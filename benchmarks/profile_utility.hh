@@ -32,6 +32,9 @@
 namespace rascal {
   namespace internal {
 
+    /**
+     * To write and read eigen matrix objects into binary objects. It is adapted from https://stackoverflow.com/a/25389481/10329403
+     */
     template <class Matrix>
     void write_binary(const char * filename, const Matrix & matrix) {
       std::ofstream out(filename,

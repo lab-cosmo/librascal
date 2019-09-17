@@ -799,7 +799,7 @@ namespace rascal {
         Matrix_t result = func(range_begin);
         int cols{static_cast<int>(result.cols())};
         int rows{static_cast<int>(result.rows())};
-      std::make_shared<Interpolator_t>(func, range_begin, range_end, accuracy, cols, rows);
+        std::make_shared<Interpolator_t>(func, range_begin, range_end, accuracy, cols, rows);
         this->intp = std::make_shared<Interpolator_t>(func, range_begin, range_end, accuracy, cols, rows);
       }
 

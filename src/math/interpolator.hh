@@ -749,10 +749,11 @@ namespace rascal {
       int dj;
     };
 
-    // TODO(alex) make class abstract to express that it is just a shared
-    // container between
-    
-    /* Base class of an interpolator to allow storage of variable templates of an interpolator as member variable, because templation of member variables is not allowed. The interpolator upcasted for storage and downcasted when used.
+    /**
+     * Base class of an interpolator to allow storage of variable templates of
+     * an interpolator as member variable, because templation of member
+     * variables is not allowed. The interpolator upcasted for storage and
+     * downcasted when used.
      */
     class InterpolatorBase {
      public:
@@ -785,8 +786,8 @@ namespace rascal {
 
     /** 
      * Templated interpolator class, used as basic class for different kind of
-     * interpolators (e.g. scalar, vector) to reduce code repetition and allow
-     * additional optimization for specific types of interpolators.
+     * interpolators (currently scalar, vector) to reduce code repetition and
+     * allow additional optimization for specific types of interpolators.
      */
     template <class InterpolationMethod, class GridRational, class SearchMethod,
               class ErrorMethod>
@@ -816,7 +817,7 @@ namespace rascal {
        */
       InterpolatorTyped(double x1, double x2, double error_bound, int max_grid_points, int start_grid_fineness)
           : InterpolatorTyped(x1, x2, error_bound, max_grid_points, start_grid_fineness, true) {}
-      InterpolatorTyped(double x1, double x2, double error_bound)      
+      InterpolatorTyped(double x1, double x2, double error_bound)
           : InterpolatorTyped(x1, x2, error_bound, 10000000, 5, true) {}
 
       /**
@@ -827,9 +828,9 @@ namespace rascal {
 
       int get_grid_fineness() {return this->grid_fineness;}
       int get_grid_size() {return this->grid.size();}
-      Vector_Ref get_grid_ref() {return this->grid;}
+      Vector_Ref get_grid_ref() {return Vector_Ref(this->grid);}
 
-      // Should be implemented
+      // Should be implemented, but is not made virtual for performance
       // virtual Ω interpolate(double x);
       // virtual Ω interpolate_derivative(double x);
       
@@ -851,7 +852,6 @@ namespace rascal {
         if (max_grid_points < 2) {
           throw std::logic_error("Maximal number of grid points must be at least 2.");
         }
-        this->initialize_iteratively();
       };
 
       InterpolatorTyped(Vector_t grid, bool) :
@@ -861,7 +861,7 @@ namespace rascal {
             search_method{SearchMethod()} {
       }
       
-      void initialize_iteratively() {
+      void initialize_iteratively() override {
         this->compute_grid_error();
         while (this->grid_error > this->error_bound &&
                this->grid.size() < this->max_grid_points) {
@@ -869,18 +869,18 @@ namespace rascal {
           this->compute_grid_error();
         }
       }
+
       bool is_grid_uniform() {
-        this->h = this->grid(1) - this->grid(0);
+        double step_size = this->grid(1) - this->grid(0);
         for (int i=0; i<this->grid.size()-2; i++) {
           // h_i - h_0 > ε
-          if (std::abs((this->grid(i+1) - this->grid(i)) -this->h) > dbl_ftol) {
+          if (std::abs((this->grid(i+1) - this->grid(i)) - step_size) > dbl_ftol) {
             return false;
           }
         }
         return true;
       }
-
-
+      
       virtual void initialize_from_computed_grid() override = 0;
 
       virtual void compute_grid_error() = 0;
@@ -998,6 +998,10 @@ namespace rascal {
         return this->intp_method.interpolate_derivative(
             this->grid, this->evaluated_grid, x, nearest_grid_index_to_x);
       } 
+
+      Vector_Ref get_evaluated_grid_ref() {
+        return Vector_Ref(this->evaluated_grid);
+      }
      protected:
       void initialize_from_computed_grid() override {
         if (this->clamped_boundary_conditions) {
@@ -1012,7 +1016,7 @@ namespace rascal {
        * Estimates the interpolator error by computing a refined test grid and
        * compares the result of the function with the interpolator
        */
-      void compute_grid_error() {
+      void compute_grid_error() override {
         // compute the grid
         this->grid = this->grid_rational.compute_grid(this->x1, this->x2,
                                                       this->grid_fineness);
@@ -1153,13 +1157,22 @@ namespace rascal {
        * @param cols 
        * @param rows
        * @param clamped_boundary_conditions By default the cubic spline uses the natural boundary conditions, but if y'(x1) and y'(x2) are known, the clamped boundary conditions can be turned on, which can increase the accuracy of the interpolation.
+       * @param yd1 referring to y'(x1) 
+       * @param ydn referring to y'(x2) 
+       *
+       * @error grid is not uniform
+       * @error grid and evaluated grid do not match by size
+       * @error evaluated grid and cols and rows do not match
        */
-      InterpolatorVectorUniformCubicSpline<RefinementMethod, ErrorMethod_>(Vector_t grid, Vector_t evaluated_grid, int cols, int rows) : Parent(grid), evaluated_grid{evaluated_grid}, cols{cols}, rows{rows}, matrix_size{cols*rows}, clamped_boundary_conditions{false}, yd1{0}, ydn{0} {
-        if (grid.size() != evaluated_grid.size()) {
-          throw std::logic_error("The grid and evaluated grid must match in size");
+      InterpolatorVectorUniformCubicSpline<RefinementMethod, ErrorMethod_>(Vector_t grid, Matrix_t evaluated_grid, int cols, int rows) : Parent(grid), evaluated_grid{evaluated_grid}, cols{cols}, rows{rows}, matrix_size{cols*rows}, clamped_boundary_conditions{false}, yd1{0}, ydn{0} {
+        if (grid.size() != evaluated_grid.rows()) {
+          throw std::logic_error("The grid size and evaluated grid rows must match");
         }
         if (not(this->is_grid_uniform())) {
-          throw std::logic_error("The grid has to be unform.");
+          throw std::logic_error("The grid has to be uniform.");
+        }
+        if (not(evaluated_grid.cols() == cols*rows)) {
+          throw std::logic_error("The evaluated grid number of cols must match cols*rows");
         }
         this->initialize_from_computed_grid();
       }
@@ -1168,32 +1181,57 @@ namespace rascal {
         if (clamped_boundary_conditions) {
           throw std::logic_error("Clamped boundary condition has yet not been implemented for CubicSplineVectorUniform.");
         }
-        if (grid.size() != evaluated_grid.size()) {
-          throw std::logic_error("The grid and evaluated grid must match in size");
+        if (grid.size() != evaluated_grid.rows()) {
+          throw std::logic_error("The grid size and evaluated grid rows must match");
         }
         if (not(this->is_grid_uniform())) {
-          throw std::logic_error("The grid has to be unform.");
+          throw std::logic_error("The grid has to be uniform.");
+        }
+        if (not(evaluated_grid.cols() == cols*rows)) {
+          throw std::logic_error("The evaluated grid number of cols must match cols*rows");
         }
         this->initialize_from_computed_grid();
       }
 
       // OPT(alex) container for Matrix_t, then reshape one time to prevent
       // check overflow
+      /**
+       * @error(debug) point is not in range [x1,x2]
+       * @param x point to be interpolated within range [x1,x2]
+       * @return interpolation of point x, estimating y(x)
+       */ 
       Matrix_t interpolate(double x) {
         return Eigen::Map<Matrix_t>(this->raw_interpolate(x).data(), this->rows,
                                     this->cols);
       }
-
+      
+      /**
+       * interpolates the derivative 
+       *
+       * @error(debug) point is not in range [x1,x2]
+       * @param x point to be interpolated within range [x1,x2]
+       * @return interpolation of point x, estimating y'(x)
+       */ 
       Matrix_t interpolate_derivative(double x) {
-        // TODO(alex) change to Eigen::Map again
-        //return Eigen::Map<Matrix_t>(this->raw_interpolate_derivative(x).data(), this->rows,
-        //                            this->cols);
-        Matrix_t result(this->rows, this->cols);
-        Vector_t tmp{this->raw_interpolate_derivative(x)};
-        for (int i{0}; i < this->rows * this->cols; i++) {
-          result(i / this->cols, i % this->cols) = tmp(i);
-        }
-        return result;
+        return Eigen::Map<Matrix_t>(this->raw_interpolate_derivative(x).data(), this->rows,
+                                    this->cols);
+      }
+
+      /**
+       * This function exists for benchmark purposes, to estimate the memory
+       * and function call overhead.
+       *
+       * @error(debug) point is not in range [x1,x2]
+       * @param x point to be interpolated within range [x1,x2]
+       * @return interpolation of point x, estimating y(x)
+       */ 
+      Matrix_t interpolate_dummy(const double x) const {
+        assert(x >= this->x1 && x <= this->x2);
+        return x * Matrix_t::Ones(this->rows, this->cols);
+      }
+
+      Matrix_Ref get_evaluated_grid_ref() {
+        return Matrix_Ref(this->evaluated_grid);
       }
      protected:
       // ensures that the grid for estimating the test error is fine enough.
@@ -1219,7 +1257,7 @@ namespace rascal {
 
       void initialize_from_computed_grid() override {
         if (this->clamped_boundary_conditions) {
-          //TODO(alex) implement this
+          //OPT(alex) implement for clamped_boundary_conditions
           //this->intp_method.initialize(Vector_Ref(this->grid), Matrix_Ref(this->evaluated_grid), this->yd1, this->ydn);
           this->intp_method.initialize(Vector_Ref(this->grid), Matrix_Ref(this->evaluated_grid));
         } else {
@@ -1270,12 +1308,6 @@ namespace rascal {
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate_derivative(
             this->grid, this->evaluated_grid, x, nearest_grid_index_to_x);
-      }
-
-      // This function exists for benchmark purposes, to compute the memory
-      // and function call overhead.
-      Matrix_t interpolate_optimal(const double x) const {
-        return x * Matrix_t::Ones(this->rows, this->cols);
       }
 
       // TODO(alex) bring get information to Handler and Manager

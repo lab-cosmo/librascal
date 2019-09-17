@@ -59,12 +59,12 @@ int main() {
   };
 
   // interpolator parameters
-  using IntpScalarUniformCubicSpline = math::InterpolatorScalarUniformCubicSpline<
-                         math::RefinementMethod_t::Exponential>;
+  using IntpScalarUniformCubicSpline = InterpolatorScalarUniformCubicSpline<
+                         RefinementMethod_t::Exponential>;
   std::shared_ptr<IntpScalarUniformCubicSpline> intp;
   double x1{0};
   double x2{8};
-  double mean_error_bound{1e-5};
+  double error_bound{1e-5};
   
   // profile parameters
   size_t nb_points = 1e6;
@@ -83,22 +83,20 @@ int main() {
   // loads grid file
   if (not(file_exists(filename_grid)) || not(file_exists(filename_evaluated_grid))) {
     std::cout << "Grid file does not exist, has to be computed." << std::endl;
-    intp = std::make_shared<IntpScalarUniformCubicSpline>(func, x1, x2, mean_error_bound);
-    Vector_t grid{intp->get_grid()};
-    Vector_t evaluated_grid{Vector_t::Zero(grid.size())};
-    for (int i=0; i<evaluated_grid.size()) {
-      evaluated_grid(i) = func(grid(i));
-    }
+    intp = std::make_shared<IntpScalarUniformCubicSpline>(func, x1, x2, error_bound);
+    Vector_t grid{intp->get_grid_ref()};
+    Vector_t evaluated_grid{intp->get_evaluated_grid_ref()};
     write_binary(filename_grid, grid);
     write_binary(filename_evaluated_grid, evaluated_grid);
   } else {
     std::cout << "Grid file exists and is read." << std::endl;
     Vector_t grid;
+    Vector_t evaluated_grid;
     read_binary(filename_grid, grid);
-    read_binary(filename_evaluated_grid, grid);
+    read_binary(filename_evaluated_grid, evaluated_grid);
     intp = std::make_shared<IntpScalarUniformCubicSpline>(grid, evaluated_grid);
   }
-  std::cout << "interpolation of scalar radial contribution: interpolator grid size " << intp.grid.size() << std::endl;
+  std::cout << "interpolation of scalar radial contribution: interpolator grid size " << intp->get_grid_size() << std::endl;
 
 
   std::chrono::duration<double> elapsed{};

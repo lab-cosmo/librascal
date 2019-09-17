@@ -48,7 +48,7 @@ static constexpr int SEED = 1597463007;
 int main() {
   // radial contribution parameters
   int max_radial{3};
-  int max_angular{max_radial - 1};
+  int max_angular{max_radial};
   json fc_hypers{{"type", "Constant"},
                  {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}};
   json hypers{
@@ -64,29 +64,38 @@ int main() {
   };
 
   // interpolator parameters
-  auto intp{InterpolatorVectorized<
-      InterpolationMethod<InterpolationMethod_t::CubicSplineVectorized>,
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
-      SearchMethod<SearchMethod_t::Uniform>>()};
+  using IntpVectorUniformCubicSpline = InterpolatorVectorUniformCubicSpline<
+                         RefinementMethod_t::Exponential>;
+  std::shared_ptr<IntpVectorUniformCubicSpline> intp;
   double x1{0};
   double x2{8};
-  double mean_error_bound{1e-10};
+  double error_bound{1e-10};
   size_t nb_points = 1e6;
   size_t nb_iterations = 100000;
-  const char * filename{"profile_vector_cubic_spline_grid.dat"};
+  const char * filename_grid{"profile_vector_cubic_spline_grid.grid"};
+  const char * filename_evaluated_grid{"profile_vector_cubic_spline_grid.evaluated_grid"};
 
   // loads grid file
-  if (not(file_exists(filename))) {
+  if (not(file_exists(filename_grid)) || not(file_exists(filename_evaluated_grid))) {
     std::cout << "Grid file does not exist, has to be computed." << std::endl;
-    intp.initialize(func, x1, x2, mean_error_bound);
-    write_binary(filename, intp.grid);
+    Matrix_t result = func(x1);
+    int cols{static_cast<int>(result.cols())};
+    int rows{static_cast<int>(result.rows())};
+    intp = std::make_shared<IntpVectorUniformCubicSpline>(func, x1, x2, error_bound, cols, rows);
+    Vector_t grid{intp->get_grid_ref()};
+    Matrix_t evaluated_grid{intp->get_evaluated_grid_ref()};
+    write_binary(filename_grid, grid);
+    write_binary(filename_evaluated_grid, evaluated_grid);
   } else {
     std::cout << "Grid file exists and is read." << std::endl;
     Vector_t grid;
-    read_binary(filename, grid);
-    intp.initialize(func, grid);
+    Matrix_t evaluated_grid;
+    read_binary(filename_grid, grid);
+    read_binary(filename_evaluated_grid, evaluated_grid);
+    std::cout << grid.size() << " " <<  evaluated_grid.cols() << " " << evaluated_grid.rows() << std::endl;
+    intp = std::make_shared<IntpVectorUniformCubicSpline>(grid, evaluated_grid, max_radial, max_angular+1);
   }
-  std::cout << "vector interpolation of radial contribution: interpolator grid size " << intp.grid.size() << std::endl;
+  std::cout << "vector interpolation of radial contribution: interpolator grid size " << intp->get_grid_size() << std::endl;
 
   // shuffle points to test interpolation method for uncorrelated requests
   srand(SEED); 
@@ -101,7 +110,7 @@ int main() {
   auto start = std::chrono::high_resolution_clock::now();
   for (int j{0}; j < N_REPETITIONS; j++) {
     for (size_t i{0}; i < nb_iterations; i++) {
-      mat_tmp = intp.interpolate(points(i % nb_points));
+      mat_tmp = intp->interpolate(points(i % nb_points));
     }
   }
   auto finish = std::chrono::high_resolution_clock::now();

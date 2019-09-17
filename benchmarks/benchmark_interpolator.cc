@@ -191,21 +191,21 @@ namespace rascal {
     BENCHMARK_CAPTURE(BM_SphExp, no_intp_comp_gradient, sph_exp_gradient_fix)
         ->Apply(AllCombinationsArguments<SphericalExpansionDataset>);
 
-    // auto intp_vec_fix{InterpolatorVectorizedFixture<RadConDataset>()};
+    // auto intp_vec_fix{InterpolatorVectorFixture<RadConDataset>()};
     // BENCHMARK_CAPTURE(BM_IntpRadCon, ,
     // intp_vec_fix)->Apply(AllCombinationsArguments<RadConDataset>)->Complexity();
 
-    // auto intp_vec_fix1{InterpolatorVectorizedFixture<RadConDataset1>()};
+    // auto intp_vec_fix1{InterpolatorVectorFixture<RadConDataset1>()};
     // BENCHMARK_CAPTURE(BM_IntpRadCon, ,
     // intp_vec_fix1)->Apply(AllCombinationsArguments<RadConDataset1>)->Complexity();
     // BENCHMARK_CAPTURE(BM_RadCon, ,
     // intp_vec_fix1)->Apply(AllCombinationsArguments<RadConDataset>)->Complexity();
-    // auto intp_vec_fix2{InterpolatorVectorizedFixture<RadConDataset2>()};
+    // auto intp_vec_fix2{InterpolatorVectorFixture<RadConDataset2>()};
     // BENCHMARK_CAPTURE(BM_IntpRadCon, ,
     // intp_vec_fix2)->Apply(AllCombinationsArguments<RadConDataset2>)->Complexity();
     // BENCHMARK_CAPTURE(BM_RadCon, ,
     // intp_vec_fix2)->Apply(AllCombinationsArguments<RadConDataset>)->Complexity();
-    // auto intp_vec_fix3{InterpolatorVectorizedFixture<RadConDataset3>()};
+    // auto intp_vec_fix3{InterpolatorVectorFixture<RadConDataset3>()};
     // BENCHMARK_CAPTURE(BM_IntpRadCon, ,
     // intp_vec_fix3)->Apply(AllCombinationsArguments<RadConDataset3>)->Complexity();
     // BENCHMARK_CAPTURE(BM_RadCon, ,

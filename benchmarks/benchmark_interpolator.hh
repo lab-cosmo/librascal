@@ -39,7 +39,7 @@
 #include "representations/representation_manager_spherical_expansion.hh"
 #include "json.hpp"
 
-using namespace rascal::math;
+using namespace rascal::math; // NO LINT
 
 // TODO(all) naming to BFixture to prevent collision with tests ok?
 
@@ -57,6 +57,9 @@ namespace rascal {
     // Static const functions because json type cannot be static const. See
     // https://stackoverflow.com/a/17057121/10329403
 
+    /**
+     * Dataset for testing the SphericalExpansion with Interpolation
+     */
     class SphericalExpansionDataset : public BaseInterpolatorDataset {
      public:
       using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
@@ -87,47 +90,6 @@ namespace rascal {
                 {"log_error_bounds", {-10}},
                 {"func_names", {SupportedVecFunc::RadialContribution}},
                 {"max_radial", {3}},
-                {"random", {true}}};
-      }
-    };
-
-    class RadConDataset1 : public BaseInterpolatorDataset {
-     public:
-      using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
-      static const json data() {
-        return {//{"nbs_iterations", {1e3,1e4,1e5,1e6}},
-                {"nbs_iterations", {1e3, 1e4, 1e5, 1e6}},
-                {"ranges", {std::make_pair(0, 16)}},
-                {"log_error_bounds", {-10}},
-                {"func_names", {SupportedVecFunc::RadialContribution}},
-                {"max_radial", {3}},
-                {"random", {true}}};
-      }
-    };
-
-    class RadConDataset2 : public BaseInterpolatorDataset {
-     public:
-      using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
-      static const json data() {
-        return {//{"nbs_iterations", {1e3,1e4,1e5,1e6}},
-                {"nbs_iterations", {1e3, 1e4, 1e5, 1e6}},
-                {"ranges", {std::make_pair(0, 16)}},
-                {"log_error_bounds", {-10}},
-                {"func_names", {SupportedVecFunc::RadialContribution}},
-                {"max_radial", {5}},
-                {"random", {true}}};
-      }
-    };
-    class RadConDataset3 : public BaseInterpolatorDataset {
-     public:
-      using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
-      static const json data() {
-        return {//{"nbs_iterations", {1e3,1e4,1e5,1e6}},
-                {"nbs_iterations", {1e3, 1e4, 1e5, 1e6}},
-                {"ranges", {std::make_pair(0, 16)}},
-                {"log_error_bounds", {-10}},
-                {"func_names", {SupportedVecFunc::RadialContribution}},
-                {"max_radial", {8}},
                 {"random", {true}}};
       }
     };
@@ -235,14 +197,12 @@ namespace rascal {
      public:
       using Parent = InterpolatorBFixture<Dataset>;
       using SupportedFunc = typename Dataset::SupportedFunc;
-      using Interpolator_t = Interpolator<
-          InterpolationMethod<InterpolationMethod_t::CubicSpline>,
-          GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
-          SearchMethod<SearchMethod_t::Uniform>>;
+      using Interpolator_t = math::InterpolatorScalarUniformCubicSpline<
+                         math::RefinementMethod_t::Exponential>;
 
       InterpolatorScalarFixture<Dataset>() : Parent() {}
 
-      Interpolator_t intp;
+      std::shared_ptr<Interpolator_t> intp{};
       SupportedFunc func_name{SupportedFunc::Identity};
       std::function<double(double)> func{};
 
@@ -276,7 +236,7 @@ namespace rascal {
 
         this->error_bound = std::pow(10, this->log_error_bound);
         this->init_function();
-        this->intp.initialize(this->func, this->x1, this->x2,
+        this->intp = std::make_shared<Interpolator_t>(this->func, this->x1, this->x2,
                               this->error_bound);
       }
 
@@ -310,16 +270,14 @@ namespace rascal {
     };
 
     template <class Dataset>
-    class InterpolatorVectorizedFixture : public InterpolatorBFixture<Dataset> {
+    class InterpolatorVectorFixture : public InterpolatorBFixture<Dataset> {
      public:
       using Parent = InterpolatorBFixture<Dataset>;
       using SupportedVecFunc = typename Dataset::SupportedVecFunc;
-      using Interpolator_t = InterpolatorVectorized<
-          InterpolationMethod<InterpolationMethod_t::CubicSplineVectorized>,
-          GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>,
-          SearchMethod<SearchMethod_t::Uniform>>;
+      using Interpolator_t = math::InterpolatorVectorUniformCubicSpline<
+                         math::RefinementMethod_t::Exponential>;
 
-      Interpolator_t intp;
+      std::shared_ptr<Interpolator_t> intp{};
       std::function<math::Matrix_t(double)> func;
       SupportedVecFunc func_name;
       int max_radial{0};
@@ -366,8 +324,7 @@ namespace rascal {
 
         this->error_bound = std::pow(10, this->log_error_bound);
         this->init_function(state, data);
-        this->intp.initialize(this->func, this->x1, this->x2, this->error_bound,
-                              10000000, 5, true);
+        this->intp = std::make_shared<Interpolator_t>(this->func, this->x1, this->x2, this->error_bound);
       }
 
       void init_radial_contribution_function(const ::benchmark::State & state,
