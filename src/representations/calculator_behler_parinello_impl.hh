@@ -30,8 +30,12 @@
 
 namespace rascal {
 
+  /* ---------------------------------------------------------------------- */
   CalculatorBehlerParinello::CalculatorBehlerParinello(
-      const Hypers_t & /*parameters*/) {}
+      const Hypers_t & parameters) {
+    // Extract the options and hyperparameters
+    this->set_hyperparameters(parameters);
+  }
 
 }  // namespace rascal
 

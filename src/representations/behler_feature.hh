@@ -32,23 +32,26 @@
 #include "representations/cutoff_functions.hh"
 #include "representations/symmetry_functions.hh"
 
+#include "json_io.hh"
+
 namespace rascal {
 
-  template <class StructureManager>
   class BehlerFeatureBase {
    public:
-    template <size_t Order>
-    using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
+    constexpr static int MaxBehlerOrder{3};
+    using StdSpecies = TupleStandardisation<int, MaxBehlerOrder>;
 
-    using StdSpecies =
-        TupleStandardisation<int, StructureManager::traits::MaxOrder>;
+    using Hypers_t = json;
 
     //! Default constructor
     BehlerFeatureBase() = delete;
 
     //! Constructor with symmetry function type
-    BehlerFeatureBase(const SymmetryFunType sym_fun_type, const size_t order)
-        : sym_fun_type{sym_fun_type}, order{order} {}
+    BehlerFeatureBase(const SymmetryFunType & sym_fun_type,
+                      const internal::CutoffFunctionType & cut_fun_type,
+                      const size_t & order, const Hypers_t & raw_params)
+        : sym_fun_type{sym_fun_type}, cut_fun_type{cut_fun_type}, order{order},
+          raw_params{raw_params} {}
 
     //! Copy constructor
     BehlerFeatureBase(const BehlerFeatureBase & other);
@@ -70,12 +73,9 @@ namespace rascal {
     //! to the manager
     virtual void init(const UnitStyle & units) = 0;
 
-    //! needs to be called in the beginning of every evaluation step, refreshes
-    //! the precalculated properties if necessary
-    virtual void prepare(StructureManager & manager) = 0;
-
     //! Main worker (raison d'être)
-    virtual void apply(StructureManager & manager) const = 0;
+    template <class StructureManager>
+    inline void compute(StructureManager & manager) const;
 
     //! insert a parameter (sub-)json
     void add_params(const json & params) {
@@ -91,22 +91,23 @@ namespace rascal {
     }
 
    protected:
-    std::vector<json> raw_params{};
+    template <SymmetryFunType SymFunType, class StructureManager>
+    inline void compute_helper(StructureManager & manager) const;
+
     const SymmetryFunType sym_fun_type;
+    const internal::CutoffFunctionType cut_fun_type;
     const size_t order;
+    std::vector<json> raw_params{};
   };
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType,
-            class StructureManager>
-  class BehlerFeature final : public BehlerFeatureBase<StructureManager> {
+  template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType>
+  class BehlerFeature final : public BehlerFeatureBase {
    public:
-    using Parent = BehlerFeatureBase<StructureManager>;
+    using Parent = BehlerFeatureBase;
     using SymmetryFunction = SymmetryFun<SymFunType>;
     using CutoffFunction = internal::CutoffFunction<CutFunType>;
     using StdSpecies = typename Parent::StdSpecies;
-    template <size_t Order>
-    using ClusterRef_t = typename Parent::ClusterRef_t;
 
     // stores parameter packs ordered by cutoff radius
     using ParamStorage =
@@ -114,17 +115,14 @@ namespace rascal {
                  Eigen::Matrix<double, SymmetryFun<SymFunType>::NbParams,
                                Eigen::Dynamic>>;
 
-    constexpr static size_t MaxOrder{Parent::traits::MaxOrder};
-
     //! Default constructor
-    BehlerFeature() : Parent(SymFunType) {}
+    BehlerFeature() : Parent(SymFunType, CutFunType, SymmetryFunction::Order) {}
 
     //! Copy constructor
     BehlerFeature(const BehlerFeature & other) = delete;
 
     //! Move constructor
     BehlerFeature(BehlerFeature && other) = default;
-
     //! Destructor
     ~BehlerFeature() = default;
 
@@ -135,24 +133,19 @@ namespace rascal {
     BehlerFeature & operator=(BehlerFeature && other) = default;
 
     void init(const UnitStyle & units) final;
-    void prepare(StructureManager & manager) final;
 
-    void apply(StructureManager & manager) const;
+    template <class StructureManager>
+    void compute(StructureManager & manager) const;
 
     StdSpecies get_species_combo() const;  // to implement
     size_t get_index() const;              // to implement
 
    protected:
-    template <size_t Order>
-    inline void eval_cluster(StructureManager & manager,
-                             const ClusterRef_t<Order> & cluster);
-    static constexpr size_t AtomOrder{1};
-    static constexpr size_t PairOrder{2};
-    static constexpr size_t AtomLayer{
-        std::get<0>(StructureManager::traits::LayerByOrder::type)};
-    static constexpr size_t PairLayer{
-        std::get<1>(StructureManager::traits::LayerByOrder::type)};
-
+    template <class StructureManager, size_t Order>
+    inline void
+    eval_cluster(StructureManager & manager,
+                 const typename StructureManager::template ClusterRef_t<Order> &
+                     cluster);
     ParamStorage params{};
   };
 

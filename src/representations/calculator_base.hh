@@ -69,9 +69,6 @@ namespace rascal {
     //! Move assignment operator
     CalculatorBase & operator=(CalculatorBase && other) = default;
 
-    //! Pure Virtual Function to set hyperparameters of the representation
-    virtual void set_hyperparameters(const Hypers_t &) = 0;
-
     //!
     void check_hyperparameters(const ReferenceHypers_t &, const Hypers_t &);
 

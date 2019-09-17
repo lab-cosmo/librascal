@@ -85,18 +85,27 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   using multiple_fixtures =
-      boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb>,
-                       CalculatorFixture<MultipleStructureSphericalExpansion>,
-                       CalculatorFixture<MultipleStructureSphericalInvariants>,
-                       CalculatorFixture<MultipleStructureSphericalCovariants>,
+      boost::mpl::list<// CalculatorFixture<MultipleStructureSortedCoulomb>,
+                       // CalculatorFixture<MultipleStructureSphericalExpansion>,
+                       // CalculatorFixture<MultipleStructureSphericalInvariants>,
+                       // CalculatorFixture<MultipleStructureSphericalCovariants>,
+                       // CalculatorFixture<MultipleStructureBehlerParinello>
+    >;
+  using multiple_fixtures_BLA =
+      boost::mpl::list<// CalculatorFixture<MultipleStructureSortedCoulomb>,
+                       // CalculatorFixture<MultipleStructureSphericalExpansion>,
+                       // CalculatorFixture<MultipleStructureSphericalInvariants>,
+                       // CalculatorFixture<MultipleStructureSphericalCovariants>,
                        CalculatorFixture<MultipleStructureBehlerParinello>>;
 
   using fixtures_ref_test =
-      boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
-                       CalculatorFixture<SphericalExpansionTestData>,
-                       CalculatorFixture<SphericalInvariantsTestData>,
-                       CalculatorFixture<SphericalCovariantsTestData>>;
+                  boost::mpl::list<>;// CalculatorFixture<SortedCoulombTestData>,
+                       // CalculatorFixture<SphericalExpansionTestData>,
+                       // CalculatorFixture<SphericalInvariantsTestData>,
+                       // CalculatorFixture<SphericalCovariantsTestData>>;
 
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_and_compilation, Fix,
+                                   multiple_fixtures_BLA, Fix){};
   /* ---------------------------------------------------------------------- */
   /**
    * Test if the constructor runs and that the name is properly set
@@ -117,6 +126,7 @@ namespace rascal {
     // test the user defined name works
     for (auto & hyper : representation_hypers) {
       hyper["identifier"] = "my_representation";
+      std::cout << hyper << std::endl;
       representations.emplace_back(hyper);
       auto & name{representations.back().get_name()};
       auto & prefix{representations.back().get_prefix()};

@@ -121,10 +121,10 @@ namespace rascal {
     std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
+        {{"type", "CosineShifted"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "Cosine"},
+        {{"type", "CosineShifted"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -189,10 +189,10 @@ namespace rascal {
     std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
+        {{"type", "CosineShifted"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "Cosine"},
+        {{"type", "CosineShifted"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -267,10 +267,10 @@ namespace rascal {
     std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
+        {{"type", "CosineShifted"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "Cosine"},
+        {{"type", "CosineShifted"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -350,10 +350,10 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
+        {{"type", "CosineShifted"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "Cosine"},
+        {{"type", "CosineShifted"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -439,7 +439,7 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
+        {{"type", "CosineShifted"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -476,7 +476,7 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
+        {{"type", "CosineShifted"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -840,7 +840,8 @@ namespace rascal {
     MultipleStructureBehlerParinello() : Parent{} {};
     ~MultipleStructureBehlerParinello() = default;
 
-    std::vector<json> representation_hypers{{{"bla", 3.}, {"bla list", "em"}}};
+    std::vector<json> representation_hypers{
+        {{"bla", 3.}, {"bla list", "em"}, {"identifier", "name"}}};
   };
 
   struct SortedCoulombTestData : TestData {

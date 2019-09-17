@@ -75,20 +75,27 @@ namespace rascal {
     operator=(CalculatorBehlerParinello && other) = default;
 
     //! Pure Virtual Function to set hyperparameters of the representation
-    void set_hyperparameters(const Hypers_t &) final{};
+    void set_hyperparameters(const Hypers_t & hyper) {
+      this->set_name(hyper);
+    }
 
     template <class StructureManager>
-    void compute(StructureManager & /*manager*/) {}
+    inline void compute(std::shared_ptr<StructureManager> manager) {
+      // temporary meaningless definition
+      manager->template get_property_ref<Property_t<StructureManager>>(
+          this->get_name());
+    }
 
    protected:
     //! unique cutoff function used for all input nodes
     internal::CutoffFunctionType cutoff_fun{};
     //! set of all cutoff values for optimisation
     std::set<double> cutoffs{};
-
     //! reference the requiered hypers
-    const ReferenceHypers_t reference_hypers{{"bla", {}},
-                                             {"bla list", {"it", "em"}}};
+    const ReferenceHypers_t reference_hypers{
+        {"bla", {}},
+        {"bla list", {"it", "em"}},
+    };
   };
 }  // namespace rascal
 

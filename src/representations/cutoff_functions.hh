@@ -50,9 +50,16 @@ namespace rascal {
     /**
      * List of implemented cutoff function
      */
-    enum class CutoffFunctionType { Cosine, RadialScaling, End_ };
+    enum class CutoffFunctionType { CosineShifted, RadialScaling, End_ };
 
-    struct CutoffFunctionBase {
+    /**
+     * forward declaration for compute dispatch
+     */
+    template <CutoffFunctionType Type>
+    class CutoffFunction;
+
+    class CutoffFunctionBase {
+     public:
       //! Constructor
       CutoffFunctionBase() = default;
       //! Destructor
@@ -68,35 +75,95 @@ namespace rascal {
 
       using Hypers_t = CalculatorBase::Hypers_t;
 
-      //! Pure Virtual Function to set hyperparameters of the cutoff function
-      virtual void set_hyperparameters(const Hypers_t &) = 0;
+      //! Main worker (raison d'être)
+      template <class StructureManager>
+      inline void compute(StructureManager & manager) const;
 
-      // TODO(felix) test is having these pure virtual changes performance
-      //! Pure Virtual Function to evaluate the cutoff function
-      // virtual double f_c(const double& distance) = 0;
-      //! Pure Virtual Function to evaluate the derivative of the cutoff
-      //! function with respect to the distance
-      // virtual double df_c(const double& distance) = 0;
+      /**
+       * The identifier string must provide a unique name for a property to
+       * store precomputed cutoff function values. For this, the naming scheme
+       * must guarantee that two different parameter sets (e.g., cut-off radii)
+       * generate diffent names, and should guarantee that the same function
+       * with the same  parameters generates the same name.
+       */
+      virtual const std::string & get_identifier() const = 0;
+
+     protected:
+      //! Main worker (raison d'être)
+      template <CutoffFunctionType CutFunType, class StructureManager>
+      inline void compute_helper(StructureManager & manager) const;
+    };
+
+    /* ---------------------------------------------------------------------- */
+    template <class CutoffFunctionType>
+    class CutoffFunctionComputer : public CutoffFunctionBase {
+     public:
+      template <class StructureManager>
+      void compute(StructureManager & manager) const {
+        auto & typed_this{static_cast<CutoffFunctionType &>(*this)};
+        if (not manager.has_property()) {
+        };
+      }
     };
 
     // Empty general template class implementing the cutoff functions
     // It should never be instantiated.
     template <CutoffFunctionType Type>
-    struct CutoffFunction : CutoffFunctionBase {};
+    class CutoffFunction : public CutoffFunctionComputer<CutoffFunction<Type>> {
+    };
+
+    /**
+     * Cosine cutoff function as in Behler, can only be used with strict
+     * managers
+     */
+    // template <>
+    // class CutoffFunction<CutoffFunctionType::Cosine>
+    //     : public CutoffFunctionComputer<
+    //           CutoffFunction<CutoffFunctionType::Cosine>> {
+    //  public:
+    //   using Hypers_t = typename CutoffFunctionBase::Hypers_t;
+    //   explicit CutoffFunction(const Hypers_t & hypers)
+    //       : hypers{hypers},
+    //         cutoff{hypers.at("cutoff").at("value").get<double>()},
+    //         identifier{this->make_identifier()} {}
+
+    //   inline double f_c(const double & distance) const {
+    //     assert(distance <= this->cutoff);
+    //     return .5 * (std::cos(math::PI * distance / this->cutoff) + 1.);
+    //   }
+
+    //   inline double df_c(const double & distance) {
+    //     assert(distance <= this->cutoff);
+    //     auto && scaled_dist{math::PI * distance / this->cutoff};
+    //     return -.5 * scaled_dist * std::sin(scaled_dist);
+    //   }
+
+    //   const std::string & get_identifier() const { return this->identifier; }
+
+    //  protected:
+    //   std::string make_identifier() {
+    //     std::stringstream id{};
+    //     id.precision(14);
+    //     id << "Cosine_" << this->cutoff;
+    //     return id.str();
+    //   }
+    //   //! keep the hypers
+    //   const Hypers_t hypers;
+    //   //! cutoff radii
+    //   const double cutoff;
+    //   const std::string identifier;
+    // };
 
     template <>
-    struct CutoffFunction<internal::CutoffFunctionType::Cosine>
-        : CutoffFunctionBase {
+    class CutoffFunction<internal::CutoffFunctionType::CosineShifted>
+        : public CutoffFunctionBase {
+     public:
       using Hypers_t = CutoffFunctionBase::Hypers_t;
-      explicit CutoffFunction(const Hypers_t & hypers) {
-        this->set_hyperparameters(hypers);
-      }
-
-      void set_hyperparameters(const Hypers_t & hypers) {
-        this->cutoff = hypers.at("cutoff").at("value").get<double>();
-        this->smooth_width =
-            hypers.at("smooth_width").at("value").get<double>();
-      }
+      explicit CutoffFunction(const Hypers_t & hypers)
+          : hypers{hypers},
+            cutoff{hypers.at("cutoff").at("value").get<double>()},
+            smooth_width{hypers.at("smooth_width").at("value").get<double>()},
+            identifier{this->make_identifier()} {}
 
       inline double f_c(const double & distance) {
         return math::switching_function_cosine(distance, this->cutoff,
@@ -108,12 +175,22 @@ namespace rascal {
                                                          this->smooth_width);
       }
 
+      const std::string & get_identifier() const { return this->identifier; }
+
+     private:
+      std::string make_identifier() const {
+        std::stringstream id{};
+        id.precision(14);
+        id << "CosineShifted_" << this->cutoff << "_" << this->smooth_width;
+        return id.str();
+      }
       //! keep the hypers
-      Hypers_t hypers{};
+      Hypers_t hypers;
       //! cutoff radii
-      double cutoff{0.};
+      double cutoff;
       //! interval into which the smoothing happens [cutoff-smooth_width,cutoff]
-      double smooth_width{0.};
+      double smooth_width;
+      std::string identifier;
     };
 
     /**
@@ -130,23 +207,22 @@ namespace rascal {
      * with the cosine switching function.
      */
     template <>
-    struct CutoffFunction<internal::CutoffFunctionType::RadialScaling>
-        : CutoffFunctionBase {
+    class CutoffFunction<CutoffFunctionType::RadialScaling>
+        : public CutoffFunctionComputer<
+              CutoffFunction<CutoffFunctionType::RadialScaling>> {
+     public:
       using Hypers_t = CutoffFunctionBase::Hypers_t;
-      explicit CutoffFunction(const Hypers_t & hypers) {
-        this->set_hyperparameters(hypers);
-      }
-
-      void set_hyperparameters(const Hypers_t & hypers) {
-        this->cutoff = hypers.at("cutoff").at("value").get<double>();
-        this->smooth_width =
-            hypers.at("smooth_width").at("value").get<double>();
-        this->rate = hypers.at("rate").at("value").get<double>();
+      explicit CutoffFunction(const Hypers_t & hypers)
+          : hypers{hypers},
+            cutoff{hypers.at("cutoff").at("value").get<double>()},
+            smooth_width{hypers.at("smooth_width").at("value").get<double>()},
+            rate{hypers.at("rate").at("value").get<double>()},
+            exponent{hypers.at("exponent").at("value").get<int>()},
+            scale{hypers.at("scale").at("value").get<double>()},
+            identifier{this->make_identifier()} {
         if (this->rate < 0) {
           throw std::runtime_error("RadialScaling's rate should be positive");
         }
-        this->exponent = hypers.at("exponent").at("value").get<int>();
-        this->scale = hypers.at("scale").at("value").get<double>();
       }
 
       inline double f_c(const double & distance) {
@@ -179,20 +255,56 @@ namespace rascal {
                             distance, this->cutoff, this->smooth_width);
       }
 
+      template <class StructureManager>
+      void compute(StructureManager & manager) const;
+
+      const std::string & get_identifier() const { return this->identifier; }
+
+     protected:
+      std::string make_identifier() {
+        std::stringstream id{};
+        id.precision(14);
+        id << "RadialScaling_" << this->cutoff << "_" << this->smooth_width
+           << "_" << this->rate << "_" << this->exponent << "_" << this->scale;
+        return id.str();
+      }
+
       //! keep the hypers
-      Hypers_t hypers{};
+      Hypers_t hypers;
       //! cutoff radii
-      double cutoff{0.};
+      double cutoff;
       //! interval into which the smoothing happens [cutoff-smooth_width,cutoff]
-      double smooth_width{0.};
+      double smooth_width;
       //! rate c
-      double rate{0.};
+      double rate;
       //! exponent m
-      int exponent{0};
+      int exponent;
       //! scale r_0
-      double scale{1.};
+      double scale;
+      std::string identifier;
     };
 
+    template <CutoffFunctionType CutFunType, class StructureManager>
+    inline void
+    CutoffFunctionBase::compute_helper(StructureManager & manager) const {
+      switch (CutFunType) {
+      case CutoffFunctionType::CosineShifted: {
+        auto & cutoff_function{static_cast<
+            const CutoffFunction<CutoffFunctionType::CosineShifted> &>(*this)};
+        cutoff_function.compute(manager);
+        break;
+      }
+      case CutoffFunctionType::RadialScaling: {
+        auto & cutoff_function{static_cast<
+            const CutoffFunction<CutoffFunctionType::RadialScaling> &>(*this)};
+        cutoff_function.compute(manager);
+        break;
+      }
+      default:
+        throw std::runtime_error("Unknown cutoff function type");
+        break;
+      }
+    }
   }  // namespace internal
 
   template <internal::CutoffFunctionType Type, class Hypers>
