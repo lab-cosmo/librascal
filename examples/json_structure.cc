@@ -31,11 +31,9 @@
 #include "structure_managers/adaptor_neighbour_list.hh"
 #include "structure_managers/make_structure_manager.hh"
 #include "rascal_utility.hh"
-#include "representations/representation_manager_sorted_coulomb.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_spherical_invariants.hh"
-#include "representations/feature_manager_dense.hh"
-#include "representations/feature_manager_block_sparse.hh"
+#include "representations/calculator_sorted_coulomb.hh"
+#include "representations/calculator_spherical_expansion.hh"
+#include "representations/calculator_spherical_invariants.hh"
 #include "json_io.hh"
 
 #include <iostream>
@@ -48,8 +46,7 @@
 
 using namespace rascal;  // NOLINT
 
-using Representation_t = RepresentationManagerSphericalInvariants<
-    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+using Representation_t = CalculatorSphericalInvariants;
 
 using LayerByOrder = std::index_sequence<0, 0, 1>;
 

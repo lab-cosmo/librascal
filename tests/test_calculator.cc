@@ -85,10 +85,14 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
 
   using multiple_fixtures =
-      boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb>,
-                       CalculatorFixture<MultipleStructureSphericalExpansion>,
-                       CalculatorFixture<MultipleStructureSphericalInvariants>,
-                       CalculatorFixture<MultipleStructureSphericalCovariants>>;
+      boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb<
+                            MultipleStructureManagerNLStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalExpansion<
+                            MultipleStructureManagerNLStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalInvariants<
+                            MultipleStructureManagerNLStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalCovariants<
+                            MultipleStructureManagerNLStrictFixture>>>;
 
   using fixtures_ref_test =
       boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
@@ -197,10 +201,10 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_no_center_test, Fix,
                                    multiple_fixtures, Fix) {
     using ArrayB_t = typename AtomicStructure<3>::ArrayB_t;
-    using Property_t = typename Fix::Property_t;
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
-    auto & hypers = Fix::hypers;
+    using Property_t = typename Fix::Property_t;
+    auto & hypers = Fix::representation_hypers;
     for (auto & manager : managers) {
       auto man = extract_underlying_manager<0>(manager);
       auto atomic_structure = man->get_atomic_structure();
@@ -212,7 +216,9 @@ namespace rascal {
       for (auto & hyper : hypers) {
         representations.emplace_back(hyper);
         representations.back().compute(manager);
-        BOOST_CHECK_EQUAL(representations.back().get_center_size(), 1);
+        auto& prop = manager->template get_validated_property_ref<Property_t>(
+            representations.back().get_name());
+        BOOST_CHECK_EQUAL(prop.get_nb_item(), 1);
       }
     }
   }
@@ -224,16 +230,17 @@ namespace rascal {
       // susceptible to
       // differences in neighbour ordering so test will fail for a wrong
       // reason...
-      // RepresentationFixture<MultipleStructureSortedCoulombCenterMask,
+      // CalculatorFixture<MultipleStructureSortedCoulombCenterMask,
       //                       RepresentationManagerSortedCoulomb>,
-      RepresentationFixture<
+      CalculatorFixture<
+          MultipleStructureSphericalExpansion<
+              MultipleStructureManagerNLStrictFixtureCenterMask>>,
+      CalculatorFixture<
+          MultipleStructureSphericalCovariants<
+              MultipleStructureManagerNLStrictFixtureCenterMask>>,
+      CalculatorFixture<
           MultipleStructureSphericalInvariants<
-              MultipleStructureManagerNLStrictFixtureCenterMask>,
-          RepresentationManagerSphericalExpansion>,
-      RepresentationFixture<
-          MultipleStructureSphericalInvariants<
-              MultipleStructureManagerNLStrictFixtureCenterMask>,
-          RepresentationManagerSphericalInvariants>>;
+              MultipleStructureManagerNLStrictFixtureCenterMask>>>;
 
   /**
    * Test that selecting subsets of centers will give the same representation
@@ -243,7 +250,7 @@ namespace rascal {
     bool verbose{false};
     auto & managers = Fix::managers;
     // auto & representations = Fix::representations;
-    auto & hypers = Fix::hypers;
+    auto & hypers = Fix::representation_hypers;
     using Representation_t = typename Fix::Representation_t;
     using Property_t = typename Fix::Property_t;
 
@@ -265,11 +272,11 @@ namespace rascal {
         representation.compute(manager);
         representation.compute(manager_no_center);
 
-        auto prop = manager->template get_validated_property_ref<Property_t>(
+        auto& prop = manager->template get_validated_property_ref<Property_t>(
             representation.get_name());
         math::Matrix_t rep_full = prop.get_dense_feature_matrix();
 
-        auto prop_no_center = manager->template get_validated_property_ref<Property_t>(
+        auto& prop_no_center = manager->template get_validated_property_ref<Property_t>(
             representation.get_name());
         math::Matrix_t rep_no_center = prop_no_center.get_dense_feature_matrix();
 

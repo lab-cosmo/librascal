@@ -304,9 +304,19 @@ namespace rascal {
     using ArrayB_t = typename AtomicStructure<Dim>::ArrayB_t;
 
     auto cell = j.at("cell").get<Cell_t>();
-    auto atom_types = j.at("atom_types").get<AtomTypes_t>();
-    auto pbc = j.at("pbc").get<PBC_t>();
     auto positions = j.at("positions").get<Positions_t>();
+
+    AtomTypes_t atom_types(positions.rows());
+    if (j.count("atom_types") == 1) {
+      atom_types = j.at("atom_types").get<AtomTypes_t>();
+    } else if (j.count("numbers") == 1) {
+      atom_types = j.at("numbers").get<AtomTypes_t>();
+    } else {
+      throw std::runtime_error(
+          R"(AtomicStructure needs atom_types or numbers keyword)");
+    }
+    auto pbc = j.at("pbc").get<PBC_t>();
+
 
     cell.transposeInPlace();
 
