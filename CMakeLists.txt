@@ -334,6 +334,7 @@ endforeach(binaryfile ${binaries})
 configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
 
+# TODO(alex) do this for all profiling options
 # Add profiling information for the appropriate examples
 if (ENABLE_PROFILING)
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -361,6 +362,7 @@ if(CPPLINT_FOUND)
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/benchmarks" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
   "--filter=-build/namespaces")
 endif()
@@ -372,6 +374,7 @@ if(CLANG_FORMAT_FOUND)
   clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
   clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
   clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/benchmarks" "")
   clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
 endif()
 

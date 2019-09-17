@@ -682,8 +682,7 @@ namespace rascal {
         return Parent::compute_neighbour_contribution(distance, this->fac_a);
       }
 
-      inline Matrix_Ref
-      compute_neighbour_contribution(const double &) {
+      inline Matrix_Ref compute_neighbour_contribution(const double &) {
         return Parent::compute_neighbour_contribution(this->fac_a);
       }
 
@@ -723,21 +722,19 @@ namespace rascal {
       using Matrix_t = typename Parent::Matrix_t;
       using Matrix_Ref = typename Parent::Matrix_Ref;
       using Vector_Ref = typename Parent::Vector_Ref;
-      using Interpolator_t = math::InterpolatorVectorized_t;
+      using Interpolator_t = math::InterpolatorVectorUniformCubicSpline<math::RefinementMethod_t::Exponential>;
 
       explicit RadialContributionHandler(const Hypers_t & hypers)
           : Parent(hypers) {
-        this->precompute_fac_a();
-        this->precompute_center_contribution();
-
+        this->precompute();
         this->init_interpolator(hypers);
       }
 
       // If we find a case where smarter parameters for x1 and x2 can be given
-      RadialContributionHandler(const Hypers_t & hypers, double x1, double x2,
+      explicit RadialContributionHandler(const Hypers_t & hypers, double x1, double x2,
                                 double accuracy)
           : Parent(hypers) {
-        this->precompute_fac_a();
+        this->precompute();
         this->init_interpolator(x1, x2, accuracy);
       }
       // Returns the precomputed center contribution
@@ -752,7 +749,7 @@ namespace rascal {
                                      ClusterRefKey<Order, Layer> &) {
         // TODO(alex) TODO(felix) include an check that the distance is within
         // the (x1,x2) range of the interpolator
-        this->radial_integral_neighbour = this->intp.interpolate(distance);
+        this->radial_integral_neighbour = this->intp->interpolate(distance);
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
@@ -761,11 +758,25 @@ namespace rascal {
       compute_neighbour_derivative(const double & distance,
                                    ClusterRefKey<Order, Layer> &) {
         this->radial_neighbour_derivative =
-            this->intp.interpolate_derivative(distance);
+            this->intp->interpolate_derivative(distance);
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
      protected:
+      void precompute() {
+        this->precompute_fac_a();
+        this->precompute_center_contribution();
+      }
+      void precompute_fac_a() {
+        auto smearing{downcast_atomic_smearing<AtomicSmearingType::Constant>(
+            this->atomic_smearing)};
+        this->fac_a = 0.5 * pow(smearing->get_gaussian_sigma(), -2);
+      }
+
+      // Should be invoked only after the a factor has been precomputed
+      void precompute_center_contribution() {
+        Parent::compute_center_contribution(this->fac_a);
+      }
       void init_interpolator(const Hypers_t & hypers) {
         auto radial_contribution_hypers =
             hypers.at("radial_contribution").template get<json>();
@@ -785,17 +796,11 @@ namespace rascal {
           Parent::compute_neighbour_contribution(distance, this->fac_a);
           return this->radial_integral_neighbour;
         }};
-        this->intp.initialize(func, range_begin, range_end, accuracy);
-      }
-      void precompute_fac_a() {
-        auto smearing{downcast_atomic_smearing<AtomicSmearingType::Constant>(
-            this->atomic_smearing)};
-        this->fac_a = 0.5 * pow(smearing->get_gaussian_sigma(), -2);
-      }
-
-      // Should be invoked only after the a factor has been precomputed
-      void precompute_center_contribution() {
-        Parent::compute_center_contribution(this->fac_a);
+        Matrix_t result = func(range_begin);
+        int cols{static_cast<int>(result.cols())};
+        int rows{static_cast<int>(result.rows())};
+      std::make_shared<Interpolator_t>(func, range_begin, range_end, accuracy, cols, rows);
+        this->intp = std::make_shared<Interpolator_t>(func, range_begin, range_end, accuracy, cols, rows);
       }
 
       double get_range_begin(const Hypers_t & optimization_hypers) {
@@ -835,7 +840,7 @@ namespace rascal {
       }
 
       double fac_a{};
-      Interpolator_t intp{};
+      std::shared_ptr<Interpolator_t> intp{};
     };
 
   }  // namespace internal
@@ -1151,6 +1156,7 @@ namespace rascal {
     std::shared_ptr<internal::RadialContributionBase> radial_integral{};
     internal::RadialBasisType radial_integral_type{};
 
+    // TODO(alex) rename optimization type
     internal::OptimizationType interpolator_type{};
 
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};

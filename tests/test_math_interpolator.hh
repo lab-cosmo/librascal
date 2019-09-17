@@ -49,9 +49,9 @@ namespace rascal {
   }
 
   template <class Interpolator>
-  static double intp_ref_mean_error(Interpolator & intp,
+  static double intp_ref_mean_error(std::shared_ptr<Interpolator> & intp,
                                     const math::Vector_Ref & ref_points) {
-    return (intp.interpolate(ref_points) - intp.eval(ref_points))
+    return (intp->interpolate(ref_points) - intp->eval(ref_points))
         .array()
         .abs()
         .mean();
@@ -60,13 +60,13 @@ namespace rascal {
   // the interpolation on a set of reference points for different
 
   template <class ErrorMethod, class Interpolator>
-  static double compute_intp_error(Interpolator & intp,
+  static double compute_intp_error(std::shared_ptr<Interpolator> & intp,
                                    std::function<double(double)> ref_func,
                                    const math::Vector_Ref & ref_points) {
     math::Vector_t intp_vals = math::Vector_t::Zero(ref_points.size());
     math::Vector_t intp_refs = math::Vector_t::Zero(ref_points.size());
     for (int i{0}; i < ref_points.size() - 1; i++) {
-      intp_vals(i) = convert_to_scalar(intp.interpolate(ref_points(i)));
+      intp_vals(i) = convert_to_scalar(intp->interpolate(ref_points(i)));
       intp_refs(i) = ref_func(ref_points(i));
     }
     return ErrorMethod::compute_global_error(Vector_Ref(intp_vals),
@@ -75,14 +75,14 @@ namespace rascal {
 
   template <class ErrorMethod, class Interpolator>
   static double
-  compute_intp_derivative_error(Interpolator & intp,
+  compute_intp_derivative_error(std::shared_ptr<Interpolator> & intp,
                                 std::function<double(double)> derivative_func,
                                 const math::Vector_Ref & ref_points) {
     math::Vector_t intp_vals = math::Vector_t::Zero(ref_points.size());
     math::Vector_t intp_refs = math::Vector_t::Zero(ref_points.size());
     for (int i{0}; i < ref_points.size() - 1; i++) {
       intp_vals(i) =
-          convert_to_scalar(intp.interpolate_derivative(ref_points(i)));
+          convert_to_scalar(intp->interpolate_derivative(ref_points(i)));
       intp_refs(i) = derivative_func(ref_points(i));
     }
     return ErrorMethod::compute_global_error(Vector_Ref(intp_vals),
@@ -91,7 +91,7 @@ namespace rascal {
 
   template <class ErrorMethod, class Interpolator>
   static double
-  compute_intp_finite_diff_error(Interpolator & intp,
+  compute_intp_finite_diff_error(std::shared_ptr<Interpolator> & intp,
                                  std::function<double(double)> derivative_func,
                                  const math::Vector_Ref & ref_points) {
     Vector_t intp_refs = Vector_t::Zero(ref_points.size() - 1);
@@ -99,8 +99,8 @@ namespace rascal {
     for (int i{0}; i < ref_points.size() - 2; i++) {
       intp_refs(i) = derivative_func(ref_points(i));
       finite_diff_derivative(i) =
-          (convert_to_scalar(intp.interpolate(ref_points(i + 1))) -
-           convert_to_scalar(intp.interpolate(ref_points(i)))) /
+          (convert_to_scalar(intp->interpolate(ref_points(i + 1))) -
+           convert_to_scalar(intp->interpolate(ref_points(i)))) /
           (ref_points(i + 1) - ref_points(i));
     }
     return ErrorMethod::compute_global_error(Vector_Ref(finite_diff_derivative),
@@ -126,9 +126,9 @@ namespace rascal {
 
   template <class Interpolator>
   struct InterpolatorFixture {
-    InterpolatorFixture<Interpolator>() : intp{Interpolator()} {}
+    InterpolatorFixture<Interpolator>() {}
+    typedef Interpolator Interpolator_t;
 
-    Interpolator intp;
     double x1{0};
     double x2{1};
     double error_bound{1e-5};
