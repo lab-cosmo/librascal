@@ -126,23 +126,18 @@ namespace rascal {
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "Cosine"},
-         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
 
     std::vector<json> rep_hypers{{{"max_radial", 6},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 10},
+                                 {{"max_radial", 6},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
                                   {"normalize", true}},
@@ -150,16 +145,16 @@ namespace rascal {
                                   {"max_angular", 3},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 8},
-                                  {"max_angular", 6},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 4},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 4},
+                                 {{"max_radial", 3},
                                   {"max_angular", 1},
                                   {"soap_type", "BiSpectrum"},
                                   {"inversion_symmetry", true},
                                   {"normalize", true}},
-                                 {{"max_radial", 4},
+                                 {{"max_radial", 3},
                                   {"max_angular", 1},
                                   {"soap_type", "BiSpectrum"},
                                   {"inversion_symmetry", false},
@@ -193,9 +188,6 @@ namespace rascal {
 
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
-         {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "Cosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -212,7 +204,7 @@ namespace rascal {
                                   {"inversion_symmetry", true},
                                   {"normalize", true}},
                                  {{"max_radial", 2},
-                                  {"max_angular", 3},
+                                  {"max_angular", 2},
                                   {"soap_type", "LambdaSpectrum"},
                                   {"lam", 2},
                                   {"inversion_symmetry", false},
@@ -460,7 +452,7 @@ namespace rascal {
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     std::vector<json> rep_hypers{
         {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}},
-        {{"max_radial", 4}, {"max_angular", 0}, {"compute_gradients", true}}};
+        {{"max_radial", 3}, {"max_angular", 0}, {"compute_gradients", true}}};
   };
 
   struct SingleHypersSphericalInvariants : SimplePeriodicNLCCStrictFixture {
@@ -500,7 +492,7 @@ namespace rascal {
                                   {"normalize", true},
                                   {"soap_type", "PowerSpectrum"},
                                   {"compute_gradients", true}},
-                                 {{"max_radial", 4},
+                                 {{"max_radial", 3},
                                   {"max_angular", 0},
                                   {"normalize", true},
                                   {"soap_type", "RadialSpectrum"},

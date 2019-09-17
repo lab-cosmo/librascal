@@ -63,7 +63,7 @@ namespace rascal {
 
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
-         {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
+         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
