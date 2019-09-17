@@ -176,13 +176,14 @@ namespace rascal {
     //! Updates the manager using the impl
     template <class... Args>
     void update(Args &&... arguments) {
-      // update the underlying structure
-      this->update_self(std::forward<Args>(arguments)...);
-
       if (sizeof...(arguments) > 0) {
         // the structure has changed to tell it to the whole tree
         this->send_changed_structure_signal();
       }
+
+      // update the underlying structure
+      this->update_self(std::forward<Args>(arguments)...);
+      this->set_update_status(true);
 
       // send the update signal to the tree
       this->update_children();

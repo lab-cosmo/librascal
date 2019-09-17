@@ -37,6 +37,7 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <iostream>
 
 // TODO(markus): CHECK for skewedness
 namespace rascal {
@@ -117,6 +118,10 @@ namespace rascal {
       this->set_structure(positions, atom_types, cell, pbc, center_atoms_mask);
     }
 
+
+    //! Default constructor
+    AtomicStructure() = default;
+
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
     inline void set_structure(const PositionsInput_t & positions,
@@ -167,15 +172,26 @@ namespace rascal {
        * fields for the <code>AtomicStructure</code> object defined in the
        * header belonging to this file. Here, just the first one is read.
        */
+
+      if (not s.is_object()) {
+        throw std::runtime_error("The json input should be a dictionary.");
+      }
+
       if (s.count("filename") == 1) {
         auto filename{s["filename"].get<std::string>()};
         this->set_structure(filename);
-      } else if (s.count("cell") == 1 and s.count("atom_types") == 1 and
+      } else if (s.count("cell") == 1 and
+                 (s.count("atom_types") == 1 or s.count("numbers") == 1) and
                  s.count("pbc") == 1 and s.count("positions") == 1) {
         auto json_atoms_object = s.get<AtomicStructure<Dim>>();
         this->set_structure(json_atoms_object);
       } else {
-        throw std::runtime_error("The json input was not understood.");
+        std::string error{
+            "The json input was not understood. The input keys are: "};
+        for (auto & el : s.items()) {
+          error += el.key() + std::string(", ");
+        }
+        throw std::runtime_error(error);
       }
     }
 

@@ -60,7 +60,7 @@ namespace rascal {
       //! Move assignment operator
       CutoffFunctionBase & operator=(CutoffFunctionBase && other) = default;
 
-      using Hypers_t = RepresentationManagerBase::Hypers_t;
+      using Hypers_t = CalculatorBase::Hypers_t;
 
       //! Pure Virtual Function to set hyperparameters of the cutoff function
       virtual void set_hyperparameters(const Hypers_t &) = 0;

@@ -1,1 +1,1 @@
-from .structure_manager import get_neighbourlist, convert_to_structure
+from .structure_manager import AtomsList, get_neighbourlist, convert_to_structure_list

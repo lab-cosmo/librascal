@@ -40,7 +40,6 @@
 #include "structure_managers/structure_manager.hh"
 
 #include <set>
-#include <typeinfo>
 #include <vector>
 
 namespace rascal {
