@@ -41,9 +41,9 @@ namespace rascal {
      *
      * Follows the algorithm described in https://arxiv.org/abs/1410.1748
      *
-     * In brief, this class computes the real spherical harmonics where the
-     * imaginary components of the usual complex functions are instead stored
-     * in the negative-m indices:
+     * In brief, this class computes the real spherical harmonics including
+     * the Condon-Shortley phase where the imaginary components of the usual
+     * complex functions are instead stored in the negative-m indices:
      *
      * //clang-format off (mangles comments horribly)
      *

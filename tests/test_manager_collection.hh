@@ -5,7 +5,8 @@
  *
  * @date   14 June 2019
  *
- * @brief
+ * @brief contains the fixtures with data for the tests of the structure
+ *        manager collection
  *
  * @section LICENSE
  *
@@ -46,7 +47,7 @@ namespace rascal {
 
     std::string filename{"reference_data/dft-smiles_500.ubjson"};
     int start{0};
-    int lenght{10};
+    int length{10};
   };
 
   /**

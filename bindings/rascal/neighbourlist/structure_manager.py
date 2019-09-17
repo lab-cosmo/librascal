@@ -1,8 +1,21 @@
-from .base import NeighbourList, NeighbourListFactory, is_valid_structure, adapt_structure, StructureCollectionFactory
+from .base import (NeighbourList, NeighbourListFactory, is_valid_structure,
+ adapt_structure, StructureCollectionFactory)
 from collections.abc import Iterable
 
 
 class AtomsList(object):
+    """
+    A wrapper class for a stack of managers precompiled on the C++ side of the form Strict->NeighbourList->Center.
+    A container for atoms/centers/atomic environments.
+
+    Attributes
+    ----------
+    nl_options : dict
+        Parameters for each layer of the wrapped structure manager. Parameters can be specified for these layers: center, neighbourlist and strict.
+
+    Methods
+    -------
+    """
     def __init__(self, frames, nl_options, start=None, length=None):
         self.nl_options = nl_options
         self._frames = frames
@@ -25,7 +38,8 @@ class AtomsList(object):
             try:
                 managers.add_structures(structures)
             except:
-                print("Neighbourlist of structures failed. try one at a time.")
+                print("""Neighbourlist of structures failed. trying
+                one at a time.""")
                 ii = 0
                 for structure, manager in zip(structures, managers):
                     try:
@@ -42,6 +56,16 @@ class AtomsList(object):
         return self.managers[key]
 
     def get_dense_feature_matrix(self, calculator):
+        """
+        Parameters
+        -------
+        calculator : Calculator (an object owning a _representation object)
+
+        Returns
+        -------
+        represenation_matrix : ndarray
+            returns the representation bound to the calculator as dense matrix.
+        """
         return self.managers.get_dense_feature_matrix(calculator._representation)
 
 

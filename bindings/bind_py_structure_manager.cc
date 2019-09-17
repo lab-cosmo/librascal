@@ -59,7 +59,7 @@ namespace rascal {
                                StructureManager<StructureManagerImplementation>,
                                std::shared_ptr<StructureManagerImplementation>>;
 
-  //! Bind a ClusterRef (to enable the acces to properties such as distances)
+  //! Bind a ClusterRef (to enable the access to properties such as distances)
   template <size_t Order, size_t Layer>
   void add_cluster_ref(py::module & m) {
     std::string cluster_parent_name =
@@ -165,7 +165,7 @@ namespace rascal {
   /**
    * Bind the clusterRef allowing to iterate over the manager, atom, neigh...
    * Use signature overloading to dispatch to the proper function.
-   * Use iteration by recursion to iterate from Order to MaxOrder-1 staticaly
+   * Use iteration by recursion to iterate from Order to MaxOrder-1 statically
    */
   template <typename StructureManagerImplementation, size_t Order,
             size_t MaxOrder>
@@ -219,7 +219,7 @@ namespace rascal {
   /**
    * templated function for adding a StructureManager interface
    * to allow using the iteration over the manager in python, the interface
-   * of the structure manager need to be binded.
+   * of the structure manager need to be bound.
    */
   template <typename StructureManagerImplementation>
   decltype(auto) add_structure_manager_interface(py::module & m) {
@@ -250,6 +250,11 @@ namespace rascal {
     return manager;
   }
 
+  /**
+   * Bind the update function when the atomic structure is provided as
+   * a set of positions, the corresponding atom_types, the cell vectors and
+   * the periodic boundary conditions.
+   */
   template <typename StructureManagerImplementation>
   void
   bind_update_unpacked(PyManager<StructureManagerImplementation> & manager) {
@@ -265,6 +270,11 @@ namespace rascal {
                 py::arg("pbc"), py::call_guard<py::gil_scoped_release>());
   }
 
+  /**
+   * Bind the update function when no atomic structure is provided. It
+   * corresponds to the case when several adaptors are stacked on a
+   * structure manager centers and then you update keeping the structure as is.
+   */
   template <typename StructureManagerImplementation>
   void bind_update_empty(PyManager<StructureManagerImplementation> & manager) {
     manager.def("update",
@@ -472,11 +482,26 @@ namespace rascal {
         [](ManagerCollection_t & v, int index) { return v[index]; },
         py::keep_alive<0, 1>());
 
-    // add_structures to the collection
+    /**
+     * Binds the `add_structures`. Instead of invoking the targeted function to
+     * bind within a lambda function, a pointer-to-member-function is used here.
+     *
+     * @param ManagerCollection_t::add_structures a pointer-to-member-function
+     * of the add_structures function in ManagerCollection which takes an vector
+     * of AtomicStructures<3> and returns void.
+     */
     manager_collection.def("add_structures",
                            (void (ManagerCollection_t::*)(  // NOLINT
                                const std::vector<AtomicStructure<3>> &)) &
                                ManagerCollection_t::add_structures);
+    /**
+     * Binds the `add_structures`. Instead of invoking the targeted function to
+     * bind within a lambda function, a pointer-to-member-function is used here.
+     *
+     * @param ManagerCollection_t::add_structures a pointer-to-member-function
+     * of the add_structures function in ManagerCollection which takes a string,
+     * const int and int, and returns void.
+     */
     manager_collection.def(
         "add_structures",
         (void (ManagerCollection_t::*)(const std::string &, const int &, int)) &

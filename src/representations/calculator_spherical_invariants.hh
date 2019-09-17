@@ -374,20 +374,20 @@ namespace rascal {
     //! initialize the soap vectors with only the keys needed for each center
     template <class StructureManager, class Invariants,
               class InvariantsDerivative, class ExpansionCoeff>
-    void initialize_percenter_powerspectrum_soap_vectors(
+    void initialize_per_center_powerspectrum_soap_vectors(
         Invariants & soap_vector, InvariantsDerivative & soap_vector_gradients,
         ExpansionCoeff & expansions_coefficients,
         std::shared_ptr<StructureManager> manager);
 
     template <class StructureManager, class Invariants,
               class InvariantsDerivative, class ExpansionCoeff>
-    void initialize_percenter_radialspectrum_soap_vectors(
+    void initialize_per_center_radialspectrum_soap_vectors(
         Invariants & soap_vector, InvariantsDerivative & soap_vector_gradients,
         ExpansionCoeff & expansions_coefficients,
         std::shared_ptr<StructureManager> manager);
 
     template <class StructureManager, class Invariants, class ExpansionCoeff>
-    void initialize_percenter_bispectrum_soap_vectors(
+    void initialize_per_center_bispectrum_soap_vectors(
         Invariants & soap_vector, ExpansionCoeff & expansions_coefficients,
         std::shared_ptr<StructureManager> manager);
 
@@ -442,7 +442,7 @@ namespace rascal {
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
     using internal::enumValue;
-    using internal::n_spatial_dimensions;
+    constexpr static int n_spatial_dimensions = StructureManager::dim();
     using internal::SphericalInvariantsType;
     using math::pow;
 
@@ -478,7 +478,7 @@ namespace rascal {
       return;
     }
 
-    this->initialize_percenter_powerspectrum_soap_vectors(
+    this->initialize_per_center_powerspectrum_soap_vectors(
         soap_vectors, soap_vector_gradients, expansions_coefficients, manager);
 
     Key_t pair_type{0, 0};
@@ -847,7 +847,7 @@ namespace rascal {
       return;
     }
 
-    this->initialize_percenter_radialspectrum_soap_vectors(
+    this->initialize_per_center_radialspectrum_soap_vectors(
         soap_vectors, soap_vector_gradients, expansions_coefficients, manager);
     Key_t element_type{0};
 
@@ -1007,7 +1007,7 @@ namespace rascal {
       return;
     }
 
-    this->initialize_percenter_bispectrum_soap_vectors(
+    this->initialize_per_center_bispectrum_soap_vectors(
         soap_vectors, expansions_coefficients, manager);
 
     using complex = std::complex<double>;
@@ -1164,7 +1164,7 @@ namespace rascal {
 
   template <class StructureManager, class Invariants, class ExpansionCoeff>
   void
-  CalculatorSphericalInvariants::initialize_percenter_bispectrum_soap_vectors(
+  CalculatorSphericalInvariants::initialize_per_center_bispectrum_soap_vectors(
       Invariants & soap_vectors, ExpansionCoeff & expansions_coefficients,
       std::shared_ptr<StructureManager> manager) {
     size_t n_row{math::pow(this->max_radial, 3_n)};
@@ -1213,12 +1213,12 @@ namespace rascal {
   template <class StructureManager, class Invariants,
             class InvariantsDerivative, class ExpansionCoeff>
   void CalculatorSphericalInvariants::
-      initialize_percenter_powerspectrum_soap_vectors(
+      initialize_per_center_powerspectrum_soap_vectors(
           Invariants & soap_vectors,
           InvariantsDerivative & soap_vector_gradients,
           ExpansionCoeff & expansions_coefficients,
           std::shared_ptr<StructureManager> manager) {
-    using internal::n_spatial_dimensions;
+    constexpr static int n_spatial_dimensions = StructureManager::dim();
     size_t n_row{math::pow(this->max_radial, 2_n)};
     size_t n_col{this->max_angular + 1};
 
@@ -1311,12 +1311,12 @@ namespace rascal {
   template <class StructureManager, class Invariants,
             class InvariantsDerivative, class ExpansionCoeff>
   void CalculatorSphericalInvariants::
-      initialize_percenter_radialspectrum_soap_vectors(
+      initialize_per_center_radialspectrum_soap_vectors(
           Invariants & soap_vectors,
           InvariantsDerivative & soap_vector_gradients,
           ExpansionCoeff & expansions_coefficients,
           std::shared_ptr<StructureManager> manager) {
-    using internal::n_spatial_dimensions;
+    constexpr static int n_spatial_dimensions = StructureManager::dim();
     size_t n_row{this->max_radial};
     size_t n_col{1};
 

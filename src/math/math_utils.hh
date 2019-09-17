@@ -147,8 +147,17 @@ namespace rascal {
     }
 
     /**
-     * defines integer power functor to apply integer power to an Eigen
-     * object as an element wise Unary operation
+     * Defines an integer power functor, which is used as CustomUnaryOp object
+     * to apply elementwise integer power operations on an Eigen::MatrixBase
+     * object e.g. :
+     *
+     *   Eigen::VectorXd vec(3);
+     *   vec << 5,10,20;
+     *   auto functor{MakePositiveIntegerPower(2)};
+     *   vec.unaryExpr(functor);
+     *   // result is vec = [25,100,400]
+     *
+     * @tparam Scalar can be of type: double, int and uint
      */
     template <typename Scalar>
     struct MakePositiveIntegerPower {

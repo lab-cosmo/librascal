@@ -176,7 +176,7 @@ if(BUILD_BINDINGS)
     endif()
   endif()
 
-  add_external_package(pybind11 VERSION 2.2.2 CONFIG)
+  add_external_package(pybind11 VERSION 2.3.0 CONFIG)
 
     # Get where python site-packages is
     if(NOT USER)

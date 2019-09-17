@@ -65,7 +65,7 @@ namespace rascal {
     static_assert(std::is_same<Value, internal::Value<T, NbRow, NbCol>>::value,
                   "type alias failed");
 
-    using value_type = typename Value::type;
+    using value_type = typename Value::value_type;
     using reference = typename Value::reference;
     using const_reference = typename Value::const_reference;
 

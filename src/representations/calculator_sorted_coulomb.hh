@@ -218,8 +218,13 @@ namespace rascal {
 
     inline void update_central_cutoff(const double &);
 
-    //! check if size of representation manager is enough for current structure
-    //! manager
+    /**
+     * check if size of the calculator is enough for current structure
+     * manager.
+     * size refers to the parameter that regulate the feature size of the
+     * calculator.
+     */
+
     template <class StructureManager>
     void check_size_compatibility(StructureManager & manager) {
       for (auto center : manager) {
@@ -235,6 +240,7 @@ namespace rascal {
 
     /* -------------------- rep-interface-end -------------------- */
 
+    /* -------------------- compute-loop-begin -------------------- */
     //! loop over a collection of manangers (note that maps would raise a
     //! compilation error)
     template <
@@ -254,6 +260,7 @@ namespace rascal {
     inline void compute_loop(StructureManager & manager) {
       this->compute_impl<AlgorithmType>(manager);
     }
+    /* -------------------- compute-loop-end -------------------- */
 
     //! Implementation of compute representation
     template <internal::CMSortAlgorithm AlgorithmType, class StructureManager>
@@ -406,10 +413,20 @@ namespace rascal {
   inline void CalculatorSortedCoulomb::compute_impl(
       std::shared_ptr<StructureManager> & manager) {
     using Prop_t = Property_t<StructureManager>;
-    this->update_central_cutoff(manager->get_cutoff());
 
-    // get a reference to the data container that will hold the representation
-    // in the structure manager
+    // TODO(felix) use the commented code bellow. needs changes in the tests
+    // because it actually runs cases where
+    // this->central_cutoff > manager->get_cutoff() is true.
+    this->update_central_cutoff(manager->get_cutoff());
+    // if (this->central_cutoff > manager->get_cutoff()) {
+    //   std::string error{R"(The hypers cutoff and the managers cutoff are not
+    //   compatible: )"}; error += std::to_string(this->central_cutoff) +
+    //   std::string(" > "); error +=  std::to_string(manager->get_cutoff());
+    //   throw std::runtime_error(error);
+    // }
+
+    // Get a reference to the data container where the computed representation
+    // is stored in the corresponding structure manager
     auto && coulomb_matrices{
         manager->template get_property_ref<Prop_t>(this->get_name())};
 
