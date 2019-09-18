@@ -37,13 +37,13 @@ namespace rascal {
   template <SymmetryFunType SymFunType, class StructureManager>
   void BehlerFeatureBase::compute_helper(StructureManager & manager) const {
     switch (this->cut_fun_type) {
-    // case CutoffFunctionType::Cosine: {
-    //   auto & feature{static_cast<
-    //       const BehlerFeature<SymFunType, CutoffFunctionType::Cosine> &>(
-    //       *this)};
-    //   feature.compute(manager);
-    //   break;
-    // }
+    case CutoffFunctionType::Cosine: {
+      auto & feature{static_cast<
+          const BehlerFeature<SymFunType, CutoffFunctionType::Cosine> &>(
+          *this)};
+      feature.compute(manager);
+      break;
+    }
     case CutoffFunctionType::RadialScaling: {
       auto & feature{static_cast<
           const BehlerFeature<SymFunType, CutoffFunctionType::RadialScaling> &>(

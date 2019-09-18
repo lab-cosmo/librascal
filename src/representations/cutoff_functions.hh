@@ -50,7 +50,7 @@ namespace rascal {
     /**
      * List of implemented cutoff function
      */
-    enum class CutoffFunctionType { CosineShifted, RadialScaling, End_ };
+    enum class CutoffFunctionType { Cosine, CosineShifted, RadialScaling, End_ };
 
     /**
      * forward declaration for compute dispatch
@@ -116,43 +116,43 @@ namespace rascal {
      * Cosine cutoff function as in Behler, can only be used with strict
      * managers
      */
-    // template <>
-    // class CutoffFunction<CutoffFunctionType::Cosine>
-    //     : public CutoffFunctionComputer<
-    //           CutoffFunction<CutoffFunctionType::Cosine>> {
-    //  public:
-    //   using Hypers_t = typename CutoffFunctionBase::Hypers_t;
-    //   explicit CutoffFunction(const Hypers_t & hypers)
-    //       : hypers{hypers},
-    //         cutoff{hypers.at("cutoff").at("value").get<double>()},
-    //         identifier{this->make_identifier()} {}
+    template <>
+    class CutoffFunction<CutoffFunctionType::Cosine>
+        : public CutoffFunctionComputer<
+              CutoffFunction<CutoffFunctionType::Cosine>> {
+     public:
+      using Hypers_t = typename CutoffFunctionBase::Hypers_t;
+      explicit CutoffFunction(const Hypers_t & hypers)
+          : hypers{hypers},
+            cutoff{hypers.at("cutoff").at("value").get<double>()},
+            identifier{this->make_identifier()} {}
 
-    //   inline double f_c(const double & distance) const {
-    //     assert(distance <= this->cutoff);
-    //     return .5 * (std::cos(math::PI * distance / this->cutoff) + 1.);
-    //   }
+      inline double f_c(const double & distance) const {
+        assert(distance <= this->cutoff);
+        return .5 * (std::cos(math::PI * distance / this->cutoff) + 1.);
+      }
 
-    //   inline double df_c(const double & distance) {
-    //     assert(distance <= this->cutoff);
-    //     auto && scaled_dist{math::PI * distance / this->cutoff};
-    //     return -.5 * scaled_dist * std::sin(scaled_dist);
-    //   }
+      inline double df_c(const double & distance) {
+        assert(distance <= this->cutoff);
+        auto && scaled_dist{math::PI * distance / this->cutoff};
+        return -.5 * scaled_dist * std::sin(scaled_dist);
+      }
 
-    //   const std::string & get_identifier() const { return this->identifier; }
+      const std::string & get_identifier() const { return this->identifier; }
 
-    //  protected:
-    //   std::string make_identifier() {
-    //     std::stringstream id{};
-    //     id.precision(14);
-    //     id << "Cosine_" << this->cutoff;
-    //     return id.str();
-    //   }
-    //   //! keep the hypers
-    //   const Hypers_t hypers;
-    //   //! cutoff radii
-    //   const double cutoff;
-    //   const std::string identifier;
-    // };
+     protected:
+      std::string make_identifier() {
+        std::stringstream id{};
+        id.precision(14);
+        id << "Cosine_" << this->cutoff;
+        return id.str();
+      }
+      //! keep the hypers
+      const Hypers_t hypers;
+      //! cutoff radii
+      const double cutoff;
+      const std::string identifier;
+    };
 
     template <>
     class CutoffFunction<internal::CutoffFunctionType::CosineShifted>
