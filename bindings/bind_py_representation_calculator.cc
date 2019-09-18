@@ -33,7 +33,8 @@ namespace rascal {
   using PyCalculator = py::class_<Calculator, CalculatorBase>;
 
   template <typename Calculator>
-  decltype(auto) add_representation_calculator(py::module & mod, py::module &) {
+  decltype(auto) add_representation_calculator(py::module & mod,
+                                               py::module & /*m_unused*/) {
     std::string representation_name =
         internal::GetBindingTypeName<Calculator>();
 
@@ -66,7 +67,7 @@ namespace rascal {
         py::call_guard<py::gil_scoped_release>());
   }
 
-  namespace detail {
+  namespace py_internal {
     template <typename SM, typename AdaptorTypeHolder_>
     struct bind_compute_function_helper;
 
@@ -88,11 +89,11 @@ namespace rascal {
         bind_compute_function_helper<T...>::apply(representation);
       }
     };
-  }  // namespace detail
+  }  // namespace py_internal
 
   template <typename StructureManagerTypeHolder_, class Calculator>
   void bind_compute_function_helper(PyCalculator<Calculator> & representation) {
-    detail::bind_compute_function_util<StructureManagerTypeHolder_>::apply(
+    py_internal::bind_compute_function_util<StructureManagerTypeHolder_>::apply(
         representation);
   }
 
@@ -101,13 +102,13 @@ namespace rascal {
    *
    * @params mod pybind11 representation of the python module the represenation
    *             managers will be included to
-   * @params m_throwaway pybind11 representation of the python module that are
+   * @params m_internal pybind11 representation of the python module that are
    *                  needed but not useful to use on the python side
    *
    */
   void add_representation_calculators(py::module & mod,
-                                      py::module & m_throwaway) {
-    auto base = py::class_<CalculatorBase>(m_throwaway, "CalculatorBase");
+                                      py::module & m_internal) {
+    auto base = py::class_<CalculatorBase>(m_internal, "CalculatorBase");
     base.def_readwrite("name", &CalculatorBase::name);
     base.def_readonly("default_prefix", &CalculatorBase::default_prefix);
     /*-------------------- rep-bind-start --------------------*/
@@ -124,22 +125,22 @@ namespace rascal {
     using Calc1_t = CalculatorSortedCoulomb;
     // Bind the interface of this representation manager
     auto rep_sorted_coulomb =
-        add_representation_calculator<Calc1_t>(mod, m_throwaway);
+        add_representation_calculator<Calc1_t>(mod, m_internal);
     bind_compute_function_helper<ManagerList_t>(rep_sorted_coulomb);
 
     /*-------------------- rep-bind-end --------------------*/
     using Calc2_t = CalculatorSphericalExpansion;
     auto rep_spherical_expansion =
-        add_representation_calculator<Calc2_t>(mod, m_throwaway);
+        add_representation_calculator<Calc2_t>(mod, m_internal);
     bind_compute_function_helper<ManagerList_t>(rep_spherical_expansion);
 
     using Calc3_t = CalculatorSphericalInvariants;
-    auto rep_soap = add_representation_calculator<Calc3_t>(mod, m_throwaway);
+    auto rep_soap = add_representation_calculator<Calc3_t>(mod, m_internal);
     bind_compute_function_helper<ManagerList_t>(rep_soap);
 
     using Calc4_t = CalculatorSphericalCovariants;
     auto rep_lambda_soap =
-        add_representation_calculator<Calc4_t>(mod, m_throwaway);
+        add_representation_calculator<Calc4_t>(mod, m_internal);
     bind_compute_function_helper<ManagerList_t>(rep_lambda_soap);
   }
 

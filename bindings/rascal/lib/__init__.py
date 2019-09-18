@@ -1,5 +1,5 @@
-from ._rascal import (NeighbourList, Models,
-                      RepresentationManager, utils)
+from ._rascal import (neighbour_list, models,
+                      representation_calculators, utils)
 
-from ._rascal.Models import Kernels
+from ._rascal.models import kernels
 from ._rascal.utils import sparsification

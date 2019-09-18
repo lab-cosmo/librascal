@@ -29,7 +29,7 @@
 
 namespace rascal {
 
-  decltype(auto) add_kernel(py::module & mod, py::module &) {
+  decltype(auto) add_kernel(py::module & mod, py::module & /*m_internal*/) {
     py::class_<Kernel> kernel(mod, "Kernel");
     // use custom constructor to pass json formated string as initializer
     // an alternative would be to convert python dict to json internally
@@ -56,11 +56,11 @@ namespace rascal {
    *
    * @params mod pybind11 representation of the python module the represenation
    *             managers will be included to
-   * @params m_throwaway pybind11 representation of the python module that are
+   * @params m_internal pybind11 representation of the python module that are
    *                  needed but not useful to use on the python side
    *
    */
-  void add_kernels(py::module & mod, py::module & m_throwaway) {
+  void add_kernels(py::module & mod, py::module & m_internal) {
     // Defines a particular structure manager type
     using ManagerCollection_t =
         ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
@@ -70,7 +70,7 @@ namespace rascal {
     // manager
     using Calc1_t = CalculatorSphericalInvariants;
     // Bind the interface of this representation manager
-    auto kernel = add_kernel(mod, m_throwaway);
+    auto kernel = add_kernel(mod, m_internal);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
                                  ManagerCollection_t>(kernel);
   }
