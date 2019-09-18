@@ -398,18 +398,18 @@ namespace rascal {
        * Note that you _must_ call compute_neighbour_contribution() first to
        * populate the relevant arrays!
        *
-       * The derivative is taken with respect to the pair distance, r_{ij}.  In
-       * order to get the radial component of the gradient, remember to multiply
-       * by the direction vector \hat{\vec{r}_{ij}} (and not the vector itself),
-       * since
-       * \[
+       * The derivative is taken with respect to the pair distance,
+       * \f$r_{ij}\f$.  In order to get the radial component of the gradient,
+       * remember to multiply by the direction vector \f$\hat{\vec{r}_{ij}}\f$
+       * (and not the vector itself), since
+       * \f[
        *    \grad_{\vec{r}_i} f(r_{ij}) =
        *                    \frac{d f}{d r_{ij}} \frac{- \vec{r}_{ij}}{r_{ij}}
        *                  = \frac{d f}{d r_{ij}} -\hat{\vec{r}_{ij}}
-       * \])
-       * so multiply by _negative_ $\hat{\vec{r}}_ij$ to get the radial
+       * \f])
+       * so multiply by _negative_ \f$\hat{\vec{r}}_ij\f$ to get the radial
        * component of the gradient wrt motion of the central atom
-       * ($\frac{d}{d\vec{r}_i}$).
+       * (\f$\frac{d}{d\vec{r}_i}\f$).
        *
        * And finally, there is no compute_center_derivative() because that's
        * just zero -- the centre contribution doesn't vary w.r.t. motion of
@@ -673,6 +673,7 @@ namespace rascal {
       auto fc_type = fc_hypers.at("type").get<std::string>();
       this->interaction_cutoff = fc_hypers.at("cutoff").at("value");
       this->cutoff_smooth_width = fc_hypers.at("smooth_width").at("value");
+      // TODO(max) change to "ShiftedCosine" for B-P compatibility
       if (fc_type.compare("Cosine") == 0) {
         this->cutoff_function_type = CutoffFunctionType::Cosine;
         this->cutoff_function =
@@ -734,7 +735,7 @@ namespace rascal {
 
     /**
      * loop over a collection of manangers if it is an iterator.
-     * Or just call compute_impl
+     * Or just call compute_impl if it's a single manager (see below)
      */
     template <
         internal::CutoffFunctionType FcType,
@@ -792,6 +793,7 @@ namespace rascal {
     // specialize based on the cutoff function
     using internal::CutoffFunctionType;
 
+    // TODO(max) change to "ShiftedCosine" for B-P compatibility
     switch (this->cutoff_function_type) {
     case CutoffFunctionType::Cosine: {
       this->compute_by_radial_contribution<CutoffFunctionType::Cosine>(
@@ -799,7 +801,9 @@ namespace rascal {
       break;
     }
     default:
-      throw std::logic_error("The combination of parameter is not handdled.");
+      throw std::logic_error(
+            "Requested cutoff function type \'" + this->cutoff_function_type +
+            "\' is not recognized.  Must be one of" + ": \'Cosine\'.");
       break;
     }
   }
@@ -820,7 +824,11 @@ namespace rascal {
       break;
     }
     default:
-      throw std::logic_error("The combination of parameter is not handdled.");
+      throw std::logic_error(
+          "The combination of radial basis: \'" +
+          this->radial_integral_type + "\' and \'" + this->atomic_smearing_type
+          + "\' is unsupported.  Currently only constant-width atomic smearing"
+          + " (\'Constant\') in the GTO radial basis is implemented.");
       break;
     }
   }
