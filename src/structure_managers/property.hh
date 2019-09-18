@@ -117,7 +117,7 @@ namespace rascal {
       }
     }
 
-    const std::string & get_type_info() const final { return this->type_id; };
+    const std::string & get_type_info() const final { return this->type_id; }
 
     /* ---------------------------------------------------------------------- */
     /**

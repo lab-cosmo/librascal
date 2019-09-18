@@ -67,7 +67,7 @@ namespace rascal {
     using Children_t = std::weak_ptr<Updateable>;
 
     //! Default constructor sets the status variable for update to false.
-    Updateable() : updated{false} {};
+    Updateable() : updated{false} {}
 
     //! Copy constructor
     Updateable(const Updateable & other) = delete;

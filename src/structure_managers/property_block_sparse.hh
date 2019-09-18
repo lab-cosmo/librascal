@@ -523,7 +523,7 @@ namespace rascal {
     /* --------------------------------------------------------------------- */
 
     //! return info about the type
-    const std::string & get_type_info() const final { return this->type_id; };
+    const std::string & get_type_info() const final { return this->type_id; }
 
     /**
      * the case consider_ghost_atoms == true is limited to cluster_index
