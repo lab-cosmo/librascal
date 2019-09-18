@@ -32,6 +32,7 @@
 #include "math/math_utils.hh"
 
 #include <map>
+#include <vector>
 
 namespace rascal {
   namespace math {

@@ -28,6 +28,8 @@
 #ifndef SRC_STRUCTURE_MANAGERS_CLUSTER_REF_BASE_HH_
 #define SRC_STRUCTURE_MANAGERS_CLUSTER_REF_BASE_HH_
 
+#include <cstddef>
+
 namespace rascal {
 
   class ClusterRefBase {

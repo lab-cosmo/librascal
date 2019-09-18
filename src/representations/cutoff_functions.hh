@@ -31,11 +31,13 @@
 
 #include "rascal_utility.hh"
 #include "math/math_utils.hh"
+#include "representations/calculator_base.hh"
 
 #include <vector>
 #include <memory>
 
 #include <Eigen/Dense>
+
 
 namespace rascal {
 
