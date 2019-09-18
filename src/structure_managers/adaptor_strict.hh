@@ -398,16 +398,12 @@ namespace rascal {
     }
 
     //! initialise the distance storage
-    this->template create_property<Distance_t>("distance");
-    this->template create_property<DirectionVector_t>("dir_vec");
-
-    this->distance =
-        this->template get_validated_property<Distance_t>("distance");
+    this->distance = this->template get_property_ptr<Distance_t>("distance");
     this->dir_vec =
-        this->template get_validated_property<DirectionVector_t>("dir_vec");
+        this->template get_property_ptr<DirectionVector_t>("dir_vec");
 
-    this->distance->resize_to_zero();
-    this->dir_vec->resize_to_zero();
+    this->distance->clear();
+    this->dir_vec->clear();
 
     // fill the list, at least pairs are mandatory for this to work
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
@@ -422,7 +418,6 @@ namespace rascal {
        * Add new layer for atoms (see LayerByOrder for
        * possible optimisation).
        */
-
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
 
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
@@ -447,6 +442,9 @@ namespace rascal {
         }
       }
     }
+
+    this->distance->set_updated_status(true);
+    this->dir_vec->set_updated_status(true);
   }
 }  // namespace rascal
 
