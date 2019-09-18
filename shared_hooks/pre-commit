@@ -1,19 +1,21 @@
 #!/bin/sh
 #
-# An example hook script to verify what is about to be committed.
-# Called by "git commit" with no arguments.  The hook should
-# exit with non-zero status after issuing an appropriate message if
-# it wants to stop the commit.
+# This hook removes output from ipython notebooks before commit and
+# depends on nbstripout https://github.com/kynan/nbstripout, which
+# can be installed via pip or conda
 #
-# To enable this hook, rename this file to "pre-commit".
-
-pip install nbfilter
+# This hook will not be executed using default git configurations.
+#
+# To use this hook, execute:
+# 	git config core.hooksPath shared_hooks
 
 NBS=$(echo $(git diff --full-index -z --cached $against --name-only) | sort | grep "ipynb")
 
+[[ -z "$NBS" ]] || command -v nbstripout >/dev/null 2>&1 || { echo >&2 "I require nbstripout but it's not installed. Aborting commit."; exit 1; }
+
 for NB in $NBS ; do
     echo "Removing outputs from $NB"
-    python -m nbfilter.clean < $NB | sponge $NB
+    nbstripout $NB
     git add "$NB"
 done
 
