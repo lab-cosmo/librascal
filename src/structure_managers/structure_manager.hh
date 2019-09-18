@@ -394,7 +394,7 @@ namespace rascal {
       auto property = get_property(name);
       try {
         UserProperty_t::check_compatibility(*property);
-      } catch (const std::runtime_error & error) {
+      } catch (const std::runtime_error &) {
         return false;
       }
       return true;
@@ -1360,7 +1360,7 @@ namespace rascal {
     ProxyWithGhosts() = delete;
 
     //! Constructor
-    ProxyWithGhosts(ManagerImplementation & manager) : manager{manager} {};
+    ProxyWithGhosts(ManagerImplementation & manager) : manager{manager} {}
 
     //! Copy constructor
     ProxyWithGhosts(const ProxyWithGhosts & other) = delete;
@@ -1411,7 +1411,7 @@ namespace rascal {
     ProxyOnlyGhosts() = delete;
 
     //!
-    ProxyOnlyGhosts(ManagerImplementation & manager) : Parent{manager} {};
+    ProxyOnlyGhosts(ManagerImplementation & manager) : Parent{manager} {}
 
     //! Copy constructor
     ProxyOnlyGhosts(const ProxyOnlyGhosts & other) = delete;
