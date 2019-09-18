@@ -122,11 +122,21 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(LIBRASCAL_NAME "rascal-dbg")
+  set(WIGXJPF_NAME "wigxjpf-dbg")
 else()
   set(LIBRASCAL_NAME "rascal")
+  set(WIGXJPF_NAME "wigxjpfo")
 endif()
 
+# include_directories(SYSTEM
+#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/inc
+#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/cfg
+#   )
+
+add_external_package(wigxjpf VERSION 1.9 CONFIG)
+
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
+
 
 # Try to find optional cpp linter
 include(cpplint)
@@ -166,7 +176,7 @@ if(BUILD_BINDINGS)
     endif()
   endif()
 
-  add_external_package(pybind11 VERSION 2.2.2 CONFIG)
+  add_external_package(pybind11 VERSION 2.3.0 CONFIG)
 
     # Get where python site-packages is
     if(NOT USER)

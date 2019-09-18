@@ -28,34 +28,8 @@
 #ifndef BINDINGS_BIND_INCLUDE_HH_
 #define BINDINGS_BIND_INCLUDE_HH_
 
-#include "utils/sparsify_utilities.hh"
-
-#include "math/math_interface.hh"
-#include "math/math_utils.hh"
-
-#include "representations/representation_manager_base.hh"
-#include "representations/representation_manager_sorted_coulomb.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_soap.hh"
-
-#include "representations/feature_manager_base.hh"
-#include "representations/feature_manager_dense.hh"
-#include "representations/feature_manager_block_sparse.hh"
-
-#include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/structure_manager_lammps.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_increase_maxorder.hh"
-#include "structure_managers/adaptor_half_neighbour_list.hh"
-#include "structure_managers/adaptor_full_neighbour_list.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/structure_manager_base.hh"
-
-#include "basic_types.hh"
+#include "atomic_structure.hh"
 #include "rascal_utility.hh"
-#include "json_io.hh"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl_bind.h>
@@ -67,48 +41,40 @@
 
 #include <Eigen/Dense>
 #include <vector>
+#include <map>
+#include <memory>
 
-// PYBIND11_MAKE_OPAQUE(std::vector<double>);
+PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 
-// using namespace rascal;
 namespace py = pybind11;
 
-void add_structure_managers(py::module &, py::module &);
-void add_representation_managers(py::module &, py::module &);
-void add_feature_managers(py::module &, py::module &);
-
-void utils_binding(py::module &);
-void math_binding(py::module &);
-
 namespace rascal {
+
   namespace internal {
 
     /**
-     * Mapping to search and replace in type names
-     * when giving binding name
+     * Mapping used to replace all occurences of the first string with the
+     * second string in the class titles in the python binding module names.
+     *
+     * first: string which should be replaced
+     * second: the replaced with string
      */
-    struct SubstitutionMap {
-      using Map = std::map<std::string, std::string>;
-      Map mapping = {{"StructureManager", ""},
-                     {"Adaptor", ""},
-                     {"RepresentationManager", ""},
-                     {"FeatureManager", ""}};
-    };
+    const std::map<std::string, std::string> module_name_replacement_map = {
+        {"StructureManager", ""}, {"Adaptor", ""}, {"Calculator", ""}};
 
     /**
-     * Transforms the template type to a string for the pyhton bindings.
+     * Transforms the template type to a string for the python bindings.
      * There are submodules in the python bindings with the class
-     * tittle so to avoid redundancy they are removed from the
+     * title so to avoid redundancy they are removed from the
      * typename.
-     * @template T type that should be stringifyied
+     * @template T type that should be stringified
      * @returns std::string name of the type
      */
     template <typename T>
     std::string GetBindingTypeName() {
       std::string typeName = GetTypeName<T>();
-      SubstitutionMap ojb{};
       std::vector<std::string> names{typeName};
-      for (const auto & map : ojb.mapping) {
+      for (const auto & map : module_name_replacement_map) {
         names.push_back(std::regex_replace(
             names.back(), std::regex(map.first.c_str()), map.second.c_str()));
       }

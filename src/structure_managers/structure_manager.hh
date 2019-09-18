@@ -25,7 +25,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-//! header guards
 #ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
 #define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
 
@@ -35,8 +34,10 @@
  */
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/property.hh"
+#include "structure_managers/property_block_sparse.hh"
 #include "structure_managers/cluster_ref_key.hh"
 #include "rascal_utility.hh"
+#include "json_io.hh"
 
 //! Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -346,31 +347,27 @@ namespace rascal {
      */
     void attach_property(const std::string & name,
                          std::shared_ptr<PropertyBase> property) {
-      // if (this->has_property(name)) {
-      //   std::stringstream error{};
-      //   error << "A property of name '" << name
-      //         << "' has already been registered";
-      //   throw std::runtime_error(error.str());
-      // }
+      if (this->has_property(name)) {
+        std::stringstream error{};
+        error << "A property of name '" << name
+              << "' has already been registered";
+        throw std::runtime_error(error.str());
+      }
       this->properties[name] = property;
-      this->property_fresh[name] = false;
     }
 
     /**
      * Helper function to check if a property with the specifier `name` has
      * already been attached.
      */
-    bool has_property(const std::string & name) {
-      return not(this->properties.find(name) == this->properties.end());
-    }
-    bool has_property(const std::string & name) const {
+    inline bool has_property(const std::string & name) const {
       return not(this->properties.find(name) == this->properties.end());
     }
 
     template <typename Property_t>
     void create_property(const std::string & name) {
-      auto property{std::make_shared<Property_t>(*this)};
-      attach_property(name, property);
+      auto property{std::make_shared<Property_t>(this->implementation())};
+      this->attach_property(name, property);
     }
 
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
@@ -388,7 +385,9 @@ namespace rascal {
       return this->properties.at(name);
     }
 
-    /*  Checks if the property type of user matches the actual stored property.
+    /**
+     *  Checks if the property type of user matches the actual stored
+     *  property.
      */
     template <typename UserProperty_t>
     bool check_property_t(const std::string & name) const {
@@ -401,8 +400,11 @@ namespace rascal {
       return true;
     }
 
-    /*  Throws an error if property type given from user does not match actual
+    /**
+     * Throws an error if property type given from user does not match actual
      * property type.
+     * TO(all) Is the try and catch need here ? it will throw in the respective
+     * check_compatibility and we get the full stack with the debugger.
      */
     template <typename UserProperty_t>
     void validate_property_t(std::shared_ptr<PropertyBase> property) const {
@@ -430,11 +432,7 @@ namespace rascal {
     template <typename UserProperty_t>
     UserProperty_t &
     get_validated_property_ref(const std::string & name) const {
-      auto property = this->get_property(name);
-      this->template validate_property_t<UserProperty_t>(property);
-      UserProperty_t * property_ptr =
-          reinterpret_cast<UserProperty_t *>(property.get());
-      return *property_ptr;
+      return *this->get_validated_property<UserProperty_t>(name);
     }
     /*  Returns the typed property. Throws an error if property type given from
      *  user does not match actual property type.
@@ -447,6 +445,38 @@ namespace rascal {
       return std::static_pointer_cast<UserProperty_t>(property);
     }
 
+    void register_property(std::shared_ptr<PropertyBase> property,
+                           const std::string & name) {
+      this->properties[name] = property;
+    }
+    /**
+     * Get a property of a given name. Create it if it does not exist.
+     *
+     * @tparam UserProperty_t full type of the property to return
+     *
+     * @param name name of the property to get
+     *
+     * @throw runtime_error if UserProperty_t is not compatible with property
+     * of the given name
+     */
+    template <typename UserProperty_t>
+    std::shared_ptr<UserProperty_t> get_property_ptr(const std::string & name) {
+      if (this->has_property(name)) {
+        auto property{this->get_property(name)};
+        UserProperty_t::check_compatibility(*property);
+        return std::static_pointer_cast<UserProperty_t>(property);
+      } else {
+        auto property{std::make_shared<UserProperty_t>(this->implementation())};
+        this->register_property(property, name);
+        return property;
+      }
+    }
+
+    template <typename UserProperty_t>
+    UserProperty_t & get_property_ref(const std::string & name) {
+      return *this->template get_property_ptr<UserProperty_t>(name);
+    }
+
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>
     get_property(const std::string & name) const {
@@ -455,21 +485,16 @@ namespace rascal {
               name);
     }
 
-    /**
-     * Attach update status to property. It is necessary, because the underlying
-     * structure might change and then the calculated property might be out of
-     * sync with the structure.
-     */
-    void set_property_fresh(const std::string & name) {
-      this->property_fresh[name] = true;
+    inline void set_updated_property_status(const bool & is_updated) {
+      for (auto & element : this->properties) {
+        auto & property{element.second};
+        property->set_updated_status(is_updated);
+      }
     }
 
-    /**
-     * Check if the status of the property is in sync with the underlying
-     * structure
-     */
-    bool is_property_fresh(const std::string & name) {
-      return this->property_fresh[name];
+    inline void set_updated_property_status(const std::string & name,
+                                            const bool & is_updated) {
+      this->properties[name]->set_updated_status(is_updated);
     }
 
     //! Get the full type of the structure manager
@@ -546,6 +571,7 @@ namespace rascal {
      * `false` along the tree to the managers and the properties it holds.
      */
     void send_changed_structure_signal() final {
+      this->set_updated_property_status(false);
       this->set_update_status(false);
       for (auto && child : this->children) {
         if (not child.expired()) {
@@ -631,7 +657,6 @@ namespace rascal {
     ClusterIndex_t cluster_indices_container;
 
     std::map<std::string, std::shared_ptr<PropertyBase>> properties{};
-    std::map<std::string, bool> property_fresh{};
   };
 
   /* ----------------------------------------------------------------------

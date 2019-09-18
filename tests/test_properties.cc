@@ -210,7 +210,7 @@ namespace rascal {
     }
   }
   /* ---------------------------------------------------------------------- */
-  /*
+  /**
    * checks if the properties associated with atoms and pairs can be filled
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_pair_property_test, Fix,
@@ -320,7 +320,8 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  /* If consider_ghost_neighbours is true the atoms index should
+  /**
+   * If consider_ghost_neighbours is true the atoms index should
    * correspond to the cluster index of order 1 when StructureManagerCenters is
    * used as  root implementation and no filtering on order 1 has been done.
    */
@@ -354,7 +355,8 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  /* Access of atom property with pair.
+  /**
+   * Access of atom property with pair.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_vector_property_access_with_pair_tests,
                                    Fix, pair_property_fixtures, Fix) {
@@ -443,7 +445,8 @@ namespace rascal {
       std::cout << " finished." << std::endl;
     }
   }
-  /* Access of atom property with triple.
+  /**
+   * Access of atom property with triple.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(
       atom_vector_property_access_with_triple_tests, Fix,
@@ -524,7 +527,8 @@ namespace rascal {
     }
   }
   /* ---------------------------------------------------------------------- */
-  /* The access of an order one property with the atom itself
+  /**
+   * The access of an order one property with the atom itself
    * and the pair with the atom as neighbour should be the same.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_test_simple_order_one_property, Fix,
@@ -625,9 +629,10 @@ namespace rascal {
         Fix::pair_property[pair] = ++pair_property_counter;
       }
     }
-
-    auto & FakeSizedProperty{Fix::AtomVectorProperty_t::check_compatibility(
-        Fix::atom_dynamic_vector_property)};
+    auto & base_property{
+        static_cast<PropertyBase &>(Fix::atom_dynamic_vector_property)};
+    auto & FakeSizedProperty{
+        static_cast<typename Fix::AtomVectorProperty_t &>(base_property)};
 
     pair_property_counter = 0;
     counter = 0;
@@ -709,13 +714,13 @@ namespace rascal {
       : public MultipleStructureFixture<MultipleStructureManagerNLFixture> {
     using Parent = MultipleStructureFixture<MultipleStructureManagerNLFixture>;
     using ManagerTypeList_t = typename Parent::ManagerTypeHolder_t::type_list;
-
+    using Manager_t = typename Parent::ManagerTypeHolder_t::type;
     using Key_t = std::vector<int>;
     using BlockSparseProperty_t =
         BlockSparseProperty<double, Order, 0, Manager_t, Key_t>;
-    using Dense_t = typename BlockSparseProperty_t::Dense_t;
+    using Matrix_t = typename BlockSparseProperty_t::Matrix_t;
     using InputData_t = typename BlockSparseProperty_t::InputData_t;
-    using test_data_t = std::vector<InputData_t>;
+    using TestData_t = std::vector<InputData_t>;
 
     constexpr static Dim_t DynSize() { return 3; }
 
@@ -730,8 +735,7 @@ namespace rascal {
       for (auto & manager : managers) {
         sparse_features.emplace_back(*manager, sparse_features_desc);
         this->keys_list.emplace_back();
-        test_data_t test_data{};
-        //for (auto atom : manager) { // NOTE(max) replaced since `atom` unused
+        TestData_t test_data{};
         for (size_t i{0}; i < manager->get_size(); ++i) {
           // set up random unique keys
           auto set_max_size{size_dist(gen)};
@@ -745,7 +749,7 @@ namespace rascal {
           // resize and set to 0
           datas.resize(keys, n_row, n_col, 0);
           for (auto & key : keys) {
-            auto data = Dense_t::Random(n_row, n_col);
+            auto data = Matrix_t::Random(n_row, n_col);
             datas[key] += data;
           }
           this->keys_list.back().push_back(keys);
@@ -759,7 +763,7 @@ namespace rascal {
     int n_col{8};
 
     std::vector<std::vector<std::set<Key_t>>> keys_list{};
-    std::vector<test_data_t> test_datas{};
+    std::vector<TestData_t> test_datas{};
     std::vector<BlockSparseProperty_t> sparse_features{};
   };
 
