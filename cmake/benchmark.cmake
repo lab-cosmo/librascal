@@ -34,7 +34,7 @@ set(BENCHMARK_ENABLE_INSTALL CACHE BOOL OFF)
 add_subdirectory("${benchmark_SOURCE_DIR}")
 include_directories("${benchmark_SOURCE_DIR}/include")
 
--# surpresses the "'CSVReporter' is deprecated" errors when compiling benchmark.cc
+# surpresses the "'CSVReporter' is deprecated" errors when compiling benchmark.cc
  set_target_properties(
      benchmark PROPERTIES
      COMPILE_FLAGS

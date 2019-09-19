@@ -157,29 +157,29 @@ namespace rascal {
   /**
    * Spherical Expansion without gradient benchmarks
    */
-  auto sph_exp_intp_fix =
-      SphericalExpansionBFixture<SphericalExpansionDataset>(true, false);
-  BENCHMARK_CAPTURE(BM_SphExp, use_intp_no_gradient, sph_exp_intp_fix)
-      ->Apply(AllCombinationsArguments<SphericalExpansionDataset>)
-      ->Complexity();
   auto sph_exp_fix =
       SphericalExpansionBFixture<SphericalExpansionDataset>(false, false);
   BENCHMARK_CAPTURE(BM_SphExp, no_intp_no_gradient, sph_exp_fix)
+      ->Apply(AllCombinationsArguments<SphericalExpansionDataset>)
+      ->Complexity();
+  auto sph_exp_intp_fix =
+      SphericalExpansionBFixture<SphericalExpansionDataset>(true, false);
+  BENCHMARK_CAPTURE(BM_SphExp, use_intp_no_gradient, sph_exp_intp_fix)
       ->Apply(AllCombinationsArguments<SphericalExpansionDataset>)
       ->Complexity();
 
   /**
    * Spherical Expansion with gradient benchmarks
    */
+  auto sph_exp_gradient_fix =
+      SphericalExpansionBFixture<SphericalExpansionDataset>(false, true);
+  BENCHMARK_CAPTURE(BM_SphExp, no_intp_comp_gradient, sph_exp_gradient_fix)
+      ->Apply(AllCombinationsArguments<SphericalExpansionDataset>)
+      ->Complexity();
   auto sph_exp_intp_gradient_fix =
       SphericalExpansionBFixture<SphericalExpansionDataset>(true, true);
   BENCHMARK_CAPTURE(BM_SphExp, use_intp_comp_gradient,
                     sph_exp_intp_gradient_fix)
-      ->Apply(AllCombinationsArguments<SphericalExpansionDataset>)
-      ->Complexity();
-  auto sph_exp_gradient_fix =
-      SphericalExpansionBFixture<SphericalExpansionDataset>(false, true);
-  BENCHMARK_CAPTURE(BM_SphExp, no_intp_comp_gradient, sph_exp_gradient_fix)
       ->Apply(AllCombinationsArguments<SphericalExpansionDataset>)
       ->Complexity();
 
