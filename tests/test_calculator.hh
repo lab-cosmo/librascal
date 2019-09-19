@@ -557,13 +557,13 @@ namespace rascal {
   };
 
   /**
-   * Calculator specialized to testing the gradient of a RepresentationManager
+   * Calculator specialized to testing the gradient of a Calculator
    *
    * The gradient is tested center-by-center, by iterating over each center and
    * doing finite displacements on its position.  This iteration should normally
    * be done by the RepresentationManagerGradientFixture class.
    *
-   * Initialize with a RepresentationManager, a StructureManager, and an
+   * Initialize with a Calculator, a StructureManager, and an
    * AtomicStructure representing the original structure (before modifying with
    * finite-difference displacments).  The gradient of the representation with
    * respect to the center position can then be tested, as usual, with

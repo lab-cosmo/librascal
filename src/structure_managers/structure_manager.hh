@@ -894,7 +894,7 @@ namespace rascal {
           it(manager) {}
 
     //! Copy constructor
-    ClusterRef(const ClusterRef & other) = default;
+    ClusterRef(const ClusterRef & other) = delete;
 
     //! Move constructor
     ClusterRef(ClusterRef && other) = default;

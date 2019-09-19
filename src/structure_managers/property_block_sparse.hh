@@ -380,8 +380,8 @@ namespace rascal {
        */
       inline Precision_t dot(Self_t & B) {
         Precision_t val{0.};
-        auto keysB{B.get_keys()};
-        auto unique_keys{this->intersection(keysB)};
+        auto keys_b{B.get_keys()};
+        auto unique_keys{this->intersection(keys_b)};
 
         for (auto & key : unique_keys) {
           auto && posA{this->map[key]};

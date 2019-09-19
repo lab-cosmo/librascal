@@ -1,11 +1,11 @@
-from .base import (NeighbourList, NeighbourListFactory, is_valid_structure,
+from .base import (neighbourList, NeighbourListFactory, is_valid_structure,
  adapt_structure, StructureCollectionFactory)
 from collections.abc import Iterable
 
 
 class AtomsList(object):
     """
-    A wrapper class for a stack of managers precompiled on the C++ side of the form Strict->NeighbourList->Center.
+    A wrapper class for a stack of managers precompiled on the C++ side of the form Strict->neighbourList->Center.
     A container for atoms/centers/atomic environments.
 
     Attributes
@@ -27,9 +27,9 @@ class AtomsList(object):
                 managers.add_structures(frames)
             elif start is not None and length is None:
                 managers.add_structures(frames, start=start)
-            elif start is not None and not length is None:
+            elif start is not None and length is not None:
                 managers.add_structures(frames, start=start, length=length)
-            elif start is None and not length is None:
+            elif start is None and length is not None:
                 managers.add_structures(frames, length=length)
         else:
             # if python structure
@@ -78,7 +78,7 @@ def get_neighbourlist(structure, options):
 def convert_to_structure_list(frames):
     if not isinstance(frames, Iterable):
         frames = [frames]
-    structure_list = NeighbourList.AtomicStructureList()
+    structure_list = neighbourList.AtomicStructureList()
     for frame in frames:
         if is_valid_structure(frame):
             structure = frame

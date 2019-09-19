@@ -1,5 +1,5 @@
-# from ..lib.Kernels import CosineKernel
-from ..lib._rascal.Models.Kernels import Kernel as Kernelcpp
+# from ..lib.kernels import CosineKernel
+from ..lib._rascal.models.kernels import Kernel as Kernelcpp
 from ..neighbourlist import AtomsList
 import json
 
@@ -10,7 +10,7 @@ class Kernel(object):
 
     Attributes
     ----------
-        
+
     Methods
     -------
     """

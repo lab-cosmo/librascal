@@ -1,4 +1,4 @@
-from ..lib import RepresentationManager
+from ..lib import calculator
 from ..utils.pool_worker import FactoryPool
 from ..neighbourlist.base import NeighbourListFactory
 from ..neighbourlist.structure_manager import convert_to_structure_list
@@ -10,7 +10,7 @@ import queue
 _representations_list = ["sortedcoulomb", "sphericalexpansion",
                          "sphericalinvariants", "sphericalcovariants"]
 _representations = {}
-for k, v in RepresentationManager.__dict__.items():
+for k, v in calculator.__dict__.items():
     if "pybind11_builtins.pybind11_type" in str(type(v)):
         kl = k.lower()
         for name in _representations_list:

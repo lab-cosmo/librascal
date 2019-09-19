@@ -52,7 +52,7 @@ using Representation_t = CalculatorSphericalInvariants;
 using Manager_t = AdaptorStrict<
     AdaptorCenterContribution<AdaptorNeighbourList<StructureManagerCenters>>>;
 using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
-using PropDer_t =
+using PropGrad_t =
     typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
 
 int main(int argc, char * argv[]) {
@@ -106,11 +106,6 @@ int main(int argc, char * argv[]) {
   constexpr size_t n_centers_print{4};
   constexpr size_t n_neigh_print{1};
 
-  // auto soap = representation.get_representation_full();
-  // std::cout << "Sample SOAP elements \n"
-  //<< soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
-  //<< soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
-  //<< soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
   // Print the first few elements and gradients, so we know we're getting
   // something
   std::cout << "Expansion of first " << n_centers_print << " centers:";
@@ -125,7 +120,7 @@ int main(int argc, char * argv[]) {
 
   auto && soap_vectors{
       manager->template get_property_ref<Prop_t>(representation.get_name())};
-  auto && soap_vector_gradients{manager->template get_property_ref<PropDer_t>(
+  auto && soap_vector_gradients{manager->template get_property_ref<PropGrad_t>(
       representation.get_gradient_name())};
 
   for (auto center : manager) {

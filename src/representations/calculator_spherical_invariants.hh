@@ -230,7 +230,7 @@ namespace rascal {
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
 
     explicit CalculatorSphericalInvariants(const Hypers_t & hyper)
-        : rep_expansion{hyper} {
+        : CalculatorBase{}, rep_expansion{hyper} {
       this->set_default_prefix("spherical_invariants_");
       this->set_hyperparameters(hyper);
     }

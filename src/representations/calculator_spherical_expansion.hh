@@ -684,7 +684,7 @@ namespace rascal {
     }
 
     /**
-     * Construct a new RepresentationManager using a hyperparameters container
+     * Construct a new Calculator using a hyperparameters container
      *
      * @param hypers container (usually parsed from json) for the options and
      *               hyperparameters
@@ -692,7 +692,8 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container
      */
-    explicit CalculatorSphericalExpansion(const Hypers_t & hyper) {
+    explicit CalculatorSphericalExpansion(const Hypers_t & hyper)
+      :CalculatorBase{} {
       this->set_default_prefix("spherical_expansion_");
       this->set_hyperparameters(hyper);
     }

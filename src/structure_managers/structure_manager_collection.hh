@@ -194,7 +194,8 @@ namespace rascal {
 
       if (not structures.is_object()) {
         throw std::runtime_error(
-            R"(The first level of the ase format is a dictionary with indicies as keys to the structures)");
+            R"(The first level of the ase format is a dictionary with indicies
+                as keys to the structures)");
       }
 
       if (structures.count("ids") == 1) {

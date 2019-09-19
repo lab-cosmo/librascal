@@ -99,56 +99,7 @@ namespace rascal {
     }
   }
 
-  // BOOST_FIXTURE_TEST_CASE(
-  //     simple_cubic_9_neighbour_list_ii_pairs,
-  //     PairFixtureSimpleCenterPairs<StructureManagerCenters>) {
-  //   constexpr bool verbose{false};
-
-  //   pair_manager1->update();
-  //   pair_manager2->update();
-
-  //   auto natoms1{pair_manager1->get_nb_clusters(1)};
-  //   auto natoms2{pair_manager1->get_nb_clusters(1)};
-
-  //   auto npairs1{pair_manager1->get_nb_clusters(2)};
-  //   auto npairs2{pair_manager2->get_nb_clusters(2)};
-
-  //   if (verbose) {
-  //     std::cout << "natoms 1/2 " << natoms1 << "/" << natoms2 << std::endl;
-  //     std::cout << "npairs 1/2 " << npairs1 << "/" << npairs2 << std::endl;
-  //   }
-
-  //   BOOST_CHECK_EQUAL(natoms1, natoms2);
-  //   BOOST_CHECK_EQUAL(npairs1 + natoms1, npairs2);
-
-  //   auto pair_counter{0};
-  //   for (auto atom : pair_manager2) {
-  //     auto type{atom.get_atom_type()};
-  //     bool first{true};
-  //     auto tag1 = atom.get_atom_tag();
-  //     for (auto pair : atom) {
-  //       auto pair_type{pair.get_atom_type()};
-  //       ++pair_counter;
-  //       auto tag2 = pair.get_atom_tag();
-  //       if (first) {
-  //         // Check if the ii-pairs actually exist as the first neighbour of
-  //         the
-  //         // i-atom; check is based on atom tag.
-  //         BOOST_CHECK_EQUAL(tag1, tag2);
-  //         first = false;
-  //       }
-  //       if (verbose) {
-  //         std::cout << "pair (" << tag1 << ", " << tag2
-  //                   << "), pair_counter = " << pair_counter
-  //                   << ", atom types = " << type << ", " << pair_type
-  //                   << std::endl;
-  //       }
-  //     }
-  //   }
-
-  //   BOOST_CHECK_EQUAL(pair_counter, npairs2);
-  // }
-
+ 
   /* ---------------------------------------------------------------------- */
   //! test if hcp managers are constructed
   BOOST_FIXTURE_TEST_CASE(constructor_test_hcp, ManagerFixtureTwoHcp) {}

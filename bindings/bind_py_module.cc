@@ -33,16 +33,16 @@ namespace py = pybind11;
 PYBIND11_MODULE(_rascal, mod) {
   mod.doc() = "Python bindings for the Rascal library";
 
-  py::module m_nl = mod.def_submodule("NeighbourList");
+  py::module m_nl = mod.def_submodule("neighbourList");
   m_nl.doc() = "Utilities to make neighbour lists";
 
-  py::module m_rpr_mng = mod.def_submodule("RepresentationManager");
-  m_rpr_mng.doc() = "Representation Manager Classes";
-  py::module m_models = mod.def_submodule("Models");
+  py::module m_rpr_mng = mod.def_submodule("calculator");
+  m_rpr_mng.doc() = "Calculator Classes for the representations";
+  py::module m_models = mod.def_submodule("models");
   m_models.doc() = "Collection of models";
 
-  py::module m_kernels = m_models.def_submodule("Kernels");
-  m_kernels.doc() = "Collection of Kernels";
+  py::module m_kernels = m_models.def_submodule("kernels");
+  m_kernels.doc() = "Collection of kernels";
 
   py::module m_utl = mod.def_submodule("utils");
   py::module m_math = mod.def_submodule("math");

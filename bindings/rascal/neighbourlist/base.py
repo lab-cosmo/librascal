@@ -1,4 +1,4 @@
-from ..lib import NeighbourList
+from ..lib import neighbourList
 import numpy as np
 
 # Register Adaptors and StructureManagers
@@ -6,14 +6,14 @@ _neighbourlist_list = ["centers", "neighbourlist", "centercontribution",
                        "strict", "maxorder", "halflist", "fulllist"]
 
 _neighbourlists = {}
-for k, v in NeighbourList.__dict__.items():
+for k, v in neighbourList.__dict__.items():
     if "make_adapted_manager" in k or "make_structure_manager" in k:
         name = k.lower().replace('make_adapted_manager_',
                                  '').replace('make_structure_manager_', '')
         _neighbourlists[name] = v
 
 _structure_collections = {}
-for k, v in NeighbourList.__dict__.items():
+for k, v in neighbourList.__dict__.items():
     if "ManagerCollection" in k:
         name = k.lower().replace('managercollection_', '')
         _structure_collections[name] = v

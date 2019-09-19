@@ -55,7 +55,7 @@ using Representation_t = CalculatorSphericalInvariants;
 using Manager_t = AdaptorStrict<
     AdaptorCenterContribution<AdaptorNeighbourList<StructureManagerCenters>>>;
 using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
-using PropDer_t =
+using PropGrad_t =
     typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
 
 int main(int argc, char * argv[]) {

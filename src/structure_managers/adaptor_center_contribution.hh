@@ -353,13 +353,9 @@ namespace rascal {
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
     for (auto atom : this->manager.get()->with_ghosts()) {
-      //   using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer + 1, 1>>;
-      // using AtomIndex_t = std::array<int, Order>;
-      // ClusterRefKey(AtomIndex_t atom_tag_list, IndexConstArray
-      // cluster_indices)
 
       this->add_atom(atom);
-      /**
+      /*
        * Add new layer for atoms (see LayerByOrder for
        * possible optimisation).
        */

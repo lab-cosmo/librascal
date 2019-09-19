@@ -53,7 +53,7 @@ using Representation_t = CalculatorSphericalExpansion;
 using Manager_t = AdaptorStrict<
     AdaptorCenterContribution<AdaptorNeighbourList<StructureManagerCenters>>>;
 using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
-using PropDer_t =
+using PropGrad_t =
     typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
 
 int main(int argc, char * argv[]) {
@@ -124,7 +124,7 @@ int main(int argc, char * argv[]) {
   auto && expansions_coefficients{
       manager->template get_property_ref<Prop_t>(representation.get_name())};
   auto && expansions_coefficients_gradient{
-      manager->template get_property_ref<PropDer_t>(
+      manager->template get_property_ref<PropGrad_t>(
           representation.get_gradient_name())};
 
   size_t center_count{0};
