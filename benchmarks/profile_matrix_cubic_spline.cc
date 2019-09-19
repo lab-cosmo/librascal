@@ -1,11 +1,11 @@
 /**
- * file  profile_vector_cubic_spline.hh
+ * file  profile_matrix_cubic_spline.hh
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
  * @date   22 August 2019
  *
- * @brief used to profile the vector cubic spline method by storing the
+ * @brief used to profile the matrix cubic spline method by storing the
  * grid in the initialization process in a file and loading it on start, to
  * remove the computation cost of the initialization process during the
  * profiling
