@@ -53,6 +53,9 @@ ENDIF()
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
 "Release" "Debug" "RelWithDebInfo" "MinSizeRel")
 
+#set_property(CACHE CMAKE_CXX_COMPILER PROPERTY STRINGS
+#"gnu++" "clang++")
+
 project(rascal)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -88,7 +91,8 @@ SET(TYPE_ARCHITECTURE "native" CACHE STRING "Choose the type of architecture to 
 
 message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
-set(BUILD_BENCHMARK "OFF" CACHE BOOL
+# TODO(alex) turned on for testing on circleci, but when ests are adapted it should be changed to default OFF
+set(BUILD_BENCHMARK "ON" CACHE BOOL
   "If on, the google benchmark will be built.")
 
 ########## COMPILATION FLAGS ##########

@@ -410,7 +410,7 @@ namespace rascal {
           RadialContribution<RadialBasisType::GTO>>(hypers);
       this->func = [&](double x) mutable {
         return this->radial_contr
-            ->compute_contribution<AtomicSmearingType::Constant>(x,
+            ->template compute_contribution<AtomicSmearingType::Constant>(x,
                                                                            0.5);
       };
     }
@@ -502,7 +502,7 @@ namespace rascal {
 
       this->nb_neighbours = 0;
       for (auto center : this->manager) {
-        for (auto neigh : center) {
+        for (auto _ : center) {
           this->nb_neighbours++;
         }
       }
