@@ -266,14 +266,13 @@ namespace rascal {
       /**
        * Compute a full set of spherical harmonics given a direction vector.
        * If calculate_derivatives flag is on, the derivatives are additionally
-       * computed.
+       * computed. This function returns void, results have to be retrieved
+       * with get functions.
        *
        * @param direction   unit vector defining the angles
        *                    (arguments for the \f$Y_\ell^m\f$)
        *
        * @param calculate_derivatives       Compute the gradients too?
-       *
-       * @return void, results have to be retrieved with get functions
        *
        * @warning Prints warning and normalizes direction if it is not
        *          already normalized.

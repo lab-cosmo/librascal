@@ -272,8 +272,8 @@ namespace rascal {
    protected:
     /**
      * main function during construction of a neighbourlist.
-     * @param atom the atom to add to the list
-     * @param Order select whether it is an i-atom (order=1), j-atom (order=2),
+     * @param atom_tag the atom to add to the list
+     * @tparam Order select whether it is an i-atom (order=1), j-atom (order=2),
      * or ...
      */
     template <size_t Order>

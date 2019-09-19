@@ -654,7 +654,7 @@ namespace rascal {
      * missing entries are filled with zeros.
      * The features are flattened out following the underlying storage order.
      *
-     * @params features dense Eigen matrix of the proper size
+     * @param features dense Eigen matrix of the proper size
      *
      * @param all_keys set of all the keys that should be considered when
      * building the feature matrix

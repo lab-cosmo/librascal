@@ -42,24 +42,14 @@
 // TODO(markus): CHECK for skewedness
 namespace rascal {
 
+  /**
+   * A common structure to access atom and cell related data, based on the
+   * idea of the atoms object in the Atomic Simulation Environment. The
+   * object contains atomic positions, the cell vectors, periodicity
+   * information as well as the atomic types (element).
+   */
   template <int Dim>
   struct AtomicStructure {
-    /**
-     * A common structure to access atom and cell related data, based on the
-     * idea of the atoms object in the Atomic Simulation Environment. The
-     * object contains atomic positions, the cell vectors, periodicity
-     * information as well as the atomic types (element).
-     *
-     *  @param cell is a contiguous vector which holds the cell unit vectors.
-     *
-     *  @param type a vector of integers which holds the atomic type (atomic
-     *  number as per periodic table).
-     *
-     *  @param pbc is a 0/1 vector which defines the periodicity of the given
-     *  structure for each dimension
-     *
-     *  @param position is a vector which holds the atomic positions.
-     */
     using Cell_t = Eigen::Matrix<double, Dim, Dim>;
     using Cell_ref = Eigen::Ref<Cell_t>;
     using ConstCell_ref = const Eigen::Ref<const Cell_t>;
@@ -91,14 +81,28 @@ namespace rascal {
     using ArrayConstRef_t =
         const Eigen::Ref<const Eigen::Array<T, Eigen::Dynamic, 1>>;
 
-    //! positions of the atomic structure in a Nx3 Eigen Matrix
+    /**
+     * A 3xN matrix which holds the atomic positions.
+     */
     Positions_t positions{};
-    //! atomic numbers of the N atoms
+
+    /**
+     * A vector of integers which holds the atomic type (atomic number as
+     * per periodic table).
+     */
     AtomTypes_t atom_types{};
-    //! cell vectors defining the box
+
+    /**
+     * A contiguous vector which holds the cell unit vectors.
+     */
     Cell_t cell{};
-    //! periodic boundary conditions for each directions
+
+    /**
+     * A 0/1 vector which defines the periodicity of the given structure
+     * for each dimension
+     */
     PBC_t pbc{};
+
     //! Contains the information wheter an atom should be centered on or not
     //! in the form of an array of N booleans (true->center)
     ArrayB_t center_atoms_mask{};

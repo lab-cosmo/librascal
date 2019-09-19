@@ -103,11 +103,7 @@ namespace rascal {
      * Note that this function is template-specialized by Gaussian sigma type
      * (constant, per-species, or radially dependent).
      *
-     * @param pair Atom pair defining the neighbour, as e.g. returned by
-     *             iteration over neighbours of a centre
-     *
      * @throw logic_error if the requested sigma type has not been implemented
-     *
      */
     template <AtomicSmearingType SigmaType>
     struct AtomicSmearingSpecification {};
@@ -216,14 +212,18 @@ namespace rascal {
      * Implementation of the radial contribution for Gaussian Type Orbitals
      * radial basis functions and gaussian smearing of the atom density.
      *
-     *          R^{GTO}_{n}(r) = \mathcal{N}_n\ r^{n} \exp[-br^2]
+     * @f[
+     *      R^{GTO}_{n}(r) = \mathcal{N}_n\ r^{n} \exp[-br^2]
+     * @f]
      *
-     * \mathcal{N}_n^2 = \frac{2}{\sigma_n^{2n + 3}\Gamma(n + 3/2)}
-     * \sigma_n = (r_\text{cut}-\delta r_\text{cut})
-     * \max(\sqrt{n},1)/n_\text{max} b=\frac{1}{2\sigma_n} \int_0^\infty
-     * R^{GTO}_{n}(r) R^{GTO}_{n\prime}(r) \dd{r}= 2 \left(\frac{1}{2
-     * \sigma_{n}^2}+\frac{1}{2 \sigma_{n\prime}^2} \right)^{-\frac{1}{2}
-     * (3+n+n\prime)} \Gamma(\frac{3+n+n\prime}{2})
+     * @f[
+     *      \mathcal{N}_n^2 = \frac{2}{\sigma_n^{2n + 3}\Gamma(n + 3/2)}
+     *      \sigma_n = (r_\text{cut}-\delta r_\text{cut})
+     *      \max(\sqrt{n},1)/n_\text{max} b=\frac{1}{2\sigma_n} \int_0^\infty
+     *      R^{GTO}_{n}(r) R^{GTO}_{n\prime}(r) \dd{r}= 2 \left(\frac{1}{2
+     *      \sigma_{n}^2}+\frac{1}{2 \sigma_{n\prime}^2} \right)^{-\frac{1}{2}
+     *      (3+n+n\prime)} \Gamma(\frac{3+n+n\prime}{2})
+     * @f]
      */
     template <>
     struct RadialContribution<RadialBasisType::GTO> : RadialContributionBase {
@@ -253,7 +253,7 @@ namespace rascal {
 
       /**
        * Set hyperparameters.
-       * @params hypers is expected to be the same as the the input of
+       * @param hypers is expected to be the same as the the input of
        *         the spherical expansion
        */
       void set_hyperparameters(const Hypers_t & hypers) {
@@ -880,8 +880,8 @@ namespace rascal {
     /**
      * Construct a new Calculator using a hyperparameters container
      *
-     * @param hypers container (usually parsed from json) for the options and
-     *               hyperparameters
+     * @param hyper container (usually parsed from json) for the options and
+     *              hyperparameters
      *
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container
