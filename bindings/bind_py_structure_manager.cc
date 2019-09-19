@@ -477,10 +477,9 @@ namespace rascal {
                            },
                            py::keep_alive<0, 1>());
     // bind [] accessor
-    manager_collection.def(
-        "__getitem__",
-        [](ManagerCollection_t & v, int index) { return v[index]; },
-        py::keep_alive<0, 1>());
+    manager_collection.def("__getitem__", [](ManagerCollection_t & v,
+                                             int index) { return v[index]; },
+                           py::keep_alive<0, 1>());
 
     /**
      * Binds the `add_structures`. Instead of invoking the targeted function to

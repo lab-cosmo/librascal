@@ -592,8 +592,8 @@ namespace rascal {
         std::shared_ptr<StructureManager> structure_manager,
         Structure_t atomic_structure)
         : representation{representation}, structure_manager{structure_manager},
-          atomic_structure{atomic_structure}, center_it{
-                                                  structure_manager->begin()} {}
+          atomic_structure{atomic_structure},
+          center_it{structure_manager->begin()} {}
 
     ~RepresentationManagerGradientCalculator() = default;
 
@@ -766,8 +766,8 @@ namespace rascal {
     RepresentationManagerGradientFixture(
         std::string filename, std::shared_ptr<StructureManager_t> structure,
         Calculator_t & calc)
-        : structure{structure}, center_it{structure->begin()}, calculator{
-                                                                   calc} {
+        : structure{structure}, center_it{structure->begin()},
+          calculator{calc} {
       json input_data = json_io::load(filename);
 
       this->function_inputs = this->get_function_inputs();

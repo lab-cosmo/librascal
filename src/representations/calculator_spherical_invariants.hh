@@ -337,11 +337,11 @@ namespace rascal {
     }
 
     //! single manager case
-    template <
-        internal::SphericalInvariantsType BodyOrder, class StructureManager,
-        std::enable_if_t<
-            not(internal::is_proper_iterator<StructureManager>::value), int> =
-            0>
+    template <internal::SphericalInvariantsType BodyOrder,
+              class StructureManager,
+              std::enable_if_t<
+                  not(internal::is_proper_iterator<StructureManager>::value),
+                  int> = 0>
     void compute_loop(StructureManager & manager) {
       this->compute_impl<BodyOrder>(manager);
     }
@@ -798,10 +798,10 @@ namespace rascal {
                                       grad_component_size);
               const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
                   soap_vector_by_species_pair.data(), grad_component_size);
-              soap_gradient_dim_N =
-                  ((soap_gradient_dim_N - soap_vector_dot_neigh_gradient *
-                                              soap_vector_N.transpose()) /
-                   soap_vector_norm);
+              soap_gradient_dim_N = ((soap_gradient_dim_N -
+                                      soap_vector_dot_neigh_gradient *
+                                          soap_vector_N.transpose()) /
+                                     soap_vector_norm);
             }  // for soap_grad_spair : soap_center_gradient
           }    // for neigh : center
         }      // if normalize

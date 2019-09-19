@@ -99,7 +99,6 @@ namespace rascal {
     }
   }
 
- 
   /* ---------------------------------------------------------------------- */
   //! test if hcp managers are constructed
   BOOST_FIXTURE_TEST_CASE(constructor_test_hcp, ManagerFixtureTwoHcp) {}

@@ -313,8 +313,8 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorMaxOrder<ManagerImplementation>::AdaptorMaxOrder(
       std::shared_ptr<ManagerImplementation> manager)
-      : manager{std::move(manager)}, nb_neigh{},
-        neighbours_atom_tag{}, offsets{} {
+      : manager{std::move(manager)}, nb_neigh{}, neighbours_atom_tag{},
+        offsets{} {
     if (traits::MaxOrder < 3) {
       throw std::runtime_error("Increase MaxOrder: No pair list in underlying"
                                " manager.");

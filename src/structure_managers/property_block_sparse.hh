@@ -386,10 +386,10 @@ namespace rascal {
         for (auto & key : unique_keys) {
           auto && posA{this->map[key]};
           auto vecA{VectorMap_Ref(&this->data[std::get<0>(posA)],
-                                std::get<1>(posA) * std::get<2>(posA))};
+                                  std::get<1>(posA) * std::get<2>(posA))};
           auto && posB{B.map[key]};
           auto vecB{VectorMap_Ref(&B.data[std::get<0>(posB)],
-                                std::get<1>(posB) * std::get<2>(posB))};
+                                  std::get<1>(posB) * std::get<2>(posB))};
           val += vecA.dot(vecB);
         }
         return val;

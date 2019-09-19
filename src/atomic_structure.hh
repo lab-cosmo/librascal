@@ -88,7 +88,6 @@ namespace rascal {
     Cell_t cell{};
     PBC_t pbc{};
 
-
     //! Default constructor
     AtomicStructure() = default;
 

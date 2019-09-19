@@ -299,8 +299,8 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorFullList<ManagerImplementation>::AdaptorFullList(
       std::shared_ptr<ManagerImplementation> manager)
-      : manager{std::move(manager)}, nb_neigh{},
-        neighbours_atom_tag{}, offsets{} {}
+      : manager{std::move(manager)}, nb_neigh{}, neighbours_atom_tag{},
+        offsets{} {}
 
   /* ---------------------------------------------------------------------- */
   //! update function, which updates based on underlying manager

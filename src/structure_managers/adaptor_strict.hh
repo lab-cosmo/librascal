@@ -363,8 +363,8 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
       std::shared_ptr<ManagerImplementation> manager, double cutoff)
-      : manager{std::move(manager)}, distance{std::make_shared<Distance_t>(
-                                         *this)},
+      : manager{std::move(manager)},
+        distance{std::make_shared<Distance_t>(*this)},
         dir_vec{std::make_shared<DirectionVector_t>(*this)}, cutoff{cutoff},
         atom_tag_list{}, neighbours_cluster_index{}, nb_neigh{}, offsets{}
 

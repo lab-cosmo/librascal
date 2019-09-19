@@ -155,7 +155,7 @@ namespace rascal {
 
     template <size_t N, size_t... Seq>
     constexpr std::index_sequence<N + Seq...>
-    add_to_sequence(std::index_sequence<Seq...>) {
+        add_to_sequence(std::index_sequence<Seq...>) {
       return {};
     }
 

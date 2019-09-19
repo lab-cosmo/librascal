@@ -693,7 +693,7 @@ namespace rascal {
      *                    specified in the container
      */
     explicit CalculatorSphericalExpansion(const Hypers_t & hyper)
-      :CalculatorBase{} {
+        : CalculatorBase{} {
       this->set_default_prefix("spherical_expansion_");
       this->set_hyperparameters(hyper);
     }

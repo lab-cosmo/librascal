@@ -610,11 +610,11 @@ namespace rascal {
     Fix::atom_dynamic_vector_unit_property.resize();
     Fix::atom_dynamic_vector_property.resize();
 
-    BOOST_CHECK_THROW(Fix::AtomVectorProperty_t ::check_compatibility(
+    BOOST_CHECK_THROW(Fix::AtomVectorProperty_t::check_compatibility(
                           Fix::atom_dynamic_vector_unit_property),
                       std::runtime_error);
 
-    BOOST_CHECK_NO_THROW(Fix::AtomVectorProperty_t ::check_compatibility(
+    BOOST_CHECK_NO_THROW(Fix::AtomVectorProperty_t::check_compatibility(
         Fix::atom_vector_property));
 
     int pair_property_counter{};
