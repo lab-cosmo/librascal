@@ -75,7 +75,7 @@ namespace rascal {
     StructureManagerLammps(const StructureManagerLammps & other) = delete;
 
     //! Move constructor
-    StructureManagerLammps(StructureManagerLammps && other) = default;
+    StructureManagerLammps(StructureManagerLammps && other) = delete;
 
     //! Destructor
     virtual ~StructureManagerLammps() = default;
@@ -86,7 +86,7 @@ namespace rascal {
 
     //! Move assignment operator
     StructureManagerLammps &
-    operator=(StructureManagerLammps && other) = default;
+    operator=(StructureManagerLammps && other) = delete;
 
     //! Updates the manager using the impl
     template <class... Args>
