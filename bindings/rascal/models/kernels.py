@@ -14,6 +14,20 @@ class Kernel(object):
     -------
     """
     def __init__(self, representation, name='Cosine', target_type='structure', **kwargs):
+        """
+        Compute the kernel.
+
+        Parameters
+        ----------
+        representation : the representation used to produce the features that
+            should be used to compute the kernel
+        name : name of the kernel
+        target_type : 'structure' if the target property is for the whole
+            structure and 'atom' if it refers to atomic properties
+
+        kwargs : additional arguments for the kernel. depends on the kernel
+
+        """
         hypers = dict(name=name,target_type=target_type)
         hypers.update(**kwargs)
         hypers_str = json.dumps(hypers)
