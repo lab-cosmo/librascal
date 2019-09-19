@@ -53,9 +53,6 @@ ENDIF()
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
 "Release" "Debug" "RelWithDebInfo" "MinSizeRel")
 
-#set_property(CACHE CMAKE_CXX_COMPILER PROPERTY STRINGS
-#"gnu++" "clang++")
-
 project(rascal)
 
 set(CMAKE_CXX_STANDARD 14)
