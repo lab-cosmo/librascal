@@ -44,6 +44,7 @@
 #include <cmath>
 #include <memory>
 #include <exception>
+#include <sstream>
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
@@ -801,9 +802,15 @@ namespace rascal {
       break;
     }
     default:
-      throw std::logic_error(
-            "Requested cutoff function type \'" + this->cutoff_function_type +
-            "\' is not recognized.  Must be one of" + ": \'Cosine\'.");
+      // The control flow really should never reach here.  But just in case,
+      // provide the necessary information to debug this problem.
+      std::basic_ostringstream<char> err_message;
+      err_message << "Invalid cutoff function type encountered ";
+      err_message << "(This is a bug.  Debug info for developers: ";
+      err_message << "cutoff_function_type == ";
+      err_message << static_cast<int>(this->cutoff_function_type);
+      err_message << ")" << std::endl;
+      throw std::logic_error(err_message.str());
       break;
     }
   }
@@ -824,11 +831,20 @@ namespace rascal {
       break;
     }
     default:
-      throw std::logic_error(
-          "The combination of radial basis: \'" +
-          this->radial_integral_type + "\' and \'" + this->atomic_smearing_type
-          + "\' is unsupported.  Currently only constant-width atomic smearing"
-          + " (\'Constant\') in the GTO radial basis is implemented.");
+      // The control flow really should never reach here.  In this case, any
+      // "invalid combination of parameters" should have already been handled at
+      // the parameter processing stage where the user can be notified in a
+      // helpful way.  But in case we do get here, provide the necessary
+      // information to debug this problem.
+      std::basic_ostringstream<char> err_message;
+      err_message << "Invalid combination of atomic smearing and radial basis ";
+      err_message << "type encountered (This is a bug.  Debug info for ";
+      err_message << "developers: " << "radial_integral_type == ";
+      err_message << static_cast<int>(this->radial_integral_type);
+      err_message << ", atomic_smearing_type == ";
+      err_message << static_cast<int>(this->atomic_smearing_type);
+      err_message << ")" << std::endl;
+      throw std::logic_error(err_message.str());
       break;
     }
   }
