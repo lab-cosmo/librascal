@@ -118,7 +118,7 @@ namespace rascal {
            {std::make_pair(3, 4), std::make_pair(6, 6), std::make_pair(8, 6)}},
           {"random", {true}},  // dummy
           {"filenames", {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}},
-          {"cutoffs", {3, 5}}};
+          {"cutoffs", {10}}};
       return data;
     }
   };
