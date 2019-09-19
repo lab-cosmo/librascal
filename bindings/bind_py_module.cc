@@ -47,7 +47,7 @@ PYBIND11_MODULE(_rascal, mod) {
   py::module m_utl = mod.def_submodule("utils");
   py::module m_math = mod.def_submodule("math");
   m_math.doc() = "Collection of math functions";
-  py::module m_throwaway = mod.def_submodule("rubbish");
+  py::module m_throwaway = mod.def_submodule("_internals");
   m_throwaway.doc() =
       "Collection of bindings that are needed to build functional bindings for"
       " the python user but are not functional itself. It basically contains"

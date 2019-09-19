@@ -29,7 +29,7 @@
 #include "bind_py_representation_calculator.hh"
 
 namespace rascal {
-  /**
+  /*
    * In this file SMI stands for StructureManagerImplementation.
    */
 
@@ -94,7 +94,8 @@ namespace rascal {
 
     std::string cluster_name = internal::GetBindingTypeName<SMI>();
 
-    static_assert(Order < 5, "Can't bind more than quadruplet as it is.");
+    static_assert(Order < 5, R"(Not currently configured to bind clusters
+                                higher than quadruplets.)");
 
     if (Order == 1) {
       cluster_name += std::string(".Center");

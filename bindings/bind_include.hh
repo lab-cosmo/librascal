@@ -44,6 +44,12 @@
 #include <map>
 #include <memory>
 
+/**
+ * avoid implicit copy
+ * std::vector<rascal::AtomicStructure<3>> is used to bundle the
+ * information of a list of structures so that it can be passed to the cpp
+ * side so that the loop happens there
+ */
 PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 
 namespace py = pybind11;
@@ -53,7 +59,7 @@ namespace rascal {
   namespace internal {
 
     /**
-     * Mapping used to replace all occurences of the first string with the
+     * Mapping used to replace all occurrences of the first string with the
      * second string in the class titles in the python binding module names.
      *
      * first: string which should be replaced

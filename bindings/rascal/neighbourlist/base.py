@@ -19,20 +19,20 @@ for k, v in NeighbourList.__dict__.items():
 
 def NeighbourListFactory(nl_options):
     names = []
-    kargs = []
+    kargs_list = []
     full_name = []
     for opt in nl_options:
         full_name.insert(0, opt['name'])
         name = '_'.join(full_name)
         names.append(name)
-        kargs.append(opt['args'])
+        kargs_list.append(opt['args'])
 
         if name not in _neighbourlists:
             raise NameError('The neighbourlist factory {} has not been registered. The available combinations are: {}'.format(
                 name, list(_neighbourlists.keys())))
 
-    managers = [_neighbourlists[names[0]](**kargs[0])]
-    for name, karg in zip(names[1:], kargs[1:]):
+    managers = [_neighbourlists[names[0]](**kargs_list[0])]
+    for name, karg in zip(names[1:], kargs_list[1:]):
         manager = _neighbourlists[name](managers[-1], **karg)
         managers.append(manager)
 
