@@ -60,10 +60,10 @@ namespace rascal {
       virtual ~UnitStyle() = default;
 
       //! Copy assignment operator
-      UnitStyle & operator=(const UnitStyle & other) = default;
+      UnitStyle & operator=(const UnitStyle & other) = delete;
 
       //! Move assignment operator
-      UnitStyle & operator=(UnitStyle && other) = default;
+      UnitStyle & operator=(UnitStyle && other) = delete;
 
       /**
        * returns a string representation of the given unit with a optional

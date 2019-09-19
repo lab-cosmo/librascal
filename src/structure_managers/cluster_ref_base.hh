@@ -50,7 +50,7 @@ namespace rascal {
     ClusterRefBase & operator=(const ClusterRefBase & other) = delete;
 
     //! Move assignment operator
-    ClusterRefBase & operator=(ClusterRefBase && other) = default;
+    ClusterRefBase & operator=(ClusterRefBase && other) = delete;
 
     //! returns the order of the cluster
     inline size_t get_order() const { return this->order; }

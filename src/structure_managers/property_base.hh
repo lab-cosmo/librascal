@@ -60,7 +60,7 @@ namespace rascal {
     PropertyBase & operator=(const PropertyBase & other) = delete;
 
     //! Move assignment operator
-    PropertyBase & operator=(PropertyBase && other) = default;
+    PropertyBase & operator=(PropertyBase && other) = delete;
 
     //! return compile time type information
     virtual const std::string & get_type_info() const = 0;
