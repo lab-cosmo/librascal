@@ -125,7 +125,8 @@ namespace rascal {
         return this->grid_from_meshes();
       }
 
-      Vector_t compute_test_grid(double, double, int) {
+      Vector_t compute_test_grid(double /*x1*/, double /*x2*/,
+                                 int /*grid_fineness*/) {
         Vector_t test_grid = Vector_t::Zero(this->grid_size - 1);
         int i{0};
         auto next_it{this->grid_meshes.begin()};
@@ -383,7 +384,7 @@ namespace rascal {
       inline void compute_second_derivative(const Vector_Ref & yv, double yd1,
                                             double ydn) {
         // Bad xa input to routine splint
-        assert(this->h != 0.0);
+        assert(this->h < dbl_ftol);
         int n{static_cast<int>(yv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
@@ -412,7 +413,7 @@ namespace rascal {
       // natural/simple boundary conditions s''(x_0) = s''(x_n) = 0
       inline void compute_second_derivative(const Vector_Ref & yv) {
         // Bad xa input to routine splint
-        assert(this->h != 0.0);
+        assert(this->h < dbl_ftol);
         int n{static_cast<int>(yv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
@@ -440,10 +441,13 @@ namespace rascal {
       inline double raw_interpolate(const Vector_Ref & xx,
                                     const Vector_Ref & yy, const int & j1,
                                     const double & x) {
-        assert(this->h != 0.0);
+        assert(this->h < dbl_ftol);
+        // j1
         const int klo{j1}, khi{j1 + 1};
-        // a+b=1
+        // percentage of grid cell start to x
         const double a{(xx(khi) - x) / this->h};
+        // percentage of x to grid cell end, because a+b = 1 we can simplify
+        // the computation
         double b{1 - a};
         return a * (yy(klo) +
                     (a * a - 1) * this->second_derivative_h_sq_6(klo)) +
@@ -455,7 +459,7 @@ namespace rascal {
                                                const Vector_Ref & yy,
                                                const int & j1,
                                                const double & x) {
-        assert(this->h != 0.0);
+        assert(this->h < dbl_ftol);
         const int klo{j1}, khi{j1 + 1};
         // It is a+b=1
         const double a{(xx(khi) - x) / this->h};
@@ -642,7 +646,11 @@ namespace rascal {
        */
     };
 
-    // Works for functions with large value outside of the range [0,1] well
+    /**
+     * Works well for interpolators with functions evaluating large absolute
+     * values, outside the range [-1,1], so for functions of the form
+     * y:[x1,x2]->[-a,b] with a << -1 and b >> 1.
+     */
     template <>
     struct ErrorMetric<ErrorMetric_t::Relative> {
       static Vector_t compute_entrywise_error(const Vector_Ref & values,
@@ -660,7 +668,11 @@ namespace rascal {
       }
     };
 
-    // Works for functions within the range [0,1] well
+    /**
+     * Works well for interpolators with functions evaluating small absolute
+     * values, inside the range [-1,1], so for functions of the form
+     * y:[x1,x2]->[-1,1].
+     */
     template <>
     struct ErrorMetric<ErrorMetric_t::Absolute> {
       static Vector_t compute_entrywise_error(const Vector_Ref & values,

@@ -31,7 +31,7 @@ jobs:
                                         rm -rf build
                                         mkdir build
                                         cd build
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=gcc-5 -DCMAKE_CXX_COMPILER=g++-5 -DCMAKE_CROSSCOMPILING -DRUN_HAVE_STD_REGEX=0 ..
+                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=gcc-5 -DCMAKE_CXX_COMPILER=g++-5 -DRUN_HAVE_STD_REGEX=0 ..
                         - run: pwd
                         - run:
                                 command: |
@@ -405,7 +405,7 @@ jobs:
                                         rm -rf build
                                         mkdir build
                                         cd build
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-5.0 -DCMAKE_CXX_COMPILER=clang++-5.0 -DCMAKE_CROSSCOMPILING -DRUN_HAVE_STD_REGEX=0 ..
+                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-5.0 -DCMAKE_CXX_COMPILER=clang++-5.0 -DRUN_HAVE_STD_REGEX=0 ..
                         - run: pwd
                         - run:
                                 command: |
@@ -459,7 +459,7 @@ jobs:
                                         rm -rf build
                                         mkdir build
                                         cd build
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-4.0 -DCMAKE_CXX_COMPILER=clang++-4.0 -DCMAKE_CROSSCOMPILING -DRUN_HAVE_STD_REGEX=0 ..
+                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-4.0 -DCMAKE_CXX_COMPILER=clang++-4.0 -DRUN_HAVE_STD_REGEX=0 ..
                         - run: pwd
                         - run:
                                 command: |
