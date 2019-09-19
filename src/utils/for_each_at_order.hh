@@ -66,7 +66,7 @@ namespace rascal {
                          Args &&... args) {
           function(cluster, std::forward<Args>(args)...);
         }
-    };
+      };
 
     }  // namespace detail
 
