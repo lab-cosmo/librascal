@@ -38,29 +38,61 @@
 
 namespace rascal {
   namespace math {
-    using Vector_Ref = typename Eigen::Ref<const Vector_t>;
-    using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
+    /**
+     * To allow flexibility for the behaviour of the interpolator for experimenting while giving the possibility to optimize the interpolator for certain methods, the interpolator class itself is only a skeleton to execute these interpolator methods. 
+     *
+     * There exist methods for the mathematical derived interpolation method contained in InterpolationMethod, for the creation of the grid and test grid contained in the GridRational, a search method to find the nearest grid point before a point for interpolation contained in SearchMethod and a method for computing an error term contained in ErrorMethod.
+     *
+     * The Interpolator class hierarchy is are split into InterpolatorBase -> Interpolator (abstract) -> YOUR_INTERPOLATOR_IMPLEMENTATION
+     * An interpolator implementation can be very general an allow multiple combination of methods to allow flexibility or very rigid to allow better optimization. The same goes for the interpolator methods which can be used interchangeable with other methods or depend that certain other methods are used.
+     *
+     * While testing different methods it has turned out that the interpolator is most optimal for uniform grids, therefore there exists only implementations using uniform grids and interpolation methds optimized for uniform non adaptive grids. However, the adaptive GridRational and SearchMethod for non uniform grids are functional for an appropriate interpolator implementation and are kept in case of need.
+     */
 
+    /**
+     * GridRational consist of an refinement part which determines the method of refining the grid.
+     * The GridType describes the type of starting grid, but the type does necessery have to hold after the refinement.
+     */
     enum class GridType_t { Uniform };
     enum class RefinementMethod_t { Exponential, Linear, Adaptive };
 
     template <GridType_t Type, RefinementMethod_t Method>
-    struct GridRational {};
+    struct GridRational {
+    /**
+     * Vector_t compute_grid(double x1, double x2, int grid_fineness)
+     *
+     * Vector_t compute_test_grid(double x1, double x2, int grid_fineness)
+     *
+     * used for adaptive method to update its internal error_grid, for grid methods without any internal information about the errors on the grid, this function can be empty 
+     * void update_errors(Vector_ref error_grid)  
+     */
+    };
 
+    /**
+     * Starts with a uniform grid and in each refinement step it adds the test grid point with the largest error. It is important to notice that even though it starts with an adaptive grid, it usually does not stay uniform.
+     *                               x1                 x2 
+     * grid                          [     |       |    ]
+     * test grid                        |      |      |
+     * error                           0.5    1.5    0.1
+     * refined grid                  [     |   |   |    ]
+     * test grid for refined grid       |    |   |    |
+     *
+     * These are possible improvements for this grid rational:
+     * - for this grid rational it makes sense to save the test grid,
+     * because it is one step ahead and we can add more points
+     * - make hyperparameter k highest error
+     * - make grid rational init compute, increase_finness() and then remove
+     * x1,x2,grid_fineness
+     */
     template <>
-    struct GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive> {
+    class GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive> {
       GridRational<GridType_t::Uniform, RefinementMethod_t::Adaptive>()
           : grid_meshes{}, grid_meshes_error{}, grid_size{0}, max_it{} {}
 
       constexpr static GridType_t GridType{GridType_t::Uniform};
       constexpr static RefinementMethod_t RefinementMethod{
           RefinementMethod_t::Adaptive};
-      // These are possible improvements for this grid rational:
-      // - for this grid rational it makes sense to save the test grid,
-      // because it is one step ahead and we can add more points
-      // - make hyperparameter k highest error
-      // - make grid rational init compute, increase_finness() and then remove
-      // x1,x2,grid_fineness
+     public: 
       Vector_t compute_grid(double x1, double x2, int grid_fineness) {
         if (grid_fineness == 0) {
           this->grid_meshes = {x1, x2};
@@ -69,26 +101,6 @@ namespace rascal {
         }
         this->refine();
         return this->grid_from_meshes();
-      }
-
-      void refine() {
-        auto next_it{this->max_it};
-        next_it++;
-        double cur{*this->max_it};
-        double mid_point{cur + (*next_it - cur) / 2};
-        this->grid_meshes.emplace_after(this->max_it, mid_point);
-        this->grid_size++;
-      }
-
-      Vector_t grid_from_meshes() {
-        Vector_t grid = Vector_t::Zero(this->grid_size);
-        int i{0};
-        for (auto it = this->grid_meshes.begin(); it != this->grid_meshes.end();
-             ++it) {
-          grid(i) = (*it);
-          i++;
-        }
-        return grid;
       }
 
       Vector_t compute_test_grid(double, double, int) {
@@ -123,6 +135,26 @@ namespace rascal {
           it++;
         }
       }
+     private:
+      void refine() {
+        auto next_it{this->max_it};
+        next_it++;
+        double cur{*this->max_it};
+        double mid_point{cur + (*next_it - cur) / 2};
+        this->grid_meshes.emplace_after(this->max_it, mid_point);
+        this->grid_size++;
+      }
+
+      Vector_t grid_from_meshes() {
+        Vector_t grid = Vector_t::Zero(this->grid_size);
+        int i{0};
+        for (auto it = this->grid_meshes.begin(); it != this->grid_meshes.end();
+             ++it) {
+          grid(i) = (*it);
+          i++;
+        }
+        return grid;
+      }
 
       // We store the grid sorted in two ways:
       // - for the refinement key which is the error
@@ -135,36 +167,68 @@ namespace rascal {
       std::forward_list<double>::iterator max_it;
     };
 
+    /**
+     * The uniform grid uses the points in between grid points as test grid
+     *                x1                 x2
+     * grid           [     |     |     |     |     ]
+     * test grid         |     |     |     |     |
+     * refined grid   [  |   |   |   |   |   |   |  ] for slope = 3
+     */
     template <>
-    struct GridRational<GridType_t::Uniform, RefinementMethod_t::Linear> {
+    class GridRational<GridType_t::Uniform, RefinementMethod_t::Linear> {
+     public:
       constexpr static GridType_t GridType{GridType_t::Uniform};
       constexpr static RefinementMethod_t RefinementMethod{
           RefinementMethod_t::Linear};
 
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Linear>() : slope{10} {}
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Linear>(int slope) : slope{slope} {}
+      void update_errors(Vector_Ref);
+
       Vector_t compute_grid(double x1, double x2, int grid_fineness) {
-        double nb_grid_points = grid_fineness + 2;
+        double nb_grid_points = grid_fineness*slope + 2;
         return Vector_t::LinSpaced(nb_grid_points, x1, x2);
       }
       Vector_t compute_test_grid(double x1, double x2, int grid_fineness) {
-        double nb_grid_points = grid_fineness + 2;
+        double nb_grid_points = grid_fineness*slope + 2;
         // half of a step size in the grid to get the inner grid points
         // step size = (x2-x1)/(nb_grid_points-1)
         double offset{(x2 - x1) / (2 * (nb_grid_points - 1))};
         return Vector_t::LinSpaced(nb_grid_points - 1, x1 + offset,
                                    x2 - offset);
       }
+      bool is_grid_uniform(const Vector_Ref & grid) {
+        double step_size = grid(1) - grid(0);
+        for (int i=0; i<grid.size()-2; i++) {
+          // h_i - h_0 > ε
+          if (std::abs((grid(i+1) - grid(i)) - step_size) > dbl_ftol) {
+            return false;
+          }
+        }
+        return true;
+      }
 
-      void update_errors(Vector_Ref) {}
-      int grid_size{0};
-      // One could extend this with a configurable linear slope factor
+     private:
+      const int slope;
     };
 
+    /**
+     * The uniform grid uses the points in between grid points as test grid
+     *              x1        x2
+     * grid         [ | | | | ]
+     * test grid     | | | | | 
+     * refined grid [|||||||||]  for base = 2
+     */
     template <>
-    struct GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential> {
+    class GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential> {
+     public:
       constexpr static GridType_t GridType{GridType_t::Uniform};
       constexpr static RefinementMethod_t RefinementMethod{
           RefinementMethod_t::Exponential};
 
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>() : base{2} {}
+      GridRational<GridType_t::Uniform, RefinementMethod_t::Exponential>(int base) : base{base} {}
+
       Vector_t compute_grid(double x1, double x2, int grid_fineness) {
         double nb_grid_points = 2 << grid_fineness;
         return Vector_t::LinSpaced(nb_grid_points, x1, x2);
@@ -177,21 +241,59 @@ namespace rascal {
         return Vector_t::LinSpaced(nb_grid_points - 1, x1 + offset,
                                    x2 - offset);
       }
-
-      void update_errors(Vector_Ref) {}
-      int grid_size{0};
-      // One could extend this with a configurable exponential basis factor
-      // default would be 2
+      bool is_grid_uniform(const Vector_Ref & grid) {
+        double step_size = grid(1) - grid(0);
+        for (int i=0; i<grid.size()-2; i++) {
+          // h_i - h_0 > ε
+          if (std::abs((grid(i+1) - grid(i)) - step_size) > dbl_ftol) {
+            return false;
+          }
+        }
+        return true;
+      }
+      void update_errors(Vector_Ref);
+     private:
+      const int base;
     };
 
     enum class InterpolationMethod_t { CubicSplineScalarUniform, CubicSplineVectorUniform };
 
+    /**
+     * Interpolation method for a function of the form y:ℝ->Ω
+     */
     template <InterpolationMethod_t Type>
-    struct InterpolationMethod {};
+    struct InterpolationMethod {
+    /**
+     * Initializes or reinitializes the interpolation method for a new grid
+     * @param grid the grid for interpolation
+     * @param evaluated_grid y(grid)
+     * void initialize(const Vector_Ref & grid,
+     *                const Ω_Ref & evaluated_grid)
+     *
+     * intp(x)
+     * @param grid the grid for interpolation
+     * @param evaluated_grid y(grid)
+     * @param x point to be interpolated
+     * @param nearest_grid_index_to_x the nearest points is always truncated with floor
+     * inline double interpolate(const Vector_Ref & grid,
+     *                           const Ω_Ref & evaluated_grid, double x,
+     *                           int nearest_grid_index_to_x) 
+     *
+     * intp'(x)
+     * @param grid the grid for interpolation
+     * @param evaluated_grid y(grid)
+     * @param x point to be interpolated
+     * @param nearest_grid_index_to_x the nearest points is always truncated with floor
+     * inline double interpolate_derivative(const Vector_Ref & grid,
+     *                           const Ω_Ref & evaluated_grid, double x,
+     *                           int nearest_grid_index_to_x) 
+     */
+    };
 
     /**
      * An implementation of the cubic spline method, the implementation is
-     * adapted from "Numerical Recipes" [1] and optimized for uniform grids.
+     * adapted from "Numerical Recipes" [1] for functions of the form 
+     * f:ℝ->ℝ and optimized for uniform grids.
      *
      * [1] Press, William H., et al. Numerical recipes 3rd edition: The art of
      * scientific computing. Cambridge university press, 2007.
@@ -234,17 +336,19 @@ namespace rascal {
       }
 
      private:
-      // The two functions below implement the tridiagonal matrix algorithm
-      // to solve the linear system in
-      // http://mathworld.wolfram.com/CubicSpline.html
-      // under different boundary conditions. We describe with s the spline
-      // function and with y the targeted function for interpolation.
-      //
-      // Reference:
-      // https://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm
+      /**
+       * The two functions below implement the tridiagonal matrix algorithm
+       * to solve the linear system in
+       * http://mathworld.wolfram.com/CubicSpline.html
+       * under different boundary conditions. We describe with s the spline
+       * function and with y the targeted function for interpolation.
+       *
+       * Reference:
+       * https://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm
 
-      // clamped boundary conditions when first derivative for boundaries is
-      // known s'(x_0) = y'(x_0), s'(x_n) = y'(x_n)
+       * clamped boundary conditions when first derivative for boundaries is
+       * known s'(x_0) = y'(x_0), s'(x_n) = y'(x_n)
+       */
       inline void compute_second_derivative(const Vector_Ref & yv, double yd1,
                                             double ydn) {
         // Bad xa input to routine splint
@@ -335,16 +439,26 @@ namespace rascal {
       double h{0};
       // h*h/6.0
       double h_sq_6{0};
-      // This term is the solution vector of the linear system of the
-      // tridiagonal toeplitz matrix derived by the conditions of cubic spline.
-      // The linear system can be found in
-      // http://mathworld.wolfram.com/CubicSpline.html These terms are the
-      // remaining constants of the second derivative of the cubic spline. In
-      // addition we already multiply them with precomputed coefficients derived
-      // by assuming a uniform grid y2 *h*h/6
+      /**
+       * This term is the solution vector of the linear system of the
+       * tridiagonal toeplitz matrix derived by the conditions of cubic spline.
+       * The linear system can be found in
+       * http://mathworld.wolfram.com/CubicSpline.html These terms are the
+       * remaining constants of the second derivative of the cubic spline. In
+       * addition we already multiply them with precomputed coefficients derived
+       * by assuming a uniform grid y2 *h*h/6
+       */
       Vector_t second_derivative_h_sq_6{};
     };
 
+    /**
+     * An implementation of the cubic spline method, the implementation is
+     * adapted from "Numerical Recipes" [1] for functions of the form 
+     * y:ℝ->ℝ^n and optimized for uniform grids.
+     *
+     * [1] Press, William H., et al. Numerical recipes 3rd edition: The art of
+     * scientific computing. Cambridge university press, 2007.
+     */
     template <>
     class InterpolationMethod<InterpolationMethod_t::CubicSplineVectorUniform> {
      public:
@@ -568,11 +682,29 @@ namespace rascal {
 
     enum class SearchMethod_t { Hunt, Locate, Uniform };
 
+
     template <SearchMethod_t Method>
-    struct SearchMethod {};
+    struct SearchMethod {
+      /**
+       * The main purpose of the Search method is to obtain from a point x in the range [x1,x2] the nearest grid point. With nearest the grid point just before point x is meant.
+       *                     x1     x        x2
+       *                            |
+       * grid                [   |   |   |   ]
+       * nearest grid point      |
+       *
+       * @param grid used for searching the index
+       * void initialize(const Vector_Ref & grid) 
+       *
+       * @param grid used for searching the index
+       * @param x as mentioned above
+       * @return nearest grid point
+       * int search(double x, const Vector_Ref & grid) 
+       */
+    };
 
     template <>
-    struct SearchMethod<SearchMethod_t::Uniform> {
+    class SearchMethod<SearchMethod_t::Uniform> {
+     public:
       constexpr static SearchMethod_t Method{SearchMethod_t::Uniform};
 
       void initialize(const Vector_Ref & grid) {
@@ -592,6 +724,7 @@ namespace rascal {
                                          this->nb_grid_points_per_unit) -
                             1));
       }
+     private:
       // the number of support methods the interpolation method uses
       double nb_grid_points_per_unit{0};
       double x1{0};
@@ -773,14 +906,7 @@ namespace rascal {
       InterpolatorBase & operator=(const InterpolatorBase & other) = delete;
 
       //! Move assignment operator
-      InterpolatorBase & operator=(InterpolatorBase && other) = default;
-
-      //! Pure Virtual Function to set hyperparameters of the cutoff function
-      virtual void initialize_iteratively() = 0;
-      virtual void initialize_from_computed_grid() = 0;
-      // should be implemented
-      // virtual double/Matrix interpolate() = 0;
-      
+      InterpolatorBase & operator=(InterpolatorBase && other) = default; 
     };
 
 
@@ -791,7 +917,7 @@ namespace rascal {
      */
     template <class InterpolationMethod, class GridRational, class SearchMethod,
               class ErrorMethod>
-    class InterpolatorTyped : public InterpolatorBase {
+    class Interpolator : public InterpolatorBase {
      public:
       /**
        * Different constructors for the interpolator, to be able to run the interpolator with only the required parameters, but also to fine tune different functionalities for an expert use. The detailed explanation of each parameter can be seen in the protected constructor.
@@ -815,16 +941,16 @@ namespace rascal {
        * @error error bound is illdefined
        * @error fineness is illdefined. 
        */
-      InterpolatorTyped(double x1, double x2, double error_bound, int max_grid_points, int start_grid_fineness)
-          : InterpolatorTyped(x1, x2, error_bound, max_grid_points, start_grid_fineness, true) {}
-      InterpolatorTyped(double x1, double x2, double error_bound)
-          : InterpolatorTyped(x1, x2, error_bound, 10000000, 5, true) {}
+      Interpolator(double x1, double x2, double error_bound, int max_grid_points, int start_grid_fineness)
+          : Interpolator(x1, x2, error_bound, max_grid_points, start_grid_fineness, true) {}
+      Interpolator(double x1, double x2, double error_bound)
+          : Interpolator(x1, x2, error_bound, 10000000, 5, true) {}
 
       /**
        * Constructor to initialize interpolator from grid.
        * @param grid in the range [x1,x2]
        */
-      InterpolatorTyped(Vector_t grid) : InterpolatorTyped(grid, true) {}
+      Interpolator(Vector_t grid) : Interpolator(grid, true) {}
 
       int get_grid_fineness() {return this->grid_fineness;}
       int get_grid_size() {return this->grid.size();}
@@ -833,9 +959,12 @@ namespace rascal {
       // Should be implemented, but is not made virtual for performance
       // virtual Ω interpolate(double x);
       // virtual Ω interpolate_derivative(double x);
+      // virtual Vector_Ref get_grid_ref() = 0;
+      // virtual Ω  get_evaluated_grid_ref() = 0;
+      // virtual int get_grid_size() = 0;
       
      protected:
-      InterpolatorTyped(double x1, double x2, double error_bound, int max_grid_points, int start_grid_fineness, bool) :
+      Interpolator(double x1, double x2, double error_bound, int max_grid_points, int start_grid_fineness, bool) :
             x1{x1}, x2{x2}, error_bound{error_bound}, max_grid_points{max_grid_points}, grid_fineness{start_grid_fineness},
             intp_method{InterpolationMethod()},
             grid_rational{GridRational()}, 
@@ -854,14 +983,17 @@ namespace rascal {
         }
       };
 
-      InterpolatorTyped(Vector_t grid, bool) :
+      Interpolator(Vector_t grid, bool) :
             grid{grid},
             intp_method{InterpolationMethod()},
             grid_rational{GridRational()},
             search_method{SearchMethod()} {
       }
       
-      void initialize_iteratively() override {
+     /**
+      * The general procedure of the interpolatorar is to initialize the ressources for the interpolation method on a grid and test if the error is within a bound. If this is not the case the interpolator will refine the grid and repeat its procedure.
+      */
+      void initialize_iteratively() {
         this->compute_grid_error();
         while (this->grid_error > this->error_bound &&
                this->grid.size() < this->max_grid_points) {
@@ -870,21 +1002,8 @@ namespace rascal {
         }
       }
 
-      bool is_grid_uniform() {
-        double step_size = this->grid(1) - this->grid(0);
-        for (int i=0; i<this->grid.size()-2; i++) {
-          // h_i - h_0 > ε
-          if (std::abs((this->grid(i+1) - this->grid(i)) - step_size) > dbl_ftol) {
-            return false;
-          }
-        }
-        return true;
-      }
-      
-      virtual void initialize_from_computed_grid() override = 0;
-
       virtual void compute_grid_error() = 0;
-      
+  
       // The boundary points of the range of interpolation
       const double x1{0.};
       const double x2{0.};
@@ -901,8 +1020,6 @@ namespace rascal {
       SearchMethod search_method{};
     };
 
-    // TODO(alex) rename InterpolatorTyped to Interpolator
-
     /**
      * Specialization of the interpolator for uniform grids with cubic spline.
      * The spline methods can be also adapted for general grids, however for uniform grids the
@@ -911,18 +1028,20 @@ namespace rascal {
     template <RefinementMethod_t RefinementMethod,
               class ErrorMethod_ =
                   ErrorMethod<ErrorMetric_t::Absolute, ErrorNorm_t::Mean>>
-    class InterpolatorScalarUniformCubicSpline : public InterpolatorTyped<
+    class InterpolatorScalarUniformCubicSpline : public Interpolator<
                                                  InterpolationMethod<InterpolationMethod_t::CubicSplineScalarUniform>,
       GridRational<GridType_t::Uniform, RefinementMethod>,
       SearchMethod<SearchMethod_t::Uniform>,
       ErrorMethod_> {
 
      public:
-      using Parent = InterpolatorTyped<InterpolationMethod<InterpolationMethod_t::CubicSplineScalarUniform>,
+      using Parent = Interpolator<InterpolationMethod<InterpolationMethod_t::CubicSplineScalarUniform>,
                       GridRational<GridType_t::Uniform, RefinementMethod>,
                       SearchMethod<SearchMethod_t::Uniform>, ErrorMethod_>;
       using This = InterpolatorScalarUniformCubicSpline<RefinementMethod, ErrorMethod_>;
       using ThisErrorMethod = ErrorMethod_;
+      using ThisGridRational = GridRational<GridType_t::Uniform, RefinementMethod>;
+      using ThisSearchMethod = SearchMethod<SearchMethod_t::Uniform>;
 
       /**
        * Constructor using a the function of the form y:[x1,x2]->ℝ to initialize a grid by iteratively refining it until an error bound (logical) or a max number of points for the grid is reached.
@@ -960,7 +1079,7 @@ namespace rascal {
         if (grid.size() != evaluated_grid.size()) {
           throw std::logic_error("The grid and evaluated grid must match in size");
         }
-        if (not(this->is_grid_uniform())) {
+        if (not(this->grid_rational.is_grid_uniform(Vector_Ref(this->grid)))) {
           throw std::logic_error("The grid has to be unform.");
         }
         this->initialize_from_computed_grid();
@@ -970,7 +1089,7 @@ namespace rascal {
         if (grid.size() != evaluated_grid.size()) {
           throw std::logic_error("The grid and evaluated grid must match in size");
         }
-        if (not(this->is_grid_uniform())) {
+        if (not(this->grid_rational.is_grid_uniform(Vector_Ref(this->grid)))) {
           throw std::logic_error("The grid has to be unform.");
         }
         this->initialize_from_computed_grid();
@@ -1002,8 +1121,31 @@ namespace rascal {
       Vector_Ref get_evaluated_grid_ref() {
         return Vector_Ref(this->evaluated_grid);
       }
+
+      /**
+       * Function returns a json with information about the interpolator to
+       * evaluate the interpolator. Used for benchmarks.
+       *
+       * @return json with information about the interpolator
+       */
+      json compute_interpolator_information() {
+        // compute test errors
+        Vector_t test_grid{this->grid_rational.compute_test_grid(
+            this->x1, this->x2, this->grid_fineness)};
+        Vector_t test_grid_interpolated{
+            this->interpolate(Vector_Ref(test_grid))};
+        Vector_t test_grid_evaluated{this->eval(Vector_Ref(test_grid))};
+        Vector_t error_grid{ThisErrorMethod::compute_entrywise_error(
+            Vector_Ref(test_grid_interpolated), Vector_Ref(test_grid_evaluated))};
+        double mean_grid_error{error_grid.mean()};
+        double max_grid_error{error_grid.maxCoeff()};
+
+        return {{"mean_grid_error", mean_grid_error},
+                {"max_grid_error", max_grid_error},
+                {"grid_size", this->grid.size()}};
+      }
      protected:
-      void initialize_from_computed_grid() override {
+      void initialize_from_computed_grid() {
         if (this->clamped_boundary_conditions) {
           this->intp_method.initialize(Vector_Ref(this->grid), Vector_Ref(this->evaluated_grid), this->yd1, this->ydn);
         } else {
@@ -1016,7 +1158,7 @@ namespace rascal {
        * Estimates the interpolator error by computing a refined test grid and
        * compares the result of the function with the interpolator
        */
-      void compute_grid_error() override {
+      void compute_grid_error() {
         // compute the grid
         this->grid = this->grid_rational.compute_grid(this->x1, this->x2,
                                                       this->grid_fineness);
@@ -1087,39 +1229,18 @@ namespace rascal {
     template <RefinementMethod_t RefinementMethod,
               class ErrorMethod_ =
                   ErrorMethod<ErrorMetric_t::Absolute, ErrorNorm_t::Mean>>
-    class InterpolatorVectorUniformCubicSpline : 
-      public InterpolatorTyped<
+    class InterpolatorMatrixUniformCubicSpline : 
+      public Interpolator<
         InterpolationMethod<InterpolationMethod_t::CubicSplineVectorUniform>,
         GridRational<GridType_t::Uniform, RefinementMethod>,
         SearchMethod<SearchMethod_t::Uniform>,
         ErrorMethod_> {
      public:
-      using Parent = InterpolatorTyped<InterpolationMethod<InterpolationMethod_t::CubicSplineVectorUniform>,
+      using Parent = Interpolator<InterpolationMethod<InterpolationMethod_t::CubicSplineVectorUniform>,
                       GridRational<GridType_t::Uniform, RefinementMethod>,
                       SearchMethod<SearchMethod_t::Uniform>, ErrorMethod_>;
       using ThisErrorMethod = ErrorMethod_;
-
-
-      // y:[x1,x2]->ℝ^{n,m}
-      std::function<Matrix_t(double)> function{};
-      // y(grid) reshaped to (grid_size, n*m)
-      Matrix_t evaluated_grid{};
-      // m
-      const int cols{0};
-      // n
-      const int rows{0};
-      // n*m
-      const int matrix_size{0};
-      /**
-       * If the first derivative of the function at the boundary points is
-       * known, one can initialize the interpolator with these values to obtain
-       * a higher accuracy with the interpolation method.
-       */
-      const bool clamped_boundary_conditions{false};
-      // y'(x1)
-      const double yd1{0.};
-      // y'(x2)
-      const double ydn{0.};
+      using ThisGridRational = GridRational<GridType_t::Uniform, RefinementMethod>;
 
       /**
        * Constructor using a the function of the form y:[x1,x2]->ℝ^{n,m} to initialize a grid by iteratively refining it until an error bound (logical) or a max number of points for the grid is reached.
@@ -1137,11 +1258,11 @@ namespace rascal {
        * @param yd1 referring to y'(x1)
        * @param ydn referring to y'(x2)
        */
-      InterpolatorVectorUniformCubicSpline<RefinementMethod, ErrorMethod_>(std::function<Matrix_t(double)> function, const double & x1, const double & x2, const double & error_bound, const int & cols, const int & rows) : Parent(x1,x2,error_bound), function{function}, cols{cols}, rows{rows}, matrix_size{cols*rows}, clamped_boundary_conditions{false}, yd1{0}, ydn{0} {
+      InterpolatorMatrixUniformCubicSpline<RefinementMethod, ErrorMethod_>(std::function<Matrix_t(double)> function, const double & x1, const double & x2, const double & error_bound, const int & cols, const int & rows) : Parent(x1,x2,error_bound), function{function}, cols{cols}, rows{rows}, matrix_size{cols*rows}, clamped_boundary_conditions{false}, yd1{0}, ydn{0} {
         this->initialize_iteratively();
       }
 
-      InterpolatorVectorUniformCubicSpline<RefinementMethod, ErrorMethod_>(std::function<Matrix_t(double)> function, double x1, double x2, double error_bound, int cols, int rows, int max_grid_points, int start_grid_fineness, bool clamped_boundary_conditions, double yd1, double ydn) : Parent{x1,x2,error_bound,max_grid_points, start_grid_fineness}, function{function}, cols{cols}, rows{rows}, matrix_size{cols*rows}, clamped_boundary_conditions{clamped_boundary_conditions}, yd1{yd1}, ydn{ydn} {
+      InterpolatorMatrixUniformCubicSpline<RefinementMethod, ErrorMethod_>(std::function<Matrix_t(double)> function, double x1, double x2, double error_bound, int cols, int rows, int max_grid_points, int start_grid_fineness, bool clamped_boundary_conditions, double yd1, double ydn) : Parent{x1,x2,error_bound,max_grid_points, start_grid_fineness}, function{function}, cols{cols}, rows{rows}, matrix_size{cols*rows}, clamped_boundary_conditions{clamped_boundary_conditions}, yd1{yd1}, ydn{ydn} {
         if (clamped_boundary_conditions) {
           throw std::logic_error("Clamped boundary condition has yet not been implemented for CubicSplineVectorUniform.");
         }
@@ -1164,11 +1285,11 @@ namespace rascal {
        * @error grid and evaluated grid do not match by size
        * @error evaluated grid and cols and rows do not match
        */
-      InterpolatorVectorUniformCubicSpline<RefinementMethod, ErrorMethod_>(Vector_t grid, Matrix_t evaluated_grid, int cols, int rows) : Parent(grid), evaluated_grid{evaluated_grid}, cols{cols}, rows{rows}, matrix_size{cols*rows}, clamped_boundary_conditions{false}, yd1{0}, ydn{0} {
+      InterpolatorMatrixUniformCubicSpline<RefinementMethod, ErrorMethod_>(Vector_t grid, Matrix_t evaluated_grid, int cols, int rows) : Parent(grid), evaluated_grid{evaluated_grid}, cols{cols}, rows{rows}, matrix_size{cols*rows}, clamped_boundary_conditions{false}, yd1{0}, ydn{0} {
         if (grid.size() != evaluated_grid.rows()) {
           throw std::logic_error("The grid size and evaluated grid rows must match");
         }
-        if (not(this->is_grid_uniform())) {
+        if (not(this->grid_rational.is_grid_uniform(Vector_Ref(this->grid)))) {
           throw std::logic_error("The grid has to be uniform.");
         }
         if (not(evaluated_grid.cols() == cols*rows)) {
@@ -1177,14 +1298,14 @@ namespace rascal {
         this->initialize_from_computed_grid();
       }
 
-      InterpolatorVectorUniformCubicSpline<RefinementMethod, ErrorMethod_>(Vector_t grid, Matrix_t evaluated_grid, int cols, int rows, bool clamped_boundary_conditions, double yd1, double ydn) : Parent(grid), evaluated_grid{evaluated_grid}, cols{cols}, rows{rows}, matrix_size{cols*rows}, clamped_boundary_conditions{clamped_boundary_conditions}, yd1{yd1}, ydn{ydn} {
+      InterpolatorMatrixUniformCubicSpline<RefinementMethod, ErrorMethod_>(Vector_t grid, Matrix_t evaluated_grid, int cols, int rows, bool clamped_boundary_conditions, double yd1, double ydn) : Parent(grid), evaluated_grid{evaluated_grid}, cols{cols}, rows{rows}, matrix_size{cols*rows}, clamped_boundary_conditions{clamped_boundary_conditions}, yd1{yd1}, ydn{ydn} {
         if (clamped_boundary_conditions) {
           throw std::logic_error("Clamped boundary condition has yet not been implemented for CubicSplineVectorUniform.");
         }
         if (grid.size() != evaluated_grid.rows()) {
           throw std::logic_error("The grid size and evaluated grid rows must match");
         }
-        if (not(this->is_grid_uniform())) {
+        if (not(this->grid_rational.is_grid_uniform(Vector_Ref(this->grid)))) {
           throw std::logic_error("The grid has to be uniform.");
         }
         if (not(evaluated_grid.cols() == cols*rows)) {
@@ -1233,9 +1354,34 @@ namespace rascal {
       Matrix_Ref get_evaluated_grid_ref() {
         return Matrix_Ref(this->evaluated_grid);
       }
+      int get_matrix_size() {return this->matrix_size;}
+
+      /**
+       * Function returns a json with information about the interpolator to
+       * evaluate the interpolator. Used for benchmarks.
+       *
+       * @return json with information about the interpolator
+       */
+      json compute_interpolator_information() {
+        // compute test errors
+        Vector_t test_grid{this->grid_rational.compute_test_grid(
+            this->x1, this->x2, this->grid_fineness)};
+        Matrix_t test_grid_interpolated{
+            this->raw_interpolate(Vector_Ref(test_grid))};
+        Matrix_t test_grid_evaluated{this->eval(Vector_Ref(test_grid))};
+        Matrix_t error_mat{ThisErrorMethod::compute_entrywise_error(
+            Matrix_Ref(test_grid_interpolated), Matrix_Ref(test_grid_evaluated))};
+        double mean_grid_error{error_mat.mean()};
+        double max_grid_error{error_mat.maxCoeff()};
+
+        return {{"mean_grid_error", mean_grid_error},
+                {"max_grid_error", max_grid_error},
+                {"grid_size", this->grid.size()}};
+      }
+
      protected:
       // ensures that the grid for estimating the test error is fine enough.
-      void compute_grid_error() override {
+      void compute_grid_error() {
         this->grid = this->grid_rational.compute_grid(this->x1, this->x2,
                                                       this->grid_fineness);
         this->evaluated_grid = this->eval(Vector_Ref(this->grid));
@@ -1255,7 +1401,7 @@ namespace rascal {
             Matrix_Ref(test_grid_evaluated));
       }
 
-      void initialize_from_computed_grid() override {
+      void initialize_from_computed_grid() {
         if (this->clamped_boundary_conditions) {
           //OPT(alex) implement for clamped_boundary_conditions
           //this->intp_method.initialize(Vector_Ref(this->grid), Matrix_Ref(this->evaluated_grid), this->yd1, this->ydn);
@@ -1282,10 +1428,11 @@ namespace rascal {
         return evaluated_grid;
       }
 
-      // The vectorized interpolator stores the output of the function as
-      // vector,
-      // it interpolation results is by default a vector.
-      Vector_t raw_interpolate(double x) {
+      /**
+       * Interpolates the point x 
+       * @return intp(x) in the shape (rows*cols)
+       */
+      inline Vector_t raw_interpolate(double x) {
         // x is outside of range
         assert(x >= this->x1 && x <= this->x2);
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
@@ -1293,7 +1440,11 @@ namespace rascal {
                                              x, nearest_grid_index_to_x);
       }
 
-      Matrix_t raw_interpolate(const Vector_Ref & points) {
+      /**
+       * Interpolates the each x in points 
+       * @return intp(x) in the shape (points.size(), rows*cols)
+       */
+      inline Matrix_t raw_interpolate(const Vector_Ref & points) {
         Matrix_t interpolated_points =
             Matrix_t::Zero(points.size(), this->matrix_size);
         for (int i{0}; i < points.size(); i++) {
@@ -1312,24 +1463,24 @@ namespace rascal {
 
       // TODO(alex) bring get information to Handler and Manager
 
-      // Function returns a json with information about the interpolator to
-      // evaluate the interpolator
-      json get_interpolator_information() {
-        // compute test errors
-        Vector_t test_grid{this->grid_rational.compute_test_grid(
-            this->x1, this->x2, this->grid_fineness)};
-        Matrix_t test_grid_interpolated{
-            this->raw_interpolate(Vector_Ref(test_grid))};
-        Matrix_t test_grid_evaluated{this->eval(Vector_Ref(test_grid))};
-        Matrix_t error_mat = ThisErrorMethod::compute_entrywise_error(
-            test_grid_interpolated, test_grid_evaluated);
-        double mean_grid_error = error_mat.mean();
-        double max_grid_error = error_mat.maxCoeff();
-
-        return {{"mean_grid_error", mean_grid_error},
-                {"max_grid_error", max_grid_error},
-                {"grid_size", this->grid.size()}};
-      }
+      // y:[x1,x2]->ℝ^{rows,cols}
+      std::function<Matrix_t(double)> function{};
+      // y(grid) reshaped to (grid_size, n*m)
+      Matrix_t evaluated_grid{};
+      const int cols{0};
+      const int rows{0};
+      // cols*rows
+      const int matrix_size{0};
+      /**
+       * If the first derivative of the function at the boundary points is
+       * known, one can initialize the interpolator with these values to obtain
+       * a higher accuracy with the interpolation method.
+       */
+      const bool clamped_boundary_conditions{false};
+      // y'(x1)
+      const double yd1{0.};
+      // y'(x2)
+      const double ydn{0.};
     };
 
   }  // namespace math

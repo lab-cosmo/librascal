@@ -28,84 +28,104 @@
 #include "benchmarks.hh"
 
 namespace rascal {
-  namespace internal {
-    class SampleData {
-     public:
-      static const json data() {
-        return {{"x", {1, 2, 3}}, {"name", {"crystal.json", "cube.json"}}};
-      }
-    };
+  /**
+   * Structure holding the data, the data is created inside a static function, because non primitives cannot be static as member variable. 
+   */
+  struct SampleData {
+    static const json data() {
+      static json data = {
+        {"x", {1, 2, 3}},
+        {"name", {"crystal.json", "cube.json"}}};
+      return data;
+    }
+  };
 
-    template <typename Dataset>
-    class MyFix : public BaseFixture<Dataset> {
-     public:
-      using Parent = BaseFixture<Dataset>;
-      MyFix<Dataset>() : Parent() {}
+  /**
+   * We have the name convention to call fixtures in the benchmarks BFixture to potential prevent collision with the tests. All new BFixture should inherit from BaseBFixture to eget a lookup table for the data json string in the Dataset template parameter. Since a json does have no deterministic order, a map has to build from json index
+   */
+  template <typename Dataset>
+  class MyBFixture : public BaseBFixture<Dataset> {
+   public:
+    using Parent = BaseBFixture<Dataset>;
+    MyBFixture <Dataset>() : Parent() {}
 
-      void SetUp(benchmark::State & state) {
-        std::string old_name = this->name;
+    /**
+     * By convention we use a SetUp function which handles the initialization of new parameters, it should be invoked at the start of the benchmark.
+     */
+    void SetUp(benchmark::State & state) {
+      std::string old_name = this->name;
 
-        // initialize
-        json data = Dataset::data();
-        this->x = this->template lookup<int>(data, "x", state);
-        this->name = this->template lookup<std::string>(data, "name", state);
+      // initialize
+      json data = Dataset::data();
+      this->x = this->template lookup<int>(data, "x", state);
+      this->name = this->template lookup<std::string>(data, "name", state);
 
-        if (this->name != old_name) {
-          // Some very costly initialization
-          std::cout << "Initialize file." << std::endl;
-        }
-      }
-      int x;
-      std::string name;
-    };
-
-    template <class Fix>
-    void BM_Example(benchmark::State & state, Fix & fix) {
-      fix.SetUp(state);
-      std::cout << "BM_Example invoked " << fix.x << ", " << fix.name
-                << std::endl;
-      for (auto _ : state) {
-        // do some tests for speed
+      // this check tests if the data has actually changed, if it has changed then we do the costly initialization.
+      if (this->name != old_name) {        
+        // Some very costly initialization
+        std::cout << "Costly initialization." << std::endl;
       }
     }
+    int x;
+    std::string name;
+  };
 
-    auto myfix{MyFix<SampleData>()};
-    BENCHMARK_CAPTURE(BM_Example, , myfix)
-        ->Apply(AllCombinationsArguments<SampleData>);
-    // we skip name here BENCHMARK_CAPTURE(BM_Example, some_name, myfix)
-
-    void BM_StringCompare(benchmark::State & state) {
-      /*
-       / The benchmark function is executed around 10 times depending one the
-       min time given. / There is a tradeoff between the number of preiterations
-       and the number / of iterations. The total per test can be controlled with
-       the / benchmark_min_time flag.
-      */
-      std::cout << "Preiteration " << state.range(0) << std::endl;
-      std::string s1(state.range(0), '-');
-      std::string s2(state.range(0), '-');
-      // BEGIN ITERATION
-      for (auto _ : state) {
-        benchmark::DoNotOptimize(s1.compare(s2));
-      }  // END ITERATION
-      state.SetComplexityN(state.range(0));
+  template <class BFixture>
+  void BM_Example(benchmark::State & state, BFixture & fix) {
+    fix.SetUp(state);
+    std::cout << "BM_Example invoked " << fix.x << ", " << fix.name
+              << std::endl;
+    //
+    for (auto _ : state) {
+      // do some tests for speed
     }
+  }
 
-    BENCHMARK(BM_StringCompare)->RangeMultiplier(2)->Range(1 << 10, 1 << 18);
+ /**
+  * The `AllCombinationsArguments` function is used to produce all combinations from the parameters included in a `Dataset` structure. The parameters are accessible in the benchmark function with the benchmark state. However, the google benchmark library only allows to give indices as parameters. Therefore only combinations of indices are accessible from the benchmark state. Furthermore, since a json does have no deterministic order, we cannot directly use the indices to access the data in the json string. A map has to build from json string, to the index inside the json object. This is done in the BaseBFixture. Inside a Fixture class the lookup function can be used with the json data, the state and the targeted property to access it at the right index.
+  */
+  auto myfix{MyBFixture<SampleData>()};
+  BENCHMARK_CAPTURE(BM_Example, , myfix)
+      ->Apply(AllCombinationsArguments<SampleData>);
+  // we skip naming the benchmark here, to give the benchmark some_name use
+  // BENCHMARK_CAPTURE(BM_Example, some_name, myfix)
 
-    // Repetition repeats everything in this case 5 times and calculates
-    // averages
-    // BENCHMARK_REGISTER_F(MyFixture, BarTest)->Repetitions(5);
+  /**
+   * This benchmark should make clear how the different depth of iterations work in google benchmark
+   * there are benchmark_repetitions which can be given when executing the executable. This parameter controls how often the benchmark is executed. In addition there are two additional parameters controlling the number of execution. There is a hidden parameter which controls how often a benchmark is executed for per repitition and there is the number of iterations controlling how often the for loop on the state is executed. These two hidden parameters can be manipulated implicitly with the benchmark_min_time flag, but google benchmark itself handles how the time changes the two parameters. To understand this better, please execute this benchmark multiple times with different values.
+   */
+  void BM_StringCompare(benchmark::State & state) {
+    std::cout << "Preiteration " << state.range(0) << std::endl;
+    std::string s1(state.range(0), '-');
+    std::string s2(state.range(0), '-');
+    /* We do not print inside the iterations because this value can be seen when the benchmarks are run.
+     */
+    // BEGIN ITERATION
+    for (auto _ : state) {
+      benchmark::DoNotOptimize(s1.compare(s2));
+    }  // END ITERATION
+    state.SetComplexityN(state.range(0));
+  }
 
-    // Complexity
-    // BENCHMARK(BM_StringCompare)
-    //    ->RangeMultiplier(2)->Range(1<<10, 1<<18)->Complexity();
-    //     ->Range(1<<10, 1<<18)->Complexity([](auto n)->double{return n;});
+  /**
+   * RangeMultiplier is the exponential base for all Ranges given later. The first parameter 1 << 10 results in parameters (1,2,4,8), the second (1,2,4,8,16)
+   */
+  BENCHMARK(BM_StringCompare)->RangeMultiplier(2)->Range(1 << 10, 1 << 18);
 
-    // TODO(alex)
-    //- The benchmark does have not the option to initialize ressources only
-    // once for a benchmark. There is an issue for this which has not moved
-    // since end of 2018 https://github.com/google/benchmark/issues/743
-  }  // namespace internal
+  /**
+   * Repetition repeats everything in this case 3 times and calculates
+   * averages
+   */
+  BENCHMARK(BM_StringCompare)->RangeMultiplier(2)->Range(1 << 10, 1 << 18)->Repetitions(3);
+
+  /**
+   * Google benchmark can estimate the complexity. To estimate the complexity inside the benchmark the parameter determing the size is required.
+   */
+   BENCHMARK(BM_StringCompare)
+      ->RangeMultiplier(2)
+       ->Range(1<<10, 1<<18)->Complexity();
+       // alternatively an own complexity function can be given 
+       //->Range(1<<10, 1<<18)->Complexity([](auto n)->double{return n;});
+
 }  // namespace rascal
 BENCHMARK_MAIN();

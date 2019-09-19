@@ -256,7 +256,7 @@ int main() {
     };
 
     // vector interpolator parameters 
-    using IntpVectorUniformCubicSpline = InterpolatorVectorUniformCubicSpline<
+    using IntpVectorUniformCubicSpline = InterpolatorMatrixUniformCubicSpline<
                            RefinementMethod_t::Exponential>;
     std::shared_ptr<IntpVectorUniformCubicSpline> intp_vec;
 

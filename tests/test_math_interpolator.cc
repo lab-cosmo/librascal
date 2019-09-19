@@ -244,7 +244,7 @@ namespace rascal {
     }
   }
 
-  using IntpVectorUniformCubicSpline = math::InterpolatorVectorUniformCubicSpline<
+  using IntpVectorUniformCubicSpline = math::InterpolatorMatrixUniformCubicSpline<
                          math::RefinementMethod_t::Exponential>;
 
   // This test compares the vectorized interpolator with the scalar

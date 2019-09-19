@@ -722,7 +722,7 @@ namespace rascal {
       using Matrix_t = typename Parent::Matrix_t;
       using Matrix_Ref = typename Parent::Matrix_Ref;
       using Vector_Ref = typename Parent::Vector_Ref;
-      using Interpolator_t = math::InterpolatorVectorUniformCubicSpline<math::RefinementMethod_t::Exponential>;
+      using Interpolator_t = math::InterpolatorMatrixUniformCubicSpline<math::RefinementMethod_t::Exponential>;
 
       explicit RadialContributionHandler(const Hypers_t & hypers)
           : Parent(hypers) {
