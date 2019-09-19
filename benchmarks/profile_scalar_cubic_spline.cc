@@ -36,18 +36,21 @@
 #include "math/interpolator.hh"
 #include "math/hyp1f1.hh"
 
-using namespace rascal::math;  // NOLINT
-using namespace rascal::internal;  // NOLINT
-
 static constexpr int N_REPETITIONS = 200;
-static constexpr int SEED = 1597463007;
+static unsigned int SEED = 1597463007;
+
+using namespace rascal; // NOLINT
+
+using math::Hyp1f1;
+using math::InterpolatorScalarUniformCubicSpline;
+using math::RefinementMethod_t;
+using math::Vector_t;
 
 /* Please execute this file one time before using the profiler to create the
  * grid.
  */
 
 int main() {
-
   // hyp1f1 parameters
   double n = 5;
   double l = 4;
@@ -59,31 +62,34 @@ int main() {
   };
 
   // interpolator parameters
-  using IntpScalarUniformCubicSpline = InterpolatorScalarUniformCubicSpline<
-                         RefinementMethod_t::Exponential>;
+  using IntpScalarUniformCubicSpline =
+      InterpolatorScalarUniformCubicSpline<RefinementMethod_t::Exponential>;
   std::shared_ptr<IntpScalarUniformCubicSpline> intp;
   double x1{0};
   double x2{8};
   double error_bound{1e-5};
-  
+
   // profile parameters
   size_t nb_points = 1e6;
   size_t nb_iterations = 1000000;
   const char * filename_grid{"profile_scalar_cubic_spline_grid.grid"};
-  const char * filename_evaluated_grid{"profile_scalar_cubic_spline_grid.evaluated_grid"};
+  const char * filename_evaluated_grid{
+      "profile_scalar_cubic_spline_grid.evaluated_grid"};
 
   // shuffle points to test interpolation method for uncorrelated requests
   srand(SEED);
   Vector_t points_tmp = Vector_t::LinSpaced(nb_points, x1, x2);
   Vector_t points = Vector_t::Zero(nb_points);
   for (size_t i{0}; i < nb_points; i++) {
-    points(i) = points_tmp(rand() % nb_points);
+    points(i) = points_tmp(rand_r(&SEED) % nb_points);
   }
 
   // loads grid file
-  if (not(file_exists(filename_grid)) || not(file_exists(filename_evaluated_grid))) {
+  if (not(file_exists(filename_grid)) ||
+      not(file_exists(filename_evaluated_grid))) {
     std::cout << "Grid file does not exist, has to be computed." << std::endl;
-    intp = std::make_shared<IntpScalarUniformCubicSpline>(func, x1, x2, error_bound);
+    intp = std::make_shared<IntpScalarUniformCubicSpline>(func, x1, x2,
+                                                          error_bound);
     Vector_t grid{intp->get_grid_ref()};
     Vector_t evaluated_grid{intp->get_evaluated_grid_ref()};
     write_binary(filename_grid, grid);
@@ -96,8 +102,9 @@ int main() {
     read_binary(filename_evaluated_grid, evaluated_grid);
     intp = std::make_shared<IntpScalarUniformCubicSpline>(grid, evaluated_grid);
   }
-  std::cout << "interpolation of scalar radial contribution: interpolator grid size " << intp->get_grid_size() << std::endl;
-
+  std::cout
+      << "interpolation of scalar radial contribution: interpolator grid size "
+      << intp->get_grid_size() << std::endl;
 
   std::chrono::duration<double> elapsed{};
   auto start = std::chrono::high_resolution_clock::now();

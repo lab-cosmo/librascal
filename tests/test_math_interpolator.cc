@@ -32,8 +32,9 @@ namespace rascal {
   // TODO(all) not sure about the naming convention of tests, camelcase ...
   BOOST_AUTO_TEST_SUITE(MathInterpolatorTests);
 
-  using IntpScalarUniformCubicSpline = math::InterpolatorScalarUniformCubicSpline<
-                         math::RefinementMethod_t::Exponential>;
+  using IntpScalarUniformCubicSpline =
+      math::InterpolatorScalarUniformCubicSpline<
+          math::RefinementMethod_t::Exponential>;
 
   using interpolator_fixtures =
       boost::mpl::list<InterpolatorFixture<IntpScalarUniformCubicSpline>>;
@@ -55,7 +56,8 @@ namespace rascal {
         std::cout << "Test for function: " << function_name << std::endl;
       }
 
-      auto intp{std::make_shared<typename Fix::Interpolator_t>(func, Fix::x1, Fix::x2, Fix::error_bound)};
+      auto intp{std::make_shared<typename Fix::Interpolator_t>(
+          func, Fix::x1, Fix::x2, Fix::error_bound)};
       if (verbose) {
         std::cout << "Interpolator interpolator fineness: "
                   << intp->get_grid_fineness() << std::endl;
@@ -67,8 +69,8 @@ namespace rascal {
 
       // Checks if interpolator satisfies the given error bound. This condition
       // should be always fulfilled.
-      error = compute_intp_error<AbsoluteMeanErrorMethod>(intp, func,
-                                                          ref_points);
+      error =
+          compute_intp_error<AbsoluteMeanErrorMethod>(intp, func, ref_points);
       BOOST_CHECK_LE(error, Fix::error_bound);
     }
   }
@@ -83,9 +85,10 @@ namespace rascal {
     std::function<double(double)> func = [&](double x) {
       return Fix::hyp1f1.calc(x);
     };
-    auto intp{std::make_shared<typename Fix::Interpolator_t>(func, Fix::x1, Fix::x2, Fix::error_bound)};
-    double error = compute_intp_error<AbsoluteMeanErrorMethod>(intp, func,
-                                                               ref_points);
+    auto intp{std::make_shared<typename Fix::Interpolator_t>(
+        func, Fix::x1, Fix::x2, Fix::error_bound)};
+    double error =
+        compute_intp_error<AbsoluteMeanErrorMethod>(intp, func, ref_points);
     BOOST_CHECK_LE(error, Fix::error_bound);
   }
 
@@ -98,9 +101,10 @@ namespace rascal {
           .compute_contribution<rascal::internal::AtomicSmearingType::Constant>(
               x, 0.5)(0, 0);
     };
-    auto intp{std::make_shared<IntpScalarUniformCubicSpline>(func, this->x1, this->x2, this->error_bound)};
-    double error = compute_intp_error<AbsoluteMeanErrorMethod>(intp, func,
-                                                               ref_points);
+    auto intp{std::make_shared<IntpScalarUniformCubicSpline>(
+        func, this->x1, this->x2, this->error_bound)};
+    double error =
+        compute_intp_error<AbsoluteMeanErrorMethod>(intp, func, ref_points);
     BOOST_CHECK_LE(error, this->error_bound);
   }
 
@@ -129,11 +133,12 @@ namespace rascal {
                     << clamped_boundary_condition << std::endl;
         }
         if (clamped_boundary_condition) {
-          intp = std::make_shared<typename Fix::Interpolator_t>(func, Fix::x1, Fix::x2,
-              Fix::error_bound, 100000, 5, true, derivative_func(Fix::x1), derivative_func(Fix::x2));
+          intp = std::make_shared<typename Fix::Interpolator_t>(
+              func, Fix::x1, Fix::x2, Fix::error_bound, 100000, 5, true,
+              derivative_func(Fix::x1), derivative_func(Fix::x2));
         } else {
-          intp = std::make_shared<typename Fix::Interpolator_t>(func, Fix::x1, Fix::x2,
-              Fix::error_bound);
+          intp = std::make_shared<typename Fix::Interpolator_t>(
+              func, Fix::x1, Fix::x2, Fix::error_bound);
         }
         if (verbose) {
           std::cout << "Interpolator interpolator fineness: "
@@ -146,8 +151,8 @@ namespace rascal {
 
         // Checks if interpolator satisfies the given error bound. This
         // condition should be always fulfilled.
-        error = compute_intp_error<AbsoluteMeanErrorMethod>(intp, func,
-                                                            ref_points);
+        error =
+            compute_intp_error<AbsoluteMeanErrorMethod>(intp, func, ref_points);
         BOOST_CHECK_LE(error, Fix::error_bound);
 
         // The following conditions do not necessary have to be fulfilled, but
@@ -199,12 +204,12 @@ namespace rascal {
   }
 
   using IntpScalarUniformCubicSplineRelativeError =
-    math::InterpolatorScalarUniformCubicSpline<
-      math::RefinementMethod_t::Exponential,
-      math::ErrorMethod<math::ErrorMetric_t::Relative,
-                        math::ErrorNorm_t::Mean>>;
-  using interpolator_relative_error_fixtures =
-      boost::mpl::list<InterpolatorFixture<IntpScalarUniformCubicSplineRelativeError>>;
+      math::InterpolatorScalarUniformCubicSpline<
+          math::RefinementMethod_t::Exponential,
+          math::ErrorMethod<math::ErrorMetric_t::Relative,
+                            math::ErrorNorm_t::Mean>>;
+  using interpolator_relative_error_fixtures = boost::mpl::list<
+      InterpolatorFixture<IntpScalarUniformCubicSplineRelativeError>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(functions_interpolator_relative_error_tests,
                                    Fix, interpolator_relative_error_fixtures,
@@ -224,7 +229,8 @@ namespace rascal {
         std::cout << "Test for function: " << function_name << std::endl;
       }
 
-      auto intp{std::make_shared<typename Fix::Interpolator_t>(func, Fix::x1, Fix::x2, Fix::error_bound)};
+      auto intp{std::make_shared<typename Fix::Interpolator_t>(
+          func, Fix::x1, Fix::x2, Fix::error_bound)};
       if (verbose) {
         std::cout << "Interpolator interpolator fineness: "
                   << intp->get_grid_fineness() << std::endl;
@@ -244,8 +250,9 @@ namespace rascal {
     }
   }
 
-  using IntpVectorUniformCubicSpline = math::InterpolatorMatrixUniformCubicSpline<
-                         math::RefinementMethod_t::Exponential>;
+  using IntpVectorUniformCubicSpline =
+      math::InterpolatorMatrixUniformCubicSpline<
+          math::RefinementMethod_t::Exponential>;
 
   // This test compares the vectorized interpolator with the scalar
   // interpolators results for the functions map. The results should match
@@ -274,7 +281,8 @@ namespace rascal {
       Matrix_t tmp_mat = vector_func(x1);
       int cols{static_cast<int>(tmp_mat.cols())};
       int rows{static_cast<int>(tmp_mat.rows())};
-      auto intp{std::make_shared<IntpVectorUniformCubicSpline>(vector_func, x1, x2, error_bound, cols, rows)};
+      auto intp{std::make_shared<IntpVectorUniformCubicSpline>(
+          vector_func, x1, x2, error_bound, cols, rows)};
       if (verbose) {
         std::cout << "Interpolator interpolator fineness: "
                   << intp->get_grid_fineness() << std::endl;
@@ -319,7 +327,8 @@ namespace rascal {
       Matrix_t tmp_mat = vector_func(x1);
       int cols = tmp_mat.cols();
       int rows = tmp_mat.rows();
-      auto intp{std::make_shared<IntpVectorUniformCubicSpline>(vector_func, x1, x2, error_bound, cols, rows)};
+      auto intp{std::make_shared<IntpVectorUniformCubicSpline>(
+          vector_func, x1, x2, error_bound, cols, rows)};
       if (verbose) {
         std::cout << "Interpolator interpolator fineness: "
                   << intp->get_grid_fineness() << std::endl;
@@ -396,7 +405,8 @@ namespace rascal {
     Matrix_t tmp_mat = func(x1);
     int cols = tmp_mat.cols();
     int rows = tmp_mat.rows();
-    auto intp{std::make_shared<IntpVectorUniformCubicSpline>(func, x1, x2, error_bound, cols, rows)};
+    auto intp{std::make_shared<IntpVectorUniformCubicSpline>(
+        func, x1, x2, error_bound, cols, rows)};
 
     int matrix_size = max_radial * (max_angular + 1);
     Matrix_t intp_val = Matrix_t::Zero(ref_points.size(), matrix_size);

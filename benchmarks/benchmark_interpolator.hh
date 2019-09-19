@@ -25,6 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifndef BENCHMARKS_BENCHMARK_INTERPOLATOR_HH_
+#define BENCHMARKS_BENCHMARK_INTERPOLATOR_HH_
+
 #include <functional>
 #include <map>
 #include <iostream>
@@ -39,11 +42,23 @@
 #include "representations/representation_manager_spherical_expansion.hh"
 #include "json.hpp"
 
-using namespace rascal::math; // NO LINT
+
 
 namespace rascal {
+
+  using internal::RadialContribution;
+  using internal::RadialBasisType;
+  using internal::AtomicSmearingType;
+
+  using math::Hyp1f1;
+  using math::InterpolatorScalarUniformCubicSpline;
+  using math::InterpolatorMatrixUniformCubicSpline;
+  using math::RefinementMethod_t;
+  using math::Vector_t;
+  using math::Matrix_t;
+
   // For the random functionalities in the benchmarks
-  static constexpr int SEED = 1597463007;  // 0x5f3759df
+  static unsigned int SEED = 1597463007;  // 0x5f3759df
 
   class BaseInterpolatorDataset {
    public:
@@ -51,31 +66,38 @@ namespace rascal {
     enum class SupportedVecFunc { RadialContribution };
   };
 
-
   /**
    * Interpolator Dataset explanation
    *  static const json data = {
-   *      // number of usages of the interpolation function on a grid, note this is independent from the google benchmark parameter
-   *      {"nbs_iterations", {1e3}}, 
+   *      // number of usages of the interpolation function on a grid, note this
+   * is independent from the google benchmark parameter
+   *      {"nbs_iterations", {1e3}},
+   *
    *      // the range of the interpolator
-   *      {"ranges", {std::make_pair(0, 16)}}, 
-   *      // the log of the interpolator parameter error bound 
+   *      {"ranges", {std::make_pair(0, 16)}},
+   *
+   *      // the log of the interpolator parameter error bound
    *      {"log_error_bounds", {-8}},
+   *
    *      // the function used to interpolate
    *      {"func_names", {SupportedVecFunc::RadialContribution}},
-   *      // the parameters for `RadialContribution` or `SphericalExpansion`
-   *      {"radial_angular",
-   *       {std::make_pair(3, 3), std::make_pair(6, 6),
-   *        std::make_pair(9, 9)}},
-   *      // if the grid used for interpolation should be generated randomly, this is performance critical when using the search method hunt or locate in the interpolator
-   *      {"random", {true}}, 
+   *
+   *      // the parameters for `RadialContribution` or `SphericalExpansion` a
+   *      // pair of (max_radial, max_angular)
+   *      {"radial_angular", {std::make_pair(3, 3)},
+   *
+   *      // if the grid used for interpolation should be generated randomly,
+   *      // this is performance critical when using the search method hunt or
+   *      // locate in the interpolator
+   *      {"random", {true}},
+   *
    *      // parameter only for `SphericalExpansion`
    *      {"filenames",
    *       {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}},
-   *      // parameter only for `SphericalExpansion`
+   *
+   *      // parameter only for `SphericalExpansion` AdaptorStrict cutoff
    *      {"cutoffs", {8}}};
    */
-
 
   /**
    * Dataset for testing the SphericalExpansion with Interpolation. To avoid
@@ -88,15 +110,15 @@ namespace rascal {
     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
     static const json data() {
       static const json data = {
-          {"nbs_iterations", {1e3}}, // dummy
+          {"nbs_iterations", {1e3}},            // dummy
           {"ranges", {std::make_pair(0, 16)}},  // dummy
           {"log_error_bounds", {-8}},
           {"func_names", {SupportedVecFunc::RadialContribution}},  // dummy
-          {"radial_angular", {std::make_pair(3, 4), std::make_pair(6, 6), std::make_pair(8, 6)}},
+          {"radial_angular",
+           {std::make_pair(3, 4), std::make_pair(6, 6), std::make_pair(8, 6)}},
           {"random", {true}},  // dummy
-          {"filenames",
-           {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}},
-          {"cutoffs", {3,5}}};
+          {"filenames", {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}},
+          {"cutoffs", {3, 5}}};
       return data;
     }
   };
@@ -108,12 +130,12 @@ namespace rascal {
     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
     static const json data() {
       static const json data = {
-              {"nbs_iterations", {1e3, 1e4, 1e5, 1e6}},
-              {"ranges", {std::make_pair(0, 16)}},
-              {"log_error_bounds", {-10}},
-              {"func_names", {SupportedVecFunc::RadialContribution}},
-              {"radial_angular", {std::make_pair(6, 6)}},
-              {"random", {true}}};
+          {"nbs_iterations", {1e3, 1e4, 1e5, 1e6}},
+          {"ranges", {std::make_pair(0, 16)}},
+          {"log_error_bounds", {-10}},
+          {"func_names", {SupportedVecFunc::RadialContribution}},
+          {"radial_angular", {std::make_pair(6, 6)}},
+          {"random", {true}}};
       return data;
     }
   };
@@ -121,18 +143,18 @@ namespace rascal {
   struct Hyp1f1Dataset : public BaseInterpolatorDataset {
     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
     static const json data() {
-      static const json data = {
-              {"nbs_iterations", {1e3, 1e4, 1e5, 1e6}},
-              {"ranges", {std::make_pair(0, 16)}},
-              {"log_error_bounds", {-8}},
-              {"func_names", {SupportedFunc::Hyp1f1}},
-              {"random", {true}}};
+      static const json data = {{"nbs_iterations", {1e3, 1e4, 1e5, 1e6}},
+                                {"ranges", {std::make_pair(0, 16)}},
+                                {"log_error_bounds", {-8}},
+                                {"func_names", {SupportedFunc::Hyp1f1}},
+                                {"random", {true}}};
       return data;
     }
   };
 
   /**
-   * Abstract class for all BFixtures using the interpolator to adapt for different interpolator implementations.
+   * Abstract class for all BFixtures using the interpolator to adapt for
+   * different interpolator implementations.
    */
   template <class Dataset>
   class InterpolatorBFixture : public BaseBFixture<Dataset> {
@@ -190,24 +212,22 @@ namespace rascal {
     }
 
     // initialize the ref points
-    void init_ref_points(const ::benchmark::State & state,
-                         const json & data) {
+    void init_ref_points(const ::benchmark::State & state, const json & data) {
       auto range = this->template lookup<std::pair<double, double>>(
           data, "ranges", state);
       this->x1 = std::get<0>(range);
       this->x2 = std::get<1>(range);
       this->random = this->template lookup<bool>(data, "random", state);
       if (this->random) {
-        srand(SEED);
-        math::Vector_t points_tmp = math::Vector_t::LinSpaced(
-            this->nb_ref_points, this->x1, this->x2);
+        math::Vector_t points_tmp =
+            math::Vector_t::LinSpaced(this->nb_ref_points, this->x1, this->x2);
         this->ref_points = math::Vector_t::Zero(this->nb_ref_points);
         for (int i{0}; i < this->ref_points.size(); i++) {
-          this->ref_points(i) = points_tmp(rand() % this->nb_ref_points);
+          this->ref_points(i) = points_tmp(rand_r(&SEED) % this->nb_ref_points);
         }
       } else {
-        this->ref_points = math::Vector_t::LinSpaced(this->nb_ref_points,
-                                                     this->x1, this->x2);
+        this->ref_points =
+            math::Vector_t::LinSpaced(this->nb_ref_points, this->x1, this->x2);
       }
     }
     virtual bool
@@ -218,7 +238,8 @@ namespace rascal {
   };
 
   /**
-   * To cover different implementations of the interpolator, this abstract class is the base class for all interpolator BFixtures. It 
+   * To cover different implementations of the interpolator, this abstract class
+   * is the base class for all interpolator BFixtures. It
    */
   template <class Dataset>
   class InterpolatorScalarBFixture : public InterpolatorBFixture<Dataset> {
@@ -226,7 +247,7 @@ namespace rascal {
     using Parent = InterpolatorBFixture<Dataset>;
     using SupportedFunc = typename Dataset::SupportedFunc;
     using Interpolator_t = math::InterpolatorScalarUniformCubicSpline<
-                       math::RefinementMethod_t::Exponential>;
+        math::RefinementMethod_t::Exponential>;
 
     InterpolatorScalarBFixture<Dataset>() : Parent() {}
 
@@ -264,8 +285,8 @@ namespace rascal {
 
       this->error_bound = std::pow(10, this->log_error_bound);
       this->init_function();
-      this->intp = std::make_shared<Interpolator_t>(this->func, this->x1, this->x2,
-                            this->error_bound);
+      this->intp = std::make_shared<Interpolator_t>(
+          this->func, this->x1, this->x2, this->error_bound);
     }
 
     void init_hyp1f1_function() {
@@ -273,8 +294,9 @@ namespace rascal {
       double l = 9;
       double a = 0.5 * (n + l + 3);
       double b = l + 1.5;
-      // Important hyp1f1 a!=b, because for a==b the Hyp1f1 can be simplified and computations does not take as long as it would on average
-      auto hyp1f1 = math::Hyp1f1(a, b+1, 200, 1e-15);
+      // Important hyp1f1 a!=b, because for a==b the Hyp1f1 can be simplified
+      // and computations does not take as long as it would on average
+      auto hyp1f1 = math::Hyp1f1(a, b + 1, 200, 1e-15);
       this->func = [=](double x) mutable { return hyp1f1.calc(x); };
     }
 
@@ -309,14 +331,16 @@ namespace rascal {
     using Parent = InterpolatorBFixture<Dataset>;
     using SupportedVecFunc = typename Dataset::SupportedVecFunc;
     using Interpolator_t = math::InterpolatorMatrixUniformCubicSpline<
-                       math::RefinementMethod_t::Exponential>;
+        math::RefinementMethod_t::Exponential>;
 
     std::shared_ptr<Interpolator_t> intp{};
     std::function<math::Matrix_t(double)> func;
     SupportedVecFunc func_name;
     int max_radial{0};
     int max_angular{0};
-    std::shared_ptr<internal::RadialContribution<internal::RadialBasisType::GTO>> radial_contr{};
+    std::shared_ptr<
+        RadialContribution<RadialBasisType::GTO>>
+        radial_contr{};
 
    protected:
     bool have_scalar_interpolator_parameters_changed(
@@ -362,7 +386,9 @@ namespace rascal {
 
       this->error_bound = std::pow(10, this->log_error_bound);
       this->init_function(state, data);
-      this->intp = std::make_shared<Interpolator_t>(this->func, this->x1, this->x2, this->error_bound, this->max_radial, this->max_angular+1);
+      this->intp = std::make_shared<Interpolator_t>(
+          this->func, this->x1, this->x2, this->error_bound, this->max_radial,
+          this->max_angular + 1);
     }
 
     void init_radial_contribution_function(const ::benchmark::State & state,
@@ -380,10 +406,12 @@ namespace rascal {
           {"cutoff_function", {{"cutoff", {{"value", 2.0}, {"unit", "A"}}}}}};
       // we cannot copy radial contribution to the lambda function, because
       // the copying has been disabled
-      this->radial_contr = std::make_shared<internal::RadialContribution<internal::RadialBasisType::GTO>>(hypers);
+      this->radial_contr = std::make_shared<
+          RadialContribution<RadialBasisType::GTO>>(hypers);
       this->func = [&](double x) mutable {
         return this->radial_contr
-            ->compute_contribution<internal::AtomicSmearingType::Constant>(x, 0.5);
+            ->compute_contribution<AtomicSmearingType::Constant>(x,
+                                                                           0.5);
       };
     }
 
@@ -413,8 +441,10 @@ namespace rascal {
     using Parent = InterpolatorBFixture<Dataset>;
 
     /**
-     * @param use_interpolator determines if the SphericalExpansion should be used with interpolator to estimate a time difference
-     * @param compute_gradients determines if the SphericalExpansion should be calculate gradients
+     * @param use_interpolator determines if the SphericalExpansion should be
+     * used with interpolator to estimate a time difference
+     * @param compute_gradients determines if the SphericalExpansion should be
+     * calculate gradients
      */
     SphericalExpansionBFixture<Dataset>(const bool use_interpolator,
                                         const bool compute_gradients)
@@ -451,9 +481,12 @@ namespace rascal {
       // make structure manager
       json structure{};
       json adaptors;
-      json ad1{{"name", "AdaptorNeighbourList"},
-               {"initialization_arguments",
-                {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+      // hyperparameters for the neighbourlist adaptor
+      json ad1{
+          {"name", "AdaptorNeighbourList"},
+          {"initialization_arguments",
+           {{"cutoff", this->cutoff}, {"consider_ghost_neighbours", false}}}};
+      // hyperparameters for the strict adaptor
       json ad2{{"name", "AdaptorStrict"},
                {"initialization_arguments", {{"cutoff", this->cutoff}}}};
       adaptors.emplace_back(ad1);
@@ -516,8 +549,7 @@ namespace rascal {
       int new_max_angular = std::get<1>(radial_angular);
       std::string new_filename =
           this->template lookup<std::string>(data, "filenames", state);
-      double new_cutoff =
-          this->template lookup<double>(data, "cutoffs", state);
+      double new_cutoff = this->template lookup<double>(data, "cutoffs", state);
       return (new_log_error_bound != this->log_error_bound ||
               new_max_radial != this->max_radial ||
               new_max_angular != this->max_angular ||
@@ -525,3 +557,4 @@ namespace rascal {
     }
   };
 }  // namespace rascal
+#endif  // BENCHMARKS_BENCHMARK_INTERPOLATOR_HH_

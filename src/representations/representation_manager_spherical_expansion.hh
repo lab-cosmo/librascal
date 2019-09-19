@@ -722,7 +722,8 @@ namespace rascal {
       using Matrix_t = typename Parent::Matrix_t;
       using Matrix_Ref = typename Parent::Matrix_Ref;
       using Vector_Ref = typename Parent::Vector_Ref;
-      using Interpolator_t = math::InterpolatorMatrixUniformCubicSpline<math::RefinementMethod_t::Exponential>;
+      using Interpolator_t = math::InterpolatorMatrixUniformCubicSpline<
+          math::RefinementMethod_t::Exponential>;
 
       explicit RadialContributionHandler(const Hypers_t & hypers)
           : Parent(hypers) {
@@ -731,8 +732,8 @@ namespace rascal {
       }
 
       // If we find a case where smarter parameters for x1 and x2 can be given
-      explicit RadialContributionHandler(const Hypers_t & hypers, double x1, double x2,
-                                double accuracy)
+      explicit RadialContributionHandler(const Hypers_t & hypers, double x1,
+                                         double x2, double accuracy)
           : Parent(hypers) {
         this->precompute();
         this->init_interpolator(x1, x2, accuracy);
@@ -799,7 +800,8 @@ namespace rascal {
         Matrix_t result = func(range_begin);
         int cols{static_cast<int>(result.cols())};
         int rows{static_cast<int>(result.rows())};
-        this->intp = std::make_shared<Interpolator_t>(func, range_begin, range_end, accuracy, cols, rows);
+        this->intp = std::make_shared<Interpolator_t>(
+            func, range_begin, range_end, accuracy, cols, rows);
       }
 
       double get_range_begin(const Hypers_t & optimization_hypers) {

@@ -36,11 +36,15 @@
 #include "math/interpolator.hh"
 #include "representations/representation_manager_spherical_expansion.hh"
 
-using namespace rascal::math;  // NOLINT
-using namespace rascal::internal;  // NOLINT
-
 static constexpr int N_REPETITIONS = 200;
-static constexpr int SEED = 1597463007;
+static unsigned int SEED = 1597463007;
+
+using namespace rascal; // NOLINT
+
+using math::InterpolatorMatrixUniformCubicSpline;
+using math::RefinementMethod_t;
+using math::Vector_t;
+using math::Matrix_t;
 
 /* Please execute this file one time before using the profiler to create the
  * grid.
@@ -57,15 +61,16 @@ int main() {
       {"max_angular", max_angular},
       {"compute_gradients", true},
       {"cutoff_function", {{"cutoff", {{"value", 2.0}, {"unit", "A"}}}}}};
-  auto radial_contr = RadialContribution<RadialBasisType::GTO>(hypers);
+  auto radial_contr =
+      internal::RadialContribution<internal::RadialBasisType::GTO>(hypers);
   std::function<Matrix_t(double)> func = [&radial_contr](double x) {
-    return radial_contr.compute_contribution<AtomicSmearingType::Constant>(x,
-                                                                           0.5);
+    return radial_contr
+        .compute_contribution<internal::AtomicSmearingType::Constant>(x, 0.5);
   };
 
   // interpolator parameters
-  using IntpVectorUniformCubicSpline = InterpolatorMatrixUniformCubicSpline<
-                         RefinementMethod_t::Exponential>;
+  using IntpVectorUniformCubicSpline =
+      InterpolatorMatrixUniformCubicSpline<RefinementMethod_t::Exponential>;
   std::shared_ptr<IntpVectorUniformCubicSpline> intp;
   double x1{0};
   double x2{8};
@@ -73,15 +78,18 @@ int main() {
   size_t nb_points = 1e6;
   size_t nb_iterations = 100000;
   const char * filename_grid{"profile_vector_cubic_spline_grid.grid"};
-  const char * filename_evaluated_grid{"profile_vector_cubic_spline_grid.evaluated_grid"};
+  const char * filename_evaluated_grid{
+      "profile_vector_cubic_spline_grid.evaluated_grid"};
 
   // loads grid file
-  if (not(file_exists(filename_grid)) || not(file_exists(filename_evaluated_grid))) {
+  if (not(rascal::file_exists(filename_grid)) ||
+      not(rascal::file_exists(filename_evaluated_grid))) {
     std::cout << "Grid file does not exist, has to be computed." << std::endl;
     Matrix_t result = func(x1);
     int cols{static_cast<int>(result.cols())};
     int rows{static_cast<int>(result.rows())};
-    intp = std::make_shared<IntpVectorUniformCubicSpline>(func, x1, x2, error_bound, cols, rows);
+    intp = std::make_shared<IntpVectorUniformCubicSpline>(
+        func, x1, x2, error_bound, cols, rows);
     Vector_t grid{intp->get_grid_ref()};
     Matrix_t evaluated_grid{intp->get_evaluated_grid_ref()};
     write_binary(filename_grid, grid);
@@ -92,17 +100,21 @@ int main() {
     Matrix_t evaluated_grid;
     read_binary(filename_grid, grid);
     read_binary(filename_evaluated_grid, evaluated_grid);
-    std::cout << grid.size() << " " <<  evaluated_grid.cols() << " " << evaluated_grid.rows() << std::endl;
-    intp = std::make_shared<IntpVectorUniformCubicSpline>(grid, evaluated_grid, max_radial, max_angular+1);
+    std::cout << grid.size() << " " << evaluated_grid.cols() << " "
+              << evaluated_grid.rows() << std::endl;
+    intp = std::make_shared<IntpVectorUniformCubicSpline>(
+        grid, evaluated_grid, max_radial, max_angular + 1);
   }
-  std::cout << "vector interpolation of radial contribution: interpolator grid size " << intp->get_grid_size() << std::endl;
+  std::cout
+      << "vector interpolation of radial contribution: interpolator grid size "
+      << intp->get_grid_size() << std::endl;
 
   // shuffle points to test interpolation method for uncorrelated requests
-  srand(SEED); 
+  srand(SEED);
   Vector_t points_tmp = Vector_t::LinSpaced(nb_points, x1, x2);
   Vector_t points = Vector_t::Zero(nb_points);
   for (size_t i{0}; i < nb_points; i++) {
-    points(i) = points_tmp(rand() % nb_points);
+    points(i) = points_tmp(rand_r(&SEED) % nb_points);
   }
 
   Matrix_t mat_tmp = Matrix_t::Zero(max_radial, max_angular + 1);
