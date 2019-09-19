@@ -42,24 +42,14 @@
 // TODO(markus): CHECK for skewedness
 namespace rascal {
 
+  /**
+   * A common structure to access atom and cell related data, based on the
+   * idea of the atoms object in the Atomic Simulation Environment. The
+   * object contains atomic positions, the cell vectors, periodicity
+   * information as well as the atomic types (element).
+   */
   template <int Dim>
   struct AtomicStructure {
-    /**
-     * A common structure to access atom and cell related data, based on the
-     * idea of the atoms object in the Atomic Simulation Environment. The
-     * object contains atomic positions, the cell vectors, periodicity
-     * information as well as the atomic types (element).
-     *
-     *  @param cell is a contiguous vector which holds the cell unit vectors.
-     *
-     *  @param type a vector of integers which holds the atomic type (atomic
-     *  number as per periodic table).
-     *
-     *  @param pbc is a 0/1 vector which defines the periodicity of the given
-     *  structure for each dimension
-     *
-     *  @param position is a vector which holds the atomic positions.
-     */
     using Cell_t = Eigen::Matrix<double, Dim, Dim>;
     using Cell_ref = Eigen::Map<Cell_t>;
 
@@ -82,10 +72,26 @@ namespace rascal {
 
     using PBCInput_t = Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
-    // Eigen types for saving atomic structure data
+    /**
+     * A vector which holds the atomic positions.
+     */
     Positions_t positions{};
+
+    /**
+     * A vector of integers which holds the atomic type (atomic number as
+     * per periodic table).
+     */
     AtomTypes_t atom_types{};
+
+    /**
+     * A contiguous vector which holds the cell unit vectors.
+     */
     Cell_t cell{};
+
+    /**
+     * A 0/1 vector which defines the periodicity of the given structure
+     * for each dimension
+     */
     PBC_t pbc{};
 
 

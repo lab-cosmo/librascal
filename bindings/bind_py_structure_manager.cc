@@ -496,8 +496,8 @@ namespace rascal {
 
   /**
    * Bind a list of adaptors by stacking them using template recursion.
-   * @tparams ManagerImplementation a fully typed manager
-   * @tparams AdaptorImplementationPack list of adaptor partial type
+   * @tparam ManagerImplementation a fully typed manager
+   * @tparam AdaptorImplementationPack list of adaptor partial type
    */
   template <typename ManagerImplementation,
             template <class> class AdaptorImplementation,

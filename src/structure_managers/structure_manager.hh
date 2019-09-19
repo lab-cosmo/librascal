@@ -173,8 +173,7 @@ namespace rascal {
    * to the number of clusters and from `Updateable` to be able to update the
    * structure by using a vector of `Updateables`.
    *
-   * @param ManagerImplementation
-   * class implementation
+   * @tparam ManagerImplementation class implementation
    */
   template <class ManagerImplementation>
   class StructureManager : public StructureManagerBase {

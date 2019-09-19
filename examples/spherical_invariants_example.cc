@@ -100,11 +100,6 @@ int main(int argc, char * argv[]) {
   constexpr size_t n_centers_print{4};
   constexpr size_t n_neigh_print{1};
 
-  // auto soap = representation.get_representation_full();
-  // std::cout << "Sample SOAP elements \n"
-  //<< soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
-  //<< soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
-  //<< soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
   // Print the first few elements and gradients, so we know we're getting
   // something
   std::cout << "Expansion of first " << n_centers_print << " centers:";
