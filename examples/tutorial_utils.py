@@ -11,7 +11,6 @@ except:
     from rascal.representations import SOAP
 from matplotlib import pyplot as plt
 import time
-from time import strftime
 from tqdm import tqdm_notebook as tqdm
 from threading import Thread, Timer
 from queue import Queue
