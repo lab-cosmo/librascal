@@ -384,7 +384,7 @@ namespace rascal {
       inline void compute_second_derivative(const Vector_Ref & yv, double yd1,
                                             double ydn) {
         // Bad xa input to routine splint
-        assert(this->h < dbl_ftol);
+        assert(this->h > dbl_ftol);
         int n{static_cast<int>(yv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
@@ -413,7 +413,7 @@ namespace rascal {
       // natural/simple boundary conditions s''(x_0) = s''(x_n) = 0
       inline void compute_second_derivative(const Vector_Ref & yv) {
         // Bad xa input to routine splint
-        assert(this->h < dbl_ftol);
+        assert(this->h > dbl_ftol);
         int n{static_cast<int>(yv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
@@ -441,7 +441,7 @@ namespace rascal {
       inline double raw_interpolate(const Vector_Ref & xx,
                                     const Vector_Ref & yy, const int & j1,
                                     const double & x) {
-        assert(this->h < dbl_ftol);
+        assert(this->h > dbl_ftol);
         // j1
         const int klo{j1}, khi{j1 + 1};
         // percentage of grid cell start to x
@@ -459,7 +459,7 @@ namespace rascal {
                                                const Vector_Ref & yy,
                                                const int & j1,
                                                const double & x) {
-        assert(this->h < dbl_ftol);
+        assert(this->h > dbl_ftol);
         const int klo{j1}, khi{j1 + 1};
         // It is a+b=1
         const double a{(xx(khi) - x) / this->h};

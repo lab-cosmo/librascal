@@ -31,6 +31,16 @@ set(BENCHMARK_ENABLE_TESTING CACHE BOOL OFF)
 set(BENCHMARK_ENABLE_GTEST_TESTS CACHE BOOL OFF)
 set(BENCHMARK_ENABLE_INSTALL CACHE BOOL OFF)
 
+mark_as_advanced(BENCHMARK_ENABLE_TESTING)
+mark_as_advanced(BENCHMARK_BUILD_32_BITS)
+mark_as_advanced(FORCE BENCHMARK_DOWNLOAD_DEPENDENCIE) # does not work
+mark_as_advanced(FORCE BENCHMARK_ENABLE_ASSEMBLY_TEST) # does not work
+mark_as_advanced(BENCHMARK_ENABLE_EXCEPTIONS)
+mark_as_advanced(BENCHMARK_ENABLE_GTEST_TESTS)
+mark_as_advanced(BENCHMARK_ENABLE_INSTALL)
+mark_as_advanced(BENCHMARK_ENABLE_LTO)
+mark_as_advanced(BENCHMARK_USE_LIBCXX)
+
 add_subdirectory("${benchmark_SOURCE_DIR}")
 include_directories("${benchmark_SOURCE_DIR}/include")
 
@@ -43,3 +53,4 @@ include_directories("${benchmark_SOURCE_DIR}/include")
 
 set(${package}_FOUND TRUE CACHE INTERNAL "To avoid cyclic search" FORCE)
 set(${package}_FOUND_EXTERNAL TRUE CACHE INTERNAL "" FORCE)
+
