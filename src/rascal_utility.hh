@@ -124,7 +124,7 @@ namespace rascal {
       return static_cast<size_t>(e);
     }
 
-    //! compute the lenght of the enum assuming the last element is End_
+    //! compute the length of the enum assuming the last element is End_
     template <typename Enum>
     constexpr size_t enumSize() {
       return enumValue(Enum::End_);

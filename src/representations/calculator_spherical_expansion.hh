@@ -367,8 +367,6 @@ namespace rascal {
             distance_fac_a_l.asDiagonal();
         radial_integral_neighbour.transpose() *=
             this->radial_norm_factors.asDiagonal();
-        // radial_integral_neighbour.transpose() *=
-        //    this->radial_ortho_matrix;
         return radial_integral_neighbour;
       }
 

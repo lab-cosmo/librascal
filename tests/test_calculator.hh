@@ -121,52 +121,40 @@ namespace rascal {
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "Cosine"},
-         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{
-        {{"type", "GTO"}},
-        {{"type", "GTO"},
-         {"optimization",
-          {{"type", "Spline"},
-           {"accuracy", 1e-8},
-           {"range", {{"begin", 0.}, {"end", 3.}}}}}}};
+        {{"type", "GTO"}}};
 
     // TODO(alex) TODO(max)
     // for max_angular=0 and soap_type=RadialSpectrum error in SOAP independent
     // from the cubic jsons. Strangely for max_angular=0 and
     // soap_type=PowerSpectrum there is no error
-    std::vector<json> rep_hypers{//{{"max_radial", 6},
-                                  //{"max_angular", 0},
-                                  //{"soap_type", "RadialSpectrum"},
-                                  //{"normalize", true}},
-                                 //{{"max_radial", 10},
-                                  //{"max_angular", 0},
-                                  //{"soap_type", "RadialSpectrum"},
-                                  //{"normalize", true}},
+    std::vector<json> rep_hypers{{{"max_radial", 6},
+                                  {"max_angular", 0},
+                                  {"soap_type", "RadialSpectrum"},
+                                  {"normalize", true}},
+                                 {{"max_radial", 10},
+                                  {"max_angular", 0},
+                                  {"soap_type", "RadialSpectrum"},
+                                  {"normalize", true}},
                                  {{"max_radial", 3},
                                   {"max_angular", 3},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 8},
-                                  {"max_angular", 6},
+                                 {{"max_radial", 4},
+                                  {"max_angular", 3},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 4},
+                                 {{"max_radial", 2},
                                   {"max_angular", 1},
                                   {"soap_type", "BiSpectrum"},
                                   {"inversion_symmetry", true},
                                   {"normalize", true}},
-                                 {{"max_radial", 4},
+                                 {{"max_radial", 2},
                                   {"max_angular", 1},
                                   {"soap_type", "BiSpectrum"},
                                   {"inversion_symmetry", false},
@@ -284,7 +272,13 @@ namespace rascal {
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> radial_contribution_hypers{
+        {{"type", "GTO"}},
+        {{"type", "GTO"},
+         {"optimization",
+          {{"type", "Spline"},
+           {"accuracy", 1e-5},
+           {"range", {{"begin", 0.}, {"end", 3.}}}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
@@ -372,7 +366,13 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> radial_contribution_hypers{
+        {{"type", "GTO"}},
+        {{"type", "GTO"},
+         {"optimization",
+          {{"type", "Spline"},
+           {"accuracy", 1e-5},
+           {"range", {{"begin", 0.}, {"end", 3.}}}}}}};
     std::vector<json> rep_hypers{
         {{"max_radial", 4}, {"max_angular", 2}, {"compute_gradients", true}},
         {{"max_radial", 6}, {"max_angular", 4}, {"compute_gradients", true}}};
@@ -430,6 +430,11 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
+  /**
+   * This data struct contains data for single structure manager defined by the
+   * inheritence (in this case `SimplePeriodicNLStrictFixture`). It tests
+   * multiple representation hyperparameters.
+   */
   struct SingleHypersSphericalExpansion : SimplePeriodicNLStrictFixture {
     using Parent = SimplePeriodicNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
@@ -461,7 +466,13 @@ namespace rascal {
     std::vector<json> density_hypers{
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> radial_contribution_hypers{
+        {{"type", "GTO"}},
+        {{"type", "GTO"},
+         {"optimization",
+          {{"type", "Spline"},
+           {"accuracy", 1e-5},
+           {"range", {{"begin", 0.}, {"end", 3.}}}}}}};
     std::vector<json> rep_hypers{
         {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}},
         {{"max_radial", 4}, {"max_angular", 0}, {"compute_gradients", true}}};
@@ -499,10 +510,6 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    // TODO(alex) TODO(max)
-    // for max_angular=0 and soap_type=RadialSpectrum error in SOAP independent
-    // from the cubic jsons. Strangely for max_angular=0 and
-    // soap_type=PowerSpectrum there is no error
     std::vector<json> rep_hypers{{{"max_radial", 2},
                                   {"max_angular", 2},
                                   {"normalize", true},

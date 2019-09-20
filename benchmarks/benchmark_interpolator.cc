@@ -69,6 +69,7 @@ namespace rascal {
     state.SetComplexityN(fix.nb_iterations);
     json info = fix.intp->compute_interpolator_information();
 
+    // type has to be clared for g++-5
     state.counters.insert({{"x1", fix.x1},
                            {"x2", fix.x2},
                            {"log(error_bound)", fix.log_error_bound},
@@ -77,7 +78,8 @@ namespace rascal {
                            {"log(max_grid_error)",
                             std::log10(info["max_grid_error"].get<double>())},
                            {"nb_iterations", fix.nb_iterations},
-                           {"grid_size", info["grid_size"]}});
+                           {"grid_size", info["grid_size"].get<int>()}
+                          });
   }
 
   template <class Fix>
@@ -115,7 +117,7 @@ namespace rascal {
                             std::log10(info["mean_grid_error"].get<double>())},
                            {"log(max_grid_error)",
                             std::log10(info["max_grid_error"].get<double>())},
-                           {"grid_size", info["grid_size"]}});
+                           {"grid_size", info["grid_size"].get<int>()}});
   }
 
   template <class BFixture>

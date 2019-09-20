@@ -84,12 +84,20 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
+  /**
+   * These fixtures have the initialization hyperparameters inside the class. So
+   * changes/updates new tests can be done inside the template classes.
+   */
   using multiple_fixtures =
       boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb>,
                        CalculatorFixture<MultipleStructureSphericalExpansion>,
                        CalculatorFixture<MultipleStructureSphericalInvariants>,
                        CalculatorFixture<MultipleStructureSphericalCovariants>>;
-
+  /**
+   * These fitures have the initialization hyperparameters stored in a binary
+   * json constructed with the python scripts in the librascal/script folder and
+   * are stored in librascal/tests/reference_data folder.
+   */
   using fixtures_ref_test =
       boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
                        CalculatorFixture<SphericalExpansionTestData>,
@@ -247,6 +255,7 @@ namespace rascal {
     }
   }
 
+  // These tests have their hyperparameters inside the template class
   using fixtures_with_gradients =
       boost::mpl::list<CalculatorFixture<MultipleHypersSphericalExpansion>>;
 
@@ -288,10 +297,6 @@ namespace rascal {
   using simple_periodic_fixtures =
       boost::mpl::list<CalculatorFixture<SingleHypersSphericalExpansion>,
                        CalculatorFixture<SingleHypersSphericalInvariants>>;
-      // TODO(alex) move this to spherical_expansion_radial_derivative
-      // RepresentationFixture<MultipleStructureSOAP,
-      //                      CalculatorSphericalExpansion>
-
   /**
    * Test the gradient of the SphericalExpansion representation on a few simple
    * crystal structures (single- and multi-species, primitive and supercells)

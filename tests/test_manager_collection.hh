@@ -46,8 +46,8 @@ namespace rascal {
     ~StrictNLCollectionFixture() = default;
 
     std::string filename{"reference_data/dft-smiles_500.ubjson"};
-    int start{0};
-    int length{10};
+    int start{4};
+    int length{3};
   };
 
   /**
