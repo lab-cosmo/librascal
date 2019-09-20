@@ -22,7 +22,7 @@ hyper_vals = {
             "interaction_cutoff":dict(options = [2.0,5.0],name = r"$r_{cut}$"),
             "max_radial":dict(options =  [0, 10],name = r"$n_{max}$"),
             "max_angular": dict(options = [0, 10],name = r"$l_{max}$"),
-            "gaussian_sigma_constant": dict(options = [0.0,1.0],name = r"$\sigma$"),
+            "gaussian_sigma_constant": dict(options = [0.01,1.0],name = r"$\sigma$"),
             "gaussian_sigma_type":dict(fixed="Constant"),
             "cutoff_smooth_width":dict(fixed=0.5),
             }
@@ -361,9 +361,16 @@ class SOAP_tutorial(object):
         if(pretend==False):
             self.krr[self.sliders['property_to_ml'].value], k = model, kernel
             self.trained[self.sliders['property_to_ml'].value] = True
-    def plot_prediction(self):
-        self.plot_prediction_func(self.test_idx)
-    def plot_prediction_func(self, frame_idx, pretend=False):
+    def predict_test_set(self):
+        self.plot_prediction_func(frame_idx = self.test_idx)
+    def predict_new_set(self, filename = './data/small_molecules-1000.xyz', num_frames=''):
+        frames=np.array(read(filename, ":{}".format(num_frames)))
+        properties = extract_property(frames, self.sliders['property_to_ml'].value)
+        self.plot_prediction_func(y_known=properties, frames=frames)
+    def plot_prediction_func(self, y_known=None, frames=None, frame_idx=[], pretend=False):
+        if(len(frame_idx)>0):
+            frames=self.frames[frame_idx]
+            y_known = np.concatenate(self.properties[self.sliders['property_to_ml'].value][frame_idx])[:,0] if self.sliders['kernel_type'].value=='atomic' else self.properties[self.sliders['property_to_ml'].value][frame_idx]
         if(pretend==False):
             verbosity_wrap = lambda s: self.verbosity_wrap(s)
         else:
@@ -371,18 +378,18 @@ class SOAP_tutorial(object):
         if(self.trained[self.sliders['property_to_ml'].value]==False):
             verbosity_wrap("Model has not yet been trained, training now..."   )
             self.train_krr_model()
-        testing_properties =np.concatenate(self.properties[self.sliders['property_to_ml'].value][frame_idx])[:,0] if self.sliders['kernel_type'].value=='atomic' else self.properties[self.sliders['property_to_ml'].value][frame_idx]
+        testing_properties = y_known#np.concatenate(self.properties[self.sliders['property_to_ml'].value][frame_idx])[:,0] if self.sliders['kernel_type'].value=='atomic' else self.properties[self.sliders['property_to_ml'].value][frame_idx]
 
         if(pretend==False):
             verbosity_wrap("Estimating time to compute prediction...")
-            self.estimate_time(x=self.pred_frames, y=self.pred_times, f=self.plot_prediction_func, N=max(0,20-len(self.pred_frames)), ref=self.sliders['number_of_frames'].value*(1-self.sliders['training_percentage'].value))
-            est = int(np.poly1d(np.polyfit(self.pred_frames,self.pred_times,deg=2))(len(frame_idx)))+1
+            self.estimate_time(x=self.pred_frames, y=self.pred_times, f=self.plot_prediction_func, N=max(0,20-len(self.pred_frames)), ref=len(frames))
+            est = int(np.poly1d(np.polyfit(self.pred_frames,self.pred_times,deg=3))(len(frames)))+1
         else:
             est=0
 
         t = time.time()
-        verbosity_wrap("Predicting the properties of our test set will take approximately {} minutes and {} seconds.".format(int(est/60), int(est%60)))
-        y_pred = self.krr[self.sliders['property_to_ml'].value].predict(self.frames[frame_idx])
+        verbosity_wrap("Predicting the properties of our data set will take approximately {} minutes and {} seconds.".format(int(est/60), int(est%60)))
+        y_pred = self.krr[self.sliders['property_to_ml'].value].predict(frames)
         self.pred_frames.append(len(frame_idx))
         self.pred_times.append(time.time()-t)
         verbosity_wrap(markdown_table_from_dict(get_score(y_pred, testing_properties), headers=["Statistic","Value" ]))
