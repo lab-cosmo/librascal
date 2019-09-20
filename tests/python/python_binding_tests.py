@@ -6,7 +6,7 @@ import faulthandler
 from python_structure_manager_test import (
     TestStructureManagerCenters, TestNL, TestNLStrict
 )
-from python_representation_manager_test import (
+from python_representation_calculator_test import (
     TestSortedCoulombRepresentation, TestSphericalExpansionRepresentation,
     TestSphericalInvariantsRepresentation
 )

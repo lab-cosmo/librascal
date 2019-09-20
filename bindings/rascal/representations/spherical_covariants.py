@@ -1,10 +1,7 @@
 import json
 
-from ..neighbourlist import get_neighbourlist
-from .base import RepresentationFactory, FeatureFactory
-from ..utils import get_full_name
-from ..neighbourlist.structure_manager import convert_to_structure
-from ..neighbourlist.base import NeighbourListFactory
+from .base import CalculatorFactory
+from ..neighbourlist import AtomsList
 import numpy as np
 
 
@@ -112,22 +109,14 @@ class SphericalCovariants(object):
 
         self.nl_options = [
             dict(name='centers', args=[]),
-            dict(name='neighbourlist', args=[interaction_cutoff]),
-            dict(name='strict', args=[interaction_cutoff])
-        ]
+            dict(name='neighbourlist', args=dict(cutoff=interaction_cutoff)),
+            dict(name='strict', args=dict(cutoff=interaction_cutoff))
+                                    ]
 
-        neighbourlist_full_name = get_full_name(self.nl_options)
-        self.name = self.name + '_' + neighbourlist_full_name
         hypers_str = json.dumps(self.hypers)
         self.rep_options = dict(name=self.name, args=[hypers_str])
 
-        n_features = self.get_num_coefficients()
-        self.feature_options = dict(name='blocksparse_double', args=[
-                                    n_features, hypers_str])
-
-        self.manager = NeighbourListFactory(self.nl_options)
-        self.representation = RepresentationFactory(
-            self.manager, self.rep_options)
+        self._representation = CalculatorFactory(self.rep_options)
 
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
@@ -145,7 +134,7 @@ class SphericalCovariants(object):
         self.hypers.update(hypers_clean)
         return
 
-    def transform(self, frames, features=None):
+    def transform(self, frames):
         """Compute the representation.
 
         Parameters
@@ -155,40 +144,14 @@ class SphericalCovariants(object):
 
         Returns
         -------
-        FeatureManager.blocksparse_double
-            Object containing the representation
+
 
         """
-        if features is None:
-            features = FeatureFactory(self.feature_options)
+        if not isinstance(frames, AtomsList):
+            frames = AtomsList(frames, self.nl_options)
 
-        structures = [convert_to_structure(frame) for frame in frames]
-
-        n_atoms = [0]+[len(structure['atom_types'])
-                       for structure in structures]
-        structure_ids = np.cumsum(n_atoms)[:-1]
-        n_centers = np.sum(n_atoms)
-
-        ii = 0
-        for structure in structures:
-            try:
-                self.manager.update(**structure)
-            except:
-                print("Structure NL {} failed".format(ii))
-
-            try:
-                self.representation.compute()
-            except:
-                print("Structure Rep computation {} failed".format(ii))
-
-            try:
-                features.append(self.representation)
-            except:
-                print("Structure data gather {} failed".format(ii))
-
-            ii += 1
-
-        return features
+        self._representation.compute(frames.managers)
+        return frames
 
     def get_num_coefficients(self):
         """Return the number of coefficients in the representation

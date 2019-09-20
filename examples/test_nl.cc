@@ -29,12 +29,14 @@
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
 #include "structure_managers/make_structure_manager.hh"
+#include "structure_managers/structure_manager_collection.hh"
+
 #include "rascal_utility.hh"
-#include "representations/representation_manager_sorted_coulomb.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_spherical_invariants.hh"
-#include "representations/feature_manager_dense.hh"
-#include "representations/feature_manager_block_sparse.hh"
+#include "representations/calculator_sorted_coulomb.hh"
+#include "representations/calculator_spherical_expansion.hh"
+#include "representations/calculator_spherical_invariants.hh"
+
+#include "models/kernels.hh"
 
 #include <iostream>
 #include <basic_types.hh>
@@ -47,23 +49,56 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-using Representation_t = RepresentationManagerSphericalInvariants<
-    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+template <typename Manager, template <class> class... AdaptorImplementationPack>
+struct Test {
+  using ManagerTypeHolder_t =
+      StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+                                 AdaptorStrict>;
+  using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
+  void operator()() {
+    std::cout << internal::GetTypeName<ManagerTypeList_t>() << std::endl;
+  }
+};
+
+// using Representation_t = CalculatorSphericalInvariants;
+using ManagerTypeHolder_t =
+    StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+                               AdaptorStrict>;
+using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
+using Manager_t = typename ManagerTypeHolder_t::type;
+using ManagerCollection_t =
+    typename TypeHolderInjector<ManagerCollection, ManagerTypeList_t>::type;
+// using Manager_t =
+// AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+using Representation_t = CalculatorSphericalInvariants;
+using Property_t = typename Representation_t::template Property_t<Manager_t>;
+// using ManagerCollection_t = ManagerCollection<>;
+using Test1 = typename TypeHolderInjector<Test, ManagerTypeList_t>::type;
 
 int main() {
-  std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-  double cutoff{3.};
-  json hypers{{"max_radial", 6},
+  Test1()();
+  std::string filename{"reference_data/dft-smiles_500.ubjson"};
+  // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+  // std::string filename{"reference_data/methane.json"};
+  std::string rep_id{"pp"};
+
+  double cutoff{5.};
+  // json hypers{{"max_radial", 6},
+  //             {"max_angular", 6},
+  //             {"soap_type", "PowerSpectrum"},
+  //             {"normalize", true},
+  //             {"identifier",rep_id}};
+  json hypers{{"max_radial", 8},
               {"max_angular", 6},
-              // {"soap_type", "PowerSpectrum"},
-              {"soap_type", "BiSpectrum"},
+              {"soap_type", "PowerSpectrum"},
+              // {"soap_type", "BiSpectrum"},
               {"inversion_symmetry", true},
               {"normalize", true},
-              {"compute_gradients", true}};
+              {"compute_gradients", false}};
 
   json fc_hypers{{"type", "Cosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
-                 {"smooth_width", {{"value", 0.}, {"unit", "AA"}}}};
+                 {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
   json sigma_hypers{{"type", "Constant"},
                     {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
 
@@ -75,66 +110,62 @@ int main() {
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+            {{"cutoff", cutoff},
+             {"consider_ghost_neighbours", false},
+             {"skin", 0.}}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
   adaptors.emplace_back(ad2);
+  // ManagerCollection_t collection{adaptors};
+  // collection.add_structures(filename, 0, 10);
+  // std::cout << collection.size() << std::endl;
 
-  AtomicStructure<3> atomic_structure{};
-  atomic_structure.set_structure(filename);
-  auto manager =
-      make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>(
-          structure, adaptors);
+  // Representation_t representation{hypers};
+  // representation.compute(collection);
 
-  manager->update(atomic_structure);
-  int nb_neighbours{0};
-  for (auto center : manager) {
-    for (auto neigh : center) {
-      nb_neighbours++;
-    }
-  }
-  std::cout << "nb_neighbours" << nb_neighbours << std::endl;
+  // auto manager =
+  //         make_structure_manager_stack<StructureManagerCenters,
+  //                 AdaptorNeighbourList, AdaptorStrict>(
+  //                 structure, adaptors);
+  ManagerCollection_t collectionA{adaptors};
+  collectionA.add_structures(filename, 0, 10);
+  std::cout << collectionA.size() << std::endl;
+  ManagerCollection_t collectionB{adaptors};
+  collectionB.add_structures(filename, 0, 10);
+  std::cout << collectionB.size() << std::endl;
 
-  AtomicStructure<3> atomic_structure2{atomic_structure};
+  Representation_t representation{hypers};
+  representation.compute(collectionA);
+  representation.compute(collectionB);
 
-  atomic_structure2.positions(0, 0) += 0.5;
-
-  manager->update(atomic_structure2);
-
-  Representation_t representation{manager, hypers};
-  representation.compute();
-
-  size_t inner_size{representation.get_feature_size()};
-  FeatureManagerBlockSparse<double> feature{inner_size, hypers};
-
-  feature.push_back(representation);
-  auto X{feature.get_feature_matrix_dense()};
-  std::cout << "sadfasd" << std::endl;
-  // auto n_center{feature.sample_size()};
-  auto norms = X.colwise().norm();
-  std::cout << norms.size() << std::endl;
-  // for (int icenter{0}; icenter < n_center; icenter++) {
-  //   std::cout << norms[icenter] << std::endl;
+  json kernel_hypers{
+      {"zeta", 2}, {"target_type", "Structure"}, {"name", "Cosine"}};
+  Kernel kernel{kernel_hypers};
+  // for (auto& manager : collectionA) {
+  //   for (auto center : manager) {
+  //     std::cout << center.get_position().transpose() << std::endl;
+  //   }
+  //   std::cout  << std::endl;
   // }
+  auto feat = collectionA.get_dense_feature_matrix(representation);
+  std::cout << feat << std::endl;
+  std::cout << "*******************************************" << std::endl;
+  auto mat = kernel.compute(representation, collectionA, collectionB);
+  std::cout << mat << std::endl;
 
-  auto kernel1 = X.transpose() * X;
+  // json kernel_hypers_local{{"zeta", 2},
+  //                     {"target_type", "Atom"}};
+  // Kernel<internal::KernelType::Cosine> kernel_local{kernel_hypers_local};
 
-  auto kernel2 = dot(feature, feature);
+  // auto mat_local = kernel_local.compute(representation, collectionA,
+  // collectionA); std::cout << mat_local << std::endl;
 
-  auto kernel3 = dot(feature);
+  // auto property_name{representation.get_name()};
+  // auto&& property{manager->template
+  // get_validated_property_ref<Property_t>(property_name)};
 
-  // auto max1{kernel1.mean()};
-  // auto max2{kernel2.mean()};
-  // auto diff{(kernel1 - kernel2).array().abs().matrix().mean()};
-  std::cout << kernel1.mean() << ", " << kernel1.minCoeff() << ", "
-            << kernel1.maxCoeff() << std::endl;
-  // std::cout << max1 << ", " << max2 << ", " << diff << std::endl;
-
-  // diff = (kernel2 - kernel3).array().abs().matrix().mean();
-
-  // std::cout << diff << std::endl;
+  // auto test_representation{property.get_dense_feature_matrix()};
 
   return (0);
 }

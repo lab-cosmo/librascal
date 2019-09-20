@@ -34,7 +34,7 @@
 #include "json_io.hh"
 #include "profile_utility.hh"
 #include "math/interpolator.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
+#include "representations/calculator_spherical_expansion.hh"
 
 static constexpr int N_REPETITIONS = 200;
 static unsigned int SEED = 1597463007;

@@ -1,5 +1,5 @@
 /**
- * file   test_representation_manager.hh
+ * file   test_calculator.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  * @author Max Veit <max.veit@epfl.ch>
@@ -26,20 +26,20 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef TESTS_TEST_REPRESENTATION_MANAGER_HH_
-#define TESTS_TEST_REPRESENTATION_MANAGER_HH_
+#ifndef TESTS_TEST_CALCULATOR_HH_
+#define TESTS_TEST_CALCULATOR_HH_
 
 #include "tests.hh"
 #include "test_adaptor.hh"
 #include "test_math.hh"
 #include "test_structure.hh"
 #include "atomic_structure.hh"
-#include "representations/representation_manager_base.hh"
-#include "representations/representation_manager_sorted_coulomb.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/representation_manager_spherical_invariants.hh"
-#include "representations/representation_manager_spherical_covariants.hh"
-#include "representations/feature_manager_block_sparse.hh"
+#include "structure_managers/structure_manager_collection.hh"
+#include "representations/calculator_base.hh"
+#include "representations/calculator_sorted_coulomb.hh"
+#include "representations/calculator_spherical_expansion.hh"
+#include "representations/calculator_spherical_invariants.hh"
+#include "representations/calculator_spherical_covariants.hh"
 
 #include "json_io.hh"
 #include "rascal_utility.hh"
@@ -97,6 +97,7 @@ namespace rascal {
       : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalInvariants;
 
     MultipleStructureSphericalInvariants() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
@@ -106,7 +107,7 @@ namespace rascal {
               rep_hyp["cutoff_function"] = fc_hyp;
               rep_hyp["gaussian_density"] = sig_hyp;
               rep_hyp["radial_contribution"] = ri_hyp;
-              this->hypers.push_back(rep_hyp);
+              this->representation_hypers.push_back(rep_hyp);
             }
           }
         }
@@ -115,7 +116,7 @@ namespace rascal {
 
     ~MultipleStructureSphericalInvariants() = default;
 
-    std::vector<json> hypers{};
+    std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
@@ -145,18 +146,18 @@ namespace rascal {
     // from the cubic jsons. Strangely for max_angular=0 and
     // soap_type=PowerSpectrum there is no error
     std::vector<json> rep_hypers{//{{"max_radial", 6},
-                                 // {"max_angular", 0},
-                                 // {"soap_type", "RadialSpectrum"},
-                                 // {"normalize", true}},
-                                 //{{"max_radial", 6},
-                                 // {"max_angular", 0},
-                                 // {"soap_type", "RadialSpectrum"},
-                                 // {"normalize", true}},
-                                 {{"max_radial", 6},
-                                  {"max_angular", 6},
+                                  //{"max_angular", 0},
+                                  //{"soap_type", "RadialSpectrum"},
+                                  //{"normalize", true}},
+                                 //{{"max_radial", 10},
+                                  //{"max_angular", 0},
+                                  //{"soap_type", "RadialSpectrum"},
+                                  //{"normalize", true}},
+                                 {{"max_radial", 3},
+                                  {"max_angular", 3},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 6},
+                                 {{"max_radial", 8},
                                   {"max_angular", 6},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}},
@@ -176,6 +177,7 @@ namespace rascal {
       : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalCovariants;
 
     MultipleStructureSphericalCovariants() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
@@ -185,7 +187,7 @@ namespace rascal {
               rep_hyp["cutoff_function"] = fc_hyp;
               rep_hyp["gaussian_density"] = sig_hyp;
               rep_hyp["radial_contribution"] = ri_hyp;
-              this->hypers.push_back(rep_hyp);
+              this->representation_hypers.push_back(rep_hyp);
             }
           }
         }
@@ -194,7 +196,7 @@ namespace rascal {
 
     ~MultipleStructureSphericalCovariants() = default;
 
-    std::vector<json> hypers{};
+    std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
@@ -210,14 +212,14 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 6},
-                                  {"max_angular", 6},
+    std::vector<json> rep_hypers{{{"max_radial", 1},
+                                  {"max_angular", 2},
                                   {"soap_type", "LambdaSpectrum"},
                                   {"lam", 2},
                                   {"inversion_symmetry", true},
                                   {"normalize", true}},
-                                 {{"max_radial", 6},
-                                  {"max_angular", 6},
+                                 {{"max_radial", 2},
+                                  {"max_angular", 3},
                                   {"soap_type", "LambdaSpectrum"},
                                   {"lam", 2},
                                   {"inversion_symmetry", false},
@@ -227,10 +229,12 @@ namespace rascal {
   struct SphericalInvariantsTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalInvariants;
     SphericalInvariantsTestData() : Parent{} {
       this->get_ref(this->ref_filename);
     }
     ~SphericalInvariantsTestData() = default;
+    bool verbose{false};
     std::string ref_filename{
         "reference_data/spherical_invariants_reference.ubjson"};
   };
@@ -238,10 +242,12 @@ namespace rascal {
   struct SphericalCovariantsTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalCovariants;
     SphericalCovariantsTestData() : Parent{} {
       this->get_ref(this->ref_filename);
     }
     ~SphericalCovariantsTestData() = default;
+    bool verbose{false};
     std::string ref_filename{
         "reference_data/spherical_covariants_reference.ubjson"};
   };
@@ -250,6 +256,7 @@ namespace rascal {
       : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalExpansion;
 
     MultipleStructureSphericalExpansion() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
@@ -259,7 +266,7 @@ namespace rascal {
               rep_hyp["cutoff_function"] = fc_hyp;
               rep_hyp["gaussian_density"] = sig_hyp;
               rep_hyp["radial_contribution"] = ri_hyp;
-              this->hypers.push_back(rep_hyp);
+              this->representation_hypers.push_back(rep_hyp);
             }
           }
         }
@@ -267,7 +274,7 @@ namespace rascal {
     };
     ~MultipleStructureSphericalExpansion() = default;
 
-    std::vector<json> hypers{};
+    std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
@@ -332,6 +339,7 @@ namespace rascal {
       : SimpleStructureManagerNLStrictFixture {
     using Parent = SimpleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalExpansion;
 
     MultipleHypersSphericalExpansion() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
@@ -341,7 +349,7 @@ namespace rascal {
               rep_hyp["cutoff_function"] = fc_hyp;
               rep_hyp["gaussian_density"] = sig_hyp;
               rep_hyp["radial_contribution"] = ri_hyp;
-              this->hypers.push_back(rep_hyp);
+              this->representation_hypers.push_back(rep_hyp);
             }
           }
         }
@@ -350,7 +358,7 @@ namespace rascal {
 
     ~MultipleHypersSphericalExpansion() = default;
 
-    std::vector<json> hypers{};
+    std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
@@ -422,11 +430,12 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
-  struct SingleHypersSphericalRepresentation : SimplePeriodicNLStrictFixture {
+  struct SingleHypersSphericalExpansion : SimplePeriodicNLStrictFixture {
     using Parent = SimplePeriodicNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalExpansion;
 
-    SingleHypersSphericalRepresentation() : Parent{} {
+    SingleHypersSphericalExpansion() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
@@ -434,16 +443,53 @@ namespace rascal {
               rep_hyp["cutoff_function"] = fc_hyp;
               rep_hyp["gaussian_density"] = sig_hyp;
               rep_hyp["radial_contribution"] = ri_hyp;
-              this->hypers.push_back(rep_hyp);
+              this->representation_hypers.push_back(rep_hyp);
             }
           }
         }
       }
     };
 
-    ~SingleHypersSphericalRepresentation() = default;
+    ~SingleHypersSphericalExpansion() = default;
 
-    std::vector<json> hypers{};
+    std::vector<json> representation_hypers{};
+    std::vector<json> fc_hypers{
+        {{"type", "Cosine"},
+         {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+
+    std::vector<json> density_hypers{
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> rep_hypers{
+        {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}},
+        {{"max_radial", 4}, {"max_angular", 0}, {"compute_gradients", true}}};
+  };
+
+  struct SingleHypersSphericalInvariants : SimplePeriodicNLStrictFixture {
+    using Parent = SimplePeriodicNLStrictFixture;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalInvariants;
+
+    SingleHypersSphericalInvariants() : Parent{} {
+      for (auto & ri_hyp : this->radial_contribution_hypers) {
+        for (auto & fc_hyp : this->fc_hypers) {
+          for (auto & sig_hyp : this->density_hypers) {
+            for (auto & rep_hyp : this->rep_hypers) {
+              rep_hyp["cutoff_function"] = fc_hyp;
+              rep_hyp["gaussian_density"] = sig_hyp;
+              rep_hyp["radial_contribution"] = ri_hyp;
+              this->representation_hypers.push_back(rep_hyp);
+            }
+          }
+        }
+      }
+    };
+
+    ~SingleHypersSphericalInvariants() = default;
+
+    std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
@@ -472,11 +518,13 @@ namespace rascal {
   struct SphericalExpansionTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalExpansion;
 
     SphericalExpansionTestData() : Parent{} {
       this->get_ref(this->ref_filename);
     }
     ~SphericalExpansionTestData() = default;
+    bool verbose{true};
     std::string ref_filename{
         "reference_data/spherical_expansion_reference.ubjson"};
   };
@@ -537,20 +585,27 @@ namespace rascal {
    * respect to the center position can then be tested, as usual, with
    * test_gradients() (defined in test_math.hh).
    */
-  template <typename RepManager>
+  template <typename RepManager, class StructureManager>
   class RepresentationManagerGradientCalculator {
    public:
     using Structure_t = AtomicStructure<3>;
     using Key_t = typename RepManager::Key_t;
-    using PairRef_t = typename RepManager::Manager_t::template ClusterRef<2>;
     static const size_t n_arguments = 3;
 
-    template <typename T>
+    using PairRef_t =
+        typename RepManager::template ClusterRef_t<StructureManager, 2>;
+
+    // type of the data structure holding the representation and its gradients
+    using Prop_t = typename RepManager::template Property_t<StructureManager>;
+    using PropGrad_t =
+        typename RepManager::template PropertyGradient_t<StructureManager>;
+
+    template <typename T, class V>
     friend class RepresentationManagerGradientFixture;
 
     RepresentationManagerGradientCalculator(
         RepManager & representation,
-        std::shared_ptr<typename RepManager::Manager_t> structure_manager,
+        std::shared_ptr<StructureManager> structure_manager,
         Structure_t atomic_structure)
         : representation{representation}, structure_manager{structure_manager},
           atomic_structure{atomic_structure}, center_it{
@@ -564,9 +619,14 @@ namespace rascal {
       Structure_t modified_structure{this->atomic_structure};
       modified_structure.positions.col(center.get_index()) = center_position;
       this->structure_manager->update(modified_structure);
-      representation.compute();
-      auto & data_sparse{representation.get_representation_sparse()};
-      auto & gradients_sparse{representation.get_gradient_sparse()};
+      this->representation.compute(this->structure_manager);
+
+      auto && data_sparse{structure_manager->template get_property_ref<Prop_t>(
+          representation.get_name())};
+      auto && gradients_sparse{
+          structure_manager->template get_property_ref<PropGrad_t>(
+              representation.get_gradient_name())};
+
       auto & data_center{data_sparse[center]};
       auto keys_center = gradients_sparse.get_keys(center);
       Key_t center_key{center.get_atom_type()};
@@ -621,8 +681,13 @@ namespace rascal {
       // center_it->position() = center_position;
       // representation.compute();
       auto center = *center_it;
-      auto & data_sparse{representation.get_representation_sparse()};
-      auto & gradients_sparse{representation.get_gradient_sparse()};
+
+      auto && data_sparse{structure_manager->template get_property_ref<Prop_t>(
+          representation.get_name())};
+      auto && gradients_sparse{
+          structure_manager->template get_property_ref<PropGrad_t>(
+              representation.get_gradient_name())};
+
       auto & gradients_center{gradients_sparse[center]};
       auto keys_center = gradients_center.get_keys();
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
@@ -667,9 +732,9 @@ namespace rascal {
 
    private:
     RepManager & representation;
-    std::shared_ptr<typename RepManager::Manager_t> structure_manager;
+    std::shared_ptr<StructureManager> structure_manager;
     Structure_t atomic_structure;
-    typename RepManager::Manager_t::iterator center_it;
+    typename StructureManager::iterator center_it;
 
     inline void advance_center() { ++this->center_it; }
 
@@ -704,12 +769,13 @@ namespace rascal {
    * Holds data (i.e. function values, gradient directions) and iterates through
    * the list of centers
    */
-  template <typename RepManager_t>
+  template <typename RepManager_t, class StructureManager_t>
   class RepresentationManagerGradientFixture : public GradientTestFixture {
    public:
     using StdVector2Dim_t = std::vector<std::vector<double>>;
-    using Calculator_t = RepresentationManagerGradientCalculator<RepManager_t>;
-    using StructureManager_t = typename RepManager_t::Manager_t;
+    using Calculator_t =
+        RepresentationManagerGradientCalculator<RepManager_t,
+                                                StructureManager_t>;
 
     static const size_t n_arguments = 3;
 
@@ -718,9 +784,7 @@ namespace rascal {
         Calculator_t & calc)
         : structure{structure}, center_it{structure->begin()}, calculator{
                                                                    calc} {
-      json input_data;
-      std::ifstream input_file{filename};
-      input_file >> input_data;
+      json input_data = json_io::load(filename);
 
       this->function_inputs = this->get_function_inputs();
       this->displacement_directions =
@@ -759,10 +823,6 @@ namespace rascal {
       return inputs_new;
     }
 
-    // StdVector2Dim_t function_inputs{};
-    // Eigen::MatrixXd displacement_directions{};
-    // VerbosityValue verbosity{VerbosityValue::NORMAL};
-
     std::shared_ptr<StructureManager_t> structure;
     typename StructureManager_t::iterator center_it;
     Calculator_t & calculator;
@@ -772,26 +832,29 @@ namespace rascal {
       : MultipleStructureManagerNLStrictFixture {
     using Parent = MultipleStructureManagerNLStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-
+    using Representation_t = CalculatorSortedCoulomb;
     MultipleStructureSortedCoulomb() : Parent{} {};
     ~MultipleStructureSortedCoulomb() = default;
 
-    std::vector<json> hypers{{{"central_decay", 0.5},
-                              {"interaction_cutoff", 10.},
-                              {"interaction_decay", 0.5},
-                              {"size", 120},
-                              {"sorting_algorithm", "distance"}},
-                             {{"central_decay", 0.5},
-                              {"interaction_cutoff", 10.},
-                              {"interaction_decay", 0.5},
-                              {"size", 120},
-                              {"sorting_algorithm", "row_norm"}}};
+    std::vector<json> representation_hypers{
+        {{"central_cutoff", 3.},
+         {"central_decay", 0.5},
+         {"interaction_cutoff", 10.},
+         {"interaction_decay", 0.5},
+         {"size", 120},
+         {"sorting_algorithm", "distance"}},
+        {{"central_cutoff", 3.},
+         {"central_decay", 0.5},
+         {"interaction_cutoff", 10.},
+         {"interaction_decay", 0.5},
+         {"size", 120},
+         {"sorting_algorithm", "row_norm"}}};
   };
 
   struct SortedCoulombTestData : TestData {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-
+    using Representation_t = CalculatorSortedCoulomb;
     SortedCoulombTestData() : Parent{} { this->get_ref(this->ref_filename); }
     ~SortedCoulombTestData() = default;
 
@@ -801,22 +864,25 @@ namespace rascal {
 
     const bool consider_ghost_neighbours{false};
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
+    bool verbose{false};
   };
 
-  template <class BaseFixture, template <class> class RepresentationManager>
-  struct RepresentationFixture : MultipleStructureFixture<BaseFixture> {
+  template <class BaseFixture>
+  struct CalculatorFixture : MultipleStructureFixture<BaseFixture> {
     using Parent = MultipleStructureFixture<BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
-    using Representation_t = RepresentationManager<Manager_t>;
+    using Representation_t = typename BaseFixture::Representation_t;
+    using Property_t =
+        typename Representation_t::template Property_t<Manager_t>;
 
-    RepresentationFixture() : Parent{} {}
-    ~RepresentationFixture() = default;
+    CalculatorFixture() : Parent{} {}
+    ~CalculatorFixture() = default;
 
-    std::list<Representation_t> representations{};
+    std::vector<Representation_t> representations{};
   };
 
   /* ---------------------------------------------------------------------- */
 
 }  // namespace rascal
 
-#endif  // TESTS_TEST_REPRESENTATION_MANAGER_HH_
+#endif  // TESTS_TEST_CALCULATOR_HH_

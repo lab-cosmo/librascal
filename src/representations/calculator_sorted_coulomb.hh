@@ -1,5 +1,5 @@
 /**
- * file   representation_manager_sorted_coulomb.hh
+ * file   calculator_sorted_coulomb.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -25,10 +25,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SORTED_COULOMB_HH_
-#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SORTED_COULOMB_HH_
+#ifndef SRC_REPRESENTATIONS_CALCULATOR_SORTED_COULOMB_HH_
+#define SRC_REPRESENTATIONS_CALCULATOR_SORTED_COULOMB_HH_
 
-#include "representations/representation_manager_base.hh"
+#include "representations/calculator_base.hh"
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
 #include "rascal_utility.hh"
@@ -157,22 +157,20 @@ namespace rascal {
   /**
    * Implementation of the Environmental Coulomb Matrix
    */
-  template <class StructureManager>
-  class RepresentationManagerSortedCoulomb : public RepresentationManagerBase {
+  class CalculatorSortedCoulomb : public CalculatorBase {
    public:
-    using Manager_t = StructureManager;
-    using ManagerPtr_t = std::shared_ptr<Manager_t>;
-    using Parent = RepresentationManagerBase;
+    using Parent = CalculatorBase;
     // type of the hyperparameters
     using Hypers_t = typename Parent::Hypers_t;
     // numeric type for the representation features
     using Precision_t = typename Parent::Precision_t;
     // type of the data structure for the representation feaures
+    template <class StructureManager>
     using Property_t =
-        Property<Precision_t, 1, 1, Manager_t, Eigen::Dynamic, 1>;
-    template <size_t Order>
+        Property<Precision_t, 1, 1, StructureManager, Eigen::Dynamic, 1>;
     // short hand type to help the iteration over the structure manager
-    using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
+    template <class StructureManager, size_t Order>
+    using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
     // type of the datastructure used to register the list of valid
     // hyperparameters
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
@@ -180,75 +178,56 @@ namespace rascal {
 
     /* -------------------- rep-construc-start -------------------- */
     //! Constructor
-    RepresentationManagerSortedCoulomb(ManagerPtr_t sm, const Hypers_t & hyper)
-        : structure_manager{std::move(sm)}, central_decay{},
-          interaction_cutoff{}, interaction_decay{}, coulomb_matrices{*sm} {
+    explicit CalculatorSortedCoulomb(const Hypers_t & hyper) {
+      this->set_default_prefix("sorted_coulomb_");
       this->check_hyperparameters(this->reference_hypers, hyper);
       // Extract the options and hyperparameters
       this->set_hyperparameters(hyper);
-      // additional checks specific to the coulomb matrix representation
-      this->check_size_compatibility();
     }
 
     //! Copy constructor
-    RepresentationManagerSortedCoulomb(
-        const RepresentationManagerSortedCoulomb & other) = delete;
+    CalculatorSortedCoulomb(const CalculatorSortedCoulomb & other) = delete;
 
     //! Move constructor
-    RepresentationManagerSortedCoulomb(
-        RepresentationManagerSortedCoulomb && other) = default;
+    CalculatorSortedCoulomb(CalculatorSortedCoulomb && other) = default;
 
     //! Destructor
-    virtual ~RepresentationManagerSortedCoulomb() = default;
+    virtual ~CalculatorSortedCoulomb() = default;
 
     //! Copy assignment operator
-    RepresentationManagerSortedCoulomb &
-    operator=(const RepresentationManagerSortedCoulomb & other) = delete;
+    CalculatorSortedCoulomb &
+    operator=(const CalculatorSortedCoulomb & other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerSortedCoulomb &
-    operator=(RepresentationManagerSortedCoulomb && other) = default;
+    CalculatorSortedCoulomb &
+    operator=(CalculatorSortedCoulomb && other) = default;
     /* -------------------- rep-construc-end -------------------- */
 
     /* -------------------- rep-interface-start -------------------- */
-    //! compute representation
-    void compute();
+    /**
+     * Compute representation for a given structure manager.
+     *
+     * @tparam StructureManager a (single or collection)
+     * of structure manager(s) (in an iterator) held in shared_ptr
+     */
+    template <class StructureManager>
+    void compute(StructureManager & managers);
 
     //! set hypers
-    void set_hyperparameters(const Hypers_t &);
+    inline void set_hyperparameters(const Hypers_t &);
 
-    //! getter for the representation
-    Eigen::Map<const Eigen::MatrixXd> get_representation_full() {
-      auto nb_centers{this->structure_manager->size()};
-      auto nb_features{this->get_n_feature()};
-      auto & raw_data{this->coulomb_matrices.get_raw_data()};
-      Eigen::Map<const Eigen::MatrixXd> representation(raw_data.data(),
-                                                       nb_features, nb_centers);
-      return representation;
-    }
+    inline void update_central_cutoff(const double &);
 
-    //! get the raw data of the representation
-    std::vector<Precision_t> & get_representation_raw_data() {
-      return this->coulomb_matrices.get_raw_data();
-    }
+    /**
+     * check if size of the calculator is enough for current structure
+     * manager.
+     * size refers to the parameter that regulate the feature size of the
+     * calculator.
+     */
 
-    Data_t & get_representation_sparse_raw_data() { return this->dummy; }
-
-    //! get the size of a feature vector
-    size_t get_feature_size() { return this->coulomb_matrices.get_nb_comp(); }
-
-    //! get the number of centers for the representation
-    size_t get_center_size() { return this->coulomb_matrices.get_nb_item(); }
-    /* -------------------- rep-interface-end -------------------- */
-
-    //! Implementation of compute representation
-    template <internal::CMSortAlgorithm AlgorithmType>
-    void compute_helper();
-
-    //! check if size of representation manager is enough for current structure
-    //! manager
-    void check_size_compatibility() {
-      for (auto center : this->structure_manager) {
+    template <class StructureManager>
+    void check_size_compatibility(StructureManager & manager) {
+      for (auto center : manager) {
         auto n_neighbours{center.size()};
         if (n_neighbours > this->size) {
           std::cout << "size is too small for this "
@@ -259,8 +238,38 @@ namespace rascal {
       }
     }
 
+    /* -------------------- rep-interface-end -------------------- */
+
+    /* -------------------- compute-loop-begin -------------------- */
+    //! loop over a collection of manangers (note that maps would raise a
+    //! compilation error)
+    template <
+        internal::CMSortAlgorithm AlgorithmType, class StructureManager,
+        std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
+                         int> = 0>
+    inline void compute_loop(StructureManager & managers) {
+      for (auto & manager : managers) {
+        this->compute_impl<AlgorithmType>(manager);
+      }
+    }
+    //! if it is not a list of managers
+    template <internal::CMSortAlgorithm AlgorithmType, class StructureManager,
+              std::enable_if_t<
+                  not(internal::is_proper_iterator<StructureManager>::value),
+                  int> = 0>
+    inline void compute_loop(StructureManager & manager) {
+      this->compute_impl<AlgorithmType>(manager);
+    }
+    /* -------------------- compute-loop-end -------------------- */
+
+    //! Implementation of compute representation
+    template <internal::CMSortAlgorithm AlgorithmType, class StructureManager>
+    inline void compute_impl(std::shared_ptr<StructureManager> & manager);
+
     //! returns the distance matrix for a central atom
-    void get_distance_matrix(ClusterRef_t<1> & center,
+    template <class StructureManager>
+    void get_distance_matrix(std::shared_ptr<StructureManager> & manager,
+                             ClusterRef_t<StructureManager, 1> & center,
                              Eigen::Ref<Eigen::MatrixXd> distance_mat,
                              Eigen::Ref<Eigen::MatrixXd> type_factor_mat);
 
@@ -311,8 +320,6 @@ namespace rascal {
     inline size_t get_n_feature() { return this->size * (this->size + 1) / 2; }
 
     /* -------------------- rep-variables-start -------------------- */
-    // Reference to the structure manager
-    ManagerPtr_t structure_manager;
     // list of hyperparameters specific to the coulomb matrix
     // spherical cutoff for the atomic environment
     double central_cutoff{};
@@ -323,12 +330,9 @@ namespace rascal {
     // at least equal to the largest number of neighours
     size_t size{};
 
-    Data_t dummy{};
-
-    Property_t coulomb_matrices;
-
     //! reference the requiered hypers
     ReferenceHypers_t reference_hypers{
+        {"central_cutoff", {}},
         {"central_decay", {}},
         {"interaction_cutoff", {}},
         {"interaction_decay", {}},
@@ -339,57 +343,63 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  template <class Mngr>
-  void RepresentationManagerSortedCoulomb<Mngr>::set_hyperparameters(
-      const RepresentationManagerSortedCoulomb<Mngr>::Hypers_t & hyper) {
+  inline void CalculatorSortedCoulomb::set_hyperparameters(
+      const CalculatorSortedCoulomb::Hypers_t & hyper) {
     this->hypers = hyper;
-    this->central_cutoff = this->structure_manager->get_cutoff();
-    this->hypers["central_cutoff"] = this->central_cutoff;
+    // TODO(felix) potential problem here in the tests and bindings
+    this->update_central_cutoff(this->hypers["central_cutoff"]);
 
     this->options.emplace("sorting_algorithm",
                           hyper["sorting_algorithm"].get<std::string>());
 
     this->size = hyper["size"];
 
-    if ((hyper["interaction_cutoff"] < 0) or
-        hyper["interaction_cutoff"] > 2 * this->central_cutoff) {
+    this->set_name(hyper);
+  }
+
+  inline void
+  CalculatorSortedCoulomb::update_central_cutoff(const double & cutoff) {
+    this->central_cutoff = cutoff;
+
+    if ((this->hypers["interaction_cutoff"] < 0) or
+        this->hypers["interaction_cutoff"] > 2 * this->central_cutoff) {
       this->interaction_cutoff = 2 * this->central_cutoff;
       this->hypers["interaction_cutoff"] = this->interaction_cutoff;
     } else {
-      this->interaction_cutoff = hyper["interaction_cutoff"];
+      this->interaction_cutoff = this->hypers["interaction_cutoff"];
     }
 
-    if (hyper["central_decay"] < 0) {
+    if (this->hypers["central_decay"] < 0) {
       this->central_decay = 0.;
       this->hypers["central_decay"] = this->central_decay;
-    } else if (hyper["central_decay"] > this->central_cutoff) {
+    } else if (this->hypers["central_decay"] > this->central_cutoff) {
       this->central_decay = this->central_cutoff;
       this->hypers["central_decay"] = this->central_cutoff;
     } else {
-      this->central_decay = hyper["central_decay"];
+      this->central_decay = this->hypers["central_decay"];
     }
 
-    if (hyper["interaction_decay"] < 0) {
+    if (this->hypers["interaction_decay"] < 0) {
       this->interaction_decay = 0.;
       this->hypers["interaction_decay"] = this->interaction_decay;
-    } else if (hyper["interaction_decay"] > this->interaction_cutoff) {
+    } else if (this->hypers["interaction_decay"] > this->interaction_cutoff) {
       this->interaction_decay = this->interaction_cutoff;
       this->hypers["interaction_decay"] = this->interaction_cutoff;
     } else {
-      this->interaction_decay = hyper["interaction_decay"];
+      this->interaction_decay = this->hypers["interaction_decay"];
     }
   }
 
   /* ---------------------------------------------------------------------- */
   /* -------------------- rep-options-compute-start-------------------- */
-  template <class Mngr>
-  void RepresentationManagerSortedCoulomb<Mngr>::compute() {
+  template <class StructureManager>
+  void CalculatorSortedCoulomb::compute(StructureManager & managers) {
     auto option{this->options["sorting_algorithm"]};
 
     if (option == "distance") {
-      compute_helper<internal::CMSortAlgorithm::Distance>();
+      compute_loop<internal::CMSortAlgorithm::Distance>(managers);
     } else if (option == "row_norm") {
-      compute_helper<internal::CMSortAlgorithm::RowNorm>();
+      compute_loop<internal::CMSortAlgorithm::RowNorm>(managers);
     } else {
       auto error_message{std::string("Option '") + option +
                          std::string("' is not implemented.")};
@@ -397,22 +407,49 @@ namespace rascal {
     }
   }
   /* -------------------- rep-options-compute-end -------------------- */
-  /* ---------------------------------------------------------------------- */
+
   /* -------------------- rep-options-compute-impl-start -------------------- */
-  template <class Mngr>
-  template <internal::CMSortAlgorithm AlgorithmType>
-  void RepresentationManagerSortedCoulomb<Mngr>::compute_helper() {
+  template <internal::CMSortAlgorithm AlgorithmType, class StructureManager>
+  inline void CalculatorSortedCoulomb::compute_impl(
+      std::shared_ptr<StructureManager> & manager) {
+    using Prop_t = Property_t<StructureManager>;
+
+    // TODO(felix) use the commented code bellow. needs changes in the tests
+    // because it actually runs cases where
+    // this->central_cutoff > manager->get_cutoff() is true.
+    this->update_central_cutoff(manager->get_cutoff());
+    // if (this->central_cutoff > manager->get_cutoff()) {
+    //   std::string error{R"(The hypers cutoff and the managers cutoff are not
+    //   compatible: )"}; error += std::to_string(this->central_cutoff) +
+    //   std::string(" > "); error +=  std::to_string(manager->get_cutoff());
+    //   throw std::runtime_error(error);
+    // }
+
+    // Get a reference to the data container where the computed representation
+    // is stored in the corresponding structure manager
+    auto && coulomb_matrices{
+        manager->template get_property_ref<Prop_t>(this->get_name())};
+
+    // if the representation has already been computed for the current
+    // structure then do nothing
+    if (coulomb_matrices.is_updated()) {
+      return;
+    }
+
+    this->check_size_compatibility(manager);
+
     // initialise the sorted coulomb_matrices in linear storage
-    this->coulomb_matrices.resize_to_zero();
-    this->coulomb_matrices.set_nb_row(this->get_n_feature());
+    coulomb_matrices.clear();
+    coulomb_matrices.set_nb_row(this->get_n_feature());
+    coulomb_matrices.resize();
+    // coulomb_matrices.set_shape(this->get_n_feature(), 1);
 
     // initialize the sorted linear coulomb matrix
     Eigen::MatrixXd lin_sorted_coulomb_mat(this->size * (this->size + 1) / 2,
                                            1);
-    // Eigen::MatrixXd coulomb_mat(this->size,this->size);
 
     // loop over the centers
-    for (auto center : *this->structure_manager) {
+    for (auto center : manager) {
       // re-use the temporary coulomb mat in linear storage
       // need to be zeroed because old data might not be overwritten
       lin_sorted_coulomb_mat =
@@ -432,10 +469,10 @@ namespace rascal {
       Eigen::MatrixXd coulomb_mat =
           Eigen::MatrixXd::Ones(n_neighbour, n_neighbour);
 
-      this->get_distance_matrix(center, distance_mat, type_factor_mat);
+      this->get_distance_matrix(manager, center, distance_mat, type_factor_mat);
 
       // Compute Coulomb Mat element wise.
-      coulomb_mat = type_factor_mat.array() / distance_mat.array();
+      coulomb_mat.array() = type_factor_mat.array() / distance_mat.array();
 
       using Sorter = internal::SortCoulomMatrix<AlgorithmType>;
       auto sort_order{
@@ -444,27 +481,28 @@ namespace rascal {
       this->sort_and_linearize_coulomb_matrix(
           coulomb_mat, lin_sorted_coulomb_mat, sort_order);
 
-      this->coulomb_matrices.push_back(lin_sorted_coulomb_mat);
+      coulomb_matrices[center] = lin_sorted_coulomb_mat;
     }
   }
   /* -------------------- rep-options-compute-impl-end -------------------- */
 
   /* ---------------------------------------------------------------------- */
-  template <class Mngr>
-  void RepresentationManagerSortedCoulomb<Mngr>::get_distance_matrix(
-      RepresentationManagerSortedCoulomb<Mngr>::ClusterRef_t<1> & center,
+  template <class StructureManager>
+  void CalculatorSortedCoulomb::get_distance_matrix(
+      std::shared_ptr<StructureManager> & manager,
+      CalculatorSortedCoulomb::ClusterRef_t<StructureManager, 1> & center,
       Eigen::Ref<Eigen::MatrixXd> distance_mat,
       Eigen::Ref<Eigen::MatrixXd> type_factor_mat) {
     // the coulomb mat first row and col corresponds
     // to central atom to neighbours
     auto && Zk{center.get_atom_type()};
-    auto && central_cutoff{this->structure_manager->get_cutoff()};
+    auto && central_cutoff{this->central_cutoff};
 
     type_factor_mat(0, 0) = 0.5 * std::pow(Zk, 2.4);
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
-      double & dik{this->structure_manager->get_distance(neigh_i)};
+      double & dik{manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
@@ -479,7 +517,7 @@ namespace rascal {
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
-      double & dik{this->structure_manager->get_distance(neigh_i)};
+      double & dik{manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
@@ -506,4 +544,4 @@ namespace rascal {
   }
 }  // namespace rascal
 
-#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SORTED_COULOMB_HH_
+#endif  // SRC_REPRESENTATIONS_CALCULATOR_SORTED_COULOMB_HH_

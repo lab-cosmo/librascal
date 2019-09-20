@@ -39,7 +39,7 @@
 
 #include "math/interpolator.hh"
 #include "benchmarks.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
+#include "representations/calculator_spherical_expansion.hh"
 #include "json.hpp"
 
 
@@ -433,8 +433,7 @@ namespace rascal {
   template <class Dataset>
   class SphericalExpansionBFixture : public InterpolatorBFixture<Dataset> {
    public:
-    using Representation_t = RepresentationManagerSphericalExpansion<
-        AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+    using Representation_t = CalculatorSphericalExpansion;
     using Manager_t =
         AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
@@ -535,7 +534,7 @@ namespace rascal {
       }
       this->hypers = hypers;
       this->representation_ptr =
-          std::make_shared<Representation_t>(manager, hypers);
+          std::make_shared<Representation_t>(hypers);
     }
 
     bool

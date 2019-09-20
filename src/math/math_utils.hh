@@ -147,6 +147,28 @@ namespace rascal {
     }
 
     /**
+     * Defines an integer power functor, which is used as CustomUnaryOp object
+     * to apply elementwise integer power operations on an Eigen::MatrixBase
+     * object e.g. :
+     *
+     *   Eigen::VectorXd vec(3);
+     *   vec << 5,10,20;
+     *   auto functor{MakePositiveIntegerPower(2)};
+     *   vec.unaryExpr(functor);
+     *   // result is vec = [25,100,400]
+     *
+     * @tparam Scalar can be of type: double, int and uint
+     */
+    template <typename Scalar>
+    struct MakePositiveIntegerPower {
+      typedef Scalar result_type;
+      size_t b;
+      explicit MakePositiveIntegerPower(const size_t & b) : b{b} {}
+
+      Scalar operator()(const Scalar & a) const { return pow(a, this->b); }
+    };
+
+    /**
      * Compute a cosine-type switching function for smooth cutoffs
      *
      * @param cutoff Outer (strict) cutoff, beyond which this function becomes

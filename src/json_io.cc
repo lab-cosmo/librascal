@@ -27,11 +27,41 @@
 
 #include "json_io.hh"
 
-#include <sstream>
-
 namespace rascal {
 
   namespace json_io {
+
+    json load(const std::string & filename) {
+      json data;
+      auto extension{internal::get_filename_extension(filename)};
+      if (extension == "json") {
+        data = load_txt(filename);
+      } else if (extension == "ubjson") {
+        data = load_bin(filename);
+      } else {
+        throw std::runtime_error(std::string("Don't know the extension of ") +
+                                 filename);
+      }
+      return data;
+    }
+
+    json load_txt(const std::string & filename) {
+      json j;
+      std::ifstream reader(filename);
+      if (not reader.is_open()) {
+        throw std::runtime_error(std::string("Could not open the file: ") +
+                                 filename);
+      }
+      reader >> j;
+      reader.close();
+      return j;
+    }
+
+    json load_bin(const std::string & filename) {
+      std::vector<std::uint8_t> ref_data_ubjson;
+      internal::read_binary_file(filename, ref_data_ubjson);
+      return json::from_ubjson(ref_data_ubjson);
+    }
 
     /* ---------------------------------------------------------------------- */
     void to_json(json & j, AtomicJsonData & s) {
@@ -43,8 +73,15 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     void from_json(const json & j, AtomicJsonData & s) {
+      if (j.count("atom_types") == 1) {
+        s.type = j.at("atom_types").get<std::vector<int>>();
+      } else if (j.count("numbers") == 1) {
+        s.type = j.at("numbers").get<std::vector<int>>();
+      } else {
+        throw std::runtime_error(
+            R"(AtomicJsonData needs atom_types or numbers keyword)");
+      }
       s.cell = j.at("cell").get<std::vector<std::vector<double>>>();
-      s.type = j.at("atom_types").get<std::vector<int>>();
       s.pbc = j.at("pbc").get<std::vector<int>>();
       s.position = j.at("positions").get<std::vector<std::vector<double>>>();
     }

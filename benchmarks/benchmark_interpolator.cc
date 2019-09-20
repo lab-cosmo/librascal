@@ -122,9 +122,9 @@ namespace rascal {
   void BM_SphExp(benchmark::State & state, BFixture & fix) {
     fix.SetUp(state);
     for (auto _ : state) {
-      fix.representation_ptr->compute();
+      fix.representation_ptr->compute(fix.manager);
     }
-    // TODO(all) I would like to print interpolator information, but it is
+    // TODO(alex) I would like to print interpolator information, but it is
     // covered under a lot of layers, not sure if
     state.counters.insert({{"max_radial", fix.max_radial},
                            {"max_angular", fix.max_angular},

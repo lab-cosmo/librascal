@@ -35,7 +35,7 @@
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
 #include "math/hyp1f1.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
+#include "representations/calculator_spherical_expansion.hh"
 #include "rascal_utility.hh"
 
 #include <fstream>

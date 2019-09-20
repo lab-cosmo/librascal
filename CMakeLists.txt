@@ -194,7 +194,7 @@ if(BUILD_BINDINGS)
     endif()
   endif()
 
-  add_external_package(pybind11 VERSION 2.2.2 CONFIG)
+  add_external_package(pybind11 VERSION 2.3.0 CONFIG)
 
     # Get where python site-packages is
     if(NOT USER)
@@ -300,8 +300,7 @@ add_custom_command(OUTPUT copy_test_reference_data
         always_rebuild
   )
 
-# put it down here to avoid warnings from boost tests
-# DON'T UNCOMMENT, just fix your code
+# put it there to avoid warnings from boost tests
 add_compile_options(-Werror) # warnings are errors!
 
 # compile the library

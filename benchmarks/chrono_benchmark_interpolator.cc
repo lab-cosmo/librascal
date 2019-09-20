@@ -32,7 +32,7 @@
 #include "json_io.hh"
 #include "profile_utility.hh"
 #include "math/interpolator.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
+#include "representations/calculator_spherical_expansion.hh"
 
 using namespace rascal;            // NOLINT
 using namespace rascal::math;      // NOLINT

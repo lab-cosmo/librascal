@@ -11,7 +11,7 @@ In this section, we summarize the representation implemented in Rascal.
 Pair distances
 **************
 
-SOAP
+SphericalInvariants
 ****
 
 BP symmetry functions
