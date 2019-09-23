@@ -12,12 +12,9 @@ except:
 from matplotlib import pyplot as plt
 import time
 from tqdm import tqdm_notebook as tqdm
-from threading import Thread, Timer
-from queue import Queue
-import multiprocessing
 style = {'description_width': 'initial'}
 hyper_vals = {
-# "soap_type": dict(options = ["PowerSpectrum", "RadialSpectrum"], name = "Body Order"),
+            # "body order": dict(options = [1,2,3], name = "Body Order"),
             "interaction_cutoff":dict(options = [2.0,5.0],name = r"$r_{cut}$"),
             "max_radial":dict(options =  [0, 10],name = r"$n_{max}$"),
             "max_angular": dict(options = [0, 10],name = r"$l_{max}$"),
@@ -84,19 +81,6 @@ def compute_kernel(zeta, rep1, rep2=None, kernel_type = 'global', time_estimate=
         kernel_function = rep1.cosine_kernel_atomic
     else:
         kernel_function = rep1.cosine_kernel_global
-    # if(time_estimate!=0):
-    #     manager = multiprocessing.Manager()
-    #     return_dict = manager.dict()
-    #     # timer = Thread(target=tqdm_timer, args=(time_estimate,))
-    #     timer = multiprocessing.Process(target=tqdm_timer, args=(time_estimate,))
-    #     timer.start()
-    #     # kthread = Thread(target=kernel_function, args=(rep2, zeta,) if rep2!=None else (zeta,))
-    #     kthread = multiprocessing.Process(target=kernel_function, args=(rep2, zeta,) if rep2!=None else (zeta,))
-    #     kthread.start()
-    #     kthread.join()
-    #     print(return_dict.values())
-    #     return return_dict.values()
-    # else:
     if rep2 is not None:
         return kernel_function(rep2, zeta)
     else:
@@ -130,52 +114,6 @@ def readme_button():
     display(button, output)
 
     button.on_click(show_readme_for_button)
-def link_ngl_wdgt_to_ax_pos(ax, pos, ngl_widget):
-    from matplotlib.widgets import AxesWidget
-    from scipy.spatial import cKDTree
-    r"""
-    Initial idea for this function comes from @arose, the rest is @gph82 and @clonker
-    """
-
-    kdtree = cKDTree(pos)
-    #assert ngl_widget.trajectory_0.n_frames == pos.shape[0]
-    x, y = pos.T
-
-    lineh = ax.axhline(ax.get_ybound()[0], c="black", ls='--')
-    linev = ax.axvline(ax.get_xbound()[0], c="black", ls='--')
-    dot, = ax.plot(pos[0,0],pos[0,1], 'o', c='red', ms=7)
-
-    ngl_widget.isClick = False
-
-    def onclick(event):
-        linev.set_xdata((event.xdata, event.xdata))
-        lineh.set_ydata((event.ydata, event.ydata))
-        data = [event.xdata, event.ydata]
-        _, index = kdtree.query(x=data, k=1)
-        dot.set_xdata((x[index]))
-        dot.set_ydata((y[index]))
-        ngl_widget.isClick = True
-        ngl_widget.frame = index
-
-    def my_observer(change):
-        r"""Here comes the code that you want to execute
-        """
-        ngl_widget.isClick = False
-        _idx = change["new"]
-        try:
-            dot.set_xdata((x[_idx]))
-            dot.set_ydata((y[_idx]))
-        except IndexError as e:
-            dot.set_xdata((x[0]))
-            dot.set_ydata((y[0]))
-            print("caught index error with index %s (new=%s, old=%s)" % (_idx, change["new"], change["old"]))
-
-    # Connect axes to widget
-    axes_widget = AxesWidget(ax)
-    axes_widget.connect_event('button_release_event', onclick)
-
-    # Connect widget to axes
-    ngl_widget.observe(my_observer, "frame", "change")
 def _button_template_(options, description, disp_func, default=None):
     button = widgets.ToggleButtons(
         options = options,\
@@ -187,10 +125,7 @@ def _button_template_(options, description, disp_func, default=None):
     display(button)
     button.observe(disp_func, 'value')
     return button
-def tqdm_timer(seconds):
-    for i in tqdm(range(seconds), total=seconds):
-        time.sleep(1)
-class SOAP_tutorial(object):
+class learning_tutorial(object):
     def __init__(self, input_file='./data/small_molecules-1000.xyz',training_percentage=0.8, interactive = False, verbose=True, hyperparameters = dict(**hyper_dict['Power Spectrum']), number_of_frames=None, property=None):
         self.zeta = 2
         self.Lambda = 5e-3
@@ -301,7 +236,6 @@ class SOAP_tutorial(object):
                 self.hyperparameters[s] = hyper_dict[self.preset_button.value][s]
                 self.sliders[s].value = self.hyperparameters[s]
         self.reset_ML()
-        # timer=Thread(target=tqdm_timer, args=(e
     def get_input(self,a):
         inp = self.input_button.value# if self.input_button.value!='Other' else input("Which file do you want to load?")
         self.input_file = inp
@@ -336,8 +270,7 @@ class SOAP_tutorial(object):
         verbosity_wrap('This took {} seconds/frame.'.format(round((time.time()-t)/len(frame_idx),8)))
 
         if(pretend==False):
-            verbosity_wrap("Estimating time to compute kernel...")
-            self.estimate_time(N=max(0,20-len(self.est_frames)))
+            self.estimate_time(N=max(0,20-len(self.est_frames)), p="Estimating time to compute kernel...")
             est = int(np.poly1d(np.polyfit(self.est_frames,self.est_times,deg=2))(len(frame_idx)))+1
         else:
             est=0
@@ -352,7 +285,7 @@ class SOAP_tutorial(object):
         delta = np.std(training_properties) / np.mean(kernel.diagonal())
         kernel[np.diag_indices_from(kernel)] += self.Lambda**2 / delta **2 + jitter
 
-        verbosity_wrap("<br/>We will adjust the diagonals of our kernel by {} so that it is properly scaled.".format(round(self.Lambda**2 / delta **2 + jitter,8)))
+        verbosity_wrap("<br/>We will adjust the our kernel with the tolerance matrix $\\Lambda = ({})I$.".format(round(self.Lambda**2 / delta **2 + jitter,8)))
         verbosity_wrap("<br/>Now we can take this kernel to compute the weights of our KRR.")
 
         weights = np.linalg.solve(kernel,training_properties)
@@ -380,8 +313,7 @@ class SOAP_tutorial(object):
         testing_properties = y_known#np.concatenate(self.properties[self.sliders['property_to_ml'].value][frame_idx])[:,0] if self.sliders['kernel_type'].value=='atomic' else self.properties[self.sliders['property_to_ml'].value][frame_idx]
 
         if(pretend==False):
-            verbosity_wrap("Estimating time to compute prediction...")
-            self.estimate_time(x=self.pred_frames, y=self.pred_times, f=self.plot_prediction_func, N=max(0,20-len(self.pred_frames)), ref=len(frames))
+            self.estimate_time(x=self.pred_frames, y=self.pred_times, f=self.plot_prediction_func, N=max(0,20-len(self.pred_frames)), ref=len(frames), p="Estimating time to compute prediction...")
             est = int(np.poly1d(np.polyfit(self.pred_frames,self.pred_times,deg=3))(len(frames)))+1
         else:
             est=0
@@ -400,6 +332,107 @@ class SOAP_tutorial(object):
             plt.ylabel('Predicted '+self.sliders['property_to_ml'].value)
             plt.gca().set_aspect('equal')
             plt.show()
+    def output_params(self):
+        self.verbosity_wrap('Our input file is {}, of which we are using {} frames.'.format(self.input_file, self.sliders['number_of_frames'].value))
+        self.verbosity_wrap("<br/>Our hyperparameters are {}".format(markdown_table_from_dict({hyper_vals[k]['name']:[self.hyperparameters[k]] for k in self.hyperparameters if 'fixed' not in hyper_vals[k]}, headers =["Parameter", "Value"])))
+    def set(self, value_name, value):
+        assert value_name in self.sliders
+        self.sliders[value_name].value=value
+    def estimate_time(self, x=None, y=None, f=None, N=20, ref =None, p=None):
+        if(N<=0):
+            return
+        if(x==None or y==None or f==None or ref==None):
+            x=self.est_frames
+            y=self.est_times
+            f=self.train_krr_model_func
+            ref = int(0.25*self.sliders['number_of_frames'].value*self.sliders['training_percentage'].value)
+
+        if(p!=None and min(N, ref)>0):
+            self.verbosity_wrap(p)
+        for nf in tqdm(np.random.randint(2,ref, size=min(N, ref))):
+            f(frame_idx=np.random.randint(len(self.frames),size=nf), pretend=True)
+class SOAP_tutorial(object):
+    def __init__(self, input_file='./data/small_molecules-1000.xyz',training_percentage=0.8, interactive = False, verbose=True, hyperparameters = dict(**hyper_dict['Power Spectrum']), number_of_frames=None, property=None):
+
+        self.hyperparameters = hyperparameters
+        self.verbose = verbose
+        self.verbosity_wrap = lambda s: (None if not verbose else display(Markdown(s)))
+
+        file_options = ['./data/{}'.format(f) for f in os.listdir('./data') if f.endswith('xyz')]
+        if(input_file!=None):
+            file_options.insert(0, input_file)
+            if(input_file in file_options[1:]):
+                file_options.pop(file_options[1:].index(input_file)+1)
+        self.input_file = file_options[0] if input_file==None else input_file
+        self.frames=np.array(read(self.input_file, ":"))
+
+        self.sliders = {val:
+                        widgets.FloatSlider(value = self.hyperparameters.get(val, hyper_vals[val]['options'][0]),
+                                    min = hyper_vals[val]['options'][0],
+                                    max = hyper_vals[val]['options'][1],
+                                    description = hyper_vals[val]['name'],
+                                    continuous_update = True,
+                                    step = (hyper_vals[val]['options'][1]-hyper_vals[val]['options'][0])/20.,\
+                                    style=style,\
+                                    )
+                        if isinstance(hyper_vals[val]['options'][0],float) else
+                        widgets.IntSlider(value = self.hyperparameters.get(val, hyper_vals[val]['options'][0]),
+                                    min = hyper_vals[val]['options'][0],
+                                    max = hyper_vals[val]['options'][1],
+                                    description = hyper_vals[val]['name'],
+                                    continuous_update = True,
+                                    step = 1,
+                                    style=style,\
+                                    )
+                        if isinstance(hyper_vals[val]['options'][0],int) and hyper_vals[val]['options'][0]!=True else
+                        widgets.Dropdown(options=hyper_vals[val]['options'],
+                                         style=style,\
+                                         value = self.hyperparameters.get(val, hyper_vals[val]['options'][0]),
+                                         description=hyper_vals[val]['name'],
+                                         )
+                        for val in hyper_vals if 'fixed' not in hyper_vals[val]}
+
+
+        self.sliders['number_of_frames'] = widgets.IntSlider(value=int(len(self.frames)*0.2) if number_of_frames==None else number_of_frames, min = 1, max = len(self.frames), \
+                                                    description="Number of Frames", step=1, style=style)
+        if(interactive):
+            self.input_button = widgets.Dropdown(options=[*file_options],#, "Other"],
+                                         style=style,\
+                                         value = self.input_file,
+                                         description="Input File: ",
+                                         )
+            self.input_button.observe(self.get_input, names='value')
+            display(self.input_button)
+            self.preset_button = _button_template_(list(hyper_dict.keys()), "SOAP Presets: ", self.disp_func)
+
+            slider_order = ['property_to_ml', 'kernel_type', 'number_of_frames', 'training_percentage',*list(hyper_vals.keys())]
+            for s in slider_order:
+                if(s in self.sliders):
+                    display(self.sliders[s])
+                    self.sliders[s].observe(lambda change: self.change_func(change), names='value')
+
+    def reset_ML(self, inp_change=False):
+        if(inp_change):
+            self.sliders['number_of_frames'].max = len(self.frames)
+            self.sliders['number_of_frames'].value = int(len(self.frames)*0.2)
+    def change_func(self,change):
+        change['owner'].value = change['new']
+        for s in self.hyperparameters:
+            if(s in self.sliders):
+                if(self.hyperparameters[s]!=self.sliders[s].value):
+                    self.hyperparameters[s] = self.sliders[s].value
+        self.reset_ML()
+    def disp_func(self,a):
+        for s in self.sliders:
+            if(s in self.hyperparameters):
+                self.hyperparameters[s] = hyper_dict[self.preset_button.value][s]
+                self.sliders[s].value = self.hyperparameters[s]
+        self.reset_ML()
+    def get_input(self,a):
+        inp = self.input_button.value# if self.input_button.value!='Other' else input("Which file do you want to load?")
+        self.input_file = inp
+        self.frames = np.array(read(self.input_file, ":"))
+        self.reset_ML(True)
     def output_params(self):
         self.verbosity_wrap('Our input file is {}, of which we are using {} frames.'.format(self.input_file, self.sliders['number_of_frames'].value))
         self.verbosity_wrap("<br/>Our hyperparameters are {}".format(markdown_table_from_dict({hyper_vals[k]['name']:[self.hyperparameters[k]] for k in self.hyperparameters if 'fixed' not in hyper_vals[k]}, headers =["Parameter", "Value"])))
