@@ -113,6 +113,7 @@ namespace rascal {
         json ad2{{"name", "AdaptorStrict"},
                  {"initialization_arguments", {{"cutoff", cutoff}}}};
         adaptors.emplace_back(ad1);
+        // ad1b is dummy name
         adaptors.emplace_back(ad1b);
         adaptors.emplace_back(ad2);
 
