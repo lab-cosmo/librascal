@@ -207,6 +207,11 @@ namespace rascal {
     return manager;
   }
 
+  /**
+   * Is used by the `BindAdaptor` to keep track of the names of the managers
+   * to ensure that the same manager present in different stacks of managers
+   * is not binded twice.
+   */
   template <typename Manager_t>
   decltype(auto) add_manager_safe(py::module & mod,
                                   const std::string & manager_name) {

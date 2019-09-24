@@ -969,7 +969,7 @@ namespace rascal {
     template <bool T = HasCenterPairOrderTwo, std::enable_if_t<T, int> = 0>
     inline auto get_atom_jj() {
       auto && manager = it.get_manager();
-      auto && atom_j_tag = this->back();
+      auto && atom_j_tag = this->get_atom_tag();
       auto && atom_j_index = manager.get_atom_index(atom_j_tag);
       auto && atom_j_it = manager.get_iterator_at(atom_j_index, 0);
       auto && atom_j = *atom_j_it;
@@ -1059,7 +1059,11 @@ namespace rascal {
       return this->atom_tag_list;
     }
 
-    //! allows to set the atom tags, which constitute the cluster
+    /**
+     * Allows to set the atom tag at the atom index (cluster of Order 1 index)
+     *
+     * @param index atom index (cluster of Order 1 index)
+     */
     inline void set_atom_tag(const size_t index, const int tag) {
       this->atom_tag_list[index] = tag;
     }
@@ -1078,6 +1082,9 @@ namespace rascal {
     //!`atom_cluster_indices` is an initially contiguous numbering of atoms
     Iterator_t & it;
 
+    /**
+     * Helper struct to only iterate in a customised range.
+     */
     template <class ManagerImplementation_ = ManagerImplementation,
               size_t Order_ = Order>
     struct CustomProxy {

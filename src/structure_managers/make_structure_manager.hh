@@ -42,7 +42,7 @@ namespace rascal {
    * Factory function to make a structure manager
    * @tparams Adaptor partial type of the adaptor
    * @params Manager input structure manager
-   * @params args additional argument for the constructructor
+   * @params args additional argument for the constructor
    */
   template <typename Manager>
   std::shared_ptr<Manager> make_structure_manager() {
@@ -53,7 +53,7 @@ namespace rascal {
    * Factory function to make an adapted structure manager
    * @tparams Adaptor partial type of the adaptor
    * @params Manager input structure manager
-   * @params args additional argument for the constructructor
+   * @params args additional argument for the constructor
    */
   template <template <class> class Adaptor, typename Manager, typename... Args>
   std::shared_ptr<Adaptor<Manager>>
@@ -67,7 +67,7 @@ namespace rascal {
    * Factory function to make an adapted structure manager
    * @tparams Adaptor partial type of the adaptor
    * @params Manager input structure manager
-   * @params adaptor_hypers additional argument for the constructructor given
+   * @params adaptor_hypers additional argument for the constructor given
    *         in a dictionary like containner, e.g. json type.
    */
   template <template <class> class Adaptor, typename Manager, typename Hypers_t>
@@ -214,7 +214,20 @@ namespace rascal {
   //! Utility to hold a list of Adaptors partial types
   template <template <class> class... AdaptorImplementation>
   struct AdaptorTypeHolder;
-  //! Utility to hold a fully typed structure manager and a list of Adaptors
+  /**
+   * Utility to hold the fully typed structure manager with adaptors as stack
+   * and as a list.
+   *
+   * StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+   *                            AdaptorStrict>
+   *
+   * -> type_list
+   *    std::tuple<StructureManagerCenters,
+   *               AdaptorTypeHolder<AdaptorNeighbourList, AdaptorStrict>>
+   *
+   * -> type
+   *    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
+   */
   template <typename Manager, template <class> class... AdaptorImplementation>
   struct StructureManagerTypeHolder {
     // handle the case without adaptors with conditional_t

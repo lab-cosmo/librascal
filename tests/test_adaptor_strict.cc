@@ -75,8 +75,8 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Iteration test for strict adaptor. It also checks if the positions and
-   * types of the original atoms are accessed correctly.
+   * Iteration test for strict adaptor. It also checks if the types of the
+   * original atoms are accessed correctly.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(iterator_test, Fix, multiple_fixtures, Fix) {
     auto && managers = Fix::managers;
@@ -121,7 +121,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * Test that the atom index from a neighbour matches the atom tag of the
-   * ClusterRefKey returned by get_atom_j
+   * ClusterRefKey returned by get_atom_j for a manager using as root
+   * implementation `StructureManagerCenters`.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_atom_j_test, Fix, multiple_fixtures,
                                    Fix) {

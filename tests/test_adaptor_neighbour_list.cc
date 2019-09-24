@@ -151,7 +151,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * Test that the atom index from a neighbour matches the atom tag of the
-   * ClusterRefKey returned by get_atom_j
+   * ClusterRefKey returned by get_atom_j for a manager using as root
+   * implementation `StructureManagerCenters`.
    */
   BOOST_FIXTURE_TEST_CASE(get_atom_j_test,
                           ManagerFixture<StructureManagerCenters>) {

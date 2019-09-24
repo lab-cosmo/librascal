@@ -5,6 +5,7 @@ import numpy as np
 _neighbourlist_list = ["centers", "neighbourlist", "centercontribution",
                        "strict", "maxorder", "halflist", "fulllist"]
 
+# names of existing neighbourlist implementation on the pybinding site.
 _neighbourlists = {}
 for k, v in neighbourList.__dict__.items():
     if "make_adapted_manager" in k or "make_structure_manager" in k:
@@ -12,6 +13,8 @@ for k, v in neighbourList.__dict__.items():
                                  '').replace('make_structure_manager_', '')
         _neighbourlists[name] = v
 
+# names of existing stucture manager stacks/collection implementations on the
+# pybinding site.
 _structure_collections = {}
 for k, v in neighbourList.__dict__.items():
     if "ManagerCollection" in k:
@@ -20,6 +23,18 @@ for k, v in neighbourList.__dict__.items():
 
 
 def NeighbourListFactory(nl_options):
+    """
+    Iterates trough each manager specified by the nl_options checking if this
+    implementation exists within the pybindings.
+
+    Attributes
+    ----------
+    nl_options: dict
+       Dictory containing the hyperparameters for the neighbour list manager.
+    Returns
+    -------
+        The top manager of a manager stack
+    """
     names = []
     kargs = []
     full_name = []

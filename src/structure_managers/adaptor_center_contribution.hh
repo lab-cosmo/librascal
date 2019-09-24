@@ -6,7 +6,7 @@
  *
  * @date   July 2019
  *
- * @brief
+ * @brief Adaptor that adds the central atom to the iteration over pairs
  *
  * Copyright  2019 Markus Stricker, Felix Musil COSMO (EPFL), LAMMM (EPFL)
  *
@@ -63,16 +63,20 @@ namespace rascal {
   };
 
   /**
-   * Adaptor that adds the centeral atom to the iteration over pairs and the
+   * Adaptor that adds the central atom to the iteration over pairs and the
    * use of the get_atom_ii(). The ii-pair is added at the begining of
    * every block of data associated to neighbors.
    * The default iteration pattern does not include the ii-pair so use
    * with_self_pair() to include it. The properties associated with this
    * manager will have an entry for the ii-pair.
    *
-   * It should be used on a linked cell neighbor list to avoid
-   * rebuilding the distance and direction vector arrays of the AdaptorStrict
-   * (or some sort of similar indirections).
+   * It should be stacked after an adaptor providing a linked cell neighbor
+   * list, but before any adaptor computing pair related properties as
+   * `AdaptoStrict`. This adaptor changes the neighbour list, thus it would
+   * make any map of the form pair -> property invalid as it is the case for the
+   * distance and direction vector in the `AdaptorStrict` class. The same goes
+   * for the `AdaptorMaxOrder` and adaptors computing properties for clusters of
+   * Order > 2.
    */
   template <class ManagerImplementation>
   class AdaptorCenterContribution
@@ -102,11 +106,6 @@ namespace rascal {
     //! Default constructor
     AdaptorCenterContribution() = delete;
 
-    /**
-     * construct a strict neighbourhood list from a given manager. `cut-off`
-     * specifies the strict cutoff radius. all clusters with distances above
-     * this parameter will be skipped
-     */
     explicit AdaptorCenterContribution(ImplementationPtr_t manager);
 
     AdaptorCenterContribution(ImplementationPtr_t manager,
@@ -245,10 +244,16 @@ namespace rascal {
     }
 
     // TODO(felix) remove ? or fuse with the function below ?
+    /**
+     * @return a list of atom tags for clusters of Order 1 aka centers.
+     */
     const std::vector<int> get_manager_atom_tag_list() {
       return this->atom_tag_list[0];
     }
     // TODO(felix) rename ?
+    /**
+     * @return a list of atom tags for clusters of Order 2 aka pairs.
+     */
     const std::vector<int> get_neighbours_atom_tag() {
       return this->atom_tag_list[1];
     }
@@ -289,11 +294,10 @@ namespace rascal {
     ImplementationPtr_t manager;
 
     /**
+     * For clusters of the form (i,j)
      * store atom tags per order,i.e.
      *   - atom_tag_list[0] lists all i-atoms
      *   - atom_tag_list[1] lists all j-atoms
-     *   - atom_tag_list[2] lists all k-atoms
-     *   - etc
      */
     std::array<std::vector<int>, traits::MaxOrder> atom_tag_list;
     std::vector<size_t> neighbours_cluster_index;

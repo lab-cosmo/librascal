@@ -245,6 +245,9 @@ namespace rascal {
      */
     const int & get_internal_neighbour_atom_tag() const { return this->back(); }
 
+    /* 
+     * From an cluster of form (i,j,..., n) it returns the tag of atom n
+     */
     const int & get_atom_tag() const { return this->back(); }
 
     //! returns the cluster's index, given a specific layer

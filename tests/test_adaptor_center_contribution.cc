@@ -93,7 +93,8 @@ namespace rascal {
           auto pair_offset{pair.get_global_index()};
           auto pair_type{pair.get_atom_type()};
           if (verbose) {
-            std::cout << "pair (" << atom.back() << ", " << pair.back()
+            std::cout << "pair (" << atom.get_atom_tag() << ", "
+                      << pair.get_atom_tag()
                       << "), pair_counter = " << pair_counter
                       << ", pair_offset = " << pair_offset
                       << ", atom types = " << type << ", " << pair_type
@@ -110,7 +111,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * Test that the atom index from a neighbour matches the atom tag of the
-   * ClusterRefKey returned by get_atom_j
+   * ClusterRefKey returned by get_atom_j for a manager using as root
+   * implementation `StructureManagerCenters`.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_atom_j_test, Fix, multiple_fixtures,
                                    Fix) {
@@ -123,15 +125,16 @@ namespace rascal {
 
       for (auto atom : adaptor_strict) {
         for (auto pair : atom) {
-          auto atom_j_index = adaptor_strict->get_atom_index(pair.back());
+          auto atom_j_index =
+              adaptor_strict->get_atom_index(pair.get_atom_tag());
           auto atom_j = pair.get_atom_j();
-          auto atom_j_tag = atom_j.get_atom_tag_list();
+          auto atom_j_tags = atom_j.get_atom_tag_list();
           if (verbose) {
             std::cout << "neigh: " << atom_j_index
-                      << " tag_j: " << atom_j_tag[0] << std::endl;
+                      << " tag_j: " << atom_j_tags[0] << std::endl;
           }
 
-          BOOST_CHECK_EQUAL(atom_j_index, atom_j_tag[0]);
+          BOOST_CHECK_EQUAL(atom_j_index, atom_j_tags[0]);
         }
       }
     }
@@ -149,12 +152,12 @@ namespace rascal {
       adaptor->update();
 
       for (auto atom : adaptor) {
-        auto ctag = atom.get_atom_tag();
+        auto atom_tag = atom.get_atom_tag();
         auto atom_ii = atom.get_atom_ii();
-        auto atom_ii_tag = atom_ii.get_atom_tag_list();
+        auto atom_ii_tags = atom_ii.get_atom_tag_list();
 
-        BOOST_CHECK_EQUAL(ctag, atom_ii_tag[0]);
-        BOOST_CHECK_EQUAL(ctag, atom_ii_tag[1]);
+        BOOST_CHECK_EQUAL(atom_tag, atom_ii_tags[0]);
+        BOOST_CHECK_EQUAL(atom_tag, atom_ii_tags[1]);
       }
     }
   }
@@ -174,17 +177,18 @@ namespace rascal {
       for (auto atom : adaptor) {
         for (auto pair : atom) {
           auto atom_j = pair.get_atom_j();
-          auto ctag = atom_j.get_atom_tag();
+          auto atom_j_tag = atom_j.get_atom_tag();
           auto atom_jj = pair.get_atom_jj();
-          auto atom_jj_tag = atom_jj.get_atom_tag_list();
+          auto atom_jj_tags = atom_jj.get_atom_tag_list();
 
           if (verbose) {
-            std::cout << "Center j: " << ctag << " neigh: " << atom_jj_tag[0]
-                      << ", " << atom_jj_tag[1] << std::endl;
+            std::cout << "Center j: " << atom_j_tag
+                      << " neigh: " << atom_jj_tags[0] << ", "
+                      << atom_jj_tags[1] << std::endl;
           }
 
-          BOOST_CHECK_EQUAL(ctag, atom_jj_tag[0]);
-          BOOST_CHECK_EQUAL(ctag, atom_jj_tag[1]);
+          BOOST_CHECK_EQUAL(atom_j_tag, atom_jj_tags[0]);
+          BOOST_CHECK_EQUAL(atom_j_tag, atom_jj_tags[1]);
         }
       }
     }
@@ -256,7 +260,7 @@ namespace rascal {
         for (auto pair : atom) {
           BOOST_CHECK_EQUAL(ref_1[i_center], prop[ii_pair]);
 
-          auto && atom_j_tag = pair.back();
+          auto && atom_j_tag = pair.get_atom_tag();
           auto && atom_j_index = adaptor->get_atom_index(atom_j_tag);
           auto jj_pair = pair.get_atom_jj();
           BOOST_CHECK_EQUAL(ref_1[atom_j_index], prop[jj_pair]);
