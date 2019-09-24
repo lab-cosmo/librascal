@@ -44,11 +44,10 @@
 #include <map>
 #include <memory>
 
-/**
- * avoid implicit copy
- * std::vector<rascal::AtomicStructure<3>> is used to bundle the
- * information of a list of structures so that it can be passed to the cpp
- * side so that the loop happens there
+/*
+ * Prevent vector of atomic structures from being copied into a Python list,
+ * since we already have the AtomsList object.  See also
+ * https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
  */
 PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 

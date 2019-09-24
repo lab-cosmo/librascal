@@ -1,31 +1,31 @@
 # from ..lib.Kernels import CosineKernel
-from ..lib._rascal.Models.Kernels import Kernel as Kernelcpp
+from ..lib._rascal.models.kernels import Kernel as Kernelcpp
 from ..neighbourlist import AtomsList
 import json
 
 class Kernel(object):
-    """
-    Computes the kernel from an representation
 
-    Attributes
-    ----------
+    """ Computes the kernel from an representation """
 
-    Methods
-    -------
-    """
-    def __init__(self, representation, name='Cosine', target_type='structure', **kwargs):
+    def __init__(self, representation, name='Cosine', target_type='structure',
+                 **kwargs):
         """
-        Compute the kernel.
+        Initialize the kernel with the given parameters
 
         Parameters
         ----------
-        representation : the representation used to produce the features that
-            should be used to compute the kernel
-        name : name of the kernel
-        target_type : 'structure' if the target property is for the whole
-            structure and 'atom' if it refers to atomic properties
 
-        kwargs : additional arguments for the kernel. depends on the kernel
+        representation : Calculator
+            Representation calculator associated with the kernel
+
+        name : string
+            Type of kernel, 'Cosine' (aka dot-product) is the default and
+            (currently) only option
+
+        target_type : string
+            Type of target (prediction) properties, either 'atomic' (kernel is
+            between atomic environments) or 'structure' (kernel is summed over
+            atoms in a structure) (default)
 
         """
         hypers = dict(name=name,target_type=target_type)
