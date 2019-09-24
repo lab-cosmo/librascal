@@ -410,7 +410,6 @@ class SOAP_tutorial(object):
                 if(s in self.sliders):
                     display(self.sliders[s])
                     self.sliders[s].observe(lambda change: self.change_func(change), names='value')
-
     def reset_ML(self, inp_change=False):
         if(inp_change):
             self.sliders['number_of_frames'].max = len(self.frames)
