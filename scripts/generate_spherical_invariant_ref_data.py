@@ -83,7 +83,7 @@ def dump_reference_json():
                         "gaussian_sigma_type": "Constant",
                         "normalize": True,
                         "cutoff_function_type": "Cosine",
-                        "radial_basis": "GTO",
+                        "radial_basis": rad_basis,
                         "gaussian_sigma_constant": gaussian_sigma,
                         "soap_type": soap_type,
                         "inversion_symmetry": inversion_symmetry, }
