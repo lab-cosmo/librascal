@@ -30,9 +30,9 @@
 #include "structure_managers/adaptor_neighbour_list.hh"
 #include "structure_managers/make_structure_manager.hh"
 #include "rascal_utility.hh"
-#include "representations/representation_manager_sorted_coulomb.hh"
-#include "representations/representation_manager_spherical_expansion.hh"
-#include "representations/feature_manager_dense.hh"
+#include "representations/calculator_sorted_coulomb.hh"
+#include "representations/calculator_spherical_expansion.hh"
+#include "representations/calculator_spherical_invariants.hh"
 #include "basic_types.hh"
 #include "atomic_structure.hh"
 
@@ -50,8 +50,11 @@ using namespace rascal;  // NOLINT
 
 const int N_ITERATIONS = 1000;
 
-using Representation_t = RepresentationManagerSphericalExpansion<
-    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>>;
+using Representation_t = CalculatorSphericalInvariants;
+using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
+using PropDer_t =
+    typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
 
 int main(int argc, char * argv[]) {
   if (argc < 2) {
@@ -111,12 +114,12 @@ int main(int argc, char * argv[]) {
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
 
-  Representation_t representation{manager, hypers};
+  Representation_t representation{hypers};
 
   start = std::chrono::high_resolution_clock::now();
   // This is the part that should get profiled
   for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
-    representation.compute();
+    representation.compute(manager);
   }
   finish = std::chrono::high_resolution_clock::now();
 
@@ -125,19 +128,19 @@ int main(int argc, char * argv[]) {
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
 
-  auto expn = representation.get_representation_full();
-  std::cout << "Sample SphericalExpansion elements " << std::endl
-            << expn(0, 0) << " " << expn(0, 1) << " " << expn(0, 2) << "\n"
-            << expn(1, 0) << " " << expn(1, 1) << " " << expn(1, 2) << "\n"
-            << expn(2, 0) << " " << expn(2, 1) << " " << expn(2, 2) << "\n";
+  // auto expn = representation.get_representation_full();
+  // std::cout << "Sample SphericalExpansion elements " << std::endl
+  //           << expn(0, 0) << " " << expn(0, 1) << " " << expn(0, 2) << "\n"
+  //           << expn(1, 0) << " " << expn(1, 1) << " " << expn(1, 2) << "\n"
+  //           << expn(2, 0) << " " << expn(2, 1) << " " << expn(2, 2) << "\n";
 
   // Profile again, this time with gradients
   hypers["compute_gradients"] = true;
-  Representation_t representation_gradients{manager, hypers};
+  Representation_t representation_gradients{hypers};
   start = std::chrono::high_resolution_clock::now();
   // This is the part that should get profiled
   for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
-    representation_gradients.compute();
+    representation_gradients.compute(manager);
   }
   finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed_grad{};
@@ -148,12 +151,15 @@ int main(int argc, char * argv[]) {
   std::cout << "Ratio (with gradients / without gradients): "
             << elapsed_grad.count() / elapsed.count() << std::endl;
 
-  auto expn2 = representation_gradients.get_representation_full();
-  std::cout << "Sample SphericalExpansion elements (should be identical) "
-            << std::endl
-            << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) << "\n"
-            << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) << "\n"
-            << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2) << "\n";
+  // auto expn2 = representation_gradients.get_representation_full();
+  // std::cout << "Sample SphericalExpansion elements (should be identical) "
+  //           << std::endl
+  //           << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) <<
+  //           "\n"
+  //           << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) <<
+  //           "\n"
+  //           << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2) <<
+  //           "\n";
   // TODO(max) print out analogous gradient components, for now see
   // spherical_expansion_example
 }

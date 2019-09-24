@@ -27,7 +27,7 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
 
         features = rep.transform([self.frame])
 
-        test = features.get_feature_matrix().T
+        test = features.get_dense_feature_matrix(rep)
 
 
 class TestSphericalExpansionRepresentation(unittest.TestCase):
@@ -53,7 +53,7 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
 
         features = rep.transform([self.frame])
 
-        test = features.get_feature_matrix().T
+        test = features.get_dense_feature_matrix(rep)
 
 
 class TestSphericalInvariantsRepresentation(unittest.TestCase):
@@ -81,4 +81,4 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
 
         features = rep.transform([self.frame])
 
-        test = features.get_feature_matrix().T
+        test = features.get_dense_feature_matrix(rep)

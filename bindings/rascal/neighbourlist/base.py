@@ -11,27 +11,52 @@ for k, v in NeighbourList.__dict__.items():
                                  '').replace('make_structure_manager_', '')
         _neighbourlists[name] = v
 
+_structure_collections = {}
+for k, v in NeighbourList.__dict__.items():
+    if "ManagerCollection" in k:
+        name = k.lower().replace('managercollection_', '')
+        _structure_collections[name] = v
 
 def NeighbourListFactory(nl_options):
     names = []
-    args = []
+    kargs = []
     full_name = []
     for opt in nl_options:
         full_name.insert(0, opt['name'])
         name = '_'.join(full_name)
         names.append(name)
-        args.append(opt['args'])
+        kargs.append(opt['args'])
 
         if name not in _neighbourlists:
             raise NameError('The neighbourlist factory {} has not been registered. The available combinations are: {}'.format(
                 name, list(_neighbourlists.keys())))
 
-    managers = [_neighbourlists[names[0]](*args[0])]
-    for name, arg in zip(names[1:], args[1:]):
-        manager = _neighbourlists[name](managers[-1], *arg)
+    managers = [_neighbourlists[names[0]](**kargs[0])]
+    for name, karg in zip(names[1:], kargs[1:]):
+        manager = _neighbourlists[name](managers[-1], **karg)
         managers.append(manager)
 
     return managers[-1]
+
+def StructureCollectionFactory(nl_options):
+    import json
+
+    args = []
+    full_name = []
+    for opt in nl_options:
+        full_name.insert(0, opt['name'])
+        name = '_'.join(full_name)
+        args.append(dict(name=opt['name'], initialization_arguments=opt['args']))
+
+    if name not in _structure_collections:
+        raise NameError('The StructureCollection factory {} has not been registered. The available combinations are: {}'.format(
+            name, list(_structure_collections.keys())))
+    # remove the arguments relative to stucture manager centers
+    args.pop(0)
+    agrs_str = json.dumps(args)
+    structure_collection = _structure_collections[name](agrs_str)
+
+    return structure_collection
 
 
 def is_valid_structure(structure):

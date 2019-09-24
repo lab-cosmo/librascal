@@ -1,6 +1,6 @@
 from copy import copy
-from rascal.representations import SortedCoulombMatrix
 from ase import Atoms
+from ase.io import read
 import json
 import ubjson
 """Script used to generate the sorted_coulomb_reference.ubjson reference file
@@ -11,19 +11,7 @@ import sys
 path = os.path.abspath('../')
 sys.path.insert(0, os.path.join(path, 'build/'))
 sys.path.insert(0, os.path.join(path, 'tests/'))
-
-
-def load_json(fn):
-    with open(fn, 'r') as f:
-        data = json.load(f)
-    return data[str(data['ids'][0])]
-
-
-def json2ase(f):
-    return Atoms(**{v: f[k] for k, v in
-                    dict(positions='positions', atom_types='numbers',
-                         pbc='pbc', cell='cell').items()
-                    })
+from rascal.representations import SortedCoulombMatrix
 
 
 cutoffs = [2, 3, 4, 5]
@@ -48,10 +36,11 @@ for fn in fns:
         data['rep_info'].append([])
         for sort in sorts:
             rep = SortedCoulombMatrix(cutoff, sorting_algorithm=sort)
-            frame = [json2ase(load_json(fn))]
+            frame = read(fn)
             features = rep.transform(frame)
-            test = features.get_feature_matrix()
+            test = features.get_dense_feature_matrix(rep)
             hypers['size'] = rep.size
+            hypers['central_cutoff'] = cutoff
             print(rep.size)
             hypers['sorting_algorithm'] = sort
             data['rep_info'][-1].append(dict(feature_matrix=test.tolist(),

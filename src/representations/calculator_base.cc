@@ -1,5 +1,5 @@
 /**
- * file   representation_manager_base.cc
+ * file   calculator_base.cc
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -25,11 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "representations/representation_manager_base.hh"
+#include "representations/calculator_base.hh"
 
 namespace rascal {
 
-  std::string RepresentationManagerBase::get_options_string() {
+  std::string CalculatorBase::get_options_string() {
     std::string out{};
     for (const auto & item : this->options) {
       out += item.second + std::string(" ");
@@ -40,13 +40,13 @@ namespace rascal {
     return out;
   }
   /* ---------------------------------------------------------------------- */
-  std::string RepresentationManagerBase::get_hypers_string() {
+  std::string CalculatorBase::get_hypers_string() {
     return this->hypers.dump(2);
   }
   /* ---------------------------------------------------------------------- */
-  void RepresentationManagerBase::check_hyperparameters(
-      const RepresentationManagerBase::ReferenceHypers_t & reference_items,
-      const RepresentationManagerBase::Hypers_t & hypers) {
+  void CalculatorBase::check_hyperparameters(
+      const CalculatorBase::ReferenceHypers_t & reference_items,
+      const CalculatorBase::Hypers_t & hypers) {
     for (const auto & reference_item : reference_items) {
       auto && key{reference_item.first};
       auto && val{reference_item.second};

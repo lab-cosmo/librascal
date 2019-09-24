@@ -1,28 +1,16 @@
 
-from rascal.utils import ostream_redirect
-from rascal.representations import SphericalInvariants
+
 from ase.io import read
 import numpy as np
-import rascal.lib as lrl
-import rascal
 import argparse
 import ase
 import json
 import sys
 sys.path.insert(0, '../build/')
-
-
-def load_json(fn):
-    with open(fn, 'r') as f:
-        data = json.load(f)
-    return data[str(data['ids'][0])]
-
-
-def json2ase(f):
-    return ase.Atoms(**{v: f[k] for k, v in
-                        dict(positions='positions', atom_types='numbers',
-                             pbc='pbc', cell='cell').items()
-                        })
+import rascal
+from rascal.utils import ostream_redirect
+from rascal.representations import SphericalInvariants
+import rascal.lib as lrl
 
 
 ############################################################################
@@ -33,7 +21,7 @@ def get_feature_vector(hypers, frames):
         soap_vectors = soap.transform(frames)
         print('Feature vector size: %.3fMB' %
               (soap.get_num_coefficients()*8.0/1.0e6))
-        feature_vector = soap_vectors.get_feature_matrix()
+        feature_vector = soap_vectors.get_dense_feature_matrix(soap)
     return feature_vector
 
 ##############################################################################
@@ -75,13 +63,12 @@ def dump_reference_json():
                 rep_info=[])
 
     for fn in fns:
-        frames = [json2ase(load_json(fn))]
+        frames = read(fn)
         for cutoff in cutoffs:
             print(fn, cutoff)
             data['rep_info'].append([])
             for soap_type, gaussian_sigma, max_radial, max_angular, rad_basis in product(soap_types, gaussian_sigmas, max_radials, max_angulars,
             radial_basis):
-
                 if 'RadialSpectrum' == soap_type:
                     max_angular = 0
                 if "BiSpectrum" == soap_type:
@@ -95,18 +82,20 @@ def dump_reference_json():
                         "max_angular": max_angular,
                         "gaussian_sigma_type": "Constant",
                         "normalize": True,
-                        "cutoff_function_type":"Cosine",
-                        "radial_basis":rad_basis,
+                        "cutoff_function_type": "Cosine",
+                        "radial_basis": "GTO",
                         "gaussian_sigma_constant": gaussian_sigma,
                         "soap_type": soap_type,
                         "inversion_symmetry": inversion_symmetry, }
 
                 soap = SphericalInvariants(**hypers)
                 soap_vectors = soap.transform(frames)
-                x = soap_vectors.get_feature_matrix()
-                
-                data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
-                        hypers=copy(soap.hypers)))
+                x = soap_vectors.get_dense_feature_matrix(soap)
+                x[np.abs(x) < 1e-300] = 0.
+                data['rep_info'][-1].append(
+                    dict(feature_matrix=x.tolist(),
+                            hypers=copy(soap.hypers)))
+
     with open(path+
         "tests/reference_data/spherical_invariants_reference.ubjson",
                         'wb') as f:
@@ -143,7 +132,6 @@ def main(json_dump, save_kernel):
 
     test_hypers["soap_type"] = "RadialSpectrum"
     x = get_feature_vector(test_hypers, frames)
-    x = x.T #Eigen column major
     kernel = np.dot(x, x.T)
     if save_kernel is True:
         np.save('kernel_soap_example_nu1.npy', kernel)
@@ -152,7 +140,6 @@ def main(json_dump, save_kernel):
 
     test_hypers["soap_type"] = "PowerSpectrum"
     x = get_feature_vector(test_hypers, frames)
-    x = x.T #Eigen column major
     kernel = np.dot(x, x.T)
     if save_kernel is True:
         np.save('kernel_soap_example_nu2.npy', kernel)
@@ -171,7 +158,6 @@ def main(json_dump, save_kernel):
     test_hypers["max_radial"] = nmax
     test_hypers["max_angular"] = lmax
     x = get_feature_vector(test_hypers, frames)
-    x = x.T #Eigen column major
     kernel = np.dot(x, x.T)
     if save_kernel is True:
         np.save('kernel_soap_example_nu3.npy', kernel)

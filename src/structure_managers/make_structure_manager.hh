@@ -228,6 +228,58 @@ namespace rascal {
                                Manager, AdaptorImplementation...>::type>;
   };
 
+  namespace detail {
+    template <template <typename Manager,
+                        template <class> class... AdaptorImplementation>
+              class Collection,
+              typename SM, typename AdaptorTypeHolder_>
+    struct InjectTypeHolderHelper;
+
+    template <template <typename Manager,
+                        template <class> class... AdaptorImplementation>
+              class Collection,
+              typename SM, template <class> class... Ti>
+    struct InjectTypeHolderHelper<Collection, SM, AdaptorTypeHolder<Ti...>> {
+      using type = Collection<SM, Ti...>;
+    };
+
+    template <template <typename Manager,
+                        template <class> class... AdaptorImplementation>
+              class Collection,
+              typename StructureManagerTypeHolder_>
+    struct InjectTypeHolderUtil;
+
+    template <template <typename Manager,
+                        template <class> class... AdaptorImplementation>
+              class Collection,
+              typename... T>
+    struct InjectTypeHolderUtil<Collection, std::tuple<T...>> {
+      using type = typename InjectTypeHolderHelper<Collection, T...>::type;
+    };
+  }  // namespace detail
+  /**
+   * Utility class holding the fully typed Collection class in type member
+   *
+   * @tparam Collection a class templated by a structure manager and a list
+   * of adaptors
+   *
+   * @tparam StructureManagerTypeHolder_ a
+   *                  StructureManagerTypeHolder::type_list
+   *
+   * This utility does not help directly for templated function,
+   * so to handle this case the function should inserted in a functor.
+   * C++17 would allow to avoid the functor
+   * see https://stackoverflow.com/a/49291186/11609484.
+   */
+  template <template <typename Manager,
+                      template <class> class... AdaptorImplementation>
+            class Collection,
+            typename StructureManagerTypeHolder_>
+  struct TypeHolderInjector {
+    using type = typename detail::InjectTypeHolderUtil<
+        Collection, StructureManagerTypeHolder_>::type;
+  };
+
   namespace internal {
     /**
      * Allow to provide a StructureManagerTypeHolder instead of the list types
@@ -255,6 +307,8 @@ namespace rascal {
   }  // namespace internal
 
   /**
+   * TODO(felix) use TypeHolderInjector to simplify this thing
+   *
    * Factory function to make a manager with its types provided with
    * a StructureManagerTypeHolder and arguments packaged in two json object.
    */

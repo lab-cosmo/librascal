@@ -54,7 +54,7 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  BOOST_FIXTURE_TEST_CASE(cell_lenght_test, ManagerFixtureLattice) {
+  BOOST_FIXTURE_TEST_CASE(cell_length_test, ManagerFixtureLattice) {
     Vec3_t cell_lengths = lattice.get_cell_lengths();
     Vec3_t cell_lengths_true;
     cell_lengths_true << 6.190000000000000, 6.6053463194597155,
@@ -263,17 +263,17 @@ namespace rascal {
     // clang-format on
     Cell_t reciprocical_vectors = lattice.get_reciprocal_vectors();
 
-    Vec3_t reciprocal_lenghts_true;
-    reciprocal_lenghts_true << 0.17356276881481585983, 0.16417692074942269453,
+    Vec3_t reciprocal_lengths_true;
+    reciprocal_lengths_true << 0.17356276881481585983, 0.16417692074942269453,
         0.13679890560875518357;
-    Vec3_t reciprocal_lenghts = lattice.get_reciprocal_lengths();
+    Vec3_t reciprocal_lengths = lattice.get_reciprocal_lengths();
 
     for (int jj{0}; jj < 3; ++jj) {
       for (int ii{0}; ii < 3; ++ii) {
         BOOST_CHECK_CLOSE(reciprocical_vectors_true(ii, jj),
                           reciprocical_vectors(ii, jj), lattice_tol);
       }
-      BOOST_CHECK_CLOSE(reciprocal_lenghts_true[jj], reciprocal_lenghts[jj],
+      BOOST_CHECK_CLOSE(reciprocal_lengths_true[jj], reciprocal_lengths[jj],
                         lattice_tol);
     }
   }

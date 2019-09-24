@@ -35,17 +35,59 @@
 #define GCC_COMPILER
 #endif
 
-#include "representations/representation_manager_base.hh"
-
 #include <utility>
 #include <string>
 #include <regex>  // NOLINT
 #include <tuple>
 #include <map>
 #include <fstream>
+#include <type_traits>
 
 namespace rascal {
   namespace internal {
+
+    /**
+     * Utility to check if a template parameter is iterable
+     */
+    template <typename... Ts>
+    struct make_void {
+      typedef void type;
+    };
+    template <typename... Ts>
+    using void_t = typename make_void<Ts...>::type;
+
+    /**
+     * Checks if the type T has a begin, end, iterator and const_iterator
+     * functionality.
+     */
+    template <class, class = void_t<>>
+    struct is_iterable : std::false_type {};
+
+    template <class T>
+    struct is_iterable<T,
+                       void_t<decltype(std::declval<T>().begin()),
+                              decltype(std::declval<T>().end()),
+                              typename T::iterator, typename T::const_iterator>>
+        : std::true_type {};
+
+    template <class, class = void_t<>>
+    struct is_map : std::false_type {};
+
+    template <class T>
+    struct is_map<
+        T, void_t<decltype(std::declval<T>().begin()),
+                  decltype(std::declval<T>().end()), typename T::iterator,
+                  typename T::const_iterator, typename T::key_type>>
+        : std::true_type {};
+
+    /**
+     * Here the proper iteraror means that it is a std Container and not
+     * a std AssociativeContainer
+     */
+    template <class T>
+    struct is_proper_iterator {
+      static constexpr bool value = !is_map<T>::value && is_iterable<T>::value;
+    };
 
     /* ---------------------------------------------------------------------- */
     /**
@@ -198,7 +240,7 @@ namespace rascal {
     struct ResizePropertyToZero {
       template <typename T>
       void operator()(T & t) {
-        t.resize_to_zero();
+        t.clear();
       }
     };
 
@@ -279,6 +321,10 @@ namespace rascal {
       // open the file:
       std::ifstream file(filename, std::ios::binary);
 
+      if (not file.is_open()) {
+        throw std::runtime_error(std::string("Could not open the file: ") +
+                                 filename);
+      }
       // Stop eating new lines in binary mode!!!
       file.unsetf(std::ios::skipws);
 
@@ -297,14 +343,18 @@ namespace rascal {
                  std::istream_iterator<BINARY>());
     }
 
-    inline void read_text_file(const std::string & filename, json & j) {
-      std::ifstream reader(filename);
-      if (not reader.is_open()) {
-        throw std::runtime_error(std::string("Could not open the file: ") +
-                                 filename);
+    /**
+     * extract the extension from a filename as the charaters after the last
+     * "."
+     * if it is not found it return an empty string
+     */
+    inline std::string get_filename_extension(const std::string & filename) {
+      auto const pos = filename.find_last_of(".");
+      std::string extension{""};
+      if (pos != std::string::npos) {
+        extension = filename.substr(pos + 1);
       }
-      reader >> j;
-      reader.close();
+      return extension;
     }
 
   }  // namespace internal

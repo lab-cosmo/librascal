@@ -104,7 +104,7 @@ namespace rascal {
 
   struct ModifiedBesselFirstKindRefFixture {
     ModifiedBesselFirstKindRefFixture() {
-      internal::read_text_file(this->ref_filename, this->ref_data);
+      this->ref_data = json_io::load_txt(this->ref_filename);
     }
 
     ~ModifiedBesselFirstKindRefFixture() = default;

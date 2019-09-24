@@ -1,30 +1,15 @@
-#!/usr/bin/env python
 import json
 import ase
 import argparse
-import rascal
-import rascal.lib as lrl
 import numpy as np
 from ase.io import read
-from rascal.representations import SphericalExpansion
-from rascal.utils import ostream_redirect
 """Generate reference data for the librascal spherical expansion"""
-
 import sys
 sys.path.insert(0, '../build/')
-
-
-def load_json(fn):
-    with open(fn, 'r') as f:
-        data = json.load(f)
-    return data[str(data['ids'][0])]
-
-
-def json2ase(f):
-    return ase.Atoms(**{v: f[k] for k, v in
-                        dict(positions='positions', atom_types='numbers',
-                             pbc='pbc', cell='cell').items()
-                        })
+from rascal.representations import SphericalExpansion
+from rascal.utils import ostream_redirect
+import rascal
+import rascal.lib as lrl
 
 
 ###############################################################################
@@ -34,7 +19,7 @@ def get_soap_vectors(hypers, frames):
     with ostream_redirect():
         sph_expn = SphericalExpansion(**hypers)
         expansions = sph_expn.transform(frames)
-        soap_vectors = expansions.get_feature_matrix()
+        soap_vectors = expansions.get_dense_feature_matrix(sph_expn)
     return soap_vectors
 
 ###############################################################################
@@ -75,29 +60,29 @@ def dump_reference_json():
                 max_radials=max_radials,
                 rep_info=[])
 
-    # An example of the gruesomeness of using 4 spaces for one tab
     for fn in fns:
         for cutoff in cutoffs:
             data['rep_info'].append([])
             for gaussian_sigma, max_radial, max_angular, cutoff_smooth_width, rad_basis in product(gaussian_sigmas, max_radials, max_angulars, cutoff_smooth_widths, radial_basis):
-                frames = [json2ase(load_json(fn))]
+                frames = read(fn)
                 hypers = {"interaction_cutoff": cutoff,
                             "cutoff_smooth_width":
-                                cutoff_smooth_width,
+                            cutoff_smooth_width,
                             "max_radial": max_radial,
                             "max_angular": max_angular,
                             "gaussian_sigma_type": "Constant",
                             "cutoff_function_type": "Cosine",
                             "gaussian_sigma_constant":
-                                gaussian_sigma,
+                            gaussian_sigma,
                             "radial_basis": rad_basis}
-                            
+
                 sph_expn = SphericalExpansion(**hypers)
                 expansions = sph_expn.transform(frames)
-                x = expansions.get_feature_matrix()
+                x = expansions.get_dense_feature_matrix(sph_expn)
+                x[np.abs(x) < 1e-300] = 0.
                 data['rep_info'][-1].append(
-                        dict(feature_matrix=x.tolist(),
-                                hypers=copy(sph_expn.hypers)))
+                    dict(feature_matrix=x.tolist(),
+                            hypers=copy(sph_expn.hypers)))
 
     with open(path+"tests/reference_data/spherical_expansion_reference.ubjson",
               'wb') as f:

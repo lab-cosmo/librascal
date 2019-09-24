@@ -1,5 +1,5 @@
 /**
- * file   representation_manager_spherical_expansion.hh
+ * file   calculator_spherical_expansion.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -27,13 +27,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_HH_
-#define SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_HH_
+#ifndef SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
+#define SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
 
-#include "representations/representation_manager_base.hh"
+#include "representations/calculator_base.hh"
 #include "representations/cutoff_functions.hh"
 #include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
 #include "rascal_utility.hh"
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
@@ -55,9 +54,6 @@
 namespace rascal {
 
   namespace internal {
-
-    //! Just for clarity, make it explicit that we're working in 3-D
-    static const size_t n_spatial_dimensions = 3;
 
     /**
      * List of possible Radial basis that can be used by the spherical
@@ -92,7 +88,7 @@ namespace rascal {
       AtomicSmearingSpecificationBase &
       operator=(AtomicSmearingSpecificationBase && other) = default;
 
-      using Hypers_t = RepresentationManagerBase::Hypers_t;
+      using Hypers_t = CalculatorBase::Hypers_t;
     };
 
     /**
@@ -194,7 +190,7 @@ namespace rascal {
       RadialContributionBase &
       operator=(RadialContributionBase && other) = default;
 
-      using Hypers_t = RepresentationManagerBase::Hypers_t;
+      using Hypers_t = CalculatorBase::Hypers_t;
       using Matrix_t = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
                                      Eigen::RowMajor>;
       using Vector_t = Eigen::VectorXd;
@@ -451,7 +447,7 @@ namespace rascal {
         coefficients.lhs_dot(this->ortho_norm_matrix);
       }
 
-      template <typename Coeffs, typename Center>
+      template <int n_spatial_dimensions, typename Coeffs, typename Center>
       void finalize_coefficients_der(Coeffs & coefficients_gradient,
                                      Center & center) const {
         auto && coefficients_center_gradient = coefficients_gradient[center];
@@ -522,7 +518,7 @@ namespace rascal {
                                    "radial overlap matrix.");
         }
         Matrix_t eigenvalues = eigensolver.eigenvalues();
-        Eigen::ArrayXd eigs_invsqrt = eigenvalues.array().sqrt().inverse();
+        Eigen::ArrayXd eigs_invsqrt = eigenvalues.array().rsqrt();
         Matrix_t unitary = eigensolver.eigenvectors();
         this->radial_ortho_matrix =
             unitary * eigs_invsqrt.matrix().asDiagonal() * unitary.adjoint();
@@ -742,7 +738,7 @@ namespace rascal {
       template <typename Coeffs>
       void finalize_coefficients(Coeffs & /*coefficients*/) const {}
 
-      template <typename Coeffs, typename Center>
+      template <int n_spatial_dimensions, typename Coeffs, typename Center>
       void finalize_coefficients_der(Coeffs & /*coefficients_gradient*/,
                                      Center & /*center*/) const {}
 
@@ -791,26 +787,32 @@ namespace rascal {
    * The local environment of each atom is represented by Gaussians of a
    * certain width (user-defined; can be constant, species-dependent, or
    * radially dependent).  This density field is expanded in an angular basis
-   * of spherical harmonics (à la SOAP) and a radial basis of either Gaussians
-   * (again, as in SOAP) or one of the more recent bases currently under
-   * development.
+   * of spherical harmonics (à la SphericalInvariants) and a radial basis of
+   * either Gaussians (again, as in SphericalInvariants) or one of the more
+   * recent bases currently under development.
    */
-  template <class StructureManager>
-  class RepresentationManagerSphericalExpansion
-      : public RepresentationManagerBase {
+  class CalculatorSphericalExpansion : public CalculatorBase {
    public:
-    using Parent = RepresentationManagerBase;
-    using Manager_t = StructureManager;
-    using ManagerPtr_t = std::shared_ptr<Manager_t>;
+    using Parent = CalculatorBase;
     using Hypers_t = typename Parent::Hypers_t;
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
-    using Key_t = std::vector<int>;
-    using SparseProperty_t =
-        BlockSparseProperty<double, 1, 0, Manager_t, Key_t>;
-    using Dense_t = typename SparseProperty_t::Dense_t;
-    using Data_t = typename SparseProperty_t::Data_t;
-    using SparsePropertyGradient_t =
-        BlockSparseProperty<double, 2, 0, Manager_t, Key_t>;
+    using Key_t = typename Parent::Key_t;
+
+    template <class StructureManager>
+    using Property_t =
+        BlockSparseProperty<double, 1, 0, StructureManager, Key_t>;
+    template <class StructureManager>
+    using PropertyGradient_t =
+        BlockSparseProperty<double, 2, 0, StructureManager, Key_t>;
+
+    template <class StructureManager>
+    using Dense_t = typename Property_t<StructureManager>::Dense_t;
+    template <class StructureManager>
+    using Data_t = typename Property_t<StructureManager>::Data_t;
+
+    template <class StructureManager, size_t Order>
+    using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
+
     using Matrix_t = math::Matrix_t;
     using Vector_t = math::Vector_t;
     using Matrix_Ref = math::Matrix_Ref;
@@ -826,12 +828,10 @@ namespace rascal {
      *                    specified in the structure
      */
     void set_hyperparameters(const Hypers_t & hypers) {
+      using internal::AtomicSmearingType;
       using internal::CutoffFunctionType;
       using internal::RadialBasisType;
-
       this->hypers = hypers;
-
-      this->expansions_coefficients.clear();
 
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
@@ -889,6 +889,8 @@ namespace rascal {
                                "\' has not been implemented.  Must be one of" +
                                ": \'Cosine\'.");
       }
+
+      this->set_name(hypers);
     }
 
     /**
@@ -900,91 +902,75 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container
      */
-    RepresentationManagerSphericalExpansion(ManagerPtr_t sm,
-                                            const Hypers_t & hyper)
-        : expansions_coefficients{*sm}, expansions_coefficients_gradient{*sm},
-          structure_manager{std::move(sm)} {
+    explicit CalculatorSphericalExpansion(const Hypers_t & hyper) {
+      this->set_default_prefix("spherical_expansion_");
       this->set_hyperparameters(hyper);
     }
 
     //! Copy constructor
-    RepresentationManagerSphericalExpansion(
-        const RepresentationManagerSphericalExpansion & other) = delete;
+    CalculatorSphericalExpansion(const CalculatorSphericalExpansion & other) =
+        delete;
 
     //! Move constructor
-    RepresentationManagerSphericalExpansion(
-        RepresentationManagerSphericalExpansion && other) = default;
+    CalculatorSphericalExpansion(CalculatorSphericalExpansion && other) =
+        default;
 
     //! Destructor
-    virtual ~RepresentationManagerSphericalExpansion() = default;
+    virtual ~CalculatorSphericalExpansion() = default;
 
     //! Copy assignment operator
-    RepresentationManagerSphericalExpansion &
-    operator=(const RepresentationManagerSphericalExpansion & other) = delete;
+    CalculatorSphericalExpansion &
+    operator=(const CalculatorSphericalExpansion & other) = delete;
 
     //! Move assignment operator
-    RepresentationManagerSphericalExpansion &
-    operator=(RepresentationManagerSphericalExpansion && other) = default;
+    CalculatorSphericalExpansion &
+    operator=(CalculatorSphericalExpansion && other) = default;
 
-    //! compute representation. choose the CutoffFunctionType from the hypers
-    void compute();
+    /**
+     * Compute representation for a given structure manager.
+     *
+     * @tparam StructureManager a (single or collection)
+     * of structure manager(s) (in an iterator) held in shared_ptr
+     */
+    template <class StructureManager>
+    void compute(StructureManager & managers);
 
     //! choose the RadialBasisType and AtomicSmearingType from the hypers
-    template <internal::CutoffFunctionType FcType>
-    void compute_by_radial_contribution();
+    template <internal::CutoffFunctionType FcType, class StructureManager>
+    void compute_by_radial_contribution(StructureManager & managers);
+
+    /**
+     * loop over a collection of manangers if it is an iterator.
+     * Or just call compute_impl
+     */
+    template <
+        internal::CutoffFunctionType FcType,
+        internal::RadialBasisType RadialType,
+        internal::AtomicSmearingType SmearingType, class StructureManager,
+        std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
+                         int> = 0>
+    inline void compute_loop(StructureManager & managers) {
+      for (auto & manager : managers) {
+        this->compute_impl<FcType, RadialType, SmearingType>(manager);
+      }
+    }
+
+    //! single manager case
+    template <internal::CutoffFunctionType FcType,
+              internal::RadialBasisType RadialType,
+              internal::AtomicSmearingType SmearingType, class StructureManager,
+              std::enable_if_t<
+                  not(internal::is_proper_iterator<StructureManager>::value),
+                  int> = 0>
+    inline void compute_loop(StructureManager & manager) {
+      this->compute_impl<FcType, RadialType, SmearingType>(manager);
+    }
 
     //! Compute the spherical exansion given several options
     template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
-              internal::AtomicSmearingType SmearingType>
-    void compute_impl();
-
-    /**
-     * Return the raw data for the representation
-     *
-     * @warning placeholder -- doesn't actually return anything meaningful
-     *
-     * Will be replaced when the representation calculator is implemented
-     */
-    std::vector<Precision_t> & get_representation_raw_data() {
-      return this->dummy;
-    }
-
-    /**
-     * Return a reference to the internal sparse data storage
-     *
-     * @todo(max) this should really be a const reference, but that screws
-     * things up further down the line (when indexing the sparse property)
-     */
-    SparseProperty_t & get_representation_sparse() {
-      return this->expansions_coefficients;
-    }
-
-    /**
-     * Return a reference to the internal sparse storage of the gradients
-     */
-    SparsePropertyGradient_t & get_gradient_sparse() {
-      return this->expansions_coefficients_gradient;
-    }
-
-    Data_t & get_representation_sparse_raw_data() {
-      return this->expansions_coefficients.get_raw_data();
-    }
-
-    size_t get_feature_size() {
-      return this->expansions_coefficients.get_nb_comp();
-    }
-
-    size_t get_center_size() {
-      return this->expansions_coefficients.get_nb_item();
-    }
-
-    auto get_representation_full() {
-      return this->expansions_coefficients.get_dense_rep();
-    }
-
-    SparseProperty_t expansions_coefficients;
-    SparsePropertyGradient_t expansions_coefficients_gradient;
+              internal::AtomicSmearingType SmearingType, class StructureManager>
+    inline void compute_impl(std::shared_ptr<StructureManager> manager);
 
    protected:
     double interaction_cutoff{};
@@ -993,11 +979,6 @@ namespace rascal {
     size_t max_angular{};
     size_t n_species{};
     bool compute_gradients{};
-
-    //! Unused variable, will be eliminated with the representation calculator
-    std::vector<Precision_t> dummy{};
-
-    ManagerPtr_t structure_manager;
 
     internal::AtomicSmearingType atomic_smearing_type{};
 
@@ -1013,14 +994,15 @@ namespace rascal {
   };
 
   // compute classes template construction
-  template <class Mngr>
-  void RepresentationManagerSphericalExpansion<Mngr>::compute() {
+  template <class StructureManager>
+  void CalculatorSphericalExpansion::compute(StructureManager & managers) {
     // specialize based on the cutoff function
     using internal::CutoffFunctionType;
 
     switch (this->cutoff_function_type) {
     case CutoffFunctionType::Cosine: {
-      this->compute_by_radial_contribution<CutoffFunctionType::Cosine>();
+      this->compute_by_radial_contribution<CutoffFunctionType::Cosine>(
+          managers);
       break;
     }
     default:
@@ -1029,10 +1011,9 @@ namespace rascal {
     }
   }
 
-  template <class Mngr>
-  template <internal::CutoffFunctionType FcType>
-  void RepresentationManagerSphericalExpansion<
-      Mngr>::compute_by_radial_contribution() {
+  template <internal::CutoffFunctionType FcType, class StructureManager>
+  void CalculatorSphericalExpansion::compute_by_radial_contribution(
+      StructureManager & managers) {
     // specialize based on the type of radial contribution
     using internal::AtomicSmearingType;
     using internal::RadialBasisType;
@@ -1041,14 +1022,14 @@ namespace rascal {
                                    this->atomic_smearing_type)) {
     case internal::combineEnums(RadialBasisType::GTO,
                                 AtomicSmearingType::Constant): {
-      this->compute_impl<FcType, RadialBasisType::GTO,
-                         AtomicSmearingType::Constant>();
+      this->compute_loop<FcType, RadialBasisType::GTO,
+                         AtomicSmearingType::Constant>(managers);
       break;
     }
     case internal::combineEnums(RadialBasisType::DVR,
                                 AtomicSmearingType::Constant): {
-      this->compute_impl<FcType, RadialBasisType::DVR,
-                         AtomicSmearingType::Constant>();
+      this->compute_loop<FcType, RadialBasisType::DVR,
+                         AtomicSmearingType::Constant>(managers);
       break;
     }
     default:
@@ -1062,14 +1043,30 @@ namespace rascal {
    * TODO(felix,max) use the parity of the spherical harmonics to use half
    * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
    */
-  template <class Mngr>
   template <internal::CutoffFunctionType FcType,
             internal::RadialBasisType RadialType,
-            internal::AtomicSmearingType SmearingType>
-  void RepresentationManagerSphericalExpansion<Mngr>::compute_impl() {
-    using internal::n_spatial_dimensions;
+            internal::AtomicSmearingType SmearingType, class StructureManager>
+  void CalculatorSphericalExpansion::compute_impl(
+      std::shared_ptr<StructureManager> manager) {
+    using Prop_t = Property_t<StructureManager>;
+    using PropGrad_t = PropertyGradient_t<StructureManager>;
+    constexpr static int n_spatial_dimensions = StructureManager::dim();
+
     using math::PI;
     using math::pow;
+
+    auto && expansions_coefficients{
+        manager->template get_property_ref<Prop_t>(this->get_name())};
+
+    auto && expansions_coefficients_gradient{
+        manager->template get_property_ref<PropGrad_t>(
+            this->get_gradient_name())};
+
+    // if the representation has already been computed for the current
+    // structure then do nothing
+    if (expansions_coefficients.is_updated()) {
+      return;
+    }
 
     // downcast cutoff and radial contributions so they are functional
     auto cutoff_function{
@@ -1079,24 +1076,26 @@ namespace rascal {
 
     auto n_row{this->max_radial};
     auto n_col{(this->max_angular + 1) * (this->max_angular + 1)};
-    this->expansions_coefficients.clear();
-    this->expansions_coefficients.set_shape(n_row, n_col);
-    this->expansions_coefficients.resize();
+    expansions_coefficients.clear();
+    expansions_coefficients.set_shape(n_row, n_col);
+    expansions_coefficients.resize();
 
-    this->expansions_coefficients_gradient.clear();
-    // Row-major ordering, so the Cartesian (spatial) index varies slowest
-    this->expansions_coefficients_gradient.set_shape(
-        n_spatial_dimensions * n_row, n_col);
-    this->expansions_coefficients_gradient.resize();
+    if (this->compute_gradients) {
+      expansions_coefficients_gradient.clear();
+      // Row-major ordering, so the Cartesian (spatial) index varies slowest
+      expansions_coefficients_gradient.set_shape(n_spatial_dimensions * n_row,
+                                                 n_col);
+      expansions_coefficients_gradient.resize();
+    }
 
-    for (auto center : this->structure_manager) {
-      auto & coefficients_center = this->expansions_coefficients[center];
+    for (auto center : manager) {
+      auto & coefficients_center = expansions_coefficients[center];
       auto & coefficients_center_gradient =
-          this->expansions_coefficients_gradient[center];
+          expansions_coefficients_gradient[center];
       Key_t center_type{center.get_atom_type()};
 
       // TODO(felix) think about an option to have "global" species,
-      //"structure" species(or not), or automatic at the level of environment
+      // "structure" species(or not), or automatic at the level of environment
       std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
       for (auto neigh : center) {
         keys.insert({neigh.get_atom_type()});
@@ -1116,12 +1115,12 @@ namespace rascal {
           sqrt(4.0 * PI);
 
       for (auto neigh : center) {
-        auto dist{this->structure_manager->get_distance(neigh)};
-        auto direction{this->structure_manager->get_direction_vector(neigh)};
+        auto dist{manager->get_distance(neigh)};
+        auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
 
         auto & coefficients_neigh_gradient =
-            this->expansions_coefficients_gradient[neigh];
+            expansions_coefficients_gradient[neigh];
         this->spherical_harmonics.calc(direction, this->compute_gradients);
         auto && harmonics{spherical_harmonics.get_harmonics()};
         auto && harmonics_gradients{
@@ -1175,7 +1174,7 @@ namespace rascal {
                  + (neighbour_contribution * df_c));
           Matrix_t pair_gradient_contribution{this->max_radial,
                                               this->max_angular + 1};
-          for (size_t cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
+          for (int cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
                  ++cartesian_idx) {
             size_t l_block_idx{0};
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
@@ -1210,12 +1209,13 @@ namespace rascal {
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
       if (this->compute_gradients) {
-        radial_integral->finalize_coefficients_der(
-            this->expansions_coefficients_gradient, center);
+        radial_integral
+            ->template finalize_coefficients_der<n_spatial_dimensions>(
+                expansions_coefficients_gradient, center);
       }
-    }  // for (center : structure_manager)
+    }  // for (center : manager)
   }    // compute()
 
 }  // namespace rascal
 
-#endif  // SRC_REPRESENTATIONS_REPRESENTATION_MANAGER_SPHERICAL_EXPANSION_HH_
+#endif  // SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
