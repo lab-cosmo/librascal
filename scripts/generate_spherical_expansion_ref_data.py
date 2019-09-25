@@ -63,7 +63,10 @@ def dump_reference_json():
     for fn in fns:
         for cutoff in cutoffs:
             data['rep_info'].append([])
-            for gaussian_sigma, max_radial, max_angular, cutoff_smooth_width, rad_basis in product(gaussian_sigmas, max_radials, max_angulars, cutoff_smooth_widths, radial_basis):
+            for (gaussian_sigma, max_radial, max_angular,
+                 cutoff_smooth_width, rad_basis) in product(
+                    gaussian_sigmas, max_radials, max_angulars,
+                    cutoff_smooth_widths, radial_basis):
                 frames = read(fn)
                 hypers = {"interaction_cutoff": cutoff,
                             "cutoff_smooth_width":

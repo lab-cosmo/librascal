@@ -8,7 +8,8 @@ import numpy as np
 import ubjson
 import json
 
-# Computes the sample points and weights for Gauss-Legendre quadrature and rescales them. 
+# Computes the sample points and weights for Gauss-Legendre quadrature
+# and rescales them.
 def get_leggauss(order, a, b):
     x,w = leggauss(order)
     # rescaling
@@ -57,27 +58,34 @@ def dump_reference_json():
                 for order in orders:
                     val = sbesseli_complete_square(order,alpha,rij,xn)
                     vals[-1].append(val)
-            data["i_complete_square"].append(dict(alpha=alpha,rij=rij,xs=xns.tolist(),max_order=max_order,vals=vals))
+            data["i_complete_square"].append(
+                    dict(alpha=alpha,rij=rij,xs=xns.tolist(),
+                         max_order=max_order,vals=vals))
 
     # data = [data]
-    # with open(path+"tests/reference_data/modified_bessel_first_kind_reference.ubjson",'wb') as f:
+    # with open(
+    #       (path +
+    #        "tests/reference_data/modified_bessel_first_kind_reference.ubjson",
+    #       'wb') as f:
     #     ubjson.dump(data,f)
-    with open(path+"tests/reference_data/modified_bessel_first_kind_reference.json",'w') as f:
+    with open(os.path.join(
+            path, "tests", "reference_data",
+            "modified_bessel_first_kind_reference.json"), 'w') as f:
         json.dump(data,f)
 
-##########################################################################################
-##########################################################################################
+###############################################################################
+###############################################################################
 
 def main(json_dump):
     if json_dump == True:
         dump_reference_json()
 
-##########################################################################################
-##########################################################################################
+###############################################################################
+###############################################################################
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-json_dump', action='store_true', help='Switch for dumping json')
-
+    parser.add_argument('-json_dump', action='store_true',
+                        help='Switch for dumping json')
     args = parser.parse_args()
     main(args.json_dump)

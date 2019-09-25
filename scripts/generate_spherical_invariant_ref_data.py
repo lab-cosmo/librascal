@@ -67,8 +67,10 @@ def dump_reference_json():
         for cutoff in cutoffs:
             print(fn, cutoff)
             data['rep_info'].append([])
-            for soap_type, gaussian_sigma, max_radial, max_angular, rad_basis in product(soap_types, gaussian_sigmas, max_radials, max_angulars,
-            radial_basis):
+            for (soap_type, gaussian_sigma,
+                 max_radial, max_angular, rad_basis) in product(
+                        soap_types, gaussian_sigmas, max_radials,
+                        max_angulars, radial_basis):
                 if 'RadialSpectrum' == soap_type:
                     max_angular = 0
                 if "BiSpectrum" == soap_type:
