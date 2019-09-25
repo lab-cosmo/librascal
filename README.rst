@@ -128,6 +128,7 @@ required python packages required for the usage and development of rascal.
         - qml
         - autopep8
         - pytest
+        - tqdm
 
 To configure and compile the code with the default options, on \*nix
 systems (Windows is not supported):
@@ -281,6 +282,15 @@ helpful to customize the build options.
       cd build
       cmake -DBUILD_BINDINGS=OFF ..
       make
+
+6. Installing rascal
+
+   .. code:: shell
+
+      mkdir ../build
+      cd build
+      cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_BINDINGS=ON ..
+      make install
 
 Miscellaneous Information
 -------------------------

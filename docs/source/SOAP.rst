@@ -428,13 +428,14 @@ with possibly different :math:`m` values. The :math:`z` component is:
 .. math::
 
    \begin{aligned}
-       \frac{\partial D_{\ell m}}{\partial z_i} &= \frac{-\sqrt{1-u^2}}{2r}\left(e^{i\phi}\sqrt{(\ell+m)(\ell-m+1)}Y_l^{m-1}(\hat{r})
-           - e^{-i\phi}\sqrt{(\ell-m)(\ell+m+1)}Y_l^{m+1}(\hat{r})\right)\nonumber\\
-       &= \frac{-\sin{\theta}}{2r_{ij}}(\cos(m\phi) + i\sin(m\phi))
-       \left(\sqrt{(\ell+m)(\ell - m + 1)}\sqrt{\frac{2\ell+1}{4\pi}\frac{(\ell-m+1)!}{(\ell+m-1)!}}
+       \frac{\partial D_{\ell m}}{\partial z_i} &= \frac{-\sqrt{1-u^2}}{2r}\big(e^{i\phi}\sqrt{(\ell+m)(\ell-m+1)}Y_l^{m-1}(\hat{r})\nonumber\\
+           &\qquad\qquad - e^{-i\phi}\sqrt{(\ell-m)(\ell+m+1)}Y_l^{m+1}(\hat{r})\big)\nonumber\\
+       &= \frac{-\sin{\theta}}{2r_{ij}}(\cos(m\phi) + i\sin(m\phi)) \\
+           &\qquad\qquad \left(\sqrt{(\ell+m)(\ell - m + 1)}\sqrt{\frac{2\ell+1}{4\pi}\frac{(\ell-m+1)!}{(\ell+m-1)!}} 
            P_l^{m-1}(\cos{\theta})\right.\nonumber\\
-       &\qquad\qquad \left. {} - \sqrt{(\ell-m)(\ell + m + 1)}\sqrt{\frac{2\ell+1}{4\pi}\frac{(\ell-m-1)!}{(\ell+m+1)!}}
-       P_l^{m+1}(\cos{\theta})\right)\end{aligned}
+           &\qquad\qquad\qquad \left. {} - \sqrt{(\ell-m)(\ell + m + 1)}\sqrt{\frac{2\ell+1}{4\pi}\frac{(\ell-m-1)!}{(\ell+m+1)!}}
+               P_l^{m+1}(\cos{\theta})\right)
+    \end{aligned}
 
 But remember, we’re actually using the real spherical harmonics:
 

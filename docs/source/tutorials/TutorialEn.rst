@@ -1,9 +1,15 @@
 .. _TutorialEn:
 
+.. role:: raw-html(raw)
+    :format: html
+
 Energy fitting
 ================
 
-Approach used in Rascal can be used for calculating any of the rotationally invariant properties (such as formation energy), as well as rotationally covariant properties (such as dipole moment). This example is about fitting the formation energies of some small molecules. The dataset is located in the `librascal/examples/data/<https://github.com/cosmo-epfl/librascal/tree/master/examples/data>`_ folder, the python notebook doing the calculation is `librascal/examples/SOAP_example.ipynb <https://github.com/cosmo-epfl/librascal/blob/master/examples/SOAP_example.ipynb>`_.
+Approach used in Rascal can be used for calculating any of the rotationally invariant properties (such as formation energy), as well as rotationally covariant properties (such as dipole moment). This example is about fitting the formation energies of some small molecules. The dataset is located in the `librascal/examples/data/ <../../../../examples/data>`_ folder, the python notebook doing the calculation is `librascal/examples/SOAP_example.ipynb (outbound) <https://github.com/cosmo-epfl/librascal/blob/master/examples/SOAP_example.ipynb>`_.
+
+
+
 
 Let's take a look at the code and describe what it do step-by-step.
 
@@ -36,9 +42,9 @@ Here ASE is used to read the file with information about molecules, then the siz
 
     frames = read('./data/small_molecules-1000.xyz',':')
     hypers = dict(soap_type="PowerSpectrum",
-                  interaction_cutoff=3.5, 
-                  max_radial=6, 
-                  max_angular=6, 
+                  interaction_cutoff=3.5,
+                  max_radial=6,
+                  max_angular=6,
                   gaussian_sigma_constant=0.4,
                   gaussian_sigma_type="Constant",
                   cutoff_smooth_width=0.5,
@@ -146,13 +152,14 @@ train_krr_model - train the model basing on the given dataset and using global c
 Full spectrum
 *************
 
-Here the full (with radial and angular parts) energies are computed. Let's describe the parameters of the soap descriptor, defined in the "hypers" dictionary.
-interaction_cutoff -  Maximum pairwise distance for atoms to be considered in expansion<br>
+Here the full (with radial and angular parts) energies are computed. Let's describe the parameters of the soap descriptor, defined in the ``hypers`` dictionary.
+interaction_cutoff -  Maximum pairwise distance for atoms to be considered in expansion :raw-html:`<br />`
 max_radial - number of radial basis functions
 max_angular - highest angular momentum number in the expansion
 gaussian_sigma_constant - specifies the atomic Gaussian widths, in the case where they're fixed.
-gaussian_sigma_type - how the Gaussian atom sigmas (smearing widths) are allowed to vary -- fixed ('Constant'), by species ('PerSpecies'), or by distance from the central atom ('Radial')
-cutoff_smooth_width - the distance over which the the interaction is smoothed to zero<br>
+gaussian_sigma_type - how the Gaussian atom sigmas (smearing widths) are allowed to vary -- fixed (``Constant``), by species (``PerSpecies``), or by distance from the central atom (``Radial``)
+cutoff_smooth_width - the distance over which the the interaction is smoothed to zero :raw-html:`<br />`
+
 
 .. code-block:: python
 
@@ -225,7 +232,7 @@ It can be seen that the two spectres are quite similar, but the radial spectrum 
 
 Map of the dataset
 *******************
-Here we use sklearn to do `kernel principal component analysis <https://en.wikipedia.org/wiki/Kernel_principal_component_analysis>`_.
+Here we use sklearn to do `kernel principal component analysis (outbound) <https://en.wikipedia.org/wiki/Kernel_principal_component_analysis>`_.
 
 .. code-block:: python
 

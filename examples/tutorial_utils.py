@@ -9,6 +9,7 @@ try:
     from rascal.representations import SphericalInvariants as SOAP
 except:
     from rascal.representations import SOAP
+from rascal.models import Kernel
 from matplotlib import pyplot as plt
 import time
 from time import strftime
@@ -80,11 +81,11 @@ def get_score(ypred,y):
                 "RMSD":[np.sqrt(np.mean((ypred-y)**2))],
                 r"$R^2$" : [get_r2(ypred, y)]
                 }
-def compute_kernel(zeta, rep1, rep2=None, kernel_type = 'global', time_estimate=0):
+def compute_kernel(representation, zeta, feature1, feature2=None, kernel_type = 'global', time_estimate=0):
     if(kernel_type=='atomic'):
-        kernel_function = rep1.cosine_kernel_atomic
+        kernel = Kernel(representation, name='Cosine',target_type='Atom',zeta=zeta)
     else:
-        kernel_function = rep1.cosine_kernel_global
+        kernel = Kernel(representation, name='Cosine',target_type='Structure',zeta=zeta)
     # if(time_estimate!=0):
     #     manager = multiprocessing.Manager()
     #     return_dict = manager.dict()
@@ -98,10 +99,11 @@ def compute_kernel(zeta, rep1, rep2=None, kernel_type = 'global', time_estimate=
     #     print(return_dict.values())
     #     return return_dict.values()
     # else:
-    if rep2 is not None:
-        return kernel_function(rep2, zeta)
+    if feature2 is not None:
+        return kernel(feature2)
     else:
-        return kernel_function(zeta)
+        return kernel(feature1)
+
 class KRR(object):
     def __init__(self,zeta,weights,representation,X, kernel_type):
         self.weights = weights
@@ -112,7 +114,7 @@ class KRR(object):
 
     def predict(self,frames):
         features = self.representation.transform(frames)
-        kernel = compute_kernel(self.zeta, self.X, features, self.kernel_type)
+        kernel = compute_kernel(self.representation, self.zeta, self.X, features, self.kernel_type)
         return np.dot(self.weights, kernel)
 def extract_property(frames, property='energy'):
     if(property in frames[0].info):
@@ -346,7 +348,7 @@ class SOAP_tutorial(object):
         verbosity_wrap("<br/>Next we find the kernel for our training model.<br/>(This step will take approximately {} minutes and {} seconds.)".format(int(est/60), int(est%60)))
         time.sleep(0.5)
         t = time.time()
-        kernel = compute_kernel(self.zeta, features, kernel_type=self.sliders['kernel_type'].value, time_estimate=est)
+        kernel = compute_kernel(representation, self.zeta, features, kernel_type=self.sliders['kernel_type'].value, time_estimate=est)
         self.est_frames.append(len(frame_idx))
         self.est_times.append(time.time()-t)
 

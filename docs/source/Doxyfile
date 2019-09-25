@@ -1172,7 +1172,7 @@ HTML_COLORSTYLE_HUE    = 302
 
 HTML_COLORSTYLE_SAT    = 57
 
-HTML_COLORSTYLE_GAMMA  = 20
+HTML_COLORSTYLE_GAMMA  = 40
 
 # If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML
 # page will contain the date and time when the page was generated. Setting this

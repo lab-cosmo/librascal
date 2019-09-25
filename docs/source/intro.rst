@@ -35,14 +35,14 @@ bind_py_METHOD.cc. We decided to employ Pybind11 because of its seamless
 integration between Eigen and numpy. This allows the developer (and the user) to
 code fast and efficient algorithms easily, without losing the power of the C++
 linear algebra as well as numpy simplicity. For more reference, please consult
-`Eigen interface from pybind11
+`Eigen interface from pybind11 (outbound)
 <http://pybind11.readthedocs.io/en/stable/advanced/cast/eigen.html?highlight=eigen#pass-by-reference>`_.
 
 Developers
 ----------
 
-Rascal is jointly developed between the `COSMO <https://cosmo.epfl.ch>`_ and
-`LAMMM <https://lammm.epfl.ch>`_ groups at EPFL.  The active developers are
+Rascal is jointly developed between the `COSMO (outbound) <https://cosmo.epfl.ch>`_ and
+`LAMMM (outbound) <https://lammm.epfl.ch>`_ groups at EPFL.  The active developers are
 Michele Ceriotti, Federico Giberti, Alexander Gocsinski, Till Junge, Félix
 Musil, Markus Stricker, Max Veit, and Michael Willatt.
 
