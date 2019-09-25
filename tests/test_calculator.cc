@@ -251,9 +251,8 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_center_mask_test, Fix,
                                    multiple_center_mask_fixtures, Fix) {
-    bool verbose{true};
+    bool verbose{false};
     auto & managers = Fix::managers;
-    // auto & representations = Fix::representations;
     auto & hypers = Fix::representation_hypers;
     using Representation_t = typename Fix::Representation_t;
     using Property_t = typename Fix::Property_t;
@@ -285,7 +284,7 @@ namespace rascal {
         math::Matrix_t rep_no_center = prop_no_center.get_dense_feature_matrix();
 
         BOOST_CHECK_EQUAL(rep_full.cols(), rep_no_center.cols());
-        BOOST_CHECK_EQUAL(center_atoms_mask.template cast<int>().sum(), rep_no_center.rows());
+        BOOST_CHECK_EQUAL(center_atoms_mask.count(), rep_no_center.rows());
 
         if (verbose) {
           std::cout << "rep dim: " << rep_no_center.rows()
@@ -297,10 +296,10 @@ namespace rascal {
         for (size_t i_center{0}; i_center < manager_no_center->size();
              ++i_center) {
           if (center_atoms_mask(i_center)) {
-            auto row_full = rep_full.col(i_center);
-            auto row_no_center = rep_no_center.col(i_no_center);
+            auto row_full = rep_full.row(i_center);
+            auto row_no_center = rep_no_center.row(i_no_center);
             auto diff = (row_full - row_no_center).norm();
-            // BOOST_CHECK_LE(diff, math::dbl_ftol);
+            BOOST_CHECK_LE(diff, math::dbl_ftol);
             if (verbose) {
               std::cout << "Center idx: " << i_center << " Diff: " << diff
                         << std::endl;
