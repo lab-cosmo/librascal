@@ -269,7 +269,8 @@ namespace rascal {
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}},
+                                                 {{"type", "DVR"}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},

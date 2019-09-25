@@ -52,6 +52,8 @@ namespace rascal {
     // Reminder: C++ floating-point literals are automatically of type double
     /// Pi to more digits than anyone could possibly need
     const double PI = 3.14159265358979323846264338327950288419716939937510;
+    const double SQRT_PI =
+        1.7724538509055160272981674833411451827975494561223871282;
     const double SQRT_TWO = std::sqrt(2.0);
     const double INV_SQRT_TWO = std::sqrt(0.5);
     const double SQRT_THREE = std::sqrt(3.0);

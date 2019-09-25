@@ -344,8 +344,9 @@ namespace rascal {
     }
 
     /**
-     * returns the extension of a filename. returns empty string if nothing
-     * found
+     * extract the extension from a filename as the charaters after the last
+     * "."
+     * if it is not found it return an empty string
      */
     inline std::string get_filename_extension(const std::string & filename) {
       auto const pos = filename.find_last_of(".");

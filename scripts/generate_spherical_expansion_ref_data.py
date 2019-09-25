@@ -31,6 +31,8 @@ def dump_reference_json():
     import ubjson
     import os
     from copy import copy
+    from itertools import product
+
     path = '../'
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
@@ -40,7 +42,7 @@ def dump_reference_json():
     max_radials = [4, 10]
     max_angulars = [3, 6]
     cutoff_smooth_widths = [0., 1.]
-    radial_basis = ["GTO"]
+    radial_basis = ["GTO", "DVR"]
 
     fns = [
         os.path.join(
@@ -58,35 +60,32 @@ def dump_reference_json():
                 max_radials=max_radials,
                 rep_info=[])
 
-    # An example of the gruesomeness of using 4 spaces for one tab
     for fn in fns:
         for cutoff in cutoffs:
             data['rep_info'].append([])
-            for gaussian_sigma in gaussian_sigmas:
-                for max_radial in max_radials:
-                    for max_angular in max_angulars:
-                        for cutoff_smooth_width in cutoff_smooth_widths:
-                            for rad_basis in radial_basis:
-                                frames = read(fn)
-                                hypers = {"interaction_cutoff": cutoff,
-                                          "cutoff_smooth_width":
-                                          cutoff_smooth_width,
-                                          "max_radial": max_radial,
-                                          "max_angular": max_angular,
-                                          "gaussian_sigma_type": "Constant",
-                                          "cutoff_function_type": "Cosine",
-                                          "gaussian_sigma_constant":
-                                          gaussian_sigma,
-                                          "radial_basis": rad_basis}
-                                # x = get_soap_vectors(hypers, frames)
-                                sph_expn = SphericalExpansion(**hypers)
-                                expansions = sph_expn.transform(frames)
-                                x = expansions.get_dense_feature_matrix(
-                                    sph_expn)
-                                x[np.abs(x) < 1e-300] = 0.
-                                data['rep_info'][-1].append(
-                                    dict(feature_matrix=x.tolist(),
-                                         hypers=copy(sph_expn.hypers)))
+            for (gaussian_sigma, max_radial, max_angular,
+                 cutoff_smooth_width, rad_basis) in product(
+                    gaussian_sigmas, max_radials, max_angulars,
+                    cutoff_smooth_widths, radial_basis):
+                frames = read(fn)
+                hypers = {"interaction_cutoff": cutoff,
+                            "cutoff_smooth_width":
+                            cutoff_smooth_width,
+                            "max_radial": max_radial,
+                            "max_angular": max_angular,
+                            "gaussian_sigma_type": "Constant",
+                            "cutoff_function_type": "Cosine",
+                            "gaussian_sigma_constant":
+                            gaussian_sigma,
+                            "radial_basis": rad_basis}
+
+                sph_expn = SphericalExpansion(**hypers)
+                expansions = sph_expn.transform(frames)
+                x = expansions.get_dense_feature_matrix(sph_expn)
+                x[np.abs(x) < 1e-300] = 0.
+                data['rep_info'][-1].append(
+                    dict(feature_matrix=x.tolist(),
+                            hypers=copy(sph_expn.hypers)))
 
     with open(path+"tests/reference_data/spherical_expansion_reference.ubjson",
               'wb') as f:

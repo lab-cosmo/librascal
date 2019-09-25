@@ -67,8 +67,10 @@ def dump_reference_json():
         for cutoff in cutoffs:
             print(fn, cutoff)
             data['rep_info'].append([])
-            for soap_type, gaussian_sigma, max_radial, max_angular, inversion_symmetry, Lambda in product(soap_types, gaussian_sigmas,
-                                                                                                          max_radials, max_angulars, inversion_symmetries, Lambdas):
+            for (soap_type, gaussian_sigma, max_radial,
+                 max_angular, inversion_symmetry, Lambda) in product(
+                    soap_types, gaussian_sigmas, max_radials, max_angulars,
+                    inversion_symmetries, Lambdas):
                 hypers = {"interaction_cutoff": cutoff,
                           "cutoff_smooth_width": 0.5,
                           "max_radial": max_radial,
