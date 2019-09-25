@@ -99,8 +99,7 @@ namespace rascal {
   };
 
   template <typename MultipleStructureFixture>
-  struct MultipleStructureSphericalInvariants
-      : MultipleStructureFixture {
+  struct MultipleStructureSphericalInvariants : MultipleStructureFixture {
     using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;

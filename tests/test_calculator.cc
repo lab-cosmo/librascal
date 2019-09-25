@@ -163,11 +163,10 @@ namespace rascal {
         int size{0};
         for (int row_i{0}; row_i < feat_prop.rows(); row_i++) {
           for (int col_i{0}; col_i < feat_prop.cols(); ++col_i) {
-            diff +=
-                std::abs(feat_prop(row_i, col_i) - feat_col(row_i, col_i));
+            diff += std::abs(feat_prop(row_i, col_i) - feat_col(row_i, col_i));
             size += 1;
 
-            if (verbose and diff/size > 6e-12) {
+            if (verbose and diff / size > 6e-12) {
               std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", "
                         << col_i << " \t " << feat_prop(row_i, col_i)
                         << "\t != " << feat_col(row_i, col_i) << std::endl;
@@ -176,7 +175,6 @@ namespace rascal {
         }
         diff /= size;
         BOOST_CHECK_LE(diff, 6e-12);
-
       }
       manager_i++;
     }
@@ -237,15 +235,12 @@ namespace rascal {
       // reason...
       // CalculatorFixture<MultipleStructureSortedCoulombCenterMask,
       //                       RepresentationManagerSortedCoulomb>,
-      CalculatorFixture<
-          MultipleStructureSphericalExpansion<
-              MultipleStructureManagerNLCCStrictFixtureCenterMask>>,
-      CalculatorFixture<
-          MultipleStructureSphericalCovariants<
-              MultipleStructureManagerNLCCStrictFixtureCenterMask>>,
-      CalculatorFixture<
-          MultipleStructureSphericalInvariants<
-              MultipleStructureManagerNLCCStrictFixtureCenterMask>>>;
+      CalculatorFixture<MultipleStructureSphericalExpansion<
+          MultipleStructureManagerNLCCStrictFixtureCenterMask>>,
+      CalculatorFixture<MultipleStructureSphericalCovariants<
+          MultipleStructureManagerNLCCStrictFixtureCenterMask>>,
+      CalculatorFixture<MultipleStructureSphericalInvariants<
+          MultipleStructureManagerNLCCStrictFixtureCenterMask>>>;
 
   /**
    * Test that selecting subsets of centers will give the same representation

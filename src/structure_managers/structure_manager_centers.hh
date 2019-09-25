@@ -154,8 +154,8 @@ namespace rascal {
 
     //! Default constructor, values are set during .update() function
     StructureManagerCenters()
-        : atoms_object{}, lattice{}, atoms_index{}, offsets{},
-          n_center_atoms{}, natoms{} {}
+        : atoms_object{}, lattice{}, atoms_index{}, offsets{}, n_center_atoms{},
+          natoms{} {}
 
     //! Copy constructor
     StructureManagerCenters(const StructureManagerCenters & other) = delete;

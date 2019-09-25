@@ -547,8 +547,7 @@ namespace rascal {
     using type = BindAdaptorStack<Manager_t, AdaptorImplementationPack...>;
 
     BindAdaptorStack(py::module & m_nl, py::module & m_adaptor,
-                     py::module & m_internal,
-                     std::set<std::string> & name_list)
+                     py::module & m_internal, std::set<std::string> & name_list)
         : next_stack{m_nl, m_adaptor, m_internal, name_list} {
       std::string manager_name{internal::GetBindingTypeName<Manager_t>()};
       if (not name_list.count(manager_name)) {
