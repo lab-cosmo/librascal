@@ -368,14 +368,14 @@ namespace rascal {
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
 
-      auto atom_tag = atom.get_atom_tag();
+      auto && atom_tag = atom.get_atom_tag();
       AtomIndex_t self_atom_tag_list{atom_tag, atom_tag};
 
       std::array<size_t, PairLayer + 1> self_indices_pair;
       self_indices_pair[PairLayer] = pair_counter;
-      auto self_indices_pair_ = IndexConstArray(self_indices_pair.data());
+      auto && self_indices_pair_ = IndexConstArray(self_indices_pair.data());
       pair_cluster_indices.push_back(self_indices_pair_);
-      auto self_pair =
+      auto && self_pair =
           ClusterRefKey<2, PairLayer>(self_atom_tag_list, self_indices_pair_);
       this->add_atom(self_pair);
       pair_counter++;
