@@ -57,6 +57,8 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{
         parent_traits::HasDirectionVectors};
     constexpr static int Dim{parent_traits::Dim};
+    constexpr static int StackLevel{ManagerImplementation::traits::StackLevel +
+                                    1};
     //! New MaxOrder upon construction!
     constexpr static size_t MaxOrder{MaxOrder_};
     //! New Layer
@@ -120,8 +122,10 @@ namespace rascal {
     friend struct internal::ClusterAdder;
 
     using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
+
     using Parent = StructureManager<Manager_t>;
     using ParentBase = FilterBase;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorFilter>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;

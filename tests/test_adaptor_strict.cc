@@ -86,7 +86,7 @@ namespace rascal {
       BOOST_CHECK_EQUAL(index, atom_counter);
 
       auto type{atom.get_atom_type()};
-      BOOST_CHECK_EQUAL(type, this->fixture.atom_types[index]);
+      BOOST_CHECK_EQUAL(type, this->atom_types[index]);
       ++atom_counter;
 
       for (auto pair : atom) {
@@ -116,6 +116,8 @@ namespace rascal {
                           ManagerFixture<StructureManagerCenters>) {
     bool verbose{false};
     int mult = 3;
+
+    auto manager{this->managers[0]};
     // double rc_max{mult * 0.5 + cutoff};
     // auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(manager,
     // rc_max)}; pair_manager->update();
@@ -263,6 +265,7 @@ namespace rascal {
 
   using multiple_fixtures = boost::mpl::list<
       MultipleStructureFixture<MultipleStructureManagerNLFixture>>;
+
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_strict_test, Fix, multiple_fixtures,
                                    Fix) {
     bool verbose{false};
@@ -331,7 +334,6 @@ namespace rascal {
         neigh_ids.push_back(indices);
         neigh_dist.push_back(distances);
         neigh_dir_vec.push_back(dir_vecs);
-        // break;
       }
 
       if (verbose) {
@@ -403,6 +405,115 @@ namespace rascal {
             double dv0{neigh_dir_vec[ii][jj][kk]};
             double dv1{neigh_dir_vec_strict[ii][jj][kk]};
             BOOST_CHECK_EQUAL(dv0, dv1);
+          }
+        }
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  using Fixtures_no_center = boost::mpl::list<
+      MultipleStructureFixture<MultipleStructureManagerNLFixtureCenterMask>,
+      MultipleStructureFixture<
+          MultipleStructureManagerNLStrictFixtureCenterMask>>;
+  /**
+   * Test that + get_size and get_nb_clusters are consistent with their tasks
+   *           when masking some atoms
+   *
+   *           + distances of the strict manager are unchanged, their order
+   *           might so sorted distances are compared
+   *
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_no_center_test, Fix,
+                                   Fixtures_no_center, Fix) {
+    bool verbose{false};
+    auto & managers = Fix::managers;
+    int n_it{static_cast<int>(managers.size())};
+    for (int i_it{0}; i_it < n_it; i_it += 2) {
+      auto & manager = managers[i_it];
+      auto & manager_no_center = managers[i_it + 1];
+      auto center_atoms_mask = extract_underlying_manager<0>(manager_no_center)
+                                   ->get_center_atoms_mask();
+
+      if (not manager->get_consider_ghost_neighbours()) {
+        auto natoms = manager->get_size();
+        auto natoms2 = manager->get_nb_clusters(1);
+        BOOST_CHECK_EQUAL(natoms, natoms2);
+
+        auto n_center_atom = center_atoms_mask.count();
+        natoms = manager_no_center->get_size();
+        natoms2 = manager_no_center->get_nb_clusters(1);
+        BOOST_CHECK_EQUAL(n_center_atom, natoms);
+      } else {
+        auto natoms = manager->get_size_with_ghosts();
+        auto natoms2 = manager->get_nb_clusters(1);
+        BOOST_CHECK_EQUAL(natoms, natoms2);
+      }
+
+      if (verbose) {
+        std::cout << "center_atoms_mask: " << center_atoms_mask.transpose()
+                  << std::endl;
+      }
+      std::vector<std::vector<double>> distances_ref{};
+      std::vector<std::vector<double>> distances{};
+
+      size_t i_center{0};
+      if (verbose) {
+        std::cout << "Center index: ";
+      }
+      for (auto center : manager) {
+        if (center_atoms_mask(i_center)) {
+          distances_ref.emplace_back();
+          if (verbose) {
+            std::cout << extract_underlying_manager<0>(manager)->get_atom_index(
+                             center)
+                      << ", ";
+          }
+          for (auto neigh : center) {
+            auto dist{(neigh.get_position() - center.get_position()).norm()};
+            distances_ref.back().push_back(dist);
+          }
+        }
+        i_center++;
+      }
+      if (verbose) {
+        std::cout << std::endl;
+        std::cout << "Center index center_mask: ";
+      }
+      for (auto center : manager_no_center) {
+        distances.emplace_back();
+        if (verbose) {
+          std::cout << extract_underlying_manager<0>(manager_no_center)
+                           ->get_atom_index(center)
+                    << ", ";
+        }
+        for (auto neigh : center) {
+          auto dist{(neigh.get_position() - center.get_position()).norm()};
+          distances.back().push_back(dist);
+        }
+      }
+      if (verbose) {
+        std::cout << std::endl;
+      }
+      i_center = 0;
+      for (; i_center < manager_no_center->size(); ++i_center) {
+        std::sort(distances_ref[i_center].begin(),
+                  distances_ref[i_center].end());
+        std::sort(distances[i_center].begin(), distances[i_center].end());
+
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+            distances_ref[i_center].begin(), distances_ref[i_center].end(),
+            distances[i_center].begin(), distances[i_center].end());
+
+        if (verbose) {
+          std::cout << "Center: " << i_center << std::endl;
+          std::cout << "sizes: " << distances_ref[i_center].size() << ", "
+                    << distances[i_center].size() << std::endl;
+          for (size_t i_d{0}; i_d < distances[i_center].size(); i_d++) {
+            std::cout << std::abs(distances_ref[i_center][i_d] -
+                                  distances[i_center][i_d])
+                      << "\t" << distances_ref[i_center][i_d] << "\t"
+                      << distances[i_center][i_d] << std::endl;
           }
         }
       }

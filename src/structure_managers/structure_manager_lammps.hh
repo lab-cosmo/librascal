@@ -50,6 +50,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{false};
+    constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0, 0>;
   };
 
@@ -63,6 +64,7 @@ namespace rascal {
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
+    using ManagerImplementation_t = StructureManagerLammps;
     using ImplementationPtr_t = std::shared_ptr<StructureManagerLammps>;
 
     //! Default constructor

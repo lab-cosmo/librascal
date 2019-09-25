@@ -53,6 +53,8 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{true};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
+    constexpr static int StackLevel{ManagerImplementation::traits::StackLevel +
+                                    1};
     using LayerByOrder = typename LayerIncreaser<
         MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
   };
@@ -75,6 +77,7 @@ namespace rascal {
             AdaptorStrict<ManagerImplementation>> {
    public:
     using Manager_t = AdaptorStrict<ManagerImplementation>;
+    using ManagerImplementation_t = ManagerImplementation;
     using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorStrict>;
@@ -135,6 +138,7 @@ namespace rascal {
     inline const double & get_cutoff() const { return this->cutoff; }
 
     inline size_t get_nb_clusters(int order) const {
+      assert(order > 0);
       return this->atom_tag_list[order - 1].size();
     }
 

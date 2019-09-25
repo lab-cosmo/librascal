@@ -94,9 +94,9 @@ namespace rascal {
     json factory_args{};
   };
 
-  struct MultipleStructureSphericalInvariants
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+  template <typename MultipleStructureFixture>
+  struct MultipleStructureSphericalInvariants : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;
 
@@ -162,9 +162,9 @@ namespace rascal {
                                   {"normalize", true}}};
   };
 
-  struct MultipleStructureSphericalCovariants
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+  template <typename MultipleStructureFixture>
+  struct MultipleStructureSphericalCovariants : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalCovariants;
 
@@ -241,9 +241,9 @@ namespace rascal {
         "reference_data/spherical_covariants_reference.ubjson"};
   };
 
-  struct MultipleStructureSphericalExpansion
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+  template <class MultipleStructureFixture>
+  struct MultipleStructureSphericalExpansion : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
 
@@ -809,9 +809,9 @@ namespace rascal {
     Calculator_t & calculator;
   };
 
-  struct MultipleStructureSortedCoulomb
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+  template <class MultipleStructureFixture>
+  struct MultipleStructureSortedCoulomb : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSortedCoulomb;
     MultipleStructureSortedCoulomb() : Parent{} {};
@@ -830,6 +830,26 @@ namespace rascal {
          {"interaction_decay", 0.5},
          {"size", 120},
          {"sorting_algorithm", "row_norm"}}};
+  };
+
+  struct MultipleStructureSortedCoulombCenterMask
+      : MultipleStructureManagerNLStrictFixtureCenterMask {
+    using Parent = MultipleStructureManagerNLStrictFixtureCenterMask;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+
+    MultipleStructureSortedCoulombCenterMask() : Parent{} {};
+    ~MultipleStructureSortedCoulombCenterMask() = default;
+
+    std::vector<json> hypers{{{"central_decay", 0.5},
+                              {"interaction_cutoff", 10.},
+                              {"interaction_decay", 0.5},
+                              {"size", 120},
+                              {"sorting_algorithm", "distance"}},
+                             {{"central_decay", 0.5},
+                              {"interaction_cutoff", 10.},
+                              {"interaction_decay", 0.5},
+                              {"size", 120},
+                              {"sorting_algorithm", "row_norm"}}};
   };
 
   struct SortedCoulombTestData : TestData {

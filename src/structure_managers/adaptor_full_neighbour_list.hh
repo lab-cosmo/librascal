@@ -54,6 +54,8 @@ namespace rascal {
         ManagerImplementation::traits::HasDirectionVectors};
     constexpr static int Dim{ManagerImplementation::traits::Dim};
     constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
+    constexpr static int StackLevel{ManagerImplementation::traits::StackLevel +
+                                    1};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::full};
     // New pairs are added at this layer, which did not exist before. Therefore
@@ -81,6 +83,7 @@ namespace rascal {
     using Parent = StructureManager<AdaptorFullList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFullList>;
     using Manager_t = AdaptorFullList<ManagerImplementation>;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
