@@ -12,7 +12,7 @@ Pair distances
 **************
 
 SphericalInvariants
-****
+*******************
 
 BP symmetry functions
 *********************

@@ -3,21 +3,38 @@
 C++ documentation
 -----------------
 
-Outline
-=======
+This list is incomplete. You can help by *expanding it*!
 
- .. doxygennamespace:: rascal
+Representations
+~~~~~~~~~~~~~~~
+
+ .. doxygenclass:: rascal::CalculatorSphericalExpansion
     :project: rascal
     :members:
-    :outline:
 
-Classes
-=======
+ .. doxygenclass:: rascal::CalculatorSphericalInvariants
+    :project: rascal
+    :members:
 
- .. just try an example with latex markup
+ .. doxygenclass:: rascal::CalculatorSphericalCovariants
+    :project: rascal
+    :members:
+
+Math utilities (namespace :cpp:class:`rascal::math`)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  .. doxygenclass:: rascal::math::SphericalHarmonics
     :project: rascal
     :members:
 
-(TODO)
+ .. doxygenclass:: rascal::math::Hyp1f1
+    :project: rascal
+    :members:
+
+Index
+=====
+
+ .. doxygennamespace:: rascal
+    :project: rascal
+    :members:
+
