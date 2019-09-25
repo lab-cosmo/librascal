@@ -118,9 +118,9 @@ namespace rascal {
             vals.col(0) * this->bessel_arg_i.tail(n_rows);
 
         for (int order{2}; order < this->order_max; ++order) {
-          vals.col(order) =
-              vals.col(order - 2) - vals.col(order - 1) * (2. * order - 1.) *
-                                        this->bessel_arg_i.tail(n_rows);
+          vals.col(order) = vals.col(order - 2) -
+                            vals.col(order - 1) * (2. * order - 1.) *
+                                this->bessel_arg_i.tail(n_rows);
         }
       }
 
@@ -165,9 +165,9 @@ namespace rascal {
         }
 
         for (int order{this->order_max - 3}; order >= 0; --order) {
-          vals.col(order) =
-              vals.col(order + 2) + vals.col(order + 1) * (2. * order + 3.) *
-                                        this->bessel_arg_i.head(n_rows);
+          vals.col(order) = vals.col(order + 2) +
+                            vals.col(order + 1) * (2. * order + 3.) *
+                                this->bessel_arg_i.head(n_rows);
         }
       }
 

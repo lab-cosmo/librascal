@@ -429,7 +429,7 @@ namespace rascal {
                     {"skin", skin},
                     {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
               json ad1b{{"name", "AdaptorCenterContribution"},
-                      {"initialization_arguments", {}}};
+                        {"initialization_arguments", {}}};
               adaptors.push_back(ad1);
               adaptors.push_back(ad1b);
 
@@ -497,7 +497,7 @@ namespace rascal {
                     {"skin", skin},
                     {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
               json ad1b{{"name", "AdaptorCenterContribution"},
-                      {"initialization_arguments", {}}};
+                        {"initialization_arguments", {}}};
               json ad2{{"name", "AdaptorStrict"},
                        {"initialization_arguments", {{"cutoff", cutoff}}}};
               adaptors.push_back(ad1);
