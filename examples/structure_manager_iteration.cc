@@ -63,6 +63,9 @@ int main() {
    *
    * `alanine-X.json` is a unit cell of a polyalanine chain.
    *
+   * `alanine-center-select.json` is the same with only the heavy (non-H) atoms
+   *                              selected for iteration.
+   *
    * `simple_cubic_9.json` is an artificial 9-atom test structure.
    */
 
@@ -74,13 +77,16 @@ int main() {
 
   // `manager` is the data object which reads, stores and gives access to atom
   // positions, types. It also provides iteration over all atom.
-  //  manager.update(filename);
+  manager->update(filename);
+
+  // std::cout << "Atoms mask: " << manager->get_center_atoms_mask()
+  //          << std::endl;
 
   // `pair_manager` is constructed with the `manager` and a `cutoff`.
   auto pair_manager{
       make_adapted_manager<AdaptorNeighbourList>(manager, cutoff, true)};
   // By invoking the `.update()` method, a neighbour list is built.
-  //  pair_manager->update();
+  pair_manager->update();
 
   // `strict_manager` is constructed with a `pair_manager`.
   auto strict_manager{
@@ -91,7 +97,7 @@ int main() {
   auto triplet_manager{make_adapted_manager<AdaptorMaxOrder>(strict_manager)};
   // `.update()` triggers the extension of the pair list to triplets
   // triplet_manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
-  triplet_manager->update(filename);
+  triplet_manager->update();
 
   // Iteration over `manager`
   std::cout << "manager iteration over atoms" << std::endl;

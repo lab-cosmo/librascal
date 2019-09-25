@@ -136,11 +136,15 @@ namespace rascal {
     template <class... Args>
     void update(Args &&... arguments);
 
-    //! returns the (strict) cutoff for the adaptor
+    //! returns the linked cell cutoff for the adaptor
     inline double get_cutoff() const { return this->manager->get_cutoff(); }
 
     inline size_t get_nb_clusters(int order) const {
       return this->atom_tag_list[order - 1].size();
+    }
+
+    inline bool get_consider_ghost_neighbours() const {
+      return this->manager->get_consider_ghost_neighbours();
     }
 
     inline size_t get_size() const { return this->manager->get_size(); }

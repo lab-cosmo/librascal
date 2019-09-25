@@ -79,8 +79,8 @@ namespace rascal {
             AdaptorStrict<ManagerImplementation>> {
    public:
     using Manager_t = AdaptorStrict<ManagerImplementation>;
-    using Parent = StructureManager<Manager_t>;
     using ManagerImplementation_t = ManagerImplementation;
+    using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorStrict>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -137,6 +137,7 @@ namespace rascal {
     inline double get_cutoff() const { return this->cutoff; }
 
     inline size_t get_nb_clusters(int order) const {
+      assert(order > 0);
       return this->atom_tag_list[order - 1].size();
     }
 

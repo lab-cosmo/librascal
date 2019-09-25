@@ -1030,7 +1030,7 @@ namespace rascal {
      * Special case when HasCenterPair == true and Order == 1. The default
      * iteration in this case does not include the ii-pair by starting at 1
      * since the ii-pair is the first element.
-     * To include the ii-pair to the iteration use .with_self_pair() 
+     * To include the ii-pair to the iteration use .with_self_pair()
      */
     template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
     inline iterator begin() {

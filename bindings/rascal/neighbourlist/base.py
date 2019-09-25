@@ -95,9 +95,10 @@ def is_valid_structure(structure):
     return is_valid
 
 
-def adapt_structure(cell, positions, atom_types, pbc):
+def adapt_structure(cell, positions, atom_types, pbc, center_atoms_mask):
     cell = np.array(cell.T, order='F')
     positions = np.array(positions.T, order='F')
     atom_types = atom_types.reshape(-1, 1)
     pbc = pbc.reshape(3, 1)
-    return dict(cell=cell, positions=positions, atom_types=atom_types, pbc=pbc)
+    return dict(cell=cell, positions=positions, atom_types=atom_types, pbc=pbc,
+                center_atoms_mask=center_atoms_mask)

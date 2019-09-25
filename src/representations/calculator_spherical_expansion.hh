@@ -714,7 +714,7 @@ namespace rascal {
         using math::pow;
         using std::sqrt;
 
-        //TODO(max,felix) implement (!) -- these are dummy values
+        // TODO(max,felix) implement (!) -- these are dummy values
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
@@ -1035,7 +1035,8 @@ namespace rascal {
       std::basic_ostringstream<char> err_message;
       err_message << "Invalid combination of atomic smearing and radial basis ";
       err_message << "type encountered (This is a bug.  Debug info for ";
-      err_message << "developers: " << "radial_integral_type == ";
+      err_message << "developers: "
+                  << "radial_integral_type == ";
       err_message << static_cast<int>(this->radial_integral_type);
       err_message << ", atomic_smearing_type == ";
       err_message << static_cast<int>(this->atomic_smearing_type);

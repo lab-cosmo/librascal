@@ -122,6 +122,7 @@ namespace rascal {
     friend struct internal::ClusterAdder;
 
     using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
+
     using Parent = StructureManager<Manager_t>;
     using ParentBase = FilterBase;
     using ManagerImplementation_t = ManagerImplementation;

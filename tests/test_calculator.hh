@@ -98,9 +98,10 @@ namespace rascal {
     json factory_args{};
   };
 
+  template <typename MultipleStructureFixture>
   struct MultipleStructureSphericalInvariants
-      : MultipleStructureManagerNLCCStrictFixture {
-    using Parent = MultipleStructureManagerNLCCStrictFixture;
+      : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;
 
@@ -161,9 +162,9 @@ namespace rascal {
                                   {"normalize", true}}};
   };
 
-  struct MultipleStructureSphericalCovariants
-      : MultipleStructureManagerNLCCStrictFixture {
-    using Parent = MultipleStructureManagerNLCCStrictFixture;
+  template <typename MultipleStructureFixture>
+  struct MultipleStructureSphericalCovariants : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalCovariants;
 
@@ -237,9 +238,9 @@ namespace rascal {
         "reference_data/spherical_covariants_reference.ubjson"};
   };
 
-  struct MultipleStructureSphericalExpansion
-      : MultipleStructureManagerNLCCStrictFixture {
-    using Parent = MultipleStructureManagerNLCCStrictFixture;
+  template <class MultipleStructureFixture>
+  struct MultipleStructureSphericalExpansion : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
 
@@ -813,9 +814,9 @@ namespace rascal {
     Calculator_t & calculator;
   };
 
-  struct MultipleStructureSortedCoulomb
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+  template <class MultipleStructureFixture>
+  struct MultipleStructureSortedCoulomb : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSortedCoulomb;
     MultipleStructureSortedCoulomb() : Parent{} {};

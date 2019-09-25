@@ -1,11 +1,11 @@
 /**
- * file   test_nl.cc
+ * file   playground.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   2018
  *
- * @brief Example for Neighbour list
+ * @brief File to build and test new functionality
  *
  * Copyright  2018 Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -46,6 +46,7 @@
 #include <functional>
 #include <string>
 #include <initializer_list>
+#include <random>
 
 using namespace rascal;  // NOLINT
 

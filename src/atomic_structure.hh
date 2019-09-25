@@ -61,17 +61,18 @@ namespace rascal {
      *  @param position is a vector which holds the atomic positions.
      */
     using Cell_t = Eigen::Matrix<double, Dim, Dim>;
-    using Cell_ref = Eigen::Map<Cell_t>;
+    using Cell_ref = Eigen::Ref<Cell_t>;
+    using ConstCell_ref = const Eigen::Ref<const Cell_t>;
 
-    using AtomTypes_t = Eigen::Matrix<int, 1, Eigen::Dynamic>;
-    using AtomTypes_ref = Eigen::Map<AtomTypes_t>;
-    using ConstAtomTypes_ref = Eigen::Map<const AtomTypes_t>;
+    using AtomTypes_t = Eigen::Matrix<int, Eigen::Dynamic, 1>;
+    using AtomTypes_ref = Eigen::Ref<AtomTypes_t>;
+    using ConstAtomTypes_ref = Eigen::Ref<const AtomTypes_t>;
 
     using PBC_t = Eigen::Matrix<int, Dim, 1>;
-    using PBC_ref = Eigen::Map<PBC_t>;
+    using PBC_ref = Eigen::Ref<PBC_t>;
 
     using Positions_t = Eigen::Matrix<double, Dim, Eigen::Dynamic>;
-    using Positions_ref = Eigen::Map<Positions_t>;
+    using Positions_ref = Eigen::Ref<Positions_t>;
 
     using PositionsInput_t =
         Eigen::Ref<const Eigen::MatrixXd, 0,
@@ -81,29 +82,59 @@ namespace rascal {
         Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
 
     using PBCInput_t = Eigen::Ref<const Eigen::Matrix<int, Eigen::Dynamic, 1>>;
+    using CellInput_t = Eigen::Ref<const Eigen::MatrixXd>;
 
-    // Eigen types for saving atomic structure data
+    using ArrayB_t = Eigen::Array<bool, Eigen::Dynamic, 1>;
+    using ArrayB_ref = Eigen::Ref<const ArrayB_t>;
+
+    //! positions of the atomic structure in a Nx3 Eigen Matrix
     Positions_t positions{};
+    //! atomic numbers of the N atoms
     AtomTypes_t atom_types{};
+    //! cell vectors defining the box
     Cell_t cell{};
+    //! periodic boundary conditions for each directions
     PBC_t pbc{};
+    //! Contains the information wheter an atom should be centered on or not
+    //! in the form of an array of N booleans (true->center)
+    ArrayB_t center_atoms_mask{};
 
     //! Default constructor
     AtomicStructure() = default;
+
+    inline size_t get_number_of_atoms() const { return positions.cols(); }
+
+    /**
+     * Set the atomic structure. The expected input are similar to the member
+     * variable of the AtomicStructure class.
+     *
+     * By default all atoms are considered as atoms to center the
+     * representation on.
+     *
+     * A valid atomic structure file is in the ASE json format.
+     */
+    inline void set_structure(const PositionsInput_t & positions,
+                              const AtomTypesInput_t & atom_types,
+                              const CellInput_t cell, const PBCInput_t & pbc) {
+      auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
+      this->set_structure(positions, atom_types, cell, pbc, center_atoms_mask);
+    }
 
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
     inline void set_structure(const PositionsInput_t & positions,
                               const AtomTypesInput_t & atom_types,
-                              const Eigen::Ref<const Eigen::MatrixXd> cell,
-                              const PBCInput_t & pbc) {
+                              const CellInput_t cell, const PBCInput_t & pbc,
+                              const ArrayB_t & center_atoms_mask) {
       // check data consistency
       auto npos{positions.cols()};
       auto ntypes{atom_types.rows()};
-      if (npos != ntypes) {
+      auto n_center_flags{center_atoms_mask.size()};
+      if (npos != ntypes or ntypes != n_center_flags) {
         std::stringstream err_str{};
         err_str << "Number of atom positions and atom types is not the same: '"
-                << npos << "' != '" << ntypes << "'.";
+                << npos << "' != '" << ntypes << "' != '" << n_center_flags
+                << "'.";
         throw std::runtime_error(err_str.str());
       }
 
@@ -111,6 +142,7 @@ namespace rascal {
       this->atom_types = atom_types;
       this->pbc = pbc;
       this->positions = positions;
+      this->center_atoms_mask = center_atoms_mask;
     }
 
     // TODO(markus): add function to read from XYZ files
@@ -149,8 +181,7 @@ namespace rascal {
       } else if (s.count("cell") == 1 and
                  (s.count("atom_types") == 1 or s.count("numbers") == 1) and
                  s.count("pbc") == 1 and s.count("positions") == 1) {
-        json_io::AtomicJsonData json_atoms_object{};
-        json_atoms_object = s;
+        auto json_atoms_object = s.get<AtomicStructure<Dim>>();
         this->set_structure(json_atoms_object);
       } else {
         std::string error{
@@ -162,133 +193,139 @@ namespace rascal {
       }
     }
 
-    //! method for initializing structure from a json object; data is copied
-    inline void set_structure(const json_io::AtomicJsonData & s) {
-      // internal std::vector for reading from json, necessary for push_back, no
-      // direct mapping possible
-      std::vector<double> cell_data{};
-      std::vector<int> type_data{};
-      std::vector<int> pbc_data{};
-      std::vector<double> pos_data{};
-
-      // check for empty data set
-      try {
-        auto pos_size = s.position.size();
-        if (pos_size == 0) {
-          throw std::runtime_error("No atomic structure defined. "
-                                   "Read structure first!");
-        }
-      } catch (const std::exception & e) {
-        std::cerr << e.what() << std::endl;
-        std::exit(EXIT_FAILURE);
-      }
-
-      // get data out of the json object to access with Eigen::Map
-      for (auto vec : s.cell) {
-        for (auto coord : vec) {
-          cell_data.push_back(coord);
-        }
-      }
-      // elements
-      for (auto val : s.type) {
-        type_data.push_back(val);
-      }
-      // periodicity
-      for (auto val : s.pbc) {
-        pbc_data.push_back(val);
-      }
-      // positions
-      for (auto pos : s.position) {
-        for (auto coord : pos) {
-          pos_data.push_back(coord);
-        }
-      }
-
-      // check data consistency
-      auto npos{positions.size() / Dim};
-      auto ntypes{atom_types.size()};
-      if (npos != ntypes) {
-        std::stringstream err_str{};
-        err_str << "Number of atom positions and atom types is not the same: '"
-                << npos << "' != '" << ntypes << "'.";
-        throw std::runtime_error(err_str.str());
-      }
-      // associate them to internal data structure
-      this->cell = Cell_ref(cell_data.data());
-      this->atom_types = AtomTypes_ref(type_data.data(), type_data.size());
-      this->pbc = PBC_ref(pbc_data.data());
-      this->positions =
-          Positions_ref(pos_data.data(), Dim, pos_data.size() / Dim);
-    }
-
     inline void set_structure(const AtomicStructure<Dim> & other) {
       this->positions = other.positions;
       this->atom_types = other.atom_types;
       this->cell = other.cell;
       this->pbc = other.pbc;
+      this->center_atoms_mask = other.center_atoms_mask;
     }
 
     inline void set_structure() {}
 
     /**
-     * Compare if another structure is identical to itself.
+     * Compare if another atomic structure is identical to itself.
      *
      * Assumes that if the structure is given as json or filename related then
      * it is different. Do the comparison only if it is given as an
      * AtomicStructure or positions, pbc...
      * Used for the verlet list
+     *
+     * @param threshold2 tolerance parameter squared for the similarity
+     *                    comparison
      */
-    inline bool is_identical(const double &) const { return true; }
+    inline bool is_similar(const double &) const { return true; }
 
-    inline bool is_identical(const json_io::AtomicJsonData &, const double &) {
+    inline bool is_similar(const json_io::AtomicJsonData &, const double &) {
       return false;
     }
 
-    inline bool is_identical(const json &, const double &) const {
+    inline bool is_similar(const json &, const double &) const { return false; }
+
+    inline bool is_similar(const std::string &, const double &) const {
       return false;
     }
 
-    inline bool is_identical(const std::string &, const double &) const {
-      return false;
-    }
-
-    inline bool is_identical(const AtomicStructure<Dim> & other,
-                             const double & skin2) const {
-      bool is_similar{true};
+    inline bool is_similar(const AtomicStructure<Dim> & other,
+                           const double & threshold2) const {
+      bool is_similar_{true};
       if (this->positions.cols() == other.positions.cols()) {
         if ((this->pbc.array() != other.pbc.array()).any() or
             (this->cell.array() != other.cell.array()).any() or
+            (this->center_atoms_mask != other.center_atoms_mask).any() or
+            (this->atom_types.array() != other.atom_types.array()).any() or
             (this->positions - other.positions)
                     .rowwise()
                     .squaredNorm()
-                    .maxCoeff() > skin2) {
-          is_similar = false;
+                    .maxCoeff() > threshold2) {
+          is_similar_ = false;
         }
       } else {
-        is_similar = false;
+        is_similar_ = false;
       }
-      return is_similar;
+      return is_similar_;
     }
 
-    inline bool is_identical(const PositionsInput_t & positions,
-                             const AtomTypesInput_t & /*atom_types*/,
-                             const Eigen::Ref<const Eigen::MatrixXd> cell,
-                             const PBCInput_t & pbc,
-                             const double & skin2) const {
-      bool is_similar{true};
+    inline bool is_similar(const PositionsInput_t & positions,
+                           const AtomTypesInput_t & atom_types,
+                           const CellInput_t cell, const PBCInput_t & pbc,
+                           const double & threshold2) const {
+      auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
+      return this->is_similar(positions, atom_types, cell, pbc,
+                              center_atoms_mask, threshold2);
+    }
+
+    inline bool is_similar(const PositionsInput_t & positions,
+                           const AtomTypesInput_t & atom_types,
+                           const CellInput_t cell, const PBCInput_t & pbc,
+                           const ArrayB_ref & center_atoms_mask,
+                           const double & threshold2) const {
+      bool is_similar_{true};
       if (this->positions.cols() == positions.cols()) {
         if ((this->pbc.array() != pbc.array()).any() or
             (this->cell.array() != cell.array()).any() or
+            (this->center_atoms_mask != center_atoms_mask).any() or
+            (this->atom_types.array() != atom_types.array()).any() or
             (this->positions - positions).rowwise().squaredNorm().maxCoeff() >
-                skin2) {
-          is_similar = false;
+                threshold2) {
+          is_similar_ = false;
         }
       } else {
-        is_similar = false;
+        is_similar_ = false;
       }
-      return is_similar;
+      return is_similar_;
     }
   };
+
+  /* ---------------------------------------------------------------------- */
+  template <int Dim>
+  void to_json(json & j, const AtomicStructure<Dim> & s) {
+    auto cell = s.cell;
+    cell.transposeInPlace();
+
+    j = json{{"cell", cell},
+             {"atom_types", s.atom_types},
+             {"pbc", s.pbc},
+             {"positions", s.positions},
+             {"center_atoms_mask", s.center_atoms_mask}};
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template <int Dim>
+  void from_json(const json & j, AtomicStructure<Dim> & s) {
+    using Cell_t = Eigen::MatrixXd;
+    using AtomTypes_t = Eigen::VectorXi;
+    using PBC_t = Eigen::VectorXi;
+    using Positions_t = Eigen::MatrixXd;
+    using ArrayB_t = typename AtomicStructure<Dim>::ArrayB_t;
+
+    auto cell = j.at("cell").get<Cell_t>();
+    auto positions = j.at("positions").get<Positions_t>();
+
+    AtomTypes_t atom_types(positions.rows());
+    if (j.count("atom_types") == 1) {
+      atom_types = j.at("atom_types").get<AtomTypes_t>();
+    } else if (j.count("numbers") == 1) {
+      atom_types = j.at("numbers").get<AtomTypes_t>();
+    } else {
+      throw std::runtime_error(
+          R"(AtomicStructure needs atom_types or numbers keyword)");
+    }
+    auto pbc = j.at("pbc").get<PBC_t>();
+
+    cell.transposeInPlace();
+
+    if (atom_types.size() == positions.rows()) {
+      positions.transposeInPlace();
+    }
+    if (j.count("center_atoms_mask") == 1) {
+      auto center_atoms_mask = j.at("center_atoms_mask").get<ArrayB_t>();
+      s.set_structure(positions, atom_types, cell, pbc, center_atoms_mask);
+    } else {
+      s.set_structure(positions, atom_types, cell, pbc);
+    }
+  }
+
 }  // namespace rascal
 
 #endif  // SRC_ATOMIC_STRUCTURE_HH_

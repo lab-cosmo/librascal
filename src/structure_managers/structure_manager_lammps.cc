@@ -51,6 +51,7 @@ namespace rascal {
     this->vatom = vatom;
     this->offsets.reserve(inum);
     this->offsets.resize(1);
+    this->atom_index_from_atom_tag_list.clear();
     // #BUG8486@(all) it should be this->inum
     for (int i{0}; i < this->inum; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);

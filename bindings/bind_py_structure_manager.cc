@@ -240,9 +240,8 @@ namespace rascal {
 
   //! templated function for adding a StructureManager implementation
   template <typename StructureManagerImplementation>
-  decltype(auto)
-  add_structure_manager_implementation(py::module & m,
-                                       py::module & m_internal) {
+  decltype(auto) add_structure_manager_implementation(py::module & m,
+                                                      py::module & m_internal) {
     using Child = StructureManagerImplementation;
     constexpr static size_t MaxOrder = Child::traits::MaxOrder;
 
