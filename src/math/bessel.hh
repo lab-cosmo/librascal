@@ -36,11 +36,12 @@ namespace rascal {
   namespace math {
 
     /**
-     * Computes of the modified bessel function of the first kind (MBSF) as
-     * \[
+     * Computes the modified spherical bessel function of the first kind (MBSF)
+     * as
+     * \f[
      *    f(r; x_n, a) = e^{-ar^2} e^{-ax_n^2} i_l(2*a*r*x_n)
-     * \]
-     * Just precompte() once, calc(), and use get_values() to access
+     * \f]
+     * Just call precompute() once, calc(), and use get_values() to access
      * the values
      *
      * Note that this uses the "exp-exp complete-square" optimized function,
@@ -48,11 +49,11 @@ namespace rascal {
      * it from blowing up.
      *
      * The recursion relation used here is:
-     * \[
+     * \f[
      *    i_0(x) = sinh(x) / x
      *    i_1(x) = (x*cosh(x) + sinh(x)) / x^2
      *    i_n(x) = i_{n-2}(x) - (2n - 1)/x * i_{n-1}(x)
-     * \]
+     * \f]
      * from
      * http://mathworld.wolfram.com/ModifiedSphericalBesselFunctionoftheFirstKind.html
      * // NOLINT
@@ -130,14 +131,14 @@ namespace rascal {
        * The recurence relation is initialized using the confluent
        * hypergeometric function.
        *
-       * \[
+       * \f[
        *    f(r; x_n, a) = e^{-ar^2} e^{-ax_n^2} i_l(2*a*r*x_n)
-       * \]
+       * \f]
        * using the representation of Modified Bessel function as 1F1
-       * \[
+       * \f[
        *  i_l(x) = \exp{-x} \frac{\sqrt{\pi}}{4\Gamma{1.5 + n}}
        *            (\frac{x}{2})^{l} 1F1(l+1, 2l+2, 2x)
-       * \]
+       * \f]
        *
        * @param distance (single) value of distance
        *                (second exponential argument) in the equation above

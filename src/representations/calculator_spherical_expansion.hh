@@ -648,9 +648,11 @@ namespace rascal {
             this->max_radial)};
 
         // sqrt(w) * x
-        // x and not x^2 because in the kernel formulation the r^2 from the
-        // jacobian gets split out into each of the expansion coefficients
-        // so only x
+        // (if you think it should be x^2 and not x, think again -- the
+        // transformation from integrating the overlap in 3-D spherical
+        // coordinates to the 1-D radial coordinate absorbs a factor of r.
+        // For more details, see the SOAP theory documentation)
+        // TODO(max) link to SOAP theory documentation
         this->legendre_radial_factor =
             point_weight.col(1).array().sqrt() * point_weight.col(0).array();
 
@@ -704,25 +706,7 @@ namespace rascal {
       /**
        * Compute the radial derivative of the neighbour contribution
        *
-       * Note that you _must_ call compute_neighbour_contribution() first to
-       * populate the relevant arrays!
-       *
-       * The derivative is taken with respect to the pair distance, r_{ij}.  In
-       * order to get the radial component of the gradient, remember to multiply
-       * by the direction vector \hat{\vec{r}_{ij}} (and not the vector itself),
-       * since
-       * \[
-       *    \grad_{\vec{r}_i} f(r_{ij}) =
-       *                    \frac{d f}{d r_{ij}} \frac{- \vec{r}_{ij}}{r_{ij}}
-       *                  = \frac{d f}{d r_{ij}} -\hat{\vec{r}_{ij}}
-       * \])
-       * so multiply by _negative_ $\hat{\vec{r}}_ij$ to get the radial
-       * component of the gradient wrt motion of the central atom
-       * ($\frac{d}{d\vec{r}_i}$).
-       *
-       * And finally, there is no compute_center_derivative() because that's
-       * just zero -- the centre contribution doesn't vary w.r.t. motion of
-       * the central atom
+       * @todo still needs to be implemented for the DVR radial basis
        */
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Matrix_Ref
@@ -732,6 +716,7 @@ namespace rascal {
         using math::pow;
         using std::sqrt;
 
+        //TODO(max,felix) implement (!) -- these are dummy values
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
@@ -873,7 +858,7 @@ namespace rascal {
         throw std::logic_error("Requested Radial contribution type \'" +
                                radial_contribution_type +
                                "\' has not been implemented.  Must be one of" +
-                               ": \'GTO\' " + " \'DVR\'. ");
+                               ": \'GTO\' or \'DVR\'. ");
       }
 
       auto fc_hypers = hypers.at("cutoff_function").get<json>();
