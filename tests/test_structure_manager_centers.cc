@@ -37,7 +37,11 @@ namespace rascal {
                           ManagerFixture<StructureManagerCenters>) {}
 
   /* ---------------------------------------------------------------------- */
-  // checking iteration
+  /**
+   * checking the iteration with and without the center mask
+   *
+   * test that the positions are properly iterated over
+   */
   BOOST_FIXTURE_TEST_CASE(iterator_test,
                           ManagerFixture<StructureManagerCenters>) {
     constexpr bool verbose{false};

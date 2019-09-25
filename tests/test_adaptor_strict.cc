@@ -416,7 +416,14 @@ namespace rascal {
       MultipleStructureFixture<MultipleStructureManagerNLFixtureCenterMask>,
       MultipleStructureFixture<
           MultipleStructureManagerNLStrictFixtureCenterMask>>;
-
+  /**
+   * Test that + get_size and get_nb_clusters are consistent with their tasks
+   *           when masking some atoms
+   *
+   *           + distances of the strict manager are unchanged, their order
+   *           might so sorted distances are compared
+   *
+   */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_no_center_test, Fix,
                                    Fixtures_no_center, Fix) {
     bool verbose{false};
