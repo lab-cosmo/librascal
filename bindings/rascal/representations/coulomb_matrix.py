@@ -2,7 +2,6 @@ import numpy as np
 import json
 
 from ..neighbourlist import AtomsList
-from ..lib import calculator
 from .base import CalculatorFactory
 from ..utils import FactoryPool
 from itertools import starmap

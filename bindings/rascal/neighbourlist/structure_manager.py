@@ -1,17 +1,20 @@
-from .base import (neighbourList, NeighbourListFactory, is_valid_structure,
+from ..lib import neighbour_list
+from .base import (NeighbourListFactory, is_valid_structure,
  adapt_structure, StructureCollectionFactory)
 from collections.abc import Iterable
 
 
 class AtomsList(object):
     """
-    A wrapper class for a stack of managers precompiled on the C++ side of the form Strict->neighbourList->Center.
-    A container for atoms/centers/atomic environments.
+    A wrapper class for a stack of managers precompiled on the C++ side of the
+    form Strict->NeighbourList->Center.  A container for atoms/centers/atomic
+    environments.
 
     Attributes
     ----------
     nl_options : dict
-        Parameters for each layer of the wrapped structure manager. Parameters can be specified for these layers: center, neighbourlist and strict.
+        Parameters for each layer of the wrapped structure manager. Parameters
+        can be specified for these layers: center, neighbourlist and strict.
 
     Methods
     -------
@@ -66,7 +69,8 @@ class AtomsList(object):
         represenation_matrix : ndarray
             returns the representation bound to the calculator as dense matrix.
         """
-        return self.managers.get_dense_feature_matrix(calculator._representation)
+        return self.managers.get_dense_feature_matrix(
+                calculator._representation)
 
 
 def get_neighbourlist(structure, options):
@@ -78,7 +82,7 @@ def get_neighbourlist(structure, options):
 def convert_to_structure_list(frames):
     if not isinstance(frames, Iterable):
         frames = [frames]
-    structure_list = neighbourList.AtomicStructureList()
+    structure_list = neighbour_list.AtomicStructureList()
     for frame in frames:
         if is_valid_structure(frame):
             structure = frame
@@ -124,4 +128,5 @@ def unpack_ase(frame):
     numbers = frame.get_atomic_numbers()
     pbc = frame.get_pbc().astype(int)
 
-    return adapt_structure(cell=cell, positions=positions, atom_types=numbers, pbc=pbc)
+    return adapt_structure(
+            cell=cell, positions=positions, atom_types=numbers, pbc=pbc)

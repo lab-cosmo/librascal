@@ -45,6 +45,10 @@ class SphericalInvariants(object):
         Specifies whether inversion invariance should be enforced.
         (Only relevant for BiSpectrum.)
 
+    normalize : boolean
+        Whether to normalize so that the kernel between identical environments
+        is 1.  Default and highly recommended: True.
+
     Methods
     -------
     transform(frames)
