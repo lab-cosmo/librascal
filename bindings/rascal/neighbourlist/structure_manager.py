@@ -30,9 +30,9 @@ class AtomsList(object):
                 managers.add_structures(frames)
             elif start is not None and length is None:
                 managers.add_structures(frames, start=start)
-            elif start is not None and not length is None:
+            elif start is not None and length is not None:
                 managers.add_structures(frames, start=start, length=length)
-            elif start is None and not length is None:
+            elif start is None and length is not None:
                 managers.add_structures(frames, length=length)
         else:
             # if python structure
@@ -54,8 +54,10 @@ class AtomsList(object):
 
     def __iter__(self):
         return self.managers
+
     def __getitem__(self, key):
         return self.managers[key]
+
     def get_dense_feature_matrix(self, calculator):
         """
         Parameters

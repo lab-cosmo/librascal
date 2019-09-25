@@ -451,10 +451,7 @@ namespace rascal {
       template <int n_spatial_dimensions, typename Coeffs, typename Center>
       void finalize_coefficients_der(Coeffs & coefficients_gradient,
                                      Center & center) const {
-        auto && coefficients_center_gradient = coefficients_gradient[center];
-        coefficients_center_gradient.template lhs_dot_der<n_spatial_dimensions>(
-            this->ortho_norm_matrix);
-        for (auto neigh : center) {
+        for (auto neigh : center.with_self_pair()) {
           auto & coefficients_neigh_gradient = coefficients_gradient[neigh];
           coefficients_neigh_gradient
               .template lhs_dot_der<n_spatial_dimensions>(
@@ -881,7 +878,7 @@ namespace rascal {
     }
 
     /**
-     * Construct a new RepresentationManager using a hyperparameters container
+     * Construct a new Calculator using a hyperparameters container
      *
      * @param hypers container (usually parsed from json) for the options and
      *               hyperparameters
@@ -889,7 +886,8 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container
      */
-    explicit CalculatorSphericalExpansion(const Hypers_t & hyper) {
+    explicit CalculatorSphericalExpansion(const Hypers_t & hyper)
+        : CalculatorBase{} {
       this->set_default_prefix("spherical_expansion_");
       this->set_hyperparameters(hyper);
     }
@@ -1101,7 +1099,7 @@ namespace rascal {
     for (auto center : manager) {
       auto & coefficients_center = expansions_coefficients[center];
       auto & coefficients_center_gradient =
-          expansions_coefficients_gradient[center];
+          expansions_coefficients_gradient[center.get_atom_ii()];
       Key_t center_type{center.get_atom_type()};
 
       // TODO(felix) think about an option to have "global" species,
@@ -1128,9 +1126,9 @@ namespace rascal {
         auto dist{manager->get_distance(neigh)};
         auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
-
         auto & coefficients_neigh_gradient =
             expansions_coefficients_gradient[neigh];
+
         this->spherical_harmonics.calc(direction, this->compute_gradients);
         auto && harmonics{spherical_harmonics.get_harmonics()};
         auto && harmonics_gradients{
@@ -1158,7 +1156,6 @@ namespace rascal {
         // compute the gradients of the coefficients with respect to
         // atoms positions
         if (this->compute_gradients) {
-          // TODO(max,felix) should only have 1 valid key
           std::vector<Key_t> neigh_types{neigh_type};
           coefficients_neigh_gradient.resize(
               neigh_types, n_spatial_dimensions * n_row, n_col, 0.);

@@ -1,7 +1,7 @@
-# from ..lib.Kernels import CosineKernel
 from ..lib._rascal.models.kernels import Kernel as Kernelcpp
 from ..neighbourlist import AtomsList
 import json
+
 
 class Kernel(object):
 
@@ -34,7 +34,6 @@ class Kernel(object):
         self._representation = representation._representation
 
         self._kernel = Kernelcpp(hypers_str)
-
 
     def __call__(self, X, Y=None):
         """

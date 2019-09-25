@@ -86,7 +86,7 @@ namespace rascal {
   //! Dynamic access to all layers by cluster dimension (probably not necessary)
   template <size_t MaxOrder, size_t... Ints>
   constexpr std::array<size_t, MaxOrder>
-  get_layers(std::index_sequence<Ints...>) {
+      get_layers(std::index_sequence<Ints...>) {
     return std::array<size_t, MaxOrder>{Ints...};
   }
 
@@ -245,6 +245,9 @@ namespace rascal {
      */
     const int & get_internal_neighbour_atom_tag() const { return this->back(); }
 
+    /* 
+     * From an cluster of form (i,j,..., n) it returns the tag of atom n
+     */
     const int & get_atom_tag() const { return this->back(); }
 
     //! returns the cluster's index, given a specific layer

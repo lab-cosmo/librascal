@@ -63,7 +63,7 @@ namespace rascal {
 
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
-         {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
+         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
@@ -87,7 +87,8 @@ namespace rascal {
   struct DataSphericalInvariantsKernelFixture {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
     using Representation_t = CalculatorSphericalInvariants;
 
     DataSphericalInvariantsKernelFixture() {
@@ -107,9 +108,13 @@ namespace rascal {
                  {"initialization_arguments",
                   {{"cutoff", cutoff},
                    {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+        json ad1b{{"name", "AdaptorCenterContribution"},
+                  {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
                  {"initialization_arguments", {{"cutoff", cutoff}}}};
         adaptors.emplace_back(ad1);
+        // ad1b is dummy name
+        adaptors.emplace_back(ad1b);
         adaptors.emplace_back(ad2);
 
         parameters["structure"] = structure;

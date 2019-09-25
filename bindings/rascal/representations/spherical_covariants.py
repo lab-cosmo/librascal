@@ -108,10 +108,11 @@ class SphericalCovariants(object):
                                     radial_contribution=radial_contribution)
 
         self.nl_options = [
-            dict(name='centers', args=[]),
+            dict(name='centers', args=dict()),
             dict(name='neighbourlist', args=dict(cutoff=interaction_cutoff)),
+            dict(name="centercontribution", args=dict()),
             dict(name='strict', args=dict(cutoff=interaction_cutoff))
-                                    ]
+        ]
 
         hypers_str = json.dumps(self.hypers)
         self.rep_options = dict(name=self.name, args=[hypers_str])
@@ -162,15 +163,15 @@ class SphericalCovariants(object):
         if self.hypers['soap_type'] == 'LambdaSpectrum':
             if self.hypers['inversion_symmetry'] == True:
                 n_col = (np.ceil((self.hypers['max_angular'] + 1)**2/2.0) -
-                    (1.0 + np.floor((self.hypers['lam'] - 1)/2.0))**2 -
-                    np.floor((self.hypers['max_angular'] + 1 -
-                              self.hypers['lam'])**2/2.0)
-                        * (self.hypers['lam'] % 2) -
-                    (np.ceil((self.hypers['max_angular'] + 1 -
-                              self.hypers['lam'])**2/2.0) -
-                     (self.hypers['max_angular'] -
-                      self.hypers['lam'] + 1)) *
-                    (1.0 - self.hypers['lam'] % 2))
+                         (1.0 + np.floor((self.hypers['lam'] - 1)/2.0))**2 -
+                         np.floor((self.hypers['max_angular'] + 1 -
+                                   self.hypers['lam'])**2/2.0)
+                         * (self.hypers['lam'] % 2) -
+                         (np.ceil((self.hypers['max_angular'] + 1 -
+                                   self.hypers['lam'])**2/2.0) -
+                          (self.hypers['max_angular'] -
+                             self.hypers['lam'] + 1)) *
+                         (1.0 - self.hypers['lam'] % 2))
                 if (self.hypers['lam'] % 2 == 1):
                     n_col = -n_col + 0.5*(2.0 + self.hypers['lam'] -
                                           3 * self.hypers['lam']**2 +
@@ -186,7 +187,7 @@ class SphericalCovariants(object):
                         int((2 + self.hypers['lam'] - 3*self.hypers['lam']**2 +
                              2 * self.hypers['max_angular'] +
                              4 * self.hypers['lam']
-                               * self.hypers['max_angular'])/2) *
+                             * self.hypers['max_angular'])/2) *
                         (2*self.hypers['lam'] + 1))
         else:
             raise ValueError('Only soap_type = LambdaSpectrum '

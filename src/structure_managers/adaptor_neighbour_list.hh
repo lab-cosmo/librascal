@@ -54,15 +54,15 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorNeighbourList<ManagerImplementation>> {
+    using parent_traits = StructureManager_traits<ManagerImplementation>;
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{false};
-    constexpr static int Dim{ManagerImplementation::traits::Dim};
-    constexpr static int StackLevel{ManagerImplementation::traits::StackLevel +
-                                    1};
+    constexpr static int Dim{parent_traits::Dim};
+    constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
     // New MaxOrder upon construction, by construction should be 2
-    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder +
-                                     1};
+    constexpr static size_t MaxOrder{parent_traits::MaxOrder + 1};
     // When using periodic boundary conditions, it is possible that atoms are
     // added upon construction of the neighbour list. Therefore the layering
     // sequence is reset: here is layer 0 again.
@@ -456,8 +456,8 @@ namespace rascal {
      * radius or extends an existing neighbourlist to the next order
      */
     AdaptorNeighbourList(ImplementationPtr_t manager, double cutoff,
-                         const bool & consider_ghost_neighbours = false,
-                         const double & skin = 0.);
+                         bool consider_ghost_neighbours = false,
+                         double skin = 0.);
 
     AdaptorNeighbourList(ImplementationPtr_t manager,
                          const Hypers_t & adaptor_hypers)
@@ -817,7 +817,7 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
       std::shared_ptr<ManagerImplementation> manager, double cutoff,
-      const bool & consider_ghost_neighbours, const double & skin)
+      bool consider_ghost_neighbours, double skin)
       : manager{std::move(manager)}, cutoff{cutoff}, skin2{skin * skin},
         atom_tag_list{}, atom_types{}, ghost_atom_tag_list{}, nb_neigh{},
         neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0},

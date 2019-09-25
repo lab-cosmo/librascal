@@ -1,5 +1,9 @@
 
 
+from rascal.representations import SphericalCovariants
+from rascal.utils import ostream_redirect
+import rascal
+import rascal.lib as lrl
 from ase.io import read
 import numpy as np
 
@@ -8,10 +12,6 @@ import ase
 import json
 import sys
 sys.path.insert(0, '../build/')
-import rascal.lib as lrl
-import rascal
-from rascal.utils import ostream_redirect
-from rascal.representations import SphericalCovariants
 
 
 #############################################################################
@@ -26,6 +26,7 @@ def get_feature_vector(hypers, frames):
     return feature_vector
 
 #############################################################################
+
 
 def dump_reference_json():
     import ubjson
@@ -89,9 +90,9 @@ def dump_reference_json():
                 data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                  hypers=copy(soap.hypers)))
 
-    with open(path+
-                "tests/reference_data/spherical_covariants_reference.ubjson",
-                'wb') as f:
+    with open(path +
+              "tests/reference_data/spherical_covariants_reference.ubjson",
+              'wb') as f:
         ubjson.dump(data, f)
 
 ##############################################################################

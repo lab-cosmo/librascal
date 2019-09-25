@@ -6,6 +6,7 @@ from ..neighbourlist.structure_manager import convert_to_structure_list
 import numpy as np
 import queue
 
+# Register Calculators
 _representations_list = ["sortedcoulomb", "sphericalexpansion",
                          "sphericalinvariants", "sphericalcovariants"]
 _representations = {}
@@ -25,4 +26,3 @@ def CalculatorFactory(rep_options):
              'The available combinations are: {}').format(
                 name, list(_representations.keys())))
     return _representations[name](*rep_options['args'])
-

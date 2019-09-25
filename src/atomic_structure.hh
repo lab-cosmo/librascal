@@ -99,6 +99,9 @@ namespace rascal {
     //! in the form of an array of N booleans (true->center)
     ArrayB_t center_atoms_mask{};
 
+    //! Default constructor
+    AtomicStructure() = default;
+
     inline size_t get_number_of_atoms() const { return positions.cols(); }
 
     /**
@@ -116,9 +119,6 @@ namespace rascal {
       auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
       this->set_structure(positions, atom_types, cell, pbc, center_atoms_mask);
     }
-
-    //! Default constructor
-    AtomicStructure() = default;
 
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!

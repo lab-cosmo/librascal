@@ -55,8 +55,8 @@ namespace rascal {
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
     PairFixtureSimple()
-        : cutoff{1.}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(
-                          fixture.manager, this->cutoff)} {}
+        : cutoff{1.5}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+                           fixture.manager, this->cutoff)} {}
 
     ~PairFixtureSimple() = default;
 
@@ -78,7 +78,7 @@ namespace rascal {
                   " MaxOrder=1");
 
     PairFixtureCenters()
-        : cutoff{3.5}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+        : cutoff{1.5}, pair_manager{make_adapted_manager<AdaptorNeighbourList>(
                            this->fixture.manager, this->cutoff, true)} {}
 
     ~PairFixtureCenters() {}
@@ -88,6 +88,33 @@ namespace rascal {
 
     double cutoff;
     std::shared_ptr<PairManager_t> pair_manager;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * PairFixture based on StructureManagerCenters which includes ii-pairs
+   */
+  template <class ManagerImplementation>
+  struct PairFixtureSimpleCenterPairs {
+    using Manager_t = ManagerImplementation;
+
+    static_assert(ManagerImplementation::traits::MaxOrder == 1,
+                  "Lower layer manager has to be a collection of atoms, i.e."
+                  " MaxOrder=1");
+
+    using PairManager_t = AdaptorNeighbourList<Manager_t>;
+
+    PairFixtureSimpleCenterPairs()
+        : cutoff{1.5}, pair_manager1{make_adapted_manager<AdaptorNeighbourList>(
+                           fixture.manager, this->cutoff, true, false)},
+          pair_manager2{make_adapted_manager<AdaptorNeighbourList>(
+              fixture.manager, this->cutoff, true, true)} {}
+
+    ~PairFixtureSimpleCenterPairs() = default;
+
+    ManagerFixtureFile<Manager_t> fixture{};
+    double cutoff;
+    std::shared_ptr<PairManager_t> pair_manager1, pair_manager2;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -201,6 +228,51 @@ namespace rascal {
     json factory_args{};
   };
 
+  struct MultipleStructureManagerNLCCFixture {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution>;
+    MultipleStructureManagerNLCCFixture() {
+      for (auto && filename : this->filenames) {
+        for (auto && cutoff : this->cutoffs) {
+          for (auto && skin : this->skins) {
+            json parameters;
+            json structure{{"filename", filename}};
+            json adaptors;
+            json ad1{
+                {"name", "AdaptorNeighbourList"},
+                {"initialization_arguments",
+                 {{"cutoff", cutoff},
+                  {"skin", skin},
+                  {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+            json ad1b{{"name", "AdaptorCenterContribution"},
+                      {"initialization_arguments", {}}};
+            adaptors.push_back(ad1);
+            adaptors.push_back(ad1b);
+
+            parameters["structure"] = structure;
+            parameters["adaptors"] = adaptors;
+
+            this->factory_args.emplace_back(parameters);
+          }
+        }
+      }
+    }
+
+    ~MultipleStructureManagerNLCCFixture() = default;
+
+    const bool consider_ghost_neighbours{false};
+    const std::vector<std::string> filenames{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/simple_cubic_8.json",
+        "reference_data/small_molecule.json"};
+    const std::vector<double> cutoffs{{1., 2., 3.}};
+    const std::vector<double> skins{{0., 0.3}};
+
+    json factory_args{};
+  };
+
   struct MultipleStructureManagerNLRattleFixture {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
@@ -279,11 +351,60 @@ namespace rascal {
     json factory_args{};
   };
 
-  struct MultipleStructureManagerNLFixtureCenterMask {
+  struct MultipleStructureManagerNLCCStrictFixture {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList>;
-    MultipleStructureManagerNLFixtureCenterMask() {
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
+
+    MultipleStructureManagerNLCCStrictFixture() {
+      for (auto && filename : this->filenames) {
+        for (auto && cutoff : this->cutoffs) {
+          for (auto && skin : this->skins) {
+            json parameters;
+            json structure{{"filename", filename}};
+            json adaptors;
+            json ad1{
+                {"name", "AdaptorNeighbourList"},
+                {"initialization_arguments",
+                 {{"cutoff", cutoff},
+                  {"skin", skin},
+                  {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+            json ad1b{{"name", "AdaptorCenterContribution"},
+                      {"initialization_arguments", {}}};
+            json ad2{{"name", "AdaptorStrict"},
+                     {"initialization_arguments", {{"cutoff", cutoff}}}};
+            adaptors.emplace_back(ad1);
+            adaptors.push_back(ad1b);
+            adaptors.emplace_back(ad2);
+
+            parameters["structure"] = structure;
+            parameters["adaptors"] = adaptors;
+
+            this->factory_args.emplace_back(parameters);
+          }
+        }
+      }
+    }
+
+    ~MultipleStructureManagerNLCCStrictFixture() = default;
+    const bool consider_ghost_neighbours{false};
+    const std::vector<std::string> filenames{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/simple_cubic_8.json",
+        "reference_data/small_molecule.json"};
+    const std::vector<double> cutoffs{{2., 3.}};
+    const std::vector<double> skins{{0., 0.3}};
+
+    json factory_args{};
+  };
+
+  struct MultipleStructureManagerNLCCFixtureCenterMask {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution>;
+    MultipleStructureManagerNLCCFixtureCenterMask() {
       // random-number engine used
       std::mt19937_64 rng{1242484542};
 
@@ -307,7 +428,10 @@ namespace rascal {
                    {{"cutoff", cutoff},
                     {"skin", skin},
                     {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+              json ad1b{{"name", "AdaptorCenterContribution"},
+                      {"initialization_arguments", {}}};
               adaptors.push_back(ad1);
+              adaptors.push_back(ad1b);
 
               parameters["structure"] = structure;
               parameters["adaptors"] = adaptors;
@@ -330,27 +454,26 @@ namespace rascal {
       }
     }
 
-    ~MultipleStructureManagerNLFixtureCenterMask() = default;
+    ~MultipleStructureManagerNLCCFixtureCenterMask() = default;
 
     const std::vector<bool> consider_ghost_neighbours_list{{false, true}};
     const std::vector<std::string> filenames{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/molecular_crystal.json",
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
-    // const std::vector<std::string> filenames{
-    //     "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+
     const std::vector<double> cutoffs{{2., 3.}};
     const std::vector<double> skins{{0., 0.3}};
 
     json factory_args{};
   };
 
-  struct MultipleStructureManagerNLStrictFixtureCenterMask {
+  struct MultipleStructureManagerNLCCStrictFixtureCenterMask {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
-    MultipleStructureManagerNLStrictFixtureCenterMask() {
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
+    MultipleStructureManagerNLCCStrictFixtureCenterMask() {
       // random-number engine used
       std::mt19937_64 rng{1242484542};
 
@@ -373,9 +496,12 @@ namespace rascal {
                    {{"cutoff", cutoff},
                     {"skin", skin},
                     {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+              json ad1b{{"name", "AdaptorCenterContribution"},
+                      {"initialization_arguments", {}}};
               json ad2{{"name", "AdaptorStrict"},
                        {"initialization_arguments", {{"cutoff", cutoff}}}};
               adaptors.push_back(ad1);
+              adaptors.push_back(ad1b);
               adaptors.push_back(ad2);
 
               parameters["structure"] = structure;
@@ -399,7 +525,7 @@ namespace rascal {
       }
     }
 
-    ~MultipleStructureManagerNLStrictFixtureCenterMask() = default;
+    ~MultipleStructureManagerNLCCStrictFixtureCenterMask() = default;
 
     const std::vector<bool> consider_ghost_neighbours_list{{false, true}};
     const std::vector<std::string> filenames{

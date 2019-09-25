@@ -82,10 +82,11 @@ namespace rascal {
                           PairFixtureSimple<StructureManagerCenters>) {
     constexpr bool verbose{false};
 
+    pair_manager->update();
     auto npairs = pair_manager->get_nb_clusters(2);
 
     if (verbose) {
-      std::cout << "npairs " << npairs << std::endl;
+      std::cout << "n1 pairs " << npairs << std::endl;
     }
     int np{0};
     for (auto atom : pair_manager) {
@@ -117,6 +118,8 @@ namespace rascal {
                           PairFixtureSimple<StructureManagerCenters>) {
     constexpr bool verbose{false};
 
+    pair_manager->update();
+
     //! testing iteration of zerot-th order manager
     for (auto atom : fixture.manager) {
       if (verbose) {
@@ -144,6 +147,36 @@ namespace rascal {
     }
     BOOST_CHECK_EQUAL(n_pairs, pair_manager->get_nb_clusters(2));
   }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test that the atom index from a neighbour matches the atom tag of the
+   * ClusterRefKey returned by get_atom_j for a manager using as root
+   * implementation `StructureManagerCenters`.
+   */
+  BOOST_FIXTURE_TEST_CASE(get_atom_j_test,
+                          ManagerFixture<StructureManagerCenters>) {
+    auto pair_manager{
+        make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
+
+    constexpr bool verbose{false};
+
+    for (auto atom : pair_manager) {
+      for (auto pair : atom) {
+        auto atom_j_index = pair_manager->get_atom_index(pair.back());
+        auto atom_j = pair.get_atom_j();
+        auto atom_j_tag = atom_j.get_atom_tag_list();
+        if (verbose) {
+          std::cout << "neigh: " << atom_j_index << " tag_j: " << atom_j_tag[0]
+                    << std::endl;
+        }
+
+        BOOST_CHECK_EQUAL(atom_j_index, atom_j_tag[0]);
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
 
   using multiple_fixtures = boost::mpl::list<
       MultipleStructureFixture<MultipleStructureManagerNLFixture>>;

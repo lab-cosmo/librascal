@@ -1,3 +1,4 @@
+from rascal.representations import SortedCoulombMatrix
 from copy import copy
 from ase import Atoms
 from ase.io import read
@@ -11,7 +12,6 @@ import sys
 path = os.path.abspath('../')
 sys.path.insert(0, os.path.join(path, 'build/'))
 sys.path.insert(0, os.path.join(path, 'tests/'))
-from rascal.representations import SortedCoulombMatrix
 
 
 cutoffs = [2, 3, 4, 5]

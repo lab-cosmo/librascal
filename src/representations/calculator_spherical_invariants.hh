@@ -230,7 +230,7 @@ namespace rascal {
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
 
     explicit CalculatorSphericalInvariants(const Hypers_t & hyper)
-        : rep_expansion{hyper} {
+        : CalculatorBase{}, rep_expansion{hyper} {
       this->set_default_prefix("spherical_invariants_");
       this->set_hyperparameters(hyper);
     }
@@ -337,11 +337,11 @@ namespace rascal {
     }
 
     //! single manager case
-    template <
-        internal::SphericalInvariantsType BodyOrder, class StructureManager,
-        std::enable_if_t<
-            not(internal::is_proper_iterator<StructureManager>::value), int> =
-            0>
+    template <internal::SphericalInvariantsType BodyOrder,
+              class StructureManager,
+              std::enable_if_t<
+                  not(internal::is_proper_iterator<StructureManager>::value),
+                  int> = 0>
     void compute_loop(StructureManager & manager) {
       this->compute_impl<BodyOrder>(manager);
     }
@@ -453,8 +453,6 @@ namespace rascal {
             SphericalInvariantsType::PowerSpectrum)])};
     auto & l_factors{precomputation->l_factors};
 
-    // TODO(felix) use the updated mech of the prop to avoid recomputing
-    // if the prop already exists and is uptodate
     // Compute the spherical expansions of the current structure
     rep_expansion.compute(manager);
 
@@ -491,7 +489,7 @@ namespace rascal {
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
       auto & soap_vector{soap_vectors[center]};
-
+      // Compute the Powerspectrum coefficients
       for (const auto & el1 : coefficients) {
         spair_type[0] = el1.first[0];
         auto & coef1{el1.second};
@@ -539,9 +537,10 @@ namespace rascal {
         soap_vector.normalize();
       }
       if (this->compute_gradients) {
+        auto ii_pair = center.get_atom_ii();
         auto & grad_center_coefficients{
-            expansions_coefficients_gradient[center]};
-        auto & soap_center_gradient{soap_vector_gradients[center]};
+            expansions_coefficients_gradient[ii_pair]};
+        auto & soap_center_gradient{soap_vector_gradients[ii_pair]};
         for (const auto & grad_species_1 : grad_center_coefficients) {
           spair_type[0] = grad_species_1.first[0];
           const auto & expansion_coefficients_1{
@@ -799,10 +798,10 @@ namespace rascal {
                                       grad_component_size);
               const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
                   soap_vector_by_species_pair.data(), grad_component_size);
-              soap_gradient_dim_N =
-                  ((soap_gradient_dim_N - soap_vector_dot_neigh_gradient *
-                                              soap_vector_N.transpose()) /
-                   soap_vector_norm);
+              soap_gradient_dim_N = ((soap_gradient_dim_N -
+                                      soap_vector_dot_neigh_gradient *
+                                          soap_vector_N.transpose()) /
+                                     soap_vector_norm);
             }  // for soap_grad_spair : soap_center_gradient
           }    // for neigh : center
         }      // if normalize
@@ -868,9 +867,10 @@ namespace rascal {
       }
 
       if (this->compute_gradients) {
+        auto ii_pair = center.get_atom_ii();
         auto & grad_center_coefficients{
-            expansions_coefficients_gradient[center]};
-        auto & soap_center_gradient{soap_vector_gradients[center]};
+            expansions_coefficients_gradient[ii_pair]};
+        auto & soap_center_gradient{soap_vector_gradients[ii_pair]};
 
         for (const auto & el : grad_center_coefficients) {
           element_type[0] = el.first[0];
@@ -1272,8 +1272,9 @@ namespace rascal {
       soap_vector.resize(pair_list, n_row, n_col);
 
       if (this->compute_gradients) {
+        auto ii_pair = center.get_atom_ii();
         // The gradient wrt center is nonzero for all species pairs
-        soap_vector_gradients[center].resize(
+        soap_vector_gradients[ii_pair].resize(
             pair_list, n_spatial_dimensions * n_row, n_col, 0.);
 
         // TODO(max,felix) needs work
@@ -1343,9 +1344,10 @@ namespace rascal {
       soap_vector.resize(keys, n_row, n_col, 0);
 
       if (this->compute_gradients) {
+        auto ii_pair = center.get_atom_ii();
         // The gradient wrt center is nonzero for all species pairs
-        soap_vector_gradients[center].resize(keys, n_spatial_dimensions * n_row,
-                                             n_col, 0);
+        soap_vector_gradients[ii_pair].resize(
+            keys, n_spatial_dimensions * n_row, n_col, 0);
         for (auto neigh : center) {
           soap_vector_gradients[neigh].resize(
               keys, n_spatial_dimensions * n_row, n_col, 0);

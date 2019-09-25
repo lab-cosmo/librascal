@@ -866,6 +866,11 @@ namespace rascal {
     using IndexConstArray_t = typename ThisParentClass::IndexConstArray;
     using IndexArray_t = typename ThisParentClass::IndexArray;
 
+    static constexpr bool HasCenterPairOrderOne{traits::HasCenterPair and
+                                                Order == 1};
+
+    static constexpr bool HasCenterPairOrderTwo{traits::HasCenterPair and
+                                                Order == 2};
     //! Default constructor
     ClusterRef() = delete;
 
@@ -909,6 +914,73 @@ namespace rascal {
     }
 
     /**
+     * Getter for a ClusterRefKey refering to the current j-atom of the
+     * ij-pair.
+     *
+     * if you try to use this function and Order != 2 then
+     * you will get an error about not finding the function to call
+     * because of SFINAE.
+     *
+     * @return ClusterRefKey of order 1 and proper layer
+     */
+    template <size_t Order_ = Order, std::enable_if_t<Order_ == 2, int> = 0>
+    inline auto get_atom_j() {
+      auto && manager = it.get_manager();
+      auto && atom_j_tag = this->get_internal_neighbour_atom_tag();
+      auto && atom_j_index = manager.get_atom_index(atom_j_tag);
+      auto atom_j_it = manager.get_iterator_at(atom_j_index, 0);
+      constexpr static size_t ClusterLayer_{
+          ManagerImplementation::template cluster_layer_from_order<1>()};
+      auto atom_j = static_cast<ClusterRefKey<1, ClusterLayer_>>(*atom_j_it);
+      return atom_j;
+    }
+
+    /**
+     * Getter for a ClusterRefKey refering to the ii-pair of the current
+     * i-atom.
+     *
+     * if you try to use this function and HasCenterPair == false then
+     * you will get an error about not finding the function to call
+     * because of SFINAE.
+     *
+     * @return ClusterRefKey of order 2 and proper layer
+     */
+    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
+    inline auto get_atom_ii() {
+      static_assert(traits::MaxOrder > 1, "Need neighbors to get one");
+
+      auto && atom_ii_it = this->with_self_pair().begin();
+      constexpr static size_t ClusterLayer_{
+          ManagerImplementation::template cluster_layer_from_order<2>()};
+      auto atom_ii = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_ii_it);
+      return atom_ii;
+    }
+
+    /**
+     * Getter for a ClusterRefKey refering to the current jj-pair associated
+     * to the current ij-pair.
+     *
+     * if you try to use this function and HasCenterPair == false then
+     * you will get an error about not finding the function to call
+     * because of SFINAE.
+     *
+     * @return ClusterRefKey of order 2 and proper layer
+     */
+    template <bool T = HasCenterPairOrderTwo, std::enable_if_t<T, int> = 0>
+    inline auto get_atom_jj() {
+      auto && manager = it.get_manager();
+      auto && atom_j_tag = this->get_atom_tag();
+      auto && atom_j_index = manager.get_atom_index(atom_j_tag);
+      auto && atom_j_it = manager.get_iterator_at(atom_j_index, 0);
+      auto && atom_j = *atom_j_it;
+      auto && atom_jj_it = atom_j.with_self_pair().begin();
+      constexpr static size_t ClusterLayer_{
+          ManagerImplementation::template cluster_layer_from_order<2>()};
+      auto atom_jj = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_jj_it);
+      return atom_jj;
+    }
+
+    /**
      * Returns the position of the last atom in the cluster, e.g. when
      * cluster order==1 it is the atom position, when cluster order==2 it is
      * the neighbour position, etc.
@@ -945,11 +1017,28 @@ namespace rascal {
       return this->it.get_manager();
     }
     //! start of the iteration over the cluster itself
+    template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
     inline iterator begin() {
       std::array<size_t, Order> counters{this->it.get_counters()};
       auto offset = this->get_manager().get_offset(counters);
       return iterator(*this, 0, offset);
     }
+
+    /**
+     * start of the iteration over the cluster itself.
+     *
+     * Special case when HasCenterPair == true and Order == 1. The default
+     * iteration in this case does not include the ii-pair by starting at 1
+     * since the ii-pair is the first element.
+     * To include the ii-pair to the iteration use .with_self_pair()
+     */
+    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
+    inline iterator begin() {
+      std::array<size_t, Order> counters{this->it.get_counters()};
+      auto offset = this->get_manager().get_offset(counters);
+      return iterator(*this, 1, offset);
+    }
+
     //! end of the iterations over the cluster itself
     inline iterator end() {
       return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
@@ -971,6 +1060,15 @@ namespace rascal {
       return this->atom_tag_list;
     }
 
+    /**
+     * Allows to set the atom tag at the atom index (cluster of Order 1 index)
+     *
+     * @param index atom index (cluster of Order 1 index)
+     */
+    inline void set_atom_tag(const size_t index, const int tag) {
+      this->atom_tag_list[index] = tag;
+    }
+
     inline Iterator_t & get_iterator() { return this->it; }
     inline const Iterator_t & get_iterator() const { return this->it; }
 
@@ -985,7 +1083,50 @@ namespace rascal {
     //!`atom_cluster_indices` is an initially contiguous numbering of atoms
     Iterator_t & it;
 
-   private:
+    /**
+     * Helper struct to only iterate in a customised range.
+     */
+    template <class ManagerImplementation_ = ManagerImplementation,
+              size_t Order_ = Order>
+    struct CustomProxy {
+      using ClusterRef_t = typename StructureManager<
+          ManagerImplementation_>::template ClusterRef<Order_>;
+      using iterator = typename ClusterRef_t::iterator;
+      friend iterator;
+
+      CustomProxy(ClusterRef_t & cluster_ref, size_t & start, size_t & offset,
+                  size_t & finish)
+          : cluster_ref{cluster_ref}, start{start}, offset{offset},
+            finish{finish} {}
+
+      inline iterator begin() {
+        return iterator(cluster_ref, this->start, this->offset);
+      }
+      //! end of the iterations over the cluster itself
+      inline iterator end() {
+        return iterator(cluster_ref, this->finish,
+                        std::numeric_limits<size_t>::max());
+      }
+      ClusterRef_t & cluster_ref;
+      size_t start;
+      size_t offset;
+      size_t finish;
+    };
+
+   public:
+    /**
+     * Return an iterable for Order == 2 that includes the self pair if
+     * HasCenterPair == true. If HasCenterPair == false then its the
+     * regular iteration.
+     */
+    inline CustomProxy<ManagerImplementation, Order> with_self_pair() {
+      std::array<size_t, Order> counters{this->it.get_counters()};
+      size_t offset{this->get_manager().get_offset(counters)};
+      size_t finish{this->size()};
+      size_t start{0};
+      return CustomProxy<ManagerImplementation, Order>(*this, start, offset,
+                                                       finish);
+    }
   };
 
   namespace internal {

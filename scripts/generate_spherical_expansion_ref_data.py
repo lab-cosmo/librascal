@@ -1,3 +1,7 @@
+import rascal.lib as lrl
+import rascal
+from rascal.utils import ostream_redirect
+from rascal.representations import SphericalExpansion
 import json
 import ase
 import argparse
@@ -6,10 +10,6 @@ from ase.io import read
 """Generate reference data for the librascal spherical expansion"""
 import sys
 sys.path.insert(0, '../build/')
-from rascal.representations import SphericalExpansion
-from rascal.utils import ostream_redirect
-import rascal
-import rascal.lib as lrl
 
 
 ###############################################################################

@@ -39,6 +39,24 @@
 
 namespace rascal {
 
+  /**
+   * A container to hold the multiple managers associated with one stack of
+   * managers and allows iterations over them. Each manager stack needs to
+   * initialized stack by stack. This class provides functions to do this job.
+   *
+   * ManagerCollection<StructureManagerCenter, AdaptorNeighbourList,
+   *                   AdaptorStrict>
+   *
+   * ->
+   *  initializes                                     StructureManagerCenter
+   *  initializes                AdaptorNeighbourList<StructureManagerCenter>
+   *  initializes AdaptorStrict<<AdaptorNeighbourList<StructureManagerCenter>>
+   *  and are contained in the `managers` member variable.
+   *
+   * @tparam Manager the root manager implementation
+   * @tparam AdaptorImplementationPack the adaptors stacked on top in the order
+   * of stacking
+   */
   template <typename Manager,
             template <class> class... AdaptorImplementationPack>
   class ManagerCollection {
@@ -194,7 +212,8 @@ namespace rascal {
 
       if (not structures.is_object()) {
         throw std::runtime_error(
-            R"(The first level of the ase format is a dictionary with indicies as keys to the structures)");
+            R"(The first level of the ase format is a dictionary with indicies
+                as keys to the structures)");
       }
 
       if (structures.count("ids") == 1) {

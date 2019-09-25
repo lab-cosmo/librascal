@@ -88,11 +88,11 @@ namespace rascal {
       boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb<
                            MultipleStructureManagerNLStrictFixture>>,
                        CalculatorFixture<MultipleStructureSphericalExpansion<
-                           MultipleStructureManagerNLStrictFixture>>,
+                           MultipleStructureManagerNLCCStrictFixture>>,
                        CalculatorFixture<MultipleStructureSphericalInvariants<
-                           MultipleStructureManagerNLStrictFixture>>,
+                           MultipleStructureManagerNLCCStrictFixture>>,
                        CalculatorFixture<MultipleStructureSphericalCovariants<
-                           MultipleStructureManagerNLStrictFixture>>>;
+                           MultipleStructureManagerNLCCStrictFixture>>>;
 
   using fixtures_ref_test =
       boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
@@ -159,19 +159,24 @@ namespace rascal {
 
         BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
         BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
+        double diff{0.};
+        int size{0};
         for (int row_i{0}; row_i < feat_prop.rows(); row_i++) {
           for (int col_i{0}; col_i < feat_prop.cols(); ++col_i) {
-            double diff =
+            diff +=
                 std::abs(feat_prop(row_i, col_i) - feat_col(row_i, col_i));
+            size += 1;
 
-            BOOST_CHECK_LE(diff, 6e-12);
-            if (verbose and diff > 6e-12) {
+            if (verbose and diff/size > 6e-12) {
               std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", "
                         << col_i << " \t " << feat_prop(row_i, col_i)
                         << "\t != " << feat_col(row_i, col_i) << std::endl;
             }
           }
         }
+        diff /= size;
+        BOOST_CHECK_LE(diff, 6e-12);
+
       }
       manager_i++;
     }
@@ -225,25 +230,22 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  // using multiple_center_mask_fixtures = boost::mpl::list<
-  //     // TODO(felix) For some reason the Sorted coulomb version is
-  //     // susceptible to
-  //     // differences in neighbour ordering so test will fail for a wrong
-  //     // reason...
-  //     // CalculatorFixture<MultipleStructureSortedCoulombCenterMask,
-  //     //                       RepresentationManagerSortedCoulomb>,
-  //     CalculatorFixture<
-  //         MultipleStructureSphericalExpansion<
-  //             MultipleStructureManagerNLStrictFixtureCenterMask>>,
-  //     CalculatorFixture<
-  //         MultipleStructureSphericalCovariants<
-  //             MultipleStructureManagerNLStrictFixtureCenterMask>>,
-  //     CalculatorFixture<
-  //         MultipleStructureSphericalInvariants<
-  //             MultipleStructureManagerNLStrictFixtureCenterMask>>>;
-  using multiple_center_mask_fixtures =
-      boost::mpl::list<CalculatorFixture<MultipleStructureSphericalExpansion<
-          MultipleStructureManagerNLStrictFixtureCenterMask>>>;
+  using multiple_center_mask_fixtures = boost::mpl::list<
+      // TODO(felix) For some reason the Sorted coulomb version is
+      // susceptible to
+      // differences in neighbour ordering so test will fail for a wrong
+      // reason...
+      // CalculatorFixture<MultipleStructureSortedCoulombCenterMask,
+      //                       RepresentationManagerSortedCoulomb>,
+      CalculatorFixture<
+          MultipleStructureSphericalExpansion<
+              MultipleStructureManagerNLCCStrictFixtureCenterMask>>,
+      CalculatorFixture<
+          MultipleStructureSphericalCovariants<
+              MultipleStructureManagerNLCCStrictFixtureCenterMask>>,
+      CalculatorFixture<
+          MultipleStructureSphericalInvariants<
+              MultipleStructureManagerNLCCStrictFixtureCenterMask>>>;
 
   /**
    * Test that selecting subsets of centers will give the same representation

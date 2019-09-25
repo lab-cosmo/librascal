@@ -1,16 +1,14 @@
 /**
- * file   adaptor_strict.hh
+ * file   adaptor_center_contribution.hh
  *
- * @author Till Junge <till.junge@altermail.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
  *
- * @date   04 Jun 2018
+ * @date   July 2019
  *
- * @brief implements an adaptor for structure_managers, filtering
- * the original manager so that only neighbours that are strictly
- * within r_cut are retained
+ * @brief Adaptor that adds the central atom to the iteration over pairs
  *
- * Copyright  2018 Till Junge, Felix Musil COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2019 Markus Stricker, Felix Musil COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -28,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_STRICT_HH_
-#define SRC_STRUCTURE_MANAGERS_ADAPTOR_STRICT_HH_
+#ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_CENTER_CONTRIBUTION_HH_
+#define SRC_STRUCTURE_MANAGERS_ADAPTOR_CENTER_CONTRIBUTION_HH_
 
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/property.hh"
@@ -41,90 +39,95 @@ namespace rascal {
    * forward declaration for traits
    */
   template <class ManagerImplementation>
-  class AdaptorStrict;
+  class AdaptorCenterContribution;
 
   /*
    * specialisation of traits for strict adaptor
    */
   template <class ManagerImplementation>
-  struct StructureManager_traits<AdaptorStrict<ManagerImplementation>> {
+  struct StructureManager_traits<
+      AdaptorCenterContribution<ManagerImplementation>> {
     using parent_traits = StructureManager_traits<ManagerImplementation>;
-    constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::yes};
-    constexpr static bool HasDistances{true};
-    constexpr static bool HasDirectionVectors{true};
-    constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
+    constexpr static AdaptorTraits::Strict Strict{parent_traits::Strict};
+    constexpr static bool HasDistances{parent_traits::HasDistances};
+    constexpr static bool HasDirectionVectors{
+        parent_traits::HasDirectionVectors};
+    constexpr static bool HasCenterPair{true};
     constexpr static int Dim{parent_traits::Dim};
-    constexpr static size_t MaxOrder{parent_traits::MaxOrder};
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
-    using LayerByOrder =
-        typename LayerIncreaser<MaxOrder,
-                                typename parent_traits::LayerByOrder>::type;
+    constexpr static size_t MaxOrder{parent_traits::MaxOrder};
+    // Reset the Layer for the pair since the underlying iteration pool is
+    // increased in size so all the data belongs to the adaptor
+    using LayerByOrder = std::index_sequence<
+        ManagerImplementation::template cluster_layer_from_order<1>() + 1, 0>;
   };
 
   /**
-   * Adaptor that guarantees that only neighbours within the cutoff are
-   * present. A neighbor manager could include some wiggle room and list
-   * clusters with distances above the specified cutoff, this adaptor makes it
-   * possible to get a list with only the clusters that have distances strictly
-   * below the cutoff. This is also useful to extract managers with different
-   * levels of truncation from a single, loose manager.
+   * Adaptor that adds the central atom to the iteration over pairs and the
+   * use of the get_atom_ii(). The ii-pair is added at the begining of
+   * every block of data associated to neighbors.
+   * The default iteration pattern does not include the ii-pair so use
+   * with_self_pair() to include it. The properties associated with this
+   * manager will have an entry for the ii-pair.
    *
-   * This interface should be implemented by all managers with the trait
-   * AdaptorTraits::Strict::yes
+   * It should be stacked after an adaptor providing a linked cell neighbor
+   * list, but before any adaptor computing pair related properties as
+   * `AdaptoStrict`. This adaptor changes the neighbour list, thus it would
+   * make any map of the form pair -> property invalid as it is the case for the
+   * distance and direction vector in the `AdaptorStrict` class. The same goes
+   * for the `AdaptorMaxOrder` and adaptors computing properties for clusters of
+   * Order > 2.
    */
   template <class ManagerImplementation>
-  class AdaptorStrict
-      : public StructureManager<AdaptorStrict<ManagerImplementation>>,
+  class AdaptorCenterContribution
+      : public StructureManager<
+            AdaptorCenterContribution<ManagerImplementation>>,
         public std::enable_shared_from_this<
-            AdaptorStrict<ManagerImplementation>> {
+            AdaptorCenterContribution<ManagerImplementation>> {
    public:
-    using Manager_t = AdaptorStrict<ManagerImplementation>;
-    using ManagerImplementation_t = ManagerImplementation;
+    using Manager_t = AdaptorCenterContribution<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
-    using traits = StructureManager_traits<AdaptorStrict>;
+    using traits = StructureManager_traits<Manager_t>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
-    using This = AdaptorStrict;
-    using Distance_t = typename This::template Property_t<double, 2, 1>;
-    using DirectionVector_t = typename This::template Property_t<double, 2, 3>;
 
-    static_assert(traits::MaxOrder > 1,
+    static_assert(traits::MaxOrder == 2,
                   "ManagerImlementation needs to handle pairs");
+    static_assert(traits::Strict == AdaptorTraits::Strict::no,
+                  "AdaptorCenterContribution does not work on strict NL.");
     constexpr static auto AtomLayer{
         Manager_t::template cluster_layer_from_order<1>()};
     constexpr static auto PairLayer{
         Manager_t::template cluster_layer_from_order<2>()};
 
     //! Default constructor
-    AdaptorStrict() = delete;
+    AdaptorCenterContribution() = delete;
 
-    /**
-     * construct a strict neighbourhood list from a given manager. `cut-off`
-     * specifies the strict cutoff radius. all clusters with distances above
-     * this parameter will be skipped
-     */
-    AdaptorStrict(ImplementationPtr_t manager, double cutoff);
+    explicit AdaptorCenterContribution(ImplementationPtr_t manager);
 
-    AdaptorStrict(ImplementationPtr_t manager, const Hypers_t & adaptor_hypers)
-        : AdaptorStrict(manager,
-                        adaptor_hypers.at("cutoff").template get<double>()) {}
+    AdaptorCenterContribution(ImplementationPtr_t manager,
+                              const Hypers_t & /* adaptor_hypers*/)
+        : AdaptorCenterContribution(manager) {}
 
     //! Copy constructor
-    AdaptorStrict(const AdaptorStrict & other) = delete;
+    AdaptorCenterContribution(const AdaptorCenterContribution & other) = delete;
 
     //! Move constructor
-    AdaptorStrict(AdaptorStrict && other) = default;
+    AdaptorCenterContribution(AdaptorCenterContribution && other) = default;
 
     //! Destructor
-    virtual ~AdaptorStrict() = default;
+    virtual ~AdaptorCenterContribution() = default;
 
     //! Copy assignment operator
-    AdaptorStrict & operator=(const AdaptorStrict & other) = delete;
+    AdaptorCenterContribution &
+    operator=(const AdaptorCenterContribution & other) = delete;
 
     //! Move assignment operator
-    AdaptorStrict & operator=(AdaptorStrict && other) = default;
+    AdaptorCenterContribution &
+    operator=(AdaptorCenterContribution && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
     inline void update_self();
@@ -133,12 +136,15 @@ namespace rascal {
     template <class... Args>
     void update(Args &&... arguments);
 
-    //! returns the (strict) cutoff for the adaptor
-    inline double get_cutoff() const { return this->cutoff; }
+    //! returns the linked cell cutoff for the adaptor
+    inline double get_cutoff() const { return this->manager->get_cutoff(); }
 
     inline size_t get_nb_clusters(int order) const {
-      assert(order > 0);
       return this->atom_tag_list[order - 1].size();
+    }
+
+    inline bool get_consider_ghost_neighbours() const {
+      return this->manager->get_consider_ghost_neighbours();
     }
 
     inline size_t get_size() const { return this->manager->get_size(); }
@@ -217,6 +223,7 @@ namespace rascal {
       return this->offsets[Order][counters.back()];
     }
 
+    // TODO(felix) should be removed because not used ?
     template <size_t Order>
     inline int get_neighbour_atom_tag(const size_t neighbour_index) const {
       static_assert(Order < traits::MaxOrder,
@@ -240,31 +247,17 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
-    // BUG8486@(till) I deleted the non const getters, because they are not
-    // needed
-    // if this was wrong, please explain
-    //! returns the distance between atoms in a given pair
-    template <size_t Order, size_t Layer>
-    inline double &
-    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-      return this->distance->operator[](pair);
-    }
-
-    //! returns the direction vector between atoms in a given pair
-    template <size_t Order, size_t Layer>
-    inline const Vector_ref
-    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
-      return this->dir_vec->operator[](pair);
-    }
-
-    inline bool get_consider_ghost_neighbours() const {
-      return this->manager->get_consider_ghost_neighbours();
-    }
-
+    // TODO(felix) remove ? or fuse with the function below ?
+    /**
+     * @return a list of atom tags for clusters of Order 1 aka centers.
+     */
     const std::vector<int> get_manager_atom_tag_list() {
       return this->atom_tag_list[0];
     }
-
+    // TODO(felix) rename ?
+    /**
+     * @return a list of atom tags for clusters of Order 2 aka pairs.
+     */
     const std::vector<int> get_neighbours_atom_tag() {
       return this->atom_tag_list[1];
     }
@@ -303,16 +296,12 @@ namespace rascal {
     }
 
     ImplementationPtr_t manager;
-    std::shared_ptr<Distance_t> distance;
-    std::shared_ptr<DirectionVector_t> dir_vec;
-    const double cutoff;
 
     /**
+     * For clusters of the form (i,j)
      * store atom tags per order,i.e.
      *   - atom_tag_list[0] lists all i-atoms
      *   - atom_tag_list[1] lists all j-atoms
-     *   - atom_tag_list[2] lists all k-atoms
-     *   - etc
      */
     std::array<std::vector<int>, traits::MaxOrder> atom_tag_list;
     std::vector<size_t> neighbours_cluster_index;
@@ -325,67 +314,26 @@ namespace rascal {
      * store the offsets from where the nb_neigh can be counted
      */
     std::array<std::vector<size_t>, traits::MaxOrder> offsets;
-
-   private:
   };
-
-  namespace internal {
-    /* ---------------------------------------------------------------------- */
-    template <bool IsStrict, class ManagerImplementation>
-    struct CutOffChecker {
-      static bool check(const std::shared_ptr<ManagerImplementation> & manager,
-                        double cutoff) {
-        return cutoff < manager->get_cutoff();
-      }
-    };
-
-    /* ---------------------------------------------------------------------- */
-    template <class ManagerImplementation>
-    struct CutOffChecker<false, ManagerImplementation> {
-      static bool
-      check(const std::shared_ptr<ManagerImplementation> & /*manager*/,
-            double /*cutoff*/) {
-        return true;
-      }
-    };
-
-    /* ---------------------------------------------------------------------- */
-    template <class ManagerImplementation>
-    bool inline check_cutoff(
-        const std::shared_ptr<ManagerImplementation> & manager, double cutoff) {
-      constexpr bool IsStrict{(ManagerImplementation::traits::Strict ==
-                               AdaptorTraits::Strict::yes)};
-      return CutOffChecker<IsStrict, ManagerImplementation>::check(manager,
-                                                                   cutoff);
-    }
-  }  // namespace internal
 
   /*--------------------------------------------------------------------------*/
   template <class ManagerImplementation>
-  AdaptorStrict<ManagerImplementation>::AdaptorStrict(
-      std::shared_ptr<ManagerImplementation> manager, double cutoff)
-      : manager{std::move(manager)},
-        distance{std::make_shared<Distance_t>(*this)},
-        dir_vec{std::make_shared<DirectionVector_t>(*this)}, cutoff{cutoff},
-        atom_tag_list{}, neighbours_cluster_index{}, nb_neigh{}, offsets{}
-
-  {
-    if (not internal::check_cutoff(this->manager, cutoff)) {
-      throw std::runtime_error("underlying manager already has a smaller "
-                               "cut off");
-    }
-  }
+  AdaptorCenterContribution<ManagerImplementation>::AdaptorCenterContribution(
+      std::shared_ptr<ManagerImplementation> manager)
+      : manager{std::move(manager)}, atom_tag_list{},
+        neighbours_cluster_index{}, nb_neigh{}, offsets{} {}
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   template <class... Args>
-  void AdaptorStrict<ManagerImplementation>::update(Args &&... arguments) {
+  void AdaptorCenterContribution<ManagerImplementation>::update(
+      Args &&... arguments) {
     this->manager->update(std::forward<Args>(arguments)...);
   }
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  void AdaptorStrict<ManagerImplementation>::update_self() {
+  void AdaptorCenterContribution<ManagerImplementation>::update_self() {
     //! Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
@@ -401,27 +349,20 @@ namespace rascal {
       vector.push_back(0);
     }
 
-    //! initialise the distance storage
-    this->distance = this->template get_property_ptr<Distance_t>("distance");
-    this->dir_vec =
-        this->template get_property_ptr<DirectionVector_t>("dir_vec");
-
-    this->distance->clear();
-    this->dir_vec->clear();
+    using AtomIndex_t = typename ClusterRefKey<2, PairLayer>::AtomIndex_t;
+    using IndexConstArray =
+        typename ClusterRefKey<2, PairLayer>::IndexConstArray;
 
     // fill the list, at least pairs are mandatory for this to work
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
-
-    double rc2{this->cutoff * this->cutoff};
-
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
     for (auto atom : this->manager.get()->with_ghosts()) {
       this->add_atom(atom);
-      /**
+      /*
        * Add new layer for atoms (see LayerByOrder for
        * possible optimisation).
        */
@@ -430,32 +371,29 @@ namespace rascal {
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
-      for (auto pair : atom.with_self_pair()) {
-        auto vec_ij{pair.get_position() - atom.get_position()};
-        double distance2{(vec_ij).squaredNorm()};
-        if (distance2 <= rc2) {
-          this->add_atom(pair);
-          double distance{std::sqrt(distance2)};
-          if (distance2 > 0.) {
-            this->dir_vec->push_back((vec_ij.array() / distance).matrix());
-          } else {
-            this->dir_vec->push_back((vec_ij.array()).matrix());
-          }
 
-          this->distance->push_back(distance);
+      auto && atom_tag = atom.get_atom_tag();
+      AtomIndex_t self_atom_tag_list{atom_tag, atom_tag};
 
-          Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;
-          indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
-          indices_pair(PairLayer) = pair_counter;
-          pair_cluster_indices.push_back(indices_pair);
-          pair_counter++;
-        }
+      std::array<size_t, PairLayer + 1> self_indices_pair;
+      self_indices_pair[PairLayer] = pair_counter;
+      auto && self_indices_pair_ = IndexConstArray(self_indices_pair.data());
+      pair_cluster_indices.push_back(self_indices_pair_);
+      auto && self_pair =
+          ClusterRefKey<2, PairLayer>(self_atom_tag_list, self_indices_pair_);
+      this->add_atom(self_pair);
+      pair_counter++;
+
+      for (auto pair : atom) {
+        this->add_atom(pair);
+
+        Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;
+        indices_pair(PairLayer) = pair_counter;
+        pair_cluster_indices.push_back(indices_pair);
+        pair_counter++;
       }
     }
-
-    this->distance->set_updated_status(true);
-    this->dir_vec->set_updated_status(true);
   }
 }  // namespace rascal
 
-#endif  // SRC_STRUCTURE_MANAGERS_ADAPTOR_STRICT_HH_
+#endif  // SRC_STRUCTURE_MANAGERS_ADAPTOR_CENTER_CONTRIBUTION_HH_

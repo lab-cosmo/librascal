@@ -28,6 +28,7 @@
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/adaptor_center_contribution.hh"
 #include "structure_managers/make_structure_manager.hh"
 #include "rascal_utility.hh"
 #include "representations/calculator_sorted_coulomb.hh"
@@ -51,9 +52,10 @@ using namespace rascal;  // NOLINT
 const int N_ITERATIONS = 1000;
 
 using Representation_t = CalculatorSphericalInvariants;
-using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+using Manager_t = AdaptorStrict<
+    AdaptorCenterContribution<AdaptorNeighbourList<StructureManagerCenters>>>;
 using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
-using PropDer_t =
+using PropGrad_t =
     typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
 
 int main(int argc, char * argv[]) {
@@ -86,13 +88,17 @@ int main(int argc, char * argv[]) {
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
             {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+  json ad1b{{"name", "AdaptorCenterContribution"},
+            {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
+  adaptors.emplace_back(ad1b);
   adaptors.emplace_back(ad2);
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>(
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>(
           structure, adaptors);
 
   AtomicStructure<3> ast{};

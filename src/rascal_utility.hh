@@ -81,8 +81,8 @@ namespace rascal {
         : std::true_type {};
 
     /**
-     * Here the proper iteraror means that it is a std Container and not
-     * a std AssociativeContainer
+     * Here the proper iteraror means that it is a std::Container and not
+     * a std::AssociativeContainer
      */
     template <class T>
     struct is_proper_iterator {
@@ -155,7 +155,7 @@ namespace rascal {
 
     template <size_t N, size_t... Seq>
     constexpr std::index_sequence<N + Seq...>
-    add_to_sequence(std::index_sequence<Seq...>) {
+        add_to_sequence(std::index_sequence<Seq...>) {
       return {};
     }
 

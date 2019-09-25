@@ -28,6 +28,7 @@
 #include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/adaptor_center_contribution.hh"
 #include "structure_managers/make_structure_manager.hh"
 #include "rascal_utility.hh"
 #include "representations/calculator_sorted_coulomb.hh"
@@ -91,13 +92,17 @@ int main(int argc, char * argv[]) {
             {{"cutoff", cutoff},
              {"consider_ghost_neighbours", false},
              {"skin", 0.}}}};
+  json ad1b{{"name", "AdaptorCenterContribution"},
+            {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
+  adaptors.emplace_back(ad1b);
   adaptors.emplace_back(ad2);
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>(
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>(
           structure, adaptors);
 
   AtomicStructure<3> ast{};
