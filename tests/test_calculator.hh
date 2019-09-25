@@ -95,8 +95,7 @@ namespace rascal {
   };
 
   template <typename MultipleStructureFixture>
-  struct MultipleStructureSphericalInvariants
-      : MultipleStructureFixture {
+  struct MultipleStructureSphericalInvariants : MultipleStructureFixture {
     using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;
@@ -164,8 +163,7 @@ namespace rascal {
   };
 
   template <typename MultipleStructureFixture>
-  struct MultipleStructureSphericalCovariants
-      : MultipleStructureFixture {
+  struct MultipleStructureSphericalCovariants : MultipleStructureFixture {
     using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalCovariants;
@@ -243,9 +241,8 @@ namespace rascal {
         "reference_data/spherical_covariants_reference.ubjson"};
   };
 
-  template<class MultipleStructureFixture>
-  struct MultipleStructureSphericalExpansion
-      : MultipleStructureFixture {
+  template <class MultipleStructureFixture>
+  struct MultipleStructureSphericalExpansion : MultipleStructureFixture {
     using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
@@ -276,7 +273,8 @@ namespace rascal {
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}},
+                                                 {{"type", "DVR"}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
@@ -284,7 +282,6 @@ namespace rascal {
 
     std::vector<json> rep_hypers{{{"max_radial", 10}, {"max_angular", 8}}};
   };
-
 
   /** Simplified version of MultipleStructureManagerNLStrictFixture
    *  that uses only one structure, cutoff, and adaptor set
@@ -812,9 +809,8 @@ namespace rascal {
     Calculator_t & calculator;
   };
 
-  template<class MultipleStructureFixture>
-  struct MultipleStructureSortedCoulomb
-      : MultipleStructureFixture {
+  template <class MultipleStructureFixture>
+  struct MultipleStructureSortedCoulomb : MultipleStructureFixture {
     using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSortedCoulomb;

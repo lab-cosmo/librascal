@@ -86,13 +86,13 @@ namespace rascal {
 
   using multiple_fixtures =
       boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb<
-                            MultipleStructureManagerNLStrictFixture>>,
+                           MultipleStructureManagerNLStrictFixture>>,
                        CalculatorFixture<MultipleStructureSphericalExpansion<
-                            MultipleStructureManagerNLStrictFixture>>,
+                           MultipleStructureManagerNLStrictFixture>>,
                        CalculatorFixture<MultipleStructureSphericalInvariants<
-                            MultipleStructureManagerNLStrictFixture>>,
+                           MultipleStructureManagerNLStrictFixture>>,
                        CalculatorFixture<MultipleStructureSphericalCovariants<
-                            MultipleStructureManagerNLStrictFixture>>>;
+                           MultipleStructureManagerNLStrictFixture>>>;
 
   using fixtures_ref_test =
       boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
@@ -216,7 +216,7 @@ namespace rascal {
       for (auto & hyper : hypers) {
         representations.emplace_back(hyper);
         representations.back().compute(manager);
-        auto& prop = manager->template get_validated_property_ref<Property_t>(
+        auto & prop = manager->template get_validated_property_ref<Property_t>(
             representations.back().get_name());
         BOOST_CHECK_EQUAL(prop.get_nb_item(), 1);
       }
@@ -241,10 +241,9 @@ namespace rascal {
   //     CalculatorFixture<
   //         MultipleStructureSphericalInvariants<
   //             MultipleStructureManagerNLStrictFixtureCenterMask>>>;
-  using multiple_center_mask_fixtures = boost::mpl::list<
-      CalculatorFixture<
-          MultipleStructureSphericalExpansion<
-              MultipleStructureManagerNLStrictFixtureCenterMask>>>;
+  using multiple_center_mask_fixtures =
+      boost::mpl::list<CalculatorFixture<MultipleStructureSphericalExpansion<
+          MultipleStructureManagerNLStrictFixtureCenterMask>>>;
 
   /**
    * Test that selecting subsets of centers will give the same representation
@@ -275,21 +274,22 @@ namespace rascal {
         representation.compute(manager);
         representation.compute(manager_no_center);
 
-        auto& prop = manager->template get_validated_property_ref<Property_t>(
+        auto & prop = manager->template get_validated_property_ref<Property_t>(
             representation.get_name());
         math::Matrix_t rep_full = prop.get_dense_feature_matrix();
 
-        auto& prop_no_center = manager_no_center->template get_validated_property_ref<Property_t>(
-            representation.get_name());
-        math::Matrix_t rep_no_center = prop_no_center.get_dense_feature_matrix();
+        auto & prop_no_center =
+            manager_no_center->template get_validated_property_ref<Property_t>(
+                representation.get_name());
+        math::Matrix_t rep_no_center =
+            prop_no_center.get_dense_feature_matrix();
 
         BOOST_CHECK_EQUAL(rep_full.cols(), rep_no_center.cols());
         BOOST_CHECK_EQUAL(center_atoms_mask.count(), rep_no_center.rows());
 
         if (verbose) {
-          std::cout << "rep dim: " << rep_no_center.rows()
-                    << ", " << rep_no_center.cols()
-                    << std::endl;
+          std::cout << "rep dim: " << rep_no_center.rows() << ", "
+                    << rep_no_center.cols() << std::endl;
         }
 
         size_t i_no_center{0};
@@ -405,8 +405,6 @@ namespace rascal {
       test_gradients(calculator, test_data);
     }
   }
-
-
 
   using simple_periodic_fixtures =
       boost::mpl::list<CalculatorFixture<SingleHypersSphericalExpansion>,

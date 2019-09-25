@@ -44,6 +44,11 @@
 #include <map>
 #include <memory>
 
+/*
+ * Prevent vector of atomic structures from being copied into a Python list,
+ * since we already have the AtomsList object.  See also
+ * https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
+ */
 PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 
 namespace py = pybind11;
@@ -53,7 +58,7 @@ namespace rascal {
   namespace internal {
 
     /**
-     * Mapping used to replace all occurences of the first string with the
+     * Mapping used to replace all occurrences of the first string with the
      * second string in the class titles in the python binding module names.
      *
      * first: string which should be replaced

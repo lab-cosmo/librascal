@@ -87,7 +87,6 @@ namespace rascal {
     using ArrayB_t = Eigen::Array<bool, Eigen::Dynamic, 1>;
     using ArrayB_ref = Eigen::Ref<const ArrayB_t>;
 
-
     //! positions of the atomic structure in a Nx3 Eigen Matrix
     Positions_t positions{};
     //! atomic numbers of the N atoms
@@ -117,7 +116,6 @@ namespace rascal {
       auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
       this->set_structure(positions, atom_types, cell, pbc, center_atoms_mask);
     }
-
 
     //! Default constructor
     AtomicStructure() = default;
@@ -222,16 +220,14 @@ namespace rascal {
       return false;
     }
 
-    inline bool is_similar(const json &, const double &) const {
-      return false;
-    }
+    inline bool is_similar(const json &, const double &) const { return false; }
 
     inline bool is_similar(const std::string &, const double &) const {
       return false;
     }
 
     inline bool is_similar(const AtomicStructure<Dim> & other,
-                             const double & threshold2) const {
+                           const double & threshold2) const {
       bool is_similar_{true};
       if (this->positions.cols() == other.positions.cols()) {
         if ((this->pbc.array() != other.pbc.array()).any() or
@@ -251,19 +247,19 @@ namespace rascal {
     }
 
     inline bool is_similar(const PositionsInput_t & positions,
-                             const AtomTypesInput_t & atom_types,
-                             const CellInput_t cell, const PBCInput_t & pbc,
-                             const double & threshold2) const {
+                           const AtomTypesInput_t & atom_types,
+                           const CellInput_t cell, const PBCInput_t & pbc,
+                           const double & threshold2) const {
       auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
       return this->is_similar(positions, atom_types, cell, pbc,
-                                center_atoms_mask, threshold2);
+                              center_atoms_mask, threshold2);
     }
 
     inline bool is_similar(const PositionsInput_t & positions,
-                             const AtomTypesInput_t & atom_types,
-                             const CellInput_t cell, const PBCInput_t & pbc,
-                             const ArrayB_ref & center_atoms_mask,
-                             const double & threshold2) const {
+                           const AtomTypesInput_t & atom_types,
+                           const CellInput_t cell, const PBCInput_t & pbc,
+                           const ArrayB_ref & center_atoms_mask,
+                           const double & threshold2) const {
       bool is_similar_{true};
       if (this->positions.cols() == positions.cols()) {
         if ((this->pbc.array() != pbc.array()).any() or
@@ -316,7 +312,6 @@ namespace rascal {
           R"(AtomicStructure needs atom_types or numbers keyword)");
     }
     auto pbc = j.at("pbc").get<PBC_t>();
-
 
     cell.transposeInPlace();
 

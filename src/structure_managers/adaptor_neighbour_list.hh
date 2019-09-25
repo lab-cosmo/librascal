@@ -304,9 +304,9 @@ namespace rascal {
     //! itself
     template <size_t Dim, class Container_t>
     void fill_neighbours_atom_tag(const int current_atom_tag,
-                                 const std::array<int, Dim> & ccoord,
-                                 const Container_t & boxes,
-                                 std::vector<int> & neighbours_atom_tag) {
+                                  const std::array<int, Dim> & ccoord,
+                                  const Container_t & boxes,
+                                  std::vector<int> & neighbours_atom_tag) {
       neighbours_atom_tag.clear();
       for (auto && s : Stencil<Dim>{ccoord}) {
         for (const auto & neigh : boxes[s]) {
@@ -840,7 +840,7 @@ namespace rascal {
       auto && atomic_structure{this->manager->get_atomic_structure()};
       // if the structure has not changed by more than skin**2
       if (not atomic_structure.is_similar(std::forward<Args>(arguments)...,
-                                            this->skin2)) {
+                                          this->skin2)) {
         this->need_update = true;
       } else {
         this->need_update = false;
@@ -1078,7 +1078,7 @@ namespace rascal {
       Vector_t dpos = pos - mesh_min;
       auto box_index = internal::get_box_index(dpos, cutoff);
       internal::fill_neighbours_atom_tag(atom_tag, box_index, atom_id_cell,
-                                        current_j_atoms);
+                                         current_j_atoms);
 
       nneigh += current_j_atoms.size();
       for (auto & j_atom_tag : current_j_atoms) {
