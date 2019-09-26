@@ -125,6 +125,13 @@ def _button_template_(options, description, disp_func, default=None):
     display(button)
     button.observe(disp_func, 'value')
     return button
+
+def ket(X):
+    return "\\left|{}\\right\\rangle".format(X)
+def bra(X):
+    return "\\left\\langle{}\\right|".format(X)
+def braket(X,Y):
+    return "\\left\\langle{}|{}\\right\\rangle".format(X,Y)
 class learning_tutorial(object):
     def __init__(self, input_file='./data/small_molecules-1000.xyz',training_percentage=0.8, interactive = False, verbose=True, hyperparameters = dict(**hyper_dict['Power Spectrum']), number_of_frames=None, property=None):
         self.zeta = 2

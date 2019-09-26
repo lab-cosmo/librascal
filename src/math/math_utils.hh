@@ -1,5 +1,5 @@
 /**
- * @file   math_utils.hh
+ * file   math_utils.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  * @author  Max Veit <max.veit@epfl.ch>
@@ -60,7 +60,7 @@ namespace rascal {
     const double dbl_ftol = 100.0 * std::numeric_limits<double>::epsilon();
 
     /// How large a number must be to be considered infinity
-    const double DOVERFLOW = std::numeric_limits<double>::infinity();
+    const double DOVERFLOW = std::numeric_limits<double>::infinity() / 100.;
 
     // define some usefull matrix type
     using Matrix_t =

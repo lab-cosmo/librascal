@@ -1,5 +1,5 @@
 /**
- * @file   key_standardisation.hh
+ * file   key_standardisation.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>

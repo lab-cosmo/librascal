@@ -1,5 +1,5 @@
 /**
- * @file   json_io.cc
+ * file   json_io.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *

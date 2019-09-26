@@ -1,5 +1,5 @@
 /**
- * @file   sparsify_fps.cc
+ * file   sparsify_fps.cc
  *
  * @author  Michele Ceriotti <michele.ceriotti@gmail.com>
  *

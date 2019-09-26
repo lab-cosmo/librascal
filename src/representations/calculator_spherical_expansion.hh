@@ -1,5 +1,5 @@
 /**
- * @file   calculator_spherical_expansion.hh
+ * file   calculator_spherical_expansion.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -100,7 +100,11 @@ namespace rascal {
      * Note that this function is template-specialized by Gaussian sigma type
      * (constant, per-species, or radially dependent).
      *
+     * @param pair Atom pair defining the neighbour, as e.g. returned by
+     *             iteration over neighbours of a centre
+     *
      * @throw logic_error if the requested sigma type has not been implemented
+     *
      */
     template <AtomicSmearingType SigmaType>
     struct AtomicSmearingSpecification {};
@@ -209,18 +213,14 @@ namespace rascal {
      * Implementation of the radial contribution for Gaussian Type Orbitals
      * radial basis functions and gaussian smearing of the atom density.
      *
-     * @f[
-     *      R^{GTO}_{n}(r) = \mathcal{N}_n\ r^{n} \exp[-br^2]
-     * @f]
+     *          R^{GTO}_{n}(r) = \mathcal{N}_n\ r^{n} \exp[-br^2]
      *
-     * @f[
-     *      \mathcal{N}_n^2 = \frac{2}{\sigma_n^{2n + 3}\Gamma(n + 3/2)}
-     *      \sigma_n = (r_\text{cut}-\delta r_\text{cut})
-     *      \max(\sqrt{n},1)/n_\text{max} b=\frac{1}{2\sigma_n} \int_0^\infty
-     *      R^{GTO}_{n}(r) R^{GTO}_{n\prime}(r) \dd{r}= 2 \left(\frac{1}{2
-     *      \sigma_{n}^2}+\frac{1}{2 \sigma_{n\prime}^2} \right)^{-\frac{1}{2}
-     *      (3+n+n\prime)} \Gamma(\frac{3+n+n\prime}{2})
-     * @f]
+     * \mathcal{N}_n^2 = \frac{2}{\sigma_n^{2n + 3}\Gamma(n + 3/2)}
+     * \sigma_n = (r_\text{cut}-\delta r_\text{cut})
+     * \max(\sqrt{n},1)/n_\text{max} b=\frac{1}{2\sigma_n} \int_0^\infty
+     * R^{GTO}_{n}(r) R^{GTO}_{n\prime}(r) \dd{r}= 2 \left(\frac{1}{2
+     * \sigma_{n}^2}+\frac{1}{2 \sigma_{n\prime}^2} \right)^{-\frac{1}{2}
+     * (3+n+n\prime)} \Gamma(\frac{3+n+n\prime}{2})
      */
     template <>
     struct RadialContribution<RadialBasisType::GTO> : RadialContributionBase {
@@ -250,7 +250,7 @@ namespace rascal {
 
       /**
        * Set hyperparameters.
-       * @param hypers is expected to be the same as the the input of
+       * @params hypers is expected to be the same as the the input of
        *         the spherical expansion
        */
       void set_hyperparameters(const Hypers_t & hypers) {
@@ -398,19 +398,18 @@ namespace rascal {
        * Note that you _must_ call compute_neighbour_contribution() first to
        * populate the relevant arrays!
        *
-       * The derivative is taken with respect to the pair distance,
-       * @f$ r_{ij} @f$. In order to get the radial component of the gradient,
-       * remember to multiply by the direction vector @f$ \hat{\vec{r}_{ij}} @f$
-       * (and not the vector itself), since
-       * @f[
+       * The derivative is taken with respect to the pair distance, r_{ij}.  In
+       * order to get the radial component of the gradient, remember to multiply
+       * by the direction vector \hat{\vec{r}_{ij}} (and not the vector itself),
+       * since
+       * \[
        *    \grad_{\vec{r}_i} f(r_{ij}) =
        *                    \frac{d f}{d r_{ij}} \frac{- \vec{r}_{ij}}{r_{ij}}
        *                  = \frac{d f}{d r_{ij}} -\hat{\vec{r}_{ij}}
-       * \@f]
-       *
-       * so multiply by _negative_ @f$ \hat{\vec{r}}_ij @f$ to get the radial
+       * \])
+       * so multiply by _negative_ $\hat{\vec{r}}_ij$ to get the radial
        * component of the gradient wrt motion of the central atom
-       * (@f$ \frac{d}{d\vec{r}_i} @f$).
+       * ($\frac{d}{d\vec{r}_i}$).
        *
        * And finally, there is no compute_center_derivative() because that's
        * just zero -- the centre contribution doesn't vary w.r.t. motion of
@@ -690,8 +689,8 @@ namespace rascal {
     /**
      * Construct a new RepresentationManager using a hyperparameters container
      *
-     * @param hyper container (usually parsed from json) for the options and
-     *              hyperparameters
+     * @param hypers container (usually parsed from json) for the options and
+     *               hyperparameters
      *
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container

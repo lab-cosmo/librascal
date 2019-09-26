@@ -1,5 +1,5 @@
 /**
- * @file   make_structure_manager.hh
+ * file   make_structure_manager.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -40,8 +40,9 @@
 namespace rascal {
   /**
    * Factory function to make a structure manager
-   *
-   * @tparam Manager input structure manager
+   * @tparams Adaptor partial type of the adaptor
+   * @params Manager input structure manager
+   * @params args additional argument for the constructructor
    */
   template <typename Manager>
   std::shared_ptr<Manager> make_structure_manager() {
@@ -50,10 +51,9 @@ namespace rascal {
 
   /**
    * Factory function to make an adapted structure manager
-   *
-   * @tparam Adaptor partial type of the adaptor
-   * @tparam Manager input structure manager
-   * @param args additional argument for the constructructor
+   * @tparams Adaptor partial type of the adaptor
+   * @params Manager input structure manager
+   * @params args additional argument for the constructructor
    */
   template <template <class> class Adaptor, typename Manager, typename... Args>
   std::shared_ptr<Adaptor<Manager>>
@@ -65,11 +65,10 @@ namespace rascal {
 
   /**
    * Factory function to make an adapted structure manager
-   *
-   * @tparam Adaptor partial type of the adaptor
-   * @tparam Manager input structure manager
-   * @param adaptor_hypers additional argument for the constructructor given
-   *        in a dictionary like containner, e.g. json type.
+   * @tparams Adaptor partial type of the adaptor
+   * @params Manager input structure manager
+   * @params adaptor_hypers additional argument for the constructructor given
+   *         in a dictionary like containner, e.g. json type.
    */
   template <template <class> class Adaptor, typename Manager, typename Hypers_t>
   std::shared_ptr<Adaptor<Manager>>
@@ -87,10 +86,12 @@ namespace rascal {
      * helper to make an adapted manager taking a list of dictionary like
      * objects containing the initialization of some adaptors and which one
      * to pick.
-     *
-     * @tparam Adaptor partial type of the adaptor
-     * @tparam HyperPos position of the relevant initialization_arguments for
+     * @tparams Adaptor partial type of the adaptor
+     * @tparams HyperPos position of the relevant initialization_arguments for
      *          the Adaptor
+     * @params manager a structure manager
+     * @params list of dictionary like objects
+     *
      */
     template <template <class> class Adaptor, size_t HyperPos>
     struct make_adapted_manager_hypers_util {
@@ -105,7 +106,8 @@ namespace rascal {
 
     /**
      * Given an instanciated structure manager, recursively stack adaptors
-     * on it while instanciating them and create backward links (add_child).
+     * on it
+     * while instanciating them and create backward links (add_child).
      * It assumes the adaptors arguments needed for constructions
      * are gathered in a list of dictionary like objects, e.g. json type.
      */
@@ -163,15 +165,15 @@ namespace rascal {
   /**
    * Factory function to make an adapted structure manager from a list of
    * template parameters and constructor arguments.
-   * @tparam AdaptorImplementationPack list of partial types of the adaptors
-   * @tparam Manager type of the structure manager root
-   * @tparam Hypers_t type of the dictionary like container that aggregate
-   *         the parameters to construct the successive adapted managers
-   * @param structure_inputs info to get an atomic structure using
-   *        the AtomicStructure class
-   * @param adaptor_inputs arguments for the constructructor of the adapted
-   *        managers given in the same order as AdaptorImplementationPack
-   *        in a dictionary like containner, e.g. json type.
+   * @tparams AdaptorImplementationPack list of partial types of the adaptors
+   * @tparams Manager type of the structure manager root
+   * @tparams Hypers_t type of the dictionary like container that aggregate
+   *          the parameters to construct the successive adapted managers
+   * @params structure_inputs info to get an atomic structure using
+   *         the AtomicStructure class
+   * @params adaptor_hypers arguments for the constructructor of the adapted
+   *         managers given in the same order as AdaptorImplementationPack
+   *         in a dictionary like containner, e.g. json type.
    */
   template <typename Manager,
             template <class> class... AdaptorImplementationPack,
@@ -283,8 +285,8 @@ namespace rascal {
      * Allow to provide a StructureManagerTypeHolder instead of the list types
      * to make_structure_manager_stack.
      *
-     * @tparam SM structure manager type
-     * @tparam AdaptorTypeHolder_ list of adaptor partial types
+     * @tparams SM structure manager type
+     * @tparams Ti list of adaptor partial types
      */
     template <typename SM, typename AdaptorTypeHolder_>
     struct make_structure_manager_stack_with_hypers_util;
@@ -328,12 +330,12 @@ namespace rascal {
    * Factory function to stack adaptors on a structure managers with a valid
    *  structure already registered.
    *
-   * @tparam Manager type of the base manager, e.g. StructureManagerCenters
-   * @tparam AdaptorImplementationPack list of adaptors to stack on the base
-   *         manager type
-   * @param manager_base a structure manager with a structure inside
-   * @param hypers list of arguments to build the adaptor (packed in tuples and
-   *        in the same order as in AdaptorImplementationPack)
+   * @tparams Manager type of the base manager, e.g. StructureManagerCenters
+   * @tparams AdaptorImplementationPack list of adaptors to stack on the base
+   * manager type
+   * @params manager_base a structure manager with a structure inside
+   * @params args list of arguments to build the adaptor (packed in tuples and
+   *  in the same order as in AdaptorImplementationPack)
    * @return shared pointer to the fully built structure manager
    */
   template <typename Manager,

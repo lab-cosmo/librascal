@@ -1,5 +1,5 @@
 /**
- * @file   structure_manager_base.hh
+ * file   structure_manager_base.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *

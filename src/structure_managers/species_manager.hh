@@ -1,5 +1,5 @@
 /**
- * @file    species_manager.hh
+ * file    species_manager.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Till Junge <till.junge@epfl.ch>

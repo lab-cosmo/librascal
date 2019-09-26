@@ -1,5 +1,5 @@
 /**
- * @file   math_interface.hh
+ * file   math_interface.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *

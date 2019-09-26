@@ -346,7 +346,7 @@ namespace rascal {
       this->compute_impl<BodyOrder>(manager);
     }
 
-    //! compute representation @f$ \nu == 1 @f$
+    //! compute representation \nu == 1
     template <
         internal::SphericalInvariantsType BodyOrder,
         std::enable_if_t<BodyOrder ==
@@ -355,7 +355,7 @@ namespace rascal {
         class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
-    //! compute representation @f$ \nu == 2 @f$
+    //! compute representation \nu == 2
     template <internal::SphericalInvariantsType BodyOrder,
               std::enable_if_t<
                   BodyOrder == internal::SphericalInvariantsType::PowerSpectrum,
@@ -363,7 +363,7 @@ namespace rascal {
               class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
-    //! compute representation @f$ \nu == 3 @f$
+    //! compute representation \nu == 3
     template <internal::SphericalInvariantsType BodyOrder,
               std::enable_if_t<
                   BodyOrder == internal::SphericalInvariantsType::BiSpectrum,

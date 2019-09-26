@@ -1,5 +1,5 @@
 /**
- * @file   property_typed.hh
+ * file   property_typed.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>

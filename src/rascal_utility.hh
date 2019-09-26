@@ -1,5 +1,5 @@
 /**
- * @file   rascal_utility.hh
+ * file   rascal_utility.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -253,13 +253,10 @@ namespace rascal {
      * This functionality is compiler dependant so for the moment
      * clang and gcc are compatible.
      * @template T type that should be stringifyied
+     * @returns std::string name of the type
      */
     template <typename T>
     struct GetTypeNameHelper {
-      /**
-       * Get the type name
-       * @returns std::string name of the type
-       */
       static const std::string GetTypeName() {
 // The output of of Pretty Function depends on the compiler
 // the #define strings is a pain to split

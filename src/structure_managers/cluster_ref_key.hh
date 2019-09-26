@@ -1,5 +1,5 @@
 /**
- * @file   cluster_ref_key.hh
+ * file   cluster_ref_key.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Markus Stricer <markus.stricker@epfl.ch>

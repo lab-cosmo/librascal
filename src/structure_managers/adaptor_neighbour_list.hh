@@ -1,5 +1,5 @@
 /**
- * @file   adaptor_neighbour_list.hh
+ * file   adaptor_neighbour_list.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Till Junge <till.junge@epfl.ch>
@@ -86,7 +86,7 @@ namespace rascal {
     class Stencil {
      public:
       //! constructor
-      explicit Stencil(const std::array<int, Dim> & origin) : origin{origin} {}
+      explicit Stencil(const std::array<int, Dim> & origin) : origin{origin} {};
       //! copy constructor
       Stencil(const Stencil & other) = default;
       //! assignment operator
@@ -162,7 +162,7 @@ namespace rascal {
       PeriodicImages(const std::array<int, Dim> & origin,
                      const std::array<int, Dim> & nrepetitions,
                      const size_t & ntot)
-          : origin{origin}, nrepetitions{nrepetitions}, ntot{ntot} {}
+          : origin{origin}, nrepetitions{nrepetitions}, ntot{ntot} {};
       //! copy constructor
       PeriodicImages(const PeriodicImages & other) = default;
       //! assignment operator
@@ -238,7 +238,7 @@ namespace rascal {
      public:
       //! constructor
       explicit MeshBounds(const std::array<double, 2 * Dim> & extent)
-          : extent{extent} {}
+          : extent{extent} {};
       //! copy constructor
       MeshBounds(const MeshBounds & other) = default;
       //! assignment operator

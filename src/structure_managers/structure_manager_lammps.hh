@@ -1,5 +1,5 @@
 /**
- * @file   structure_manager_lammps.hh
+ * file   structure_manager_lammps.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -72,7 +72,7 @@ namespace rascal {
     StructureManagerLammps(const StructureManagerLammps & other) = delete;
 
     //! Move constructor
-    StructureManagerLammps(StructureManagerLammps && other) = delete;
+    StructureManagerLammps(StructureManagerLammps && other) = default;
 
     //! Destructor
     virtual ~StructureManagerLammps() = default;
@@ -83,7 +83,7 @@ namespace rascal {
 
     //! Move assignment operator
     StructureManagerLammps &
-    operator=(StructureManagerLammps && other) = delete;
+    operator=(StructureManagerLammps && other) = default;
 
     //! Updates the manager using the impl
     template <class... Args>

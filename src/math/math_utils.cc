@@ -1,5 +1,5 @@
 /**
- * @file   math_utils.cc
+ * file   math_utils.cc
  *
 
  * @author  Felix Musil <felix.musil@epfl.ch>

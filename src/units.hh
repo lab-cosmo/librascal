@@ -1,5 +1,5 @@
 /**
- * @file   units.hh
+ * file   units.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -60,10 +60,10 @@ namespace rascal {
       virtual ~UnitStyle() = default;
 
       //! Copy assignment operator
-      UnitStyle & operator=(const UnitStyle & other) = delete;
+      UnitStyle & operator=(const UnitStyle & other) = default;
 
       //! Move assignment operator
-      UnitStyle & operator=(UnitStyle && other) = delete;
+      UnitStyle & operator=(UnitStyle && other) = default;
 
       /**
        * returns a string representation of the given unit with a optional

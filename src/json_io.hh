@@ -1,5 +1,5 @@
 /**
- * @file   json_io.hh
+ * file   json_io.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -65,22 +65,21 @@ namespace rascal {
      */
     struct AtomicJsonData {
       /**
-       *  cell is a vector of vectors which holds the cell unit vectors.
+       *  @param cell is a vector a vector of vectors which holds the cell unit
+       *  vectors.
+       *
+       *  @param type a vector of integers which holds the atomic type (atomic
+       *  number from periodic table).
+       *
+       *  @param pbc is a 0/1 vector which says, where periodic boundary
+       *  conditions are applied.
+       *
+       *  @param position is a vector of vectors which holds the atomic
+       *  positions.
        */
       std::vector<std::vector<double>> cell{};
-      /**
-       *  type a vector of integers which holds the atomic type (atomic
-       *  number from periodic table).
-       */
       std::vector<int> type{};
-      /**
-       *  pbc is a 0/1 vector which says where periodic boundary conditions
-       *  are applied.
-       */
       std::vector<int> pbc{};
-      /**
-       *  position is a vector of vectors which holds the atomic positions.
-       */
       std::vector<std::vector<double>> position{};
     };
 

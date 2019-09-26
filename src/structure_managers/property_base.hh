@@ -1,5 +1,5 @@
 /**
- * @file   property_base.hh
+ * file   property_base.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -60,7 +60,7 @@ namespace rascal {
     PropertyBase & operator=(const PropertyBase & other) = delete;
 
     //! Move assignment operator
-    PropertyBase & operator=(PropertyBase && other) = delete;
+    PropertyBase & operator=(PropertyBase && other) = default;
 
     //! return compile time type information
     virtual const std::string & get_type_info() const = 0;

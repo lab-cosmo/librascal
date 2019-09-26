@@ -1,5 +1,5 @@
 /**
- * @file   cutoff_functions.hh
+ * file   cutoff_functions.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -31,13 +31,11 @@
 
 #include "rascal_utility.hh"
 #include "math/math_utils.hh"
-#include "representations/calculator_base.hh"
 
 #include <vector>
 #include <memory>
 
 #include <Eigen/Dense>
-
 
 namespace rascal {
 

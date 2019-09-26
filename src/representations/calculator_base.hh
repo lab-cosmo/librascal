@@ -1,5 +1,5 @@
 /**
- * @file   calculator_base.hh
+ * file   calculator_base.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
