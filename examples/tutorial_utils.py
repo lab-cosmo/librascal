@@ -15,8 +15,10 @@ import time
 from time import strftime
 from tqdm import tqdm_notebook as tqdm
 from threading import Thread, Timer
+import urllib.request
 from queue import Queue
 import multiprocessing
+
 style = {'description_width': 'initial'}
 hyper_vals = {
 # "soap_type": dict(options = ["PowerSpectrum", "RadialSpectrum"], name = "Body Order"),
@@ -194,7 +196,20 @@ def tqdm_timer(seconds):
     for i in tqdm(range(seconds), total=seconds):
         time.sleep(1)
 class SOAP_tutorial(object):
-    def __init__(self, input_file='./data/small_molecules-1000.xyz',training_percentage=0.8, interactive = False, verbose=True, hyperparameters = dict(**hyper_dict['Power Spectrum']), number_of_frames=None, property=None):
+
+    csd500_filename = "CSD-500.xyz"
+    csd500_download_link = (
+            "https://static-content.springer.com/esm/" +
+            "art%3A10.1038%2Fs41467-018-06972-x/MediaObjects/" +
+            "41467_2018_6972_MOESM4_ESM.txt")
+
+    def __init__(self,
+                 input_file='./data/small_molecules-1000.xyz',
+                 auto_download_csd500=True,
+                 training_percentage=0.8,
+                 interactive = False, verbose=True, hyperparameters=dict(
+                     **hyper_dict['Power Spectrum']),
+                 number_of_frames=None, property=None):
         self.zeta = 2
         self.Lambda = 5e-3
 
@@ -202,6 +217,20 @@ class SOAP_tutorial(object):
         self.verbose = verbose
         self.verbosity_wrap = lambda s: (None if not verbose else display(Markdown(s)))
 
+        if auto_download_csd500 and not os.path.isfile(os.path.join(
+                "data", self.csd500_filename)):
+            try:
+                urllib.request.urlretrieve(
+                        self.csd500_download_link,
+                        os.path.join("data", self.csd500_filename))
+            except urllib.error.URLError as e:
+                sys.stderr.write("Couldn't download the CSD-500 dataset.\n")
+                if hasattr(e, "reason"):
+                    sys.stderr.write("Failed to reach the server. " +
+                                     "Try checking your network connection?\n")
+                    sys.stderr.write("Reason: " + e.reason + "\n")
+                elif hasattr(e, "code"):
+                    sys.stderr.write("HTTP error: {:d}\n".format(e.code))
         file_options = ['./data/{}'.format(f) for f in os.listdir('./data') if f.endswith('xyz')]
         if(input_file!=None):
             file_options.insert(0, input_file)
