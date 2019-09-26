@@ -3,9 +3,13 @@
 References
 ==========
 
-Here you can find some reference papers, describing the principles which are used in Rascal.
+.. [AllenTildesley] D. J. Tildesley and M.P. Allen, *Computer Simulations of Liquids*, Oxford University Press
+.. [Behler2007] J. Behler and M. Parinello, *Generalized Neural-Network Representations of High-Dimensional Potential-Energy Surfaces*, Phys. Rev. Lett 98, 146401
 
-1. `ML basis (outbound) <https://onlinelibrary.wiley.com/doi/full/10.1002/qua.24927>`_
+SOAP references
+---------------
+
+1. `Tutorial introduction (outbound) <https://onlinelibrary.wiley.com/doi/full/10.1002/qua.24927>`_
 
 2. `Complete description (outbound) <https://journals.aps.org/prb/abstract/10.1103/PhysRevB.87.184115>`_
 

@@ -11,8 +11,8 @@ In this section, we summarize the representation implemented in Rascal.
 Pair distances
 **************
 
-SphericalInvariants
-*******************
+Spherical Invariants and Covariants
+***********************************
 
 BP symmetry functions
 *********************
