@@ -9,9 +9,9 @@ SOAP Theory
 :Last updated: 27 Aug 2019
 
 The mathematics behind the analytical radial integrals, and Cartesian gradients,
-of the SOAP descriptor is described below.  Also available as a PDF
-:download:`here <dox_resources/SOAP_documentation.pdf>`.
+of the SOAP descriptor is described below.
 
+.. TODO link to an appropriate publication once the below is incorporated there
 
 
 From the density to the density expansion
