@@ -47,6 +47,10 @@ extensions = ['sphinx.ext.autodoc',
 ## needs to run in-place
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
+# Sphinx notebook inclusion: Be error-tolerant until we can make sure
+# all notebooks run on the common developer environment
+nbsphinx_allow_errors = True
+
 if read_the_docs_build is True:
     rascal_path = "."
 else:
