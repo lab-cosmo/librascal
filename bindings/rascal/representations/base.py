@@ -26,3 +26,49 @@ def CalculatorFactory(rep_options):
              'The available combinations are: {}').format(
                 name, list(_representations.keys())))
     return _representations[name](*rep_options['args'])
+
+def cutoff_function_dict_switch(cutoff_function_type, **kwargs):
+    """
+    return appropriate dict for the cutoff function parameters
+    """
+    if cutoff_function_type == 'Cosine':
+        cutoff_function_dict = dict(
+            type=cutoff_function_type,
+            cutoff=dict(
+                value=kwargs['interaction_cutoff'],
+                unit='AA'
+            ),
+            smooth_width=dict(
+                value=kwargs['cutoff_smooth_width'],
+                unit='AA'
+            ),
+        )
+    elif cutoff_function_type == 'RadialScaling':
+        cutoff_function_dict = dict(
+            type=cutoff_function_type,
+            cutoff=dict(
+                value=kwargs['interaction_cutoff'],
+                unit='AA'
+            ),
+            smooth_width=dict(
+                value=kwargs['cutoff_smooth_width'],
+                unit='AA'
+            ),
+            rate=dict(
+                value=kwargs['rate'],
+                unit='AA'
+            ),
+            scale=dict(
+                value=kwargs['scale'],
+                unit='AA'
+            ),
+            exponent=dict(
+                value=kwargs['exponent'],
+                unit='AA'
+            ),
+        )
+    else:
+        raise NotImplementedError('cutoff_function: '+cutoff_function_type+
+                                    ' has not been implemented.')
+
+    return cutoff_function_dict

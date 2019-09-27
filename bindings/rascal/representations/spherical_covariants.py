@@ -1,6 +1,6 @@
 import json
 
-from .base import CalculatorFactory
+from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
 import numpy as np
 
@@ -65,7 +65,8 @@ class SphericalCovariants(object):
                  cutoff_function_type="Cosine", normalize=True,
                  radial_basis="GTO",
                  soap_type="LambdaSpectrum", inversion_symmetry=True,
-                 lam=0):
+                 lam=0,
+                 cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -81,17 +82,13 @@ class SphericalCovariants(object):
             inversion_symmetry=inversion_symmetry,
             lam=lam)
 
-        cutoff_function = dict(
-            type=cutoff_function_type,
-            cutoff=dict(
-                value=interaction_cutoff,
-                unit='AA'
-            ),
-            smooth_width=dict(
-                value=cutoff_smooth_width,
-                unit='AA'
-            ),
+        cutoff_function_parameters.update(
+            **dict(interaction_cutoff=interaction_cutoff,
+                    cutoff_smooth_width=cutoff_smooth_width)
         )
+        cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
+                                **cutoff_function_parameters)
+
         gaussian_density = dict(
             type=gaussian_sigma_type,
             gaussian_sigma=dict(
@@ -129,7 +126,8 @@ class SphericalCovariants(object):
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
                         'inversion_symmetry', 'lam', 'cutoff_function',
-                        'normalize', 'gaussian_density', 'radial_contribution'}
+                        'normalize', 'gaussian_density', 'radial_contribution',
+                        'cutoff_function_parameters'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
