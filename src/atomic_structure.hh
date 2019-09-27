@@ -87,6 +87,10 @@ namespace rascal {
     using ArrayB_t = Eigen::Array<bool, Eigen::Dynamic, 1>;
     using ArrayB_ref = Eigen::Ref<const ArrayB_t>;
 
+    template <typename T>
+    using ArrayConstRef_t =
+        const Eigen::Ref<const Eigen::Array<T, Eigen::Dynamic, 1>>;
+
     //! positions of the atomic structure in a Nx3 Eigen Matrix
     Positions_t positions{};
     //! atomic numbers of the N atoms
@@ -118,6 +122,27 @@ namespace rascal {
                               const CellInput_t cell, const PBCInput_t & pbc) {
       auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
       this->set_structure(positions, atom_types, cell, pbc, center_atoms_mask);
+    }
+
+    /**
+     * Method to set an property associated to the atoms like center_atoms_mask
+     * to values different from the default one
+     */
+    template <typename T>
+    inline void set_atom_property(std::string name, ArrayConstRef_t<T> array) {
+      if (name == "center_atoms_mask") {
+        if (atom_types.size() != array.size()) {
+          throw std::runtime_error(R"(Input array does not have the same size
+                                      as the number of atoms)");
+        }
+        center_atoms_mask = array;
+      } else {
+        std::string error{"The name '"};
+        error += name;
+        error += std::string(R"(' is not part of the possible registered
+                                  fields: 'center_atoms_mask' )");
+        throw std::runtime_error(error);
+      }
     }
 
     //! method for initializing structure data from raw Eigen types, beware:

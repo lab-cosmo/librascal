@@ -86,7 +86,7 @@ namespace rascal {
   //! Dynamic access to all layers by cluster dimension (probably not necessary)
   template <size_t MaxOrder, size_t... Ints>
   constexpr std::array<size_t, MaxOrder>
-      get_layers(std::index_sequence<Ints...>) {
+  get_layers(std::index_sequence<Ints...>) {
     return std::array<size_t, MaxOrder>{Ints...};
   }
 

@@ -232,10 +232,10 @@ namespace rascal {
           // avoid making temp by breaking down the operation in 3 parts
           this->assoc_legendre_polynom.row(angular_l)
               .head(angular_l - 1)
-              .array() = cos_theta *
-                         this->assoc_legendre_polynom.row(angular_l - 1)
-                             .head(angular_l - 1)
-                             .array();
+              .array() =
+              cos_theta * this->assoc_legendre_polynom.row(angular_l - 1)
+                              .head(angular_l - 1)
+                              .array();
           this->assoc_legendre_polynom.row(angular_l)
               .head(angular_l - 1)
               .array() +=

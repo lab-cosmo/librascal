@@ -2,7 +2,7 @@ from ..lib import neighbour_list
 from .base import (NeighbourListFactory, is_valid_structure,
  adapt_structure, StructureCollectionFactory)
 from collections.abc import Iterable
-
+import numpy as np
 
 class AtomsList(object):
     """

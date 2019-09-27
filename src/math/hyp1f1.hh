@@ -188,10 +188,9 @@ namespace rascal {
           // adaptive sum. computes several terms at a time to save on
           // and on bailout tests (typical n. of terms needed is ~20)
           for (size_t i{0}; i < mmax - 3; i += 4) {
-            a1 = zpow *
-                 (coefficient(i) +
-                  z * (coefficient(i + 1) +
-                       z * (coefficient(i + 2) + z * coefficient(i + 3))));
+            a1 = zpow * (coefficient(i) + z * (coefficient(i + 1) +
+                                               z * (coefficient(i + 2) +
+                                                    z * coefficient(i + 3))));
             if (a1 < this->tolerance * res) {
               this->n_terms = i;
               res += a1;
@@ -463,9 +462,9 @@ namespace rascal {
      public:
       Hyp1f1(const double & a, const double & b, const size_t & mmax = 500,
              const double & tolerance = 1e-13)
-          : hyp1f1_series{a, b, mmax, tolerance},
-            hyp1f1_asymptotic{a, b, mmax, tolerance}, a{a}, b{b},
-            tolerance{tolerance} {
+          : hyp1f1_series{a, b, mmax, tolerance}, hyp1f1_asymptotic{a, b, mmax,
+                                                                    tolerance},
+            a{a}, b{b}, tolerance{tolerance} {
         // now we try to determine what is the switching point between
         // power series and asymptotic expansion. basically we choose
         // the method that requires fewer terms for a chosen target accuracy.
@@ -570,8 +569,8 @@ namespace rascal {
       Hyp1f1SphericalExpansion(const bool & recursion = false,
                                const double & tolerance = 1e-14,
                                const size_t & precomputation_size = 200)
-          : tolerance{tolerance}, precomputation_size{precomputation_size},
-            recursion{recursion} {}
+          : tolerance{tolerance},
+            precomputation_size{precomputation_size}, recursion{recursion} {}
 
       //! initialize the 1F1 computers
       void precompute(const size_t & max_radial, const size_t & max_angular) {
