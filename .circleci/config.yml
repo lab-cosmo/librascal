@@ -26,7 +26,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -77,7 +77,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -126,7 +126,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -176,7 +176,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -239,7 +239,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -302,7 +302,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -354,7 +354,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -407,7 +407,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
@@ -462,7 +462,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx jupyter cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
                         - run:
                                 command: |
                                         rm -rf build
