@@ -267,7 +267,19 @@ namespace rascal {
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
         {{"type", "Cosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}},
+        {{"type", "RadialScaling"},
+         {"cutoff", {{"value", 4.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}},
+         {"rate", {{"value", .0}, {"unit", "AA"}}},
+         {"exponent", {{"value", 4}, {"unit", ""}}},
+         {"scale", {{"value", 2.5}, {"unit", "AA"}}}},
+        {{"type", "RadialScaling"},
+         {"cutoff", {{"value", 4.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}},
+         {"rate", {{"value", 1.}, {"unit", "AA"}}},
+         {"exponent", {{"value", 3}, {"unit", ""}}},
+         {"scale", {{"value", 2.}, {"unit", "AA"}}}}};
 
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}},
                                                  {{"type", "DVR"}}};
@@ -276,10 +288,11 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.5}, {"unit", "AA"}}}}};
 
-    std::vector<json> rep_hypers{{{"max_radial", 10}, {"max_angular", 8}}};
+    std::vector<json> rep_hypers{{{"max_radial", 6}, {"max_angular", 4}}};
   };
 
-  /** Simplified version of MultipleStructureManagerNLStrictFixture
+  /**
+   * Simplified version of MultipleStructureManagerNLStrictFixture
    *  that uses only one structure, cutoff, and adaptor set
    *
    *  Useful if we just need a StructureManager to test relatively isolated
@@ -445,7 +458,13 @@ namespace rascal {
     std::vector<json> fc_hypers{
         {{"type", "Cosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}},
+         {"type", "RadialScaling"},
+         {"cutoff", {{"value", 4.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}},
+         {"rate", {{"value", 1.}, {"unit", "AA"}}},
+         {"exponent", {{"value", 3}, {"unit", ""}}},
+         {"scale", {{"value", 2.}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
