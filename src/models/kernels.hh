@@ -68,6 +68,12 @@ namespace rascal {
         }
       }
 
+      /**
+       * Compute the kernel between 2 set of structure(s)
+       *
+       * @tparam StructureManagers should be an iterable over shared pointer
+       *          of structure managers like ManagerCollection
+       */
       template <
           class Property_t, internal::TargetType Type,
           std::enable_if_t<Type == internal::TargetType::Structure, int> = 0,

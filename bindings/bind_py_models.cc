@@ -62,16 +62,20 @@ namespace rascal {
    */
   void add_kernels(py::module & mod, py::module & m_internal) {
     // Defines a particular structure manager type
-    using ManagerCollection_t =
+    using ManagerCollection_1_t =
         ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
                           AdaptorStrict>;
-
+    using ManagerCollection_2_t =
+        ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
+                          AdaptorCenterContribution, AdaptorStrict>;
     // Defines the representation manager type for the particular structure
     // manager
     using Calc1_t = CalculatorSphericalInvariants;
     // Bind the interface of this representation manager
     auto kernel = add_kernel(mod, m_internal);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
-                                 ManagerCollection_t>(kernel);
+                                 ManagerCollection_1_t>(kernel);
+    bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
+                                 ManagerCollection_2_t>(kernel);
   }
 }  // namespace rascal
