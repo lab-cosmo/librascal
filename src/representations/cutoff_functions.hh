@@ -123,6 +123,10 @@ namespace rascal {
      *        |
      *        ╰ c / (c + (r/r_0)^m), else
      *
+     * c -> rate
+     * r_0 -> scale
+     * m -> exponent
+     *
      * with the cosine switching function.
      */
     template <>
@@ -147,13 +151,13 @@ namespace rascal {
 
       inline double f_c(const double & distance) {
         double factor{0.};
-        if (this->rate < math::dbl_ftol) {
-          factor = math::pow(distance / this->scale, -this->exponent);
-        } else if (this->exponent == 0) {
-          factor = 1.;
-        } else {
+        if (this->rate > math::dbl_ftol) {
           factor = this->rate / (this->rate + math::pow(distance / this->scale,
                                                         this->exponent));
+        } else if (this->exponent == 0) {
+          factor = 1.;
+        } else  {
+          factor = math::pow(distance / this->scale, -this->exponent);
         }
         return factor * math::switching_function_cosine(distance, this->cutoff,
                                                         this->smooth_width);

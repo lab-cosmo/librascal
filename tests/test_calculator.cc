@@ -408,8 +408,9 @@ namespace rascal {
                        CalculatorFixture<SingleHypersSphericalInvariants>>;
 
   /**
-   * Test the gradient of the SphericalExpansion representation on a few simple
-   * crystal structures (single- and multi-species, primitive and supercells)
+   * Test the gradient of the SphericalExpansion and SphericalInvariants
+   * representation on a few simple crystal structures (single- and
+   * multi-species, primitive and supercells)
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_representation_gradients, Fix,
                                    simple_periodic_fixtures, Fix) {

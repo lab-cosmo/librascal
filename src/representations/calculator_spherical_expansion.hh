@@ -889,10 +889,14 @@ namespace rascal {
         this->cutoff_function_type = CutoffFunctionType::Cosine;
         this->cutoff_function =
             make_cutoff_function<CutoffFunctionType::Cosine>(fc_hypers);
+      } else if (fc_type.compare("RadialScaling") == 0) {
+        this->cutoff_function_type = CutoffFunctionType::RadialScaling;
+        this->cutoff_function =
+            make_cutoff_function<CutoffFunctionType::RadialScaling>(fc_hypers);
       } else {
         throw std::logic_error("Requested cutoff function type \'" + fc_type +
                                "\' has not been implemented.  Must be one of" +
-                               ": \'Cosine\'.");
+                               ": \'Cosine\' or 'RadialScaling'.");
       }
 
       this->set_name(hypers);
@@ -1014,6 +1018,11 @@ namespace rascal {
     switch (this->cutoff_function_type) {
     case CutoffFunctionType::Cosine: {
       this->compute_by_radial_contribution<CutoffFunctionType::Cosine>(
+          managers);
+      break;
+    }
+    case CutoffFunctionType::RadialScaling: {
+      this->compute_by_radial_contribution<CutoffFunctionType::RadialScaling>(
           managers);
       break;
     }
