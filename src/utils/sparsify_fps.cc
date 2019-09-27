@@ -101,8 +101,7 @@ namespace rascal {
           // note that this is as expensive as re-running a full
           // FPS, but it allows us to extend an existing FPS set
           list_new_d2 = feature_x2 + feature_x2(i_restart[0]) -
-                        2 *
-                            (feature_matrix *
+                        2 * (feature_matrix *
                              feature_matrix.row(i_restart[0]).transpose())
                                 .array();
           list_min_d2 = list_new_d2;
@@ -123,8 +122,7 @@ namespace rascal {
             sparse_minmax_d2(i - 1) = d2max_new;
             list_new_d2 =
                 feature_x2 + feature_x2(i_new) -
-                2 *
-                    (feature_matrix * feature_matrix.row(i_new).transpose())
+                2 * (feature_matrix * feature_matrix.row(i_new).transpose())
                         .array();
             list_min_d2 = list_min_d2.min(list_new_d2);
           }
@@ -136,8 +134,7 @@ namespace rascal {
         //  distance square to the selected point
         list_new_d2 =
             feature_x2 + feature_x2(i_first_point) -
-            2 *
-                (feature_matrix * feature_matrix.row(i_first_point).transpose())
+            2 * (feature_matrix * feature_matrix.row(i_first_point).transpose())
                     .array();
         list_min_d2 = list_new_d2;  // we only have this point....
       }
@@ -154,8 +151,7 @@ namespace rascal {
         // dispatching to the proper distance/kernel needed
         list_new_d2 =
             feature_x2 + feature_x2(i_new) -
-            2 *
-                (feature_matrix * feature_matrix.row(i_new).transpose())
+            2 * (feature_matrix * feature_matrix.row(i_new).transpose())
                     .array();
 
         // this actually returns a list with the element-wise minimum between
@@ -227,8 +223,7 @@ namespace rascal {
       //  distance square to the selected point
       list_new_d2 =
           feature_x2 + feature_x2(i_first_point) -
-          2 *
-              (feature_matrix * feature_matrix.row(i_first_point).transpose())
+          2 * (feature_matrix * feature_matrix.row(i_first_point).transpose())
                   .array();
       list_min_d2 = list_new_d2;  // we only have this point....
 

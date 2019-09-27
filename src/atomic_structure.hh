@@ -87,9 +87,9 @@ namespace rascal {
     using ArrayB_t = Eigen::Array<bool, Eigen::Dynamic, 1>;
     using ArrayB_ref = Eigen::Ref<const ArrayB_t>;
 
-    template<typename T>
+    template <typename T>
     using ArrayConstRef_t =
-          const Eigen::Ref<const Eigen::Array<T, Eigen::Dynamic, 1>>;
+        const Eigen::Ref<const Eigen::Array<T, Eigen::Dynamic, 1>>;
 
     //! positions of the atomic structure in a Nx3 Eigen Matrix
     Positions_t positions{};
@@ -128,7 +128,7 @@ namespace rascal {
      * Method to set an property associated to the atoms like center_atoms_mask
      * to values different from the default one
      */
-    template<typename T>
+    template <typename T>
     inline void set_atom_property(std::string name, ArrayConstRef_t<T> array) {
       if (name == "center_atoms_mask") {
         if (atom_types.size() != array.size()) {

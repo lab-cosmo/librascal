@@ -303,8 +303,8 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorHalfList<ManagerImplementation>::AdaptorHalfList(
       std::shared_ptr<ManagerImplementation> manager)
-      : manager{std::move(manager)}, nb_neigh{}, neighbours_atom_tag{},
-        offsets{} {
+      : manager{std::move(manager)}, nb_neigh{},
+        neighbours_atom_tag{}, offsets{} {
     // this->manager->add_child(this->get_weak_ptr());
   }
 
