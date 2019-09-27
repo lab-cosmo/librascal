@@ -1,6 +1,6 @@
 import json
 
-from .base import CalculatorFactory
+from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
 import numpy as np
 
@@ -66,7 +66,8 @@ class SphericalInvariants(object):
                  gaussian_sigma_constant=0., n_species=1,
                  cutoff_function_type="Cosine",
                  soap_type="PowerSpectrum", inversion_symmetry=True,
-                 radial_basis="GTO", normalize=True):
+                 radial_basis="GTO", normalize=True,
+                 cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -80,17 +81,13 @@ class SphericalInvariants(object):
             soap_type=soap_type, normalize=normalize,
             inversion_symmetry=inversion_symmetry)
 
-        cutoff_function = dict(
-            type=cutoff_function_type,
-            cutoff=dict(
-                value=interaction_cutoff,
-                unit='AA'
-            ),
-            smooth_width=dict(
-                value=cutoff_smooth_width,
-                unit='AA'
-            ),
+        cutoff_function_parameters.update(
+            **dict(interaction_cutoff=interaction_cutoff,
+                    cutoff_smooth_width=cutoff_smooth_width)
         )
+        cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
+                                **cutoff_function_parameters)
+
         gaussian_density = dict(
             type=gaussian_sigma_type,
             gaussian_sigma=dict(
@@ -131,7 +128,8 @@ class SphericalInvariants(object):
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
                         'inversion_symmetry', 'cutoff_function', 'normalize',
-                        'gaussian_density', 'radial_contribution'}
+                        'gaussian_density', 'radial_contribution',
+                        'cutoff_function_parameters'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
