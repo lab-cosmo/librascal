@@ -1,5 +1,5 @@
 /**
- * file   gauss_legendre.hh
+ * @file   gauss_legendre.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  * @author  Max Veit <max.veit@epfl.ch>
@@ -38,9 +38,9 @@ namespace rascal {
     /**
      * Produce the weights and points for the Gauss-Legendre quadrature.
      *
-     * @params r_st starting point of the integral
-     * @params r_nd ending point of the integral
-     * @params order_n number of gauss-legendre quadrature points
+     * @param r_st starting point of the integral
+     * @param r_nd ending point of the integral
+     * @param order_n number of gauss-legendre quadrature points
      *
      * @return point_weight order_n x 2 matrix containing the points (1st
      * column) and the weights (2nd column) of the Gauss-Legendre quadrature.

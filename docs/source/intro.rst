@@ -47,8 +47,8 @@ Michele Ceriotti, Federico Giberti, Alexander Gocsinski, Till Junge, Félix
 Musil, Markus Stricker, Max Veit, and Michael Willatt.
 
 This documentation has been contributed by Chiheb Ben Mahmoud, Michele Ceriotti,
-Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, and is currently
-maintained by Max Veit.
+Federico Giberti, Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil,
+and is currently maintained by Max Veit.
 
 
 Contents

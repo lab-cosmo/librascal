@@ -28,7 +28,7 @@
 #ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
 #define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
 
-/**
+/*
  * Each actual implementation of a StructureManager is based on the given
  * interface
  */
@@ -39,10 +39,10 @@
 #include "rascal_utility.hh"
 #include "json_io.hh"
 
-//! Some data types and operations are based on the Eigen library
+// Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
-//! And standard header inclusion
+// And standard header inclusion
 #include <cstddef>
 #include <array>
 #include <type_traits>

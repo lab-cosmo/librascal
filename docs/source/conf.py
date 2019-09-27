@@ -84,8 +84,12 @@ master_doc = 'intro'
 
 # General information about the project.
 project = 'Rascal'
-copyright = '2018, Felix Musil, Federico Giberti, Till Junge, Michele Ceriotti'
-author = 'Felix Musil, Federico Giberti, Till Junge, Michele Ceriotti'
+copyright = ('2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti, ' +
+             'Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, ' +
+             'Max Veit')
+author = ('Michele Ceriotti, Federico Giberti, Alexander Gocsinski, ' +
+          'Till Junge, Félix Musil, Markus Stricker, Max Veit, and ' +
+          'Michael Willatt')
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

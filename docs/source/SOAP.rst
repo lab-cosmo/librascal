@@ -352,7 +352,7 @@ following shifting formula is useful,
 Discrete Variable Representation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In the special case of the the DVR radial basis [8]_ with Gauss-Legendre
+In the special case of the the DVR radial basis [7]_ with Gauss-Legendre
 quadrature rule, the radial integral simplifies into:
 
 .. math:: \text{I}_{n\ell}^{ij} = \frac{r_c}{2} \sqrt{\omega_n} x_n^2 e^{-ax_n^2} \mathsf{i}_{\ell}\left(2a x_n r_{ij}\right),
