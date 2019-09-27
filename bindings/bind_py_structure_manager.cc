@@ -631,8 +631,9 @@ namespace rascal {
   }
 
   template <typename T>
-  using Array1D_t = Eigen::Array<T, Eigen::Dynamic, 1>;
-
+    using ArrayConstRef_t =
+        const Eigen::Ref<const Eigen::Array<T, Eigen::Dynamic, 1>>;
+        
   /**
    * bind AtomicStructure class and bind a vector of them so that a vector of
    * AtomicStructure can be passed from python to c++ without copy to the
@@ -685,7 +686,7 @@ namespace rascal {
                const py::EigenDRef<const Eigen::VectorXi> & atom_types,
                const py::EigenDRef<const Eigen::MatrixXd> & cell,
                const py::EigenDRef<const Eigen::MatrixXi> & pbc,
-               const py::EigenDRef<const Array1D_t<bool>> & center_atoms_mask) {
+               ArrayConstRef_t<bool> center_atoms_mask) {
               v.emplace_back();
               v.back().set_structure(positions, atom_types, cell, pbc);
               v.back().set_atom_property("center_atoms_mask",
