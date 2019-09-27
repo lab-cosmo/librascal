@@ -631,9 +631,9 @@ namespace rascal {
   }
 
   template <typename T>
-    using ArrayConstRef_t =
-        const Eigen::Ref<const Eigen::Array<T, Eigen::Dynamic, 1>>;
-        
+  using ArrayConstRef_t =
+      const Eigen::Ref<const Eigen::Array<T, Eigen::Dynamic, 1>>;
+
   /**
    * bind AtomicStructure class and bind a vector of them so that a vector of
    * AtomicStructure can be passed from python to c++ without copy to the
@@ -679,22 +679,21 @@ namespace rascal {
              },
              py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
              py::arg("pbc"), py::call_guard<py::gil_scoped_release>())
-        .def(
-            "append",
-            [](AtomicStructureList_t & v,
-               const py::EigenDRef<const Eigen::MatrixXd> & positions,
-               const py::EigenDRef<const Eigen::VectorXi> & atom_types,
-               const py::EigenDRef<const Eigen::MatrixXd> & cell,
-               const py::EigenDRef<const Eigen::MatrixXi> & pbc,
-               ArrayConstRef_t<bool> center_atoms_mask) {
-              v.emplace_back();
-              v.back().set_structure(positions, atom_types, cell, pbc);
-              v.back().set_atom_property("center_atoms_mask",
-                                         center_atoms_mask);
-            },
-            py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
-            py::arg("pbc"), py::arg("center_atoms_mask"),
-            py::call_guard<py::gil_scoped_release>())
+        .def("append",
+             [](AtomicStructureList_t & v,
+                const py::EigenDRef<const Eigen::MatrixXd> & positions,
+                const py::EigenDRef<const Eigen::VectorXi> & atom_types,
+                const py::EigenDRef<const Eigen::MatrixXd> & cell,
+                const py::EigenDRef<const Eigen::MatrixXi> & pbc,
+                ArrayConstRef_t<bool> center_atoms_mask) {
+               v.emplace_back();
+               v.back().set_structure(positions, atom_types, cell, pbc);
+               v.back().set_atom_property("center_atoms_mask",
+                                          center_atoms_mask);
+             },
+             py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
+             py::arg("pbc"), py::arg("center_atoms_mask"),
+             py::call_guard<py::gil_scoped_release>())
         .def("__len__",
              [](const AtomicStructureList_t & v) { return v.size(); })
         .def("__iter__",
