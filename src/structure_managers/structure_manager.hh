@@ -1,5 +1,5 @@
 /**
- * file   structure_manager.hh
+ * @file   structure_manager.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -28,7 +28,7 @@
 #ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
 #define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
 
-/**
+/*
  * Each actual implementation of a StructureManager is based on the given
  * interface
  */
@@ -39,10 +39,10 @@
 #include "rascal_utility.hh"
 #include "json_io.hh"
 
-//! Some data types and operations are based on the Eigen library
+// Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
-//! And standard header inclusion
+// And standard header inclusion
 #include <cstddef>
 #include <array>
 #include <type_traits>
@@ -173,8 +173,7 @@ namespace rascal {
    * to the number of clusters and from `Updateable` to be able to update the
    * structure by using a vector of `Updateables`.
    *
-   * @param ManagerImplementation
-   * class implementation
+   * @tparam ManagerImplementation class implementation
    */
   template <class ManagerImplementation>
   class StructureManager : public StructureManagerBase {
@@ -394,7 +393,7 @@ namespace rascal {
       auto property = get_property(name);
       try {
         UserProperty_t::check_compatibility(*property);
-      } catch (const std::runtime_error & error) {
+      } catch (const std::runtime_error &) {
         return false;
       }
       return true;
@@ -1360,7 +1359,7 @@ namespace rascal {
     ProxyWithGhosts() = delete;
 
     //! Constructor
-    ProxyWithGhosts(ManagerImplementation & manager) : manager{manager} {};
+    ProxyWithGhosts(ManagerImplementation & manager) : manager{manager} {}
 
     //! Copy constructor
     ProxyWithGhosts(const ProxyWithGhosts & other) = delete;
@@ -1411,7 +1410,7 @@ namespace rascal {
     ProxyOnlyGhosts() = delete;
 
     //!
-    ProxyOnlyGhosts(ManagerImplementation & manager) : Parent{manager} {};
+    ProxyOnlyGhosts(ManagerImplementation & manager) : Parent{manager} {}
 
     //! Copy constructor
     ProxyOnlyGhosts(const ProxyOnlyGhosts & other) = delete;

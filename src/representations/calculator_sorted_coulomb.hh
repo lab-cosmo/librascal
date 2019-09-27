@@ -1,5 +1,5 @@
 /**
- * file   calculator_sorted_coulomb.hh
+ * @file   calculator_sorted_coulomb.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -76,15 +76,15 @@ namespace rascal {
     /* -------------------- rep-options-def-end -------------------- */
 
     /* -------------------- rep-options-impl-start -------------------- */
-    /**
-     * Sort the coulomb matrix using the distance to the central atom
-     * as reference order.
-     *
-     * @params distance_mat distance matrix between all the atoms in the
-     *                      neighbourhood
-     */
     template <>
     struct SortCoulomMatrix<CMSortAlgorithm::Distance> {
+      /**
+       * Sort the coulomb matrix using the distance to the central atom
+       * as reference order.
+       *
+       * @param distance_mat distance matrix between all the atoms in the
+       *                      neighbourhood
+       */
       static decltype(auto) get_coulomb_matrix_sorting_order(
           const Eigen::Ref<const Eigen::MatrixXd> & distance_mat,
           const Eigen::Ref<const Eigen::MatrixXd> &) {
@@ -112,15 +112,15 @@ namespace rascal {
       }
     };
 
-    /**
-     * Sort the coulomb matrix using the distance to the central atom
-     * as reference order.
-     *
-     * @params coulomb_mat coulomb matris between all the atoms in the
-     *                      neighbourhood
-     */
     template <>
     struct SortCoulomMatrix<CMSortAlgorithm::RowNorm> {
+      /**
+       * Sort the coulomb matrix using the distance to the central atom
+       * as reference order.
+       *
+       * @param coulomb_mat coulomb matris between all the atoms in the
+       *                      neighbourhood
+       */
       static decltype(auto) get_coulomb_matrix_sorting_order(
           const Eigen::Ref<const Eigen::MatrixXd> &,
           const Eigen::Ref<const Eigen::MatrixXd> & coulomb_mat) {
@@ -278,9 +278,9 @@ namespace rascal {
      * Sort the coulomb matrix using the distance to the central atom
      * as reference order and linearize it.
      *
-     * @params square_coulomb CM to sort
-     * @params linear_coulomb sorted and linearized CM
-     * @params order_coulomb  map to the sorted order order
+     * @param square_coulomb CM to sort
+     * @param linear_coulomb sorted and linearized CM
+     * @param order_coulomb  map to the sorted order order
      */
     template <typename DerivedA, typename DerivedB>
     void sort_and_linearize_coulomb_matrix(

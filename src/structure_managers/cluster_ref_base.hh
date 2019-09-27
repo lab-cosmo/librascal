@@ -1,5 +1,5 @@
 /**
- * file   cluster_ref_base.hh
+ * @file   cluster_ref_base.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -28,6 +28,8 @@
 #ifndef SRC_STRUCTURE_MANAGERS_CLUSTER_REF_BASE_HH_
 #define SRC_STRUCTURE_MANAGERS_CLUSTER_REF_BASE_HH_
 
+#include <cstddef>
+
 namespace rascal {
 
   class ClusterRefBase {
@@ -48,7 +50,7 @@ namespace rascal {
     ClusterRefBase & operator=(const ClusterRefBase & other) = delete;
 
     //! Move assignment operator
-    ClusterRefBase & operator=(ClusterRefBase && other) = default;
+    ClusterRefBase & operator=(ClusterRefBase && other) = delete;
 
     //! returns the order of the cluster
     inline size_t get_order() const { return this->order; }

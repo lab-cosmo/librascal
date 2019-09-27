@@ -1,5 +1,5 @@
 /**
- * file   test_adaptor_strict.cc
+ * @file   test_adaptor_strict.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>

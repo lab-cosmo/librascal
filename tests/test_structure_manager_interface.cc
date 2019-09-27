@@ -1,5 +1,5 @@
 /**
- * file     test_structure_managers_interface.cc
+ * @file     test_structure_managers_interface.cc
  *
  * @author  Michele Ceriotti <michele.ceriotti@epfl.ch>
  *

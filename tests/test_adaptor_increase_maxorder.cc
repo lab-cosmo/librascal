@@ -1,5 +1,5 @@
 /**
- * file   test_adaptor_increase_maxlevel.cc
+ * @file   test_adaptor_increase_maxlevel.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *

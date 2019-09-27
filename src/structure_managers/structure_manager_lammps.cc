@@ -1,5 +1,5 @@
 /**
- * file   structure_manager_lammps.cc
+ * @file   structure_manager_lammps.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -82,15 +82,12 @@ namespace rascal {
     switch (order) {
     case 1: {
       return inum;
-      break;
     }
     case 2: {
       return nb_pairs;
-      break;
     }
     default:
       throw std::runtime_error("Can only handle single atoms and pairs");
-      break;
     }
   }
 }  // namespace rascal

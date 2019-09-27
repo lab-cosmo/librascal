@@ -1,5 +1,5 @@
 /**
- * file   calculator_spherical_expansion.hh
+ * @file   calculator_spherical_expansion.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -96,18 +96,15 @@ namespace rascal {
      * Specification to hold the parameter for the atomic smearing function,
      * currently only Gaussians are supported.
      *
-     * This is `sigma' in the definition `f(r) = A exp(r / (2 sigma^2))'.
+     * This is \f$\sigma\f$ in the definition
+     * \f$f(r) = A \exp{\frac{-r^2}{2 \sigma^2}}\f$.
      * The width may depend both on the atomic species of the neighbour as well
      * as the distance.
      *
      * Note that this function is template-specialized by Gaussian sigma type
      * (constant, per-species, or radially dependent).
      *
-     * @param pair Atom pair defining the neighbour, as e.g. returned by
-     *             iteration over neighbours of a centre
-     *
      * @throw logic_error if the requested sigma type has not been implemented
-     *
      */
     template <AtomicSmearingType SigmaType>
     struct AtomicSmearingSpecification {};
@@ -216,14 +213,24 @@ namespace rascal {
      * Implementation of the radial contribution for Gaussian Type Orbitals
      * radial basis functions and gaussian smearing of the atom density.
      *
-     *          R^{GTO}_{n}(r) = \mathcal{N}_n\ r^{n} \exp[-br^2]
+     * @f[
+     *      R^{GTO}_{n}(r) = \mathcal{N}_n\ r^{n} \exp[-br^2]
+     * @f]
      *
-     * \mathcal{N}_n^2 = \frac{2}{\sigma_n^{2n + 3}\Gamma(n + 3/2)}
-     * \sigma_n = (r_\text{cut}-\delta r_\text{cut})
-     * \max(\sqrt{n},1)/n_\text{max} b=\frac{1}{2\sigma_n} \int_0^\infty
-     * R^{GTO}_{n}(r) R^{GTO}_{n\prime}(r) \dd{r}= 2 \left(\frac{1}{2
-     * \sigma_{n}^2}+\frac{1}{2 \sigma_{n\prime}^2} \right)^{-\frac{1}{2}
-     * (3+n+n\prime)} \Gamma(\frac{3+n+n\prime}{2})
+     * @f{gather*}
+     *      \newcommand{\dd}{\mathrm{d}\,}
+     *      \mathcal{N}_n^2 = \frac{2}{\sigma_n^{2n + 3}\Gamma(n + 3/2)}\\
+     *      \sigma_n = (r_\text{cut}-\delta r_\text{cut})
+     *      \max(\sqrt{n},1)/n_\text{max}\\
+     *      b=\frac{1}{2\sigma_n}\\
+     *      \int_0^\infty R^{GTO}_{n}(r) R^{GTO}_{n^\prime}(r)
+     *      \dd{r}= 2 \left(\frac{1}{2 \sigma_{n}^2}+
+     *      \frac{1}{2 \sigma_{n^\prime}^2} \right)^{-\frac{1}{2}
+     *      (3+n+n^\prime)} \Gamma(\frac{3+n+n^\prime}{2})
+     * @f}
+     *
+     * See [the theory page](../SOAP.html#gto-like-radial-basis) for more
+     * details.
      */
     template <>
     struct RadialContribution<RadialBasisType::GTO> : RadialContributionBase {
@@ -232,15 +239,15 @@ namespace rascal {
         this->set_hyperparameters(hypers);
         this->precompute();
       }
-      //! Destructor
+      // Destructor
       virtual ~RadialContribution() = default;
-      //! Copy constructor
+      // Copy constructor
       RadialContribution(const RadialContribution & other) = delete;
-      //! Move constructor
+      // Move constructor
       RadialContribution(RadialContribution && other) = default;
-      //! Copy assignment operator
+      // Copy assignment operator
       RadialContribution & operator=(const RadialContribution & other) = delete;
-      //! Move assignment operator
+      // Move assignment operator
       RadialContribution & operator=(RadialContribution && other) = default;
 
       using Parent = RadialContributionBase;
@@ -253,7 +260,7 @@ namespace rascal {
 
       /**
        * Set hyperparameters.
-       * @params hypers is expected to be the same as the the input of
+       * @param hypers is expected to be the same as the the input of
        *         the spherical expansion
        */
       void set_hyperparameters(const Hypers_t & hypers) {
@@ -403,19 +410,26 @@ namespace rascal {
        *
        * The derivative is taken with respect to the pair distance,
        * \f$r_{ij}\f$.  In order to get the radial component of the gradient,
-       * remember to multiply by the direction vector \f$\hat{\vec{r}_{ij}}\f$
+       * remember to multiply by the direction vector
+       * \f$
+       *    \renewcommand{\vec}[1]{\mathbf{#1}}
+       *    \hat{\vec{r}_{ij}}
+       * \f$
        * (and not the vector itself), since
        * \f[
+       *    \let\grad\nabla
        *    \grad_{\vec{r}_i} f(r_{ij}) =
-       *                    \frac{d f}{d r_{ij}} \frac{- \vec{r}_{ij}}{r_{ij}}
-       *                  = \frac{d f}{d r_{ij}} -\hat{\vec{r}_{ij}}
-       * \f])
-       * so multiply by _negative_ \f$\hat{\vec{r}}_ij\f$ to get the radial
+       *                    \frac{\dd f}{\dd r_{ij}}
+       *                    \frac{- \vec{r}_{ij}}{r_{ij}}
+       *                  = \frac{\dd f}{\dd r_{ij}} -\hat{\vec{r}_{ij}}.
+       * \f]
+       *
+       * so multiply by _negative_ \f$\hat{\vec{r}}_{ij}\f$ to get the radial
        * component of the gradient wrt motion of the central atom
        * (\f$\frac{d}{d\vec{r}_i}\f$).
        *
        * And finally, there is no compute_center_derivative() because that's
-       * just zero -- the centre contribution doesn't vary w.r.t. motion of
+       * just zero -- the center contribution doesn't vary w.r.t. motion of
        * the central atom
        */
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
@@ -567,6 +581,10 @@ namespace rascal {
 
     /**
      * Implementation of the radial contribution for DVR basis
+     *
+     * See the
+     * [theory page](../SOAP.html#numerical-integration-of-the-radial-integral)
+     * for more details.
      */
     template <>
     struct RadialContribution<RadialBasisType::DVR> : RadialContributionBase {
@@ -595,7 +613,8 @@ namespace rascal {
 
       /**
        * Set hyperparameters.
-       * @params hypers is expected to be the same as the the input of
+       *
+       * @param hypers is expected to be the same as the the input of
        *         the spherical expansion
        */
       void set_hyperparameters(const Hypers_t & hypers) {
@@ -770,8 +789,8 @@ namespace rascal {
    * The local environment of each atom is represented by Gaussians of a
    * certain width (user-defined; can be constant, species-dependent, or
    * radially dependent).  This density field is expanded in an angular basis
-   * of spherical harmonics (à la SphericalInvariants) and a radial basis of
-   * either Gaussians (again, as in SphericalInvariants) or one of the more
+   * of spherical harmonics (à la SOAP) and a radial basis of
+   * either Gaussians (again, as in SOAP/SphericalInvariants) or one of the more
    * recent bases currently under development.
    */
   class CalculatorSphericalExpansion : public CalculatorBase {
@@ -802,10 +821,12 @@ namespace rascal {
     using Vector_Ref = math::Vector_Ref;
 
     /**
-     * Set the hyperparameters of this descriptor from a json object.
+     * Set the hyperparameters of this descriptor from a json-like container.
      *
      * @param hypers structure (usually parsed from json) containing the
      *               options and hyperparameters
+     *
+     * @todo (max, felix) document the SOAP/SphExpn-specific hypers here
      *
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the structure
@@ -880,8 +901,13 @@ namespace rascal {
     /**
      * Construct a new Calculator using a hyperparameters container
      *
-     * @param hypers container (usually parsed from json) for the options and
-     *               hyperparameters
+     * See set_hyperparameters() for a description of the hypers
+     *
+     * @todo (max) ffs, why isn't the link above working in Sphinx?
+     *             And why aren't the todos showing?!
+     *
+     * @param hyper container (usually parsed from json) for the options and
+     *              hyperparameters
      *
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container
@@ -926,7 +952,7 @@ namespace rascal {
 
     /**
      * loop over a collection of manangers if it is an iterator.
-     * Or just call compute_impl if it's a single manager (see below)
+     * Or just call compute_impl() if it's a single manager (see below)
      */
     template <
         internal::CutoffFunctionType FcType,
@@ -1048,8 +1074,6 @@ namespace rascal {
 
   /**
    * Compute the spherical expansion
-   * TODO(felix,max) use the parity of the spherical harmonics to use half
-   * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
    */
   template <internal::CutoffFunctionType FcType,
             internal::RadialBasisType RadialType,
@@ -1096,6 +1120,9 @@ namespace rascal {
       expansions_coefficients_gradient.resize();
     }
 
+    /* @TODO(felix,max) use the parity of the spherical harmonics to use half
+     * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
+     */
     for (auto center : manager) {
       auto & coefficients_center = expansions_coefficients[center];
       auto & coefficients_center_gradient =

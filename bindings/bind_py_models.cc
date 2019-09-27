@@ -29,7 +29,8 @@
 
 namespace rascal {
 
-  decltype(auto) add_kernel(py::module & mod, py::module & /*m_internal*/) {
+  static decltype(auto) add_kernel(py::module & mod,
+                                   py::module & /*m_internal*/) {
     py::class_<Kernel> kernel(mod, "Kernel");
     // use custom constructor to pass json formated string as initializer
     // an alternative would be to convert python dict to json internally
@@ -54,10 +55,10 @@ namespace rascal {
   /**
    * Function to bind the representation managers to python
    *
-   * @params mod pybind11 representation of the python module the represenation
+   * @param mod pybind11 representation of the python module the represenation
    *             managers will be included to
-   * @params m_internal pybind11 representation of the python module that are
-   *                  needed but not useful to use on the python side
+   * @param m_internal pybind11 representation of the python module that are
+   *                   needed but not useful to use on the python side
    *
    */
   void add_kernels(py::module & mod, py::module & m_internal) {
