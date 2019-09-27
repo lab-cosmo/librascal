@@ -462,7 +462,7 @@ jobs:
                                 name: installing python packages
                                 command: |
                                         python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx jupyter_client cpplint
+                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme nbsphinx jupyter cpplint
                         - run:
                                 command: |
                                         rm -rf build
