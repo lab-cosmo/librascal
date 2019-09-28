@@ -82,8 +82,8 @@ class SphericalInvariants(object):
             inversion_symmetry=inversion_symmetry)
 
         cutoff_function_parameters.update(
-            **dict(interaction_cutoff=interaction_cutoff,
-                    cutoff_smooth_width=cutoff_smooth_width)
+            interaction_cutoff=interaction_cutoff,
+            cutoff_smooth_width=cutoff_smooth_width
         )
         cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
                                 **cutoff_function_parameters)
