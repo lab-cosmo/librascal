@@ -128,6 +128,9 @@ namespace rascal {
      * m -> exponent
      *
      * with the cosine switching function.
+     *
+     * Typically c == 1, r_0 > 0 and m is a positive integer.
+     * 
      */
     template <>
     struct CutoffFunction<internal::CutoffFunctionType::RadialScaling>
