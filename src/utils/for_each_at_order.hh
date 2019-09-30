@@ -1,5 +1,5 @@
 /**
- * file   for_each_at_order.hh
+ * @file   for_each_at_order.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -28,6 +28,9 @@
 
 #ifndef SRC_UTILS_FOR_EACH_AT_ORDER_HH_
 #define SRC_UTILS_FOR_EACH_AT_ORDER_HH_
+
+#include <cstddef>
+#include <utility>
 
 namespace rascal {
 
@@ -61,9 +64,9 @@ namespace rascal {
       struct ForEachAtOrderHelper<Order, Order, Cluster, Function, Args...> {
         static void loop(Cluster & cluster, Function && function,
                          Args &&... args) {
-          function(cluster, forward<Args>(args)...);
+          function(cluster, std::forward<Args>(args)...);
         }
-      }
+      };
 
     }  // namespace detail
 

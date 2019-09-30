@@ -1,5 +1,5 @@
 /**
- * file   bessel.hh
+ * @file   bessel.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  * @author  Max Veit <max.veit@epfl.ch>

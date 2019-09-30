@@ -1,5 +1,5 @@
 /**
- * file   structure_manager_collection.hh
+ * @file   structure_manager_collection.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *

@@ -1,5 +1,5 @@
 /**
- * \file  src/structure_managers/structure_manager_centers.hh
+ * @file  src/structure_managers/structure_manager_centers.hh
  *
  * @ingroup group_structure_manager
  *
@@ -161,7 +161,7 @@ namespace rascal {
     StructureManagerCenters(const StructureManagerCenters & other) = delete;
 
     //! Move constructor
-    StructureManagerCenters(StructureManagerCenters && other) = default;
+    StructureManagerCenters(StructureManagerCenters && other) = delete;
 
     //! Destructor
     virtual ~StructureManagerCenters() = default;
@@ -172,7 +172,7 @@ namespace rascal {
 
     //! Move assignment operator
     StructureManagerCenters &
-    operator=(StructureManagerCenters && other) = default;
+    operator=(StructureManagerCenters && other) = delete;
 
     //! Updates the manager using the impl
     template <class... Args>

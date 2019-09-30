@@ -1,5 +1,5 @@
 /**
- * file   sparsify_utilities.hh
+ * @file   sparsify_utilities.hh
  *
  * @author  Michele Ceriotti <michele.ceriotti@gmail.com>
  *
@@ -38,6 +38,14 @@ namespace rascal {
 
     using RowMatrixXd =
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
+    using FPSReturnTuple =
+        std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXd>;
+
+    using FPSReturnTupleConst =
+        std::tuple<const Eigen::ArrayXi, const Eigen::ArrayXd,
+                   const Eigen::ArrayXd>;
+
     /**
      * Farthest Point Sampling selection of points given the feature matrix
      *
@@ -57,14 +65,6 @@ namespace rascal {
      *        each stage, and a list of the Hausdorff distances between all the
      *        inputs and the selected set
      */
-
-    using FPSReturnTuple =
-        std::tuple<Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXd>;
-
-    using FPSReturnTupleConst =
-        std::tuple<const Eigen::ArrayXi, const Eigen::ArrayXd,
-                   const Eigen::ArrayXd>;
-
     FPSReturnTuple
     select_fps(const Eigen::Ref<const RowMatrixXd> & feature_matrix,
                int n_sparse = 0, int i_first_point = 0,

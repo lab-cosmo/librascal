@@ -1,5 +1,5 @@
 /**
- * file   structure_manager_centers.cc
+ * @file   structure_manager_centers.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>

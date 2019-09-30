@@ -1,5 +1,5 @@
 /**
- * file   calculator_spherical_covariants.hh
+ * @file   calculator_spherical_covariants.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>

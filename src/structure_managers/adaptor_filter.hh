@@ -1,5 +1,5 @@
 /**
- * file   adaptor_filter.hh
+ * @file   adaptor_filter.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>

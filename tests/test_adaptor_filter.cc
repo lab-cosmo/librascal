@@ -1,5 +1,5 @@
 /**
- * file   test_adaptor_filter.cc
+ * @file   test_adaptor_filter.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *

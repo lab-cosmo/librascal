@@ -1,5 +1,5 @@
 /**
- * file   hyp1f1.hh
+ * @file   hyp1f1.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
@@ -32,6 +32,7 @@
 #include "math/math_utils.hh"
 
 #include <map>
+#include <vector>
 
 namespace rascal {
   namespace math {
@@ -78,10 +79,14 @@ namespace rascal {
 
     /**
      * Computes the 1F1 with the direct sum
-     *  1F1(a,b,z) = \sum_{j=0}^{\infty} \frac{(a)_j}{(b)_jj!} z^{j}
+     *  @f[
+     *      1F1(a,b,z) = \sum_{j=0}^{\infty} \frac{(a)_j}{(b)_jj!} z^{j}
+     *  @f]
      *
-     *  G(a,b,z) = \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}
+     *  @f[
+     *      G(a,b,z) = \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}
      *                    * 1F1(a,b,z)
+     *  @f]
      */
     class Hyp1f1Series {
      protected:
@@ -125,8 +130,8 @@ namespace rascal {
        * @param z2 -> argument of exp(-alpha*r_ij^2)
        * @param ez2 -> exp(-alpha*r_ij^2)
        *
-       *  !Warning! the derivative outputed from this function is not dG/dz
-       * but d1F1/dz * \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}.
+       * @warning the derivative outputed from this function is not dG/dz
+       * but @f$ d1F1/dz * \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2} @f$.
        * We do this to avoid computing both d1F1/dz and 1F1 when asking for
        * gradients and perform this step in Hyp1f1SphericalExpansion.
        */
@@ -221,11 +226,15 @@ namespace rascal {
 
     /**
      * Computes the 1F1 with the asymptotic limit
-     *  1F1(a,b,z) \sim \exp{z} z^{a-b} \frac{\Gamma{b}}{\Gamma{a}}
+     * @f[
+     *      1F1(a,b,z) \sim \exp{z} z^{a-b} \frac{\Gamma{b}}{\Gamma{a}}
      *                    \sum_{j=0}^{\infty} \frac{(b-a)_j(1-a)_j}{j!} z^{-j}
+     * @f]
      *
+     * @f[
      *  G(a,b,z) = \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}
      *                    * 1F1(a,b,z)
+     * @f]
      */
     class Hyp1f1Asymptotic {
      private:
@@ -282,12 +291,11 @@ namespace rascal {
 
       /**
        * Computes G(a,b,z)
-       * @param z -> pow(alpha * r_ij, 2) / (alpha + beta)
-       * @param z2 -> argument of exp(-alpha*r_ij^2)
-       * @param ez2 -> exp(-alpha*r_ij^2)
+       * @param z -> @f$ pow(alpha * r_ij, 2) / (alpha + beta) @f$
+       * @param z2 -> argument of @f$ exp(-alpha*r_ij^2) @f$
        *
-       *  !Warning! the derivative outputed from this function is not dG/dz
-       * but d1F1/dz * \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}.
+       * @warning the derivative outputed from this function is not dG/dz
+       * but @f$ d1F1/dz * \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2} @f$.
        * We do this to avoid computing both d1F1/dz and 1F1 when asking for
        * gradients and perform this step in Hyp1f1SphericalExpansion.
        */
@@ -379,11 +387,12 @@ namespace rascal {
     };
 
     /**
-     * Computes the 1F1(a,b,z) for a given a and b and variable argument.
+     * Computes the confluent hypergeometric function \f${}_1F_1(a,b,z)\f$ for
+     * a given a and b and variable argument.
      *
-     * The class to bundles the 2 definitions of the 1F1 (see above) and
-     * implements a switch rational (with bisection) to go between the 2
-     * at construction.
+     * The class to bundles the two definitions of the 1F1 (Hyp1f1Asymptotic
+     * and Hyp1f1Series) and implements a switch rational (with bisection) to
+     * go between the two at construction.
      * It works because we probe test at construction the domain of
      * applicability of the two definitions.
      */
@@ -479,7 +488,7 @@ namespace rascal {
 
       double get_z_switch() { return this->z_asympt; }
 
-      //! Compute 1F1(a,b,z)
+      //! Compute @f${}_1F_1(a,b,z)@f$
       inline double calc(const double & z, const bool & derivative = false) {
         if (z > this->z_asympt) {
           return this->hyp1f1_asymptotic.calc(z, derivative);
@@ -505,14 +514,16 @@ namespace rascal {
 
       /**
        * Computes G(a,b,z)
-       * @param z -> pow(alpha * r_ij, 2) / (alpha + beta)
-       * @param z2 -> argument of exp(-alpha*r_ij^2)
-       * @param ez2 -> exp(-alpha*r_ij^2)
+       * @param z -> @f$ pow(alpha * r_ij, 2) / (alpha + beta) @f$
+       * @param z2 -> argument of @f$ exp(-alpha*r_ij^2) @f$
+       * @param ez2 -> @f$ exp(-alpha*r_ij^2) @f$
        *
-       *  !Warning! the derivative outputed from this function is not dG/dz
-       * but d1F1/dz * \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}.
-       * We do this to avoid computing both d1F1/dz and 1F1 when asking for
-       * gradients and perform this step in Hyp1f1SphericalExpansion.
+       * @warning the derivative outputed from this function is not @f$dG/dz@f$
+       * but @f$ \frac{\mathrm{d}\,{}_1F_1}{\mathrm{d}\,z} *
+       * \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2} @f$.
+       * We do this to avoid computing both @f$d{}_1F_1/dz@f$ and @f${}_1F_1@f$
+       * when asking for gradients and perform this step in
+       * Hyp1f1SphericalExpansion.
        */
       inline double calc(const double & z, const double & z2,
                          const double & ez2, const bool & derivative = false) {
@@ -526,17 +537,20 @@ namespace rascal {
 
     /**
      * Computes 1F1 and its derivative with respect to z for a range of a and b
-     * for l < l_max + 1 and n < n_max where:
-     * a = 0.5 * (n + l + 3)
-     * b = l + 1.5
+     * for @f$l < l_\mathrm{max} + 1@f$ and @f$n < n_\mathrm{max}@f$ where:
+     * @f$ a = 0.5 * (n + l + 3) @f$
+     * @f$ b = l + 1.5 @f$
      *
      * For efficiency the function computed is:
+     * @f[
      *   G(a,b,z) = \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2}
      *                     1F1(a,b,z)
+     * @f]
      *
      * It can use the recurence relationships of the 1F1 to speed things up.
      *
-     * This class is tailored to work with the GTO basis in SphericalExpansion.
+     * This class is tailored to work with the GTO basis in
+     * CalculatorSphericalExpansion.
      */
     class Hyp1f1SphericalExpansion {
      protected:

@@ -1,5 +1,5 @@
 /**
- * file   adaptor_increase_maxorder.hh
+ * @file   adaptor_increase_maxorder.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *

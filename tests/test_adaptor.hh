@@ -1,5 +1,5 @@
 /**
- * file test_adaptor.hh
+ * @file test_adaptor.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>

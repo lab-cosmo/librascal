@@ -1,5 +1,5 @@
 /**
- * file   property_block_sparse.hh
+ * @file   property_block_sparse.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -522,7 +522,7 @@ namespace rascal {
     /* --------------------------------------------------------------------- */
 
     //! return info about the type
-    const std::string & get_type_info() const final { return this->type_id; };
+    const std::string & get_type_info() const final { return this->type_id; }
 
     /**
      * the case consider_ghost_atoms == true is limited to cluster_index
@@ -654,7 +654,7 @@ namespace rascal {
      * missing entries are filled with zeros.
      * The features are flattened out following the underlying storage order.
      *
-     * @params features dense Eigen matrix of the proper size
+     * @param features dense Eigen matrix of the proper size
      *
      * @param all_keys set of all the keys that should be considered when
      * building the feature matrix

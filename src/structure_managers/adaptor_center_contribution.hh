@@ -1,5 +1,5 @@
 /**
- * file   adaptor_center_contribution.hh
+ * @file   adaptor_center_contribution.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>

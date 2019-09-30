@@ -1,5 +1,5 @@
 /**
- * file   calculator_spherical_invariants.hh
+ * @file   calculator_spherical_invariants.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -346,7 +346,7 @@ namespace rascal {
       this->compute_impl<BodyOrder>(manager);
     }
 
-    //! compute representation \nu == 1
+    //! compute representation @f$ \nu == 1 @f$
     template <
         internal::SphericalInvariantsType BodyOrder,
         std::enable_if_t<BodyOrder ==
@@ -355,7 +355,7 @@ namespace rascal {
         class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
-    //! compute representation \nu == 2
+    //! compute representation @f$ \nu == 2 @f$
     template <internal::SphericalInvariantsType BodyOrder,
               std::enable_if_t<
                   BodyOrder == internal::SphericalInvariantsType::PowerSpectrum,
@@ -363,7 +363,7 @@ namespace rascal {
               class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
-    //! compute representation \nu == 3
+    //! compute representation @f$ \nu == 3 @f$
     template <internal::SphericalInvariantsType BodyOrder,
               std::enable_if_t<
                   BodyOrder == internal::SphericalInvariantsType::BiSpectrum,

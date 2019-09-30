@@ -12,7 +12,7 @@ Pair distances
 **************
 
 SphericalInvariants
-****
+*******************
 
 Behler-Parinello symmetry functions
 ***********************************

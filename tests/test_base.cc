@@ -1,5 +1,5 @@
 /**
- * file   test_base.cc
+ * @file   test_base.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
