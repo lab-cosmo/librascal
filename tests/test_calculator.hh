@@ -124,7 +124,7 @@ namespace rascal {
     std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 
@@ -187,7 +187,7 @@ namespace rascal {
     std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -262,10 +262,10 @@ namespace rascal {
     std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "Cosine"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}},
         {{"type", "RadialScaling"},
@@ -363,10 +363,10 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "Cosine"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -456,7 +456,7 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}},
          {"type", "RadialScaling"},
@@ -499,7 +499,7 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
