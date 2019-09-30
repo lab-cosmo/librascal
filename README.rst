@@ -12,13 +12,13 @@ collection of tools to this end.
 
 librascal is currently considered a standalone code. However, we aim to
 provide enough flexibility to interface it with other codes such as
-LAMMPS and PLUMED-2.0.  It can be used as a C++ library as well as a
-python module.  To be able to call it from python, we have used the
+LAMMPS and PLUMED-2.0. It can be used as a C++ library as well as a
+python module. To be able to call it from python, we have used the
 pybind11 library.
 
 Although at the moment is a serial-only code, we aim to write it in MPI
 so that it will be possible to take advantage of parallelization to
-speed up the calculations significantly.  Parallelization is possible especially
+speed up the calculations significantly. Parallelization is possible especially
 over atoms in a structure (for large structures), over structures in a
 collection (for large collections of small structures), or over components of a
 representation (for representations with a large number of independent functions
@@ -104,31 +104,12 @@ And the following libraries to build the documentation:
 Beware, Python3 is mandatory. The code won’t work with a Python version
 older than 3.
 
-Using the package manager of your choice this yaml script should install all
-required python packages required for the usage and development of rascal.
+You can then use pip to install all python packages required for the usage
+and development of rascal:
 
-.. code:: yaml
+.. code:: bash
 
-    name: librascal-dev-env
-    dependencies:
-      - python=3.6 
-      - pip:
-        - numpy
-        - matplotlib
-        - scipy
-        - mpmath
-        - ase
-        - ubjson
-        - cpplint
-        - sphinx=2.1.2
-        - sphinx_rtd_theme
-        - breathe=4.13.1
-        - nbsphinx
-        - jupyter
-        - qml
-        - autopep8
-        - pytest
-        - tqdm
+    pip install -r requirements.txt
 
 To configure and compile the code with the default options, on \*nix
 systems (Windows is not supported):
@@ -210,7 +191,7 @@ helpful to customize the build options.
      cmake -DENABLE_DOC=ON ..
      make doc
 
-   and open :file:`build/docs/html/intro.html` in a browser.  The
+   and open :file:`build/docs/html/intro.html` in a browser. The
    Doxygen html build is still available under
    :file:`build/docs/dox_html/index.html` but it is being phased out in favour
    of Sphinx/breathe.
