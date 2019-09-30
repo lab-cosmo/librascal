@@ -39,8 +39,12 @@
 #include "structure_managers/property.hh"
 #include "structure_managers/structure_manager.hh"
 
+#include<Eigen/StdVector>
+
 #include <set>
 #include <vector>
+#include <cmath>
+
 
 namespace rascal {
   /**
@@ -417,6 +421,10 @@ namespace rascal {
 
      private:
     };
+
+
+
+
   }  // namespace internal
 
   /* ---------------------------------------------------------------------- */
@@ -733,6 +741,9 @@ namespace rascal {
     //! full neighbour list with linked cell algorithm
     void make_full_neighbour_list();
 
+    //! full neighbour list with linked cell algorithm
+    void make_full_neighbour_list_new();
+
     /* ---------------------------------------------------------------------- */
     //! pointer to underlying structure manager
     ImplementationPtr_t manager;
@@ -850,6 +861,11 @@ namespace rascal {
   }
   /* ---------------------------------------------------------------------- */
   /**
+   * List of implemented Linked cell algorithm
+   */
+  enum class LinkedCellVersion {First, Robust, End_};
+
+  /**
    * build a neighbour list based on atomic positions, types and indices, in the
    * following the needed data structures are initialized, after construction,
    * this function must be called to invoke the neighbour list algorithm
@@ -876,7 +892,7 @@ namespace rascal {
       this->ghost_types.clear();
       this->atom_index_from_atom_tag_list.clear();
       // actual call for building the neighbour list
-      this->make_full_neighbour_list();
+      this->make_full_neighbour_list_new();
       this->set_offsets();
 
       // layering is started from the scratch, therefore all clusters and
@@ -889,6 +905,250 @@ namespace rascal {
       ++this->n_update;
     }
   }
+
+  namespace internal {
+
+    template<class ManagerPtr, int Dim>
+    struct GrowReplicasRecursively {
+      using Cell_t = typename AtomicStructure<Dim>::Cell_t;
+      using Vector_t = Eigen::Matrix<double, Dim, 1>;
+      using VectorI_t = Eigen::Matrix<int, Dim, 1>;
+      using VectorIMap_t = Eigen::Map<VectorI_t>;
+      using VectorList_t = std::vector<Vector_t,Eigen::aligned_allocator<Vector_t> >;
+      template<class Pbc>
+      GrowReplicasRecursively(ManagerPtr manager, const Pbc& pbc, const Cell_t& cell, const  Vector_t& mesh_min, const Vector_t& mesh_max)
+        : manager{manager}, cell{cell}, mesh_min{mesh_min},
+          mesh_max{mesh_max} {
+        // select the iteration directions depending on the pbc
+        std::vector<std::vector<int>> iteration_bounds{};
+        for (int i_dim{0}; i_dim < Dim; i_dim++) {
+          if (pbc[i_dim]) {
+            iteration_bounds.push_back({-1, 0 , 1});
+          } else {
+            iteration_bounds.push_back({0});
+          }
+        }
+        this->directions = internal::cartesian_product(iteration_bounds);
+        // initialize the list of cell coordinates with the (0,0,0) element
+        this->pcells.emplace(internal::make_array<Dim>(0));
+
+        
+      }
+
+      VectorList_t make_images() {
+        auto cell_shift_start{internal::make_array<Dim>(0)};
+        this->grow_and_check_recursive(cell_shift_start);
+        return this->images;
+      }
+
+      void grow_and_check_recursive(const std::array<int, Dim>& cell_shift) {
+        // loop over all possible shift directions
+        for (const auto& direction : this->directions) {
+          std::array<int, Dim> new_cell_shift{cell_shift};
+          for (int i_dim{0}; i_dim < Dim; i_dim++) {
+            new_cell_shift[i_dim] += direction[i_dim];
+          }
+          // if the shift is already registered continue
+          if (this->pcells.count(new_cell_shift)) {
+            continue;
+          }
+
+          VectorIMap_t new_cell_shift_map = VectorIMap_t(new_cell_shift.data(), Dim);
+          Vector_t offset{(this->cell * new_cell_shift_map.template cast<double>())};
+          bool found_any{false};
+          for (auto center : this->manager) {
+            Vector_t shifted_position{center.get_position()+offset};
+            if ((shifted_position.array() >= this->mesh_min.array()).all()
+                 and (shifted_position.array() <= this->mesh_max.array()).all()) {
+              this->images.emplace_back(shifted_position);
+              found_any = true;
+            }
+          }
+          this->pcells.emplace(new_cell_shift);
+          if (found_any) {
+            this->grow_and_check_recursive(new_cell_shift);
+          }
+        }
+      }
+
+      ManagerPtr manager;
+      Cell_t cell;
+      Vector_t mesh_min;
+      Vector_t mesh_max;
+      std::set<std::array<int, Dim>> pcells{};
+      std::vector<std::vector<int>> directions{};
+      VectorList_t images{};
+    };
+  }
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Builds full neighbour list. Triclinicity is accounted for. The general idea
+   * is to anchor a mesh at the origin of the supplied cell (assuming it is at
+   * the origin). Then the mesh is extended into space until it is as big as the
+   * maximum cell coordinate plus one cutoff in each direction. This mesh has
+   * boxes of size ``cutoff``. Depending on the periodicity of the mesh, ghost
+   * atoms are added by shifting all i-atoms by the cell vectors corresponding
+   * to the desired periodicity. All i-atoms and the ghost atoms are then sorted
+   * into the respective boxes of the cartesian mesh and a stencil anchored at
+   * the box of the i-atoms is used to build the atom neighbourhoods from the 9
+   * (2d) or 27 (3d) boxes, which is checked for the neighbourhood. Correct
+   * periodicity is ensured by the placement of the ghost atoms. The resulting
+   * neighbourlist is full and not strict.
+   */
+  template <class ManagerImplementation>
+  void AdaptorNeighbourList<ManagerImplementation>::make_full_neighbour_list_new() {
+    // short hands for variable
+    constexpr auto dim{traits::Dim};
+
+    using Vector_t = Eigen::Matrix<double, dim, 1>;
+    // using VectorMap_t = Eigen::Map<Vector_t>;
+
+
+
+    auto&& cell{this->manager->get_cell()};
+    auto&& positions{this->manager->get_positions()};
+    auto&& pbc{this->manager->get_periodic_boundary_conditions()};
+    double cutoff{this->cutoff};
+
+    std::array<int, dim> nboxes_per_dim{};
+
+
+    // bounding box, including a cutoff-sized skin. this is the range we need to cover
+    // with periodic copies of the cell to find neighbors for all atoms
+    Vector_t mesh_min{(positions.array().rowwise().minCoeff()-cutoff).matrix()};
+    Vector_t mesh_max{(positions.array().rowwise().maxCoeff()+cutoff).matrix()};
+    // find the number of boxes in each direction to fill the bounding box
+    // for the linked cell
+    for (int i_dim{0}; i_dim < dim; i_dim++) {
+      nboxes_per_dim[i_dim] = static_cast<int>(
+                std::ceil((mesh_max[i_dim]-mesh_min[i_dim])/cutoff));
+    }
+
+    // build the images iterativelly by growing the replication
+    // of the cell from (0,0,0)
+    internal::GrowReplicasRecursively<ImplementationPtr_t, dim> replica_generator{this->manager, pbc, cell, mesh_min, mesh_max};
+
+    auto&& images = replica_generator.make_images();
+
+    std::cout << images.size() << ", "
+              << replica_generator.pcells.size() << std::endl;
+    for (auto& shift : replica_generator.pcells) {
+      std::cout << "\t" << shift[0]  << ",\t" << shift[1]  << ",\t" << shift[2]
+                << std::endl;
+    }
+    // // Get the mesh bounds to solve for the multiplicators
+    // int n{0};
+    // for (auto && coord : internal::MeshBounds<dim>{mesh_bounds}) {
+    //   xpos.col(n) = Eigen::Map<Eigen::Matrix<double, dim, 1>>(coord.data());
+    //   n++;
+    // }
+
+    // // solve inverse problem for all multipliers
+    // auto cell_inv{cell.inverse().eval()};
+    // auto multiplicator{cell_inv * xpos.eval()};
+    // auto xmin = multiplicator.rowwise().minCoeff().eval();
+    // auto xmax = multiplicator.rowwise().maxCoeff().eval();
+
+    // // find max and min multipliers for cell vectors
+    // for (auto i{0}; i < dim; ++i) {
+    //   m_min[i] = std::floor(xmin(i));
+    //   m_max[i] = std::ceil(xmax(i));
+    // }
+
+    // std::array<int, dim> periodic_max{};
+    // std::array<int, dim> periodic_min{};
+    // std::array<int, dim> repetitions{};
+    // auto periodicity = this->manager->get_periodic_boundary_conditions();
+    // size_t ntot{1};
+
+    // // calculate number of actual repetitions of cell, depending on periodicity
+    // for (auto i{0}; i < dim; ++i) {
+    //   if (periodicity[i]) {
+    //     periodic_max[i] = m_max[i];
+    //     periodic_min[i] = m_min[i];
+    //   } else {
+    //     periodic_max[i] = 0;
+    //     periodic_min[i] = 0;
+    //   }
+    //   auto nrep_in_dim = -periodic_min[i] + periodic_max[i] + 1;
+    //   repetitions[i] = nrep_in_dim;
+    //   ntot *= nrep_in_dim;
+    // }
+
+    // // before generating ghost atoms, all existing atoms are added to the list
+    // // of current atoms to start the full list of current i-atoms and ghosts
+    // // This is done before the ghost atom generation, to have them all
+    // // contiguously at the beginning of the list.
+    // for (size_t atom_tag{0}; atom_tag < this->n_atoms; ++atom_tag) {
+    //   auto atom_type = this->manager->get_atom_type(atom_tag);
+    //   auto cluster_index = this->manager->get_atom_index(atom_tag);
+    //   if (atom_tag < this->n_centers) {
+    //     this->atom_tag_list.push_back(atom_tag);
+    //   }
+    //   this->atom_types.push_back(atom_type);
+    //   this->atom_index_from_atom_tag_list.push_back(cluster_index);
+    // }
+
+    // // generate ghost atom tags and positions
+    // for (size_t atom_tag{0}; atom_tag < this->n_atoms; ++atom_tag) {
+    //   auto pos = this->manager->get_position(atom_tag);
+    //   auto atom_type = this->manager->get_atom_type(atom_tag);
+
+    //   for (auto && p_image :
+    //        internal::PeriodicImages<dim>{periodic_min, repetitions, ntot}) {
+    //     // exclude the original unit cell
+    //     if (not(p_image.array() == 0).all()) {
+    //       Vector_t pos_ghost{pos + cell * p_image.template cast<double>()};
+    //       auto flag_inside =
+    //           internal::position_in_bounds(ghost_min, ghost_max, pos_ghost);
+
+    //       if (flag_inside) {
+    //         // next atom tag is size, since start is at index = 0
+    //         auto new_atom_tag{this->n_atoms + this->n_ghosts};
+    //         this->add_ghost_atom(new_atom_tag, pos_ghost, atom_type);
+    //         // adds origin atom cluster_index if true
+    //         // adds ghost atom cluster index if false
+    //         size_t cluster_index = this->manager->get_atom_index(atom_tag);
+    //         this->atom_index_from_atom_tag_list.push_back(cluster_index);
+    //       }
+    //     }
+    //   }
+    // }
+
+    // // neighbour boxes
+    // internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
+
+    // // sorting the atoms and ghosts inside the cell into boxes
+    // auto n_potential_neighbours{this->n_atoms + this->n_ghosts};
+    // for (size_t atom_tag{0}; atom_tag < n_potential_neighbours; ++atom_tag) {
+    //   auto pos = this->get_position(atom_tag);
+    //   Vector_t dpos = pos - mesh_min;
+    //   auto idx = internal::get_box_index(dpos, cutoff);
+    //   atom_id_cell[idx].push_back(atom_tag);
+    // }
+
+    // // go through all atoms and/or ghosts to build neighbour list, depending on
+    // // the runtime decision flag
+    // std::vector<int> current_j_atoms{};
+    // for (auto center : this->get_manager().with_ghosts()) {
+    //   int atom_tag = center.get_atom_tag();
+    //   int nneigh{0};
+
+    //   Vector_t pos = center.get_position();
+    //   Vector_t dpos = pos - mesh_min;
+    //   auto box_index = internal::get_box_index(dpos, cutoff);
+    //   internal::fill_neighbours_atom_tag(atom_tag, box_index, atom_id_cell,
+    //                                      current_j_atoms);
+
+    //   nneigh += current_j_atoms.size();
+    //   for (auto & j_atom_tag : current_j_atoms) {
+    //     this->neighbours_atom_tag.push_back(j_atom_tag);
+    //   }
+
+    //   this->nb_neigh.push_back(nneigh);
+    // }
+  }
+
 
   /* ---------------------------------------------------------------------- */
   /**

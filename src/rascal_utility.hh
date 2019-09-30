@@ -39,12 +39,57 @@
 #include <string>
 #include <regex>  // NOLINT
 #include <tuple>
+#include <array>
 #include <map>
 #include <fstream>
 #include <type_traits>
 
 namespace rascal {
   namespace internal {
+
+
+    namespace detail
+    {
+      template <typename T, std::size_t...Is>
+      std::array<T, sizeof...(Is)> make_array(const T& value, std::index_sequence<Is...>)  {
+        return {{(static_cast<void>(Is), value)...}};
+      }
+    }
+
+    template <std::size_t N, typename T>
+    std::array<T, N> make_array(const T& value) {
+      return detail::make_array(value, std::make_index_sequence<N>());
+    }
+
+    /**
+     * Implementation of the cartesian product
+     *
+     * @return the cartesian product of the elements in lists
+     */
+    template<typename T>
+    auto cartesian_product(const std::vector<std::vector<T>>& lists) {
+      std::vector<std::vector<T>> result{};
+      // test is the input lists is empty. if yes return empty result
+      if (std::find_if(std::begin(lists), std::end(lists),
+        [](auto e) -> bool { return e.size() == 0; }) != std::end(lists)) {
+        return result;
+      }
+      for (auto& e : lists[0]) {
+        result.push_back({e});
+      }
+      for (size_t i_list{1}; i_list < lists.size(); ++i_list) {
+        std::vector<std::vector<T>> temp;
+        for (auto& e : result) {
+          for (auto f : lists[i_list]) {
+            auto e_tmp = e;
+            e_tmp.push_back(f);
+            temp.push_back(e_tmp);
+          }
+        }
+        result = temp;
+      }
+      return result;
+    }
 
     /**
      * Utility to check if a template parameter is iterable
