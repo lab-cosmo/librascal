@@ -71,7 +71,7 @@ int main(int argc, char * argv[]) {
               {"soap_type", "PowerSpectrum"},
               {"normalize", true}};
 
-  json fc_hypers{{"type", "Cosine"},
+  json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
                  {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
   json sigma_hypers{{"type", "Constant"},

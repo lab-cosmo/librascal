@@ -70,7 +70,7 @@ def dump_reference_json():
                                                   "gaussian_sigma_type": "Constant",
                                                   "gaussian_sigma_constant": gaussian_sigma,
                                                   "soap_type": soap_type,
-                                                  "cutoff_function_type": "Cosine",
+                                                  "cutoff_function_type": "ShiftedCosine",
                                                   "normalize": True,
                                                   "radial_basis": "GTO"}
                                         soap = SphericalInvariants(**hypers)

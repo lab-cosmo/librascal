@@ -42,7 +42,7 @@ def dump_reference_json():
     max_angulars = [3, 6]
     cutoff_smooth_widths = [0., 1.]
     radial_basis = ["GTO", "DVR"]
-    cutoff_function_types = ['Cosine', 'RadialScaling']
+    cutoff_function_types = ['ShiftedCosine', 'RadialScaling']
     fns = [
         os.path.join(
             path, "tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),

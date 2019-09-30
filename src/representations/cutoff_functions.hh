@@ -46,7 +46,7 @@ namespace rascal {
     /**
      * List of implemented cutoff function
      */
-    enum class CutoffFunctionType { Cosine, RadialScaling, End_ };
+    enum class CutoffFunctionType { ShiftedCosine, RadialScaling, End_ };
 
     struct CutoffFunctionBase {
       //! Constructor
@@ -81,7 +81,7 @@ namespace rascal {
     struct CutoffFunction : CutoffFunctionBase {};
 
     template <>
-    struct CutoffFunction<internal::CutoffFunctionType::Cosine>
+    struct CutoffFunction<internal::CutoffFunctionType::ShiftedCosine>
         : CutoffFunctionBase {
       using Hypers_t = CutoffFunctionBase::Hypers_t;
       explicit CutoffFunction(const Hypers_t & hypers) {
