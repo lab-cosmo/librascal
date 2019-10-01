@@ -17,7 +17,7 @@ set(DOXYGEN_BUILD_HTML "NO" CACHE BOOL
 mark_as_advanced(DOXYGEN_BUILD_HTML)
 
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/conf.py"
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/conf.py.in"
   "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
   @ONLY)
 
@@ -59,4 +59,3 @@ add_custom_target(doc
   "${SPHINX_HTML_DIR}"
   DEPENDS doxygen_doc
   COMMENT "Building HTML documentation with Sphinx")
-
