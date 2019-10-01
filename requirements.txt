@@ -4,8 +4,8 @@ scipy
 jupyter
 # notebook tutorials
 matplotlib
-qml
-tqdm
+#qml
+# tqdm
 # for documentation
 sphinx==2.1.2
 breathe==4.13.1
