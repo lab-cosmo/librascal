@@ -104,7 +104,7 @@ namespace rascal {
     }
 
     //! return position vector of an atom given the atom tag
-    inline Vector_ref get_position(const int & atom_tag) {
+    inline Vector_ref get_position(int atom_tag) {
       auto * xval{this->x[this->get_atom_index(atom_tag)]};
       return Vector_ref(xval);
     }
@@ -115,12 +115,12 @@ namespace rascal {
     }
 
     //! get const atom type reference given an atom_tag
-    inline const int & get_atom_type(const int & atom_tag) const {
+    inline int get_atom_type(int atom_tag) const {
       return this->type[this->get_atom_index(atom_tag)];
     }
 
     //! Returns atom type given an atom tag
-    inline int & get_atom_type(const int & atom_tag) {
+    inline int & get_atom_type(int atom_tag) {
       return this->type[this->get_atom_index(atom_tag)];
     }
 
@@ -219,7 +219,7 @@ namespace rascal {
      *
      * @param vatom per-atom virial
      */
-    void update_self(const int & inum, const int & tot_num, int * ilist,
+    void update_self(int inum, int tot_num, int * ilist,
                      int * numneigh, int ** firstneigh, double ** x,
                      double ** f, int * type, double * eatom, double ** vatom);
 

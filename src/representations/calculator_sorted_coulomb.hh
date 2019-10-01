@@ -217,7 +217,7 @@ namespace rascal {
     //! set hypers
     inline void set_hyperparameters(const Hypers_t & /*hypers*/);
 
-    inline void update_central_cutoff(const double & /*cutoff*/);
+    inline void update_central_cutoff(double /*cutoff*/);
 
     /**
      * check if size of the calculator is enough for current structure
@@ -302,9 +302,9 @@ namespace rascal {
     }
 
     //! scale cutoff factor depending on distance and decay
-    inline double get_cutoff_factor(const double & distance,
-                                    const double & cutoff,
-                                    const double & decay) {
+    inline double get_cutoff_factor(double distance,
+                                    double cutoff,
+                                    double decay) {
       if (distance <= cutoff - decay) {
         return 1.;
       } else if (distance > cutoff) {
@@ -359,7 +359,7 @@ namespace rascal {
   }
 
   inline void
-  CalculatorSortedCoulomb::update_central_cutoff(const double & cutoff) {
+  CalculatorSortedCoulomb::update_central_cutoff(double cutoff) {
     this->central_cutoff = cutoff;
 
     if ((this->hypers["interaction_cutoff"] < 0) or

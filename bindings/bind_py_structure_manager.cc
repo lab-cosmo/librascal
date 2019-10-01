@@ -309,7 +309,7 @@ namespace rascal {
                                            py::module & m_adaptor) {
       m_adaptor.def(
           name.c_str(),
-          [](ImplementationPtr_t & manager, const double & cutoff) {
+          [](ImplementationPtr_t & manager, double cutoff) {
             return make_adapted_manager<AdaptorStrict, Implementation_t>(
                 manager, cutoff);
           },
@@ -420,8 +420,8 @@ namespace rascal {
                                            py::module & m_adaptor) {
       m_adaptor.def(
           name.c_str(),
-          [](ImplementationPtr_t manager, const double & cutoff,
-             const bool & consider_ghost_neighbours) {
+          [](ImplementationPtr_t manager, double cutoff,
+             bool consider_ghost_neighbours) {
             return make_adapted_manager<AdaptorNeighbourList, Implementation_t>(
                 manager, cutoff, consider_ghost_neighbours);
           },
@@ -507,7 +507,7 @@ namespace rascal {
      */
     manager_collection.def(
         "add_structures",
-        (void (ManagerCollection_t::*)(const std::string &, const int &, int)) &
+        (void (ManagerCollection_t::*)(const std::string &, int, int)) &
             ManagerCollection_t::add_structures,
         R"(Read a file and extract the structures from start to start + length.)",
         py::arg("filename"), py::arg("start") = 0, py::arg("length") = -1);

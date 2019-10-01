@@ -165,7 +165,7 @@ namespace rascal {
     }
 
     //! returns position of the given atom tag
-    inline Vector_ref get_position(const int & index) {
+    inline Vector_ref get_position(int index) {
       return this->manager->get_position(index);
     }
 
@@ -210,17 +210,17 @@ namespace rascal {
     }
 
     //! return atom type, const ref
-    inline const int & get_atom_type(const AtomRef_t & atom) const {
+    inline int get_atom_type(const AtomRef_t & atom) const {
       return this->manager->get_atom_type(atom.get_index());
     }
 
     //! Returns atom type given an atom tag
-    inline int & get_atom_type(const int & atom_id) {
+    inline int & get_atom_type(int atom_id) {
       return this->manager->get_atom_type(atom_id);
     }
 
     //! Returns a constant atom type given an atom tag
-    inline const int & get_atom_type(const int & atom_id) const {
+    inline int get_atom_type(int atom_id) const {
       return this->manager->get_atom_type(atom_id);
     }
 

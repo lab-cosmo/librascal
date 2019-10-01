@@ -173,7 +173,7 @@ namespace rascal {
     /**
      * Accessor for property by index for properties
      */
-    inline reference operator[](const size_t & index) {
+    inline reference operator[](size_t index) {
       // use tag dispatch to use the proper definition
       // of the get function
       return this->get(
@@ -205,11 +205,11 @@ namespace rascal {
                             this->get_nb_col());
     }
 
-    inline reference get(const size_t & index, StaticSize) {
+    inline reference get(size_t index, StaticSize) {
       return Value::get_ref(this->values[index * NbRow * NbCol]);
     }
 
-    inline reference get(const size_t & index, DynamicSize) {
+    inline reference get(size_t index, DynamicSize) {
       return get_ref(this->values[index * this->get_nb_comp()]);
     }
 

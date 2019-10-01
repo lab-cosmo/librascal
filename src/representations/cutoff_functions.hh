@@ -69,10 +69,10 @@ namespace rascal {
 
       // TODO(felix) test is having these pure virtual changes performance
       //! Pure Virtual Function to evaluate the cutoff function
-      // virtual double f_c(const double& distance) = 0;
+      // virtual double f_c(double distance) = 0;
       //! Pure Virtual Function to evaluate the derivative of the cutoff
       //! function with respect to the distance
-      // virtual double df_c(const double& distance) = 0;
+      // virtual double df_c(double distance) = 0;
     };
 
     // Empty general template class implementing the cutoff functions
@@ -94,12 +94,12 @@ namespace rascal {
             hypers.at("smooth_width").at("value").get<double>();
       }
 
-      inline double f_c(const double & distance) {
+      inline double f_c(double distance) {
         return math::switching_function_cosine(distance, this->cutoff,
                                                this->smooth_width);
       }
 
-      inline double df_c(const double & distance) {
+      inline double df_c(double distance) {
         return math::derivative_switching_funtion_cosine(distance, this->cutoff,
                                                          this->smooth_width);
       }
@@ -152,7 +152,7 @@ namespace rascal {
         this->scale = hypers.at("scale").at("value").get<double>();
       }
 
-      inline double f_c(const double & distance) {
+      inline double f_c(double distance) {
         double factor{0.};
         if (this->rate > math::dbl_ftol) {
           factor = this->rate / (this->rate + math::pow(distance / this->scale,
@@ -166,7 +166,7 @@ namespace rascal {
                                                         this->smooth_width);
       }
 
-      inline double df_c(const double & distance) {
+      inline double df_c(double distance) {
         double factor{0.};
         if (this->rate < math::dbl_ftol) {
           factor = -this->exponent / distance *

@@ -98,7 +98,7 @@ namespace rascal {
 
       //! integer power
       template <typename Scalar_>
-      inline double pow_i(const Scalar_ & x, const int & n) {
+      inline double pow_i(const Scalar_ & x, int n) {
         size_t un{0};
         double value{static_cast<double>(x)};
 
@@ -114,37 +114,37 @@ namespace rascal {
     }  // namespace details
 
     //! integer power
-    inline double pow(const double & x, const int & n) {
+    inline double pow(double x, int n) {
       return details::pow_i(x, n);
     }
 
     //! integer power
-    inline double pow(const int & x, const int & n) {
+    inline double pow(int x, int n) {
       return details::pow_i(x, n);
     }
 
     //! integer power
-    inline double pow(const size_t & x, const int & n) {
+    inline double pow(size_t x, int n) {
       return details::pow_i(x, n);
     }
 
     //! unsingned integer power
-    inline double pow(const double & x, const std::size_t & n) {
+    inline double pow(double x, size_t n) {
       return details::pow_u(x, n);
     }
 
     //! unsingned integer power
-    inline int pow(const int & x, const std::size_t & n) {
+    inline int pow(int x, size_t n) {
       return details::pow_u(x, n);
     }
 
     //! unsingned integer power
-    inline size_t pow(const size_t & x, const std::size_t & n) {
+    inline size_t pow(size_t x, size_t n) {
       return details::pow_u(x, n);
     }
 
     //! general power
-    inline double pow(const double & x, const double & n) {
+    inline double pow(double x, double n) {
       return std::pow(x, n);
     }
 
@@ -165,7 +165,7 @@ namespace rascal {
     struct MakePositiveIntegerPower {
       typedef Scalar result_type;
       size_t b;
-      explicit MakePositiveIntegerPower(const size_t & b) : b{b} {}
+      explicit MakePositiveIntegerPower(size_t b) : b{b} {}
 
       Scalar operator()(const Scalar & a) const { return pow(a, this->b); }
     };
@@ -195,9 +195,9 @@ namespace rascal {
      * function.
      *
      */
-    inline double switching_function_cosine(const double & r,
-                                            const double & cutoff,
-                                            const double & smooth_width) {
+    inline double switching_function_cosine(double r,
+                                            double cutoff,
+                                            double smooth_width) {
       if (r <= (cutoff - smooth_width)) {
         return 1.0;
       } else if (r > cutoff) {
@@ -225,8 +225,8 @@ namespace rascal {
      *                                              / smooth_width)
      */
     inline double
-    derivative_switching_funtion_cosine(const double & r, const double & cutoff,
-                                        const double & smooth_width) {
+    derivative_switching_funtion_cosine(double r, double cutoff,
+                                        double smooth_width) {
       if (r <= (cutoff - smooth_width)) {
         return 0.0;
       } else if (r > cutoff) {

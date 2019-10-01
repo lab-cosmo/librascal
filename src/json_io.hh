@@ -52,14 +52,14 @@ namespace Eigen {
     struct ResizeEigen {
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_mat(
-          const size_t & /* n_rows*/, const size_t & /*n_cols */,
+          size_t /* n_rows*/, size_t /*n_cols */,
           Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & /*s*/) {
         // assert(n_rows == _Rows);
         // assert(n_cols == _Cols);
       }
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_arr(
-          const size_t & /* n_rows*/, const size_t & /*n_cols */,
+          size_t /* n_rows*/, size_t /*n_cols */,
           Array<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & /*s*/) {
         // assert(n_rows == _Rows);
         // assert(n_cols == _Cols);
@@ -70,14 +70,14 @@ namespace Eigen {
     struct ResizeEigen<Dynamic, Dynamic> {
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_mat(
-          const size_t & n_rows, const size_t & n_cols,
+          size_t n_rows, size_t n_cols,
           Matrix<_Scalar, Dynamic, Dynamic, _Options, _MaxRows, _MaxCols> & s) {
         s.resize(n_rows, n_cols);
       }
 
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_arr(
-          const size_t & n_rows, const size_t & n_cols,
+          size_t n_rows, size_t n_cols,
           Array<_Scalar, Dynamic, Dynamic, _Options, _MaxRows, _MaxCols> & s) {
         s.resize(n_rows, n_cols);
       }
@@ -87,7 +87,7 @@ namespace Eigen {
     struct ResizeEigen<Dynamic, _Cols> {
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_mat(
-          const size_t & n_rows, const size_t & /* n_cols */,
+          size_t n_rows, size_t /* n_cols */,
           Matrix<_Scalar, Dynamic, _Cols, _Options, _MaxRows, _MaxCols> & s) {
         // assert(n_cols == _Cols);
         s.resize(n_rows, _Cols);
@@ -95,7 +95,7 @@ namespace Eigen {
 
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_arr(
-          const size_t & n_rows, const size_t & /*n_cols */,
+          size_t n_rows, size_t /*n_cols */,
           Array<_Scalar, Dynamic, _Cols, _Options, _MaxRows, _MaxCols> & s) {
         // assert(n_cols == _Cols);
         s.resize(n_rows, _Cols);
@@ -106,7 +106,7 @@ namespace Eigen {
     struct ResizeEigen<_Rows, Dynamic> {
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_mat(
-          const size_t & /*n_rows */, const size_t & n_cols,
+          size_t /*n_rows */, size_t n_cols,
           Matrix<_Scalar, _Rows, Dynamic, _Options, _MaxRows, _MaxCols> & s) {
         // assert(n_rows == _Rows);
         s.resize(_Rows, n_cols);
@@ -114,7 +114,7 @@ namespace Eigen {
 
       template <typename _Scalar, int _Options, int _MaxRows, int _MaxCols>
       static void apply_arr(
-          const size_t & /*n_rows */, const size_t & n_cols,
+          size_t /*n_rows */, size_t n_cols,
           Array<_Scalar, _Rows, Dynamic, _Options, _MaxRows, _MaxCols> & s) {
         // assert(n_rows == _Rows);
         s.resize(_Rows, n_cols);
