@@ -337,20 +337,25 @@ namespace rascal {
     }
 
     /* ---------------------------------------------------------------------- */
-    //! get the linear index of a voxel in a given grid
-    template <size_t Dim>
-    constexpr Dim_t get_index(const std::array<int, Dim> & sizes,
-                              const std::array<int, Dim> & ccoord) {
-      Dim_t retval{0};
-      Dim_t factor{1};
-      for (Dim_t i = Dim - 1; i >= 0; --i) {
-        retval += ccoord[i] * factor;
-        if (i != 0) {
-          factor *= sizes[i];
-        }
+    /**
+     * get the linear index of a voxel in a given grid
+     *
+     * @tparam Array_t is expected to be an array of int like of size Dim like
+     *          std::array or Eigen::Vector
+     */
+    template <size_t Dim, typename Array_t>
+    inline int get_linear_index(const std::array<int, Dim> & sizes,
+                              const Array_t & ccoord) {
+      int retval{0};
+      int factor{1};
+      for (int ii{Dim - 1}; ii >= 0; --ii) {
+        retval += ccoord[ii] * factor;
+        factor *= sizes[ii];
       }
       return retval;
     }
+
+
 
     /* ---------------------------------------------------------------------- */
     //! test if position inside
@@ -403,13 +408,13 @@ namespace rascal {
       IndexContainer & operator=(IndexContainer && other) = default;
       //! brackets operator
       std::vector<int> & operator[](const std::array<int, Dim> & ccoord) {
-        auto index = get_index(this->nboxes, ccoord);
+        auto&& index = get_linear_index(this->nboxes, ccoord);
         return data[index];
       }
 
       const std::vector<int> &
       operator[](const std::array<int, Dim> & ccoord) const {
-        auto index = get_index(this->nboxes, ccoord);
+        auto&& index = get_linear_index(this->nboxes, ccoord);
         return this->data[index];
       }
 
@@ -455,6 +460,8 @@ namespace rascal {
     static_assert(traits::MaxOrder == 2,
                   "ManagerImplementation needs an atom list "
                   " and can only build a neighbour list (pairs).");
+
+    friend internal::GrowReplicasRecursively<ManagerImplementation_t, traits::Dim>;
 
     //! Default constructor
     AdaptorNeighbourList() = delete;
@@ -908,17 +915,27 @@ namespace rascal {
 
   namespace internal {
 
-    template<class ManagerPtr, int Dim>
+    template<typename Derived>
+    inline bool is_position_in_bounds(const Eigen::MatrixBase<Derived>& pos,
+                                        const Eigen::MatrixBase<Derived>& min,
+                                        const Eigen::MatrixBase<Derived>& max) {
+      bool is_inside{(pos.array() >= min.array()).all()
+                      and (pos.array() <= max.array()).all()};
+      return is_inside;
+    }
+
+    template<class Manager, int Dim>
     struct GrowReplicasRecursively {
       using Cell_t = typename AtomicStructure<Dim>::Cell_t;
-      using Vector_t = Eigen::Matrix<double, Dim, 1>;
+      using Vector_t = typename Manager::Vector_t;
       using VectorI_t = Eigen::Matrix<int, Dim, 1>;
       using VectorIMap_t = Eigen::Map<VectorI_t>;
       using VectorList_t = std::vector<Vector_t,Eigen::aligned_allocator<Vector_t> >;
+
       template<class Pbc>
-      GrowReplicasRecursively(ManagerPtr manager, const Pbc& pbc, const Cell_t& cell, const  Vector_t& mesh_min, const Vector_t& mesh_max)
-        : manager{manager}, cell{cell}, mesh_min{mesh_min},
-          mesh_max{mesh_max} {
+      GrowReplicasRecursively(std::shared_ptr<Manager> manager, const Pbc& pbc, const Cell_t& cell, const  Vector_t& bounding_box_min, const Vector_t& bounding_box_max)
+        : manager{manager}, cell{cell}, bounding_box_min{bounding_box_min},
+          bounding_box_max{bounding_box_max}, n_atoms{manager->get_n_atoms()}, n_ghosts{0} {
         // select the iteration directions depending on the pbc
         std::vector<std::vector<int>> iteration_bounds{};
         for (int i_dim{0}; i_dim < Dim; i_dim++) {
@@ -928,19 +945,26 @@ namespace rascal {
             iteration_bounds.push_back({0});
           }
         }
+        // all possible directions to the neighbor boxes in Dim dimensions,
+        // e.g. 8 in 2D
         this->directions = internal::cartesian_product(iteration_bounds);
         // initialize the list of cell coordinates with the (0,0,0) element
         this->pcells.emplace(internal::make_array<Dim>(0));
-
-        
       }
 
-      VectorList_t make_images() {
+      /**
+       * Main function to build the ghost atoms that are needed
+       */
+      void make_images() {
         auto cell_shift_start{internal::make_array<Dim>(0)};
         this->grow_and_check_recursive(cell_shift_start);
         return this->images;
       }
 
+      /**
+       * recursive building of the ghost atoms
+       * @param cell_shift coordinate of the current cell
+       */
       void grow_and_check_recursive(const std::array<int, Dim>& cell_shift) {
         // loop over all possible shift directions
         for (const auto& direction : this->directions) {
@@ -958,9 +982,16 @@ namespace rascal {
           bool found_any{false};
           for (auto center : this->manager) {
             Vector_t shifted_position{center.get_position()+offset};
-            if ((shifted_position.array() >= this->mesh_min.array()).all()
-                 and (shifted_position.array() <= this->mesh_max.array()).all()) {
+            if (is_position_in_bounds(shifted_position, this->bounding_box_min, this->bounding_box_max)) {
+              auto&& atom_tag{center.get_atom_tag()};
+              auto&& atom_type{center.get_atom_type()};
+              size_t cluster_index{this->manager->get_atom_index(atom_tag)};
+              auto new_atom_tag{this->n_atoms + this->n_ghosts};
               this->images.emplace_back(shifted_position);
+              this->atom_tags.emplace_back(new_atom_tag);
+              this->atom_types.emplace_back(atom_type);
+              this->atom_indices.emplace_back(cluster_index);
+              this->n_ghosts++;
               found_any = true;
             }
           }
@@ -971,14 +1002,173 @@ namespace rascal {
         }
       }
 
-      ManagerPtr manager;
+      std::shared_ptr<Manager> manager;
       Cell_t cell;
-      Vector_t mesh_min;
-      Vector_t mesh_max;
+      //! limits of the bounding box that we need to fill with ghost atoms
+      Vector_t bounding_box_min;
+      Vector_t bounding_box_max;
       std::set<std::array<int, Dim>> pcells{};
       std::vector<std::vector<int>> directions{};
       VectorList_t images{};
+      std::vector<int> atom_tags{};
+      std::vector<int> atom_types{};
+      std::vector<size_t> atom_indices{};
+      int n_atoms;
+      int n_ghosts;
     };
+
+
+
+    /**
+     * Representation of a ensemble of cubic boxes of size cutoff and spanning
+     * the at least the cuboid box defined by mesh_min and mesh_max.
+     */
+    template<int Dim>
+    struct CubicBins {
+      using ArrayI_t = Eigen::Array<int, Dim, 1>;
+      using ArrayIMap_t = Eigen::Map<ArrayI_t>;
+      using Vector_t = Eigen::Matrix<double, Dim, 1>;
+      using VectorConstRef_t = const Eigen::Ref<const Vector_t>;
+      std::array<int, Dim> nboxes_per_dim{};
+      std::vector<std::vector<int>> boxes{};
+      Vector_t bounding_box_min;
+      Vector_t bounding_box_max;
+      double cutoff;
+
+
+      CubicBins(double cutoff, VectorConstRef_t bounding_box_min, VectorConstRef_t bounding_box_max) : bounding_box_min{bounding_box_min}, bounding_box_max{bounding_box_max}, cutoff{cutoff} {
+        // find the number of boxes in each direction to fill the bounding box
+        // for the linked cell
+        int nboxes{1};
+        for (int i_dim{0}; i_dim < Dim; i_dim++) {
+          nboxes_per_dim[i_dim] = static_cast<int>(
+                    std::ceil((bounding_box_max[i_dim]-bounding_box_min[i_dim])/cutoff));
+          nboxes *= nboxes_per_dim[i_dim];
+        }
+        boxes.resize(nboxes);
+      }
+
+      inline ArrayI_t get_box_position(VectorConstRef_t atom_pos) {
+        ArrayI_t box_pos{((atom_pos - this->bounding_box_min) / this->cutoff).array().floor().template cast<int>()};
+        return box_pos;
+      }
+
+      inline void push_tag_to_box(VectorConstRef_t atom_pos, int index) {
+        auto && box_pos = this->get_box_position(atom_pos);
+        auto && lin_box_idx{get_linear_index(this->nboxes_per_dim, box_pos)};
+        this->boxes[lin_box_idx].emplace_back(index);
+      }
+
+      inline const std::vector<int>& operator[](const int& lin_box_idx) const {
+        return this->boxes[lin_box_idx];
+      }
+
+      /**
+       * Iterator over the boxes
+       */
+      auto begin() noexcept { return this->boxes.begin(); }
+      auto end() noexcept { return this->boxes.end(); }
+      auto begin() const noexcept {
+        return this->boxes.cbegin();
+      }
+      auto end() const noexcept {
+        return this->boxes.cend();
+      }
+
+      //! iterators over `` dereferences to cell coordinates
+      class IteratorOverNeighbourBoxes {
+        using ArrayI_t = typename CubicBins<Dim>::ArrayI_t;
+        using ArrayIMap_t = typename CubicBins<Dim>::ArrayIMap_t;
+        /**
+         * position of the central box to iterate around
+         */
+        IteratorOverNeighbourBoxes(const CubicBins<Dim> & boxes, const std::array<int, Dim>& position, const std::array<int, Dim>& sizes)
+            : boxes{boxes}, linear_indices{} {
+          std::vector<std::vector<int>> iteration_bounds{};
+          for (int i_dim{0}; i_dim < Dim; i_dim++) {
+            iteration_bounds.push_back({-1, 0 , 1});
+          }
+          auto directions_all = internal::cartesian_product(iteration_bounds);
+          auto pos = ArrayIMap_t(position.data());
+          // don't include the origin in the iteration
+          for (auto& direction : directions_all) {
+            ArrayI_t dir = ArrayIMap_t(direction.data());
+            // if (dir.squaredNorm() != 0) {
+            ArrayI_t shifted_pos{pos+dir};
+            int lin_idx{get_linear_index(sizes, shifted_pos)};
+            this->linear_indices.emplace_back(lin_idx);
+            // }
+          }
+        }
+
+        //! destructor
+        ~IteratorOverNeighbourBoxes() {}
+
+        struct iterator {
+          using value_type = std::vector<int>;    //!< stl conformance
+          using reference = value_type&;
+          using const_reference = const value_type&;
+          using const_value_type = const value_type;  //!< stl conformance
+          using pointer = value_type *;               //!< stl conformance
+          using iterator_category =
+              std::forward_iterator_tag;  //!< stl conformance
+
+          iterator(const CubicBins<Dim> & boxes,const std::vector<int>& linear_indices, int index)
+          : boxes{boxes}, index{index}, linear_indices{linear_indices} {}
+          //! destructor
+          ~iterator() {}
+          //! dereferencing
+          const_reference operator*() const {
+            auto&& idx{this->linear_indices[this->index]};
+            return this->boxes[idx];
+          }
+          //! pre-increment
+          const_reference operator++() {
+            this->index++;
+            return *this;
+          }
+          //! inequality
+          inline bool operator!=(const IteratorOverNeighbourBoxes & other) const {
+            return this->index != other.index;
+          }
+
+          //! ref to stencils
+          const CubicBins<Dim> & boxes;
+          //! index of currect pointed-to voxel
+          int index;
+          //! list of indices to visit in boxes
+          const std::vector<int> & linear_indices;
+        };
+
+        //! ref to stencils
+        const CubicBins<Dim> & boxes;
+        //! index of currect pointed-to voxel
+        size_t index;
+        //! list of indices to visit in boxes
+        std::vector<int> linear_indices;
+
+        iterator begin() const noexcept {
+          return iterator(boxes, linear_indices, 0);
+        }
+
+        iterator end() const noexcept {
+          return iterator(boxes, linear_indices, linear_indices.size());
+        }
+
+      };
+
+      auto iterate_over_neighbour_boxes(VectorConstRef_t atom_pos) {
+        auto && box_pos = this->get_box_position(atom_pos);
+        return IteratorOverNeighbourBoxes(&this, box_pos, this->nboxes_per_dim);
+      }
+
+    };
+
+
+
+
+
+
   }
   /* ---------------------------------------------------------------------- */
   /**
@@ -1000,133 +1190,91 @@ namespace rascal {
     // short hands for variable
     constexpr auto dim{traits::Dim};
 
-    using Vector_t = Eigen::Matrix<double, dim, 1>;
     // using VectorMap_t = Eigen::Map<Vector_t>;
-
-
 
     auto&& cell{this->manager->get_cell()};
     auto&& positions{this->manager->get_positions()};
     auto&& pbc{this->manager->get_periodic_boundary_conditions()};
     double cutoff{this->cutoff};
 
-    std::array<int, dim> nboxes_per_dim{};
-
-
     // bounding box, including a cutoff-sized skin. this is the range we need to cover
     // with periodic copies of the cell to find neighbors for all atoms
     Vector_t mesh_min{(positions.array().rowwise().minCoeff()-cutoff).matrix()};
     Vector_t mesh_max{(positions.array().rowwise().maxCoeff()+cutoff).matrix()};
-    // find the number of boxes in each direction to fill the bounding box
-    // for the linked cell
+    // this bounding box includes the potential neighbors of the ghost atoms
+    Vector_t ghost_min{mesh_min.array() - cutoff};
+    Vector_t ghost_max{mesh_max.array() + cutoff};
+
+    std::array<int, dim> nboxes_per_dim{};
     for (int i_dim{0}; i_dim < dim; i_dim++) {
       nboxes_per_dim[i_dim] = static_cast<int>(
-                std::ceil((mesh_max[i_dim]-mesh_min[i_dim])/cutoff));
+                std::ceil((ghost_max[i_dim]-ghost_min[i_dim])/cutoff));
+    }
+
+    // before generating ghost atoms, all existing atoms are added to the list
+    // of current atoms to start the full list of current i-atoms and ghosts
+    // This is done before the ghost atom generation, to have them all
+    // contiguously at the beginning of the list.
+    for (size_t atom_tag{0}; atom_tag < this->n_atoms; ++atom_tag) {
+      auto atom_type = this->manager->get_atom_type(atom_tag);
+      auto cluster_index = this->manager->get_atom_index(atom_tag);
+      // don't add atoms that are not centers
+      if (atom_tag < this->n_centers) {
+        this->atom_tag_list.push_back(atom_tag);
+      }
+      this->atom_types.push_back(atom_type);
+      this->atom_index_from_atom_tag_list.push_back(cluster_index);
     }
 
     // build the images iterativelly by growing the replication
     // of the cell from (0,0,0)
-    internal::GrowReplicasRecursively<ImplementationPtr_t, dim> replica_generator{this->manager, pbc, cell, mesh_min, mesh_max};
+    internal::GrowReplicasRecursively<ManagerImplementation_t, dim> replica_generator{this->manager, pbc, cell, ghost_min, ghost_max};
 
-    auto&& images = replica_generator.make_images();
+    replica_generator.make_images(this->get_shared_ptr());
 
-    std::cout << images.size() << ", "
+    std::cout << this->n_ghosts << ", "
               << replica_generator.pcells.size() << std::endl;
-    for (auto& shift : replica_generator.pcells) {
-      std::cout << "\t" << shift[0]  << ",\t" << shift[1]  << ",\t" << shift[2]
-                << std::endl;
+
+    internal::CubicBins<dim> bins{cutoff, ghost_min, ghost_max};
+
+    // add atoms from the original structure to the bins
+    for (size_t atom_tag{0}; atom_tag < this->n_atoms; ++atom_tag) {
+      auto && atom_pos = this->manager->get_position(atom_tag);
+      bins.push_tag_to_box(atom_pos, atom_tag);
     }
-    // // Get the mesh bounds to solve for the multiplicators
-    // int n{0};
-    // for (auto && coord : internal::MeshBounds<dim>{mesh_bounds}) {
-    //   xpos.col(n) = Eigen::Map<Eigen::Matrix<double, dim, 1>>(coord.data());
-    //   n++;
-    // }
 
-    // // solve inverse problem for all multipliers
-    // auto cell_inv{cell.inverse().eval()};
-    // auto multiplicator{cell_inv * xpos.eval()};
-    // auto xmin = multiplicator.rowwise().minCoeff().eval();
-    // auto xmax = multiplicator.rowwise().maxCoeff().eval();
+    // add ghost atoms to the bins
+    for (int i_ghost{0}; i_ghost < replica_generator.n_ghosts; ++i_ghost) {
+      auto && atom_pos = replica_generator.images[i_ghost];
+      auto && atom_tag = replica_generator.atom_tags[i_ghost];
+      bins.push_tag_to_box(atom_pos, atom_tag);
+    }
 
-    // // find max and min multipliers for cell vectors
-    // for (auto i{0}; i < dim; ++i) {
-    //   m_min[i] = std::floor(xmin(i));
-    //   m_max[i] = std::ceil(xmax(i));
-    // }
+    std::vector<int> current_j_atoms{};
+    for (size_t atom_tag{0}; atom_tag < this->n_centers; ++atom_tag) {
+      auto && atom_pos = this->manager->get_position(atom_tag);
+      for (const auto & neigh_tags : bins.iterate_over_neighbour_boxes(atom_pos)) {
+        for (const auto & neigh_tag : neigh_tags) {
+          // don't add the center as its own neighbor
+          if (neigh_tag == atom_tag) { continue; }
+          // if it is a center atom
+          if (neigh_tag < this->n_atoms) {
+            auto && neigh_pos = this->manager->get_position(neigh_tag);
+            this->neighbours_atom_tag.push_back(neigh_tag);
+          } else { // if it is a ghost atom
+            auto&& i_ghost{neigh_tag-this->n_atoms};
+            auto&& neigh_pos{replica_generator.images[i_ghost]};
+            auto&& atom_type{replica_generator.atom_types[i_ghost]};
+            auto&& atom_index{replica_generator.atom_indices[i_ghost]};
+            auto new_atom_tag{this->n_atoms + this->n_ghosts};
+            this->add_ghost_atom(new_atom_tag, neigh_pos, atom_type);
+            this->atom_index_from_atom_tag_list.push_back(atom_index);
+          }
 
-    // std::array<int, dim> periodic_max{};
-    // std::array<int, dim> periodic_min{};
-    // std::array<int, dim> repetitions{};
-    // auto periodicity = this->manager->get_periodic_boundary_conditions();
-    // size_t ntot{1};
 
-    // // calculate number of actual repetitions of cell, depending on periodicity
-    // for (auto i{0}; i < dim; ++i) {
-    //   if (periodicity[i]) {
-    //     periodic_max[i] = m_max[i];
-    //     periodic_min[i] = m_min[i];
-    //   } else {
-    //     periodic_max[i] = 0;
-    //     periodic_min[i] = 0;
-    //   }
-    //   auto nrep_in_dim = -periodic_min[i] + periodic_max[i] + 1;
-    //   repetitions[i] = nrep_in_dim;
-    //   ntot *= nrep_in_dim;
-    // }
-
-    // // before generating ghost atoms, all existing atoms are added to the list
-    // // of current atoms to start the full list of current i-atoms and ghosts
-    // // This is done before the ghost atom generation, to have them all
-    // // contiguously at the beginning of the list.
-    // for (size_t atom_tag{0}; atom_tag < this->n_atoms; ++atom_tag) {
-    //   auto atom_type = this->manager->get_atom_type(atom_tag);
-    //   auto cluster_index = this->manager->get_atom_index(atom_tag);
-    //   if (atom_tag < this->n_centers) {
-    //     this->atom_tag_list.push_back(atom_tag);
-    //   }
-    //   this->atom_types.push_back(atom_type);
-    //   this->atom_index_from_atom_tag_list.push_back(cluster_index);
-    // }
-
-    // // generate ghost atom tags and positions
-    // for (size_t atom_tag{0}; atom_tag < this->n_atoms; ++atom_tag) {
-    //   auto pos = this->manager->get_position(atom_tag);
-    //   auto atom_type = this->manager->get_atom_type(atom_tag);
-
-    //   for (auto && p_image :
-    //        internal::PeriodicImages<dim>{periodic_min, repetitions, ntot}) {
-    //     // exclude the original unit cell
-    //     if (not(p_image.array() == 0).all()) {
-    //       Vector_t pos_ghost{pos + cell * p_image.template cast<double>()};
-    //       auto flag_inside =
-    //           internal::position_in_bounds(ghost_min, ghost_max, pos_ghost);
-
-    //       if (flag_inside) {
-    //         // next atom tag is size, since start is at index = 0
-    //         auto new_atom_tag{this->n_atoms + this->n_ghosts};
-    //         this->add_ghost_atom(new_atom_tag, pos_ghost, atom_type);
-    //         // adds origin atom cluster_index if true
-    //         // adds ghost atom cluster index if false
-    //         size_t cluster_index = this->manager->get_atom_index(atom_tag);
-    //         this->atom_index_from_atom_tag_list.push_back(cluster_index);
-    //       }
-    //     }
-    //   }
-    // }
-
-    // // neighbour boxes
-    // internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
-
-    // // sorting the atoms and ghosts inside the cell into boxes
-    // auto n_potential_neighbours{this->n_atoms + this->n_ghosts};
-    // for (size_t atom_tag{0}; atom_tag < n_potential_neighbours; ++atom_tag) {
-    //   auto pos = this->get_position(atom_tag);
-    //   Vector_t dpos = pos - mesh_min;
-    //   auto idx = internal::get_box_index(dpos, cutoff);
-    //   atom_id_cell[idx].push_back(atom_tag);
-    // }
-
+        }
+      }
+    }
     // // go through all atoms and/or ghosts to build neighbour list, depending on
     // // the runtime decision flag
     // std::vector<int> current_j_atoms{};
@@ -1134,8 +1282,9 @@ namespace rascal {
     //   int atom_tag = center.get_atom_tag();
     //   int nneigh{0};
 
-    //   Vector_t pos = center.get_position();
-    //   Vector_t dpos = pos - mesh_min;
+    //   Vector_t pos{center.get_position()};
+    //   Vector_t dpos{pos - mesh_min};
+
     //   auto box_index = internal::get_box_index(dpos, cutoff);
     //   internal::fill_neighbours_atom_tag(atom_tag, box_index, atom_id_cell,
     //                                      current_j_atoms);
@@ -1147,6 +1296,7 @@ namespace rascal {
 
     //   this->nb_neigh.push_back(nneigh);
     // }
+
   }
 
 
@@ -1280,8 +1430,8 @@ namespace rascal {
     // This is done before the ghost atom generation, to have them all
     // contiguously at the beginning of the list.
     for (size_t atom_tag{0}; atom_tag < this->n_atoms; ++atom_tag) {
-      auto atom_type = this->manager->get_atom_type(atom_tag);
-      auto cluster_index = this->manager->get_atom_index(atom_tag);
+      auto&& atom_type = this->manager->get_atom_type(atom_tag);
+      auto&& cluster_index = this->manager->get_atom_index(atom_tag);
       if (atom_tag < this->n_centers) {
         this->atom_tag_list.push_back(atom_tag);
       }

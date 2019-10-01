@@ -71,6 +71,36 @@ namespace rascal {
   }
 
 
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test the row norm sorting
+   */
+  BOOST_AUTO_TEST_CASE(linear_index_test) {
+    using internal::get_linear_index;
+    using internal::get_multidim_index;
+    bool verbose{false};
+    std::array<int, 3> sizes{4,4,3};
+
+    for (int ix{0}; ix < sizes[0]; ix++) {
+      for (int iy{0}; iy < sizes[1]; iy++) {
+        for (int iz{0}; iz < sizes[2]; iz++) {
+          std::array<int, 3> input{ix,iy,iz};
+          auto lin_idx = get_linear_index(sizes, input);
+          auto output = get_multidim_index(sizes, lin_idx);
+          if (verbose) {
+            std::cout << "input: " << ix << ", "<<iy<< ", " << iz<< std::endl;
+            std::cout << "output: " << output[0] << ", "
+                      <<output[1] << ", " << output[2] << std::endl;
+          }
+          BOOST_CHECK_EQUAL_COLLECTIONS(
+            input.begin(),input.end(),
+            output.begin(), output.end());
+        }
+      }
+    }
+  }
+
+
 
   BOOST_AUTO_TEST_SUITE_END();
 

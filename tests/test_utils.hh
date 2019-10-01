@@ -30,6 +30,7 @@
 
 
 #include "rascal_utility.hh"
+#include "structure_managers/adaptor_neighbour_list.hh"
 
 namespace rascal {
 

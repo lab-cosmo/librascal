@@ -102,6 +102,7 @@ namespace rascal {
     using traits = StructureManager_traits<StructureManagerCenters>;
     using Parent = StructureManager<StructureManagerCenters>;
     // here you see why -- definition of used function return types
+    using Vector_t = typename Parent::Vector_t;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
     using Children_t = typename Parent::Children_t;
