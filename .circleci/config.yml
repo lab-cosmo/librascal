@@ -1,502 +1,158 @@
 version: 2
+
+# The default job builds the code, Python bindings and tests with different
+# compilers, and then run the corresponding tests. The compilers to used are
+# indicated by the CC/CXX environment variables.
+default_job: &default_job
+  docker:
+    - image: ubuntu:18.04
+  steps:
+    - run:
+        name: Install dependencies
+        command: |
+          apt update -y
+          apt install -y git cmake python3.6 python3-pip libboost-test-dev
+          ${APT_EXTRA_INSTALL}
+    - checkout
+    - run:
+        name: Install Python dependencies
+        command: python3.6 -m pip install -r requirements.txt
+    - run:
+        name: Configure
+        command: |
+          mkdir build
+          cd build
+          cmake ${CMAKE_EXTRA} -DBUILD_BINDINGS=ON -DBUILD_TESTS=ON \
+                -DCPPLINT=CPPLINT-NOTFOUND \
+                -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..
+    - run:
+        name: Build
+        command: cd build && make -j2
+    - run:
+        name: Run tests
+        command: cd build && ctest --output-on-failure
+
 jobs:
-        build_ubuntu_g++-5.5:
-                docker:
-                        - image: ubuntu:18.04
-                          environment:
-                                  PIPENV_VENV_IN_PROJECT: true
-                steps:
-                        - checkout
-                        - run:
-                                name: setting up apt-get properly
-                                command: |
-                                        apt-get update -y
-                        - run:
-                                name: Installing dependencies
-                                command: |
-                                        apt-get install -y cmake
-                                        apt-get install -y python3-pip
-                                        apt-get install -y python3.6
-                                        apt-get install -y git
-                                        apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen graphviz
-                                        apt-get install -y pandoc
-                                        apt-get install -y gcc-5 g++-5
-                        - run:
-                                name: installing python packages
-                                command: |
-                                        python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
-                        - run:
-                                command: |
-                                        rm -rf build
-                                        mkdir build
-                                        cd build
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=gcc-5 -DCMAKE_CXX_COMPILER=g++-5 ..
-                        - run: pwd
-                        - run:
-                                command: |
-                                        cd build
-                                        make
-                        - run:
-                                command: |
-                                        cd build
-                                        ctest -V
-                        - run:
-                                command: |
-                                        cd build
-                                        make doc
-                        - run:
-                                command: |
-                                        cd build
-                                        make lint
-
-        build_ubuntu_g++-6.4:
-                docker:
-                        - image: ubuntu:18.04
-                          environment:
-                                  PIPENV_VENV_IN_PROJECT: true
-                steps:
-                        - checkout
-                        - run:
-                                name: setting up apt-get properly
-                                command: |
-                                        apt-get update -y
-                        - run:
-                                name: Installing dependencies
-                                command: |
-                                        apt-get install -y cmake
-                                        apt-get install -y python3-pip
-                                        apt-get install -y python3.6
-                                        apt-get install -y git
-                                        apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen graphviz
-                                        apt-get install -y pandoc
-                                        apt-get install -y gcc-6 g++-6
-                        - run:
-                                name: installing python packages
-                                command: |
-                                        python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
-                        - run:
-                                command: |
-                                        rm -rf build
-                                        mkdir build
-                                        cd build
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6 ..
-                        - run: pwd
-                        - run:
-                                command: |
-                                        cd build
-                                        make
-                        - run:
-                                command: |
-                                        cd build
-                                        ctest -V
-                        - run:
-                                command: |
-                                        cd build
-                                        make doc
-                        - run:
-                                command: |
-                                        cd build
-                                        make lint
-        build_ubuntu_g++-7.3:
-                docker:
-                        - image: ubuntu:18.04
-                          environment:
-                                  PIPENV_VENV_IN_PROJECT: true
-                steps:
-                        - checkout
-                        - run:
-                                name: setting up apt-get properly
-                                command: |
-                                        apt-get update -y
-                        - run:
-                                name: Installing dependencies
-                                command: |
-                                        apt-get install -y cmake
-                                        apt-get install -y python3-pip
-                                        apt-get install -y python3.6
-                                        apt-get install -y git
-                                        apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen graphviz
-                                        apt-get install -y pandoc
-                        - run:
-                                name: installing python packages
-                                command: |
-                                        python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
-                        - run:
-                                command: |
-                                        rm -rf build
-                                        mkdir build
-                                        cd build
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
-                        - run: pwd
-                        - run:
-                                command: |
-                                        cd build
-                                        make
-                        - run:
-                                command: |
-                                        cd build
-                                        ctest -V
-                        - run:
-                                command: |
-                                        cd build
-                                        make doc
-                        - run:
-                                command: |
-                                        cd build
-                                        make lint
-
-        build_ubuntu_g++-7.3_debug:
-                docker:
-                        - image: ubuntu:18.04
-                          environment:
-                                  PIPENV_VENV_IN_PROJECT: true
-                steps:
-                        - checkout
-                        - run:
-                                name: setting up apt-get properly
-                                command: |
-                                        apt-get update -y
-                        - run:
-                                name: Installing dependencies
-                                command: |
-                                        apt-get install -y cmake
-                                        apt-get install -y python3-pip
-                                        apt-get install -y python3.6
-                                        apt-get install -y git
-                                        apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen graphviz
-                                        apt-get install -y pandoc
-                        - run:
-                                name: installing python packages
-                                command: |
-                                        python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
-                        - run:
-                                command: |
-                                        rm -rf build
-                                        mkdir build
-                                        cd build
-                                        cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_DOC=ON -DBUILD_TESTS=ON ..
-                        - run: pwd
-                        - run:
-                                command: |
-                                        cd build
-                                        make
-                        - run:
-                                command: |
-                                        cd build
-                                        ctest -V
-                        - run:
-                                command: |
-                                        cd build
-                                        make doc
-                        - run:
-                                command: |
-                                        cd build
-                                        make lint
-
-        build_ubuntu_clang-7.0:
-                docker:
-                        - image: ubuntu:18.04
-                          environment:
-                                  PIPENV_VENV_IN_PROJECT: true
-                steps:
-                        - checkout
-                        - run:
-                                name: setting up apt-get properly
-                                command: |
-                                        apt-get update -y
-                        - run:
-                                name: Installing dependencies
-                                command: |
-                                        apt-get install -y cmake
-                                        apt-get install -y python3-pip
-                                        apt-get install -y python3.6
-                                        apt-get install -y git
-                                        apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen graphviz
-                                        apt-get install -y pandoc
-                                        apt-get install -y software-properties-common
-                                        apt-get install -y gcc-5 g++-5
-                                        apt-get update -y
-                                        apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 15CF4D18AF4F7421
-                                        add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main"
-                                        #add-apt-repository 'deb-src http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main'
-                                        apt-get update -y
-                                        # apt-get install -y libllvm-7-ocaml-dev libllvm7 llvm-7 llvm-7-dev llvm-7-doc llvm-7-examples llvm-7-runtime
-                                        apt-get install -y clang-7 lldb-7 lld-7
-                                        apt-get install -y libc++-7-dev libc++abi-7-dev
-                                        # for some reason the execution rights are not set properly by default
-                                        chmod 777 /usr/bin/clang*
-                                        chmod 777 /usr/lib/llvm-7/bin/clang*
-                        - run:
-                                name: installing python packages
-                                command: |
-                                        python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
-                        - run:
-                                command: |
-                                        rm -rf build
-                                        mkdir build
-                                        cd build
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-7 -DCMAKE_CXX_COMPILER=clang++-7 ..
-                        - run: pwd
-                        - run:
-                                command: |
-                                        cd build
-                                        make
-                        - run:
-                                command: |
-                                        cd build
-                                        ctest -V
-                        - run:
-                                command: |
-                                        cd build
-                                        make doc
-                        - run:
-                                command: |
-                                        cd build
-                                        make lint
-
-        build_ubuntu_clang-7.0_debug:
-                docker:
-                        - image: ubuntu:18.04
-                          environment:
-                                  PIPENV_VENV_IN_PROJECT: true
-                steps:
-                        - checkout
-                        - run:
-                                name: setting up apt-get properly
-                                command: |
-                                        apt-get update -y
-                        - run:
-                                name: Installing dependencies
-                                command: |
-                                        apt-get install -y cmake
-                                        apt-get install -y python3-pip
-                                        apt-get install -y python3.6
-                                        apt-get install -y git
-                                        apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen graphviz
-                                        apt-get install -y pandoc
-                                        apt-get install -y software-properties-common
-                                        apt-get install -y gcc-5 g++-5
-                                        apt-get update -y
-                                        apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 15CF4D18AF4F7421
-                                        add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main"
-                                        #add-apt-repository 'deb-src http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main'
-                                        apt-get update -y
-                                        # apt-get install -y libllvm-7-ocaml-dev libllvm7 llvm-7 llvm-7-dev llvm-7-doc llvm-7-examples llvm-7-runtime
-                                        apt-get install -y clang-7 lldb-7 lld-7
-                                        apt-get install -y libc++-7-dev libc++abi-7-dev
-                                        # for some reason the execution rights are not set properly by default
-                                        chmod 777 /usr/bin/clang*
-                                        chmod 777 /usr/lib/llvm-7/bin/clang*
-                        - run:
-                                name: installing python packages
-                                command: |
-                                        python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
-                        - run:
-                                command: |
-                                        rm -rf build
-                                        mkdir build
-                                        cd build
-                                        cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-7 -DCMAKE_CXX_COMPILER=clang++-7 ..
-                        - run: pwd
-                        - run:
-                                command: |
-                                        cd build
-                                        make
-                        - run:
-                                command: |
-                                        cd build
-                                        ctest -V
-                        - run:
-                                command: |
-                                        cd build
-                                        make doc
-                        - run:
-                                command: |
-                                        cd build
-                                        make lint
-
-        build_ubuntu_clang-6.0:
-                docker:
-                        - image: ubuntu:18.04
-                          environment:
-                                  PIPENV_VENV_IN_PROJECT: true
-                steps:
-                        - checkout
-                        - run:
-                                name: setting up apt-get properly
-                                command: |
-                                        apt-get update -y
-                        - run:
-                                name: Installing dependencies
-                                command: |
-                                        apt-get install -y cmake
-                                        apt-get install -y python3-pip
-                                        apt-get install -y python3.6
-                                        apt-get install -y git
-                                        apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen graphviz
-                                        apt-get install -y pandoc
-                                        apt-get remove -y clang
-                                        apt-get install -y clang-6.0 libclang-common-6.0-dev libllvm6.0 libc++-dev
-                        - run:
-                                name: installing python packages
-                                command: |
-                                        python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
-                        - run:
-                                command: |
-                                        rm -rf build
-                                        mkdir build
-                                        cd build
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 ..
-                        - run: pwd
-                        - run:
-                                command: |
-                                        cd build
-                                        make
-                        - run:
-                                command: |
-                                        cd build
-                                        ctest -V
-                        - run:
-                                command: |
-                                        cd build
-                                        make doc
-                        - run:
-                                command: |
-                                        cd build
-                                        make lint
-
-
-        build_ubuntu_clang-5.0:
-                docker:
-                        - image: ubuntu:18.04
-                          environment:
-                                  PIPENV_VENV_IN_PROJECT: true
-                steps:
-                        - checkout
-                        - run:
-                                name: setting up apt-get properly
-                                command: |
-                                        apt-get update -y
-                        - run:
-                                name: Installing dependencies
-                                command: |
-                                        apt-get install -y cmake
-                                        apt-get install -y python3-pip
-                                        apt-get install -y python3.6
-                                        apt-get install -y git
-                                        apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen graphviz
-                                        apt-get install -y pandoc
-                                        apt-get remove -y clang
-                                        apt-get install -y clang-5.0 libclang-common-5.0-dev libllvm5.0 libc++-dev
-                        - run:
-                                name: installing python packages
-                                command: |
-                                        python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
-                        - run:
-                                command: |
-                                        rm -rf build
-                                        mkdir build
-                                        cd build
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-5.0 -DCMAKE_CXX_COMPILER=clang++-5.0 ..
-                        - run: pwd
-                        - run:
-                                command: |
-                                        cd build
-                                        make
-                        - run:
-                                command: |
-                                        cd build
-                                        ctest -V
-                        - run:
-                                command: |
-                                        cd build
-                                        make doc
-                        - run:
-                                command: |
-                                        cd build
-                                        make lint
-        build_ubuntu_clang-4.0:
-                docker:
-                        - image: ubuntu:18.04
-                          environment:
-                                  PIPENV_VENV_IN_PROJECT: true
-                steps:
-                        - checkout
-                        - run:
-                                name: setting up apt-get properly
-                                command: |
-                                        apt-get update -y
-                        - run:
-                                name: Installing dependencies
-                                command: |
-                                        apt-get install -y cmake
-                                        apt-get install -y python3-pip
-                                        apt-get install -y python3.6
-                                        apt-get install -y git
-                                        apt-get install -y libboost-test-dev
-                                        apt-get install -y doxygen graphviz
-                                        apt-get install -y pandoc
-                                        apt-get install -y clang-4.0 llvm-4.0
-                                        #apt-get install -y software-properties-common
-                                        #apt-get update -y
-                                        #apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 15CF4D18AF4F7421
-                                        #apt-add-repository "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.8 main"
-                                        #apt-get install -y clang-3.8 #lldb-3.8 #llvm-3.8-dev
-                        - run:
-                                name: installing python packages
-                                command: |
-                                        python3.6 -m pip install --upgrade pip
-                                        python3.6 -m pip install numpy scipy sphinx==2.1.2 breathe==4.13.1 sphinx_rtd_theme jupyter nbsphinx cpplint
-                        - run:
-                                command: |
-                                        rm -rf build
-                                        mkdir build
-                                        cd build
-                                        cmake -DENABLE_DOC=ON -DBUILD_TESTS=ON -DCMAKE_C_COMPILER=clang-4.0 -DCMAKE_CXX_COMPILER=clang++-4.0 ..
-                        - run: pwd
-                        - run:
-                                command: |
-                                        cd build
-                                        make
-                        - run:
-                                command: |
-                                        cd build
-                                        ctest -V
-                        - run:
-                                command: |
-                                        cd build
-                                        make doc
-                        - run:
-                                command: |
-                                        cd build
-                                        make lint
+  gcc-5:
+    environment:
+      CC: gcc-5
+      CXX: g++-5
+      APT_EXTRA_INSTALL: apt install -y gcc-5 g++-5
+    <<: *default_job
+  gcc-6:
+    environment:
+      CC: gcc-6
+      CXX: g++-6
+      APT_EXTRA_INSTALL: apt install -y gcc-6 g++-6
+    <<: *default_job
+  gcc-7:
+    environment:
+      CC: gcc-7
+      CXX: g++-7
+      # Not actually needed since gcc-7 is the default on Ubuntu 18.04
+      # but this protect use against unwanted changes
+      APT_EXTRA_INSTALL: apt install -y gcc-7 g++-7
+    <<: *default_job
+  gcc-7-debug:
+    environment:
+      CC: gcc-7
+      CXX: g++-7
+      # Not actually needed since gcc-7 is the default on Ubuntu 18.04
+      # but this protect use against unwanted changes
+      APT_EXTRA_INSTALL: apt install -y gcc-7 g++-7
+      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug
+    <<: *default_job
+  clang-4:
+    environment:
+      CC: clang-4.0
+      CXX: clang++-4.0
+      APT_EXTRA_INSTALL: apt install -y clang-4.0
+    <<: *default_job
+  clang-5:
+    environment:
+      CC: clang-5.0
+      CXX: clang++-5.0
+      APT_EXTRA_INSTALL: apt install -y clang-5.0
+    <<: *default_job
+  clang-6:
+    environment:
+      CC: clang-6.0
+      CXX: clang++-6.0
+      APT_EXTRA_INSTALL: apt install -y clang-6.0
+    <<: *default_job
+  clang-7:
+    environment:
+      CC: clang-7
+      CXX: clang++-7
+      APT_EXTRA_INSTALL: apt install -y clang-7
+    <<: *default_job
+  clang-7-debug:
+    environment:
+      CC: clang-7
+      CXX: clang++-7
+      APT_EXTRA_INSTALL: apt install -y clang-7
+      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug
+    <<: *default_job
+  # Special job only building the documentation
+  docs:
+    docker:
+    - image: ubuntu:18.04
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            apt update -y
+            apt install -y git cmake python3.6 python3-pip
+            apt install -y doxygen pandoc
+      - checkout
+      - run:
+          name: Install Python dependencies
+          command: python3.6 -m pip install -r requirements.txt
+      - run:
+          name: Configure
+          command: |
+            mkdir build
+            cd build
+            cmake -DENABLE_DOC=ON -DBUILD_BINDINGS=OFF ..
+      - run:
+          name: Build docs
+          command: cd build && make doc
+  # Special job only linting the code
+  lint:
+    docker:
+    - image: ubuntu:18.04
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            apt update -y
+            apt install -y git cmake python3.6 python3-pip
+      - checkout
+      - run:
+          name: Install Python dependencies
+          command: python3.6 -m pip install -r requirements.txt
+      - run:
+          name: Configure
+          command: |
+            mkdir build
+            cd build
+            cmake -DBUILD_BINDINGS=OFF ..
+      - run:
+          name: Lint the code
+          command: cd build && make lint
 
 workflows:
-        version: 2
-        ubuntu:
-                jobs:
-                        - build_ubuntu_g++-7.3_debug
-                        - build_ubuntu_clang-7.0_debug
-                        - build_ubuntu_g++-5.5
-                        - build_ubuntu_g++-6.4
-                        - build_ubuntu_g++-7.3
-                        - build_ubuntu_clang-4.0
-                        - build_ubuntu_clang-5.0
-                        - build_ubuntu_clang-6.0
-                        - build_ubuntu_clang-7.0
+  version: 2
+  run_all:
+    jobs:
+      - lint
+      - docs
+      - gcc-5
+      - gcc-6
+      - gcc-7
+      - gcc-7-debug
+      - clang-4
+      - clang-5
+      - clang-6
+      - clang-7
+      - clang-7-debug
