@@ -1,0 +1,322 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Adaptors &mdash; Rascal 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Species Manager" href="species-manager.html" />
+    <link rel="prev" title="Neighbor List Manager" href="neighbor-list-manager.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Rascal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whitepaper.html">Goals &amp; Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SOAP.html">SOAP Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../representation/representations.html">Representations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models/models.html">Models</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="neighbor-list-manager.html">Neighbor List Manager</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Adaptors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adaptorneighbourlist">AdaptorNeighbourList</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adaptorhalflist">AdaptorHalfList</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adaptorfulllist">AdaptorFullList</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adaptorstrict">AdaptorStrict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adaptormaxorder">AdaptorMaxOrder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adaptorfilter">AdaptorFilter</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="species-manager.html">Species Manager</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guide/developer.html">Developer’s guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../auto_doc/auto.html">Auto Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rascal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="neighbor-list-manager.html">Neighbor List Manager</a> &raquo;</li>
+        
+      <li>Adaptors</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/neighbor_list/adaptors.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="adaptors">
+<span id="id1"></span><h1>Adaptors<a class="headerlink" href="#adaptors" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#overview" id="id6">Overview</a></p></li>
+<li><p><a class="reference internal" href="#adaptorneighbourlist" id="id7">AdaptorNeighbourList</a></p></li>
+<li><p><a class="reference internal" href="#adaptorhalflist" id="id8">AdaptorHalfList</a></p></li>
+<li><p><a class="reference internal" href="#adaptorfulllist" id="id9">AdaptorFullList</a></p></li>
+<li><p><a class="reference internal" href="#adaptorstrict" id="id10">AdaptorStrict</a></p></li>
+<li><p><a class="reference internal" href="#adaptormaxorder" id="id11">AdaptorMaxOrder</a></p></li>
+<li><p><a class="reference internal" href="#adaptorfilter" id="id12">AdaptorFilter</a></p></li>
+</ul>
+</div>
+<div class="section" id="overview">
+<h2><a class="toc-backref" href="#id6">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Adaptors are objects which are <em>stacked</em> on top of a <code class="xref py py-class docutils literal notranslate"><span class="pre">StructureManager</span></code> (or <a href="#id2"><span class="problematic" id="id3">``</span></a>AdatorX`) to provide a new (extended or sorted) view on an atomic structure or neighbour list. The name <em>adaptor</em> is chosen because they are used to adapt and prepare an atomic structure for a given calculation based on e.g. pair relationships.
+Each adaptor preserves the interface for interacting with an atomic structure.</p>
+<p>This can for example be neighbourlist, filter by strict cutoffs, increase a half neighbourlist to a full neighbourlist.</p>
+<p>A typical usage scenario is an <code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorStrict</span></code> on top of an <code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorNeighbourList</span></code> on top of a <code class="xref py py-class docutils literal notranslate"><span class="pre">StructureManager</span></code>. By adapting the initial atomic structure in this way, the final object is an iterable strict neighbourlist.</p>
+<p>Each adaptor only stores the additional information it generates during construction. No atoms or neighbourlists are stored twice. If the requested information does not exist at this <cite>Layer</cite>, it is piped to the underlying adaptor/manager.</p>
+</div>
+<div class="section" id="adaptorneighbourlist">
+<h2><a class="toc-backref" href="#id7">AdaptorNeighbourList</a><a class="headerlink" href="#adaptorneighbourlist" title="Permalink to this headline">¶</a></h2>
+<p>Since the purpose of this library is the efficient calculation of atomic representations, this adaptor is probably the most fundamental. Without a neighbourlist, there is no relationship of an atom between its environment.</p>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorNeighbourList</span></code> provides the functionality to build a neighbourlist from a list of atoms, their cell and periodicity information. By default a full neighbourlist is built based on the cell linked-lists and triclinicity is accounted for.</p>
+<p>The basic idea is to anchor a mesh at the origin of the supplied cell. This overlaid mesh is then repeated until it is large enough to have at least one cutoff length in all direction. Periodicity is now ensured by adding ghost atoms through shifting all center atoms by the supplied lattice vectors.
+All center and ghost atoms are then sorted into boxes. These boxes are indexed and the neighbourhood for each atom is built based on it’s surrounding.
+The resulting neighbourlist is full and not strict.</p>
+<p>One peculiarity has to be mentiond. It is the flag <code class="docutils literal notranslate"><span class="pre">consider_ghost_neighbours</span></code>.
+The standard behaviour of the adaptor is to provide neighbours of the initial list of atoms. It does not provide a neighbourlist for the ghost atoms.
+This corresponds to <code class="docutils literal notranslate"><span class="pre">consider_ghost_neighbours=false</span></code>. And it is fine if only a pair list is needed for whatever comes afterwards.
+But if triplets are constructed subsequently, the neighbours of ghost atoms are needed. Some atomic representations have three-body terms and they can not be constructed if the ghost atoms do not have neighbours.</p>
+</div>
+<div class="section" id="adaptorhalflist">
+<h2><a class="toc-backref" href="#id8">AdaptorHalfList</a><a class="headerlink" href="#adaptorhalflist" title="Permalink to this headline">¶</a></h2>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorHalfList</span></code> provides to functionality to reduce a full neighbourlist to a half list. After construction the iteration over all possible pairs in an atomic structure yields each pair only once.
+The choice for including or not including a pair is based on the atomic indices of the participating atoms. Only pairs where the first (i-atom) index is smaller than the second (j-atom) index are included.
+Atomic indices are rascal-internal and the user does not have control over atomic indices. This ensures that the condition is a safe check.</p>
+</div>
+<div class="section" id="adaptorfulllist">
+<h2><a class="toc-backref" href="#id9">AdaptorFullList</a><a class="headerlink" href="#adaptorfulllist" title="Permalink to this headline">¶</a></h2>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorFullList</span></code> provides the functionality to blow up a half neighbourlist to a full neighbourlist.
+After construction the iteration over pairs yields each atom at least once as an i-atom.
+By construction the logic of layering in rascal for pairs is broken. Hence layer information for all pairs (also the ones that previously existed) is reset.</p>
+<p>This means that a previously calculated <code class="xref py py-class docutils literal notranslate"><span class="pre">Property</span></code> is not accessible any more with :class:<a href="#id4"><span class="problematic" id="id5">`</span></a>~ClusterRef`s of this type. Or it is partly accessible, but meaningless since the layering is destroyed.</p>
+</div>
+<div class="section" id="adaptorstrict">
+<h2><a class="toc-backref" href="#id10">AdaptorStrict</a><a class="headerlink" href="#adaptorstrict" title="Permalink to this headline">¶</a></h2>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorStrict</span></code> provides the functionality to only iterate over neighbours that are actually within a cutoff.
+Can must be stacked on top of an existing neighbourlist.
+During calculation of the strict neighbourlist the actual distance between neighbouring atoms has to be calculated.
+The distance (often used for calculating representations) and direction (used in derivatives) is stored for later possible reuse.</p>
+<p>Using this adaptor ensures that later calculation of (possibly very expensive) representations is limited to the atoms which are in each other’s cutoff.</p>
+</div>
+<div class="section" id="adaptormaxorder">
+<h2><a class="toc-backref" href="#id11">AdaptorMaxOrder</a><a class="headerlink" href="#adaptormaxorder" title="Permalink to this headline">¶</a></h2>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorMaxOrder</span></code> increases and existing neighbourlist by one Order. I.e. a pair list becomes a triplet list, a triplet list a quadruplet list, etc.
+It must be stacked on an existing neighbourlist.</p>
+<p>The functionality is provided by taking a <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> of a given order and adding all neighbours (pairs) of the constituting atoms as neighbours of this cluster.</p>
+<p>(Currently there is a peculiarity. Adding all neighbours results in an ambiguity. The triplet list is not strict any more. This is expected to be sorted out during the implementation of <code class="docutils literal notranslate"><span class="pre">Representations</span></code>)</p>
+</div>
+<div class="section" id="adaptorfilter">
+<h2><a class="toc-backref" href="#id12">AdaptorFilter</a><a class="headerlink" href="#adaptorfilter" title="Permalink to this headline">¶</a></h2>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorFilter</span></code> is a pure virtual which can not be instantiated. An daughter class of it provides a filtered (masked) view on an existing <code class="xref py py-class docutils literal notranslate"><span class="pre">StructureManager</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">Adaptor</span></code>.</p>
+<p>Any daughter class needs to implement the <code class="xref py py-meth docutils literal notranslate"><span class="pre">perform_filtering()</span></code> function. When used in this way, it could in principle substitute the <code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorStrict</span></code>.</p>
+<p>Currently only the <code class="xref py py-class docutils literal notranslate"><span class="pre">SpeciesManager</span></code> uses this class. Within this context the <code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorFilter</span></code> is used as a bucket to store a species-sorted view. Please refer to its documentation for details <a class="reference internal" href="species-manager.html#species-manager"><span class="std std-ref">Species Manager</span></a>.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="species-manager.html" class="btn btn-neutral float-right" title="Species Manager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="neighbor-list-manager.html" class="btn btn-neutral float-left" title="Neighbor List Manager" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti, Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

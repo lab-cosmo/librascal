@@ -1,0 +1,573 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Energy fitting &mdash; Rascal 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Setup" href="SOAP_CSD500.html" />
+    <link rel="prev" title="Tutorials" href="tutorials.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Rascal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="tutorials.html#getting-started">Getting started</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Energy fitting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#imports">Imports</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataset">Dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#full-spectrum">Full spectrum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#radial-spectrum">Radial spectrum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#map-of-the-dataset">Map of the dataset</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SOAP_CSD500.html">Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SOAP_CSD500.html#SOAP:-Power-spectrum">SOAP: Power spectrum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SOAP_CSD500.html#Learning-the-chemical-shifts-of-a-set-of-crystal-structures">Learning the chemical shifts of a set of crystal structures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SOAP_CSD500.html#Make-a-map-of-the-dataset">Make a map of the dataset</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials.html#intro-for-developers">Intro for developers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../whitepaper.html">Goals &amp; Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SOAP.html">SOAP Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../representation/representations.html">Representations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../neighbor_list/neighbor-list-manager.html">Neighbor List Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guide/developer.html">Developer’s guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../auto_doc/auto.html">Auto Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rascal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="tutorials.html">Tutorials</a> &raquo;</li>
+        
+      <li>Energy fitting</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/tutorials/TutorialEn.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="energy-fitting">
+<span id="tutorialen"></span><h1>Energy fitting<a class="headerlink" href="#energy-fitting" title="Permalink to this headline">¶</a></h1>
+<p>Approach used in Rascal can be used for calculating any of the rotationally
+invariant properties (such as formation energy), as well as rotationally
+covariant properties (such as dipole moment). This example is about fitting the
+formation energies of some small molecules. The dataset is located in the
+<a class="reference external" href="../../../../examples/data">librascal/examples/data/</a> folder, the python
+notebook doing the calculation is <a class="reference external" href="https://github.com/cosmo-epfl/librascal/blob/master/examples/SOAP_example.ipynb">librascal/examples/SOAP_example.ipynb
+(outbound)</a>.</p>
+<p>Let’s take a look at the code and describe what it do step-by-step.</p>
+<div class="section" id="imports">
+<h2>Imports<a class="headerlink" href="#imports" title="Permalink to this headline">¶</a></h2>
+<p>Just import of the necessary modules, including Rascal itself.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pylab</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;../build/&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">rascal</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">ase</span>
+<span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">writex</span>
+<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">make_supercell</span>
+<span class="kn">from</span> <span class="nn">ase.visualize</span> <span class="kn">import</span> <span class="n">view</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">rascal.representations</span> <span class="kn">import</span> <span class="n">SOAP</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="dataset">
+<h2>Dataset<a class="headerlink" href="#dataset" title="Permalink to this headline">¶</a></h2>
+<p>Here ASE is used to read the file with information about molecules, then the
+size of the feature matrix shown. The number of columns is the number of atoms
+in the set of molecules, the number of rows is depend on the max_radial and
+max_angular parameters. If the number of columns is big, sparsification needs to
+be done to reduce it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frames</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s1">&#39;./data/small_molecules-1000.xyz&#39;</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+<span class="n">hypers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;PowerSpectrum&quot;</span><span class="p">,</span>
+              <span class="n">interaction_cutoff</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span>
+              <span class="n">max_radial</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+              <span class="n">max_angular</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+              <span class="n">gaussian_sigma_constant</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+              <span class="n">gaussian_sigma_type</span><span class="o">=</span><span class="s2">&quot;Constant&quot;</span><span class="p">,</span>
+              <span class="n">cutoff_smooth_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+              <span class="p">)</span>
+<span class="n">soap</span> <span class="o">=</span> <span class="n">SOAP</span><span class="p">(</span><span class="o">**</span><span class="n">hypers</span><span class="p">)</span>
+<span class="o">%</span><span class="n">time</span> <span class="n">representation</span> <span class="o">=</span> <span class="n">soap</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">representation</span><span class="o">.</span><span class="n">get_feature_matrix</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+<span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>Here we define the functions, which are needed for the further computations.
+Let’s describe some of them.  compute_representation - creates a feature manager
+class using information about structure compute_kernel - compute the matrix of
+global similarity using global cosine kernel with a power of zeta to itself
+KRR.predict - predicting the energy of the molecules in the set, using trained
+model train_krr_model - train the model basing on the given dataset and using
+global cosine kernel</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the small molecules</span>
+<span class="n">frames</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s1">&#39;./data/small_molecules-1000.xyz&#39;</span><span class="p">,</span><span class="s1">&#39;:600&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">compute_representation</span><span class="p">(</span><span class="n">representation</span><span class="p">,</span><span class="n">frames</span><span class="p">):</span>
+    <span class="n">expansions</span> <span class="o">=</span> <span class="n">soap</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">expansions</span>
+
+<span class="k">def</span> <span class="nf">compute_kernel</span><span class="p">(</span><span class="n">zeta</span><span class="p">,</span> <span class="n">rep1</span><span class="p">,</span> <span class="n">rep2</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">rep2</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">rep1</span><span class="o">.</span><span class="n">cosine_kernel_global</span><span class="p">(</span><span class="n">zeta</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">rep1</span><span class="o">.</span><span class="n">cosine_kernel_global</span><span class="p">(</span><span class="n">rep2</span><span class="p">,</span><span class="n">zeta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">kernel</span>
+
+<span class="k">def</span> <span class="nf">extract_energy</span><span class="p">(</span><span class="n">frames</span><span class="p">):</span>
+    <span class="n">prop</span> <span class="o">=</span> <span class="p">[[]]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ii</span><span class="p">,</span><span class="n">cc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frames</span><span class="p">):</span>
+        <span class="n">prop</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;dft_formation_energy_per_atom_in_eV&#39;</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y</span>
+
+<span class="k">def</span> <span class="nf">split_dataset</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">test_fraction</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+    <span class="n">Ntrain</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="n">test_fraction</span><span class="p">)</span>
+    <span class="n">train</span> <span class="o">=</span> <span class="n">ids</span><span class="p">[:</span><span class="n">Ntrain</span><span class="p">]</span>
+    <span class="n">test</span> <span class="o">=</span> <span class="n">ids</span><span class="p">[</span><span class="n">Ntrain</span><span class="p">:]</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="n">extract_energy</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">frames</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">train</span><span class="p">],</span><span class="n">targets</span><span class="p">[</span><span class="n">train</span><span class="p">],[</span><span class="n">frames</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">test</span><span class="p">],</span><span class="n">targets</span><span class="p">[</span><span class="n">test</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">get_mae</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ypred</span><span class="o">-</span><span class="n">y</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">get_rmse</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">ypred</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">get_sup</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">ypred</span><span class="o">-</span><span class="n">y</span><span class="p">)))</span>
+<span class="k">def</span> <span class="nf">get_r2</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span><span class="n">y_true</span><span class="p">):</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">sample_weight</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">numerator</span> <span class="o">=</span> <span class="p">(</span><span class="n">weight</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">denominator</span> <span class="o">=</span> <span class="p">(</span><span class="n">weight</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">output_scores</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">output_scores</span><span class="p">)</span>
+
+<span class="n">score_func</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">MAE</span><span class="o">=</span><span class="n">get_mae</span><span class="p">,</span>
+    <span class="n">RMSE</span><span class="o">=</span><span class="n">get_rmse</span><span class="p">,</span>
+    <span class="n">SUP</span><span class="o">=</span><span class="n">get_sup</span><span class="p">,</span>
+    <span class="n">R2</span><span class="o">=</span><span class="n">get_r2</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_score</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">func</span> <span class="ow">in</span> <span class="n">score_func</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">scores</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">ypred</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">scores</span>
+
+<span class="k">class</span> <span class="nc">KRR</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">zeta</span><span class="p">,</span><span class="n">weights</span><span class="p">,</span><span class="n">representation</span><span class="p">,</span><span class="n">X</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">representation</span> <span class="o">=</span> <span class="n">representation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zeta</span> <span class="o">=</span> <span class="n">zeta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
+
+<span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">frames</span><span class="p">):</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">compute_representation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">representation</span><span class="p">,</span><span class="n">frames</span><span class="p">)</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">compute_kernel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zeta</span> <span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span> <span class="n">kernel</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">train_krr_model</span><span class="p">(</span><span class="n">zeta</span><span class="p">,</span><span class="n">Lambda</span><span class="p">,</span><span class="n">representation</span><span class="p">,</span><span class="n">frames</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">jitter</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">compute_representation</span><span class="p">(</span><span class="n">representation</span><span class="p">,</span><span class="n">frames</span><span class="p">)</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">compute_kernel</span><span class="p">(</span><span class="n">zeta</span><span class="p">,</span><span class="n">features</span><span class="p">)</span>
+    <span class="c1"># adjust the kernel so that it is properly scaled</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">diagonal</span><span class="p">())</span>
+    <span class="n">kernel</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">diag_indices_from</span><span class="p">(</span><span class="n">kernel</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">Lambda</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">delta</span> <span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">jitter</span>
+    <span class="c1"># train the krr model</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">KRR</span><span class="p">(</span><span class="n">zeta</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span><span class="n">representation</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span><span class="n">kernel</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="full-spectrum">
+<h2>Full spectrum<a class="headerlink" href="#full-spectrum" title="Permalink to this headline">¶</a></h2>
+<p>Here the full (with radial and angular parts) energies are computed. Let’s
+describe the parameters of the soap descriptor, defined in the <code class="docutils literal notranslate"><span class="pre">hypers</span></code>
+dictionary.</p>
+<ul class="simple">
+<li><p><strong>interaction_cutoff</strong>: Maximum pairwise distance for atoms to be considered
+in expansion</p></li>
+<li><p><strong>max_radial</strong>: number of radial basis functions</p></li>
+<li><p><strong>max_angular</strong>: highest angular momentum number in the expansion</p></li>
+<li><p><strong>gaussian_sigma_constant</strong>: specifies the atomic Gaussian widths, in the
+case where they’re fixed.</p></li>
+<li><p><strong>gaussian_sigma_type</strong>: how the Gaussian atom sigmas (smearing widths) are
+allowed to vary – fixed (<code class="docutils literal notranslate"><span class="pre">Constant</span></code>), by species (<code class="docutils literal notranslate"><span class="pre">PerSpecies</span></code>), or by
+distance from the central atom (<code class="docutils literal notranslate"><span class="pre">Radial</span></code>)</p></li>
+<li><p><strong>cutoff_smooth_width</strong>: the distance over which the the interaction is
+smoothed to zero</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hypers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;PowerSpectrum&quot;</span><span class="p">,</span>
+              <span class="n">interaction_cutoff</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span>
+              <span class="n">max_radial</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+              <span class="n">max_angular</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+              <span class="n">gaussian_sigma_constant</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+              <span class="n">gaussian_sigma_type</span><span class="o">=</span><span class="s2">&quot;Constant&quot;</span><span class="p">,</span>
+              <span class="n">cutoff_smooth_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+              <span class="p">)</span>
+<span class="n">soap</span> <span class="o">=</span> <span class="n">SOAP</span><span class="p">(</span><span class="o">**</span><span class="n">hypers</span><span class="p">)</span>
+
+<span class="n">frames_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">frames_test</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">split_dataset</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span><span class="mf">0.8</span><span class="p">)</span>
+
+<span class="n">zeta</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">Lambda</span> <span class="o">=</span> <span class="mf">5e-3</span>
+<span class="n">krr</span><span class="p">,</span><span class="n">k</span> <span class="o">=</span> <span class="n">train_krr_model</span><span class="p">(</span><span class="n">zeta</span><span class="p">,</span> <span class="n">Lambda</span><span class="p">,</span> <span class="n">soap</span><span class="p">,</span> <span class="n">frames_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">krr</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">frames_test</span><span class="p">)</span>
+<span class="n">get_score</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;scaled&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;DFT energy / (eV/atom)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Predicted energy / (eV/atom)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The result of this block is:</p>
+<img alt="../_images/R1.png" src="../_images/R1.png" />
+<p>The result is quite good. One can try to change the train dataset to see how it
+affects the precision of the result.</p>
+</div>
+<div class="section" id="radial-spectrum">
+<h2>Radial spectrum<a class="headerlink" href="#radial-spectrum" title="Permalink to this headline">¶</a></h2>
+<p>Here we compute the energy, supposing the angular component to be zero.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hypers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;RadialSpectrum&quot;</span><span class="p">,</span>
+              <span class="n">interaction_cutoff</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span>
+              <span class="n">max_radial</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+              <span class="n">max_angular</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+              <span class="n">gaussian_sigma_constant</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+              <span class="n">gaussian_sigma_type</span><span class="o">=</span><span class="s2">&quot;Constant&quot;</span><span class="p">,</span>
+              <span class="n">cutoff_smooth_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+              <span class="p">)</span>
+<span class="n">soap</span> <span class="o">=</span> <span class="n">SOAP</span><span class="p">(</span><span class="o">**</span><span class="n">hypers</span><span class="p">)</span>
+
+<span class="n">frames_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">frames_test</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">split_dataset</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span><span class="mf">0.8</span><span class="p">)</span>
+
+<span class="n">zeta</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">Lambda</span> <span class="o">=</span> <span class="mf">5e-4</span>
+<span class="n">krr</span><span class="p">,</span><span class="n">k</span> <span class="o">=</span> <span class="n">train_krr_model</span><span class="p">(</span><span class="n">zeta</span><span class="p">,</span> <span class="n">Lambda</span><span class="p">,</span> <span class="n">soap</span><span class="p">,</span> <span class="n">frames_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">krr</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">frames_test</span><span class="p">)</span>
+<span class="n">get_score</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;scaled&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;DFT energy / (eV/atom)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Predicted energy / (eV/atom)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Comparison of full and radial spectrum:</p>
+<img alt="../_images/Comps.png" src="../_images/Comps.png" />
+<p>It can be seen that the two spectres are quite similar, but the radial spectrum is much more simple to compute (as feature matrix is much smaller and the set of spherical harmonics doesn’t have to be computed). It is quite an inteseting fact, but, unfortunately, this feature is probably not generalizable and should be just the feature of this particular dataset.</p>
+</div>
+<div class="section" id="map-of-the-dataset">
+<h2>Map of the dataset<a class="headerlink" href="#map-of-the-dataset" title="Permalink to this headline">¶</a></h2>
+<p>Here we use sklearn to do <a class="reference external" href="https://en.wikipedia.org/wiki/Kernel_principal_component_analysis">kernel principal component analysis (outbound)</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">compute_representation</span><span class="p">(</span><span class="n">representation</span><span class="p">,</span><span class="n">frames</span><span class="p">):</span>
+    <span class="n">expansions</span> <span class="o">=</span> <span class="n">soap</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">expansions</span>
+
+<span class="k">def</span> <span class="nf">compute_kernel</span><span class="p">(</span><span class="n">zeta</span><span class="p">,</span> <span class="n">rep1</span><span class="p">,</span> <span class="n">rep2</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">rep2</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">rep1</span><span class="o">.</span><span class="n">cosine_kernel_global</span><span class="p">(</span><span class="n">zeta</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">rep1</span><span class="o">.</span><span class="n">cosine_kernel_global</span><span class="p">(</span><span class="n">rep2</span><span class="p">,</span><span class="n">zeta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">kernel</span>
+
+<span class="k">def</span> <span class="nf">link_ngl_wdgt_to_ax_pos</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">ngl_widget</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">matplotlib.widgets</span> <span class="kn">import</span> <span class="n">AxesWidget</span>
+    <span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">cKDTree</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initial idea for this function comes from @arose, the rest is @gph82 and @clonker</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">kdtree</span> <span class="o">=</span> <span class="n">cKDTree</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+    <span class="c1">#assert ngl_widget.trajectory_0.n_frames == pos.shape[0]</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">lineh</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_ybound</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+    <span class="n">linev</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xbound</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+    <span class="n">dot</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+
+    <span class="n">ngl_widget</span><span class="o">.</span><span class="n">isClick</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">onclick</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+        <span class="n">linev</span><span class="o">.</span><span class="n">set_xdata</span><span class="p">((</span><span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">))</span>
+        <span class="n">lineh</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">((</span><span class="n">event</span><span class="o">.</span><span class="n">ydata</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">ydata</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">ydata</span><span class="p">]</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">kdtree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">dot</span><span class="o">.</span><span class="n">set_xdata</span><span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="n">index</span><span class="p">]))</span>
+        <span class="n">dot</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">((</span><span class="n">y</span><span class="p">[</span><span class="n">index</span><span class="p">]))</span>
+        <span class="n">ngl_widget</span><span class="o">.</span><span class="n">isClick</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">ngl_widget</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">index</span>
+
+    <span class="k">def</span> <span class="nf">my_observer</span><span class="p">(</span><span class="n">change</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Here comes the code that you want to execute</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ngl_widget</span><span class="o">.</span><span class="n">isClick</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">_idx</span> <span class="o">=</span> <span class="n">change</span><span class="p">[</span><span class="s2">&quot;new&quot;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dot</span><span class="o">.</span><span class="n">set_xdata</span><span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="n">_idx</span><span class="p">]))</span>
+            <span class="n">dot</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">((</span><span class="n">y</span><span class="p">[</span><span class="n">_idx</span><span class="p">]))</span>
+        <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">dot</span><span class="o">.</span><span class="n">set_xdata</span><span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">dot</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">((</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;caught index error with index </span><span class="si">%s</span><span class="s2"> (new=</span><span class="si">%s</span><span class="s2">, old=</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_idx</span><span class="p">,</span> <span class="n">change</span><span class="p">[</span><span class="s2">&quot;new&quot;</span><span class="p">],</span> <span class="n">change</span><span class="p">[</span><span class="s2">&quot;old&quot;</span><span class="p">]))</span>
+
+    <span class="c1"># Connect axes to widget</span>
+    <span class="n">axes_widget</span> <span class="o">=</span> <span class="n">AxesWidget</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">axes_widget</span><span class="o">.</span><span class="n">connect_event</span><span class="p">(</span><span class="s1">&#39;button_release_event&#39;</span><span class="p">,</span> <span class="n">onclick</span><span class="p">)</span>
+
+    <span class="c1"># Connect widget to axes</span>
+    <span class="n">ngl_widget</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">my_observer</span><span class="p">,</span> <span class="s2">&quot;frame&quot;</span><span class="p">,</span> <span class="s2">&quot;change&quot;</span><span class="p">)</span>
+
+<span class="c1"># Load the small molecules</span>
+<span class="n">frames</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s1">&#39;./data/small_molecules-1000.xyz&#39;</span><span class="p">,</span><span class="s1">&#39;:600&#39;</span><span class="p">)</span>
+<span class="n">hypers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;PowerSpectrum&quot;</span><span class="p">,</span>
+              <span class="n">interaction_cutoff</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span>
+              <span class="n">max_radial</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+              <span class="n">max_angular</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+              <span class="n">gaussian_sigma_constant</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+              <span class="n">gaussian_sigma_type</span><span class="o">=</span><span class="s2">&quot;Constant&quot;</span><span class="p">,</span>
+              <span class="n">cutoff_smooth_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+              <span class="p">)</span>
+<span class="n">soap</span> <span class="o">=</span> <span class="n">SOAP</span><span class="p">(</span><span class="o">**</span><span class="n">hypers</span><span class="p">)</span>
+<span class="n">zeta</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">features</span> <span class="o">=</span> <span class="n">compute_representation</span><span class="p">(</span><span class="n">soap</span><span class="p">,</span> <span class="n">frames</span><span class="p">)</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">compute_kernel</span><span class="p">(</span><span class="n">zeta</span><span class="p">,</span><span class="n">features</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">KernelPCA</span>
+<span class="n">kpca</span> <span class="o">=</span> <span class="n">KernelPCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;precomputed&#39;</span><span class="p">)</span>
+<span class="n">kpca</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">kpca</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">X</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The result of this block is:</p>
+<img alt="../_images/PCAs.png" src="../_images/PCAs.png" />
+<p>It shows how the structures is located in the abstract 2D map, where similar
+structures are located near to each other, and the very different ones far from
+each other.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="SOAP_CSD500.html" class="btn btn-neutral float-right" title="Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tutorials.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti, Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

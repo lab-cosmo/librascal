@@ -1,0 +1,272 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Neighbor List Manager &mdash; Rascal 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Adaptors" href="adaptors.html" />
+    <link rel="prev" title="Models" href="../models/models.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Rascal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whitepaper.html">Goals &amp; Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SOAP.html">SOAP Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../representation/representations.html">Representations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models/models.html">Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Neighbor List Manager</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adaptors.html">Adaptors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="species-manager.html">Species Manager</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guide/developer.html">Developer’s guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../auto_doc/auto.html">Auto Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rascal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Neighbor List Manager</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/neighbor_list/neighbor-list-manager.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="neighbor-list-manager">
+<span id="id1"></span><h1>Neighbor List Manager<a class="headerlink" href="#neighbor-list-manager" title="Permalink to this headline">¶</a></h1>
+<p>Librascal provides a user friendly, flexible and efficient infrastructure to build neighbor list meeting the specific needs of many represenations of atomic neighborhood.
+A neighbor list in librascal manages and/or builds all the data relevant to the atomic structure it refers to, e.g. the atomic structure (positions, atomic types, cell, periodic boundary conditions), the distances between a central atom and its neighbors, the representations associated to the atomic structure…
+The main purpose of gathering all these informations in one place is to reduce as much as possible the access to these quantities with explicit indices (see <a class="reference internal" href="../tutorials/nl-for-user.html#nl-for-user"><span class="std std-ref">How to build a neighbor list?</span></a> for a detailed description of how to interact with them).</p>
+<p>The purpose of neighbor lists in librascal is to provide the iteration patterns dictated by the definition of a representation from an input structure which could be a raw atomic structure or an already existing neighbor list provided by an external code such as LAMMPS. Clearly both the starting and ending state of a neighbor list differ greatly between representations and framework. To adress this issue librascal defines two family of objects: the <code class="xref py py-class docutils literal notranslate"><span class="pre">StructureManagerX</span></code> and the <code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorY</span></code> that follow the interface defined the <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">StructureManager</span></code> class (<cite>X</cite> and <cite>Y</cite> are names referring to the function of the object).
+A structure manager is meant to handle the input structure like in <a class="reference internal" href="../auto_doc/auto_cpp.html#_CPPv4N6rascal23StructureManagerCentersE" title="rascal::StructureManagerCenters"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">StructureManagerCenters</span></code></a> or <a class="reference internal" href="../auto_doc/auto_cpp.html#_CPPv4N6rascal22StructureManagerLammpsE" title="rascal::StructureManagerLammps"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">StructureManagerLammps</span></code></a> while an adaptor modifies the neighbor list so that it matches the requirements of a representation.</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">General descriptions</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="adaptors.html">Adaptors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adaptors.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adaptors.html#adaptorneighbourlist">AdaptorNeighbourList</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adaptors.html#adaptorhalflist">AdaptorHalfList</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adaptors.html#adaptorfulllist">AdaptorFullList</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adaptors.html#adaptorstrict">AdaptorStrict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adaptors.html#adaptormaxorder">AdaptorMaxOrder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adaptors.html#adaptorfilter">AdaptorFilter</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="species-manager.html">Species Manager</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="species-manager.html#principle">Principle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="species-manager.html#storage-concept">Storage concept</a></li>
+<li class="toctree-l2"><a class="reference internal" href="species-manager.html#access">Access</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="adaptors.html" class="btn btn-neutral float-right" title="Adaptors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../models/models.html" class="btn btn-neutral float-left" title="Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti, Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,10 +1,373 @@
+
+
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Librascal</title>
-    </head>
-    <body>
-        <h1>Hello world!</h1>
-    </body>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to librascal’s documentation! &mdash; Rascal 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> Rascal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="whitepaper.html">Goals &amp; Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SOAP.html">SOAP Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="representation/representations.html">Representations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="neighbor_list/neighbor-list-manager.html">Neighbor List Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dev_guide/developer.html">Developer’s guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auto_doc/auto.html">Auto Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Rascal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Welcome to librascal’s documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="welcome-to-librascal-s-documentation">
+<h1>Welcome to librascal’s documentation!<a class="headerlink" href="#welcome-to-librascal-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>librascal is a versatile and scalable fingerprint and machine learning
+code. It focuses on the efficient construction of representations of
+atomic structures, that can then be fed to any supervised or
+unsupervised learning algorithm. Simple regression code will be included
+for testing purposes, but the long-term goal is to develop a separate
+collection of tools to this end.</p>
+<p>librascal is currently considered a standalone code. However, we aim to
+provide enough flexibility to interface it with other codes such as
+LAMMPS and PLUMED-2.0. It can be used as a C++ library as well as a
+python module. To be able to call it from python, we have used the
+pybind11 library.</p>
+<p>Although at the moment is a serial-only code, we aim to write it in MPI
+so that it will be possible to take advantage of parallelization to
+speed up the calculations significantly. Parallelization is possible especially
+over atoms in a structure (for large structures), over structures in a
+collection (for large collections of small structures), or over components of a
+representation (for representations with a large number of independent functions
+or components).</p>
+<p>It comes with a GNU Lesser General Public License of version 3, which
+means that it can be modified and freely distributed, although we take
+no responsibility for its misuse.</p>
+<div class="section" id="development">
+<h2>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h2>
+<p>The code is currently in the alpha development phase; it is not yet
+suitable for public use. Nevertheless, there is a significant amount of
+functionality (including two tutorials) currently working and available
+to test if you’re feeling adventurous. Feedback and bug reports are
+welcome, as long as you keep the above in mind.</p>
+</div>
+<div class="section" id="structure-of-the-code">
+<span id="code-structure"></span><h2>Structure of the Code<a class="headerlink" href="#structure-of-the-code" title="Permalink to this headline">¶</a></h2>
+<p>The code is divided mainly in two parts: a pure C++ part and a python-binding interface.</p>
+<p>The subroutines of the code that performs the expensive part of the calculation
+are written in C++14, and are collected in the <code class="file docutils literal notranslate"><span class="pre">/src/</span></code> directory, as in the
+case of the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">cdist</span></code>. This folder is completely agnostic of the
+python bindings, and it should be kept in this way.</p>
+<p>The python-bindings is obtained through Pybind11, and the binding subroutines
+are included in the <code class="file docutils literal notranslate"><span class="pre">/bindings/</span></code> folder. Here, the bind_py_module.cc is
+the file that contains the main binding of the C++ package (in other words, is
+what is needed to use the syntax <code class="code python docutils literal notranslate"><span class="keyword namespace"><span class="pre">import</span></span> <span class="name namespace"><span class="pre">librascal</span></span></code>). The binding for
+each submodule of Rascal and its members are collected in files named
+bind_py_METHOD.cc. We decided to employ Pybind11 because of its seamless
+integration between Eigen and numpy. This allows the developer (and the user) to
+code fast and efficient algorithms easily, without losing the power of the C++
+linear algebra as well as numpy simplicity. For more reference, please consult
+<a class="reference external" href="http://pybind11.readthedocs.io/en/stable/advanced/cast/eigen.html?highlight=eigen#pass-by-reference">Eigen interface from pybind11 (outbound)</a>.</p>
+</div>
+<div class="section" id="developers">
+<h2>Developers<a class="headerlink" href="#developers" title="Permalink to this headline">¶</a></h2>
+<p>Rascal is jointly developed between the <a class="reference external" href="https://cosmo.epfl.ch">COSMO (outbound)</a> and
+<a class="reference external" href="https://lammm.epfl.ch">LAMMM (outbound)</a> groups at EPFL.  The active developers are
+Michele Ceriotti, Federico Giberti, Alexander Gocsinski, Till Junge, Félix
+Musil, Markus Stricker, Max Veit, and Michael Willatt.</p>
+<p>This documentation has been contributed by Chiheb Ben Mahmoud, Michele Ceriotti,
+Federico Giberti, Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil,
+and is currently maintained by Max Veit.</p>
+</div>
+<div class="section" id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#get-librascal">Get librascal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#miscellaneous-information">Miscellaneous Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#run-rascal">Run Rascal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#advanced-options">Advanced options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorials.html#getting-started">Getting started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tutorials.html#intro-for-developers">Intro for developers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="whitepaper.html">Goals &amp; Design</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="whitepaper.html#structures-and-clusters">Structures and Clusters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whitepaper.html#structure-managers">Structure Managers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whitepaper.html#adaptors">Adaptors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whitepaper.html#stacking-of-structuremanagers">Stacking of StructureManagers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whitepaper.html#clusterrefs-property-and-indexing">ClusterRefs, Property and indexing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whitepaper.html#repmanager">RepManager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="whitepaper.html#structure-managers-repmanager-and-python">Structure Managers, RepManager and Python</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="SOAP.html">SOAP Theory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="SOAP.html#from-the-density-to-the-density-expansion">From the density to the density expansion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="representation/representations.html">Representations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="representation/representations.html#pair-distances">Pair distances</a></li>
+<li class="toctree-l2"><a class="reference internal" href="representation/representations.html#sphericalinvariants">SphericalInvariants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="representation/representations.html#behler-parinello-symmetry-functions">Behler-Parinello symmetry functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="representation/representations.html#voronoi-representation">Voronoi representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="representation/representations.html#coulomb-matrices">Coulomb matrices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="models/models.html">Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="models/models.html#regression">Regression</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="neighbor_list/neighbor-list-manager.html">Neighbor List Manager</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="neighbor_list/adaptors.html">Adaptors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neighbor_list/species-manager.html">Species Manager</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dev_guide/developer.html">Developer’s guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dev_guide/how_to_contribute.html">How to contribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_guide/how_to_misc.html">How to edit the documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_guide/how_to_misc.html#how-to-edit-a-readme">How to edit a Readme</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_guide/how_to_add_representation.html">How to add a new representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_guide/how_to_test.html">How to write a test</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_guide/how_to_test.html#how-to-run-the-tests">How to run the tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_guide/coding-convention.html">Coding Convention</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="auto_doc/auto.html">Auto Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="auto_doc/auto_python.html">Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_doc/auto_cpp.html">C++ documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">References</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bibliography.html#soap-references">SOAP references</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti, Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
 </html>

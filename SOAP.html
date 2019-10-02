@@ -1,0 +1,745 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>SOAP Theory &mdash; Rascal 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Representations" href="representation/representations.html" />
+    <link rel="prev" title="Goals &amp; Design" href="whitepaper.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Rascal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="whitepaper.html">Goals &amp; Design</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SOAP Theory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#from-the-density-to-the-density-expansion">From the density to the density expansion</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#density-coefficients-angular-integration">Density coefficients: angular integration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#integration-over-phi">Integration over <span class="math notranslate nohighlight">\(\phi\)</span></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#integration-over-theta">Integration over <span class="math notranslate nohighlight">\(\theta\)</span></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#density-coefficients-radial-integration">Density coefficients: Radial integration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gto-like-radial-basis">GTO like radial basis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#numerical-integration-of-the-radial-integral">Numerical Integration of the Radial Integral</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gradient-of-the-density-coefficients-with-respect-to-the-cartesian-coordinates">Gradient of the density coefficients with respect to the Cartesian coordinates</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#terms-common-to-the-different-radial-basis">Terms common to the different radial basis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gto-like-radial-basis-1">GTO like radial basis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#numerical-integration">Numerical Integration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="representation/representations.html">Representations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="neighbor_list/neighbor-list-manager.html">Neighbor List Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dev_guide/developer.html">Developer’s guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auto_doc/auto.html">Auto Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Rascal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>SOAP Theory</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/SOAP.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="soap-theory">
+<span id="theory"></span><h1>SOAP Theory<a class="headerlink" href="#soap-theory" title="Permalink to this headline">¶</a></h1>
+<dl class="field-list simple">
+<dt class="field-odd">Authors</dt>
+<dd class="field-odd"><p>Felix Musil, Max Veit, Michael Willatt, Klim Goldshtein</p>
+</dd>
+<dt class="field-even">Last updated</dt>
+<dd class="field-even"><p>27 Aug 2019</p>
+</dd>
+</dl>
+<p>The mathematics behind the analytical radial integrals, and Cartesian gradients,
+of the SOAP descriptor is described below.</p>
+<div class="section" id="from-the-density-to-the-density-expansion">
+<h2>From the density to the density expansion<a class="headerlink" href="#from-the-density-to-the-density-expansion" title="Permalink to this headline">¶</a></h2>
+<p>Density expansion:</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\newcommand{\bvec}[1]{\mathbf{#1}}
+\newcommand{\CHF}[3]{{}_{1}F_{1}\left(#1 ,#2, #3 \right)}
+\newcommand{\CHLF}[2]{{}_{0}F_{1}\left(#1,#2\right)}
+\newcommand{\GA}[1]{\Gamma\left(#1\right)}
+\newcommand{\rij}{r_{ij}}
+\newcommand{\phiij}{\phi_{ij}}
+\newcommand{\uij}{u_{ij}}
+\newcommand{\thetaij}{\theta_{ij}}
+\newcommand{\br}{\mathbf{r}}
+\newcommand{\bhr}{\hat{\mathbf{r}}}
+\newcommand{\bm}[1]{\mathbf{#1}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\Rhat}{{\hat{R}}}
+\newcommand{\bk}{\mathbf{k}}
+\newcommand{\bK}{\mathbf{K}}
+\newcommand{\bt}{\mathbf{t}}
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bw}{\mathbf{w}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bPsi}{\mathbf{\Psi}}
+\newcommand{\bPhi}{\mathbf{\Phi}}
+\newcommand{\dbr}{\textrm{d}\br}
+\newcommand{\dint}{\textrm{d}}
+\newcommand{\drhat}{\textrm{d}\hat{R}}
+\newcommand{\cald}{\mathcal{D}}
+\newcommand{\CX}{\mathcal{X}}
+\newcommand{\calk}{\mathcal{K}}
+\newcommand{\CA}{\mathcal{A}}
+\newcommand{\CB}{\mathcal{B}}
+\newcommand{\loss}{\ell}
+\newcommand{\diag}{\operatorname{diag}}
+% Stuff that was in the physics package (but mathjax can't use, obvs)
+\newcommand{\braket}[2]{\left\langle #1 \middle| #2 \right \rangle}
+\newcommand{\dd}{\mathrm{d}\;}
+\newcommand{\norm}[1]{\left\| #1 \right\|}
+\newcommand{\dv}[2]{\frac{\mathrm{d}\, #1}{\mathrm{d}\, #2}}
+\newcommand{\grad}{\nabla}
+\newcommand{\iket}[2]{\ket{#1}_{#2}}
+\newcommand{\ibraket}[3]{\braket{#1}{#2}_{#3}}
+\newcommand{\CN}{\mathcal{N}}
+\newcommand{\gaus}[2]{\CN_{#1}\left(#2\right)}\\\rho^{\alpha}_i(\mathbf{r})=\sum_{j\in \alpha} \mathcal{N}_{\sigma}\left(\mathbf{r}-\mathbf{r}_{ij}\right) =
+\sum_{nlm} \braket{\alpha n \ell m}{\mathcal{X}_i} B_{nlm}(\mathbf{r}),\end{aligned}\end{align} \]</div>
+<p>where <span class="math notranslate nohighlight">\(\alpha\)</span> is a tag refers to the specie of the considered
+atoms, <span class="math notranslate nohighlight">\(\sum_{j \in \alpha}\)</span> defines a sum over the neighbours of
+atom <span class="math notranslate nohighlight">\(i\)</span> of specie <span class="math notranslate nohighlight">\(\alpha\)</span>, <span class="math notranslate nohighlight">\(\mathcal{N}_{\sigma}\)</span> a
+Gaussian centered around <span class="math notranslate nohighlight">\(0\)</span> and variance <span class="math notranslate nohighlight">\(\sigma^2\)</span>,
+<span class="math notranslate nohighlight">\(B_{nlm}(\mathbf{r}) = R_n(r) Y_{\ell}^m(\hat{\mathbf{r}})\)</span>
+defines a complete orthonormal basis set, <span class="math notranslate nohighlight">\(Y_{\ell}^m\)</span> a spherical
+harmonic (SH), <span class="math notranslate nohighlight">\(r=\norm{\mathbf{r}}\)</span> and
+<span class="math notranslate nohighlight">\(\hat{\mathbf{r}}=\mathbf{r}/r\)</span>.</p>
+<p>The following derivation aims at deriving expressions for the
+coefficients of the density expansion and their derivative with respect
+to atomic coordinate for several basis sets.</p>
+<div class="section" id="density-coefficients-angular-integration">
+<h3>Density coefficients: angular integration<a class="headerlink" href="#density-coefficients-angular-integration" title="Permalink to this headline">¶</a></h3>
+<p>Spherical harmonics are the only orthonormal basis set of <span class="math notranslate nohighlight">\(S^2\)</span> so
+this part should apply except for real space basis.</p>
+<p>We use the orthonormality of the basis set to compute the expressiont
+for the density coefficients and express the resulting integral over
+<span class="math notranslate nohighlight">\(\rm I\!R^3\)</span> in spherical coordinates using
+<span class="math notranslate nohighlight">\(\norm{\mathbf{r}-\mathbf{r}_{ij}}^2=\mathbf{r}^2+\mathbf{r}_{ij}^2-2\norm{\mathbf{r}}\norm{\mathbf{r}_{ij}}\cos{\theta}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{split}
+\braket{\alpha n \ell m}{\mathcal{X}_i}=&amp; \sum_{j \in \alpha} c^{ij}_{n \ell m} = \sum_{j \in \alpha} \int_{\rm I\!R^3} \exp\left[-a\left(\mathbf{r}-\mathbf{r}_{ij}\right)^2\right]B_{nlm}(\mathbf{r})\\
+=&amp;\sum_{j \in \alpha} \int_{0}^{\infty}r^2  \exp\left[-a\left(r^2+r_{ij}^2\right)\right] g_n(r) \int_{-1}^{1}\mathrm{d}\left(\cos{\theta}\right) \\
+&amp; \int_0^{2\pi}\mathrm{d}\phi \exp\left[2arr_{ij}\cos{\theta}\right]Y_{\ell}^{m}\left(\hat{\mathrm{R}}\hat{\bm{q}}\right),\\
+\end{split}\end{split}\]</div>
+<p>where
+<span class="math notranslate nohighlight">\(\hat{\mathrm{R}} = \hat{\mathrm{R}}_{ZYZ}\left(\alpha_{ij},\beta{ij},0\right)\)</span>
+is the ZYZ-Euler matrix that rotate <span class="math notranslate nohighlight">\(\hat{e}_z\)</span> onto
+<span class="math notranslate nohighlight">\(\bm{q}_{ij}\)</span>, <span class="math notranslate nohighlight">\(a=\frac{1}{2\sigma^2}\)</span>. Note that global
+normalization constants are omitted because of a normalization at the
+end.</p>
+<div class="line-block">
+<div class="line">We use the following convention for the SH</div>
+</div>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[Y_{\ell}^{m}\left(\hat{\mathbf{r}}\right)=Y_{\ell}^{m}\left(\theta,\phi\right)=A_{\ell}^{m}e^{im\phi}P^{m}_{\ell}\left(\cos\theta\right),\]</div>
+</div></blockquote>
+<p>where
+<span class="math notranslate nohighlight">\(A_{\ell}^{m} =\sqrt{\frac{(\ell-m)!(2l+1)}{4\pi(\ell+m)!}}\)</span> and
+<span class="math notranslate nohighlight">\(\hat{q}\)</span> is the direction vector defined by the angle
+<span class="math notranslate nohighlight">\(\theta\)</span> and <span class="math notranslate nohighlight">\(\phi\)</span>. Note that the phase factor
+<span class="math notranslate nohighlight">\((-1)^\ell\)</span> is included in the definition of the Associated
+Legendre Polynomials (ALPs). The set of spherical harmonics is
+calculated in the
+| <strong>librascal/src/math/spherical_harmonics.cc</strong> file, which is provided
+with explanations. The total number of SH in the set is
+<span class="math notranslate nohighlight">\((l_{max} +1)^2\)</span>.</p>
+<p>The integration over the angular part yields</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{split}
+\int_{-1}^{1}\mathrm{d}\left(\cos{\theta}\right) \exp\left[arr_{ij}\cos{\theta}\right] \int_0^{2\pi}\mathrm{d}\phi Y_{\ell}^{m}\left(\hat{\mathrm{R}}\left(\alpha_{ij},\beta{ij},0\right)\hat{\bm{q}}\right) =&amp; 4\pi Y_\ell^m \left(\beta_{ij},\alpha_{ij}\right) \mathsf{i}_{\ell}\left(arr_{ij}\right), \\
+=&amp; Y_\ell^m \left(\hat{\mathbf{r}}_{ij}\right) \mathsf{i}_{\ell}\left(arr_{ij}\right),
+\end{split}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathsf{i}_{\ell}\)</span> stands for the modified spherical
+Bessel function of the first kind. The intermediate steps are detailed
+in the following paragraphs.</p>
+<div class="section" id="integration-over-phi">
+<h4>Integration over <span class="math notranslate nohighlight">\(\phi\)</span><a class="headerlink" href="#integration-over-phi" title="Permalink to this headline">¶</a></h4>
+<p>The integration over the polar angle cancels out all orders of <span class="math notranslate nohighlight">\(m\)</span>
+from the SH</p>
+<div class="math notranslate nohighlight">
+\[\int_0^{2\pi}\mathrm{d}\phi Y_{\ell}^{m}\left(\theta,\phi\right) = \sqrt{\pi\left(2l+1\right)}\mathrm{P}_{\ell}^{m}\left(\cos{\theta}\right) \delta_{m0},\]</div>
+<p>since</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\int_0^{2\pi}\mathrm{d}\phi \exp\left[im\phi\right] = 2\pi \delta_{0m}.
+\end{split}\]</div>
+<p>Nevertheless, the rotation of the spherical harmonic breaks down into a
+linear combination of spherical harmonics. The coefficents are the
+entries of the Wigner D-matrix constructed from the Euler angles of the
+rotation matrix <span class="math notranslate nohighlight">\(\hat{R}\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{split}
+Y_{\ell}^{m}\left(\hat{\mathrm{R}}\hat{\mathbf{r}}\right) = &amp; \sum_{m'=-\ell}^{\ell} \mathrm{D}_{mm'}^\ell\left(\hat{R}\,\right) Y_{\ell}^{m}\left(\hat{\mathbf{r}}\right), \\
+\mathrm{D}_{m0}^\ell\left(\alpha,\beta,\gamma\right) =&amp; \sqrt{\frac{4\pi}{2l+1}} Y_l^m\left(\beta,\alpha\right). \\
+\end{split}\end{split}\]</div>
+<p>Thus, the polar integral over the rotated SH simplifies into</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{split}
+\int_0^{2\pi}\mathrm{d}\phi\, Y_{\ell}^{m}\left(\hat{\mathrm{R}}\hat{\mathbf{r}}\right) =&amp; \sum_{m'=-\ell}^{\ell} \mathrm{D}_{mm'}^\ell\left(\alpha_{ij},\beta_{ij},0\right) \sqrt{\pi(2l+1)} P_{\ell}^{m'}\left(\cos{\theta}\right) \delta_{m'0} \\
+=&amp; 2\pi Y_\ell^m \left(\beta_{ij},\alpha_{ij}\right) P_{\ell}^{0}\left(\cos{\theta}\right).
+\end{split}
+\label{eq:int-phi}\end{split}\]</div>
+</div>
+<div class="section" id="integration-over-theta">
+<h4>Integration over <span class="math notranslate nohighlight">\(\theta\)</span><a class="headerlink" href="#integration-over-theta" title="Permalink to this headline">¶</a></h4>
+<p>The modified spherical Bessel function of the first kind (MSBF) admit
+the following integral representation</p>
+<div class="math notranslate nohighlight">
+\[\mathsf{i}_n\left(z\right)= \frac{1}{2}\int_{-1}^{1}\mathrm{d}x \exp\left(zx\right)\mathrm{P}_{n}^{0}\left(x\right),\]</div>
+<p>which can be shown using the reference relations <a class="footnote-reference brackets" href="#id4" id="id1">1</a> <a class="footnote-reference brackets" href="#id5" id="id2">2</a> <a class="footnote-reference brackets" href="#id6" id="id3">3</a>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+\mathsf{j}_n\left(z\right) =&amp; \frac{(-i)^n}{2}\int_{-1}^{1}\mathrm{d}x \exp\left[izx\right]P_{n}^{0}\left(x\right), \label{eq:bessel-1}\\
+\mathsf{i}_n\left(z\right)=&amp; (-i)^{n} \mathsf{j}_n\left(iz\right), \label{eq:bessel-3}\\
+\mathsf{i}_n\left(z\right)=&amp; (-1)^{n} \mathsf{i}_n\left(-z\right), \label{eq:bessel-4}\end{aligned}\end{split}\]</div>
+<dl class="footnote brackets">
+<dt class="label" id="id4"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p><a class="reference external" href="http://dlmf.nist.gov/10.54.E2">http://dlmf.nist.gov/10.54.E2</a></p>
+</dd>
+<dt class="label" id="id5"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
+<dd><p><a class="reference external" href="http://dlmf.nist.gov/10.47.E12">http://dlmf.nist.gov/10.47.E12</a></p>
+</dd>
+<dt class="label" id="id6"><span class="brackets"><a class="fn-backref" href="#id3">3</a></span></dt>
+<dd><p><a class="reference external" href="http://dlmf.nist.gov/10.47.E16">http://dlmf.nist.gov/10.47.E16</a></p>
+</dd>
+</dl>
+<p><span class="math notranslate nohighlight">\(j_n\)</span> is the spherical Bessel function of the first kind. The
+integral over the polar angle is then given by</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\int_{-1}^{1}\mathrm{d}\left(\cos{\theta}\right) \exp\left[2arr_{ij}\cos{\theta}\right]P_{\ell}^{0}\left(\cos{\theta}\right) =&amp; 2 \mathsf{i}_{\ell}(2arr_{ij}).
+\end{split}\]</div>
+</div>
+</div>
+<div class="section" id="density-coefficients-radial-integration">
+<h3>Density coefficients: Radial integration<a class="headerlink" href="#density-coefficients-radial-integration" title="Permalink to this headline">¶</a></h3>
+<p>Summing up the results from the previous section:</p>
+<div class="math notranslate nohighlight">
+\[c^{ij}_{n\ell m} = 4\pi Y_{\ell}^m(\hat{\mathbf{r}}_{ij}) \exp\left[-ar^2_{ij}\right] \underbrace{\int_0^\infty \dd{r} r^2 R_n(r) e^{-ar^2} \mathsf{i}_{\ell}\left(2a r r_{ij}\right)}_{=\text{I}_{n\ell}^{ij}} ,\]</div>
+<p>we identify <span class="math notranslate nohighlight">\(\text{I}_{n\ell}^{ij}\)</span> as the last term to simplify
+for particular choices of radial basis functions.</p>
+<div class="section" id="gto-like-radial-basis">
+<h4>GTO like radial basis<a class="headerlink" href="#gto-like-radial-basis" title="Permalink to this headline">¶</a></h4>
+<p>The Gaussian Type Orbital radial basis is defined</p>
+<div class="math notranslate nohighlight">
+\[R^{GTO}_{n}(r) = \mathcal{N}_n\ r^{n} \exp[-br^2],\]</div>
+<p>where <span class="math notranslate nohighlight">\(b=\frac{1}{2\sigma_n^2}\)</span>,
+<span class="math notranslate nohighlight">\(\sigma_n = (r_\text{cut}-\delta r_\text{cut}) \max(\sqrt{n},1)/n_\text{max}\)</span>
+and the normalization factor is given by</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{N}_n^2 = \frac{2(1)}{\sigma_n^{2n + 3}\Gamma(n + 3/2)}.\]</div>
+<p>The overlap between GTO radial basis is:</p>
+<div class="math notranslate nohighlight">
+\[\int_0^\infty R^{GTO}_{n}(r) R^{GTO}_{n^\prime}(r) \dd{r}= 2 \left(\frac{1}{2 \sigma_{n}^2}+\frac{1}{2 \sigma_{n^\prime}^2} \right)^{-\frac{1}{2} (3+n+n^\prime)} \Gamma(\frac{3+n+n^\prime}{2})\]</div>
+<p>This equals what we use in the implementation</p>
+<div class="math notranslate nohighlight">
+\[\int_0^\infty R^{GTO}_{n}(r) R^{GTO}_{n^\prime}(r) \dd{r}= N_n N_{n^\prime} \left(\frac{1}{2 \sigma_{n}^2}+\frac{1}{2 \sigma_{n^\prime}^2} \right)^{-\frac{1}{2} (3+n+n^\prime)} \Gamma(\frac{3+n+n^\prime}{2})\]</div>
+<p>The radial integral becomes</p>
+<div class="math notranslate nohighlight">
+\[I^{ij\,\text{GTO}}_{nl}= \mathcal{N}_n \frac{\sqrt{\pi}}{4} \frac{\GA{\frac{n+\ell+k+3}{2}}}{\GA{\ell+\frac{3}{2}}}a^\ell \rij^\ell(a+b)^{-\frac{n+k+\ell+3}{2}}  \CHF{\frac{n+\ell+k+3}{2}}{\ell+\frac{3}{2}}{\frac{a^2 \rij^2}{a+b}},
+\label{eq:rad-int-gto-1}\]</div>
+<p>which yields the following expression for the neighbour contribution</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}c^{ij\,\text{GTO}}_{n\ell m}=&amp; (\pi)^{\frac{3}{2}} \mathcal{N}_n \frac{\GA{\frac{n+\ell+3}{2}}}{\GA{\ell+\frac{3}{2}}} (a+b)^{-\frac{n+\ell+3}{2}}  \\
+&amp; Y_{\ell}^m(\bhr_{ij}) \exp\left[-ar^2_{ij}\right]   (a\rij)^\ell  \CHF{\frac{n+\ell+3}{2}}{\ell+\frac{3}{2}}{\frac{a^2 \rij^2}{a+b}}.
+\label{eq:density-gto}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Gamma\)</span> is the Gamma function, and <span class="math notranslate nohighlight">\({}_1F_1\)</span> is the
+confluent hypergeometric function of the first kind.</p>
+<div class="line-block">
+<div class="line">The neighbour contribution is calculated in</div>
+<div class="line">file <strong>librascal/src/representations/
+representation_manager_spherical_expansion.hh</strong>,</div>
+<div class="line">function <strong>compute_neighbour_contribution</strong>, line 338.</div>
+</div>
+<p>The steps of the derivation are detailed in the next paragraph.</p>
+<div class="section" id="analytic-radial-integral">
+<h5>Analytic radial integral<a class="headerlink" href="#analytic-radial-integral" title="Permalink to this headline">¶</a></h5>
+<p>We write an integral representation of the confluent hypergeometric
+function <span class="math notranslate nohighlight">\(\CHF{a}{b}{z}\)</span> (CHF) in
+terms of MSBF:</p>
+<div class="math notranslate nohighlight">
+\[\CHF{a}{\ell+\frac{3}{2}}{x} = \frac{2x^{-\frac{\ell}{2}}}{\sqrt{\pi}}\frac{\GA{\ell+\frac{3}{2}}}{\GA{a}}\int_0^\infty e^{-t} t^{a-1-\frac{\ell}{2}} \mathsf{i}_{\ell}(2\sqrt{xt})\dd{t},
+\label{eq:chf-int}\]</div>
+<p>using these relations <a class="footnote-reference brackets" href="#id10" id="id7">4</a> <a class="footnote-reference brackets" href="#id11" id="id8">5</a> <a class="footnote-reference brackets" href="#id12" id="id9">6</a></p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+\CHF{a}{b}{z} = &amp; \frac{1}{\GA{a}} \int_0^\infty e^{-t}t^{a-1}\CHLF{b}{zt}\dd{t},\\
+I_l(z) =&amp; \frac{(\frac{z}{2})^{\ell}}{\GA{l+1}} \CHLF{\ell+1}{\frac{z^2}{4}},\\
+\mathsf{i}_{\ell}(z) =&amp; \sqrt{\frac{\pi}{2z}}I_{\ell+1/2}(z),\\
+\mathsf{i}_{\ell}(z) =&amp; \sqrt{\frac{\pi}{4}}\frac{(\frac{z}{2})^{\ell}}{\GA{\ell+\frac{3}{2}}} \CHLF{\ell+\frac{3}{2}}{\frac{z^2}{4}},\\
+\CHLF{\ell+\frac{3}{2}}{xt}=&amp; \sqrt{\frac{4}{\pi}}\GA{\ell+\frac{3}{2}} x^{-\frac{\ell}{2}}t^{-\frac{\ell}{2}}\mathsf{i}_{\ell}(2\sqrt{xt}),
+\end{align}\end{split}\]</div>
+<dl class="footnote brackets">
+<dt class="label" id="id10"><span class="brackets"><a class="fn-backref" href="#id7">4</a></span></dt>
+<dd><p><a class="reference external" href="http://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/07/01/01/0002/">http://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/07/01/01/0002/</a>
+<a class="reference external" href="http://dlmf.nist.gov/16.5.E3">http://dlmf.nist.gov/16.5.E3</a></p>
+</dd>
+<dt class="label" id="id11"><span class="brackets"><a class="fn-backref" href="#id8">5</a></span></dt>
+<dd><p><a class="reference external" href="https://en.wikipedia.org/wiki/Generalized_hypergeometric_function#The_series_0F1">https://en.wikipedia.org/wiki/Generalized_hypergeometric_function#The_series_0F1</a></p>
+</dd>
+<dt class="label" id="id12"><span class="brackets">6</span><span class="fn-backref">(<a href="#id9">1</a>,<a href="#id16">2</a>)</span></dt>
+<dd><p><a class="reference external" href="http://mathworld.wolfram.com/ModifiedSphericalBesselFunctionoftheFirstKind.html">http://mathworld.wolfram.com/ModifiedSphericalBesselFunctionoftheFirstKind.html</a></p>
+</dd>
+</dl>
+<p>where <span class="math notranslate nohighlight">\(I_\ell\)</span> is the modified Bessel function and
+<span class="math notranslate nohighlight">\(\CHLF{b}{z}\)</span> is the limit conflent
+hypergeometric function.</p>
+<p>The module for calculating
+<span class="math notranslate nohighlight">\(\CHF{..}{..}{..}\)</span> is located in
+<strong>librascal/src/math/hyp1f1.hh</strong>.</p>
+<p>The radial integral with GTO radial basis function is:</p>
+<div class="math notranslate nohighlight">
+\[I^{ij\,\text{GTO}}_{nl}=\int_0^\infty \dd{r} r^{2+k} g^{\text{GTO}}_n(r) e^{-\frac{r^2}{2\sigma^2}} \mathsf{i}_{\ell}\left(r r_{ij} / \sigma^2\right) = \mathcal{N}_n \int_0^\infty \mathrm{d}r r^{2+k+n}  e^{-r^2(a+b)} \mathsf{i}_{\ell}\left(2a r r_{ij}\right),
+    \label{eq:rad-int-gto-0}\]</div>
+<p>with <span class="math notranslate nohighlight">\(k\)</span> an additional power of <span class="math notranslate nohighlight">\(r\)</span> that will be non zero
+for the derivative. We partially identify the terms between
+<a class="reference external" href="#eq:chf-int">[eq:chf-int]</a> and
+<a class="reference external" href="#eq:rad-int-gto-0">[eq:rad-int-gto-0]</a>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+    t =&amp; r^2(a+b),\\
+    \dd{t} =&amp; 2 r \dd{r} (a+b),\\
+    x = &amp; \frac{a^2 r_{ij}^2}{a+b},\end{aligned}\end{split}\]</div>
+<p>to change the integrand of the radial integral</p>
+<div class="math notranslate nohighlight">
+\[I^{ij\,\text{GTO}}_{nl}= \mathcal{N}_n \int_0^\infty \frac{\dd{t}}{2(a+b)} (a+b)^{-\frac{n+k+1}{2}} t^{\frac{n+k+1}{2}}  e^{-t} \mathsf{i}_{\ell}\left(2\sqrt{xt}\right),
+    \label{eq:rad-int-gto-01}\]</div>
+<p>and identify the last term</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+    a =&amp; \frac{n+\ell+k+3}{2}.\end{aligned}\]</div>
+</div>
+</div>
+<div class="section" id="numerical-integration-of-the-radial-integral">
+<h4>Numerical Integration of the Radial Integral<a class="headerlink" href="#numerical-integration-of-the-radial-integral" title="Permalink to this headline">¶</a></h4>
+<p>The numerical integration does not rely on a specific form of the radial
+basis</p>
+<div class="math notranslate nohighlight">
+\[\text{I}_{n\ell}^{ij} = \sum_{k=1}^{K} \omega_k  r_k^2 R_n(r_k) e^{-ar_k^2} \mathsf{i}_{\ell}\left(2a r_k r_{ij}\right),\]</div>
+<p>where the <span class="math notranslate nohighlight">\(\omega_k\)</span> are the quadrature weights evaluated at the
+quadrature nodes <span class="math notranslate nohighlight">\(r_k\)</span>. Depending on the quadrature rule, the
+following shifting formula is useful,</p>
+<div class="math notranslate nohighlight">
+\[\int_a^b f(x)\,\dd{x} \approx \frac{b-a}{2} \sum_{i=1}^n w_i f\left(\frac{b-a}{2}x_i + \frac{a+b}{2}\right).\]</div>
+<div class="section" id="discrete-variable-representation">
+<h5>Discrete Variable Representation<a class="headerlink" href="#discrete-variable-representation" title="Permalink to this headline">¶</a></h5>
+<p>In the special case of the the DVR radial basis <a class="footnote-reference brackets" href="#id14" id="id13">7</a> with Gauss-Legendre
+quadrature rule, the radial integral simplifies into:</p>
+<div class="math notranslate nohighlight">
+\[\text{I}_{n\ell}^{ij} = \frac{r_c}{2} \sqrt{\omega_n} x_n^2 e^{-ax_n^2} \mathsf{i}_{\ell}\left(2a x_n r_{ij}\right),\]</div>
+<p>where <span class="math notranslate nohighlight">\(x_n=\frac{r_c}{2}r_n+\frac{r_c}{2}\)</span>.</p>
+<dl class="footnote brackets">
+<dt class="label" id="id14"><span class="brackets"><a class="fn-backref" href="#id13">7</a></span></dt>
+<dd><p>Light, J. C., &amp; Carrington, T. (2007). Discrete-Variable Representations and their Utilization (pp. 263–310). John Wiley &amp; Sons, Ltd.
+<a class="reference external" href="https://doi.org/10.1002/9780470141731.ch4">https://doi.org/10.1002/9780470141731.ch4</a></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="section" id="gradient-of-the-density-coefficients-with-respect-to-the-cartesian-coordinates">
+<h3>Gradient of the density coefficients with respect to the Cartesian coordinates<a class="headerlink" href="#gradient-of-the-density-coefficients-with-respect-to-the-cartesian-coordinates" title="Permalink to this headline">¶</a></h3>
+<p>The density coefficients can be split into two parts: one that depends on
+the choice of radial basis function (<span class="math notranslate nohighlight">\(\text{I}_{n\ell}^{ij}\)</span>) and
+the rest:</p>
+<div class="math notranslate nohighlight">
+\[c^{ij}_{n\ell m} =  Y_{\ell}^m(\hat{\mathbf{r}}_{ij}) \exp\left[-ar^2_{ij}\right] \text{I}_{n\ell}^{ij} =  D^{ij}_{\ell m} C^{ij} \text{I}_{n\ell}^{ij},\]</div>
+<p>where <span class="math notranslate nohighlight">\(C^{ij}\)</span> is the Gaussian exponential factor and
+<span class="math notranslate nohighlight">\(\bar{D}^{ij}_{\ell m} = \bar{Y}_{\ell,m}(\hat{r}_{ij})\)</span> is the
+spherical harmonic, see eq.
+<a class="reference external" href="#eq:real-spherical-harmonics">[eq:real-spherical-harmonics]</a>. Note
+the constant factors are omitted.</p>
+<p>The following derivations end up with this formula that does not depend
+on the radial basis:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+    \grad_i\,c^{ij}_{\alpha n \ell m} =&amp; 2a c^{ij}_{\alpha n \ell m} \mathbf{r}_{ij}\nonumber\\
+    &amp;{} +  C \bar{D}^{ij}_{\ell m} \cdot \grad_i \text{I}_{n\ell}^{ij}\nonumber\\
+    &amp;{} + N_{n \ell}A_{n\ell} B_\ell C \cdot \grad_i\,\bar{D}^{ij}_{\ell,m},\end{aligned}\end{split}\]</div>
+<p>where
+<span class="math notranslate nohighlight">\(\grad_i\bar{D}^{ij}_{\ell,m} = \grad_i \bar{Y}_{\ell,m}(\hat{r}_{ij})\)</span>
+is defined in
+<a class="reference external" href="#eq:dbx0,eq:dbx1,eq:dbx2,eq:dby0,eq:y1,eq:dby2,eq:dbz0,eq:dbz1,eq:dbz2">[eq:dbx0,eq:dbx1,eq:dbx2,eq:dby0,eq:y1,eq:dby2,eq:dbz0,eq:dbz1,eq:dbz2]</a>.</p>
+<div class="section" id="terms-common-to-the-different-radial-basis">
+<h4>Terms common to the different radial basis<a class="headerlink" href="#terms-common-to-the-different-radial-basis" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="gaussian">
+<h5>Gaussian<a class="headerlink" href="#gaussian" title="Permalink to this headline">¶</a></h5>
+<div class="math notranslate nohighlight">
+\[\begin{gathered}
+    \dv{C^{ij}}{r_{ij}} = -2ar_{ij}C^{ij}\end{gathered}\]</div>
+</div>
+<div class="section" id="length">
+<h5>Length<a class="headerlink" href="#length" title="Permalink to this headline">¶</a></h5>
+<p>So for the radial terms, we just use the derivatives of the radius
+<span class="math notranslate nohighlight">\(r_{ij}\)</span> wrt the Cartesian coordinates:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{gathered}
+    \dv{ r_{ij}}{ \{x_i, y_i, z_i\}} = -\frac{\{x_{ij}, y_{ij}, z_{ij}\}}{r_{ij}}\\
+    \grad_i\,r_{ij} = \frac{-\mathbf{r}_{ij}}{r_{ij}}\\
+    \text{where }\mathbf{r}_{ij} = \mathbf{r}_j - \mathbf{r}_i\end{gathered}\end{split}\]</div>
+</div>
+<div class="section" id="spherical-harmonics">
+<h5>Spherical Harmonics<a class="headerlink" href="#spherical-harmonics" title="Permalink to this headline">¶</a></h5>
+<p>The derivative of the spherical harmonic can be expressed in a few
+different ways. The versions below are in terms of the original harmonic
+with possibly different <span class="math notranslate nohighlight">\(m\)</span> values. The <span class="math notranslate nohighlight">\(z\)</span> component is:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+    \frac{\partial D_{\ell m}}{\partial z_i} &amp;= \frac{-\sqrt{1-u^2}}{2r}\big(e^{i\phi}\sqrt{(\ell+m)(\ell-m+1)}Y_l^{m-1}(\hat{r})\nonumber\\
+        &amp;\qquad\qquad - e^{-i\phi}\sqrt{(\ell-m)(\ell+m+1)}Y_l^{m+1}(\hat{r})\big)\nonumber\\
+    &amp;= \frac{-\sin{\theta}}{2r_{ij}}(\cos(m\phi) + i\sin(m\phi)) \\
+        &amp;\qquad\qquad \left(\sqrt{(\ell+m)(\ell - m + 1)}\sqrt{\frac{2\ell+1}{4\pi}\frac{(\ell-m+1)!}{(\ell+m-1)!}}
+        P_l^{m-1}(\cos{\theta})\right.\nonumber\\
+        &amp;\qquad\qquad\qquad \left. {} - \sqrt{(\ell-m)(\ell + m + 1)}\sqrt{\frac{2\ell+1}{4\pi}\frac{(\ell-m-1)!}{(\ell+m+1)!}}
+            P_l^{m+1}(\cos{\theta})\right)
+ \end{aligned}\end{split}\]</div>
+<p>But remember, we’re actually using the real spherical harmonics:</p>
+<p>[eq:real-spherical-harmonics]</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+    \left.\begin{aligned}
+    \bar{Y}_{\ell m}(\hat{r}_{ij}) &amp;= \cos(m\phi) \bar{P}_\ell^m(\cos{\theta})\\
+    \bar{Y}_{\ell,-m}(\hat{r}_{ij}) &amp;= \sin(m\phi) \bar{P}_\ell^m(\cos{\theta})
+    \end{aligned}\right\}&amp;\text{ for }m &gt; 0\\
+    \bar{Y}_{\ell,0}(\hat{r}_{ij}) = \frac{1}{\sqrt{2}} \bar{P}_\ell^0(\cos{\theta})&amp;\end{aligned}\end{split}\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\bar{P}_\ell^m(\cos{\theta}) = \sqrt{\frac{2\ell + 1}{2\pi}\frac{(\ell - m)!}{(\ell + m)!}}P_\ell^m(\cos{\theta}).\]</div>
+<p>So we can write</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+    \frac{\partial \bar{D}_{\ell m}}{\partial z_i} &amp;=
+    \frac{-\sin\theta}{2r_{ij}}\cos(m\phi)\left(\sqrt{(\ell + m)(\ell - m + 1)}\bar{P}_\ell^{m-1}(\cos\theta)
+        - \sqrt{(\ell - m)(\ell + m + 1)}\bar{P}_\ell^{m+1}(\cos\theta)\right) \label{eq:dbz0}\\
+    \frac{\partial \bar{D}_{\ell,-m}}{\partial z_i} &amp;=
+    \frac{-\sin\theta}{2r_{ij}}\sin(m\phi)\left(\sqrt{(\ell + m)(\ell - m + 1)}\bar{P}_\ell^{m-1}(\cos\theta)
+        - \sqrt{(\ell - m)(\ell + m + 1)}\bar{P}_\ell^{m+1}(\cos\theta)\right)\label{eq:dbz1}\\
+    \frac{\partial \bar{D}_{\ell,0}}{\partial z_i} &amp;=
+        \frac{\sin\theta}{r_{ij}}
+            \sqrt{\frac{\ell(\ell + 1)}{2}}\bar{P}_\ell^{1}(\cos\theta))\label{eq:dbz2}\end{aligned}\end{split}\]</div>
+<p>(the last one comes from the identity
+<span class="math notranslate nohighlight">\(\sqrt{\frac{(\ell+m)!}{(\ell-m)!}}P_\ell^{-m} = (-1)^m \sqrt{\frac{(\ell - m)!}{(\ell + m)!}}P_l^m(\cos\theta)\)</span>
+with <span class="math notranslate nohighlight">\(m=1\)</span>).</p>
+<p>The <span class="math notranslate nohighlight">\(x\)</span> component is:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+    \frac{\partial \bar{D}_{\ell m}}{\partial x_i} &amp;= \frac{-m\sin\phi}{\sqrt{x_{ij}^2 + y_{ij}^2}} \bar{D}_{\ell,-m} + \frac{\cos\phi \cos\theta}{2r_{ij}}\cos(m\phi)\left(
+        \sqrt{(\ell + m)(\ell - m + 1)}\bar{P}_\ell^{m-1}(\cos\theta)\right.\nonumber\\
+        &amp;\qquad\qquad\qquad\left. {} - \sqrt{(\ell - m)(\ell + m + 1)}\bar{P}_\ell^{m+1}(\cos\theta)\right)\label{eq:dbx0}\\
+    \frac{\partial \bar{D}_{\ell,-m}}{\partial x_i} &amp;= \frac{m\sin\phi}{\sqrt{x_{ij}^2 + y_{ij}^2}} \bar{D}_{\ell,m} + \frac{\cos\phi \cos\theta}{2r_{ij}}\sin(m\phi)\left(
+        \sqrt{(\ell + m)(\ell - m + 1)}\bar{P}_\ell^{m-1}(\cos\theta)\right.\nonumber\\
+        &amp;\qquad\qquad\qquad\left. {} - \sqrt{(\ell - m)(\ell + m + 1)}\bar{P}_\ell^{m+1}(\cos\theta)\right)\label{eq:dbx1}\\
+    \frac{\partial \bar{D}_{\ell,0}}{\partial x_i} &amp;=
+        \frac{-\cos\phi \cos\theta}{r_{ij}}\sqrt{\frac{\ell(\ell+1)}{2}}\bar{P}_\ell^1(\cos\theta)\label{eq:dbx2}\end{aligned}\end{split}\]</div>
+<p>and for the <span class="math notranslate nohighlight">\(y\)</span> component, similarly:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+    \frac{\partial \bar{D}_{\ell m}}{\partial y_i} &amp;= \frac{m\cos\phi}{\sqrt{x_{ij}^2 + y_{ij}^2}} \bar{D}_{\ell,-m} + \frac{\sin\phi \cos\theta}{2r_{ij}}\cos(m\phi)\left(
+        \sqrt{(\ell + m)(\ell - m + 1)}\bar{P}_\ell^{m-1}(\cos\theta)\right.\nonumber\\
+        &amp;\qquad\qquad\qquad\left. {} - \sqrt{(\ell - m)(\ell + m + 1)}\bar{P}_\ell^{m+1}(\cos\theta)\right)\label{eq:dby0}\\
+    \frac{\partial \bar{D}_{\ell,-m}}{\partial y_i} &amp;= \frac{-m\cos\phi}{\sqrt{x_{ij}^2 + y_{ij}^2}} \bar{D}_{\ell,m} + \frac{\sin\phi \cos\theta}{2r_{ij}}\sin(m\phi)\left(
+        \sqrt{(\ell + m)(\ell - m + 1)}\bar{P}_\ell^{m-1}(\cos\theta)\right.\nonumber\\
+        &amp;\qquad\qquad\qquad\left. {} - \sqrt{(\ell - m)(\ell + m + 1)}\bar{P}_\ell^{m+1}(\cos\theta)\right)\label{eq:dby1}\\
+    \frac{\partial \bar{D}_{\ell,0}}{\partial y_i} &amp;=
+        \frac{-\sin\phi \cos\theta}{r_{ij}}\sqrt{\frac{\ell(\ell+1)}{2}}\bar{P}_\ell^1(\cos\theta)\label{eq:dby2}\end{aligned}\end{split}\]</div>
+<p>The formulæ above have a singularity at the poles for <span class="math notranslate nohighlight">\(m \neq 0\)</span>,
+so use the following identity:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{gathered}
+    \frac{m}{\sqrt{x_{ij}^2 + y_{ij}^2}} \begin{pmatrix}\bar{Y}_{\ell, -m}(\hat{r}_{ij})\\
+                                                         \bar{Y}_{\ell,  m}(\hat{r}_{ij})\end{pmatrix}
+        = \frac{-1}{2z_{ij}}\begin{pmatrix}\sin(m\phi)\\\cos(m\phi)\end{pmatrix}
+            \left(\sqrt{(\ell+m)(\ell - m + 1)}\bar{P}_\ell^{m-1}(\cos\theta) \right.\\
+            \left. {} + \sqrt{(\ell - m)(\ell + m + 1)}\bar{P}_\ell^{m+1}(\cos\theta)\right)\end{gathered}\end{split}\]</div>
+<p>to shift the singularity to the equator (<span class="math notranslate nohighlight">\(z=0\)</span>). In the code
+derivatives of spherical harmonics is computed in the
+<strong>feat/soap_gradients branch</strong>,
+<strong>librascal/src/math/spherical_harmonics.hh</strong></p>
+</div>
+</div>
+<div class="section" id="gto-like-radial-basis-1">
+<span id="id15"></span><h4>GTO like radial basis<a class="headerlink" href="#gto-like-radial-basis-1" title="Permalink to this headline">¶</a></h4>
+<p>We rewrite <a class="reference external" href="#eq:rad-int-gto-1">[eq:rad-int-gto-1]</a></p>
+<div class="math notranslate nohighlight">
+\[I^{ij\,\text{GTO}}_{nl} = N_{n\ell} \cdot A_{n\ell} \cdot B_\ell ,\]</div>
+<p>where <span class="math notranslate nohighlight">\(B_{\ell} = r_{ij}^{\ell}\)</span>,
+<span class="math notranslate nohighlight">\(A_{n\ell} = \CHF{\frac{n + \ell + 3}{2}}{\ell+\frac{3}{2}}{\frac{a^2 r_{ij}^2}{a+b}}\)</span>,
+<span class="math notranslate nohighlight">\(N_{n \ell} = \frac{\mathcal{N}_n}{4} a^\ell\left(a+b\right)^{-\frac{n + \ell + 3}{2}}  \frac{\Gamma\left(\frac{n + \ell + 3}{2}\right)}{\Gamma\left(\frac{3}{2} + \ell\right)}\)</span>,
+<span class="math notranslate nohighlight">\(\mathcal{N}_n = \sqrt{\frac{2}{\sigma_n^{2n+3}\Gamma\left(n + \frac{3}{2}\right)}}\)</span>.
+Note that some constant multiplying factors of <span class="math notranslate nohighlight">\(\pi\)</span> have been
+omitted.</p>
+<div class="section" id="b-ell">
+<h5><span class="math notranslate nohighlight">\(B_{\ell}\)</span><a class="headerlink" href="#b-ell" title="Permalink to this headline">¶</a></h5>
+<div class="math notranslate nohighlight">
+\[\dv{B_\ell}{r_{ij}} = \frac{\ell}{r_{ij}} B_\ell\]</div>
+</div>
+<div class="section" id="chf">
+<h5>CHF<a class="headerlink" href="#chf" title="Permalink to this headline">¶</a></h5>
+<p>for the hypergeometric term:</p>
+<div class="math notranslate nohighlight">
+\[\dv{A_{n \ell}}{r_{ij}} = \frac{\frac{n + \ell + 3}{2}}{\left(\ell + \frac{3}{2}\right)}
+\frac{2a^2 r_{ij}}{a+b}
+\CHF{\frac{n + \ell + 5}{2}}{\ell+\frac{5}{2}}{\frac{a^2 r_{ij}^2}{a+b}}\]</div>
+<p>which is not proportional to <span class="math notranslate nohighlight">\(A_{n \ell}\)</span>, or even to
+<span class="math notranslate nohighlight">\(A_{n+1,\ell + 1}\)</span> – so just recompute it explicitly.</p>
+</div>
+<div class="section" id="gto-formula-for-practical-computation">
+<h5>GTO formula for practical computation<a class="headerlink" href="#gto-formula-for-practical-computation" title="Permalink to this headline">¶</a></h5>
+<p>Finally, putting the radial and angular components together, we get:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+ \grad_i\,c^{ij}_{\alpha n \ell m} &amp;= c^{ij}_{\alpha n \ell m}\left(-\frac{\ell}{r_{ij}^2} + 2a\right)\br_{ij}\nonumber\\
+ &amp;{} + N_{n \ell}B_\ell C \bar{D}_{\ell m} \cdot \frac{\frac{n + \ell + 3}{2}}{\left(\ell + \frac{3}{2}\right)}
+ \frac{2a^2}{a+b}
+ \CHF{\frac{n + \ell + 5}{2}}{\ell+\frac{5}{2}}{\frac{a^2 r_{ij}^2}{a+b}} \bvec{r}_{ij}\nonumber\\
+ &amp;{} + N_{n \ell}A_{n\ell} B_\ell C \cdot \nabla_i\,\bar{D}_{\ell,m}
+\end{aligned}\end{split}\]</div>
+<p>where the gradient of the spherical harmonic has already been computed
+separately using the equations above.</p>
+<div class="line-block">
+<div class="line">Gradient of the coefficients is calculated in <strong>feat/soap_gradients</strong>
+branch,</div>
+<div class="line">file
+<strong>librascal/src/representations/representation_manager_spherical_expansion.hh</strong>,</div>
+<div class="line">function <strong>compute_neighbour_derivative</strong>, line 420.</div>
+</div>
+</div>
+</div>
+<div class="section" id="numerical-integration">
+<h4>Numerical Integration<a class="headerlink" href="#numerical-integration" title="Permalink to this headline">¶</a></h4>
+<p>Using the recurrence relation of the MSBF <a class="footnote-reference brackets" href="#id12" id="id16">6</a>:</p>
+<div class="math notranslate nohighlight">
+\[\dv{\mathsf{i}_{\ell}(x)}{x} = \frac{1}{2\ell+1}[\ell\mathsf{i}_{\ell-1}(x)+(\ell+1)\mathsf{i}_{\ell+1}(x)],\]</div>
+<p>the gradient of the radial integral becomes:</p>
+<div class="math notranslate nohighlight">
+\[\grad_i \text{I}_{n\ell}^{ij} = -\frac{2a}{2\ell+1}\sum_{k=1}^{K} \omega_k  r_k^3 R_n(r_k) e^{-ar_k^2} [\ell\mathsf{i}_{\ell-1}(2a r_k r_{ij})+(\ell+1)\mathsf{i}_{\ell+1}(2a r_k r_{ij})] \hat{\mathbf{r}}_{ij}.\]</div>
+<p>In the case of the DVR radial basis:</p>
+<div class="math notranslate nohighlight">
+\[\text{I}_{n\ell}^{ij} = -\frac{2a\sqrt{\omega_n}}{2\ell+1}\frac{r_c}{2}  x_n^3 e^{-ax_n^2} [\ell\mathsf{i}_{\ell-1}(2a x_n r_{ij})+(\ell+1)\mathsf{i}_{\ell+1}(2a x_n r_{ij})] \hat{\mathbf{r}}_{ij},\]</div>
+<p>where <span class="math notranslate nohighlight">\(x_n=\frac{r_c}{2}r_n+\frac{r_c}{2}\)</span>.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="representation/representations.html" class="btn btn-neutral float-right" title="Representations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="whitepaper.html" class="btn btn-neutral float-left" title="Goals &amp; Design" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti, Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
