@@ -13,7 +13,6 @@ sys.path.insert(0, os.path.join(path, 'build/'))
 sys.path.insert(0, os.path.join(path, 'tests/'))
 from rascal.representations import SortedCoulombMatrix
 
-
 cutoffs = [2, 3, 4, 5]
 sorts = ['row_norm', 'distance']
 

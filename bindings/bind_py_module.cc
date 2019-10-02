@@ -33,22 +33,22 @@ namespace py = pybind11;
 PYBIND11_MODULE(_rascal, mod) {
   mod.doc() = "Python bindings for the Rascal library";
 
-  py::module m_nl = mod.def_submodule("NeighbourList");
+  py::module m_nl = mod.def_submodule("neighbour_list");
   m_nl.doc() = "Utilities to make neighbour lists";
 
-  py::module m_rpr_mng = mod.def_submodule("RepresentationManager");
-  m_rpr_mng.doc() = "Representation Manager Classes";
-  py::module m_models = mod.def_submodule("Models");
+  py::module m_repr = mod.def_submodule("representation_calculators");
+  m_repr.doc() = "Representation calculator classes";
+  py::module m_models = mod.def_submodule("models");
   m_models.doc() = "Collection of models";
 
-  py::module m_kernels = m_models.def_submodule("Kernels");
+  py::module m_kernels = m_models.def_submodule("kernels");
   m_kernels.doc() = "Collection of Kernels";
 
   py::module m_utl = mod.def_submodule("utils");
   py::module m_math = mod.def_submodule("math");
   m_math.doc() = "Collection of math functions";
-  py::module m_throwaway = mod.def_submodule("rubbish");
-  m_throwaway.doc() =
+  py::module m_internal = mod.def_submodule("_internal");
+  m_internal.doc() =
       "Collection of bindings that are needed to build functional bindings for"
       " the python user but are not functional itself. It basically contains"
       " all methods which are used on the binding side, but are not meant to"
@@ -56,9 +56,9 @@ PYBIND11_MODULE(_rascal, mod) {
 
   py::add_ostream_redirect(m_utl, "ostream_redirect");
 
-  rascal::add_structure_managers(m_nl, m_throwaway);
-  rascal::add_representation_calculators(m_rpr_mng, m_throwaway);
+  rascal::add_structure_managers(m_nl, m_internal);
+  rascal::add_representation_calculators(m_repr, m_internal);
   rascal::utils_binding(m_utl);
   rascal::math_binding(m_math);
-  rascal::add_kernels(m_kernels, m_throwaway);
+  rascal::add_kernels(m_kernels, m_internal);
 }

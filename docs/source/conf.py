@@ -40,11 +40,16 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.napoleon',
               'sphinx.ext.autosummary',
               'breathe',
+              'nbsphinx',
               ]
 
 ## this line detects whether the script is run on readthedocs.io, where it
 ## needs to run in-place
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+
+# Sphinx notebook inclusion: Be error-tolerant until we can make sure
+# all notebooks run on the common developer environment
+nbsphinx_allow_errors = True
 
 if read_the_docs_build is True:
     rascal_path = "."
@@ -58,8 +63,9 @@ sys.path.insert(0,import_path)
 
 
 print("rascal_path = '{}'".format(rascal_path))
-subprocess.call('ls; pwd', shell=True)
-subprocess.call("cd {} && doxygen".format(rascal_path), shell=True)
+# NO - do it in the sensible way, as a makefile target!
+# subprocess.call('ls; pwd', shell=True)
+# subprocess.call("cd {} && doxygen".format(rascal_path), shell=True)
 
 breathe_projects = {"rascal": os.path.join(rascal_path, "doxygenxml")}
 breathe_default_project = "rascal"
@@ -74,12 +80,16 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'intro'
 
 # General information about the project.
 project = 'Rascal'
-copyright = '2018, Felix Musil, Federico Giberti, Till Junge, Michele Ceriotti'
-author = 'Felix Musil, Federico Giberti, Till Junge, Michele Ceriotti'
+copyright = ('2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti, ' +
+             'Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, ' +
+             'Max Veit')
+author = ('Michele Ceriotti, Federico Giberti, Alexander Gocsinski, ' +
+          'Till Junge, Félix Musil, Markus Stricker, Max Veit, and ' +
+          'Michael Willatt')
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

@@ -39,12 +39,12 @@
 static constexpr int N_REPETITIONS = 200;
 static unsigned int SEED = 1597463007;
 
-using namespace rascal; // NOLINT
+using namespace rascal;  // NOLINT
 
 using math::InterpolatorMatrixUniformCubicSpline;
+using math::Matrix_t;
 using math::RefinementMethod_t;
 using math::Vector_t;
-using math::Matrix_t;
 
 /* Please execute this file one time before using the profiler to create the
  * grid.

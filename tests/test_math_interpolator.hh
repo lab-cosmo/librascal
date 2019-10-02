@@ -28,6 +28,7 @@
 #include "tests.hh"
 #include "test_math.hh"
 #include "math/interpolator.hh"
+#include "representations/calculator_spherical_expansion.hh"
 
 #ifndef TESTS_TEST_MATH_INTERPOLATOR_HH_
 #define TESTS_TEST_MATH_INTERPOLATOR_HH_
@@ -126,6 +127,8 @@ namespace rascal {
 
   template <class Interpolator>
   struct InterpolatorFixture {
+    using RadialIntegral_t =
+        internal::RadialContribution<internal::RadialBasisType::GTO>;
     InterpolatorFixture<Interpolator>() {}
     typedef Interpolator Interpolator_t;
 
@@ -157,9 +160,7 @@ namespace rascal {
         {"cutoff_function", {{"cutoff", {{"value", 2.0}, {"unit", "A"}}}}}};
 
     // a=0.5*(n+l+3), b = l+1.5, mmax, tolerance
-    internal::RadialContribution<rascal::internal::RadialBasisType::GTO>
-        radial_contr{internal::RadialContribution<
-            rascal::internal::RadialBasisType::GTO>(hypers)};
+    RadialIntegral_t radial_contr{RadialIntegral_t(hypers)};
   };
 
 }  // namespace rascal

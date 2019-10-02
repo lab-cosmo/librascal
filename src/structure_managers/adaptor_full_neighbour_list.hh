@@ -1,5 +1,5 @@
 /**
- * file   adaptor_full_neighbour_list.hh
+ * @file   adaptor_full_neighbour_list.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -46,22 +46,22 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorFullList<ManagerImplementation>> {
-    constexpr static AdaptorTraits::Strict Strict{
-        ManagerImplementation::traits::Strict};
-    constexpr static bool HasDistances{
-        ManagerImplementation::traits::HasDistances};
+    using parent_traits = StructureManager_traits<ManagerImplementation>;
+    constexpr static AdaptorTraits::Strict Strict{parent_traits::Strict};
+    constexpr static bool HasDistances{parent_traits::HasDistances};
     constexpr static bool HasDirectionVectors{
-        ManagerImplementation::traits::HasDirectionVectors};
-    constexpr static int Dim{ManagerImplementation::traits::Dim};
-    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
+        parent_traits::HasDirectionVectors};
+    constexpr static int Dim{parent_traits::Dim};
+    constexpr static size_t MaxOrder{parent_traits::MaxOrder};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::full};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
+    constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     // New pairs are added at this layer, which did not exist before. Therefore
     // the layering has to be reset.
-    constexpr static size_t AtomLayer{
-        get<0>(typename LayerIncreaser<
-               MaxOrder,
-               typename ManagerImplementation::traits::LayerByOrder>::type{})};
+    constexpr static size_t AtomLayer{get<0>(
+        typename LayerIncreaser<MaxOrder,
+                                typename parent_traits::LayerByOrder>::type{})};
     using LayerByOrder = std::index_sequence<AtomLayer, 0>;
   };
 
@@ -81,6 +81,7 @@ namespace rascal {
     using Parent = StructureManager<AdaptorFullList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFullList>;
     using Manager_t = AdaptorFullList<ManagerImplementation>;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;

@@ -81,7 +81,7 @@ class BoxList(object):
 
     def cell2lin(self, ids):
         return int(ids[0] + self.nbins_c[0] * (ids[1] + self.nbins_c[1]
-                    * ids[2]))
+                                               * ids[2]))
 
     def iter_box(self):
         for bin_id in range(self.nbins):
@@ -107,15 +107,15 @@ class Box(object):
             if 0 == self.mult_pos[ii] and p is False:
                 self.search_idx.append(
                     [self.mult_pos[ii]+jj for jj in range(
-                                                    self.neigh_search[ii]+1)])
+                        self.neigh_search[ii]+1)])
             elif self.nbins_c[ii]-1 == self.mult_pos[ii] and p is False:
                 self.search_idx.append(
                     [self.mult_pos[ii]+jj for jj in range(
-                                                -self.neigh_search[ii], 0+1)])
+                        -self.neigh_search[ii], 0+1)])
             else:
                 self.search_idx.append([self.mult_pos[ii]+jj for jj in
                                         range(-self.neigh_search[ii],
-                                        self.neigh_search[ii]+1)])
+                                              self.neigh_search[ii]+1)])
 
         self.neighbour_bin_index, self.neighbour_bin_shift = [], []
         for ii in self.search_idx[0]:
@@ -128,7 +128,7 @@ class Box(object):
 
     def cell2lin(self, ids):
         return int(ids[0] + self.nbins_c[0] * (ids[1] + self.nbins_c[1]
-                    * ids[2]))
+                                               * ids[2]))
 
     def lin2cell(self, lin_ids):
         fac = 1

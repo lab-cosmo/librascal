@@ -1,5 +1,5 @@
 /**
- * file   math_utils.hh
+ * @file   math_utils.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  * @author  Max Veit <max.veit@epfl.ch>
@@ -52,6 +52,8 @@ namespace rascal {
     // Reminder: C++ floating-point literals are automatically of type double
     /// Pi to more digits than anyone could possibly need
     const double PI = 3.14159265358979323846264338327950288419716939937510;
+    const double SQRT_PI =
+        1.7724538509055160272981674833411451827975494561223871282;
     const double SQRT_TWO = std::sqrt(2.0);
     const double INV_SQRT_TWO = std::sqrt(0.5);
     const double SQRT_THREE = std::sqrt(3.0);
@@ -60,7 +62,7 @@ namespace rascal {
     const double dbl_ftol = 100.0 * std::numeric_limits<double>::epsilon();
 
     /// How large a number must be to be considered infinity
-    const double DOVERFLOW = std::numeric_limits<double>::infinity() / 100.;
+    const double DOVERFLOW = std::numeric_limits<double>::infinity();
 
     // define some usefull matrix type
     using Matrix_t =

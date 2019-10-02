@@ -45,10 +45,11 @@ namespace rascal {
      * execute these interpolator methods.
      *
      * The mathematical interpolation method are
-     * contained in the InterpolationMethod, for the creation of the grid and test
-     * grid contained in the GridRational, a search method to find the nearest
-     * grid point before a point for interpolation contained in SearchMethod and
-     * a method for computing an error term contained in ErrorMethod.
+     * contained in the InterpolationMethod, for the creation of the grid and
+     * test grid contained in the GridRational, a search method to find the
+     * nearest grid point before a point for interpolation contained in
+     * SearchMethod and a method for computing an error term contained in
+     * ErrorMethod.
      *
      * The Interpolator class hierarchy is split into InterpolatorBase ->
      * Interpolator (abstract) -> YOUR_INTERPOLATOR_IMPLEMENTATION An
@@ -65,6 +66,7 @@ namespace rascal {
      * SearchMethod for non uniform grids are functional for an appropriate
      * interpolator implementation and are kept in case of need.
      */
+    enum class GridType_t { Uniform };
     enum class RefinementMethod_t { Exponential, Linear, Adaptive };
 
     /**
@@ -201,8 +203,8 @@ namespace rascal {
 
     /**
      * TODO(alex) add spaces
-     * The uniform grid uses the points in between grid points as test grid. The refined grid adds `slope` number of points to grid.
-     *                x1                 x2
+     * The uniform grid uses the points in between grid points as test grid. The
+     * refined grid adds `slope` number of points to grid. x1                 x2
      * grid           [     |     |     |     |     ]
      * test grid         x     x     x     x     x
      * refined grid   [  |   |   |   |   |   |   |  ] for slope = 3

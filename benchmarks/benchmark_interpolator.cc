@@ -78,8 +78,7 @@ namespace rascal {
                            {"log(max_grid_error)",
                             std::log10(info["max_grid_error"].get<double>())},
                            {"nb_iterations", fix.nb_iterations},
-                           {"grid_size", info["grid_size"].get<int>()}
-                          });
+                           {"grid_size", info["grid_size"].get<int>()}});
   }
 
   template <class Fix>

@@ -1,5 +1,5 @@
 /**
- * file   property.hh
+ * @file   property.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -117,7 +117,7 @@ namespace rascal {
       }
     }
 
-    const std::string & get_type_info() const final { return this->type_id; };
+    const std::string & get_type_info() const final { return this->type_id; }
 
     /* ---------------------------------------------------------------------- */
     /**
@@ -218,7 +218,6 @@ namespace rascal {
       return reference(&value, this->get_nb_row(), this->get_nb_col());
     }
 
-   protected:
     std::string type_id{};
   };
 

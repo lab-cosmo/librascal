@@ -39,10 +39,11 @@
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/structure_manager_collection.hh"
+#include "structure_managers/adaptor_center_contribution.hh"
 
 #include "bind_include.hh"
 
 namespace rascal {
-  void add_structure_managers(py::module &, py::module &);
+  void add_structure_managers(py::module &, py::module & /*m_unused*/);
 }
 #endif  // BINDINGS_BIND_PY_STRUCTURE_MANAGER_HH_

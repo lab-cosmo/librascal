@@ -1,5 +1,5 @@
 /**
- * file   cutoff_functions.hh
+ * @file   cutoff_functions.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -31,6 +31,7 @@
 
 #include "rascal_utility.hh"
 #include "math/math_utils.hh"
+#include "representations/calculator_base.hh"
 
 #include <vector>
 #include <memory>
@@ -44,7 +45,7 @@ namespace rascal {
     /**
      * List of implemented cutoff function
      */
-    enum class CutoffFunctionType { Cosine, RadialScaling, End_ };
+    enum class CutoffFunctionType { ShiftedCosine, RadialScaling, End_ };
 
     struct CutoffFunctionBase {
       //! Constructor
@@ -79,7 +80,7 @@ namespace rascal {
     struct CutoffFunction : CutoffFunctionBase {};
 
     template <>
-    struct CutoffFunction<internal::CutoffFunctionType::Cosine>
+    struct CutoffFunction<internal::CutoffFunctionType::ShiftedCosine>
         : CutoffFunctionBase {
       using Hypers_t = CutoffFunctionBase::Hypers_t;
       explicit CutoffFunction(const Hypers_t & hypers) {
@@ -121,7 +122,14 @@ namespace rascal {
      *        |
      *        ╰ c / (c + (r/r_0)^m), else
      *
+     * c -> rate
+     * r_0 -> scale
+     * m -> exponent
+     *
      * with the cosine switching function.
+     *
+     * Typically c == 1, r_0 > 0 and m is a positive integer.
+     *
      */
     template <>
     struct CutoffFunction<internal::CutoffFunctionType::RadialScaling>
@@ -145,13 +153,13 @@ namespace rascal {
 
       inline double f_c(const double & distance) {
         double factor{0.};
-        if (this->rate < math::dbl_ftol) {
-          factor = math::pow(distance / this->scale, -this->exponent);
+        if (this->rate > math::dbl_ftol) {
+          factor = this->rate / (this->rate + math::pow(distance / this->scale,
+                                                        this->exponent));
         } else if (this->exponent == 0) {
           factor = 1.;
         } else {
-          factor = this->rate / (this->rate + math::pow(distance / this->scale,
-                                                        this->exponent));
+          factor = math::pow(distance / this->scale, -this->exponent);
         }
         return factor * math::switching_function_cosine(distance, this->cutoff,
                                                         this->smooth_width);

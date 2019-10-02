@@ -1,5 +1,5 @@
 /**
- * file   adaptor_strict.hh
+ * @file   adaptor_strict.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -48,13 +48,17 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorStrict<ManagerImplementation>> {
+    using parent_traits = StructureManager_traits<ManagerImplementation>;
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::yes};
     constexpr static bool HasDistances{true};
     constexpr static bool HasDirectionVectors{true};
-    constexpr static int Dim{ManagerImplementation::traits::Dim};
-    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-    using LayerByOrder = typename LayerIncreaser<
-        MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
+    constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
+    constexpr static int Dim{parent_traits::Dim};
+    constexpr static size_t MaxOrder{parent_traits::MaxOrder};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
+    using LayerByOrder =
+        typename LayerIncreaser<MaxOrder,
+                                typename parent_traits::LayerByOrder>::type;
   };
 
   /**
@@ -75,6 +79,7 @@ namespace rascal {
             AdaptorStrict<ManagerImplementation>> {
    public:
     using Manager_t = AdaptorStrict<ManagerImplementation>;
+    using ManagerImplementation_t = ManagerImplementation;
     using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorStrict>;
@@ -101,9 +106,6 @@ namespace rascal {
      * this parameter will be skipped
      */
     AdaptorStrict(ImplementationPtr_t manager, double cutoff);
-
-    AdaptorStrict(ImplementationPtr_t manager, std::tuple<double> tp)
-        : AdaptorStrict(manager, std::get<0>(tp)) {}
 
     AdaptorStrict(ImplementationPtr_t manager, const Hypers_t & adaptor_hypers)
         : AdaptorStrict(manager,
@@ -132,9 +134,10 @@ namespace rascal {
     void update(Args &&... arguments);
 
     //! returns the (strict) cutoff for the adaptor
-    inline const double & get_cutoff() const { return this->cutoff; }
+    inline double get_cutoff() const { return this->cutoff; }
 
     inline size_t get_nb_clusters(int order) const {
+      assert(order > 0);
       return this->atom_tag_list[order - 1].size();
     }
 
@@ -165,7 +168,8 @@ namespace rascal {
       return this->atom_tag_list[0][index];
     }
 
-    /* Since the cluster indices of order 1 are only copied in this filter we
+    /**
+     * Since the cluster indices of order 1 are only copied in this filter we
      * can safely use the before-computed list from the previous manager,
      * since they are still valid for access.
      */
@@ -265,16 +269,11 @@ namespace rascal {
       return this->atom_tag_list[1];
     }
 
-    // TODO(alex) implement in all with HasDistance true when merged with
-    // default_implementation_function
-    double get_min_distance() { return this->min_distance; }
-    double get_max_distance() { return this->max_distance; }
-
    protected:
     /**
      * main function during construction of a neighbourlist.
-     * @param atom the atom to add to the list
-     * @param Order select whether it is an i-atom (order=1), j-atom (order=2),
+     * @param atom_tag the atom to add to the list
+     * @tparam Order select whether it is an i-atom (order=1), j-atom (order=2),
      * or ...
      */
     template <size_t Order>
@@ -307,8 +306,6 @@ namespace rascal {
     std::shared_ptr<Distance_t> distance;
     std::shared_ptr<DirectionVector_t> dir_vec;
     const double cutoff;
-    double min_distance;
-    double max_distance;
 
     /**
      * store atom tags per order,i.e.
@@ -370,8 +367,7 @@ namespace rascal {
       : manager{std::move(manager)}, distance{std::make_shared<Distance_t>(
                                          *this)},
         dir_vec{std::make_shared<DirectionVector_t>(*this)}, cutoff{cutoff},
-        min_distance{}, max_distance{}, atom_tag_list{},
-        neighbours_cluster_index{}, nb_neigh{}, offsets{}
+        atom_tag_list{}, neighbours_cluster_index{}, nb_neigh{}, offsets{}
 
   {
     if (not internal::check_cutoff(this->manager, cutoff)) {
@@ -418,9 +414,9 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
-    // TODO(all) warning or error if pairs are empty???
-    this->min_distance = std::numeric_limits<double>::max();
-    this->max_distance = 0.;
+
+    double rc2{this->cutoff * this->cutoff};
+
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
     for (auto atom : this->manager.get()->with_ghosts()) {
@@ -434,23 +430,19 @@ namespace rascal {
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
-      double rc2{this->cutoff * this->cutoff};
-      for (auto pair : atom) {
+      for (auto pair : atom.with_self_pair()) {
         auto vec_ij{pair.get_position() - atom.get_position()};
         double distance2{(vec_ij).squaredNorm()};
         if (distance2 <= rc2) {
           this->add_atom(pair);
           double distance{std::sqrt(distance2)};
+          if (distance2 > 0.) {
+            this->dir_vec->push_back((vec_ij.array() / distance).matrix());
+          } else {
+            this->dir_vec->push_back((vec_ij.array()).matrix());
+          }
 
-          this->dir_vec->push_back((vec_ij.array() / distance).matrix());
           this->distance->push_back(distance);
-
-          if (distance > this->max_distance) {
-            this->max_distance = distance;
-          }
-          if (distance < this->min_distance) {
-            this->min_distance = distance;
-          }
 
           Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;
           indices_pair.template head<PairLayer>() = pair.get_cluster_indices();

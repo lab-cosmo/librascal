@@ -1,5 +1,5 @@
 /**
- * file   test_lattice.cc
+ * @file   test_lattice.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *

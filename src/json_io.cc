@@ -1,5 +1,5 @@
 /**
- * file   json_io.cc
+ * @file   json_io.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -28,7 +28,6 @@
 #include "json_io.hh"
 
 namespace rascal {
-
   namespace json_io {
 
     json load(const std::string & filename) {

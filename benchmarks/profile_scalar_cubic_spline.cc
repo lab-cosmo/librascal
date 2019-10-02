@@ -39,7 +39,7 @@
 static constexpr int N_REPETITIONS = 200;
 static unsigned int SEED = 1597463007;
 
-using namespace rascal; // NOLINT
+using namespace rascal;  // NOLINT
 
 using math::Hyp1f1;
 using math::InterpolatorScalarUniformCubicSpline;

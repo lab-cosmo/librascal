@@ -1,5 +1,5 @@
 /**
- * file   kernels.hh
+ * @file   kernels.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -68,6 +68,12 @@ namespace rascal {
         }
       }
 
+      /**
+       * Compute the kernel between 2 set of structure(s)
+       *
+       * @tparam StructureManagers should be an iterable over shared pointer
+       *          of structure managers like ManagerCollection
+       */
       template <
           class Property_t, internal::TargetType Type,
           std::enable_if_t<Type == internal::TargetType::Structure, int> = 0,
@@ -98,7 +104,8 @@ namespace rascal {
       }
 
       /**
-       * Compute the kernel between 2 set of structures for a given representation specified by the name.
+       * Compute the kernel between 2 set of structures for a given
+       * representation specified by the name.
        *
        * @param managers_a a ManagerCollection or similar collection of
        * structure managers
@@ -190,9 +197,9 @@ namespace rascal {
       }
     }
 
-
     /*
-     * The root compute kernel function. It computes the kernel between 2 set of structures for a given representation specified by the calculator.
+     * The root compute kernel function. It computes the kernel between 2 set of
+     * structures for a given representation specified by the calculator.
      *
      * @param calculator the calculator which has been used to calculate
      * the representation on the two managers

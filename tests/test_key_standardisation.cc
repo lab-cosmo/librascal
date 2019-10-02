@@ -1,5 +1,5 @@
 /**
- * file   test_key_standardisation.hh
+ * @file   test_key_standardisation.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *

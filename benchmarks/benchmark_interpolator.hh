@@ -33,8 +33,9 @@
 #include <iostream>
 
 #include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/adaptor_center_contribution.hh"
+#include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/make_structure_manager.hh"
 
 #include "math/interpolator.hh"
@@ -42,20 +43,18 @@
 #include "representations/calculator_spherical_expansion.hh"
 #include "json.hpp"
 
-
-
 namespace rascal {
 
-  using internal::RadialContribution;
-  using internal::RadialBasisType;
   using internal::AtomicSmearingType;
+  using internal::RadialBasisType;
+  using internal::RadialContribution;
 
   using math::Hyp1f1;
-  using math::InterpolatorScalarUniformCubicSpline;
   using math::InterpolatorMatrixUniformCubicSpline;
+  using math::InterpolatorScalarUniformCubicSpline;
+  using math::Matrix_t;
   using math::RefinementMethod_t;
   using math::Vector_t;
-  using math::Matrix_t;
 
   // For the random functionalities in the benchmarks
   static unsigned int SEED = 1597463007;  // 0x5f3759df
@@ -338,9 +337,7 @@ namespace rascal {
     SupportedVecFunc func_name;
     int max_radial{0};
     int max_angular{0};
-    std::shared_ptr<
-        RadialContribution<RadialBasisType::GTO>>
-        radial_contr{};
+    std::shared_ptr<RadialContribution<RadialBasisType::GTO>> radial_contr{};
 
    protected:
     bool have_scalar_interpolator_parameters_changed(
@@ -406,12 +403,12 @@ namespace rascal {
           {"cutoff_function", {{"cutoff", {{"value", 2.0}, {"unit", "A"}}}}}};
       // we cannot copy radial contribution to the lambda function, because
       // the copying has been disabled
-      this->radial_contr = std::make_shared<
-          RadialContribution<RadialBasisType::GTO>>(hypers);
+      this->radial_contr =
+          std::make_shared<RadialContribution<RadialBasisType::GTO>>(hypers);
       this->func = [&](double x) mutable {
         return this->radial_contr
             ->template compute_contribution<AtomicSmearingType::Constant>(x,
-                                                                           0.5);
+                                                                          0.5);
       };
     }
 
@@ -434,8 +431,8 @@ namespace rascal {
   class SphericalExpansionBFixture : public InterpolatorBFixture<Dataset> {
    public:
     using Representation_t = CalculatorSphericalExpansion;
-    using Manager_t =
-        AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+    using Manager_t = AdaptorStrict<AdaptorCenterContribution<
+        AdaptorNeighbourList<StructureManagerCenters>>>;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using Parent = InterpolatorBFixture<Dataset>;
 
@@ -493,10 +490,9 @@ namespace rascal {
 
       AtomicStructure<3> atomic_structure{};
       atomic_structure.set_structure(this->filename);
-      this->manager =
-          make_structure_manager_stack<StructureManagerCenters,
-                                       AdaptorNeighbourList, AdaptorStrict>(
-              structure, adaptors);
+      this->manager = make_structure_manager_stack<
+          StructureManagerCenters, AdaptorNeighbourList,
+          AdaptorCenterContribution, AdaptorStrict>(structure, adaptors);
       this->manager->update(atomic_structure);
 
       this->nb_neighbours = 0;
@@ -533,8 +529,7 @@ namespace rascal {
         hypers["radial_contribution"] = {{"type", "GTO"}};
       }
       this->hypers = hypers;
-      this->representation_ptr =
-          std::make_shared<Representation_t>(hypers);
+      this->representation_ptr = std::make_shared<Representation_t>(hypers);
     }
 
     bool

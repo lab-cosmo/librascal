@@ -65,4 +65,4 @@ namespace rascal {
     return (stat(name, &buffer) == 0);
   }
 }  // namespace rascal
-#endif // BENCHMARKS_PROFILE_UTILITY_HH_
+#endif  // BENCHMARKS_PROFILE_UTILITY_HH_

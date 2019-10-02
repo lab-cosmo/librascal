@@ -1,5 +1,5 @@
 /**
- * file   rascal_utility.hh
+ * @file   rascal_utility.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -81,8 +81,8 @@ namespace rascal {
         : std::true_type {};
 
     /**
-     * Here the proper iteraror means that it is a std Container and not
-     * a std AssociativeContainer
+     * Here the proper iteraror means that it is a std::Container and not
+     * a std::AssociativeContainer
      */
     template <class T>
     struct is_proper_iterator {
@@ -260,10 +260,13 @@ namespace rascal {
      * This functionality is compiler dependant so for the moment
      * clang and gcc are compatible.
      * @template T type that should be stringifyied
-     * @returns std::string name of the type
      */
     template <typename T>
     struct GetTypeNameHelper {
+      /**
+       * Get the type name
+       * @returns std::string name of the type
+       */
       static const std::string GetTypeName() {
 // The output of of Pretty Function depends on the compiler
 // the #define strings is a pain to split
@@ -350,6 +353,11 @@ namespace rascal {
                  std::istream_iterator<BINARY>());
     }
 
+    /**
+     * extract the extension from a filename as the charaters after the last
+     * "."
+     * if it is not found it return an empty string
+     */
     inline std::string get_filename_extension(const std::string & filename) {
       auto const pos = filename.find_last_of(".");
       std::string extension{""};

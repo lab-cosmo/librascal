@@ -84,20 +84,16 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  /**
-   * These fixtures have the initialization hyperparameters inside the class. So
-   * changes/updates new tests can be done inside the template classes.
-   */
   using multiple_fixtures =
-      boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb>,
-                       CalculatorFixture<MultipleStructureSphericalExpansion>,
-                       CalculatorFixture<MultipleStructureSphericalInvariants>,
-                       CalculatorFixture<MultipleStructureSphericalCovariants>>;
-  /**
-   * These fitures have the initialization hyperparameters stored in a binary
-   * json constructed with the python scripts in the librascal/script folder and
-   * are stored in librascal/tests/reference_data folder.
-   */
+      boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb<
+                           MultipleStructureManagerNLStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalExpansion<
+                           MultipleStructureManagerNLCCStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalInvariants<
+                           MultipleStructureManagerNLCCStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalCovariants<
+                           MultipleStructureManagerNLCCStrictFixture>>>;
+
   using fixtures_ref_test =
       boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
                        CalculatorFixture<SphericalExpansionTestData>,
@@ -163,19 +159,22 @@ namespace rascal {
 
         BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
         BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
+        double diff{0.};
+        int size{0};
         for (int row_i{0}; row_i < feat_prop.rows(); row_i++) {
           for (int col_i{0}; col_i < feat_prop.cols(); ++col_i) {
-            double diff =
-                std::abs(feat_prop(row_i, col_i) - feat_col(row_i, col_i));
+            diff += std::abs(feat_prop(row_i, col_i) - feat_col(row_i, col_i));
+            size += 1;
 
-            BOOST_CHECK_LE(diff, 6e-12);
-            if (verbose and diff > 6e-12) {
+            if (verbose and diff / size > 6e-12) {
               std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", "
                         << col_i << " \t " << feat_prop(row_i, col_i)
                         << "\t != " << feat_col(row_i, col_i) << std::endl;
             }
           }
         }
+        diff /= size;
+        BOOST_CHECK_LE(diff, 6e-12);
       }
       manager_i++;
     }
@@ -194,6 +193,117 @@ namespace rascal {
       for (auto & hyper : representation_hypers) {
         representations.emplace_back(hyper);
         representations.back().compute(manager);
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test if the no center option takes out the centers
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_no_center_test, Fix,
+                                   multiple_fixtures, Fix) {
+    using ArrayB_t = typename AtomicStructure<3>::ArrayB_t;
+    auto & managers = Fix::managers;
+    auto & representations = Fix::representations;
+    using Property_t = typename Fix::Property_t;
+    auto & hypers = Fix::representation_hypers;
+    for (auto & manager : managers) {
+      auto man = extract_underlying_manager<0>(manager);
+      auto atomic_structure = man->get_atomic_structure();
+      auto n_atoms = atomic_structure.get_number_of_atoms();
+      atomic_structure.center_atoms_mask = ArrayB_t::Zero(n_atoms);
+      auto i_atom1 = static_cast<int>(n_atoms / 2);
+      atomic_structure.center_atoms_mask[i_atom1] = true;
+      manager->update(atomic_structure);
+      for (auto & hyper : hypers) {
+        representations.emplace_back(hyper);
+        representations.back().compute(manager);
+        auto & prop = manager->template get_validated_property_ref<Property_t>(
+            representations.back().get_name());
+        BOOST_CHECK_EQUAL(prop.get_nb_item(), 1);
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+
+  using multiple_center_mask_fixtures = boost::mpl::list<
+      // TODO(felix) For some reason the Sorted coulomb version is
+      // susceptible to
+      // differences in neighbour ordering so test will fail for a wrong
+      // reason...
+      // CalculatorFixture<MultipleStructureSortedCoulombCenterMask,
+      //                       RepresentationManagerSortedCoulomb>,
+      CalculatorFixture<MultipleStructureSphericalExpansion<
+          MultipleStructureManagerNLCCStrictFixtureCenterMask>>,
+      CalculatorFixture<MultipleStructureSphericalCovariants<
+          MultipleStructureManagerNLCCStrictFixtureCenterMask>>,
+      CalculatorFixture<MultipleStructureSphericalInvariants<
+          MultipleStructureManagerNLCCStrictFixtureCenterMask>>>;
+
+  /**
+   * Test that selecting subsets of centers will give the same representation
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_center_mask_test, Fix,
+                                   multiple_center_mask_fixtures, Fix) {
+    bool verbose{false};
+    auto & managers = Fix::managers;
+    auto & hypers = Fix::representation_hypers;
+    using Representation_t = typename Fix::Representation_t;
+    using Property_t = typename Fix::Property_t;
+
+    int n_manager{static_cast<int>(managers.size())};
+    for (int i_manager{0}; i_manager < n_manager; i_manager += 2) {
+      for (auto & hyper : hypers) {
+        auto & manager = managers[i_manager];
+        auto & manager_no_center = managers[i_manager + 1];
+        auto center_atoms_mask =
+            extract_underlying_manager<0>(manager_no_center)
+                ->get_center_atoms_mask();
+
+        if (verbose) {
+          std::cout << "center_atoms_mask: " << center_atoms_mask.transpose()
+                    << std::endl;
+        }
+
+        Representation_t representation{hyper};
+        representation.compute(manager);
+        representation.compute(manager_no_center);
+
+        auto & prop = manager->template get_validated_property_ref<Property_t>(
+            representation.get_name());
+        math::Matrix_t rep_full = prop.get_dense_feature_matrix();
+
+        auto & prop_no_center =
+            manager_no_center->template get_validated_property_ref<Property_t>(
+                representation.get_name());
+        math::Matrix_t rep_no_center =
+            prop_no_center.get_dense_feature_matrix();
+
+        BOOST_CHECK_EQUAL(rep_full.cols(), rep_no_center.cols());
+        BOOST_CHECK_EQUAL(center_atoms_mask.count(), rep_no_center.rows());
+
+        if (verbose) {
+          std::cout << "rep dim: " << rep_no_center.rows() << ", "
+                    << rep_no_center.cols() << std::endl;
+        }
+
+        size_t i_no_center{0};
+        for (size_t i_center{0}; i_center < manager_no_center->size();
+             ++i_center) {
+          if (center_atoms_mask(i_center)) {
+            auto row_full = rep_full.row(i_center);
+            auto row_no_center = rep_no_center.row(i_no_center);
+            auto diff = (row_full - row_no_center).norm();
+            BOOST_CHECK_LE(diff, math::dbl_ftol);
+            if (verbose) {
+              std::cout << "Center idx: " << i_center << " Diff: " << diff
+                        << std::endl;
+            }
+            i_no_center++;
+          }
+        }
       }
     }
   }
@@ -255,7 +365,6 @@ namespace rascal {
     }
   }
 
-  // These tests have their hyperparameters inside the template class
   using fixtures_with_gradients =
       boost::mpl::list<CalculatorFixture<MultipleHypersSphericalExpansion>>;
 
@@ -297,9 +406,11 @@ namespace rascal {
   using simple_periodic_fixtures =
       boost::mpl::list<CalculatorFixture<SingleHypersSphericalExpansion>,
                        CalculatorFixture<SingleHypersSphericalInvariants>>;
+
   /**
-   * Test the gradient of the SphericalExpansion representation on a few simple
-   * crystal structures (single- and multi-species, primitive and supercells)
+   * Test the gradient of the SphericalExpansion and SphericalInvariants
+   * representation on a few simple crystal structures (single- and
+   * multi-species, primitive and supercells)
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_representation_gradients, Fix,
                                    simple_periodic_fixtures, Fix) {

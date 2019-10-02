@@ -1,5 +1,5 @@
 /**
- * file   structure_manager_lammps.hh
+ * @file   structure_manager_lammps.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -50,6 +50,8 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{false};
+    constexpr static bool HasCenterPair{false};
+    constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0, 0>;
   };
 
@@ -63,6 +65,7 @@ namespace rascal {
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
+    using ManagerImplementation_t = StructureManagerLammps;
     using ImplementationPtr_t = std::shared_ptr<StructureManagerLammps>;
 
     //! Default constructor
@@ -72,7 +75,7 @@ namespace rascal {
     StructureManagerLammps(const StructureManagerLammps & other) = delete;
 
     //! Move constructor
-    StructureManagerLammps(StructureManagerLammps && other) = default;
+    StructureManagerLammps(StructureManagerLammps && other) = delete;
 
     //! Destructor
     virtual ~StructureManagerLammps() = default;
@@ -83,7 +86,7 @@ namespace rascal {
 
     //! Move assignment operator
     StructureManagerLammps &
-    operator=(StructureManagerLammps && other) = default;
+    operator=(StructureManagerLammps && other) = delete;
 
     //! Updates the manager using the impl
     template <class... Args>
