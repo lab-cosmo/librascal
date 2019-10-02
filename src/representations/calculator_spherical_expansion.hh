@@ -1147,6 +1147,8 @@ namespace rascal {
               center) /
           sqrt(4.0 * PI);
 
+      auto atom_i_tag = center.get_atom_tag();
+
       for (auto neigh : center) {
         auto dist{manager->get_distance(neigh)};
         auto direction{manager->get_direction_vector(neigh)};
@@ -1178,9 +1180,15 @@ namespace rascal {
           l_block_idx += l_block_size;
         }
 
+        auto && atom_j = neigh.get_atom_j();
+        auto atom_j_tag = atom_j.get_atom_tag();
+
         // compute the gradients of the coefficients with respect to
         // atoms positions
-        if (this->compute_gradients) {
+        // but only if the neighbour is _not_ an image of the center!
+        // (the periodic images move with the center, so their contribution to
+        // the center gradient is zero)
+        if (this->compute_gradients and (atom_j_tag != atom_i_tag)) {
           std::vector<Key_t> neigh_types{neigh_type};
           coefficients_neigh_gradient.resize(
               neigh_types, n_spatial_dimensions * n_row, n_col, 0.);
