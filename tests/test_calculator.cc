@@ -432,7 +432,8 @@ namespace rascal {
         structures.back().set_structure(*filename_it);
         // The finite-difference tests don't work with periodic boundary
         // conditions -- moving one atom moves all its periodic images, too
-        structures.back().pbc.setZero();
+        // Update: Turns out we actually do want this behaviour
+        //structures.back().pbc.setZero();
         RepresentationManagerGradientCalculator<typename Fix::Representation_t,
                                                 typename Fix::Manager_t>
             calculator(representations.back(), manager, structures.back());
