@@ -358,7 +358,7 @@ namespace rascal {
       //! define the contribution from a neighbour atom to the expansion
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Matrix_Ref
-      compute_neighbour_contribution(const double & distance,
+      compute_neighbour_contribution(double distance,
                                      ClusterRefKey<Order, Layer> & pair) {
         using math::PI;
         using math::pow;
@@ -434,7 +434,7 @@ namespace rascal {
        */
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Matrix_Ref
-      compute_neighbour_derivative(const double & distance,
+      compute_neighbour_derivative(double distance,
                                    ClusterRefKey<Order, Layer> & /*pair*/) {
         using math::PI;
         using math::pow;
@@ -701,7 +701,7 @@ namespace rascal {
       //! define the contribution from a neighbour atom to the expansion
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Matrix_Ref
-      compute_neighbour_contribution(const double & distance,
+      compute_neighbour_contribution(double distance,
                                      ClusterRefKey<Order, Layer> & pair) {
         using math::PI;
         using math::pow;
@@ -727,7 +727,7 @@ namespace rascal {
        */
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Matrix_Ref
-      compute_neighbour_derivative(const double & /*distance*/,
+      compute_neighbour_derivative(double /*distance*/,
                                    ClusterRefKey<Order, Layer> & /*pair*/) {
         using math::PI;
         using math::pow;

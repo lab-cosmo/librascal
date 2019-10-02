@@ -165,7 +165,7 @@ namespace rascal {
       //! constructor
       PeriodicImages(const std::array<int, Dim> & origin,
                      const std::array<int, Dim> & nrepetitions,
-                     const size_t & ntot)
+                     size_t ntot)
           : origin{origin}, nrepetitions{nrepetitions}, ntot{ntot} {}
       //! copy constructor
       PeriodicImages(const PeriodicImages & other) = default;
@@ -321,7 +321,7 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     //! get the cell index for a position
     template <class Vector_t>
-    decltype(auto) get_box_index(const Vector_t & position, const double & rc) {
+    decltype(auto) get_box_index(const Vector_t & position, double rc) {
       auto constexpr dimension{Vector_t::SizeAtCompileTime};
 
       std::array<int, dimension> nidx{};
@@ -565,7 +565,7 @@ namespace rascal {
     }
 
     //! Returns position of an atom with index atom_tag
-    inline Vector_ref get_position(const size_t & atom_tag) {
+    inline Vector_ref get_position(size_t atom_tag) {
       if (atom_tag < this->n_atoms) {
         return this->manager->get_position(atom_tag);
       } else {
@@ -586,13 +586,13 @@ namespace rascal {
     }
 
     //! ghost types are only available for MaxOrder=2
-    inline const int & get_ghost_type(const size_t & atom_tag) const {
+    inline int get_ghost_type(size_t atom_tag) const {
       auto && p{this->get_ghost_types()};
       return p[atom_tag];
     }
 
     //! ghost types are only available for MaxOrder=2
-    inline int & get_ghost_type(const size_t & atom_tag) {
+    inline int & get_ghost_type(size_t atom_tag) {
       auto && p{this->get_ghost_types()};
       return p[atom_tag];
     }
@@ -644,7 +644,7 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom tag, also works for ghost atoms
-    inline int & get_atom_type(const int & atom_tag) {
+    inline int & get_atom_type(int atom_tag) {
       // return this->atom_types[this->get_atom_index(atom_tag)];
       return this->atom_types[atom_tag];
     }
@@ -658,7 +658,7 @@ namespace rascal {
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline const int & get_atom_type(const int & atom_tag) const {
+    inline int get_atom_type(int atom_tag) const {
       return this->atom_types[atom_tag];
     }
 
@@ -678,9 +678,9 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
-    const size_t & get_n_update() const { return this->n_update; }
+    size_t get_n_update() const { return this->n_update; }
 
-    const size_t & get_skin2() const { return this->skin2; }
+    size_t get_skin2() const { return this->skin2; }
 
    protected:
     /* ---------------------------------------------------------------------- */
@@ -698,8 +698,8 @@ namespace rascal {
      * is needed, because ghost atoms are also included in the buildup of the
      * pair list.
      */
-    inline void add_ghost_atom(const int & atom_tag, const Vector_t & position,
-                               const int & atom_type) {
+    inline void add_ghost_atom(int atom_tag, const Vector_t & position,
+                               int atom_type) {
       // first add it to the list of atoms
       this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);

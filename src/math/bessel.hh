@@ -69,7 +69,7 @@ namespace rascal {
        * @param x_v      Eigen::Array of x-values (part of the argument of the
        *                 first exponential; see equation above)
        */
-      void precompute(const size_t & l_max,
+      void precompute(size_t l_max,
                       const Eigen::Ref<const Eigen::VectorXd> & x_v) {
         this->x_v = x_v.array();
         this->n_max = x_v.size();
@@ -102,8 +102,8 @@ namespace rascal {
        * @param n_rows number of rows where the recursion is applicable
        *               from the bottom
        */
-      void upward_recursion(const double & distance, const double & fac_a,
-                            const int & n_rows) {
+      void upward_recursion(double distance, double fac_a,
+                            int n_rows) {
         auto vals = this->bessel_values.bottomRows(n_rows);
         // i_0(z) = sinh(z) / z
         vals.col(0) =
@@ -146,8 +146,8 @@ namespace rascal {
        * @param n_rows number of rows where the recursion is applicable
        *               from the top
        */
-      void downward_recursion(const double & distance, const double & fac_a,
-                              const int & n_rows) {
+      void downward_recursion(double distance, double fac_a,
+                              int n_rows) {
         auto vals = this->bessel_values.topRows(n_rows);
         this->exp_bessel_arg = Eigen::exp(-this->bessel_arg.head(n_rows));
         this->efac = std::exp(-fac_a * distance * distance) *
@@ -178,7 +178,7 @@ namespace rascal {
        * threshold the MBSFs are set to 0 because of the numerical noise
        * arrising below 1e-150.
        */
-      inline void calc(const double & distance, const double & fac_a) {
+      inline void calc(double distance, double fac_a) {
         this->bessel_arg = (2. * fac_a * distance) * this->x_v;
         this->bessel_arg_i = this->bessel_arg.inverse();
         // find the index where bessel_arg is larger than 50

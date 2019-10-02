@@ -199,13 +199,13 @@ namespace rascal {
     inline Cell_ref get_cell() { return Cell_ref(this->atoms_object.cell); }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline int & get_atom_type(const int & atom_tag) {
+    inline int & get_atom_type(int atom_tag) {
       auto && atom_index{this->get_atom_index(atom_tag)};
       return this->atoms_object.atom_types(atom_index);
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline const int & get_atom_type(const int & atom_tag) const {
+    inline int get_atom_type(int atom_tag) const {
       auto && atom_index{this->get_atom_index(atom_tag)};
       return this->atoms_object.atom_types(atom_index);
     }
@@ -238,7 +238,7 @@ namespace rascal {
     }
 
     //! Returns the position of an atom, given an atom tag
-    inline Vector_ref get_position(const int & atom_tag) {
+    inline Vector_ref get_position(int atom_tag) {
       auto && atom_index{this->get_atom_index(atom_tag)};
       auto p = this->get_positions();
       auto * xval{p.col(atom_index).data()};
@@ -272,7 +272,7 @@ namespace rascal {
       return this->get_atom_index(cluster.get_atom_tag());
     }
 
-    inline const size_t & get_atom_index(const int & atom_tag) const {
+    inline size_t get_atom_index(int atom_tag) const {
       return std::get<0>(this->atoms_index)[atom_tag];
     }
 
@@ -294,9 +294,9 @@ namespace rascal {
       return 0;
     }
 
-    inline int get_atom_tag(const int & raw_index) const { return raw_index; }
+    inline int get_atom_tag(int raw_index) const { return raw_index; }
 
-    inline size_t get_atom_tag(const size_t & raw_index) const {
+    inline size_t get_atom_tag(size_t raw_index) const {
       return raw_index;
     }
 
