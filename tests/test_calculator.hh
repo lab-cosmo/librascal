@@ -397,7 +397,7 @@ namespace rascal {
                  {"initialization_arguments",
                   {{"cutoff", cutoff},
                    {"skin", cutoff_skin},
-                   {"consider_ghost_neighbours", false}}}};
+                   {"consider_ghost_neighbours", true}}}};
         json ad1b{{"name", "AdaptorCenterContribution"},
                   {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
