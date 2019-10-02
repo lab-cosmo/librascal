@@ -44,13 +44,13 @@ namespace rascal {
      * for certain methods, the interpolator class itself is only a skeleton to
      * execute these interpolator methods.
      *
-     * There exist methods for the mathematical derived interpolation method
-     * contained in InterpolationMethod, for the creation of the grid and test
+     * The mathematical interpolation method are
+     * contained in the InterpolationMethod, for the creation of the grid and test
      * grid contained in the GridRational, a search method to find the nearest
      * grid point before a point for interpolation contained in SearchMethod and
      * a method for computing an error term contained in ErrorMethod.
      *
-     * The Interpolator class hierarchy is are split into InterpolatorBase ->
+     * The Interpolator class hierarchy is split into InterpolatorBase ->
      * Interpolator (abstract) -> YOUR_INTERPOLATOR_IMPLEMENTATION An
      * interpolator implementation can be very general an allow multiple
      * combination of methods to allow flexibility or very rigid to allow better
@@ -65,15 +65,18 @@ namespace rascal {
      * SearchMethod for non uniform grids are functional for an appropriate
      * interpolator implementation and are kept in case of need.
      */
+    enum class RefinementMethod_t { Exponential, Linear, Adaptive };
 
     /**
+     * GridRatonial creates the grid and test grid. The test grid is used
+     * estimate the error of the interpolator on the grid. If the error is too
+     * large, the grid is further refined until the desired accuracy is
+     * achieved.
+     *
      * GridRational consist of an refinement part which determines the method of
      * refining the grid. The GridType describes the type of starting grid, but
      * the type does necessery have to hold after the refinement.
      */
-    enum class GridType_t { Uniform };
-    enum class RefinementMethod_t { Exponential, Linear, Adaptive };
-
     template <GridType_t Type, RefinementMethod_t Method>
     struct GridRational {
       /**
@@ -88,16 +91,21 @@ namespace rascal {
     };
 
     /**
+     * GridRational for a uniform grid with an adaptive refinement.
+     *
      * Starts with a uniform grid and in each refinement step it adds the test
      * grid point with the largest error. It is important to notice that even
-     * though it starts with an adaptive grid, it usually does not stay uniform.
+     * though it starts with a uniform grid, it usually does not stay uniform.
+     *
      *                               x1                 x2
      * grid                          [     |       |    ]
      * test grid                        |      |      |
      * error                           0.5    1.5    0.1
      * refined grid                  [     |   |   |    ]
      * test grid for refined grid       |    |   |    |
-     *
+     */
+
+    /* TODO(alex):
      * These are possible improvements for this grid rational:
      * - for this grid rational it makes sense to save the test grid,
      * because it is one step ahead and we can add more points
@@ -192,10 +200,11 @@ namespace rascal {
     };
 
     /**
-     * The uniform grid uses the points in between grid points as test grid
+     * TODO(alex) add spaces
+     * The uniform grid uses the points in between grid points as test grid. The refined grid adds `slope` number of points to grid.
      *                x1                 x2
      * grid           [     |     |     |     |     ]
-     * test grid         |     |     |     |     |
+     * test grid         x     x     x     x     x
      * refined grid   [  |   |   |   |   |   |   |  ] for slope = 3
      */
     template <>
@@ -207,8 +216,10 @@ namespace rascal {
 
       GridRational<GridType_t::Uniform, RefinementMethod_t::Linear>()
           : slope{10} {}
-      GridRational<GridType_t::Uniform, RefinementMethod_t::Linear>(int slope)
+      explicit GridRational<GridType_t::Uniform, RefinementMethod_t::Linear>(
+          int slope)
           : slope{slope} {}
+
       void update_errors(Vector_Ref);
 
       Vector_t compute_grid(double x1, double x2, int grid_fineness) {
@@ -258,6 +269,7 @@ namespace rascal {
           int base)
           : base{base} {}
 
+      // TODO(alex) use base
       Vector_t compute_grid(double x1, double x2, int grid_fineness) {
         double nb_grid_points = 2 << grid_fineness;
         return Vector_t::LinSpaced(nb_grid_points, x1, x2);
