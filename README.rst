@@ -28,6 +28,10 @@ It comes with a GNU Lesser General Public License of version 3, which
 means that it can be modified and freely distributed, although we take
 no responsibility for its misuse.
 
+For more information, have a look at the documentation_!
+
+.. _documentation: https://cosmo-epfl.github.io/librascal/
+
 Development
 -----------
 
@@ -191,10 +195,7 @@ helpful to customize the build options.
      cmake -DENABLE_DOC=ON ..
      make doc
 
-   and open :file:`build/docs/html/intro.html` in a browser. The
-   Doxygen html build is still available under
-   :file:`build/docs/dox_html/index.html` but it is being phased out in favour
-   of Sphinx/breathe.
+   and open :file:`build/docs/html/index.html` in a browser.
 
 4. Helpers for Developers
 
