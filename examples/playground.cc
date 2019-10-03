@@ -84,7 +84,7 @@ int main() {
   // Test1()();
   // std::string filename{"reference_data/dft-smiles_500.ubjson"};
   // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-  std::string filename{"reference_data/alloy.json"};
+  std::string filename{"reference_data/alloy-small.json"};
   // std::string filename{"reference_data/diamond_cubic.json"};
   std::string rep_id{"pp"};
 
@@ -111,13 +111,11 @@ int main() {
 
     for (auto neigh : center) {
       auto tag_list = neigh.get_atom_tag_list();
-      auto dist = manager->get_distance(neigh);
 
       auto atom_j = neigh.get_atom_j();
       auto atom_j_tag = atom_j.get_atom_tag_list();
       auto atom_j_ids = atom_j.get_cluster_indices();
       std::cout << "neigh: " << tag_list[0] << ", " << tag_list[1] << ", "
-                << dist
                 << " tag_j: " << atom_j_tag[0] << ", " << atom_j_ids[0]
                 << std::endl;
     }

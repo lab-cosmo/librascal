@@ -910,9 +910,9 @@ namespace rascal {
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
 
     // short hands for parameters and inputs
-    constexpr auto& dim{traits::Dim};
-    auto& cell{this->manager->get_cell()};
-    double& cutoff{this->cutoff};
+    constexpr auto dim{traits::Dim};
+    const auto& cell{this->manager->get_cell()};
+    const double& cutoff{this->cutoff};
 
     // minimum/maximum coordinate of mesh for neighbour list, it is larger by
     // one cell to be able to provide a neighbour list also over ghost atoms;
