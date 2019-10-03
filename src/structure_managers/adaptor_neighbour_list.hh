@@ -399,6 +399,16 @@ namespace rascal {
       IndexContainer & operator=(IndexContainer && other) = default;
       //! brackets operator
       std::vector<int> & operator[](const std::array<int, Dim> & ccoord) {
+        for (int i = 0; i < int(Dim); ++i) {
+          if (not (ccoord[i] < this->nboxes[i])) {
+            std::stringstream error{};
+            error << "ccoord = (" << ccoord[0] << ", " << ccoord[1] << ", "
+                  << ccoord[2] << "), nboxes = (" << nboxes[0] << ", "
+                  << nboxes[1] << ", " << nboxes[2] << ")";
+            std::cout << error.str() << std::endl;
+            throw std::runtime_error(error.str());
+          }
+        }
         auto index = get_index(this->nboxes, ccoord);
         return data[index];
       }
@@ -910,9 +920,9 @@ namespace rascal {
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
 
     // short hands for parameters and inputs
-    constexpr auto& dim{traits::Dim};
-    auto& cell{this->manager->get_cell()};
-    double& cutoff{this->cutoff};
+    constexpr auto dim{traits::Dim};
+    const auto & cell{this->manager->get_cell()};
+    const double & cutoff{this->cutoff};
 
     // minimum/maximum coordinate of mesh for neighbour list, it is larger by
     // one cell to be able to provide a neighbour list also over ghost atoms;
@@ -944,28 +954,23 @@ namespace rascal {
       double min_coord{std::min(0., cell.row(i).minCoeff())};
       double max_coord{std::max(0., cell.row(i).maxCoeff())};
 
-      // minimum is given by -cutoff and a delta to avoid ambiguity during cell
-      // sorting of atom position e.g. at x = (0,0,0).
-      double epsilon{0.25 * cutoff};
       // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
-      mesh_min[i] = min_coord - 2 * cutoff - epsilon;
+      mesh_min[i] = min_coord - 2 * cutoff ;
 
       // outer mesh, including one layer of emtpy cells
+      double lmesh{max_coord - mesh_min[i] + cutoff};
       //! possible assumption: mesh_min is negative
-      double lmesh{std::fabs(mesh_min[i]) + max_coord + 3 * cutoff};
       //double lmesh{max_coord - mesh_min[i] + cutoff}; //MC
       double n{std::ceil(lmesh / cutoff)};
       //! again this assumes mesh_min is negative
-      double lmax{n * cutoff - std::fabs(mesh_min[i])};
-      //mesh_max[i] = mesh_min[i] + n * cutoff//MC
-      mesh_max[i] = lmax;
+      mesh_max[i] = mesh_min[i] + n * cutoff;  // MC
       nboxes_per_dim[i] = static_cast<int>(n);
 
       // positions min/max for ghost atoms -> this is the actual bounding box
       ghost_min[i] = mesh_min[i] + cutoff;
       double lghost{lmesh - 2 * cutoff};
       double n_ghosts{std::ceil(lghost / cutoff)};
-      ghost_max[i] = n_ghosts * cutoff - std::fabs(ghost_min[i]);
+      ghost_max[i] = n_ghosts * cutoff + ghost_min[i];
     }
 
     // Periodicity related multipliers. Now the mesh coordinates are calculated
