@@ -399,16 +399,6 @@ namespace rascal {
       IndexContainer & operator=(IndexContainer && other) = default;
       //! brackets operator
       std::vector<int> & operator[](const std::array<int, Dim> & ccoord) {
-        for (int i = 0; i < int(Dim); ++i) {
-          if (not (ccoord[i] < this->nboxes[i])) {
-            std::stringstream error{};
-            error << "ccoord = (" << ccoord[0] << ", " << ccoord[1] << ", "
-                  << ccoord[2] << "), nboxes = (" << nboxes[0] << ", "
-                  << nboxes[1] << ", " << nboxes[2] << ")";
-            std::cout << error.str() << std::endl;
-            throw std::runtime_error(error.str());
-          }
-        }
         auto index = get_index(this->nboxes, ccoord);
         return data[index];
       }
