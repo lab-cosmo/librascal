@@ -910,7 +910,7 @@ namespace rascal {
    * maximum cell coordinate plus one cutoff in each direction. This mesh has
    * boxes of size ``cutoff``.
    * All atoms are expected to be inside the unit cell.
-   * 
+   *
    * Depending on the periodicity of the mesh, ghost
    * atoms are added by shifting all i-atoms by the cell vectors corresponding
    * to the desired periodicity. All i-atoms and the ghost atoms are then sorted
@@ -966,7 +966,7 @@ namespace rascal {
       mesh_min[i] = min_coord - 2 * cutoff;
 
       // outer mesh, including one layer of emtpy cells
-      double lmesh{max_coord - mesh_min[i] + cutoff};
+      double lmesh{max_coord - mesh_min[i] + 2* cutoff};
       // number of Linked Cell in each directions
       double n{std::ceil(lmesh / cutoff)};
       mesh_max[i] = mesh_min[i] + n * cutoff;

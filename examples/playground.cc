@@ -68,11 +68,20 @@ int main() {
             {{"cutoff", cutoff},
              {"consider_ghost_neighbours", false},
              {"skin", 0.}}}};
-  adaptors.emplace_back(ad1);
 
+  json ad2{{"name", "AdaptorStrict"},
+           {"initialization_arguments", {{"cutoff", cutoff}}}};
+  adaptors.emplace_back(ad1);
+  adaptors.emplace_back(ad2);
+  /*auto manager =
+      make_structure_manager_stack<StructureManagerCenters,
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>(
+          structure, adaptors);
+    */
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList>(structure, adaptors);
+                                   AdaptorNeighbourList, AdaptorStrict>(structure, adaptors);
 
   std::cout << "n_centers: " << manager->size() << std::endl;
   for (auto center : manager) {
