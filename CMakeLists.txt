@@ -366,3 +366,10 @@ if(AUTOPEP8_FOUND)
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts" "")
 endif()
+
+# Removes every file in the build folder except the external libraries to
+# prevent redownloading external libraries
+add_custom_target(
+    deepclean 
+    COMMAND bash ${CMAKE_SOURCE_DIR}/deepclean.sh
+  )
