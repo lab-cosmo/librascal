@@ -53,9 +53,9 @@ using namespace rascal;  // NOLINT
 int main() {
   // Test1()();
   // std::string filename{"reference_data/dft-smiles_500.ubjson"};
-  // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+  std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   //  std::string filename{"reference_data/alloy-small.json"};
-  std::string filename{"reference_data/alloy-small.json"};
+  //std::string filename{"reference_data/alloy-small.json"};
   // std::string filename{"reference_data/diamond_cubic.json"};
   std::string rep_id{"pp"};
 
@@ -77,7 +77,7 @@ int main() {
   std::cout << "n_centers: " << manager->size() << std::endl;
   for (auto center : manager) {
     auto ctag = center.get_atom_tag();
-    std::cout << "Center: " << ctag << std::endl;
+    std::cout << "Center: " << ctag << " n. neighbors "<< center.size() << std::endl;
 
     for (auto neigh : center) {
       auto tag_list = neigh.get_atom_tag_list();
