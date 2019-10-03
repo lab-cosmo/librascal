@@ -400,7 +400,7 @@ namespace rascal {
       //! brackets operator
       std::vector<int> & operator[](const std::array<int, Dim> & ccoord) {
         for (int i = 0; i < int(Dim); ++i) {
-          if (not (ccoord[i] < this->nboxes[i]) and (ccoord[i] >= 0)) {
+          if (not (ccoord[i] < this->nboxes[i]-1) and (ccoord[i] >= 1)) {
             std::stringstream error{};
             error << "Error: At least one atom is outside the unit cell. This "
                      "adaptor expects atoms to be folded into the original "
