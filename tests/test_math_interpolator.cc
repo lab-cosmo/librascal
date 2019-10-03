@@ -60,7 +60,7 @@ namespace rascal {
           func, Fix::x1, Fix::x2, Fix::error_bound)};
       if (verbose) {
         std::cout << "Interpolator interpolator fineness: "
-                  << intp->get_grid_fineness() << std::endl;
+                  << intp->get_degree_of_fineness() << std::endl;
       }
       if (verbose) {
         std::cout << "Interpolator grid size: " << intp->get_grid_size()
@@ -142,7 +142,7 @@ namespace rascal {
         }
         if (verbose) {
           std::cout << "Interpolator interpolator fineness: "
-                    << intp->get_grid_fineness() << std::endl;
+                    << intp->get_degree_of_fineness() << std::endl;
         }
         if (verbose) {
           std::cout << "Interpolator grid size: " << intp->get_grid_size()
@@ -233,7 +233,7 @@ namespace rascal {
           func, Fix::x1, Fix::x2, Fix::error_bound)};
       if (verbose) {
         std::cout << "Interpolator interpolator fineness: "
-                  << intp->get_grid_fineness() << std::endl;
+                  << intp->get_degree_of_fineness() << std::endl;
       }
       if (verbose) {
         std::cout << "Interpolator grid size: " << intp->get_grid_size()
@@ -285,7 +285,7 @@ namespace rascal {
           vector_func, x1, x2, error_bound, cols, rows)};
       if (verbose) {
         std::cout << "Interpolator interpolator fineness: "
-                  << intp->get_grid_fineness() << std::endl;
+                  << intp->get_degree_of_fineness() << std::endl;
       }
       if (verbose) {
         std::cout << "Interpolator grid size: " << intp->get_grid_size()
@@ -331,7 +331,7 @@ namespace rascal {
           vector_func, x1, x2, error_bound, cols, rows)};
       if (verbose) {
         std::cout << "Interpolator interpolator fineness: "
-                  << intp->get_grid_fineness() << std::endl;
+                  << intp->get_degree_of_fineness() << std::endl;
       }
       if (verbose) {
         std::cout << "Interpolator grid size: " << intp->get_grid_size()
