@@ -84,7 +84,7 @@ int main() {
   // Test1()();
   // std::string filename{"reference_data/dft-smiles_500.ubjson"};
   // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-  std::string filename{"reference_data/alloy.json"};
+  std::string filename{"reference_data/alloy-small.json"};
   // std::string filename{"reference_data/diamond_cubic.json"};
   std::string rep_id{"pp"};
 
@@ -105,27 +105,21 @@ int main() {
           structure, adaptors);
 
   std::cout << "n_centers: " << manager->size() << std::endl;
-  // for (auto center : manager) {
-  //   auto ctag = center.get_atom_tag();
-  //   std::cout << "Center: " << ctag << std::endl;
-  //   // auto atom_ii = center.get_atom_ii();
-  //   // auto atom_ii_tag = atom_ii.get_atom_tag_list();
-  //   // auto atom_ii_ids = atom_ii.get_cluster_indices();
+  for (auto center : manager) {
+    auto ctag = center.get_atom_tag();
+    std::cout << "Center: " << ctag << std::endl;
 
-  //   for (auto neigh : center) {
-  //     auto tag_list = neigh.get_atom_tag_list();
-  //     auto dist = manager->get_distance(neigh);
+    for (auto neigh : center) {
+      auto tag_list = neigh.get_atom_tag_list();
 
-  //     auto atom_j = neigh.get_atom_j();
-  //     auto atom_j_tag = atom_j.get_atom_tag_list();
-  //     auto atom_j_ids = atom_j.get_cluster_indices();
-  //     std::cout << "neigh: " << tag_list[0] << ", " << tag_list[1] << ", "
-  //               << dist << " tag_ii: " << atom_ii_tag[0] << ", "
-  //               << atom_ii_tag[1] << ", " << atom_ii_ids[0]
-  //               << " tag_j: " << atom_j_tag[0] << ", " << atom_j_ids[0]
-  //               << std::endl;
-  //   }
-  // }
+      auto atom_j = neigh.get_atom_j();
+      auto atom_j_tag = atom_j.get_atom_tag_list();
+      auto atom_j_ids = atom_j.get_cluster_indices();
+      std::cout << "neigh: " << tag_list[0] << ", " << tag_list[1] << ", "
+                << " tag_j: " << atom_j_tag[0] << ", " << atom_j_ids[0]
+                << std::endl;
+    }
+  }
 
   return (0);
 }
