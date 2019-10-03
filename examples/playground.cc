@@ -84,7 +84,8 @@ int main() {
   // Test1()();
   // std::string filename{"reference_data/dft-smiles_500.ubjson"};
   // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-  std::string filename{"reference_data/alloy-small.json"};
+  //  std::string filename{"reference_data/alloy-small.json"};
+  std::string filename{"reference_data/alloy.json"};
   // std::string filename{"reference_data/diamond_cubic.json"};
   std::string rep_id{"pp"};
 

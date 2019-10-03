@@ -950,10 +950,13 @@ namespace rascal {
     // vector for storing the tags of atoms contained in each box
     std::vector<std::vector<int>> atoms_in_box{};
     for (auto i{0}; i < dim; ++i) {
-      // min and max coordinate of atoms in Cartesian space
-      double min_coord{std::min(0., cell.row(i).minCoeff())};
-      double max_coord{std::max(0., cell.row(i).maxCoeff())};
-
+      // min and max coordinates of cell cell corners in Cartesian space
+      double min_coord{};
+      double max_coord{};
+      for (int col{0}; col < cell.cols(); ++col) {
+        min_coord -= cell(i, col) * (cell(i, col) < 0.);
+        max_coord += cell(i, col) * (cell(i, col) > 0.);
+      }
       // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
       mesh_min[i] = min_coord - 2 * cutoff ;
 
