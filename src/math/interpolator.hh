@@ -970,7 +970,7 @@ namespace rascal {
        * interpolator interpolating a function of the form y:[x1,x2]->Ω up to an
        * error bound or a max number of grid points in the range [x1,x2], where
        * Ω depends on the child inheriting from this class. Currently, there are
-       * implementations for Ω equal ℝ or ℝ^n.
+       * implementations for Ω equal ℝ or ℝ^{n,m}.
        *
        * @param function the function to be interpolated referred as y here
        * @param x1 begin range
@@ -978,13 +978,14 @@ namespace rascal {
        * @param error_bound the minimal error bound fulfilled
        * @param max_grid_points maximal number of grid points for the
        * interpolating grid until the refinement of the grid stops.
-       * @param start_degree_of_fineness starting fineness of the grid when starting
-       * the algorithm, the fineness parameter describes the fineness of the
+       * @param initial_degree_of_fineness starting value for the `degree_of_fineness` parameter. 
+       * The `degree_of_fineness` parameter describes the fineness of the
        * grid for grid rationals with non adaptive refinement methods. Higher
-       * value results in finer grids. It depends on the specifics of the
+       * values results in finer grids. It depends on the specifics of the
        * GridRational how the fineness changes the number of grid points
-       * exactly. For adaptive refinement methods the fineness is ignored. The
-       * fineness parameter should be at least 1. A good fineness value can
+       * exactly. The fineness parameter should be at least 1. 
+       * Starting with a very low parameter can lead to poor estimations of the errors, because the fineness of the test grid also relies on this parameter
+       * A good inital fineness value can
        * reduce the number of steps in the initialization.
        * @param empty bool parameter to prevent overloading with the public
        * constructor
@@ -994,9 +995,9 @@ namespace rascal {
        * @error fineness is illdefined.
        */
       Interpolator(double x1, double x2, double error_bound,
-                   int max_grid_points, int start_degree_of_fineness)
+                   int max_grid_points, int initial_degree_of_fineness)
           : Interpolator(x1, x2, error_bound, max_grid_points,
-                         start_degree_of_fineness, true) {}
+                         initial_degree_of_fineness, true) {}
       Interpolator(double x1, double x2, double error_bound)
           : Interpolator(x1, x2, error_bound, 10000000, 5, true) {}
 
@@ -1019,10 +1020,10 @@ namespace rascal {
 
      protected:
       Interpolator(double x1, double x2, double error_bound,
-                   int max_grid_points, int start_degree_of_fineness, bool)
+                   int max_grid_points, int initial_degree_of_fineness, bool)
           : x1{x1}, x2{x2}, error_bound{error_bound},
             max_grid_points{max_grid_points},
-            degree_of_fineness{start_degree_of_fineness},
+            degree_of_fineness{initial_degree_of_fineness},
             intp_method{InterpolationMethod()}, grid_rational{GridRational()},
             search_method{SearchMethod()} {
         if (x2 < x1) {
@@ -1031,7 +1032,7 @@ namespace rascal {
         if (error_bound <= 0) {
           throw std::logic_error("Error bound must be > 0");
         }
-        if (start_degree_of_fineness < 1) {
+        if (initial_degree_of_fineness < 1) {
           throw std::logic_error("Starting grid fineness must be at least 1.");
         }
         if (max_grid_points < 2) {
@@ -1114,7 +1115,7 @@ namespace rascal {
        * @param error_bound the minimal error bound fulfilled
        * @param max_grid_points maximal number of grid points for the
        * interpolating grid until the refinement of the grid stops.
-       * @param start_degree_of_fineness starting fineness of the grid when starting
+       * @param initial_degree_of_fineness starting fineness of the grid when starting
        * the algorithm, the fineness parameter describes the fineness of the
        * grid for grid rationals with non adaptive refinement methods. Higher
        * value results in finer grids. It depends on the specifics of the
@@ -1140,9 +1141,9 @@ namespace rascal {
 
       InterpolatorScalarUniformCubicSpline<RefinementMethod, ErrorMethod_>(
           std::function<double(double)> function, double x1, double x2,
-          double error_bound, int max_grid_points, int start_degree_of_fineness,
+          double error_bound, int max_grid_points, int initial_degree_of_fineness,
           bool clamped_boundary_conditions, double yd1, double ydn)
-          : Parent{x1, x2, error_bound, max_grid_points, start_degree_of_fineness},
+          : Parent{x1, x2, error_bound, max_grid_points, initial_degree_of_fineness},
             function{function},
             clamped_boundary_conditions{clamped_boundary_conditions}, yd1{yd1},
             ydn{ydn} {
@@ -1356,13 +1357,14 @@ namespace rascal {
        * @param error_bound the minimal error bound fulfilled
        * @param max_grid_points maximal number of grid points for the
        * interpolating grid until the refinement of the grid stops.
-       * @param start_degree_of_fineness starting fineness of the grid when starting
-       * the algorithm, the fineness parameter describes the fineness of the
+       * @param initial_degree_of_fineness starting value for the `degree_of_fineness` parameter. 
+       * The `degree_of_fineness` parameter describes the fineness of the
        * grid for grid rationals with non adaptive refinement methods. Higher
-       * value results in finer grids. It depends on the specifics of the
+       * values results in finer grids. It depends on the specifics of the
        * GridRational how the fineness changes the number of grid points
-       * exactly. For adaptive refinement methods the fineness is ignored. The
-       * fineness parameter should be at least 1. A good fineness value can
+       * exactly. The fineness parameter should be at least 1. 
+       * Starting with a very low parameter can lead to poor estimations of the errors, because the fineness of the test grid also relies on this parameter
+       * A good inital fineness value can
        * reduce the number of steps in the initialization.
        * @param clamped_boundary_conditions Parameter referring to the boundary
        * condition of cubic spline. By default the cubic spline uses the natural
@@ -1385,9 +1387,9 @@ namespace rascal {
       InterpolatorMatrixUniformCubicSpline<RefinementMethod, ErrorMethod_>(
           std::function<Matrix_t(double)> function, double x1, double x2,
           double error_bound, int cols, int rows, int max_grid_points,
-          int start_degree_of_fineness, bool clamped_boundary_conditions, double yd1,
+          int initial_degree_of_fineness, bool clamped_boundary_conditions, double yd1,
           double ydn)
-          : Parent{x1, x2, error_bound, max_grid_points, start_degree_of_fineness},
+          : Parent{x1, x2, error_bound, max_grid_points, initial_degree_of_fineness},
             function{function}, cols{cols}, rows{rows}, matrix_size{cols *
                                                                     rows},
             clamped_boundary_conditions{clamped_boundary_conditions}, yd1{yd1},
@@ -1613,8 +1615,6 @@ namespace rascal {
         return this->intp_method.interpolate_derivative(
             this->grid, this->evaluated_grid, x, nearest_grid_index_to_x);
       }
-
-      // TODO(alex) bring get information to Handler and Manager
 
       // y:[x1,x2]->ℝ^{rows,cols}
       std::function<Matrix_t(double)> function{};
