@@ -908,7 +908,10 @@ namespace rascal {
    * is to anchor a mesh at the origin of the supplied cell (assuming it is at
    * the origin). Then the mesh is extended into space until it is as big as the
    * maximum cell coordinate plus one cutoff in each direction. This mesh has
-   * boxes of size ``cutoff``. Depending on the periodicity of the mesh, ghost
+   * boxes of size ``cutoff``.
+   * All atoms are expected to be inside the unit cell.
+   * 
+   * Depending on the periodicity of the mesh, ghost
    * atoms are added by shifting all i-atoms by the cell vectors corresponding
    * to the desired periodicity. All i-atoms and the ghost atoms are then sorted
    * into the respective boxes of the cartesian mesh and a stencil anchored at
@@ -964,11 +967,9 @@ namespace rascal {
 
       // outer mesh, including one layer of emtpy cells
       double lmesh{max_coord - mesh_min[i] + cutoff};
-      //! possible assumption: mesh_min is negative
-      // double lmesh{max_coord - mesh_min[i] + cutoff}; //MC
+      // number of Linked Cell in each directions
       double n{std::ceil(lmesh / cutoff)};
-      //! again this assumes mesh_min is negative
-      mesh_max[i] = mesh_min[i] + n * cutoff;  // MC
+      mesh_max[i] = mesh_min[i] + n * cutoff;
       nboxes_per_dim[i] = static_cast<int>(n);
 
       // positions min/max for ghost atoms -> this is the actual bounding box
