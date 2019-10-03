@@ -65,7 +65,7 @@ Contents
    models/models
    neighbor_list/neighbor-list-manager
    dev_guide/developer
-   auto_doc/auto
+   reference/index
    bibliography
 
 
@@ -75,4 +75,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
