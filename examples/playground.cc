@@ -108,9 +108,6 @@ int main() {
   for (auto center : manager) {
     auto ctag = center.get_atom_tag();
     std::cout << "Center: " << ctag << std::endl;
-    auto atom_ii = center.get_atom_ii();
-    auto atom_ii_tag = atom_ii.get_atom_tag_list();
-    auto atom_ii_ids = atom_ii.get_cluster_indices();
 
     for (auto neigh : center) {
       auto tag_list = neigh.get_atom_tag_list();
@@ -120,8 +117,7 @@ int main() {
       auto atom_j_tag = atom_j.get_atom_tag_list();
       auto atom_j_ids = atom_j.get_cluster_indices();
       std::cout << "neigh: " << tag_list[0] << ", " << tag_list[1] << ", "
-                << dist << " tag_ii: " << atom_ii_tag[0] << ", "
-                << atom_ii_tag[1] << ", " << atom_ii_ids[0]
+                << dist
                 << " tag_j: " << atom_j_tag[0] << ", " << atom_j_ids[0]
                 << std::endl;
     }
