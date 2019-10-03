@@ -50,9 +50,7 @@ PROJECT_BRIEF          = "Free software for the machine-learning calculations of
 # in the documentation. The maximum height of the logo should not exceed 55
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
-
-#TODO(max) this should be both COSMO and LAMMM's logos together
-PROJECT_LOGO           = @CMAKE_CURRENT_SOURCE_DIR@/source/resources/images/cosmo-logo.png
+PROJECT_LOGO           = @CMAKE_CURRENT_SOURCE_DIR@/source/resources/images/rascal.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is

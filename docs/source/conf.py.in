@@ -22,6 +22,8 @@ import subprocess
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+if sys.version_info < (3, 6):
+    raise Exception("Python >= 3.6 is required")
 
 # -- General configuration ------------------------------------------------
 
@@ -77,11 +79,11 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Rascal'
-copyright = '2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti, \
-Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit'
+copyright = '''2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti,
+Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit'''
 
-author = 'Michele Ceriotti, Federico Giberti, Alexander Gocsinski, \
-Till Junge, Félix Musil, Markus Stricker, Max Veit, and Michael Willatt'
+author = '''Michele Ceriotti, Federico Giberti, Alexander Gocsinski,
+Till Junge, Félix Musil, Markus Stricker, Max Veit, and Michael Willatt'''
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -107,6 +109,8 @@ exclude_patterns = []
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+# If true, `todo` and `todoList` produce output, else they produce nothing.
+todo_include_todos = True
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -152,6 +156,8 @@ html_sidebars = {
 
     ]
 }
+
+html_favicon = '@CMAKE_CURRENT_SOURCE_DIR@/source/resources/images/rascal.png'
 
 
 # -- Options for LaTeX output ---------------------------------------------
