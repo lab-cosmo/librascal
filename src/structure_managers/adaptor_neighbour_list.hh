@@ -955,9 +955,9 @@ namespace rascal {
     // vector for storing the tags of atoms contained in each box
     std::vector<std::vector<int>> atoms_in_box{};
     for (auto i{0}; i < dim; ++i) {
-      // min and max coordinates of cell cell corners in Cartesian space
-      double min_coord{};
-      double max_coord{};
+      // min and max coordinates of cell corners in Cartesian space
+      double min_coord{0.0};
+      double max_coord{0.0};
       for (int col{0}; col < cell.cols(); ++col) {
         min_coord -= cell(i, col) * double(cell(i, col) < 0.);
         max_coord += cell(i, col) * double(cell(i, col) > 0.);
@@ -966,7 +966,7 @@ namespace rascal {
       mesh_min[i] = min_coord - 2 * cutoff;
 
       // outer mesh, including one layer of emtpy cells
-      double lmesh{max_coord - mesh_min[i] + 2* cutoff};
+      double lmesh{max_coord - mesh_min[i] + 2 * cutoff};
       // number of Linked Cell in each directions
       double n{std::ceil(lmesh / cutoff)};
       mesh_max[i] = mesh_min[i] + n * cutoff;

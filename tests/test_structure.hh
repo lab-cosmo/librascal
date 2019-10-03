@@ -149,7 +149,7 @@ namespace rascal {
 
       positions_1 << 0.0, p_1[0], 0.0, p_1[1], 0.0, p_1[2];
 
-      auto p_2 = -1. / 3. * cell_2.col(0) + 1. / 2. * cell_2.col(1) +
+      auto p_2 = 2. / 3. * cell_2.col(0) + 1. / 2. * cell_2.col(1) +
                  2. / 3. * cell_2.col(2);
 
       positions_2 << 0.0, p_2[0], 0.0, p_2[1], 0.0, p_2[2];
