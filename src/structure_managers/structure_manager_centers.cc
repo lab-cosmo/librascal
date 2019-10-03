@@ -69,12 +69,11 @@ namespace rascal {
     auto positions_scaled = (lat.inverse() * this->get_positions()).eval();
     double tol{1e-14};
     if ((positions_scaled.array().rowwise().minCoeff() < -tol).any() or
-        (positions_scaled.array().rowwise().maxCoeff() > 1.+tol).any()) {
+        (positions_scaled.array().rowwise().maxCoeff() > 1. + tol).any()) {
       std::string error{R"(Some of the positions in the structure are not
                             inside the unit cell. Please wrap the atoms.)"};
       throw std::runtime_error(error);
     }
-
 
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     atom_cluster_indices.fill_sequence();

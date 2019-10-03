@@ -296,9 +296,7 @@ namespace rascal {
 
     inline int get_atom_tag(int raw_index) const { return raw_index; }
 
-    inline size_t get_atom_tag(size_t raw_index) const {
-      return raw_index;
-    }
+    inline size_t get_atom_tag(size_t raw_index) const { return raw_index; }
 
     /**
      * Return the linear index of cluster (i.e., the count at which

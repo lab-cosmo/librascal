@@ -164,8 +164,7 @@ namespace rascal {
      public:
       //! constructor
       PeriodicImages(const std::array<int, Dim> & origin,
-                     const std::array<int, Dim> & nrepetitions,
-                     size_t ntot)
+                     const std::array<int, Dim> & nrepetitions, size_t ntot)
           : origin{origin}, nrepetitions{nrepetitions}, ntot{ntot} {}
       //! copy constructor
       PeriodicImages(const PeriodicImages & other) = default;
@@ -400,7 +399,7 @@ namespace rascal {
       //! brackets operator
       std::vector<int> & operator[](const std::array<int, Dim> & ccoord) {
         for (int i = 0; i < int(Dim); ++i) {
-          if (not (ccoord[i] < this->nboxes[i]-1) and (ccoord[i] >= 1)) {
+          if (not(ccoord[i] < this->nboxes[i] - 1) and (ccoord[i] >= 1)) {
             std::stringstream error{};
             error << "Error: At least one atom is outside the unit cell. This "
                      "adaptor expects atoms to be folded into the original "
@@ -961,12 +960,12 @@ namespace rascal {
         max_coord += cell(i, col) * double(cell(i, col) > 0.);
       }
       // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
-      mesh_min[i] = min_coord - 2 * cutoff ;
+      mesh_min[i] = min_coord - 2 * cutoff;
 
       // outer mesh, including one layer of emtpy cells
       double lmesh{max_coord - mesh_min[i] + cutoff};
       //! possible assumption: mesh_min is negative
-      //double lmesh{max_coord - mesh_min[i] + cutoff}; //MC
+      // double lmesh{max_coord - mesh_min[i] + cutoff}; //MC
       double n{std::ceil(lmesh / cutoff)};
       //! again this assumes mesh_min is negative
       mesh_max[i] = mesh_min[i] + n * cutoff;  // MC

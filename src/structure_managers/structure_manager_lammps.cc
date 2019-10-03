@@ -33,8 +33,7 @@
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
-  void StructureManagerLammps::update_self(int inum,
-                                           int tot_num, int * ilist,
+  void StructureManagerLammps::update_self(int inum, int tot_num, int * ilist,
                                            int * numneigh, int ** firstneigh,
                                            double ** x, double ** f, int * type,
                                            double * eatom, double ** vatom) {

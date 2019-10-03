@@ -219,9 +219,9 @@ namespace rascal {
      *
      * @param vatom per-atom virial
      */
-    void update_self(int inum, int tot_num, int * ilist,
-                     int * numneigh, int ** firstneigh, double ** x,
-                     double ** f, int * type, double * eatom, double ** vatom);
+    void update_self(int inum, int tot_num, int * ilist, int * numneigh,
+                     int ** firstneigh, double ** x, double ** f, int * type,
+                     double * eatom, double ** vatom);
 
    protected:
     int inum{};           //!< total numer of atoms

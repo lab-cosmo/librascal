@@ -81,8 +81,8 @@ namespace rascal {
     int i_manager{0};
     for (auto & manager : this->managers) {
       auto & structure = this->structures[i_manager];
-      structure.positions.col(0) << -0.5,-0.5,-0.5;
-      BOOST_CHECK_THROW(manager->update(structure), std::runtime_error );
+      structure.positions.col(0) << -0.5, -0.5, -0.5;
+      BOOST_CHECK_THROW(manager->update(structure), std::runtime_error);
       ++i_manager;
     }
   }

@@ -50,42 +50,12 @@
 
 using namespace rascal;  // NOLINT
 
-// template <typename Manager, template <class> class...
-// AdaptorImplementationPack> struct Test {
-//   using ManagerTypeHolder_t =
-//       StructureManagerTypeHolder<StructureManagerCenters,
-//       AdaptorNeighbourList,
-//                                  AdaptorStrict>;
-//   using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
-//   void operator()() {
-//     std::cout << internal::GetTypeName<ManagerTypeList_t>() << std::endl;
-//   }
-// };
-
-// // using Representation_t = CalculatorSphericalInvariants;
-// using ManagerTypeHolder_t =
-//     StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
-//                                AdaptorCenterContribution, AdaptorStrict>;
-// using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
-// using Manager_t = typename ManagerTypeHolder_t::type;
-// using ManagerCollection_t =
-//     typename TypeHolderInjector<ManagerCollection, ManagerTypeList_t>::type;
-// // using Manager_t =
-// // AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
-// using Representation_t = CalculatorSphericalInvariants;
-// using Property_t = typename Representation_t::template Property_t<Manager_t>;
-// // using ManagerCollection_t = ManagerCollection<>;
-// using Test1 = typename TypeHolderInjector<Test, ManagerTypeList_t>::type;
-
-// template <typename T, size_t Order, int NbRow = 1, int NbCol = 1>
-// using Prop_t = Property<T, Order, 1, Manager_t, NbRow, NbCol>;
-
 int main() {
   // Test1()();
   // std::string filename{"reference_data/dft-smiles_500.ubjson"};
   // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   //  std::string filename{"reference_data/alloy-small.json"};
-  std::string filename{"reference_data/alloy.json"};
+  std::string filename{"reference_data/alloy-small.json"};
   // std::string filename{"reference_data/diamond_cubic.json"};
   std::string rep_id{"pp"};
 
@@ -102,8 +72,7 @@ int main() {
 
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList>(
-          structure, adaptors);
+                                   AdaptorNeighbourList>(structure, adaptors);
 
   std::cout << "n_centers: " << manager->size() << std::endl;
   for (auto center : manager) {
