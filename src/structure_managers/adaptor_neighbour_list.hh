@@ -954,8 +954,8 @@ namespace rascal {
       double min_coord{};
       double max_coord{};
       for (int col{0}; col < cell.cols(); ++col) {
-        min_coord -= cell(i, col) * (cell(i, col) < 0.);
-        max_coord += cell(i, col) * (cell(i, col) > 0.);
+        min_coord -= cell(i, col) * double(cell(i, col) < 0.);
+        max_coord += cell(i, col) * double(cell(i, col) > 0.);
       }
       // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
       mesh_min[i] = min_coord - 2 * cutoff ;
