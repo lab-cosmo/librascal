@@ -1,3 +1,7 @@
+if (NOT ${BUILD_BINDINGS})
+    message(FATAL_ERROR "BUILD_BINDINGS=ON is required to build the documentation")
+endif()
+
 find_package(Sphinx REQUIRED)
 find_package(Doxygen REQUIRED)
 
@@ -29,18 +33,26 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
   @ONLY)
 
-add_custom_target(doxygen_doc
+file(GLOB_RECURSE RASCAL_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../src/**.hh)
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/doxygenxml/index.xml
     COMMAND "${DOXYGEN_EXECUTABLE}"
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-    COMMENT "Generating C++ documentation with Doxygen")
+    COMMENT "Generating C++ documentation with Doxygen"
+    DEPENDS ${RASCAL_HEADERS}
+)
+
+add_custom_target(doxygen_doc
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/doxygenxml/index.xml
+)
 
 add_custom_target(doc
-  COMMAND
-  ${SPHINX_EXECUTABLE}
-  -q -b html
-  -c "${CMAKE_CURRENT_BINARY_DIR}"
-  -d "${SPHINX_CACHE_DIR}"
-  "${CMAKE_CURRENT_SOURCE_DIR}/source"
-  "${SPHINX_HTML_DIR}"
-  DEPENDS doxygen_doc
-  COMMENT "Building HTML documentation with Sphinx")
+  COMMAND ${SPHINX_EXECUTABLE} -q -b html
+            -c "${CMAKE_CURRENT_BINARY_DIR}"
+            -d "${SPHINX_CACHE_DIR}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/source"
+            "${SPHINX_HTML_DIR}"
+  DEPENDS doxygen_doc librascal
+  COMMENT "Building HTML documentation with Sphinx"
+)

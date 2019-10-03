@@ -113,7 +113,7 @@ jobs:
           command: |
             mkdir build
             cd build
-            cmake -DENABLE_DOC=ON -DBUILD_BINDINGS=OFF ..
+            cmake -DENABLE_DOC=ON -DBUILD_BINDINGS=ON ..
       - run:
           name: Build docs
           command: cd build && make doc
