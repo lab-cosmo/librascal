@@ -440,7 +440,7 @@ namespace rascal {
     ManagerFixtureSimple()
         : ManagerFixture<StructureManagerCenters>{}, pbc{{true, false, false}},
           cell(3, 3), positions(3, 8), atom_types(8), cutoff{2.1}, natoms{8} {
-      cell << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.5;
+      cell << 2.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 2.0;
       // clang-format off
       positions << 0.4, 1.4, 0.4,
                    1.4, 0.4, 1.4,
