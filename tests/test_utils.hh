@@ -42,13 +42,13 @@ namespace rascal {
        */
       static const std::string get() {
 #define FUNCTION_MACRO __PRETTY_FUNCTION__
-            const size_t funcNameLength{sizeof(FUNCTION_MACRO) - 1u};
-            std::string typeName{FUNCTION_MACRO, funcNameLength};
-            return typeName;
+        const size_t funcNameLength{sizeof(FUNCTION_MACRO) - 1u};
+        std::string typeName{FUNCTION_MACRO, funcNameLength};
+        return typeName;
 #undef FUNCTION_MACRO
       }
     };
-  } // namespace internal
+  }  // namespace internal
 }  // namespace rascal
 
 #endif  // TESTS_TEST_UTILS_HH_

@@ -114,39 +114,25 @@ namespace rascal {
     }  // namespace details
 
     //! integer power
-    inline double pow(double x, int n) {
-      return details::pow_i(x, n);
-    }
+    inline double pow(double x, int n) { return details::pow_i(x, n); }
 
     //! integer power
-    inline double pow(int x, int n) {
-      return details::pow_i(x, n);
-    }
+    inline double pow(int x, int n) { return details::pow_i(x, n); }
 
     //! integer power
-    inline double pow(size_t x, int n) {
-      return details::pow_i(x, n);
-    }
+    inline double pow(size_t x, int n) { return details::pow_i(x, n); }
 
     //! unsingned integer power
-    inline double pow(double x, size_t n) {
-      return details::pow_u(x, n);
-    }
+    inline double pow(double x, size_t n) { return details::pow_u(x, n); }
 
     //! unsingned integer power
-    inline int pow(int x, size_t n) {
-      return details::pow_u(x, n);
-    }
+    inline int pow(int x, size_t n) { return details::pow_u(x, n); }
 
     //! unsingned integer power
-    inline size_t pow(size_t x, size_t n) {
-      return details::pow_u(x, n);
-    }
+    inline size_t pow(size_t x, size_t n) { return details::pow_u(x, n); }
 
     //! general power
-    inline double pow(double x, double n) {
-      return std::pow(x, n);
-    }
+    inline double pow(double x, double n) { return std::pow(x, n); }
 
     /**
      * Defines an integer power functor, which is used as CustomUnaryOp object
@@ -195,8 +181,7 @@ namespace rascal {
      * function.
      *
      */
-    inline double switching_function_cosine(double r,
-                                            double cutoff,
+    inline double switching_function_cosine(double r, double cutoff,
                                             double smooth_width) {
       if (r <= (cutoff - smooth_width)) {
         return 1.0;
@@ -224,9 +209,8 @@ namespace rascal {
      * dsw/dr (r) = -pi/(2*smooth_width) * sin(pi * (r - cutoff + smooth_width)
      *                                              / smooth_width)
      */
-    inline double
-    derivative_switching_funtion_cosine(double r, double cutoff,
-                                        double smooth_width) {
+    inline double derivative_switching_funtion_cosine(double r, double cutoff,
+                                                      double smooth_width) {
       if (r <= (cutoff - smooth_width)) {
         return 0.0;
       } else if (r > cutoff) {

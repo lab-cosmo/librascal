@@ -271,9 +271,8 @@ namespace rascal {
 #define FUNCTION_MACRO __PRETTY_FUNCTION__
 #define PREFIX                                                                 \
   "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() " \
-  "[with T = "  // NOLINT
-#define SUFFIX_1                                                               \
-  "; std::string = std::__cxx11::basic_string<char>]"  // NOLINT
+  "[with T = "                                                        // NOLINT
+#define SUFFIX_1 "; std::string = std::__cxx11::basic_string<char>]"  // NOLINT
 #define SUFFIX_2 ""
 #define NUM_TYPE_REPEATS 1
 #elif defined(GCC_COMPILER_8_AND_LOWER)

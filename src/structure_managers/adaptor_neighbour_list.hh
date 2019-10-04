@@ -164,8 +164,7 @@ namespace rascal {
      public:
       //! constructor
       PeriodicImages(const std::array<int, Dim> & origin,
-                     const std::array<int, Dim> & nrepetitions,
-                     size_t ntot)
+                     const std::array<int, Dim> & nrepetitions, size_t ntot)
           : origin{origin}, nrepetitions{nrepetitions}, ntot{ntot} {}
       //! copy constructor
       PeriodicImages(const PeriodicImages & other) = default;

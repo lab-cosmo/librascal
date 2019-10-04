@@ -102,8 +102,7 @@ namespace rascal {
        * @param n_rows number of rows where the recursion is applicable
        *               from the bottom
        */
-      void upward_recursion(double distance, double fac_a,
-                            int n_rows) {
+      void upward_recursion(double distance, double fac_a, int n_rows) {
         auto vals = this->bessel_values.bottomRows(n_rows);
         // i_0(z) = sinh(z) / z
         vals.col(0) =
@@ -146,8 +145,7 @@ namespace rascal {
        * @param n_rows number of rows where the recursion is applicable
        *               from the top
        */
-      void downward_recursion(double distance, double fac_a,
-                              int n_rows) {
+      void downward_recursion(double distance, double fac_a, int n_rows) {
         auto vals = this->bessel_values.topRows(n_rows);
         this->exp_bessel_arg = Eigen::exp(-this->bessel_arg.head(n_rows));
         this->efac = std::exp(-fac_a * distance * distance) *

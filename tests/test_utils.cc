@@ -25,11 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #include "test_utils.hh"
 
 namespace rascal {
-
 
   BOOST_AUTO_TEST_SUITE(test_utils);
   /* ---------------------------------------------------------------------- */
@@ -39,15 +37,17 @@ namespace rascal {
   BOOST_AUTO_TEST_CASE(type_demangling_test) {
     bool verbose{false};
     std::string ref{"rascal::ClusterRefKey<1, 2>"};
-    std::string test{internal::GetTypeNameHelper<ClusterRefKey<1,2>>::GetTypeName()};
+    std::string test{
+        internal::GetTypeNameHelper<ClusterRefKey<1, 2>>::GetTypeName()};
     BOOST_CHECK_EQUAL(ref, test);
     if (verbose) {
-      std::cout << "ref:  "<< ref << std::endl;
-      std::cout << "test: "<<test << std::endl;
-      std::cout << "pretty_function: " << internal::PrettyFunction<ClusterRefKey<1,2>>::get() << std::endl;
+      std::cout << "ref:  " << ref << std::endl;
+      std::cout << "test: " << test << std::endl;
+      std::cout << "pretty_function: "
+                << internal::PrettyFunction<ClusterRefKey<1, 2>>::get()
+                << std::endl;
     }
   }
-
 
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();

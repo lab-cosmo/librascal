@@ -38,7 +38,6 @@
 
 #include <Eigen/Dense>
 
-
 namespace rascal {
 
   namespace internal {
@@ -130,7 +129,7 @@ namespace rascal {
      * with the cosine switching function.
      *
      * Typically c == 1, r_0 > 0 and m is a positive integer.
-     * 
+     *
      */
     template <>
     struct CutoffFunction<internal::CutoffFunctionType::RadialScaling>
@@ -159,7 +158,7 @@ namespace rascal {
                                                         this->exponent));
         } else if (this->exponent == 0) {
           factor = 1.;
-        } else  {
+        } else {
           factor = math::pow(distance / this->scale, -this->exponent);
         }
         return factor * math::switching_function_cosine(distance, this->cutoff,

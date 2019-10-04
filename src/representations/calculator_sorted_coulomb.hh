@@ -302,8 +302,7 @@ namespace rascal {
     }
 
     //! scale cutoff factor depending on distance and decay
-    inline double get_cutoff_factor(double distance,
-                                    double cutoff,
+    inline double get_cutoff_factor(double distance, double cutoff,
                                     double decay) {
       if (distance <= cutoff - decay) {
         return 1.;
@@ -358,8 +357,7 @@ namespace rascal {
     this->set_name(hyper);
   }
 
-  inline void
-  CalculatorSortedCoulomb::update_central_cutoff(double cutoff) {
+  inline void CalculatorSortedCoulomb::update_central_cutoff(double cutoff) {
     this->central_cutoff = cutoff;
 
     if ((this->hypers["interaction_cutoff"] < 0) or
