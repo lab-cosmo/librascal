@@ -48,7 +48,6 @@ namespace rascal {
         std::string typeName{FUNCTION_MACRO, funcNameLength};
         return typeName;
 #undef FUNCTION_MACRO
-
       }
     };
   }  // namespace internal

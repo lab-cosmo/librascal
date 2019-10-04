@@ -50,8 +50,7 @@ namespace rascal {
     std::string ref_clang{"ClusterRefKey_1_2"};
     std::string ref_gcc_6_and_lower{"ClusterRefKey_1ul_2ul"};
     std::string ref_gcc_7_and_upper{"ClusterRefKey_1_2"};
-    std::string test{
-        internal::GetTypeName<ClusterRefKey<1, 2>>()};
+    std::string test{internal::GetTypeName<ClusterRefKey<1, 2>>()};
 #if defined(GCC_COMPILER_7_AND_UPPER)
     BOOST_CHECK_EQUAL(ref_gcc_7_and_upper, test);
 #elif defined(GCC_COMPILER_6_AND_LOWER)
@@ -61,10 +60,8 @@ namespace rascal {
 #endif
     if (verbose) {
       std::cout << "ref_clang:  " << ref_clang << std::endl;
-      std::cout << "ref_gcc_6_and_lower:  "
-                << ref_gcc_6_and_lower << std::endl;
-      std::cout << "ref_gcc_7_and_upper:  "
-                 << ref_gcc_7_and_upper << std::endl;
+      std::cout << "ref_gcc_6_and_lower:  " << ref_gcc_6_and_lower << std::endl;
+      std::cout << "ref_gcc_7_and_upper:  " << ref_gcc_7_and_upper << std::endl;
       std::cout << "test: " << test << std::endl;
       std::cout << "pretty_function: "
                 << internal::PrettyFunction<ClusterRefKey<1, 2>>::get()
@@ -81,7 +78,7 @@ namespace rascal {
       std::cout << "test_simple:  " << test_simple << std::endl;
       std::cout << "pretty_function: "
                 << internal::PrettyFunction<
-                            StructureManager<StructureManagerCenters>>::get()
+                       StructureManager<StructureManagerCenters>>::get()
                 << std::endl;
     }
   }
