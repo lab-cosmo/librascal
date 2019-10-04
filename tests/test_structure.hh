@@ -126,7 +126,7 @@ namespace rascal {
     ManagerFixtureTwoHcp()
         : ManagerFixtureTwo<StructureManagerCenters>{}, pbc{{true, true, true}},
           cell_1(3, 3), cell_2(3, 3), positions_1(3, 2), positions_2(3, 2),
-          atom_types(2), cutoff{0.7} {
+          atom_types(2), cutoff{0.8} {
       /*
        * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
        * unit cells: basal and prismatic 1. The neighbourlist is built with the
