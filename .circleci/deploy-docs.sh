@@ -9,7 +9,13 @@ rm -rf gh-pages/*
 
 cp -a build/docs/html/. gh-pages/.
 
-mkdir -p gh-pages/.circleci && cp -a .circleci/. gh-pages/.circleci/.
+# disable CircleCI on gh-pages branch
+mkdir -p gh-pages/.circleci
+cat << EOF > gh-pages/.circleci/config.yml
+test:
+  override:
+    - echo "test"
+EOF
 
 cd gh-pages
 git add -A
