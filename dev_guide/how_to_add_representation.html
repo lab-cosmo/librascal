@@ -13,6 +13,8 @@
 
   
   
+    <link rel="shortcut icon" href="../_static/rascal.png"/>
+  
   
   
 
@@ -110,7 +112,7 @@
 <li class="toctree-l2"><a class="reference internal" href="coding-convention.html">Coding Convention</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../auto_doc/auto.html">Auto Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
 </ul>
 
@@ -219,7 +221,7 @@
 <h2><a class="toc-backref" href="#id6">Write a Calculator for a representation</a><a class="headerlink" href="#write-a-calculator-for-a-representation" title="Permalink to this headline">¶</a></h2>
 <p>A calculator of a representation is an object that builds a representation of the atomic structure contained in <em>a</em> structure manager. This class:</p>
 <ul class="simple">
-<li><p>inherits publicly from <a class="reference internal" href="../auto_doc/auto_cpp.html#_CPPv4N6rascal14CalculatorBaseE" title="rascal::CalculatorBase"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalculatorBase</span></code></a> to follow its interface and use some of the common utilies shared by such class.</p></li>
+<li><p>inherits publicly from <a class="reference internal" href="../reference/cpp.html#_CPPv4N6rascal14CalculatorBaseE" title="rascal::CalculatorBase"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalculatorBase</span></code></a> to follow its interface and use some of the common utilies shared by such class.</p></li>
 <li><p>uses a <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute()</span></code> function expecting one or a list of structure manager(s) to build the representation efficiently.</p></li>
 <li><p>uses the <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Property</span></code> class to store the representation’s features.</p></li>
 </ul>
@@ -232,7 +234,7 @@
 </ul>
 </div></blockquote>
 <p>Note that there is one representation manager per structure manager.</p>
-<p>To illustrate the basic structure that a new representation that would be implemented in <code class="docutils literal notranslate"><span class="pre">calculator_representation_name.hh</span></code> should follow, let’s take the example of the <a class="reference internal" href="../auto_doc/auto_cpp.html#_CPPv4N6rascal23CalculatorSortedCoulombE" title="rascal::CalculatorSortedCoulomb"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalculatorSortedCoulomb</span></code></a>. A detailed discussion of the sorted coulomb matrix representation can be found in <a class="footnote-reference brackets" href="#one" id="id1">1</a> and <a class="footnote-reference brackets" href="#two" id="id2">2</a>.</p>
+<p>To illustrate the basic structure that a new representation that would be implemented in <code class="docutils literal notranslate"><span class="pre">calculator_representation_name.hh</span></code> should follow, let’s take the example of the <a class="reference internal" href="../reference/cpp.html#_CPPv4N6rascal23CalculatorSortedCoulombE" title="rascal::CalculatorSortedCoulomb"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalculatorSortedCoulomb</span></code></a>. A detailed discussion of the sorted coulomb matrix representation can be found in <a class="footnote-reference brackets" href="#one" id="id1">1</a> and <a class="footnote-reference brackets" href="#two" id="id2">2</a>.</p>
 <p>The representation starts with the definition of some useful short hands</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
 <span class="cm"> * Implementation of the Environmental Coulomb Matrix</span>
@@ -297,7 +299,7 @@
   <span class="c1">//! set hypers</span>
   <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">set_hyperparameters</span><span class="p">(</span><span class="k">const</span> <span class="n">Hypers_t</span> <span class="o">&amp;</span> <span class="cm">/*hypers*/</span><span class="p">);</span>
 
-  <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">update_central_cutoff</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="o">&amp;</span> <span class="cm">/*cutoff*/</span><span class="p">);</span>
+  <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">update_central_cutoff</span><span class="p">(</span><span class="kt">double</span> <span class="cm">/*cutoff*/</span><span class="p">);</span>
 
   <span class="cm">/**</span>
 <span class="cm">   * check if size of the calculator is enough for current structure</span>
@@ -345,7 +347,7 @@
 </div>
 <div class="section" id="implementing-several-types-of-the-same-representation">
 <h2><a class="toc-backref" href="#id7">Implementing several types of the same representation</a><a class="headerlink" href="#implementing-several-types-of-the-same-representation" title="Permalink to this headline">¶</a></h2>
-<p>Often there are different ways to implement the same fundamental representation. To be able to do this in rascal, the compute function is used with the type of of the implementation as template argument (or multiple if representation requires this). The switch between several implementations of conceptually equivalent parts of a representation can be implemented through several mechanisms such a virtual inheritance. We detail here how to implement such switch efficiently using the <a class="reference internal" href="../auto_doc/auto_cpp.html#_CPPv4N6rascal23CalculatorSortedCoulombE" title="rascal::CalculatorSortedCoulomb"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalculatorSortedCoulomb</span></code></a> as an example.</p>
+<p>Often there are different ways to implement the same fundamental representation. To be able to do this in rascal, the compute function is used with the type of of the implementation as template argument (or multiple if representation requires this). The switch between several implementations of conceptually equivalent parts of a representation can be implemented through several mechanisms such a virtual inheritance. We detail here how to implement such switch efficiently using the <a class="reference internal" href="../reference/cpp.html#_CPPv4N6rascal23CalculatorSortedCoulombE" title="rascal::CalculatorSortedCoulomb"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalculatorSortedCoulomb</span></code></a> as an example.</p>
 <p>To make the coulomb matrix invariant with respect to permutation Ref. <a class="footnote-reference brackets" href="#two" id="id3">2</a> proposes to sort the upper triangular part of the coulomb matrix according to the norm of each rows or the distance from the central atom (see <a class="footnote-reference brackets" href="#one" id="id4">1</a> for details).</p>
 <p>The implementation of these two behaviour is encapsulated in the <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">SortCoulomMatrix</span></code> class and the choice between them is done with a template parameter using template specialization. Note that a in this particular case templated functions could be sufficient but to underline how to implement the most general case a class is used.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// Enum class defining the several possible sorting options of the Coulomb</span>
@@ -437,7 +439,7 @@
 <span class="p">};</span>
 </pre></div>
 </div>
-<p>The switch between the two behaviours is done in the <a class="reference internal" href="../auto_doc/auto_cpp.html#_CPPv4I0EN6rascal23CalculatorSortedCoulomb7computeEvR16StructureManager" title="rascal::CalculatorSortedCoulomb::compute"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute()</span></code></a> function which chooses the right type of computation method to compute the representation for each structure manager. At the moment the <a class="reference internal" href="../auto_doc/auto_cpp.html#_CPPv4I_N8internal15CMSortAlgorithmE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal23CalculatorSortedCoulomb12compute_loopEvR16StructureManager" title="rascal::CalculatorSortedCoulomb::compute_loop"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute_loop()</span></code></a> function has to be copied to every new calculator to allow iterations over structure managers. It is not necessary to understand this code, if one is only interested to integegrate a new representation into rascal.</p>
+<p>The switch between the two behaviours is done in the <a class="reference internal" href="../reference/cpp.html#_CPPv4I0EN6rascal23CalculatorSortedCoulomb7computeEvR16StructureManager" title="rascal::CalculatorSortedCoulomb::compute"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute()</span></code></a> function which chooses the right type of computation method to compute the representation for each structure manager. At the moment the <a class="reference internal" href="../reference/cpp.html#_CPPv4I_N8internal15CMSortAlgorithmE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal23CalculatorSortedCoulomb12compute_loopEvR16StructureManager" title="rascal::CalculatorSortedCoulomb::compute_loop"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute_loop()</span></code></a> function has to be copied to every new calculator to allow iterations over structure managers. It is not necessary to understand this code, if one is only interested to integegrate a new representation into rascal.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//! loop over a collection of manangers (note that maps would raise a</span>
 <span class="c1">//! compilation error)</span>
 <span class="k">template</span> <span class="o">&lt;</span>
@@ -452,14 +454,14 @@
 <span class="c1">//! if it is not a list of managers</span>
 <span class="k">template</span> <span class="o">&lt;</span><span class="n">internal</span><span class="o">::</span><span class="n">CMSortAlgorithm</span> <span class="n">AlgorithmType</span><span class="p">,</span> <span class="k">class</span> <span class="nc">StructureManager</span><span class="p">,</span>
           <span class="n">std</span><span class="o">::</span><span class="n">enable_if_t</span><span class="o">&lt;</span>
-              <span class="o">!</span><span class="p">(</span><span class="n">internal</span><span class="o">::</span><span class="n">is_proper_iterator</span><span class="o">&lt;</span><span class="n">StructureManager</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">),</span>
+              <span class="n">not</span><span class="p">(</span><span class="n">internal</span><span class="o">::</span><span class="n">is_proper_iterator</span><span class="o">&lt;</span><span class="n">StructureManager</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">),</span>
               <span class="kt">int</span><span class="o">&gt;</span> <span class="o">=</span> <span class="mi">0</span><span class="o">&gt;</span>
 <span class="kr">inline</span> <span class="kt">void</span> <span class="n">compute_loop</span><span class="p">(</span><span class="n">StructureManager</span> <span class="o">&amp;</span> <span class="n">manager</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">this</span><span class="o">-&gt;</span><span class="n">compute_impl</span><span class="o">&lt;</span><span class="n">AlgorithmType</span><span class="o">&gt;</span><span class="p">(</span><span class="n">manager</span><span class="p">);</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The actual implementation of the representation is in the function <a class="reference internal" href="../auto_doc/auto_cpp.html#_CPPv4I_N8internal15CMSortAlgorithmE0EN6rascal23CalculatorSortedCoulomb12compute_implEvRNSt10shared_ptrI16StructureManagerEE" title="rascal::CalculatorSortedCoulomb::compute_impl"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute_impl()</span></code></a> witch the computation method as template argument.</p>
+<p>The actual implementation of the representation is in the function <a class="reference internal" href="../reference/cpp.html#_CPPv4I_N8internal15CMSortAlgorithmE0EN6rascal23CalculatorSortedCoulomb12compute_implEvRNSt10shared_ptrI16StructureManagerEE" title="rascal::CalculatorSortedCoulomb::compute_impl"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute_impl()</span></code></a> witch the computation method as template argument.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">StructureManager</span><span class="o">&gt;</span>
 <span class="kt">void</span> <span class="n">CalculatorSortedCoulomb</span><span class="o">::</span><span class="n">compute</span><span class="p">(</span><span class="n">StructureManager</span> <span class="o">&amp;</span> <span class="n">managers</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">auto</span> <span class="n">option</span><span class="p">{</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">options</span><span class="p">[</span><span class="s">&quot;sorting_algorithm&quot;</span><span class="p">]};</span>
@@ -531,7 +533,8 @@ Physical Review Letters, 108(5), 58301. <a class="reference external" href="http
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti, Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
+        &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti,
+Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
 
     </p>
   </div>

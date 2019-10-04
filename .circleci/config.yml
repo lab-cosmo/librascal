@@ -113,18 +113,18 @@ jobs:
           command: |
             mkdir build
             cd build
-            cmake -DENABLE_DOC=ON -DBUILD_BINDINGS=OFF ..
+            cmake -DENABLE_DOC=ON -DBUILD_BINDINGS=ON ..
       - run:
           name: Build docs
           command: cd build && make doc
       - run:
           name: Deploy docs
           command: |
-            # if [[ $CIRCLE_BRANCH == "master" ]]; then
+            if [[ $CIRCLE_BRANCH == "master" ]]; then
                 ./.circleci/deploy-docs.sh
                 cd gh-pages
                 git push -q https://${GH_TOKEN}@github.com/cosmo-epfl/librascal.git gh-pages
-            # fi
+            fi
 
   # Special job only linting the code
   lint:
@@ -154,14 +154,14 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      # - lint
+      - lint
       - docs
-      # - gcc-5
-      # - gcc-6
-      # - gcc-7
-      # - gcc-7-debug
-      # - clang-4
-      # - clang-5
-      # - clang-6
-      # - clang-7
-      # - clang-7-debug
+      - gcc-5
+      - gcc-6
+      - gcc-7
+      - gcc-7-debug
+      - clang-4
+      - clang-5
+      - clang-6
+      - clang-7
+      - clang-7-debug

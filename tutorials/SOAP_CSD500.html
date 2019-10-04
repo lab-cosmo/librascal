@@ -13,6 +13,8 @@
 
   
   
+    <link rel="shortcut icon" href="../_static/rascal.png"/>
+  
   
   
 
@@ -120,7 +122,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../models/models.html">Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../neighbor_list/neighbor-list-manager.html">Neighbor List Manager</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dev_guide/developer.html">Developer’s guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../auto_doc/auto.html">Auto Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
 </ul>
 
@@ -437,7 +439,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
@@ -459,23 +461,6 @@ div.rendered_html tbody tr:hover {
 <span class="kn">from</span> <span class="nn">rascal.representations</span> <span class="k">import</span> <span class="n">SphericalInvariants</span> <span class="k">as</span> <span class="n">SOAP</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-3-3817e697329a&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-green-fg">import</span> time
-<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">import</span> rascal
-<span class="ansi-green-intense-fg ansi-bold">      3</span> <span class="ansi-green-fg">import</span> json
-<span class="ansi-green-intense-fg ansi-bold">      4</span>
-<span class="ansi-green-intense-fg ansi-bold">      5</span> <span class="ansi-green-fg">import</span> ase
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;rascal&#39;
-</pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
@@ -519,11 +504,11 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>(&#39;./data/CSD-500.xyz&#39;, &lt;http.client.HTTPMessage at 0x7f9ecf4bf160&gt;)
+<span></span>(&#39;./data/CSD-500.xyz&#39;, &lt;http.client.HTTPMessage at 0x7f9d3f85e898&gt;)
 </pre></div>
 </div>
 </div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
@@ -533,21 +518,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-6-05cc81cb2cc7&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg">#frames = read(&#39;./data/small_molecules-1000.xyz&#39;,&#39;:600&#39;)</span>
-<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg"> </span>frames <span class="ansi-blue-fg">=</span> read<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;./data/CSD-500.xyz&#39;</span><span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">&#39;:3&#39;</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;read&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
@@ -556,20 +527,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-7-5125b33e1dc2&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>n_atoms <span class="ansi-blue-fg">=</span> sum<span class="ansi-blue-fg">(</span>frame<span class="ansi-blue-fg">.</span>get_number_of_atoms<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> frame <span class="ansi-green-fg">in</span> frames<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;frames&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
@@ -579,21 +537,6 @@ div.rendered_html tbody tr:hover {
     <span class="n">chem_shifts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;CS&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-8-40f921f42bf1&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      1</span> chem_shifts <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
-<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">for</span> frame <span class="ansi-green-fg">in</span> frames<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">      3</span>     chem_shifts<span class="ansi-blue-fg">.</span>append<span class="ansi-blue-fg">(</span>frame<span class="ansi-blue-fg">.</span>arrays<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;CS&#39;</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;frames&#39; is not defined
-</pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
@@ -605,19 +548,15 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">IndexError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-9-c08178236267&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>chem_shifts<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">.</span>shape
-
-<span class="ansi-red-fg">IndexError</span>: list index out of range
-</pre></div></div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>(62, 2)
+</pre></div>
 </div>
-<div class="nbinput docutils container">
+</div>
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
@@ -625,19 +564,6 @@ div.rendered_html tbody tr:hover {
 <span></span><span class="n">chem_shifts_atoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">chem_shifts</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-10-69198d6e6205&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>chem_shifts_atoms <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>concatenate<span class="ansi-blue-fg">(</span>chem_shifts<span class="ansi-blue-fg">,</span> axis<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;np&#39; is not defined
-</pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
@@ -649,23 +575,19 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-11-0d67165c66ef&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>chem_shifts_atoms<span class="ansi-blue-fg">.</span>shape
-
-<span class="ansi-red-fg">NameError</span>: name &#39;chem_shifts_atoms&#39; is not defined
-</pre></div></div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>(362, 2)
+</pre></div>
+</div>
 </div>
 </div>
 </div>
 <div class="section" id="SOAP:-Power-spectrum">
 <h1>SOAP: Power spectrum<a class="headerlink" href="#SOAP:-Power-spectrum" title="Permalink to this headline">¶</a></h1>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
@@ -682,21 +604,6 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-12-5ee18be7222f&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      7</span>               cutoff_smooth_width<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0.5</span><span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">      8</span>               )
-<span class="ansi-green-fg">----&gt; 9</span><span class="ansi-red-fg"> </span>soap <span class="ansi-blue-fg">=</span> SOAP<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">**</span>hypers<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;SOAP&#39; is not defined
-</pre></div></div>
-</div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
@@ -711,14 +618,11 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;timed exec&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;soap&#39; is not defined
+CPU times: user 28.7 ms, sys: 4.63 ms, total: 33.4 ms
+Wall time: 32.9 ms
 </pre></div></div>
 </div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
@@ -726,19 +630,6 @@ div.rendered_html tbody tr:hover {
 <span></span><span class="n">X</span> <span class="o">=</span> <span class="n">representation</span><span class="o">.</span><span class="n">get_dense_feature_matrix</span><span class="p">(</span><span class="n">soap</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-14-ef4ba23a9316&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>X <span class="ansi-blue-fg">=</span> representation<span class="ansi-blue-fg">.</span>get_dense_feature_matrix<span class="ansi-blue-fg">(</span>soap<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>T
-
-<span class="ansi-red-fg">NameError</span>: name &#39;representation&#39; is not defined
-</pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
@@ -750,17 +641,13 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-15-bc5f1a0adac8&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>X<span class="ansi-blue-fg">.</span>shape
-
-<span class="ansi-red-fg">NameError</span>: name &#39;X&#39; is not defined
-</pre></div></div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>(2520, 362)
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="Learning-the-chemical-shifts-of-a-set-of-crystal-structures">
@@ -871,22 +758,18 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-17-c3f75ea3f4d1&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>compute_representation<span class="ansi-blue-fg">(</span>soap<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;soap&#39; is not defined
-</pre></div></div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>&lt;rascal.neighbourlist.structure_manager.AtomsList at 0x7f9d3a803898&gt;
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="With-the-full-power-spectrum">
 <h2>With the full power spectrum<a class="headerlink" href="#With-the-full-power-spectrum" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
@@ -903,22 +786,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-18-8a84d090e7a5&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      7</span>               cutoff_smooth_width<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0.5</span><span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">      8</span>               )
-<span class="ansi-green-fg">----&gt; 9</span><span class="ansi-red-fg"> </span>soap <span class="ansi-blue-fg">=</span> SOAP<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">**</span>hypers<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;SOAP&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
@@ -927,20 +795,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-19-bed0925940cb&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>frames_train<span class="ansi-blue-fg">,</span> y_train<span class="ansi-blue-fg">,</span> frames_test<span class="ansi-blue-fg">,</span> y_test <span class="ansi-blue-fg">=</span> split_dataset<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">0.5</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;frames&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
@@ -949,20 +804,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-20-64927f1d948f&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>y_train <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>concatenate<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">[</span>frame<span class="ansi-blue-fg">.</span>arrays<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;CS&#39;</span><span class="ansi-blue-fg">]</span> <span class="ansi-green-fg">for</span> frame <span class="ansi-green-fg">in</span> frames_train<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> axis<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;np&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
@@ -971,20 +813,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-21-d64e893b211e&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>y_train <span class="ansi-blue-fg">=</span> y_train<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;y_train&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
@@ -993,20 +822,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-22-c7503e082411&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>y_test <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>concatenate<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">[</span>frame<span class="ansi-blue-fg">.</span>arrays<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;CS&#39;</span><span class="ansi-blue-fg">]</span> <span class="ansi-green-fg">for</span> frame <span class="ansi-green-fg">in</span> frames_test<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> axis<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;np&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
@@ -1015,20 +831,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-23-f5f0ffb6477f&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>y_test <span class="ansi-blue-fg">=</span> y_test<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;y_test&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
@@ -1036,19 +839,6 @@ div.rendered_html tbody tr:hover {
 <span></span><span class="n">n_atoms</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">get_number_of_atoms</span><span class="p">()</span> <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames_train</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-24-7fa192ce867f&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>n_atoms <span class="ansi-blue-fg">=</span> sum<span class="ansi-blue-fg">(</span>frame<span class="ansi-blue-fg">.</span>get_number_of_atoms<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> frame <span class="ansi-green-fg">in</span> frames_train<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;frames_train&#39; is not defined
-</pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
@@ -1059,7 +849,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
@@ -1067,19 +857,6 @@ div.rendered_html tbody tr:hover {
 <span></span><span class="n">features</span> <span class="o">=</span> <span class="n">compute_representation</span><span class="p">(</span><span class="n">soap</span><span class="p">,</span> <span class="n">frames_train</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-26-acf4215baa49&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>features <span class="ansi-blue-fg">=</span> compute_representation<span class="ansi-blue-fg">(</span>soap<span class="ansi-blue-fg">,</span> frames_train<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;soap&#39; is not defined
-</pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
@@ -1091,17 +868,13 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-27-224628ecf868&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>features
-
-<span class="ansi-red-fg">NameError</span>: name &#39;features&#39; is not defined
-</pre></div></div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>&lt;rascal.neighbourlist.structure_manager.AtomsList at 0x7f9d3a80d710&gt;
+</pre></div>
+</div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
@@ -1118,11 +891,18 @@ div.rendered_html tbody tr:hover {
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-red-fg">AttributeError</span>Traceback (most recent call last)
 <span class="ansi-green-fg">&lt;ipython-input-28-539c7625fc7a&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
 <span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>kernel <span class="ansi-blue-fg">=</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">)</span>
 
-<span class="ansi-red-fg">NameError</span>: name &#39;features&#39; is not defined
+<span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">compute_atomic_kernel</span><span class="ansi-blue-fg">(zeta, rep1, rep2)</span>
+<span class="ansi-green-intense-fg ansi-bold">      9</span> <span class="ansi-green-fg">def</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> rep1<span class="ansi-blue-fg">,</span> rep2<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     10</span>     <span class="ansi-green-fg">if</span> rep2 <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 11</span><span class="ansi-red-fg">         </span>kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_atomic<span class="ansi-blue-fg">(</span>rep2<span class="ansi-blue-fg">,</span> zeta<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     12</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     13</span>         kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_atomic<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">AttributeError</span>: &#39;AtomsList&#39; object has no attribute &#39;cosine_kernel_atomic&#39;
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -1201,7 +981,7 @@ div.rendered_html tbody tr:hover {
 <span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># First, try without regularization -- the results will be nonsense</span>
 <span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg"> </span>weights <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>linalg<span class="ansi-blue-fg">.</span>solve<span class="ansi-blue-fg">(</span>kernel<span class="ansi-blue-fg">,</span>y_train<span class="ansi-blue-fg">)</span>
 
-<span class="ansi-red-fg">NameError</span>: name &#39;np&#39; is not defined
+<span class="ansi-red-fg">NameError</span>: name &#39;kernel&#39; is not defined
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -1289,13 +1069,27 @@ div.rendered_html tbody tr:hover {
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-red-fg">AttributeError</span>Traceback (most recent call last)
 <span class="ansi-green-fg">&lt;ipython-input-36-06fbc99774ab&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
 <span class="ansi-green-intense-fg ansi-bold">      1</span> zeta <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">2</span>
 <span class="ansi-green-intense-fg ansi-bold">      2</span> Lambda <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">10</span>
 <span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span>krr<span class="ansi-blue-fg">,</span>k <span class="ansi-blue-fg">=</span> train_krr_model<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> Lambda<span class="ansi-blue-fg">,</span> soap<span class="ansi-blue-fg">,</span> frames_train<span class="ansi-blue-fg">,</span> y_train<span class="ansi-blue-fg">)</span>
 
-<span class="ansi-red-fg">NameError</span>: name &#39;soap&#39; is not defined
+<span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">train_krr_model</span><span class="ansi-blue-fg">(zeta, Lambda, representation, frames, y, jitter)</span>
+<span class="ansi-green-intense-fg ansi-bold">     76</span> <span class="ansi-green-fg">def</span> train_krr_model<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span>Lambda<span class="ansi-blue-fg">,</span>representation<span class="ansi-blue-fg">,</span>frames<span class="ansi-blue-fg">,</span>y<span class="ansi-blue-fg">,</span>jitter<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1e-8</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     77</span>     features <span class="ansi-blue-fg">=</span> compute_representation<span class="ansi-blue-fg">(</span>representation<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 78</span><span class="ansi-red-fg">     </span>kernel <span class="ansi-blue-fg">=</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     79</span>     <span class="ansi-red-fg"># adjust the kernel so that it is properly scaled</span>
+<span class="ansi-green-intense-fg ansi-bold">     80</span>     delta <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>std<span class="ansi-blue-fg">(</span>y<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">/</span> np<span class="ansi-blue-fg">.</span>mean<span class="ansi-blue-fg">(</span>kernel<span class="ansi-blue-fg">.</span>diagonal<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">compute_atomic_kernel</span><span class="ansi-blue-fg">(zeta, rep1, rep2)</span>
+<span class="ansi-green-intense-fg ansi-bold">      9</span> <span class="ansi-green-fg">def</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> rep1<span class="ansi-blue-fg">,</span> rep2<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     10</span>     <span class="ansi-green-fg">if</span> rep2 <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 11</span><span class="ansi-red-fg">         </span>kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_atomic<span class="ansi-blue-fg">(</span>rep2<span class="ansi-blue-fg">,</span> zeta<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     12</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     13</span>         kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_atomic<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">AttributeError</span>: &#39;AtomsList&#39; object has no attribute &#39;cosine_kernel_atomic&#39;
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -1350,13 +1144,13 @@ div.rendered_html tbody tr:hover {
 <span class="ansi-green-intense-fg ansi-bold">      4</span> plt<span class="ansi-blue-fg">.</span>ylabel<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;DFT shift&#39;</span><span class="ansi-blue-fg">)</span>
 <span class="ansi-green-intense-fg ansi-bold">      5</span> plt<span class="ansi-blue-fg">.</span>xlabel<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;Predicted shift&#39;</span><span class="ansi-blue-fg">)</span>
 
-<span class="ansi-red-fg">NameError</span>: name &#39;y_test&#39; is not defined
+<span class="ansi-red-fg">NameError</span>: name &#39;y_pred&#39; is not defined
 </pre></div></div>
 </div>
 </div>
 <div class="section" id="With-just-the-radial-spectrum">
 <h2>With just the radial spectrum<a class="headerlink" href="#With-just-the-radial-spectrum" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
 </pre></div>
 </div>
@@ -1373,22 +1167,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-39-a2f7085eba1a&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      7</span>               cutoff_smooth_width<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0.5</span>
-<span class="ansi-green-intense-fg ansi-bold">      8</span>               )
-<span class="ansi-green-fg">----&gt; 9</span><span class="ansi-red-fg"> </span>soap <span class="ansi-blue-fg">=</span> SOAP<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">**</span>hypers<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;SOAP&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
 </pre></div>
 </div>
@@ -1396,19 +1175,6 @@ div.rendered_html tbody tr:hover {
 <span></span><span class="n">frames_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">frames_test</span><span class="p">,</span> <span class="n">y_testr</span> <span class="o">=</span> <span class="n">split_dataset</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span><span class="mf">0.4</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-40-b4afb0fac59a&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>frames_train<span class="ansi-blue-fg">,</span> y_train<span class="ansi-blue-fg">,</span> frames_test<span class="ansi-blue-fg">,</span> y_testr <span class="ansi-blue-fg">=</span> split_dataset<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">0.4</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;frames&#39; is not defined
-</pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
@@ -1427,13 +1193,27 @@ div.rendered_html tbody tr:hover {
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-red-fg">AttributeError</span>Traceback (most recent call last)
 <span class="ansi-green-fg">&lt;ipython-input-41-6cd322b49906&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
 <span class="ansi-green-intense-fg ansi-bold">      1</span> zeta <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">2</span>
 <span class="ansi-green-intense-fg ansi-bold">      2</span> Lambda <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">5e-3</span>
 <span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span>krr<span class="ansi-blue-fg">,</span>k <span class="ansi-blue-fg">=</span> train_krr_model<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> Lambda<span class="ansi-blue-fg">,</span> soap<span class="ansi-blue-fg">,</span> frames_train<span class="ansi-blue-fg">,</span> y_train<span class="ansi-blue-fg">)</span>
 
-<span class="ansi-red-fg">NameError</span>: name &#39;soap&#39; is not defined
+<span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">train_krr_model</span><span class="ansi-blue-fg">(zeta, Lambda, representation, frames, y, jitter)</span>
+<span class="ansi-green-intense-fg ansi-bold">     76</span> <span class="ansi-green-fg">def</span> train_krr_model<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span>Lambda<span class="ansi-blue-fg">,</span>representation<span class="ansi-blue-fg">,</span>frames<span class="ansi-blue-fg">,</span>y<span class="ansi-blue-fg">,</span>jitter<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1e-8</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     77</span>     features <span class="ansi-blue-fg">=</span> compute_representation<span class="ansi-blue-fg">(</span>representation<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 78</span><span class="ansi-red-fg">     </span>kernel <span class="ansi-blue-fg">=</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     79</span>     <span class="ansi-red-fg"># adjust the kernel so that it is properly scaled</span>
+<span class="ansi-green-intense-fg ansi-bold">     80</span>     delta <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>std<span class="ansi-blue-fg">(</span>y<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">/</span> np<span class="ansi-blue-fg">.</span>mean<span class="ansi-blue-fg">(</span>kernel<span class="ansi-blue-fg">.</span>diagonal<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">compute_atomic_kernel</span><span class="ansi-blue-fg">(zeta, rep1, rep2)</span>
+<span class="ansi-green-intense-fg ansi-bold">      9</span> <span class="ansi-green-fg">def</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> rep1<span class="ansi-blue-fg">,</span> rep2<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     10</span>     <span class="ansi-green-fg">if</span> rep2 <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 11</span><span class="ansi-red-fg">         </span>kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_atomic<span class="ansi-blue-fg">(</span>rep2<span class="ansi-blue-fg">,</span> zeta<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     12</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     13</span>         kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_atomic<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">AttributeError</span>: &#39;AtomsList&#39; object has no attribute &#39;cosine_kernel_atomic&#39;
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -1575,7 +1355,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="make-a-map-with-kernel-pca-projection">
 <h2>make a map with kernel pca projection<a class="headerlink" href="#make-a-map-with-kernel-pca-projection" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
 </pre></div>
 </div>
@@ -1585,21 +1365,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-46-8c137b84c603&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># Load the small molecules</span>
-<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg"> </span>frames <span class="ansi-blue-fg">=</span> read<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;./data/small_molecules-1000.xyz&#39;</span><span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">&#39;:600&#39;</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;read&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
 </pre></div>
 </div>
@@ -1615,21 +1381,6 @@ div.rendered_html tbody tr:hover {
 <span class="n">soap</span> <span class="o">=</span> <span class="n">SOAP</span><span class="p">(</span><span class="o">**</span><span class="n">hypers</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-47-5ee18be7222f&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      7</span>               cutoff_smooth_width<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0.5</span><span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">      8</span>               )
-<span class="ansi-green-fg">----&gt; 9</span><span class="ansi-red-fg"> </span>soap <span class="ansi-blue-fg">=</span> SOAP<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">**</span>hypers<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;SOAP&#39; is not defined
-</pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
@@ -1650,15 +1401,20 @@ div.rendered_html tbody tr:hover {
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-red-fg">AttributeError</span>Traceback (most recent call last)
 <span class="ansi-green-fg">&lt;ipython-input-48-0ff01955223f&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      1</span> zeta <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">2</span>
-<span class="ansi-green-intense-fg ansi-bold">      2</span>
-<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span>features <span class="ansi-blue-fg">=</span> compute_representation<span class="ansi-blue-fg">(</span>soap<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> features <span class="ansi-blue-fg">=</span> compute_representation<span class="ansi-blue-fg">(</span>soap<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span>
 <span class="ansi-green-intense-fg ansi-bold">      4</span>
-<span class="ansi-green-intense-fg ansi-bold">      5</span> kernel <span class="ansi-blue-fg">=</span> compute_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span>features<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">----&gt; 5</span><span class="ansi-red-fg"> </span>kernel <span class="ansi-blue-fg">=</span> compute_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span>features<span class="ansi-blue-fg">)</span>
 
-<span class="ansi-red-fg">NameError</span>: name &#39;soap&#39; is not defined
+<span class="ansi-green-fg">&lt;ipython-input-44-a427801a5537&gt;</span> in <span class="ansi-cyan-fg">compute_kernel</span><span class="ansi-blue-fg">(zeta, rep1, rep2)</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> <span class="ansi-green-fg">def</span> compute_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> rep1<span class="ansi-blue-fg">,</span> rep2<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span>     <span class="ansi-green-fg">if</span> rep2 <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">----&gt; 7</span><span class="ansi-red-fg">         </span>kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_global<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      8</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">      9</span>         kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_global<span class="ansi-blue-fg">(</span>rep2<span class="ansi-blue-fg">,</span>zeta<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">AttributeError</span>: &#39;AtomsList&#39; object has no attribute &#39;cosine_kernel_global&#39;
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -1736,99 +1492,6 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">X</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="c1">#plt.savefig(&#39;PCA.png&#39;,dpi=300)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-52-e241bba0a2ba&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>plt<span class="ansi-blue-fg">.</span>scatter<span class="ansi-blue-fg">(</span>X<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span>X<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span>s<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">3</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-red-fg">#plt.savefig(&#39;PCA.png&#39;,dpi=300)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;X&#39; is not defined
-</pre></div></div>
-</div>
-</div>
-<div class="section" id="make-an-interactive-map">
-<h2>make an interactive map<a class="headerlink" href="#make-an-interactive-map" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># package to visualize the structures in the notebook</span>
-<span class="c1"># https://github.com/arose/nglview#released-version</span>
-<span class="kn">import</span> <span class="nn">nglview</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-53-2fa0ca23db8b&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># package to visualize the structures in the notebook</span>
-<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-red-fg"># https://github.com/arose/nglview#released-version</span>
-<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">import</span> nglview
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;nglview&#39;
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">iwdg</span> <span class="o">=</span> <span class="n">nglview</span><span class="o">.</span><span class="n">show_asetraj</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
-<span class="c1"># set up the visualization</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">add_unitcell</span><span class="p">()</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">add_spacefill</span><span class="p">()</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">remove_ball_and_stick</span><span class="p">()</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">camera</span> <span class="o">=</span> <span class="s1">&#39;orthographic&#39;</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;clipDist&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="p">}</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">update_spacefill</span><span class="p">(</span><span class="n">radiusType</span><span class="o">=</span><span class="s1">&#39;covalent&#39;</span><span class="p">,</span>
-                                   <span class="n">scale</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
-                                   <span class="n">color_scheme</span><span class="o">=</span><span class="s1">&#39;element&#39;</span><span class="p">)</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">_remote_call</span><span class="p">(</span><span class="s1">&#39;setSize&#39;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;Widget&#39;</span><span class="p">,</span>
-                               <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">px&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">600</span><span class="p">,),</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1">px&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">400</span><span class="p">,)])</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">player</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="mf">200.0</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-54-c5315972e322&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>iwdg <span class="ansi-blue-fg">=</span> nglview<span class="ansi-blue-fg">.</span>show_asetraj<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-red-fg"># set up the visualization</span>
-<span class="ansi-green-intense-fg ansi-bold">      3</span> iwdg<span class="ansi-blue-fg">.</span>add_unitcell<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">      4</span> iwdg<span class="ansi-blue-fg">.</span>add_spacefill<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">      5</span> iwdg<span class="ansi-blue-fg">.</span>remove_ball_and_stick<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nglview&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">link_ngl_wdgt_to_ax_pos</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">(),</span> <span class="n">X</span><span class="p">,</span> <span class="n">iwdg</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">X</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">iwdg</span>
 </pre></div>
 </div>
 </div>
@@ -2615,7 +2278,95 @@ if (IPython.notebook.kernel != null) {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area rendered_html docutils container">
-<div id='e7212157-92f4-43b7-96af-d3113feaae22'></div></div>
+<div id='736748e3-ad15-4f62-a311-d2cc5f72b8b7'></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.collections.PathCollection at 0x7f9d3300a860&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="make-an-interactive-map">
+<h2>make an interactive map<a class="headerlink" href="#make-an-interactive-map" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># package to visualize the structures in the notebook</span>
+<span class="c1"># https://github.com/arose/nglview#released-version</span>
+<span class="kn">import</span> <span class="nn">nglview</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-53-2fa0ca23db8b&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># package to visualize the structures in the notebook</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-red-fg"># https://github.com/arose/nglview#released-version</span>
+<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">import</span> nglview
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;nglview&#39;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">iwdg</span> <span class="o">=</span> <span class="n">nglview</span><span class="o">.</span><span class="n">show_asetraj</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
+<span class="c1"># set up the visualization</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">add_unitcell</span><span class="p">()</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">add_spacefill</span><span class="p">()</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">remove_ball_and_stick</span><span class="p">()</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">camera</span> <span class="o">=</span> <span class="s1">&#39;orthographic&#39;</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;clipDist&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="p">}</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">update_spacefill</span><span class="p">(</span><span class="n">radiusType</span><span class="o">=</span><span class="s1">&#39;covalent&#39;</span><span class="p">,</span>
+                                   <span class="n">scale</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+                                   <span class="n">color_scheme</span><span class="o">=</span><span class="s1">&#39;element&#39;</span><span class="p">)</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">_remote_call</span><span class="p">(</span><span class="s1">&#39;setSize&#39;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;Widget&#39;</span><span class="p">,</span>
+                               <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">px&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">600</span><span class="p">,),</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1">px&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">400</span><span class="p">,)])</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">player</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="mf">200.0</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-54-c5315972e322&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>iwdg <span class="ansi-blue-fg">=</span> nglview<span class="ansi-blue-fg">.</span>show_asetraj<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-red-fg"># set up the visualization</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> iwdg<span class="ansi-blue-fg">.</span>add_unitcell<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> iwdg<span class="ansi-blue-fg">.</span>add_spacefill<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> iwdg<span class="ansi-blue-fg">.</span>remove_ball_and_stick<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;nglview&#39; is not defined
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">link_ngl_wdgt_to_ax_pos</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">(),</span> <span class="n">X</span><span class="p">,</span> <span class="n">iwdg</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">X</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">iwdg</span>
+</pre></div>
+</div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -2629,7 +2380,7 @@ if (IPython.notebook.kernel != null) {
 <span class="ansi-green-intense-fg ansi-bold">      2</span> plt<span class="ansi-blue-fg">.</span>scatter<span class="ansi-blue-fg">(</span>X<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span>X<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span>s<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">3</span><span class="ansi-blue-fg">)</span>
 <span class="ansi-green-intense-fg ansi-bold">      3</span> iwdg
 
-<span class="ansi-red-fg">NameError</span>: name &#39;X&#39; is not defined
+<span class="ansi-red-fg">NameError</span>: name &#39;iwdg&#39; is not defined
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -2673,7 +2424,8 @@ if (IPython.notebook.kernel != null) {
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti, Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
+        &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti,
+Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
 
     </p>
   </div>
