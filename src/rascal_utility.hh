@@ -31,11 +31,11 @@
 // Detects which compiler is used
 #if defined(__clang__)
 #define CLANG_COMPILER
-#elif(defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ > 8)
+#elif((defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ > 8))
 // there is a slight modification in the output of __PRETTY_FUNCTION__ in gcc 9
 // here we expect it to be forwarded to newer versions
 #define GCC_COMPILER_9_AND_UPPER
-#elif(defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ <= 8)
+#elif((defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ <= 8))
 #define GCC_COMPILER_8_AND_LOWER
 #endif
 

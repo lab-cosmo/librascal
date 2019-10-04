@@ -25,6 +25,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
+// Detects which compiler is used
+#if defined(__clang__)
+#define CLANG_COMPILER
+#elif((defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ > 6))
+#define GCC_COMPILER_7_AND_UPPER
+#elif((defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ <= 6))
+#define GCC_COMPILER_6_AND_LOWER
+#endif
+
 #include "test_utils.hh"
 
 namespace rascal {
@@ -35,13 +44,25 @@ namespace rascal {
    * Test that the internal::GetTypeNameHelper function
    */
   BOOST_AUTO_TEST_CASE(type_demangling_test) {
-    bool verbose{false};
-    std::string ref{"rascal::ClusterRefKey<1, 2>"};
+    bool verbose{true};
+    std::string ref_clang{"ClusterRefKey_1_2"};
+    std::string ref_gcc_6_and_lower{"ClusterRefKey_1ul_2ul"};
+    std::string ref_gcc_7_and_upper{"ClusterRefKey_1_2"};
     std::string test{
-        internal::GetTypeNameHelper<ClusterRefKey<1, 2>>::GetTypeName()};
-    BOOST_CHECK_EQUAL(ref, test);
+        internal::GetTypeName<ClusterRefKey<1, 2>>()};
+#if defined(GCC_COMPILER_7_AND_UPPER)
+    BOOST_CHECK_EQUAL(ref_gcc_7_and_upper, test);
+#elif defined(GCC_COMPILER_6_AND_LOWER)
+    BOOST_CHECK_EQUAL(ref_gcc_6_and_lower, test);
+#elif defined(CLANG_COMPILER)
+    BOOST_CHECK_EQUAL(ref_clang, test);
+#endif
     if (verbose) {
-      std::cout << "ref:  " << ref << std::endl;
+      std::cout << "ref_clang:  " << ref_clang << std::endl;
+      std::cout << "ref_gcc_6_and_lower:  "
+                << ref_gcc_6_and_lower << std::endl;
+      std::cout << "ref_gcc_7_and_upper:  "
+                 << ref_gcc_7_and_upper << std::endl;
       std::cout << "test: " << test << std::endl;
       std::cout << "pretty_function: "
                 << internal::PrettyFunction<ClusterRefKey<1, 2>>::get()
