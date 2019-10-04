@@ -31,8 +31,12 @@
 // Detects which compiler is used
 #if defined(__clang__)
 #define CLANG_COMPILER
-#elif defined(__GNUC__) || defined(__GNUG__)
-#define GCC_COMPILER
+#elif (defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ > 8)
+// there is a slight modification in the output of __PRETTY_FUNCTION__ in gcc 9
+// here we expect it to be forwarded to newer versions
+#define GCC_COMPILER_9_AND_UPPER
+#elif (defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ <= 8)
+#define GCC_COMPILER_8_AND_LOWER
 #endif
 
 #include <utility>
@@ -263,7 +267,16 @@ namespace rascal {
       static const std::string GetTypeName() {
 // The output of of Pretty Function depends on the compiler
 // the #define strings is a pain to split
-#if defined(GCC_COMPILER)
+#if defined(GCC_COMPILER_9_AND_UPPER)
+#define FUNCTION_MACRO __PRETTY_FUNCTION__
+#define PREFIX                                                                 \
+  "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() " \
+  "[with T = "  // NOLINT
+#define SUFFIX_1                                                               \
+  "; std::string = std::__cxx11::basic_string<char>]"  // NOLINT
+#define SUFFIX_2 ""
+#define NUM_TYPE_REPEATS 1
+#elif defined(GCC_COMPILER_8_AND_LOWER)
 #define FUNCTION_MACRO __PRETTY_FUNCTION__
 #define PREFIX                                                                 \
   "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() " \
