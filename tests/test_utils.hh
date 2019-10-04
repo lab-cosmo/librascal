@@ -31,6 +31,8 @@
 #include "tests.hh"
 #include "rascal_utility.hh"
 #include "structure_managers/cluster_ref_key.hh"
+#include "structure_managers/structure_manager.hh"
+#include "structure_managers/structure_manager_centers.hh"
 
 namespace rascal {
   namespace internal {

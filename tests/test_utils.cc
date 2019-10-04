@@ -41,10 +41,12 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(test_utils);
   /* ---------------------------------------------------------------------- */
   /**
-   * Test that the internal::GetTypeNameHelper function
+   * Test that the internal::GetTypeNameHelper function returns what we expect
    */
   BOOST_AUTO_TEST_CASE(type_demangling_test) {
     bool verbose{true};
+
+    // test template with numbers
     std::string ref_clang{"ClusterRefKey_1_2"};
     std::string ref_gcc_6_and_lower{"ClusterRefKey_1ul_2ul"};
     std::string ref_gcc_7_and_upper{"ClusterRefKey_1_2"};
@@ -66,6 +68,20 @@ namespace rascal {
       std::cout << "test: " << test << std::endl;
       std::cout << "pretty_function: "
                 << internal::PrettyFunction<ClusterRefKey<1, 2>>::get()
+                << std::endl;
+    }
+
+    // test template with class
+    std::string ref_simple{"StructureManager_StructureManagerCenters"};
+    std::string test_simple{
+        internal::GetTypeName<StructureManager<StructureManagerCenters>>()};
+    BOOST_CHECK_EQUAL(ref_simple, test_simple);
+    if (verbose) {
+      std::cout << "ref_simple:  " << ref_simple << std::endl;
+      std::cout << "test_simple:  " << test_simple << std::endl;
+      std::cout << "pretty_function: "
+                << internal::PrettyFunction<
+                            StructureManager<StructureManagerCenters>>::get()
                 << std::endl;
     }
   }
