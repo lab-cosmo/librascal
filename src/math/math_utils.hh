@@ -141,7 +141,7 @@ namespace rascal {
      * @param divisor is a positive divisor
      * @tparam Num type of the double modulo
      */
-    template<class Num>
+    template <class Num>
     Num py_mod(Num x, Num divisor) {
       assert(divisor > 0.);
       Num m{std::fmod(x, divisor)};
@@ -178,7 +178,6 @@ namespace rascal {
       explicit MakePositivePyMod(double divisor) : divisor{divisor} {}
       double operator()(double a) const { return py_mod(a, this->divisor); }
     };
-
 
     /**
      * Compute a cosine-type switching function for smooth cutoffs

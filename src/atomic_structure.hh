@@ -126,7 +126,8 @@ namespace rascal {
 
       for (int i_dim{0}; i_dim < Dim; ++i_dim) {
         if (this->pbc[i_dim]) {
-          scaled_positions.row(i_dim) = scaled_positions.row(i_dim).unaryExpr(functor);
+          scaled_positions.row(i_dim) =
+              scaled_positions.row(i_dim).unaryExpr(functor);
         }
       }
       this->positions = this->cell * scaled_positions;

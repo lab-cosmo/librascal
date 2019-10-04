@@ -398,8 +398,8 @@ namespace rascal {
       IndexContainer & operator=(IndexContainer && other) = default;
       //! brackets operator
       std::vector<int> & operator[](const std::array<int, Dim> & ccoord) {
-        for (int i = 0; i < int(Dim); ++i) {
-          if (not(ccoord[i] < this->nboxes[i] - 1) and (ccoord[i] >= 1)) {
+        for (int i = 0; i < static_cast<int>(Dim); ++i) {
+          if (not(ccoord[i] < this->nboxes[i] - 1) and (ccoord[i] >= 1)) { //NOLINT
             std::stringstream error{};
             error << "Error: At least one atom is outside the unit cell. This "
                      "adaptor expects atoms to be folded into the original "
@@ -959,8 +959,8 @@ namespace rascal {
       double min_coord{0.0};
       double max_coord{0.0};
       for (int col{0}; col < cell.cols(); ++col) {
-        min_coord -= cell(i, col) * double(cell(i, col) < 0.);
-        max_coord += cell(i, col) * double(cell(i, col) > 0.);
+        min_coord -= cell(i, col) * static_cast<double>(cell(i, col) < 0.);
+        max_coord += cell(i, col) * static_cast<double>(cell(i, col) > 0.);
       }
       // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
       mesh_min[i] = min_coord - 2 * cutoff;
