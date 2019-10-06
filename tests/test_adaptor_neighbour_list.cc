@@ -533,21 +533,24 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * Test a very skewed cell with atoms right at the edges of the cell. Imagine
-   * a center of a cuboid cell. The distribute atoms in each spatial direction
-   * in +/- epsilon. Further, add more atoms at distance rcut-2*epsilon. Then
-   * shift the origin of the cell to the center and wrap the atoms to be
-   * contained in the cell.
+   * a center of a cuboid cell. Then atoms are distributed in each spatial
+   * direction in +/- epsilon (6 atoms). Further, add more atoms at distance
+   * rcut-2*epsilon (another 6 atoms). Then shift the origin of the cell to the center and wrap
+   * the atoms to be contained in the cell. The idea is that the periodic images
+   * are too far away to be neighbours, but each atom has every other atom in
+   * the cell as a neighbour, i.e. 11 neighbours.
    */
-  // TODO(markus) use tolerance of structure manager checke for building
-  // structure
   BOOST_FIXTURE_TEST_CASE(neighbourlist_edge_case_epsilon_rcut,
                           ManagerFixtureSkewDeltaRcut) {
     auto pair_manager{
         make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
+    pair_manager->update();
 
     constexpr bool verbose{true};
-    auto n_pairs{0};
+    std::cout << "neighbourlist_edge_case_epsilon_rcut" << std::endl;
     for (auto atom : pair_manager) {
+      std::cout << "atom? " << atom.back() << std::endl;
+      auto n_pairs{0};
       for (auto pair : atom) {
         n_pairs++;
         if (verbose) {
@@ -555,6 +558,8 @@ namespace rascal {
                     << " glob " << pair.get_global_index() << std::endl;
         }
       }
+      std::cout << "number of pairs: " << n_pairs << std::endl;
+      BOOST_CHECK_EQUAL(11, n_pairs);
     }
   }
 
