@@ -530,5 +530,32 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test a very skewed cell with atoms right at the edges of the cell. Imagine
+   * a center of a cuboid cell. The distribute atoms in each spatial direction
+   * in +/- epsilon. Further, add more atoms at distance rcut-2*epsilon. Then
+   * shift the origin of the cell to the center and wrap the atoms to be
+   * contained in the cell.
+   */
+  // TODO(markus) use tolerance of structure manager checke for building structure
+  BOOST_FIXTURE_TEST_CASE(neighbourlist_edge_case_epsilon_rcut,
+                          ManagerFixtureSkewDeltaRcut) {
+    auto pair_manager{
+        make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
+
+    constexpr bool verbose{true};
+    auto n_pairs{0};
+    for (auto atom : pair_manager) {
+      for (auto pair : atom) {
+        n_pairs++;
+        if (verbose) {
+          std::cout << "   complete pair " << atom.back() << " " << pair.back()
+                    << " glob " << pair.get_global_index() << std::endl;
+        }
+      }
+    }
+  }
+
   BOOST_AUTO_TEST_SUITE_END();
 }  // namespace rascal

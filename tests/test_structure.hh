@@ -471,6 +471,52 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
+   * A manager using ManagerCenters to check the neighbourlist algorithm
+   * with a very skewed cell and positions right at the edge of the periodicity
+   */
+  struct ManagerFixtureSkewDeltaRcut : public ManagerFixture<StructureManagerCenters> {
+    ManagerFixtureSkewDeltaRcut()
+        : ManagerFixture<StructureManagerCenters>{}, pbc{{true, true, true}},
+          cell(3, 3), positions(3, 12),
+          atom_types(12), cutoff{0.10958486630316071}, natoms{12} {
+      cell << 1.0, 0.0, 0.0, 0.9659258262890683, 0.25881904510252074, 0.0,
+          0.9659258262890683, 0.12716654751512468, 0.22542397232961758;
+
+      // clang-format off
+      positions <<
+        0.00100000, 0.00000000, 0.00000000,
+        0.99900000, 0.00000000, 0.00000000,
+        1.00000000, 0.00100000, 0.00000000,
+        0.96592583, 0.25781905, 0.00000000,
+        1.96592583, 0.25881905, 0.00100000,
+        0.96592583, 0.12716655, 0.22442397,
+        0.10958487, 0.00000000, 0.00000000,
+        0.89041513, 0.00000000, 0.00000000,
+        1.00000000, 0.10958487, 0.00000000,
+        0.96592583, 0.14923418, 0.00000000,
+        1.96592583, 0.25881905, 0.10958487,
+        0.96592583, 0.12716655, 0.11583911;
+      // clang-format on
+      atom_types << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
+
+      using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
+      this->manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
+    }
+
+    ~ManagerFixtureSkewDeltaRcut() {}
+
+    std::array<int, 3> pbc;
+    Eigen::MatrixXd cell;
+    Eigen::MatrixXd positions;
+    Eigen::VectorXi atom_types;
+
+    double cutoff;
+
+    const int natoms;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
    * A fixture to check the neighbourlist algorithm with increasing skewedness
    * of the cell as well as a shift of the positions. The manager is built and
    * constructed inside the loop in the test: it skews the cells, therefore it
