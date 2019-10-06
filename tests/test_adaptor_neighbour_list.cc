@@ -538,7 +538,8 @@ namespace rascal {
    * shift the origin of the cell to the center and wrap the atoms to be
    * contained in the cell.
    */
-  // TODO(markus) use tolerance of structure manager checke for building structure
+  // TODO(markus) use tolerance of structure manager checke for building
+  // structure
   BOOST_FIXTURE_TEST_CASE(neighbourlist_edge_case_epsilon_rcut,
                           ManagerFixtureSkewDeltaRcut) {
     auto pair_manager{

@@ -66,8 +66,8 @@ namespace rascal {
 
     // Check if all atoms are inside the unit cell assuming the cell starts
     // at (0,0,0)
-    auto positions_scaled = (lat.inverse() * this->get_positions()).eval();
-    double tol{1e-14};  // TODO(markus) why this tolerance?
+    auto positions_scaled = this->atoms_object.get_scaled_positions();
+    double tol{1e-10};
     if ((positions_scaled.array().rowwise().minCoeff() < -tol).any() or
         (positions_scaled.array().rowwise().maxCoeff() > 1. + tol).any()) {
       std::string error{R"(Some of the positions in the structure are not
