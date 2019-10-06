@@ -474,7 +474,8 @@ namespace rascal {
    * A manager using ManagerCenters to check the neighbourlist algorithm
    * with a very skewed cell and positions right at the edge of the periodicity
    */
-  struct ManagerFixtureSkewDeltaRcut : public ManagerFixture<StructureManagerCenters> {
+  struct ManagerFixtureSkewDeltaRcut
+      : public ManagerFixture<StructureManagerCenters> {
     ManagerFixtureSkewDeltaRcut()
         : ManagerFixture<StructureManagerCenters>{}, pbc{{true, true, true}},
           cell(3, 3), positions(12, 3),
