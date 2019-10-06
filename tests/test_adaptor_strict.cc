@@ -426,7 +426,7 @@ namespace rascal {
     int mult = 3;
 
     for (auto i{1}; i < mult; ++i) {
-      auto cutoff_tmp = i * 0.5 + cutoff;
+      auto cutoff_tmp = i * cutoff;
 
       std::vector<int> neighbours_per_atom1{};
       std::vector<int> neighbours_per_atom2{};
