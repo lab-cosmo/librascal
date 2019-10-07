@@ -203,19 +203,9 @@ namespace rascal {
       return this->manager->get_atom_index(atom_tag);
     }
 
-    //! return atom type
-    int & get_atom_type(const AtomRef_t & atom) {
-      return this->manager->get_atom_type(atom.get_index());
-    }
-
     //! return atom type, const ref
     int get_atom_type(const AtomRef_t & atom) const {
       return this->manager->get_atom_type(atom.get_index());
-    }
-
-    //! Returns atom type given an atom tag
-    int & get_atom_type(int atom_id) {
-      return this->manager->get_atom_type(atom_id);
     }
 
     //! Returns a constant atom type given an atom tag

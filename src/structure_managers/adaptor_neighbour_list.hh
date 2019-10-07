@@ -599,18 +599,8 @@ namespace rascal {
 
     //! ghost types are only available for MaxOrder=2
     int get_ghost_type(size_t atom_tag) const {
-      auto && p{this->get_ghost_types()};
-      return p[atom_tag];
+      return this->ghost_types[atom_tag];
     }
-
-    //! ghost types are only available for MaxOrder=2
-    int & get_ghost_type(size_t atom_tag) {
-      auto && p{this->get_ghost_types()};
-      return p[atom_tag];
-    }
-
-    //! provides access to the atomic types of ghost atoms
-    std::vector<int> & get_ghost_types() { return this->ghost_types; }
 
     //! provides access to the atomic types of ghost atoms
     const std::vector<int> & get_ghost_types() const {
@@ -651,12 +641,6 @@ namespace rascal {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
         return this->neighbours_atom_tag[offset + iteration_index];
       }
-    }
-
-    //! Returns atom type given an atom tag, also works for ghost atoms
-    int & get_atom_type(int atom_tag) {
-      // return this->atom_types[this->get_atom_index(atom_tag)];
-      return this->atom_types[atom_tag];
     }
 
     /* If consider_ghost_neighbours=true and the atom tag corresponds to an

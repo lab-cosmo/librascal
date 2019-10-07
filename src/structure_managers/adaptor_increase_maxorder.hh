@@ -187,13 +187,8 @@ namespace rascal {
       return this->manager->get_atom_type(atom_tag);
     }
 
-    //! get atom type from underlying manager
-    int & get_atom_type(int atom_tag) {
-      return this->manager->get_atom_type(atom_tag);
-    }
-
     //! return atom type
-    int & get_atom_type(const AtomRef_t & atom) {
+    int get_atom_type(const AtomRef_t & atom) const {
       return this->manager->get_atom_type(atom.get_atom_tag());
     }
 

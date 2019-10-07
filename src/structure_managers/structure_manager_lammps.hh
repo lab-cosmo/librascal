@@ -119,11 +119,6 @@ namespace rascal {
       return this->type[this->get_atom_index(atom_tag)];
     }
 
-    //! Returns atom type given an atom tag
-    int & get_atom_type(int atom_tag) {
-      return this->type[this->get_atom_index(atom_tag)];
-    }
-
     //! return number of I atoms in the list
     size_t get_size() const { return this->inum; }
 

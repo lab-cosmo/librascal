@@ -174,26 +174,11 @@ namespace rascal {
     }
 
     //! return atom type
-    int & get_atom_type(const AtomRef_t & atom) {
-      /**
-       * careful, atom refers to our local index, for the manager, we need its
-       * index:
-       */
-      auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
-      return this->manager->get_atom_type(original_atom);
-    }
-
-    //! return atom type
     int get_atom_type(const AtomRef_t & atom) const {
       // careful, atom refers to our local index, for the manager, we need its
       // index:
       auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
       return this->manager->get_atom_type(original_atom);
-    }
-
-    //! Returns atom type given an atom tag
-    int & get_atom_type(int atom_id) {
-      return this->manager->get_atom_type(atom_id);
     }
 
     //! Returns a constant atom type given an atom tag
@@ -240,7 +225,7 @@ namespace rascal {
     // if this was wrong, please explain
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer>
-    double & get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+    double get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       return this->distance->operator[](pair);
     }
 

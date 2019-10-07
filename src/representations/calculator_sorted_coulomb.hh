@@ -500,7 +500,7 @@ namespace rascal {
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
-      double & dik{manager->get_distance(neigh_i)};
+      double dik{manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
@@ -515,7 +515,7 @@ namespace rascal {
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
-      double & dik{manager->get_distance(neigh_i)};
+      double dik{manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
