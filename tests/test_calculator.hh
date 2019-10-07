@@ -136,7 +136,7 @@ namespace rascal {
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 10},
+                                 {{"max_radial", 6},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
                                   {"normalize", true}},
@@ -423,7 +423,6 @@ namespace rascal {
 
     ~SimplePeriodicNLCCStrictFixture() = default;
 
-    // TODO(alex) TODO(max) seg faults in the simple cubic structures for SOAP
     const std::vector<std::string> filenames{
         "reference_data/simple_cubic_3.json",
         "reference_data/simple_cubic_8.json",

@@ -48,6 +48,7 @@
 #include <cmath>
 #include <memory>
 #include <exception>
+#include <sstream>
 #include <vector>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
@@ -214,7 +215,7 @@ namespace rascal {
 
       virtual void precompute() = 0;
       // Can't make templated virtual member function... But these functions
-      // are expected. One could use CRTP ;)
+      // are expected
       // virtual Vector_Ref compute_center_contribution() = 0;
       // virtual Matrix_Ref compute_neighbour_contribution() = 0;
       // virtual Matrix_Ref compute_neighbour_derivative() = 0;
@@ -1297,7 +1298,6 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the container
      */
-
     explicit CalculatorSphericalExpansion(const Hypers_t & hyper)
         : CalculatorBase{} {
       this->set_default_prefix("spherical_expansion_");
@@ -1322,13 +1322,6 @@ namespace rascal {
     //! Move assignment operator
     CalculatorSphericalExpansion &
     operator=(CalculatorSphericalExpansion && other) = default;
-
-    //! compute representation. choose the CutoffFunctionType from the hypers
-    void compute();
-
-    //! choose the RadialBasisType and AtomicSmearingType from the hypers
-    template <internal::CutoffFunctionType FcType>
-    void compute_by_radial_contribution();
 
     /**
      * Compute representation for a given structure manager.
@@ -1548,8 +1541,7 @@ namespace rascal {
       expansions_coefficients_gradient.resize();
     }
 
-    /*
-     * TODO(felix,max) use the parity of the spherical harmonics to use half
+    /* @TODO(felix,max) use the parity of the spherical harmonics to use half
      * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
      */
     for (auto center : manager) {
@@ -1581,9 +1573,9 @@ namespace rascal {
         auto dist{manager->get_distance(neigh)};
         auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
-
         auto & coefficients_neigh_gradient =
             expansions_coefficients_gradient[neigh];
+
         this->spherical_harmonics.calc(direction, this->compute_gradients);
         auto && harmonics{spherical_harmonics.get_harmonics()};
         auto && harmonics_gradients{
