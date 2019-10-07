@@ -511,7 +511,7 @@ namespace rascal {
         int n{static_cast<int>(yv.rows())};
         Matrix_t y2 = Matrix_t::Zero(n, yv.cols());
         Matrix_t u = Matrix_t::Zero(n, yv.cols());
-        double sig = 0.;  
+        double sig = 0.;
         Vector_t p = Vector_t::Zero(n);
         y2.row(0) = Vector_t::Zero(yv.cols());
         u.row(0) = Vector_t::Zero(yv.cols());
