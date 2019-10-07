@@ -78,9 +78,9 @@ namespace rascal {
           class Property_t, internal::TargetType Type,
           std::enable_if_t<Type == internal::TargetType::Structure, int> = 0,
           class StructureManagers>
-      inline math::Matrix_t compute(StructureManagers & managers_a,
-                                    StructureManagers & managers_b,
-                                    const std::string & representation_name) {
+      math::Matrix_t compute(StructureManagers & managers_a,
+                             StructureManagers & managers_b,
+                             const std::string & representation_name) {
         math::Matrix_t kernel(managers_a.size(), managers_b.size());
         auto integer_power{math::MakePositiveIntegerPower<double>(this->zeta)};
         size_t ii_A{0};
@@ -119,9 +119,9 @@ namespace rascal {
       template <class Property_t, internal::TargetType Type,
                 std::enable_if_t<Type == internal::TargetType::Atom, int> = 0,
                 class StructureManagers>
-      inline math::Matrix_t compute(const StructureManagers & managers_a,
-                                    const StructureManagers & managers_b,
-                                    const std::string & representation_name) {
+      math::Matrix_t compute(const StructureManagers & managers_a,
+                             const StructureManagers & managers_b,
+                             const std::string & representation_name) {
         size_t n_centersA{0};
         for (const auto & manager_a : managers_a) {
           n_centersA += manager_a->size();
@@ -238,10 +238,9 @@ namespace rascal {
 
     template <class Property_t, internal::TargetType Type,
               class StructureManagers>
-    inline math::Matrix_t
-    compute_helper(const std::string & representation_name,
-                   const StructureManagers & managers_a,
-                   const StructureManagers & managers_b) {
+    math::Matrix_t compute_helper(const std::string & representation_name,
+                                  const StructureManagers & managers_a,
+                                  const StructureManagers & managers_b) {
       using internal::KernelType;
 
       switch (this->kernel_type) {

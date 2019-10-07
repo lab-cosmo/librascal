@@ -93,12 +93,12 @@ namespace rascal {
             hypers.at("smooth_width").at("value").get<double>();
       }
 
-      inline double f_c(double distance) {
+      double f_c(double distance) {
         return math::switching_function_cosine(distance, this->cutoff,
                                                this->smooth_width);
       }
 
-      inline double df_c(double distance) {
+      double df_c(double distance) {
         return math::derivative_switching_funtion_cosine(distance, this->cutoff,
                                                          this->smooth_width);
       }
@@ -151,7 +151,7 @@ namespace rascal {
         this->scale = hypers.at("scale").at("value").get<double>();
       }
 
-      inline double f_c(double distance) {
+      double f_c(double distance) {
         double factor{0.};
         if (this->rate > math::dbl_ftol) {
           factor = this->rate / (this->rate + math::pow(distance / this->scale,
@@ -165,7 +165,7 @@ namespace rascal {
                                                         this->smooth_width);
       }
 
-      inline double df_c(double distance) {
+      double df_c(double distance) {
         double factor{0.};
         if (this->rate < math::dbl_ftol) {
           factor = -this->exponent / distance *

@@ -536,16 +536,16 @@ namespace rascal {
             unitary * eigs_invsqrt.matrix().asDiagonal() * unitary.adjoint();
       }
 
-      inline Matrix_t get_radial_orthonormalization_matrix() const {
+      Matrix_t get_radial_orthonormalization_matrix() const {
         return this->radial_norm_factors.asDiagonal() *
                this->radial_ortho_matrix;
       }
 
-      inline Matrix_Ref get_radial_integral_neighbour() const {
+      Matrix_Ref get_radial_integral_neighbour() const {
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
-      inline Matrix_Ref get_radial_neighbour_derivative() const {
+      Matrix_Ref get_radial_neighbour_derivative() const {
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
@@ -963,7 +963,7 @@ namespace rascal {
         internal::AtomicSmearingType SmearingType, class StructureManager,
         std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
                          int> = 0>
-    inline void compute_loop(StructureManager & managers) {
+    void compute_loop(StructureManager & managers) {
       for (auto & manager : managers) {
         this->compute_impl<FcType, RadialType, SmearingType>(manager);
       }
@@ -976,7 +976,7 @@ namespace rascal {
               std::enable_if_t<
                   not(internal::is_proper_iterator<StructureManager>::value),
                   int> = 0>
-    inline void compute_loop(StructureManager & manager) {
+    void compute_loop(StructureManager & manager) {
       this->compute_impl<FcType, RadialType, SmearingType>(manager);
     }
 
@@ -984,7 +984,7 @@ namespace rascal {
     template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
               internal::AtomicSmearingType SmearingType, class StructureManager>
-    inline void compute_impl(std::shared_ptr<StructureManager> manager);
+    void compute_impl(std::shared_ptr<StructureManager> manager);
 
    protected:
     double interaction_cutoff{};

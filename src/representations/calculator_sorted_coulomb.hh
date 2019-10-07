@@ -215,9 +215,9 @@ namespace rascal {
     void compute(StructureManager & managers);
 
     //! set hypers
-    inline void set_hyperparameters(const Hypers_t & /*hypers*/);
+    void set_hyperparameters(const Hypers_t & /*hypers*/);
 
-    inline void update_central_cutoff(double /*cutoff*/);
+    void update_central_cutoff(double /*cutoff*/);
 
     /**
      * check if size of the calculator is enough for current structure
@@ -248,7 +248,7 @@ namespace rascal {
         internal::CMSortAlgorithm AlgorithmType, class StructureManager,
         std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
                          int> = 0>
-    inline void compute_loop(StructureManager & managers) {
+    void compute_loop(StructureManager & managers) {
       for (auto & manager : managers) {
         this->compute_impl<AlgorithmType>(manager);
       }
@@ -258,14 +258,14 @@ namespace rascal {
               std::enable_if_t<
                   not(internal::is_proper_iterator<StructureManager>::value),
                   int> = 0>
-    inline void compute_loop(StructureManager & manager) {
+    void compute_loop(StructureManager & manager) {
       this->compute_impl<AlgorithmType>(manager);
     }
     /* -------------------- compute-loop-end -------------------- */
 
     //! Implementation of compute representation
     template <internal::CMSortAlgorithm AlgorithmType, class StructureManager>
-    inline void compute_impl(std::shared_ptr<StructureManager> & manager);
+    void compute_impl(std::shared_ptr<StructureManager> & manager);
 
     //! returns the distance matrix for a central atom
     template <class StructureManager>
@@ -302,8 +302,7 @@ namespace rascal {
     }
 
     //! scale cutoff factor depending on distance and decay
-    inline double get_cutoff_factor(double distance, double cutoff,
-                                    double decay) {
+    double get_cutoff_factor(double distance, double cutoff, double decay) {
       if (distance <= cutoff - decay) {
         return 1.;
       } else if (distance > cutoff) {
@@ -317,7 +316,7 @@ namespace rascal {
     }
 
     //! get the size of a feature vector from the hyper parameters
-    inline size_t get_n_feature() { return this->size * (this->size + 1) / 2; }
+    size_t get_n_feature() { return this->size * (this->size + 1) / 2; }
 
     /* -------------------- rep-variables-start -------------------- */
     // list of hyperparameters specific to the coulomb matrix
