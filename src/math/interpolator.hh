@@ -1062,7 +1062,7 @@ namespace rascal {
        * @pre x is in range [x1,x2]
        */
       double interpolate_derivative(double x) {
-        assert(x >= this->x1 && x <= this->x2 "x is not in range [x1,x2]");
+        assert(x >= this->x1 && x <= this->x2);
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate_derivative(
             this->grid, this->evaluated_grid, x, nearest_grid_index_to_x);

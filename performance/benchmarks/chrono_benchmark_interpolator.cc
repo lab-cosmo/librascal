@@ -30,7 +30,6 @@
 #include <chrono>
 
 #include "json_io.hh"
-#include "profile_utility.hh"
 #include "math/interpolator.hh"
 #include "representations/calculator_spherical_expansion.hh"
 

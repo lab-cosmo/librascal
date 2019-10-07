@@ -26,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef BENCHMARKS_BENCHMARKS_HH_
-#define BENCHMARKS_BENCHMARKS_HH_
+#ifndef PERFORMANCE_BENCHMARKS_BENCHMARKS_HH_
+#define PERFORMANCE_BENCHMARKS_BENCHMARKS_HH_
 
 #include <benchmark/benchmark.h>
 #include <functional>
@@ -180,4 +180,4 @@ namespace rascal {
     std::map<std::string, int64_t> state_range_index_to_key;
   };
 }  // namespace rascal
-#endif  // BENCHMARKS_BENCHMARKS_HH_
+#endif  // PERFORMANCE_BENCHMARKS_BENCHMARKS_HH_

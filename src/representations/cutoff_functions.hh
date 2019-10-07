@@ -38,7 +38,6 @@
 
 #include <Eigen/Dense>
 
-
 namespace rascal {
 
   namespace internal {

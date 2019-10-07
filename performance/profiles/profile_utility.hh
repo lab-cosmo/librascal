@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef BENCHMARKS_PROFILE_UTILITY_HH_
-#define BENCHMARKS_PROFILE_UTILITY_HH_
+#ifndef PERFORMANCE_PROFILES_PROFILE_UTILITY_HH_
+#define PERFORMANCE_PROFILES_PROFILE_UTILITY_HH_
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -65,4 +65,4 @@ namespace rascal {
     return (stat(name, &buffer) == 0);
   }
 }  // namespace rascal
-#endif  // BENCHMARKS_PROFILE_UTILITY_HH_
+#endif  // PERFORMANCE_PROFILES_PROFILE_UTILITY_HH_
