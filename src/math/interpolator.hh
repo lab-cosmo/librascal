@@ -830,6 +830,7 @@ namespace rascal {
        * @param grid in the range [x1,x2]
        */
       explicit Interpolator(Vector_t grid) : Interpolator(grid, true) {}
+      virtual ~Interpolator() = default;
 
       int get_degree_of_fineness() { return this->degree_of_fineness; }
 
