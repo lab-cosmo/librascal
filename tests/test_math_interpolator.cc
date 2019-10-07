@@ -239,7 +239,7 @@ namespace rascal {
       // Checks if interpolator satisfies the given error bound. This condition
       // should be always fulfilled.
       error = compute_intp_error<RelativeErrorMethod>(intp, func, ref_points);
-      BOOST_CHECK_LE(error, 2 * Fix::error_bound);
+      BOOST_CHECK_LE(error, Fix::error_bound);
     }
   }
 

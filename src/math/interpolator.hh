@@ -327,7 +327,7 @@ namespace rascal {
       inline double interpolate(const Vector_Ref & grid,
                                 const Vector_Ref & evaluated_grid, double x,
                                 int nearest_grid_index_to_x) const {
-        assert(this->initialized "interpolation method is not initialized");
+        assert(this->initialized);
         return this->raw_interpolate(grid, evaluated_grid,
                                      nearest_grid_index_to_x, x);
       }
@@ -338,7 +338,7 @@ namespace rascal {
                                            const Vector_Ref & evaluated_grid,
                                            double x,
                                            int nearest_grid_index_to_x) const {
-        assert(this->initialized "interpolation method is not initialized");
+        assert(this->initialized);
         return this->raw_interpolate_derivative(grid, evaluated_grid,
                                                 nearest_grid_index_to_x, x);
       }
@@ -489,7 +489,7 @@ namespace rascal {
       inline Vector_t interpolate(const Vector_Ref & grid,
                                   const Matrix_Ref & evaluated_grid, double x,
                                   int nearest_grid_index_to_x) const {
-        assert(this->initialized "interpolation method is not initialized");
+        assert(this->initialized);
         return this->raw_interpolate(grid, evaluated_grid,
                                      nearest_grid_index_to_x, x);
       }
@@ -501,7 +501,7 @@ namespace rascal {
       interpolate_derivative(const Vector_Ref & grid,
                              const Matrix_Ref & evaluated_grid, double x,
                              int nearest_grid_index_to_x) const {
-        assert(this->initialized "interpolation method is not initialized");
+        assert(this->initialized);
         return this->raw_interpolate_derivative(grid, evaluated_grid,
                                                 nearest_grid_index_to_x, x);
       }
@@ -511,8 +511,7 @@ namespace rascal {
         int n{static_cast<int>(yv.rows())};
         Matrix_t y2 = Matrix_t::Zero(n, yv.cols());
         Matrix_t u = Matrix_t::Zero(n, yv.cols());
-        double sig = 0.5;  // wtf this is more accurate than the correct
-                           // value 0.5 TODO(alex)
+        double sig = 0.;  
         Vector_t p = Vector_t::Zero(n);
         y2.row(0) = Vector_t::Zero(yv.cols());
         u.row(0) = Vector_t::Zero(yv.cols());
@@ -741,8 +740,9 @@ namespace rascal {
      public:
       /**
        * @param grid used for searching the index
+       * @param nb_support_points support points of the interpolation method
        */
-      void initialize(const Vector_Ref & grid) {
+      void initialize(const Vector_Ref & grid, size_t nb_support_points) {
         // nb_grid_points/unit
         this->nb_grid_points_per_unit =
             grid.size() / (grid(grid.size() - 1) - grid(0));
@@ -1037,7 +1037,7 @@ namespace rascal {
        * @pre x is in range [x1,x2]
        */
       double interpolate(double x) {
-        assert(x >= this->x1 && x <= this->x2 "x is not in range [x1,x2]");
+        assert(x >= this->x1 && x <= this->x2);
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate(this->grid, this->evaluated_grid,
                                              x, nearest_grid_index_to_x);
@@ -1101,7 +1101,7 @@ namespace rascal {
           this->intp_method.initialize(Vector_Ref(this->grid),
                                        Vector_Ref(this->evaluated_grid));
         }
-        this->search_method.initialize(Vector_Ref(this->grid));
+        this->search_method.initialize(Vector_Ref(this->grid), 2);
       }
 
       /**
@@ -1292,7 +1292,7 @@ namespace rascal {
        */
       inline Vector_t raw_interpolate(double x) {
         // x is outside of range
-        assert(x >= this->x1 && x <= this->x2 "x is not in range [x1,x2]");
+        assert(x >= this->x1 && x <= this->x2);
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate(this->grid, this->evaluated_grid,
                                              x, nearest_grid_index_to_x);
@@ -1319,7 +1319,7 @@ namespace rascal {
        */
       inline Vector_t raw_interpolate_derivative(double x) {
         // x is outside of range
-        assert(x >= this->x1 && x <= this->x2 "x is not in range [x1,x2]");
+        assert(x >= this->x1 && x <= this->x2);
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate_derivative(
             this->grid, this->evaluated_grid, x, nearest_grid_index_to_x);
@@ -1349,7 +1349,7 @@ namespace rascal {
        * @assert x is not in range [x1,x2]
        */
       Matrix_t interpolate_dummy(const double x) const {
-        assert(x >= this->x1 && x <= this->x2 "x is not in range [x1,x2]");
+        assert(x >= this->x1 && x <= this->x2);
         return x * Matrix_t::Ones(this->rows, this->cols);
       }
 
@@ -1414,7 +1414,7 @@ namespace rascal {
           this->intp_method.initialize(Vector_Ref(this->grid),
                                        Matrix_Ref(this->evaluated_grid));
         }
-        this->search_method.initialize(Vector_Ref(this->grid));
+        this->search_method.initialize(Vector_Ref(this->grid), 2);
       }
 
       // f:[x1,x2]->ℝ^{rows,cols}
