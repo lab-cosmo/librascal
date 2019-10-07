@@ -232,7 +232,7 @@ namespace rascal {
     ClusterRefKey & operator=(ClusterRefKey && other) = default;
 
     //! returns the atom tags of the current cluster
-    const inline AtomIndex_t & get_atom_tag_list() const {
+    const AtomIndex_t & get_atom_tag_list() const {
       return this->atom_tag_list;
     }
 
@@ -251,20 +251,20 @@ namespace rascal {
     int get_atom_tag() const { return this->back(); }
 
     //! returns the cluster's index, given a specific layer
-    inline size_t get_cluster_index(const size_t layer) const {
+    size_t get_cluster_index(const size_t layer) const {
       return this->cluster_indices(layer);
     }
 
     //! returns the complete cluster indices (stacking history)
-    inline IndexConstArray get_cluster_indices() const {
+    IndexConstArray get_cluster_indices() const {
       return this->cluster_indices;
     }
 
     //! returns the order of the current cluster
-    constexpr static inline size_t order() { return Order; }
+    constexpr static size_t order() { return Order; }
 
     //! returns the layer of the current cluster
-    constexpr static inline size_t cluster_layer() { return Layer; }
+    constexpr static size_t cluster_layer() { return Layer; }
 
    protected:
     /**

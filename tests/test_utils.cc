@@ -44,8 +44,8 @@ namespace rascal {
     BOOST_CHECK_EQUAL(test, "ClusterRefKey_1ul_2ul");
 
     // test template with class
-    std::string test_simple{internal::type_name<
-        StructureManager<StructureManagerCenters>>()};
+    std::string test_simple{
+        internal::type_name<StructureManager<StructureManagerCenters>>()};
     BOOST_CHECK_EQUAL(test_simple, "StructureManager_StructureManagerCenters");
   }
 

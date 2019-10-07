@@ -176,7 +176,7 @@ namespace rascal {
        * threshold the MBSFs are set to 0 because of the numerical noise
        * arrising below 1e-150.
        */
-      inline void calc(double distance, double fac_a) {
+      void calc(double distance, double fac_a) {
         this->bessel_arg = (2. * fac_a * distance) * this->x_v;
         this->bessel_arg_i = this->bessel_arg.inverse();
         // find the index where bessel_arg is larger than 50

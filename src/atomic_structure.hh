@@ -111,7 +111,7 @@ namespace rascal {
     //! Default constructor
     AtomicStructure() = default;
 
-    inline size_t get_number_of_atoms() const { return positions.cols(); }
+    size_t get_number_of_atoms() const { return positions.cols(); }
 
     Positions_t get_scaled_positions() {
       return this->cell.inverse() * this->positions;
@@ -142,9 +142,9 @@ namespace rascal {
      *
      * A valid atomic structure file is in the ASE json format.
      */
-    inline void set_structure(const PositionsInput_t & positions,
-                              const AtomTypesInput_t & atom_types,
-                              const CellInput_t cell, const PBCInput_t & pbc) {
+    void set_structure(const PositionsInput_t & positions,
+                       const AtomTypesInput_t & atom_types,
+                       const CellInput_t cell, const PBCInput_t & pbc) {
       auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
       this->set_structure(positions, atom_types, cell, pbc, center_atoms_mask);
     }
@@ -154,7 +154,7 @@ namespace rascal {
      * to values different from the default one
      */
     template <typename T>
-    inline void set_atom_property(std::string name, ArrayConstRef_t<T> array) {
+    void set_atom_property(std::string name, ArrayConstRef_t<T> array) {
       if (name == "center_atoms_mask") {
         if (atom_types.size() != array.size()) {
           throw std::runtime_error(R"(Input array does not have the same size
@@ -172,10 +172,10 @@ namespace rascal {
 
     //! method for initializing structure data from raw Eigen types, beware:
     //! copy!
-    inline void set_structure(const PositionsInput_t & positions,
-                              const AtomTypesInput_t & atom_types,
-                              const CellInput_t cell, const PBCInput_t & pbc,
-                              const ArrayB_t & center_atoms_mask) {
+    void set_structure(const PositionsInput_t & positions,
+                       const AtomTypesInput_t & atom_types,
+                       const CellInput_t cell, const PBCInput_t & pbc,
+                       const ArrayB_t & center_atoms_mask) {
       // check data consistency
       auto npos{positions.cols()};
       auto ntypes{atom_types.rows()};
@@ -196,7 +196,7 @@ namespace rascal {
     }
 
     // TODO(markus): add function to read from XYZ files
-    inline void set_structure(const std::string & filename) {
+    void set_structure(const std::string & filename) {
       json j;
       std::ifstream reader(filename);
       if (not reader.is_open()) {
@@ -208,7 +208,7 @@ namespace rascal {
       this->set_structure(j.begin().value());
     }
 
-    inline void set_structure(const json & s) {
+    void set_structure(const json & s) {
       /*
        * ASE json format is nested - here, first entry is actual data
        * structure. If in any case you should have multiple
@@ -243,7 +243,7 @@ namespace rascal {
       }
     }
 
-    inline void set_structure(const AtomicStructure<Dim> & other) {
+    void set_structure(const AtomicStructure<Dim> & other) {
       this->positions = other.positions;
       this->atom_types = other.atom_types;
       this->cell = other.cell;
@@ -251,7 +251,7 @@ namespace rascal {
       this->center_atoms_mask = other.center_atoms_mask;
     }
 
-    inline void set_structure() {}
+    void set_structure() {}
 
     /**
      * Compare if another atomic structure is identical to itself.
@@ -264,18 +264,16 @@ namespace rascal {
      * @param threshold2 tolerance parameter squared for the similarity
      *                    comparison
      */
-    inline bool is_similar(double) const { return true; }
+    bool is_similar(double) const { return true; }
 
-    inline bool is_similar(const json_io::AtomicJsonData &, double) {
-      return false;
-    }
+    bool is_similar(const json_io::AtomicJsonData &, double) { return false; }
 
-    inline bool is_similar(const json &, double) const { return false; }
+    bool is_similar(const json &, double) const { return false; }
 
-    inline bool is_similar(const std::string &, double) const { return false; }
+    bool is_similar(const std::string &, double) const { return false; }
 
-    inline bool is_similar(const AtomicStructure<Dim> & other,
-                           double threshold2) const {
+    bool is_similar(const AtomicStructure<Dim> & other,
+                    double threshold2) const {
       bool is_similar_{true};
       if (this->positions.cols() == other.positions.cols()) {
         if ((this->pbc.array() != other.pbc.array()).any() or
@@ -294,20 +292,19 @@ namespace rascal {
       return is_similar_;
     }
 
-    inline bool is_similar(const PositionsInput_t & positions,
-                           const AtomTypesInput_t & atom_types,
-                           const CellInput_t cell, const PBCInput_t & pbc,
-                           double threshold2) const {
+    bool is_similar(const PositionsInput_t & positions,
+                    const AtomTypesInput_t & atom_types, const CellInput_t cell,
+                    const PBCInput_t & pbc, double threshold2) const {
       auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
       return this->is_similar(positions, atom_types, cell, pbc,
                               center_atoms_mask, threshold2);
     }
 
-    inline bool is_similar(const PositionsInput_t & positions,
-                           const AtomTypesInput_t & atom_types,
-                           const CellInput_t cell, const PBCInput_t & pbc,
-                           const ArrayB_ref & center_atoms_mask,
-                           double threshold2) const {
+    bool is_similar(const PositionsInput_t & positions,
+                    const AtomTypesInput_t & atom_types, const CellInput_t cell,
+                    const PBCInput_t & pbc,
+                    const ArrayB_ref & center_atoms_mask,
+                    double threshold2) const {
       bool is_similar_{true};
       if (this->positions.cols() == positions.cols()) {
         if ((this->pbc.array() != pbc.array()).any() or
