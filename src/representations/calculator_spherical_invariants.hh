@@ -271,15 +271,14 @@ namespace rascal {
         this->compute_gradients = false;
       }
 
-      if (this->spherical_invariants_type_str.compare("PowerSpectrum") == 0) {
+      if (this->spherical_invariants_type_str == "PowerSpectrum") {
         this->spherical_invariants_type =
             SphericalInvariantsType::PowerSpectrum;
         this->precompute_spherical_invariants[enumValue(
             SphericalInvariantsType::PowerSpectrum)] =
             make_spherical_invariants_precompute<
                 SphericalInvariantsType::PowerSpectrum>(hypers);
-      } else if (this->spherical_invariants_type_str.compare(
-                     "RadialSpectrum") == 0) {
+      } else if (this->spherical_invariants_type_str == "RadialSpectrum") {
         this->spherical_invariants_type =
             SphericalInvariantsType::RadialSpectrum;
         this->precompute_spherical_invariants[enumValue(
@@ -289,8 +288,7 @@ namespace rascal {
         if (this->max_angular > 0) {
           throw std::logic_error("max_angular should be 0 with RadialSpectrum");
         }
-      } else if (this->spherical_invariants_type_str.compare("BiSpectrum") ==
-                 0) {
+      } else if (this->spherical_invariants_type_str == "BiSpectrum") {
         this->spherical_invariants_type =
             internal::SphericalInvariantsType::BiSpectrum;
         this->precompute_spherical_invariants[enumValue(

@@ -299,7 +299,7 @@ namespace rascal {
         // define the type of smearing to use
         auto smearing_hypers = hypers.at("gaussian_density").get<json>();
         auto smearing_type = smearing_hypers.at("type").get<std::string>();
-        if (smearing_type.compare("Constant") == 0) {
+        if (smearing_type == "Constant") {
           this->atomic_smearing_type = AtomicSmearingType::Constant;
           this->atomic_smearing =
               make_atomic_smearing<AtomicSmearingType::Constant>(
@@ -644,7 +644,7 @@ namespace rascal {
         // define the type of smearing to use
         auto smearing_hypers = hypers.at("gaussian_density").get<json>();
         auto smearing_type = smearing_hypers.at("type").get<std::string>();
-        if (smearing_type.compare("Constant") == 0) {
+        if (smearing_type == "Constant") {
           this->atomic_smearing_type = AtomicSmearingType::Constant;
           this->atomic_smearing =
               make_atomic_smearing<AtomicSmearingType::Constant>(
@@ -860,14 +860,14 @@ namespace rascal {
       // create the class that will compute the radial terms of the
       // expansion. the atomic smearing is an integral part of the
       // radial contribution
-      if (radial_contribution_type.compare("GTO") == 0) {
+      if (radial_contribution_type == "GTO") {
         auto rc_shared = std::make_shared<
             internal::RadialContribution<RadialBasisType::GTO>>(hypers);
         this->atomic_smearing_type = rc_shared->atomic_smearing_type;
         this->radial_integral = rc_shared;
         this->radial_integral_type = RadialBasisType::GTO;
 
-      } else if (radial_contribution_type.compare("DVR") == 0) {
+      } else if (radial_contribution_type == "DVR") {
         auto rc_shared = std::make_shared<
             internal::RadialContribution<RadialBasisType::DVR>>(hypers);
         this->atomic_smearing_type = rc_shared->atomic_smearing_type;
@@ -884,11 +884,11 @@ namespace rascal {
       auto fc_type = fc_hypers.at("type").get<std::string>();
       this->interaction_cutoff = fc_hypers.at("cutoff").at("value");
       this->cutoff_smooth_width = fc_hypers.at("smooth_width").at("value");
-      if (fc_type.compare("ShiftedCosine") == 0) {
+      if (fc_type == "ShiftedCosine") {
         this->cutoff_function_type = CutoffFunctionType::ShiftedCosine;
         this->cutoff_function =
             make_cutoff_function<CutoffFunctionType::ShiftedCosine>(fc_hypers);
-      } else if (fc_type.compare("RadialScaling") == 0) {
+      } else if (fc_type == "RadialScaling") {
         this->cutoff_function_type = CutoffFunctionType::RadialScaling;
         this->cutoff_function =
             make_cutoff_function<CutoffFunctionType::RadialScaling>(fc_hypers);

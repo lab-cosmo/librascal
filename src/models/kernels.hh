@@ -188,7 +188,7 @@ namespace rascal {
       }
 
       auto kernel_type_str = hypers.at("name").get<std::string>();
-      if (kernel_type_str.compare("Cosine") == 0) {
+      if (kernel_type_str == "Cosine") {
         this->kernel_type = KernelType::Cosine;
         this->kernel_impl = make_kernel_impl<KernelType::Cosine>(hypers);
       } else {
