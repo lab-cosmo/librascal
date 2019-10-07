@@ -233,12 +233,10 @@ namespace rascal {
 
     constexpr bool verbose{true};
 
-    cutoff = 1.0;
-
     if (verbose) {
       std::cout << "HCP test " << cutoff << std::endl;
     }
-    int mult = 2;
+    int mult{3};
 
     for (auto i{1}; i < mult; ++i) {
       double cutoff_tmp = i * cutoff;

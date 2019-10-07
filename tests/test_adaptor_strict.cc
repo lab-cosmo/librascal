@@ -418,7 +418,7 @@ namespace rascal {
      * leads to a difference in number of neighbours. Therefore the strict
      * cutoff is check to ensure the exact same number of neighbours.
      */
-    constexpr bool verbose{false};
+    constexpr bool verbose{true};
 
     if (verbose) {
       std::cout << "HCP test " << cutoff << std::endl;
@@ -426,7 +426,7 @@ namespace rascal {
     int mult = 3;
 
     for (auto i{1}; i < mult; ++i) {
-      auto cutoff_tmp = i * cutoff;
+      double cutoff_tmp = i * cutoff;
 
       std::vector<int> neighbours_per_atom1{};
       std::vector<int> neighbours_per_atom2{};
