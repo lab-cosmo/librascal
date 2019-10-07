@@ -208,24 +208,12 @@ namespace rascal {
 
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer,
-              bool DummyHasDistances = traits::HasDistances>
-    const std::enable_if_t<DummyHasDistances, double> &
-    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-      static_assert(DummyHasDistances == traits::HasDistances,
-                    "SFINAE, do not specify");
-      return this->manager->get_distance(pair);
-    }
-
-    /**
-     * return pair distance
-     */
-    template <size_t Order, size_t Layer,
               bool HasDistances = traits::HasDistances>
-    std::enable_if_t<HasDistances, double &>
+    const std::enable_if_t<HasDistances, double>
     get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       static_assert(HasDistances == traits::HasDistances,
-                    "SFINAE don't touch parameter!");
-      return this->manager.get_distance(pair);
+                    "HasDistances is used for SFINAE, please don't specify it");
+      return this->manager->get_distance(pair);
     }
 
     /**
@@ -236,8 +224,8 @@ namespace rascal {
     std::enable_if_t<HasDistances, Vector_ref>
     get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
       static_assert(HasDistances == traits::HasDistances,
-                    "SFINAE don't touch parameter!");
-      return this->manager.get_direction_vector(pair);
+                    "HasDistances is used for SFINAE, please don't specify it");
+      return this->manager->get_direction_vector(pair);
     }
 
     //! get atom_tag of index-th neighbour of this cluster
@@ -256,16 +244,6 @@ namespace rascal {
     }
 
     //! return atom type
-    int & get_atom_type(const AtomRef_t & atom) {
-      /**
-       * careful, atom refers to our local index, for the manager, we need its
-       * index:
-       */
-      auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
-      return this->manager->get_atom_type(original_atom);
-    }
-
-    //! return atom type
     int get_atom_type(const AtomRef_t & atom) const {
       // careful, atom refers to our local index, for the manager, we need its
       // index:
@@ -274,13 +252,7 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom tag
-    int & get_atom_type(int atom_id) {
-      auto && type{this->manager->get_atom_type(atom_id)};
-      return type;
-    }
-
-    //! Returns a constant atom type given an atom tag
-    int get_atom_type(int & atom_id) const {
+    int get_atom_type(int atom_id) const {
       auto && type{this->manager->get_atom_type(atom_id)};
       return type;
     }

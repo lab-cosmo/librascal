@@ -320,12 +320,6 @@ namespace rascal {
       return this->implementation().get_atom_type(atom_tag);
     }
 
-    //! returns the atom type (convention is atomic number, but nothing is
-    //! imposed apart from being an integer
-    int & atom_type(int atom_tag) {
-      return this->implementation().get_atom_type(atom_tag);
-    }
-
     /**
      * Attach a property to a StructureManager. A given calculated property is
      * only reasonable if connected with a structure. It is also connected with
@@ -794,11 +788,6 @@ namespace rascal {
      * to be arbitrary as long as it is an integer)
      */
     int get_atom_type() const { return this->manager.atom_type(this->index); }
-    /**
-     * return atom type (idea: corresponding atomic number, but is allowed
-     * to be arbitrary as long as it is an integer)
-     */
-    int & get_atom_type() { return this->manager.atom_type(this->index); }
 
    protected:
     //! reference to the underlying manager
@@ -963,12 +952,6 @@ namespace rascal {
      */
     decltype(auto) get_position() {
       return this->get_manager().position(this->get_atom_tag());
-    }
-
-    //! returns the type of the last atom in the cluster
-    int & get_atom_type() {
-      auto && id{this->get_atom_tag()};
-      return this->get_manager().atom_type(id);
     }
 
     //! returns the type of the last atom in the cluster

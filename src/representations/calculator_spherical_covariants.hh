@@ -381,7 +381,7 @@ namespace rascal {
       internal::Sorted<false> is_not_sorted{};
 
       std::vector<internal::SortedKey<Key_t>> pair_list{};
-      auto & center_type{center.get_atom_type()};
+      auto center_type{center.get_atom_type()};
       Key_t pair_type{center_type, center_type};
       // TODO(felix) optimize this loop
       // the species are not sorted by construction so there are sorted

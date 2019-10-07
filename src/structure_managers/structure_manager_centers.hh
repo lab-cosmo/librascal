@@ -199,21 +199,9 @@ namespace rascal {
     Cell_ref get_cell() { return Cell_ref(this->atoms_object.cell); }
 
     //! Returns the type of a given atom, given an AtomRef
-    int & get_atom_type(int atom_tag) {
-      auto && atom_index{this->get_atom_index(atom_tag)};
-      return this->atoms_object.atom_types(atom_index);
-    }
-
-    //! Returns the type of a given atom, given an AtomRef
     int get_atom_type(int atom_tag) const {
       auto && atom_index{this->get_atom_index(atom_tag)};
       return this->atoms_object.atom_types(atom_index);
-    }
-
-    //! Returns an a map with all atom types.
-    AtomTypes_ref get_atom_types() {
-      AtomTypes_ref val(this->atoms_object.atom_types);
-      return val;
     }
 
     //! Returns an a map with all atom types.
