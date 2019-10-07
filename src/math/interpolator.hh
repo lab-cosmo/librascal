@@ -117,7 +117,8 @@ namespace rascal {
        * @param degree_of_fineness determines the number of grid points, has to
        *        be greater than 1.
        */
-      Vector_t compute_grid(double x1, double x2, int degree_of_fineness) {
+      Vector_t compute_grid(double /*x1*/, double /*x2*/,
+                            int /*degree_of_fineness*/) {
         throw std::runtime_error("Function `compute_grid` has not been "
                                  "implemented in UniformGridRational.");
         return Vector_t::Zero(1, 1);
@@ -132,7 +133,8 @@ namespace rascal {
        * @param degree_of_fineness determines the number of grid points, has to
        *        be greater than 1.
        */
-      Vector_t compute_test_grid(double x1, double x2, int degree_of_fineness) {
+      Vector_t compute_test_grid(double /*x1*/, double /*x2*/,
+                                 int /*degree_of_fineness*/) {
         throw std::runtime_error("Function `compute_test_grid` has not been "
                                  "implemented in UniformGridRational.");
         return Vector_t::Zero(1, 1);
@@ -227,8 +229,8 @@ namespace rascal {
        * @param grid the grid for interpolation
        * @param evaluated_grid evaluation of the function f(grid)
        */
-      void initialize(const Vector_Ref & grid,
-                      const Vector_Ref & evaluated_grid) {
+      void initialize(const Vector_Ref & /*grid*/,
+                      const Vector_Ref & /*evaluated_grid*/) {
         throw std::runtime_error(
             "Function `initialize` for functions of the form f:[x1,x2]->ℝ has "
             "not been implemented in InterpolationMethod.");
@@ -242,8 +244,8 @@ namespace rascal {
        * @param evaluated_grid evaluation of the function f(grid) of shape
        *                       (grid_size, n*m)
        */
-      void initialize(const Vector_Ref & grid,
-                      const Matrix_Ref & evaluated_grid) {
+      void initialize(const Vector_Ref & /*grid*/,
+                      const Matrix_Ref & /*evaluated_grid*/) {
         throw std::runtime_error(
             "Function `initialize` for functions of the form "
             "f:[x1,x2]->ℝ^{n,m} has "
@@ -259,9 +261,9 @@ namespace rascal {
        * @param nearest_grid_index_to_x the nearest point to x is always
        * truncated with floor
        */
-      inline double interpolate(const Vector_Ref & grid,
-                                const Vector_Ref & evaluated_grid, double x,
-                                int nearest_grid_index_to_x) {
+      inline double interpolate(const Vector_Ref & /*grid*/,
+                                const Vector_Ref & /*evaluated_grid*/,
+                                double /*x*/, int /*nearest_grid_index_to_x*/) {
         throw std::runtime_error(
             "Function `interpolate` for functions of the form f:[x1,x2]->ℝ has "
             "not been implemented in InterpolationMethod.");
@@ -278,9 +280,9 @@ namespace rascal {
        * @param nearest_grid_index_to_x the nearest point to x is always
        * truncated with floor
        */
-      inline double interpolate(const Vector_Ref & grid,
-                                const Matrix_Ref & evaluated_grid, double x,
-                                int nearest_grid_index_to_x) {
+      inline double interpolate(const Vector_Ref & /*grid*/,
+                                const Matrix_Ref & /*evaluated_grid*/,
+                                double /*x*/, int /*nearest_grid_index_to_x*/) {
         throw std::runtime_error(
             "Function `interpolate` for functions of the form "
             "f:[x1,x2]->ℝ^{n,m} has "
@@ -481,18 +483,25 @@ namespace rascal {
         this->initialized = true;
       }
 
+      /**
+       * @pre interpolation method is initialized
+       */
       inline Vector_t interpolate(const Vector_Ref & grid,
                                   const Matrix_Ref & evaluated_grid, double x,
                                   int nearest_grid_index_to_x) const {
-        assert(this->initialized);
+        assert(this->initialized "interpolation method is not initialized");
         return this->raw_interpolate(grid, evaluated_grid,
                                      nearest_grid_index_to_x, x);
       }
+
+      /**
+       * @pre interpolation method is initialized
+       */
       inline Vector_t
       interpolate_derivative(const Vector_Ref & grid,
                              const Matrix_Ref & evaluated_grid, double x,
                              int nearest_grid_index_to_x) const {
-        assert(this->initialized);
+        assert(this->initialized "interpolation method is not initialized");
         return this->raw_interpolate_derivative(grid, evaluated_grid,
                                                 nearest_grid_index_to_x, x);
       }
@@ -589,9 +598,9 @@ namespace rascal {
        * @param error_bound the error bound to be reached
        */
       template <class Eigen_Ref>
-      static bool is_error_below_bound(const Eigen_Ref & values,
-                                       const Eigen_Ref & references,
-                                       double error_bound) {
+      static bool is_error_below_bound(const Eigen_Ref & /*values*/,
+                                       const Eigen_Ref & /*references*/,
+                                       double /*error_bound*/) {
         throw std::runtime_error("Function `is_error_below_bound` has not been "
                                  "implemented in ErrorMethod.");
         return false;
@@ -791,19 +800,18 @@ namespace rascal {
        * @param x2 end range
        * @param error_bound the minimal error bound fulfilled
        * @param max_grid_points maximal number of grid points for the
-       * interpolating grid until the refinement of the grid stops.
+       *        interpolating grid until the refinement of the grid stops.
        * @param initial_degree_of_fineness starting value for the
-       * `degree_of_fineness` parameter. The `degree_of_fineness` parameter
-       * describes the fineness of the grid for grid rationals with non adaptive
-       * refinement methods. Higher values results in finer grids. It depends on
-       * the specifics of the UniformGridRational how the fineness changes the
-       * number of grid points exactly. The fineness parameter should be at
-       * least 1. Starting with a very low parameter can lead to poor
-       * estimations of the errors, because the fineness of the test grid also
-       * relies on this parameter A good inital fineness value can reduce the
-       * number of steps in the initialization.
-       * @param empty bool parameter to prevent overloading with the public
-       * constructor
+       *        `degree_of_fineness` parameter. The `degree_of_fineness`
+       *        parameter describes the fineness of the grid for grid rationals
+       *        with non adaptive refinement methods. Higher values results in
+       *        finer grids. It depends on the specifics of the
+       *        UniformGridRational how the fineness changes the number of grid
+       *        points exactly. The fineness parameter should be at least 1.
+       *        Starting with a very low parameter can lead to poor estimations
+       *        of the errors, because the fineness of the test grid also relies
+       *        on this parameter A good inital fineness value can reduce the
+       *        number of steps in the initialization.
        *
        * @throw std::logic_error range is illdefined
        * @throw std::logic_error error bound is illdefined
@@ -837,6 +845,10 @@ namespace rascal {
       // virtual Ω interpolate_derivative(double x);
 
      protected:
+      /*
+       * @param empty bool parameter to prevent overloading with the public
+       *        constructor
+       */
       Interpolator(double x1, double x2, double error_bound,
                    int max_grid_points, int initial_degree_of_fineness, bool)
           : x1{x1}, x2{x2}, error_bound{error_bound},
@@ -930,20 +942,21 @@ namespace rascal {
        * @param x2 end range
        * @param error_bound the minimal error bound fulfilled
        * @param max_grid_points maximal number of grid points for the
-       * interpolating grid until the refinement of the grid stops.
+       *        interpolating grid until the refinement of the grid stops.
        * @param initial_degree_of_fineness starting fineness of the grid when
-       * starting the algorithm, the fineness parameter describes the fineness
-       * of the grid for grid rationals with non adaptive refinement methods.
-       * Higher value results in finer grids. It depends on the specifics of the
-       * UniformGridRational how the fineness changes the number of grid points
-       * exactly. For adaptive refinement methods the fineness is ignored. The
-       * fineness parameter should be at least 1. A good fineness value can
-       * reduce the number of steps in the initialization.
+       *        starting the algorithm, the fineness parameter describes the
+       *        fineness of the grid for grid rationals with non adaptive
+       *        refinement methods. Higher value results in finer grids. It
+       *        depends on the specifics of the UniformGridRational how the
+       *        fineness changes the number of grid points exactly. For adaptive
+       *        refinement methods the fineness is ignored. The fineness
+       *        parameter should be at least 1. A good fineness value can reduce
+       *        the number of steps in the initialization.
        * @param clamped_boundary_conditions Parameter referring to the boundary
-       * condition of cubic spline. By default the cubic spline uses the natural
-       * boundary conditions, but if f'(x1) and f'(x2) are known, the clamped
-       * boundary conditions can be turned on, which can increase the accuracy
-       * of the interpolation.
+       *        condition of cubic spline. By default the cubic spline uses the
+       *        natural boundary conditions, but if f'(x1) and f'(x2) are known,
+       *        the clamped boundary conditions can be turned on, which can
+       *        increase the accuracy of the interpolation.
        * @param dfx1 referring to f'(x1)
        * @param dfx2 referring to f'(x2)
        */
@@ -974,14 +987,14 @@ namespace rascal {
        *
        * @param grid a uniform grid in the range [x1,x2] with x1 and x2 as start
        * @param evaluated_grid the grid evaluated by the function referred as
-       * f(grid)
+       *        f(grid)
        * @param clamped_boundary_conditions By default the cubic spline uses the
-       * natural boundary conditions, but if f'(x1) and f'(x2) are known, the
-       * clamped boundary conditions can be turned on, which can increase the
-       * accuracy of the interpolation.
+       *        natural boundary conditions, but if f'(x1) and f'(x2) are known,
+       *        the clamped boundary conditions can be turned on, which can
+       *        increase the accuracy of the interpolation.
        *
        * @throw std::logic_error the grid size and evaluated grid size do not
-       * match in size.
+       *        match in size.
        * @throw std::logic_error the given grid is not uniform.
        *
        */
@@ -1174,22 +1187,23 @@ namespace rascal {
        * @param x2 end range
        * @param error_bound the minimal error bound fulfilled
        * @param max_grid_points maximal number of grid points for the
-       * interpolating grid until the refinement of the grid stops.
+       *        interpolating grid until the refinement of the grid stops.
        * @param initial_degree_of_fineness starting value for the
-       * `degree_of_fineness` parameter. The `degree_of_fineness` parameter
-       * describes the fineness of the grid for grid rationals with non adaptive
-       * refinement methods. Higher values results in finer grids. It depends on
-       * the specifics of the UniformGridRational how the fineness changes the
-       * number of grid points exactly. The fineness parameter should be at
-       * least 1. Starting with a very low parameter can lead to poor
-       * estimations of the errors, because the fineness of the test grid also
-       * relies on this parameter A good inital fineness value can reduce the
-       * number of steps in the initialization.
+       *        `degree_of_fineness` parameter. The `degree_of_fineness`
+       *        parameter describes the fineness of the grid for grid rationals
+       *        with non adaptive refinement methods. Higher values results in
+       *        finer grids. It depends on the specifics of the
+       *        UniformGridRational how the fineness changes the number of grid
+       *        points exactly. The fineness parameter should be at least 1.
+       *        Starting with a very low parameter can lead to poor estimations
+       *        of the errors, because the fineness of the test grid also relies
+       *        on this parameter A good inital fineness value can reduce the
+       *        number of steps in the initialization.
        * @param clamped_boundary_conditions Parameter referring to the boundary
-       * condition of cubic spline. By default the cubic spline uses the natural
-       * boundary conditions, but if f'(x1) and f'(x2) are known, the clamped
-       * boundary conditions can be turned on, which can increase the accuracy
-       * of the interpolation.
+       *        condition of cubic spline. By default the cubic spline uses the
+       *        natural boundary conditions, but if f'(x1) and f'(x2) are known,
+       *        the clamped boundary conditions can be turned on, which can
+       *        increase the accuracy of the interpolation.
        * @param dfx1 referring to f'(x1)
        * @param dfx2 referring to f'(x2)
        */
@@ -1212,9 +1226,9 @@ namespace rascal {
        * @param cols
        * @param rows
        * @param clamped_boundary_conditions By default the cubic spline uses the
-       * natural boundary conditions, but if f'(x1) and f'(x2) are known, the
-       * clamped boundary conditions can be turned on, which can increase the
-       * accuracy of the interpolation.
+       *        natural boundary conditions, but if f'(x1) and f'(x2) are known,
+       *        the clamped boundary conditions can be turned on, which can
+       *        increase the accuracy of the interpolation.
        * @param dfx1 referring to f'(x1)
        * @param dfx2 referring to f'(x2)
        *
