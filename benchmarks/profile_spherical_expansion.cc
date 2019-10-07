@@ -1,5 +1,5 @@
 /**
- * file   spherical_expansion_profile.cc
+ * file   profile_spherical_expansion.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
@@ -134,6 +134,7 @@ int main(int argc, char * argv[]) {
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
 
+  // TODO(max) remove comments or make verbose flag
   // auto expn = representation.get_representation_full();
   // std::cout << "Sample SphericalExpansion elements " << std::endl
   //           << expn(0, 0) << " " << expn(0, 1) << " " << expn(0, 2) << "\n"
@@ -157,6 +158,7 @@ int main(int argc, char * argv[]) {
   std::cout << "Ratio (with gradients / without gradients): "
             << elapsed_grad.count() / elapsed.count() << std::endl;
 
+  // TODO(max) remove comments or make verbose flag
   // auto expn2 = representation_gradients.get_representation_full();
   // std::cout << "Sample SphericalExpansion elements (should be identical) "
   //           << std::endl

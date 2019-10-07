@@ -67,18 +67,20 @@ namespace rascal {
       }
     }
     state.SetComplexityN(fix.nb_iterations);
-    json info = fix.intp->compute_interpolator_information();
+    Vector_t pointwise_grid_error =
+        compute_pointwise_absolute_grid_error(fix.intp);
+    double mean_grid_error{pointwise_grid_error.mean()};
+    double max_grid_error{pointwise_grid_error.maxCoeff()};
+    int grid_size{fix.intp->get_grid_size()};
 
-    // type has to be clared for g++-5
-    state.counters.insert({{"x1", fix.x1},
-                           {"x2", fix.x2},
-                           {"log(error_bound)", fix.log_error_bound},
-                           {"log(mean_grid_error)",
-                            std::log10(info["mean_grid_error"].get<double>())},
-                           {"log(max_grid_error)",
-                            std::log10(info["max_grid_error"].get<double>())},
-                           {"nb_iterations", fix.nb_iterations},
-                           {"grid_size", info["grid_size"].get<int>()}});
+    state.counters.insert(
+        {{"x1", fix.x1},
+         {"x2", fix.x2},
+         {"log(error_bound)", fix.log_error_bound},
+         {"log(mean_grid_error)", std::log10(mean_grid_error)},
+         {"log(max_grid_error)", std::log10(max_grid_error)},
+         {"nb_iterations", fix.nb_iterations},
+         {"grid_size", grid_size}});
   }
 
   template <class Fix>
@@ -104,19 +106,22 @@ namespace rascal {
       }
     }
     state.SetComplexityN(fix.nb_iterations);
-    json info = fix.intp->compute_interpolator_information();
+    Matrix_t pointwise_grid_error =
+        compute_pointwise_absolute_grid_error(fix.intp);
+    double mean_grid_error{pointwise_grid_error.mean()};
+    double max_grid_error{pointwise_grid_error.maxCoeff()};
+    int grid_size{fix.intp->get_grid_size()};
 
-    state.counters.insert({{"nb_iterations", fix.nb_iterations},
-                           {"max_radial", fix.max_radial},
-                           {"max_angular", fix.max_angular},
-                           {"x1", fix.x1},
-                           {"x2", fix.x2},
-                           {"log(error_bound)", fix.log_error_bound},
-                           {"log(mean_grid_error)",
-                            std::log10(info["mean_grid_error"].get<double>())},
-                           {"log(max_grid_error)",
-                            std::log10(info["max_grid_error"].get<double>())},
-                           {"grid_size", info["grid_size"].get<int>()}});
+    state.counters.insert(
+        {{"nb_iterations", fix.nb_iterations},
+         {"max_radial", fix.max_radial},
+         {"max_angular", fix.max_angular},
+         {"x1", fix.x1},
+         {"x2", fix.x2},
+         {"log(error_bound)", fix.log_error_bound},
+         {"log(mean_grid_error)", std::log10(mean_grid_error)},
+         {"log(max_grid_error)", std::log10(max_grid_error)},
+         {"grid_size", grid_size}});
   }
 
   template <class BFixture>

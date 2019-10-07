@@ -69,8 +69,7 @@ namespace rascal {
 
       // Checks if interpolator satisfies the given error bound. This condition
       // should be always fulfilled.
-      error =
-          compute_intp_error<AbsoluteMeanErrorMethod>(intp, func, ref_points);
+      error = compute_intp_error<AbsoluteErrorMethod>(intp, func, ref_points);
       BOOST_CHECK_LE(error, Fix::error_bound);
     }
   }
@@ -88,7 +87,7 @@ namespace rascal {
     auto intp{std::make_shared<typename Fix::Interpolator_t>(
         func, Fix::x1, Fix::x2, Fix::error_bound)};
     double error =
-        compute_intp_error<AbsoluteMeanErrorMethod>(intp, func, ref_points);
+        compute_intp_error<AbsoluteErrorMethod>(intp, func, ref_points);
     BOOST_CHECK_LE(error, Fix::error_bound);
   }
 
@@ -104,7 +103,7 @@ namespace rascal {
     auto intp{std::make_shared<IntpScalarUniformCubicSpline>(
         func, this->x1, this->x2, this->error_bound)};
     double error =
-        compute_intp_error<AbsoluteMeanErrorMethod>(intp, func, ref_points);
+        compute_intp_error<AbsoluteErrorMethod>(intp, func, ref_points);
     BOOST_CHECK_LE(error, this->error_bound);
   }
 
@@ -151,8 +150,7 @@ namespace rascal {
 
         // Checks if interpolator satisfies the given error bound. This
         // condition should be always fulfilled.
-        error =
-            compute_intp_error<AbsoluteMeanErrorMethod>(intp, func, ref_points);
+        error = compute_intp_error<AbsoluteErrorMethod>(intp, func, ref_points);
         BOOST_CHECK_LE(error, Fix::error_bound);
 
         // The following conditions do not necessary have to be fulfilled, but
@@ -164,11 +162,10 @@ namespace rascal {
         // Checks if using the interpolators derivative is at least as accurate
         // as using finite methods with the interpolators function or if they
         // are close. This condition should be always fulfilled.
-        intp_error = compute_intp_derivative_error<AbsoluteMeanErrorMethod>(
+        intp_error = compute_intp_derivative_error<AbsoluteErrorMethod>(
             intp, derivative_func, ref_points);
-        finite_diff_error =
-            compute_intp_finite_diff_error<AbsoluteMeanErrorMethod>(
-                intp, derivative_func, ref_points);
+        finite_diff_error = compute_intp_finite_diff_error<AbsoluteErrorMethod>(
+            intp, derivative_func, ref_points);
         BOOST_CHECK((finite_diff_error - intp_error) >= 0 ||
                     std::abs(finite_diff_error - intp_error) < tol);
         if (verbose) {
@@ -182,15 +179,15 @@ namespace rascal {
         // error bound. A rigorous error bound can be found in
         // https://doi.org/10.1016/0021-9045(82)90041-7 and could be
         // implemented, but this is good enough.
-        error = compute_intp_derivative_error<AbsoluteMeanErrorMethod>(
+        error = compute_intp_derivative_error<AbsoluteErrorMethod>(
             intp, derivative_func, ref_points);
         BOOST_CHECK_LE(error, 6 * Fix::error_bound);
 
         // Check if derivative of the interpolator is as precise as the finite
         // difference method for the points used by the interpolator.
-        intp_error = compute_intp_derivative_error<AbsoluteMeanErrorMethod>(
+        intp_error = compute_intp_derivative_error<AbsoluteErrorMethod>(
             intp, derivative_func, intp->get_grid_ref());
-        finite_diff_error = compute_finite_diff_error<AbsoluteMeanErrorMethod>(
+        finite_diff_error = compute_finite_diff_error<AbsoluteErrorMethod>(
             func, derivative_func, intp->get_grid_ref());
         BOOST_CHECK((finite_diff_error - intp_error) >= 0 ||
                     std::abs(finite_diff_error - intp_error) < tol);
@@ -206,8 +203,7 @@ namespace rascal {
   using IntpScalarUniformCubicSplineRelativeError =
       math::InterpolatorScalarUniformCubicSpline<
           math::RefinementMethod_t::Exponential,
-          math::ErrorMethod<math::ErrorMetric_t::Relative,
-                            math::ErrorNorm_t::Mean>>;
+          math::ErrorMethod<math::ErrorMetric_t::Relative>>;
   using interpolator_relative_error_fixtures = boost::mpl::list<
       InterpolatorFixture<IntpScalarUniformCubicSplineRelativeError>>;
 
@@ -242,22 +238,19 @@ namespace rascal {
 
       // Checks if interpolator satisfies the given error bound. This condition
       // should be always fulfilled.
-      error =
-          compute_intp_error<math::ErrorMethod<math::ErrorMetric_t::Relative,
-                                               math::ErrorNorm_t::Mean>>(
-              intp, func, ref_points);
-      BOOST_CHECK_LE(error, Fix::error_bound);
+      error = compute_intp_error<RelativeErrorMethod>(intp, func, ref_points);
+      BOOST_CHECK_LE(error, 2 * Fix::error_bound);
     }
   }
 
-  using IntpVectorUniformCubicSpline =
+  using IntpMatrixUniformCubicSpline =
       math::InterpolatorMatrixUniformCubicSpline<
           math::RefinementMethod_t::Exponential>;
 
   // This test compares the vectorized interpolator with the scalar
   // interpolators results for the functions map. The results should match
   BOOST_FIXTURE_TEST_CASE(functions_interpolator_vectorized_test,
-                          InterpolatorFixture<IntpVectorUniformCubicSpline>) {
+                          InterpolatorFixture<IntpMatrixUniformCubicSpline>) {
     bool verbose{false};
 
     Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2);
@@ -281,7 +274,7 @@ namespace rascal {
       Matrix_t tmp_mat = vector_func(x1);
       int cols{static_cast<int>(tmp_mat.cols())};
       int rows{static_cast<int>(tmp_mat.rows())};
-      auto intp{std::make_shared<IntpVectorUniformCubicSpline>(
+      auto intp{std::make_shared<IntpMatrixUniformCubicSpline>(
           vector_func, x1, x2, error_bound, cols, rows)};
       if (verbose) {
         std::cout << "Interpolator interpolator fineness: "
@@ -294,14 +287,13 @@ namespace rascal {
 
       // Checks if interpolator satisfies the given error bound. This condition
       // should be always fulfilled.
-      error =
-          compute_intp_error<AbsoluteMeanErrorMethod>(intp, func, ref_points);
+      error = compute_intp_error<AbsoluteErrorMethod>(intp, func, ref_points);
       BOOST_CHECK_LE(error, error_bound);
     }
   }
 
   BOOST_FIXTURE_TEST_CASE(functions_dervative_interpolator_vectorized_test,
-                          InterpolatorFixture<IntpVectorUniformCubicSpline>) {
+                          InterpolatorFixture<IntpMatrixUniformCubicSpline>) {
     bool verbose{false};
 
     Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2);
@@ -327,7 +319,7 @@ namespace rascal {
       Matrix_t tmp_mat = vector_func(x1);
       int cols = tmp_mat.cols();
       int rows = tmp_mat.rows();
-      auto intp{std::make_shared<IntpVectorUniformCubicSpline>(
+      auto intp{std::make_shared<IntpMatrixUniformCubicSpline>(
           vector_func, x1, x2, error_bound, cols, rows)};
       if (verbose) {
         std::cout << "Interpolator interpolator fineness: "
@@ -340,8 +332,7 @@ namespace rascal {
 
       // Checks if interpolator satisfies the given error bound. This condition
       // should be always fulfilled.
-      error =
-          compute_intp_error<AbsoluteMeanErrorMethod>(intp, func, ref_points);
+      error = compute_intp_error<AbsoluteErrorMethod>(intp, func, ref_points);
       BOOST_CHECK_LE(error, error_bound);
 
       // The following conditions do not necessary have to be fulfilled, but an
@@ -353,11 +344,10 @@ namespace rascal {
       // Checks if using the interpolators derivative is at least as accurate as
       // using finite methods with the interpolators function or if they are
       // close. This condition should be always fulfilled.
-      intp_error = compute_intp_derivative_error<AbsoluteMeanErrorMethod>(
+      intp_error = compute_intp_derivative_error<AbsoluteErrorMethod>(
           intp, derivative_func, ref_points);
-      finite_diff_error =
-          compute_intp_finite_diff_error<AbsoluteMeanErrorMethod>(
-              intp, derivative_func, ref_points);
+      finite_diff_error = compute_intp_finite_diff_error<AbsoluteErrorMethod>(
+          intp, derivative_func, ref_points);
       BOOST_CHECK((finite_diff_error - intp_error) >= 0 ||
                   std::abs(finite_diff_error - intp_error) < tol);
       if (verbose) {
@@ -371,15 +361,15 @@ namespace rascal {
       // bound. A rigorous error bound can be found in
       // https://doi.org/10.1016/0021-9045(82)90041-7 and could be implemented,
       // but this is good enough.
-      error = compute_intp_derivative_error<AbsoluteMeanErrorMethod>(
+      error = compute_intp_derivative_error<AbsoluteErrorMethod>(
           intp, derivative_func, ref_points);
       BOOST_CHECK_LE(error, 6 * error_bound);
 
       // Check if derivative of the interpolator is as precise as the finite
       // difference method for the points used by the interpolator.
-      intp_error = compute_intp_derivative_error<AbsoluteMeanErrorMethod>(
+      intp_error = compute_intp_derivative_error<AbsoluteErrorMethod>(
           intp, derivative_func, intp->get_grid_ref());
-      finite_diff_error = compute_finite_diff_error<AbsoluteMeanErrorMethod>(
+      finite_diff_error = compute_finite_diff_error<AbsoluteErrorMethod>(
           func, derivative_func, intp->get_grid_ref());
       BOOST_CHECK((finite_diff_error - intp_error) >= 0 ||
                   std::abs(finite_diff_error - intp_error) < tol);
@@ -396,7 +386,7 @@ namespace rascal {
   // checks if the standard interpolator and vectorized interpolator return the
   // same results and if the vectorized interpolator is fulfills its error bound
   BOOST_FIXTURE_TEST_CASE(radial_contribution_interpolator_vectorized_test,
-                          InterpolatorFixture<IntpVectorUniformCubicSpline>) {
+                          InterpolatorFixture<IntpMatrixUniformCubicSpline>) {
     Vector_t ref_points = Vector_t::LinSpaced(nb_ref_points, x1, x2);
 
     std::function<Matrix_t(double)> func = [&](double x) {
@@ -405,7 +395,7 @@ namespace rascal {
     Matrix_t tmp_mat = func(x1);
     int cols = tmp_mat.cols();
     int rows = tmp_mat.rows();
-    auto intp{std::make_shared<IntpVectorUniformCubicSpline>(
+    auto intp{std::make_shared<IntpMatrixUniformCubicSpline>(
         func, x1, x2, error_bound, cols, rows)};
 
     int matrix_size = max_radial * (max_angular + 1);

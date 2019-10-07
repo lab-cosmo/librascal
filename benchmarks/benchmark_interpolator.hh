@@ -52,12 +52,53 @@ namespace rascal {
   using math::Hyp1f1;
   using math::InterpolatorMatrixUniformCubicSpline;
   using math::InterpolatorScalarUniformCubicSpline;
+  using math::Matrix_Ref;
   using math::Matrix_t;
   using math::RefinementMethod_t;
+  using math::Vector_Ref;
   using math::Vector_t;
 
   // For the random functionalities in the benchmarks
   static unsigned int SEED = 1597463007;  // 0x5f3759df
+
+  /**
+   * Computes the absolute error on the grid per grid point for scalar
+   * interpolator
+   */
+  template <RefinementMethod_t RefinementMethod, class ErrorMethod>
+  Vector_t compute_pointwise_absolute_grid_error(
+      std::shared_ptr<
+          InterpolatorScalarUniformCubicSpline<RefinementMethod, ErrorMethod>> &
+          intp) {
+    Vector_t test_grid{intp->get_test_grid()};
+    Vector_t test_grid_interpolated{intp->interpolate(Vector_Ref(test_grid))};
+    Vector_t test_grid_evaluated{intp->eval(Vector_Ref(test_grid))};
+    Vector_t error_grid{
+        math::ErrorMethod<math::ErrorMetric_t::Absolute>::
+            compute_pointwise_error(Vector_Ref(test_grid_interpolated),
+                                    Vector_Ref(test_grid_evaluated))};
+    return error_grid;
+  }
+
+  /**
+   * Computes the absolute error on the grid per grid point for matrix
+   * interpolator
+   */
+  template <RefinementMethod_t RefinementMethod, class ErrorMethod>
+  Vector_t compute_pointwise_absolute_grid_error(
+      std::shared_ptr<
+          InterpolatorMatrixUniformCubicSpline<RefinementMethod, ErrorMethod>> &
+          intp) {
+    Vector_t test_grid{intp->get_test_grid()};
+    Matrix_t test_grid_interpolated{
+        intp->raw_interpolate(Vector_Ref(test_grid))};
+    Matrix_t test_grid_evaluated{intp->eval(Vector_Ref(test_grid))};
+    Matrix_t error_grid{
+        math::ErrorMethod<math::ErrorMetric_t::Absolute>::
+            compute_pointwise_error(Matrix_Ref(test_grid_interpolated),
+                                    Matrix_Ref(test_grid_evaluated))};
+    return error_grid;
+  }
 
   class BaseInterpolatorDataset {
    public:
@@ -478,14 +519,19 @@ namespace rascal {
       json structure{};
       json adaptors;
       // hyperparameters for the neighbourlist adaptor
-      json ad1{
-          {"name", "AdaptorNeighbourList"},
-          {"initialization_arguments",
-           {{"cutoff", this->cutoff}, {"consider_ghost_neighbours", false}}}};
+
+      json ad1{{"name", "AdaptorNeighbourList"},
+               {"initialization_arguments",
+                {{"cutoff", this->cutoff},
+                 {"consider_ghost_neighbours", false},
+                 {"skin", 0.}}}};
+      json ad1b{{"name", "AdaptorCenterContribution"},
+                {"initialization_arguments", {}}};
       // hyperparameters for the strict adaptor
       json ad2{{"name", "AdaptorStrict"},
                {"initialization_arguments", {{"cutoff", this->cutoff}}}};
       adaptors.emplace_back(ad1);
+      adaptors.emplace_back(ad1b);
       adaptors.emplace_back(ad2);
 
       AtomicStructure<3> atomic_structure{};
@@ -509,7 +555,7 @@ namespace rascal {
                   {"normalize", true},
                   {"compute_gradients", this->compute_gradients}};
 
-      json fc_hypers{{"type", "Cosine"},
+      json fc_hypers{{"type", "ShiftedCosine"},
                      {"cutoff", {{"value", this->cutoff}, {"unit", "AA"}}},
                      {"smooth_width", {{"value", 0.}, {"unit", "AA"}}}};
       json sigma_hypers{{"type", "Constant"},

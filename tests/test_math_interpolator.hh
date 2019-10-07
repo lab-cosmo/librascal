@@ -39,29 +39,19 @@ namespace rascal {
   using Vector_Ref = math::Vector_Ref;
   using Matrix_Ref = math::Matrix_Ref;
 
-  using AbsoluteMeanErrorMethod =
-      math::ErrorMethod<math::ErrorMetric_t::Absolute, math::ErrorNorm_t::Mean>;
-  using RelativeMeanErrorMethod =
-      math::ErrorMethod<math::ErrorMetric_t::Relative, math::ErrorNorm_t::Mean>;
+  using AbsoluteErrorMethod = math::ErrorMethod<math::ErrorMetric_t::Absolute>;
+  using RelativeErrorMethod = math::ErrorMethod<math::ErrorMetric_t::Relative>;
 
   static double convert_to_scalar(const double x) { return x; }
   static double convert_to_scalar(const math::Matrix_t & mat) {
     return mat(0, 0);
   }
 
-  template <class Interpolator>
-  static double intp_ref_mean_error(std::shared_ptr<Interpolator> & intp,
-                                    const math::Vector_Ref & ref_points) {
-    return (intp->interpolate(ref_points) - intp->eval(ref_points))
-        .array()
-        .abs()
-        .mean();
-  }
   // These functions calculate the error between the interpolated function and
   // the interpolation on a set of reference points for different
 
-  template <class ErrorMethod, class Interpolator>
-  static double compute_intp_error(std::shared_ptr<Interpolator> & intp,
+  template <class ErrorMethod, class ScalarInterpolator>
+  static double compute_intp_error(std::shared_ptr<ScalarInterpolator> & intp,
                                    std::function<double(double)> ref_func,
                                    const math::Vector_Ref & ref_points) {
     math::Vector_t intp_vals = math::Vector_t::Zero(ref_points.size());
@@ -74,9 +64,9 @@ namespace rascal {
                                              Vector_Ref(intp_refs));
   }
 
-  template <class ErrorMethod, class Interpolator>
+  template <class ErrorMethod, class ScalarInterpolator>
   static double
-  compute_intp_derivative_error(std::shared_ptr<Interpolator> & intp,
+  compute_intp_derivative_error(std::shared_ptr<ScalarInterpolator> & intp,
                                 std::function<double(double)> derivative_func,
                                 const math::Vector_Ref & ref_points) {
     math::Vector_t intp_vals = math::Vector_t::Zero(ref_points.size());
@@ -90,9 +80,9 @@ namespace rascal {
                                              Vector_Ref(intp_refs));
   }
 
-  template <class ErrorMethod, class Interpolator>
+  template <class ErrorMethod, class ScalarInterpolator>
   static double
-  compute_intp_finite_diff_error(std::shared_ptr<Interpolator> & intp,
+  compute_intp_finite_diff_error(std::shared_ptr<ScalarInterpolator> & intp,
                                  std::function<double(double)> derivative_func,
                                  const math::Vector_Ref & ref_points) {
     Vector_t intp_refs = Vector_t::Zero(ref_points.size() - 1);

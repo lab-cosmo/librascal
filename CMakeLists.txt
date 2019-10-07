@@ -91,7 +91,6 @@ SET(TYPE_ARCHITECTURE "native" CACHE STRING "Choose the type of architecture to 
 
 message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
-# TODO(alex) turned on for testing on circleci, but when ests are adapted it should be changed to default OFF
 set(BUILD_BENCHMARK "OFF" CACHE BOOL
   "If on, the google benchmark will be built.")
 
@@ -387,3 +386,10 @@ if(AUTOPEP8_FOUND)
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts" "")
 endif()
+
+# Runs all benchmarks in succession, add new benchmarks with a new COMMAND
+add_custom_target(
+    benchmarks
+    COMMAND ./benchmark_interpolator --benchmark_counters_tabular=true 
+    COMMAND ./chrono_benchmark_interpolator
+  )
