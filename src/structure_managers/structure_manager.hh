@@ -721,25 +721,15 @@ namespace rascal {
       using IndexConstArray_t = typename ParentClass::IndexConstArray;
       using IndexArray_t = typename ParentClass::IndexArray;
 
-      template <typename ClusterIndicesType_ = ClusterIndicesType,
-                typename std::enable_if_t<
-                    std::is_same<ClusterIndicesType_, IndexConstArray_t>::value,
-                    int> = 0>
       static IndexConstArray_t & cast(IndexConstArray_t & cluster_indices) {
         return cluster_indices;
       }
 
-      template <
-          typename ClusterIndicesType_ = ClusterIndicesType,
-          typename std::enable_if_t<
-              std::is_same<ClusterIndicesType_, IndexArray_t>::value, int> = 0>
       static IndexConstArray_t cast(const IndexArray_t & cluster_indices) {
         return IndexConstArray_t(cluster_indices.data());
       }
-      template <typename ClusterIndicesType_ = ClusterIndicesType,
-                typename std::enable_if_t<
-                    std::is_same<ClusterIndicesType_, size_t>::value, int> = 0>
-      inline IndexConstArray_t cast(const size_t & cluster_index) {
+
+      static IndexConstArray_t cast(const size_t & cluster_index) {
         return IndexConstArray_t(&cluster_index);
       }
     };
