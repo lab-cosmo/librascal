@@ -231,15 +231,17 @@ namespace rascal {
      * cutoff is checked to ensure the exact same number of neighbours.
      */
 
-    constexpr bool verbose{false};
+    constexpr bool verbose{true};
+
+    cutoff = 1.0;
 
     if (verbose) {
       std::cout << "HCP test " << cutoff << std::endl;
     }
-    int mult = 3;
+    int mult = 2;
 
     for (auto i{1}; i < mult; ++i) {
-      auto cutoff_tmp = i * cutoff;
+      double cutoff_tmp = i * cutoff;
 
       std::vector<int> neighbours_per_atom1{};
       std::vector<int> neighbours_per_atom2{};
@@ -260,35 +262,38 @@ namespace rascal {
       pair_manager2->update();
 
       if (verbose) {
-        std::cout << "Manager 1" << std::endl;
+        std::cout << "--- Manager 1" << std::endl;
       }
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
         for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "1 pair " << atom.back() << " " << pair.back()
-                      << std::endl;
-          }
           double dist = {(atom.get_position() - pair.get_position()).norm()};
+
           if (dist < cutoff_tmp) {
             neighbours_per_atom1.back()++;
+            if (verbose) {
+              std::cout << "1 pair " << atom.back() << " " << pair.back()
+                        << std::endl;
+              std::cout << "Manager1 dist " << dist << std::endl;
+            }
           }
         }
       }
 
       if (verbose) {
-        std::cout << "Manager 2" << std::endl;
+        std::cout << "--- Manager 2" << std::endl;
       }
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
         for (auto pair : atom) {
-          if (verbose) {
-            std::cout << "2 pair " << atom.back() << " " << pair.back()
-                      << std::endl;
-          }
           double dist = {(atom.get_position() - pair.get_position()).norm()};
           if (dist < cutoff_tmp) {
             neighbours_per_atom2.back()++;
+            if (verbose) {
+              std::cout << "2 pair " << atom.back() << " " << pair.back()
+                        << std::endl;
+              std::cout << "Manager2 dist " << dist << std::endl;
+            }
           }
         }
       }

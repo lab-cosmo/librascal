@@ -127,7 +127,7 @@ namespace rascal {
         : ManagerFixtureTwo<StructureManagerCenters>{}, pbc{{true, true, true}},
           cell_1(3, 3), cell_2(3, 3), positions_1(3, 2), positions_2(3, 2),
           atom_types(2), cutoff{0.4} {
-      /*
+      /**
        * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
        * unit cells: basal and prismatic 1. The neighbourlist is built with the
        * same cutoff. The test checks, if all atoms have the same number of
@@ -136,21 +136,34 @@ namespace rascal {
       auto a{1.};
       auto c{std::sqrt(8. / 3.)};
       // clang-format off
+      // basal cell
       cell_1 << a,                -0.5 * a, 0.,
                 0., std::sqrt(3.) / 2. * a, 0.,
                 0., 0.,                      c;
 
-      cell_2 << a,  0.,                0.5 * a,
-                0.,  c,                     0.,
-                0., 0., std::sqrt(3.) / 2. * a;
+
+      //   // prism cell?
+      cell_2 << a,  0.,                0.5 * a ,
+                0., c ,                     0. ,
+                0., 0., std::sqrt(3.) / 2. * a ;
       // clang-format on
-      auto p_1 = 2. / 3. * cell_1.col(0) + 1. / 3. * cell_1.col(1) +
-                 1. / 2. * cell_1.col(2);
+      auto h{std::sqrt(3.) / 2. * a};
+      auto r{std::sqrt(3.) / 6. * a};
+
+      Eigen::Vector3d p_1(0, h - r, c / 2);
+      // auto p_1 = 1. / 3. * cell_1.col(1) + 1. / 2. * cell_1.col(2);
+
+      std::cout << "p1 " << p_1[0] << " " << p_1[1] << " " << p_1[2]
+                << std::endl;
 
       positions_1 << 0.0, p_1[0], 0.0, p_1[1], 0.0, p_1[2];
 
-      auto p_2 = 2. / 3. * cell_2.col(0) + 1. / 2. * cell_2.col(1) +
-                 2. / 3. * cell_2.col(2);
+      Eigen::Vector3d p_2(a/2, c/2, r);
+      // auto p_2 = 1. / 2. * cell_2.col(0) + 1. / 2. * cell_2.col(1) +
+      //            0.0446582 * cell_2.col(2);
+
+      std::cout << "p2 " << p_2[0] << " " << p_2[1] << " " << p_2[2]
+                << std::endl;
 
       positions_2 << 0.0, p_2[0], 0.0, p_2[1], 0.0, p_2[2];
 
@@ -161,7 +174,7 @@ namespace rascal {
       manager_1->update(positions_1, atom_types, cell_1, PBC_t{pbc.data()});
 
       manager_2->update(positions_2, atom_types, cell_2, PBC_t{pbc.data()});
-    }
+    }  // namespace rascal
 
     ~ManagerFixtureTwoHcp() {}
 
@@ -176,7 +189,7 @@ namespace rascal {
     double cutoff;
 
     const int natoms{2};
-  };
+  };  // namespace rascal
 
   /* ---------------------------------------------------------------------- */
   /**
