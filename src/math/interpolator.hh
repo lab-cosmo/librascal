@@ -120,7 +120,7 @@ namespace rascal {
       Vector_t compute_grid(double x1, double x2, int degree_of_fineness) {
         throw std::runtime_error("Function `compute_grid` has not been "
                                  "implemented in UniformGridRational.");
-        return 0;
+        return Vector_t::Zero(1, 1);
       }
 
       /**
@@ -135,7 +135,7 @@ namespace rascal {
       Vector_t compute_test_grid(double x1, double x2, int degree_of_fineness) {
         throw std::runtime_error("Function `compute_test_grid` has not been "
                                  "implemented in UniformGridRational.");
-        return 0;
+        return Vector_t::Zero(1, 1);
       }
     };
 
@@ -319,19 +319,24 @@ namespace rascal {
         this->compute_second_derivative(evaluated_grid, dfx1, dfx2);
         this->initialized = true;
       }
-
+      /**
+       * @pre interpolation method is initialized
+       */
       inline double interpolate(const Vector_Ref & grid,
                                 const Vector_Ref & evaluated_grid, double x,
                                 int nearest_grid_index_to_x) const {
-        assert(this->initialized);
+        assert(this->initialized "interpolation method is not initialized");
         return this->raw_interpolate(grid, evaluated_grid,
                                      nearest_grid_index_to_x, x);
       }
+      /**
+       * @pre interpolation method is initialized
+       */
       inline double interpolate_derivative(const Vector_Ref & grid,
                                            const Vector_Ref & evaluated_grid,
                                            double x,
                                            int nearest_grid_index_to_x) const {
-        assert(this->initialized);
+        assert(this->initialized "interpolation method is not initialized");
         return this->raw_interpolate_derivative(grid, evaluated_grid,
                                                 nearest_grid_index_to_x, x);
       }
@@ -589,7 +594,7 @@ namespace rascal {
                                        double error_bound) {
         throw std::runtime_error("Function `is_error_below_bound` has not been "
                                  "implemented in ErrorMethod.");
-        return 0;
+        return false;
       }
     };
 
@@ -1015,9 +1020,11 @@ namespace rascal {
        *
        * @param x point to be interpolated within range [x1,x2]
        * @return interpolation of point x, which is intp(x)
+       *
+       * @pre x is in range [x1,x2]
        */
       double interpolate(double x) {
-        assert(x >= this->x1 && x <= this->x2);
+        assert(x >= this->x1 && x <= this->x2 "x is not in range [x1,x2]");
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate(this->grid, this->evaluated_grid,
                                              x, nearest_grid_index_to_x);
@@ -1038,10 +1045,10 @@ namespace rascal {
        * @param x point to be interpolated within range [x1,x2]
        * @return interpolation of point x, estimation of f'(x)
        *
-       * @assert parameter is not in range
+       * @pre x is in range [x1,x2]
        */
       double interpolate_derivative(double x) {
-        assert(x >= this->x1 && x <= this->x2);
+        assert(x >= this->x1 && x <= this->x2 "x is not in range [x1,x2]");
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate_derivative(
             this->grid, this->evaluated_grid, x, nearest_grid_index_to_x);
@@ -1242,7 +1249,7 @@ namespace rascal {
        * @param x point to be interpolated within range [x1,x2]
        * @return interpolation of point x, which is intp(x)
        *
-       * @assert point is not in range [x1,x2]
+       * @pre x is in range [x1,x2]
        */
       Matrix_t interpolate(double x) {
         return Eigen::Map<Matrix_t>(this->raw_interpolate(x).data(), this->rows,
@@ -1256,7 +1263,7 @@ namespace rascal {
        * @param x point to be interpolated within range [x1,x2]
        * @return interpolation of point x, estimation of f'(x)
        *
-       * @assert point is not in range [x1,x2]
+       * @pre x is in range [x1,x2]
        */
       Matrix_t interpolate_derivative(double x) {
         return Eigen::Map<Matrix_t>(this->raw_interpolate_derivative(x).data(),
@@ -1266,10 +1273,12 @@ namespace rascal {
       /**
        * Interpolates the point x
        * @return intp(x) in the shape (rows*cols)
+       *
+       * @pre x is in range [x1,x2]
        */
       inline Vector_t raw_interpolate(double x) {
         // x is outside of range
-        assert(x >= this->x1 && x <= this->x2);
+        assert(x >= this->x1 && x <= this->x2 "x is not in range [x1,x2]");
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate(this->grid, this->evaluated_grid,
                                              x, nearest_grid_index_to_x);
@@ -1291,10 +1300,12 @@ namespace rascal {
       /**
        * Interpolates the derivative of point x
        * @return intp(x) in the shape (rows*cols)
+       *
+       * @pre x is in range [x1,x2]
        */
       inline Vector_t raw_interpolate_derivative(double x) {
         // x is outside of range
-        assert(x >= this->x1 && x <= this->x2);
+        assert(x >= this->x1 && x <= this->x2 "x is not in range [x1,x2]");
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate_derivative(
             this->grid, this->evaluated_grid, x, nearest_grid_index_to_x);
@@ -1321,10 +1332,10 @@ namespace rascal {
        * @param x point to be interpolated within range [x1,x2]
        * @return interpolation of point x, estimating f(x)
        *
-       * @assert  point is not in range [x1,x2]
+       * @assert x is not in range [x1,x2]
        */
       Matrix_t interpolate_dummy(const double x) const {
-        assert(x >= this->x1 && x <= this->x2);
+        assert(x >= this->x1 && x <= this->x2 "x is not in range [x1,x2]");
         return x * Matrix_t::Ones(this->rows, this->cols);
       }
 
