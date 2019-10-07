@@ -748,6 +748,7 @@ namespace rascal {
             grid.size() / (grid(grid.size() - 1) - grid(0));
         this->x1 = grid(0);
         this->grid_size = grid.size();
+        this->nb_support_points = nb_support_points;
         this->search_size = this->grid_size - this->nb_support_points;
       }
 
