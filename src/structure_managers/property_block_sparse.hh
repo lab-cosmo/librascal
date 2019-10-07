@@ -308,12 +308,12 @@ namespace rascal {
       //! Returns the number of elements with key that compares equivalent to
       //! the specified argument, which is either 1 or 0 since this container
       //! does not allow duplicates.
-      decltype(auto) count(const key_type & key) {
+      size_t count(const key_type & key) {
         SortedKey_t skey{key};
         return this->count(skey);
       }
 
-      decltype(auto) count(const SortedKey_t & skey) {
+      size_t count(const SortedKey_t & skey) {
         return this->map.count(skey.get_key());
       }
 
@@ -574,7 +574,7 @@ namespace rascal {
     /* -------------------------------------------------------------------- */
     //! Property accessor by cluster ref
     template <size_t CallerLayer>
-    decltype(auto) operator[](const ClusterRefKey<Order, CallerLayer> & id) {
+    InputData_t & operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
@@ -588,7 +588,7 @@ namespace rascal {
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
               std::enable_if_t<(Order_ == 1) and (CallerOrder == 2),  // NOLINT
                                int> = 0>                              // NOLINT
-    decltype(auto)
+    InputData_t &
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](this->get_manager().get_atom_index(
           id.get_internal_neighbour_atom_tag()));
@@ -598,8 +598,8 @@ namespace rascal {
     InputData_t & operator[](size_t index) { return this->values[index]; }
 
     template <size_t CallerLayer>
-    decltype(auto) operator()(const ClusterRefKey<Order, CallerLayer> & id,
-                              const Key_t & key) {
+    DenseRef_t operator()(const ClusterRefKey<Order, CallerLayer> & id,
+                          const Key_t & key) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
@@ -707,7 +707,7 @@ namespace rascal {
     size_t get_nb_item() const { return this->size(); }
 
     template <size_t CallerLayer>
-    decltype(auto)
+    std::vector<Key_t>
     get_keys(const ClusterRefKey<Order, CallerLayer> & id) const {
       // static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
       static_assert(CallerLayer >= PropertyLayer,

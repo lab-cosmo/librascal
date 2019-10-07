@@ -29,8 +29,8 @@
 
 namespace rascal {
 
-  static decltype(auto) add_kernel(py::module & mod,
-                                   py::module & /*m_internal*/) {
+  static py::class_<Kernel> add_kernel(py::module & mod,
+                                       py::module & /*m_internal*/) {
     py::class_<Kernel> kernel(mod, "Kernel");
     // use custom constructor to pass json formated string as initializer
     // an alternative would be to convert python dict to json internally

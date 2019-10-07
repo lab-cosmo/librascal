@@ -144,7 +144,7 @@ namespace rascal {
     //! Overload to build the tuple
     template <typename... PropertyTypes, typename Manager>
     struct ClusterIndexConstructor<std::tuple<PropertyTypes...>, Manager> {
-      static decltype(auto) make(Manager & manager) {
+      static std::tuple<PropertyTypes...> make(Manager & manager) {
         return std::tuple<PropertyTypes...>(
             std::move(PropertyTypes(manager))...);
       }
@@ -480,7 +480,7 @@ namespace rascal {
     }
 
     //! Get the full type of the structure manager
-    static decltype(auto) get_name() {
+    static std::string get_name() {
       return internal::type_name<ManagerImplementation>();
     }
 
@@ -644,14 +644,16 @@ namespace rascal {
     //! helper function that allows to append extra elements to an array It
     //! returns the given array, plus one element
     template <typename T, size_t Size, int... Indices>
-    decltype(auto) append_array_helper(const std::array<T, Size> & arr, T && t,
-                                       std::integer_sequence<int, Indices...>) {
+    std::array<T, Size + 1>
+    append_array_helper(const std::array<T, Size> & arr, T && t,
+                        std::integer_sequence<int, Indices...>) {
       return std::array<T, Size + 1>{arr[Indices]..., std::forward<T>(t)};
     }
 
     //! template function allows to add an element to an array
     template <typename T, size_t Size>
-    decltype(auto) append_array(const std::array<T, Size> & arr, T && t) {
+    std::array<T, Size + 1> append_array(const std::array<T, Size> & arr,
+                                         T && t) {
       return append_array_helper(arr, std::forward<T>(t),
                                  std::make_integer_sequence<int, Size>{});
     }
@@ -950,7 +952,7 @@ namespace rascal {
      * cluster order==1 it is the atom position, when cluster order==2 it is
      * the neighbour position, etc.
      */
-    decltype(auto) get_position() {
+    auto get_position() {
       return this->get_manager().position(this->get_atom_tag());
     }
 

@@ -320,7 +320,8 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     //! get the cell index for a position
     template <class Vector_t>
-    decltype(auto) get_box_index(const Vector_t & position, double rc) {
+    std::array<int, Vector_t::SizeAtCompileTime>
+    get_box_index(const Vector_t & position, double rc) {
       auto constexpr dimension{Vector_t::SizeAtCompileTime};
 
       std::array<int, dimension> nidx{};

@@ -193,7 +193,7 @@ namespace rascal {
   }  // namespace internal
 
   template <internal::SphericalInvariantsType Type, class Hypers>
-  decltype(auto) make_spherical_invariants_precompute(const Hypers & hypers) {
+  auto make_spherical_invariants_precompute(const Hypers & hypers) {
     return std::static_pointer_cast<
         internal::SphericalInvariantsPrecomputationBase>(
         std::make_shared<internal::SphericalInvariantsPrecomputation<Type>>(
@@ -201,7 +201,7 @@ namespace rascal {
   }
 
   template <internal::SphericalInvariantsType Type>
-  decltype(auto) downcast_spherical_invariants_precompute(
+  auto downcast_spherical_invariants_precompute(
       const std::shared_ptr<internal::SphericalInvariantsPrecomputationBase> &
           spherical_invariants_precompute) {
     return std::static_pointer_cast<

@@ -155,13 +155,14 @@ namespace rascal {
   }  // namespace internal
 
   template <internal::KernelType Type, class Hypers>
-  decltype(auto) make_kernel_impl(const Hypers & hypers) {
+  std::shared_ptr<internal::KernelImplBase>
+  make_kernel_impl(const Hypers & hypers) {
     return std::static_pointer_cast<internal::KernelImplBase>(
         std::make_shared<internal::KernelImpl<Type>>(hypers));
   }
 
   template <internal::KernelType Type>
-  decltype(auto) downcast_kernel_impl(
+  std::shared_ptr<internal::KernelImpl<Type>> downcast_kernel_impl(
       std::shared_ptr<internal::KernelImplBase> & kernel_impl) {
     return std::static_pointer_cast<internal::KernelImpl<Type>>(kernel_impl);
   }

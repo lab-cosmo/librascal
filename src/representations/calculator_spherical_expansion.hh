@@ -155,14 +155,14 @@ namespace rascal {
 
     //! Utility to make shared pointer and cast to base class
     template <AtomicSmearingType Type, class Hypers>
-    decltype(auto) make_atomic_smearing(const Hypers & sigma_hypers) {
+    auto make_atomic_smearing(const Hypers & sigma_hypers) {
       return std::static_pointer_cast<AtomicSmearingSpecificationBase>(
           std::make_shared<AtomicSmearingSpecification<Type>>(sigma_hypers));
     }
 
     //! Utility to cast base to child class
     template <AtomicSmearingType Type>
-    decltype(auto) downcast_atomic_smearing(
+    auto downcast_atomic_smearing(
         const std::shared_ptr<AtomicSmearingSpecificationBase> &
             atomic_smearing) {
       return std::static_pointer_cast<AtomicSmearingSpecification<Type>>(
@@ -770,13 +770,13 @@ namespace rascal {
   }  // namespace internal
 
   template <internal::RadialBasisType Type, class Hypers>
-  decltype(auto) make_radial_integral(const Hypers & basis_hypers) {
+  auto make_radial_integral(const Hypers & basis_hypers) {
     return std::static_pointer_cast<internal::RadialContributionBase>(
         std::make_shared<internal::RadialContribution<Type>>(basis_hypers));
   }
 
   template <internal::RadialBasisType Type>
-  decltype(auto) downcast_radial_integral(
+  auto downcast_radial_integral(
       const std::shared_ptr<internal::RadialContributionBase> &
           radial_integral) {
     return std::static_pointer_cast<internal::RadialContribution<Type>>(
