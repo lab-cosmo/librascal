@@ -126,7 +126,7 @@ namespace rascal {
     ManagerFixtureTwoHcp()
         : ManagerFixtureTwo<StructureManagerCenters>{}, pbc{{true, true, true}},
           cell_1(3, 3), cell_2(3, 3), positions_1(3, 2), positions_2(3, 2),
-          atom_types(2), cutoff{0.6} {
+          atom_types(2), cutoff{0.4} {
       /*
        * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
        * unit cells: basal and prismatic 1. The neighbourlist is built with the
@@ -479,25 +479,27 @@ namespace rascal {
     ManagerFixtureSkewDeltaRcut()
         : ManagerFixture<StructureManagerCenters>{}, pbc{{true, true, true}},
           cell(3, 3), positions(12, 3),
-          atom_types(12), cutoff{0.10958486630316071}, natoms{12} {
-      cell << 1.0, 0.0, 0.0, 0.9659258262890683, 0.25881904510252074, 0.0,
-          0.9659258262890683, 0.12716654751512468, 0.22542397232961758;
+          atom_types(12), cutoff{0.997}, natoms{12} {
+      cell << 10.0, 0.0, 0.0, 9.396926207859085, 3.420201433256687, 0.0,
+          9.396926207859085, 1.6569316261720377, 2.992048701181514;
+
       cell.transposeInPlace();
       // clang-format off
       positions <<  0.00100000, 0.00000000, 0.00000000,
-                    0.99900000, 0.00000000, 0.00000000,
-                    1.00000000, 0.00100000, 0.00000000,
-                    0.96592583, 0.25781905, 0.00000000,
-                    1.96592583, 0.25881905, 0.00100000,
-                    0.96592583, 0.12716655, 0.22442397,
-                    0.10958487, 0.00000000, 0.00000000,
-                    0.89041513, 0.00000000, 0.00000000,
-                    1.00000000, 0.10958487, 0.00000000,
-                    0.96592583, 0.14923418, 0.00000000,
-                    1.96592583, 0.25881905, 0.10958487,
-                    0.96592583, 0.12716655, 0.11583911;
-      positions.transposeInPlace();
+                    9.99900000, 0.00000000, 0.00000000,
+                   10.00000000, 0.00100000, 0.00000000,
+                    9.39692621, 3.41920143, 0.00000000,
+                   19.39692621, 3.42020143, 0.00100000,
+                    9.39692621, 1.65693163, 2.99104870,
+                    0.49800000, 0.00000000, 0.00000000,
+                    9.50200000, 0.00000000, 0.00000000,
+                   10.00000000, 0.49800000, 0.00000000,
+                    9.39692621, 2.92220143, 0.00000000,
+                   19.39692621, 3.42020143, 0.49800000,
+                    9.39692621, 1.65693163, 2.49404870;
       // clang-format on
+      positions.transposeInPlace();
+
       atom_types << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
 
       using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
