@@ -33,8 +33,8 @@ namespace rascal {
   using PyCalculator = py::class_<Calculator, CalculatorBase>;
 
   template <typename Calculator>
-  decltype(auto) add_representation_calculator(py::module & mod,
-                                               py::module & /*m_unused*/) {
+  auto add_representation_calculator(py::module & mod,
+                                     py::module & /*m_unused*/) {
     std::string representation_name =
         internal::GetBindingTypeName<Calculator>();
 

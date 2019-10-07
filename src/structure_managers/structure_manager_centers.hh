@@ -255,8 +255,7 @@ namespace rascal {
     }
 
     template <size_t Order, size_t Layer>
-    decltype(auto)
-    get_atom_index(const ClusterRefKey<Order, Layer> & cluster) const {
+    size_t get_atom_index(const ClusterRefKey<Order, Layer> & cluster) const {
       return this->get_atom_index(cluster.get_atom_tag());
     }
 

@@ -198,13 +198,13 @@ namespace rascal {
   }  // namespace internal
 
   template <internal::CutoffFunctionType Type, class Hypers>
-  decltype(auto) make_cutoff_function(const Hypers & fc_hypers) {
+  auto make_cutoff_function(const Hypers & fc_hypers) {
     return std::static_pointer_cast<internal::CutoffFunctionBase>(
         std::make_shared<internal::CutoffFunction<Type>>(fc_hypers));
   }
 
   template <internal::CutoffFunctionType Type>
-  decltype(auto) downcast_cutoff_function(
+  auto downcast_cutoff_function(
       std::shared_ptr<internal::CutoffFunctionBase> & cutoff_function) {
     return std::static_pointer_cast<internal::CutoffFunction<Type>>(
         cutoff_function);

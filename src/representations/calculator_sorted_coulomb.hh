@@ -85,7 +85,8 @@ namespace rascal {
        * @param distance_mat distance matrix between all the atoms in the
        *                      neighbourhood
        */
-      static decltype(auto) get_coulomb_matrix_sorting_order(
+      static std::vector<std::pair<size_t, distiter>>
+      get_coulomb_matrix_sorting_order(
           const Eigen::Ref<const Eigen::MatrixXd> & distance_mat,
           const Eigen::Ref<const Eigen::MatrixXd> &) {
         // initialize the distances to be sorted. the center is always first
@@ -121,7 +122,8 @@ namespace rascal {
        * @param coulomb_mat coulomb matris between all the atoms in the
        *                      neighbourhood
        */
-      static decltype(auto) get_coulomb_matrix_sorting_order(
+      static std::vector<std::pair<size_t, distiter>>
+      get_coulomb_matrix_sorting_order(
           const Eigen::Ref<const Eigen::MatrixXd> &,
           const Eigen::Ref<const Eigen::MatrixXd> & coulomb_mat) {
         // initialize the distances to be sorted. the center is always first
