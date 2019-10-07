@@ -239,7 +239,7 @@ namespace rascal {
       this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
       this->normalize = hypers.at("normalize").get<bool>();
 
-      if (this->spherical_covariants_type_str.compare("LambdaSpectrum") == 0) {
+      if (this->spherical_covariants_type_str == "LambdaSpectrum") {
         this->spherical_covariants_type =
             SphericalCovariantsType::LambdaSpectrum;
         this->precompute_spherical_covariants[enumValue(
