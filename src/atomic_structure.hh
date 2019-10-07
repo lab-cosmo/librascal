@@ -251,9 +251,7 @@ namespace rascal {
 
     inline bool is_similar(const json &, double) const { return false; }
 
-    inline bool is_similar(const std::string &, double) const {
-      return false;
-    }
+    inline bool is_similar(const std::string &, double) const { return false; }
 
     inline bool is_similar(const AtomicStructure<Dim> & other,
                            double threshold2) const {

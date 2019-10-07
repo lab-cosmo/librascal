@@ -334,9 +334,7 @@ namespace rascal {
         return keys;
       }
 
-      inline void multiply_elements_by(double fac) {
-        this->data *= fac;
-      }
+      inline void multiply_elements_by(double fac) { this->data *= fac; }
 
       /**
        * l^2 norm of the entire vector

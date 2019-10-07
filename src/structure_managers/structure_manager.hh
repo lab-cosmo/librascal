@@ -759,7 +759,7 @@ namespace rascal {
       template <typename ClusterIndicesType_ = ClusterIndicesType,
                 typename std::enable_if_t<
                     std::is_same<ClusterIndicesType_, size_t>::value, int> = 0>
-      static inline IndexConstArray_t cast(const size_t& cluster_index) {
+      static inline IndexConstArray_t cast(const size_t & cluster_index) {
         return IndexConstArray_t(&cluster_index);
       }
     };
@@ -782,8 +782,7 @@ namespace rascal {
     AtomRef() = delete;
 
     //! constructor from iterator
-    AtomRef(Manager_t & manager, int id)
-        : manager{manager}, index{id} {}
+    AtomRef(Manager_t & manager, int id) : manager{manager}, index{id} {}
 
     //! Copy constructor
     AtomRef(const AtomRef & other) = default;
