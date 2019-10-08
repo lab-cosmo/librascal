@@ -231,10 +231,12 @@ namespace rascal {
      * cutoff is checked to ensure the exact same number of neighbours.
      */
 
-    constexpr bool verbose{true};
+    constexpr bool verbose{false};
+
+    cutoff = 1.01;
 
     if (verbose) {
-      std::cout << "HCP test " << cutoff << std::endl;
+      std::cout << "HCP test cutoff initial " << cutoff << std::endl;
     }
     int mult{3};
 
@@ -260,26 +262,25 @@ namespace rascal {
       pair_manager2->update();
 
       if (verbose) {
-        std::cout << "--- Manager 1" << std::endl;
+        std::cout << "------ Manager 1" << std::endl;
       }
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
         for (auto pair : atom) {
           double dist = {(atom.get_position() - pair.get_position()).norm()};
-
           if (dist < cutoff_tmp) {
             neighbours_per_atom1.back()++;
             if (verbose) {
-              std::cout << "1 pair " << atom.back() << " " << pair.back()
+              std::cout << "--add 1 pair " << atom.back() << " " << pair.back()
                         << std::endl;
-              std::cout << "Manager1 dist " << dist << std::endl;
+              std::cout << "Manager1 dist add" << dist << std::endl;
             }
           }
         }
       }
 
       if (verbose) {
-        std::cout << "--- Manager 2" << std::endl;
+        std::cout << "------ Manager 2" << std::endl;
       }
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
@@ -288,9 +289,9 @@ namespace rascal {
           if (dist < cutoff_tmp) {
             neighbours_per_atom2.back()++;
             if (verbose) {
-              std::cout << "2 pair " << atom.back() << " " << pair.back()
+              std::cout << "--add 2 pair " << atom.back() << " " << pair.back()
                         << std::endl;
-              std::cout << "Manager2 dist " << dist << std::endl;
+              std::cout << "Manager2 dist add " << dist << std::endl;
             }
           }
         }

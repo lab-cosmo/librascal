@@ -357,8 +357,8 @@ namespace rascal {
       auto pos_greater = pos.array() - max.array();
 
       // check if shifted position inside maximum mesh positions
-      auto f_lt = (pos_lower.array() > 0.).all();
-      auto f_gt = (pos_greater.array() < 0.).all();
+      auto f_lt = (pos_lower.array() >= 0.).all();
+      auto f_gt = (pos_greater.array() <= 0.).all();
 
       if (f_lt and f_gt) {
         return true;
@@ -960,7 +960,7 @@ namespace rascal {
       double min_coord{0.0};
       double max_coord{0.0};
       for (int col{0}; col < cell.cols(); ++col) {
-        min_coord -= cell(i, col) * static_cast<double>(cell(i, col) < 0.);
+        min_coord += cell(i, col) * static_cast<double>(cell(i, col) < 0.);
         max_coord += cell(i, col) * static_cast<double>(cell(i, col) > 0.);
       }
       // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
