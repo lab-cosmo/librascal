@@ -168,7 +168,7 @@ namespace rascal {
                  Order,
                  PropertyLayer,
                  metadata},
-          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
+          type_id{typeid(Self_t).name()} {}
 
     //! Default constructor
     TypedProperty() = delete;
