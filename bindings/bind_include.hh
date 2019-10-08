@@ -56,17 +56,6 @@ namespace py = pybind11;
 namespace rascal {
 
   namespace internal {
-
-    /**
-     * Mapping used to replace all occurrences of the first string with the
-     * second string in the class titles in the python binding module names.
-     *
-     * first: string which should be replaced
-     * second: the replaced with string
-     */
-    const std::map<std::string, std::string> module_name_replacement_map = {
-        {"StructureManager", ""}, {"Adaptor", ""}, {"Calculator", ""}};
-
     /**
      * Transforms the template type to a string for the python bindings.
      * There are submodules in the python bindings with the class
@@ -77,14 +66,16 @@ namespace rascal {
      */
     template <typename T>
     std::string GetBindingTypeName() {
-      std::string typeName = GetTypeName<T>();
-      std::vector<std::string> names{typeName};
-      for (const auto & map : module_name_replacement_map) {
-        names.push_back(std::regex_replace(
-            names.back(), std::regex(map.first.c_str()), map.second.c_str()));
+        static std::map<std::string, std::string> replacement_map = {
+            {"StructureManager", ""}, {"Adaptor", ""}, {"Calculator", ""}
+        };
+
+        std::string name = type_name<T>();
+        for (const auto & map : replacement_map) {
+            replace(name, map.first, map.second);
       }
 
-      return names.back();
+      return name;
     }
   }  // namespace internal
 }  // namespace rascal
