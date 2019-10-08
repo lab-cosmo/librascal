@@ -341,8 +341,8 @@ namespace rascal {
        * without requiring a cluster object os it can be used for benchmarks.
        */
       template <AtomicSmearingType AST>
-      Matrix_t compute_contribution(const double & distance,
-                                    const double & sigma) {
+      Matrix_t compute_contribution(double distance,
+                                    double sigma) {
         using math::PI;
         using math::pow;
         using std::sqrt;
@@ -427,8 +427,8 @@ namespace rascal {
 
       //! define the contribution from a neighbour atom to the expansion
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
-      inline Matrix_Ref
-      compute_neighbour_contribution(const double & distance,
+      Matrix_Ref
+      compute_neighbour_contribution(double distance,
                                      ClusterRefKey<Order, Layer> & pair) {
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         double smearing_value{smearing->get_gaussian_sigma(pair)};
@@ -440,8 +440,8 @@ namespace rascal {
       // Define the contribution from a neighbour atom to the expansion with an
       // already precomputed a factor
 
-      inline Matrix_Ref compute_neighbour_contribution(const double & distance,
-                                                       const double & fac_a) {
+      inline Matrix_Ref compute_neighbour_contribution(double distance,
+                                                       double fac_a) {
         using math::pow;
         using std::sqrt;
 
@@ -793,8 +793,8 @@ namespace rascal {
         return this->compute_neighbour_contribution(distance, fac_a);
       }
 
-      inline Matrix_Ref compute_neighbour_contribution(const double & distance,
-                                                       const double & fac_a) {
+      inline Matrix_Ref compute_neighbour_contribution(double distance,
+                                                       double fac_a) {
         using math::PI;
         using math::pow;
         using std::sqrt;
@@ -958,7 +958,7 @@ namespace rascal {
 
       template <size_t Order, size_t Layer>
       inline Matrix_Ref
-      compute_neighbour_contribution(const double & distance,
+      compute_neighbour_contribution(double distance,
                                      ClusterRefKey<Order, Layer> &) {
         // TODO(alex) TODO(felix) include an check that the distance is within
         // the (x1,x2) range of the interpolator

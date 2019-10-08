@@ -363,8 +363,7 @@ namespace rascal {
        * \f$\sin(m\phi)\f$ in the second column, with \f$m\f$ being the row
        * index
        */
-      void compute_cos_sin_angle_multiples(const double & cos_phi,
-                                           const double & sin_phi) {
+      void compute_cos_sin_angle_multiples(double cos_phi, double sin_phi) {
         for (size_t m_count{0}; m_count < this->max_angular + 1; m_count++) {
           if (m_count == 0) {
             this->cos_sin_m_phi.row(m_count) << 1.0, 0.0;

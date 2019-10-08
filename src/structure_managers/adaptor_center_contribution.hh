@@ -153,7 +153,7 @@ namespace rascal {
       return this->get_nb_clusters(1);
     }
 
-    inline Vector_ref get_position(const int & index) {
+    inline Vector_ref get_position(int index) {
       return this->manager->get_position(index);
     }
 
@@ -194,7 +194,7 @@ namespace rascal {
     }
 
     //! return atom type
-    inline const int & get_atom_type(const AtomRef_t & atom) const {
+    inline int get_atom_type(const AtomRef_t & atom) const {
       // careful, atom refers to our local index, for the manager, we need its
       // index:
       auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
@@ -202,12 +202,12 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom tag
-    inline int & get_atom_type(const int & atom_id) {
+    inline int & get_atom_type(int atom_id) {
       return this->manager->get_atom_type(atom_id);
     }
 
     //! Returns a constant atom type given an atom tag
-    inline const int & get_atom_type(const int & atom_id) const {
+    inline int get_atom_type(int atom_id) const {
       auto && type{this->manager->get_atom_type(atom_id)};
       return type;
     }
@@ -265,9 +265,9 @@ namespace rascal {
    protected:
     /**
      * main function during construction of a neighbourlist.
-     * @param atom the atom to add to the list
-     * @param Order select whether it is an i-atom (order=1), j-atom (order=2),
-     * or ...
+     * @param atom_tag the atom to add to the list
+     * @tparam Order select whether it is an i-atom (order=1), j-atom (order=2),
+     *         etc.
      */
     template <size_t Order>
     inline void add_atom(int atom_tag) {

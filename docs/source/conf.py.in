@@ -22,6 +22,8 @@ import subprocess
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+if sys.version_info < (3, 6):
+    raise Exception("Python >= 3.6 is required")
 
 # -- General configuration ------------------------------------------------
 
@@ -43,23 +45,16 @@ extensions = ['sphinx.ext.autodoc',
               'nbsphinx',
               ]
 
-## this line detects whether the script is run on readthedocs.io, where it
-## needs to run in-place
-read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
-
 # Sphinx notebook inclusion: Be error-tolerant until we can make sure
 # all notebooks run on the common developer environment
 nbsphinx_allow_errors = True
 
-if read_the_docs_build is True:
-    rascal_path = "."
-else:
-    rascal_path = "@CMAKE_CURRENT_BINARY_DIR@"
-    os.makedirs("@CMAKE_CURRENT_BINARY_DIR@/_static", exist_ok=True)
+rascal_path = "@CMAKE_CURRENT_BINARY_DIR@"
+os.makedirs("@CMAKE_CURRENT_BINARY_DIR@/_static", exist_ok=True)
 
 import_path = "@CMAKE_BINARY_DIR@"
 print("import_path = '{}'".format(import_path))
-sys.path.insert(0,import_path)
+sys.path.insert(0, import_path)
 
 
 print("rascal_path = '{}'".format(rascal_path))
@@ -80,16 +75,15 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The master toctree document.
-master_doc = 'intro'
+master_doc = 'index'
 
 # General information about the project.
 project = 'Rascal'
-copyright = ('2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti, ' +
-             'Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, ' +
-             'Max Veit')
-author = ('Michele Ceriotti, Federico Giberti, Alexander Gocsinski, ' +
-          'Till Junge, Félix Musil, Markus Stricker, Max Veit, and ' +
-          'Michael Willatt')
+copyright = '''2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti,
+Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit'''
+
+author = '''Michele Ceriotti, Federico Giberti, Alexander Gocsinski,
+Till Junge, Félix Musil, Markus Stricker, Max Veit, and Michael Willatt'''
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -118,7 +112,6 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
 
-
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -137,7 +130,6 @@ html_theme_options = {
     'display_version': True,
     'prev_next_buttons_location': 'bottom',
     'style_external_links': False,
-    #'vcs_pageview_mode': '',
     # Toc options
     'collapse_navigation': True,
     'sticky_navigation': True,
@@ -165,11 +157,7 @@ html_sidebars = {
     ]
 }
 
-
-# -- Options for HTMLHelp output ------------------------------------------
-
-# Output file base name for HTML help builder.
-htmlhelp_basename = 'Rascaldoc'
+html_favicon = '@CMAKE_CURRENT_SOURCE_DIR@/source/resources/images/rascal.png'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -199,28 +187,3 @@ latex_documents = [
     (master_doc, 'Rascal.tex', 'Rascal Documentation',
      'Felix Musil, Federico Giberti, Till Junge, Michele Ceriotti', 'manual'),
 ]
-
-
-# -- Options for manual page output ---------------------------------------
-
-# One entry per manual page. List of tuples
-# (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'rascal', 'Rascal Documentation',
-     [author], 1)
-]
-
-
-# -- Options for Texinfo output -------------------------------------------
-
-# Grouping the document tree into Texinfo files. List of tuples
-# (source start file, target name, title, author,
-#  dir menu entry, description, category)
-texinfo_documents = [
-    (master_doc, 'Rascal', 'Rascal Documentation',
-     author, 'Rascal', 'One line description of project.',
-     'Miscellaneous'),
-]
-
-
-

@@ -102,7 +102,7 @@ namespace rascal {
    *
    * @param mod pybind11 representation of the python modules the representation
    *        managers will be included to
-   * @param m_throwaway pybind11 representation of the python modules that are
+   * @param m_internal pybind11 representation of the python modules that are
    *        needed but not useful to use on the python side
    */
   void add_representation_calculators(py::module & mod,

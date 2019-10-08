@@ -243,20 +243,18 @@ namespace rascal {
      * @param threshold2 tolerance parameter squared for the similarity
      *                    comparison
      */
-    inline bool is_similar(const double &) const { return true; }
+    inline bool is_similar(double) const { return true; }
 
-    inline bool is_similar(const json_io::AtomicJsonData &, const double &) {
+    inline bool is_similar(const json_io::AtomicJsonData &, double) {
       return false;
     }
 
-    inline bool is_similar(const json &, const double &) const { return false; }
+    inline bool is_similar(const json &, double) const { return false; }
 
-    inline bool is_similar(const std::string &, const double &) const {
-      return false;
-    }
+    inline bool is_similar(const std::string &, double) const { return false; }
 
     inline bool is_similar(const AtomicStructure<Dim> & other,
-                           const double & threshold2) const {
+                           double threshold2) const {
       bool is_similar_{true};
       if (this->positions.cols() == other.positions.cols()) {
         if ((this->pbc.array() != other.pbc.array()).any() or
@@ -278,7 +276,7 @@ namespace rascal {
     inline bool is_similar(const PositionsInput_t & positions,
                            const AtomTypesInput_t & atom_types,
                            const CellInput_t cell, const PBCInput_t & pbc,
-                           const double & threshold2) const {
+                           double threshold2) const {
       auto center_atoms_mask = ArrayB_t::Ones(atom_types.size());
       return this->is_similar(positions, atom_types, cell, pbc,
                               center_atoms_mask, threshold2);
@@ -288,7 +286,7 @@ namespace rascal {
                            const AtomTypesInput_t & atom_types,
                            const CellInput_t cell, const PBCInput_t & pbc,
                            const ArrayB_ref & center_atoms_mask,
-                           const double & threshold2) const {
+                           double threshold2) const {
       bool is_similar_{true};
       if (this->positions.cols() == positions.cols()) {
         if ((this->pbc.array() != pbc.array()).any() or

@@ -204,7 +204,7 @@ namespace rascal {
      * first and 3 would corresponds to the 4th structure irrespective of the
      * actual indices in the file.
      */
-    void add_structures(const std::string & filename, const int & start = 0,
+    void add_structures(const std::string & filename, int start = 0,
                         int length = -1) {
       // important not to do brace initialization because it adds an extra
       // nesting layer

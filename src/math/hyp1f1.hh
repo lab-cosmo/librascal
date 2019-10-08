@@ -48,32 +48,23 @@ namespace rascal {
      *
      * G refers to the modified 1F1 defined below
      */
-    inline double recurence_to_val_downward(const double & a, const double & b,
-                                            const double & z,
-                                            const double & M1p2p,
-                                            const double & M1p1p) {
+    inline double recurence_to_val_downward(double a, double b, double z,
+                                            double M1p2p, double M1p1p) {
       return z * (a - b) * M1p2p / (b * (b + 1)) + M1p1p;
     }
 
-    inline double recurence_to_der_downward(const double & a, const double & b,
-                                            const double & z,
-                                            const double & M2p3p,
-                                            const double & M1p2p) {
+    inline double recurence_to_der_downward(double a, double b, double z,
+                                            double M2p3p, double M1p2p) {
       return z * (a + 1) * M2p3p / ((b + 2) * (b + 1)) + M1p2p;
     }
 
-    inline double recurence_G_to_val_downward(const double & a,
-                                              const double & b,
-                                              const double & z,
-                                              const double & M1p2p,
-                                              const double & M1p1p) {
+    inline double recurence_G_to_val_downward(double a, double b, double z,
+                                              double M1p2p, double M1p1p) {
       return (z * (a - b) * M1p2p + M1p1p * b) / a;
     }
 
-    inline double recurence_G_to_der_downward(const double &, const double & b,
-                                              const double & z,
-                                              const double & M2p3p,
-                                              const double & M1p2p) {
+    inline double recurence_G_to_der_downward(double, double b, double z,
+                                              double M2p3p, double M1p2p) {
       return z * M2p3p + M1p2p * (b + 1);
     }
 
@@ -104,8 +95,7 @@ namespace rascal {
       // derivatives.
       size_t n_terms{100};
 
-      Hyp1f1Series(const double & a, const double & b, const size_t & mmax,
-                   const double & tolerance = 1e-14)
+      Hyp1f1Series(double a, double b, size_t mmax, double tolerance = 1e-14)
           : a{a}, b{b}, mmax{mmax}, prefac{std::tgamma(a) / std::tgamma(b)},
             tolerance{tolerance} {
         // when a == b, 1F1 is an exponential
@@ -137,9 +127,8 @@ namespace rascal {
        * @f$. We do this to avoid computing both d1F1/dz and 1F1 when asking for
        * gradients and perform this step in Hyp1f1SphericalExpansion.
        */
-      inline double calc(const double & z, const double & z2,
-                         const double & ez2, const bool & derivative = false,
-                         const int & n_terms = -1) {
+      inline double calc(double z, double z2, double ez2,
+                         bool derivative = false, int n_terms = -1) {
         using math::pow;
         double result{0.};
         if (not this->is_exp) {
@@ -150,8 +139,7 @@ namespace rascal {
         return result;
       }
 
-      inline double calc(const double & z, const bool & derivative = false,
-                         const int & n_terms = -1) {
+      inline double calc(double z, bool derivative = false, int n_terms = -1) {
         double result{0.};
         if (not this->is_exp) {
           result = this->hyp1f1(z, derivative, n_terms);
@@ -161,8 +149,7 @@ namespace rascal {
         return result;
       }
       //! Computes 1F1
-      inline double hyp1f1(const double & z, const bool & derivative,
-                           const int & n_terms) {
+      inline double hyp1f1(double z, bool derivative, int n_terms) {
         using math::pow;
         size_t mmax{0};
         if (n_terms == -1) {
@@ -186,8 +173,8 @@ namespace rascal {
         return res;
       }
 
-      inline double sum(const double & z, const Eigen::VectorXd & coefficient,
-                        const size_t & mmax, const int & n_terms) {
+      inline double sum(double z, const Eigen::VectorXd & coefficient,
+                        size_t mmax, int n_terms) {
         // perform the sum
         double res{1.0}, a1{1.0}, zpow{z}, z4{z * z};
         z4 *= z4;
@@ -248,7 +235,7 @@ namespace rascal {
       Eigen::VectorXd coeff{};
       Eigen::VectorXd coeff_derivative{};
 
-      inline double z_power_a_b(const double & z) {
+      inline double z_power_a_b(double z) {
         using math::pow;
         double fac{0.};
         if (this->is_n_and_l) {
@@ -264,8 +251,8 @@ namespace rascal {
       // derivatives.
       size_t n_terms{20};
 
-      Hyp1f1Asymptotic(const double & a, const double & b, const size_t & mmax,
-                       const double & tolerance = 1e-14)
+      Hyp1f1Asymptotic(double a, double b, size_t mmax,
+                       double tolerance = 1e-14)
           : a{a}, b{b}, prefac{std::tgamma(b) / std::tgamma(a)},
             tolerance{tolerance}, mmax{mmax} {
         double intpart;
@@ -303,9 +290,8 @@ namespace rascal {
        * @f$. We do this to avoid computing both d1F1/dz and 1F1 when asking for
        * gradients and perform this step in Hyp1f1SphericalExpansion.
        */
-      inline double calc(const double & z, const double & z2,
-                         const bool & derivative = false,
-                         const int & n_terms = -1) {
+      inline double calc(double z, double z2, bool derivative = false,
+                         int n_terms = -1) {
         using math::pow;
         double result{0.};
         if (not this->is_exp) {
@@ -319,8 +305,7 @@ namespace rascal {
       }
 
       //! Computes 1F1
-      inline double calc(const double & z, const bool & derivative = false,
-                         const int & n_terms = -1) {
+      inline double calc(double z, bool derivative = false, int n_terms = -1) {
         using math::pow;
         if (not this->is_exp) {
           auto fac{this->z_power_a_b(z)};
@@ -336,8 +321,7 @@ namespace rascal {
       }
 
       //! computes hyp2f0 with arg1 = b-a and arg2 = 1-a arg3 = 1 / z
-      inline double hyp2f0(const double & z, const bool & derivative,
-                           const int & n_terms) {
+      inline double hyp2f0(double z, bool derivative, int n_terms) {
         using math::pow;
         // this->n_terms = this->mmax;
 
@@ -362,8 +346,8 @@ namespace rascal {
         return res;
       }
 
-      inline double sum(const double & z, const Eigen::VectorXd & coefficient,
-                        const size_t & mmax, const int & n_terms) {
+      inline double sum(double z, const Eigen::VectorXd & coefficient,
+                        size_t mmax, int n_terms) {
         double iz{1.0 / z};
         double res{1.}, izpow{1.}, s_i{1.};
         // perform the sum
@@ -475,8 +459,7 @@ namespace rascal {
       }
 
      public:
-      Hyp1f1(const double & a, const double & b, const size_t & mmax = 500,
-             const double & tolerance = 1e-13)
+      Hyp1f1(double a, double b, size_t mmax = 500, double tolerance = 1e-13)
           : hyp1f1_series{a, b, mmax, tolerance}, hyp1f1_asymptotic{a, b, mmax,
                                                                     tolerance},
             a{a}, b{b}, tolerance{tolerance} {
@@ -495,7 +478,7 @@ namespace rascal {
       double get_z_switch() { return this->z_asympt; }
 
       //! Compute @f${}_1F_1(a,b,z)@f$
-      inline double calc(const double & z, const bool & derivative = false) {
+      inline double calc(double z, bool derivative = false) {
         if (z > this->z_asympt) {
           return this->hyp1f1_asymptotic.calc(z, derivative);
         } else {
@@ -503,8 +486,7 @@ namespace rascal {
         }
       }
 
-      inline double calc_numerical_derivative(const double & z,
-                                              const double & h) {
+      inline double calc_numerical_derivative(double z, double h) {
         if (z > this->z_asympt) {
           double fzp{this->hyp1f1_asymptotic.calc(z + h)};
           size_t n_terms{this->hyp1f1_asymptotic.n_terms};
@@ -531,8 +513,8 @@ namespace rascal {
        * when asking for gradients and perform this step in
        * Hyp1f1SphericalExpansion.
        */
-      inline double calc(const double & z, const double & z2,
-                         const double & ez2, const bool & derivative = false) {
+      inline double calc(double z, double z2, double ez2,
+                         bool derivative = false) {
         if (z > this->z_asympt) {
           return this->hyp1f1_asymptotic.calc(z, z2, derivative);
         } else {
@@ -575,25 +557,24 @@ namespace rascal {
       Eigen::ArrayXd z{};
       Eigen::ArrayXd dz_dr{};
 
-      inline int get_pos(const int & n_radial, const int & l_angular) {
+      inline int get_pos(int n_radial, int l_angular) {
         return l_angular + (this->max_angular + 1) * n_radial;
       }
 
-      inline double get_a(const int & n_radial, const int & l_angular) {
+      inline double get_a(int n_radial, int l_angular) {
         return 0.5 * (n_radial + l_angular + 3);
       }
 
-      inline double get_b(const int & l_angular) { return l_angular + 1.5; }
+      inline double get_b(int l_angular) { return l_angular + 1.5; }
 
      public:
-      Hyp1f1SphericalExpansion(const bool & recursion = false,
-                               const double & tolerance = 1e-14,
-                               const size_t & precomputation_size = 200)
+      Hyp1f1SphericalExpansion(bool recursion = false, double tolerance = 1e-14,
+                               size_t precomputation_size = 200)
           : tolerance{tolerance},
             precomputation_size{precomputation_size}, recursion{recursion} {}
 
       //! initialize the 1F1 computers
-      void precompute(const size_t & max_radial, const size_t & max_angular) {
+      void precompute(size_t max_radial, size_t max_angular) {
         this->max_angular = max_angular;
         this->max_radial = max_radial;
         this->values.resize(max_radial, max_angular + 1);
@@ -611,16 +592,14 @@ namespace rascal {
       }
 
       //! helper function to compute z for one set of n, l, z
-      inline double calc(const size_t & n_radial, const size_t & l_angular,
-                         const double & z) {
+      inline double calc(size_t n_radial, size_t l_angular, double z) {
         int ipos{this->get_pos(n_radial, l_angular)};
         return this->hyp1f1[ipos].calc(z);
       }
 
       //! helper function to compute z for one set of n, l, custom z
-      inline double calc(const size_t & n_radial, const size_t & l_angular,
-                         const double & r_ij, const double & alpha,
-                         const double & beta) {
+      inline double calc(size_t n_radial, size_t l_angular, double r_ij,
+                         double alpha, double beta) {
         int ipos{this->get_pos(n_radial, l_angular)};
         double z{math::pow(alpha * r_ij, 2) / (alpha + beta)};
         double z2{-alpha * r_ij * r_ij};
@@ -629,9 +608,8 @@ namespace rascal {
       }
 
       //! the work horse that computes G for all possible n, l values
-      inline void calc(const double & r_ij, const double & alpha,
-                       const Vector_Ref & fac_b,
-                       const bool & derivative = false) {
+      inline void calc(double r_ij, double alpha, const Vector_Ref & fac_b,
+                       bool derivative = false) {
         if (not this->recursion or this->max_angular < 3) {
           // recursion needs 4 evaluations of 1F1 so not worth it if l_max < 3
           this->calc_direct(r_ij, alpha, fac_b, derivative);
@@ -644,7 +622,7 @@ namespace rascal {
        *  Computes G and dG/dz*dz/dr using recursion relations with
        *  z = (alpha * r_ij)**2 / (alpha + fac_b)
        */
-      inline void calc_recursion(const double & r_ij, const double & alpha,
+      inline void calc_recursion(double r_ij, double alpha,
                                  const Vector_Ref & fac_b) {
         double M1p2p{0.}, M2p3p{0.}, MP1p2p{0.}, MP2p3p{0.}, M1p1p{0.}, Moo{0.},
             MP1p1p{0.}, MPoo{0.};
@@ -709,9 +687,8 @@ namespace rascal {
       }
 
       //! computes G by direct evaluation
-      inline void calc_direct(const double & r_ij, const double & alpha,
-                              const Vector_Ref & fac_b,
-                              const bool & derivative) {
+      inline void calc_direct(double r_ij, double alpha,
+                              const Vector_Ref & fac_b, bool derivative) {
         // computes some intermediates that accelerate calculations further
         // down
         double alpha_rij{alpha * r_ij};

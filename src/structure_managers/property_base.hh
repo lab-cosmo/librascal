@@ -109,9 +109,9 @@ namespace rascal {
     /**
      * Controls the is_updated flag
      */
-    inline const bool & is_updated() const { return this->updated; }
+    inline bool is_updated() const { return this->updated; }
 
-    inline void set_updated_status(const bool & is_updated) {
+    inline void set_updated_status(bool is_updated) {
       this->updated = is_updated;
     }
 

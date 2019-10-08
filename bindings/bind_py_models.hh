@@ -1,5 +1,5 @@
 /**
- * @file   models.hh
+ * @file   bind_py_models.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *

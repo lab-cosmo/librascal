@@ -93,7 +93,7 @@ namespace rascal {
       }
 
       //! access or insert specified element. use with caution !
-      inline Value_t & operator[](const size_t & id) { return this->data[id]; }
+      inline Value_t & operator[](size_t id) { return this->data[id]; }
 
       inline const Key_t & get_key() const { return data; }
     };
@@ -276,14 +276,14 @@ namespace rascal {
        * the elements
        */
       template <typename Key_List>
-      void resize(const Key_List & keys, const int & n_row, const int & n_col,
+      void resize(const Key_List & keys, int n_row, int n_col,
                   const Precision_t & val) {
         this->resize(keys, n_row, n_col);
         this->data = val;
       }
 
       template <typename Key_List>
-      void resize(const Key_List & keys, const int & n_row, const int & n_col) {
+      void resize(const Key_List & keys, int n_row, int n_col) {
         std::vector<SortedKey_t> skeys{};
         for (auto && key : keys) {
           SortedKey_t skey{key};
@@ -292,8 +292,8 @@ namespace rascal {
         this->resize(skeys, n_row, n_col);
       }
 
-      void resize(const std::vector<SortedKey_t> & skeys, const int & n_row,
-                  const int & n_col) {
+      void resize(const std::vector<SortedKey_t> & skeys, int n_row,
+                  int n_col) {
         int new_size{0};
         for (auto && skey : skeys) {
           if (this->count(skey) == 0) {
@@ -334,9 +334,7 @@ namespace rascal {
         return keys;
       }
 
-      inline void multiply_elements_by(const double & fac) {
-        this->data *= fac;
-      }
+      inline void multiply_elements_by(double fac) { this->data *= fac; }
 
       /**
        * l^2 norm of the entire vector
@@ -363,7 +361,7 @@ namespace rascal {
        *
        * relevant only when the keys have 2 indices
        */
-      inline void multiply_off_diagonal_elements_by(const double & fac) {
+      inline void multiply_off_diagonal_elements_by(double fac) {
         for (const auto & el : this->map) {
           auto && pair_type{el.first};
           auto && pos{el.second};
@@ -599,7 +597,7 @@ namespace rascal {
     }
 
     //! Accessor for property by index for dynamically sized properties
-    inline InputData_t & operator[](const size_t & index) {
+    inline InputData_t & operator[](size_t index) {
       return this->values[index];
     }
 
@@ -615,7 +613,7 @@ namespace rascal {
     }
 
     //! Accessor for property by index for dynamically sized properties
-    inline DenseRef_t operator()(const size_t & index, const Key_t & key) {
+    inline DenseRef_t operator()(size_t index, const Key_t & key) {
       auto && val = this->values[index].at(key);
       return DenseRef_t(&val(0, 0), val.rows(), val.cols());
     }
@@ -632,7 +630,7 @@ namespace rascal {
       return this->get_dense_row(id.get_cluster_index(CallerLayer));
     }
 
-    inline Matrix_t get_dense_row(const size_t & index) {
+    inline Matrix_t get_dense_row(size_t index) {
       auto keys = this->values[index].get_keys();
       Matrix_t feature_row = Matrix_t::Zero(this->get_nb_comp(), keys.size());
       size_t i_col{0};

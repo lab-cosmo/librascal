@@ -316,7 +316,7 @@ namespace rascal {
     }
 
     //! returns position of an atom with index ``atom_tag``
-    inline Vector_ref position(const int & atom_tag) {
+    inline Vector_ref position(int atom_tag) {
       return this->implementation().get_position(atom_tag);
     }
 
@@ -327,13 +327,13 @@ namespace rascal {
 
     //! returns the atom type (convention is atomic number, but nothing is
     //! imposed apart from being an integer
-    inline const int & atom_type(const int & atom_tag) const {
+    inline int atom_type(int atom_tag) const {
       return this->implementation().get_atom_type(atom_tag);
     }
 
     //! returns the atom type (convention is atomic number, but nothing is
     //! imposed apart from being an integer
-    inline int & atom_type(const int & atom_tag) {
+    inline int & atom_type(int atom_tag) {
       return this->implementation().get_atom_type(atom_tag);
     }
 
@@ -484,7 +484,7 @@ namespace rascal {
               name);
     }
 
-    inline void set_updated_property_status(const bool & is_updated) {
+    inline void set_updated_property_status(bool is_updated) {
       for (auto & element : this->properties) {
         auto & property{element.second};
         property->set_updated_status(is_updated);
@@ -492,7 +492,7 @@ namespace rascal {
     }
 
     inline void set_updated_property_status(const std::string & name,
-                                            const bool & is_updated) {
+                                            bool is_updated) {
       this->properties[name]->set_updated_status(is_updated);
     }
 
@@ -782,8 +782,7 @@ namespace rascal {
     AtomRef() = delete;
 
     //! constructor from iterator
-    AtomRef(Manager_t & manager, const int & id)
-        : manager{manager}, index{id} {}
+    AtomRef(Manager_t & manager, int id) : manager{manager}, index{id} {}
 
     //! Copy constructor
     AtomRef(const AtomRef & other) = default;
@@ -801,7 +800,7 @@ namespace rascal {
     AtomRef & operator=(AtomRef && other) = default;
 
     //! return index of the atom
-    inline const int & get_index() const { return this->index; }
+    inline int get_index() const { return this->index; }
 
     //! return position vector of the atom
     inline Vector_ref get_position() {
@@ -812,7 +811,7 @@ namespace rascal {
      * return atom type (idea: corresponding atomic number, but is allowed
      * to be arbitrary as long as it is an integer)
      */
-    inline const int & get_atom_type() const {
+    inline int get_atom_type() const {
       return this->manager.atom_type(this->index);
     }
     /**
@@ -995,7 +994,7 @@ namespace rascal {
     }
 
     //! returns the type of the last atom in the cluster
-    inline const int & get_atom_type() const {
+    inline int get_atom_type() const {
       auto && id{this->get_atom_tag()};
       return this->get_manager().atom_type(id);
     }

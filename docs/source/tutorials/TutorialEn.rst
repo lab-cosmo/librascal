@@ -4,17 +4,22 @@
     :format: html
 
 Energy fitting
-================
+==============
 
-Approach used in Rascal can be used for calculating any of the rotationally invariant properties (such as formation energy), as well as rotationally covariant properties (such as dipole moment). This example is about fitting the formation energies of some small molecules. The dataset is located in the `librascal/examples/data/ <../../../../examples/data>`_ folder, the python notebook doing the calculation is `librascal/examples/SOAP_example.ipynb (outbound) <https://github.com/cosmo-epfl/librascal/blob/master/examples/SOAP_example.ipynb>`_.
-
-
+Approach used in Rascal can be used for calculating any of the rotationally
+invariant properties (such as formation energy), as well as rotationally
+covariant properties (such as dipole moment). This example is about fitting the
+formation energies of some small molecules. The dataset is located in the
+`librascal/examples/data/ <../../../../examples/data>`_ folder, the python
+notebook doing the calculation is `librascal/examples/SOAP_example.ipynb
+(outbound)
+<https://github.com/cosmo-epfl/librascal/blob/master/examples/SOAP_example.ipynb>`_.
 
 
 Let's take a look at the code and describe what it do step-by-step.
 
 Imports
-*********
+*******
 
 Just import of the necessary modules, including Rascal itself.
 
@@ -34,9 +39,13 @@ Just import of the necessary modules, including Rascal itself.
     from rascal.representations import SOAP
 
 Dataset
-***********
+*******
 
-Here ASE is used to read the file with information about molecules, then the size of the feature matrix shown. The number of columns is the number of atoms in the set of molecules, the number of rows is depend on the max_radial and max_angular parameters. If the number of columns is big, sparsification needs to be done to reduce it.
+Here ASE is used to read the file with information about molecules, then the
+size of the feature matrix shown. The number of columns is the number of atoms
+in the set of molecules, the number of rows is depend on the max_radial and
+max_angular parameters. If the number of columns is big, sparsification needs to
+be done to reduce it.
 
 .. code-block:: python
 
@@ -58,15 +67,17 @@ Here ASE is used to read the file with information about molecules, then the siz
 Functions
 *********
 
-Here we define the functions, which are needed for the further computations. Let's describe some of them. 
-compute_representation - creates a feature manager class using information about structure
-compute_kernel - compute the matrix of global similarity using global cosine kernel with a power of zeta to itself
-KRR.predict - predicting the energy of the molecules in the set, using trained model
-train_krr_model - train the model basing on the given dataset and using global cosine kernel
+Here we define the functions, which are needed for the further computations.
+Let's describe some of them.  compute_representation - creates a feature manager
+class using information about structure compute_kernel - compute the matrix of
+global similarity using global cosine kernel with a power of zeta to itself
+KRR.predict - predicting the energy of the molecules in the set, using trained
+model train_krr_model - train the model basing on the given dataset and using
+global cosine kernel
 
 .. code-block:: python
 
-    # Load the small molecules 
+    # Load the small molecules
     frames = read('./data/small_molecules-1000.xyz',':600')
 
     def compute_representation(representation,frames):
@@ -131,12 +142,12 @@ train_krr_model - train the model basing on the given dataset and using global c
             self.representation = representation
             self.zeta = zeta
             self.X = X
-        
+
     def predict(self,frames):
         features = compute_representation(self.representation,frames)
         kernel = compute_kernel(self.zeta , self.X, features)
         return np.dot(self.weights, kernel)
-    
+
     def train_krr_model(zeta,Lambda,representation,frames,y,jitter=1e-8):
         features = compute_representation(representation,frames)
         kernel = compute_kernel(zeta,features)
@@ -152,21 +163,28 @@ train_krr_model - train the model basing on the given dataset and using global c
 Full spectrum
 *************
 
-Here the full (with radial and angular parts) energies are computed. Let's describe the parameters of the soap descriptor, defined in the ``hypers`` dictionary.
-interaction_cutoff -  Maximum pairwise distance for atoms to be considered in expansion :raw-html:`<br />`
-max_radial - number of radial basis functions
-max_angular - highest angular momentum number in the expansion
-gaussian_sigma_constant - specifies the atomic Gaussian widths, in the case where they're fixed.
-gaussian_sigma_type - how the Gaussian atom sigmas (smearing widths) are allowed to vary -- fixed (``Constant``), by species (``PerSpecies``), or by distance from the central atom (``Radial``)
-cutoff_smooth_width - the distance over which the the interaction is smoothed to zero :raw-html:`<br />`
+Here the full (with radial and angular parts) energies are computed. Let's
+describe the parameters of the soap descriptor, defined in the ``hypers``
+dictionary.
 
+- **interaction_cutoff**: Maximum pairwise distance for atoms to be considered
+  in expansion
+- **max_radial**: number of radial basis functions
+- **max_angular**: highest angular momentum number in the expansion
+- **gaussian_sigma_constant**: specifies the atomic Gaussian widths, in the
+  case where they're fixed.
+- **gaussian_sigma_type**: how the Gaussian atom sigmas (smearing widths) are
+  allowed to vary -- fixed (``Constant``), by species (``PerSpecies``), or by
+  distance from the central atom (``Radial``)
+- **cutoff_smooth_width**: the distance over which the the interaction is
+  smoothed to zero
 
 .. code-block:: python
 
     hypers = dict(soap_type="PowerSpectrum",
-                  interaction_cutoff=3.5, 
-                  max_radial=6, 
-                  max_angular=6, 
+                  interaction_cutoff=3.5,
+                  max_radial=6,
+                  max_angular=6,
                   gaussian_sigma_constant=0.4,
                   gaussian_sigma_type="Constant",
                   cutoff_smooth_width=0.5,
@@ -189,9 +207,10 @@ cutoff_smooth_width - the distance over which the the interaction is smoothed to
 
 The result of this block is:
 
-.. image:: ../dox_resources/R1.png
+.. image:: ../resources/images/R1.png
 
-The result is quite good. One can try to change the train dataset to see how it affects the precision of the result. 
+The result is quite good. One can try to change the train dataset to see how it
+affects the precision of the result.
 
 Radial spectrum
 ***************
@@ -201,9 +220,9 @@ Here we compute the energy, supposing the angular component to be zero.
 .. code-block:: python
 
     hypers = dict(soap_type="RadialSpectrum",
-                  interaction_cutoff=3.5, 
-                  max_radial=6, 
-                  max_angular=0, 
+                  interaction_cutoff=3.5,
+                  max_radial=6,
+                  max_angular=0,
                   gaussian_sigma_constant=0.4,
                   gaussian_sigma_type="Constant",
                   cutoff_smooth_width=0.5,
@@ -226,7 +245,7 @@ Here we compute the energy, supposing the angular component to be zero.
 
 Comparison of full and radial spectrum:
 
-.. image:: ../dox_resources/Comps.png
+.. image:: ../resources/images/Comps.png
 
 It can be seen that the two spectres are quite similar, but the radial spectrum is much more simple to compute (as feature matrix is much smaller and the set of spherical harmonics doesn't have to be computed). It is quite an inteseting fact, but, unfortunately, this feature is probably not generalizable and should be just the feature of this particular dataset.
 
@@ -253,27 +272,27 @@ Here we use sklearn to do `kernel principal component analysis (outbound) <https
         r"""
         Initial idea for this function comes from @arose, the rest is @gph82 and @clonker
         """
-    
+
         kdtree = cKDTree(pos)
         #assert ngl_widget.trajectory_0.n_frames == pos.shape[0]
         x, y = pos.T
-        
+
         lineh = ax.axhline(ax.get_ybound()[0], c="black", ls='--')
         linev = ax.axvline(ax.get_xbound()[0], c="black", ls='--')
         dot, = ax.plot(pos[0,0],pos[0,1], 'o', c='red', ms=7)
-    
+
         ngl_widget.isClick = False
-        
+
         def onclick(event):
             linev.set_xdata((event.xdata, event.xdata))
             lineh.set_ydata((event.ydata, event.ydata))
-            data = [event.xdata, event.ydata]    
+            data = [event.xdata, event.ydata]
             _, index = kdtree.query(x=data, k=1)
             dot.set_xdata((x[index]))
             dot.set_ydata((y[index]))
             ngl_widget.isClick = True
             ngl_widget.frame = index
-    
+
         def my_observer(change):
             r"""Here comes the code that you want to execute
             """
@@ -281,27 +300,27 @@ Here we use sklearn to do `kernel principal component analysis (outbound) <https
             _idx = change["new"]
             try:
                 dot.set_xdata((x[_idx]))
-                dot.set_ydata((y[_idx]))            
+                dot.set_ydata((y[_idx]))
             except IndexError as e:
                 dot.set_xdata((x[0]))
                 dot.set_ydata((y[0]))
                 print("caught index error with index %s (new=%s, old=%s)" % (_idx, change["new"], change["old"]))
-    
+
         # Connect axes to widget
         axes_widget = AxesWidget(ax)
         axes_widget.connect_event('button_release_event', onclick)
-        
-        # Connect widget to axes
-        ngl_widget.observe(my_observer, "frame", "change")    
 
-    # Load the small molecules 
+        # Connect widget to axes
+        ngl_widget.observe(my_observer, "frame", "change")
+
+    # Load the small molecules
     frames = read('./data/small_molecules-1000.xyz',':600')
     hypers = dict(soap_type="PowerSpectrum",
-                  interaction_cutoff=3.5, 
-                  max_radial=6, 
-                  max_angular=6, 
+                  interaction_cutoff=3.5,
+                  max_radial=6,
+                  max_angular=6,
                   gaussian_sigma_constant=0.4,
-                  gaussian_sigma_type="Constant",    
+                  gaussian_sigma_type="Constant",
                   cutoff_smooth_width=0.5,
                   )
     soap = SOAP(**hypers)
@@ -316,6 +335,8 @@ Here we use sklearn to do `kernel principal component analysis (outbound) <https
 
 The result of this block is:
 
-.. image:: ../dox_resources/PCAs.png
+.. image:: ../resources/images/PCAs.png
 
-It shows how the structures is located in the abstract 2D map, where similar structures are located near to each other, and the very different ones far from each other. 
+It shows how the structures is located in the abstract 2D map, where similar
+structures are located near to each other, and the very different ones far from
+each other.

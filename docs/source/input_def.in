@@ -1,1 +1,0 @@
-INPUT = @CMAKE_SOURCE_DIR@/src @CMAKE_SOURCE_DIR@/bindings @CMAKE_SOURCE_DIR@/docs/source/group_defs.dox @CMAKE_CURRENT_BINARY_DIR@

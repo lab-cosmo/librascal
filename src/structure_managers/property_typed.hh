@@ -279,7 +279,7 @@ namespace rascal {
     }
 
     //! Accessor for property by index for dynamically sized properties
-    reference operator[](const size_t & index) {
+    reference operator[](size_t index) {
       return Value_t::get_ref(this->values[index * this->get_nb_comp()],
                               this->get_nb_row(), this->get_nb_col());
     }
