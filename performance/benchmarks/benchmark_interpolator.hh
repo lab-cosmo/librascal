@@ -85,7 +85,7 @@ namespace rascal {
    * interpolator
    */
   template <RefinementMethod_t RefinementMethod, class ErrorMethod>
-  Vector_t compute_pointwise_absolute_grid_error(
+  Matrix_t compute_pointwise_absolute_grid_error(
       std::shared_ptr<
           InterpolatorMatrixUniformCubicSpline<RefinementMethod, ErrorMethod>> &
           intp) {
@@ -234,9 +234,6 @@ namespace rascal {
     bool random{true};
     const int nb_ref_points = 100000;
     math::Vector_t ref_points{Vector_t::Zero(nb_ref_points)};
-
-    // SupportedFunc func_name{SupportedFunc::Identity};
-    // std::function<double(double)> func{};
 
    protected:
     // could be moved to a base class
@@ -439,8 +436,8 @@ namespace rascal {
                      {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}};
       json hypers{
           {"gaussian_density", fc_hypers},
-          {"max_radial", max_radial},
-          {"max_angular", max_angular},
+          {"max_radial", this->max_radial},
+          {"max_angular", this->max_angular},
           {"cutoff_function", {{"cutoff", {{"value", 2.0}, {"unit", "A"}}}}}};
       // we cannot copy radial contribution to the lambda function, because
       // the copying has been disabled

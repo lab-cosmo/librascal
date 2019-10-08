@@ -29,7 +29,7 @@
 
 namespace rascal {
 
-  // Hyp1f1 function
+  // Benchmark for Hyp1f1 without interpolator
   template <class BFixture>
   void BM_Hyp1f1(benchmark::State & state, BFixture & fix) {
     fix.SetUp(state);
@@ -54,7 +54,7 @@ namespace rascal {
     state.counters.insert({{"nb_iterations", fix.nb_iterations}});
   }
 
-  // Hyp1f1 using the interpolator
+  // Benchmark for Hyp1f1 with interpolator
   template <class BFixture>
   void BM_Hyp1f1Intp(benchmark::State & state, BFixture & fix) {
     fix.SetUp(state);
@@ -83,6 +83,7 @@ namespace rascal {
          {"grid_size", grid_size}});
   }
 
+  // Benchmark for RadialContribution without interpolator
   template <class Fix>
   void BM_RadCon(benchmark::State & state, Fix & fix) {
     fix.SetUp(state);
@@ -95,7 +96,7 @@ namespace rascal {
     state.SetComplexityN(fix.nb_iterations);
   }
 
-  // Hyp1f1 using the interpolator
+  // Benchmark for RadialContribution with interpolator
   template <class BFixture>
   void BM_RadConIntp(benchmark::State & state, BFixture & fix) {
     fix.SetUp(state);
@@ -125,6 +126,7 @@ namespace rascal {
          {"grid_size", grid_size}});
   }
 
+  // Benchmark for SphericalExpansion with or without the interpolator
   template <class BFixture>
   void BM_SphExp(benchmark::State & state, BFixture & fix) {
     fix.SetUp(state);
@@ -133,6 +135,7 @@ namespace rascal {
     }
     // TODO(alex) I would like to print interpolator information, but it is
     // covered under a lot of layers, not sure if
+    state.SetComplexityN(fix.max_radial*(fix.max_angular+1));
     state.counters.insert({{"max_radial", fix.max_radial},
                            {"max_angular", fix.max_angular},
                            {"cutoff", fix.cutoff},
