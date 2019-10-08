@@ -33,9 +33,9 @@ default_job: &default_job
     - run:
         name: Run tests
         command: cd build && ctest --output-on-failure
-    - run:
-        name: Run benchmarks
-        command: cd build && make benchmarks
+    # - run:
+    #    name: Run benchmarks
+    #    command: cd build && make benchmarks
 
 jobs:
   gcc-5:
