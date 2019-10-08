@@ -1,6 +1,6 @@
 import os
 import inspect
-from IPython.display import Markdown, display, clear_output
+from IPython.display import Markdown, display, clear_output, Image, HTML
 import ipywidgets as widgets
 import numpy as np
 import ase
@@ -12,10 +12,12 @@ except:
 from matplotlib import pyplot as plt
 import time
 from tqdm import tqdm_notebook as tqdm
+import pandas as pd
+
 style = {'description_width': 'initial'}
 hyper_vals = {
-            # "body order": dict(options = [1,2,3], name = "Body Order"),
-            "interaction_cutoff":dict(options = [2.0,5.0],name = r"$r_{cut}$"),
+            "body_order": dict(options = [1,2,3], name = "Body Order"),
+            "interaction_cutoff":dict(options = [0.6,5.0],name = r"$r_{cut}$"),
             "max_radial":dict(options =  [0, 10],name = r"$n_{max}$"),
             "max_angular": dict(options = [0, 10],name = r"$l_{max}$"),
             "gaussian_sigma_constant": dict(options = [0.01,1.0],name = r"$\sigma$"),
@@ -23,7 +25,7 @@ hyper_vals = {
             "cutoff_smooth_width":dict(fixed=0.5),
             }
 hyper_dict = {"Minimal Power Spectrum":dict(
-                              # soap_type="PowerSpectrum",
+                              body_order=2,
                               interaction_cutoff=3.5,
                               max_radial=2,
                               max_angular=1,
@@ -32,7 +34,7 @@ hyper_dict = {"Minimal Power Spectrum":dict(
                               cutoff_smooth_width=0.,
                               ),\
           "Power Spectrum":dict(
-                              # soap_type="PowerSpectrum",
+                              body_order=2,
                               interaction_cutoff=3.5,
                               max_radial=6,
                               max_angular=6,
@@ -41,18 +43,20 @@ hyper_dict = {"Minimal Power Spectrum":dict(
                               cutoff_smooth_width=0.5,
                               ),
           "Radial Spectrum": dict(
-                                  # soap_type="RadialSpectrum",
+                                  body_order=1,
                                   interaction_cutoff=3.5,
                                   max_radial=6,
                                   max_angular=0,
                                   gaussian_sigma_constant=0.4,
                                   gaussian_sigma_type="Constant",
                                   cutoff_smooth_width=0.5,
-                                  )
+                                  ),
           }
 known_properties = dict(CS="atomic", dft_formation_energy_per_atom_in_eV="global")
 ignore= ['Natoms', 'numbers','Name','positions','cutoff','nneightol',"NAME"]
 
+def wrap_body_order(hyperparams):
+    return {"soap_type":["RadialSpectrum", "PowerSpectrum","BiSpectrum"][hyperparams["body_order"]-1] , **{h:hyperparams[h] for h in hyperparams if h!='body_order'}}
 def markdown_table_from_dict(d, headers):
     return '<table>  <thead><tr>{}</tr></thead><tbody>'.format(''.join(['<th>{}</th>'.format(h) for h in headers]))+''.join(['<tr><td>{}</td>{}</tr>'.format(key, ''.join(['<td>{}</td>'.format(v) for v in d[key]])) for key in d])+'</tbody></table>'
 def split_dataset(frames, train_fraction, seed=10):
@@ -133,7 +137,7 @@ def bra(X):
 def braket(X,Y):
     return "\\left\\langle{}|{}\\right\\rangle".format(X,Y)
 class learning_tutorial(object):
-    def __init__(self, input_file='./data/small_molecules-1000.xyz',training_percentage=0.8, interactive = False, verbose=True, hyperparameters = dict(**hyper_dict['Power Spectrum']), number_of_frames=None, property=None):
+    def __init__(self, input_file='./data/learning/small_molecules-1000.xyz',training_percentage=0.8, interactive = False, verbose=True, hyperparameters = dict(**hyper_dict['Power Spectrum']), number_of_frames=None, property=None):
         self.zeta = 2
         self.Lambda = 5e-3
 
@@ -141,7 +145,7 @@ class learning_tutorial(object):
         self.verbose = verbose
         self.verbosity_wrap = lambda s: (None if not verbose else display(Markdown(s)))
 
-        file_options = ['./data/{}'.format(f) for f in os.listdir('./data') if f.endswith('xyz')]
+        file_options = ['./data/learning/{}'.format(f) for f in os.listdir('./data/learning/') if f.endswith('xyz')]
         if(input_file!=None):
             file_options.insert(0, input_file)
             if(input_file in file_options[1:]):
@@ -264,7 +268,7 @@ class learning_tutorial(object):
 
         verbosity_wrap("<br/>We will now train a model on {}.".format(self.sliders['property_to_ml'].value))
 
-        representation = SOAP(**self.hyperparameters)
+        representation = SOAP(**wrap_body_order(self.hyperparameters))
 
         training_properties = np.concatenate(self.properties[self.sliders['property_to_ml'].value][frame_idx])[:,0] if known_properties[self.sliders['property_to_ml'].value]=='atomic' else self.properties[self.sliders['property_to_ml'].value][frame_idx]
 
@@ -359,20 +363,20 @@ class learning_tutorial(object):
         for nf in tqdm(np.random.randint(2,ref, size=min(N, ref))):
             f(frame_idx=np.random.randint(len(self.frames),size=nf), pretend=True)
 class SOAP_tutorial(object):
-    def __init__(self, input_file='./data/small_molecules-1000.xyz',training_percentage=0.8, interactive = False, verbose=True, hyperparameters = dict(**hyper_dict['Power Spectrum']), number_of_frames=None, property=None):
+    def __init__(self, input_file='./data/molecules/1-Propanol.xyz',training_percentage=0.8, interactive = False, verbose=True, hyperparameters = dict(**hyper_dict['Power Spectrum']), number_of_frames=None, property=None):
 
-        self.hyperparameters = hyperparameters
+        self.hyperparameters = {h:hyperparameters[h] if h in hyperparameters else hyper_dict['Power Spectrum'][h] for h in hyper_dict['Power Spectrum']}
         self.verbose = verbose
         self.verbosity_wrap = lambda s: (None if not verbose else display(Markdown(s)))
 
-        file_options = ['./data/{}'.format(f) for f in os.listdir('./data') if f.endswith('xyz')]
+        file_options = ['./data/molecules/{}'.format(f) for f in os.listdir('./data/molecules/') if f.endswith('xyz')]
         if(input_file!=None):
             file_options.insert(0, input_file)
             if(input_file in file_options[1:]):
                 file_options.pop(file_options[1:].index(input_file)+1)
         self.input_file = file_options[0] if input_file==None else input_file
-        self.frames=np.array(read(self.input_file, ":"))
-
+        self.frames=read(self.input_file, ":")
+        self.interactive=interactive
         self.sliders = {val:
                         widgets.FloatSlider(value = self.hyperparameters.get(val, hyper_vals[val]['options'][0]),
                                     min = hyper_vals[val]['options'][0],
@@ -399,9 +403,6 @@ class SOAP_tutorial(object):
                                          )
                         for val in hyper_vals if 'fixed' not in hyper_vals[val]}
 
-
-        self.sliders['number_of_frames'] = widgets.IntSlider(value=int(len(self.frames)*0.2) if number_of_frames==None else number_of_frames, min = 1, max = len(self.frames), \
-                                                    description="Number of Frames", step=1, style=style)
         if(interactive):
             self.input_button = widgets.Dropdown(options=[*file_options],#, "Other"],
                                          style=style,\
@@ -411,48 +412,126 @@ class SOAP_tutorial(object):
             self.input_button.observe(self.get_input, names='value')
             display(self.input_button)
             self.preset_button = _button_template_(list(hyper_dict.keys()), "SOAP Presets: ", self.disp_func)
+            self.compute_button = widgets.ToggleButton(
+                                    value=False,
+                                    description='Compute SOAP Vectors',
+                                    disabled=False,
+                                    button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                                    tooltip='Description',
+                                    icon='check',
+                                    layout=widgets.Layout(width='50%')
+                                )
 
-            slider_order = ['property_to_ml', 'kernel_type', 'number_of_frames', 'training_percentage',*list(hyper_vals.keys())]
+            self.compute_button.observe(self.output_soap_vectors, names='value')
+            display(self.compute_button)
+
+            slider_order = ['property_to_ml', 'kernel_type', 'training_percentage',*list(hyper_vals.keys())]
             for s in slider_order:
                 if(s in self.sliders):
                     display(self.sliders[s])
                     self.sliders[s].observe(lambda change: self.change_func(change), names='value')
-    def reset_ML(self, inp_change=False):
-        if(inp_change):
-            self.sliders['number_of_frames'].max = len(self.frames)
-            self.sliders['number_of_frames'].value = int(len(self.frames)*0.2)
+        self.get_input(a=None)
+
     def change_func(self,change):
         change['owner'].value = change['new']
         for s in self.hyperparameters:
             if(s in self.sliders):
                 if(self.hyperparameters[s]!=self.sliders[s].value):
                     self.hyperparameters[s] = self.sliders[s].value
-        self.reset_ML()
     def disp_func(self,a):
         for s in self.sliders:
             if(s in self.hyperparameters):
                 self.hyperparameters[s] = hyper_dict[self.preset_button.value][s]
                 self.sliders[s].value = self.hyperparameters[s]
-        self.reset_ML()
     def get_input(self,a):
-        inp = self.input_button.value# if self.input_button.value!='Other' else input("Which file do you want to load?")
-        self.input_file = inp
-        self.frames = np.array(read(self.input_file, ":"))
-        self.reset_ML(True)
+        try:
+            inp = self.input_button.value# if self.input_button.value!='Other' else input("Which file do you want to load?")
+            self.input_file = inp
+        except:
+            pass
+        self.frames = read(self.input_file, ":")
+        self.positions = self.frames[0].get_positions()
+        self.symbols = np.array([i for i in self.frames[0].symbols])
+        self.format_positions()
+        self.inds = sorted(range(len(self.positions)), key=lambda i: (self.symbols[i]=="H",self.symbols[i],self.positions[i][0]))
+    def format_positions(self):
+        from sklearn.decomposition import PCA
+        print(self.positions)
+        pca = PCA(n_components = 3)
+        pca.fit([self.positions[i] for i in range(len(self.positions)) if self.symbols[i]!="H"])
+        self.positions = pca.transform(self.positions)
+        print(self.positions)
+
     def output_params(self):
-        self.verbosity_wrap('Our input file is {}, of which we are using {} frames.'.format(self.input_file, self.sliders['number_of_frames'].value))
+        self.verbosity_wrap('Our input file is {}.'.format(self.input_file))
         self.verbosity_wrap("<br/>Our hyperparameters are {}".format(markdown_table_from_dict({hyper_vals[k]['name']:[self.hyperparameters[k]] for k in self.hyperparameters if 'fixed' not in hyper_vals[k]}, headers =["Parameter", "Value"])))
     def set(self, value_name, value):
         assert value_name in self.sliders
         self.sliders[value_name].value=value
-    def estimate_time(self, x=None, y=None, f=None, N=20, ref =None):
-        if(N<=0):
-            return
-        if(x==None or y==None or f==None or ref==None):
-            x=self.est_frames
-            y=self.est_times
-            f=self.train_krr_model_func
-            ref = int(0.25*self.sliders['number_of_frames'].value*self.sliders['training_percentage'].value)
+    def get_soap_vectors(self,average=False):
+        representation = SOAP(**wrap_body_order(self.hyperparameters))
+        features = representation.transform(self.frames).get_dense_feature_matrix(representation)
+        if(average):
+            features=np.sum(features, axis=0)
+        return features
+    def output_soap_vectors(self, a=None):
+        sv = self.get_soap_vectors(True)
+        print(sv)
+        if(self.interactive):
+            self.compute_button.value = False
+    def show_vectors(self, show=True):
+        order=[i for i in self.inds if self.symbols[i]!="H"]
+        super_scripts = [list(self.symbols[self.inds][:ai]).count(self.symbols[ai])+1 for ai in order]
+        vectors = self.get_soap_vectors()
+        data = np.array([['%1.3f' % (np.dot(vectors[i], vectors[j])/(np.linalg.norm(vectors[i])*np.linalg.norm(vectors[j]))) for i in order] for j in order])
+        labels = [r'${}{}$'.format(self.frames[0].symbols[i],'^{{({})}}'.format(super_scripts[i]) if list(self.symbols).count(self.symbols[i])>1 else '') for i in order]
+        df = pd.DataFrame(data=data, columns=labels, index=labels)
+        df.name = "Similarity Kernel"
+        if(show):
+            display(HTML(df.to_html()))
+        # df[:,0] = labels
+        return df
+    def show_molecule(self, show=True):
+        import os
+        img_name = './images/cache/'+self.input_file[-list(reversed(self.input_file)).index('/'):].replace('xyz','png')
+        if(not os.path.exists(img_name)):
+            from ase.data import covalent_radii, atomic_numbers
+            from matplotlib import pyplot, patches
+            from ase.data.colors import jmol_colors
+            style = {
+             "horizontalalignment":"center",
+             "verticalalignment":"center",
+             "fontsize":12
+            }
+            fig, ax = pyplot.subplots(1)
 
-        for nf in tqdm(np.random.randint(2,ref, size=min(N, ref))):
-            f(frame_idx=np.random.randint(len(self.frames),size=nf), pretend=True)
+            for ai in range(len(self.positions)):
+                super_script = list(self.symbols[self.inds][:ai]).count(self.symbols[ai])+1
+                ax.text(*self.positions[ai][:2], \
+                        s=r'${}{}$'.format(self.symbols[ai],'^{{({})}}'.format(super_script) if self.symbols[ai]!='H' and list(self.symbols).count(self.symbols[ai])>1 else ''), \
+                        **style,
+                        zorder=self.positions[ai][-1]+0.01
+                        )
+                ax.add_artist(patches.Circle(self.positions[ai][:2],\
+                                             covalent_radii[atomic_numbers[self.symbols[ai]]], \
+                                             facecolor= jmol_colors[atomic_numbers[self.symbols[ai]]], \
+                                             edgecolor='k', \
+                                             zorder=self.positions[ai][-1]))
+            ax.axis('off')
+            bounds = [*np.min(self.positions, axis=0), *np.max(self.positions, axis=0)]
+            ax.set_xlim([bounds[0]-1.5, bounds[3]+1.5])
+            ax.set_ylim([bounds[1]-1.5, bounds[5]+1.5])
+            ax.set_aspect('equal')
+            fig.savefig(img_name)
+            fig.clf()
+        if(show):
+            display(Image(img_name))
+            os.remove(img_name)
+        return img_name
+    def show_all(self, ax=None):
+        from matplotlib import pyplot, patches
+        m=self.show_molecule(show=False)
+        df=self.show_vectors(show=False)
+        # df['image']=[m]
+        display(HTML("<table><tr><td><img src="+m+"></td><td>" + df.to_html()+"</td></tr></table>"))
+        # display(Image(m))
