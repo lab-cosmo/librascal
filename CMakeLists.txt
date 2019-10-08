@@ -175,8 +175,6 @@ if(${BUILD_PROFILES})
    get_filename_component(binaryname  ${binaryfile} NAME_WE)
    add_executable(${binaryname} ${binaryfile})
    target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
-   target_link_libraries(${binaryname} Threads::Threads)
-   target_link_libraries(${binaryname} benchmark)
  endforeach(binaryfile ${binaries})
 endif(${BUILD_PROFILES})
 
