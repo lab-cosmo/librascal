@@ -92,6 +92,7 @@ namespace rascal {
         tmp = fix.func(fix.ref_points(i % fix.nb_ref_points));
       }
     }
+    state.SetComplexityN(fix.nb_iterations);
   }
 
   // Hyp1f1 using the interpolator
