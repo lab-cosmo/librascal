@@ -142,7 +142,7 @@ namespace rascal {
                 0., 0.,                      c;
 
 
-      //   // prism cell?
+      // prism cell
       cell_2 << a,  0.,                0.5 * a ,
                 0., c ,                     0. ,
                 0., 0., std::sqrt(3.) / 2. * a ;
@@ -150,20 +150,11 @@ namespace rascal {
       auto h{std::sqrt(3.) / 2. * a};
       auto r{std::sqrt(3.) / 6. * a};
 
-      Eigen::Vector3d p_1(0, h - r, c / 2);
-      // auto p_1 = 1. / 3. * cell_1.col(1) + 1. / 2. * cell_1.col(2);
-
-      std::cout << "p1 " << p_1[0] << " " << p_1[1] << " " << p_1[2]
-                << std::endl;
+      Eigen::Vector3d p_1(0, h - r, c / 2.);
 
       positions_1 << 0.0, p_1[0], 0.0, p_1[1], 0.0, p_1[2];
 
-      Eigen::Vector3d p_2(a / 2, c / 2, r);
-      // auto p_2 = 1. / 2. * cell_2.col(0) + 1. / 2. * cell_2.col(1) +
-      //            0.0446582 * cell_2.col(2);
-
-      std::cout << "p2 " << p_2[0] << " " << p_2[1] << " " << p_2[2]
-                << std::endl;
+      Eigen::Vector3d p_2(a / 2., c / 2., r);
 
       positions_2 << 0.0, p_2[0], 0.0, p_2[1], 0.0, p_2[2];
 
