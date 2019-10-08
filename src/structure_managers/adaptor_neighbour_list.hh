@@ -964,7 +964,7 @@ namespace rascal {
         max_coord += cell(i, col) * static_cast<double>(cell(i, col) > 0.);
       }
       // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
-      mesh_min[i] = min_coord - 2.1 * cutoff;
+      mesh_min[i] = min_coord - 2. * cutoff;
 
       // outer mesh, including one layer of emtpy cells
       double lmesh{max_coord - mesh_min[i] + 2 * cutoff};
