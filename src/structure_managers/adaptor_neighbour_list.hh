@@ -357,8 +357,8 @@ namespace rascal {
       auto pos_greater = pos.array() - max.array();
 
       // check if shifted position inside maximum mesh positions
-      auto f_lt = (pos_lower.array() >= 0.).all();
-      auto f_gt = (pos_greater.array() <= 0.).all();
+      auto f_lt = (pos_lower.array() > 0.).all();
+      auto f_gt = (pos_greater.array() < 0.).all();
 
       if (f_lt and f_gt) {
         return true;

@@ -234,6 +234,7 @@ namespace rascal {
     constexpr bool verbose{false};
 
     cutoff = 1.01;
+    std::vector<int> expected_number_of_neighbours{12, 56};
 
     if (verbose) {
       std::cout << "HCP test cutoff initial " << cutoff << std::endl;
@@ -297,9 +298,20 @@ namespace rascal {
         }
       }
 
+      // Check if both atoms in different cells have the same number of
+      // neighbours
       BOOST_CHECK_EQUAL_COLLECTIONS(
           neighbours_per_atom1.begin(), neighbours_per_atom1.end(),
           neighbours_per_atom2.begin(), neighbours_per_atom2.end());
+      // Additionally check for the expected number of neighbours (known)
+
+      int n_expected{expected_number_of_neighbours[i-1]};
+      for (auto n_neigh : neighbours_per_atom1) {
+        BOOST_CHECK_EQUAL(n_neigh, n_expected);
+      }
+      for (auto n_neigh : neighbours_per_atom2) {
+        BOOST_CHECK_EQUAL(n_neigh, n_expected);
+      }
 
       for (auto i{0}; i < natoms; ++i) {
         if (verbose) {

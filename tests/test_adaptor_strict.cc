@@ -3,6 +3,7 @@
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   04 Jun 2018
  *
@@ -418,7 +419,7 @@ namespace rascal {
      * leads to a difference in number of neighbours. Therefore the strict
      * cutoff is check to ensure the exact same number of neighbours.
      */
-    constexpr bool verbose{true};
+    constexpr bool verbose{false};
 
     if (verbose) {
       std::cout << "HCP test " << cutoff << std::endl;
@@ -435,7 +436,7 @@ namespace rascal {
       neighbours_per_atom1.resize(0);
 
       if (verbose) {
-        std::cout << "hcp test cutoff " << cutoff_tmp << std::endl;
+        std::cout << "hcp test cutoff = " << cutoff_tmp << std::endl;
       }
 
       auto pair_manager1{
