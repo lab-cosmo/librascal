@@ -56,7 +56,7 @@ namespace rascal {
           }
         }
       }
-    };
+    }
     ~StrictNLKernelFixture() = default;
 
     std::vector<json> representation_hypers{};
@@ -92,9 +92,8 @@ namespace rascal {
     using Representation_t = CalculatorSphericalInvariants;
 
     DataSphericalInvariantsKernelFixture() {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(ref_filename, ref_data_ubjson);
-      auto datas = json::from_ubjson(ref_data_ubjson);
+      auto datas =
+          json::from_ubjson(internal::read_binary_file(this->ref_filename));
       this->ref_data = datas["rep_info"]["spherical_invariants"];
       this->filename = datas["filename"];
       this->start = datas["start"];

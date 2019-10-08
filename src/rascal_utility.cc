@@ -19,8 +19,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rascal_utility.hh"
 #include <cstdlib>
+#include <fstream>
+#include <iterator>
+
+#include "rascal_utility.hh"
 
 #ifdef __GNUG__
 #include <cxxabi.h>
@@ -46,4 +49,35 @@ void rascal::internal::replace(std::string & string,
     string.replace(pos, pattern.size(), replacement);
     pos = string.find(pattern, pos + replacement.size());
   }
+}
+
+std::vector<uint8_t>
+rascal::internal::read_binary_file(const std::string & filename) {
+  std::ifstream file(filename, std::ios::binary);
+  if (not file.is_open()) {
+    throw std::runtime_error("Could not open the file: " + filename);
+  }
+
+  // Stop eating new lines in binary mode!!!
+  file.unsetf(std::ios::skipws);
+
+  file.seekg(0, std::ios::end);
+  auto size = file.tellg();
+  file.seekg(0, std::ios::beg);
+
+  std::vector<uint8_t> result;
+  result.reserve(size);
+  result.insert(result.begin(), std::istream_iterator<uint8_t>(file),
+                std::istream_iterator<uint8_t>());
+  return result;
+}
+
+std::string
+rascal::internal::get_filename_extension(const std::string & filename) {
+  auto const pos = filename.find_last_of(".");
+  std::string extension;
+  if (pos != std::string::npos) {
+    extension = filename.substr(pos + 1);
+  }
+  return extension;
 }

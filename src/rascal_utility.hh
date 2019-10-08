@@ -32,10 +32,6 @@
 #include <string>
 #include <vector>
 #include <typeinfo>
-#include <tuple>
-#include <map>
-#include <fstream>
-#include <iterator>
 #include <type_traits>
 
 namespace rascal {
@@ -262,53 +258,14 @@ namespace rascal {
       return full_name;
     }
 
-    /**
-     * Reads a binary file and puts it into a vector
-     * Taken from
-     * https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars
-     * // NOLINT
-     */
-    template <typename BINARY>
-    void read_binary_file(const std::string & filename,
-                          std::vector<BINARY> & vec) {
-      // open the file:
-      std::ifstream file(filename, std::ios::binary);
+    //! Reads a binary file
+    //!
+    //! @throw std::runtime_error if the file can't be opened
+    std::vector<uint8_t> read_binary_file(const std::string & filename);
 
-      if (not file.is_open()) {
-        throw std::runtime_error(std::string("Could not open the file: ") +
-                                 filename);
-      }
-      // Stop eating new lines in binary mode!!!
-      file.unsetf(std::ios::skipws);
-
-      // get its size:
-      std::streampos fileSize;
-
-      file.seekg(0, std::ios::end);
-      fileSize = file.tellg();
-      file.seekg(0, std::ios::beg);
-
-      // reserve capacity
-      vec.reserve(fileSize);
-
-      // read the data:
-      vec.insert(vec.begin(), std::istream_iterator<BINARY>(file),
-                 std::istream_iterator<BINARY>());
-    }
-
-    /**
-     * extract the extension from a filename as the charaters after the last
-     * "."
-     * if it is not found it return an empty string
-     */
-    inline std::string get_filename_extension(const std::string & filename) {
-      auto const pos = filename.find_last_of(".");
-      std::string extension{""};
-      if (pos != std::string::npos) {
-        extension = filename.substr(pos + 1);
-      }
-      return extension;
-    }
+    //! Extract the extension from a filename as the charaters after the last
+    //! ".". If no extension is found, return an empty string.
+    std::string get_filename_extension(const std::string & filename);
 
   }  // namespace internal
 }  // namespace rascal
