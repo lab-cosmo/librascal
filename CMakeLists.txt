@@ -159,6 +159,13 @@ if(${BUILD_BENCHMARKS})
    target_link_libraries(${binaryname} Threads::Threads)
    target_link_libraries(${binaryname} benchmark)
  endforeach(binaryfile ${binaries})
+
+ # Runs all benchmarks in succession, add new benchmarks with a new COMMAND
+ add_custom_target(
+     benchmarks
+     COMMAND ./benchmark_interpolator --benchmark_counters_tabular=true
+     COMMAND ./chrono_benchmark_interpolator
+   )
 endif(${BUILD_BENCHMARKS})
 
 if(${BUILD_PROFILES})
@@ -405,9 +412,3 @@ if(AUTOPEP8_FOUND)
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts" "")
 endif()
 
-# Runs all benchmarks in succession, add new benchmarks with a new COMMAND
-add_custom_target(
-    benchmarks
-    COMMAND ./benchmark_interpolator --benchmark_counters_tabular=true 
-    COMMAND ./chrono_benchmark_interpolator
-  )

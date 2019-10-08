@@ -31,10 +31,10 @@ default_job: &default_job
         command: cd build && make -j2
     - run:
         name: Run tests
-        command: cd build && ctest --output-on-failure
+        command: cd build && make -j2 && ctest --output-on-failure
     - run:
         name: Run benchmarks
-        command: cd build && make benchmarks 
+        command: cd build && make -j2 && make benchmarks 
 
 jobs:
   gcc-5:
