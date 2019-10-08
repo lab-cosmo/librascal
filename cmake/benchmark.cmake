@@ -10,22 +10,6 @@ download_external_project(benchmark
 
 set(benchmark_SOURCE_DIR "${_benchmark_external_dir}/${package}")
 
-
-# TODO(alex) solve BENCHMARK_ENABLE_GTEST_TESTS error
-# If we want to include tests then:
-# If enabled the -std=c++03 flag is enabled when compiling cxx03_test.cc thus
-# resulting in an error. We do not need the test anyway, but the cmake file does
-# things I do not get outside this project, it is hard to locate the reason for 
-# any compiling error.
-
-# We do not require to run the tests of benchmark, but in case
-#download_external_project(googletest
-#  URL "https://github.com/google/googletest.git"
-#  BACKEND GIT
-#  THIRD_PARTY_SRC_DIR ${benchmark_SOURCE_DIR}
-#  ${_googletest_update}
-#  )
-
 # turns BENCHMARK settings off which are not targeted
 set(BENCHMARK_ENABLE_TESTING CACHE BOOL OFF)
 set(BENCHMARK_ENABLE_GTEST_TESTS CACHE BOOL OFF)
