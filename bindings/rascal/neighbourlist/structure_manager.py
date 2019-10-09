@@ -1,8 +1,12 @@
+from collections.abc import Iterable
+from functools import reduce
+from operator import and_
+
+import numpy as np
+
 from ..lib import neighbour_list
 from .base import (NeighbourListFactory, is_valid_structure,
  adapt_structure, StructureCollectionFactory)
-from collections.abc import Iterable
-import numpy as np
 
 class AtomsList(object):
     """
@@ -122,6 +126,11 @@ def unpack_ase(frame):
     -------
     StructureManagerCenters
         base structure manager.
+
+    If the frame has an ase.atoms.arrays entry called
+    'center_atoms_mask' then it will be used as the center mask
+    (surprise) for any representations computed on this
+    StructureManager.
     """
     cell = frame.get_cell()
     positions = frame.get_positions()
@@ -133,4 +142,85 @@ def unpack_ase(frame):
     else:
         center_atoms_mask = np.ones_like(numbers, dtype=bool)
 
-    return adapt_structure(cell=cell, positions=positions, atom_types=numbers, pbc=pbc, center_atoms_mask=center_atoms_mask)
+    return adapt_structure(cell=cell, positions=positions,
+                           atom_types=numbers, pbc=pbc,
+                           center_atoms_mask=center_atoms_mask)
+
+
+def add_center_atoms_mask_by_id(frame, id_select=None, id_blacklist=None):
+    """Add a center-select mask to an ASE atoms object, by index
+
+    Parameters
+    ----------
+    frame: ase.Atoms
+        Atomic structure to mask
+    id_select: list of int
+        List of atom IDs to select
+    id_blacklist: list of int
+        List of atom IDs to exclude
+
+    The default is to select all atoms.  If id_select is provided,
+    select only those atoms.  If only id_blacklist is provided, select
+    all atoms _except_ those in the blacklist.  If both are provided,
+    atoms are first selected based on id_select and then excluded based
+    on id_blacklist.
+
+    The Atoms object is modified directly; nothing is returned.
+    """
+    if id_select is not None:
+        atoms_select = np.arange(frame.get_number_of_atoms())
+    else:
+        atoms_select = np.array(id_select)
+    if id_blacklist is not None:
+        atoms_select = np.setdiff1d(atoms_select, id_blacklist)
+    mask = np.zeros((frame.get_number_of_atoms(),), dtype='bool')
+    mask[atoms_select] = True
+    frame.arrays['center_atoms_mask'] = mask
+
+
+def add_center_atoms_mask_species(frame, species_select=[],
+                                  species_blacklist=[]):
+    """Add a center-select mask to an ASE atoms object, by atomic species
+
+    Parameters
+    ----------
+    frame: ase.Atoms
+        Atomic structure to mask
+    species_select: list of int or str
+        List of atomic numbers, or species symbols, to select
+        Should be of consistent type across list
+    species_blacklist: list of int or str
+        List of atomic numbers, or species symbols, to exclude
+        Should be of consistent type across list
+
+    The default is to select all atoms.  If species_select is provided,
+    select only those atoms whose species is in the list.  If only
+    species_blacklist is provided, select all atoms _except_ those whose
+    species is in the blacklist.  If both are provided, atoms are first
+    selected based on species_select and then excluded based
+    on species_blacklist.
+
+    The Atoms object is modified directly; nothing is returned.
+    """
+    select_is_str = reduce(and_,
+                           map(lambda x: isinstance(x, str), species_select))
+    select_is_int = reduce(and_,
+                           map(lambda x: isinstance(x, int), species_select))
+    blacklist_is_str = reduce(
+            and_, map(lambda x: isinstance(x, str), species_blacklist))
+    blacklist_is_int = reduce(
+            and_, map(lambda x: isinstance(x, int), species_blacklist))
+    if select_is_str:
+        id_select = np.isin(frame.get_chemical_symbols(), species_select)
+    elif select_is_int:
+        id_select = np.isin(frame.get_atomic_numbers(), species_select)
+    else:
+        raise ValueError("Species select must be either all string or all int")
+    if blacklist_is_str:
+        id_blacklist = np.isin(frame.get_chemical_symbols(), species_blacklist)
+    elif blacklist_is_int:
+        id_blacklist = np.isin(frame.get_atomic_numbers(), species_blacklist)
+    else:
+        raise ValueError(
+                "Species blacklist must be either all string or all int")
+    add_center_atoms_mask_by_id(frame, id_select, id_blacklist)
