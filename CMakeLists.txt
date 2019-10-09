@@ -149,23 +149,29 @@ add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 if(${BUILD_BENCHMARKS})
   find_package(Threads REQUIRED)
   add_external_package(benchmark VERSION 1.5.0 CONFIG)
+  set(RUN_BENCHMARKS_FLAGS "" CACHE 
+      "Additional flags to run all benchmarks. See ./benchmark_interpolator"
+      "--help for available flags")
+  mark_as_advanced(RUN_BENCHMARKS_FLAGS)
 
- # Compile benchmark files
- file( GLOB binaries "${CMAKE_SOURCE_DIR}/performance/benchmarks/*.cc")
- foreach(binaryfile ${binaries})
-   get_filename_component(binaryname  ${binaryfile} NAME_WE)
-   add_executable(${binaryname} ${binaryfile})
-   target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
-   target_link_libraries(${binaryname} Threads::Threads)
-   target_link_libraries(${binaryname} benchmark)
- endforeach(binaryfile ${binaries})
+  # Compile benchmark files
+  file( GLOB binaries "${CMAKE_SOURCE_DIR}/performance/benchmarks/*.cc")
+  foreach(binaryfile ${binaries})
+    get_filename_component(binaryname  ${binaryfile} NAME_WE)
+    add_executable(${binaryname} ${binaryfile})
+    target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
+    target_link_libraries(${binaryname} Threads::Threads)
+    target_link_libraries(${binaryname} benchmark)
+  endforeach(binaryfile ${binaries})
 
- # Runs all benchmarks in succession, add new benchmarks with a new COMMAND
- add_custom_target(
-     benchmarks
-     COMMAND ./benchmark_interpolator --benchmark_counters_tabular=true
-     COMMAND ./chrono_benchmark_interpolator
-   )
+  # Runs all benchmarks in succession, add new benchmarks with a new COMMAND
+
+  add_custom_target(
+      benchmarks
+      COMMAND ./benchmark_interpolator
+                         --benchmark_counters_tabular=true
+                         ${RUN_BENCHMARKS_FLAGS}
+    )
 endif(${BUILD_BENCHMARKS})
 
 if(${BUILD_PROFILES})
