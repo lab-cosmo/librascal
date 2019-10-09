@@ -135,6 +135,20 @@ namespace rascal {
     inline double pow(double x, double n) { return std::pow(x, n); }
 
     /**
+     * Modulo that follows python standard, i.e. (-3) % 5 == 2 (python) and not
+     * (-3) % 5 == -3 (C++).
+     *
+     * @param divisor is a positive divisor
+     * @tparam Num type of the double modulo
+     */
+    template <class Num>
+    Num py_mod(Num x, Num divisor) {
+      assert(divisor > 0.);
+      Num m{std::fmod(x, divisor)};
+      return m + (m < 0 ? divisor : 0);
+    }
+
+    /**
      * Defines an integer power functor, which is used as CustomUnaryOp object
      * to apply elementwise integer power operations on an Eigen::MatrixBase
      * object e.g. :
@@ -154,6 +168,15 @@ namespace rascal {
       explicit MakePositiveIntegerPower(size_t b) : b{b} {}
 
       Scalar operator()(const Scalar & a) const { return pow(a, this->b); }
+    };
+
+    /**
+     * Defines a modulo function that follows python standard behaviour
+     */
+    struct MakePositivePyMod {
+      double divisor;
+      explicit MakePositivePyMod(double divisor) : divisor{divisor} {}
+      double operator()(double a) const { return py_mod(a, this->divisor); }
     };
 
     /**

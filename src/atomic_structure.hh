@@ -32,6 +32,7 @@
 
 #include "basic_types.hh"
 #include "json_io.hh"
+#include "math/math_utils.hh"
 
 #include <Eigen/Dense>
 
@@ -111,6 +112,26 @@ namespace rascal {
     AtomicStructure() = default;
 
     inline size_t get_number_of_atoms() const { return positions.cols(); }
+
+    Positions_t get_scaled_positions() {
+      return this->cell.inverse() * this->positions;
+    }
+
+    /**
+     * fold the atoms inside the box if it has periodic boundary conditions
+     */
+    void wrap() {
+      auto scaled_positions = this->get_scaled_positions();
+      auto functor{math::MakePositivePyMod(1.)};
+
+      for (int i_dim{0}; i_dim < Dim; ++i_dim) {
+        if (this->pbc[i_dim]) {
+          scaled_positions.row(i_dim) =
+              scaled_positions.row(i_dim).unaryExpr(functor);
+        }
+      }
+      this->positions = this->cell * scaled_positions;
+    }
 
     /**
      * Set the atomic structure. The expected input are similar to the member

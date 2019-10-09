@@ -86,6 +86,31 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Test the wrapping of the atoms in a structure
+   */
+  BOOST_FIXTURE_TEST_CASE(wrap_positions_test, AtomicStructureFixture) {
+    AtomicStructure<3> structure1{};
+    AtomicStructure<3> structure2{};
+    bool verbose{false};
+
+    // load structure from a json formated file
+    structure1.set_structure(
+        std::string("./reference_data/dummy_structure.json"));
+    structure1.wrap();
+    structure2.set_structure(
+        std::string("./reference_data/dummy_structure_wrapped.json"));
+
+    // check if identical with itself
+    double skin2{1e-15};
+    BOOST_CHECK(structure1.is_similar(structure2, skin2));
+    if (verbose) {
+      std::cout << (structure2.positions - structure1.positions).transpose()
+                << std::endl;
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal
