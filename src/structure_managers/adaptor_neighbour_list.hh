@@ -836,6 +836,10 @@ namespace rascal {
         neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0},
         consider_ghost_neighbours{consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
+    if (this->skin2 > 0.) {
+      throw std::runtime_error(
+          "The verlet list is not functional for the moment, keep skin == 0");
+    }
   }
 
   /* ---------------------------------------------------------------------- */

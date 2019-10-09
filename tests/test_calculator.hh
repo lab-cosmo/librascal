@@ -333,7 +333,7 @@ namespace rascal {
     const std::string filename{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
     const double cutoff{3.};
-    const double cutoff_skin{0.5};
+    const double cutoff_skin{0.};
 
     json factory_args{};
   };
@@ -426,7 +426,7 @@ namespace rascal {
         "reference_data/SiCGe_wurtzite_like.json",
         "reference_data/SiC_moissanite_supercell.json"};
     const double cutoff{2.5};
-    const double cutoff_skin{0.5};
+    const double cutoff_skin{0.};
 
     json factory_args{};
     std::vector<Structure_t> structures{};
