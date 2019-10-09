@@ -1,5 +1,5 @@
 /**
- * file test_structure.hh
+ * @file test_structure.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>
@@ -40,6 +40,8 @@
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/adaptor_increase_maxorder.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/adaptor_half_neighbour_list.hh"
+#include "structure_managers/adaptor_center_contribution.hh"
 #include "structure_managers/make_structure_manager.hh"
 #include "rascal_utility.hh"
 
@@ -98,7 +100,7 @@ namespace rascal {
   struct ManagerFixtureFile : public ManagerFixture<ManagerImplementation> {
     // initialize manager variable
     ManagerFixtureFile()
-        : ManagerFixture<ManagerImplementation>{}, cutoff{1.},
+        : ManagerFixture<ManagerImplementation>{}, cutoff{3.5},
           filename{"simple_cubic_9.json"}  // initialize current fixture
     {
       this->manager->update(filename);
@@ -260,19 +262,19 @@ namespace rascal {
     using ptr_t = double **;
 
     ManagerFixture()
-        : firstneigh{new int *[nb]}, x{new double *[nb]}, f{new double *[nb]},
+        : firstneigh{new int *[6]}, x{new double *[nb]}, f{new double *[nb]},
           vatom{new double *[nb]}, manager{
                                        make_structure_manager<Manager_t>()} {
       manager->update(inum, tot_num, ilist, numneigh,
                       static_cast<int **>(firstneigh), ptr_t(x), ptr_t(f), type,
                       eatom, static_cast<double **>(vatom));
       firstneigh[0] = new int[2];
-      firstneigh[0][0] = 1;
-      firstneigh[0][1] = 2;
-      firstneigh[1] = new int;
-      firstneigh[1][0] = 0;
-      firstneigh[2] = new int;
-      firstneigh[2][0] = 0;
+      firstneigh[0][0] = 3;
+      firstneigh[0][1] = 5;
+      firstneigh[3] = new int;
+      firstneigh[3][0] = 0;
+      firstneigh[5] = new int;
+      firstneigh[5][0] = 0;
 
       for (int i{0}; i < nb; ++i) {
         x[i] = new double[dim];
@@ -288,8 +290,9 @@ namespace rascal {
     ManagerFixture & operator=(const ManagerFixture &) = delete;
     ~ManagerFixture() {
       delete[] firstneigh[0];
-      delete firstneigh[1];
-      delete firstneigh[2];
+      delete firstneigh[3];
+      delete firstneigh[5];
+
       delete[] firstneigh;
       delete[] vatom;
       for (int i{0}; i < nb; ++i) {
@@ -304,13 +307,21 @@ namespace rascal {
 
     int inum{nb};
     int tot_num{nb};  // includes ghosts
-    int ilist[nb]{0, 1, 2};
+    // #BUG8486@(all) how does lammps saves the types for non contiguous atom
+    // tag lists? how would the type list look like in this case? because you
+    // cannot access it simply with the atom tags, e.g. you need to map
+    // 0->0,3->1 and 5->2. I am currently doing this, but how lammps actual do
+    // it? Also we cannot except negative atom tags at the moment and I would
+    // not do it, because lammps does not have negative ones, we do not have the
+    // case of using negative ones, why the extra effort?
+    int ilist[nb]{0, 3,
+                  5};  // TODO(alex): make ilist non-contiguous, eg {1, 28, 12}
     int numneigh[nb]{2, 1, 1};
     int ** firstneigh;
     double ** x;
     double ** f;
     int type[nb]{1, 2, -9};
-    double eatom[3]{2, 1, 1};
+    double eatom[nb]{2, 1, 1};
     double ** vatom;
     std::shared_ptr<Manager_t> manager;
   };
@@ -357,9 +368,10 @@ namespace rascal {
 
     using PairManager_t = AdaptorNeighbourList<Manager_t>;
 
+    const double cutoff{3.};
     PairFixture()
         : pair_manager{make_adapted_manager<AdaptorNeighbourList>(
-              this->fixture.manager, 3.)} {
+              this->fixture.manager, cutoff, false)} {
       this->pair_manager->update();
     }
 
@@ -377,54 +389,44 @@ namespace rascal {
   template <>
   struct ManagerFixture<StructureManagerCenters> {
     using Manager_t = StructureManagerCenters;
+    using ArrayB_t = AtomicStructure<3>::ArrayB_t;
 
     ManagerFixture()
-        : manager{make_structure_manager<Manager_t>()}, positions(22, 3),
-          atom_types(22), cell(3, 3), pbc{{true, true, true}}, cutoff{2.} {
-      // clang-format off
-      cell << 6.19, 2.41, 0.21,
-              0.00, 6.15, 1.02,
-              0.00, 0.00, 7.31;
+        : manager{make_structure_manager<Manager_t>()}, cutoff{2.} {
+      Eigen::ArrayXi to_change_id(50);
+      ArrayB_t center_atoms_mask(50);
+      for (auto & filename : this->filenames) {
+        for (auto & n_is_not_center : this->n_is_not_centers) {
+          structures.emplace_back();
+          structures.back().set_structure(filename);
 
-      positions << 3.689540159937393, 5.123016813620886, 1.994119731169116,
-          6.818437242389163, 2.630056617829216, 6.182500355729062,
-          2.114977334498767, 6.697579639059512, 1.392155450018263,
-          7.420401523540017, 2.432242071439904, 6.380314902118375,
-          1.112656394115962, 7.699900579442317, 3.569715877854675,
-          5.242841095703604, 3.122826344932127, 5.689730628626151,
-          3.248684682453303, 5.563872291104976, 2.608353462112637,
-          6.204203511445642, 5.035681855581504, 2.134827911489532,
-          0.946910011088814, 6.223599755982222, 4.168634519120968,
-          3.001875247950068, 1.980327734683430, 5.190182032387606,
-          2.943861424421339, 4.226648342649697, 5.457161501166098,
-          1.713348265904937, 1.501663178733906, 5.668846588337130,
-          5.208365510425203, 1.962144256645833, 2.728127406527150,
-          4.442382360543885, 2.839975217222644, 4.330534549848392,
-          0.744216089807768, 6.426293677263268, 4.643695520786083,
-          2.662204050783991, 1.250682335857938, 6.055217235712136,
-          0.860905287815103, 6.444994283754972, 4.536108843695142,
-          2.769790727874932, 5.609177455068640, 1.696722116501434,
-          6.703053268421970, 0.602846303148105, 3.487609972580834,
-          3.818289598989240, 1.436734374347541, 5.869165197222533,
-          1.054504320562138, 6.251395251007936, 3.998423858825871,
-          3.307475712744203, 5.323662899811682, 1.982236671758393;
-      // clang-format on
-      positions.transposeInPlace();
-      atom_types << 20, 20, 24, 24, 15, 15, 15, 15, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-          8, 8, 8, 8, 8;
+          // don't center on all atoms
+          center_atoms_mask =
+              ArrayB_t::Ones(structures.back().get_number_of_atoms());
+          to_change_id = ((Eigen::ArrayXd::Random(n_is_not_center) +
+                           Eigen::ArrayXd::Ones(n_is_not_center)) *
+                          ((center_atoms_mask.size() - 1) * 0.5))
+                             .cast<int>();
+          for (int i_id{0}; i_id < n_is_not_center; ++i_id) {
+            center_atoms_mask(to_change_id(i_id)) = false;
+          }
 
-      using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
-      manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
-      structure.set_structure(positions, atom_types, cell, PBC_t{pbc.data()});
+          structures.back().center_atoms_mask = center_atoms_mask;
+          managers.push_back(make_structure_manager<Manager_t>());
+          managers.back()->update(structures.back());
+        }
+      }
+      manager->update(structures[0]);
     }
 
     ~ManagerFixture() {}
-    AtomicStructure<3> structure{};
+
     std::shared_ptr<Manager_t> manager;
-    Eigen::MatrixXd positions;
-    Eigen::VectorXi atom_types;
-    Eigen::MatrixXd cell;
-    std::array<int, 3> pbc;
+    std::vector<AtomicStructure<3>> structures{};
+    std::vector<std::shared_ptr<Manager_t>> managers{};
+    std::vector<std::string> filenames{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+    std::vector<int> n_is_not_centers{0, 3, 5};
     double cutoff;
   };
 

@@ -67,6 +67,9 @@ include(rascalTools)
 set(BUILD_BINDINGS "ON" CACHE BOOL
   "If on, the python bindings will be built.")
 
+set(BUILD_EXAMPLES "ON" CACHE BOOL
+  "If on, the examples will be built.")
+
 set(USER "OFF" CACHE BOOL
   "Switch installation folder")
 
@@ -82,6 +85,9 @@ set(BUILD_TESTS "OFF" CACHE BOOL
 set(ENABLE_PROFILING "OFF" CACHE BOOL
   "If on, adds gprof profiling information to some of the examples. \
   (GNU compilers only)")
+
+SET(TYPE_ARCHITECTURE "native" CACHE STRING "Choose the type of architecture to compile to in release mode. Default is to let the compiler decide")
+
 
 message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
@@ -102,7 +108,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-virtual-dtor")
   string( TOLOWER "${CMAKE_BUILD_TYPE}" build_type )
   if ("release" STREQUAL "${build_type}" )
-    add_compile_options(-march=native)
+    add_compile_options("-march=${TYPE_ARCHITECTURE}")
   endif()
   if ("debug" STREQUAL "${build_type}" )
     add_compile_options(-O0)
@@ -119,13 +125,21 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(LIBRASCAL_NAME "rascal-dbg")
-  set(LIBCEPHES_NAME "cephes-dbg")
+  set(WIGXJPF_NAME "wigxjpf-dbg")
 else()
   set(LIBRASCAL_NAME "rascal")
-  set(LIBCEPHES_NAME "cephes")
+  set(WIGXJPF_NAME "wigxjpfo")
 endif()
 
+# include_directories(SYSTEM
+#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/inc
+#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/cfg
+#   )
+
+add_external_package(wigxjpf VERSION 1.9 CONFIG)
+
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
+
 
 # Try to find optional cpp linter
 include(cpplint)
@@ -165,7 +179,7 @@ if(BUILD_BINDINGS)
     endif()
   endif()
 
-  add_external_package(pybind11 VERSION 2.2.2 CONFIG)
+  add_external_package(pybind11 VERSION 2.3.0 CONFIG)
 
     # Get where python site-packages is
     if(NOT USER)
@@ -210,6 +224,11 @@ set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
+# utility to force copy of files...
+add_custom_command(
+    OUTPUT always_rebuild
+    COMMAND ${CMAKE_COMMAND} -E echo
+  )
 
 # set up the tests
 if (${BUILD_TESTS})
@@ -229,22 +248,6 @@ if (${BUILD_TESTS})
   configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
 
-  add_custom_command(
-    OUTPUT always_rebuild
-    COMMAND ${CMAKE_COMMAND} -E echo
-  )
-
-  add_custom_target(cpp_test ALL
-    DEPENDS
-    copy_test_reference_data
-  )
-
-  add_custom_command(OUTPUT copy_test_reference_data
-      COMMAND ${CMAKE_COMMAND} -E copy_directory
-      ${CMAKE_SOURCE_DIR}/tests/reference_data ${CMAKE_BINARY_DIR}/reference_data
-      DEPENDS
-          always_rebuild
-    )
 
   if(BUILD_BINDINGS)
 
@@ -268,6 +271,19 @@ if (${BUILD_TESTS})
 
 endif(${BUILD_TESTS})
 
+# copy reference data that might be used in the example
+add_custom_target(copy_reference_data ALL
+    DEPENDS
+    copy_test_reference_data
+  )
+
+add_custom_command(OUTPUT copy_test_reference_data
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/tests/reference_data ${CMAKE_BINARY_DIR}/reference_data
+    DEPENDS
+        always_rebuild
+  )
+
 # put it there to avoid warnings from boost tests
 add_compile_options(-Werror) # warnings are errors!
 
@@ -290,24 +306,26 @@ if (${ENABLE_DOC})
     )
 endif (${ENABLE_DOC})
 
-# compile executables
-file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
-foreach(binaryfile ${binaries})
-  get_filename_component(binaryname  ${binaryfile} NAME_WE)
-  add_executable(${binaryname} ${binaryfile})
-  target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
-endforeach(binaryfile ${binaries})
-configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
-configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+if (${BUILD_EXAMPLES})
+  # compile exmaples executables
+  file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
+  foreach(binaryfile ${binaries})
+    get_filename_component(binaryname  ${binaryfile} NAME_WE)
+    add_executable(${binaryname} ${binaryfile})
+    target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
+  endforeach(binaryfile ${binaries})
+  configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
 
-# Add profiling information for the appropriate examples
-if (ENABLE_PROFILING)
-  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    target_compile_options("soap_profile" PRIVATE -pg)
-    set_target_properties("soap_profile" PROPERTIES LINK_FLAGS -pg)
+  # Add profiling information for the appropriate examples
+  if (ENABLE_PROFILING)
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    target_compile_options("soap_profile" PRIVATE -ggdb)
+      # target_compile_options("soap_profile" PRIVATE -pg)
+      # set_target_properties("soap_profile" PROPERTIES LINK_FLAGS -pg)
+    endif()
   endif()
-endif()
-
+endif (${BUILD_EXAMPLES})
 
 
 # or copy them
@@ -346,4 +364,5 @@ if(AUTOPEP8_FOUND)
   # .pycodestyle in project root folder
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts" "")
 endif()

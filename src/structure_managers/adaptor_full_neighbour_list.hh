@@ -1,5 +1,5 @@
 /**
- * file   adaptor_full_neighbour_list.hh
+ * @file   adaptor_full_neighbour_list.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -46,22 +46,22 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorFullList<ManagerImplementation>> {
-    constexpr static AdaptorTraits::Strict Strict{
-        ManagerImplementation::traits::Strict};
-    constexpr static bool HasDistances{
-        ManagerImplementation::traits::HasDistances};
+    using parent_traits = StructureManager_traits<ManagerImplementation>;
+    constexpr static AdaptorTraits::Strict Strict{parent_traits::Strict};
+    constexpr static bool HasDistances{parent_traits::HasDistances};
     constexpr static bool HasDirectionVectors{
-        ManagerImplementation::traits::HasDirectionVectors};
-    constexpr static int Dim{ManagerImplementation::traits::Dim};
-    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
+        parent_traits::HasDirectionVectors};
+    constexpr static int Dim{parent_traits::Dim};
+    constexpr static size_t MaxOrder{parent_traits::MaxOrder};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::full};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
+    constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     // New pairs are added at this layer, which did not exist before. Therefore
     // the layering has to be reset.
-    constexpr static size_t AtomLayer{
-        get<0>(typename LayerIncreaser<
-               MaxOrder,
-               typename ManagerImplementation::traits::LayerByOrder>::type{})};
+    constexpr static size_t AtomLayer{get<0>(
+        typename LayerIncreaser<MaxOrder,
+                                typename parent_traits::LayerByOrder>::type{})};
     using LayerByOrder = std::index_sequence<AtomLayer, 0>;
   };
 
@@ -81,6 +81,7 @@ namespace rascal {
     using Parent = StructureManager<AdaptorFullList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFullList>;
     using Manager_t = AdaptorFullList<ManagerImplementation>;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -146,7 +147,7 @@ namespace rascal {
         break;
       }
       case 2: {
-        return this->neighbours.size();
+        return this->neighbours_atom_tag.size();
         break;
       }
       default: {
@@ -158,8 +159,13 @@ namespace rascal {
     //! returns the number of atoms
     inline size_t get_size() const { return this->get_nb_clusters(1); }
 
-    //! returns position of the given atom index
-    inline Vector_ref get_position(const int & index) {
+    //! returns the number of atoms
+    inline size_t get_size_with_ghosts() const {
+      return this->manager->get_size_with_ghosts();
+    }
+
+    //! returns position of the given atom tag
+    inline Vector_ref get_position(int index) {
       return this->manager->get_position(index);
     }
 
@@ -171,8 +177,8 @@ namespace rascal {
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
     inline int
-    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & cluster,
-                          size_t index) const {
+    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                           size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
@@ -181,17 +187,21 @@ namespace rascal {
           internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
       if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_neighbour(*this->manager, cluster,
-                                                       index);
+        return IncreaseHelper_t::get_neighbour_atom_tag(*this->manager, cluster,
+                                                        index);
       } else {
         auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
-        return this->neighbours[offset + index];
+        return this->neighbours_atom_tag[offset + index];
       }
     }
 
-    //! get atom_index of the index-th atom in manager
-    inline int get_cluster_neighbour(const Parent &, size_t index) const {
-      return this->manager->get_cluster_neighbour(*this->manager, index);
+    //! get atom_tag of the index-th atom in manager
+    inline int get_neighbour_atom_tag(const Parent &, size_t index) const {
+      return this->manager->get_neighbour_atom_tag(*this->manager, index);
+    }
+
+    size_t get_atom_index(const int atom_tag) const {
+      return this->manager->get_atom_index(atom_tag);
     }
 
     //! return atom type
@@ -200,17 +210,17 @@ namespace rascal {
     }
 
     //! return atom type, const ref
-    inline const int & get_atom_type(const AtomRef_t & atom) const {
+    inline int get_atom_type(const AtomRef_t & atom) const {
       return this->manager->get_atom_type(atom.get_index());
     }
 
-    //! Returns atom type given an atom index
-    inline int & get_atom_type(const int & atom_id) {
+    //! Returns atom type given an atom tag
+    inline int & get_atom_type(int atom_id) {
       return this->manager->get_atom_type(atom_id);
     }
 
-    //! Returns a constant atom type given an atom index
-    inline const int & get_atom_type(const int & atom_id) const {
+    //! Returns a constant atom type given an atom tag
+    inline int get_atom_type(int atom_id) const {
       return this->manager->get_atom_type(atom_id);
     }
 
@@ -236,8 +246,14 @@ namespace rascal {
 
     //! Returns the number of neighbours of a given cluster
     template <size_t Order, size_t Layer>
-    inline size_t
-    get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
+    inline typename std::enable_if_t<(Order < (traits::MaxOrder - 1)), size_t>
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
+      return this->manager->get_cluster_size(cluster);
+    }
+
+    template <size_t Order, size_t Layer>
+    inline typename std::enable_if_t<not(Order < traits::MaxOrder - 1), size_t>
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       /*
@@ -248,13 +264,8 @@ namespace rascal {
        */
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
-
-      if (Order < (traits::MaxOrder - 1)) {
-        return this->manager->get_cluster_size(cluster);
-      } else {
-        auto access_index = cluster.get_cluster_index(Layer);
-        return nb_neigh[access_index];
-      }
+      auto access_index = cluster.get_cluster_index(Layer);
+      return nb_neigh[access_index];
     }
 
     //! Get the manager used to build the instance
@@ -270,8 +281,8 @@ namespace rascal {
     //! Stores the number of neighbours for every atom after sorting
     std::vector<size_t> nb_neigh;
 
-    //! Stores all neighbours, i.e. atom indices in a list
-    std::vector<size_t> neighbours;
+    //! Stores all neighbours, i.e. atom tags in a list
+    std::vector<int> neighbours_atom_tag;
 
     /**
      * Stores the offsets for accessing `neighbours`; this is the entry point in
@@ -288,18 +299,14 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorFullList<ManagerImplementation>::AdaptorFullList(
       std::shared_ptr<ManagerImplementation> manager)
-      : manager{std::move(manager)}, nb_neigh{}, neighbours{}, offsets{} {}
+      : manager{std::move(manager)}, nb_neigh{},
+        neighbours_atom_tag{}, offsets{} {}
 
   /* ---------------------------------------------------------------------- */
   //! update function, which updates based on underlying manager
   template <class ManagerImplementation>
   template <class... Args>
   void AdaptorFullList<ManagerImplementation>::update(Args &&... arguments) {
-    // if sizeof...(arguments) == 0 then the underlying structure
-    // is not changed
-    if (sizeof...(arguments) > 0) {
-      this->set_update_status(false);
-    }
     this->manager->update(std::forward<Args>(arguments)...);
   }
 
@@ -322,7 +329,7 @@ namespace rascal {
     // filling it
     this->nb_neigh.resize(0);
     this->offsets.resize(0);
-    this->neighbours.resize(0);
+    this->neighbours_atom_tag.resize(0);
 
     // prepare data structure to collect neighbours
     auto natoms = this->manager->get_size();
@@ -335,14 +342,15 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     // loop through all atoms and pairs and collect all neighbours in vector
     for (auto atom : *this->manager) {
-      auto index_1{atom.get_atom_index()};
+      auto atom_tag{atom.get_atom_tag()};
 
       for (auto pair : atom) {
-        auto index_2{pair.get_atom_index()};
+        auto neighbour_atom_index{
+            this->get_atom_index(pair.get_internal_neighbour_atom_tag())};
 
         // add indices to their reciprocal list
         // -> already exists: this->new_neighbours[index_1].push_back(index_2);
-        new_neighbours[index_2].push_back(index_1);
+        new_neighbours[neighbour_atom_index].push_back(atom_tag);
       }
     }
 
@@ -356,7 +364,7 @@ namespace rascal {
     int pair_counter{0};
 
     for (auto atom : *this->manager) {
-      auto index_i = atom.get_atom_index();
+      auto atom_index = this->get_atom_index(atom.get_atom_tag());
 
       // Add new depth layer for atoms
       constexpr auto AtomLayer{
@@ -370,8 +378,8 @@ namespace rascal {
       int nneigh{0};
       for (auto pair : atom) {
         // add existing pairs
-        auto index_j = pair.get_atom_index();
-        this->neighbours.push_back(index_j);
+        auto neighbour_atom_tag = pair.get_internal_neighbour_atom_tag();
+        this->neighbours_atom_tag.push_back(neighbour_atom_tag);
         nneigh++;
 
         // The layer of pairs is reinitialized with this adaptor. Therefore the
@@ -391,8 +399,8 @@ namespace rascal {
       constexpr static auto ActiveLayer{
           compute_cluster_layer<PairOrder>(typename traits::LayerByOrder{})};
 
-      for (auto index_j : new_neighbours[index_i]) {
-        this->neighbours.push_back(index_j);
+      for (auto neighbour_atom_tag : new_neighbours[atom_index]) {
+        this->neighbours_atom_tag.push_back(neighbour_atom_tag);
         nneigh++;
 
         Eigen::Matrix<size_t, ActiveLayer + 1, 1> indices_pair;

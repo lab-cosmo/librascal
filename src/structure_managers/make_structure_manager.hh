@@ -1,5 +1,5 @@
 /**
- * file   make_structure_manager.hh
+ * @file   make_structure_manager.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -40,9 +40,8 @@
 namespace rascal {
   /**
    * Factory function to make a structure manager
-   * @tparams Adaptor partial type of the adaptor
-   * @params Manager input structure manager
-   * @params args additional argument for the constructructor
+   *
+   * @tparam Manager input structure manager
    */
   template <typename Manager>
   std::shared_ptr<Manager> make_structure_manager() {
@@ -51,9 +50,10 @@ namespace rascal {
 
   /**
    * Factory function to make an adapted structure manager
-   * @tparams Adaptor partial type of the adaptor
-   * @params Manager input structure manager
-   * @params args additional argument for the constructructor
+   *
+   * @tparam Adaptor partial type of the adaptor
+   * @tparam Manager input structure manager
+   * @param args additional argument for the constructructor
    */
   template <template <class> class Adaptor, typename Manager, typename... Args>
   std::shared_ptr<Adaptor<Manager>>
@@ -65,10 +65,11 @@ namespace rascal {
 
   /**
    * Factory function to make an adapted structure manager
-   * @tparams Adaptor partial type of the adaptor
-   * @params Manager input structure manager
-   * @params adaptor_hypers additional argument for the constructructor given
-   *         in a dictionary like containner, e.g. json type.
+   *
+   * @tparam Adaptor partial type of the adaptor
+   * @tparam Manager input structure manager
+   * @param adaptor_hypers additional argument for the constructructor given
+   *        in a dictionary like containner, e.g. json type.
    */
   template <template <class> class Adaptor, typename Manager, typename Hypers_t>
   std::shared_ptr<Adaptor<Manager>>
@@ -86,12 +87,10 @@ namespace rascal {
      * helper to make an adapted manager taking a list of dictionary like
      * objects containing the initialization of some adaptors and which one
      * to pick.
-     * @tparams Adaptor partial type of the adaptor
-     * @tparams HyperPos position of the relevant initialization_arguments for
-     *          the Adaptor
-     * @params manager a structure manager
-     * @params list of dictionary like objects
      *
+     * @tparam Adaptor partial type of the adaptor
+     * @tparam HyperPos position of the relevant initialization_arguments for
+     *          the Adaptor
      */
     template <template <class> class Adaptor, size_t HyperPos>
     struct make_adapted_manager_hypers_util {
@@ -106,8 +105,7 @@ namespace rascal {
 
     /**
      * Given an instanciated structure manager, recursively stack adaptors
-     * on it
-     * while instanciating them and create backward links (add_child).
+     * on it while instanciating them and create backward links (add_child).
      * It assumes the adaptors arguments needed for constructions
      * are gathered in a list of dictionary like objects, e.g. json type.
      */
@@ -165,15 +163,15 @@ namespace rascal {
   /**
    * Factory function to make an adapted structure manager from a list of
    * template parameters and constructor arguments.
-   * @tparams AdaptorImplementationPack list of partial types of the adaptors
-   * @tparams Manager type of the structure manager root
-   * @tparams Hypers_t type of the dictionary like container that aggregate
-   *          the parameters to construct the successive adapted managers
-   * @params structure_inputs info to get an atomic structure using
-   *         the AtomicStructure class
-   * @params adaptor_hypers arguments for the constructructor of the adapted
-   *         managers given in the same order as AdaptorImplementationPack
-   *         in a dictionary like containner, e.g. json type.
+   * @tparam AdaptorImplementationPack list of partial types of the adaptors
+   * @tparam Manager type of the structure manager root
+   * @tparam Hypers_t type of the dictionary like container that aggregate
+   *         the parameters to construct the successive adapted managers
+   * @param structure_inputs info to get an atomic structure using
+   *        the AtomicStructure class
+   * @param adaptor_inputs arguments for the constructructor of the adapted
+   *        managers given in the same order as AdaptorImplementationPack
+   *        in a dictionary like containner, e.g. json type.
    */
   template <typename Manager,
             template <class> class... AdaptorImplementationPack,
@@ -192,8 +190,6 @@ namespace rascal {
                                "of parameters as there are adaptors to build.");
     }
 
-    AtomicStructure<3> structure{};
-    structure.set_structure(structure_inputs);
     // instanciate the base manager
     auto manager_base = make_structure_manager<Manager>();
     // build the stack of adaptors
@@ -203,7 +199,11 @@ namespace rascal {
     auto manager = factory.get_manager();
     // give a structure to the underlying base manager
     // and update all the stack of adaptors
-    manager->update(structure);
+    if (structure_inputs.size() > 0) {
+      AtomicStructure<3> structure{};
+      structure.set_structure(structure_inputs);
+      manager->update(structure);
+    }
 
     return manager;
   }
@@ -212,7 +212,20 @@ namespace rascal {
   //! Utility to hold a list of Adaptors partial types
   template <template <class> class... AdaptorImplementation>
   struct AdaptorTypeHolder;
-  //! Utility to hold a fully typed structure manager and a list of Adaptors
+  /**
+   * Utility to hold the fully typed structure manager with adaptors as stack
+   * and as a list.
+   *
+   * StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+   *                            AdaptorStrict>
+   *
+   * -> type_list
+   *    std::tuple<StructureManagerCenters,
+   *               AdaptorTypeHolder<AdaptorNeighbourList, AdaptorStrict>>
+   *
+   * -> type
+   *    AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>
+   */
   template <typename Manager, template <class> class... AdaptorImplementation>
   struct StructureManagerTypeHolder {
     // handle the case without adaptors with conditional_t
@@ -226,13 +239,65 @@ namespace rascal {
                                Manager, AdaptorImplementation...>::type>;
   };
 
+  namespace detail {
+    template <template <typename Manager,
+                        template <class> class... AdaptorImplementation>
+              class Collection,
+              typename SM, typename AdaptorTypeHolder_>
+    struct InjectTypeHolderHelper;
+
+    template <template <typename Manager,
+                        template <class> class... AdaptorImplementation>
+              class Collection,
+              typename SM, template <class> class... Ti>
+    struct InjectTypeHolderHelper<Collection, SM, AdaptorTypeHolder<Ti...>> {
+      using type = Collection<SM, Ti...>;
+    };
+
+    template <template <typename Manager,
+                        template <class> class... AdaptorImplementation>
+              class Collection,
+              typename StructureManagerTypeHolder_>
+    struct InjectTypeHolderUtil;
+
+    template <template <typename Manager,
+                        template <class> class... AdaptorImplementation>
+              class Collection,
+              typename... T>
+    struct InjectTypeHolderUtil<Collection, std::tuple<T...>> {
+      using type = typename InjectTypeHolderHelper<Collection, T...>::type;
+    };
+  }  // namespace detail
+     /**
+      * Utility class holding the fully typed Collection class in type member
+      *
+      * @tparam Collection a class templated by a structure manager and a list
+      * of adaptors
+      *
+      * @tparam StructureManagerTypeHolder_ a
+      *                  StructureManagerTypeHolder::type_list
+      *
+      * This utility does not help directly for templated function,
+      * so to handle this case the function should inserted in a functor.
+      * C++17 would allow to avoid the functor
+      * see https://stackoverflow.com/a/49291186/11609484.
+      */
+  template <template <typename Manager,
+                      template <class> class... AdaptorImplementation>
+            class Collection,
+            typename StructureManagerTypeHolder_>
+  struct TypeHolderInjector {
+    using type = typename detail::InjectTypeHolderUtil<
+        Collection, StructureManagerTypeHolder_>::type;
+  };
+
   namespace internal {
     /**
      * Allow to provide a StructureManagerTypeHolder instead of the list types
      * to make_structure_manager_stack.
      *
-     * @tparams SM structure manager type
-     * @tparams Ti list of adaptor partial types
+     * @tparam SM structure manager type
+     * @tparam AdaptorTypeHolder_ list of adaptor partial types
      */
     template <typename SM, typename AdaptorTypeHolder_>
     struct make_structure_manager_stack_with_hypers_util;
@@ -253,6 +318,8 @@ namespace rascal {
   }  // namespace internal
 
   /**
+   * TODO(felix) use TypeHolderInjector to simplify this thing
+   *
    * Factory function to make a manager with its types provided with
    * a StructureManagerTypeHolder and arguments packaged in two json object.
    */
@@ -274,12 +341,12 @@ namespace rascal {
    * Factory function to stack adaptors on a structure managers with a valid
    *  structure already registered.
    *
-   * @tparams Manager type of the base manager, e.g. StructureManagerCenters
-   * @tparams AdaptorImplementationPack list of adaptors to stack on the base
-   * manager type
-   * @params manager_base a structure manager with a structure inside
-   * @params args list of arguments to build the adaptor (packed in tuples and
-   *  in the same order as in AdaptorImplementationPack)
+   * @tparam Manager type of the base manager, e.g. StructureManagerCenters
+   * @tparam AdaptorImplementationPack list of adaptors to stack on the base
+   *         manager type
+   * @param manager_base a structure manager with a structure inside
+   * @param hypers list of arguments to build the adaptor (packed in tuples and
+   *        in the same order as in AdaptorImplementationPack)
    * @return shared pointer to the fully built structure manager
    */
   template <typename Manager,
@@ -300,39 +367,44 @@ namespace rascal {
   }
 
   namespace internal {
-    template <typename StructureManagerPtr, int TargetLevel>
+    template <typename StructureManager, int TargetLevel>
     struct UnderlyingManagerExtractor {
-      using ManagerPtr_t =
-          typename StructureManagerPtr::element_type::ImplementationPtr_t;
-      using type = UnderlyingManagerExtractor<ManagerPtr_t, TargetLevel + 1>;
+      using Manager_t = typename StructureManager::ManagerImplementation_t;
+      using type = UnderlyingManagerExtractor<Manager_t, TargetLevel - 1>;
 
-      explicit UnderlyingManagerExtractor(StructureManagerPtr & sm)
+      explicit UnderlyingManagerExtractor(
+          std::shared_ptr<StructureManager> & sm)
           : manager{sm->get_previous_manager()}, next_stack{manager} {}
 
-      ManagerPtr_t manager;
+      std::shared_ptr<Manager_t> manager;
       type next_stack;
 
       decltype(auto) get_manager() { return this->next_stack.get_manager(); }
     };
 
-    template <typename StructureManagerPtr>
-    struct UnderlyingManagerExtractor<StructureManagerPtr, 0> {
-      using ManagerPtr_t = StructureManagerPtr;
-
-      explicit UnderlyingManagerExtractor(StructureManagerPtr & sm)
+    template <typename StructureManager>
+    struct UnderlyingManagerExtractor<StructureManager, 0> {
+      explicit UnderlyingManagerExtractor(
+          std::shared_ptr<StructureManager> & sm)
           : manager{sm} {}
 
-      ManagerPtr_t manager;
+      std::shared_ptr<StructureManager> manager;
 
       decltype(auto) get_manager() { return this->manager->get_shared_ptr(); }
     };
+
   }  // namespace internal
 
-  template <int TargetLevel, typename StructureManagerPtr>
-  decltype(auto) extract_underlying_manager(StructureManagerPtr manager) {
-    static_assert(TargetLevel < 0, "target_level should be negative");
+  template <int TargetLevel, typename StructureManager>
+  decltype(auto)
+  extract_underlying_manager(std::shared_ptr<StructureManager> manager) {
+    static constexpr int n_step_below =
+        StructureManager::traits::StackLevel - TargetLevel;
+    static_assert(
+        n_step_below >= 0,
+        "TargetLevel is larger than the number of manager in the stack");
     auto test{
-        internal::UnderlyingManagerExtractor<StructureManagerPtr, TargetLevel>(
+        internal::UnderlyingManagerExtractor<StructureManager, n_step_below>(
             manager)};
 
     return test.get_manager();

@@ -1,5 +1,5 @@
 /**
- * file    species_manager.hh
+ * @file    species_manager.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Till Junge <till.junge@epfl.ch>
@@ -131,6 +131,8 @@ namespace rascal {
     //! Updates the underlying manager as well as the adaptor
     template <class... Args>
     void update(Args &&... arguments) {
+      // SpeciesManager does not belong to the chain of updatables
+      // like a regular adaptor so you need to set the status here
       if (sizeof...(arguments) > 0) {
         this->set_update_status(false);
       }
@@ -145,6 +147,20 @@ namespace rascal {
        * can't do it themselves.
        */
       this->update_self();
+    }
+
+    /**
+     * When the underlying structure changes, all computations are potentially
+     * invalid. This function triggers the setting of the statue variable to
+     * `false` along the tree to the managers and the properties it holds.
+     */
+    void send_changed_structure_signal() final {
+      this->set_update_status(false);
+      for (auto && child : this->children) {
+        if (not child.expired()) {
+          child.lock()->send_changed_structure_signal();
+        }
+      }
     }
 
     /**

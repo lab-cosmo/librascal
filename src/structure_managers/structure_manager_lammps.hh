@@ -1,5 +1,5 @@
 /**
- * file   structure_manager_lammps.hh
+ * @file   structure_manager_lammps.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -50,6 +50,8 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{false};
+    constexpr static bool HasCenterPair{false};
+    constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0, 0>;
   };
 
@@ -63,6 +65,7 @@ namespace rascal {
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
+    using ManagerImplementation_t = StructureManagerLammps;
     using ImplementationPtr_t = std::shared_ptr<StructureManagerLammps>;
 
     //! Default constructor
@@ -72,7 +75,7 @@ namespace rascal {
     StructureManagerLammps(const StructureManagerLammps & other) = delete;
 
     //! Move constructor
-    StructureManagerLammps(StructureManagerLammps && other) = default;
+    StructureManagerLammps(StructureManagerLammps && other) = delete;
 
     //! Destructor
     virtual ~StructureManagerLammps() = default;
@@ -83,36 +86,42 @@ namespace rascal {
 
     //! Move assignment operator
     StructureManagerLammps &
-    operator=(StructureManagerLammps && other) = default;
+    operator=(StructureManagerLammps && other) = delete;
 
     //! Updates the manager using the impl
     template <class... Args>
     void update(Args &&... arguments) {
-      // update the underlying structure
-      this->update_self(std::forward<Args>(arguments)...);
-
       if (sizeof...(arguments) > 0) {
         // the structure has changed to tell it to the whole tree
         this->send_changed_structure_signal();
       }
+      // update the underlying structure
+      this->update_self(std::forward<Args>(arguments)...);
+      this->set_update_status(true);
+
       // send the update signal to the tree
       this->update_children();
     }
 
-    //! return position vector of an atom given the atom index
-    inline Vector_ref get_position(const size_t & atom_index) {
-      auto * xval{this->x[atom_index]};
+    //! return position vector of an atom given the atom tag
+    inline Vector_ref get_position(int atom_tag) {
+      auto * xval{this->x[this->get_atom_index(atom_tag)]};
       return Vector_ref(xval);
     }
 
-    //! get const atom type reference given an atom_index
-    inline const int & get_atom_type(const int & atom_index) const {
-      return this->type[atom_index];
+    //! return position vector of an atom given the atom tag
+    inline Vector_ref get_position(const AtomRef_t & atom) {
+      return this->get_position(this->get_atom_index(atom.get_index()));
     }
 
-    //! Returns atom type given an atom index
-    inline int & get_atom_type(const int & atom_index) {
-      return this->type[atom_index];
+    //! get const atom type reference given an atom_tag
+    inline int get_atom_type(int atom_tag) const {
+      return this->type[this->get_atom_index(atom_tag)];
+    }
+
+    //! Returns atom type given an atom tag
+    inline int & get_atom_type(int atom_tag) {
+      return this->type[this->get_atom_index(atom_tag)];
     }
 
     //! return number of I atoms in the list
@@ -121,21 +130,24 @@ namespace rascal {
     //! return number of center and ghost atoms
     inline size_t get_size_with_ghosts() const { return this->tot_num; }
 
+    //! Lammps does not have ghost atoms
+    inline bool get_consider_ghost_neighbours() const { return false; }
+
     //! return the number of neighbours of a given atom
     template <size_t Order, size_t Layer>
     inline size_t
-    get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
-      return this->numneigh[cluster.back()];
+      return this->numneigh[this->get_atom_index(cluster.get_atom_tag())];
     }
 
     //! return the index-th neighbour of the last atom in a cluster with
     //! cluster_size = 1 (atoms) which can be used to construct pairs
     template <size_t Order, size_t Layer>
     inline int
-    get_cluster_neighbour(const ClusterRefKey<Order, Layer> & cluster,
-                          size_t index) const {
+    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                           size_t index) const {
       static_assert(Order == traits::MaxOrder - 1,
                     "this implementation only handles atoms and identify its "
                     "index-th neighbour.");
@@ -144,12 +156,22 @@ namespace rascal {
     }
 
     /**
-     * return the atom_index of the index-th atom in manager parent here is
-     * dummy and is used for consistency in other words, atom_index is the
-     * global LAMMPS atom index.
+     * return the atom_tag of the index-th atom in manager parent here is
+     * dummy and is used for consistency in other words, atom_tag is the
+     * global LAMMPS atom tag.
      */
-    inline int get_cluster_neighbour(const Parent &, size_t index) const {
-      return this->ilist[index];
+    inline int get_neighbour_atom_tag(const Parent &,
+                                      size_t cluster_index) const {
+      return this->ilist[cluster_index];
+    }
+
+    // #BUG8486@(all) I do not know how the structure of ilist is implemented,
+    // can it it have huge gaps like [1, 50000]? Then using a vector with
+    // ensures quick memory access would be super inefficient. However
+    // firstneigh also uses this kind of access structure and is given by
+    // lammps, so it should be fine.
+    inline int get_atom_index(int atom_tag) const {
+      return this->atom_index_from_atom_tag_list[atom_tag];
     }
 
     /**
@@ -197,9 +219,9 @@ namespace rascal {
      *
      * @param vatom per-atom virial
      */
-    void update_self(const int & inum, const int & tot_num, int * ilist,
-                     int * numneigh, int ** firstneigh, double ** x,
-                     double ** f, int * type, double * eatom, double ** vatom);
+    void update_self(int inum, int tot_num, int * ilist, int * numneigh,
+                     int ** firstneigh, double ** x, double ** f, int * type,
+                     double * eatom, double ** vatom);
 
    protected:
     int inum{};           //!< total numer of atoms
@@ -214,6 +236,31 @@ namespace rascal {
     double ** vatom{};    //!< virial stress of atoms
     int nb_pairs{};       //! number of clusters with cluster_size=2 (pairs)
     std::vector<int> offsets{};  //! offset per atom to access neighbour list
+
+    // the inverse mapping from the ilist
+    std::vector<size_t> atom_index_from_atom_tag_list{};
+
+   private:
+    void make_atom_index_from_atom_tag_list() {
+      int max_atomic_index = 0;
+      for (int i{0}; i < this->inum; ++i) {
+        if (this->ilist[i] > max_atomic_index) {
+          max_atomic_index = this->ilist[i];
+        }
+      }
+      //! Filling dummy cluster index
+      this->atom_index_from_atom_tag_list.reserve(max_atomic_index + 1);
+      for (int i{0}; i < max_atomic_index + 1; ++i) {
+        this->atom_index_from_atom_tag_list.push_back(0);
+      }
+      //! Replacing dummy values with correct cluster index
+      for (int i{0}; i < this->inum; ++i) {
+        // this->ilist does not have negative atom tags therefore the cast is
+        // safe
+        this->atom_index_from_atom_tag_list.at(
+            static_cast<size_t>(this->ilist[i])) = i;
+      }
+    }
   };
 
   /**

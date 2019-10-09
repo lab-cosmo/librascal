@@ -1,5 +1,5 @@
 /**
- * file   property.hh
+ * @file   property.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -31,6 +31,7 @@
 #ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_HH_
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_HH_
 
+#include "rascal_utility.hh"
 #include "structure_managers/property_typed.hh"
 #include <basic_types.hh>
 #include <cassert>
@@ -49,21 +50,22 @@ namespace rascal {
    * which can be access with clusters directly, without the need for dealing
    * with indices.
    */
-  template <typename T, size_t Order, size_t PropertyLayer, Dim_t NbRow = 1,
-            Dim_t NbCol = 1>
-  class Property : public TypedProperty<T, Order, PropertyLayer> {
+  template <typename T, size_t Order, size_t PropertyLayer, class Manager,
+            Dim_t NbRow = 1, Dim_t NbCol = 1>
+  class Property : public TypedProperty<T, Order, PropertyLayer, Manager> {
     static_assert((std::is_arithmetic<T>::value ||
                    std::is_same<T, std::complex<double>>::value),
                   "can currently only handle arithmetic types");
 
    public:
-    using Parent = TypedProperty<T, Order, PropertyLayer>;
-
+    using Parent = TypedProperty<T, Order, PropertyLayer, Manager>;
+    using Manager_t = Manager;
+    using Self_t = Property<T, Order, PropertyLayer, Manager, NbRow, NbCol>;
     using Value = internal::Value<T, NbRow, NbCol>;
     static_assert(std::is_same<Value, internal::Value<T, NbRow, NbCol>>::value,
                   "type alias failed");
 
-    using value_type = typename Value::type;
+    using value_type = typename Value::value_type;
     using reference = typename Value::reference;
     using const_reference = typename Value::const_reference;
 
@@ -79,17 +81,9 @@ namespace rascal {
     Property() = delete;
 
     //! Constructor with Manager
-    Property(StructureManagerBase & manager,
-             std::string metadata = "no metadata")
-        : Parent{manager, NbRow, NbCol, metadata} {}
-    // Property(std::shared_ptr<StructureManagerBase> manager,
-    //          std::string metadata = "no metadata")
-    //     : Parent{manager, NbRow, NbCol, metadata} {}
-
-    // Property(std::shared_ptr<StructureManagerBase> & manager,
-    //          std::string metadata = "no metadata")
-    // :Property(std::weak_ptr<StructureManagerBase>(manager), metadata)
-    // {}
+    explicit Property(Manager_t & manager, std::string metadata = "no metadata")
+        : Parent{manager, NbRow, NbCol, metadata},
+          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
 
     //! Copy constructor
     Property(const Property & other) = delete;
@@ -112,45 +106,18 @@ namespace rascal {
      * properly casted fully typed and sized reference, or throws a runttime
      * error
      */
-    // TODO(felix) Need to make an equivalent for dynamic sized property
-    static inline Property & check_compatibility(PropertyBase & other) {
+    static inline void check_compatibility(PropertyBase & other) {
       // check ``type`` compatibility
-      if (not(other.get_type_info().hash_code() == typeid(T).hash_code())) {
+      auto type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()};
+      if (not(other.get_type_info() == type_id)) {
         std::stringstream err_str{};
-        err_str << "Incompatible types: '" << other.get_type_info().name()
-                << "' != '" << typeid(T).name() << "'.";
+        err_str << "Incompatible types: '" << other.get_type_info() << "' != '"
+                << type_id << "'.";
         throw std::runtime_error(err_str.str());
       }
-
-      // check ``order`` compatibility
-      if (not(other.get_order() == Order)) {
-        std::stringstream err_str{};
-        err_str << "Incompatible property order: input is of order "
-                << other.get_order() << ", this property is of order " << Order
-                << ".";
-        throw std::runtime_error(err_str.str());
-      }
-
-      // check property ``layer`` compatibility
-      if (not(other.get_property_layer() == PropertyLayer)) {
-        std::stringstream err_str{};
-        err_str << "At wrong layer in stack: input is at layer "
-                << other.get_property_layer() << ", this property is at layer "
-                << PropertyLayer << ".";
-        throw std::runtime_error(err_str.str());
-      }
-
-      // check size compatibility
-      if (not((other.get_nb_row() == NbRow) and
-              (other.get_nb_col() == NbCol))) {
-        std::stringstream err_str{};
-        err_str << "Incompatible sizes: input is " << other.get_nb_row() << "x"
-                << other.get_nb_col() << ", but should be " << NbRow << "x"
-                << NbCol << ".";
-        throw std::runtime_error(err_str.str());
-      }
-      return static_cast<Property &>(other);
     }
+
+    const std::string & get_type_info() const final { return this->type_id; }
 
     /* ---------------------------------------------------------------------- */
     /**
@@ -182,20 +149,31 @@ namespace rascal {
     /**
      * Property accessor by cluster ref
      */
+    // template <size_t CallerLayer, size_t ParentLayer , size_t NeighbourLayer,
+    // size_t Order_= Order> inline std::enable_if_t<not(Order_==1), reference>
     template <size_t CallerLayer>
     inline reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that "
                     "does not exist at this depth in the "
                     "adaptor stack.");
-
       return this->operator[](id.get_cluster_index(CallerLayer));
+    }
+
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>
+    inline std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
+                            reference>                            // NOLINT
+    operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
+      // #BUG8486@(all) we can just use the managers function to get the
+      // corresponding cluster index, no need to save this in the cluster
+      return this->operator[](this->get_manager().get_atom_index(
+          id.get_internal_neighbour_atom_tag()));
     }
 
     /**
      * Accessor for property by index for properties
      */
-    inline reference operator[](const size_t & index) {
+    inline reference operator[](size_t index) {
       // use tag dispatch to use the proper definition
       // of the get function
       return this->get(
@@ -227,11 +205,11 @@ namespace rascal {
                             this->get_nb_col());
     }
 
-    inline reference get(const size_t & index, StaticSize) {
+    inline reference get(size_t index, StaticSize) {
       return Value::get_ref(this->values[index * NbRow * NbCol]);
     }
 
-    inline reference get(const size_t & index, DynamicSize) {
+    inline reference get(size_t index, DynamicSize) {
       return get_ref(this->values[index * this->get_nb_comp()]);
     }
 
@@ -239,6 +217,8 @@ namespace rascal {
     inline reference get_ref(T & value) {
       return reference(&value, this->get_nb_row(), this->get_nb_col());
     }
+
+    std::string type_id{};
   };
 
 }  // namespace rascal

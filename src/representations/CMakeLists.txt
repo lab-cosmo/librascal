@@ -28,8 +28,7 @@
 #
 
 set(representation_SRC
-  ${CMAKE_CURRENT_SOURCE_DIR}/representation_manager_base.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/representation_manager_sorted_coulomb.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/calculator_base.cc
   )
 
 target_sources("${LIBRASCAL_NAME}" PRIVATE ${representation_SRC})

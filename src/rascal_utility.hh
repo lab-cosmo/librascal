@@ -1,5 +1,5 @@
 /**
- * file   rascal_utility.hh
+ * @file   rascal_utility.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -31,11 +31,13 @@
 // Detects which compiler is used
 #if defined(__clang__)
 #define CLANG_COMPILER
-#elif defined(__GNUC__) || defined(__GNUG__)
-#define GCC_COMPILER
+#elif((defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ > 8))
+// there is a slight modification in the output of __PRETTY_FUNCTION__ in gcc 9
+// here we expect it to be forwarded to newer versions
+#define GCC_COMPILER_9_AND_UPPER
+#elif((defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ <= 8))
+#define GCC_COMPILER_8_AND_LOWER
 #endif
-
-#include "representations/representation_manager_base.hh"
 
 #include <utility>
 #include <string>
@@ -43,9 +45,53 @@
 #include <tuple>
 #include <map>
 #include <fstream>
+#include <type_traits>
 
 namespace rascal {
   namespace internal {
+
+    /**
+     * Utility to check if a template parameter is iterable
+     */
+    template <typename... Ts>
+    struct make_void {
+      typedef void type;
+    };
+    template <typename... Ts>
+    using void_t = typename make_void<Ts...>::type;
+
+    /**
+     * Checks if the type T has a begin, end, iterator and const_iterator
+     * functionality.
+     */
+    template <class, class = void_t<>>
+    struct is_iterable : std::false_type {};
+
+    template <class T>
+    struct is_iterable<T,
+                       void_t<decltype(std::declval<T>().begin()),
+                              decltype(std::declval<T>().end()),
+                              typename T::iterator, typename T::const_iterator>>
+        : std::true_type {};
+
+    template <class, class = void_t<>>
+    struct is_map : std::false_type {};
+
+    template <class T>
+    struct is_map<
+        T, void_t<decltype(std::declval<T>().begin()),
+                  decltype(std::declval<T>().end()), typename T::iterator,
+                  typename T::const_iterator, typename T::key_type>>
+        : std::true_type {};
+
+    /**
+     * Here the proper iteraror means that it is a std::Container and not
+     * a std::AssociativeContainer
+     */
+    template <class T>
+    struct is_proper_iterator {
+      static constexpr bool value = !is_map<T>::value && is_iterable<T>::value;
+    };
 
     /* ---------------------------------------------------------------------- */
     /**
@@ -66,6 +112,45 @@ namespace rascal {
     struct AdaptorTypeStacker<ManagerImplementation, AdaptorImplementation> {
       using type = AdaptorImplementation<ManagerImplementation>;
     };
+    /* ---------------------------------------------------------------------- */
+    /**
+     * Utilities to combine Enum to flatten the nested switch cases
+     * The caveat is that the enum list need to be finished with the
+     * End_
+     * taken from:
+     * https://www.fluentcpp.com/2017/06/27/how-to-collapse-nested-switch-statements/
+     * // NOLINT
+     */
+
+    //! get the underlying value of the enum
+    template <typename Enum>
+    constexpr size_t enumValue(Enum e) {
+      return static_cast<size_t>(e);
+    }
+
+    //! compute the lenght of the enum assuming the last element is End_
+    template <typename Enum>
+    constexpr size_t enumSize() {
+      return enumValue(Enum::End_);
+    }
+
+    //! combine 2 enum into a new integer making sure types are properly
+    //! provided
+    // template <typename Enum1, typename Enum2>
+    // struct CombineEnums {
+    //   constexpr size_t operator()(Enum1 e1, Enum2 e2) {
+    //     return enumValue(e1) * enumSize<Enum2>() + enumValue(e2);
+    //   }
+    // };
+    // the above code does not compile with gcc 5 and 6 (4 and 7 works though)
+    // and clang has no problem. it has to do with the implementation of the
+    // standard see for more details
+    // https://stackoverflow.com/questions/16493652/constexpr-not-working-if-the-function-is-declared-inside-class-scope
+    // // NOLINT
+    template <typename Enum1, typename Enum2>
+    constexpr size_t combineEnums(Enum1 e1, Enum2 e2) {
+      return enumValue(e1) + enumSize<Enum1>() * enumValue(e2);
+    }
 
     /* ---------------------------------------------------------------------- */
     /**
@@ -159,7 +244,7 @@ namespace rascal {
     struct ResizePropertyToZero {
       template <typename T>
       void operator()(T & t) {
-        t.resize_to_zero();
+        t.clear();
       }
     };
 
@@ -172,14 +257,25 @@ namespace rascal {
      * This functionality is compiler dependant so for the moment
      * clang and gcc are compatible.
      * @template T type that should be stringifyied
-     * @returns std::string name of the type
      */
     template <typename T>
     struct GetTypeNameHelper {
+      /**
+       * Get the type name
+       * @returns std::string name of the type
+       */
       static const std::string GetTypeName() {
-        // The output of of Pretty Function depends on the compiler
-        // the #define strings is a pain to split
-#if defined(GCC_COMPILER)
+// The output of of Pretty Function depends on the compiler
+// the #define strings is a pain to split
+#if defined(GCC_COMPILER_9_AND_UPPER)
+#define FUNCTION_MACRO __PRETTY_FUNCTION__
+#define PREFIX                                                                 \
+  "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() " \
+  "[with T = "                                                        // NOLINT
+#define SUFFIX_1 "; std::string = std::__cxx11::basic_string<char>]"  // NOLINT
+#define SUFFIX_2 ""
+#define NUM_TYPE_REPEATS 1
+#elif defined(GCC_COMPILER_8_AND_LOWER)
 #define FUNCTION_MACRO __PRETTY_FUNCTION__
 #define PREFIX                                                                 \
   "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() " \
@@ -240,6 +336,10 @@ namespace rascal {
       // open the file:
       std::ifstream file(filename, std::ios::binary);
 
+      if (not file.is_open()) {
+        throw std::runtime_error(std::string("Could not open the file: ") +
+                                 filename);
+      }
       // Stop eating new lines in binary mode!!!
       file.unsetf(std::ios::skipws);
 
@@ -256,6 +356,20 @@ namespace rascal {
       // read the data:
       vec.insert(vec.begin(), std::istream_iterator<BINARY>(file),
                  std::istream_iterator<BINARY>());
+    }
+
+    /**
+     * extract the extension from a filename as the charaters after the last
+     * "."
+     * if it is not found it return an empty string
+     */
+    inline std::string get_filename_extension(const std::string & filename) {
+      auto const pos = filename.find_last_of(".");
+      std::string extension{""};
+      if (pos != std::string::npos) {
+        extension = filename.substr(pos + 1);
+      }
+      return extension;
     }
 
   }  // namespace internal

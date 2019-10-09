@@ -1,5 +1,5 @@
 /**
- * file   filter_base.hh
+ * @file   filter_base.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *

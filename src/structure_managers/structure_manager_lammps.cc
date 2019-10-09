@@ -1,5 +1,5 @@
 /**
- * file   structure_manager_lammps.cc
+ * @file   structure_manager_lammps.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -33,8 +33,7 @@
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
-  void StructureManagerLammps::update_self(const int & inum,
-                                           const int & tot_num, int * ilist,
+  void StructureManagerLammps::update_self(int inum, int tot_num, int * ilist,
                                            int * numneigh, int ** firstneigh,
                                            double ** x, double ** f, int * type,
                                            double * eatom, double ** vatom) {
@@ -51,13 +50,23 @@ namespace rascal {
     this->vatom = vatom;
     this->offsets.reserve(inum);
     this->offsets.resize(1);
-    for (int i{0}; i < this->inum - 1; ++i) {
+    this->atom_index_from_atom_tag_list.clear();
+    // #BUG8486@(all) it should be this->inum
+    for (int i{0}; i < this->inum; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
     this->nb_pairs = std::accumulate(numneigh, numneigh + this->inum, 0);
 
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
+
+    // #BUG8486@(all) is the solution used in make_atom_index_from_atom_tag_list
+    // good enough, does ilist have huge gaps?
+    // e.g. ilist = [1,5000], then the atom_index_from_atom_tag_list list will
+    // have 5000 elements.
+    // Also the dummy 0 values which will could undefined behaviour instead
+    // necessary an error
+    this->make_atom_index_from_atom_tag_list();
 
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
@@ -72,15 +81,12 @@ namespace rascal {
     switch (order) {
     case 1: {
       return inum;
-      break;
     }
     case 2: {
       return nb_pairs;
-      break;
     }
     default:
       throw std::runtime_error("Can only handle single atoms and pairs");
-      break;
     }
   }
 }  // namespace rascal
