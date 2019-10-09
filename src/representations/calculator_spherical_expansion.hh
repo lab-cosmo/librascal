@@ -314,7 +314,7 @@ namespace rascal {
         // define the type of smearing to use
         auto smearing_hypers = hypers.at("gaussian_density").get<json>();
         auto smearing_type = smearing_hypers.at("type").get<std::string>();
-        if (smearing_type.compare("Constant") == 0) {
+        if (smearing_type == "Constant") {
           this->atomic_smearing_type = AtomicSmearingType::Constant;
           this->atomic_smearing =
               make_atomic_smearing<AtomicSmearingType::Constant>(
@@ -722,7 +722,7 @@ namespace rascal {
         // define the type of smearing to use
         auto smearing_hypers = hypers.at("gaussian_density").get<json>();
         auto smearing_type = smearing_hypers.at("type").get<std::string>();
-        if (smearing_type.compare("Constant") == 0) {
+        if (smearing_type == "Constant") {
           this->atomic_smearing_type = AtomicSmearingType::Constant;
           this->atomic_smearing =
               make_atomic_smearing<AtomicSmearingType::Constant>(
@@ -1167,13 +1167,13 @@ namespace rascal {
       auto smearing_hypers = hypers.at("gaussian_density").get<json>();
       auto smearing_type = smearing_hypers.at("type").get<std::string>();
 
-      if (smearing_type.compare("Constant") == 0) {
+      if (smearing_type == "Constant") {
         this->atomic_smearing_type = AtomicSmearingType::Constant;
-      } else if (smearing_type.compare("PerSpecies") == 0) {
+      } else if (smearing_type == "PerSpecies") {
         throw std::logic_error("Requested Smearing type \'PerSpecies\'"
                                "\' has not been implemented.  Must be one of"
                                ": \'Constant\'.");
-      } else if (smearing_type.compare("Radial") == 0) {
+      } else if (smearing_type == "Radial") {
         throw std::logic_error("Requested Smearing type \'Radial\'"
                                "\' has not been implemented.  Must be one of"
                                ": \'Constant\'.");
@@ -1187,9 +1187,9 @@ namespace rascal {
           hypers.at("radial_contribution").get<json>();
       auto radial_contribution_type =
           radial_contribution_hypers.at("type").get<std::string>();
-      if (radial_contribution_type.compare("GTO") == 0) {
+      if (radial_contribution_type == "GTO") {
         this->radial_integral_type = RadialBasisType::GTO;
-      } else if (radial_contribution_type.compare("DVR") == 0) {
+      } else if (radial_contribution_type == "DVR") {
         this->radial_integral_type = RadialBasisType::DVR;
       } else {
         throw std::logic_error("Requested Radial contribution type \'" +
@@ -1205,8 +1205,8 @@ namespace rascal {
         if (optimization_hypers.find("type") != optimization_hypers.end()) {
           auto intp_type_name{
               optimization_hypers.at("type").get<std::string>()};
-          if (intp_type_name.compare("Spline") == 0) {
-            this->interpolator_type = OptimizationType::Interpolator;
+          if (intp_type_name == "Spline") {
+            this->optimization_type = OptimizationType::Interpolator;
           } else {
             std::runtime_error("Wrongly configured optimization type. Remove "
                                "optimization flag or use as type \'Spline\'.");
@@ -1216,12 +1216,12 @@ namespace rascal {
                              "optimization type.");
         }
       } else {  // Default false (don't use interpolator)
-        this->interpolator_type = OptimizationType::Nothing;
+        this->optimization_type = OptimizationType::Nothing;
       }
 
       switch (internal::combineEnums(this->radial_integral_type,
                                      this->atomic_smearing_type,
-                                     this->interpolator_type)) {
+                                     this->optimization_type)) {
       case internal::combineEnums(RadialBasisType::GTO,
                                   AtomicSmearingType::Constant,
                                   OptimizationType::Nothing): {
@@ -1267,11 +1267,11 @@ namespace rascal {
       auto fc_type = fc_hypers.at("type").get<std::string>();
       this->interaction_cutoff = fc_hypers.at("cutoff").at("value");
       this->cutoff_smooth_width = fc_hypers.at("smooth_width").at("value");
-      if (fc_type.compare("ShiftedCosine") == 0) {
+      if (fc_type == "ShiftedCosine") {
         this->cutoff_function_type = CutoffFunctionType::ShiftedCosine;
         this->cutoff_function =
             make_cutoff_function<CutoffFunctionType::ShiftedCosine>(fc_hypers);
-      } else if (fc_type.compare("RadialScaling") == 0) {
+      } else if (fc_type == "RadialScaling") {
         this->cutoff_function_type = CutoffFunctionType::RadialScaling;
         this->cutoff_function =
             make_cutoff_function<CutoffFunctionType::RadialScaling>(fc_hypers);
@@ -1386,8 +1386,7 @@ namespace rascal {
     std::shared_ptr<internal::RadialContributionBase> radial_integral{};
     internal::RadialBasisType radial_integral_type{};
 
-    // TODO(alex) rename optimization type
-    internal::OptimizationType interpolator_type{};
+    internal::OptimizationType optimization_type{};
 
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
     internal::CutoffFunctionType cutoff_function_type{};
@@ -1438,7 +1437,7 @@ namespace rascal {
 
     switch (internal::combineEnums(this->radial_integral_type,
                                    this->atomic_smearing_type,
-                                   this->interpolator_type)) {
+                                   this->optimization_type)) {
     case internal::combineEnums(RadialBasisType::GTO,
                                 AtomicSmearingType::Constant,
                                 OptimizationType::Nothing): {
