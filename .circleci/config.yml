@@ -34,24 +34,36 @@ default_job: &default_job
     - run:
         name: Run tests
         command: cd build && ctest --output-on-failure
-    - run:
-        name: Run benchmarks
-        command: cd build && make benchmarks
+    - when:
+        condition: parameters.build_benchmarks
+        steps: 
+          - run:
+               name: Run benchmarks
+               command: cd build && make benchmarks
 
 jobs:
   gcc-5:
+    build_benchmarks:
+      type: boolean
+      default: true
     environment:
       CC: gcc-5
       CXX: g++-5
       APT_EXTRA_INSTALL: apt install -y gcc-5 g++-5
     <<: *default_job
   gcc-6:
+    build_benchmarks:
+      type: boolean
+      default: true
     environment:
       CC: gcc-6
       CXX: g++-6
       APT_EXTRA_INSTALL: apt install -y gcc-6 g++-6
     <<: *default_job
   gcc-7:
+    build_benchmarks:
+      type: boolean
+      default: true
     environment:
       CC: gcc-7
       CXX: g++-7
@@ -60,6 +72,9 @@ jobs:
       APT_EXTRA_INSTALL: apt install -y gcc-7 g++-7
     <<: *default_job
   gcc-7-debug:
+    build_benchmarks:
+      type: boolean
+      default: false
     environment:
       CC: gcc-7
       CXX: g++-7
@@ -69,30 +84,45 @@ jobs:
       CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug
     <<: *default_job
   clang-4:
+    build_benchmarks:
+      type: boolean
+      default: true
     environment:
       CC: clang-4.0
       CXX: clang++-4.0
       APT_EXTRA_INSTALL: apt install -y clang-4.0
     <<: *default_job
   clang-5:
+    build_benchmarks:
+      type: boolean
+      default: true
     environment:
       CC: clang-5.0
       CXX: clang++-5.0
       APT_EXTRA_INSTALL: apt install -y clang-5.0
     <<: *default_job
   clang-6:
+    build_benchmarks:
+      type: boolean
+      default: true
     environment:
       CC: clang-6.0
       CXX: clang++-6.0
       APT_EXTRA_INSTALL: apt install -y clang-6.0
     <<: *default_job
   clang-7:
+    build_benchmarks:
+      type: boolean
+      default: true
     environment:
       CC: clang-7
       CXX: clang++-7
       APT_EXTRA_INSTALL: apt install -y clang-7
     <<: *default_job
   clang-7-debug:
+    build_benchmarks:
+      type: boolean
+      default: true
     environment:
       CC: clang-7
       CXX: clang++-7
