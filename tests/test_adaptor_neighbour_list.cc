@@ -217,8 +217,13 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /*
-   * test if two differently defined 2-atom units cells of hcp crystal structure
-   * yield the same number of neighbours per atom, if the cutoff is increased.
+   * Test if two differently defined 2-atom units cells of hcp crystal structure
+   * yield the same number of neighbours per atom, with two different cutoffs.
+   * The number of neighbours are checked against each other as well as against
+   * a hardcoded known number of neighbours. The two cells include the
+   * (crystallographically) same atoms of a hcp lattice, but use different unit
+   * cells. The basal unit cell also includes a cell vector ("a2" axis) which
+   * has a negative component (in real space coordinates).
    *
    * ``manager_1`` and ``manager_2`` each hold a different unit cell for a hcp
    * crystal system.
@@ -233,13 +238,12 @@ namespace rascal {
 
     constexpr bool verbose{false};
 
-    cutoff = 1.01;
     std::vector<int> expected_number_of_neighbours{12, 56};
 
     if (verbose) {
       std::cout << "HCP test cutoff initial " << cutoff << std::endl;
     }
-    int mult{3};
+    const int mult{3};
 
     for (auto i{1}; i < mult; ++i) {
       double cutoff_tmp = i * cutoff;
