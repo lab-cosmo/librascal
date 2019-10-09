@@ -477,9 +477,7 @@
   {
    "cell_type": "code",
    "execution_count": null,
-   "metadata": {
-    "scrolled": true
-   },
+   "metadata": {},
    "outputs": [],
    "source": [
     "kernel.shape"
@@ -573,9 +571,7 @@
   {
    "cell_type": "code",
    "execution_count": null,
-   "metadata": {
-    "scrolled": false
-   },
+   "metadata": {},
    "outputs": [],
    "source": [
     "#sc = plt.scatter(y_pred, y_test, s=3)\n",

@@ -2463,6 +2463,12 @@ Eigen)matrix, sized <span class="math notranslate nohighlight">\(m_\text{max}\)<
 </dd></dl>
 
 <dl class="function">
+<dt id="_CPPv4N6rascal15AtomicStructure4wrapEv">
+<span class="target" id="structrascal_1_1AtomicStructure_1ac0b230c18edda23d2a089094bc9da94e"></span>void <code class="sig-name descname">wrap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal15AtomicStructure4wrapEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>fold the atoms inside the box if it has periodic boundary conditions </p>
+</dd></dl>
+
+<dl class="function">
 <dt id="_CPPv4N6rascal15AtomicStructure13set_structureERK16PositionsInput_tRK16AtomTypesInput_tK11CellInput_tRK10PBCInput_t">
 <span class="target" id="structrascal_1_1AtomicStructure_1a0577a73face11794deb29655338ee1a6"></span>void <code class="sig-name descname">set_structure</code><span class="sig-paren">(</span><em class="property">const</em> PositionsInput_t &amp;<em>positions</em>, <em class="property">const</em> AtomTypesInput_t &amp;<em>atom_types</em>, <em class="property">const</em> CellInput_t <em>cell</em>, <em class="property">const</em> PBCInput_t &amp;<em>pbc</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal15AtomicStructure13set_structureERK16PositionsInput_tRK16AtomTypesInput_tK11CellInput_tRK10PBCInput_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Set the atomic structure. The expected input are similar to the member variable of the <a class="reference internal" href="#structrascal_1_1AtomicStructure"><span class="std std-ref">AtomicStructure</span></a> class.</p>
@@ -7539,6 +7545,23 @@ template&lt;&gt;<br /><span class="target" id="classrascal_1_1internal_1_1Stenci
 </dd></dl>
 
 <dl class="function">
+<dt id="_CPPv4I0EN6rascal4math6py_modE3Num3Num3Num">
+<span class="target" id="math__utils_8hh_1abb4ed1d54cbf33c9e517c0378ae489a0"></span>template&lt;class <code class="sig-name descname">Num</code>&gt;<br /><a class="reference internal" href="#_CPPv4I0EN6rascal4math6py_modE3Num3Num3Num" title="rascal::math::py_mod::Num">Num</a> <code class="sig-name descname">py_mod</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN6rascal4math6py_modE3Num3Num3Num" title="rascal::math::py_mod::Num">Num</a> <em>x</em>, <a class="reference internal" href="#_CPPv4I0EN6rascal4math6py_modE3Num3Num3Num" title="rascal::math::py_mod::Num">Num</a> <em>divisor</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN6rascal4math6py_modE3Num3Num3Num" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Modulo that follows python standard, i.e. (-3) % 5 == 2 (python) and not (-3) % 5 == -3 (C++).</p>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">divisor</span></code>: is a positive divisor </p></li>
+</ul>
+</dd>
+<dt><strong>Template Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Num</span></code>: type of the double modulo </p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="_CPPv4N6rascal4math25switching_function_cosineEddd">
 <span class="target" id="math__utils_8hh_1a54d667ea256be9958e0f4107018e6b91"></span>double <code class="sig-name descname">switching_function_cosine</code><span class="sig-paren">(</span>double <em>r</em>, double <em>cutoff</em>, double <em>smooth_width</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math25switching_function_cosineEddd" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Compute a cosine-type switching function for smooth cutoffs</p>
@@ -7799,6 +7822,12 @@ template&lt;&gt;<br /><span class="target" id="classrascal_1_1internal_1_1Stenci
 </dd>
 </dl>
 </p>
+</dd></dl>
+
+<dl class="class">
+<dt id="_CPPv4N6rascal4math17MakePositivePyModE">
+<span class="target" id="structrascal_1_1math_1_1MakePositivePyMod"></span><em class="property">struct </em><code class="sig-name descname">MakePositivePyMod</code><a class="headerlink" href="#_CPPv4N6rascal4math17MakePositivePyModE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><em>#include &lt;math_utils.hh&gt;</em><p>Defines a modulo function that follows python standard behaviour </p>
 </dd></dl>
 
 <dl class="class">

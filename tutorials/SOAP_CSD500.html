@@ -504,7 +504,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>(&#39;./data/CSD-500.xyz&#39;, &lt;http.client.HTTPMessage at 0x7ff2ecf577f0&gt;)
+<span></span>(&#39;./data/CSD-500.xyz&#39;, &lt;http.client.HTTPMessage at 0x7f811c91d898&gt;)
 </pre></div>
 </div>
 </div>
@@ -618,8 +618,11 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-CPU times: user 46.1 ms, sys: 0 ns, total: 46.1 ms
-Wall time: 45.9 ms
+Neighbourlist of structures failed. trying
+                one at a time.
+Structure Rep computation 0 failed
+CPU times: user 785 µs, sys: 577 µs, total: 1.36 ms
+Wall time: 1.21 ms
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -645,7 +648,7 @@ Wall time: 45.9 ms
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>(2520, 362)
+<span></span>(0, 0)
 </pre></div>
 </div>
 </div>
@@ -757,12 +760,22 @@ Wall time: 45.9 ms
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Neighbourlist of structures failed. trying
+                one at a time.
+Structure Rep computation 0 failed
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;rascal.neighbourlist.structure_manager.AtomsList at 0x7ff2eb367fd0&gt;
+<span></span>&lt;rascal.neighbourlist.structure_manager.AtomsList at 0x7f8118131358&gt;
 </pre></div>
 </div>
 </div>
@@ -849,7 +862,7 @@ Wall time: 45.9 ms
 </pre></div>
 </div>
 </div>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
@@ -857,6 +870,16 @@ Wall time: 45.9 ms
 <span></span><span class="n">features</span> <span class="o">=</span> <span class="n">compute_representation</span><span class="p">(</span><span class="n">soap</span><span class="p">,</span> <span class="n">frames_train</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Neighbourlist of structures failed. trying
+                one at a time.
+Structure Rep computation 0 failed
+</pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
@@ -872,7 +895,7 @@ Wall time: 45.9 ms
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;rascal.neighbourlist.structure_manager.AtomsList at 0x7ff2eb36f358&gt;
+<span></span>&lt;rascal.neighbourlist.structure_manager.AtomsList at 0x7f81181312b0&gt;
 </pre></div>
 </div>
 </div>
@@ -1063,6 +1086,16 @@ Wall time: 45.9 ms
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Neighbourlist of structures failed. trying
+                one at a time.
+Structure Rep computation 0 failed
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
@@ -1186,6 +1219,16 @@ Wall time: 45.9 ms
 <span class="n">krr</span><span class="p">,</span><span class="n">k</span> <span class="o">=</span> <span class="n">train_krr_model</span><span class="p">(</span><span class="n">zeta</span><span class="p">,</span> <span class="n">Lambda</span><span class="p">,</span> <span class="n">soap</span><span class="p">,</span> <span class="n">frames_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Neighbourlist of structures failed. trying
+                one at a time.
+Structure Rep computation 0 failed
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -1492,6 +1535,99 @@ Wall time: 45.9 ms
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">X</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="c1">#plt.savefig(&#39;PCA.png&#39;,dpi=300)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">IndexError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-52-e241bba0a2ba&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>plt<span class="ansi-blue-fg">.</span>scatter<span class="ansi-blue-fg">(</span>X<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span>X<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span>s<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">3</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-red-fg">#plt.savefig(&#39;PCA.png&#39;,dpi=300)</span>
+
+<span class="ansi-red-fg">IndexError</span>: index 0 is out of bounds for axis 1 with size 0
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="make-an-interactive-map">
+<h2>make an interactive map<a class="headerlink" href="#make-an-interactive-map" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># package to visualize the structures in the notebook</span>
+<span class="c1"># https://github.com/arose/nglview#released-version</span>
+<span class="kn">import</span> <span class="nn">nglview</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-53-2fa0ca23db8b&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># package to visualize the structures in the notebook</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-red-fg"># https://github.com/arose/nglview#released-version</span>
+<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">import</span> nglview
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;nglview&#39;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">iwdg</span> <span class="o">=</span> <span class="n">nglview</span><span class="o">.</span><span class="n">show_asetraj</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
+<span class="c1"># set up the visualization</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">add_unitcell</span><span class="p">()</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">add_spacefill</span><span class="p">()</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">remove_ball_and_stick</span><span class="p">()</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">camera</span> <span class="o">=</span> <span class="s1">&#39;orthographic&#39;</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;clipDist&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="p">}</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">update_spacefill</span><span class="p">(</span><span class="n">radiusType</span><span class="o">=</span><span class="s1">&#39;covalent&#39;</span><span class="p">,</span>
+                                   <span class="n">scale</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+                                   <span class="n">color_scheme</span><span class="o">=</span><span class="s1">&#39;element&#39;</span><span class="p">)</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">_remote_call</span><span class="p">(</span><span class="s1">&#39;setSize&#39;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;Widget&#39;</span><span class="p">,</span>
+                               <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">px&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">600</span><span class="p">,),</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1">px&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">400</span><span class="p">,)])</span>
+<span class="n">iwdg</span><span class="o">.</span><span class="n">player</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="mf">200.0</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-54-c5315972e322&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>iwdg <span class="ansi-blue-fg">=</span> nglview<span class="ansi-blue-fg">.</span>show_asetraj<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-red-fg"># set up the visualization</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> iwdg<span class="ansi-blue-fg">.</span>add_unitcell<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> iwdg<span class="ansi-blue-fg">.</span>add_spacefill<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> iwdg<span class="ansi-blue-fg">.</span>remove_ball_and_stick<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;nglview&#39; is not defined
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">link_ngl_wdgt_to_ax_pos</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">(),</span> <span class="n">X</span><span class="p">,</span> <span class="n">iwdg</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">X</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">iwdg</span>
 </pre></div>
 </div>
 </div>
@@ -2278,95 +2414,7 @@ if (IPython.notebook.kernel != null) {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area rendered_html docutils container">
-<div id='766572a2-423a-4b0b-a925-c451f5e59701'></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
-</pre></div>
-</div>
-<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.collections.PathCollection at 0x7ff2e86d8dd8&gt;
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="make-an-interactive-map">
-<h2>make an interactive map<a class="headerlink" href="#make-an-interactive-map" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># package to visualize the structures in the notebook</span>
-<span class="c1"># https://github.com/arose/nglview#released-version</span>
-<span class="kn">import</span> <span class="nn">nglview</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-53-2fa0ca23db8b&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># package to visualize the structures in the notebook</span>
-<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-red-fg"># https://github.com/arose/nglview#released-version</span>
-<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">import</span> nglview
-
-<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;nglview&#39;
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">iwdg</span> <span class="o">=</span> <span class="n">nglview</span><span class="o">.</span><span class="n">show_asetraj</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
-<span class="c1"># set up the visualization</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">add_unitcell</span><span class="p">()</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">add_spacefill</span><span class="p">()</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">remove_ball_and_stick</span><span class="p">()</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">camera</span> <span class="o">=</span> <span class="s1">&#39;orthographic&#39;</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;clipDist&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="p">}</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">update_spacefill</span><span class="p">(</span><span class="n">radiusType</span><span class="o">=</span><span class="s1">&#39;covalent&#39;</span><span class="p">,</span>
-                                   <span class="n">scale</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
-                                   <span class="n">color_scheme</span><span class="o">=</span><span class="s1">&#39;element&#39;</span><span class="p">)</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">_remote_call</span><span class="p">(</span><span class="s1">&#39;setSize&#39;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;Widget&#39;</span><span class="p">,</span>
-                               <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">px&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">600</span><span class="p">,),</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1">px&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">400</span><span class="p">,)])</span>
-<span class="n">iwdg</span><span class="o">.</span><span class="n">player</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="mf">200.0</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-
-<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-54-c5315972e322&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>iwdg <span class="ansi-blue-fg">=</span> nglview<span class="ansi-blue-fg">.</span>show_asetraj<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-red-fg"># set up the visualization</span>
-<span class="ansi-green-intense-fg ansi-bold">      3</span> iwdg<span class="ansi-blue-fg">.</span>add_unitcell<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">      4</span> iwdg<span class="ansi-blue-fg">.</span>add_spacefill<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">      5</span> iwdg<span class="ansi-blue-fg">.</span>remove_ball_and_stick<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name &#39;nglview&#39; is not defined
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">link_ngl_wdgt_to_ax_pos</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">(),</span> <span class="n">X</span><span class="p">,</span> <span class="n">iwdg</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">X</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">s</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">iwdg</span>
-</pre></div>
-</div>
+<div id='d09ee6da-1915-4653-a002-2978bcb3d677'></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
