@@ -817,14 +817,14 @@ namespace rascal {
   AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
       std::shared_ptr<ManagerImplementation> manager, double cutoff,
       bool consider_ghost_neighbours, double skin)
-      : manager{std::move(manager)}, cutoff{cutoff}, skin{skin * skin},
+      : manager{std::move(manager)}, cutoff{cutoff}, skin2{skin * skin},
         atom_tag_list{}, atom_types{}, ghost_atom_tag_list{}, nb_neigh{},
         neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0},
         consider_ghost_neighbours{consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
     if (this->skin2 > 0.) {
       throw std::runtime_error(
-          "The verlet list is not functional for the moment.");
+          "The verlet list is not functional for the moment, keep skin == 0");
     }
   }
 
