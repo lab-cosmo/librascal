@@ -64,6 +64,17 @@ namespace rascal {
     Cell_t lat = this->atoms_object.cell;
     this->lattice.set_cell(lat);
 
+    // Check if all atoms are inside the unit cell assuming the cell starts
+    // at (0,0,0)
+    auto positions_scaled = this->atoms_object.get_scaled_positions();
+    double tol{1e-10};
+    if ((positions_scaled.array().rowwise().minCoeff() < -tol).any() or
+        (positions_scaled.array().rowwise().maxCoeff() > 1. + tol).any()) {
+      std::string error{R"(Some of the positions in the structure are not
+                            inside the unit cell. Please wrap the atoms.)"};
+      throw std::runtime_error(error);
+    }
+
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     atom_cluster_indices.fill_sequence();
   }

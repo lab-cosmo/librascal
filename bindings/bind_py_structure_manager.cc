@@ -261,16 +261,17 @@ namespace rascal {
   template <typename StructureManagerImplementation>
   void
   bind_update_unpacked(PyManager<StructureManagerImplementation> & manager) {
-    manager.def("update",
-                [](StructureManagerImplementation & manager,
-                   const py::EigenDRef<const Eigen::MatrixXd> & positions,
-                   const py::EigenDRef<const Eigen::VectorXi> & atom_types,
-                   const py::EigenDRef<const Eigen::MatrixXd> & cell,
-                   const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
-                  manager.update(positions, atom_types, cell, pbc);
-                },
-                py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
-                py::arg("pbc"), py::call_guard<py::gil_scoped_release>());
+    manager.def(
+        "update",
+        [](StructureManagerImplementation & manager,
+           const py::EigenDRef<const Eigen::MatrixXd> & positions,
+           const py::EigenDRef<const Eigen::VectorXi> & atom_types,
+           const py::EigenDRef<const Eigen::MatrixXd> & cell,
+           const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
+          manager.update(positions, atom_types, cell, pbc);
+        },
+        py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
+        py::arg("pbc"), py::call_guard<py::gil_scoped_release>());
   }
 
   /**
@@ -280,9 +281,9 @@ namespace rascal {
    */
   template <typename StructureManagerImplementation>
   void bind_update_empty(PyManager<StructureManagerImplementation> & manager) {
-    manager.def("update",
-                [](StructureManagerImplementation & v) { v.update(); },
-                py::call_guard<py::gil_scoped_release>());
+    manager.def(
+        "update", [](StructureManagerImplementation & v) { v.update(); },
+        py::call_guard<py::gil_scoped_release>());
   }
 
   /**
@@ -329,12 +330,13 @@ namespace rascal {
 
     static void bind_adapted_manager_maker(const std::string & name,
                                            py::module & m_adaptor) {
-      m_adaptor.def(name.c_str(),
-                    [](ImplementationPtr_t & manager) {
-                      return make_adapted_manager<AdaptorCenterContribution,
-                                                  Implementation_t>(manager);
-                    },
-                    py::arg("manager"), py::return_value_policy::copy);
+      m_adaptor.def(
+          name.c_str(),
+          [](ImplementationPtr_t & manager) {
+            return make_adapted_manager<AdaptorCenterContribution,
+                                        Implementation_t>(manager);
+          },
+          py::arg("manager"), py::return_value_policy::copy);
     }
   };
 
@@ -474,11 +476,12 @@ namespace rascal {
     }));
 
     // bind iteration over the managers
-    manager_collection.def("__iter__",
-                           [](ManagerCollection_t & v) {
-                             return py::make_iterator(v.begin(), v.end());
-                           },
-                           py::keep_alive<0, 1>());
+    manager_collection.def(
+        "__iter__",
+        [](ManagerCollection_t & v) {
+          return py::make_iterator(v.begin(), v.end());
+        },
+        py::keep_alive<0, 1>());
     // bind [] accessor
     manager_collection.def(
         "__getitem__",
@@ -643,64 +646,71 @@ namespace rascal {
     using AtomicStructure_t = AtomicStructure<3>;
     py::class_<AtomicStructure_t>(mod, "AtomicStructure")
         .def(py::init<>())
-        .def("get_positions",
-             [](AtomicStructure_t & atomic_structure) {
-               return atomic_structure.positions;
-             },
-             py::return_value_policy::reference_internal)
-        .def("get_atom_types",
-             [](AtomicStructure_t & atomic_structure) {
-               return atomic_structure.atom_types;
-             },
-             py::return_value_policy::reference_internal)
-        .def("get_cell",
-             [](AtomicStructure_t & atomic_structure) {
-               return atomic_structure.cell;
-             },
-             py::return_value_policy::reference_internal)
-        .def("get_pbc",
-             [](AtomicStructure_t & atomic_structure) {
-               return atomic_structure.pbc;
-             },
-             py::return_value_policy::reference_internal);
+        .def(
+            "get_positions",
+            [](AtomicStructure_t & atomic_structure) {
+              return atomic_structure.positions;
+            },
+            py::return_value_policy::reference_internal)
+        .def(
+            "get_atom_types",
+            [](AtomicStructure_t & atomic_structure) {
+              return atomic_structure.atom_types;
+            },
+            py::return_value_policy::reference_internal)
+        .def(
+            "get_cell",
+            [](AtomicStructure_t & atomic_structure) {
+              return atomic_structure.cell;
+            },
+            py::return_value_policy::reference_internal)
+        .def(
+            "get_pbc",
+            [](AtomicStructure_t & atomic_structure) {
+              return atomic_structure.pbc;
+            },
+            py::return_value_policy::reference_internal);
 
     using AtomicStructureList_t = std::vector<AtomicStructure<3>>;
 
     py::class_<AtomicStructureList_t>(mod, "AtomicStructureList")
         .def(py::init<>())
-        .def("append",
-             [](AtomicStructureList_t & v,
-                const py::EigenDRef<const Eigen::MatrixXd> & positions,
-                const py::EigenDRef<const Eigen::VectorXi> & atom_types,
-                const py::EigenDRef<const Eigen::MatrixXd> & cell,
-                const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
-               v.emplace_back();
-               v.back().set_structure(positions, atom_types, cell, pbc);
-             },
-             py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
-             py::arg("pbc"), py::call_guard<py::gil_scoped_release>())
-        .def("append",
-             [](AtomicStructureList_t & v,
-                const py::EigenDRef<const Eigen::MatrixXd> & positions,
-                const py::EigenDRef<const Eigen::VectorXi> & atom_types,
-                const py::EigenDRef<const Eigen::MatrixXd> & cell,
-                const py::EigenDRef<const Eigen::MatrixXi> & pbc,
-                ArrayConstRef_t<bool> center_atoms_mask) {
-               v.emplace_back();
-               v.back().set_structure(positions, atom_types, cell, pbc);
-               v.back().set_atom_property("center_atoms_mask",
-                                          center_atoms_mask);
-             },
-             py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
-             py::arg("pbc"), py::arg("center_atoms_mask"),
-             py::call_guard<py::gil_scoped_release>())
+        .def(
+            "append",
+            [](AtomicStructureList_t & v,
+               const py::EigenDRef<const Eigen::MatrixXd> & positions,
+               const py::EigenDRef<const Eigen::VectorXi> & atom_types,
+               const py::EigenDRef<const Eigen::MatrixXd> & cell,
+               const py::EigenDRef<const Eigen::MatrixXi> & pbc) {
+              v.emplace_back();
+              v.back().set_structure(positions, atom_types, cell, pbc);
+            },
+            py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
+            py::arg("pbc"), py::call_guard<py::gil_scoped_release>())
+        .def(
+            "append",
+            [](AtomicStructureList_t & v,
+               const py::EigenDRef<const Eigen::MatrixXd> & positions,
+               const py::EigenDRef<const Eigen::VectorXi> & atom_types,
+               const py::EigenDRef<const Eigen::MatrixXd> & cell,
+               const py::EigenDRef<const Eigen::MatrixXi> & pbc,
+               ArrayConstRef_t<bool> center_atoms_mask) {
+              v.emplace_back();
+              v.back().set_structure(positions, atom_types, cell, pbc);
+              v.back().set_atom_property("center_atoms_mask",
+                                         center_atoms_mask);
+            },
+            py::arg("positions"), py::arg("atom_types"), py::arg("cell"),
+            py::arg("pbc"), py::arg("center_atoms_mask"),
+            py::call_guard<py::gil_scoped_release>())
         .def("__len__",
              [](const AtomicStructureList_t & v) { return v.size(); })
-        .def("__iter__",
-             [](AtomicStructureList_t & v) {
-               return py::make_iterator(v.begin(), v.end());
-             },
-             py::keep_alive<0, 1>());
+        .def(
+            "__iter__",
+            [](AtomicStructureList_t & v) {
+              return py::make_iterator(v.begin(), v.end());
+            },
+            py::keep_alive<0, 1>());
   }
 
   //! Main function to add StructureManagers and their Adaptors

@@ -126,8 +126,8 @@ namespace rascal {
     ManagerFixtureTwoHcp()
         : ManagerFixtureTwo<StructureManagerCenters>{}, pbc{{true, true, true}},
           cell_1(3, 3), cell_2(3, 3), positions_1(3, 2), positions_2(3, 2),
-          atom_types(2), cutoff{0.7} {
-      /*
+          atom_types(2), cutoff{1.01} {
+      /**
        * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
        * unit cells: basal and prismatic 1. The neighbourlist is built with the
        * same cutoff. The test checks, if all atoms have the same number of
@@ -136,21 +136,25 @@ namespace rascal {
       auto a{1.};
       auto c{std::sqrt(8. / 3.)};
       // clang-format off
+      // basal cell
       cell_1 << a,                -0.5 * a, 0.,
                 0., std::sqrt(3.) / 2. * a, 0.,
                 0., 0.,                      c;
 
+
+      // prism cell
       cell_2 << a,  0.,                0.5 * a,
-                0.,  c,                     0.,
+                0., c ,                     0.,
                 0., 0., std::sqrt(3.) / 2. * a;
       // clang-format on
-      auto p_1 = 2. / 3. * cell_1.col(0) + 1. / 3. * cell_1.col(1) +
-                 1. / 2. * cell_1.col(2);
+      auto h{std::sqrt(3.) / 2. * a};
+      auto r{std::sqrt(3.) / 6. * a};
+
+      Eigen::Vector3d p_1(0, h - r, c / 2.);
 
       positions_1 << 0.0, p_1[0], 0.0, p_1[1], 0.0, p_1[2];
 
-      auto p_2 = -1. / 3. * cell_2.col(0) + 1. / 2. * cell_2.col(1) +
-                 2. / 3. * cell_2.col(2);
+      Eigen::Vector3d p_2(a / 2., c / 2., r);
 
       positions_2 << 0.0, p_2[0], 0.0, p_2[1], 0.0, p_2[2];
 
@@ -161,7 +165,7 @@ namespace rascal {
       manager_1->update(positions_1, atom_types, cell_1, PBC_t{pbc.data()});
 
       manager_2->update(positions_2, atom_types, cell_2, PBC_t{pbc.data()});
-    }
+    }  // namespace rascal
 
     ~ManagerFixtureTwoHcp() {}
 
@@ -176,7 +180,7 @@ namespace rascal {
     double cutoff;
 
     const int natoms{2};
-  };
+  };  // namespace rascal
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -440,7 +444,7 @@ namespace rascal {
     ManagerFixtureSimple()
         : ManagerFixture<StructureManagerCenters>{}, pbc{{true, false, false}},
           cell(3, 3), positions(3, 8), atom_types(8), cutoff{2.1}, natoms{8} {
-      cell << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.5;
+      cell << 2.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 2.0;
       // clang-format off
       positions << 0.4, 1.4, 0.4,
                    1.4, 0.4, 1.4,
@@ -458,6 +462,55 @@ namespace rascal {
     }
 
     ~ManagerFixtureSimple() {}
+
+    std::array<int, 3> pbc;
+    Eigen::MatrixXd cell;
+    Eigen::MatrixXd positions;
+    Eigen::VectorXi atom_types;
+
+    double cutoff;
+
+    const int natoms;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * A manager using ManagerCenters to check the neighbourlist algorithm
+   * with a very skewed cell and positions right at the edge of the periodicity
+   */
+  struct ManagerFixtureSkewDeltaRcut
+      : public ManagerFixture<StructureManagerCenters> {
+    ManagerFixtureSkewDeltaRcut()
+        : ManagerFixture<StructureManagerCenters>{}, pbc{{true, true, true}},
+          cell(3, 3), positions(12, 3),
+          atom_types(12), cutoff{0.997}, natoms{12} {
+      cell << 10.0, 0.0, 0.0, 9.396926207859085, 3.420201433256687, 0.0,
+          9.396926207859085, 1.6569316261720377, 2.992048701181514;
+
+      cell.transposeInPlace();
+      // clang-format off
+      positions <<  0.00100000, 0.00000000, 0.00000000,
+                    9.99900000, 0.00000000, 0.00000000,
+                   10.00000000, 0.00100000, 0.00000000,
+                    9.39692621, 3.41920143, 0.00000000,
+                   19.39692621, 3.42020143, 0.00100000,
+                    9.39692621, 1.65693163, 2.99104870,
+                    0.49800000, 0.00000000, 0.00000000,
+                    9.50200000, 0.00000000, 0.00000000,
+                   10.00000000, 0.49800000, 0.00000000,
+                    9.39692621, 2.92220143, 0.00000000,
+                   19.39692621, 3.42020143, 0.49800000,
+                    9.39692621, 1.65693163, 2.49404870;
+      // clang-format on
+      positions.transposeInPlace();
+
+      atom_types << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
+
+      using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
+      this->manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
+    }
+
+    ~ManagerFixtureSkewDeltaRcut() {}
 
     std::array<int, 3> pbc;
     Eigen::MatrixXd cell;

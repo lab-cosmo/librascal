@@ -324,7 +324,6 @@ namespace rascal {
     using Std2DArray_t = std::vector<std::vector<double>>;
 
     const auto & rep_infos{ref_data.at("rep_info").template get<json>()};
-    // feature_matrices = data["feature_matrices"];
 
     size_t manager_i{0};
     for (auto & manager : managers) {
@@ -344,6 +343,7 @@ namespace rascal {
 
         BOOST_CHECK_EQUAL(ref_representation.size(),
                           test_representation.rows());
+        double avg_diff{0.};
         for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
           BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
                             test_representation.cols());
@@ -351,7 +351,7 @@ namespace rascal {
                ++col_i) {
             auto diff{std::abs(ref_representation[row_i][col_i] -
                                test_representation(row_i, col_i))};
-            BOOST_CHECK_LE(diff, 6e-12);
+            avg_diff += diff;
             if (verbose and diff > 6e-12) {
               std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", "
                         << col_i << " \t " << ref_representation[row_i][col_i]
@@ -359,6 +359,7 @@ namespace rascal {
                         << std::endl;
             }
           }
+          BOOST_CHECK_LE(avg_diff / test_representation.size(), 6e-12);
         }
       }
       manager_i += 1;
