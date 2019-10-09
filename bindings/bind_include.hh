@@ -72,7 +72,7 @@ namespace rascal {
      * There are submodules in the python bindings with the class
      * title so to avoid redundancy they are removed from the
      * typename.
-     * @template T type that should be stringified
+     * @tparam T type that should be stringified
      * @returns std::string name of the type
      */
     template <typename T>

@@ -1,5 +1,5 @@
 /**
- * @file   bind_py_neighbour_manager.hh
+ * @file   bind_py_structure_manager.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
