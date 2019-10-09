@@ -41,139 +41,114 @@
 namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
-   * Layer calculations and manipulations
+   * Utilities for layer calculations and manipulations.
    */
-  //! Computes layer by cluster dimension for new adaptor layer, depending on
-  //! existing layer by order.
-  template <size_t MaxOrder, class T>
+
+  /**
+   * Increases each layer of all existing orders.
+   *
+   * @tparam T the std::index_sequence representing the layer by order sequence.
+   */
+  template <class T>
   struct LayerIncreaser {};
 
-  template <size_t MaxOrder, size_t... Ints>
-  struct LayerIncreaser<MaxOrder, std::index_sequence<Ints...>> {
-    using type = std::index_sequence<(Ints + 1)...>;
+  /**
+   * @tparam LayersByOrder the layer by orders as variadic arguments
+   */
+  template <size_t... LayersByOrder>
+  struct LayerIncreaser<std::index_sequence<LayersByOrder...>> {
+    using type = std::index_sequence<(LayersByOrder + 1)...>;
   };
 
-  template <size_t MaxOrder, size_t... Ints>
+  template <size_t... LayersByOrder>
   using LayerIncreaser_t =
-      typename LayerIncreaser<MaxOrder, std::index_sequence<Ints...>>::type;
+      typename LayerIncreaser<std::index_sequence<LayersByOrder...>>::type;
 
   /* ---------------------------------------------------------------------- */
+
   /**
-   * Dynamic access to depth by cluster order
+   * Extends the layer by order index sequence by an additional cluster order.
+   * Used when order is increased by an adaptor. See traits of`AdaptorMaxOrder`.
+   *
+   * @tparam T the std::index_sequence representing the layer by order sequence.
    */
+  template <class T>
+  struct LayerExtender;
 
-  template <size_t MaxLevel, size_t... Ints>
-  constexpr size_t get_depth(size_t index, std::index_sequence<Ints...>) {
-    constexpr size_t arr[]{Ints...};
-    return arr[index];
-  }
-
-  /* ---------------------------------------------------------------------- */
-  //! Extends layer by cluster for an additional cluster dimension
-  template <size_t MaxOrder, class T>
-  struct LayerExtender {};
-
-  template <size_t MaxOrder, size_t... Ints>
-  struct LayerExtender<MaxOrder, std::index_sequence<Ints...>> {
-    using type = std::index_sequence<Ints..., 0>;
+  /**
+   * @tparam LayersByOrder the layer by orders as variadic arguments
+   */
+  template <size_t... LayersByOrder>
+  struct LayerExtender<std::index_sequence<LayersByOrder...>> {
+    using type = std::index_sequence<LayersByOrder..., 0>;
   };
 
-  template <size_t MaxOrder, size_t... Ints>
+  template <size_t... LayersByOrder>
   using LayerExtender_t =
-      typename LayerExtender<MaxOrder, std::index_sequence<Ints...>>::type;
+      typename LayerExtender<std::index_sequence<LayersByOrder...>>::type;
 
   /* ---------------------------------------------------------------------- */
-  //! Dynamic access to all layers by cluster dimension (probably not necessary)
-  template <size_t MaxOrder, size_t... Ints>
-  constexpr std::array<size_t, MaxOrder>
-  get_layers(std::index_sequence<Ints...>) {
-    return std::array<size_t, MaxOrder>{Ints...};
-  }
 
-  /* ---------------------------------------------------------------------- */
-  //! extractors helpers for cluster layers
-  namespace internal {
-    constexpr static int InvalidLayer = -1;
-    template <size_t head, size_t... tail>
-    struct Min {
-      constexpr static size_t value{
-          head < Min<tail...>::value ? head : Min<tail...>::value};
-    };
-
-    template <size_t head>
-    struct Min<head> {
-      constexpr static size_t value{head};
-    };
-
-    template <class Sequence>
-    struct MinExtractor {};
-
-    template <size_t... Ints>
-    struct MinExtractor<std::index_sequence<Ints...>> {
-      constexpr static size_t value{Min<Ints...>::value};
-    };
-
-    template <size_t Order, class Sequence, size_t... Ints>
-    struct HeadExtractor {};
-
-    template <size_t... seq>
-    struct HeadExtractorTail {
-      using type = std::index_sequence<seq...>;
-    };
-
-    template <size_t Order, size_t head, size_t... tail, size_t... seq>
-    struct HeadExtractor<Order, std::index_sequence<seq...>, head, tail...> {
-      using Extractor_t = std::conditional_t<
-          (Order > 1),
-          HeadExtractor<Order - 1, std::index_sequence<seq..., head>, tail...>,
-          HeadExtractorTail<seq..., head>>;
-      using type = typename Extractor_t::type;
-    };
-  }  // namespace internal
-
-  /* ---------------------------------------------------------------------- */
-  //! returns the cluster layer for accessing properties at a specific layer in
-  //! a stack
-  template <size_t Order, size_t... Ints>
-  constexpr size_t compute_cluster_layer(const std::index_sequence<Ints...> &) {
-    using ActiveDimensions =
-        typename internal::HeadExtractor<Order, std::index_sequence<>,
-                                         Ints...>::type;
-    return internal::MinExtractor<ActiveDimensions>::value;
-  }
-
-  // #BUG8486@(all) removed the MaxOrder template parameter, and the meaning
-  // of the access index was not clear, changed name to order
-  template <size_t... Ints>
-  constexpr size_t get_layer(const size_t order,
-                             const std::index_sequence<Ints...>) {
-    constexpr size_t arr[]{Ints...};
-    return arr[order - 1];
+  /**
+   * Static access at position `Index` in the type of the parameter
+   * `index_sequence`.
+   *
+   * @tparam Index
+   * @param index_sequence
+   *
+   * @return returns the `Index` elment in the index sequence.
+   */
+  template <size_t Index, size_t... Ints>
+  constexpr size_t get_index(const std::index_sequence<Ints...> & /*index_sequence*/) {
+    return std::get<Index>(std::make_tuple(Ints...));
   }
 
   /**
-   * Static access to layer by cluster dimension (e.g., for defining template
-   * parameter `NbRow` for a property
+   * From the index sequence given by the type of `layers_by_order` the layer is
+   * returned at order/position `Order`.
+   *
+   * @tparam Order
+   * @param layers_by_order the layers of each order in an index sequence
+   *
+   * @return returns the layer at the order `Order`
    */
-  template <size_t index, size_t... Ints>
-  constexpr size_t get(std::index_sequence<Ints...>) {
-    return get<index>(std::make_tuple(Ints...));
+  template <size_t Order, size_t... Ints>
+  constexpr size_t
+  get_layer(const std::index_sequence<Ints...> & layers_by_order) {
+    static_assert(Order > 0, "Order is <1 this should not be");
+    return get_index<Order-1>(layers_by_order);
   }
 
-  /* ---------------------------------------------------------------------- */
-  namespace internal {
-    //! extracts the head of the layer by order
-    template <size_t Layer, size_t HiLayer, typename T, size_t... Ints>
-    std::array<T, Layer> head_helper(const std::array<T, HiLayer> & arr,
-                                     std::index_sequence<Ints...>) {
-      return std::array<T, Layer>{arr[Ints]...};
-    }
-    //! specialization of the head extractor
-    template <size_t Layer, size_t HiLayer, typename T>
-    std::array<T, Layer> head(const std::array<T, HiLayer> & arr) {
-      return head_helper(arr, std::make_index_sequence<Layer>{});
-    }
-  }  // namespace internal
+  /**
+   * Returns the index sequence given by the type `layers_by_orders` as array.
+   *
+   * @param layers_by_order the layers of each order in an index sequence.
+   *
+   * @return returns `layers_by_orders` as array
+   */
+  template <size_t... Ints>
+  constexpr std::array<size_t, sizeof... (Ints)>
+  get_layers(const std::index_sequence<Ints...> & /*layers_by_order*/) {
+    return std::array<size_t, sizeof... (Ints)>{Ints...};
+  }
+
+  /**
+   * Returns the smallest number of layers up to the order `ActiveMaxOrder` in the
+   * `LayersByOrder` index sequence. It is needed to access properties at a
+   * specific layer in a manager stack.
+   *
+   * @tparam ActiveMaxOrder
+   * @param layers_by_order the layers of each order in an index sequence
+   *
+   * @return the smallest value in the given index sequence up to Order elements
+   */
+  template <size_t ActiveMaxOrder, size_t... LayersByOrder>
+  constexpr size_t compute_cluster_layer(
+      const std::index_sequence<LayersByOrder...> & /*layers_by_order*/) {
+    // transforms the LayersByOrder to an array
+    constexpr size_t arr[] = {LayersByOrder...};
+    return *std::min_element(std::begin(arr), std::begin(arr) + ActiveMaxOrder);
+  }
 
   /* ---------------------------------------------------------------------- */
   /**

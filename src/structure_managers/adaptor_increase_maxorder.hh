@@ -63,8 +63,7 @@ namespace rascal {
     constexpr static size_t MaxOrder{parent_traits::MaxOrder + 1};
     // Extend the layer by one with the new MaxOrder
     using LayerByOrder =
-        typename LayerExtender<MaxOrder,
-                               typename parent_traits::LayerByOrder>::type;
+        typename LayerExtender<typename parent_traits::LayerByOrder>::type;
   };
 
   /* ---------------------------------------------------------------------- */

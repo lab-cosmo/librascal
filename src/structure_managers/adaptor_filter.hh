@@ -64,8 +64,7 @@ namespace rascal {
     //! New Layer
     //! TODO: Is this the correct way to initialize the increased order?
     using LayerByOrder =
-        typename LayerIncreaser<MaxOrder_,
-                                typename parent_traits::LayerByOrder>::type;
+        typename LayerIncreaser<typename parent_traits::LayerByOrder>::type;
   };
 
   namespace internal {
