@@ -115,17 +115,18 @@ namespace rascal {
   template <size_t Order, size_t... Ints>
   constexpr size_t
   get_layer(const std::index_sequence<Ints...> & layers_by_order) {
-    static_assert(Order > 0, "Order is <1 this should not be");
-    static_assert(Order <= sizeof... (Ints) , "Order should be within the MaxOrder");
+    static_assert(Order > 0, "Order is <1 this should not be.");
+    static_assert(Order <= sizeof... (Ints) , "Order should be within the MaxOrder.");
     return get_index<Order-1>(layers_by_order);
   }
 
   /**
-   * Returns the index sequence given by the type `layers_by_orders` as array.
+   * Returns the index sequence given by the `Ints` as array.
    *
-   * @param layers_by_order the layers of each order in an index sequence.
+   * @param layers_by_order the type captures the layers of each order in an
+   *        index sequence.
    *
-   * @return returns `layers_by_orders` as array
+   * @return returns `Ints` as array
    */
   template <size_t... Ints>
   constexpr std::array<size_t, sizeof... (Ints)>
@@ -134,18 +135,24 @@ namespace rascal {
   }
 
   /**
-   * Returns the smallest number of layers up to the order `ActiveMaxOrder` in the
-   * `LayersByOrder` index sequence. It is needed to access properties at a
+   * Returns the smallest number of layers up to the order `ActiveMaxOrder` in
+   * the `LayersByOrder` index sequence. It is needed to access properties at a
    * specific layer in a manager stack.
    *
-   * @tparam ActiveMaxOrder
-   * @param layers_by_order the layers of each order in an index sequence
+   * @tparam ActiveMaxOrder the maximum order to check the `LayersByOrders` for
+   *         the minimum value.
+   * @param layers_by_order the type captures the layers of each order in an
+   *        index sequence.
    *
    * @return the smallest value in the given index sequence up to Order elements
    */
   template <size_t ActiveMaxOrder, size_t... LayersByOrder>
-  constexpr size_t compute_cluster_layer(
+  constexpr size_t get_min_layer(
       const std::index_sequence<LayersByOrder...> & /*layers_by_order*/) {
+    static_assert(ActiveMaxOrder > 0,
+                  "ActiveMaxOrder should be greater than 0.");
+    static_assert(ActiveMaxOrder <= sizeof...(LayersByOrder),
+                  "ActiveMaxOrder should not greater than the MaxOrder.");
     // transforms the LayersByOrder to an array
     constexpr size_t arr[] = {LayersByOrder...};
     return *std::min_element(std::begin(arr), std::begin(arr) + ActiveMaxOrder);

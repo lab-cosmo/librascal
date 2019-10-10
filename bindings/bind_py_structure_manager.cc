@@ -151,13 +151,17 @@ namespace rascal {
   }
 
   /**
-   * bind iterator and ClusterRef for Order == 1
+   * Binds iterator and ClusterRef for Order == 1. It is needed to prevent
+   * compiling error when `PyClusterRef` of Order 0 are compiled in
+   * `add_iterator`.
    *
+   * @pre Order has to be equal 1
    */
   template <typename StructureManagerImplementation, size_t Order>
   decltype(auto)
   add_iterator_order_one(py::module & m,
                PyManager<StructureManagerImplementation> & manager) {
+    static_assert(Order == 1, "Should be only used with Order equal to 1");
     using Child = StructureManagerImplementation;
     using Parent = typename Child::Parent;
 
@@ -171,20 +175,16 @@ namespace rascal {
   }
 
   /**
-   * Bind the clusterRef allowing to iterate over the manager, atom, neigh...
-   * Use signature overloading to dispatch to the proper function.
-   * Iterates recursively from Order to MaxOrder-1 statically.
+   * Starts the recursion. Should be used as in the `add_iterators::static_for`
+   * function.
    *
-   * @tparam MinOrder the first order from which you want to begin to add
-   *         iterators
-   * @tparam MaxOrder the last order from which you want to stop to add
-   *         iterators
+   * @tparam Order the current order to iterate on.
+   * @tparam MaxOrder the maximum order to stop. 
    */
   template <typename StructureManagerImplementation, size_t Order,
             size_t MaxOrder>
   struct add_iterators_recursion {
-    static_assert(Order >= 2, "The recursion step should nod get any Order < 2.");
-    //! following recursion
+    static_assert(Order >= 2, "The recursion step should not be used with Order < 2.");
     static void static_for(
         py::module & m,
         PyClusterRef<StructureManagerImplementation, Order - 1> & py_cluster) {
@@ -195,7 +195,9 @@ namespace rascal {
     }
   };
 
-  //! Stop the recursion
+  /**
+   * Stops the recursion.
+   */
   template <typename StructureManagerImplementation, size_t MaxOrder>
   struct add_iterators_recursion<StructureManagerImplementation, MaxOrder, MaxOrder> {
     static void
@@ -203,6 +205,16 @@ namespace rascal {
                PyClusterRef<StructureManagerImplementation, MaxOrder - 1> &) {}
   };
 
+  /**
+   * Bind the clusterRef allowing to iterate over the manager, atom, neigh...
+   * Use signature overloading to dispatch to the proper function.
+   * Iterates recursively from Order to MaxOrder-1 statically.
+   *
+   * @tparam MinOrder the first order from which you want to begin to add
+   *         iterators
+   * @tparam MaxOrder the last order from which you want to stop to add
+   *         iterators
+   */
   template <typename StructureManagerImplementation, size_t MinOrder,
             size_t MaxOrder>
   struct add_iterators {

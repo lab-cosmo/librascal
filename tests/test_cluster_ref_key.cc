@@ -5,17 +5,17 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(tests_cluster_ref_key);
 
   /**
-   * tests the compute_cluster_layer function
+   * tests the get_min_layer function
    */
-  BOOST_AUTO_TEST_CASE( test_compute_cluster_layer ) {
+  BOOST_AUTO_TEST_CASE( test_get_min_layer ) {
     // LayersByOrder using only one root manager
-    const size_t active_layer_root_manager{compute_cluster_layer<1>(typename std::index_sequence<0>{})};    
+    const size_t active_layer_root_manager{get_min_layer<1>(typename std::index_sequence<0>{})};    
     BOOST_CHECK_EQUAL(0, active_layer_root_manager);
     // LayersByOrder for `AdaptorFullNeighbourList`
-    const size_t active_layer_order_one_adaptor{compute_cluster_layer<1>(typename std::index_sequence<1,0>{})};
+    const size_t active_layer_order_one_adaptor{get_min_layer<1>(typename std::index_sequence<1,0>{})};
     BOOST_CHECK_EQUAL(1, active_layer_order_one_adaptor);
     // LayersByOrder for stacking an `AdaptorMaxOrder` on an `AdaptorStrict`
-    const size_t active_layer_increase_max_order{compute_cluster_layer<3>(typename std::index_sequence<1,1,0>{})};
+    const size_t active_layer_increase_max_order{get_min_layer<3>(typename std::index_sequence<1,1,0>{})};
     BOOST_CHECK_EQUAL(0, active_layer_increase_max_order);
   }
 
