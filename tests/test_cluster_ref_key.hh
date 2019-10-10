@@ -49,20 +49,19 @@ namespace rascal {
   };
 
   /**
-   * Prints the index sequence defined in the std::index_sequence type of the
-   * parameter `sequence` by recursively printing the head element.
+   * Prints the index sequence `Ints` defined in the std::index_sequence type of
+   * the parameter `sequence` by recursively printing the head element.
    *
    * @param sequence sequence to be printed
    */
-  template <size_t Head>
-  void print_index_sequence(std::index_sequence<Head> /*sequence*/) {
-    std::cout << Head << std::endl;
-  }
-
-  template <size_t Head, size_t... Is>
-  void print_index_sequence(std::index_sequence<Head, Is...> /*sequence*/) {
-    std::cout << Head << ", ";
-    print_index_sequence(std::index_sequence<Is...>{});
+  template<size_t... Ints>
+  void print_index_sequence(std::index_sequence<Ints...> /*sequence*/) {
+      std::vector<size_t> vec = {Ints...};
+      std::cout << "( "; 
+      for (size_t ele : vec) {
+        std::cout << ele << " " ;
+      }
+      std::cout << ")" << std::endl;
   }
 
   /**
