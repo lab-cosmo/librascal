@@ -536,8 +536,13 @@ namespace rascal {
       }
     }
 
+    /**
+     * This function is used for sizing the Property for `Order > 1`. At this
+     * `Order` the notion of ghosts does not exist. _Ghost pairs_ do not exist.
+     */
     template <size_t Order_ = Order, std::enable_if_t<(Order_ > 1), int> = 0>
-    size_t get_validated_property_length(bool consider_ghost_atoms = false) {
+    size_t
+    get_validated_property_length(bool /*consider_ghost_atoms*/ = false) {
       return this->base_manager.nb_clusters(Order_);
     }
 
