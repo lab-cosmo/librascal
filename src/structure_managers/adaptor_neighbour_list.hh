@@ -545,16 +545,16 @@ namespace rascal {
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t order) const {
       switch (order) {
-      case 1: {
-        return this->get_size_with_ghosts();
-        break;
-      }
+      // case 1: {
+      //   return this->get_size_with_ghosts();
+      //   break;
+      //}
       case 2: {
         return this->neighbours_atom_tag.size();
         break;
       }
       default:
-        throw std::runtime_error("Can only handle single atoms and pairs.");
+        throw std::runtime_error("Can only handle pairs.");
         break;
       }
     }
@@ -564,17 +564,7 @@ namespace rascal {
 
     //! total number of atoms used for neighbour list, including ghosts
     inline size_t get_size_with_ghosts() const {
-      // The return type of this function depends on the construction of the
-      // adaptor. If the adaptor is constructed without considering the
-      // neighbours of ghosts, only the number of atoms are returned to avoid
-      // ambiguity and false access. In case the adaptor is constructed
-      // considering the neighbours of ghosts, it is possible to iterate over
-      // all atoms including ghosts using the proxy `.with_ghosts`, which takes
-      // its `.end()` from here`
-      auto nb_atoms{this->consider_ghost_neighbours
-                        ? this->n_centers + this->n_ghosts
-                        : this->get_size()};
-      return nb_atoms;
+      return this->n_centers + this->n_ghosts;
     }
 
     //! Returns position of an atom with index atom_tag
@@ -1091,7 +1081,7 @@ namespace rascal {
     // go through all atoms and/or ghosts to build neighbour list, depending on
     // the runtime decision flag
     std::vector<int> current_j_atoms{};
-    for (auto center : this->get_manager().with_ghosts()) {
+    for (auto center : this->get_manager()) {
       int atom_tag = center.get_atom_tag();
       int nneigh{0};
 

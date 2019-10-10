@@ -523,35 +523,21 @@ namespace rascal {
     const std::string & get_type_info() const final { return this->type_id; }
 
     /**
-     * the case consider_ghost_atoms == true is limited to cluster_index
-     * objects.
+     * This function is only valid for `Order == 1` and where the user has a
+     * choice of sizing the `Property` for either including or not including
+     * ghost atoms.
      */
     template <size_t Order_ = Order, std::enable_if_t<(Order_ == 1), int> = 0>
     size_t get_validated_property_length(bool consider_ghost_atoms) {
       if (consider_ghost_atoms) {
-        if (traits::MaxOrder < 2) {
-          throw std::runtime_error(
-              "consider_ghost_atoms is true,"
-              " but can only be use for underlying manager with"
-              " MaxOrder at least 2.");
-        }
-        if (not(this->get_manager().get_consider_ghost_neighbours())) {
-          throw std::runtime_error(
-              "consider_ghost_atoms is true,"
-              " but underlying manager does not have ghost atoms in"
-              " cluster_indices_container. Turn consider_ghost_neighbours"
-              " on, to consider ghost atoms with independent property values"
-              " from their corresponding central atoms.");
-        }
         return this->get_manager().size_with_ghosts();
+      } else {
+        return this->get_manager().size();
       }
-      return this->get_manager().size();
     }
 
-    template <size_t Order_ = Order,
-              std::enable_if_t<not(Order_ == 1), int> = 0>
-    size_t
-    get_validated_property_length(bool /*consider_ghost_atoms*/ = false) {
+    template <size_t Order_ = Order, std::enable_if_t<(Order_ > 1), int> = 0>
+    size_t get_validated_property_length(bool consider_ghost_atoms = false) {
       return this->base_manager.nb_clusters(Order_);
     }
 

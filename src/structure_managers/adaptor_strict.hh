@@ -417,9 +417,7 @@ namespace rascal {
 
     double rc2{this->cutoff * this->cutoff};
 
-    // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
-    // either actually with ghosts, or only returns the number of centers.
-    for (auto atom : this->manager.get()->with_ghosts()) {
+    for (auto atom : this->manager) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for

@@ -131,9 +131,7 @@ namespace rascal {
     }
 
     auto n_pairs{0};
-    // iteration here is .with_ghosts(), because the get_nb_clusters(2) includes
-    // ghost atom pairs, too
-    for (auto atom : pair_manager->with_ghosts()) {
+    for (auto atom : pair_manager) {
       if (verbose) {
         std::cout << "pair manager atom " << atom.back() << std::endl;
       }

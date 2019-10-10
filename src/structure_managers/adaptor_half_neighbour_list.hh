@@ -341,7 +341,7 @@ namespace rascal {
     // counter for total number of pairs (minimal list) for cluster_indices
     size_t pair_counter{0};
 
-    for (auto atom : this->manager->with_ghosts()) {
+    for (auto atom : this->manager) {
       // Add new depth layer for atoms (see LayerByOrder for possible
       // optimisation).
       constexpr auto AtomLayer{

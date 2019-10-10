@@ -186,258 +186,259 @@ namespace rascal {
      * number of triplets for a pair, etc) of a given order.
      */
     inline size_t get_nb_clusters(int order) const {
-      return this->atom_tag_list[order - 1].size();
-    }
+        return this->atom_tag_list[order - 1].size();
+      }
 
-    /**
-     * return the number of atoms
-     */
-    inline size_t get_size() const { return this->get_nb_clusters(1); }
-
-    /**
-     * return the position of a given atom
-     */
-    inline Vector_ref get_position(int index) {
-      return this->manager->get_position(index);
-    }
-
-    //! returns the number of atoms
-    inline size_t get_size_with_ghosts() const {
-      return this->manager->get_size_with_ghosts();
-    }
-
-    //! returns the distance between atoms in a given pair
-    template <size_t Order, size_t Layer,
-              bool DummyHasDistances = traits::HasDistances>
-    inline const std::enable_if_t<DummyHasDistances, double> &
-    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-      static_assert(DummyHasDistances == traits::HasDistances,
-                    "SFINAE, do not specify");
-      return this->manager->get_distance(pair);
-    }
-
-    /**
-     * return pair distance
-     */
-    template <size_t Order, size_t Layer,
-              bool HasDistances = traits::HasDistances>
-    inline std::enable_if_t<HasDistances, double &>
-    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-      static_assert(HasDistances == traits::HasDistances,
-                    "SFINAE don't touch parameter!");
-      return this->manager.get_distance(pair);
-    }
-
-    /**
-     * return direction vector
-     */
-    template <size_t Order, size_t Layer,
-              bool HasDistances = traits::HasDistances>
-    inline std::enable_if_t<HasDistances, Vector_ref>
-    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
-      static_assert(HasDistances == traits::HasDistances,
-                    "SFINAE don't touch parameter!");
-      return this->manager.get_direction_vector(pair);
-    }
-
-    //! get atom_tag of index-th neighbour of this cluster
-    template <size_t Order, size_t Layer>
-    inline int
-    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
-                           int index) const {
-      static_assert(Order <= traits::MaxOrder - 1,
-                    "this implementation only handles upto traits::MaxOrder");
-      auto && offset = this->offsets[Order][cluster.get_cluster_index(Layer)];
-      return this->atom_tag_list[Order][offset + index];
-    }
-
-    //! get atom_tag of the index-th atom in manager
-    inline int get_neighbour_atom_tag(const Parent & /*parent*/,
-                                      size_t index) const {
-      return this->atom_tag_list[0][index];
-    }
-
-    //! return atom type
-    inline int & get_atom_type(const AtomRef_t & atom) {
       /**
-       * careful, atom refers to our local index, for the manager, we need its
-       * index:
+       * return the number of atoms
        */
-      auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
-      return this->manager->get_atom_type(original_atom);
-    }
+      inline size_t get_size() const { return this->get_nb_clusters(1); }
 
-    //! return atom type
-    inline int get_atom_type(const AtomRef_t & atom) const {
-      // careful, atom refers to our local index, for the manager, we need its
-      // index:
-      auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
-      return this->manager->get_atom_type(original_atom);
-    }
+      /**
+       * return the position of a given atom
+       */
+      inline Vector_ref get_position(int index) {
+        return this->manager->get_position(index);
+      }
 
-    //! Returns atom type given an atom tag
-    inline int & get_atom_type(int atom_id) {
-      auto && type{this->manager->get_atom_type(atom_id)};
-      return type;
-    }
+      //! returns the number of atoms
+      //TODO(markus) this function does not make sense here
+      inline size_t get_size_with_ghosts() const {
+        return this->manager->get_size_with_ghosts();
+      }
 
-    //! Returns a constant atom type given an atom tag
-    inline int get_atom_type(int & atom_id) const {
-      auto && type{this->manager->get_atom_type(atom_id)};
-      return type;
-    }
+      //! returns the distance between atoms in a given pair
+      template <size_t Order, size_t Layer,
+                bool DummyHasDistances = traits::HasDistances>
+      inline const std::enable_if_t<DummyHasDistances, double> & get_distance(
+          const ClusterRefKey<Order, Layer> & pair) const {
+        static_assert(DummyHasDistances == traits::HasDistances,
+                      "SFINAE, do not specify");
+        return this->manager->get_distance(pair);
+      }
 
-    /**
-     * return the linear index of cluster (i.e., the count at which
-     * this cluster appears in an iteration
-     */
+      /**
+       * return pair distance
+       */
+      template <size_t Order, size_t Layer,
+                bool HasDistances = traits::HasDistances>
+      inline std::enable_if_t<HasDistances, double &> get_distance(
+          const ClusterRefKey<Order, Layer> & pair) const {
+        static_assert(HasDistances == traits::HasDistances,
+                      "SFINAE don't touch parameter!");
+        return this->manager.get_distance(pair);
+      }
+
+      /**
+       * return direction vector
+       */
+      template <size_t Order, size_t Layer,
+                bool HasDistances = traits::HasDistances>
+      inline std::enable_if_t<HasDistances, Vector_ref> get_direction_vector(
+          const ClusterRefKey<Order, Layer> & pair) const {
+        static_assert(HasDistances == traits::HasDistances,
+                      "SFINAE don't touch parameter!");
+        return this->manager.get_direction_vector(pair);
+      }
+
+      //! get atom_tag of index-th neighbour of this cluster
+      template <size_t Order, size_t Layer>
+      inline int get_neighbour_atom_tag(
+          const ClusterRefKey<Order, Layer> & cluster, int index) const {
+        static_assert(Order <= traits::MaxOrder - 1,
+                      "this implementation only handles upto traits::MaxOrder");
+        auto && offset = this->offsets[Order][cluster.get_cluster_index(Layer)];
+        return this->atom_tag_list[Order][offset + index];
+      }
+
+      //! get atom_tag of the index-th atom in manager
+      inline int get_neighbour_atom_tag(const Parent & /*parent*/, size_t index)
+          const {
+        return this->atom_tag_list[0][index];
+      }
+
+      //! return atom type
+      inline int & get_atom_type(const AtomRef_t & atom) {
+        /**
+         * careful, atom refers to our local index, for the manager, we need its
+         * index:
+         */
+        auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
+        return this->manager->get_atom_type(original_atom);
+      }
+
+      //! return atom type
+      inline int get_atom_type(const AtomRef_t & atom) const {
+        // careful, atom refers to our local index, for the manager, we need its
+        // index:
+        auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
+        return this->manager->get_atom_type(original_atom);
+      }
+
+      //! Returns atom type given an atom tag
+      inline int & get_atom_type(int atom_id) {
+        auto && type{this->manager->get_atom_type(atom_id)};
+        return type;
+      }
+
+      //! Returns a constant atom type given an atom tag
+      inline int get_atom_type(int & atom_id) const {
+        auto && type{this->manager->get_atom_type(atom_id)};
+        return type;
+      }
+
+      /**
+       * return the linear index of cluster (i.e., the count at which
+       * this cluster appears in an iteration
+       */
+      template <size_t Order>
+      inline size_t get_offset_impl(const std::array<size_t, Order> & counters)
+          const {
+        return this->offsets[Order][counters.back()];
+      }
+
+      //! return the number of neighbours of a given atom
+      template <size_t Order, size_t Layer>
+      inline size_t get_cluster_size_impl(
+          const ClusterRefKey<Order, Layer> & cluster) const {
+        static_assert(Order <= traits::MaxOrder - 1,
+                      "Order exceeds maxorder for this filter.");
+        constexpr auto nb_neigh_layer{
+            compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+        return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
+      }
+
+      /**
+       * add a cluster to the filter. This is the main use of this
+       * class. You can iterate over the StructureManager you're
+       * filtering, and add the atoms/pairs/triplet... you wish to
+       * retain in the filtered version using this method
+       */
+      template <size_t Order>
+      inline void add_cluster(const InputClusterRef_t<Order> & cluster);
+
+     protected:
+      /**
+       * check whether a cluster has been added already (Only check the
+       * last inserted cluster, relying on the underlying iteration
+       * order
+       */
+      template <size_t Order>
+      inline bool has_cluster(const InputClusterRef_t<Order> & cluster);
+
+      /**
+       * main function during construction of the filtered view
+       * @param cluster last atom of cluster is added to the filter
+       * @param Order select whether it is an i-atom (order=1), j-atom
+       * (order=2), or ...
+       */
+      template <size_t Order>
+      inline void add_atom(const InputClusterRef_t<Order> & cluster) {
+        const auto & atom_tag{cluster.back()};
+        static_assert(
+            Order - 1 <= traits::MaxOrder,
+            "you can only add neighbours to the n-th degree defined by "
+            "MaxOrder of the underlying manager");
+
+        // add new atom at this Order
+        this->atom_tag_list[Order - 1].push_back(atom_tag);
+        // count that this atom is a new neighbour
+        this->nb_neigh[Order - 1].back()++;
+        this->offsets[Order - 1].back()++;
+
+        for (auto i{Order}; i < traits::MaxOrder; ++i) {
+          // make sure that this atom starts with zero lower-Order neighbours
+          this->nb_neigh[i].push_back(0);
+          // update the offsets
+          this->offsets[i].push_back(this->offsets[i].back() +
+                                     this->nb_neigh[i].back());
+        }
+      }
+
+      //! underlying manager to be filtered
+      ImplementationPtr_t manager;
+
+      /**
+       * store atom tags per order,i.e.
+       *   - atom_tag_list[0] lists all i-atoms
+       *   - atom_tag_list[1] lists all j-atoms
+       *   - atom_tag_list[2] lists all k-atoms
+       *   - etc
+       */
+      std::array<std::vector<int>, traits::MaxOrder> atom_tag_list{};
+      /**
+       * store the number of j-atoms for every i-atom (nb_neigh[1]), the number
+       * of k-atoms for every j-atom (nb_neigh[2]), etc
+       */
+      std::array<std::vector<size_t>, traits::MaxOrder> nb_neigh{};
+      /**
+       * store the offsets from where the nb_neigh can be counted
+       */
+      std::array<std::vector<size_t>, traits::MaxOrder> offsets{};
+
+     private:
+    };
+
+    /* ---------------------------------------------------------------------- */
+    template <class ManagerImplementation, size_t MaxOrder>
     template <size_t Order>
-    inline size_t
-    get_offset_impl(const std::array<size_t, Order> & counters) const {
-      return this->offsets[Order][counters.back()];
-    }
+    void AdaptorFilter<ManagerImplementation, MaxOrder>::add_cluster(
+        const InputClusterRef_t<Order> & cluster) {
+      // The following calls this method recursively on the parent
+      // clusters of this cluster, until this method is called with an
+      // Order=1 cluster (atom), in which case add_parent does nothing.
+      internal::ClusterAdder<Order, ManagerImplementation,
+                             MaxOrder>::add_parent(*this, cluster);
+      this->add_atom(cluster);
 
-    //! return the number of neighbours of a given atom
-    template <size_t Order, size_t Layer>
-    inline size_t
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order <= traits::MaxOrder - 1,
-                    "Order exceeds maxorder for this filter.");
-      constexpr auto nb_neigh_layer{
+      /**
+       * Add new Layer for clusters of size Order
+       */
+      constexpr auto ClusterLayer{
           compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
-      return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
+
+      Eigen::Matrix<size_t, ClusterLayer + 1, 1> indices{};
+      indices.template head<ClusterLayer>() = cluster.get_cluster_indices();
+      indices(ClusterLayer) = this->atom_tag_list[Order - 1].size() - 1;
+      auto & indices_container{
+          std::get<Order - 1>(this->cluster_indices_container)};
+      indices_container.push_back(indices);
     }
 
-    /**
-     * add a cluster to the filter. This is the main use of this
-     * class. You can iterate over the StructureManager you're
-     * filtering, and add the atoms/pairs/triplet... you wish to
-     * retain in the filtered version using this method
-     */
+    /* ---------------------------------------------------------------------- */
+    template <class ManagerImplementation, size_t MaxOrder>
     template <size_t Order>
-    inline void add_cluster(const InputClusterRef_t<Order> & cluster);
+    bool AdaptorFilter<ManagerImplementation, MaxOrder>::has_cluster(
+        const InputClusterRef_t<Order> & cluster) {
+      constexpr auto Layer{InputClusterRef_t<Order>::cluster_layer()};
 
-   protected:
-    /**
-     * check whether a cluster has been added already (Only check the
-     * last inserted cluster, relying on the underlying iteration
-     * order
-     */
-    template <size_t Order>
-    inline bool has_cluster(const InputClusterRef_t<Order> & cluster);
+      auto & indices_container{
+          std::get<Order - 1>(this->cluster_indices_container)};
+      if (indices_container.size() == 0) {
+        return false;
+      }
+      auto && last_cluster_index{indices_container.back()(Layer)};
 
-    /**
-     * main function during construction of the filtered view
-     * @param cluster last atom of cluster is added to the filter
-     * @param Order select whether it is an i-atom (order=1), j-atom (order=2),
-     * or ...
-     */
-    template <size_t Order>
-    inline void add_atom(const InputClusterRef_t<Order> & cluster) {
-      const auto & atom_tag{cluster.back()};
-      static_assert(Order - 1 <= traits::MaxOrder,
-                    "you can only add neighbours to the n-th degree defined by "
-                    "MaxOrder of the underlying manager");
+      return last_cluster_index == cluster.get_cluster_index(Layer);
+    }
 
-      // add new atom at this Order
-      this->atom_tag_list[Order - 1].push_back(atom_tag);
-      // count that this atom is a new neighbour
-      this->nb_neigh[Order - 1].back()++;
-      this->offsets[Order - 1].back()++;
+    /* ---------------------------------------------------------------------- */
+    template <class ManagerImplementation, size_t MaxOrder>
+    void AdaptorFilter<ManagerImplementation, MaxOrder>::reset_initial_state() {
+      //! Reset cluster_indices for adaptor to fill with push back.
+      internal::for_each(this->cluster_indices_container,
+                         internal::ResizePropertyToZero());
+      for (size_t i{0}; i < MaxOrder; ++i) {
+        this->atom_tag_list[i].clear();
+        this->nb_neigh[i].clear();
+        this->offsets[i].clear();
+      }
 
-      for (auto i{Order}; i < traits::MaxOrder; ++i) {
-        // make sure that this atom starts with zero lower-Order neighbours
-        this->nb_neigh[i].push_back(0);
-        // update the offsets
-        this->offsets[i].push_back(this->offsets[i].back() +
-                                   this->nb_neigh[i].back());
+      this->nb_neigh[0].push_back(0);
+      for (auto & vector : this->offsets) {
+        vector.push_back(0);
       }
     }
-
-    //! underlying manager to be filtered
-    ImplementationPtr_t manager;
-
-    /**
-     * store atom tags per order,i.e.
-     *   - atom_tag_list[0] lists all i-atoms
-     *   - atom_tag_list[1] lists all j-atoms
-     *   - atom_tag_list[2] lists all k-atoms
-     *   - etc
-     */
-    std::array<std::vector<int>, traits::MaxOrder> atom_tag_list{};
-    /**
-     * store the number of j-atoms for every i-atom (nb_neigh[1]), the number of
-     * k-atoms for every j-atom (nb_neigh[2]), etc
-     */
-    std::array<std::vector<size_t>, traits::MaxOrder> nb_neigh{};
-    /**
-     * store the offsets from where the nb_neigh can be counted
-     */
-    std::array<std::vector<size_t>, traits::MaxOrder> offsets{};
-
-   private:
-  };
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation, size_t MaxOrder>
-  template <size_t Order>
-  void AdaptorFilter<ManagerImplementation, MaxOrder>::add_cluster(
-      const InputClusterRef_t<Order> & cluster) {
-    // The following calls this method recursively on the parent
-    // clusters of this cluster, until this method is called with an
-    // Order=1 cluster (atom), in which case add_parent does nothing.
-    internal::ClusterAdder<Order, ManagerImplementation, MaxOrder>::add_parent(
-        *this, cluster);
-    this->add_atom(cluster);
-
-    /**
-     * Add new Layer for clusters of size Order
-     */
-    constexpr auto ClusterLayer{
-        compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
-
-    Eigen::Matrix<size_t, ClusterLayer + 1, 1> indices{};
-    indices.template head<ClusterLayer>() = cluster.get_cluster_indices();
-    indices(ClusterLayer) = this->atom_tag_list[Order - 1].size() - 1;
-    auto & indices_container{
-        std::get<Order - 1>(this->cluster_indices_container)};
-    indices_container.push_back(indices);
-  }
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation, size_t MaxOrder>
-  template <size_t Order>
-  bool AdaptorFilter<ManagerImplementation, MaxOrder>::has_cluster(
-      const InputClusterRef_t<Order> & cluster) {
-    constexpr auto Layer{InputClusterRef_t<Order>::cluster_layer()};
-
-    auto & indices_container{
-        std::get<Order - 1>(this->cluster_indices_container)};
-    if (indices_container.size() == 0) {
-      return false;
-    }
-    auto && last_cluster_index{indices_container.back()(Layer)};
-
-    return last_cluster_index == cluster.get_cluster_index(Layer);
-  }
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation, size_t MaxOrder>
-  void AdaptorFilter<ManagerImplementation, MaxOrder>::reset_initial_state() {
-    //! Reset cluster_indices for adaptor to fill with push back.
-    internal::for_each(this->cluster_indices_container,
-                       internal::ResizePropertyToZero());
-    for (size_t i{0}; i < MaxOrder; ++i) {
-      this->atom_tag_list[i].clear();
-      this->nb_neigh[i].clear();
-      this->offsets[i].clear();
-    }
-
-    this->nb_neigh[0].push_back(0);
-    for (auto & vector : this->offsets) {
-      vector.push_back(0);
-    }
-  }
-}  // namespace rascal
+  }  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_ADAPTOR_FILTER_HH_
