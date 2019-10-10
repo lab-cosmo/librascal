@@ -74,6 +74,21 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
+   * Check that the atom in unit cell check is properly done
+   */
+  BOOST_FIXTURE_TEST_CASE(atom_bound_test,
+                          ManagerFixture<StructureManagerCenters>) {
+    int i_manager{0};
+    for (auto & manager : this->managers) {
+      auto & structure = this->structures[i_manager];
+      structure.positions.col(0) << -0.5, -0.5, -0.5;
+      BOOST_CHECK_THROW(manager->update(structure), std::runtime_error);
+      ++i_manager;
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
    * test for checking StructureManagerCenters specific interface, ``manager``
    * is the name of the manager object. it checks specifically, if the data
    * which is read from a json file (or in the case

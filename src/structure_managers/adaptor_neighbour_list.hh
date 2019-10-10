@@ -398,6 +398,20 @@ namespace rascal {
       IndexContainer & operator=(IndexContainer && other) = default;
       //! brackets operator
       std::vector<int> & operator[](const std::array<int, Dim> & ccoord) {
+        for (int i = 0; i < static_cast<int>(Dim); ++i) {
+          if (not(ccoord[i] < this->nboxes[i] - 1)
+                and (ccoord[i] >= 1)) { // NOLINT
+            std::stringstream error{};
+            error << "Error: At least one atom is outside the unit cell. This "
+                     "adaptor expects atoms to be folded into the original "
+                     "unit cell. ccoord = ("
+                  << ccoord[0] << ", " << ccoord[1] << ", " << ccoord[2]
+                  << "), nboxes = (" << nboxes[0] << ", " << nboxes[1] << ", "
+                  << nboxes[2] << ")";
+            std::cout << error.str() << std::endl;
+            throw std::runtime_error(error.str());
+          }
+        }
         auto index = get_index(this->nboxes, ccoord);
         return data[index];
       }
@@ -822,6 +836,10 @@ namespace rascal {
         neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0},
         consider_ghost_neighbours{consider_ghost_neighbours} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
+    if (this->skin2 > 0.) {
+      throw std::runtime_error(
+          "The verlet list is not functional for the moment, keep skin == 0");
+    }
   }
 
   /* ---------------------------------------------------------------------- */
@@ -895,7 +913,10 @@ namespace rascal {
    * is to anchor a mesh at the origin of the supplied cell (assuming it is at
    * the origin). Then the mesh is extended into space until it is as big as the
    * maximum cell coordinate plus one cutoff in each direction. This mesh has
-   * boxes of size ``cutoff``. Depending on the periodicity of the mesh, ghost
+   * boxes of size ``cutoff``.
+   * All atoms are expected to be inside the unit cell.
+   *
+   * Depending on the periodicity of the mesh, ghost
    * atoms are added by shifting all i-atoms by the cell vectors corresponding
    * to the desired periodicity. All i-atoms and the ghost atoms are then sorted
    * into the respective boxes of the cartesian mesh and a stencil anchored at
@@ -908,22 +929,16 @@ namespace rascal {
   void AdaptorNeighbourList<ManagerImplementation>::make_full_neighbour_list() {
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
 
-    // short hands for variable
+    // short hands for parameters and inputs
     constexpr auto dim{traits::Dim};
-
-    auto cell{this->manager->get_cell()};
-    double cutoff{this->cutoff};
-
-    std::array<int, dim> nboxes_per_dim{};
-
-    // vector for storing the atom tags of each box
-    std::vector<std::vector<int>> atoms_in_box{};
+    const auto & cell{this->manager->get_cell()};
+    const double & cutoff{this->cutoff};
 
     // minimum/maximum coordinate of mesh for neighbour list, it is larger by
     // one cell to be able to provide a neighbour list also over ghost atoms;
     // depends on cell triclinicity and cutoff, coordinates of the mesh are
-    // relative to the origin of the given cell. ghost_min is used for placing
-    // ghost atoms within the given 'skin'.
+    // relative to the origin of the given cell.
+    // ghost_min/max is used for placing ghost atoms within the given 'skin'.
     Vector_t mesh_min{Vector_t::Zero()};
     Vector_t mesh_max{Vector_t::Zero()};
     Vector_t ghost_min{Vector_t::Zero()};
@@ -938,35 +953,41 @@ namespace rascal {
     // Mesh related stuff for neighbour boxes. Calculate min and max of the mesh
     // in cartesian coordinates and relative to the cell origin.  mesh_min is
     // the origin of the mesh; mesh_max is the maximum coordinate of the mesh;
+
     // nboxes_per_dim is the number of mesh boxes in each dimension, not to be
     // confused with the number of cells to ensure periodicity
+    std::array<int, dim> nboxes_per_dim{};
+    // vector for storing the tags of atoms contained in each box
+    std::vector<std::vector<int>> atoms_in_box{};
     for (auto i{0}; i < dim; ++i) {
-      double min_coord{std::min(0., cell.row(i).minCoeff())};
-      double max_coord{std::max(0., cell.row(i).maxCoeff())};
-
-      // minimum is given by -cutoff and a delta to avoid ambiguity during cell
-      // sorting of atom position e.g. at x = (0,0,0).
-      double epsilon{0.25 * cutoff};
+      // min and max coordinates of cell corners in Cartesian space
+      double min_coord{0.0};
+      double max_coord{0.0};
+      for (int col{0}; col < cell.cols(); ++col) {
+        min_coord += cell(i, col) * static_cast<double>(cell(i, col) < 0.);
+        max_coord += cell(i, col) * static_cast<double>(cell(i, col) > 0.);
+      }
       // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
-      mesh_min[i] = min_coord - 2 * cutoff - epsilon;
+      mesh_min[i] = min_coord - 2. * cutoff;
 
       // outer mesh, including one layer of emtpy cells
-      double lmesh{std::fabs(mesh_min[i]) + max_coord + 3 * cutoff};
+      double lmesh{max_coord - mesh_min[i] + 2 * cutoff};
+      // number of Linked Cell in each directions
       double n{std::ceil(lmesh / cutoff)};
-      double lmax{n * cutoff - std::fabs(mesh_min[i])};
-      mesh_max[i] = lmax;
+      mesh_max[i] = mesh_min[i] + n * cutoff;
       nboxes_per_dim[i] = static_cast<int>(n);
 
-      // positions min/max for ghost atoms
+      // positions min/max for ghost atoms -> this is the actual bounding box
       ghost_min[i] = mesh_min[i] + cutoff;
       double lghost{lmesh - 2 * cutoff};
       double n_ghosts{std::ceil(lghost / cutoff)};
-      ghost_max[i] = n_ghosts * cutoff - std::fabs(ghost_min[i]);
+      ghost_max[i] = n_ghosts * cutoff + ghost_min[i];
     }
 
     // Periodicity related multipliers. Now the mesh coordinates are calculated
     // in units of cell vectors. m_min and m_max give the number of repetitions
     // of the cell in each cell vector direction
+    //! we should be probably projecting in scaled coords ghost_min/max
     constexpr int ncorners = internal::ipow(2, dim);
     Eigen::Matrix<double, dim, ncorners> xpos{};
     std::array<double, 2 * dim> mesh_bounds{};
@@ -1036,6 +1057,7 @@ namespace rascal {
       for (auto && p_image :
            internal::PeriodicImages<dim>{periodic_min, repetitions, ntot}) {
         // exclude the original unit cell
+        //! assumption: this assumes atoms were inside the cell initially
         if (not(p_image.array() == 0).all()) {
           Vector_t pos_ghost{pos + cell * p_image.template cast<double>()};
           auto flag_inside =
