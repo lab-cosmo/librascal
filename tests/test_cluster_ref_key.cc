@@ -78,7 +78,7 @@ namespace rascal {
    * tests the LayerExtender struct
    */
   BOOST_AUTO_TEST_CASE(test_layer_extender) {
-    bool verbose{true};
+    bool verbose{false};
 
     using LayersUpToOrderTwo =
         typename LayerExtender<std::index_sequence<1>>::type;
@@ -102,7 +102,7 @@ namespace rascal {
    * tests the LayerIncreaser struct
    */
   BOOST_AUTO_TEST_CASE(test_layer_increaser) {
-    bool verbose{true};
+    bool verbose{false};
     using LayersUpToOrderThree =
         typename LayerIncreaser<std::index_sequence<1, 1, 0>>::type;
 
