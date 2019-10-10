@@ -99,7 +99,8 @@ namespace rascal {
    * @return returns the `Index` elment in the index sequence.
    */
   template <size_t Index, size_t... Ints>
-  constexpr size_t get_index(const std::index_sequence<Ints...> & /*index_sequence*/) {
+  constexpr size_t
+  get_index(const std::index_sequence<Ints...> & /*index_sequence*/) {
     return std::get<Index>(std::make_tuple(Ints...));
   }
 
@@ -116,8 +117,9 @@ namespace rascal {
   constexpr size_t
   get_layer(const std::index_sequence<Ints...> & layers_by_order) {
     static_assert(Order > 0, "Order is <1 this should not be.");
-    static_assert(Order <= sizeof... (Ints) , "Order should be within the MaxOrder.");
-    return get_index<Order-1>(layers_by_order);
+    static_assert(Order <= sizeof...(Ints),
+                  "Order should be within the MaxOrder.");
+    return get_index<Order - 1>(layers_by_order);
   }
 
   /**
@@ -129,9 +131,9 @@ namespace rascal {
    * @return returns `Ints` as array
    */
   template <size_t... Ints>
-  constexpr std::array<size_t, sizeof... (Ints)>
+  constexpr std::array<size_t, sizeof...(Ints)>
   get_layers(const std::index_sequence<Ints...> & /*layers_by_order*/) {
-    return std::array<size_t, sizeof... (Ints)>{Ints...};
+    return std::array<size_t, sizeof...(Ints)>{Ints...};
   }
 
   /**

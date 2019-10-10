@@ -60,7 +60,7 @@ namespace rascal {
     // New pairs are added at this layer, which did not exist before. Therefore
     // the layering has to be reset.
     constexpr static size_t AtomLayer{
-        get_layer<1>(typename parent_traits::LayerByOrder{})+1};
+        get_layer<1>(typename parent_traits::LayerByOrder{}) + 1};
     using LayerByOrder = std::index_sequence<AtomLayer, 0>;
   };
 

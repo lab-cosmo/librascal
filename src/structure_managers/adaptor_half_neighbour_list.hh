@@ -357,8 +357,8 @@ namespace rascal {
       int nneigh{0};
 
       for (auto pair : atom) {
-        constexpr auto PairLayer{get_layer<pair.order()>(
-            typename traits::LayerByOrder{})};
+        constexpr auto PairLayer{
+            get_layer<pair.order()>(typename traits::LayerByOrder{})};
 
         auto index_j{pair.get_atom_tag()};
 
