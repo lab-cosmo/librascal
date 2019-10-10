@@ -197,34 +197,32 @@ namespace rascal {
       return static_cast<Manager_t &>(this->base_manager);
     }
 
+    /**
+     * This function is only valid for `Order == 1` and where the user has a
+     * choice of sizing the `Property` for either including or not including ghost
+     * atoms.
+     */
     template <size_t Order_ = Order, std::enable_if_t<(Order_ == 1), int> = 0>
     size_t get_validated_property_length(bool consider_ghost_atoms) {
       if (consider_ghost_atoms) {
-        if (traits::MaxOrder < 2) {
-          throw std::runtime_error(
-              "consider_ghost_atoms is true,"
-              " but can only be use for underlying manager with"
-              " MaxOrder at least 2.");
-        }
-        if (not(this->get_manager().get_consider_ghost_neighbours())) {
-          throw std::runtime_error(
-              "consider_ghost_atoms is true,"
-              " but underlying manager does not have ghost atoms in"
-              " cluster_indices_container. Turn consider_ghost_neighbours"
-              " on, to consider ghost atoms with independent property values"
-              " from their corresponding central atoms.");
-        }
         return this->get_manager().size_with_ghosts();
+      } else {
+        return this->get_manager().size();
       }
-      return this->get_manager().size();
     }
+
+    /**
+     * This function is used for sizing the Property for `Order > 1`. At this
+     * `Order` the notion of ghosts does not exist. _Ghost pairs_ do not exist.
+     */
     template <size_t Order_ = Order,
-              std::enable_if_t<not(Order_ == 1), int> = 0>
+              std::enable_if_t<(Order_ > 1), int> = 0>
     size_t get_validated_property_length(bool = false) {
       return this->base_manager.nb_clusters(Order);
     }
 
-    /* Fill sequence, used for *_cluster_indices initialization
+    /**
+     * Fill sequence, used for *_cluster_indices initialization
      * if consdier_ghost_atoms is true, ghost atoms also can have
      * their own propery value independent from its correpsonding central atom.
      * This function is used for all Order 1 ManagerImplementations

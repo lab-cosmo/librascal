@@ -321,92 +321,91 @@ namespace rascal {
         this->offsets[i].push_back(this->offsets[i].back() +
                                    this->nb_neigh[i].back());
       }
+
+      //! underlying manager to be filtered
+      ImplementationPtr_t manager;
+
+      /**
+       * store atom tags per order,i.e.
+       *   - atom_tag_list[0] lists all i-atoms
+       *   - atom_tag_list[1] lists all j-atoms
+       *   - atom_tag_list[2] lists all k-atoms
+       *   - etc
+       */
+      std::array<std::vector<int>, traits::MaxOrder> atom_tag_list{};
+      /**
+       * store the number of j-atoms for every i-atom (nb_neigh[1]), the number
+       * of k-atoms for every j-atom (nb_neigh[2]), etc
+       */
+      std::array<std::vector<size_t>, traits::MaxOrder> nb_neigh{};
+      /**
+       * store the offsets from where the nb_neigh can be counted
+       */
+      std::array<std::vector<size_t>, traits::MaxOrder> offsets{};
+
+     private:
+    };
+
+    /* ---------------------------------------------------------------------- */
+    template <class ManagerImplementation, size_t MaxOrder>
+    template <size_t Order>
+    void AdaptorFilter<ManagerImplementation, MaxOrder>::add_cluster(
+        const InputClusterRef_t<Order> & cluster) {
+      // The following calls this method recursively on the parent
+      // clusters of this cluster, until this method is called with an
+      // Order=1 cluster (atom), in which case add_parent does nothing.
+      internal::ClusterAdder<Order, ManagerImplementation,
+                             MaxOrder>::add_parent(*this, cluster);
+      this->add_atom(cluster);
+
+      /**
+       * Add new Layer for clusters of size Order
+       */
+      constexpr auto ClusterLayer{
+          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+
+      Eigen::Matrix<size_t, ClusterLayer + 1, 1> indices{};
+      indices.template head<ClusterLayer>() = cluster.get_cluster_indices();
+      indices(ClusterLayer) = this->atom_tag_list[Order - 1].size() - 1;
+      auto & indices_container{
+          std::get<Order - 1>(this->cluster_indices_container)};
+      indices_container.push_back(indices);
     }
 
-    //! underlying manager to be filtered
-    ImplementationPtr_t manager;
+    /* ---------------------------------------------------------------------- */
+    template <class ManagerImplementation, size_t MaxOrder>
+    template <size_t Order>
+    bool AdaptorFilter<ManagerImplementation, MaxOrder>::has_cluster(
+        const InputClusterRef_t<Order> & cluster) {
+      constexpr auto Layer{InputClusterRef_t<Order>::cluster_layer()};
 
-    /**
-     * store atom tags per order,i.e.
-     *   - atom_tag_list[0] lists all i-atoms
-     *   - atom_tag_list[1] lists all j-atoms
-     *   - atom_tag_list[2] lists all k-atoms
-     *   - etc
-     */
-    std::array<std::vector<int>, traits::MaxOrder> atom_tag_list{};
-    /**
-     * store the number of j-atoms for every i-atom (nb_neigh[1]), the number of
-     * k-atoms for every j-atom (nb_neigh[2]), etc
-     */
-    std::array<std::vector<size_t>, traits::MaxOrder> nb_neigh{};
-    /**
-     * store the offsets from where the nb_neigh can be counted
-     */
-    std::array<std::vector<size_t>, traits::MaxOrder> offsets{};
+      auto & indices_container{
+          std::get<Order - 1>(this->cluster_indices_container)};
+      if (indices_container.size() == 0) {
+        return false;
+      }
+      auto && last_cluster_index{indices_container.back()(Layer)};
 
-   private:
-  };
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation, size_t MaxOrder>
-  template <size_t Order>
-  void AdaptorFilter<ManagerImplementation, MaxOrder>::add_cluster(
-      const InputClusterRef_t<Order> & cluster) {
-    // The following calls this method recursively on the parent
-    // clusters of this cluster, until this method is called with an
-    // Order=1 cluster (atom), in which case add_parent does nothing.
-    internal::ClusterAdder<Order, ManagerImplementation, MaxOrder>::add_parent(
-        *this, cluster);
-    this->add_atom(cluster);
-
-    /**
-     * Add new Layer for clusters of size Order
-     */
-    constexpr auto ClusterLayer{
-        compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
-
-    Eigen::Matrix<size_t, ClusterLayer + 1, 1> indices{};
-    indices.template head<ClusterLayer>() = cluster.get_cluster_indices();
-    indices(ClusterLayer) = this->atom_tag_list[Order - 1].size() - 1;
-    auto & indices_container{
-        std::get<Order - 1>(this->cluster_indices_container)};
-    indices_container.push_back(indices);
-  }
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation, size_t MaxOrder>
-  template <size_t Order>
-  bool AdaptorFilter<ManagerImplementation, MaxOrder>::has_cluster(
-      const InputClusterRef_t<Order> & cluster) {
-    constexpr auto Layer{InputClusterRef_t<Order>::cluster_layer()};
-
-    auto & indices_container{
-        std::get<Order - 1>(this->cluster_indices_container)};
-    if (indices_container.size() == 0) {
-      return false;
-    }
-    auto && last_cluster_index{indices_container.back()(Layer)};
-
-    return last_cluster_index == cluster.get_cluster_index(Layer);
-  }
-
-  /* ---------------------------------------------------------------------- */
-  template <class ManagerImplementation, size_t MaxOrder>
-  void AdaptorFilter<ManagerImplementation, MaxOrder>::reset_initial_state() {
-    //! Reset cluster_indices for adaptor to fill with push back.
-    internal::for_each(this->cluster_indices_container,
-                       internal::ResizePropertyToZero());
-    for (size_t i{0}; i < MaxOrder; ++i) {
-      this->atom_tag_list[i].clear();
-      this->nb_neigh[i].clear();
-      this->offsets[i].clear();
+      return last_cluster_index == cluster.get_cluster_index(Layer);
     }
 
-    this->nb_neigh[0].push_back(0);
-    for (auto & vector : this->offsets) {
-      vector.push_back(0);
+    /* ---------------------------------------------------------------------- */
+    template <class ManagerImplementation, size_t MaxOrder>
+    void AdaptorFilter<ManagerImplementation, MaxOrder>::reset_initial_state() {
+      //! Reset cluster_indices for adaptor to fill with push back.
+      internal::for_each(this->cluster_indices_container,
+                         internal::ResizePropertyToZero());
+      for (size_t i{0}; i < MaxOrder; ++i) {
+        this->atom_tag_list[i].clear();
+        this->nb_neigh[i].clear();
+        this->offsets[i].clear();
+      }
+
+      this->nb_neigh[0].push_back(0);
+      for (auto & vector : this->offsets) {
+        vector.push_back(0);
+      }
     }
-  }
-}  // namespace rascal
+  }  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_ADAPTOR_FILTER_HH_

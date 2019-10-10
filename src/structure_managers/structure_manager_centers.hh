@@ -243,7 +243,9 @@ namespace rascal {
 
     //! returns number of I atoms in the list, since at this level, center atoms
     //! and ghost atoms are not distinguishable.
-    size_t get_size_with_ghosts() const { return this->n_center_atoms; }
+    // TODO(markus): reminder for including this in possible future scenario for
+    // domain decomposion.
+    inline size_t get_size_with_ghosts() const { return this->n_center_atoms; }
 
     //! returns the number of neighbours of a given i atom
     template <size_t Order, size_t Layer>
