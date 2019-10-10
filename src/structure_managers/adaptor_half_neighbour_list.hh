@@ -344,7 +344,7 @@ namespace rascal {
       // Add new depth layer for atoms (see LayerByOrder for possible
       // optimisation).
       constexpr auto AtomLayer{
-          compute_cluster_layer<atom.order()>(typename traits::LayerByOrder{})};
+          get_layer<atom.order()>(typename traits::LayerByOrder{})};
 
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
@@ -357,7 +357,7 @@ namespace rascal {
       int nneigh{0};
 
       for (auto pair : atom) {
-        constexpr auto PairLayer{compute_cluster_layer<pair.order()>(
+        constexpr auto PairLayer{get_layer<pair.order()>(
             typename traits::LayerByOrder{})};
 
         auto index_j{pair.get_atom_tag()};

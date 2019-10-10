@@ -238,7 +238,7 @@ namespace rascal {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       constexpr auto nb_neigh_layer{
-          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+          get_layer<Order>(typename traits::LayerByOrder{})};
       return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
     }
 

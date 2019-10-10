@@ -367,7 +367,7 @@ namespace rascal {
 
       // Add new depth layer for atoms
       constexpr auto AtomLayer{
-          compute_cluster_layer<atom.order()>(typename traits::LayerByOrder{})};
+          get_layer<atom.order()>(typename traits::LayerByOrder{})};
 
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
@@ -396,7 +396,7 @@ namespace rascal {
       // statically compute stacking height of pairs, which is to be increased
       // through extending the neighbour list
       constexpr static auto ActiveLayer{
-          compute_cluster_layer<PairOrder>(typename traits::LayerByOrder{})};
+          get_layer<PairOrder>(typename traits::LayerByOrder{})};
 
       for (auto neighbour_atom_tag : new_neighbours[atom_index]) {
         this->neighbours_atom_tag.push_back(neighbour_atom_tag);

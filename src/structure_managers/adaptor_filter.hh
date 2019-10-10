@@ -303,7 +303,7 @@ namespace rascal {
       static_assert(Order <= traits::MaxOrder - 1,
                     "Order exceeds maxorder for this filter.");
       constexpr auto nb_neigh_layer{
-          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+          get_layer<Order>(typename traits::LayerByOrder{})};
       return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
     }
 
@@ -393,7 +393,7 @@ namespace rascal {
      * Add new Layer for clusters of size Order
      */
     constexpr auto ClusterLayer{
-        compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+        get_layer<Order>(typename traits::LayerByOrder{})};
 
     Eigen::Matrix<size_t, ClusterLayer + 1, 1> indices{};
     indices.template head<ClusterLayer>() = cluster.get_cluster_indices();

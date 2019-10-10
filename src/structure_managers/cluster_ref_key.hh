@@ -116,6 +116,7 @@ namespace rascal {
   constexpr size_t
   get_layer(const std::index_sequence<Ints...> & layers_by_order) {
     static_assert(Order > 0, "Order is <1 this should not be");
+    static_assert(Order <= sizeof... (Ints) , "Order should be within the MaxOrder");
     return get_index<Order-1>(layers_by_order);
   }
 

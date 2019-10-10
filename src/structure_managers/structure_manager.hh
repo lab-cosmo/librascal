@@ -119,7 +119,7 @@ namespace rascal {
                                                std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
       constexpr static auto ActiveLayer{
-          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+          get_layer<Order>(typename traits::LayerByOrder{})};
 
       using Property_t =
           Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;

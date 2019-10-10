@@ -38,7 +38,7 @@ namespace rascal {
   template <typename SMI, size_t Order>
   struct HelperLayer {
     static constexpr size_t layer{
-        compute_cluster_layer<Order>(LayerByOrder<SMI>{})};
+        get_layer<Order>(LayerByOrder<SMI>{})};
   };
 
   template <typename SMI, size_t Order>
@@ -91,6 +91,7 @@ namespace rascal {
     using ClusterRefKey = ClusterRefkey_t<SMI, Order>;
 
     std::string cluster_name = internal::GetBindingTypeName<SMI>();
+    static_assert(Order > 0, R"(Order must be an integer greater than 0)");
 
     static_assert(Order < 5, R"(Not currently configured to bind clusters
                                 higher than quadruplets.)");
@@ -124,11 +125,16 @@ namespace rascal {
     return py_cluster;
   }
 
-  //! Bind iterator and ClusterRef for Order >= 2
+  /**
+   * Bind iterator and ClusterRef for Order >= 2
+   *
+   * @pre Order >= 2
+   */
   template <typename StructureManagerImplementation, size_t Order>
   decltype(auto) add_iterator(
       py::module & m,
       PyClusterRef<StructureManagerImplementation, Order - 1> & py_cluster) {
+    static_assert(Order >= 2, "Order should be >= 2 here.");
     // Order-1 for PyClusterRef because it is the
     // cluster from the previous iteration
     using Child = StructureManagerImplementation;
@@ -144,10 +150,13 @@ namespace rascal {
     return py_cluster_new;
   }
 
-  //! bind iterator and ClusterRef for Order == 1
+  /**
+   * bind iterator and ClusterRef for Order == 1
+   *
+   */
   template <typename StructureManagerImplementation, size_t Order>
   decltype(auto)
-  add_iterator(py::module & m,
+  add_iterator_order_one(py::module & m,
                PyManager<StructureManagerImplementation> & manager) {
     using Child = StructureManagerImplementation;
     using Parent = typename Child::Parent;
@@ -164,9 +173,37 @@ namespace rascal {
   /**
    * Bind the clusterRef allowing to iterate over the manager, atom, neigh...
    * Use signature overloading to dispatch to the proper function.
-   * Use iteration by recursion to iterate from Order to MaxOrder-1 statically
+   * Iterates recursively from Order to MaxOrder-1 statically.
+   *
+   * @tparam MinOrder the first order from which you want to begin to add
+   *         iterators
+   * @tparam MaxOrder the last order from which you want to stop to add
+   *         iterators
    */
   template <typename StructureManagerImplementation, size_t Order,
+            size_t MaxOrder>
+  struct add_iterators_recursion {
+    static_assert(Order >= 2, "The recursion step should nod get any Order < 2.");
+    //! following recursion
+    static void static_for(
+        py::module & m,
+        PyClusterRef<StructureManagerImplementation, Order - 1> & py_cluster) {
+      auto py_cluster_new =
+          add_iterator<StructureManagerImplementation, Order>(m, py_cluster);
+      add_iterators_recursion<StructureManagerImplementation, Order + 1,
+                    MaxOrder>::static_for(m, py_cluster_new);
+    }
+  };
+
+  //! Stop the recursion
+  template <typename StructureManagerImplementation, size_t MaxOrder>
+  struct add_iterators_recursion<StructureManagerImplementation, MaxOrder, MaxOrder> {
+    static void
+    static_for(py::module &,
+               PyClusterRef<StructureManagerImplementation, MaxOrder - 1> &) {}
+  };
+
+  template <typename StructureManagerImplementation, size_t MinOrder,
             size_t MaxOrder>
   struct add_iterators {
     //! starts recursion
@@ -174,27 +211,10 @@ namespace rascal {
     static_for(py::module & m,
                PyManager<StructureManagerImplementation> & manager) {
       auto py_cluster =
-          add_iterator<StructureManagerImplementation, Order>(m, manager);
-      add_iterators<StructureManagerImplementation, Order + 1,
+          add_iterator_order_one<StructureManagerImplementation, MinOrder>(m, manager);
+      add_iterators_recursion<StructureManagerImplementation, MinOrder + 1,
                     MaxOrder>::static_for(m, py_cluster);
     }
-    //! following recursion
-    static void static_for(
-        py::module & m,
-        PyClusterRef<StructureManagerImplementation, Order - 1> & py_cluster) {
-      auto py_cluster_new =
-          add_iterator<StructureManagerImplementation, Order>(m, py_cluster);
-      add_iterators<StructureManagerImplementation, Order + 1,
-                    MaxOrder>::static_for(m, py_cluster_new);
-    }
-  };
-
-  //! Stop the recursion
-  template <typename StructureManagerImplementation, size_t MaxOrder>
-  struct add_iterators<StructureManagerImplementation, MaxOrder, MaxOrder> {
-    static void
-    static_for(py::module &,
-               PyClusterRef<StructureManagerImplementation, MaxOrder - 1> &) {}
   };
 
   template <typename Manager_t>
