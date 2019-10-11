@@ -42,12 +42,7 @@ class AtomsList(object):
             # if python structure
             structures = convert_to_structure_list(frames)
             managers = StructureCollectionFactory(nl_options)
-            try:
-                managers.add_structures(structures)
-            except Exception as e:
-                raise RuntimeError("Neighbourlist of structures failed "
-                + "because: " + str(e))
-
+            managers.add_structures(structures)
 
         self.managers = managers
 
