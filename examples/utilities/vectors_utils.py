@@ -307,6 +307,7 @@ class SOAP_tutorial(object):
 
     def show_kernel(self, key1, key2=None, show=True, average=False):
         from rascal.models import Kernel
+        from ase.data import chemical_symbols
         """ Function to show pandas dataframe for the comparison kernel
 
             Author: R. Cersonsky
@@ -323,38 +324,33 @@ class SOAP_tutorial(object):
         key2 = key2 if key2 != None else key1
         average = self.sliders['average'].value == "Average"
 
-        centersA = [i for i in self.inds[key1]
-                    if self.symbols[key1][i]
-                    in self.sliders['center_select'].value]
-        centersB = [i for i in self.inds[key2]
-                    if self.symbols[key2][i]
-                    in self.sliders['center_select'].value]
-
-        vectorsA = self.get_soap_vectors(key1, average=average)
-        vectorsB = self.get_soap_vectors(key2, average=average)
-
         soap=SOAP(**mask_body_order(self.hyperparameters))
         features1=soap.transform(self.frames[key1])
         features2=soap.transform(self.frames[key2])
 
         kernel = Kernel(soap,
                         target_type="Structure" if average else "Atom",
+                        zeta = 2,
                         **self.hyperparameters)
-        data = kernel(features1, features2)
-        # data = compute_kernel(soap,
-        #                         features1=features1,
-        #                         features2=features2,
-        #                         target_type="Structure" if average else "Atom",
-        #                         **self.hyperparameters
-        #                         )
-        #
-        print(data)
-        df=pd.DataFrame(data=[['%1.3f' %(data[i][j])
-                                for i,v in enumerate(features2._frames.numbers) if v!=1]
-                                for j,w in enumerate(features1._frames.numbers) if w!=1],
-                        columns =[v for i,v in enumerate(features2._frames.numbers) if v!=1],
-                        index =[v for i,v in enumerate(features1._frames.numbers) if v!=1]
+        data = kernel(features2, features1)
+
+        if (average):
+
+            vec1 = np.mean(features1.get_dense_feature_matrix(soap),axis=0)
+            vec2 = np.mean(features2.get_dense_feature_matrix(soap), axis=0)
+            if(vec1.shape==vec2.shape):
+                data = np.dot(vec1, vec2)/(np.linalg.norm(vec1)*np.linalg.norm(vec2))
+            df=pd.DataFrame(data=[['%1.3f' %(data)]],
+                            columns =[key2],
+                            index =[key1]
                         )
+        else:
+            df=pd.DataFrame(data=[['%1.3f' %(data[i][j])
+                                    for i,v in enumerate(features2._frames.numbers) if v!=1]
+                                    for j,w in enumerate(features1._frames.numbers) if w!=1],
+                            columns =[chemical_symbols[v] for i,v in enumerate(features2._frames.numbers) if v!=1],
+                            index =[chemical_symbols[v] for i,v in enumerate(features1._frames.numbers) if v!=1]
+                            )
         #
         df.name = ("Self-" if key1 == key2 else '') + \
             "Similarity " + ("Kernel" if not average else "")
