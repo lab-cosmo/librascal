@@ -109,6 +109,7 @@ class SphericalExpansion(object):
             type=radial_basis,
             optimization=optimization_args
         )
+
         self.update_hyperparameters(cutoff_function=cutoff_function,
                                     gaussian_density=gaussian_density,
                                     radial_contribution=radial_contribution)
