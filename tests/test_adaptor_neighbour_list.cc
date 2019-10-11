@@ -310,7 +310,7 @@ namespace rascal {
           neighbours_per_atom2.begin(), neighbours_per_atom2.end());
       // Additionally check for the expected number of neighbours (known)
 
-      int n_expected{expected_number_of_neighbours[i-1]};
+      int n_expected{expected_number_of_neighbours[i - 1]};
       for (auto n_neigh : neighbours_per_atom1) {
         BOOST_CHECK_EQUAL(n_neigh, n_expected);
       }

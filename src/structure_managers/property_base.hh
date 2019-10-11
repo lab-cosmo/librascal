@@ -134,8 +134,8 @@ namespace rascal {
                  size_t order, size_t layer,
                  std::string metadata = "no metadata")
         : base_manager{manager}, nb_col{nb_col}, nb_row{nb_row},
-          nb_comp{nb_row * nb_col}, order{order},
-          property_layer{layer}, metadata{metadata} {}
+          nb_comp{nb_row * nb_col}, order{order}, property_layer{layer},
+          metadata{metadata} {}
   };
 }  // namespace rascal
 
