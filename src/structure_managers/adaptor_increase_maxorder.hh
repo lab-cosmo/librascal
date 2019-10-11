@@ -380,16 +380,24 @@ namespace rascal {
     //! the underlying MaxOrder, just goes to the maximum
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
-      // get all i_atoms to find neighbours to extend the cluster to the next
-      // order
-      auto i_atoms = cluster.get_atom_tag_list(); //TODO(markus): cluster front, only the first index.
+      // Get all current i atoms to avoid doubling of atoms in the new cluster
+      auto i_atoms = cluster.get_atom_tag_list();
 
       // vector of existing i_atoms in `cluster` to avoid doubling of atoms in
       // final list
       std::vector<size_t> current_i_atoms{};
+      for (auto atom_tag : i_atoms) {
+        current_i_atoms.push_back(atom_tag);
+      }
 
-      // a set of new neighbours for the cluster, which will be added to extend
-      // the cluster
+      // The constructed cluster will be a centered cluster on the first atom of
+      // the cluster, hence the dereference of the first atom tag.
+      auto i_atom = *(i_atoms.begin());
+
+      // A container for the set of new neighbours for the cluster, which will
+      // be added to extend the cluster. `current_j_atoms` means the neighbours
+      // of the existing cluster and all the existing atoms are in this context
+      // referred to as `i-atoms`.
       std::set<size_t> current_j_atoms{};
 
       // access to underlying manager for access to atom pairs
@@ -398,27 +406,22 @@ namespace rascal {
       // add an entry for the current clusters' neighbours
       manager.add_entry_number_of_neighbours();
 
-      // careful: i_atoms can include ghosts: ghosts have to be ignored, since
-      // they to not have a neighbour list themselves, they are only neighbours
-      for (auto atom_tag : i_atoms) {
-        current_i_atoms.push_back(atom_tag);
-        size_t access_index = manager.get_neighbour_atom_tag(manager, atom_tag);
+      size_t access_index = manager.get_neighbour_atom_tag(manager, i_atom);
+      // construct a shifted iterator to constuct a ClusterRef<1>
+      auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
 
-        // construct a shifted iterator to constuct a ClusterRef<1>
-        auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
+      // ClusterRef<1> as dereference from iterator to get pairs of the
+      // i_atoms
+      auto && j_cluster{*iterator_at_position};
 
-        // ClusterRef<1> as dereference from iterator to get pairs of the
-        // i_atoms
-        auto && j_cluster{*iterator_at_position};
+      // TODO(markus): distinguish between full/half: full, like it is, half
+      // from ++j
 
-        // collect all possible neighbours of the cluster: collection of all
-        // neighbours of current_i_atoms
-        for (auto pair : j_cluster) {
-          auto j_add = pair.back();
-          if (j_add > i_atoms.back()) {
-            current_j_atoms.insert(j_add);
-          }
-        }
+      // collect all possible neighbours of the cluster: collection of all
+      // neighbours of current _central_ atoms for a centered cluster.
+      for (auto pair : j_cluster) {
+        auto j_add = pair.back();
+        current_j_atoms.insert(j_add);
       }
 
       // delete existing cluster atoms from list to build additional neighbours
@@ -426,6 +429,8 @@ namespace rascal {
       std::set_difference(current_j_atoms.begin(), current_j_atoms.end(),
                           current_i_atoms.begin(), current_i_atoms.end(),
                           std::inserter(atoms_to_add, atoms_to_add.begin()));
+      // careful: i_atoms can include ghosts: ghosts have to be ignored, since
+      // they to not have a neighbour list themselves, they are only neighbours
 
       if (atoms_to_add.size() > 0) {
         for (auto j : atoms_to_add) {
