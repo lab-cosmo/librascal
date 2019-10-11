@@ -57,9 +57,9 @@ namespace rascal {
   template<size_t... Ints>
   void print_index_sequence(std::index_sequence<Ints...> /*sequence*/) {
       std::vector<size_t> vec = {Ints...};
-      std::cout << "( "; 
+      std::cout << "( ";
       for (size_t ele : vec) {
-        std::cout << ele << " " ;
+        std::cout << ele << " ";
       }
       std::cout << ")" << std::endl;
   }
