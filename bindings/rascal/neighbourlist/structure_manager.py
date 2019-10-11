@@ -38,17 +38,7 @@ class AtomsList(object):
             # if python structure
             structures = convert_to_structure_list(frames)
             managers = StructureCollectionFactory(nl_options)
-            try:
-                managers.add_structures(structures)
-            except:
-                print("""Neighbourlist of structures failed. trying
-                one at a time.""")
-                ii = 0
-                for structure, manager in zip(structures, managers):
-                    try:
-                        manager.update(structure)
-                    except:
-                        print("Structure Rep computation {} failed".format(ii))
+            managers.add_structures(structures)
 
         self.managers = managers
 
