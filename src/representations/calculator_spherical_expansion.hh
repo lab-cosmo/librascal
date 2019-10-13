@@ -1253,7 +1253,7 @@ namespace rascal {
                                   AtomicSmearingType::Constant,
                                   OptimizationType::Interpolator): {
         auto rc_shared = std::make_shared<internal::RadialContributionHandler<
-            RadialBasisType::GTO, AtomicSmearingType::Constant,
+            RadialBasisType::DVR, AtomicSmearingType::Constant,
             OptimizationType::Interpolator>>(hypers);
         this->radial_integral = rc_shared;
         break;
