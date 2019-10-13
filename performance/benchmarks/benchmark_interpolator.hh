@@ -41,6 +41,7 @@
 #include "math/interpolator.hh"
 #include "benchmarks.hh"
 #include "representations/calculator_spherical_expansion.hh"
+#include "representations/calculator_spherical_invariants.hh"
 #include "json.hpp"
 
 namespace rascal {
@@ -146,7 +147,7 @@ namespace rascal {
    * required to give some value, but are not part of the SphericalExpansion.
    * These parameters are marked with dummy.
    */
-  struct SphericalExpansionDataset : public BaseInterpolatorDataset {
+  struct SphericalDataset : public BaseInterpolatorDataset {
     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
     static const json data() {
       static const json data = {
@@ -460,15 +461,16 @@ namespace rascal {
       }
     }
   };
+
   /**
    * This class uses the RepresentationManager class as basis to call the
    * RadialContribution. Therefore benchmarks for different atomic structures
    * can be done.
    */
-  template <class Dataset>
-  class SphericalExpansionBFixture : public InterpolatorBFixture<Dataset> {
+  template <class Representation_t, class Dataset>
+  class SphericalRepresentationBFixture : public InterpolatorBFixture<Dataset> {
    public:
-    using Representation_t = CalculatorSphericalExpansion;
+    //using Representation_t = CalculatorSphericalExpansion;
     using Manager_t = AdaptorStrict<AdaptorCenterContribution<
         AdaptorNeighbourList<StructureManagerCenters>>>;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
@@ -480,13 +482,13 @@ namespace rascal {
      * @param compute_gradients determines if the SphericalExpansion should be
      * calculate gradients
      */
-    SphericalExpansionBFixture<Dataset>(const bool use_interpolator,
-                                        const bool compute_gradients)
+    SphericalRepresentationBFixture<Representation_t, Dataset>(bool use_interpolator,
+                                        bool compute_gradients)
         : Parent(), use_interpolator{use_interpolator},
           compute_gradients{compute_gradients} {}
 
-    const bool use_interpolator;
-    const bool compute_gradients;
+    bool use_interpolator;
+    bool compute_gradients;
     int max_radial{0};
     int max_angular{0};
     std::string filename;
@@ -550,7 +552,8 @@ namespace rascal {
                   {"max_angular", this->max_angular},
                   {"soap_type", "PowerSpectrum"},
                   {"normalize", true},
-                  {"compute_gradients", this->compute_gradients}};
+                  {"compute_gradients", this->compute_gradients},
+                  {"soap_type", "PowerSpectrum"}};
 
       json fc_hypers{{"type", "ShiftedCosine"},
                      {"cutoff", {{"value", this->cutoff}, {"unit", "AA"}}},
@@ -593,5 +596,11 @@ namespace rascal {
               new_filename != this->filename || new_cutoff != this->cutoff);
     }
   };
+
+  template <class Dataset>
+  using SphericalExpansionBFixture = SphericalRepresentationBFixture<CalculatorSphericalExpansion, Dataset>;
+  template <class Dataset>
+  using SphericalInvariantsBFixture = SphericalRepresentationBFixture<CalculatorSphericalInvariants, Dataset>;
+
 }  // namespace rascal
 #endif  // PERFORMANCE_BENCHMARKS_BENCHMARK_INTERPOLATOR_HH_
