@@ -154,18 +154,24 @@ def add_center_atoms_mask_by_id(frame, id_select=None, id_blacklist=None):
     ----------
     frame: ase.Atoms
         Atomic structure to mask
+
     id_select: list of int
         List of atom IDs to select
+
     id_blacklist: list of int
         List of atom IDs to exclude
 
-    The default is to select all atoms.  If id_select is provided,
-    select only those atoms.  If only id_blacklist is provided, select
-    all atoms _except_ those in the blacklist.  If both are provided,
-    atoms are first selected based on id_select and then excluded based
-    on id_blacklist.
+    Returns
+    -------
+    None (the Atoms object is modified directly)
 
-    The Atoms object is modified directly; nothing is returned.
+    Notes
+    -----
+    The default is to select all atoms.  If `id_select` is provided,
+    select only those atoms.  If only `id_blacklist` is provided, select
+    all atoms *except* those in the blacklist.  If both are provided,
+    atoms are first selected based on `id_select` and then excluded based
+    on `id_blacklist`.
     """
     if id_select is not None:
         atoms_select = np.arange(frame.get_number_of_atoms())
@@ -186,21 +192,27 @@ def add_center_atoms_mask_species(frame, species_select=[],
     ----------
     frame: ase.Atoms
         Atomic structure to mask
+
     species_select: list of int or str
-        List of atomic numbers, or species symbols, to select
-        Should be of consistent type across list
+        List of atomic numbers, or species symbols, to select.
+        Should be of consistent type across list.
+
     species_blacklist: list of int or str
-        List of atomic numbers, or species symbols, to exclude
-        Should be of consistent type across list
+        List of atomic numbers, or species symbols, to exclude.
+        Should be of consistent type across list.
 
-    The default is to select all atoms.  If species_select is provided,
+    Returns
+    -------
+    None (the Atoms object is modified directly)
+
+    Notes
+    -----
+    The default is to select all atoms.  If `species_select` is provided,
     select only those atoms whose species is in the list.  If only
-    species_blacklist is provided, select all atoms _except_ those whose
+    `species_blacklist` is provided, select all atoms *except* those whose
     species is in the blacklist.  If both are provided, atoms are first
-    selected based on species_select and then excluded based
-    on species_blacklist.
-
-    The Atoms object is modified directly; nothing is returned.
+    selected based on `species_select` and then excluded based
+    on `species_blacklist`.
     """
     select_is_str = reduce(and_,
                            map(lambda x: isinstance(x, str), species_select))
