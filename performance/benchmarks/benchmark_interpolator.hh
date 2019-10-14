@@ -205,7 +205,7 @@ namespace rascal {
 
     // Could be moved to base class with virtual classes and shared by
     // vectorized and scalar
-    void SetUp(const ::benchmark::State & state) {
+    void setup(const ::benchmark::State & state) {
       const json data = Dataset::data();
       // Because in the two initialization processes share parameters of the
       // json string, therefore we check the change of parameters before

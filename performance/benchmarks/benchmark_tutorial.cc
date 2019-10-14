@@ -54,10 +54,10 @@ namespace rascal {
     MyBFixture<Dataset>() : Parent() {}
 
     /**
-     * By convention we use a SetUp function which handles the initialization of
+     * By convention we use a setup function which handles the initialization of
      * new parameters, it should be invoked at the start of the benchmark.
      */
-    void SetUp(benchmark::State & state) {
+    void setup(benchmark::State & state) {
       std::string old_name = this->name;
 
       // initialize
@@ -79,9 +79,9 @@ namespace rascal {
   };
 
   template <class BFixture>
-  void BM_Example(benchmark::State & state, BFixture & fix) {
-    fix.SetUp(state);
-    std::cout << "BM_Example invoked " << fix.x << ", " << fix.name
+  void bm_example(benchmark::State & state, BFixture & fix) {
+    fix.setup(state);
+    std::cout << "bm_example invoked " << fix.x << ", " << fix.name
               << std::endl;
     //
     for (auto _ : state) {
@@ -90,7 +90,7 @@ namespace rascal {
   }
 
   /**
-   * The `AllCombinationsArguments` function is used to produce all combinations
+   * The `all_combinations_of_arguments` function is used to produce all combinations
    * from the parameters included in a `Dataset` structure. The parameters are
    * accessible in the benchmark function with the benchmark state. However, the
    * google benchmark library only allows to give indices as parameters.
@@ -103,10 +103,10 @@ namespace rascal {
    * property to access it at the right index.
    */
   auto myfix{MyBFixture<SampleData>()};
-  BENCHMARK_CAPTURE(BM_Example, , myfix)
-      ->Apply(AllCombinationsArguments<SampleData>);
+  BENCHMARK_CAPTURE(bm_example, , myfix)
+      ->Apply(all_combinations_of_arguments<SampleData>);
   // we skip naming the benchmark here, to give the benchmark some_name use
-  // BENCHMARK_CAPTURE(BM_Example, some_name, myfix)
+  // BENCHMARK_CAPTURE(bm_example, some_name, myfix)
 
   /**
    * This benchmark should make clear how the different depth of iterations work

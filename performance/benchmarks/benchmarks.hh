@@ -101,7 +101,7 @@ namespace rascal {
    * linear step function, but is only offered for argument `Range`
    */
   template <class Dataset>
-  void AllCombinationsArguments(benchmark::internal::Benchmark * b) {
+  void all_combinations_of_arguments(benchmark::internal::Benchmark * b) {
     json data = Dataset::data();
     std::vector<std::vector<int64_t>> nbs_args;
     nbs_args.resize(data.size());

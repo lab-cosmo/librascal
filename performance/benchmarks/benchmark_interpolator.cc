@@ -31,8 +31,8 @@ namespace rascal {
 
   // Benchmark for Hyp1f1 without interpolator
   template <class BFixture>
-  void BM_Hyp1f1(benchmark::State & state, BFixture & fix) {
-    fix.SetUp(state);
+  void bm_hyp1f1(benchmark::State & state, BFixture & fix) {
+    fix.setup(state);
     // to prevent optimization we copy the results
     Vector_t tmp = Vector_t::Zero(fix.ref_points.size());
     for (auto _ : state) {
@@ -42,7 +42,8 @@ namespace rascal {
       }
       /**
        * Alternatively the DoNotOptimize function can be used, however I am
-       * not sure how much is not optimized.
+       * not sure how much is not optimized. One gets results deviating by
+       * around 10%.
        *
        * for (size_t i{0}; i < fix.nb_iterations; i++) {
        *  benchmark::DoNotOptimize(
@@ -56,8 +57,8 @@ namespace rascal {
 
   // Benchmark for Hyp1f1 with interpolator
   template <class BFixture>
-  void BM_Hyp1f1Intp(benchmark::State & state, BFixture & fix) {
-    fix.SetUp(state);
+  void bm_hyp1f1_intp(benchmark::State & state, BFixture & fix) {
+    fix.setup(state);
     // to prevent optimization
     Vector_t tmp = Vector_t::Zero(fix.ref_points.size());
     for (auto _ : state) {
@@ -86,7 +87,7 @@ namespace rascal {
   // Benchmark for RadialContribution without interpolator
   template <class Fix>
   void BM_RadCon(benchmark::State & state, Fix & fix) {
-    fix.SetUp(state);
+    fix.setup(state);
     Matrix_t tmp = Matrix_t::Zero(fix.max_radial, fix.max_angular + 1);
     for (auto _ : state) {
       for (size_t i{0}; i < fix.nb_iterations; i++) {
@@ -98,8 +99,8 @@ namespace rascal {
 
   // Benchmark for RadialContribution with interpolator
   template <class BFixture>
-  void BM_RadConIntp(benchmark::State & state, BFixture & fix) {
-    fix.SetUp(state);
+  void bm_radcon_intp(benchmark::State & state, BFixture & fix) {
+    fix.setup(state);
     // to prevent optimization
     Matrix_t tmp = Matrix_t::Zero(fix.max_radial, fix.max_angular + 1);
     for (auto _ : state) {
@@ -128,8 +129,8 @@ namespace rascal {
 
   // Benchmark for SphericalExpansion with or without the interpolator
   template <class BFixture>
-  void BM_Spherical(benchmark::State & state, BFixture & fix) {
-    fix.SetUp(state);
+  void bm_spherical(benchmark::State & state, BFixture & fix) {
+    fix.setup(state);
     for (auto _ : state) {
       fix.representation_ptr->compute(fix.manager);
     }
@@ -144,7 +145,7 @@ namespace rascal {
 
   template <class BFixture>
   void BM_SphInv(benchmark::State & state, BFixture & fix) {
-    fix.SetUp(state);
+    fix.setup(state);
     for (auto _ : state) {
       fix.representation_ptr->compute(fix.manager);
     }
@@ -161,11 +162,11 @@ namespace rascal {
    * Hyp1f1 for the scalar interpolator
    */
   auto intp_fix{InterpolatorScalarBFixture<Hyp1f1Dataset>()};
-  BENCHMARK_CAPTURE(BM_Hyp1f1, , intp_fix)
-      ->Apply(AllCombinationsArguments<Hyp1f1Dataset>)
+  BENCHMARK_CAPTURE(bm_hyp1f1, , intp_fix)
+      ->Apply(all_combinations_of_arguments<Hyp1f1Dataset>)
       ->Complexity();
-  BENCHMARK_CAPTURE(BM_Hyp1f1Intp, , intp_fix)
-      ->Apply(AllCombinationsArguments<Hyp1f1Dataset>)
+  BENCHMARK_CAPTURE(bm_hyp1f1_intp, , intp_fix)
+      ->Apply(all_combinations_of_arguments<Hyp1f1Dataset>)
       ->Complexity();
 
   /**
@@ -173,10 +174,10 @@ namespace rascal {
    */
   auto intp_mat_fix{InterpolatorMatrixBFixture<RadialContributionDataset>()};
   BENCHMARK_CAPTURE(BM_RadCon, , intp_mat_fix)
-      ->Apply(AllCombinationsArguments<RadialContributionDataset>)
+      ->Apply(all_combinations_of_arguments<RadialContributionDataset>)
       ->Complexity();
-  BENCHMARK_CAPTURE(BM_RadConIntp, , intp_mat_fix)
-      ->Apply(AllCombinationsArguments<RadialContributionDataset>)
+  BENCHMARK_CAPTURE(bm_radcon_intp, , intp_mat_fix)
+      ->Apply(all_combinations_of_arguments<RadialContributionDataset>)
       ->Complexity();
 
   /**
@@ -184,15 +185,15 @@ namespace rascal {
    */
   auto sph_expansion_fix =
       SphericalExpansionBFixture<SphericalDataset>(false, false);
-  BENCHMARK_CAPTURE(BM_Spherical, expansion_no_intp_no_gradient,
+  BENCHMARK_CAPTURE(bm_spherical, expansion_no_intp_no_gradient,
                     sph_expansion_fix)
-      ->Apply(AllCombinationsArguments<SphericalDataset>)
+      ->Apply(all_combinations_of_arguments<SphericalDataset>)
       ->Complexity();
   auto sph_expansion_intp_fix =
       SphericalExpansionBFixture<SphericalDataset>(true, false);
-  BENCHMARK_CAPTURE(BM_Spherical, expansion_use_intp_no_gradient,
+  BENCHMARK_CAPTURE(bm_spherical, expansion_use_intp_no_gradient,
                     sph_expansion_intp_fix)
-      ->Apply(AllCombinationsArguments<SphericalDataset>)
+      ->Apply(all_combinations_of_arguments<SphericalDataset>)
       ->Complexity();
 
   /**
@@ -200,15 +201,15 @@ namespace rascal {
    */
   auto sph_expansion_gradient_fix =
       SphericalExpansionBFixture<SphericalDataset>(false, true);
-  BENCHMARK_CAPTURE(BM_Spherical, expansion_no_intp_comp_gradient,
+  BENCHMARK_CAPTURE(bm_spherical, expansion_no_intp_comp_gradient,
                     sph_expansion_gradient_fix)
-      ->Apply(AllCombinationsArguments<SphericalDataset>)
+      ->Apply(all_combinations_of_arguments<SphericalDataset>)
       ->Complexity();
   auto sph_expansion_intp_gradient_fix =
       SphericalExpansionBFixture<SphericalDataset>(true, true);
-  BENCHMARK_CAPTURE(BM_Spherical, expansion_use_intp_comp_gradient,
+  BENCHMARK_CAPTURE(bm_spherical, expansion_use_intp_comp_gradient,
                     sph_expansion_intp_gradient_fix)
-      ->Apply(AllCombinationsArguments<SphericalDataset>)
+      ->Apply(all_combinations_of_arguments<SphericalDataset>)
       ->Complexity();
 
   /**
@@ -216,14 +217,14 @@ namespace rascal {
    */
   auto sph_inv_fix =
       SphericalInvariantsBFixture<SphericalDataset>(false, false);
-  BENCHMARK_CAPTURE(BM_Spherical, invariant_no_intp_no_gradient, sph_inv_fix)
-      ->Apply(AllCombinationsArguments<SphericalDataset>)
+  BENCHMARK_CAPTURE(bm_spherical, invariant_no_intp_no_gradient, sph_inv_fix)
+      ->Apply(all_combinations_of_arguments<SphericalDataset>)
       ->Complexity();
   auto sph_inv_intp_fix =
       SphericalInvariantsBFixture<SphericalDataset>(true, false);
-  BENCHMARK_CAPTURE(BM_Spherical, invariant_use_intp_no_gradient,
+  BENCHMARK_CAPTURE(bm_spherical, invariant_use_intp_no_gradient,
                     sph_inv_intp_fix)
-      ->Apply(AllCombinationsArguments<SphericalDataset>)
+      ->Apply(all_combinations_of_arguments<SphericalDataset>)
       ->Complexity();
 
 }  // namespace rascal
