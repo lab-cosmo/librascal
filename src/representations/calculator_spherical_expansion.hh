@@ -438,7 +438,7 @@ namespace rascal {
       }
 
       // Define the contribution from a neighbour atom to the expansion with an
-      // already precomputed a factor
+      // already precomputed a-factor
 
       inline Matrix_Ref compute_neighbour_contribution(double distance,
                                                        double fac_a) {
@@ -745,7 +745,7 @@ namespace rascal {
         // sqrt(w) * x
         // (if you think it should be x^2 and not x, think again -- the
         // transformation from integrating the overlap in 3-D spherical
-        // coordinates to the 1-D radial coordinate absorbs a factor of r.
+        // coordinates to the 1-D radial coordinate absorbs a-factor of r.
         // For more details, see the SOAP theory documentation)
         // TODO(max) link to SOAP theory documentation
         this->legendre_radial_factor =
@@ -912,7 +912,7 @@ namespace rascal {
         this->fac_a = 0.5 * pow(smearing->get_gaussian_sigma(), -2);
       }
 
-      // Should be invoked only after the a factor has been precomputed
+      // Should be invoked only after the a-factor has been precomputed
       void precompute_center_contribution() {
         Parent::compute_center_contribution(this->fac_a);
       }
@@ -986,7 +986,7 @@ namespace rascal {
         this->fac_a = 0.5 * pow(smearing->get_gaussian_sigma(), -2);
       }
 
-      // Should be invoked only after the a factor has been precomputed
+      // Should be invoked only after the a-factor has been precomputed
       void precompute_center_contribution() {
         Parent::compute_center_contribution(this->fac_a);
       }
