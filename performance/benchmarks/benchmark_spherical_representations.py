@@ -29,7 +29,7 @@ import sys
 
 from ase.io import read
 
-import benchmark
+import benchmarks
 
 import rascal
 from rascal.representations import SphericalInvariants
@@ -50,7 +50,7 @@ optimizations_args = [{'type':'Nothing'}, \
                        'range': (0,4)}]
 radial_bases = ["GTO", "DVR"]
 
-@benchmark.timer
+@benchmarks.timer
 def transform_representation(representation, frames, **kwargs):
     representation.transform(frames)
 
