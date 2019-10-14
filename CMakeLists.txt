@@ -167,7 +167,13 @@ if(${BUILD_BENCHMARKS})
     target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
     target_link_libraries(${binaryname} Threads::Threads)
     target_link_libraries(${binaryname} benchmark)
+
+    # surpresses the "'CSVReporter' is deprecated" errors when compiling benchmark.cc
     set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations" )
+    # surpresses the -Weffc++ Warnings by removing it from the target
+    get_target_property(BINARY_COMPILE_FLAGS ${binaryname} COMPILE_OPTIONS )
+    list(REMOVE_ITEM BINARY_COMPILE_FLAGS -Weffc++)
+    set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "${BINARY_COMPILE_FLAGS}")
   endforeach(binaryfile ${binaries})
   # Runs all benchmarks in succession, add new benchmarks with a new COMMAND
 
