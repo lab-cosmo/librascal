@@ -5815,21 +5815,40 @@ template&lt;&gt;<br /><span class="target" id="structrascal_1_1StructureManager_
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4I0EN6rascal8internal11GetTypeNameENSt6stringEv">
-<span class="target" id="namespacerascal_1_1internal_1a909e9416196642fdeded34e75a9632ee"></span>template&lt;typename <code class="sig-name descname">T</code>&gt;<br />std::string <code class="sig-name descname">GetTypeName</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN6rascal8internal11GetTypeNameENSt6stringEv" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>return a pretty form of the template typename </p>
+<dt id="_CPPv4N6rascal8internal19type_name_demangledEPKc">
+<span class="target" id="namespacerascal_1_1internal_1abd93120ee1ac9207f2186b6c4cbeeff2"></span>std::string <code class="sig-name descname">type_name_demangled</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal19type_name_demangledEPKc" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Get the demangled name of a c++ type, as returned by <code class="docutils literal notranslate"><span class="pre">typeinfo(...).name()</span></code> </p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4I0EN6rascal8internal16read_binary_fileEvRKNSt6stringERNSt6vectorI6BINARYEE">
-<span class="target" id="namespacerascal_1_1internal_1a0e661e78d4a878aa3a5b0d76a4e7e59d"></span>template&lt;typename <code class="sig-name descname">BINARY</code>&gt;<br />void <code class="sig-name descname">read_binary_file</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>filename</em>, std::vector&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal8internal16read_binary_fileEvRKNSt6stringERNSt6vectorI6BINARYEE" title="rascal::internal::read_binary_file::BINARY">BINARY</a>&gt; &amp;<em>vec</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN6rascal8internal16read_binary_fileEvRKNSt6stringERNSt6vectorI6BINARYEE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Reads a binary file and puts it into a vector Taken from <a class="reference external" href="https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars">https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars</a> // NOLINT </p>
+<dt id="_CPPv4N6rascal8internal7replaceERNSt6stringERKNSt6stringERKNSt6stringE">
+<span class="target" id="namespacerascal_1_1internal_1a51ec68df36e49c81891c41dcf35d1d3c"></span>void <code class="sig-name descname">replace</code><span class="sig-paren">(</span>std::string &amp;<em>string</em>, <em class="property">const</em> std::string &amp;<em>pattern</em>, <em class="property">const</em> std::string &amp;<em>replacement</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal7replaceERNSt6stringERKNSt6stringERKNSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Replace all occurences of <code class="docutils literal notranslate"><span class="pre">pattern</span></code> by <code class="docutils literal notranslate"><span class="pre">replacement</span></code> in <code class="docutils literal notranslate"><span class="pre">string</span></code> </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4I0EN6rascal8internal9type_nameENSt6stringEv">
+<span class="target" id="namespacerascal_1_1internal_1a9a6b945e3a5038967bf7492dcdea56c2"></span>template&lt;typename <code class="sig-name descname">T</code>&gt;<br />std::string <code class="sig-name descname">type_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN6rascal8internal9type_nameENSt6stringEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>return a human readable form of the template parameter type name </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N6rascal8internal16read_binary_fileERKNSt6stringE">
+<span class="target" id="namespacerascal_1_1internal_1a4c5c2d71e19057080a91b81753eb9a2a"></span>std::vector&lt;uint8_t&gt; <code class="sig-name descname">read_binary_file</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal16read_binary_fileERKNSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Reads a binary file</p>
+<p><dl class="simple">
+<dt><strong>Exceptions</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">std::runtime_error</span></code>: if the file can’t be opened </p></li>
+</ul>
+</dd>
+</dl>
+</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4N6rascal8internal22get_filename_extensionERKNSt6stringE">
 <span class="target" id="namespacerascal_1_1internal_1a9335ecf15a8086a708087b31a07fd3a6"></span>std::string <code class="sig-name descname">get_filename_extension</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal22get_filename_extensionERKNSt6stringE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>extract the extension from a filename as the charaters after the last “.” if it is not found it return an empty string </p>
+<dd><p>Extract the extension from a filename as the charaters after the last “.”. If no extension is found, return an empty string. </p>
 </dd></dl>
 
 <dl class="function">
@@ -5934,13 +5953,6 @@ template&lt;&gt;<br /><span class="target" id="structrascal_1_1StructureManager_
 <dt id="_CPPv4N6rascal8internal12InvalidLayerE">
 <span class="target" id="namespacerascal_1_1internal_1a7c54ddde2117e4b5874810f280decadd"></span><em class="property">constexpr</em> int <code class="sig-name descname">InvalidLayer</code> = -1<a class="headerlink" href="#_CPPv4N6rascal8internal12InvalidLayerE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
-
-<dl class="member">
-<dt>
-<span class="target" id="namespacerascal_1_1internal_1a5c50da74b7783a97552270f5e6b0b5c4"></span><code class="sig-name descname">const std::map&lt;std::string, std::string&gt; rascal::internal::module_name_replacement_map= {        {&quot;StructureManager&quot;, &quot;&quot;}, {&quot;Adaptor&quot;, &quot;&quot;}, {&quot;Calculator&quot;, &quot;&quot;}}</code></dt>
-<dd><p>Mapping used to replace all occurrences of the first string with the second string in the class titles in the python binding module names.</p>
-<p>first: string which should be replaced second: the replaced with string </p>
-</dd></dl>
 
 </div>
 <dl class="class">
@@ -6254,25 +6266,6 @@ template&lt;&gt;<br /><span class="target" id="structrascal_1_1StructureManager_
 <dt id="_CPPv4I0_6size_tEN6rascal8internal17FilterSpeciesLoopI21ManagerImplementation8MaxOrderXL0EEEE">
 <span class="target" id="structrascal_1_1internal_1_1FilterSpeciesLoop_3_01ManagerImplementation_00_01MaxOrder_00_010_01_4"></span>template&lt;class <code class="sig-name descname">ManagerImplementation</code>, size_t <code class="sig-name descname">MaxOrder</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">FilterSpeciesLoop</code>&lt;<a class="reference internal" href="#_CPPv4I0_6size_tEN6rascal8internal17FilterSpeciesLoopI21ManagerImplementation8MaxOrderXL0EEEE" title="rascal::internal::FilterSpeciesLoop&lt;ManagerImplementation, MaxOrder, 0&gt;::ManagerImplementation">ManagerImplementation</a>, <a class="reference internal" href="#_CPPv4I0_6size_tEN6rascal8internal17FilterSpeciesLoopI21ManagerImplementation8MaxOrderXL0EEEE" title="rascal::internal::FilterSpeciesLoop&lt;ManagerImplementation, MaxOrder, 0&gt;::MaxOrder">MaxOrder</a>, 0&gt;<a class="headerlink" href="#_CPPv4I0_6size_tEN6rascal8internal17FilterSpeciesLoopI21ManagerImplementation8MaxOrderXL0EEEE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><em>#include &lt;species_manager.hh&gt;</em><p>Recursion tail of the helper loop which does nothing at all </p>
-</dd></dl>
-
-<dl class="class">
-<dt id="_CPPv4I0EN6rascal8internal17GetTypeNameHelperE">
-<span class="target" id="structrascal_1_1internal_1_1GetTypeNameHelper"></span>template&lt;typename <code class="sig-name descname">T</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">GetTypeNameHelper</code><a class="headerlink" href="#_CPPv4I0EN6rascal8internal17GetTypeNameHelperE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><em>#include &lt;rascal_utility.hh&gt;</em><p>Transforms the template typename to a string. This functionality is compiler dependant so for the moment clang and gcc are compatible.  T type that should be stringifyied </p>
-<div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Public Static Functions</p>
-<dl class="function">
-<dt id="_CPPv4N6rascal8internal17GetTypeNameHelper11GetTypeNameEv">
-<span class="target" id="structrascal_1_1internal_1_1GetTypeNameHelper_1a1b44eb522a7280360a6c0a89d4810190"></span><em class="property">static</em> <em class="property">const</em> std::string <code class="sig-name descname">GetTypeName</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal17GetTypeNameHelper11GetTypeNameEv" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Get the type name <dl class="simple">
-<dt><strong>Return</strong></dt><dd><p>std::string name of the type </p>
-</dd>
-</dl>
-</p>
-</dd></dl>
-
-</div>
 </dd></dl>
 
 <dl class="class">
