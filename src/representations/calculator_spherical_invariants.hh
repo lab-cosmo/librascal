@@ -255,7 +255,7 @@ namespace rascal {
     operator=(CalculatorSphericalInvariants && other) = default;
 
     void set_hyperparameters(const Hypers_t & hypers) {
-      using internal::enumValue;
+      using internal::enum_value;
       using internal::SphericalInvariantsPrecomputationBase;
       using internal::SphericalInvariantsType;
 
@@ -274,7 +274,7 @@ namespace rascal {
       if (this->spherical_invariants_type_str.compare("PowerSpectrum") == 0) {
         this->spherical_invariants_type =
             SphericalInvariantsType::PowerSpectrum;
-        this->precompute_spherical_invariants[enumValue(
+        this->precompute_spherical_invariants[enum_value(
             SphericalInvariantsType::PowerSpectrum)] =
             make_spherical_invariants_precompute<
                 SphericalInvariantsType::PowerSpectrum>(hypers);
@@ -282,7 +282,7 @@ namespace rascal {
                      "RadialSpectrum") == 0) {
         this->spherical_invariants_type =
             SphericalInvariantsType::RadialSpectrum;
-        this->precompute_spherical_invariants[enumValue(
+        this->precompute_spherical_invariants[enum_value(
             SphericalInvariantsType::RadialSpectrum)] =
             make_spherical_invariants_precompute<
                 SphericalInvariantsType::RadialSpectrum>(hypers);
@@ -293,7 +293,7 @@ namespace rascal {
                  0) {
         this->spherical_invariants_type =
             internal::SphericalInvariantsType::BiSpectrum;
-        this->precompute_spherical_invariants[enumValue(
+        this->precompute_spherical_invariants[enum_value(
             SphericalInvariantsType::BiSpectrum)] =
             make_spherical_invariants_precompute<
                 SphericalInvariantsType::BiSpectrum>(hypers);
@@ -403,7 +403,7 @@ namespace rascal {
     internal::SphericalInvariantsType spherical_invariants_type{};
     //! collection of precomputation for the different body order
     std::array<std::shared_ptr<internal::SphericalInvariantsPrecomputationBase>,
-               internal::enumSize<internal::SphericalInvariantsType>()>
+               internal::enum_size<internal::SphericalInvariantsType>()>
         precompute_spherical_invariants{};
     std::string spherical_invariants_type_str{};
   };
@@ -441,7 +441,7 @@ namespace rascal {
             StructureManager>;
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
-    using internal::enumValue;
+    using internal::enum_value;
     constexpr static int n_spatial_dimensions = StructureManager::dim();
     using internal::SphericalInvariantsType;
     using math::pow;
@@ -449,7 +449,7 @@ namespace rascal {
     // get the relevant precomputation object and unpack the useful infos
     auto precomputation{downcast_spherical_invariants_precompute<
         SphericalInvariantsType::PowerSpectrum>(
-        this->precompute_spherical_invariants[enumValue(
+        this->precompute_spherical_invariants[enum_value(
             SphericalInvariantsType::PowerSpectrum)])};
     auto & l_factors{precomputation->l_factors};
 
@@ -982,13 +982,13 @@ namespace rascal {
     // CalculatorSphericalExpansion::PropertyGradient_t<StructureManager>;
     using Prop_t = Property_t<StructureManager>;
     // using PropGrad_t = PropertyGradient_t<StructureManager>;
-    using internal::enumValue;
+    using internal::enum_value;
     using internal::SphericalInvariantsType;
     using math::pow;
 
     auto precomputation{downcast_spherical_invariants_precompute<
         SphericalInvariantsType::BiSpectrum>(
-        this->precompute_spherical_invariants[enumValue(
+        this->precompute_spherical_invariants[enum_value(
             SphericalInvariantsType::BiSpectrum)])};
     auto & wigner_w3js{precomputation->wigner_w3js};
 

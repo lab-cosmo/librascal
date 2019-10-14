@@ -242,7 +242,7 @@ namespace rascal {
       if (this->spherical_covariants_type_str.compare("LambdaSpectrum") == 0) {
         this->spherical_covariants_type =
             SphericalCovariantsType::LambdaSpectrum;
-        this->precompute_spherical_covariants[enumValue(
+        this->precompute_spherical_covariants[enum_value(
             SphericalCovariantsType::LambdaSpectrum)] =
             make_spherical_covariants_precompute<
                 SphericalCovariantsType::LambdaSpectrum>(hypers);
@@ -312,7 +312,7 @@ namespace rascal {
     CalculatorSphericalExpansion rep_expansion;
     internal::SphericalCovariantsType spherical_covariants_type{};
     std::array<std::shared_ptr<internal::SphericalInvariantsPrecomputationBase>,
-               internal::enumSize<internal::SphericalCovariantsType>()>
+               internal::enum_size<internal::SphericalCovariantsType>()>
         precompute_spherical_covariants{};
     std::string spherical_covariants_type_str{};
 
@@ -410,7 +410,7 @@ namespace rascal {
     // CalculatorSphericalExpansion::Property_t<StructureManager>;
     using Prop_t = Property_t<StructureManager>;
     // using PropGrad_t = PropertyGradient_t<StructureManager>;
-    using internal::enumValue;
+    using internal::enum_value;
     using internal::SphericalCovariantsType;
     using math::pow;
     using complex = std::complex<double>;
@@ -418,7 +418,7 @@ namespace rascal {
     // get the relevant precomputation object and unpack the useful infos
     auto precomputation{downcast_spherical_covariants_precompute<
         SphericalCovariantsType::LambdaSpectrum>(
-        this->precompute_spherical_covariants[enumValue(
+        this->precompute_spherical_covariants[enum_value(
             SphericalCovariantsType::LambdaSpectrum)])};
     auto & wigner_3js{precomputation->wigner_3js};
 

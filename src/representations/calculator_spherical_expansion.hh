@@ -77,6 +77,17 @@ namespace rascal {
     enum class OptimizationType { Nothing, Interpolator, End_ };
 
     /**
+     * Com
+     */
+    constexpr size_t
+    combine_to_radial_contribution_type(RadialBasisType basis_type,
+                                        AtomicSmearingType smearing_type,
+                                        OptimizationType opt_type) {
+      return internal::combine_enums(
+          basis_type, smearing_type, opt_type);
+    }
+
+    /**
      * Base class for the specification of the atomic smearing.
      */
     struct AtomicSmearingSpecificationBase {
@@ -341,8 +352,7 @@ namespace rascal {
        * without requiring a cluster object os it can be used for benchmarks.
        */
       template <AtomicSmearingType AST>
-      Matrix_t compute_contribution(double distance,
-                                    double sigma) {
+      Matrix_t compute_contribution(double distance, double sigma) {
         using math::PI;
         using math::pow;
         using std::sqrt;
@@ -1219,39 +1229,39 @@ namespace rascal {
         this->optimization_type = OptimizationType::Nothing;
       }
 
-      switch (internal::combineEnums(this->radial_integral_type,
-                                     this->atomic_smearing_type,
-                                     this->optimization_type)) {
-      case internal::combineEnums(RadialBasisType::GTO,
-                                  AtomicSmearingType::Constant,
-                                  OptimizationType::Nothing): {
+      switch (internal::combine_to_radial_contribution_type(
+          this->radial_integral_type, this->atomic_smearing_type,
+          this->optimization_type)) {
+      case internal::combine_to_radial_contribution_type(
+          RadialBasisType::GTO, AtomicSmearingType::Constant,
+          OptimizationType::Nothing): {
         auto rc_shared = std::make_shared<internal::RadialContributionHandler<
             RadialBasisType::GTO, AtomicSmearingType::Constant,
             OptimizationType::Nothing>>(hypers);
         this->radial_integral = rc_shared;
         break;
       }
-      case internal::combineEnums(RadialBasisType::GTO,
-                                  AtomicSmearingType::Constant,
-                                  OptimizationType::Interpolator): {
+      case internal::combine_to_radial_contribution_type(
+          RadialBasisType::GTO, AtomicSmearingType::Constant,
+          OptimizationType::Interpolator): {
         auto rc_shared = std::make_shared<internal::RadialContributionHandler<
             RadialBasisType::GTO, AtomicSmearingType::Constant,
             OptimizationType::Interpolator>>(hypers);
         this->radial_integral = rc_shared;
         break;
       }
-      case internal::combineEnums(RadialBasisType::DVR,
-                                  AtomicSmearingType::Constant,
-                                  OptimizationType::Nothing): {
+      case internal::combine_to_radial_contribution_type(
+          RadialBasisType::DVR, AtomicSmearingType::Constant,
+          OptimizationType::Nothing): {
         auto rc_shared = std::make_shared<internal::RadialContributionHandler<
             RadialBasisType::DVR, AtomicSmearingType::Constant,
             OptimizationType::Nothing>>(hypers);
         this->radial_integral = rc_shared;
         break;
       }
-      case internal::combineEnums(RadialBasisType::DVR,
-                                  AtomicSmearingType::Constant,
-                                  OptimizationType::Interpolator): {
+      case internal::combine_to_radial_contribution_type(
+          RadialBasisType::DVR, AtomicSmearingType::Constant,
+          OptimizationType::Interpolator): {
         auto rc_shared = std::make_shared<internal::RadialContributionHandler<
             RadialBasisType::DVR, AtomicSmearingType::Constant,
             OptimizationType::Interpolator>>(hypers);
@@ -1435,36 +1445,36 @@ namespace rascal {
     using internal::OptimizationType;
     using internal::RadialBasisType;
 
-    switch (internal::combineEnums(this->radial_integral_type,
-                                   this->atomic_smearing_type,
-                                   this->optimization_type)) {
-    case internal::combineEnums(RadialBasisType::GTO,
-                                AtomicSmearingType::Constant,
-                                OptimizationType::Nothing): {
+    switch (internal::combine_to_radial_contribution_type(
+        this->radial_integral_type, this->atomic_smearing_type,
+        this->optimization_type)) {
+    case internal::combine_to_radial_contribution_type(
+        RadialBasisType::GTO, AtomicSmearingType::Constant,
+        OptimizationType::Nothing): {
       this->compute_loop<FcType, RadialBasisType::GTO,
                          AtomicSmearingType::Constant,
                          OptimizationType::Nothing>(managers);
       break;
     }
-    case internal::combineEnums(RadialBasisType::GTO,
-                                AtomicSmearingType::Constant,
-                                OptimizationType::Interpolator): {
+    case internal::combine_to_radial_contribution_type(
+        RadialBasisType::GTO, AtomicSmearingType::Constant,
+        OptimizationType::Interpolator): {
       this->compute_loop<FcType, RadialBasisType::GTO,
                          AtomicSmearingType::Constant,
                          OptimizationType::Interpolator>(managers);
       break;
     }
-    case internal::combineEnums(RadialBasisType::DVR,
-                                AtomicSmearingType::Constant,
-                                OptimizationType::Nothing): {
+    case internal::combine_to_radial_contribution_type(
+        RadialBasisType::DVR, AtomicSmearingType::Constant,
+        OptimizationType::Nothing): {
       this->compute_loop<FcType, RadialBasisType::DVR,
                          AtomicSmearingType::Constant,
                          OptimizationType::Nothing>(managers);
       break;
     }
-    case internal::combineEnums(RadialBasisType::DVR,
-                                AtomicSmearingType::Constant,
-                                OptimizationType::Interpolator): {
+    case internal::combine_to_radial_contribution_type(
+        RadialBasisType::DVR, AtomicSmearingType::Constant,
+        OptimizationType::Interpolator): {
       this->compute_loop<FcType, RadialBasisType::DVR,
                          AtomicSmearingType::Constant,
                          OptimizationType::Interpolator>(managers);
