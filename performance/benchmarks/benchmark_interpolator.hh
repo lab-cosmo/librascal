@@ -470,7 +470,7 @@ namespace rascal {
   template <class Representation_t, class Dataset>
   class SphericalRepresentationBFixture : public InterpolatorBFixture<Dataset> {
    public:
-    //using Representation_t = CalculatorSphericalExpansion;
+    // using Representation_t = CalculatorSphericalExpansion;
     using Manager_t = AdaptorStrict<AdaptorCenterContribution<
         AdaptorNeighbourList<StructureManagerCenters>>>;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
@@ -482,8 +482,8 @@ namespace rascal {
      * @param compute_gradients determines if the SphericalExpansion should be
      * calculate gradients
      */
-    SphericalRepresentationBFixture<Representation_t, Dataset>(bool use_interpolator,
-                                        bool compute_gradients)
+    SphericalRepresentationBFixture<Representation_t, Dataset>(
+        bool use_interpolator, bool compute_gradients)
         : Parent(), use_interpolator{use_interpolator},
           compute_gradients{compute_gradients} {}
 
@@ -598,9 +598,11 @@ namespace rascal {
   };
 
   template <class Dataset>
-  using SphericalExpansionBFixture = SphericalRepresentationBFixture<CalculatorSphericalExpansion, Dataset>;
+  using SphericalExpansionBFixture =
+      SphericalRepresentationBFixture<CalculatorSphericalExpansion, Dataset>;
   template <class Dataset>
-  using SphericalInvariantsBFixture = SphericalRepresentationBFixture<CalculatorSphericalInvariants, Dataset>;
+  using SphericalInvariantsBFixture =
+      SphericalRepresentationBFixture<CalculatorSphericalInvariants, Dataset>;
 
 }  // namespace rascal
 #endif  // PERFORMANCE_BENCHMARKS_BENCHMARK_INTERPOLATOR_HH_

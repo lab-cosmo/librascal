@@ -135,13 +135,12 @@ namespace rascal {
     }
     // TODO(alex) I would like to print interpolator information, but it is
     // covered under a lot of layers, not sure if
-    state.SetComplexityN(fix.max_radial*(fix.max_angular+1));
+    state.SetComplexityN(fix.max_radial * (fix.max_angular + 1));
     state.counters.insert({{"max_radial", fix.max_radial},
                            {"max_angular", fix.max_angular},
                            {"cutoff", fix.cutoff},
                            {"nb_neighbours", fix.nb_neighbours}});
   }
-
 
   template <class BFixture>
   void BM_SphInv(benchmark::State & state, BFixture & fix) {
@@ -151,63 +150,66 @@ namespace rascal {
     }
     // TODO(alex) I would like to print interpolator information, but it is
     // covered under a lot of layers, not sure if
-    state.SetComplexityN(fix.max_radial*(fix.max_angular+1));
+    state.SetComplexityN(fix.max_radial * (fix.max_angular + 1));
     state.counters.insert({{"max_radial", fix.max_radial},
                            {"max_angular", fix.max_angular},
                            {"cutoff", fix.cutoff},
                            {"nb_neighbours", fix.nb_neighbours}});
   }
 
-  // /**
-  //  * Hyp1f1 for the scalar interpolator
-  //  */
-  // auto intp_fix{InterpolatorScalarBFixture<Hyp1f1Dataset>()};
-  // BENCHMARK_CAPTURE(BM_Hyp1f1, , intp_fix)
-  //     ->Apply(AllCombinationsArguments<Hyp1f1Dataset>)
-  //     ->Complexity();
-  // BENCHMARK_CAPTURE(BM_Hyp1f1Intp, , intp_fix)
-  //     ->Apply(AllCombinationsArguments<Hyp1f1Dataset>)
-  //     ->Complexity();
+  /**
+   * Hyp1f1 for the scalar interpolator
+   */
+  auto intp_fix{InterpolatorScalarBFixture<Hyp1f1Dataset>()};
+  BENCHMARK_CAPTURE(BM_Hyp1f1, , intp_fix)
+      ->Apply(AllCombinationsArguments<Hyp1f1Dataset>)
+      ->Complexity();
+  BENCHMARK_CAPTURE(BM_Hyp1f1Intp, , intp_fix)
+      ->Apply(AllCombinationsArguments<Hyp1f1Dataset>)
+      ->Complexity();
 
-  // /**
-  //  * RadialContribution for the matrix interpolator
-  //  */
-  // auto intp_mat_fix{InterpolatorMatrixBFixture<RadialContributionDataset>()};
-  // BENCHMARK_CAPTURE(BM_RadCon, , intp_mat_fix)
-  //     ->Apply(AllCombinationsArguments<RadialContributionDataset>)
-  //     ->Complexity();
-  // BENCHMARK_CAPTURE(BM_RadConIntp, , intp_mat_fix)
-  //     ->Apply(AllCombinationsArguments<RadialContributionDataset>)
-  //     ->Complexity();
+  /**
+   * RadialContribution for the matrix interpolator
+   */
+  auto intp_mat_fix{InterpolatorMatrixBFixture<RadialContributionDataset>()};
+  BENCHMARK_CAPTURE(BM_RadCon, , intp_mat_fix)
+      ->Apply(AllCombinationsArguments<RadialContributionDataset>)
+      ->Complexity();
+  BENCHMARK_CAPTURE(BM_RadConIntp, , intp_mat_fix)
+      ->Apply(AllCombinationsArguments<RadialContributionDataset>)
+      ->Complexity();
 
-  // /**
-  //  * Spherical Expansion without gradient benchmarks
-  //  */
-  // auto sph_expansion_fix =
-  //     SphericalExpansionBFixture<SphericalDataset>(false, false);
-  // BENCHMARK_CAPTURE(BM_Spherical, expansion_no_intp_no_gradient, sph_expansion_fix)
-  //     ->Apply(AllCombinationsArguments<SphericalDataset>)
-  //     ->Complexity();
-  // auto sph_expansion_intp_fix =
-  //     SphericalExpansionBFixture<SphericalDataset>(true, false);
-  // BENCHMARK_CAPTURE(BM_Spherical, expansion_use_intp_no_gradient, sph_expansion_intp_fix)
-  //     ->Apply(AllCombinationsArguments<SphericalDataset>)
-  //     ->Complexity();
+  /**
+   * Spherical Expansion without gradient benchmarks
+   */
+  auto sph_expansion_fix =
+      SphericalExpansionBFixture<SphericalDataset>(false, false);
+  BENCHMARK_CAPTURE(BM_Spherical, expansion_no_intp_no_gradient,
+                    sph_expansion_fix)
+      ->Apply(AllCombinationsArguments<SphericalDataset>)
+      ->Complexity();
+  auto sph_expansion_intp_fix =
+      SphericalExpansionBFixture<SphericalDataset>(true, false);
+  BENCHMARK_CAPTURE(BM_Spherical, expansion_use_intp_no_gradient,
+                    sph_expansion_intp_fix)
+      ->Apply(AllCombinationsArguments<SphericalDataset>)
+      ->Complexity();
 
-  // /**
-  //  * Spherical Expansion with gradient benchmarks
-  //  */
-  // auto sph_expansion_gradient_fix =
-  //     SphericalExpansionBFixture<SphericalDataset>(false, true);
-  // BENCHMARK_CAPTURE(BM_Spherical, expansion_no_intp_comp_gradient, sph_expansion_gradient_fix)
-  //     ->Apply(AllCombinationsArguments<SphericalDataset>)
-  //     ->Complexity();
-  // auto sph_expansion_intp_gradient_fix =
-  //     SphericalExpansionBFixture<SphericalDataset>(true, true);
-  // BENCHMARK_CAPTURE(BM_Spherical, expansion_use_intp_comp_gradient,
-  //                   sph_expansion_intp_gradient_fix)
-  //     ->Apply(AllCombinationsArguments<SphericalDataset>)
-  //     ->Complexity();
+  /**
+   * Spherical Expansion with gradient benchmarks
+   */
+  auto sph_expansion_gradient_fix =
+      SphericalExpansionBFixture<SphericalDataset>(false, true);
+  BENCHMARK_CAPTURE(BM_Spherical, expansion_no_intp_comp_gradient,
+                    sph_expansion_gradient_fix)
+      ->Apply(AllCombinationsArguments<SphericalDataset>)
+      ->Complexity();
+  auto sph_expansion_intp_gradient_fix =
+      SphericalExpansionBFixture<SphericalDataset>(true, true);
+  BENCHMARK_CAPTURE(BM_Spherical, expansion_use_intp_comp_gradient,
+                    sph_expansion_intp_gradient_fix)
+      ->Apply(AllCombinationsArguments<SphericalDataset>)
+      ->Complexity();
 
   /**
    * Spherical Invariants without gradient benchmarks
@@ -219,7 +221,8 @@ namespace rascal {
       ->Complexity();
   auto sph_inv_intp_fix =
       SphericalInvariantsBFixture<SphericalDataset>(true, false);
-  BENCHMARK_CAPTURE(BM_Spherical, invariant_use_intp_no_gradient, sph_inv_intp_fix)
+  BENCHMARK_CAPTURE(BM_Spherical, invariant_use_intp_no_gradient,
+                    sph_inv_intp_fix)
       ->Apply(AllCombinationsArguments<SphericalDataset>)
       ->Complexity();
 

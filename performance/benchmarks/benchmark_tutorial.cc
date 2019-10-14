@@ -62,6 +62,8 @@ namespace rascal {
 
       // initialize
       json data = Dataset::data();
+      // lookup takes the indices inside the state and gets parameter x from
+      // dataset at these indices
       this->x = this->template lookup<int>(data, "x", state);
       this->name = this->template lookup<std::string>(data, "name", state);
 
