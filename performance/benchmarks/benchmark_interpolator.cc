@@ -33,23 +33,24 @@ namespace rascal {
   template <class BFixture>
   void bm_hyp1f1(benchmark::State & state, BFixture & fix) {
     fix.setup(state);
-    // to prevent optimization we copy the results
+
     Vector_t tmp = Vector_t::Zero(fix.ref_points.size());
     for (auto _ : state) {
-      for (size_t i{0}; i < fix.nb_iterations; i++) {
-        tmp(i % fix.ref_points.size()) =
-            fix.func(fix.ref_points(i % fix.ref_points.size()));
-      }
       /**
-       * Alternatively the DoNotOptimize function can be used, however I am
-       * not sure how much is not optimized. One gets results deviating by
-       * around 10%.
+       * To prevent that this step is optimized away from the compiler we copy
+       * the results to some temporary, the DoNotOptimize function can be used
+       * alternatively, however I am not sure how much is not optimized. One
+       * gets results deviating by around 10%.
        *
        * for (size_t i{0}; i < fix.nb_iterations; i++) {
        *  benchmark::DoNotOptimize(
        *      fix.func(fix.ref_points(i % fix.ref_points.size())));
        *}
        */
+      for (size_t i{0}; i < fix.nb_iterations; i++) {
+        tmp(i % fix.ref_points.size()) =
+            fix.func(fix.ref_points(i % fix.ref_points.size()));
+      }
     }
     state.SetComplexityN(fix.nb_iterations);
     state.counters.insert({{"nb_iterations", fix.nb_iterations}});
@@ -59,10 +60,11 @@ namespace rascal {
   template <class BFixture>
   void bm_hyp1f1_intp(benchmark::State & state, BFixture & fix) {
     fix.setup(state);
-    // to prevent optimization
     Vector_t tmp = Vector_t::Zero(fix.ref_points.size());
     for (auto _ : state) {
       for (size_t i{0}; i < fix.nb_iterations; i++) {
+        // To prevent that this step is optimized away from the compiler we copy
+        // the results to some temporary.
         tmp(i % fix.ref_points.size()) =
             fix.intp->interpolate(fix.ref_points(i % fix.ref_points.size()));
       }
@@ -86,7 +88,7 @@ namespace rascal {
 
   // Benchmark for RadialContribution without interpolator
   template <class Fix>
-  void BM_RadCon(benchmark::State & state, Fix & fix) {
+  void bm_radial_contr(benchmark::State & state, Fix & fix) {
     fix.setup(state);
     Matrix_t tmp = Matrix_t::Zero(fix.max_radial, fix.max_angular + 1);
     for (auto _ : state) {
@@ -99,7 +101,7 @@ namespace rascal {
 
   // Benchmark for RadialContribution with interpolator
   template <class BFixture>
-  void bm_radcon_intp(benchmark::State & state, BFixture & fix) {
+  void bm_radial_contr_intp(benchmark::State & state, BFixture & fix) {
     fix.setup(state);
     // to prevent optimization
     Matrix_t tmp = Matrix_t::Zero(fix.max_radial, fix.max_angular + 1);
@@ -143,21 +145,6 @@ namespace rascal {
                            {"nb_neighbours", fix.nb_neighbours}});
   }
 
-  template <class BFixture>
-  void BM_SphInv(benchmark::State & state, BFixture & fix) {
-    fix.setup(state);
-    for (auto _ : state) {
-      fix.representation_ptr->compute(fix.manager);
-    }
-    // TODO(alex) I would like to print interpolator information, but it is
-    // covered under a lot of layers, not sure if
-    state.SetComplexityN(fix.max_radial * (fix.max_angular + 1));
-    state.counters.insert({{"max_radial", fix.max_radial},
-                           {"max_angular", fix.max_angular},
-                           {"cutoff", fix.cutoff},
-                           {"nb_neighbours", fix.nb_neighbours}});
-  }
-
   /**
    * Hyp1f1 for the scalar interpolator
    */
@@ -173,10 +160,10 @@ namespace rascal {
    * RadialContribution for the matrix interpolator
    */
   auto intp_mat_fix{InterpolatorMatrixBFixture<RadialContributionDataset>()};
-  BENCHMARK_CAPTURE(BM_RadCon, , intp_mat_fix)
+  BENCHMARK_CAPTURE(bm_radial_contr, , intp_mat_fix)
       ->Apply(all_combinations_of_arguments<RadialContributionDataset>)
       ->Complexity();
-  BENCHMARK_CAPTURE(bm_radcon_intp, , intp_mat_fix)
+  BENCHMARK_CAPTURE(bm_radial_contr_intp, , intp_mat_fix)
       ->Apply(all_combinations_of_arguments<RadialContributionDataset>)
       ->Complexity();
 

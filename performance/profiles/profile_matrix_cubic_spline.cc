@@ -1,5 +1,5 @@
 /**
- * file  profile_matrix_cubic_spline.hh
+ * file  profile_matrix_cubic_spline.cc
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
@@ -28,13 +28,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <chrono>
-
 #include "json.hpp"
 #include "json_io.hh"
 #include "profile_utility.hh"
 #include "math/interpolator.hh"
 #include "representations/calculator_spherical_expansion.hh"
+
+#include <chrono>
 
 static constexpr int N_REPETITIONS = 200;
 static unsigned int SEED = 1597463007;
@@ -54,13 +54,13 @@ int main() {
   int max_radial{3};
   int max_angular{max_radial};
   json fc_hypers{{"type", "Constant"},
-                 {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}};
+                 {"gaussian_sigma", {{"value", 0.5}, {"unit", "AA"}}}};
   json hypers{
       {"gaussian_density", fc_hypers},
       {"max_radial", max_radial},
       {"max_angular", max_angular},
       {"compute_gradients", true},
-      {"cutoff_function", {{"cutoff", {{"value", 2.0}, {"unit", "A"}}}}}};
+      {"cutoff_function", {{"cutoff", {{"value", 2.0}, {"unit", "AA"}}}}}};
   auto radial_contr =
       internal::RadialContribution<internal::RadialBasisType::GTO>(hypers);
   std::function<Matrix_t(double)> func = [&radial_contr](double x) {

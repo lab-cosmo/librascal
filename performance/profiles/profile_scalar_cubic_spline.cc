@@ -28,13 +28,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <chrono>
-
 #include "json.hpp"
 #include "json_io.hh"
 #include "profile_utility.hh"
 #include "math/interpolator.hh"
 #include "math/hyp1f1.hh"
+
+#include <chrono>
 
 static constexpr int N_REPETITIONS = 200;
 static unsigned int SEED = 1597463007;

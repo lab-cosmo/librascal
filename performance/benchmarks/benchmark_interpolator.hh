@@ -453,7 +453,7 @@ namespace rascal {
 
     void init_function(const ::benchmark::State & state, const json & data) {
       switch (this->func_name) {
-      // This case uses the RadialContribution class as comparisment and can
+      // This case uses the RadialContribution class as comparison and can
       // therefore directly be computed for different distances
       case SupportedVecFunc::RadialContribution:
         this->init_radial_contribution_function(state, data);

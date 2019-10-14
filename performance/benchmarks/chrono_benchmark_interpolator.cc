@@ -1,11 +1,11 @@
 /**
- * file  chrono_benchmark_interpolator.hh
+ * file  chrono_benchmark_interpolator.cc
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
  * @date   22 August 2019
  *
- * @brief Benchmarks the interpolator using chrono, main usage for comparisment
+ * @brief Benchmarks the interpolator using chrono, main usage for comparison
  *        with google benchmarks, but also includes additional benchmarks for
  *        overhead estimation.
  *
@@ -38,7 +38,7 @@ using namespace rascal::math;      // NOLINT
 using namespace rascal::internal;  // NOLINT
 
 /* The number of repetitions to repeat the interpolation method for a number of
- * iterations. For the initialization process we only use one repititon, because
+ * iterations. For the initialization process we only use one repetiton, because
  * it takes comparatively long.
  */
 static constexpr int N_REPETITIONS = 100;
@@ -151,7 +151,7 @@ int main() {
    *
    * this benchmark uses parameters for the radial contribution which
    * make the radial contribution to a scalar function ℝ->ℝ by returning
-   * a 1x1 dimensional matrix. It is used for comparisment with the scalar
+   * a 1x1 dimensional matrix. It is used for comparison with the scalar
    * interpolator.
    */
 
@@ -238,7 +238,7 @@ int main() {
    *
    * This benchmark uses more realistic values for max_radial and max_angular
    * resulting in a function which outputs a matrix and not a scalar version.
-   * It is used to for comparisment with the vector interpolator
+   * It is used to for comparison with the vector interpolator
    *
    */
 

@@ -41,11 +41,13 @@ namespace rascal {
   };
 
   /**
-   * We have the name convention to call fixtures in the benchmarks BFixture to
-   * potential prevent collision with the tests. All new BFixture should inherit
-   * from BaseBFixture to eget a lookup table for the data json string in the
-   * Dataset template parameter. Since a json does have no deterministic order,
-   * a map has to build from json index
+   * We have the naming convention to call fixtures in the benchmarks BFixture
+   * to potential prevent collision with the tests. All new BFixtures should
+   * inherit from `BaseBFixture` to inherit a lookup table for the json
+   * keys in the data json in the Dataset template parameter e.g. "x" and "name"
+   * in the `SampleData`. According to the json standard a json does have no
+   * deterministic order, therefore a map has to be built, mapping the json
+   * keys to the correct position when accesing the json with an index.
    */
   template <typename Dataset>
   class MyBFixture : public BaseBFixture<Dataset> {
@@ -90,34 +92,34 @@ namespace rascal {
   }
 
   /**
-   * The `all_combinations_of_arguments` function is used to produce all combinations
-   * from the parameters included in a `Dataset` structure. The parameters are
-   * accessible in the benchmark function with the benchmark state. However, the
-   * google benchmark library only allows to give indices as parameters.
-   * Therefore only combinations of indices are accessible from the benchmark
-   * state. Furthermore, since a json does have no deterministic order, we
-   * cannot directly use the indices to access the data in the json string. A
-   * map has to build from json string, to the index inside the json object.
-   * This is done in the BaseBFixture. Inside a Fixture class the lookup
-   * function can be used with the json data, the state and the targeted
-   * property to access it at the right index.
+   * The `all_combinations_of_arguments` function is used to produce all
+   * combinations from the parameters included in a `Dataset` structure. The
+   * parameters are accessible in the benchmark function with the benchmark
+   * state. However, the google benchmark library only allows to give indices as
+   * parameters. Therefore only combinations of indices are accessible from the
+   * benchmark state. Furthermore, since a json does not have a deterministic
+   * order by standard, we cannot directly use the indices to access the data in
+   * the json. A map has to be built from the json key to the correct position
+   * when accessing the json with an index. This is done in the `BaseBFixture`.
+   * Inside the `BaseBFixture class the `lookup` function can be used with the
+   * data json, the state and the targeted property to access it at the correct
+   * position.
    */
   auto myfix{MyBFixture<SampleData>()};
-  BENCHMARK_CAPTURE(bm_example, , myfix)
+  BENCHMARK_CAPTURE(bm_example, /* some_name_if_wanted */, myfix)
       ->Apply(all_combinations_of_arguments<SampleData>);
-  // we skip naming the benchmark here, to give the benchmark some_name use
-  // BENCHMARK_CAPTURE(bm_example, some_name, myfix)
 
   /**
-   * This benchmark should make clear how the different depth of iterations work
-   * in google benchmark there are benchmark_repetitions which can be given when
-   * executing the executable. This parameter controls how often the benchmark
-   * is executed. In addition there are two additional parameters controlling
-   * the number of execution. There is a hidden parameter which controls how
-   * often a benchmark is executed for per repitition and there is the number of
-   * iterations controlling how often the for loop on the state is executed.
-   * These two hidden parameters can be manipulated implicitly with the
-   * benchmark_min_time flag, but google benchmark itself handles how the time
+   * This benchmark should make clear how the different depths of iterations
+   * work in google benchmark there is the `benchmark_repetitions` flag which
+   * can be given when executing the benchmark. This parameter controls how
+   * often each benchmark function is invoked. There are two more non-accessible
+   * parameters controlling the number of invokes of a benchmark function. One
+   * controls how often a benchmark is executed per repetition. Simply put, this
+   * parameter is an additional repetiton of the benchmark function. The other
+   * parameter controls the number of iterations inside the for-loop on the
+   * state. These two hidden parameters can be manipulated implicitly with the
+   * `benchmark_min_time` flag, but google benchmark itself handles how the time
    * changes the two parameters. To understand this better, please execute this
    * benchmark multiple times with different values.
    */
@@ -136,9 +138,9 @@ namespace rascal {
   }
 
   /**
-   * RangeMultiplier is the exponential base for all Ranges given later. The
-   * first parameter 1 << 10 results in parameters (1,2,4,8), the second
-   * (1,2,4,8,16)
+   * `RangeMultiplier` is the exponential base for all ranges given later by
+   * `Range` or `Ranges`. The first parameter 1 << 10 results in parameters
+   * (1,2,4,8), the second (1,2,4,8,16)
    */
   BENCHMARK(BM_StringCompare)->RangeMultiplier(2)->Range(1 << 10, 1 << 18);
 

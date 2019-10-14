@@ -5,8 +5,8 @@
  *
  * @date   22 August 2019
  *
- * @brief contains structures and functions to allow usage of a simplified
- *        usage of flexible benchmarks
+ * @brief contains structures and functions to extend the usage of google
+ *        benchmarks
  *
  * Copyright  2019 Alexander Goscinski, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -42,7 +42,7 @@
 
 namespace rascal {
   /* Helper function to create all tuple combinations between the vectors of
-   * integers in arglists.
+   * integers in `arglists`.
    * ranges. The beginning of the range is always 0, therefore only the ending
    * of the range is given as argument.
    *
@@ -59,7 +59,7 @@ namespace rascal {
    */
   std::vector<std::vector<int64_t>>
   combinations(std::vector<std::vector<int64_t>> arglists) {
-    std::size_t total = 1;
+    std::size_t total{1};
     for (std::size_t i = 0; i < arglists.size(); i++) {
       total *= arglists[i].size();
     }
@@ -97,8 +97,16 @@ namespace rascal {
    * Note:
    * GBenchmark offers a functionality doing this with benchmarks using
    * `Ranges`, but the arguments can only be given as a range with exponential
-   * step function. We would need a combinatiorial `DenseRange`, which has a
-   * linear step function, but is only offered for argument `Range`
+   * step function. We need a combinatiorial `DenseRange`, which has a
+   * linear step function, but is only offered for argument `Range`:
+   *
+   *     BENCHMARK(BM_example)->Ranges({{2, 4}, {128, 512}})
+   *
+   * which invokes BM_example with all combinations of the two ranges with
+   * exponential step function Range(2,4)=[2,4] and Range(128,512)=[128, 256,
+   * 512] namely [(2,128),(2,256),(2,512),(4,128),(4,256),(4,512)],
+   * but a corresponding functionality for `DenseRange` with a linear step
+   * function does not exist.
    */
   template <class Dataset>
   void all_combinations_of_arguments(benchmark::internal::Benchmark * b) {
@@ -108,6 +116,11 @@ namespace rascal {
     // We have to count backwards to keep the order in the benchmark as in the
     // json string, because the GBenchmark internal function creates the
     // combinations backwards.
+
+    // e.g. for
+    // static json data = {{"a", {1, 2, 3}},
+    //                     {"b", {"crystal.json", "cube.json"}}};
+    // nbs_args = [[0,1,2], [0,1]]
     size_t i{0};
     for (auto value : data) {
       std::vector<int64_t> args(value.size());
@@ -122,23 +135,24 @@ namespace rascal {
   }
 
   /**
-   * Gives utilities to access the json data in the `Dataset` structure with
-   indices given by the benchmark state. Since a json is an undordered
-   collection of data, when it is iterated through the json to produce the
-   indices for the state object, the indices do not necessary correspond to the
-   order in the json string e.g. for a data structure of the form
+   * Provides utilities to access the json data in the `Dataset` structure with
+   * indices given by the benchmark state. According the json standard a json is
+   * an unordered collection of data. Therefore the memory position does not
+   * necessary correspond to the order when declaring the json e.g. for a data
+   * structure of the form
    *
-      static json data = {
-        {"x", {1, 2, 3}},
-        {"name", {"crystal.json", "cube.json"}}};
+   *  static json data = {
+   *    {"x", {1, 2, 3}},
+   *    {"name", {"crystal.json", "cube.json"}}};
    *
-   * There is no guarantee what at position "x" is at the first position.
-   Therefore, when generating the indices for the state, the resulting indices
-   could be
+   * There is no guarantee that the key "x" is at data[0], because json does not
+   * have deterministic order by standard. Therefore, when generating the
+   * indices for the state, the resulting indices could be
    *
    * state.range = {{0,1,2},{0,1}} or {{0,1},{0,1,2}}
    *
-   * This base fixture handles this by creating a map from json string to index.
+   * This base class handles this issue by creating a map from the json keys to
+   * position indices.
    *
    * For {{0,1,2},{0,1}} state_range_index_to_key = {("x",0),("name",1)}
    * For {{0,1},{0,1,2}} state_range_index_to_key = {("x",1),("name",0)}
@@ -150,8 +164,6 @@ namespace rascal {
       json data = Dataset::data();
       this->build_state_range_index_to_key(data);
     }
-    // We have do this with an iterator of the json file because it does not
-    // perserve the insert order.
     void build_state_range_index_to_key(json & data) {
       int64_t i{0};
       for (json::iterator it = data.begin(); it != data.end(); ++it) {
