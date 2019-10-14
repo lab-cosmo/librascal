@@ -124,39 +124,64 @@ namespace rascal {
 
     //! get the underlying value of the enum
     template <typename Enum>
-    constexpr size_t enumValue(Enum e) {
+    constexpr size_t enum_value(Enum e) {
       return static_cast<size_t>(e);
     }
 
     //! compute the length of the enum assuming the last element is End_
     template <typename Enum>
-    constexpr size_t enumSize() {
-      return enumValue(Enum::End_);
+    constexpr size_t enum_size() {
+      return enum_value(Enum::End_);
     }
 
-    //! combine 2 enum into a new integer making sure types are properly
-    //! provided
-    // template <typename Enum1, typename Enum2>
-    // struct CombineEnums {
-    //   constexpr size_t operator()(Enum1 e1, Enum2 e2) {
-    //     return enumValue(e1) * enumSize<Enum2>() + enumValue(e2);
-    //   }
-    // };
-    // the above code does not compile with gcc 5 and 6 (4 and 7 works though)
-    // and clang has no problem. it has to do with the implementation of the
-    // standard see for more details
-    // https://stackoverflow.com/questions/16493652/constexpr-not-working-if-the-function-is-declared-inside-class-scope
-    // // NOLINT
+    /**
+     * Combines two or three enum into a new integer making sure types are
+     * properly provided by mapping the enums values to a unique integer as long
+     * as the order of the enum types stays the same. Requires that the enum
+     * classes have End_ enum type at the end. For example for the enums
+     *
+     *   Enum1 = { 0, 1, End_}
+     *   Enum2 = { 0, 1, 2, End_}
+     *   Enum3 = { 0, 1, End_}
+     *
+     * enum value tuple  ->  combined key
+     *    (0,0,0)               0
+     *    (1,0,0)               1
+     *    (0,1,0)               2
+     *    (1,1,0)               3
+     *    (0,2,0)               4
+     *    (1,2,0)               5
+     *    (0,0,1)               6
+     *    (1,0,1)               7
+     *    (0,1,1)               8
+     *    (1,1,1)               9
+     *    (0,2,1)              10
+     *    (1,2,1)              11
+     *
+     * Note why not in struct:
+     *   template <typename Enum1, typename Enum2>
+     *   struct CombineEnums {
+     *     constexpr size_t operator()(Enum1 e1, Enum2 e2) {
+     *       return enum_value(e1) * enum_size<Enum2>() + enum_value(e2);
+     *     }
+     *   };
+     *
+     * the above code does not compile with gcc 5 and 6 (4 and 7 works though)
+     * and clang has no problem. it has to do with the implementation of the
+     * standard see for more details
+     * https://stackoverflow.com/questions/16493652/constexpr-not-working-if-the-function-is-declared-inside-class-scope
+     * // NOLINT
+     */
     template <typename Enum1, typename Enum2>
-    constexpr size_t combineEnums(Enum1 e1, Enum2 e2) {
-      return enumValue(e1) + enumSize<Enum1>() * enumValue(e2);
+    constexpr size_t combine_enums(Enum1 e1, Enum2 e2) {
+      return enum_value(e1) + enum_size<Enum1>() * enum_value(e2);
     }
 
     template <typename Enum1, typename Enum2, typename Enum3>
-    constexpr size_t combineEnums(Enum1 e1, Enum2 e2, Enum3 e3) {
-      return enumValue(e1) +
-             enumSize<Enum1>() *
-                 (enumValue(e2) + enumSize<Enum2>() * enumValue(e3));
+    constexpr size_t combine_enums(Enum1 e1, Enum2 e2, Enum3 e3) {
+      return enum_value(e1) +
+             enum_size<Enum1>() *
+                 (enum_value(e2) + enum_size<Enum2>() * enum_value(e3));
     }
 
     /* ---------------------------------------------------------------------- */
