@@ -153,26 +153,27 @@ namespace rascal {
         error = compute_intp_error<AbsoluteErrorMethod>(intp, func, ref_points);
         BOOST_CHECK_LE(error, Fix::error_bound);
 
-        // The following conditions do not necessary have to be fulfilled, but
-        // an error here could point out a bug in the interpolator or question
-        // the sanity of it or be because the derivative function does not agree
-        // with the function. For an unfulfillde condition the error should be
-        // at least be comparatively small.
+        // Checks if using the interpolators derivative intp' is at least as
+        // accurate as using finite methods with the interpolators function intp
+        // or if they are close. This condition should be always fulfilled.
 
-        // Checks if using the interpolators derivative is at least as accurate
-        // as using finite methods with the interpolators function or if they
-        // are close. This condition should be always fulfilled.
+        // error of using intp'(x_i)
         intp_error = compute_intp_derivative_error<AbsoluteErrorMethod>(
             intp, derivative_func, ref_points);
+        // error of using ( intp(x_{i+1})-intp(x_i) ) / ( x_{i+1} - x_i )
         finite_diff_error = compute_intp_finite_diff_error<AbsoluteErrorMethod>(
             intp, derivative_func, ref_points);
-        BOOST_CHECK((finite_diff_error - intp_error) >= 0 ||
-                    std::abs(finite_diff_error - intp_error) < tol);
+        BOOST_CHECK((finite_diff_error - intp_error) > -tol);
         if (verbose) {
           std::cout << "Interpolator derivative compared to interpolator "
                        "function finite method error on test grid: "
-                    << std::abs(finite_diff_error - intp_error) << std::endl;
+                    << finite_diff_error - intp_error << std::endl;
         }
+
+        // The following conditions do not necessary have to be fulfilled, but
+        // an error here could point out a bug in the interpolator or question
+        // the sanity of it. For an unfulfilled condition the error should be
+        // at least be comparatively small.
 
         // Checks if derivative holds for a slightly higher error bound. Since
         // the order of the error does not increase, it should be close to the
@@ -237,7 +238,9 @@ namespace rascal {
       }
 
       // Checks if interpolator satisfies the given error bound. This condition
-      // should be always fulfilled.
+      // should be always achieved. The error_bound for the exp function is not
+      // completely achieved therefore the 2* factor. Since the intepolator only
+      // estimates an error this is still within a reasonable result.
       error = compute_intp_error<RelativeErrorMethod>(intp, func, ref_points);
       BOOST_CHECK_LE(error, 2 * Fix::error_bound);
     }
