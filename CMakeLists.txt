@@ -72,7 +72,7 @@ set(BUILD_EXAMPLES "ON" CACHE BOOL
   "If on, the examples will be built.")
 
 set(BUILD_BENCHMARKS "OFF" CACHE BOOL
-  "If on, the google benchmark will be built.")
+  "If on, the benchmarks will be built.")
 
 set(BUILD_PROFILES "OFF" CACHE BOOL
   "If on, the profile files will be built.")
@@ -99,6 +99,7 @@ message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
 ########## COMPILATION FLAGS ##########
 add_compile_options(-Wall -Wextra)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 # to avoid conflicts with built-in functions
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
 
@@ -147,9 +148,13 @@ add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 
 # Integrate google benchmark
 if(${BUILD_BENCHMARKS})
+  # removes the Weffc++ from the compilation of the benchmarks
+  string(REPLACE "-Weffc++" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
   find_package(Threads REQUIRED)
-  add_external_package(benchmark VERSION 1.5.0 CONFIG)
-  set(RUN_BENCHMARKS_FLAGS "" CACHE 
+  add_external_package(benchmark VERSION 1.5.0 CONFIG)  
+
+  set(RUN_BENCHMARKS_FLAGS "" CACHE
       "Additional flags to run all benchmarks. See ./benchmark_interpolator"
       "--help for available flags")
   mark_as_advanced(RUN_BENCHMARKS_FLAGS)
@@ -162,8 +167,8 @@ if(${BUILD_BENCHMARKS})
     target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
     target_link_libraries(${binaryname} Threads::Threads)
     target_link_libraries(${binaryname} benchmark)
+    set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations" )
   endforeach(binaryfile ${binaries})
-
   # Runs all benchmarks in succession, add new benchmarks with a new COMMAND
 
   add_custom_target(
@@ -172,6 +177,9 @@ if(${BUILD_BENCHMARKS})
                          --benchmark_counters_tabular=true
                          ${RUN_BENCHMARKS_FLAGS}
     )
+
+  # puts the Weffc++ flag back to the compilation process
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
 endif(${BUILD_BENCHMARKS})
 
 if(${BUILD_PROFILES})
