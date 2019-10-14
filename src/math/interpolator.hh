@@ -964,17 +964,10 @@ namespace rascal {
        */
       InterpolatorScalarUniformCubicSpline<RefinementMethod, ErrorMethod_>(
           std::function<double(double)> function, double x1, double x2,
-          double error_bound)
-          : Parent(x1, x2, error_bound), function{function},
-            clamped_boundary_conditions{false}, dfx1{0}, dfx2{0} {
-        this->initialize_iteratively();
-      }
-
-      InterpolatorScalarUniformCubicSpline<RefinementMethod, ErrorMethod_>(
-          std::function<double(double)> function, double x1, double x2,
-          double error_bound, int max_grid_points,
-          int initial_degree_of_fineness, bool clamped_boundary_conditions,
-          double dfx1, double dfx2)
+          double error_bound, int max_grid_points = 100000,
+          int initial_degree_of_fineness = 5,
+          bool clamped_boundary_conditions = false, double dfx1 = 0,
+          double dfx2 = 0)
           : Parent{x1, x2, error_bound, max_grid_points,
                    initial_degree_of_fineness},
             function{function},
@@ -1211,10 +1204,49 @@ namespace rascal {
        */
       InterpolatorMatrixUniformCubicSpline<RefinementMethod, ErrorMethod_>(
           std::function<Matrix_t(double)> function, double x1, double x2,
-          double error_bound, int cols, int rows)
-          : Parent(x1, x2, error_bound), function{function}, cols{cols},
-            rows{rows}, matrix_size{cols * rows},
-            clamped_boundary_conditions{false}, dfx1{0}, dfx2{0} {
+          double error_bound, int cols, int rows, int max_grid_points = 100000,
+          int initial_degree_of_fineness = 5,
+          bool clamped_boundary_conditions = false, double dfx1 = 0,
+          double dfx2 = 0)
+          : Parent{x1, x2, error_bound, max_grid_points,
+                   initial_degree_of_fineness},
+            function{function}, cols{cols}, rows{rows}, matrix_size{cols *
+                                                                    rows},
+            clamped_boundary_conditions{clamped_boundary_conditions},
+            dfx1{dfx1}, dfx2{dfx2} {
+        if (clamped_boundary_conditions) {
+          throw std::logic_error("InterpolatorMatrixUniformCubicSpline has "
+                                 "not been implemented for "
+                                 "clamped_boundary_conditions=true");
+        }
+        this->initialize_iteratively();
+      }
+
+      /**
+       * Allows initialization of interpolator with scalar function
+       * interpreting it as matrix of shape (1,1)
+       */
+      InterpolatorMatrixUniformCubicSpline<RefinementMethod, ErrorMethod_>(
+          std::function<double(double)> function, double x1, double x2,
+          double error_bound, int max_grid_points = 100000,
+          int initial_degree_of_fineness = 5,
+          bool clamped_boundary_conditions = false, double dfx1 = 0,
+          double dfx2 = 0)
+          : Parent{x1, x2, error_bound, max_grid_points,
+                   initial_degree_of_fineness},
+            cols{1}, rows{1}, matrix_size{1},
+            clamped_boundary_conditions{clamped_boundary_conditions},
+            dfx1{dfx1}, dfx2{dfx2} {
+        if (clamped_boundary_conditions) {
+          throw std::logic_error("InterpolatorMatrixUniformCubicSpline has not "
+                                 "been implemented for "
+                                 "clamped_boundary_conditions=true");
+        }
+        this->function = [function](double x) {
+          Matrix_t mat(1, 1);
+          mat << function(x);
+          return mat;
+        };
         this->initialize_iteratively();
       }
 
@@ -1222,13 +1254,14 @@ namespace rascal {
        * Constructor using a grid to initialize the interpolator in one step
        * interpolating a function of the form f:[x1,x2]->ℝ^{cols, rows}
        *
-       * @param grid a uniform grid in the range [x1,x2] with x1 and x2 as start
+       * @param grid a uniform grid in the range [x1,x2] with x1 and x2 as
+       * start
        * @param evaluated_grid the grid evaluated by the function referred as
        * f(grid) with shape (grid_size, cols*rows)
        * @param cols
        * @param rows
-       * @param clamped_boundary_conditions By default the cubic spline uses the
-       *        natural boundary conditions, but if f'(x1) and f'(x2) are known,
+       * @param clamped_boundary_conditions By default the cubic spline uses
+       * the natural boundary conditions, but if f'(x1) and f'(x2) are known,
        *        the clamped boundary conditions can be turned on, which can
        *        increase the accuracy of the interpolation.
        * @param dfx1 referring to f'(x1)
@@ -1273,8 +1306,8 @@ namespace rascal {
       }
 
       /**
-       * Interpolation of the derivative at point x for an function of the form
-       * f:ℝ->ℝ^{n,m}.
+       * Interpolation of the derivative at point x for an function of the
+       * form f:ℝ->ℝ^{n,m}.
        *
        * @param x point to be interpolated within range [x1,x2]
        * @return interpolation of point x, estimation of f'(x)
@@ -1429,8 +1462,8 @@ namespace rascal {
       int matrix_size{0};
       /**
        * If the first derivative of the function at the boundary points is
-       * known, one can initialize the interpolator with these values to obtain
-       * a higher accuracy with the interpolation method.
+       * known, one can initialize the interpolator with these values to
+       * obtain a higher accuracy with the interpolation method.
        */
       bool clamped_boundary_conditions{false};
       // f'(x1)
