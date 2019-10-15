@@ -180,7 +180,7 @@ namespace rascal {
     ~MultipleStructureManagerCentersFixture() = default;
 
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        // "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
 
@@ -219,7 +219,7 @@ namespace rascal {
 
     const bool consider_ghost_neighbours{false};
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        // "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{1., 2., 3.}};
@@ -264,7 +264,7 @@ namespace rascal {
 
     const bool consider_ghost_neighbours{false};
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        // "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{1., 2., 3.};
@@ -342,7 +342,7 @@ namespace rascal {
     ~MultipleStructureManagerNLStrictFixture() = default;
     const bool consider_ghost_neighbours{false};
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        // "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{2., 3.};
@@ -390,7 +390,7 @@ namespace rascal {
     ~MultipleStructureManagerNLCCStrictFixture() = default;
     const bool consider_ghost_neighbours{false};
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        // "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{2., 3.}};
@@ -458,7 +458,7 @@ namespace rascal {
 
     const std::vector<bool> consider_ghost_neighbours_list{{false, true}};
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        // "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
 
