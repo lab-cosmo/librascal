@@ -1059,7 +1059,7 @@ namespace rascal {
     // go through all atoms and/or ghosts to build neighbour list, depending on
     // the runtime decision flag
     std::vector<int> current_j_atoms{};
-    for (auto center : this->get_manager().with_ghosts()) {
+    for (auto center : this->get_manager()) {
       int atom_tag = center.get_atom_tag();
       int nneigh{0};
 
@@ -1074,6 +1074,12 @@ namespace rascal {
         this->neighbours_atom_tag.push_back(j_atom_tag);
       }
 
+      this->nb_neigh.push_back(nneigh);
+    }
+
+    // TODO(markus): this is a quick fix!
+    for (auto center : this->get_manager().only_ghosts()) {
+      int nneigh{0};
       this->nb_neigh.push_back(nneigh);
     }
   }
