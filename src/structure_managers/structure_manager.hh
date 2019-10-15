@@ -1015,31 +1015,16 @@ namespace rascal {
       return this->it.get_manager();
     }
     //! start of the iteration over the cluster itself
-    template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
     inline iterator begin() {
       std::array<size_t, Order> counters{this->it.get_counters()};
       auto offset = this->get_manager().get_offset(counters);
-      return iterator(*this, 0, offset);
-    }
-
-    /**
-     * start of the iteration over the cluster itself.
-     *
-     * Special case when HasCenterPair == true and Order == 1. The default
-     * iteration in this case does not include the ii-pair by starting at 1
-     * since the ii-pair is the first element.
-     * To include the ii-pair to the iteration use .with_self_pair()
-     */
-    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
-    inline iterator begin() {
-      std::array<size_t, Order> counters{this->it.get_counters()};
-      auto offset = this->get_manager().get_offset(counters);
-      return iterator(*this, 1, offset);
+      return iterator(*this, int(HasCenterPairOrderOne), offset);
     }
 
     //! end of the iterations over the cluster itself
     inline iterator end() {
-      return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
+      return iterator(*this, this->size() + int(HasCenterPairOrderOne),
+                      std::numeric_limits<size_t>::max());
     }
 
     /**
@@ -1178,12 +1163,12 @@ namespace rascal {
    * shared_ptr to loop over the centers.
    */
   template <typename T>
-  auto inline begin(std::shared_ptr<T> ptr) -> typename T::iterator {
+  auto inline begin(std::shared_ptr<T> & ptr) -> typename T::iterator {
     return ptr->begin();
   }
 
   template <typename T>
-  auto inline end(std::shared_ptr<T> ptr) -> typename T::iterator {
+  auto inline end(std::shared_ptr<T> & ptr) -> typename T::iterator {
     return ptr->end();
   }
 

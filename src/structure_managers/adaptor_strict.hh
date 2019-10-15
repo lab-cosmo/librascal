@@ -92,7 +92,7 @@ namespace rascal {
     using Distance_t = typename This::template Property_t<double, 2, 1>;
     using DirectionVector_t = typename This::template Property_t<double, 2, 3>;
 
-    static_assert(traits::MaxOrder > 1,
+    static_assert(traits::MaxOrder == 2,
                   "ManagerImlementation needs to handle pairs");
     constexpr static auto AtomLayer{
         Manager_t::template cluster_layer_from_order<1>()};
@@ -140,6 +140,7 @@ namespace rascal {
 
     inline size_t get_nb_clusters(int order) const {
       assert(order > 0);
+      assert(order <= 2);
       return this->atom_tag_list[order - 1].size();
     }
 
@@ -419,7 +420,7 @@ namespace rascal {
 
     double rc2{this->cutoff * this->cutoff};
 
-    for (auto atom : this->manager) {
+    for (auto && atom : this->manager->with_ghosts()) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for
@@ -430,6 +431,10 @@ namespace rascal {
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
+    }
+
+
+    for (auto && atom : this->manager) {
       for (auto pair : atom.with_self_pair()) {
         auto vec_ij{pair.get_position() - atom.get_position()};
         double distance2{(vec_ij).squaredNorm()};
