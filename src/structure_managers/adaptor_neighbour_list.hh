@@ -67,6 +67,8 @@ namespace rascal {
     // added upon construction of the neighbour list. Therefore the layering
     // sequence is reset: here is layer 0 again.
     using LayerByOrder = std::index_sequence<0, 0>;
+    constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
+        AdaptorTraits::NeighbourListType::full};
   };
 
   namespace internal {

@@ -59,6 +59,8 @@ namespace rascal {
     using LayerByOrder =
         typename LayerIncreaser<MaxOrder,
                                 typename parent_traits::LayerByOrder>::type;
+    constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
+        parent_traits::NeighbourListType};
   };
 
   /**
