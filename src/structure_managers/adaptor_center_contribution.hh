@@ -354,6 +354,7 @@ namespace rascal {
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
     }
+
     for (auto atom : this->manager) {
       auto && atom_tag = atom.get_atom_tag();
       AtomIndex_t self_atom_tag_list{{atom_tag, atom_tag}};
