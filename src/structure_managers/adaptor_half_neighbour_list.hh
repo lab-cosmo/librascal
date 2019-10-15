@@ -341,7 +341,7 @@ namespace rascal {
     // counter for total number of pairs (minimal list) for cluster_indices
     size_t pair_counter{0};
 
-    for (auto atom : this->manager) {
+    for (auto && atom : this->manager->with_ghosts()) {
       // Add new depth layer for atoms (see LayerByOrder for possible
       // optimisation).
       constexpr auto AtomLayer{
@@ -351,7 +351,9 @@ namespace rascal {
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
+    }
 
+    for (auto && atom : this->manager) {
       auto index_i{atom.get_atom_tag()};
 
       // neighbours per atom counter to correct for offsets
