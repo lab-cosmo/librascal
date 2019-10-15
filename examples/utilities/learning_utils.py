@@ -29,8 +29,8 @@ hyper_dict = json.load(open("./utilities/hyperparameter_presets.json"))
 hyper_vals = json.load(open("./utilities/hyperparameter_bounds.json"))
 
 # Properties preset for the learning tutorial
-known_properties = dict(CS="atom",
-                        dft_formation_energy_per_atom_in_eV="structure")
+known_properties = dict(CS="Atom",
+                        dft_formation_energy_per_atom_in_eV="Structure")
 ignore = ['Natoms', 'numbers', 'Name',
     'positions', 'cutoff', 'nneightol', "NAME"]
 
@@ -108,7 +108,7 @@ class KRR(object):
         weights - weights of the given by the kernel and the targets given by
                   the training set
         representation - feature set given by soap vectors
-        kernel_type - "atom" or "structure"
+        kernel_type - "atom" or "Structure"
         X - training dataset
 
     Functions:
@@ -274,8 +274,8 @@ class learning_tutorial(object):
                                                 style=style)
         if(self.sliders['property_to_ml'].value not in known_properties):
             self.sliders['kernel_type'] = widgets.Dropdown(
-                                                value='atom',
-                                                options=['atom', 'structure'],
+                                                value='Atom',
+                                                options=['Atom', 'Structure'],
                                                 description="Kernel Type",
                                                 style=style)
         else:
@@ -354,8 +354,8 @@ class learning_tutorial(object):
                     known_properties[self.sliders['property_to_ml'].value]]
                 self.sliders['kernel_type'].value = self.sliders['kernel_type'].options[0]
             else:
-                self.sliders['kernel_type'].options = ['atom', 'structure']
-                self.sliders['kernel_type'].value = 'atom'
+                self.sliders['kernel_type'].options = ['Atom', 'Structure']
+                self.sliders['kernel_type'].value = 'Atom'
 
         self.krr = {prop: None for prop in self.properties}
         self.trained = {prop: False for prop in self.properties}
@@ -378,8 +378,8 @@ class learning_tutorial(object):
                     known_properties[self.sliders['property_to_ml'].value]]
                 self.sliders['kernel_type'].value = self.sliders['kernel_type'].options[0]
             else:
-                self.sliders['kernel_type'].options = ['atom', 'structure']
-                self.sliders['kernel_type'].value = 'atom'
+                self.sliders['kernel_type'].options = ['Atom', 'Structure']
+                self.sliders['kernel_type'].value = 'Atom'
 
         self.reset_ML()
 
@@ -430,8 +430,8 @@ class learning_tutorial(object):
 
         representation = SOAP(**mask_body_order(self.hyperparameters))
 
-        if(known_properties[self.sliders['property_to_ml'].value] == 'atom'):
-            props = np.concatenate(self.properties[self.sliders['property_to_ml'].value][frame_idx][:, 0])
+        if(known_properties[self.sliders['property_to_ml'].value] == 'Atom'):
+            props = np.concatenate(self.properties[self.sliders['property_to_ml'].value][frame_idx])[:,0]
         else:
             props = self.properties[self.sliders['property_to_ml'].value][frame_idx]
 
@@ -466,6 +466,7 @@ class learning_tutorial(object):
                                 features1=features, \
                                 kernel_type=self.sliders['kernel_type'].value, \
                                 **self.hyperparameters)
+
         self.est_frames.append(len(frame_idx))
         self.est_times.append(time.time()-t)
 
@@ -526,7 +527,7 @@ class learning_tutorial(object):
         """
         if(len(frame_idx) > 0):
             frames=self.frames[frame_idx]
-            y_known = np.concatenate(self.properties[self.sliders['property_to_ml'].value][frame_idx])[: , 0] if self.sliders['kernel_type'].value == 'atom' else self.properties[self.sliders['property_to_ml'].value][frame_idx]
+            y_known = np.concatenate(self.properties[self.sliders['property_to_ml'].value][frame_idx])[: , 0] if self.sliders['kernel_type'].value == 'Atom' else self.properties[self.sliders['property_to_ml'].value][frame_idx]
         if(pretend == False):
             verbosity_wrap=lambda s: self.verbosity_wrap(s)
         else:
@@ -534,7 +535,7 @@ class learning_tutorial(object):
         if(self.trained[self.sliders['property_to_ml'].value] == False):
             verbosity_wrap("Model has not yet been trained, training now...")
             self.train_krr_model()
-        # np.concatenate(self.properties[self.sliders['property_to_ml'].value][frame_idx])[:,0] if self.sliders['kernel_type'].value=='atom' else self.properties[self.sliders['property_to_ml'].value][frame_idx]
+        # np.concatenate(self.properties[self.sliders['property_to_ml'].value][frame_idx])[:,0] if self.sliders['kernel_type'].value=='Atom' else self.properties[self.sliders['property_to_ml'].value][frame_idx]
         testing_properties=y_known
 
         if(pretend == False):
