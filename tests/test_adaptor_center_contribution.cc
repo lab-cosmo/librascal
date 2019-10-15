@@ -119,13 +119,17 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_atom_j_test, Fix, multiple_fixtures,
                                    Fix) {
     auto && managers = Fix::managers;
-    constexpr bool verbose{false};
+    constexpr bool verbose{true};
     for (auto & manager : managers) {
       auto adaptor_strict{
           make_adapted_manager<AdaptorCenterContribution>(manager)};
       adaptor_strict->update();
-
+      std::cout << "adaptor size : " << adaptor_strict->size() << std::endl;
+      std::cout << "adaptor size_wg : " << adaptor_strict->get_size_with_ghosts()
+                << std::endl;
       for (auto atom : adaptor_strict) {
+        std::cout << "atom " << atom.back() << ", of size " << atom.size()
+                  << std::endl;
         for (auto pair : atom) {
           auto atom_j_index =
               adaptor_strict->get_atom_index(pair.get_atom_tag());

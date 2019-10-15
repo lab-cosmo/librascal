@@ -550,7 +550,7 @@ namespace rascal {
       // case 1: {
       //   return this->get_size_with_ghosts();
       //   break;
-      //}
+      // }
       case 2: {
         return this->neighbours_atom_tag.size();
       default:
