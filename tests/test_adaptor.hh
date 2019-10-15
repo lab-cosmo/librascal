@@ -223,7 +223,7 @@ namespace rascal {
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{1., 2., 3.}};
-    const std::vector<double> skins{{0.}};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };
@@ -267,8 +267,8 @@ namespace rascal {
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
-    const std::vector<double> cutoffs{{1., 2., 3.}};
-    const std::vector<double> skins{{0.}};
+    const std::vector<double> cutoffs{1., 2., 3.};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };
@@ -302,7 +302,7 @@ namespace rascal {
     const std::string filename{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
     const double cutoff{3.};
-    const std::vector<double> skins{{0.}};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };
@@ -345,8 +345,8 @@ namespace rascal {
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
-    const std::vector<double> cutoffs{{2., 3.}};
-    const std::vector<double> skins{{0.}};
+    const std::vector<double> cutoffs{2., 3.};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };
@@ -394,7 +394,7 @@ namespace rascal {
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{2., 3.}};
-    const std::vector<double> skins{{0.}};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };
@@ -462,8 +462,8 @@ namespace rascal {
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
 
-    const std::vector<double> cutoffs{{2., 3.}};
-    const std::vector<double> skins{{0.}};
+    const std::vector<double> cutoffs{2., 3.};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };
@@ -533,8 +533,8 @@ namespace rascal {
         // "reference_data/molecular_crystal.json",
         // "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
-    const std::vector<double> cutoffs{{2., 3.}};
-    const std::vector<double> skins{{0.}};
+    const std::vector<double> cutoffs{2., 3.};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };

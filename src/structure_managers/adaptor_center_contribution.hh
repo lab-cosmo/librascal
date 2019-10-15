@@ -60,6 +60,8 @@ namespace rascal {
     // increased in size so all the data belongs to the adaptor
     using LayerByOrder = std::index_sequence<
         ManagerImplementation::template cluster_layer_from_order<1>() + 1, 0>;
+    constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
+        parent_traits::NeighbourListType};
   };
 
   /**

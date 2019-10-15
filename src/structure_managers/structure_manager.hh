@@ -1041,6 +1041,23 @@ namespace rascal {
     inline iterator end() {
       return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
     }
+
+    /**
+     * Directly obtain the iterator to the n-th iterate
+     */
+    iterator get_iterator_at(const size_t & start) {
+      auto && offset{this->get_manager().get_offset(this->it.get_counters())};
+      return iterator(*this, start, offset);
+    }
+
+    /**
+     * Directly obtain the iterator to the n-th iterate
+     */
+    iterator get_iterator_at(const size_t & start) const {
+      auto && offset{this->get_manager().get_offset(this->it.get_counters())};
+      return iterator(*this, start, offset);
+    }
+
     //! returns its own size
     inline size_t size() { return this->get_manager().get_cluster_size(*this); }
     //! return iterator index - this is used in cluster_indices_container as
