@@ -420,7 +420,7 @@ namespace rascal {
 
     double rc2{this->cutoff * this->cutoff};
 
-    for (auto && atom : this->manager->with_ghosts()) {
+    for (auto && atom : this->manager) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for

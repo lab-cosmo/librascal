@@ -42,8 +42,8 @@ namespace rascal {
       >;
 
   using multiple_fixtures = boost::mpl::list<
-      MultipleStructureFixture<MultipleStructureManagerNLFixture>,
-      MultipleStructureFixture<MultipleStructureManagerNLCCFixture>>;
+    //MultipleStructureFixture<MultipleStructureManagerNLFixture>  //,
+          MultipleStructureFixture<MultipleStructureManagerNLCCFixture>>;
 
   BOOST_AUTO_TEST_SUITE(adaptor_strict_test);
 
@@ -134,8 +134,16 @@ namespace rascal {
       auto adaptor_strict{make_adapted_manager<AdaptorStrict>(manager, cutoff)};
       adaptor_strict->update();
 
+      std::cout << "adaptor size : " << adaptor_strict->size() << std::endl;
+      std::cout << "adaptor size_wg : " << adaptor_strict->get_size_with_ghosts()
+                << std::endl;
+
       for (auto atom : adaptor_strict) {
+        std::cout << "atom " << atom.back() << ", of size " << atom.size()
+                  <<" position:" << std::endl << atom.get_position() << std::endl;
+        int counter{0};
         for (auto pair : atom) {
+          std::cout << counter++ << ", " << pair.back() << std::endl;
           auto atom_j_index = adaptor_strict->get_atom_index(pair.back());
           auto atom_j = pair.get_atom_j();
           auto atom_j_tag = atom_j.get_atom_tag_list();
