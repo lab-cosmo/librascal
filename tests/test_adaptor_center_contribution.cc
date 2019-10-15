@@ -129,12 +129,14 @@ namespace rascal {
                 << std::endl;
       for (auto atom : adaptor_strict) {
         std::cout << "atom " << atom.back() << ", of size " << atom.size()
-                  << std::endl;
+                  <<" position:" << std::endl << atom.get_position() << std::endl;
+        int counter{0};
         for (auto pair : atom) {
+          std::cout << counter++ << ", " << pair.back() << std::endl;
           auto atom_j_index =
               adaptor_strict->get_atom_index(pair.get_atom_tag());
-          auto atom_j = pair.get_atom_j();
-          auto atom_j_tags = atom_j.get_atom_tag_list();
+          auto && atom_j = pair.get_atom_j();
+          auto && atom_j_tags = atom_j.get_atom_tag_list();
           if (verbose) {
             std::cout << "neigh: " << atom_j_index
                       << " tag_j: " << atom_j_tags[0] << std::endl;

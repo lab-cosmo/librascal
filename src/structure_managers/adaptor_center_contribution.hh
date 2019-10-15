@@ -277,6 +277,8 @@ namespace rascal {
       this->template add_atom<Order - 1>(cluster.back());
     }
 
+    // ManagerImplementation & get_manager() { return *this->manager; }
+
     ImplementationPtr_t manager;
 
     /**
@@ -342,7 +344,7 @@ namespace rascal {
     size_t pair_counter{0};
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
-    for (auto atom : this->manager->with_ghosts()) {
+    for (auto atom : *this->manager) {
       this->add_atom(atom);
       /*
        * Add new layer for atoms (see LayerByOrder for
@@ -353,9 +355,6 @@ namespace rascal {
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
-    }
-
-    for (auto atom : this->manager) {
       auto && atom_tag = atom.get_atom_tag();
       AtomIndex_t self_atom_tag_list{{atom_tag, atom_tag}};
 
