@@ -68,10 +68,10 @@ namespace rascal {
    */
   template <RefinementMethod_t RefinementMethod, class ErrorMethod>
   Vector_t compute_pointwise_absolute_grid_error(
-      std::shared_ptr<
+      const std::shared_ptr<
           InterpolatorScalarUniformCubicSpline<RefinementMethod, ErrorMethod>> &
           intp) {
-    Vector_t test_grid{intp->get_test_grid()};
+    Vector_Ref test_grid{intp->get_test_grid()};
     Vector_t test_grid_interpolated{intp->interpolate(Vector_Ref(test_grid))};
     Vector_t test_grid_evaluated{intp->eval(Vector_Ref(test_grid))};
     Vector_t error_grid{
@@ -87,12 +87,12 @@ namespace rascal {
    */
   template <RefinementMethod_t RefinementMethod, class ErrorMethod>
   Matrix_t compute_pointwise_absolute_grid_error(
-      std::shared_ptr<
+      const std::shared_ptr<
           InterpolatorMatrixUniformCubicSpline<RefinementMethod, ErrorMethod>> &
           intp) {
-    Vector_t test_grid{intp->get_test_grid()};
+    Vector_Ref test_grid{intp->get_test_grid()};
     Matrix_t test_grid_interpolated{
-        intp->raw_interpolate(Vector_Ref(test_grid))};
+        intp->interpolate_to_vector(Vector_Ref(test_grid))};
     Matrix_t test_grid_evaluated{intp->eval(Vector_Ref(test_grid))};
     Matrix_t error_grid{
         math::ErrorMethod<math::ErrorMetric_t::Absolute>::
