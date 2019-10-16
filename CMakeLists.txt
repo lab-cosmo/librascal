@@ -111,18 +111,7 @@ else()
 endif()
 
 add_external_package(wigxjpf VERSION 1.9 CONFIG)
-
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
-
-
-# Try to find optional cpp linter
-include(cpplint)
-
-# Check for clang-format
-include(clangformat)
-
-# CHeck for autopep8
-include(autopep8)
 
 # set up bindings
 if(BUILD_BINDINGS)
@@ -180,7 +169,6 @@ elseif(BUILD_BINDINGS AND USER)
 endif()
 
 message(STATUS "Installation ROOT: ${CMAKE_INSTALL_PREFIX}")
-
 
 # Always use full RPATH
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
@@ -259,33 +247,38 @@ if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
+# Try to find optional cpp linter
+include(cpplint)
 # Checking hh/cc files for compliance with coding conventions
 if(CPPLINT_FOUND)
   # register the folders to check for cpp code conventions compliance
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
-  "--filter=-build/namespaces")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples" "--filter=-build/namespaces")
 endif()
 
+# Check for clang-format
+include(clangformat)
 # Add all hh/cc files for autoformatting with clang-format
 if(CLANG_FORMAT_FOUND)
   # register the folders to apply clang-format with given configuration
   # .clang-format in project root folder
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings")
   clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
 endif()
 
+# Check for autopep8
+include(autopep8)
 # Add python files for autoformatting with autopep8
 if(AUTOPEP8_FOUND)
   # register the folders to apply autopep8 with given configuration
   # .pycodestyle in project root folder
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts" "")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts")
 endif()
 
 # Removes every file in the build folder except the external libraries to
