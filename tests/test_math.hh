@@ -71,9 +71,8 @@ namespace rascal {
 
   struct SphericalHarmonicsClassRefFixture {
     SphericalHarmonicsClassRefFixture() {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(this->ref_filename, ref_data_ubjson);
-      this->ref_data = json::from_ubjson(ref_data_ubjson);
+      this->ref_data =
+          json::from_ubjson(internal::read_binary_file(this->ref_filename));
     }
 
     ~SphericalHarmonicsClassRefFixture() = default;
@@ -90,9 +89,8 @@ namespace rascal {
 
   struct GaussLegendreRefFixture {
     GaussLegendreRefFixture() {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(this->ref_filename, ref_data_ubjson);
-      this->ref_data = json::from_ubjson(ref_data_ubjson);
+      this->ref_data =
+          json::from_ubjson(internal::read_binary_file(this->ref_filename));
     }
 
     ~GaussLegendreRefFixture() = default;
@@ -412,9 +410,8 @@ namespace rascal {
 
   struct Hyp1F1RefFixture {
     Hyp1F1RefFixture() {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(this->ref_filename, ref_data_ubjson);
-      this->ref_data = json::from_ubjson(ref_data_ubjson);
+      this->ref_data =
+          json::from_ubjson(internal::read_binary_file(this->ref_filename));
     }
 
     ~Hyp1F1RefFixture() = default;

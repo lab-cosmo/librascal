@@ -498,7 +498,7 @@ namespace rascal {
 
     //! Get the full type of the structure manager
     static decltype(auto) get_name() {
-      return internal::GetTypeName<ManagerImplementation>();
+      return internal::type_name<ManagerImplementation>();
     }
 
     //! Create a new shared pointer to the object

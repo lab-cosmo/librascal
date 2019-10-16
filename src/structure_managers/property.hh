@@ -83,7 +83,7 @@ namespace rascal {
     //! Constructor with Manager
     explicit Property(Manager_t & manager, std::string metadata = "no metadata")
         : Parent{manager, NbRow, NbCol, metadata},
-          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
+          type_id{typeid(Self_t).name()} {}
 
     //! Copy constructor
     Property(const Property & other) = delete;
@@ -108,8 +108,8 @@ namespace rascal {
      */
     static inline void check_compatibility(PropertyBase & other) {
       // check ``type`` compatibility
-      auto type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()};
-      if (not(other.get_type_info() == type_id)) {
+      auto type_id{typeid(Self_t).name()};
+      if (other.get_type_info() != type_id) {
         std::stringstream err_str{};
         err_str << "Incompatible types: '" << other.get_type_info() << "' != '"
                 << type_id << "'.";

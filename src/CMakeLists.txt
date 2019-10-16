@@ -37,6 +37,7 @@ add_library("${LIBRASCAL_NAME}" "")
 set(rascal_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/json_io.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/units.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/rascal_utility.cc
   )
 target_sources("${LIBRASCAL_NAME}" PRIVATE ${rascal_SRC})
 

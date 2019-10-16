@@ -57,9 +57,8 @@ namespace rascal {
     TestData() = default;
 
     void get_ref(const std::string & ref_filename) {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(ref_filename, ref_data_ubjson);
-      this->ref_data = json::from_ubjson(ref_data_ubjson);
+      this->ref_data =
+          json::from_ubjson(internal::read_binary_file(ref_filename));
       auto filenames =
           this->ref_data.at("filenames").get<std::vector<std::string>>();
       auto cutoffs = this->ref_data.at("cutoffs").get<std::vector<double>>();
@@ -871,9 +870,8 @@ namespace rascal {
     ~SortedCoulombTestData() = default;
 
     void get_ref(const std::string & ref_filename) {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(ref_filename, ref_data_ubjson);
-      this->ref_data = json::from_ubjson(ref_data_ubjson);
+      this->ref_data =
+          json::from_ubjson(internal::read_binary_file(ref_filename));
       auto filenames =
           this->ref_data.at("filenames").get<std::vector<std::string>>();
       auto cutoffs = this->ref_data.at("cutoffs").get<std::vector<double>>();

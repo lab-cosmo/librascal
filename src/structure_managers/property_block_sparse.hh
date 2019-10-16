@@ -486,7 +486,7 @@ namespace rascal {
                  Order,
                  PropertyLayer,
                  metadata},
-          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
+          type_id{typeid(Self_t).name()} {}
 
     //! Default constructor
     BlockSparseProperty() = delete;
@@ -508,7 +508,7 @@ namespace rascal {
 
     static inline void check_compatibility(PropertyBase & other) {
       // check ``type`` compatibility
-      auto type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()};
+      auto type_id{typeid(Self_t).name()};
       if (not(other.get_type_info() == type_id)) {
         std::stringstream err_str{};
         err_str << "Incompatible types: '" << other.get_type_info() << "' != '"
