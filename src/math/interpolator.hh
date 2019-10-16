@@ -295,7 +295,8 @@ namespace rascal {
      * An implementation of the cubic spline method, the implementation is
      * adapted from "Numerical Recipes" [1] for functions of the form
      * f:[x1,x2]->ℝ and optimized for uniform grids, works only for uniform
-     * grids.
+     * grids. The private functions are kept as close as possible to the
+     * reference.
      *
      * [1] Press, William H., et al. Numerical recipes 3rd edition: The art of
      * scientific computing. Cambridge university press, 2007.
@@ -328,8 +329,8 @@ namespace rascal {
                                 const Vector_Ref & evaluated_grid, double x,
                                 int nearest_grid_index_to_x) const {
         assert(this->initialized);
-        return this->raw_interpolate(grid, evaluated_grid,
-                                     nearest_grid_index_to_x, x);
+        return this->interpolate_for_one_point(grid, evaluated_grid,
+                                               nearest_grid_index_to_x, x);
       }
       /**
        * @pre interpolation method is initialized
@@ -339,8 +340,8 @@ namespace rascal {
                                            double x,
                                            int nearest_grid_index_to_x) const {
         assert(this->initialized);
-        return this->raw_interpolate_derivative(grid, evaluated_grid,
-                                                nearest_grid_index_to_x, x);
+        return this->interpolate_derivative_for_one_point(
+            grid, evaluated_grid, nearest_grid_index_to_x, x);
       }
 
      private:
@@ -386,7 +387,10 @@ namespace rascal {
         this->second_derivative_h_sq_6 = y2 * this->h_sq_6;
       }
 
-      // natural/simple boundary conditions s''(x_0) = s''(x_n) = 0
+      /**
+       * Computes the second derivative for natural/simple boundary conditions
+       * s''(x_0) = s''(x_n) = 0
+       */
       inline void compute_second_derivative(const Vector_Ref & yv) {
         // Bad xa input to routine splint
         assert(this->h > dbl_ftol);
@@ -414,11 +418,10 @@ namespace rascal {
         this->second_derivative_h_sq_6 = y2 * this->h_sq_6;
       }
 
-      inline double raw_interpolate(const Vector_Ref & xx,
-                                    const Vector_Ref & yy, int j1,
-                                    double x) const {
+      inline double interpolate_for_one_point(const Vector_Ref & xx,
+                                                    const Vector_Ref & yy,
+                                                    int j1, double x) const {
         assert(this->h > dbl_ftol);
-        // j1
         int klo{j1}, khi{j1 + 1};
         // percentage of grid cell start to x
         double a{(xx(khi) - x) / this->h};
@@ -431,9 +434,10 @@ namespace rascal {
                     (b * b - 1) * this->second_derivative_h_sq_6(khi));
       }
 
-      inline double raw_interpolate_derivative(const Vector_Ref & xx,
-                                               const Vector_Ref & yy, int j1,
-                                               double x) const {
+      inline double interpolate_derivative_for_one_point(const Vector_Ref & xx,
+                                                         const Vector_Ref & yy,
+                                                         int j1,
+                                                         double x) const {
         assert(this->h > dbl_ftol);
         int klo{j1}, khi{j1 + 1};
         double a{(xx(khi) - x) / this->h};
@@ -465,7 +469,8 @@ namespace rascal {
     /**
      * An implementation of the cubic spline method, the implementation is
      * adapted from "Numerical Recipes" [1] for functions of the form
-     * y:[x1,x2]->ℝ^n and optimized for uniform grids.
+     * y:[x1,x2]->ℝ^n and optimized for uniform grids. The private functions are
+     * kept as close as possible to the reference.
      *
      * [1] Press, William H., et al. Numerical recipes 3rd edition: The art of
      * scientific computing. Cambridge university press, 2007.
@@ -490,8 +495,8 @@ namespace rascal {
                                   const Matrix_Ref & evaluated_grid, double x,
                                   int nearest_grid_index_to_x) const {
         assert(this->initialized);
-        return this->raw_interpolate(grid, evaluated_grid,
-                                     nearest_grid_index_to_x, x);
+        return this->interpolate_for_one_point(grid, evaluated_grid,
+                                               nearest_grid_index_to_x, x);
       }
 
       /**
@@ -502,8 +507,8 @@ namespace rascal {
                              const Matrix_Ref & evaluated_grid, double x,
                              int nearest_grid_index_to_x) const {
         assert(this->initialized);
-        return this->raw_interpolate_derivative(grid, evaluated_grid,
-                                                nearest_grid_index_to_x, x);
+        return this->interpolate_for_one_point(grid, evaluated_grid,
+                                               nearest_grid_index_to_x, x);
       }
 
      private:
@@ -536,9 +541,9 @@ namespace rascal {
         this->second_derivative_h_sq_6 = y2 * this->h_sq_6;
       }
 
-      inline Vector_t raw_interpolate(const Vector_Ref & xx,
-                                      const Matrix_Ref & yy, int j1,
-                                      double x) const {
+      inline Vector_t interpolate_for_one_point(const Vector_Ref & xx,
+                                                const Matrix_Ref & yy, int j1,
+                                                double x) const {
         int klo{j1}, khi{j1 + 1};
         // Bad xa input to routine splint
         assert(h != 0.0);
@@ -554,9 +559,10 @@ namespace rascal {
             .matrix();
       }
 
-      inline Vector_t raw_interpolate_derivative(const Vector_Ref & xx,
-                                                 const Matrix_Ref & yy, int j1,
-                                                 double x) const {
+      inline Vector_t
+      interpolate_derivative_for_one_point(const Vector_Ref & xx,
+                                           const Matrix_Ref & yy, int j1,
+                                           double x) const {
         int klo{j1}, khi{j1 + 1};
         // Bad xa input to routine splint
         assert(h != 0.0);
@@ -1290,8 +1296,6 @@ namespace rascal {
         this->initialize_from_computed_grid();
       }
 
-      // OPT(alex) container for Matrix_t, then reshape one time to prevent
-      // check overflow
       /**
        * Interpolation at point x for a function of the form f:ℝ->ℝ^{n,m}.
        *
@@ -1301,7 +1305,7 @@ namespace rascal {
        * @pre x is in range [x1,x2]
        */
       Matrix_t interpolate(double x) {
-        return Eigen::Map<Matrix_t>(this->raw_interpolate(x).data(), this->rows,
+        return Eigen::Map<Matrix_t>(this->interpolate_to_vector(x).data(), this->rows,
                                     this->cols);
       }
 
@@ -1315,17 +1319,18 @@ namespace rascal {
        * @pre x is in range [x1,x2]
        */
       Matrix_t interpolate_derivative(double x) {
-        return Eigen::Map<Matrix_t>(this->raw_interpolate_derivative(x).data(),
+        return Eigen::Map<Matrix_t>(this->interpolate_to_vector_derivative(x).data(),
                                     this->rows, this->cols);
       }
 
       /**
        * Interpolates the point x
-       * @return intp(x) in the shape (rows*cols)
+       *
+       * @return intp(x) in the vector shape (rows*cols)
        *
        * @pre x is in range [x1,x2]
        */
-      inline Vector_t raw_interpolate(double x) {
+      inline Vector_t interpolate_to_vector(double x) {
         // x is outside of range
         assert(x >= this->x1 && x <= this->x2);
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
@@ -1335,13 +1340,14 @@ namespace rascal {
 
       /**
        * Interpolates the each x in points
-       * @return intp(x) in the shape (points.size(), rows*cols)
+       *
+       * @return intp(x) in the vector shape (rows*cols)
        */
-      inline Matrix_t raw_interpolate(const Vector_Ref & points) {
+      inline Matrix_t interpolate_to_vector(const Vector_Ref & points) {
         Matrix_t interpolated_points =
             Matrix_t::Zero(points.size(), this->matrix_size);
         for (int i{0}; i < points.size(); i++) {
-          interpolated_points.row(i) = this->raw_interpolate(points(i));
+          interpolated_points.row(i) = this->interpolate_to_vector(points(i));
         }
         return interpolated_points;
       }
@@ -1352,7 +1358,7 @@ namespace rascal {
        *
        * @pre x is in range [x1,x2]
        */
-      inline Vector_t raw_interpolate_derivative(double x) {
+      inline Vector_t interpolate_to_vector_derivative(double x) {
         // x is outside of range
         assert(x >= this->x1 && x <= this->x2);
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
@@ -1364,12 +1370,12 @@ namespace rascal {
        * Interpolates the derivative of each x in points
        * @return intp(x) in the shape (points.size(), rows*cols)
        */
-      inline Matrix_t raw_interpolate_derivative(const Vector_Ref & points) {
+      inline Matrix_t interpolate_to_vector_derivative(const Vector_Ref & points) {
         Matrix_t interpolated_points =
             Matrix_t::Zero(points.size(), this->matrix_size);
         for (int i{0}; i < points.size(); i++) {
           interpolated_points.row(i) =
-              this->raw_interpolate_derivative(points(i));
+              this->interpolate_to_vector_derivative(points(i));
         }
         return interpolated_points;
       }
@@ -1433,7 +1439,7 @@ namespace rascal {
         // (grid_size, row*col)
         // OPT(alex) check how this is optimized
         Matrix_t test_grid_interpolated{
-            this->raw_interpolate(Vector_Ref(test_grid))};
+            this->interpolate_to_vector(Vector_Ref(test_grid))};
         Matrix_t test_grid_evaluated{this->eval(Vector_Ref(test_grid))};
         this->error_below_bound = ThisErrorMethod::is_error_below_bound(
             Matrix_Ref(test_grid_interpolated), Matrix_Ref(test_grid_evaluated),

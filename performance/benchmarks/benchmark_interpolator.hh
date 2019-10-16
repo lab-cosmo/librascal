@@ -92,7 +92,7 @@ namespace rascal {
           intp) {
     Vector_t test_grid{intp->get_test_grid()};
     Matrix_t test_grid_interpolated{
-        intp->raw_interpolate(Vector_Ref(test_grid))};
+        intp->interpolate_to_vector(Vector_Ref(test_grid))};
     Matrix_t test_grid_evaluated{intp->eval(Vector_Ref(test_grid))};
     Matrix_t error_grid{
         math::ErrorMethod<math::ErrorMetric_t::Absolute>::
