@@ -55,7 +55,7 @@ def markdown_table_from_dict(d, headers):
         Returns:
             markdown string
     """
-    return '<table>  <thead><tr>{}</tr></thead><tbody>'.format(''.join(['<th>{}</th>'.format(h) for h in headers]))+''.join(['<tr><td>{}</td>{}</tr>'.format(key, ''.join(['<td>{}</td>'.format(v) for v in d[key]])) for key in d])+'</tbody></table>'
+    return '<table>  <thead><tr>{}</tr></thead><tbody>'.format(''.join(['<th>{}</th>'.format(h) for h in headers]))+''.join(['<tr><td>{}</td>{}</tr>'.format(key.replace('_',' ').title(), ''.join(['<td>{}</td>'.format(round(v,4)) for v in d[key]])) for key in d])+'</tbody></table>'
 
 
 def compute_kernel(calculator, features1, features2=None, kernel_type='Structure', **kwargs):

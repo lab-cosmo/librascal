@@ -14,8 +14,7 @@ Getting started
 .. toctree::
     :maxdepth: 1
 
-    TutorialEn
-    SOAP_CSD500.ipynb
+    Property_Prediction_Tutorial.ipynb
 
 Intro for developers
 ~~~~~~~~~~~~~~~~~~~~
