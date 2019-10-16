@@ -162,7 +162,6 @@ namespace rascal {
         } else {
           throw std::runtime_error("n_terms should be >= -1");
         }
-        // this->n_terms = this->mmax;
         double res{0.};
         if (not derivative) {
           res = this->sum(z, this->coeff, mmax, n_terms);
@@ -186,7 +185,6 @@ namespace rascal {
                                                z * (coefficient(i + 2) +
                                                     z * coefficient(i + 3))));
             if (a1 < this->tolerance * res) {
-              // this->n_terms = i;
               res += a1;
               break;
             }
@@ -323,7 +321,6 @@ namespace rascal {
       //! computes hyp2f0 with arg1 = b-a and arg2 = 1-a arg3 = 1 / z
       inline double hyp2f0(double z, bool derivative, int n_terms) {
         using math::pow;
-        // this->n_terms = this->mmax;
 
         size_t mmax{0};
         if (n_terms == -1) {
@@ -356,7 +353,6 @@ namespace rascal {
           s_i = coefficient(i) * izpow;
           if (res > 0 and std::fabs(s_i) < this->tolerance * res and
               n_terms == -1) {
-            // this->n_terms = i;
             break;
           }
           res += s_i;
@@ -393,18 +389,12 @@ namespace rascal {
 
       double z_asympt{1.};
 
-      // TODO(all) TODO(felix) I remember this was a quick fix and I am not
-      // sure if this should be added to master
-      // size_t nterms_a{0}, nterms_s{0};
       double h1f1_a{0}, h1f1_s{0};
       double z_above{0.}, z_below{0.};
 
       void update_switching_point() {
         this->h1f1_s = this->hyp1f1_series.calc(this->z_asympt);
         this->h1f1_a = this->hyp1f1_asymptotic.calc(this->z_asympt);
-
-        // this->nterms_s = this->hyp1f1_series.n_terms;
-        // this->nterms_a = this->hyp1f1_asymptotic.n_terms;
       }
 
       /**
