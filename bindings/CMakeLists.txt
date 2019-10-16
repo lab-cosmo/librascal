@@ -47,6 +47,8 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal" DESTINATION "${PYTHON_SIT
 
 # builds the python bindings (must be after setting up the rpath)
 pybind11_add_module(pyRascal ${PY_BINDING_SRCS})
+target_compile_options(pyRascal PRIVATE -Werror)
+
 target_link_libraries(pyRascal PRIVATE "${LIBRASCAL_NAME}")
 # Want to rename the output, so that the python module is called _rascal
 set_target_properties(pyRascal PROPERTIES OUTPUT_NAME _rascal)
