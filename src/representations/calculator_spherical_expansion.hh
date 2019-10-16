@@ -83,8 +83,7 @@ namespace rascal {
     combine_to_radial_contribution_type(RadialBasisType basis_type,
                                         AtomicSmearingType smearing_type,
                                         OptimizationType opt_type) {
-      return internal::combine_enums(
-          basis_type, smearing_type, opt_type);
+      return internal::combine_enums(basis_type, smearing_type, opt_type);
     }
 
     /**
@@ -141,7 +140,8 @@ namespace rascal {
             hypers.at("gaussian_sigma").at("value").get<double>();
       }
       template <size_t Order, size_t Layer>
-      double get_gaussian_sigma(ClusterRefKey<Order, Layer> & /* pair */) {
+      double
+      get_gaussian_sigma(const ClusterRefKey<Order, Layer> & /* pair */) {
         return this->constant_gaussian_sigma;
       }
       double get_gaussian_sigma() { return this->constant_gaussian_sigma; }
@@ -156,7 +156,8 @@ namespace rascal {
       using Hypers_t = typename AtomicSmearingSpecificationBase::Hypers_t;
       explicit AtomicSmearingSpecification(const Hypers_t & /* hypers */) {}
       template <size_t Order, size_t Layer>
-      double get_gaussian_sigma(ClusterRefKey<Order, Layer> & /* pair */) {
+      double
+      get_gaussian_sigma(const ClusterRefKey<Order, Layer> & /* pair */) {
         throw std::logic_error("Requested a sigma type that has not yet "
                                "been implemented");
         return -1;
@@ -170,7 +171,8 @@ namespace rascal {
       using Hypers_t = typename AtomicSmearingSpecificationBase::Hypers_t;
       explicit AtomicSmearingSpecification(const Hypers_t & /* hypers */) {}
       template <size_t Order, size_t Layer>
-      double get_gaussian_sigma(ClusterRefKey<Order, Layer> & /* pair */) {
+      double
+      get_gaussian_sigma(const ClusterRefKey<Order, Layer> & /* pair */) {
         throw std::logic_error("Requested a sigma type that has not yet "
                                "been implemented");
         return -1;
@@ -348,7 +350,7 @@ namespace rascal {
       /**
        * Define the contribution from a neighbour atom to the expansion
        * without requiring a cluster object so it can be used with the
-       * interpolator. 
+       * interpolator.
        */
       template <AtomicSmearingType AST>
       Matrix_t compute_contribution(const double distance, const double sigma) {
@@ -437,8 +439,8 @@ namespace rascal {
       //! define the contribution from a neighbour atom to the expansion
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Matrix_Ref
-      compute_neighbour_contribution(double distance,
-                                     ClusterRefKey<Order, Layer> & pair) {
+      compute_neighbour_contribution(const double distance,
+                                     const ClusterRefKey<Order, Layer> & pair) {
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         double smearing_value{smearing->get_gaussian_sigma(pair)};
         // a = 1 / (2*\sigma^2)
@@ -449,8 +451,8 @@ namespace rascal {
       // Define the contribution from a neighbour atom to the expansion with an
       // already precomputed a-factor
 
-      inline Matrix_Ref compute_neighbour_contribution(double distance,
-                                                       double fac_a) {
+      inline Matrix_Ref compute_neighbour_contribution(const double distance,
+                                                       const double fac_a) {
         using math::pow;
         using std::sqrt;
 
@@ -521,9 +523,8 @@ namespace rascal {
        * the central atom
        */
       template <size_t Order, size_t Layer>
-      inline Matrix_Ref
-      compute_neighbour_derivative(double distance,
-                                   ClusterRefKey<Order, Layer> & /*pair*/) {
+      inline Matrix_Ref compute_neighbour_derivative(
+          const double distance, const ClusterRefKey<Order, Layer> & /*pair*/) {
         using math::PI;
         using math::pow;
         using std::sqrt;
@@ -778,7 +779,7 @@ namespace rascal {
       }
 
       //! define the contribution from the central atom to the expansion
-      Vector_Ref compute_center_contribution(double fac_a) {
+      Vector_Ref compute_center_contribution(const double fac_a) {
         using math::PI;
         using math::pow;
         using std::sqrt;
@@ -793,8 +794,8 @@ namespace rascal {
       //! define the contribution from a neighbour atom to the expansion
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Matrix_Ref
-      compute_neighbour_contribution(double distance,
-                                     ClusterRefKey<Order, Layer> & pair) {
+      compute_neighbour_contribution(const double distance,
+                                     const ClusterRefKey<Order, Layer> & pair) {
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         double smearing_value{smearing->get_gaussian_sigma(pair)};
         // a = 1 / (2*\sigma^2)
@@ -802,8 +803,8 @@ namespace rascal {
         return this->compute_neighbour_contribution(distance, fac_a);
       }
 
-      inline Matrix_Ref compute_neighbour_contribution(double distance,
-                                                       double fac_a) {
+      inline Matrix_Ref compute_neighbour_contribution(const double distance,
+                                                       const double fac_a) {
         using math::PI;
         using math::pow;
         using std::sqrt;
@@ -823,9 +824,9 @@ namespace rascal {
        * @todo still needs to be implemented for the DVR radial basis
        */
       template <size_t Order, size_t Layer>
-      inline Matrix_Ref
-      compute_neighbour_derivative(double /*distance*/,
-                                   ClusterRefKey<Order, Layer> & /*pair*/) {
+      inline Matrix_Ref compute_neighbour_derivative(
+          const double /*distance*/,
+          const ClusterRefKey<Order, Layer> & /*pair*/) {
         using math::PI;
         using math::pow;
         using std::sqrt;
@@ -898,19 +899,19 @@ namespace rascal {
 
       template <size_t Order, size_t Layer>
       inline Matrix_Ref
-      compute_neighbour_contribution(double distance,
-                                     ClusterRefKey<Order, Layer> &) {
+      compute_neighbour_contribution(const double distance,
+                                     const ClusterRefKey<Order, Layer> &) {
         return Parent::compute_neighbour_contribution(distance, this->fac_a);
       }
 
-      inline Matrix_Ref compute_neighbour_contribution(double) {
+      inline Matrix_Ref compute_neighbour_contribution(const double) {
         return Parent::compute_neighbour_contribution(this->fac_a);
       }
 
       template <size_t Order, size_t Layer>
       inline Matrix_Ref
-      compute_neighbour_derivative(double distance,
-                                   ClusterRefKey<Order, Layer> & pair) {
+      compute_neighbour_derivative(const double distance,
+                                   const ClusterRefKey<Order, Layer> & pair) {
         return Parent::compute_neighbour_derivative(distance, pair);
       }
 
@@ -953,8 +954,9 @@ namespace rascal {
       }
 
       // If we find a case where smarter parameters for x1 and x2 can be given
-      explicit RadialContributionHandler(const Hypers_t & hypers, double x1,
-                                         double x2, double accuracy)
+      explicit RadialContributionHandler(const Hypers_t & hypers,
+                                         const double x1, const double x2,
+                                         const double accuracy)
           : Parent(hypers) {
         this->precompute();
         this->init_interpolator(x1, x2, accuracy);
@@ -967,8 +969,8 @@ namespace rascal {
 
       template <size_t Order, size_t Layer>
       inline Matrix_Ref
-      compute_neighbour_contribution(double distance,
-                                     ClusterRefKey<Order, Layer> &) {
+      compute_neighbour_contribution(const double distance,
+                                     const ClusterRefKey<Order, Layer> &) {
         // TODO(alex) TODO(felix) include an check that the distance is within
         // the (x1,x2) range of the interpolator
         this->radial_integral_neighbour = this->intp->interpolate(distance);
@@ -977,8 +979,8 @@ namespace rascal {
 
       template <size_t Order, size_t Layer>
       inline Matrix_Ref
-      compute_neighbour_derivative(double distance,
-                                   ClusterRefKey<Order, Layer> &) {
+      compute_neighbour_derivative(const double distance,
+                                   const ClusterRefKey<Order, Layer> &) {
         this->radial_neighbour_derivative =
             this->intp->interpolate_derivative(distance);
         return Matrix_Ref(this->radial_neighbour_derivative);
@@ -1011,13 +1013,14 @@ namespace rascal {
         this->init_interpolator(range_begin, range_end, accuracy);
       }
 
-      void init_interpolator(double range_begin, double range_end,
-                             double accuracy) {
+      void init_interpolator(const double range_begin, const double range_end,
+                             const double accuracy) {
         // "this" is passed by reference and is mutable
-        std::function<Matrix_t(double)> func{[&](double distance) mutable {
-          Parent::compute_neighbour_contribution(distance, this->fac_a);
-          return this->radial_integral_neighbour;
-        }};
+        std::function<Matrix_t(double)> func{
+            [&](const double distance) mutable {
+              Parent::compute_neighbour_contribution(distance, this->fac_a);
+              return this->radial_integral_neighbour;
+            }};
         Matrix_t result = func(range_begin);
         int cols{static_cast<int>(result.cols())};
         int rows{static_cast<int>(result.rows())};
@@ -1451,8 +1454,8 @@ namespace rascal {
         RadialBasisType::GTO, AtomicSmearingType::Constant,
         OptimizationType::None): {
       this->compute_loop<FcType, RadialBasisType::GTO,
-                         AtomicSmearingType::Constant,
-                         OptimizationType::None>(managers);
+                         AtomicSmearingType::Constant, OptimizationType::None>(
+          managers);
       break;
     }
     case internal::combine_to_radial_contribution_type(
@@ -1467,8 +1470,8 @@ namespace rascal {
         RadialBasisType::DVR, AtomicSmearingType::Constant,
         OptimizationType::None): {
       this->compute_loop<FcType, RadialBasisType::DVR,
-                         AtomicSmearingType::Constant,
-                         OptimizationType::None>(managers);
+                         AtomicSmearingType::Constant, OptimizationType::None>(
+          managers);
       break;
     }
     case internal::combine_to_radial_contribution_type(
