@@ -253,6 +253,25 @@ helpful to customize the build options.
 
       where ``noqa`` stands for ``no`` ``q``\ uality ``a``\ ssurance.
 
+  -   If you are contributing any code in IPython/Jupyter notebooks, *please*
+      install the `nbstripout` extension (available e.g. on `github
+      <https://github.com/kynan/nbstripout#installation>`_ and
+      `PyPI <https://pypi.org/project/nbstripout/>`_).  After installing,
+      activate it for this project by running:
+
+      .. code:: shell
+         nbstripout --install --attributes .gitattributes
+
+      from the top-level repository directory.
+
+      Nonetheless, it is highly discouraged to contribute code in the form of
+      notebooks; even with filters like `nbstripout` they're a hassle to use in
+      version control.  Use them only for *stable* examples or tutorials that
+      are either meant to be run *interactively* or are meant to be processed by
+      `sphinx` (`nbsphinx <https://nbsphinx.readthedocs.io/en/latest/>`_) for
+      inclusion in the `tutorials page
+      <https://cosmo-epfl.github.io/librascal/tutorials/tutorials.html>`_.
+
 5. Bindings
 
    Librascal relies on the pybind11 library to automate the generation
