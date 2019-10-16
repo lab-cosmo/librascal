@@ -104,7 +104,7 @@ namespace rascal {
   class BaseInterpolatorDataset {
    public:
     enum class SupportedFunc { Identity, Gaussian, Hyp1f1 };
-    enum class SupportedVecFunc { RadialContribution };
+    enum class SupportedVecFunc { RadialContribution, Dummy };
   };
 
   /**
@@ -141,20 +141,22 @@ namespace rascal {
    */
 
   /**
-   * Dataset for testing the SphericalExpansion with Interpolation. To avoid
-   * code repetition the SphericalExpansionBFixture inherits from
-   * InterpolatorBFixture, therefore requires the some parameters which are
-   * required to give some value, but are not part of the SphericalExpansion.
-   * These parameters are marked with dummy.
+   * Dataset for testing the spherical representations with interpolator. To
+   * avoid code repetition `SphericalRepresentationBFixture` inherits from
+   * `InterpolatorBFixture`. Because of the inheritance, all data parameters of
+   * required by `InterpolatorBFixture` are also required by
+   * `SphericalRepresentationBFixture`. But since not all of these parameters
+   * are needed for the `SphericalRepresentationBFixture` we give them dummy
+   * values.
    */
   struct SphericalDataset : public BaseInterpolatorDataset {
     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
     static const json data() {
       static const json data = {
-          {"nbs_iterations", {1e3}},            // dummy
-          {"ranges", {std::make_pair(0, 16)}},  // dummy
+          {"nbs_iterations", {0}},             // dummy
+          {"ranges", {std::make_pair(0, 0)}},  // dummy
           {"log_error_bounds", {-8}},
-          {"func_names", {SupportedVecFunc::RadialContribution}},  // dummy
+          {"func_names", {SupportedVecFunc::Dummy}},  // dummy
           {"radial_angular",
            {std::make_pair(3, 4), std::make_pair(6, 6), std::make_pair(8, 6)}},
           {"random", {true}},  // dummy
@@ -371,7 +373,7 @@ namespace rascal {
     using Interpolator_t = math::InterpolatorMatrixUniformCubicSpline<
         math::RefinementMethod_t::Exponential>;
 
-    InterpolatorMatrixBFixture<Dataset>() : Parent () {}
+    InterpolatorMatrixBFixture<Dataset>() : Parent() {}
 
     std::shared_ptr<Interpolator_t> intp{};
     std::function<math::Matrix_t(double)> func{};
