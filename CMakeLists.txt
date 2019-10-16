@@ -255,18 +255,9 @@ if(BUILD_DOC)
     add_subdirectory(docs)
 endif()
 
-if (${BUILD_EXAMPLES})
-  # compile exmaples executables
-  file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
-  foreach(binaryfile ${binaries})
-    get_filename_component(binaryname  ${binaryfile} NAME_WE)
-    add_executable(${binaryname} ${binaryfile})
-    target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
-  endforeach(binaryfile ${binaries})
-  configure_file("${CMAKE_SOURCE_DIR}/examples/reference_data/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("${CMAKE_SOURCE_DIR}/examples/reference_data/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("${CMAKE_SOURCE_DIR}/tests/reference_data/alanine-center-select.json" ${CMAKE_BINARY_DIR} COPYONLY)
-endif (${BUILD_EXAMPLES})
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
 # Checking hh/cc files for compliance with coding conventions
 if(CPPLINT_FOUND)
