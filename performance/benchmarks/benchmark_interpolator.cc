@@ -28,6 +28,11 @@
 #include "benchmark_interpolator.hh"
 
 namespace rascal {
+  /**
+   * To compare the benchmark results with the chrono library, these benchmarks
+   * have been also created with chrono and can be found in
+   * https://gist.github.com/agoscinski/7d0e812041bea6b1cfcd5b44061d9a9f
+   */
 
   // Benchmark for Hyp1f1 without interpolator
   template <class BFixture>
