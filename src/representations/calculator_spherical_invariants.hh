@@ -38,6 +38,8 @@
 #include "rascal_utility.hh"
 #include "math/math_utils.hh"
 
+#include "wigxjpf.h"
+
 #include <algorithm>
 #include <cmath>
 #include <exception>

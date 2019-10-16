@@ -30,7 +30,6 @@
 
 set (math_SRC
   ${CMAKE_CURRENT_SOURCE_DIR}/math_utils.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/math_interface.cc
   )
 
 target_sources("${LIBRASCAL_NAME}" PRIVATE ${math_SRC})

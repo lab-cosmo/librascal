@@ -32,7 +32,6 @@ set (PY_BINDING_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_module.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_structure_manager.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_utils.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_math.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_representation_calculator.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_models.cc
   )
@@ -79,4 +78,3 @@ add_custom_command(
     OUTPUT always_rebuild
     COMMAND ${CMAKE_COMMAND} -E echo
 )
-

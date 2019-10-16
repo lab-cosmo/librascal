@@ -45,8 +45,6 @@ PYBIND11_MODULE(_rascal, mod) {
   m_kernels.doc() = "Collection of Kernels";
 
   py::module m_utl = mod.def_submodule("utils");
-  py::module m_math = mod.def_submodule("math");
-  m_math.doc() = "Collection of math functions";
   py::module m_internal = mod.def_submodule("_internal");
   m_internal.doc() =
       "Collection of bindings that are needed to build functional bindings for"
@@ -59,6 +57,5 @@ PYBIND11_MODULE(_rascal, mod) {
   rascal::add_structure_managers(m_nl, m_internal);
   rascal::add_representation_calculators(m_repr, m_internal);
   rascal::utils_binding(m_utl);
-  rascal::math_binding(m_math);
   rascal::add_kernels(m_kernels, m_internal);
 }
