@@ -199,7 +199,7 @@ Then to build the documentation run:
 .. code:: shell
 
   cd build
-  cmake -DENABLE_DOC=ON ..
+  cmake -DBUILD_DOC=ON ..
   make doc
 
 and open :file:`build/docs/html/index.html` in a browser.
@@ -330,12 +330,13 @@ Miscellaneous Information
 
 -  Common cmake flags:
 
+   -  -DCMAKE_CXX_COMPILER
    -  -DCMAKE_C_COMPILER
+   -  -DCMAKE_BUILD_TYPE
    -  -DBUILD_BINDINGS
    -  -DUSER
    -  -DINSTALL_PATH
-   -  -DCMAKE_BUILD_TYPE
-   -  -DENABLE_DOC
+   -  -DBUILD_DOC
    -  -DBUILD_TESTS
 
 -  Special flags:
