@@ -176,64 +176,16 @@ set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
-# utility to force copy of files...
-add_custom_command(
-    OUTPUT always_rebuild
-    COMMAND ${CMAKE_COMMAND} -E echo
-  )
-
-# set up the tests
-if (${BUILD_TESTS})
-  find_package(Boost REQUIRED COMPONENTS unit_test_framework )
-  enable_testing()
-  # build c++ tests and add to test suite
-  file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
-
-  add_executable(main_test_suite tests/main_test_suite.cc ${TEST_SRCS})
-
-  # https://stackoverflow.com/questions/7781374/boost-test-linking
-  ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
-
-  target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
-  target_link_libraries(main_test_suite ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
-  add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
-
-  if(BUILD_BINDINGS)
-
-    add_custom_target(py_test ALL
-      DEPENDS
-        copy_test_py
-      )
-
-    add_dependencies(py_test main_test_suite)
-
-    add_custom_command(OUTPUT copy_test_py
-      COMMAND ${CMAKE_COMMAND} -E copy_directory
-      ${CMAKE_SOURCE_DIR}/tests/python ${CMAKE_BINARY_DIR}/
-      DEPENDS
-          always_rebuild
-    )
-
-    add_test(python_binding_test python_binding_tests.py)
-  endif()
-
-
-endif(${BUILD_TESTS})
-
-# copy reference data that might be used in the example
-add_custom_target(copy_reference_data ALL
-    DEPENDS
-    copy_test_reference_data
-  )
-
-add_custom_command(OUTPUT copy_test_reference_data
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/tests/reference_data ${CMAKE_BINARY_DIR}/reference_data
-    DEPENDS
-        always_rebuild
-  )
-
 add_subdirectory(src)
+
+enable_testing()
+if(BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
+
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
 if(BUILD_BINDINGS)
     add_subdirectory(bindings)
@@ -241,10 +193,6 @@ endif()
 
 if(BUILD_DOC)
     add_subdirectory(docs)
-endif()
-
-if(BUILD_EXAMPLES)
-    add_subdirectory(examples)
 endif()
 
 # Try to find optional cpp linter

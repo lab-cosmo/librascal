@@ -26,11 +26,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
+#include <boost/test/unit_test.hpp>
+#include <boost/mpl/list.hpp>
+
 #include "test_structure.hh"
 #include "structure_managers/species_manager.hh"
-
-#include <map>
 
 namespace rascal {
 
