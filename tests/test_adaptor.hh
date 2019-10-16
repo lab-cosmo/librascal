@@ -31,7 +31,6 @@
 #ifndef TESTS_TEST_ADAPTOR_HH_
 #define TESTS_TEST_ADAPTOR_HH_
 
-#include "tests.hh"
 #include "test_structure.hh"
 
 #include <random>

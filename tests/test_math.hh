@@ -29,7 +29,6 @@
 #ifndef TESTS_TEST_MATH_HH_
 #define TESTS_TEST_MATH_HH_
 
-#include "tests.hh"
 #include "json_io.hh"
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
