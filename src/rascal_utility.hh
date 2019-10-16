@@ -1,5 +1,5 @@
 /**
- * file   rascal_utility.hh
+ * @file   rascal_utility.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -28,24 +28,57 @@
 #ifndef SRC_RASCAL_UTILITY_HH_
 #define SRC_RASCAL_UTILITY_HH_
 
-// Detects which compiler is used
-#if defined(__clang__)
-#define CLANG_COMPILER
-#elif defined(__GNUC__) || defined(__GNUG__)
-#define GCC_COMPILER
-#endif
-
-#include "representations/representation_manager_base.hh"
-
 #include <utility>
 #include <string>
-#include <regex>  // NOLINT
-#include <tuple>
-#include <map>
-#include <fstream>
+#include <vector>
+#include <typeinfo>
+#include <type_traits>
 
 namespace rascal {
   namespace internal {
+
+    /**
+     * Utility to check if a template parameter is iterable
+     */
+    template <typename... Ts>
+    struct make_void {
+      typedef void type;
+    };
+    template <typename... Ts>
+    using void_t = typename make_void<Ts...>::type;
+
+    /**
+     * Checks if the type T has a begin, end, iterator and const_iterator
+     * functionality.
+     */
+    template <class, class = void_t<>>
+    struct is_iterable : std::false_type {};
+
+    template <class T>
+    struct is_iterable<T,
+                       void_t<decltype(std::declval<T>().begin()),
+                              decltype(std::declval<T>().end()),
+                              typename T::iterator, typename T::const_iterator>>
+        : std::true_type {};
+
+    template <class, class = void_t<>>
+    struct is_map : std::false_type {};
+
+    template <class T>
+    struct is_map<
+        T, void_t<decltype(std::declval<T>().begin()),
+                  decltype(std::declval<T>().end()), typename T::iterator,
+                  typename T::const_iterator, typename T::key_type>>
+        : std::true_type {};
+
+    /**
+     * Here the proper iteraror means that it is a std::Container and not
+     * a std::AssociativeContainer
+     */
+    template <class T>
+    struct is_proper_iterator {
+      static constexpr bool value = !is_map<T>::value && is_iterable<T>::value;
+    };
 
     /* ---------------------------------------------------------------------- */
     /**
@@ -198,104 +231,41 @@ namespace rascal {
     struct ResizePropertyToZero {
       template <typename T>
       void operator()(T & t) {
-        t.resize_to_zero();
+        t.clear();
       }
     };
 
     /* ---------------------------------------------------------------------- */
-    // inspiered from
-    // https://blog.molecular-matters.com/2015/12/11/getting-
-    // the-type-of-a-template-argument-as-string-without-rtti/
-    /**
-     * Transforms the template typename to a string.
-     * This functionality is compiler dependant so for the moment
-     * clang and gcc are compatible.
-     * @template T type that should be stringifyied
-     * @returns std::string name of the type
-     */
-    template <typename T>
-    struct GetTypeNameHelper {
-      static const std::string GetTypeName() {
-// The output of of Pretty Function depends on the compiler
-// the #define strings is a pain to split
-#if defined(GCC_COMPILER)
-#define FUNCTION_MACRO __PRETTY_FUNCTION__
-#define PREFIX                                                                 \
-  "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() " \
-  "[with T = "  // NOLINT
-#define SUFFIX_1                                                               \
-  "; std::__cxx11::string = std::__cxx11::basic_string<char>]"  // NOLINT
-#define SUFFIX_2 ""
-#define NUM_TYPE_REPEATS 1
-#elif defined(CLANG_COMPILER)
-#define FUNCTION_MACRO __PRETTY_FUNCTION__
-#define PREFIX "static const std::string rascal::internal::GetTypeNameHelper<"
-#define SUFFIX_1 ">::GetTypeName() [T ="
-#define SUFFIX_2 "]"
-#define NUM_TYPE_REPEATS 2
-#else
-#error "No implementation for current compiler"
-#endif
 
-        const size_t funcNameLength{sizeof(FUNCTION_MACRO) - 1u};
-        const size_t prefixLength{sizeof(PREFIX) - 1u};
-        const size_t suffixLength{sizeof(SUFFIX_1) - 1u + sizeof(SUFFIX_2) -
-                                  1u};
-        const size_t typeLength{
-            (funcNameLength - (prefixLength + suffixLength)) /
-            NUM_TYPE_REPEATS};
-        std::string typeName{FUNCTION_MACRO + prefixLength, typeLength};
-        return typeName;
-#undef FUNCTION_MACRO
-#undef PREFIX
-#undef SUFFIX_1
-#undef SUFFIX_2
-#undef NUM_TYPE_REPEATS
-      }
-    };
-    //! return a pretty form of the template typename
-    template <typename T>
-    std::string GetTypeName() {
-      std::string full_typeName = GetTypeNameHelper<T>::GetTypeName();
+    //! Get the demangled name of a c++ type, as returned by
+    //! `typeinfo(...).name()`
+    std::string type_name_demangled(const char * name);
 
-      std::string tn2{
-          std::regex_replace(full_typeName, std::regex("rascal::"), "")};
-      std::string tn3{std::regex_replace(tn2, std::regex("<"), "_")};
-      std::string tn4{std::regex_replace(tn3, std::regex(">"), "")};
-      std::string tn5{std::regex_replace(tn4, std::regex(" "), "")};
-      std::string tn6{std::regex_replace(tn5, std::regex(","), "_")};
-      return tn6;
+    //! Replace all occurences of `pattern` by `replacement` in `string`
+    void replace(std::string & string, const std::string & pattern,
+                 const std::string & replacement);
+
+    //! return a human readable form of the template parameter type name
+    template <typename T>
+    std::string type_name() {
+      std::string full_name = type_name_demangled(typeid(T).name());
+
+      replace(full_name, "rascal::", "");
+      replace(full_name, "<", "_");
+      replace(full_name, ">", "");
+      replace(full_name, " ", "");
+      replace(full_name, ",", "_");
+      return full_name;
     }
 
-    /**
-     * Reads a binary file and puts it into a vector
-     * Taken from
-     * https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars
-     * // NOLINT
-     */
-    template <typename BINARY>
-    void read_binary_file(const std::string & filename,
-                          std::vector<BINARY> & vec) {
-      // open the file:
-      std::ifstream file(filename, std::ios::binary);
+    //! Reads a binary file
+    //!
+    //! @throw std::runtime_error if the file can't be opened
+    std::vector<uint8_t> read_binary_file(const std::string & filename);
 
-      // Stop eating new lines in binary mode!!!
-      file.unsetf(std::ios::skipws);
-
-      // get its size:
-      std::streampos fileSize;
-
-      file.seekg(0, std::ios::end);
-      fileSize = file.tellg();
-      file.seekg(0, std::ios::beg);
-
-      // reserve capacity
-      vec.reserve(fileSize);
-
-      // read the data:
-      vec.insert(vec.begin(), std::istream_iterator<BINARY>(file),
-                 std::istream_iterator<BINARY>());
-    }
+    //! Extract the extension from a filename as the charaters after the last
+    //! ".". If no extension is found, return an empty string.
+    std::string get_filename_extension(const std::string & filename);
 
   }  // namespace internal
 }  // namespace rascal

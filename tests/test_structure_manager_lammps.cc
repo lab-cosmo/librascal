@@ -1,5 +1,5 @@
 /**
- * file   test_structure_manager_lammps.cc
+ * @file   test_structure_manager_lammps.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *

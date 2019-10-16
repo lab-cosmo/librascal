@@ -1,5 +1,5 @@
 /**
- * file   adaptor_filter.hh
+ * @file   adaptor_filter.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>
@@ -56,7 +56,9 @@ namespace rascal {
     constexpr static bool HasDistances{parent_traits::HasDistances};
     constexpr static bool HasDirectionVectors{
         parent_traits::HasDirectionVectors};
+    constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     constexpr static int Dim{parent_traits::Dim};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
     //! New MaxOrder upon construction!
     constexpr static size_t MaxOrder{MaxOrder_};
     //! New Layer
@@ -120,8 +122,10 @@ namespace rascal {
     friend struct internal::ClusterAdder;
 
     using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
+
     using Parent = StructureManager<Manager_t>;
     using ParentBase = FilterBase;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorFilter>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -177,16 +181,6 @@ namespace rascal {
 
     virtual void perform_filtering() = 0;
 
-    //! returns the distance between atoms in a given pair
-    template <size_t Order, size_t Layer,
-              bool DummyHasDistances = traits::HasDistances>
-    inline const std::enable_if_t<DummyHasDistances, double> &
-    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-      static_assert(DummyHasDistances == traits::HasDistances,
-                    "SFINAE, do not specify");
-      return this->manager->get_distance(pair);
-    }
-
     /**
      * return the number of 'neighbours' (i.e., number of pairs for an atom,
      * number of triplets for a pair, etc) of a given order.
@@ -203,8 +197,23 @@ namespace rascal {
     /**
      * return the position of a given atom
      */
-    inline Vector_ref get_position(const int & index) {
+    inline Vector_ref get_position(int index) {
       return this->manager->get_position(index);
+    }
+
+    //! returns the number of atoms
+    inline size_t get_size_with_ghosts() const {
+      return this->manager->get_size_with_ghosts();
+    }
+
+    //! returns the distance between atoms in a given pair
+    template <size_t Order, size_t Layer,
+              bool DummyHasDistances = traits::HasDistances>
+    inline const std::enable_if_t<DummyHasDistances, double> &
+    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+      static_assert(DummyHasDistances == traits::HasDistances,
+                    "SFINAE, do not specify");
+      return this->manager->get_distance(pair);
     }
 
     /**
@@ -259,7 +268,7 @@ namespace rascal {
     }
 
     //! return atom type
-    inline const int & get_atom_type(const AtomRef_t & atom) const {
+    inline int get_atom_type(const AtomRef_t & atom) const {
       // careful, atom refers to our local index, for the manager, we need its
       // index:
       auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
@@ -267,13 +276,13 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom tag
-    inline int & get_atom_type(const int & atom_id) {
+    inline int & get_atom_type(int atom_id) {
       auto && type{this->manager->get_atom_type(atom_id)};
       return type;
     }
 
     //! Returns a constant atom type given an atom tag
-    inline const int & get_atom_type(int & atom_id) const {
+    inline int get_atom_type(int & atom_id) const {
       auto && type{this->manager->get_atom_type(atom_id)};
       return type;
     }

@@ -1,7 +1,6 @@
 /**
- * file   property_base.hh
+ * @file   property_block_sparse.hh
  *
- * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   03 April 2019
@@ -29,6 +28,8 @@
 #ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 
+#include "rascal_utility.hh"
+#include "math/math_utils.hh"
 #include "structure_managers/property_base.hh"
 #include "structure_managers/cluster_ref_key.hh"
 
@@ -41,7 +42,6 @@
 #include <type_traits>
 
 namespace rascal {
-
   namespace internal {
 
     /**
@@ -93,7 +93,7 @@ namespace rascal {
       }
 
       //! access or insert specified element. use with caution !
-      inline Value_t & operator[](const size_t & id) { return this->data[id]; }
+      inline Value_t & operator[](size_t id) { return this->data[id]; }
 
       inline const Key_t & get_key() const { return data; }
     };
@@ -106,11 +106,13 @@ namespace rascal {
       using Map_t = std::map<K, std::tuple<int, int, int>>;
       using Precision_t = typename V::value_type;
       using Data_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
-      using DataRef_t = Eigen::Ref<Data_t>;
-      using DataConstRef_t = const Eigen::Ref<const Data_t>;
+      using Vector_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, 1>;
+      using VectorMap_Ref = typename Eigen::Map<Vector_t>;
+      using Self_t = InternallySortedKeyMap<K, V>;
       //! the data holder.
       Data_t data{};
       Map_t map{};
+      bool normalized{false};
 
       // some member types
       using key_type = typename MyMap_t::key_type;
@@ -274,14 +276,14 @@ namespace rascal {
        * the elements
        */
       template <typename Key_List>
-      void resize(const Key_List & keys, const int & n_row, const int & n_col,
+      void resize(const Key_List & keys, int n_row, int n_col,
                   const Precision_t & val) {
         this->resize(keys, n_row, n_col);
         this->data = val;
       }
 
       template <typename Key_List>
-      void resize(const Key_List & keys, const int & n_row, const int & n_col) {
+      void resize(const Key_List & keys, int n_row, int n_col) {
         std::vector<SortedKey_t> skeys{};
         for (auto && key : keys) {
           SortedKey_t skey{key};
@@ -290,8 +292,8 @@ namespace rascal {
         this->resize(skeys, n_row, n_col);
       }
 
-      void resize(const std::vector<SortedKey_t> & skeys, const int & n_row,
-                  const int & n_col) {
+      void resize(const std::vector<SortedKey_t> & skeys, int n_row,
+                  int n_col) {
         int new_size{0};
         for (auto && skey : skeys) {
           if (this->count(skey) == 0) {
@@ -332,26 +334,26 @@ namespace rascal {
         return keys;
       }
 
-      inline void multiply_elements_by(const double & fac) {
-        this->data *= fac;
-      }
+      inline void multiply_elements_by(double fac) { this->data *= fac; }
 
       /**
        * l^2 norm of the entire vector
        */
       inline Precision_t norm() const { return this->data.matrix().norm(); }
 
-      /**
-       * squared l^2 norm of the entire vector (sum of squared elements)
-       */
       inline Precision_t squaredNorm() const {
         return this->data.matrix().squaredNorm();
       }
 
       /**
-       * Normalize the whole vector
+       * squared l^2 norm of the entire vector (sum of squared elements)
        */
-      inline void normalize() { this->data /= this->data.matrix().norm(); }
+      inline void normalize() {
+        double norm = this->data.matrix().norm();
+        if (std::abs(norm) > 0.) {
+          this->data /= norm;
+        }
+      }
 
       /**
        * Multiply the elements that belong to (key1, key2) entry with
@@ -359,7 +361,7 @@ namespace rascal {
        *
        * relevant only when the keys have 2 indices
        */
-      inline void multiply_off_diagonal_elements_by(const double & fac) {
+      inline void multiply_off_diagonal_elements_by(double fac) {
         for (const auto & el : this->map) {
           auto && pair_type{el.first};
           auto && pos{el.second};
@@ -369,6 +371,26 @@ namespace rascal {
             block *= fac;
           }
         }
+      }
+
+      /**
+       * dot product with another internally sorted map
+       */
+      inline Precision_t dot(Self_t & B) {
+        Precision_t val{0.};
+        auto keys_b{B.get_keys()};
+        auto unique_keys{this->intersection(keys_b)};
+
+        for (auto & key : unique_keys) {
+          auto && posA{this->map[key]};
+          auto vecA{VectorMap_Ref(&this->data[std::get<0>(posA)],
+                                  std::get<1>(posA) * std::get<2>(posA))};
+          auto && posB{B.map[key]};
+          auto vecB{VectorMap_Ref(&B.data[std::get<0>(posB)],
+                                  std::get<1>(posB) * std::get<2>(posB))};
+          val += vecA.dot(vecB);
+        }
+        return val;
       }
 
       /**
@@ -401,6 +423,22 @@ namespace rascal {
       }
 
      private:
+      std::vector<key_type> intersection(std::vector<key_type> & keys) {
+        if (keys.empty()) {
+          return std::vector<key_type>();
+        }
+        std::set<key_type> set{keys.cbegin(), keys.cend()};
+        std::vector<key_type> intersections;
+        for (auto el : this->map) {
+          if (set.erase(el.first) >
+              0) {  // if n exists in set, then 1 is returned and n is erased;
+                    // otherwise, 0.
+            intersections.push_back(el.first);
+          }
+        }
+        return intersections;
+      }
+
       /**
        * Functor to get a key from a map
        */
@@ -423,19 +461,20 @@ namespace rascal {
    public:
     using Parent = PropertyBase;
     using Manager_t = Manager;
+    using Self_t =
+        BlockSparseProperty<Precision_t, Order, PropertyLayer, Manager, Key>;
     using traits = typename Manager::traits;
 
-    using Dense_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, Eigen::Dynamic,
-                                  Eigen::RowMajor>;
-    using DenseRef_t = Eigen::Map<Dense_t>;
+    using Matrix_t = math::Matrix_t;
+    using DenseRef_t = Eigen::Map<Matrix_t>;
     using Key_t = Key;
     using Keys_t = std::set<Key_t>;
-    using InputData_t = internal::InternallySortedKeyMap<Key_t, Dense_t>;
+    using InputData_t = internal::InternallySortedKeyMap<Key_t, Matrix_t>;
     using Data_t = std::vector<InputData_t>;
-    using DataOrders_t = std::array<std::vector<InputData_t>, Order>;
 
    protected:
-    DataOrders_t values{};  //!< storage for properties
+    Data_t values{};
+    std::string type_id{};
 
    public:
     //! constructor
@@ -446,7 +485,8 @@ namespace rascal {
                  0,
                  Order,
                  PropertyLayer,
-                 metadata} {}
+                 metadata},
+          type_id{typeid(Self_t).name()} {}
 
     //! Default constructor
     BlockSparseProperty() = delete;
@@ -466,11 +506,21 @@ namespace rascal {
     //! Move assignment operator
     BlockSparseProperty & operator=(BlockSparseProperty && other) = default;
 
-    /* ---------------------------------------------------------------------- */
-    //! return runtime info about the stored (e.g., numerical) type
-    const std::type_info & get_type_info() const final {
-      return typeid(Precision_t);
-    };
+    static inline void check_compatibility(PropertyBase & other) {
+      // check ``type`` compatibility
+      auto type_id{typeid(Self_t).name()};
+      if (not(other.get_type_info() == type_id)) {
+        std::stringstream err_str{};
+        err_str << "Incompatible types: '" << other.get_type_info() << "' != '"
+                << type_id << "'.";
+        throw std::runtime_error(err_str.str());
+      }
+    }
+
+    /* --------------------------------------------------------------------- */
+
+    //! return info about the type
+    const std::string & get_type_info() const final { return this->type_id; }
 
     /**
      * the case consider_ghost_atoms == true is limited to cluster_index
@@ -497,6 +547,7 @@ namespace rascal {
       }
       return this->get_manager().size();
     }
+
     template <size_t Order_ = Order,
               std::enable_if_t<not(Order_ == 1), int> = 0>
     size_t
@@ -505,35 +556,17 @@ namespace rascal {
     }
 
     //! Adjust size of values (only increases, never frees)
-    template <size_t Order_ = Order, std::enable_if_t<(Order_ > 1), int> = 0>
-    inline void resize(bool consider_ghost_atoms = false) {
-      this->resize<Order_ - 1>(consider_ghost_atoms);
-      size_t new_size{
-          this->get_validated_property_length<Order_>(consider_ghost_atoms)};
-      this->values[Order_ - 1].resize(new_size);
-    }
 
-    template <size_t Order_ = Order, std::enable_if_t<(Order_ == 1), int> = 0>
     inline void resize(bool consider_ghost_atoms = false) {
       size_t new_size{
-          this->get_validated_property_length<Order_>(consider_ghost_atoms)};
-      this->values[Order_ - 1].resize(new_size);
+          this->get_validated_property_length<Order>(consider_ghost_atoms)};
+      this->values.resize(new_size);
     }
 
-    inline size_t size() const {
-      size_t size{0};
-      for (size_t i_order{0}; i_order < Order; ++i_order) {
-        size += this->values[i_order].size();
-      }
-      return size;
-    }
+    inline size_t size() const { return this->values.size(); }
 
     //! clear all the content of the property
-    inline void clear() {
-      for (size_t i_order{0}; i_order < Order; ++i_order) {
-        this->values[i_order].clear();
-      }
-    }
+    inline void clear() { this->values.clear(); }
 
     inline Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);
@@ -541,108 +574,70 @@ namespace rascal {
 
     /* -------------------------------------------------------------------- */
     //! Property accessor by cluster ref
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-              std::enable_if_t<(CallerOrder <= Order_), int> = 0>
+    template <size_t CallerLayer>
     inline decltype(auto)
-    operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
-      static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
+    operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
 
-      return this->operator()(id.get_cluster_index(CallerLayer),
-                              CallerOrder - 1);
+      return this->operator[](id.get_cluster_index(CallerLayer));
     }
-
-    /* --------------------------------------------------------------------
-     * AAAAAaaaargh oh no the const version breaks everything
-     * pls no
-    //! Property accessor by cluster ref
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-              std::enable_if_t<(CallerOrder <= Order_), int> = 0>
-    inline decltype(auto)
-    const operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
-      static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-
-      return this->operator()(id.get_cluster_index(CallerLayer),
-                              CallerOrder - 1);
-    } */
 
     /**
      * Access a property of order 1 with a clusterRef of order 2
      */
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-              std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
-                               int> = 0>                             // NOLINT
+              std::enable_if_t<(Order_ == 1) and (CallerOrder == 2),  // NOLINT
+                               int> = 0>                              // NOLINT
     inline decltype(auto)
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
-      return this->operator()(this->get_manager().get_atom_index(
-                                  id.get_internal_neighbour_atom_tag()),
-                              0);
-    }
-
-    inline InputData_t & operator()(const size_t & index,
-                                    const size_t & i_order) {
-      return this->values[i_order][index];
+      return this->operator[](this->get_manager().get_atom_index(
+          id.get_internal_neighbour_atom_tag()));
     }
 
     //! Accessor for property by index for dynamically sized properties
-    inline decltype(auto) operator()(const size_t & index) {
-      return this->operator[](index);
+    inline InputData_t & operator[](size_t index) {
+      return this->values[index];
     }
 
-    template <size_t CallerOrder, size_t CallerLayer>
+    template <size_t CallerLayer>
     inline decltype(auto)
-    operator()(const ClusterRefKey<CallerOrder, CallerLayer> & id,
+    operator()(const ClusterRefKey<Order, CallerLayer> & id,
                const Key_t & key) {
-      static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
 
-      return this->operator()(id.get_cluster_index(CallerLayer),
-                              CallerOrder - 1, key);
+      return this->operator()(id.get_cluster_index(CallerLayer), key);
     }
 
     //! Accessor for property by index for dynamically sized properties
-    inline DenseRef_t operator()(const size_t & index, const size_t & i_order,
-                                 const Key_t & key) {
-      return DenseRef_t(&this->values[i_order][index].at(key)(0, 0),
-                        this->values[i_order][index].at(key).rows(),
-                        this->values[i_order][index].at(key).cols());
+    inline DenseRef_t operator()(size_t index, const Key_t & key) {
+      auto && val = this->values[index].at(key);
+      return DenseRef_t(&val(0, 0), val.rows(), val.cols());
     }
-
-    // inline size_t get_dense_feature_size(const size_t & index) {
-    //   auto keys{this->values[0][index].get_keys()};
-    //   return this->get_nb_comp() * keys.size();
-    // }
 
     //! Accessor for property by cluster index and return a dense
     //! representation of the property associated to this cluster
-    template <size_t CallerOrder, size_t CallerLayer>
-    inline Dense_t
-    get_dense_row(const ClusterRefKey<CallerOrder, CallerLayer> & id) {
-      static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
+    template <size_t CallerLayer>
+    inline Matrix_t
+    get_dense_row(const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
 
-      return this->get_dense_row(id.get_cluster_index(CallerLayer),
-                                 CallerOrder - 1);
+      return this->get_dense_row(id.get_cluster_index(CallerLayer));
     }
 
-    inline Dense_t get_dense_row(const size_t & index, const size_t & i_order) {
-      auto keys = this->values[i_order][index].get_keys();
-      Dense_t feature_row = Dense_t::Zero(this->get_nb_comp(), keys.size());
+    inline Matrix_t get_dense_row(size_t index) {
+      auto keys = this->values[index].get_keys();
+      Matrix_t feature_row = Matrix_t::Zero(this->get_nb_comp(), keys.size());
       size_t i_col{0};
       for (const auto & key : keys) {
         size_t i_row{0};
-        for (int i_pos{0}; i_pos < this->values[i_order][index][key].size();
-             i_pos++) {
-          feature_row(i_row, i_col) = this->values[i_order][index][key](i_pos);
+        for (int i_pos{0}; i_pos < this->get_nb_comp(); i_pos++) {
+          feature_row(i_row, i_col) = this->values[index][key](i_pos);
           i_row++;
         }
         i_col++;
@@ -650,60 +645,104 @@ namespace rascal {
       return feature_row;
     }
 
-    inline Dense_t get_dense_rep() {
+    /**
+     * Fill a dense feature matrix with layout Ncenter x Nfeatures
+     * when Order == 1.
+     * It is filled in the lexicografical order provided by all_keys and the
+     * missing entries are filled with zeros.
+     * The features are flattened out following the underlying storage order.
+     *
+     * @param features dense Eigen matrix of the proper size
+     *
+     * @param all_keys set of all the keys that should be considered when
+     * building the feature matrix
+     *
+     */
+    inline void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features,
+                                          const Keys_t & all_keys) {
+      int inner_size{this->get_nb_comp()};
+      int i_row{0};
+      size_t n_center{this->values.size()};
+      for (size_t i_center{0}; i_center < n_center; i_center++) {
+        int i_feat{0};
+        for (const auto & key : all_keys) {
+          if (this->values[i_center].count(key) == 1) {
+            for (int i_pos{0}; i_pos < inner_size; i_pos++) {
+              features(i_row, i_feat) = this->values[i_center][key](i_pos);
+              i_feat++;
+            }
+          } else {
+            i_feat += inner_size;
+          }
+        }  // keys
+        i_row++;
+      }  // centers
+    }
+
+    /**
+     * Get a dense feature matrix Ncenter x Nfeatures. The keys to use are
+     * deduced from the local storage.
+     */
+    inline Matrix_t get_dense_feature_matrix() {
+      auto all_keys = this->get_keys();
       size_t n_elements{this->size()};
       int inner_size{this->get_nb_comp()};
-      Keys_t all_keys{};
-      for (size_t i_order{0}; i_order < Order; ++i_order) {
-        size_t n_center{this->values[i_order].size()};
-        for (size_t i_center{0}; i_center < n_center; i_center++) {
-          auto keys = this->values[i_order][i_center].get_keys();
-          for (auto & key : keys) {
-            all_keys.insert(key);
-          }
-        }
-      }
-      Dense_t features =
-          Dense_t::Zero(inner_size * all_keys.size(), n_elements);
-
-      for (size_t i_order{0}; i_order < Order; ++i_order) {
-        size_t n_center{this->values[i_order].size()};
-        for (size_t i_center{0}; i_center < n_center; i_center++) {
-          int i_feat{0};
-          for (const auto & key : all_keys) {
-            if (this->values[i_order][i_center].count(key) == 1) {
-              for (int i_pos{0};
-                   i_pos < this->values[i_order][i_center][key].size();
-                   i_pos++) {
-                features(i_feat, i_center) =
-                    this->values[i_order][i_center][key](i_pos);
-                i_feat++;
-              }
-            } else {
-              i_feat += inner_size;
-            }
-          }
-        }
-      }
+      Matrix_t features =
+          Matrix_t::Zero(n_elements, inner_size * all_keys.size());
+      this->fill_dense_feature_matrix(features, all_keys);
       return features;
     }
 
-    //! getter to the underlying data storage
-    // A hack here is fine because the function will disapear soon
-    inline std::vector<InputData_t> & get_raw_data() { return this->values[0]; }
+    /**
+     * @return set of unique keys at the level of the structure
+     */
+    inline Keys_t get_keys() {
+      Keys_t all_keys{};
+      size_t n_center{this->values.size()};
+      for (size_t i_center{0}; i_center < n_center; i_center++) {
+        auto keys = this->values[i_center].get_keys();
+        for (auto & key : keys) {
+          all_keys.insert(key);
+        }
+      }
+      return all_keys;
+    }
+
     //! get number of different distinct element in the property
     //! (typically the number of center)
     inline size_t get_nb_item() const { return this->size(); }
 
-    template <size_t CallerOrder, size_t CallerLayer>
+    template <size_t CallerLayer>
     inline decltype(auto)
-    get_keys(const ClusterRefKey<CallerOrder, CallerLayer> & id) const {
-      static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
+    get_keys(const ClusterRefKey<Order, CallerLayer> & id) const {
+      // static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
-      return this->values[CallerOrder - 1][id.get_cluster_index(CallerLayer)]
-          .get_keys();
+      return this->values[id.get_cluster_index(CallerLayer)].get_keys();
+    }
+
+    /**
+     * dot product between property block sparse A and B
+     * assumes order == 1 for the moment should use SFINAE to take care of
+     * the case order == 2
+     */
+    inline Matrix_t dot(Self_t & B) {
+      Matrix_t mat(this->size(), B.size());
+      auto && manager_a{this->get_manager()};
+      auto && manager_b{B.get_manager()};
+      int i_row{0};
+      for (auto centerA : manager_a) {
+        auto && rowA{this->operator[](centerA)};
+        int i_col{0};
+        for (auto centerB : manager_b) {
+          auto && rowB{B[centerB]};
+          mat(i_row, i_col) = rowA.dot(rowB);
+          ++i_col;
+        }
+        ++i_row;
+      }
+      return mat;
     }
   };
 

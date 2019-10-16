@@ -57,7 +57,7 @@ def get_NL_strict_reference(cutoff, cell, pbc, positions, atom_types):
                     neighlist[icenter].append(jneigh)
                     neighdist[icenter].append(dist)
                     neightype[icenter].append(atom_types[jneigh])
-                    dirVec[icenter].append(rr/dist)
+                    dirVec[icenter].append(rr / dist)
     return neighpos, neighlist, neightype, neighdist, dirVec
 
 
@@ -68,11 +68,11 @@ class TestStructureManagerCenters(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.nl_options = [
-            dict(name='centers', args=[]),
+            dict(name='centers', args={}),
         ]
 
     def test_manager_iteration(self):
@@ -94,13 +94,13 @@ class TestNL(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.cutoff = 3.
         self.nl_options = [
-            dict(name='centers', args=[]),
-            dict(name='neighbourlist', args=[self.cutoff]),
+            dict(name='centers', args=dict()),
+            dict(name='neighbourlist', args=dict(cutoff=self.cutoff)),
         ]
         self.pbcs = np.array([[1, 1, 1], [0, 0, 0],
                               [0, 1, 0], [1, 0, 1],
@@ -131,7 +131,7 @@ class TestNL(unittest.TestCase):
 
             for ii, center in enumerate(manager):
                 for jj, neigh in enumerate(center):
-                    dist = np.linalg.norm(neigh.position-center.position)
+                    dist = np.linalg.norm(neigh.position - center.position)
 
 
 class TestNLStrict(unittest.TestCase):
@@ -141,15 +141,15 @@ class TestNLStrict(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.cutoff = 3.
 
         self.nl_options = [
-            dict(name='centers', args=[]),
-            dict(name='neighbourlist', args=[self.cutoff]),
-            dict(name='strict', args=[self.cutoff])
+            dict(name='centers', args=dict()),
+            dict(name='neighbourlist', args=dict(cutoff=self.cutoff)),
+            dict(name='strict', args=dict(cutoff=self.cutoff))
         ]
 
         self.pbcs = np.array([[1, 1, 1], [0, 0, 0],
@@ -185,9 +185,9 @@ class TestNLStrict(unittest.TestCase):
             for ii, center in enumerate(manager):
                 dists, dirVecs = [], []
                 for jj, neigh in enumerate(center):
-                    dist = np.linalg.norm(neigh.position-center.position)
+                    dist = np.linalg.norm(neigh.position - center.position)
                     dists.append(dist)
-                    dirVecs.append((neigh.position-center.position)/dist)
+                    dirVecs.append((neigh.position - center.position) / dist)
 
                 ref_dists, dists = np.array(neighdist[ii]), np.array(dists)
                 ref_dirVecs, dirVecs = np.array(

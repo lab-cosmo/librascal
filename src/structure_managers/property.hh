@@ -1,5 +1,5 @@
 /**
- * file   property.hh
+ * @file   property.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -31,6 +31,7 @@
 #ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_HH_
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_HH_
 
+#include "rascal_utility.hh"
 #include "structure_managers/property_typed.hh"
 #include <basic_types.hh>
 #include <cassert>
@@ -59,12 +60,12 @@ namespace rascal {
    public:
     using Parent = TypedProperty<T, Order, PropertyLayer, Manager>;
     using Manager_t = Manager;
-
+    using Self_t = Property<T, Order, PropertyLayer, Manager, NbRow, NbCol>;
     using Value = internal::Value<T, NbRow, NbCol>;
     static_assert(std::is_same<Value, internal::Value<T, NbRow, NbCol>>::value,
                   "type alias failed");
 
-    using value_type = typename Value::type;
+    using value_type = typename Value::value_type;
     using reference = typename Value::reference;
     using const_reference = typename Value::const_reference;
 
@@ -81,15 +82,8 @@ namespace rascal {
 
     //! Constructor with Manager
     explicit Property(Manager_t & manager, std::string metadata = "no metadata")
-        : Parent{manager, NbRow, NbCol, metadata} {}
-    // Property(std::shared_ptr<StructureManagerBase> manager,
-    //          std::string metadata = "no metadata")
-    //     : Parent{manager, NbRow, NbCol, metadata} {}
-
-    // Property(std::shared_ptr<StructureManagerBase> & manager,
-    //          std::string metadata = "no metadata")
-    // :Property(std::weak_ptr<StructureManagerBase>(manager), metadata)
-    // {}
+        : Parent{manager, NbRow, NbCol, metadata},
+          type_id{typeid(Self_t).name()} {}
 
     //! Copy constructor
     Property(const Property & other) = delete;
@@ -112,45 +106,18 @@ namespace rascal {
      * properly casted fully typed and sized reference, or throws a runttime
      * error
      */
-    // TODO(felix) Need to make an equivalent for dynamic sized property
-    static inline Property & check_compatibility(PropertyBase & other) {
+    static inline void check_compatibility(PropertyBase & other) {
       // check ``type`` compatibility
-      if (not(other.get_type_info().hash_code() == typeid(T).hash_code())) {
+      auto type_id{typeid(Self_t).name()};
+      if (other.get_type_info() != type_id) {
         std::stringstream err_str{};
-        err_str << "Incompatible types: '" << other.get_type_info().name()
-                << "' != '" << typeid(T).name() << "'.";
+        err_str << "Incompatible types: '" << other.get_type_info() << "' != '"
+                << type_id << "'.";
         throw std::runtime_error(err_str.str());
       }
-
-      // check ``order`` compatibility
-      if (not(other.get_order() == Order)) {
-        std::stringstream err_str{};
-        err_str << "Incompatible property order: input is of order "
-                << other.get_order() << ", this property is of order " << Order
-                << ".";
-        throw std::runtime_error(err_str.str());
-      }
-
-      // check property ``layer`` compatibility
-      if (not(other.get_property_layer() == PropertyLayer)) {
-        std::stringstream err_str{};
-        err_str << "At wrong layer in stack: input is at layer "
-                << other.get_property_layer() << ", this property is at layer "
-                << PropertyLayer << ".";
-        throw std::runtime_error(err_str.str());
-      }
-
-      // check size compatibility
-      if (not((other.get_nb_row() == NbRow) and
-              (other.get_nb_col() == NbCol))) {
-        std::stringstream err_str{};
-        err_str << "Incompatible sizes: input is " << other.get_nb_row() << "x"
-                << other.get_nb_col() << ", but should be " << NbRow << "x"
-                << NbCol << ".";
-        throw std::runtime_error(err_str.str());
-      }
-      return static_cast<Property &>(other);
     }
+
+    const std::string & get_type_info() const final { return this->type_id; }
 
     /* ---------------------------------------------------------------------- */
     /**
@@ -206,7 +173,7 @@ namespace rascal {
     /**
      * Accessor for property by index for properties
      */
-    inline reference operator[](const size_t & index) {
+    inline reference operator[](size_t index) {
       // use tag dispatch to use the proper definition
       // of the get function
       return this->get(
@@ -238,11 +205,11 @@ namespace rascal {
                             this->get_nb_col());
     }
 
-    inline reference get(const size_t & index, StaticSize) {
+    inline reference get(size_t index, StaticSize) {
       return Value::get_ref(this->values[index * NbRow * NbCol]);
     }
 
-    inline reference get(const size_t & index, DynamicSize) {
+    inline reference get(size_t index, DynamicSize) {
       return get_ref(this->values[index * this->get_nb_comp()]);
     }
 
@@ -250,6 +217,8 @@ namespace rascal {
     inline reference get_ref(T & value) {
       return reference(&value, this->get_nb_row(), this->get_nb_col());
     }
+
+    std::string type_id{};
   };
 
 }  // namespace rascal

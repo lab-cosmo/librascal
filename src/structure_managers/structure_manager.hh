@@ -1,5 +1,5 @@
 /**
- * file   structure_manager.hh
+ * @file   structure_manager.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -25,23 +25,24 @@
  * Boston, MA 02111-1307, USA.
  */
 
-//! header guards
 #ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
 #define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
 
-/**
+/*
  * Each actual implementation of a StructureManager is based on the given
  * interface
  */
 #include "structure_managers/structure_manager_base.hh"
 #include "structure_managers/property.hh"
+#include "structure_managers/property_block_sparse.hh"
 #include "structure_managers/cluster_ref_key.hh"
 #include "rascal_utility.hh"
+#include "json_io.hh"
 
-//! Some data types and operations are based on the Eigen library
+// Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
-//! And standard header inclusion
+// And standard header inclusion
 #include <cstddef>
 #include <array>
 #include <type_traits>
@@ -172,8 +173,7 @@ namespace rascal {
    * to the number of clusters and from `Updateable` to be able to update the
    * structure by using a vector of `Updateables`.
    *
-   * @param ManagerImplementation
-   * class implementation
+   * @tparam ManagerImplementation class implementation
    */
   template <class ManagerImplementation>
   class StructureManager : public StructureManagerBase {
@@ -316,7 +316,7 @@ namespace rascal {
     }
 
     //! returns position of an atom with index ``atom_tag``
-    inline Vector_ref position(const int & atom_tag) {
+    inline Vector_ref position(int atom_tag) {
       return this->implementation().get_position(atom_tag);
     }
 
@@ -327,13 +327,13 @@ namespace rascal {
 
     //! returns the atom type (convention is atomic number, but nothing is
     //! imposed apart from being an integer
-    inline const int & atom_type(const int & atom_tag) const {
+    inline int atom_type(int atom_tag) const {
       return this->implementation().get_atom_type(atom_tag);
     }
 
     //! returns the atom type (convention is atomic number, but nothing is
     //! imposed apart from being an integer
-    inline int & atom_type(const int & atom_tag) {
+    inline int & atom_type(int atom_tag) {
       return this->implementation().get_atom_type(atom_tag);
     }
 
@@ -346,31 +346,27 @@ namespace rascal {
      */
     void attach_property(const std::string & name,
                          std::shared_ptr<PropertyBase> property) {
-      // if (this->has_property(name)) {
-      //   std::stringstream error{};
-      //   error << "A property of name '" << name
-      //         << "' has already been registered";
-      //   throw std::runtime_error(error.str());
-      // }
+      if (this->has_property(name)) {
+        std::stringstream error{};
+        error << "A property of name '" << name
+              << "' has already been registered";
+        throw std::runtime_error(error.str());
+      }
       this->properties[name] = property;
-      this->property_fresh[name] = false;
     }
 
     /**
      * Helper function to check if a property with the specifier `name` has
      * already been attached.
      */
-    bool has_property(const std::string & name) {
-      return not(this->properties.find(name) == this->properties.end());
-    }
-    bool has_property(const std::string & name) const {
+    inline bool has_property(const std::string & name) const {
       return not(this->properties.find(name) == this->properties.end());
     }
 
     template <typename Property_t>
     void create_property(const std::string & name) {
-      auto property{std::make_shared<Property_t>(*this)};
-      attach_property(name, property);
+      auto property{std::make_shared<Property_t>(this->implementation())};
+      this->attach_property(name, property);
     }
 
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
@@ -388,21 +384,26 @@ namespace rascal {
       return this->properties.at(name);
     }
 
-    /*  Checks if the property type of user matches the actual stored property.
+    /**
+     *  Checks if the property type of user matches the actual stored
+     *  property.
      */
     template <typename UserProperty_t>
     bool check_property_t(const std::string & name) const {
       auto property = get_property(name);
       try {
         UserProperty_t::check_compatibility(*property);
-      } catch (const std::runtime_error & error) {
+      } catch (const std::runtime_error &) {
         return false;
       }
       return true;
     }
 
-    /*  Throws an error if property type given from user does not match actual
+    /**
+     * Throws an error if property type given from user does not match actual
      * property type.
+     * TO(all) Is the try and catch need here ? it will throw in the respective
+     * check_compatibility and we get the full stack with the debugger.
      */
     template <typename UserProperty_t>
     void validate_property_t(std::shared_ptr<PropertyBase> property) const {
@@ -430,11 +431,7 @@ namespace rascal {
     template <typename UserProperty_t>
     UserProperty_t &
     get_validated_property_ref(const std::string & name) const {
-      auto property = this->get_property(name);
-      this->template validate_property_t<UserProperty_t>(property);
-      UserProperty_t * property_ptr =
-          reinterpret_cast<UserProperty_t *>(property.get());
-      return *property_ptr;
+      return *this->get_validated_property<UserProperty_t>(name);
     }
     /*  Returns the typed property. Throws an error if property type given from
      *  user does not match actual property type.
@@ -447,6 +444,38 @@ namespace rascal {
       return std::static_pointer_cast<UserProperty_t>(property);
     }
 
+    void register_property(std::shared_ptr<PropertyBase> property,
+                           const std::string & name) {
+      this->properties[name] = property;
+    }
+    /**
+     * Get a property of a given name. Create it if it does not exist.
+     *
+     * @tparam UserProperty_t full type of the property to return
+     *
+     * @param name name of the property to get
+     *
+     * @throw runtime_error if UserProperty_t is not compatible with property
+     * of the given name
+     */
+    template <typename UserProperty_t>
+    std::shared_ptr<UserProperty_t> get_property_ptr(const std::string & name) {
+      if (this->has_property(name)) {
+        auto property{this->get_property(name)};
+        UserProperty_t::check_compatibility(*property);
+        return std::static_pointer_cast<UserProperty_t>(property);
+      } else {
+        auto property{std::make_shared<UserProperty_t>(this->implementation())};
+        this->register_property(property, name);
+        return property;
+      }
+    }
+
+    template <typename UserProperty_t>
+    UserProperty_t & get_property_ref(const std::string & name) {
+      return *this->template get_property_ptr<UserProperty_t>(name);
+    }
+
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>
     get_property(const std::string & name) const {
@@ -455,26 +484,21 @@ namespace rascal {
               name);
     }
 
-    /**
-     * Attach update status to property. It is necessary, because the underlying
-     * structure might change and then the calculated property might be out of
-     * sync with the structure.
-     */
-    void set_property_fresh(const std::string & name) {
-      this->property_fresh[name] = true;
+    inline void set_updated_property_status(bool is_updated) {
+      for (auto & element : this->properties) {
+        auto & property{element.second};
+        property->set_updated_status(is_updated);
+      }
     }
 
-    /**
-     * Check if the status of the property is in sync with the underlying
-     * structure
-     */
-    bool is_property_fresh(const std::string & name) {
-      return this->property_fresh[name];
+    inline void set_updated_property_status(const std::string & name,
+                                            bool is_updated) {
+      this->properties[name]->set_updated_status(is_updated);
     }
 
     //! Get the full type of the structure manager
     static decltype(auto) get_name() {
-      return internal::GetTypeName<ManagerImplementation>();
+      return internal::type_name<ManagerImplementation>();
     }
 
     //! Create a new shared pointer to the object
@@ -546,6 +570,7 @@ namespace rascal {
      * `false` along the tree to the managers and the properties it holds.
      */
     void send_changed_structure_signal() final {
+      this->set_updated_property_status(false);
       this->set_update_status(false);
       for (auto && child : this->children) {
         if (not child.expired()) {
@@ -631,7 +656,6 @@ namespace rascal {
     ClusterIndex_t cluster_indices_container;
 
     std::map<std::string, std::shared_ptr<PropertyBase>> properties{};
-    std::map<std::string, bool> property_fresh{};
   };
 
   /* ----------------------------------------------------------------------
@@ -758,8 +782,7 @@ namespace rascal {
     AtomRef() = delete;
 
     //! constructor from iterator
-    AtomRef(Manager_t & manager, const int & id)
-        : manager{manager}, index{id} {}
+    AtomRef(Manager_t & manager, int id) : manager{manager}, index{id} {}
 
     //! Copy constructor
     AtomRef(const AtomRef & other) = default;
@@ -777,7 +800,7 @@ namespace rascal {
     AtomRef & operator=(AtomRef && other) = default;
 
     //! return index of the atom
-    inline const int & get_index() const { return this->index; }
+    inline int get_index() const { return this->index; }
 
     //! return position vector of the atom
     inline Vector_ref get_position() {
@@ -788,7 +811,7 @@ namespace rascal {
      * return atom type (idea: corresponding atomic number, but is allowed
      * to be arbitrary as long as it is an integer)
      */
-    inline const int & get_atom_type() const {
+    inline int get_atom_type() const {
       return this->manager.atom_type(this->index);
     }
     /**
@@ -841,6 +864,11 @@ namespace rascal {
     using IndexConstArray_t = typename ThisParentClass::IndexConstArray;
     using IndexArray_t = typename ThisParentClass::IndexArray;
 
+    static constexpr bool HasCenterPairOrderOne{traits::HasCenterPair and
+                                                Order == 1};
+
+    static constexpr bool HasCenterPairOrderTwo{traits::HasCenterPair and
+                                                Order == 2};
     //! Default constructor
     ClusterRef() = delete;
 
@@ -884,6 +912,73 @@ namespace rascal {
     }
 
     /**
+     * Getter for a ClusterRefKey refering to the current j-atom of the
+     * ij-pair.
+     *
+     * if you try to use this function and Order != 2 then
+     * you will get an error about not finding the function to call
+     * because of SFINAE.
+     *
+     * @return ClusterRefKey of order 1 and proper layer
+     */
+    template <size_t Order_ = Order, std::enable_if_t<Order_ == 2, int> = 0>
+    inline auto get_atom_j() {
+      auto && manager = it.get_manager();
+      auto && atom_j_tag = this->get_internal_neighbour_atom_tag();
+      auto && atom_j_index = manager.get_atom_index(atom_j_tag);
+      auto atom_j_it = manager.get_iterator_at(atom_j_index, 0);
+      constexpr static size_t ClusterLayer_{
+          ManagerImplementation::template cluster_layer_from_order<1>()};
+      auto atom_j = static_cast<ClusterRefKey<1, ClusterLayer_>>(*atom_j_it);
+      return atom_j;
+    }
+
+    /**
+     * Getter for a ClusterRefKey refering to the ii-pair of the current
+     * i-atom.
+     *
+     * if you try to use this function and HasCenterPair == false then
+     * you will get an error about not finding the function to call
+     * because of SFINAE.
+     *
+     * @return ClusterRefKey of order 2 and proper layer
+     */
+    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
+    inline auto get_atom_ii() {
+      static_assert(traits::MaxOrder > 1, "Need neighbors to get one");
+
+      auto && atom_ii_it = this->with_self_pair().begin();
+      constexpr static size_t ClusterLayer_{
+          ManagerImplementation::template cluster_layer_from_order<2>()};
+      auto atom_ii = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_ii_it);
+      return atom_ii;
+    }
+
+    /**
+     * Getter for a ClusterRefKey refering to the current jj-pair associated
+     * to the current ij-pair.
+     *
+     * if you try to use this function and HasCenterPair == false then
+     * you will get an error about not finding the function to call
+     * because of SFINAE.
+     *
+     * @return ClusterRefKey of order 2 and proper layer
+     */
+    template <bool T = HasCenterPairOrderTwo, std::enable_if_t<T, int> = 0>
+    inline auto get_atom_jj() {
+      auto && manager = it.get_manager();
+      auto && atom_j_tag = this->get_atom_tag();
+      auto && atom_j_index = manager.get_atom_index(atom_j_tag);
+      auto && atom_j_it = manager.get_iterator_at(atom_j_index, 0);
+      auto && atom_j = *atom_j_it;
+      auto && atom_jj_it = atom_j.with_self_pair().begin();
+      constexpr static size_t ClusterLayer_{
+          ManagerImplementation::template cluster_layer_from_order<2>()};
+      auto atom_jj = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_jj_it);
+      return atom_jj;
+    }
+
+    /**
      * Returns the position of the last atom in the cluster, e.g. when
      * cluster order==1 it is the atom position, when cluster order==2 it is
      * the neighbour position, etc.
@@ -899,7 +994,7 @@ namespace rascal {
     }
 
     //! returns the type of the last atom in the cluster
-    inline const int & get_atom_type() const {
+    inline int get_atom_type() const {
       auto && id{this->get_atom_tag()};
       return this->get_manager().atom_type(id);
     }
@@ -920,11 +1015,28 @@ namespace rascal {
       return this->it.get_manager();
     }
     //! start of the iteration over the cluster itself
+    template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
     inline iterator begin() {
       std::array<size_t, Order> counters{this->it.get_counters()};
       auto offset = this->get_manager().get_offset(counters);
       return iterator(*this, 0, offset);
     }
+
+    /**
+     * start of the iteration over the cluster itself.
+     *
+     * Special case when HasCenterPair == true and Order == 1. The default
+     * iteration in this case does not include the ii-pair by starting at 1
+     * since the ii-pair is the first element.
+     * To include the ii-pair to the iteration use .with_self_pair()
+     */
+    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
+    inline iterator begin() {
+      std::array<size_t, Order> counters{this->it.get_counters()};
+      auto offset = this->get_manager().get_offset(counters);
+      return iterator(*this, 1, offset);
+    }
+
     //! end of the iterations over the cluster itself
     inline iterator end() {
       return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
@@ -946,6 +1058,15 @@ namespace rascal {
       return this->atom_tag_list;
     }
 
+    /**
+     * Allows to set the atom tag at the atom index (cluster of Order 1 index)
+     *
+     * @param index atom index (cluster of Order 1 index)
+     */
+    inline void set_atom_tag(const size_t index, const int tag) {
+      this->atom_tag_list[index] = tag;
+    }
+
     inline Iterator_t & get_iterator() { return this->it; }
     inline const Iterator_t & get_iterator() const { return this->it; }
 
@@ -960,7 +1081,50 @@ namespace rascal {
     //!`atom_cluster_indices` is an initially contiguous numbering of atoms
     Iterator_t & it;
 
-   private:
+    /**
+     * Helper struct to only iterate in a customised range.
+     */
+    template <class ManagerImplementation_ = ManagerImplementation,
+              size_t Order_ = Order>
+    struct CustomProxy {
+      using ClusterRef_t = typename StructureManager<
+          ManagerImplementation_>::template ClusterRef<Order_>;
+      using iterator = typename ClusterRef_t::iterator;
+      friend iterator;
+
+      CustomProxy(ClusterRef_t & cluster_ref, size_t & start, size_t & offset,
+                  size_t & finish)
+          : cluster_ref{cluster_ref}, start{start}, offset{offset},
+            finish{finish} {}
+
+      inline iterator begin() {
+        return iterator(cluster_ref, this->start, this->offset);
+      }
+      //! end of the iterations over the cluster itself
+      inline iterator end() {
+        return iterator(cluster_ref, this->finish,
+                        std::numeric_limits<size_t>::max());
+      }
+      ClusterRef_t & cluster_ref;
+      size_t start;
+      size_t offset;
+      size_t finish;
+    };
+
+   public:
+    /**
+     * Return an iterable for Order == 2 that includes the self pair if
+     * HasCenterPair == true. If HasCenterPair == false then its the
+     * regular iteration.
+     */
+    inline CustomProxy<ManagerImplementation, Order> with_self_pair() {
+      std::array<size_t, Order> counters{this->it.get_counters()};
+      size_t offset{this->get_manager().get_offset(counters)};
+      size_t finish{this->size()};
+      size_t start{0};
+      return CustomProxy<ManagerImplementation, Order>(*this, start, offset,
+                                                       finish);
+    }
   };
 
   namespace internal {
@@ -1194,7 +1358,7 @@ namespace rascal {
     ProxyWithGhosts() = delete;
 
     //! Constructor
-    ProxyWithGhosts(ManagerImplementation & manager) : manager{manager} {};
+    ProxyWithGhosts(ManagerImplementation & manager) : manager{manager} {}
 
     //! Copy constructor
     ProxyWithGhosts(const ProxyWithGhosts & other) = delete;
@@ -1245,7 +1409,7 @@ namespace rascal {
     ProxyOnlyGhosts() = delete;
 
     //!
-    ProxyOnlyGhosts(ManagerImplementation & manager) : Parent{manager} {};
+    ProxyOnlyGhosts(ManagerImplementation & manager) : Parent{manager} {}
 
     //! Copy constructor
     ProxyOnlyGhosts(const ProxyOnlyGhosts & other) = delete;

@@ -1,5 +1,5 @@
 /**
- * file   adaptor_increase_maxorder.hh
+ * @file   adaptor_increase_maxorder.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -36,7 +36,6 @@
 #include "lattice.hh"
 #include "basic_types.hh"
 
-#include <typeinfo>
 #include <set>
 #include <vector>
 
@@ -52,17 +51,20 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorMaxOrder<ManagerImplementation>> {
+    using parent_traits = StructureManager_traits<ManagerImplementation>;
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{
-        ManagerImplementation::traits::HasDirectionVectors};
-    constexpr static int Dim{ManagerImplementation::traits::Dim};
+        parent_traits::HasDirectionVectors};
+    constexpr static int Dim{parent_traits::Dim};
+    constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
     // New MaxOrder upon construction
-    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder +
-                                     1};
+    constexpr static size_t MaxOrder{parent_traits::MaxOrder + 1};
     // Extend the layer by one with the new MaxOrder
-    using LayerByOrder = typename LayerExtender<
-        MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
+    using LayerByOrder =
+        typename LayerExtender<MaxOrder,
+                               typename parent_traits::LayerByOrder>::type;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -80,6 +82,7 @@ namespace rascal {
    public:
     using Manager_t = AdaptorMaxOrder<ManagerImplementation>;
     using Parent = StructureManager<Manager_t>;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorMaxOrder>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -171,7 +174,7 @@ namespace rascal {
     inline size_t get_size() const { return this->manager->get_size(); }
 
     //! Returns position of an atom with index atom_tag
-    inline Vector_ref get_position(const size_t & atom_tag) {
+    inline Vector_ref get_position(size_t atom_tag) {
       return this->manager->get_position(atom_tag);
     }
 
@@ -181,12 +184,12 @@ namespace rascal {
     }
 
     //! get atom type from underlying manager
-    inline const int & get_atom_type(const int & atom_tag) const {
+    inline int get_atom_type(int atom_tag) const {
       return this->manager->get_atom_type(atom_tag);
     }
 
     //! get atom type from underlying manager
-    inline int & get_atom_type(const int & atom_tag) {
+    inline int & get_atom_type(int atom_tag) {
       return this->manager->get_atom_type(atom_tag);
     }
 

@@ -1,5 +1,5 @@
 /**
- * file   test_properties.hh
+ * @file   test_properties.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
  *
@@ -33,6 +33,8 @@
 #include "tests.hh"
 #include "test_structure.hh"
 #include "test_adaptor.hh"
+
+#include "structure_managers/property.hh"
 #include "structure_managers/property_block_sparse.hh"
 
 #include <random>

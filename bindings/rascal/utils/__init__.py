@@ -6,13 +6,6 @@ from .pool_worker import FactoryPool
 ostream_redirect = utils.__dict__['ostream_redirect']
 
 
-def get_full_name(options):
-    full_name = []
-    for opt in options:
-        full_name.insert(0, opt['name'])
-    return '_'.join(full_name)
-
-
 def is_notebook():
     from IPython import get_ipython
     try:

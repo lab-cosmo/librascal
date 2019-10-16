@@ -1,5 +1,5 @@
 /**
- * file   structure_manager_lammps.hh
+ * @file   structure_manager_lammps.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -50,6 +50,8 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{false};
+    constexpr static bool HasCenterPair{false};
+    constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0, 0>;
   };
 
@@ -63,6 +65,7 @@ namespace rascal {
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
+    using ManagerImplementation_t = StructureManagerLammps;
     using ImplementationPtr_t = std::shared_ptr<StructureManagerLammps>;
 
     //! Default constructor
@@ -72,7 +75,7 @@ namespace rascal {
     StructureManagerLammps(const StructureManagerLammps & other) = delete;
 
     //! Move constructor
-    StructureManagerLammps(StructureManagerLammps && other) = default;
+    StructureManagerLammps(StructureManagerLammps && other) = delete;
 
     //! Destructor
     virtual ~StructureManagerLammps() = default;
@@ -83,24 +86,25 @@ namespace rascal {
 
     //! Move assignment operator
     StructureManagerLammps &
-    operator=(StructureManagerLammps && other) = default;
+    operator=(StructureManagerLammps && other) = delete;
 
     //! Updates the manager using the impl
     template <class... Args>
     void update(Args &&... arguments) {
-      // update the underlying structure
-      this->update_self(std::forward<Args>(arguments)...);
-
       if (sizeof...(arguments) > 0) {
         // the structure has changed to tell it to the whole tree
         this->send_changed_structure_signal();
       }
+      // update the underlying structure
+      this->update_self(std::forward<Args>(arguments)...);
+      this->set_update_status(true);
+
       // send the update signal to the tree
       this->update_children();
     }
 
     //! return position vector of an atom given the atom tag
-    inline Vector_ref get_position(const int & atom_tag) {
+    inline Vector_ref get_position(int atom_tag) {
       auto * xval{this->x[this->get_atom_index(atom_tag)]};
       return Vector_ref(xval);
     }
@@ -111,12 +115,12 @@ namespace rascal {
     }
 
     //! get const atom type reference given an atom_tag
-    inline const int & get_atom_type(const int & atom_tag) const {
+    inline int get_atom_type(int atom_tag) const {
       return this->type[this->get_atom_index(atom_tag)];
     }
 
     //! Returns atom type given an atom tag
-    inline int & get_atom_type(const int & atom_tag) {
+    inline int & get_atom_type(int atom_tag) {
       return this->type[this->get_atom_index(atom_tag)];
     }
 
@@ -215,9 +219,9 @@ namespace rascal {
      *
      * @param vatom per-atom virial
      */
-    void update_self(const int & inum, const int & tot_num, int * ilist,
-                     int * numneigh, int ** firstneigh, double ** x,
-                     double ** f, int * type, double * eatom, double ** vatom);
+    void update_self(int inum, int tot_num, int * ilist, int * numneigh,
+                     int ** firstneigh, double ** x, double ** f, int * type,
+                     double * eatom, double ** vatom);
 
    protected:
     int inum{};           //!< total numer of atoms

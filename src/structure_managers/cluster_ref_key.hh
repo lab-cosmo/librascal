@@ -1,5 +1,5 @@
 /**
- * file   cluster_ref_key.hh
+ * @file   cluster_ref_key.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Markus Stricer <markus.stricker@epfl.ch>
@@ -237,15 +237,18 @@ namespace rascal {
     }
 
     //! returns the first atom tag in this cluster
-    const int & front() const { return this->atom_tag_list.front(); }
+    int front() const { return this->atom_tag_list.front(); }
     //! returns the last atom tag in this cluster
-    const int & back() const { return this->atom_tag_list.back(); }
+    int back() const { return this->atom_tag_list.back(); }
     /* the internal cluster neighbour is the neighbour which was added as
      * neighbour in the creation of this cluster
      */
-    const int & get_internal_neighbour_atom_tag() const { return this->back(); }
+    int get_internal_neighbour_atom_tag() const { return this->back(); }
 
-    const int & get_atom_tag() const { return this->back(); }
+    /*
+     * From an cluster of form (i,j,..., n) it returns the tag of atom n
+     */
+    int get_atom_tag() const { return this->back(); }
 
     //! returns the cluster's index, given a specific layer
     inline size_t get_cluster_index(const size_t layer) const {
