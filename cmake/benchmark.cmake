@@ -26,7 +26,7 @@ mark_as_advanced(BENCHMARK_ENABLE_LTO)
 mark_as_advanced(BENCHMARK_USE_LIBCXX)
 
 add_subdirectory("${benchmark_SOURCE_DIR}")
-include_directories("${benchmark_SOURCE_DIR}/include")
+include_directories(SYSTEM "${benchmark_SOURCE_DIR}/include")
 
 # surpresses the "'CSVReporter' is deprecated" errors when compiling benchmark.cc
  set_target_properties(

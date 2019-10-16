@@ -189,7 +189,7 @@ namespace rascal {
     }
 
     // json string -> position in json string
-    std::map<std::string, int64_t> state_range_index_to_key;
+    std::map<std::string, int64_t> state_range_index_to_key{};
   };
 }  // namespace rascal
 #endif  // PERFORMANCE_BENCHMARKS_BENCHMARKS_HH_

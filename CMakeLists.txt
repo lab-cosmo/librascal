@@ -170,13 +170,8 @@ if(${BUILD_BENCHMARKS})
 
     # surpresses the "'CSVReporter' is deprecated" errors when compiling benchmark.cc
     set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations" )
-    # surpresses the -Weffc++ Warnings by removing it from the target
-    get_target_property(BINARY_COMPILE_FLAGS ${binaryname} COMPILE_OPTIONS )
-    list(REMOVE_ITEM BINARY_COMPILE_FLAGS -Weffc++)
-    set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "${BINARY_COMPILE_FLAGS}")
   endforeach(binaryfile ${binaries})
-  # Runs all benchmarks in succession, add new benchmarks with a new COMMAND
-
+  # Runs all benchmarks in succession, add new benchmarks with the RUN_BENCHMARK_FLAGS  
   add_custom_target(
       benchmarks
       COMMAND ./benchmark_interpolator

@@ -371,9 +371,11 @@ namespace rascal {
     using Interpolator_t = math::InterpolatorMatrixUniformCubicSpline<
         math::RefinementMethod_t::Exponential>;
 
+    InterpolatorMatrixBFixture<Dataset>() : Parent () {}
+
     std::shared_ptr<Interpolator_t> intp{};
-    std::function<math::Matrix_t(double)> func;
-    SupportedVecFunc func_name;
+    std::function<math::Matrix_t(double)> func{};
+    SupportedVecFunc func_name{};
     int max_radial{0};
     int max_angular{0};
     std::shared_ptr<RadialContribution<RadialBasisType::GTO>> radial_contr{};
@@ -491,14 +493,14 @@ namespace rascal {
     bool compute_gradients;
     int max_radial{0};
     int max_angular{0};
-    std::string filename;
+    std::string filename{};
     double cutoff{0};
     int nb_neighbours{0};
     ManagerPtr_t manager{};
     // to postpone initialization of representation from the time the object
     // is created, we create a list
-    std::shared_ptr<Representation_t> representation_ptr;
-    json hypers;
+    std::shared_ptr<Representation_t> representation_ptr{};
+    json hypers{};
 
     void init_interpolator(const ::benchmark::State & state,
                            const json & data) override {

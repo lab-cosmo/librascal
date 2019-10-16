@@ -76,8 +76,8 @@ namespace rascal {
         std::cout << "Costly initialization." << std::endl;
       }
     }
-    int x;
-    std::string name;
+    int x{};
+    std::string name{};
   };
 
   template <class BFixture>
