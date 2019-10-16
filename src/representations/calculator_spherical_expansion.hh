@@ -72,9 +72,9 @@ namespace rascal {
 
     /**
      * List of possible usages of interpolator. Currently only full usage
-     * or no usage is allowed, but a hybrid coud be added in the future.
+     * or no usage is allowed, but a hybrid could be added in the future.
      */
-    enum class OptimizationType { Nothing, Interpolator, End_ };
+    enum class OptimizationType { None, Interpolator, End_ };
 
     /**
      * Com
@@ -114,8 +114,6 @@ namespace rascal {
     /**
      * Specification to hold the parameter for the atomic smearing function,
      * currently only Gaussians are supported.
-     *
-     * This is `sigma' in the definition `f(r) = A exp(r / (2 sigma^2))'.
      *
      * This is \f$\sigma\f$ in the definition
      * \f$f(r) = A \exp{\frac{-r^2}{2 \sigma^2}}\f$.
@@ -347,12 +345,13 @@ namespace rascal {
         this->hyp1f1_calculator.precompute(this->max_radial, this->max_angular);
       }
 
-      // this anymore or remove the unncessary template parameter
-      /* Define the contribution from a neighbour atom to the expansion
-       * without requiring a cluster object os it can be used for benchmarks.
+      /**
+       * Define the contribution from a neighbour atom to the expansion
+       * without requiring a cluster object so it can be used with the
+       * interpolator. 
        */
       template <AtomicSmearingType AST>
-      Matrix_t compute_contribution(double distance, double sigma) {
+      Matrix_t compute_contribution(const double distance, const double sigma) {
         using math::PI;
         using math::pow;
         using std::sqrt;
@@ -867,7 +866,7 @@ namespace rascal {
 
     /* A RadialContributionHandler handles the different cases of
      * AtomicSmearingType and OptimizationType. Depending on these template
-     * parameters different member variables have to used and different
+     * parameters different member variables have to be used and different
      * parameters can be precomputed.
      */
     template <RadialBasisType RBT, AtomicSmearingType AST, OptimizationType IT>
@@ -877,7 +876,7 @@ namespace rascal {
      */
     template <RadialBasisType RBT>
     struct RadialContributionHandler<RBT, AtomicSmearingType::Constant,
-                                     OptimizationType::Nothing>
+                                     OptimizationType::None>
         : public RadialContribution<RBT> {
      public:
       using Parent = RadialContribution<RBT>;
@@ -1022,7 +1021,7 @@ namespace rascal {
         Matrix_t result = func(range_begin);
         int cols{static_cast<int>(result.cols())};
         int rows{static_cast<int>(result.rows())};
-        this->intp = std::make_shared<Interpolator_t>(
+        this->intp = std::make_unique<Interpolator_t>(
             func, range_begin, range_end, accuracy, cols, rows);
       }
 
@@ -1046,7 +1045,7 @@ namespace rascal {
             "Interpolator option is on but no range end for interpolation is "
             "given in the json hyperparameter. Interpolator cannot be "
             "initialized.");
-        return -1;
+        return 0;
       }
 
       double get_interpolator_accuracy(const Hypers_t & optimization_hypers) {
@@ -1063,19 +1062,19 @@ namespace rascal {
       }
 
       double fac_a{};
-      std::shared_ptr<Interpolator_t> intp{};
+      std::unique_ptr<Interpolator_t> intp{};
     };
 
   }  // namespace internal
 
   template <internal::RadialBasisType Type, class Hypers>
-  decltype(auto) make_radial_integral(const Hypers & basis_hypers) {
+  auto make_radial_integral(const Hypers & basis_hypers) {
     return std::static_pointer_cast<internal::RadialContributionBase>(
         std::make_shared<internal::RadialContribution<Type>>(basis_hypers));
   }
 
   template <internal::RadialBasisType Type>
-  decltype(auto) downcast_radial_integral(
+  auto downcast_radial_integral(
       const std::shared_ptr<internal::RadialContributionBase> &
           radial_integral) {
     return std::static_pointer_cast<internal::RadialContribution<Type>>(
@@ -1084,7 +1083,7 @@ namespace rascal {
 
   template <internal::RadialBasisType RBT, internal::AtomicSmearingType AST,
             internal::OptimizationType OT, class Hypers>
-  decltype(auto) make_radial_integral_handler(const Hypers & basis_hypers) {
+  auto make_radial_integral_handler(const Hypers & basis_hypers) {
     return std::static_pointer_cast<internal::RadialContributionBase>(
         std::make_shared<internal::RadialContributionHandler<RBT, AST, OT>>(
             basis_hypers));
@@ -1092,7 +1091,7 @@ namespace rascal {
 
   template <internal::RadialBasisType RBT, internal::AtomicSmearingType AST,
             internal::OptimizationType OT>
-  decltype(auto) downcast_radial_integral_handler(
+  auto downcast_radial_integral_handler(
       const std::shared_ptr<internal::RadialContributionBase> &
           radial_integral) {
     return std::static_pointer_cast<
@@ -1226,7 +1225,7 @@ namespace rascal {
                              "optimization type.");
         }
       } else {  // Default false (don't use interpolator)
-        this->optimization_type = OptimizationType::Nothing;
+        this->optimization_type = OptimizationType::None;
       }
 
       switch (internal::combine_to_radial_contribution_type(
@@ -1234,10 +1233,10 @@ namespace rascal {
           this->optimization_type)) {
       case internal::combine_to_radial_contribution_type(
           RadialBasisType::GTO, AtomicSmearingType::Constant,
-          OptimizationType::Nothing): {
+          OptimizationType::None): {
         auto rc_shared = std::make_shared<internal::RadialContributionHandler<
             RadialBasisType::GTO, AtomicSmearingType::Constant,
-            OptimizationType::Nothing>>(hypers);
+            OptimizationType::None>>(hypers);
         this->radial_integral = rc_shared;
         break;
       }
@@ -1252,10 +1251,10 @@ namespace rascal {
       }
       case internal::combine_to_radial_contribution_type(
           RadialBasisType::DVR, AtomicSmearingType::Constant,
-          OptimizationType::Nothing): {
+          OptimizationType::None): {
         auto rc_shared = std::make_shared<internal::RadialContributionHandler<
             RadialBasisType::DVR, AtomicSmearingType::Constant,
-            OptimizationType::Nothing>>(hypers);
+            OptimizationType::None>>(hypers);
         this->radial_integral = rc_shared;
         break;
       }
@@ -1450,10 +1449,10 @@ namespace rascal {
         this->optimization_type)) {
     case internal::combine_to_radial_contribution_type(
         RadialBasisType::GTO, AtomicSmearingType::Constant,
-        OptimizationType::Nothing): {
+        OptimizationType::None): {
       this->compute_loop<FcType, RadialBasisType::GTO,
                          AtomicSmearingType::Constant,
-                         OptimizationType::Nothing>(managers);
+                         OptimizationType::None>(managers);
       break;
     }
     case internal::combine_to_radial_contribution_type(
@@ -1466,10 +1465,10 @@ namespace rascal {
     }
     case internal::combine_to_radial_contribution_type(
         RadialBasisType::DVR, AtomicSmearingType::Constant,
-        OptimizationType::Nothing): {
+        OptimizationType::None): {
       this->compute_loop<FcType, RadialBasisType::DVR,
                          AtomicSmearingType::Constant,
-                         OptimizationType::Nothing>(managers);
+                         OptimizationType::None>(managers);
       break;
     }
     case internal::combine_to_radial_contribution_type(

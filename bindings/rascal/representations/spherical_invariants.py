@@ -110,14 +110,14 @@ class SphericalInvariants(object):
                     print("Warning: default parameter for spline range is used.")
                     spline_range=(0, interaction_cutoff)
                 optimization_args={'type':'Spline', 'accuracy':accuracy, 'range':{'begin':spline_range[0], 'end':spline_range[1]}}
-            elif optimization_args['type'] == 'Nothing':
-                optimization_args=dict({'type':'Nothing'})
+            elif optimization_args['type'] == 'None':
+                optimization_args=dict({'type':'None'})
             else:
                 print('Optimization type is not known. Switching to no'
                       ' optimization.')
-                optimization_args=dict({'type':'Nothing'})
+                optimization_args=dict({'type':'None'})
         else:
-            optimization_args=dict({'type':'Nothing'})
+            optimization_args=dict({'type':'None'})
 
         radial_contribution = dict(
             type=radial_basis,
