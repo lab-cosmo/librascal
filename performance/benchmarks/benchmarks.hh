@@ -1,5 +1,5 @@
 /**
- * file  benchmarks.hh
+ * @file  benchmarks.hh
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *

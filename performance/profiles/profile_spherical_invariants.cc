@@ -1,5 +1,5 @@
 /**
- * file   profile_spherical_invariants.cc
+ * @file   profile_spherical_invariants.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *

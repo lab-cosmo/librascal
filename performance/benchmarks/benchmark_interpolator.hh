@@ -1,5 +1,5 @@
 /**
- * file  benchmark_interpolator.hh
+ * @file  benchmark_interpolator.hh
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *

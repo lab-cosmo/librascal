@@ -1,5 +1,5 @@
 /**
- * file  profile_matrix_cubic_spline.cc
+ * @file  profile_matrix_cubic_spline.cc
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *

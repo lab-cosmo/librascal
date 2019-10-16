@@ -1,5 +1,5 @@
 /**
- * file   interpolator.hh
+ * @file   interpolator.hh
  *
  * @author Alexander Goscinski <alexander.goscinski@epfl.ch>
  *

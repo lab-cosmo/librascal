@@ -1,5 +1,5 @@
 """
-file  benchmark_spherical_representations.py
+@file  benchmark_spherical_representations.py
 
 @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
 

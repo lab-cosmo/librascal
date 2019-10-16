@@ -1,5 +1,5 @@
 /**
- * file  profile_scalar_cubic_spline.hh
+ * @file  profile_scalar_cubic_spline.hh
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *

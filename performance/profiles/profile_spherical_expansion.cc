@@ -1,5 +1,5 @@
 /**
- * file   profile_spherical_expansion.cc
+ * @file   profile_spherical_expansion.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *

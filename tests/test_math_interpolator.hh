@@ -1,5 +1,5 @@
 /**
- * file   test_math_interpolator.hh
+ * @file   test_math_interpolator.hh
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
