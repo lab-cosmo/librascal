@@ -47,7 +47,7 @@ add_custom_target(doxygen_doc
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/doxygenxml/index.xml
 )
 
-add_custom_target(doc
+add_custom_target(doc ALL
   COMMAND ${SPHINX_EXECUTABLE} -q -b html
             -c "${CMAKE_CURRENT_BINARY_DIR}"
             -d "${SPHINX_CACHE_DIR}"

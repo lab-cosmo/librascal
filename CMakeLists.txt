@@ -65,11 +65,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(rascalTools)
 
 ########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ########
-option(BUILD_TESTS "Build the unit tests" OFF)
 option(BUILD_BINDINGS "Build the python bindings" ON)
 option(BUILD_EXAMPLES "Build the examples" ON)
+option(BUILD_TESTS "Build the unit tests" OFF)
+option(BUILD_DOC "Build documentation" OFF)
 option(USER "Switch installation folder" OFF)
-option(ENABLE_DOC "Enable building documentation with the 'doc' target" OFF)
 
 set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
 
@@ -251,12 +251,9 @@ if(BUILD_BINDINGS)
     add_subdirectory(bindings)
 endif()
 
-# set up documentation
-if (${ENABLE_DOC})
-  add_subdirectory(
-    ${CMAKE_SOURCE_DIR}/docs/
-    )
-endif (${ENABLE_DOC})
+if(BUILD_DOC)
+    add_subdirectory(docs)
+endif()
 
 if (${BUILD_EXAMPLES})
   # compile exmaples executables
