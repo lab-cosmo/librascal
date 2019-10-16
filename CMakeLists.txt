@@ -52,44 +52,28 @@ ENDIF()
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
 "Release" "Debug" "RelWithDebInfo" "MinSizeRel")
 
-project(rascal)
+message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
+
+project(rascal CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_SHARED_LIBS ON)
-set(RASCAL_PYTHON_MAJOR_VERSION 3)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(rascalTools)
 
 ########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ########
-set(BUILD_BINDINGS "ON" CACHE BOOL
-  "If on, the python bindings will be built.")
+option(BUILD_TESTS "Build the unit tests" OFF)
+option(BUILD_BINDINGS "Build the python bindings" ON)
+option(BUILD_EXAMPLES "Build the examples" ON)
+option(USER "Switch installation folder" OFF)
+option(ENABLE_DOC "Enable building documentation with the 'doc' target" OFF)
 
-set(BUILD_EXAMPLES "ON" CACHE BOOL
-  "If on, the examples will be built.")
-
-set(USER "OFF" CACHE BOOL
-  "Switch installation folder")
-
-set(INSTALL_PATH "" CACHE STRING
-  "Path to install the libraries")
-
-set(ENABLE_DOC "OFF" CACHE BOOL
-  "If on, a target 'dev_doc' (which builds the documentation) is added.")
-
-set(BUILD_TESTS "OFF" CACHE BOOL
-  "If on, builds the unit tests")
-
-set(ENABLE_PROFILING "OFF" CACHE BOOL
-  "If on, adds gprof profiling information to some of the examples. \
-  (GNU compilers only)")
+set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
 
 SET(TYPE_ARCHITECTURE "native" CACHE STRING "Choose the type of architecture to compile to in release mode. Default is to let the compiler decide")
-
-
-message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
 ########## COMPILATION FLAGS ##########
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++")
@@ -285,15 +269,6 @@ if (${BUILD_EXAMPLES})
   configure_file("${CMAKE_SOURCE_DIR}/examples/reference_data/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("${CMAKE_SOURCE_DIR}/examples/reference_data/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("${CMAKE_SOURCE_DIR}/tests/reference_data/alanine-center-select.json" ${CMAKE_BINARY_DIR} COPYONLY)
-
-  # Add profiling information for the appropriate examples
-  if (ENABLE_PROFILING)
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    target_compile_options("soap_profile" PRIVATE -ggdb)
-      # target_compile_options("soap_profile" PRIVATE -pg)
-      # set_target_properties("soap_profile" PROPERTIES LINK_FLAGS -pg)
-    endif()
-  endif()
 endif (${BUILD_EXAMPLES})
 
 
