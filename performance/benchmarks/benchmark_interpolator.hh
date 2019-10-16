@@ -117,7 +117,7 @@ namespace rascal {
    *      // the range of the interpolator
    *      {"ranges", {std::make_pair(0, 16)}},
    *
-   *      // the log of the interpolator parameter error bound
+   *      // the log function of the interpolator parameter error bound
    *      {"log_error_bounds", {-8}},
    *
    *      // the function used to interpolate
@@ -205,8 +205,6 @@ namespace rascal {
     using Parent = BaseBFixture<Dataset>;
     using SupportedFunc = typename Dataset::SupportedFunc;
 
-    // Could be moved to base class with virtual classes and shared by
-    // vectorized and scalar
     void setup(const ::benchmark::State & state) {
       const json data = Dataset::data();
       // Because in the two initialization processes share parameters of the
@@ -279,7 +277,7 @@ namespace rascal {
 
   /**
    * To cover different implementations of the interpolator, this abstract class
-   * is the base class for all interpolator BFixtures. It
+   * is the base class for all interpolator BFixtures.
    */
   template <class Dataset>
   class InterpolatorScalarBFixture : public InterpolatorBFixture<Dataset> {
@@ -354,16 +352,15 @@ namespace rascal {
         this->init_hyp1f1_function();
         break;
       default:
-        this->func = [](double x) { return x; };
+        throw std::runtime_error("SupportedFunc type is not known.");
         break;
       }
     }
   };
 
   /**
-   * This class uses the Mat
-   * RadialContribution. Therefore benchmarks for different atomic structures
-   * can be done.
+   * This class uses the matrix interpolator with the `RadialContribution`
+   * function.
    */
   template <class Dataset>
   class InterpolatorMatrixBFixture : public InterpolatorBFixture<Dataset> {
@@ -462,6 +459,9 @@ namespace rascal {
       case SupportedVecFunc::RadialContribution:
         this->init_radial_contribution_function(state, data);
         break;
+      default:
+        throw std::runtime_error("SupportedVecFunc type is not known.");
+        break;
       }
     }
   };
@@ -528,14 +528,14 @@ namespace rascal {
                 {{"cutoff", this->cutoff},
                  {"consider_ghost_neighbours", false},
                  {"skin", 0.}}}};
-      json ad1b{{"name", "AdaptorCenterContribution"},
+      json ad2{{"name", "AdaptorCenterContribution"},
                 {"initialization_arguments", {}}};
       // hyperparameters for the strict adaptor
-      json ad2{{"name", "AdaptorStrict"},
+      json ad3{{"name", "AdaptorStrict"},
                {"initialization_arguments", {{"cutoff", this->cutoff}}}};
       adaptors.emplace_back(ad1);
-      adaptors.emplace_back(ad1b);
       adaptors.emplace_back(ad2);
+      adaptors.emplace_back(ad3);
 
       AtomicStructure<3> atomic_structure{};
       atomic_structure.set_structure(this->filename);
