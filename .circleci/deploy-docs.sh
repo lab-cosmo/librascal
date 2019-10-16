@@ -12,9 +12,21 @@ cp -a build/docs/html/. gh-pages/.
 # disable CircleCI on gh-pages branch
 mkdir -p gh-pages/.circleci
 cat << EOF > gh-pages/.circleci/config.yml
-test:
-  override:
-    - echo "test"
+version: 2
+
+jobs:
+  build:
+    docker:
+      # Very small docker image
+      - image: alpine:3
+    steps:
+      - run: echo "done"
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
 EOF
 
 cd gh-pages
