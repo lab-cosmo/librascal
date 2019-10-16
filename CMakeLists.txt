@@ -268,17 +268,6 @@ if (${BUILD_EXAMPLES})
   configure_file("${CMAKE_SOURCE_DIR}/tests/reference_data/alanine-center-select.json" ${CMAKE_BINARY_DIR} COPYONLY)
 endif (${BUILD_EXAMPLES})
 
-
-# or copy them
-file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")
-foreach(pybin ${pybins})
-  get_filename_component(binaryname  ${pybin} NAME_WE)
-  configure_file(
-    ${pybin}
-    "${CMAKE_BINARY_DIR}/${binaryname}.py"
-    COPYONLY)
-endforeach(pybin ${pybins})
-
 # Checking hh/cc files for compliance with coding conventions
 if(CPPLINT_FOUND)
   # register the folders to check for cpp code conventions compliance
