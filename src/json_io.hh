@@ -33,7 +33,7 @@
  * the JSON as a first class data type. See https://github.com/nlohmann/json for
  * documentation.
  */
-#include "json.hpp"
+#include "external/json.hpp"
 #include "rascal_utility.hh"
 
 #include <Eigen/Dense>
