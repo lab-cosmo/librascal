@@ -92,31 +92,23 @@ SET(TYPE_ARCHITECTURE "native" CACHE STRING "Choose the type of architecture to 
 message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
 ########## COMPILATION FLAGS ##########
-add_compile_options(-Wall -Wextra)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
-# to avoid conflicts with built-in functions
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
+    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
+    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"
-    OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-  # using Clang
-  add_compile_options(-Wno-missing-braces)
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
 
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  # using GCC
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-virtual-dtor")
-  string( TOLOWER "${CMAKE_BUILD_TYPE}" build_type )
-  if ("release" STREQUAL "${build_type}" )
-    add_compile_options("-march=${TYPE_ARCHITECTURE}")
-  endif()
-  if ("debug" STREQUAL "${build_type}" )
-    add_compile_options(-O0)
-  endif()
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-  # using Intel C++
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  # using Visual Studio C++
+    # Add -march=${TYPE_ARCHITECTURE} (-march=native by default) to the release
+    # build flags
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -march=${TYPE_ARCHITECTURE}")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=${TYPE_ARCHITECTURE}")
+
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -march=${TYPE_ARCHITECTURE}")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=${TYPE_ARCHITECTURE}")
 endif()
 
 ########## START CONFIGURATION ##########
@@ -133,11 +125,6 @@ else()
   set(LIBRASCAL_NAME "rascal")
   set(WIGXJPF_NAME "wigxjpfo")
 endif()
-
-# include_directories(SYSTEM
-#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/inc
-#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/cfg
-#   )
 
 add_external_package(wigxjpf VERSION 1.9 CONFIG)
 
