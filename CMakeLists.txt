@@ -140,11 +140,6 @@ include(clangformat)
 # CHeck for autopep8
 include(autopep8)
 
-include_directories(
-  ${CMAKE_SOURCE_DIR}/tests
-  ${CMAKE_SOURCE_DIR}/src
- )
-
 # set up bindings
 if(BUILD_BINDINGS)
   find_package(PythonLibsNew 3 MODULE REQUIRED)
@@ -266,19 +261,10 @@ add_custom_command(OUTPUT copy_test_reference_data
         always_rebuild
   )
 
-# put it there to avoid warnings from boost tests
-add_compile_options(-Werror) # warnings are errors!
+add_subdirectory(src)
 
-# compile the library
-add_subdirectory(
-  ${CMAKE_SOURCE_DIR}/src/
-  )
-
-# set up bindings
 if(BUILD_BINDINGS)
-add_subdirectory(
-  ${CMAKE_SOURCE_DIR}/bindings/
-)
+    add_subdirectory(bindings)
 endif()
 
 # set up documentation
