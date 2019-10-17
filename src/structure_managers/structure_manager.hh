@@ -647,7 +647,7 @@ namespace rascal {
     std::array<T, Size + 1>
     append_array_helper(const std::array<T, Size> & arr, T && t,
                         std::integer_sequence<int, Indices...>) {
-      return std::array<T, Size + 1>{arr[Indices]..., std::forward<T>(t)};
+      return std::array<T, Size + 1>{{arr[Indices]..., std::forward<T>(t)}};
     }
 
     //! template function allows to add an element to an array
@@ -1082,7 +1082,7 @@ namespace rascal {
     species_aggregator_helper(const std::array<int, Order> & array,
                               const Manager & manager,
                               std::index_sequence<Indices...> /*indices*/) {
-      return std::array<int, Order>{manager.atom_type(array[Indices])...};
+      return std::array<int, Order>{{manager.atom_type(array[Indices])...}};
     }
 
     template <class Manager, size_t Order, size_t... Indices>

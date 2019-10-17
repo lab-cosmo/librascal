@@ -353,7 +353,7 @@ namespace rascal {
       atom_cluster_indices.push_back(indices);
 
       auto && atom_tag = atom.get_atom_tag();
-      AtomIndex_t self_atom_tag_list{atom_tag, atom_tag};
+      AtomIndex_t self_atom_tag_list{{atom_tag, atom_tag}};
 
       std::array<size_t, PairLayer + 1> self_indices_pair;
       self_indices_pair[PairLayer] = pair_counter;

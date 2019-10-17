@@ -76,7 +76,7 @@ set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
 SET(TYPE_ARCHITECTURE "native" CACHE STRING "Choose the type of architecture to compile to in release mode. Default is to let the compiler decide")
 
 ########## COMPILATION FLAGS ##########
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++ -Wno-non-virtual-dtor")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
