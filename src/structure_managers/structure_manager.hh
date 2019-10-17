@@ -605,28 +605,11 @@ namespace rascal {
     }
 
     template <size_t Order, size_t Layer,
-              bool HasDistances = traits::HasDistances,
-              typename std::enable_if_t<not(HasDistances), int> = 0>
-    inline double & get_distance(const ClusterRefKey<Order, Layer> &) const {
-      static_assert("Trying to get_distance from a manager stack "
-                    "without computed distances.");
-    }
-
-    template <size_t Order, size_t Layer,
               bool HasDirectionVectors = traits::HasDirectionVectors,
               typename std::enable_if_t<HasDirectionVectors, int> = 0>
     inline const Vector_ref
     get_direction_vector(const ClusterRefKey<Order, Layer> & pair) {
       return this->get_previous_manager()->get_direction_vector(pair);
-    }
-
-    template <size_t Order, size_t Layer,
-              bool HasDirectionVectors = traits::HasDirectionVectors,
-              typename std::enable_if_t<not(HasDirectionVectors), int> = 0>
-    inline const Vector_ref
-    get_direction_vector(const ClusterRefKey<Order, Layer> &) const {
-      static_assert("Trying to get direction vectors from a manager "
-                    "stack without computed direction vectors.");
     }
 
     //! Get the full type of the structure manager
