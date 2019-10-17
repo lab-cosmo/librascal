@@ -53,6 +53,6 @@ add_custom_target(doc ALL
             -d "${SPHINX_CACHE_DIR}"
             "${CMAKE_CURRENT_SOURCE_DIR}/source"
             "${SPHINX_HTML_DIR}"
-  DEPENDS doxygen_doc librascal
+  DEPENDS doxygen_doc copy_python_bindings
   COMMENT "Building HTML documentation with Sphinx"
 )
