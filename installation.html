@@ -94,7 +94,20 @@
 <li class="toctree-l2"><a class="reference internal" href="#get-librascal">Get librascal</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#compiling">Compiling</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#customizing-the-build">Customizing the build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#customizing-the-build">Customizing the build</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tests">Tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#build-type">Build Type</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bindings">Bindings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#installing-rascal">Installing rascal</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#helpers-for-developers">Helpers for Developers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#deepclean">Deepclean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#automatic-code-formatting">Automatic code formatting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#jupyter-notebooks">Jupyter notebooks</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#miscellaneous-information">Miscellaneous Information</a></li>
@@ -315,8 +328,8 @@ make
 <p>The library supports several alternative builds that have additional
 dependencies. Note that the <code class="docutils literal notranslate"><span class="pre">ncurses</span></code> GUI for cmake (ccmake) is quite
 helpful to customize the build options.</p>
-<ol class="arabic">
-<li><p>Tests</p>
+<div class="section" id="tests">
+<h4>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h4>
 <p>Librascal source code is extensively tested (both c++ and python).
 The BOOST unit_test_framework is requiered to build the tests (see
 BOOST.md for further details on how to install the boost library). To
@@ -334,8 +347,9 @@ dependencies are optional). To install these dependencies on ubuntu:</p>
 pip3 install autopep8
 </pre></div>
 </div>
-</li>
-<li><p>Build Type</p>
+</div>
+<div class="section" id="build-type">
+<h4>Build Type<a class="headerlink" href="#build-type" title="Permalink to this headline">¶</a></h4>
 <p>Several build types are available Release (default), Debug and
 RelWithDebInfo. To build an alternative mode</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> build
@@ -351,8 +365,9 @@ cmake -DCMAKE_BUILD_TYPE<span class="o">=</span>RelWithDebInfo  <span class="se"
 make
 </pre></div>
 </div>
-</li>
-<li><p>Documentation</p>
+</div>
+<div class="section" id="documentation">
+<h4>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h4>
 <p>The documentation relies on the sphinx (with nbsphinx and breathe
 extensions), doxygen, pandoc, and graphviz
 packages. To install them on ubuntu:</p>
@@ -367,18 +382,42 @@ make doc
 </pre></div>
 </div>
 <p>and open <code class="file docutils literal notranslate"><span class="pre">build/docs/html/index.html</span></code> in a browser.</p>
-</li>
-<li><p>Helpers for Developers</p>
-<ul class="simple">
-<li><p>To remove all the cmake files/folders except for the external
-library (enable glob and remove):</p></li>
-</ul>
+</div>
+<div class="section" id="bindings">
+<h4>Bindings<a class="headerlink" href="#bindings" title="Permalink to this headline">¶</a></h4>
+<p>Librascal relies on the pybind11 library to automate the generation
+of the python bindings which are built by default. Nevertheless, to
+build only the c++ library:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> build
+cmake -DBUILD_BINDINGS<span class="o">=</span>OFF ..
+make
+</pre></div>
+</div>
+</div>
+<div class="section" id="installing-rascal">
+<h4>Installing rascal<a class="headerlink" href="#installing-rascal" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>mkdir ../build
+<span class="nb">cd</span> build
+cmake -DCMAKE_BUILD_TYPE<span class="o">=</span>Release -DBUILD_TESTS<span class="o">=</span>ON -DBUILD_BINDINGS<span class="o">=</span>ON ..
+make install
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="helpers-for-developers">
+<h3>Helpers for Developers<a class="headerlink" href="#helpers-for-developers" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="deepclean">
+<h4>Deepclean<a class="headerlink" href="#deepclean" title="Permalink to this headline">¶</a></h4>
+<p>To remove all the cmake files/folders except for the external
+library (enable glob and remove):</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">shopt</span> -s extglob
 rm -fr -- !<span class="o">(</span>external<span class="p">|</span>third-party<span class="o">)</span>
 </pre></div>
 </div>
-<ul>
-<li><p>To help developers conform their contribution to the coding
+</div>
+<div class="section" id="automatic-code-formatting">
+<h4>Automatic code formatting<a class="headerlink" href="#automatic-code-formatting" title="Permalink to this headline">¶</a></h4>
+<p>To help developers conform their contribution to the coding
 convention, the formatting of new functionalities can be automated
 using clang-format (for the c++ files) and autopep8 (for the
 python files). The .clang-format and .pycodestyle files define
@@ -402,39 +441,51 @@ introduce unwanted changes to the code. If code needs to be
 specifically excluded from auto formatting, e.g. a matrix which
 should be human-readable, code comments tells the formatters to
 ignore lines:</p>
-<p>C++</p>
+<ul>
+<li><p>C++</p>
 <div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// clang-format off</span>
 <span class="n">SOME</span> <span class="n">CODE</span> <span class="n">TO</span> <span class="n">IGNORE</span>
 <span class="c1">// clang-format on</span>
 </pre></div>
 </div>
-<p>python</p>
+</li>
+<li><p>python</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">SOME</span> <span class="n">LINE</span> <span class="n">TO</span> <span class="n">IGNORE</span> <span class="c1"># noqa</span>
 </pre></div>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">noqa</span></code> stands for <code class="docutils literal notranslate"><span class="pre">no</span></code> <code class="docutils literal notranslate"><span class="pre">q</span></code>uality <code class="docutils literal notranslate"><span class="pre">a</span></code>ssurance.</p>
 </li>
 </ul>
-</li>
-<li><p>Bindings</p>
-<p>Librascal relies on the pybind11 library to automate the generation
-of the python bindings which are built by default. Nevertheless, to
-build only the c++ library:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> build
-cmake -DBUILD_BINDINGS<span class="o">=</span>OFF ..
-make
+</div>
+<div class="section" id="jupyter-notebooks">
+<h4>Jupyter notebooks<a class="headerlink" href="#jupyter-notebooks" title="Permalink to this headline">¶</a></h4>
+<p>If you are contributing any code in IPython/Jupyter notebooks, <em>please</em>
+install the <cite>nbstripout</cite> extension (available e.g. on
+<a class="reference external" href="https://github.com/kynan/nbstripout#installation">github</a> and
+<a class="reference external" href="https://pypi.org/project/nbstripout/">PyPI</a>).  After installing,
+activate it for this project by running:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>nbstripout --install --attributes .gitattributes
 </pre></div>
 </div>
-</li>
-<li><p>Installing rascal</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>mkdir ../build
-<span class="nb">cd</span> build
-cmake -DCMAKE_BUILD_TYPE<span class="o">=</span>Release -DBUILD_TESTS<span class="o">=</span>ON -DBUILD_BINDINGS<span class="o">=</span>ON ..
-make install
+<p>from the top-level repository directory.  Please note that that
+<code class="docutils literal notranslate"><span class="pre">nbstripout</span></code> will not strip output from cells with the metadata fields
+<code class="docutils literal notranslate"><span class="pre">keep_output</span></code> or <code class="docutils literal notranslate"><span class="pre">init_cell</span></code> set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, so use these fields
+judiciously.  You can ignore these settings with the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git config filter.nbstripout.extrakeys <span class="s1">&#39;\</span>
+<span class="s1">   cell.metadata.keep_output cell.metadata.init_cell&#39;</span>
 </pre></div>
 </div>
-</li>
-</ol>
+<p>(The keys <code class="docutils literal notranslate"><span class="pre">metadata.kernel_spec.name</span></code> and
+<code class="docutils literal notranslate"><span class="pre">metadata.kernel_spec.display_name</span></code> may also be useful to reduce diff
+noise.)</p>
+<p>Nonetheless, it is highly discouraged to contribute code in the form of
+notebooks; even with filters like <code class="docutils literal notranslate"><span class="pre">nbstripout</span></code> they’re a hassle to use
+in version control.  Use them only for tutorials or <em>stable</em> examples that
+are either meant to be run <em>interactively</em> or are meant to be processed by
+<cite>sphinx</cite> (<a class="reference external" href="https://nbsphinx.readthedocs.io/en/latest/">nbsphinx</a>) for
+inclusion in the
+<a class="reference external" href="https://cosmo-epfl.github.io/librascal/tutorials/tutorials.html">tutorials page</a>.</p>
+</div>
 </div>
 </div>
 <div class="section" id="miscellaneous-information">
