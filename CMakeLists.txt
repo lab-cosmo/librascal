@@ -371,5 +371,5 @@ endif()
 # prevent redownloading external libraries
 add_custom_target(
     deepclean
-    COMMAND python ${CMAKE_SOURCE_DIR}/scripts/deepclean.py
+    COMMAND python ${CMAKE_SOURCE_DIR}/scripts/developer_utils.py deepclean
   )
