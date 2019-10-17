@@ -25,7 +25,8 @@ for C++ code (Python code generally follows PEP 8).
 Jupyter Notebooks
 =================
 
-Please read the README section on this topic.  In general, avoid contributing
+Please read the `README section <README.rst#jupyter-notebooks>`_ on this topic.
+In general, avoid contributing
 code in notebooks wherever possible.  If you do have to commit notebooks to
 version control, make sure you've installed the ``nbstripout`` extension and
 that it works properly (i.e. you're not committing the output of notebook
