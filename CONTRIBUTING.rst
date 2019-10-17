@@ -20,7 +20,7 @@ especially the
 for C++ code (Python code generally follows PEP 8).
 
 .. [*] You'd think this would be obvious, but far too many people ignore
-       ``README``s in practice
+       ``README``\ s in practice
 
 Jupyter Notebooks
 =================
