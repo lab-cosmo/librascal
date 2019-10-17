@@ -55,6 +55,9 @@ namespace rascal {
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters>;
+    // a dummy property for testing property forwarding, it is important that
+    // each manager has this type, if tests for new adaptor is added
+    using Property_t = typename Manager_t::template Property_t<double, 1>;
     const std::string filename{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
     StructureManagerCentersStackFixture()
@@ -69,6 +72,7 @@ namespace rascal {
     using Parent = StackFixture;
     using Manager_t = AdaptorNeighbourList<typename Parent::Manager_t>;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
+    using Property_t = typename Manager_t::template Property_t<double, 1>;
 
     const double consider_ghost_neighbours{consider_ghost_neighbours_};
     const double cutoff{1.};

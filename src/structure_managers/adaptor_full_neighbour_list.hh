@@ -63,6 +63,7 @@ namespace rascal {
         typename LayerIncreaser<MaxOrder,
                                 typename parent_traits::LayerByOrder>::type{})};
     using LayerByOrder = std::index_sequence<AtomLayer, 0>;
+    typedef ManagerImplementation PreviousManager_t;
   };
 
   /**
@@ -80,6 +81,7 @@ namespace rascal {
    public:
     using Parent = StructureManager<AdaptorFullList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFullList>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using Manager_t = AdaptorFullList<ManagerImplementation>;
     using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
@@ -269,7 +271,7 @@ namespace rascal {
     }
 
     //! Get the manager used to build the instance
-    ImplementationPtr_t get_previous_manager() {
+    ImplementationPtr_t get_previous_manager_impl() {
       return this->manager->get_shared_ptr();
     }
 

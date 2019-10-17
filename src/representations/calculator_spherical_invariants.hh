@@ -458,19 +458,19 @@ namespace rascal {
 
     auto && expansions_coefficients{
         manager->template get_property_ref<PropExp_t>(
-            rep_expansion.get_name())};
+            rep_expansion.get_name(), true, true)};
 
     // No error if gradients not computed; just an empty array in that case
     auto && expansions_coefficients_gradient{
         manager->template get_property_ref<PropGradExp_t>(
-            rep_expansion.get_gradient_name())};
+            rep_expansion.get_gradient_name(), true, true)};
 
-    auto && soap_vectors{
-        manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && soap_vectors{manager->template get_property_ref<Prop_t>(
+        this->get_name(), true, true)};
 
     auto && soap_vector_gradients{
         manager->template get_property_ref<PropGrad_t>(
-            this->get_gradient_name())};
+            this->get_gradient_name(), true, true)};
 
     // if the representation has already been computed for the current
     // structure then do nothing
@@ -829,18 +829,18 @@ namespace rascal {
 
     auto && expansions_coefficients{
         manager->template get_property_ref<PropExp_t>(
-            rep_expansion.get_name())};
+            rep_expansion.get_name(), true, true)};
 
     auto & expansions_coefficients_gradient{
         manager->template get_property_ref<PropGradExp_t>(
-            rep_expansion.get_gradient_name())};
+            rep_expansion.get_gradient_name(), true, true)};
 
-    auto && soap_vectors{
-        manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && soap_vectors{manager->template get_property_ref<Prop_t>(
+        this->get_name(), true, true)};
 
     auto && soap_vector_gradients{
         manager->template get_property_ref<PropGrad_t>(
-            this->get_gradient_name())};
+            this->get_gradient_name(), true, true)};
     // if the representation has already been computed for the current
     // structure then do nothing
     if (soap_vectors.is_updated()) {
@@ -996,10 +996,10 @@ namespace rascal {
 
     auto && expansions_coefficients{
         manager->template get_property_ref<PropExp_t>(
-            rep_expansion.get_name())};
+            rep_expansion.get_name(), true, true)};
 
-    auto && soap_vectors{
-        manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && soap_vectors{manager->template get_property_ref<Prop_t>(
+        this->get_name(), true, true)};
 
     // if the representation has already been computed for the current
     // structure then do nothing

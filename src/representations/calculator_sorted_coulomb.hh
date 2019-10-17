@@ -426,8 +426,8 @@ namespace rascal {
 
     // Get a reference to the data container where the computed representation
     // is stored in the corresponding structure manager
-    auto && coulomb_matrices{
-        manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && coulomb_matrices{manager->template get_property_ref<Prop_t>(
+        this->get_name(), true, true)};
 
     // if the representation has already been computed for the current
     // structure then do nothing

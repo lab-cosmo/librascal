@@ -87,12 +87,12 @@ namespace rascal {
         for (auto & manager_a : managers_a) {
           size_t ii_B{0};
           auto && propA{
-              manager_a->template get_validated_property_ref<Property_t>(
-                  representation_name)};
+              manager_a->template get_property_ref<Property_t>(
+                  representation_name, true)};
           for (auto & manager_b : managers_b) {
             auto && propB{
-                manager_b->template get_validated_property_ref<Property_t>(
-                    representation_name)};
+                manager_b->template get_property_ref<Property_t>(
+                    representation_name, true)};
 
             kernel(ii_A, ii_B) =
                 propA.dot(propB).unaryExpr(integer_power).mean();
@@ -136,12 +136,12 @@ namespace rascal {
         for (auto & manager_a : managers_a) {
           size_t ii_B{0};
           auto && propA{
-              manager_a->template get_validated_property_ref<Property_t>(
-                  representation_name)};
+              manager_a->template get_property_ref<Property_t>(
+                  representation_name, true)};
           for (auto & manager_b : managers_b) {
             auto && propB{
-                manager_b->template get_validated_property_ref<Property_t>(
-                    representation_name)};
+                manager_b->template get_property_ref<Property_t>(
+                    representation_name, true)};
 
             kernel.block(ii_A, ii_B, manager_a->size(), manager_b->size()) =
                 propA.dot(propB).unaryExpr(integer_power);

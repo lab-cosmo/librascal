@@ -13,6 +13,7 @@ We strongly advise our contributors to check these guidlines before submitting t
    how_to_misc
    how_to_add_representation
    how_to_test
+   forwarding_of_property_requests
    coding-convention
 
 

@@ -150,8 +150,8 @@ namespace rascal {
         representations.emplace_back(hyper);
         representations.back().compute(manager);
         ManagerCollection_t collection{};
-        auto & prop = manager->template get_validated_property_ref<Property_t>(
-            representations.back().get_name());
+        auto & prop = manager->template get_property_ref<Property_t>(
+            representations.back().get_name(), true);
         math::Matrix_t feat_prop = prop.get_dense_feature_matrix();
         collection.add_structure(manager);
         math::Matrix_t feat_col =
@@ -219,8 +219,8 @@ namespace rascal {
       for (auto & hyper : hypers) {
         representations.emplace_back(hyper);
         representations.back().compute(manager);
-        auto & prop = manager->template get_validated_property_ref<Property_t>(
-            representations.back().get_name());
+        auto & prop = manager->template get_property_ref<Property_t>(
+            representations.back().get_name(), true);
         BOOST_CHECK_EQUAL(prop.get_nb_item(), 1);
       }
     }
@@ -271,13 +271,13 @@ namespace rascal {
         representation.compute(manager);
         representation.compute(manager_no_center);
 
-        auto & prop = manager->template get_validated_property_ref<Property_t>(
-            representation.get_name());
+        auto & prop = manager->template get_property_ref<Property_t>(
+            representation.get_name(), true);
         math::Matrix_t rep_full = prop.get_dense_feature_matrix();
 
         auto & prop_no_center =
-            manager_no_center->template get_validated_property_ref<Property_t>(
-                representation.get_name());
+            manager_no_center->template get_property_ref<Property_t>(
+                representation.get_name(), true);
         math::Matrix_t rep_no_center =
             prop_no_center.get_dense_feature_matrix();
 
@@ -337,8 +337,8 @@ namespace rascal {
         representations.back().compute(manager);
         auto property_name{representations.back().get_name()};
         auto && property{
-            manager->template get_validated_property_ref<Property_t>(
-                property_name)};
+            manager->template get_property_ref<Property_t>(
+                property_name, true)};
         auto test_representation = property.get_dense_feature_matrix();
 
         BOOST_CHECK_EQUAL(ref_representation.size(),

@@ -137,7 +137,4 @@ int main(int argc, char * argv[]) {
   std::cout << "Compute representation with gradients"
             << " elapsed: " << elapsed_grad.count() / N_ITERATIONS << " seconds"
             << std::endl;
-  // auto property_name{representation.get_name()};
-  // auto&& property{manager->template
-  // get_validated_property_ref<Property_t>(property_name)};
 }

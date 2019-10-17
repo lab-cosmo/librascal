@@ -704,6 +704,40 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE_END();
 
   /* ---------------------------------------------------------------------- */
+  /** Tests the utility functions in structure manager file including
+   * get_property_ptr/ref and create property.
+   */
+  BOOST_AUTO_TEST_SUITE(Property_structure_manager_property_tests);
+
+  BOOST_FIXTURE_TEST_CASE(create_property,
+                          StructureManagerCentersStackFixture) {
+    BOOST_CHECK_NO_THROW(
+        this->manager->template create_property<Property_t>("prop"));
+    BOOST_CHECK_THROW(
+        this->manager->template create_property<Property_t>("prop"),
+        std::runtime_error);
+  }
+
+  /**
+   * Tests if property forwarding works
+   *
+   * ANL -> has not prop1
+   *  | forwards request to lower stack
+   *  v
+   * SMC has prop
+   */
+  BOOST_FIXTURE_TEST_CASE(property_forwarding,
+                          ANLWithoutGhosts_SMC_StackFixture) {
+    using Parent_Property_t = Parent::Property_t;
+    this->manager->get_previous_manager()
+        ->template create_property<Parent_Property_t>("prop");
+    BOOST_CHECK_NO_THROW(
+        this->manager->template get_property_ptr<Property_t>("prop", false););
+  }
+
+  BOOST_AUTO_TEST_SUITE_END();
+
+  /* ---------------------------------------------------------------------- */
 
   /*
    * A fixture for testing partially sparse properties.

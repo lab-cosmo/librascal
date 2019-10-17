@@ -75,6 +75,7 @@ namespace rascal {
     constexpr static bool HasCenterPair{false};
     constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0>;
+    typedef StructureManagerCenters PreviousManager_t;
   };
 
   /**
@@ -100,6 +101,7 @@ namespace rascal {
    public:
     // for convenience, the names are shortened
     using traits = StructureManager_traits<StructureManagerCenters>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using Parent = StructureManager<StructureManagerCenters>;
     // here you see why -- definition of used function return types
     using Vector_ref = typename Parent::Vector_ref;
@@ -330,6 +332,14 @@ namespace rascal {
    protected:
     //! makes atom tag lists and offsets
     void build();
+    /**
+     * Get a ptr of the previous manager, required for forwarding requests
+     * downwards a stack. Since there is no last manager, the manager returns
+     * itself.
+     */
+    ImplementationPtr_t get_previous_manager_impl() {
+      return shared_from_this();
+    }
     /**
      * Object which can interface to the json header to read and write atom
      * related data in the ASE format: positions, cell, periodicity, atom types
