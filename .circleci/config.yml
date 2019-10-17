@@ -31,38 +31,6 @@ default_job: &default_job
     - run:
          name: Run benchmarks
          command: cd build && make benchmarks
-
-# A job not building and runnig benchmark, needed because circleci has problems
-# with building rascal with benchmarks for gcc-debug
-no_benchmark_job: &no_benchmark_job
-  docker:
-    - image: ubuntu:18.04
-  steps:
-    - run:
-        name: Install dependencies
-        command: |
-          apt update -y
-          apt install -y git cmake python3.6 python3-pip libboost-test-dev
-          ${APT_EXTRA_INSTALL}
-    - checkout
-    - run:
-        name: Install Python dependencies
-        command: python3.6 -m pip install -r requirements.txt
-    - run:
-        name: Configure
-        command: |
-          mkdir build
-          cd build
-          cmake ${CMAKE_EXTRA} -DBUILD_TESTS=ON \
-                -DBUILD_EXAMPLES=ON -DBUILD_PROFILES=ON \
-                -DCPPLINT=CPPLINT-NOTFOUND \
-                -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..
-    - run:
-        name: Build
-        command: cd build && make -j2
-    - run:
-        name: Run tests
-        command: cd build && ctest --output-on-failure
 jobs:
   gcc-5:
     environment:
