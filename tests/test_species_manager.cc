@@ -76,7 +76,7 @@ namespace rascal {
       auto species{tup.first};
       auto nb_atoms{tup.second};
       auto nb_filtered{
-          Fix::species_manager[std::array<int, 1>{species}].size()};
+          Fix::species_manager[std::array<int, 1>{{species}}].size()};
       BOOST_CHECK_EQUAL(nb_atoms, nb_filtered);
     }
   }
