@@ -45,3 +45,7 @@ sent back without further comments.  The two exceptions to this rule are:
    auto-execution feature of ``nbsphinx`` (see
    `here <https://nbsphinx.readthedocs.io/en/latest/executing-notebooks.html>`_
    for details).
+
+Note also that ``nbstripout`` will not strip output from cells with the metadata
+fields ``keep_output`` or ``init_cell`` set to ``True``.  Please use these
+fields judiciously.
