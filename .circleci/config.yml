@@ -79,7 +79,7 @@ jobs:
       CC: gcc-9
       CXX: g++-9
       CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug
-    <<: *no_benchmark_job
+    <<: *default_job
   clang-4:
     environment:
       CC: clang-4.0
