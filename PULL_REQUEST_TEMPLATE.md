@@ -16,8 +16,12 @@ Tasks before review:
           code)
 - [ ] Run `make lint` on the project, ensure it passes
     - [ ] Run `make pretty-cpp` and `make pretty-python`, if necessary
-    - [ ] Review variable names, make sure they're descriptive
+    - [ ] Review variable names, make sure they're descriptive (ask a friend)
+    - [ ] Review all TODOs, convert to issues wherever possible
+    - [ ] Make sure draft, in-progress, and commented-out code is moved to its
+          own branch
 - [ ] If committing any code in Jupyter/IPython notebooks, install and run `nbstripout`
+- [ ] Merge with master and resolve any conflicts
 - [ ] (anything else that's still in progress)
 
 
