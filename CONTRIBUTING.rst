@@ -19,6 +19,12 @@ especially the
 `coding conventions <https://cosmo-epfl.github.io/librascal/dev_guide/coding-convention.html>`_
 for C++ code (Python code generally follows PEP 8).
 
+We now have a pull request template; please use it (especially for new
+features)!  In particular, make sure you've checked off all the items listed
+under "Tasks before review".  If you haven't been able to complete all these
+tasks, then your code isn't ready for review; consider submitting a "Draft pull
+request" instead (or waiting to request reviewers).
+
 .. [*] You'd think this would be obvious, but far too many people ignore
        ``README``\ s in practice
 
