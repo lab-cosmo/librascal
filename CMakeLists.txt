@@ -311,8 +311,8 @@ if (${BUILD_EXAMPLES})
     add_executable(${binaryname} ${binaryfile})
     target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
   endforeach(binaryfile ${binaries})
-  configure_file("${CMAKE_SOURCE_DIR}/examples/data/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("${CMAKE_SOURCE_DIR}/examples/data/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("${CMAKE_SOURCE_DIR}/examples/reference_data/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("${CMAKE_SOURCE_DIR}/examples/reference_data/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
   configure_file("${CMAKE_SOURCE_DIR}/tests/reference_data/alanine-center-select.json" ${CMAKE_BINARY_DIR} COPYONLY)
 
   # Add profiling information for the appropriate examples
