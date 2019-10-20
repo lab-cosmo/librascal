@@ -844,6 +844,8 @@ namespace rascal {
      * This is a ClusterRef of Order=1, constructed from a higher Order.
      * This function here is self referencing right now. A ClusterRefKey
      * with Order=1 is noeeded to construct it ?!
+     *
+     * tag(felix) what is the use for this constructor ?
      */
     ClusterRef(ClusterRefKey<1, 0> & cluster, Manager_t & manager)
         : ClusterRefKey<1, 0>(cluster.get_atom_tag_list(),
@@ -966,6 +968,7 @@ namespace rascal {
     //! return a const reference to the manager with maximum layer
     const Manager_t & get_manager() const { return this->it.get_manager(); }
     //! start of the iteration over the cluster itself
+    // tag(felix) should be moved to get_neighboors, get_triplets, ...
     template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
     iterator begin() {
       std::array<size_t, Order> counters{this->it.get_counters()};
@@ -1032,6 +1035,7 @@ namespace rascal {
 
     /**
      * Helper struct to only iterate in a customised range.
+     * tag(felix) use similar contruct in get_neighbors, get_triplet...
      */
     template <class ManagerImplementation_ = ManagerImplementation,
               size_t Order_ = Order>
@@ -1126,6 +1130,9 @@ namespace rascal {
    * specialized for the case Order=1, when iterating over a manager and the
    * dereference are atoms, because then the container is a manager. For all
    * other cases, the container is the cluster of the Order below.
+   *
+   * tag(felix) change behaviour so that the container is the cluster of
+   * Order == 2 except for the special case
    */
   template <class ManagerImplementation>
   template <size_t Order>
@@ -1137,11 +1144,13 @@ namespace rascal {
 
     friend ClusterRef_t;
     // determine the container type
+    // tag(felix) Manager_t or typename Manager_t::template ClusterRef<2>
     using Container_t =
         std::conditional_t<Order == 1, Manager_t,
                            typename Manager_t::template ClusterRef<Order - 1>>;
     static_assert(Order > 0, "Order has to be positive");
 
+    // tag(felix) MaxOrder trait should become a list of available orders
     static_assert(Order <= traits::MaxOrder,
                   "Order > MaxOrder, impossible iterator");
 
@@ -1253,6 +1262,8 @@ namespace rascal {
 
     //! returns the counters - which is the position in a list at each
     //! Order.
+    // tag(felix) change the behaviour to account for the fact that
+    // the data is at Order == 1 or 2
     std::array<size_t, Order> get_counters() {
       std::array<size_t, Order> counters;
       counters[Order - 1] = this->index;
