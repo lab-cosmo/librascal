@@ -10,7 +10,7 @@ Rationale and detailed description of the changes:
 
 Tasks before review:
 
-- [ ] Add tests and examples of any added functionality
+- [ ] Add tests, examples, and complete documentation of any added functionality
     - [ ] For bugfix pull requests, list any previously-disabled tests that are
           now passing (and any tests to catch similar bugs elsewhere in the
           code)
