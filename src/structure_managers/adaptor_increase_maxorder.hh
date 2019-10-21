@@ -61,6 +61,10 @@ namespace rascal {
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     // New MaxOrder upon construction
     constexpr static size_t MaxOrder{parent_traits::MaxOrder + 1};
+    // TODO(felix) here we assume that only triplets can be added. need to
+    // changed after the rework of AdaptorMaxOrder so that it passes the
+    // Order that has been added.
+    using AvailableOrdersList = typename internal::AppendAvailableOrder<3, typename parent_traits::AvailableOrdersList>::type;
     // Extend the layer by one with the new MaxOrder
     using LayerByOrder =
         typename LayerExtender<MaxOrder,

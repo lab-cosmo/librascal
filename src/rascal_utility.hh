@@ -37,6 +37,61 @@
 namespace rascal {
   namespace internal {
 
+    namespace details {
+      /**
+       * Recursivelly go through a list of Orders and check if at least one
+       * matches TargetOrder at compile time.
+       */
+      template <size_t TargetOrder, size_t Order, size_t... Orders>
+      struct IsOrderAvailableHelper {
+        static constexpr bool is_order_available = (TargetOrder == Order);
+
+        template <bool T = is_order_available, std::enable_if_t<T, int> = 0>
+        static constexpr bool get_is_order_available() {
+          return true;
+        }
+
+        template <bool T = is_order_available, std::enable_if_t<not(T), int> = 0>
+        static constexpr bool get_is_order_available() {
+          return IsOrderAvailableHelper<TargetOrder, Orders...>::get_is_order_available();
+        }
+      };
+      //! end of recursion
+      template <size_t TargetOrder, size_t Order>
+      struct IsOrderAvailableHelper<TargetOrder, Order> {
+        static constexpr bool is_order_available = (TargetOrder == Order);
+
+        template <bool T = is_order_available, std::enable_if_t<T, int> = 0>
+        static constexpr bool get_is_order_available() {
+          return true;
+        }
+
+        template <bool T = is_order_available, std::enable_if_t<not(T), int> = 0>
+        static constexpr bool get_is_order_available() {
+          return false;
+        }
+      };
+    }
+
+    /**
+     * Append an order to the list of orders available
+     */
+    template <size_t NewOrder, class T>
+    struct AppendAvailableOrder { };
+
+    template <size_t NewOrder, size_t... Orders>
+    struct AppendAvailableOrder<NewOrder, std::index_sequence<Orders...>> {
+      using type = std::index_sequence<Orders..., NewOrder>;
+    };
+
+    /**
+     * Find if TargetOrder is in the list of indices Orders.
+     */
+    template <size_t TargetOrder, size_t... Orders>
+    constexpr bool is_order_available(std::index_sequence<Orders...> /* sep*/) {
+      return details::IsOrderAvailableHelper<TargetOrder,Orders...>::get_is_order_available();
+    }
+
     /**
      * Utility to check if a template parameter is iterable
      */

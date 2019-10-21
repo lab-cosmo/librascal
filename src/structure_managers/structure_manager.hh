@@ -967,36 +967,6 @@ namespace rascal {
 
     //! return a const reference to the manager with maximum layer
     const Manager_t & get_manager() const { return this->it.get_manager(); }
-    // //! start of the iteration over the cluster itself
-    // // tag(felix) should be moved to get_neighboors, get_triplets, ...
-    // template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
-    // iterator begin() {
-    //   std::array<size_t, Order> counters{this->it.get_counters()};
-    //   auto offset = this->get_manager().get_offset(counters);
-    //   return iterator(*this, 0, offset);
-    // }
-
-    // /**
-    //  * start of the iteration over the cluster itself.
-    //  *
-    //  * Special case when HasCenterPair == true and Order == 1. The default
-    //  * iteration in this case does not include the ii-pair by starting at 1
-    //  * since the ii-pair is the first element.
-    //  * To include the ii-pair to the iteration use .with_self_pair()
-    //  */
-    // template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
-    // iterator begin() {
-    //   std::array<size_t, Order> counters{this->it.get_counters()};
-    //   auto offset = this->get_manager().get_offset(counters);
-    //   return iterator(*this, 1, offset);
-    // }
-
-
-    // //! end of the iterations over the cluster itself
-    // iterator end() {
-    //   return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
-    // }
-
 
     //! returns its own size
     size_t size() { return this->get_manager().get_cluster_size(*this); }
@@ -1037,8 +1007,9 @@ namespace rascal {
     Iterator_t & it;
 
     /**
-     * Helper struct to only iterate in a customised range.
-     * tag(felix) use similar contruct in get_neighbors, get_triplet...
+     * Helper struct to iterate in a customised range. Useful to return an
+     * iterator over the pairs (TargetOrder == 2),
+     * triplets (TargetOrder == 3)...
      */
     template <size_t TargetOrder>
     struct CustomProxy {
@@ -1066,11 +1037,17 @@ namespace rascal {
 
    public:
 
+    //! helper to identify if Manager_t has TargetOrder in AvailableOrdersList
+    template <size_t TargetOrder>
+    static constexpr bool HasOrder = internal::is_order_available<TargetOrder>(typename Manager_t::traits::AvailableOrdersList{});
+
     /**
      * Return an iterable for Order == 2 that includes the neighbors (or pairs)
-     * and if HasCenterPairOrderOne == true then the iteration avoids
+     * associated with the current central atom.
+     * if HasCenterPairOrderOne == true then the iteration avoids
      * including the self_pair, i.e. reference to the central atom as a pair.
      */
+    template <bool T = HasOrder<2>, std::enable_if_t<T, int> = 0>
     CustomProxy<2> get_pairs() {
       std::array<size_t, 1> counters{this->it.get_counters()};
       size_t offset{this->get_manager().get_offset(counters)};
@@ -1084,10 +1061,13 @@ namespace rascal {
 
 
     /**
-     * Return an iterable for Order == 2 that includes the self pair if
-     * HasCenterPair == true. If HasCenterPair == false then its the
-     * regular iteration.
+     * Return an iterable for Order == 2 that includes the neighbors (or
+     * pairs) associated with the current central atom and the self pair,
+     * i.e. ClusterRef<2> refering to the central atom if
+     * HasCenterPair == true.
+     * If HasCenterPair == false then its the regular iteration.
      */
+    template <bool T = HasOrder<2>, std::enable_if_t<T, int> = 0>
     CustomProxy<2> get_pairs_with_self_pair() {
       std::array<size_t, 1> counters{this->it.get_counters()};
       size_t offset{this->get_manager().get_offset(counters)};
@@ -1095,6 +1075,21 @@ namespace rascal {
       size_t start{0};
       return CustomProxy<2>(*this, start, offset, finish);
     }
+
+    /**
+     * Return an iterable for Order == 3 that includes the triplets associated
+     * with the current central atom.
+     */
+    template <bool T = HasOrder<3>, std::enable_if_t<T, int> = 0>
+    CustomProxy<3> get_triplets() {
+      std::array<size_t, 2> counters{this->it.get_counters()};
+      size_t offset{this->get_manager().get_offset(counters)};
+      size_t finish{this->size()};
+      size_t start{0};
+      return CustomProxy<3>(*this, start, offset, finish);
+    }
+
+
   };
 
   namespace internal {

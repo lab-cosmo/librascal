@@ -47,6 +47,7 @@ namespace rascal {
   struct StructureManager_traits<StructureManagerLammps> {
     constexpr static int Dim{3};
     constexpr static size_t MaxOrder{2};
+    using AvailableOrdersList = std::index_sequence<0, 1, 2>;
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
     constexpr static bool HasDistances{false};
     constexpr static bool HasDirectionVectors{false};

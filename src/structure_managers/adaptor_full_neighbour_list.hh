@@ -57,6 +57,7 @@ namespace rascal {
         AdaptorTraits::NeighbourListType::full};
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
+    using AvailableOrdersList = typename parent_traits::AvailableOrdersList;
     // New pairs are added at this layer, which did not exist before. Therefore
     // the layering has to be reset.
     constexpr static size_t AtomLayer{get<0>(

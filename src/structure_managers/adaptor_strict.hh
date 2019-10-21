@@ -55,6 +55,7 @@ namespace rascal {
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     constexpr static int Dim{parent_traits::Dim};
     constexpr static size_t MaxOrder{parent_traits::MaxOrder};
+    using AvailableOrdersList = typename parent_traits::AvailableOrdersList;
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     using LayerByOrder =
         typename LayerIncreaser<MaxOrder,

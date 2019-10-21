@@ -61,6 +61,7 @@ namespace rascal {
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     //! New MaxOrder upon construction!
     constexpr static size_t MaxOrder{MaxOrder_};
+    using AvailableOrdersList = typename parent_traits::AvailableOrdersList;
     //! New Layer
     //! TODO: Is this the correct way to initialize the increased order?
     using LayerByOrder =

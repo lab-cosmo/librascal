@@ -50,6 +50,24 @@
 
 using namespace rascal;  // NOLINT
 
+
+
+    template<bool is_true>
+    struct AA {};
+
+    template<>
+    struct AA<true> {
+      static void print(){
+        std::cout << "TRUE " << std::endl;
+      }
+    };
+
+    template<>
+    struct AA<false> {
+      static void print(){
+        std::cout << "FALSE " << std::endl;
+      }
+    };
 int main() {
   // Test1()();
   // std::string filename{"reference_data/dft-smiles_500.ubjson"};
@@ -60,7 +78,10 @@ int main() {
   std::string rep_id{"pp"};
 
   double cutoff{3.};
+  AA<internal::is_order_available<5>(std::index_sequence<3,4,8,7>{})>::print();
 
+  std::cout << "Order is available " <<
+      internal::is_order_available<5>(std::index_sequence<3,4,8,7>{}) << std::endl;
   // json structure{{"filename", filename}};
   // json adaptors;
   // json ad1{{"name", "AdaptorNeighbourList"},
@@ -116,6 +137,9 @@ int main() {
                 << " tag_j: " << atom_j_tag[0] << ", " << atom_j_ids[0]
                 << std::endl;
     }
+    // for (auto triplet : center.get_triplets()) {
+    //   std::cout << "triplet: " << std::endl;
+    // }
   }
 
   return (0);
