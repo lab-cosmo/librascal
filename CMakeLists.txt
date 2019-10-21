@@ -82,6 +82,9 @@ set(ENABLE_DOC "OFF" CACHE BOOL
 set(BUILD_TESTS "OFF" CACHE BOOL
   "If on, builds the unit tests")
 
+set(BUILD_SANDBOX "OFF" CACHE BOOL
+  "If on, builds the sandbox")
+
 set(ENABLE_PROFILING "OFF" CACHE BOOL
   "If on, adds gprof profiling information to some of the examples. \
   (GNU compilers only)")
@@ -327,7 +330,14 @@ if (${BUILD_EXAMPLES})
   endif()
 endif (${BUILD_EXAMPLES})
 
-
+if (${BUILD_SANDBOX})
+  file( GLOB binaries "${CMAKE_SOURCE_DIR}/sandbox/*.cc")
+  foreach(binaryfile ${binaries})
+    get_filename_component(binaryname  ${binaryfile} NAME_WE)
+    add_executable(${binaryname} ${binaryfile})
+    target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
+  endforeach(binaryfile ${binaries})
+endif (${BUILD_SANDBOX})
 # or copy them
 file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")
 foreach(pybin ${pybins})

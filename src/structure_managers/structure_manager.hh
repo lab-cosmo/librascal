@@ -967,34 +967,37 @@ namespace rascal {
 
     //! return a const reference to the manager with maximum layer
     const Manager_t & get_manager() const { return this->it.get_manager(); }
-    //! start of the iteration over the cluster itself
-    // tag(felix) should be moved to get_neighboors, get_triplets, ...
-    template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
-    iterator begin() {
-      std::array<size_t, Order> counters{this->it.get_counters()};
-      auto offset = this->get_manager().get_offset(counters);
-      return iterator(*this, 0, offset);
-    }
+    // //! start of the iteration over the cluster itself
+    // // tag(felix) should be moved to get_neighboors, get_triplets, ...
+    // template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
+    // iterator begin() {
+    //   std::array<size_t, Order> counters{this->it.get_counters()};
+    //   auto offset = this->get_manager().get_offset(counters);
+    //   return iterator(*this, 0, offset);
+    // }
 
-    /**
-     * start of the iteration over the cluster itself.
-     *
-     * Special case when HasCenterPair == true and Order == 1. The default
-     * iteration in this case does not include the ii-pair by starting at 1
-     * since the ii-pair is the first element.
-     * To include the ii-pair to the iteration use .with_self_pair()
-     */
-    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
-    iterator begin() {
-      std::array<size_t, Order> counters{this->it.get_counters()};
-      auto offset = this->get_manager().get_offset(counters);
-      return iterator(*this, 1, offset);
-    }
+    // /**
+    //  * start of the iteration over the cluster itself.
+    //  *
+    //  * Special case when HasCenterPair == true and Order == 1. The default
+    //  * iteration in this case does not include the ii-pair by starting at 1
+    //  * since the ii-pair is the first element.
+    //  * To include the ii-pair to the iteration use .with_self_pair()
+    //  */
+    // template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
+    // iterator begin() {
+    //   std::array<size_t, Order> counters{this->it.get_counters()};
+    //   auto offset = this->get_manager().get_offset(counters);
+    //   return iterator(*this, 1, offset);
+    // }
 
-    //! end of the iterations over the cluster itself
-    iterator end() {
-      return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
-    }
+
+    // //! end of the iterations over the cluster itself
+    // iterator end() {
+    //   return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
+    // }
+
+
     //! returns its own size
     size_t size() { return this->get_manager().get_cluster_size(*this); }
     //! return iterator index - this is used in cluster_indices_container as
@@ -1037,16 +1040,13 @@ namespace rascal {
      * Helper struct to only iterate in a customised range.
      * tag(felix) use similar contruct in get_neighbors, get_triplet...
      */
-    template <class ManagerImplementation_ = ManagerImplementation,
-              size_t Order_ = Order>
+    template <size_t TargetOrder>
     struct CustomProxy {
-      using ClusterRef_t = typename StructureManager<
-          ManagerImplementation_>::template ClusterRef<Order_>;
-      using iterator = typename ClusterRef_t::iterator;
-      friend iterator;
+      using ClusterRef_t = typename Manager_t::template ClusterRef<1>;
+      using iterator = typename Manager_t::template Iterator<TargetOrder>;
 
-      CustomProxy(ClusterRef_t & cluster_ref, size_t & start, size_t & offset,
-                  size_t & finish)
+      CustomProxy(ClusterRef_t & cluster_ref, const size_t & start,
+                  const size_t & offset, const size_t & finish)
           : cluster_ref{cluster_ref}, start{start}, offset{offset},
             finish{finish} {}
 
@@ -1065,18 +1065,40 @@ namespace rascal {
     };
 
    public:
+
+    /**
+     */
+    template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
+    CustomProxy<2> get_neighbors() {
+      std::array<size_t, 1> counters{this->it.get_counters()};
+      size_t offset{this->get_manager().get_offset(counters)};
+      size_t finish{this->size()};
+      size_t start{0};
+      return CustomProxy<2>(*this, start, offset, finish);
+    }
+
+    /**
+     */
+    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
+    CustomProxy<2> get_neighbors() {
+      std::array<size_t, 1> counters{this->it.get_counters()};
+      size_t offset{this->get_manager().get_offset(counters)};
+      size_t finish{this->size()};
+      size_t start{1};
+      return CustomProxy<2>(*this, start, offset, finish);
+    }
+
     /**
      * Return an iterable for Order == 2 that includes the self pair if
      * HasCenterPair == true. If HasCenterPair == false then its the
      * regular iteration.
      */
-    CustomProxy<ManagerImplementation, Order> with_self_pair() {
-      std::array<size_t, Order> counters{this->it.get_counters()};
+    CustomProxy<2> get_neighbors_with_self_pair() {
+      std::array<size_t, 1> counters{this->it.get_counters()};
       size_t offset{this->get_manager().get_offset(counters)};
       size_t finish{this->size()};
       size_t start{0};
-      return CustomProxy<ManagerImplementation, Order>(*this, start, offset,
-                                                       finish);
+      return CustomProxy<2>(*this, start, offset, finish);
     }
   };
 
