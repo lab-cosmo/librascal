@@ -15,6 +15,7 @@ Tasks before review:
           formatted correctly (ask @max-veit if you need help with this task).
     - [ ] Write additional documentation in the Sphinx (not docstrings!) to
           explain the feature and its usage in plain English
+    - [ ] Make sure the examples run (!) and produce the expected output
     - [ ] For bugfix pull requests, list here which tests have been added or re-enabled
           to verify the fix and catch future regressions as well as similar bugs
           elsewhere in the code.
