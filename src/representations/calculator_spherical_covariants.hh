@@ -53,137 +53,104 @@ namespace rascal {
   namespace internal {
     enum class SphericalCovariantsType { LambdaSpectrum, End_ };
 
-    template <SphericalCovariantsType SpectrumType>
-    struct SphericalCovariantsPrecomputation {};
-
-    template <>
-    struct SphericalCovariantsPrecomputation<
-        SphericalCovariantsType::LambdaSpectrum>
-        : SphericalInvariantsPrecomputationBase {
-      using Parent = SphericalInvariantsPrecomputationBase;
-      using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
-
-      explicit SphericalCovariantsPrecomputation(const Hypers_t & hypers) {
-        this->max_angular = hypers.at("max_angular").get<size_t>();
-        this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
-        this->lambda = hypers.at("lam").get<size_t>();
-
-        // get the number of non zero elements in the w3j
-        // Use the well-known selection rules for the Wigner 3j symbols
-        int n_elements{0};
-        size_t l3{this->lambda};
-        for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
-          for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
-            // Triangle rule
-            if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
-                l1 > l2 + l3) {
+    inline Eigen::ArrayXd precompute_wigner_3js(size_t max_angular,
+                                                bool inversion_symmetry,
+                                                size_t lambda) {
+      Eigen::ArrayXd wigner_3js{};
+      // get the number of non zero elements in the w3j
+      // Use the well-known selection rules for the Wigner 3j symbols
+      int n_elements{0};
+      size_t l3{lambda};
+      for (size_t l1{0}; l1 < max_angular + 1; ++l1) {
+        for (size_t l2{0}; l2 < max_angular + 1; ++l2) {
+          // Triangle rule
+          if (l1 < static_cast<size_t>(std::abs<int>(l2 - l3)) ||
+              l1 > l2 + l3) {
+            continue;
+          }
+          if (inversion_symmetry) {
+            if ((l1 + l2 + l3) % 2 == 1) {
               continue;
             }
-            if (this->inversion_symmetry == true) {
-              if ((l1 + l2 + l3) % 2 == 1) {
-                continue;
-              }
-            }
-            for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
-              int m1s{static_cast<int>(m1 - l1)};
-              for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
-                int m2s{static_cast<int>(m2 - l2)};
-                for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
-                  int m3s{static_cast<int>(m3 - l3)};
-                  // Selection rule for m
-                  if ((m1s + m2s + m3s != 0) && (m1s + m2s - m3s != 0)) {
-                    continue;
-                  }
-                  ++n_elements;
+          }
+          for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
+            int m1s{static_cast<int>(m1 - l1)};
+            for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
+              int m2s{static_cast<int>(m2 - l2)};
+              for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
+                int m3s{static_cast<int>(m3 - l3)};
+                // Selection rule for m
+                if ((m1s + m2s + m3s != 0) && (m1s + m2s - m3s != 0)) {
+                  continue;
                 }
+                ++n_elements;
               }
             }
           }
         }
-
-        this->wigner_3js.resize(n_elements);
-        n_elements = 0;
-        wig_table_init(2 * (this->max_angular + 1), 3);
-        wig_temp_init(2 * (this->max_angular + 1));
-        for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
-          for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
-            if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
-                (l1 > l2 + l3)) {
-              continue;
-            }
-            if (this->inversion_symmetry == true) {
-              if ((l1 + l2 + l3) % 2 == 1) {
-                continue;
-              }
-            }
-            for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
-              int m1s{static_cast<int>(m1 - l1)};
-              for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
-                int m2s{static_cast<int>(m2 - l2)};
-                for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
-                  int m3s{static_cast<int>(m3 - l3)};
-                  if ((m1s + m2s + m3s != 0) && (m1s + m2s - m3s != 0)) {
-                    continue;
-                  }
-                  double w3j1{wig3jj(2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s,
-                                     2 * m3s)};
-                  double w3j2{wig3jj(2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s,
-                                     -2 * m3s)};
-                  if (m3s > 0) {
-                    this->wigner_3js(n_elements) =
-                        (w3j2 + math::pow(-1, m3s) * w3j1) * math::INV_SQRT_TWO;
-                  } else if (m3s < 0) {
-                    this->wigner_3js(n_elements) =
-                        ((w3j1 - math::pow(-1, m3s) * w3j2)) *
-                        math::INV_SQRT_TWO;
-                  } else if (m3s == 0) {
-                    this->wigner_3js(n_elements) = w3j1;
-                  }
-                  //*/
-                  // change to the following for agreement with SOAPFAST
-                  //(different definition of the real spherical harmonics)
-                  /*
-                  if (m3s > 0) { this->wigner_3js.push_back((w3j1 + pow(-1,
-                  m3s)*w3j2)/sqrt(2.0)); } else if (m3s == 0) {
-                  this->wigner_3js.push_back(w3j1); } else if (m3s < 0) {
-                  this->wigner_3js.push_back(((w3j2 - pow(-1,
-                  m3s)*w3j1))/sqrt(2.0));
-                  }
-                  */
-                  ++n_elements;
-                }
-              }
-            }
-          }
-        }
-        wig_temp_free();
-        wig_table_free();
       }
 
-      size_t max_angular{0};
-      bool inversion_symmetry{false};
-      Eigen::ArrayXd wigner_3js{};
-      size_t lambda{2};
-    };
+      wigner_3js.resize(n_elements);
+      n_elements = 0;
+      wig_table_init(2 * (max_angular + 1), 3);
+      wig_temp_init(2 * (max_angular + 1));
+      for (size_t l1{0}; l1 < max_angular + 1; ++l1) {
+        for (size_t l2{0}; l2 < max_angular + 1; ++l2) {
+          if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
+              (l1 > l2 + l3)) {
+            continue;
+          }
+          if (inversion_symmetry) {
+            if ((l1 + l2 + l3) % 2 == 1) {
+              continue;
+            }
+          }
+          for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
+            int m1s{static_cast<int>(m1 - l1)};
+            for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
+              int m2s{static_cast<int>(m2 - l2)};
+              for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
+                int m3s{static_cast<int>(m3 - l3)};
+                if ((m1s + m2s + m3s != 0) && (m1s + m2s - m3s != 0)) {
+                  continue;
+                }
+                double w3j1{
+                    wig3jj(2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s, 2 * m3s)};
+                double w3j2{
+                    wig3jj(2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s, -2 * m3s)};
+                if (m3s > 0) {
+                  wigner_3js(n_elements) =
+                      (w3j2 + math::pow(-1, m3s) * w3j1) * math::INV_SQRT_TWO;
+                } else if (m3s < 0) {
+                  wigner_3js(n_elements) =
+                      ((w3j1 - math::pow(-1, m3s) * w3j2)) * math::INV_SQRT_TWO;
+                } else if (m3s == 0) {
+                  wigner_3js(n_elements) = w3j1;
+                }
+                //*/
+                // change to the following for agreement with SOAPFAST
+                //(different definition of the real spherical harmonics)
+                /*
+                if (m3s > 0) { wigner_3js.push_back((w3j1 + pow(-1,
+                m3s)*w3j2)/sqrt(2.0)); } else if (m3s == 0) {
+                wigner_3js.push_back(w3j1); } else if (m3s < 0) {
+                wigner_3js.push_back(((w3j2 - pow(-1,
+                m3s)*w3j1))/sqrt(2.0));
+                }
+                */
+                ++n_elements;
+              }
+            }
+          }
+        }
+      }
+      wig_temp_free();
+      wig_table_free();
+
+      return wigner_3js;
+    }
 
   }  // namespace internal
-
-  template <internal::SphericalCovariantsType Type, class Hypers>
-  auto make_spherical_covariants_precompute(const Hypers & hypers) {
-    return std::static_pointer_cast<
-        internal::SphericalInvariantsPrecomputationBase>(
-        std::make_shared<internal::SphericalCovariantsPrecomputation<Type>>(
-            hypers));
-  }
-
-  template <internal::SphericalCovariantsType Type>
-  auto downcast_spherical_covariants_precompute(
-      const std::shared_ptr<internal::SphericalInvariantsPrecomputationBase> &
-          spherical_covariants_precompute) {
-    return std::static_pointer_cast<
-        internal::SphericalCovariantsPrecomputation<Type>>(
-        spherical_covariants_precompute);
-  }
 
   class CalculatorSphericalCovariants : public CalculatorBase {
    public:
@@ -234,25 +201,21 @@ namespace rascal {
       using internal::SphericalCovariantsType;
       this->max_radial = hypers.at("max_radial").get<size_t>();
       this->max_angular = hypers.at("max_angular").get<size_t>();
-      this->spherical_covariants_type_str =
-          hypers.at("soap_type").get<std::string>();
+      auto soap_type = hypers.at("soap_type").get<std::string>();
       this->lambda = hypers.at("lam").get<size_t>();
       this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
       this->normalize = hypers.at("normalize").get<bool>();
 
-      if (this->spherical_covariants_type_str == "LambdaSpectrum") {
-        this->spherical_covariants_type =
-            SphericalCovariantsType::LambdaSpectrum;
-        this->precompute_spherical_covariants[enumValue(
-            SphericalCovariantsType::LambdaSpectrum)] =
-            make_spherical_covariants_precompute<
-                SphericalCovariantsType::LambdaSpectrum>(hypers);
+      if (soap_type == "LambdaSpectrum") {
+        this->type = SphericalCovariantsType::LambdaSpectrum;
+        this->wigner_3js = internal::precompute_wigner_3js(
+            this->max_angular, this->inversion_symmetry, this->lambda);
 
       } else {
-        throw std::logic_error("Requested Spherical Covariants type \'" +
-                               this->spherical_covariants_type_str +
-                               "\' has not been implemented.  Must be one of" +
-                               ": \'LambdaSpectrum\'.");
+        throw std::logic_error("Requested Spherical Covariants type '" +
+                               soap_type +
+                               "' has not been implemented.  Must be one of" +
+                               ": 'LambdaSpectrum'.");
       }
 
       this->set_name(hypers);
@@ -311,11 +274,10 @@ namespace rascal {
     size_t max_angular{};
 
     CalculatorSphericalExpansion rep_expansion;
-    internal::SphericalCovariantsType spherical_covariants_type{};
-    std::array<std::shared_ptr<internal::SphericalInvariantsPrecomputationBase>,
-               internal::enumSize<internal::SphericalCovariantsType>()>
-        precompute_spherical_covariants{};
-    std::string spherical_covariants_type_str{};
+    internal::SphericalCovariantsType type{};
+
+    /// precomputed wigner symbols
+    Eigen::ArrayXd wigner_3js{};
 
     bool inversion_symmetry{false};
     size_t lambda{0};
@@ -325,7 +287,7 @@ namespace rascal {
   template <class StructureManager>
   void CalculatorSphericalCovariants::compute(StructureManager & managers) {
     using internal::SphericalCovariantsType;
-    switch (this->spherical_covariants_type) {
+    switch (this->type) {
     case SphericalCovariantsType::LambdaSpectrum:
       this->compute_loop<SphericalCovariantsType::LambdaSpectrum>(managers);
       break;
@@ -416,13 +378,6 @@ namespace rascal {
     using math::pow;
     using complex = std::complex<double>;
 
-    // get the relevant precomputation object and unpack the useful infos
-    auto precomputation{downcast_spherical_covariants_precompute<
-        SphericalCovariantsType::LambdaSpectrum>(
-        this->precompute_spherical_covariants[enumValue(
-            SphericalCovariantsType::LambdaSpectrum)])};
-    auto & wigner_3js{precomputation->wigner_3js};
-
     // Compute the spherical expansions of the current structure
     rep_expansion.compute(manager);
     auto && expansions_coefficients{
@@ -488,7 +443,7 @@ namespace rascal {
                           }
                           size_t lm2{pow(l2, 2_n) + m2};
                           complex coef1c, coef2c;
-                          double w3j = wigner_3js[wigner_count];
+                          double w3j = this->wigner_3js[wigner_count];
                           // usual formulae for converting from real to complex
                           // These are the inverses of the formulae we used to
                           // define the real spherical harmonics in
