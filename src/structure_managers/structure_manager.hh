@@ -1037,6 +1037,7 @@ namespace rascal {
 
    public:
 
+    // TODO(felix) remove MaxOrder trait and use AvailableOrdersList instead
     //! helper to identify if Manager_t has TargetOrder in AvailableOrdersList
     template <size_t TargetOrder>
     static constexpr bool HasOrder = internal::is_order_available<TargetOrder>(typename Manager_t::traits::AvailableOrdersList{});
