@@ -4,7 +4,7 @@ import unittest
 import faulthandler
 
 from python_structure_manager_test import (
-    TestStructureManagerCenters, TestNL, TestNLStrict
+    TestStructureManagerCenters, TestNL, TestNLStrict, CenterSelectTest
 )
 from python_representation_calculator_test import (
     TestSortedCoulombRepresentation, TestSphericalExpansionRepresentation,
