@@ -122,12 +122,16 @@ namespace rascal {
      */
     void wrap() {
       auto scaled_positions = this->get_scaled_positions();
-      auto functor{math::MakePositivePyMod(1.)};
 
       for (int i_dim{0}; i_dim < Dim; ++i_dim) {
         if (this->pbc[i_dim]) {
           scaled_positions.row(i_dim) =
-              scaled_positions.row(i_dim).unaryExpr(functor);
+              scaled_positions.row(i_dim).unaryExpr([](double d) {
+                // Modulo that follows python standard, i.e. (-3) % 5 == 2
+                // (python) and not (-3) % 5 == -3 (C++).
+                auto m = std::fmod(d, 1.0);
+                return m + (m < 0 ? 1.0 : 0);
+              });
         }
       }
       this->positions = this->cell * scaled_positions;

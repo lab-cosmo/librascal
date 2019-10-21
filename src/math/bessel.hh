@@ -199,15 +199,6 @@ namespace rascal {
         if (n_up > 0) {
           this->upward_recursion(distance, fac_a, n_up);
         }
-
-        // set small values to 0.
-        bessel_values.unaryExpr([](double d) {
-          if (d < 1e-100) {
-            return 0.;
-          } else {
-            return d;
-          }
-        });
       }
 
       /**
