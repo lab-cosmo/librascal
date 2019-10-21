@@ -51,7 +51,7 @@
 namespace rascal {
 
   namespace internal {
-    enum class SphericalCovariantsType { LambdaSpectrum, End_ };
+    enum class SphericalCovariantsType { LambdaSpectrum };
 
     inline Eigen::ArrayXd precompute_wigner_3js(size_t max_angular,
                                                 bool inversion_symmetry,
@@ -369,11 +369,7 @@ namespace rascal {
       std::shared_ptr<StructureManager> manager) {
     using PropExp_t =
         typename CalculatorSphericalExpansion::Property_t<StructureManager>;
-    // using PropGradExp_t = typename
-    // CalculatorSphericalExpansion::Property_t<StructureManager>;
     using Prop_t = Property_t<StructureManager>;
-    // using PropGrad_t = PropertyGradient_t<StructureManager>;
-    using internal::enumValue;
     using internal::SphericalCovariantsType;
     using math::pow;
     using complex = std::complex<double>;

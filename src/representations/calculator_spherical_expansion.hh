@@ -61,13 +61,13 @@ namespace rascal {
      * List of possible Radial basis that can be used by the spherical
      * expansion.
      */
-    enum class RadialBasisType { GTO, DVR, End_ };
+    enum class RadialBasisType { GTO, DVR };
 
     /**
      * List of possible atomic smearing for the definition of the atomic
      * density. If not specified, the gaussian type smearing is implided.
      */
-    enum class AtomicSmearingType { Constant, PerSpecies, Radial, End_ };
+    enum class AtomicSmearingType { Constant, PerSpecies, Radial };
 
     /**
      * Base class for the specification of the atomic smearing.
@@ -1044,19 +1044,14 @@ namespace rascal {
     using internal::AtomicSmearingType;
     using internal::RadialBasisType;
 
-    switch (internal::combineEnums(this->radial_integral_type,
-                                   this->atomic_smearing_type)) {
-    case internal::combineEnums(RadialBasisType::GTO,
-                                AtomicSmearingType::Constant):
+    assert(this->atomic_smearing_type == AtomicSmearingType::Constant);
+    if (this->radial_integral_type == RadialBasisType::GTO) {
       this->compute_loop<FcType, RadialBasisType::GTO,
                          AtomicSmearingType::Constant>(managers);
-      break;
-    case internal::combineEnums(RadialBasisType::DVR,
-                                AtomicSmearingType::Constant):
+    } else if (this->radial_integral_type == RadialBasisType::DVR) {
       this->compute_loop<FcType, RadialBasisType::DVR,
                          AtomicSmearingType::Constant>(managers);
-      break;
-    default:
+    } else {
       // The control flow really should never reach here.  In this case, any
       // "invalid combination of parameters" should have already been handled at
       // the parameter processing stage where the user can be notified in a
@@ -1073,7 +1068,7 @@ namespace rascal {
       err_message << ")" << std::endl;
       throw std::logic_error(err_message.str());
     }
-  }
+  }  // namespace rascal
 
   /**
    * Compute the spherical expansion
