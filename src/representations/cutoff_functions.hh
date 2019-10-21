@@ -45,7 +45,7 @@ namespace rascal {
     /**
      * List of implemented cutoff function
      */
-    enum class CutoffFunctionType { ShiftedCosine, RadialScaling, End_ };
+    enum class CutoffFunctionType { ShiftedCosine, RadialScaling };
 
     struct CutoffFunctionBase {
       //! Constructor

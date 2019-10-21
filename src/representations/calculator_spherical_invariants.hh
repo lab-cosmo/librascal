@@ -56,7 +56,6 @@ namespace rascal {
       RadialSpectrum,
       PowerSpectrum,
       BiSpectrum,
-      End_
     };
 
     //! factor of 1 / sqrt(2*l+1) in front of the powerspectrum
@@ -193,7 +192,6 @@ namespace rascal {
     operator=(CalculatorSphericalInvariants && other) = default;
 
     void set_hyperparameters(const Hypers_t & hypers) {
-      using internal::enumValue;
       using internal::SphericalInvariantsType;
 
       this->max_radial = hypers.at("max_radial").get<size_t>();
@@ -362,7 +360,6 @@ namespace rascal {
             StructureManager>;
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
-    using internal::enumValue;
     constexpr static int n_spatial_dimensions = StructureManager::dim();
     using internal::SphericalInvariantsType;
     using math::pow;
