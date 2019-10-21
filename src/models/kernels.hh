@@ -82,7 +82,6 @@ namespace rascal {
                              StructureManagers & managers_b,
                              const std::string & representation_name) {
         math::Matrix_t kernel(managers_a.size(), managers_b.size());
-        auto integer_power{math::MakePositiveIntegerPower<double>(this->zeta)};
         size_t ii_A{0};
         for (auto & manager_a : managers_a) {
           size_t ii_B{0};
@@ -95,7 +94,7 @@ namespace rascal {
                     representation_name)};
 
             kernel(ii_A, ii_B) =
-                propA.dot(propB).unaryExpr(integer_power).mean();
+                propA.dot(propB).array().pow(this->zeta).mean();
             ++ii_B;
           }
           ++ii_A;
@@ -130,8 +129,8 @@ namespace rascal {
         for (const auto & manager_b : managers_b) {
           n_centersB += manager_b->size();
         }
+
         math::Matrix_t kernel(n_centersA, n_centersB);
-        auto integer_power{math::MakePositiveIntegerPower<double>(this->zeta)};
         size_t ii_A{0};
         for (auto & manager_a : managers_a) {
           size_t ii_B{0};
@@ -144,7 +143,7 @@ namespace rascal {
                     representation_name)};
 
             kernel.block(ii_A, ii_B, manager_a->size(), manager_b->size()) =
-                propA.dot(propB).unaryExpr(integer_power);
+                propA.dot(propB).array().pow(this->zeta);
             ii_B += manager_b->size();
           }
           ii_A += manager_a->size();
