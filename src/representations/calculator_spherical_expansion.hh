@@ -1015,16 +1015,14 @@ namespace rascal {
     using internal::CutoffFunctionType;
 
     switch (this->cutoff_function_type) {
-    case CutoffFunctionType::ShiftedCosine: {
+    case CutoffFunctionType::ShiftedCosine:
       this->compute_by_radial_contribution<CutoffFunctionType::ShiftedCosine>(
           managers);
       break;
-    }
-    case CutoffFunctionType::RadialScaling: {
+    case CutoffFunctionType::RadialScaling:
       this->compute_by_radial_contribution<CutoffFunctionType::RadialScaling>(
           managers);
       break;
-    }
     default:
       // The control flow really should never reach here.  But just in case,
       // provide the necessary information to debug this problem.
@@ -1049,17 +1047,15 @@ namespace rascal {
     switch (internal::combineEnums(this->radial_integral_type,
                                    this->atomic_smearing_type)) {
     case internal::combineEnums(RadialBasisType::GTO,
-                                AtomicSmearingType::Constant): {
+                                AtomicSmearingType::Constant):
       this->compute_loop<FcType, RadialBasisType::GTO,
                          AtomicSmearingType::Constant>(managers);
       break;
-    }
     case internal::combineEnums(RadialBasisType::DVR,
-                                AtomicSmearingType::Constant): {
+                                AtomicSmearingType::Constant):
       this->compute_loop<FcType, RadialBasisType::DVR,
                          AtomicSmearingType::Constant>(managers);
       break;
-    }
     default:
       // The control flow really should never reach here.  In this case, any
       // "invalid combination of parameters" should have already been handled at
@@ -1076,7 +1072,6 @@ namespace rascal {
       err_message << static_cast<int>(this->atomic_smearing_type);
       err_message << ")" << std::endl;
       throw std::logic_error(err_message.str());
-      break;
     }
   }
 

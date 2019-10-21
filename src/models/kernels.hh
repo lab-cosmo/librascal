@@ -221,19 +221,14 @@ namespace rascal {
       using internal::TargetType;
 
       switch (this->target_type) {
-      case TargetType::Structure: {
+      case TargetType::Structure:
         return this->compute_helper<Property_t, TargetType::Structure>(
             representation_name, managers_a, managers_b);
-        break;
-      }
-      case TargetType::Atom: {
+      case TargetType::Atom:
         return this->compute_helper<Property_t, TargetType::Atom>(
             representation_name, managers_a, managers_b);
-        break;
-      }
       default:
         throw std::logic_error("The combination of parameter is not handdled.");
-        break;
       }
     }
 
@@ -244,16 +239,12 @@ namespace rascal {
                                   const StructureManagers & managers_b) {
       using internal::KernelType;
 
-      switch (this->kernel_type) {
-      case KernelType::Cosine: {
+      if (this->kernel_type == KernelType::Cosine) {
         auto kernel = downcast_kernel_impl<KernelType::Cosine>(kernel_impl);
         return kernel->template compute<Property_t, Type>(
             managers_a, managers_b, representation_name);
-        break;
-      }
-      default:
+      } else {
         throw std::logic_error("The combination of parameter is not handdled.");
-        break;
       }
     }
 
