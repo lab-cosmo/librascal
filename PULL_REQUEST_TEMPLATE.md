@@ -19,7 +19,8 @@ Tasks before review:
           are now passing (and any tests to catch similar bugs elsewhere in the
           code)
 - [ ] Run `make lint` on the project, ensure it passes
-    - [ ] Run `make pretty-cpp` and `make pretty-python`, if necessary
+    - [ ] Run `make pretty-cpp` and `make pretty-python`, check that the
+          auto-formatting is sensible
     - [ ] Review variable names, make sure they're descriptive (ask a friend)
     - [ ] Review all TODOs, convert to issues wherever possible
     - [ ] Make sure draft, in-progress, and commented-out code is moved to its
