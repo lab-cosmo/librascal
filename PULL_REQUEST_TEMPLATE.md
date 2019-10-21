@@ -15,9 +15,9 @@ Tasks before review:
           formatted correctly (ask @max-veit if you need help with this task).
     - [ ] Write additional documentation in the Sphinx (not docstrings!) to
           explain the feature and its usage in plain English
-    - [ ] For bugfix pull requests, list here any previously-disabled tests that
-          are now passing (and any tests to catch similar bugs elsewhere in the
-          code)
+    - [ ] For bugfix pull requests, list here which tests have been added or re-enabled
+          to verify the fix and catch future regressions as well as similar bugs
+          elsewhere in the code.
 - [ ] Run `make lint` on the project, ensure it passes
     - [ ] Run `make pretty-cpp` and `make pretty-python`, check that the
           auto-formatting is sensible
@@ -32,5 +32,9 @@ Tasks before review:
 
 Remaining tasks, out of scope of this pull request: (optional)
 
+
 -
 -
+- [ ] Make sure to add these points to the issues or to the meeting agenda so they don't
+get forgotten!
+
