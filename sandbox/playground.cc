@@ -106,7 +106,7 @@ int main() {
     std::cout << "Center: " << ctag << " n. neighbors " << center.size()
               << std::endl;
 
-    for (auto neigh : center.get_neighbors()) {
+    for (auto neigh : center.get_pairs_with_self_pair()) {
       auto tag_list = neigh.get_atom_tag_list();
 
       auto atom_j = neigh.get_atom_j();

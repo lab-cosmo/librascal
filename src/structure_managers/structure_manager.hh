@@ -1067,33 +1067,28 @@ namespace rascal {
    public:
 
     /**
+     * Return an iterable for Order == 2 that includes the neighbors (or pairs)
+     * and if HasCenterPairOrderOne == true then the iteration avoids
+     * including the self_pair, i.e. reference to the central atom as a pair.
      */
-    template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
-    CustomProxy<2> get_neighbors() {
+    CustomProxy<2> get_pairs() {
       std::array<size_t, 1> counters{this->it.get_counters()};
       size_t offset{this->get_manager().get_offset(counters)};
       size_t finish{this->size()};
-      size_t start{0};
+      // avoid if statement or sfinae by casting the bool to
+      // size_t which turns out to give 0 if false and 1
+      // if true, the expected behavior.
+      size_t start{static_cast<size_t>(HasCenterPairOrderOne)};
       return CustomProxy<2>(*this, start, offset, finish);
     }
 
-    /**
-     */
-    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
-    CustomProxy<2> get_neighbors() {
-      std::array<size_t, 1> counters{this->it.get_counters()};
-      size_t offset{this->get_manager().get_offset(counters)};
-      size_t finish{this->size()};
-      size_t start{1};
-      return CustomProxy<2>(*this, start, offset, finish);
-    }
 
     /**
      * Return an iterable for Order == 2 that includes the self pair if
      * HasCenterPair == true. If HasCenterPair == false then its the
      * regular iteration.
      */
-    CustomProxy<2> get_neighbors_with_self_pair() {
+    CustomProxy<2> get_pairs_with_self_pair() {
       std::array<size_t, 1> counters{this->it.get_counters()};
       size_t offset{this->get_manager().get_offset(counters)};
       size_t finish{this->size()};

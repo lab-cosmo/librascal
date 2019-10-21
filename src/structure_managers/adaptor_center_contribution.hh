@@ -364,7 +364,7 @@ namespace rascal {
       this->add_atom(self_pair);
       pair_counter++;
 
-      for (auto pair : atom) {
+      for (auto pair : atom.get_pairs()) {
         this->add_atom(pair);
 
         Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;
