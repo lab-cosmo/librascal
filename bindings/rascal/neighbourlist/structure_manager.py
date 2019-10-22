@@ -263,5 +263,7 @@ def mask_center_atoms_by_species(frame, species_select=[],
             old_mask = np.ones((frame.get_number_of_atoms(),), dtype='bool')
     else:
         old_mask = frame.arrays['center_atoms_mask']
+    # Python's "bitwise" operators do per-element logical operations in NumPy
+    # see for instance https://docs.scipy.org/doc/numpy/reference/ufuncs.html#comparison-functions
     mask = (old_mask | id_select) & ~id_blacklist
     frame.arrays['center_atoms_mask'] = mask
