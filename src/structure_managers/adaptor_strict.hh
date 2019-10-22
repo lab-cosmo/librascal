@@ -410,10 +410,7 @@ namespace rascal {
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
-    }
 
-
-    for (auto && atom : this->manager) {
       for (auto pair : atom.with_self_pair()) {
         auto vec_ij{pair.get_position() - atom.get_position()};
         double distance2{(vec_ij).squaredNorm()};
@@ -435,6 +432,19 @@ namespace rascal {
           pair_counter++;
         }
       }
+    }
+
+    for (auto && atom : this->manager->only_ghosts()) {
+      this->add_atom(atom);
+      /**
+       * Add new layer for atoms (see LayerByOrder for
+       * possible optimisation).
+       */
+      Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
+
+      indices.template head<AtomLayer>() = atom.get_cluster_indices();
+      indices(AtomLayer) = indices(AtomLayer - 1);
+      atom_cluster_indices.push_back(indices);
     }
 
     this->distance->set_updated_status(true);

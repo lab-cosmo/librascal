@@ -44,8 +44,8 @@ namespace rascal {
       >;
 
   using multiple_fixtures = boost::mpl::list<
-    //MultipleStructureFixture<MultipleStructureManagerNLFixture>  //,
-          MultipleStructureFixture<MultipleStructureManagerNLCCFixture>>;
+      // MultipleStructureFixture<MultipleStructureManagerNLFixture>  //,
+      MultipleStructureFixture<MultipleStructureManagerNLCCFixture>>;
 
   BOOST_AUTO_TEST_SUITE(adaptor_strict_test);
 
@@ -137,12 +137,13 @@ namespace rascal {
       adaptor_strict->update();
 
       std::cout << "adaptor size : " << adaptor_strict->size() << std::endl;
-      std::cout << "adaptor size_wg : " << adaptor_strict->get_size_with_ghosts()
-                << std::endl;
+      std::cout << "adaptor size_wg : "
+                << adaptor_strict->get_size_with_ghosts() << std::endl;
 
       for (auto atom : adaptor_strict) {
         std::cout << "atom " << atom.back() << ", of size " << atom.size()
-                  <<" position:" << std::endl << atom.get_position() << std::endl;
+                  << " position:" << std::endl
+                  << atom.get_position() << std::endl;
         int counter{0};
         for (auto pair : atom) {
           std::cout << counter++ << ", " << pair.back() << std::endl;
@@ -286,19 +287,24 @@ namespace rascal {
 
       BOOST_CHECK_EQUAL(neigh_ids.size(), neigh_ids_strict.size());
 
-      for (size_t ii{0}; ii < neigh_ids.size(); ++ii) {
-        BOOST_CHECK_EQUAL(neigh_ids[ii].size(), neigh_ids_strict[ii].size());
+      for (size_t atom_id{0}; atom_id < neigh_ids.size(); ++atom_id) {
+        BOOST_CHECK_EQUAL(neigh_ids[atom_id].size(),
+                          neigh_ids_strict[atom_id].size());
 
-        for (size_t jj{0}; jj < neigh_ids[ii].size(); ++jj) {
-          int a0{neigh_ids[ii][jj]};
-          int a1{neigh_ids_strict[ii][jj]};
-          double d0{neigh_dist[ii][jj]};
-          double d1{neigh_dist_strict[ii][jj]};
+        for (size_t neigh_id{0};
+             neigh_id < std::min(neigh_ids[atom_id].size(),
+                                 neigh_ids_strict[atom_id].size());
+             ++neigh_id) {
+          int a0{neigh_ids[atom_id][neigh_id]};
+          int a1{neigh_ids_strict[atom_id][neigh_id]};
+          double d0{neigh_dist[atom_id][neigh_id]};
+          double d1{neigh_dist_strict[atom_id][neigh_id]};
           BOOST_CHECK_EQUAL(a0, a1);
           BOOST_CHECK_EQUAL(d0, d1);
-          for (size_t kk{0}; kk < neigh_dir_vec[ii][jj].size(); ++kk) {
-            double dv0{neigh_dir_vec[ii][jj][kk]};
-            double dv1{neigh_dir_vec_strict[ii][jj][kk]};
+          for (size_t kk{0}; kk < neigh_dir_vec[atom_id][neigh_id].size();
+               ++kk) {
+            double dv0{neigh_dir_vec[atom_id][neigh_id][kk]};
+            double dv1{neigh_dir_vec_strict[atom_id][neigh_id][kk]};
             BOOST_CHECK_EQUAL(dv0, dv1);
           }
         }

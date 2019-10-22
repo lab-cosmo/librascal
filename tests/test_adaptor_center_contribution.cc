@@ -119,7 +119,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_atom_j_test, Fix, multiple_fixtures,
                                    Fix) {
     auto && managers = Fix::managers;
-    constexpr bool verbose{true};
+    constexpr bool verbose{false};
     for (auto & manager : managers) {
       auto adaptor_strict{
           make_adapted_manager<AdaptorCenterContribution>(manager)};

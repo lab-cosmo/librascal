@@ -869,7 +869,7 @@ namespace rascal {
       auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
       auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
-      atom_cluster_indices.fill_sequence(this->consider_ghost_neighbours);
+      atom_cluster_indices.fill_sequence(true); // TODO(junge): fix this
       pair_cluster_indices.fill_sequence();
       ++this->n_update;
     }
