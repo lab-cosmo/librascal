@@ -99,7 +99,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../neighbor_list/neighbor-list-manager.html">Neighbor List Manager</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dev_guide/developer.html">Developer’s guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Python</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Python</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#atoms-and-cells">Atoms and cells</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#representations">Representations</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="cpp.html">C++ documentation</a></li>
 </ul>
 </li>
@@ -197,6 +201,80 @@
 <div class="section" id="python">
 <span id="auto-python"></span><h1>Python<a class="headerlink" href="#python" title="Permalink to this headline">¶</a></h1>
 <p>This list is incomplete. You can help by <em>expanding it</em>!</p>
+<div class="section" id="atoms-and-cells">
+<h2>Atoms and cells<a class="headerlink" href="#atoms-and-cells" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rascal.neighbourlist.structure_manager.mask_center_atoms_by_id">
+<code class="sig-prename descclassname">rascal.neighbourlist.structure_manager.</code><code class="sig-name descname">mask_center_atoms_by_id</code><span class="sig-paren">(</span><em class="sig-param">frame</em>, <em class="sig-param">id_select=None</em>, <em class="sig-param">id_blacklist=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/neighbourlist/structure_manager.html#mask_center_atoms_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.neighbourlist.structure_manager.mask_center_atoms_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mask the centers (center-select) of an ASE atoms object, by index</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> (<em>ase.Atoms</em>) – Atomic structure to mask</p></li>
+<li><p><strong>id_select</strong> (<em>list of int</em>) – List of atom IDs to select</p></li>
+<li><p><strong>id_blacklist</strong> (<em>list of int</em>) – List of atom IDs to exclude</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None (the Atoms object is modified directly)</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The default is to select all atoms.  If <cite>id_select</cite> is provided,
+select only those atoms.  If only <cite>id_blacklist</cite> is provided, select
+all atoms <em>except</em> those in the blacklist.  If both are provided,
+atoms are first selected based on <cite>id_select</cite> and then excluded based
+on <cite>id_blacklist</cite>.  If the atoms object already has a mask, then
+<cite>id_select</cite> is applied first using the <cite>or</cite> operation, then
+<cite>id_blacklist</cite> is applied using the <cite>and not</cite> operation (so the order
+of precedence is: blacklist, selection, previous mask).</p>
+<p>This logic allows this function to be combined with
+<cite>mask_center_atoms_by_species</cite> to allow mixed species/id-based
+masking.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="rascal.neighbourlist.structure_manager.mask_center_atoms_by_species">
+<code class="sig-prename descclassname">rascal.neighbourlist.structure_manager.</code><code class="sig-name descname">mask_center_atoms_by_species</code><span class="sig-paren">(</span><em class="sig-param">frame</em>, <em class="sig-param">species_select=[]</em>, <em class="sig-param">species_blacklist=[]</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/neighbourlist/structure_manager.html#mask_center_atoms_by_species"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.neighbourlist.structure_manager.mask_center_atoms_by_species" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mask the centers of an ASE atoms object, by atomic species</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> (<em>ase.Atoms</em>) – Atomic structure to mask</p></li>
+<li><p><strong>species_select</strong> (<em>list of int</em><em> or </em><em>str</em>) – List of atomic numbers, or species symbols, to select.
+Should be of consistent type across list.</p></li>
+<li><p><strong>species_blacklist</strong> (<em>list of int</em><em> or </em><em>str</em>) – List of atomic numbers, or species symbols, to exclude.
+Should be of consistent type across list.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None (the Atoms object is modified directly)</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The default is to select all atoms.  If <cite>species_select</cite> is
+provided, select only those atoms whose species is in the list.  If
+only <cite>species_blacklist</cite> is provided, select all atoms <em>except</em>
+those whose species is in the blacklist.  If both are provided,
+atoms are first selected based on <cite>species_select</cite> and then excluded
+based on <cite>species_blacklist</cite>.  If the atoms object already has a
+mask, then <cite>species_select</cite> is applied first using the <cite>or</cite>
+operation, then <cite>species_blacklist</cite> is applied using the <cite>and not</cite>
+operation (so the order of precedence is: blacklist, selection,
+previous mask).</p>
+<p>This logic allows this function to be combined with
+<cite>mask_center_atoms_by_id</cite> to allow mixed species/id-based masking.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="representations">
+<h2>Representations<a class="headerlink" href="#representations" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="rascal.representations.SortedCoulombMatrix">
 <em class="property">class </em><code class="sig-prename descclassname">rascal.representations.</code><code class="sig-name descname">SortedCoulombMatrix</code><span class="sig-paren">(</span><em class="sig-param">cutoff</em>, <em class="sig-param">sorting_algorithm='row_norm'</em>, <em class="sig-param">size=10</em>, <em class="sig-param">central_decay=-1</em>, <em class="sig-param">interaction_cutoff=10</em>, <em class="sig-param">interaction_decay=-1</em>, <em class="sig-param">method='thread'</em>, <em class="sig-param">n_workers=1</em>, <em class="sig-param">disable_pbar=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/coulomb_matrix.html#SortedCoulombMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SortedCoulombMatrix" title="Permalink to this definition">¶</a></dt>
@@ -294,6 +372,157 @@ Physical Review Letters, 108(5), 58301. <a class="reference external" href="http
 
 </dd></dl>
 
+<dl class="class">
+<dt id="rascal.representations.SphericalInvariants">
+<em class="property">class </em><code class="sig-prename descclassname">rascal.representations.</code><code class="sig-name descname">SphericalInvariants</code><span class="sig-paren">(</span><em class="sig-param">interaction_cutoff</em>, <em class="sig-param">cutoff_smooth_width</em>, <em class="sig-param">max_radial</em>, <em class="sig-param">max_angular</em>, <em class="sig-param">gaussian_sigma_type</em>, <em class="sig-param">gaussian_sigma_constant=0.0</em>, <em class="sig-param">n_species=1</em>, <em class="sig-param">cutoff_function_type='ShiftedCosine'</em>, <em class="sig-param">soap_type='PowerSpectrum'</em>, <em class="sig-param">inversion_symmetry=True</em>, <em class="sig-param">radial_basis='GTO'</em>, <em class="sig-param">normalize=True</em>, <em class="sig-param">cutoff_function_parameters={}</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_invariants.html#SphericalInvariants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalInvariants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a SphericalInvariants representation, i.e. the SOAP power spectrum</p>
+<dl class="simple">
+<dt>interaction_cutoff<span class="classifier">float</span></dt><dd><p>Maximum pairwise distance for atoms to be considered in
+expansion</p>
+</dd>
+<dt>cutoff_smooth_width<span class="classifier">float</span></dt><dd><p>The distance over which the the interaction is smoothed to zero</p>
+</dd>
+<dt>max_radial<span class="classifier">int</span></dt><dd><p>Number of radial basis functions</p>
+</dd>
+<dt>max_angular<span class="classifier">int</span></dt><dd><p>Highest angular momentum number (l) in the expansion</p>
+</dd>
+<dt>n_species<span class="classifier">int</span></dt><dd><p>Number of species to be considered separately</p>
+</dd>
+<dt>gaussian_sigma_type<span class="classifier">str</span></dt><dd><p>How the Gaussian atom sigmas (smearing widths) are allowed to
+vary – fixed (‘Constant’), by species (‘PerSpecies’), or by
+distance from the central atom (‘Radial’).</p>
+</dd>
+<dt>gaussian_sigma_constant<span class="classifier">float</span></dt><dd><p>Specifies the atomic Gaussian widths, in the case where they’re
+fixed.</p>
+</dd>
+<dt>soap_type<span class="classifier">string</span></dt><dd><p>Specifies the type of representation to be computed
+(power spectrum etc.).</p>
+</dd>
+<dt>inversion_symmetry<span class="classifier">Boolean</span></dt><dd><p>Specifies whether inversion invariance should be enforced.
+(Only relevant for BiSpectrum.)</p>
+</dd>
+<dt>normalize<span class="classifier">boolean</span></dt><dd><p>Whether to normalize so that the kernel between identical environments
+is 1.  Default and highly recommended: True.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="rascal.representations.SphericalInvariants.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">frames</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_invariants.html#SphericalInvariants.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalInvariants.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the representation for a list of ase.Atoms object.</p>
+</dd></dl>
+
+<dl class="citation">
+<dt class="label" id="soap"><span class="brackets">soap</span></dt>
+<dd><p>Bartók, Kondor, and Csányi, “On representing chemical
+environments”, Phys. Rev. B. 87(18), p. 184115
+<a class="reference external" href="http://link.aps.org/doi/10.1103/PhysRevB.87.184115">http://link.aps.org/doi/10.1103/PhysRevB.87.184115</a></p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="rascal.representations.SphericalInvariants.get_num_coefficients">
+<code class="sig-name descname">get_num_coefficients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_invariants.html#SphericalInvariants.get_num_coefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalInvariants.get_num_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of coefficients in the representation</p>
+<p>(this is the descriptor size per atomic centre)</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">frames</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_invariants.html#SphericalInvariants.transform"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Compute the representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>)</em>) – List of atomic structures.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Object containing the representation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rascal.representations.SphericalInvariants.update_hyperparameters">
+<code class="sig-name descname">update_hyperparameters</code><span class="sig-paren">(</span><em class="sig-param">**hypers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_invariants.html#SphericalInvariants.update_hyperparameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalInvariants.update_hyperparameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the given dict of hyperparameters</p>
+<p>Also updates the internal json-like representation</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rascal.representations.SphericalCovariants">
+<em class="property">class </em><code class="sig-prename descclassname">rascal.representations.</code><code class="sig-name descname">SphericalCovariants</code><span class="sig-paren">(</span><em class="sig-param">interaction_cutoff</em>, <em class="sig-param">cutoff_smooth_width</em>, <em class="sig-param">max_radial</em>, <em class="sig-param">max_angular</em>, <em class="sig-param">gaussian_sigma_type</em>, <em class="sig-param">gaussian_sigma_constant=0.0</em>, <em class="sig-param">n_species=1</em>, <em class="sig-param">cutoff_function_type='ShiftedCosine'</em>, <em class="sig-param">normalize=True</em>, <em class="sig-param">radial_basis='GTO'</em>, <em class="sig-param">soap_type='LambdaSpectrum'</em>, <em class="sig-param">inversion_symmetry=True</em>, <em class="sig-param">lam=0</em>, <em class="sig-param">cutoff_function_parameters={}</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_covariants.html#SphericalCovariants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalCovariants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a SphericalCovariants representation, i.e. lambda spectrum.</p>
+<dl class="simple">
+<dt>interaction_cutoff<span class="classifier">float</span></dt><dd><p>Maximum pairwise distance for atoms to be considered in
+expansion</p>
+</dd>
+<dt>cutoff_smooth_width<span class="classifier">float</span></dt><dd><p>The distance over which the the interaction is smoothed to zero</p>
+</dd>
+<dt>max_radial<span class="classifier">int</span></dt><dd><p>Number of radial basis functions</p>
+</dd>
+<dt>max_angular<span class="classifier">int</span></dt><dd><p>Highest angular momentum number (l) in the expansion</p>
+</dd>
+<dt>n_species<span class="classifier">int</span></dt><dd><p>Number of species to be considered separately</p>
+</dd>
+<dt>gaussian_sigma_type<span class="classifier">str</span></dt><dd><p>How the Gaussian atom sigmas (smearing widths) are allowed to
+vary – fixed (‘Constant’), by species (‘PerSpecies’), or by
+distance from the central atom (‘Radial’).</p>
+</dd>
+<dt>gaussian_sigma_constant<span class="classifier">float</span></dt><dd><p>Specifies the atomic Gaussian widths, in the case where they’re
+fixed.</p>
+</dd>
+<dt>soap_type<span class="classifier">string</span></dt><dd><p>Specifies the type of representation to be computed.</p>
+</dd>
+<dt>inversion_symmetry<span class="classifier">Boolean</span></dt><dd><p>Specifies whether inversion invariance should be enforced.</p>
+</dd>
+<dt>lam<span class="classifier">int</span></dt><dd><p>Order of the lambda spectrum.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="rascal.representations.SphericalCovariants.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">frames</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_covariants.html#SphericalCovariants.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalCovariants.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the representation for a list of ase.Atoms object.</p>
+</dd></dl>
+
+<dl class="citation">
+<dt class="label" id="lambda-soap"><span class="brackets">lambda-soap</span></dt>
+<dd><p>Grisafi, A., Wilkins, D. M., Csányi, G., &amp; Ceriotti, M.</p>
+</dd>
+</dl>
+<p>(2018). Symmetry-Adapted Machine Learning for Tensorial Properties of
+Atomistic Systems. Physical Review Letters, 120(3), 036002.
+<a class="reference external" href="https://doi.org/10.1103/PhysRevLett.120.036002">https://doi.org/10.1103/PhysRevLett.120.036002</a></p>
+<dl class="method">
+<dt id="rascal.representations.SphericalCovariants.get_num_coefficients">
+<code class="sig-name descname">get_num_coefficients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_covariants.html#SphericalCovariants.get_num_coefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalCovariants.get_num_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of coefficients in the representation</p>
+<p>(this is the descriptor size per atomic centre)</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">frames</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_covariants.html#SphericalCovariants.transform"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Compute the representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>)</em>) – List of atomic structures.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rascal.representations.SphericalCovariants.update_hyperparameters">
+<code class="sig-name descname">update_hyperparameters</code><span class="sig-paren">(</span><em class="sig-param">**hypers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_covariants.html#SphericalCovariants.update_hyperparameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalCovariants.update_hyperparameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the given dict of hyperparameters</p>
+<p>Also updates the internal json-like representation</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 
 
