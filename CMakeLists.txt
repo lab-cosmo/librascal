@@ -245,9 +245,6 @@ if (${BUILD_TESTS})
   target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
   target_link_libraries(main_test_suite ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
-  configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
-
 
   if(BUILD_BINDINGS)
 
@@ -314,8 +311,9 @@ if (${BUILD_EXAMPLES})
     add_executable(${binaryname} ${binaryfile})
     target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
   endforeach(binaryfile ${binaries})
-  configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("${CMAKE_SOURCE_DIR}/examples/reference_data/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("${CMAKE_SOURCE_DIR}/examples/reference_data/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("${CMAKE_SOURCE_DIR}/tests/reference_data/alanine-center-select.json" ${CMAKE_BINARY_DIR} COPYONLY)
 
   # Add profiling information for the appropriate examples
   if (ENABLE_PROFILING)
