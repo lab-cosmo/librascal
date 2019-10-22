@@ -101,9 +101,8 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
 
-    atom_vector_property.resize(manager->get_consider_ghost_neighbours());
-    atom_dynamic_vector_property.resize(
-        manager->get_consider_ghost_neighbours());
+    atom_vector_property.resize(true);// TODO(junge): fix this!!
+    atom_dynamic_vector_property.resize(true);
     if (verbose) {
       std::cout << ">> atom_vector_property size ";
       std::cout << atom_vector_property.size();
@@ -134,10 +133,9 @@ namespace rascal {
   }
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_sequence_test, Fix,
                                    atom_vector_property_fixtures, Fix) {
-    Fix::atom_scalar_property.fill_sequence(
-        Fix::manager->get_consider_ghost_neighbours());
+    Fix::atom_scalar_property.fill_sequence(true); // TODO(till)
     size_t counter{0};
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       BOOST_CHECK_EQUAL(Fix::atom_scalar_property[atom], counter);
       counter++;
     }
@@ -171,7 +169,7 @@ namespace rascal {
       std::cout << std::endl;
     }
     size_t counter{0};
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       if (verbose) {
         std::cout << ">> Atom with tag " << atom.get_atom_tag();
         std::cout << std::endl;
@@ -188,7 +186,7 @@ namespace rascal {
 
     counter = 0;
     Eigen::MatrixXd eigen_counter(1, 1);
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       auto error =
           (Fix::atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, tol * 100);
@@ -402,7 +400,7 @@ namespace rascal {
       std::cout << counters.size() << std::endl;
     }
     // add the position to the atom and count how often this happens
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       for (auto pair : atom) {
         if (verbose) {
           std::cout << ">> Atom with tag ";

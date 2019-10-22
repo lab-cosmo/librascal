@@ -44,7 +44,7 @@ namespace rascal {
    * Test that the internal::GetTypeNameHelper function returns what we expect
    */
   BOOST_AUTO_TEST_CASE(type_demangling_test) {
-    bool verbose{true};
+    bool verbose{false};
 
     // test template with numbers
     std::string ref_clang{"ClusterRefKey_1_2"};
