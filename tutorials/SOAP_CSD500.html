@@ -495,7 +495,7 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">download_link</span> <span class="o">=</span> <span class="s2">&quot;https://static-content.springer.com/esm/art%3A10.1038</span><span class="si">%2F</span><span class="s2">s41467-018-06972-x/MediaObjects/41467_2018_6972_MOESM4_ESM.txt&quot;</span>
 <span class="kn">import</span> <span class="nn">urllib.request</span>
-<span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">download_link</span><span class="p">,</span> <span class="s1">&#39;./data/CSD-500.xyz&#39;</span><span class="p">)</span>
+<span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">download_link</span><span class="p">,</span> <span class="s1">&#39;./reference_data/CSD-500.xyz&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -504,7 +504,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>(&#39;./data/CSD-500.xyz&#39;, &lt;http.client.HTTPMessage at 0x7f76a8f7b9e8&gt;)
+<span></span>(&#39;./reference_data/CSD-500.xyz&#39;, &lt;http.client.HTTPMessage at 0x7fc7e7bd4978&gt;)
 </pre></div>
 </div>
 </div>
@@ -514,7 +514,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1">#frames = read(&#39;./data/small_molecules-1000.xyz&#39;,&#39;:600&#39;)</span>
-<span class="n">frames</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s1">&#39;./data/CSD-500.xyz&#39;</span><span class="p">,</span><span class="s1">&#39;:3&#39;</span><span class="p">)</span>
+<span class="n">frames</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s1">&#39;./reference_data/CSD-500.xyz&#39;</span><span class="p">,</span><span class="s1">&#39;:3&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -621,8 +621,8 @@ div.rendered_html tbody tr:hover {
 Neighbourlist of structures failed. trying
                 one at a time.
 Structure Rep computation 0 failed
-CPU times: user 794 µs, sys: 724 µs, total: 1.52 ms
-Wall time: 1.18 ms
+CPU times: user 647 µs, sys: 684 µs, total: 1.33 ms
+Wall time: 1.01 ms
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -775,7 +775,7 @@ Structure Rep computation 0 failed
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;rascal.neighbourlist.structure_manager.AtomsList at 0x7f76a6f79b70&gt;
+<span></span>&lt;rascal.neighbourlist.structure_manager.AtomsList at 0x7fc7e5bd3b00&gt;
 </pre></div>
 </div>
 </div>
@@ -895,7 +895,7 @@ Structure Rep computation 0 failed
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;rascal.neighbourlist.structure_manager.AtomsList at 0x7f76a6f79cf8&gt;
+<span></span>&lt;rascal.neighbourlist.structure_manager.AtomsList at 0x7fc7e5bd3828&gt;
 </pre></div>
 </div>
 </div>
@@ -1404,7 +1404,7 @@ Structure Rep computation 0 failed
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># Load the small molecules</span>
-<span class="n">frames</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s1">&#39;./data/small_molecules-1000.xyz&#39;</span><span class="p">,</span><span class="s1">&#39;:600&#39;</span><span class="p">)</span>
+<span class="n">frames</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s1">&#39;./reference_data/small_molecules-1000.xyz&#39;</span><span class="p">,</span><span class="s1">&#39;:600&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2414,7 +2414,7 @@ if (IPython.notebook.kernel != null) {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area rendered_html docutils container">
-<div id='3dccabe5-6490-45fa-a4bc-dacd7ac5382e'></div></div>
+<div id='6525c9a5-cb4d-406f-9a4f-cdf5e037a7b0'></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
