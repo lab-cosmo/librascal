@@ -1,5 +1,5 @@
 /**
- * file   structure_manager_base.hh
+ * @file   structure_manager_base.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -37,11 +37,8 @@ namespace rascal {
   //! polymorphic base class type for StructureManagers
   class StructureManagerBase : public Updateable {
    public:
-    //! access to specific properties with a string
-    inline decltype(auto) get_property(std::string name);
-    //! only? virtual function needed.
-    virtual size_t nb_clusters(size_t order) const = 0;
     virtual ~StructureManagerBase() = default;
+    virtual size_t nb_clusters(size_t order) const = 0;
     virtual void update_self() = 0;
 
    protected:

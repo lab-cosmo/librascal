@@ -2,7 +2,6 @@ import numpy as np
 import json
 
 from ..neighbourlist import AtomsList
-from ..lib import RepresentationManager
 from .base import CalculatorFactory
 from ..utils import FactoryPool
 from itertools import starmap
@@ -73,8 +72,6 @@ class SortedCoulombMatrix(object):
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
 
-
-
     def transform(self, frames):
         """
         Compute the representation.
@@ -102,8 +99,7 @@ class SortedCoulombMatrix(object):
 
         return frames
 
-
-    def get_Nfeature(self):
+    def get_feature_size(self):
         return int(self.size*(self.size+1)/2)
 
     def get_size(self, managers):

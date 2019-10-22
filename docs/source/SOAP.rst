@@ -9,9 +9,9 @@ SOAP Theory
 :Last updated: 27 Aug 2019
 
 The mathematics behind the analytical radial integrals, and Cartesian gradients,
-of the SOAP descriptor is described below.  Also available as a PDF
-:download:`here <dox_resources/SOAP_documentation.pdf>`.
+of the SOAP descriptor is described below.
 
+.. TODO link to an appropriate publication once the below is incorporated there
 
 
 From the density to the density expansion
@@ -66,7 +66,7 @@ Density expansion:
    \newcommand{\CN}{\mathcal{N}}
    \newcommand{\gaus}[2]{\CN_{#1}\left(#2\right)}
 
-   \rho^{\alpha}_i(\mathbf{r})=\sum_{j\in \alpha} \mathcal{N}_{\sigma}\left(\mathbf{r}-\mathbf{r}_{ij}\right) = 
+   \rho^{\alpha}_i(\mathbf{r})=\sum_{j\in \alpha} \mathcal{N}_{\sigma}\left(\mathbf{r}-\mathbf{r}_{ij}\right) =
    \sum_{nlm} \braket{\alpha n \ell m}{\mathcal{X}_i} B_{nlm}(\mathbf{r}),
 
 where :math:`\alpha` is a tag refers to the specie of the considered
@@ -97,7 +97,7 @@ for the density coefficients and express the resulting integral over
 
    \begin{split}
    \braket{\alpha n \ell m}{\mathcal{X}_i}=& \sum_{j \in \alpha} c^{ij}_{n \ell m} = \sum_{j \in \alpha} \int_{\rm I\!R^3} \exp\left[-a\left(\mathbf{r}-\mathbf{r}_{ij}\right)^2\right]B_{nlm}(\mathbf{r})\\
-   =&\sum_{j \in \alpha} \int_{0}^{\infty}r^2  \exp\left[-a\left(r^2+r_{ij}^2\right)\right] g_n(r) \int_{-1}^{1}\mathrm{d}\left(\cos{\theta}\right) \\ 
+   =&\sum_{j \in \alpha} \int_{0}^{\infty}r^2  \exp\left[-a\left(r^2+r_{ij}^2\right)\right] g_n(r) \int_{-1}^{1}\mathrm{d}\left(\cos{\theta}\right) \\
    & \int_0^{2\pi}\mathrm{d}\phi \exp\left[2arr_{ij}\cos{\theta}\right]Y_{\ell}^{m}\left(\hat{\mathrm{R}}\hat{\bm{q}}\right),\\
    \end{split}
 
@@ -203,7 +203,7 @@ integral over the polar angle is then given by
 .. math::
 
    \begin{split}
-   \int_{-1}^{1}\mathrm{d}\left(\cos{\theta}\right) \exp\left[2arr_{ij}\cos{\theta}\right]P_{\ell}^{0}\left(\cos{\theta}\right) =& 2 \mathsf{i}_{\ell}(2arr_{ij}). 
+   \int_{-1}^{1}\mathrm{d}\left(\cos{\theta}\right) \exp\left[2arr_{ij}\cos{\theta}\right]P_{\ell}^{0}\left(\cos{\theta}\right) =& 2 \mathsf{i}_{\ell}(2arr_{ij}).
    \end{split}
 
 Density coefficients: Radial integration
@@ -287,7 +287,7 @@ using these relations [4]_ [5]_ [6]_
 
 .. [4]
 
-   http://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/07/01/01/0002/ 
+   http://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/07/01/01/0002/
    http://dlmf.nist.gov/16.5.E3
 
 .. [5] https://en.wikipedia.org/wiki/Generalized_hypergeometric_function#The_series_0F1
@@ -352,7 +352,7 @@ following shifting formula is useful,
 Discrete Variable Representation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In the special case of the the DVR radial basis [8]_ with Gauss-Legendre
+In the special case of the the DVR radial basis [7]_ with Gauss-Legendre
 quadrature rule, the radial integral simplifies into:
 
 .. math:: \text{I}_{n\ell}^{ij} = \frac{r_c}{2} \sqrt{\omega_n} x_n^2 e^{-ax_n^2} \mathsf{i}_{\ell}\left(2a x_n r_{ij}\right),
@@ -428,13 +428,14 @@ with possibly different :math:`m` values. The :math:`z` component is:
 .. math::
 
    \begin{aligned}
-       \frac{\partial D_{\ell m}}{\partial z_i} &= \frac{-\sqrt{1-u^2}}{2r}\left(e^{i\phi}\sqrt{(\ell+m)(\ell-m+1)}Y_l^{m-1}(\hat{r})
-           - e^{-i\phi}\sqrt{(\ell-m)(\ell+m+1)}Y_l^{m+1}(\hat{r})\right)\nonumber\\
-       &= \frac{-\sin{\theta}}{2r_{ij}}(\cos(m\phi) + i\sin(m\phi))
-       \left(\sqrt{(\ell+m)(\ell - m + 1)}\sqrt{\frac{2\ell+1}{4\pi}\frac{(\ell-m+1)!}{(\ell+m-1)!}}
+       \frac{\partial D_{\ell m}}{\partial z_i} &= \frac{-\sqrt{1-u^2}}{2r}\big(e^{i\phi}\sqrt{(\ell+m)(\ell-m+1)}Y_l^{m-1}(\hat{r})\nonumber\\
+           &\qquad\qquad - e^{-i\phi}\sqrt{(\ell-m)(\ell+m+1)}Y_l^{m+1}(\hat{r})\big)\nonumber\\
+       &= \frac{-\sin{\theta}}{2r_{ij}}(\cos(m\phi) + i\sin(m\phi)) \\
+           &\qquad\qquad \left(\sqrt{(\ell+m)(\ell - m + 1)}\sqrt{\frac{2\ell+1}{4\pi}\frac{(\ell-m+1)!}{(\ell+m-1)!}}
            P_l^{m-1}(\cos{\theta})\right.\nonumber\\
-       &\qquad\qquad \left. {} - \sqrt{(\ell-m)(\ell + m + 1)}\sqrt{\frac{2\ell+1}{4\pi}\frac{(\ell-m-1)!}{(\ell+m+1)!}}
-       P_l^{m+1}(\cos{\theta})\right)\end{aligned}
+           &\qquad\qquad\qquad \left. {} - \sqrt{(\ell-m)(\ell + m + 1)}\sqrt{\frac{2\ell+1}{4\pi}\frac{(\ell-m-1)!}{(\ell+m+1)!}}
+               P_l^{m+1}(\cos{\theta})\right)
+    \end{aligned}
 
 But remember, we’re actually using the real spherical harmonics:
 
@@ -464,7 +465,7 @@ So we can write
        \frac{\partial \bar{D}_{\ell,-m}}{\partial z_i} &=
        \frac{-\sin\theta}{2r_{ij}}\sin(m\phi)\left(\sqrt{(\ell + m)(\ell - m + 1)}\bar{P}_\ell^{m-1}(\cos\theta)
            - \sqrt{(\ell - m)(\ell + m + 1)}\bar{P}_\ell^{m+1}(\cos\theta)\right)\label{eq:dbz1}\\
-       \frac{\partial \bar{D}_{\ell,0}}{\partial z_i} &= 
+       \frac{\partial \bar{D}_{\ell,0}}{\partial z_i} &=
            \frac{\sin\theta}{r_{ij}}
                \sqrt{\frac{\ell(\ell + 1)}{2}}\bar{P}_\ell^{1}(\cos\theta))\label{eq:dbz2}\end{aligned}
 
@@ -592,4 +593,3 @@ In the case of the DVR radial basis:
 .. math:: \text{I}_{n\ell}^{ij} = -\frac{2a\sqrt{\omega_n}}{2\ell+1}\frac{r_c}{2}  x_n^3 e^{-ax_n^2} [\ell\mathsf{i}_{\ell-1}(2a x_n r_{ij})+(\ell+1)\mathsf{i}_{\ell+1}(2a x_n r_{ij})] \hat{\mathbf{r}}_{ij},
 
 where :math:`x_n=\frac{r_c}{2}r_n+\frac{r_c}{2}`.
-

@@ -610,11 +610,11 @@ namespace rascal {
     Fix::atom_dynamic_vector_unit_property.resize();
     Fix::atom_dynamic_vector_property.resize();
 
-    BOOST_CHECK_THROW(Fix::AtomVectorProperty_t ::check_compatibility(
+    BOOST_CHECK_THROW(Fix::AtomVectorProperty_t::check_compatibility(
                           Fix::atom_dynamic_vector_unit_property),
                       std::runtime_error);
 
-    BOOST_CHECK_NO_THROW(Fix::AtomVectorProperty_t ::check_compatibility(
+    BOOST_CHECK_NO_THROW(Fix::AtomVectorProperty_t::check_compatibility(
         Fix::atom_vector_property));
 
     int pair_property_counter{};
@@ -778,11 +778,7 @@ namespace rascal {
    * filled and that the data can be accessed consistently.
    */
 
-  using Fixtures = boost::mpl::list<BlockSparsePropertyFixture<1>,
-                                    // the order == 2 case test the access of
-                                    // the property of order 2 can be properly
-                                    // accessed by a clusterRef of order 1
-                                    BlockSparsePropertyFixture<2>>;
+  using Fixtures = boost::mpl::list<BlockSparsePropertyFixture<1>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_test_simple, Fix, Fixtures, Fix) {
     auto & managers = Fix::managers;
@@ -819,7 +815,6 @@ namespace rascal {
       for (auto center : manager) {
         if (verbose)
           std::cout << "center: " << i_center << std::endl;
-
         auto data = sparse_features[i_manager].get_dense_row(center);
         size_t key_id{0};
         double error1{0};

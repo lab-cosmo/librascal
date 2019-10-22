@@ -1,5 +1,5 @@
 /**
- * file   calculator_spherical_invariants.hh
+ * @file   calculator_spherical_invariants.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -193,7 +193,7 @@ namespace rascal {
   }  // namespace internal
 
   template <internal::SphericalInvariantsType Type, class Hypers>
-  decltype(auto) make_spherical_invariants_precompute(const Hypers & hypers) {
+  auto make_spherical_invariants_precompute(const Hypers & hypers) {
     return std::static_pointer_cast<
         internal::SphericalInvariantsPrecomputationBase>(
         std::make_shared<internal::SphericalInvariantsPrecomputation<Type>>(
@@ -201,7 +201,7 @@ namespace rascal {
   }
 
   template <internal::SphericalInvariantsType Type>
-  decltype(auto) downcast_spherical_invariants_precompute(
+  auto downcast_spherical_invariants_precompute(
       const std::shared_ptr<internal::SphericalInvariantsPrecomputationBase> &
           spherical_invariants_precompute) {
     return std::static_pointer_cast<
@@ -230,7 +230,7 @@ namespace rascal {
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
 
     explicit CalculatorSphericalInvariants(const Hypers_t & hyper)
-        : rep_expansion{hyper} {
+        : CalculatorBase{}, rep_expansion{hyper} {
       this->set_default_prefix("spherical_invariants_");
       this->set_hyperparameters(hyper);
     }
@@ -271,15 +271,14 @@ namespace rascal {
         this->compute_gradients = false;
       }
 
-      if (this->spherical_invariants_type_str.compare("PowerSpectrum") == 0) {
+      if (this->spherical_invariants_type_str == "PowerSpectrum") {
         this->spherical_invariants_type =
             SphericalInvariantsType::PowerSpectrum;
         this->precompute_spherical_invariants[enumValue(
             SphericalInvariantsType::PowerSpectrum)] =
             make_spherical_invariants_precompute<
                 SphericalInvariantsType::PowerSpectrum>(hypers);
-      } else if (this->spherical_invariants_type_str.compare(
-                     "RadialSpectrum") == 0) {
+      } else if (this->spherical_invariants_type_str == "RadialSpectrum") {
         this->spherical_invariants_type =
             SphericalInvariantsType::RadialSpectrum;
         this->precompute_spherical_invariants[enumValue(
@@ -289,8 +288,7 @@ namespace rascal {
         if (this->max_angular > 0) {
           throw std::logic_error("max_angular should be 0 with RadialSpectrum");
         }
-      } else if (this->spherical_invariants_type_str.compare("BiSpectrum") ==
-                 0) {
+      } else if (this->spherical_invariants_type_str == "BiSpectrum") {
         this->spherical_invariants_type =
             internal::SphericalInvariantsType::BiSpectrum;
         this->precompute_spherical_invariants[enumValue(
@@ -346,7 +344,7 @@ namespace rascal {
       this->compute_impl<BodyOrder>(manager);
     }
 
-    //! compute representation \nu == 1
+    //! compute representation @f$ \nu == 1 @f$
     template <
         internal::SphericalInvariantsType BodyOrder,
         std::enable_if_t<BodyOrder ==
@@ -355,7 +353,7 @@ namespace rascal {
         class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
-    //! compute representation \nu == 2
+    //! compute representation @f$ \nu == 2 @f$
     template <internal::SphericalInvariantsType BodyOrder,
               std::enable_if_t<
                   BodyOrder == internal::SphericalInvariantsType::PowerSpectrum,
@@ -363,7 +361,7 @@ namespace rascal {
               class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
-    //! compute representation \nu == 3
+    //! compute representation @f$ \nu == 3 @f$
     template <internal::SphericalInvariantsType BodyOrder,
               std::enable_if_t<
                   BodyOrder == internal::SphericalInvariantsType::BiSpectrum,
@@ -453,8 +451,6 @@ namespace rascal {
             SphericalInvariantsType::PowerSpectrum)])};
     auto & l_factors{precomputation->l_factors};
 
-    // TODO(felix) use the updated mech of the prop to avoid recomputing
-    // if the prop already exists and is uptodate
     // Compute the spherical expansions of the current structure
     rep_expansion.compute(manager);
 
@@ -491,7 +487,7 @@ namespace rascal {
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
       auto & soap_vector{soap_vectors[center]};
-
+      // Compute the Powerspectrum coefficients
       for (const auto & el1 : coefficients) {
         spair_type[0] = el1.first[0];
         auto & coef1{el1.second};
@@ -539,9 +535,10 @@ namespace rascal {
         soap_vector.normalize();
       }
       if (this->compute_gradients) {
+        auto ii_pair = center.get_atom_ii();
         auto & grad_center_coefficients{
-            expansions_coefficients_gradient[center]};
-        auto & soap_center_gradient{soap_vector_gradients[center]};
+            expansions_coefficients_gradient[ii_pair]};
+        auto & soap_center_gradient{soap_vector_gradients[ii_pair]};
         for (const auto & grad_species_1 : grad_center_coefficients) {
           spair_type[0] = grad_species_1.first[0];
           const auto & expansion_coefficients_1{
@@ -868,9 +865,10 @@ namespace rascal {
       }
 
       if (this->compute_gradients) {
+        auto ii_pair = center.get_atom_ii();
         auto & grad_center_coefficients{
-            expansions_coefficients_gradient[center]};
-        auto & soap_center_gradient{soap_vector_gradients[center]};
+            expansions_coefficients_gradient[ii_pair]};
+        auto & soap_center_gradient{soap_vector_gradients[ii_pair]};
 
         for (const auto & el : grad_center_coefficients) {
           element_type[0] = el.first[0];
@@ -1192,7 +1190,7 @@ namespace rascal {
       internal::Sorted<false> is_not_sorted{};
 
       std::vector<internal::SortedKey<Key_t>> triplet_list{};
-      auto & center_type{center.get_atom_type()};
+      auto center_type{center.get_atom_type()};
       Key_t triplet_type{center_type, center_type, center_type};
       // TODO(felix) optimize this loop
       for (const auto & el1 : coefficients) {
@@ -1240,7 +1238,7 @@ namespace rascal {
       internal::Sorted<true> is_sorted{};
 
       std::vector<internal::SortedKey<Key_t>> pair_list{};
-      auto & center_type{center.get_atom_type()};
+      auto center_type{center.get_atom_type()};
       Key_t pair_type{center_type, center_type};
       // avoid checking the order in pair_type by ensuring it has already been
       // done
@@ -1272,8 +1270,9 @@ namespace rascal {
       soap_vector.resize(pair_list, n_row, n_col);
 
       if (this->compute_gradients) {
+        auto ii_pair = center.get_atom_ii();
         // The gradient wrt center is nonzero for all species pairs
-        soap_vector_gradients[center].resize(
+        soap_vector_gradients[ii_pair].resize(
             pair_list, n_spatial_dimensions * n_row, n_col, 0.);
 
         // TODO(max,felix) needs work
@@ -1343,9 +1342,10 @@ namespace rascal {
       soap_vector.resize(keys, n_row, n_col, 0);
 
       if (this->compute_gradients) {
+        auto ii_pair = center.get_atom_ii();
         // The gradient wrt center is nonzero for all species pairs
-        soap_vector_gradients[center].resize(keys, n_spatial_dimensions * n_row,
-                                             n_col, 0);
+        soap_vector_gradients[ii_pair].resize(
+            keys, n_spatial_dimensions * n_row, n_col, 0);
         for (auto neigh : center) {
           soap_vector_gradients[neigh].resize(
               keys, n_spatial_dimensions * n_row, n_col, 0);

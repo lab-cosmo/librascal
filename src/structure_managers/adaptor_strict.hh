@@ -1,5 +1,5 @@
 /**
- * file   adaptor_strict.hh
+ * @file   adaptor_strict.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -48,13 +48,17 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorStrict<ManagerImplementation>> {
+    using parent_traits = StructureManager_traits<ManagerImplementation>;
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::yes};
     constexpr static bool HasDistances{true};
     constexpr static bool HasDirectionVectors{true};
-    constexpr static int Dim{ManagerImplementation::traits::Dim};
-    constexpr static size_t MaxOrder{ManagerImplementation::traits::MaxOrder};
-    using LayerByOrder = typename LayerIncreaser<
-        MaxOrder, typename ManagerImplementation::traits::LayerByOrder>::type;
+    constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
+    constexpr static int Dim{parent_traits::Dim};
+    constexpr static size_t MaxOrder{parent_traits::MaxOrder};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
+    using LayerByOrder =
+        typename LayerIncreaser<MaxOrder,
+                                typename parent_traits::LayerByOrder>::type;
   };
 
   /**
@@ -75,6 +79,7 @@ namespace rascal {
             AdaptorStrict<ManagerImplementation>> {
    public:
     using Manager_t = AdaptorStrict<ManagerImplementation>;
+    using ManagerImplementation_t = ManagerImplementation;
     using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorStrict>;
@@ -102,9 +107,6 @@ namespace rascal {
      */
     AdaptorStrict(ImplementationPtr_t manager, double cutoff);
 
-    AdaptorStrict(ImplementationPtr_t manager, std::tuple<double> tp)
-        : AdaptorStrict(manager, std::get<0>(tp)) {}
-
     AdaptorStrict(ImplementationPtr_t manager, const Hypers_t & adaptor_hypers)
         : AdaptorStrict(manager,
                         adaptor_hypers.at("cutoff").template get<double>()) {}
@@ -125,34 +127,32 @@ namespace rascal {
     AdaptorStrict & operator=(AdaptorStrict && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
-    inline void update_self();
+    void update_self();
 
     //! update the underlying manager as well as the adaptor
     template <class... Args>
     void update(Args &&... arguments);
 
     //! returns the (strict) cutoff for the adaptor
-    inline const double & get_cutoff() const { return this->cutoff; }
+    double get_cutoff() const { return this->cutoff; }
 
-    inline size_t get_nb_clusters(int order) const {
+    size_t get_nb_clusters(int order) const {
+      assert(order > 0);
       return this->atom_tag_list[order - 1].size();
     }
 
-    inline size_t get_size() const { return this->manager->get_size(); }
+    size_t get_size() const { return this->manager->get_size(); }
 
-    inline size_t get_size_with_ghosts() const {
-      return this->get_nb_clusters(1);
-    }
+    size_t get_size_with_ghosts() const { return this->get_nb_clusters(1); }
 
-    inline Vector_ref get_position(const int & index) {
+    Vector_ref get_position(int index) {
       return this->manager->get_position(index);
     }
 
     //! get atom_tag of index-th neighbour of this cluster
     template <size_t Order, size_t Layer>
-    inline int
-    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
-                           int index) const {
+    int get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                               int index) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "this implementation only handles upto traits::MaxOrder");
       auto && offset = this->offsets[Order][cluster.get_cluster_index(Layer)];
@@ -160,12 +160,12 @@ namespace rascal {
     }
 
     //! get atom_tag of the index-th atom in manager
-    inline int get_neighbour_atom_tag(const Parent & /*parent*/,
-                                      size_t index) const {
+    int get_neighbour_atom_tag(const Parent & /*parent*/, size_t index) const {
       return this->atom_tag_list[0][index];
     }
 
-    /* Since the cluster indices of order 1 are only copied in this filter we
+    /**
+     * Since the cluster indices of order 1 are only copied in this filter we
      * can safely use the before-computed list from the previous manager,
      * since they are still valid for access.
      */
@@ -174,30 +174,15 @@ namespace rascal {
     }
 
     //! return atom type
-    inline int & get_atom_type(const AtomRef_t & atom) {
-      /**
-       * careful, atom refers to our local index, for the manager, we need its
-       * index:
-       */
-      auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
-      return this->manager->get_atom_type(original_atom);
-    }
-
-    //! return atom type
-    inline const int & get_atom_type(const AtomRef_t & atom) const {
+    int get_atom_type(const AtomRef_t & atom) const {
       // careful, atom refers to our local index, for the manager, we need its
       // index:
       auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
       return this->manager->get_atom_type(original_atom);
     }
 
-    //! Returns atom type given an atom tag
-    inline int & get_atom_type(const int & atom_id) {
-      return this->manager->get_atom_type(atom_id);
-    }
-
     //! Returns a constant atom type given an atom tag
-    inline const int & get_atom_type(const int & atom_id) const {
+    int get_atom_type(int atom_id) const {
       auto && type{this->manager->get_atom_type(atom_id)};
       return type;
     }
@@ -206,15 +191,14 @@ namespace rascal {
      * this cluster appears in an iteration
      */
     template <size_t Order>
-    inline size_t
-    get_offset_impl(const std::array<size_t, Order> & counters) const {
+    size_t get_offset_impl(const std::array<size_t, Order> & counters) const {
       static_assert(Order < traits::MaxOrder,
                     "Calling this function with the wrong order cluster");
       return this->offsets[Order][counters.back()];
     }
 
     template <size_t Order>
-    inline int get_neighbour_atom_tag(const size_t neighbour_index) const {
+    int get_neighbour_atom_tag(const size_t neighbour_index) const {
       static_assert(Order < traits::MaxOrder,
                     "Calling this function with the wrong order cluster");
       return this->manager->get_neighbour_atom_tag(neighbour_index);
@@ -222,7 +206,7 @@ namespace rascal {
 
     //! return the number of neighbours of a given atom
     template <size_t Order, size_t Layer>
-    inline size_t
+    size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
@@ -241,19 +225,18 @@ namespace rascal {
     // if this was wrong, please explain
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer>
-    inline double &
-    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+    double get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       return this->distance->operator[](pair);
     }
 
     //! returns the direction vector between atoms in a given pair
     template <size_t Order, size_t Layer>
-    inline const Vector_ref
+    const Vector_ref
     get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
       return this->dir_vec->operator[](pair);
     }
 
-    inline bool get_consider_ghost_neighbours() const {
+    bool get_consider_ghost_neighbours() const {
       return this->manager->get_consider_ghost_neighbours();
     }
 
@@ -268,12 +251,12 @@ namespace rascal {
    protected:
     /**
      * main function during construction of a neighbourlist.
-     * @param atom the atom to add to the list
-     * @param Order select whether it is an i-atom (order=1), j-atom (order=2),
+     * @param atom_tag the atom to add to the list
+     * @tparam Order select whether it is an i-atom (order=1), j-atom (order=2),
      * or ...
      */
     template <size_t Order>
-    inline void add_atom(int atom_tag) {
+    void add_atom(int atom_tag) {
       static_assert(Order <= traits::MaxOrder,
                     "you can only add neighbours to the n-th degree defined by "
                     "MaxOrder of the underlying manager");
@@ -294,7 +277,7 @@ namespace rascal {
     }
 
     template <size_t Order, size_t Layer>
-    inline void add_atom(const ClusterRefKey<Order, Layer> & cluster) {
+    void add_atom(const ClusterRefKey<Order, Layer> & cluster) {
       this->template add_atom<Order - 1>(cluster.back());
     }
 
@@ -347,8 +330,8 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     template <class ManagerImplementation>
-    bool inline check_cutoff(
-        const std::shared_ptr<ManagerImplementation> & manager, double cutoff) {
+    bool check_cutoff(const std::shared_ptr<ManagerImplementation> & manager,
+                      double cutoff) {
       constexpr bool IsStrict{(ManagerImplementation::traits::Strict ==
                                AdaptorTraits::Strict::yes)};
       return CutOffChecker<IsStrict, ManagerImplementation>::check(manager,
@@ -410,6 +393,9 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
+
+    double rc2{this->cutoff * this->cutoff};
+
     // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
     // either actually with ghosts, or only returns the number of centers.
     for (auto atom : this->manager.get()->with_ghosts()) {
@@ -423,15 +409,18 @@ namespace rascal {
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
-      double rc2{this->cutoff * this->cutoff};
-      for (auto pair : atom) {
+      for (auto pair : atom.with_self_pair()) {
         auto vec_ij{pair.get_position() - atom.get_position()};
         double distance2{(vec_ij).squaredNorm()};
         if (distance2 <= rc2) {
           this->add_atom(pair);
           double distance{std::sqrt(distance2)};
+          if (distance2 > 0.) {
+            this->dir_vec->push_back((vec_ij.array() / distance).matrix());
+          } else {
+            this->dir_vec->push_back((vec_ij.array()).matrix());
+          }
 
-          this->dir_vec->push_back((vec_ij.array() / distance).matrix());
           this->distance->push_back(distance);
 
           Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;

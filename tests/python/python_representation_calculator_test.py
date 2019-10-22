@@ -14,7 +14,7 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
 
         self.hypers = dict(cutoff=3., sorting_algorithm='row_norm',
@@ -37,7 +37,7 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
 
         self.hypers = {"interaction_cutoff": 6.0,
@@ -63,7 +63,7 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
 
         self.hypers = dict(soap_type="PowerSpectrum",

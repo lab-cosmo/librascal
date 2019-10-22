@@ -1,3 +1,7 @@
+if (NOT ${BUILD_BINDINGS})
+    message(FATAL_ERROR "BUILD_BINDINGS=ON is required to build the documentation")
+endif()
+
 find_package(Sphinx REQUIRED)
 find_package(Doxygen REQUIRED)
 
@@ -10,15 +14,14 @@ set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_doctrees")
 # HTML output directory
 set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/conf.py"
-  "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
-  @ONLY)
+option(DOXYGEN_BUILD_HTML "Build the native Doxygen HTML documentation" OFF)
+mark_as_advanced(DOXYGEN_BUILD_HTML)
 
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/Doxyfile"
-  "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
-  @ONLY)
+if(${DOXYGEN_BUILD_HTML})
+    set(DOXYGEN_GENERATE_HTML "YES")
+else()
+    set(DOXYGEN_GENERATE_HTML "NO")
+endif()
 
 # Copy over the resources needed for the Doxygen HTML docs (transitional)
 file(GLOB DOX_RESOURCE_FILES
@@ -29,28 +32,35 @@ file(COPY ${DOX_RESOURCE_FILES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 file(COPY ${DOX_MARKDOWN_FILES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/input_def.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/input_def"
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/conf.py.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
   @ONLY)
 
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/xml_output_def.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/xml_output_def"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
   @ONLY)
 
-add_custom_target(doxygen_doc
+file(GLOB_RECURSE RASCAL_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../src/**.hh)
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/doxygenxml/index.xml
     COMMAND "${DOXYGEN_EXECUTABLE}"
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-    COMMENT "Generating C++ documentation with Doxygen")
+    COMMENT "Generating C++ documentation with Doxygen"
+    DEPENDS ${RASCAL_HEADERS}
+)
+
+add_custom_target(doxygen_doc
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/doxygenxml/index.xml
+)
 
 add_custom_target(doc
-  COMMAND
-  ${SPHINX_EXECUTABLE}
-  -q -b html
-  -c "${CMAKE_CURRENT_BINARY_DIR}"
-  -d "${SPHINX_CACHE_DIR}"
-  "${CMAKE_CURRENT_SOURCE_DIR}/source"
-  "${SPHINX_HTML_DIR}"
-  DEPENDS doxygen_doc
-  COMMENT "Building HTML documentation with Sphinx")
-
+  COMMAND ${SPHINX_EXECUTABLE} -q -b html
+            -c "${CMAKE_CURRENT_BINARY_DIR}"
+            -d "${SPHINX_CACHE_DIR}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/source"
+            "${SPHINX_HTML_DIR}"
+  DEPENDS doxygen_doc librascal
+  COMMENT "Building HTML documentation with Sphinx"
+)

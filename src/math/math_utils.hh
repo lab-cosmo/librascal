@@ -1,5 +1,5 @@
 /**
- * file   math_utils.hh
+ * @file   math_utils.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  * @author  Max Veit <max.veit@epfl.ch>
@@ -52,6 +52,8 @@ namespace rascal {
     // Reminder: C++ floating-point literals are automatically of type double
     /// Pi to more digits than anyone could possibly need
     const double PI = 3.14159265358979323846264338327950288419716939937510;
+    const double SQRT_PI =
+        1.7724538509055160272981674833411451827975494561223871282;
     const double SQRT_TWO = std::sqrt(2.0);
     const double INV_SQRT_TWO = std::sqrt(0.5);
     const double SQRT_THREE = std::sqrt(3.0);
@@ -60,7 +62,7 @@ namespace rascal {
     const double dbl_ftol = 100.0 * std::numeric_limits<double>::epsilon();
 
     /// How large a number must be to be considered infinity
-    const double DOVERFLOW = std::numeric_limits<double>::infinity() / 100.;
+    const double DOVERFLOW = std::numeric_limits<double>::infinity();
 
     // define some usefull matrix type
     using Matrix_t =
@@ -96,7 +98,7 @@ namespace rascal {
 
       //! integer power
       template <typename Scalar_>
-      inline double pow_i(const Scalar_ & x, const int & n) {
+      inline double pow_i(const Scalar_ & x, int n) {
         size_t un{0};
         double value{static_cast<double>(x)};
 
@@ -112,38 +114,38 @@ namespace rascal {
     }  // namespace details
 
     //! integer power
-    inline double pow(const double & x, const int & n) {
-      return details::pow_i(x, n);
-    }
+    inline double pow(double x, int n) { return details::pow_i(x, n); }
 
     //! integer power
-    inline double pow(const int & x, const int & n) {
-      return details::pow_i(x, n);
-    }
+    inline double pow(int x, int n) { return details::pow_i(x, n); }
 
     //! integer power
-    inline double pow(const size_t & x, const int & n) {
-      return details::pow_i(x, n);
-    }
+    inline double pow(size_t x, int n) { return details::pow_i(x, n); }
 
     //! unsingned integer power
-    inline double pow(const double & x, const std::size_t & n) {
-      return details::pow_u(x, n);
-    }
+    inline double pow(double x, size_t n) { return details::pow_u(x, n); }
 
     //! unsingned integer power
-    inline int pow(const int & x, const std::size_t & n) {
-      return details::pow_u(x, n);
-    }
+    inline int pow(int x, size_t n) { return details::pow_u(x, n); }
 
     //! unsingned integer power
-    inline size_t pow(const size_t & x, const std::size_t & n) {
-      return details::pow_u(x, n);
-    }
+    inline size_t pow(size_t x, size_t n) { return details::pow_u(x, n); }
 
     //! general power
-    inline double pow(const double & x, const double & n) {
-      return std::pow(x, n);
+    inline double pow(double x, double n) { return std::pow(x, n); }
+
+    /**
+     * Modulo that follows python standard, i.e. (-3) % 5 == 2 (python) and not
+     * (-3) % 5 == -3 (C++).
+     *
+     * @param divisor is a positive divisor
+     * @tparam Num type of the double modulo
+     */
+    template <class Num>
+    Num py_mod(Num x, Num divisor) {
+      assert(divisor > 0.);
+      Num m{std::fmod(x, divisor)};
+      return m + (m < 0 ? divisor : 0);
     }
 
     /**
@@ -163,9 +165,18 @@ namespace rascal {
     struct MakePositiveIntegerPower {
       typedef Scalar result_type;
       size_t b;
-      explicit MakePositiveIntegerPower(const size_t & b) : b{b} {}
+      explicit MakePositiveIntegerPower(size_t b) : b{b} {}
 
       Scalar operator()(const Scalar & a) const { return pow(a, this->b); }
+    };
+
+    /**
+     * Defines a modulo function that follows python standard behaviour
+     */
+    struct MakePositivePyMod {
+      double divisor;
+      explicit MakePositivePyMod(double divisor) : divisor{divisor} {}
+      double operator()(double a) const { return py_mod(a, this->divisor); }
     };
 
     /**
@@ -193,9 +204,8 @@ namespace rascal {
      * function.
      *
      */
-    inline double switching_function_cosine(const double & r,
-                                            const double & cutoff,
-                                            const double & smooth_width) {
+    inline double switching_function_cosine(double r, double cutoff,
+                                            double smooth_width) {
       if (r <= (cutoff - smooth_width)) {
         return 1.0;
       } else if (r > cutoff) {
@@ -222,9 +232,8 @@ namespace rascal {
      * dsw/dr (r) = -pi/(2*smooth_width) * sin(pi * (r - cutoff + smooth_width)
      *                                              / smooth_width)
      */
-    inline double
-    derivative_switching_funtion_cosine(const double & r, const double & cutoff,
-                                        const double & smooth_width) {
+    inline double derivative_switching_funtion_cosine(double r, double cutoff,
+                                                      double smooth_width) {
       if (r <= (cutoff - smooth_width)) {
         return 0.0;
       } else if (r > cutoff) {

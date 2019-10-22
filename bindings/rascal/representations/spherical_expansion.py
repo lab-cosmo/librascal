@@ -1,6 +1,6 @@
 import json
 
-from .base import CalculatorFactory
+from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
 import numpy as np
 
@@ -51,9 +51,11 @@ class SphericalExpansion(object):
 
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=0., cutoff_function_type="Cosine",
+                 gaussian_sigma_constant=0.,
+                 cutoff_function_type="ShiftedCosine",
                  n_species=1, radial_basis="GTO",
-                 method='thread', n_workers=1, disable_pbar=False):
+                 method='thread', n_workers=1, disable_pbar=False,
+                 cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -66,17 +68,13 @@ class SphericalExpansion(object):
             n_species=n_species
         )
 
-        cutoff_function = dict(
-            type=cutoff_function_type,
-            cutoff=dict(
-                value=interaction_cutoff,
-                unit='A'
-            ),
-            smooth_width=dict(
-                value=cutoff_smooth_width,
-                unit='A'
-            ),
+        cutoff_function_parameters.update(
+            interaction_cutoff=interaction_cutoff,
+            cutoff_smooth_width=cutoff_smooth_width
         )
+        cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
+                                **cutoff_function_parameters)
+
         gaussian_density = dict(
             type=gaussian_sigma_type,
             gaussian_sigma=dict(
@@ -94,6 +92,7 @@ class SphericalExpansion(object):
         self.nl_options = [
             dict(name='centers', args=dict()),
             dict(name='neighbourlist', args=dict(cutoff=interaction_cutoff)),
+            dict(name="centercontribution", args=dict()),
             dict(name='strict', args=dict(cutoff=interaction_cutoff))
         ]
 
@@ -118,7 +117,7 @@ class SphericalExpansion(object):
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species', 'gaussian_density', 'cutoff_function',
-                        'radial_contribution'}
+                        'radial_contribution', 'cutoff_function_parameters'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)

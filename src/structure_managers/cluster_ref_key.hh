@@ -1,5 +1,5 @@
 /**
- * file   cluster_ref_key.hh
+ * @file   cluster_ref_key.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Markus Stricer <markus.stricker@epfl.ch>
@@ -232,36 +232,39 @@ namespace rascal {
     ClusterRefKey & operator=(ClusterRefKey && other) = default;
 
     //! returns the atom tags of the current cluster
-    const inline AtomIndex_t & get_atom_tag_list() const {
+    const AtomIndex_t & get_atom_tag_list() const {
       return this->atom_tag_list;
     }
 
     //! returns the first atom tag in this cluster
-    const int & front() const { return this->atom_tag_list.front(); }
+    int front() const { return this->atom_tag_list.front(); }
     //! returns the last atom tag in this cluster
-    const int & back() const { return this->atom_tag_list.back(); }
+    int back() const { return this->atom_tag_list.back(); }
     /* the internal cluster neighbour is the neighbour which was added as
      * neighbour in the creation of this cluster
      */
-    const int & get_internal_neighbour_atom_tag() const { return this->back(); }
+    int get_internal_neighbour_atom_tag() const { return this->back(); }
 
-    const int & get_atom_tag() const { return this->back(); }
+    /*
+     * From an cluster of form (i,j,..., n) it returns the tag of atom n
+     */
+    int get_atom_tag() const { return this->back(); }
 
     //! returns the cluster's index, given a specific layer
-    inline size_t get_cluster_index(const size_t layer) const {
+    size_t get_cluster_index(const size_t layer) const {
       return this->cluster_indices(layer);
     }
 
     //! returns the complete cluster indices (stacking history)
-    inline IndexConstArray get_cluster_indices() const {
+    IndexConstArray get_cluster_indices() const {
       return this->cluster_indices;
     }
 
     //! returns the order of the current cluster
-    constexpr static inline size_t order() { return Order; }
+    constexpr static size_t order() { return Order; }
 
     //! returns the layer of the current cluster
-    constexpr static inline size_t cluster_layer() { return Layer; }
+    constexpr static size_t cluster_layer() { return Layer; }
 
    protected:
     /**

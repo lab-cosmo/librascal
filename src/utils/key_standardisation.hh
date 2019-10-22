@@ -1,5 +1,5 @@
 /**
- * file   key_standardisation.hh
+ * @file   key_standardisation.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>
@@ -78,7 +78,7 @@ namespace rascal {
 
     const T & operator[](const size_t index) const { return this->key[index]; }
 
-    const size_t & get_order() const { return this->order; }
+    size_t get_order() const { return this->order; }
 
     const T & back() const { return key.back(); }
 

@@ -1,5 +1,5 @@
 /**
- * file   updateable_base.hh
+ * @file   updateable_base.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -67,7 +67,7 @@ namespace rascal {
     using Children_t = std::weak_ptr<Updateable>;
 
     //! Default constructor sets the status variable for update to false.
-    Updateable() : updated{false} {};
+    Updateable() : updated{false} {}
 
     //! Copy constructor
     Updateable(const Updateable & other) = delete;
@@ -109,10 +109,10 @@ namespace rascal {
     virtual void send_changed_structure_signal() = 0;
 
     //! Setter function for update statue variable
-    inline void set_update_status(const bool sig) { this->updated = sig; }
+    void set_update_status(const bool sig) { this->updated = sig; }
 
     //! Getter function for update status variable.
-    inline bool get_update_status() const { return this->updated; }
+    bool get_update_status() const { return this->updated; }
 
    protected:
     //! List of children which are stacked on top of current object.

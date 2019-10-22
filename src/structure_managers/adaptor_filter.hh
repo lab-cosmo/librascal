@@ -1,5 +1,5 @@
 /**
- * file   adaptor_filter.hh
+ * @file   adaptor_filter.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>
@@ -56,7 +56,9 @@ namespace rascal {
     constexpr static bool HasDistances{parent_traits::HasDistances};
     constexpr static bool HasDirectionVectors{
         parent_traits::HasDirectionVectors};
+    constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     constexpr static int Dim{parent_traits::Dim};
+    constexpr static int StackLevel{parent_traits::StackLevel + 1};
     //! New MaxOrder upon construction!
     constexpr static size_t MaxOrder{MaxOrder_};
     //! New Layer
@@ -78,8 +80,8 @@ namespace rascal {
       using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
       using ClusterRef_t =
           typename Manager_t::template InputClusterRef_t<Order>;
-      inline static void add_parent(Manager_t & manager,
-                                    const ClusterRef_t & cluster) {
+      static void add_parent(Manager_t & manager,
+                             const ClusterRef_t & cluster) {
         // e.g., the pair (i,j) for a triplet (i,j,k), or the atom i
         // for a pair (i,j)
         const auto & parent_cluster{cluster.get_iterator().get_container()};
@@ -98,8 +100,8 @@ namespace rascal {
       using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
       using ClusterRef_t =
           typename Manager_t::template InputClusterRef_t<Order>;
-      inline static void add_parent(Manager_t & /*ignored manager*/,
-                                    const ClusterRef_t & /*ignored atom*/) {}
+      static void add_parent(Manager_t & /*ignored manager*/,
+                             const ClusterRef_t & /*ignored atom*/) {}
     };
 
   }  // namespace internal
@@ -120,8 +122,10 @@ namespace rascal {
     friend struct internal::ClusterAdder;
 
     using Manager_t = AdaptorFilter<ManagerImplementation, MaxOrder>;
+
     using Parent = StructureManager<Manager_t>;
     using ParentBase = FilterBase;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorFilter>;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -162,10 +166,10 @@ namespace rascal {
      * called *before* adding clusters (i.e., also at the beginning of every
      * update)
      */
-    inline void reset_initial_state();
+    void reset_initial_state();
 
     //! updates the underlying adaptor
-    inline void update_self() {
+    void update_self() {
       this->reset_initial_state();
       this->perform_filtering();
     }
@@ -177,46 +181,39 @@ namespace rascal {
 
     virtual void perform_filtering() = 0;
 
-    //! returns the distance between atoms in a given pair
-    template <size_t Order, size_t Layer,
-              bool DummyHasDistances = traits::HasDistances>
-    inline const std::enable_if_t<DummyHasDistances, double> &
-    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-      static_assert(DummyHasDistances == traits::HasDistances,
-                    "SFINAE, do not specify");
-      return this->manager->get_distance(pair);
-    }
-
     /**
      * return the number of 'neighbours' (i.e., number of pairs for an atom,
      * number of triplets for a pair, etc) of a given order.
      */
-    inline size_t get_nb_clusters(int order) const {
+    size_t get_nb_clusters(int order) const {
       return this->atom_tag_list[order - 1].size();
     }
 
     /**
      * return the number of atoms
      */
-    inline size_t get_size() const { return this->get_nb_clusters(1); }
+    size_t get_size() const { return this->get_nb_clusters(1); }
 
     /**
      * return the position of a given atom
      */
-    inline Vector_ref get_position(const int & index) {
+    Vector_ref get_position(int index) {
       return this->manager->get_position(index);
     }
 
-    /**
-     * return pair distance
-     */
+    //! returns the number of atoms
+    size_t get_size_with_ghosts() const {
+      return this->manager->get_size_with_ghosts();
+    }
+
+    //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer,
               bool HasDistances = traits::HasDistances>
-    inline std::enable_if_t<HasDistances, double &>
+    const std::enable_if_t<HasDistances, double>
     get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       static_assert(HasDistances == traits::HasDistances,
-                    "SFINAE don't touch parameter!");
-      return this->manager.get_distance(pair);
+                    "HasDistances is used for SFINAE, please don't specify it");
+      return this->manager->get_distance(pair);
     }
 
     /**
@@ -224,18 +221,17 @@ namespace rascal {
      */
     template <size_t Order, size_t Layer,
               bool HasDistances = traits::HasDistances>
-    inline std::enable_if_t<HasDistances, Vector_ref>
+    std::enable_if_t<HasDistances, Vector_ref>
     get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
       static_assert(HasDistances == traits::HasDistances,
-                    "SFINAE don't touch parameter!");
-      return this->manager.get_direction_vector(pair);
+                    "HasDistances is used for SFINAE, please don't specify it");
+      return this->manager->get_direction_vector(pair);
     }
 
     //! get atom_tag of index-th neighbour of this cluster
     template <size_t Order, size_t Layer>
-    inline int
-    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
-                           int index) const {
+    int get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                               int index) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "this implementation only handles upto traits::MaxOrder");
       auto && offset = this->offsets[Order][cluster.get_cluster_index(Layer)];
@@ -243,23 +239,12 @@ namespace rascal {
     }
 
     //! get atom_tag of the index-th atom in manager
-    inline int get_neighbour_atom_tag(const Parent & /*parent*/,
-                                      size_t index) const {
+    int get_neighbour_atom_tag(const Parent & /*parent*/, size_t index) const {
       return this->atom_tag_list[0][index];
     }
 
     //! return atom type
-    inline int & get_atom_type(const AtomRef_t & atom) {
-      /**
-       * careful, atom refers to our local index, for the manager, we need its
-       * index:
-       */
-      auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
-      return this->manager->get_atom_type(original_atom);
-    }
-
-    //! return atom type
-    inline const int & get_atom_type(const AtomRef_t & atom) const {
+    int get_atom_type(const AtomRef_t & atom) const {
       // careful, atom refers to our local index, for the manager, we need its
       // index:
       auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
@@ -267,13 +252,7 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom tag
-    inline int & get_atom_type(const int & atom_id) {
-      auto && type{this->manager->get_atom_type(atom_id)};
-      return type;
-    }
-
-    //! Returns a constant atom type given an atom tag
-    inline const int & get_atom_type(int & atom_id) const {
+    int get_atom_type(int atom_id) const {
       auto && type{this->manager->get_atom_type(atom_id)};
       return type;
     }
@@ -283,14 +262,13 @@ namespace rascal {
      * this cluster appears in an iteration
      */
     template <size_t Order>
-    inline size_t
-    get_offset_impl(const std::array<size_t, Order> & counters) const {
+    size_t get_offset_impl(const std::array<size_t, Order> & counters) const {
       return this->offsets[Order][counters.back()];
     }
 
     //! return the number of neighbours of a given atom
     template <size_t Order, size_t Layer>
-    inline size_t
+    size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "Order exceeds maxorder for this filter.");
@@ -306,7 +284,7 @@ namespace rascal {
      * retain in the filtered version using this method
      */
     template <size_t Order>
-    inline void add_cluster(const InputClusterRef_t<Order> & cluster);
+    void add_cluster(const InputClusterRef_t<Order> & cluster);
 
    protected:
     /**
@@ -315,7 +293,7 @@ namespace rascal {
      * order
      */
     template <size_t Order>
-    inline bool has_cluster(const InputClusterRef_t<Order> & cluster);
+    bool has_cluster(const InputClusterRef_t<Order> & cluster);
 
     /**
      * main function during construction of the filtered view
@@ -324,7 +302,7 @@ namespace rascal {
      * or ...
      */
     template <size_t Order>
-    inline void add_atom(const InputClusterRef_t<Order> & cluster) {
+    void add_atom(const InputClusterRef_t<Order> & cluster) {
       const auto & atom_tag{cluster.back()};
       static_assert(Order - 1 <= traits::MaxOrder,
                     "you can only add neighbours to the n-th degree defined by "

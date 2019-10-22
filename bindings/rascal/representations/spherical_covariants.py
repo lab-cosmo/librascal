@@ -1,6 +1,6 @@
 import json
 
-from .base import CalculatorFactory
+from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
 import numpy as np
 
@@ -62,10 +62,11 @@ class SphericalCovariants(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
-                 cutoff_function_type="Cosine", normalize=True,
+                 cutoff_function_type="ShiftedCosine", normalize=True,
                  radial_basis="GTO",
                  soap_type="LambdaSpectrum", inversion_symmetry=True,
-                 lam=0):
+                 lam=0,
+                 cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -81,17 +82,13 @@ class SphericalCovariants(object):
             inversion_symmetry=inversion_symmetry,
             lam=lam)
 
-        cutoff_function = dict(
-            type=cutoff_function_type,
-            cutoff=dict(
-                value=interaction_cutoff,
-                unit='AA'
-            ),
-            smooth_width=dict(
-                value=cutoff_smooth_width,
-                unit='AA'
-            ),
+        cutoff_function_parameters.update(
+            interaction_cutoff=interaction_cutoff,
+            cutoff_smooth_width=cutoff_smooth_width
         )
+        cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
+                                **cutoff_function_parameters)
+
         gaussian_density = dict(
             type=gaussian_sigma_type,
             gaussian_sigma=dict(
@@ -108,10 +105,11 @@ class SphericalCovariants(object):
                                     radial_contribution=radial_contribution)
 
         self.nl_options = [
-            dict(name='centers', args=[]),
+            dict(name='centers', args=dict()),
             dict(name='neighbourlist', args=dict(cutoff=interaction_cutoff)),
+            dict(name="centercontribution", args=dict()),
             dict(name='strict', args=dict(cutoff=interaction_cutoff))
-                                    ]
+        ]
 
         hypers_str = json.dumps(self.hypers)
         self.rep_options = dict(name=self.name, args=[hypers_str])
@@ -128,7 +126,8 @@ class SphericalCovariants(object):
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
                         'inversion_symmetry', 'lam', 'cutoff_function',
-                        'normalize', 'gaussian_density', 'radial_contribution'}
+                        'normalize', 'gaussian_density', 'radial_contribution',
+                        'cutoff_function_parameters'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
@@ -162,15 +161,15 @@ class SphericalCovariants(object):
         if self.hypers['soap_type'] == 'LambdaSpectrum':
             if self.hypers['inversion_symmetry'] == True:
                 n_col = (np.ceil((self.hypers['max_angular'] + 1)**2/2.0) -
-                    (1.0 + np.floor((self.hypers['lam'] - 1)/2.0))**2 -
-                    np.floor((self.hypers['max_angular'] + 1 -
-                              self.hypers['lam'])**2/2.0)
-                        * (self.hypers['lam'] % 2) -
-                    (np.ceil((self.hypers['max_angular'] + 1 -
-                              self.hypers['lam'])**2/2.0) -
-                     (self.hypers['max_angular'] -
-                      self.hypers['lam'] + 1)) *
-                    (1.0 - self.hypers['lam'] % 2))
+                         (1.0 + np.floor((self.hypers['lam'] - 1)/2.0))**2 -
+                         np.floor((self.hypers['max_angular'] + 1 -
+                                   self.hypers['lam'])**2/2.0)
+                         * (self.hypers['lam'] % 2) -
+                         (np.ceil((self.hypers['max_angular'] + 1 -
+                                   self.hypers['lam'])**2/2.0) -
+                          (self.hypers['max_angular'] -
+                             self.hypers['lam'] + 1)) *
+                         (1.0 - self.hypers['lam'] % 2))
                 if (self.hypers['lam'] % 2 == 1):
                     n_col = -n_col + 0.5*(2.0 + self.hypers['lam'] -
                                           3 * self.hypers['lam']**2 +
@@ -186,7 +185,7 @@ class SphericalCovariants(object):
                         int((2 + self.hypers['lam'] - 3*self.hypers['lam']**2 +
                              2 * self.hypers['max_angular'] +
                              4 * self.hypers['lam']
-                               * self.hypers['max_angular'])/2) *
+                             * self.hypers['max_angular'])/2) *
                         (2*self.hypers['lam'] + 1))
         else:
             raise ValueError('Only soap_type = LambdaSpectrum '

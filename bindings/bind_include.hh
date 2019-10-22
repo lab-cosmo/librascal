@@ -44,6 +44,11 @@
 #include <map>
 #include <memory>
 
+/*
+ * Prevent vector of atomic structures from being copied into a Python list,
+ * since we already have the AtomsList object.  See also
+ * https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
+ */
 PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 
 namespace py = pybind11;
@@ -51,35 +56,25 @@ namespace py = pybind11;
 namespace rascal {
 
   namespace internal {
-
-    /**
-     * Mapping used to replace all occurences of the first string with the
-     * second string in the class titles in the python binding module names.
-     *
-     * first: string which should be replaced
-     * second: the replaced with string
-     */
-    const std::map<std::string, std::string> module_name_replacement_map = {
-        {"StructureManager", ""}, {"Adaptor", ""}, {"Calculator", ""}};
-
     /**
      * Transforms the template type to a string for the python bindings.
      * There are submodules in the python bindings with the class
      * title so to avoid redundancy they are removed from the
      * typename.
-     * @template T type that should be stringified
+     * @tparam T type that should be stringified
      * @returns std::string name of the type
      */
     template <typename T>
     std::string GetBindingTypeName() {
-      std::string typeName = GetTypeName<T>();
-      std::vector<std::string> names{typeName};
-      for (const auto & map : module_name_replacement_map) {
-        names.push_back(std::regex_replace(
-            names.back(), std::regex(map.first.c_str()), map.second.c_str()));
+      static std::map<std::string, std::string> replacement_map = {
+          {"StructureManager", ""}, {"Adaptor", ""}, {"Calculator", ""}};
+
+      std::string name = type_name<T>();
+      for (const auto & map : replacement_map) {
+        replace(name, map.first, map.second);
       }
 
-      return names.back();
+      return name;
     }
   }  // namespace internal
 }  // namespace rascal

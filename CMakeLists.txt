@@ -67,6 +67,9 @@ include(rascalTools)
 set(BUILD_BINDINGS "ON" CACHE BOOL
   "If on, the python bindings will be built.")
 
+set(BUILD_EXAMPLES "ON" CACHE BOOL
+  "If on, the examples will be built.")
+
 set(USER "OFF" CACHE BOOL
   "Switch installation folder")
 
@@ -242,9 +245,6 @@ if (${BUILD_TESTS})
   target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
   target_link_libraries(main_test_suite ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
   add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
-  configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
-
 
   if(BUILD_BINDINGS)
 
@@ -303,25 +303,27 @@ if (${ENABLE_DOC})
     )
 endif (${ENABLE_DOC})
 
-# compile executables
-file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
-foreach(binaryfile ${binaries})
-  get_filename_component(binaryname  ${binaryfile} NAME_WE)
-  add_executable(${binaryname} ${binaryfile})
-  target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
-endforeach(binaryfile ${binaries})
-configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
-configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+if (${BUILD_EXAMPLES})
+  # compile exmaples executables
+  file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
+  foreach(binaryfile ${binaries})
+    get_filename_component(binaryname  ${binaryfile} NAME_WE)
+    add_executable(${binaryname} ${binaryfile})
+    target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
+  endforeach(binaryfile ${binaries})
+  configure_file("${CMAKE_SOURCE_DIR}/examples/reference_data/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("${CMAKE_SOURCE_DIR}/examples/reference_data/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+  configure_file("${CMAKE_SOURCE_DIR}/tests/reference_data/alanine-center-select.json" ${CMAKE_BINARY_DIR} COPYONLY)
 
-# Add profiling information for the appropriate examples
-if (ENABLE_PROFILING)
-  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  target_compile_options("soap_profile" PRIVATE -ggdb)
-    # target_compile_options("soap_profile" PRIVATE -pg)
-    # set_target_properties("soap_profile" PROPERTIES LINK_FLAGS -pg)
+  # Add profiling information for the appropriate examples
+  if (ENABLE_PROFILING)
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    target_compile_options("soap_profile" PRIVATE -ggdb)
+      # target_compile_options("soap_profile" PRIVATE -pg)
+      # set_target_properties("soap_profile" PROPERTIES LINK_FLAGS -pg)
+    endif()
   endif()
-endif()
-
+endif (${BUILD_EXAMPLES})
 
 
 # or copy them

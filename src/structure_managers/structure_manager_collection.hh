@@ -1,5 +1,5 @@
 /**
- * file   structure_manager_collection.hh
+ * @file   structure_manager_collection.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -39,6 +39,24 @@
 
 namespace rascal {
 
+  /**
+   * A container to hold the multiple managers associated with one stack of
+   * managers and allows iterations over them. Each manager stack needs to
+   * initialized stack by stack. This class provides functions to do this job.
+   *
+   * ManagerCollection<StructureManagerCenter, AdaptorNeighbourList,
+   *                   AdaptorStrict>
+   *
+   * ->
+   *  initializes                                     StructureManagerCenter
+   *  initializes                AdaptorNeighbourList<StructureManagerCenter>
+   *  initializes AdaptorStrict<<AdaptorNeighbourList<StructureManagerCenter>>
+   *  and are contained in the `managers` member variable.
+   *
+   * @tparam Manager the root manager implementation
+   * @tparam AdaptorImplementationPack the adaptors stacked on top in the order
+   * of stacking
+   */
   template <typename Manager,
             template <class> class... AdaptorImplementationPack>
   class ManagerCollection {
@@ -88,42 +106,40 @@ namespace rascal {
     using iterator = typename Data_t::iterator;
     using const_iterator = typename Data_t::const_iterator;
 
-    inline iterator begin() noexcept { return this->managers.begin(); }
-    inline const_iterator begin() const noexcept {
-      return this->managers.begin();
-    }
+    iterator begin() noexcept { return this->managers.begin(); }
+    const_iterator begin() const noexcept { return this->managers.begin(); }
 
-    inline iterator end() noexcept { return this->managers.end(); }
-    inline const_iterator end() const noexcept { return this->managers.end(); }
+    iterator end() noexcept { return this->managers.end(); }
+    const_iterator end() const noexcept { return this->managers.end(); }
 
     //! set the global inputs for the adaptors
-    inline void set_adaptor_parameters(const Hypers_t & adaptor_parameters) {
+    void set_adaptor_parameters(const Hypers_t & adaptor_parameters) {
       this->adaptor_parameters = adaptor_parameters;
     }
 
-    inline const Hypers_t & get_adaptors_parameters() const {
+    const Hypers_t & get_adaptors_parameters() const {
       return this->adaptor_parameters;
     }
 
     /**
      * functions to add one or several structures to the collection
      */
-    inline void add_structure(const Hypers_t & structure,
-                              const Hypers_t & adaptor_parameters) {
+    void add_structure(const Hypers_t & structure,
+                       const Hypers_t & adaptor_parameters) {
       auto manager =
           make_structure_manager_stack<Manager, AdaptorImplementationPack...>(
               structure, adaptor_parameters);
       this->add_structure(manager);
     }
 
-    inline void add_structure(const Hypers_t & structure) {
+    void add_structure(const Hypers_t & structure) {
       auto manager =
           make_structure_manager_stack<Manager, AdaptorImplementationPack...>(
               structure, this->adaptor_parameters);
       this->add_structure(manager);
     }
 
-    inline void add_structure(std::shared_ptr<Manager_t> & manager) {
+    void add_structure(std::shared_ptr<Manager_t> & manager) {
       this->managers.emplace_back(manager);
     }
 
@@ -186,7 +202,7 @@ namespace rascal {
      * first and 3 would corresponds to the 4th structure irrespective of the
      * actual indices in the file.
      */
-    void add_structures(const std::string & filename, const int & start = 0,
+    void add_structures(const std::string & filename, int start = 0,
                         int length = -1) {
       // important not to do brace initialization because it adds an extra
       // nesting layer
@@ -194,7 +210,8 @@ namespace rascal {
 
       if (not structures.is_object()) {
         throw std::runtime_error(
-            R"(The first level of the ase format is a dictionary with indicies as keys to the structures)");
+            R"(The first level of the ase format is a dictionary with indicies
+                as keys to the structures)");
       }
 
       if (structures.count("ids") == 1) {
@@ -216,7 +233,7 @@ namespace rascal {
     }
 
     //! number of structure manager in the collection
-    inline size_t size() const { return this->managers.size(); }
+    size_t size() const { return this->managers.size(); }
 
     /**
      * Access individual managers from the list of managers
@@ -227,7 +244,7 @@ namespace rascal {
     }
 
     template <class Calculator>
-    inline Matrix_t get_dense_feature_matrix(const Calculator & calculator) {
+    Matrix_t get_dense_feature_matrix(const Calculator & calculator) {
       using Prop_t = typename Calculator::template Property_t<Manager_t>;
 
       auto property_name{this->get_calculator_name(calculator, false)};
@@ -318,8 +335,8 @@ namespace rascal {
      * @return name of the property associated with the calculator
      */
     template <class Calculator>
-    inline std::string get_calculator_name(const Calculator & calculator,
-                                           bool is_gradients) {
+    std::string get_calculator_name(const Calculator & calculator,
+                                    bool is_gradients) {
       std::string property_name{};
       if (not is_gradients) {
         property_name = calculator.get_name();
@@ -336,8 +353,7 @@ namespace rascal {
      * @return set of keys of all the BlockSparseProperty in the managers
      */
     template <class Calculator>
-    inline auto get_keys(const Calculator & calculator,
-                         bool is_gradients = false) {
+    auto get_keys(const Calculator & calculator, bool is_gradients = false) {
       using Prop_t = typename Calculator::template Property_t<Manager_t>;
       using Keys_t = typename Prop_t::Keys_t;
 
@@ -362,8 +378,8 @@ namespace rascal {
      * samples
      */
     template <class Calculator>
-    inline size_t get_number_of_elements(const Calculator & calculator,
-                                         bool is_gradients = false) {
+    size_t get_number_of_elements(const Calculator & calculator,
+                                  bool is_gradients = false) {
       using Prop_t = typename Calculator::template Property_t<Manager_t>;
 
       size_t n_elements{0};

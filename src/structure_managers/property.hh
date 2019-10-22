@@ -1,5 +1,5 @@
 /**
- * file   property.hh
+ * @file   property.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -82,8 +82,8 @@ namespace rascal {
 
     //! Constructor with Manager
     explicit Property(Manager_t & manager, std::string metadata = "no metadata")
-        : Parent{manager, NbRow, NbCol, metadata},
-          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
+        : Parent{manager, NbRow, NbCol, metadata}, type_id{
+                                                       typeid(Self_t).name()} {}
 
     //! Copy constructor
     Property(const Property & other) = delete;
@@ -106,10 +106,10 @@ namespace rascal {
      * properly casted fully typed and sized reference, or throws a runttime
      * error
      */
-    static inline void check_compatibility(PropertyBase & other) {
+    static void check_compatibility(PropertyBase & other) {
       // check ``type`` compatibility
-      auto type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()};
-      if (not(other.get_type_info() == type_id)) {
+      auto type_id{typeid(Self_t).name()};
+      if (other.get_type_info() != type_id) {
         std::stringstream err_str{};
         err_str << "Incompatible types: '" << other.get_type_info() << "' != '"
                 << type_id << "'.";
@@ -117,14 +117,14 @@ namespace rascal {
       }
     }
 
-    const std::string & get_type_info() const final { return this->type_id; };
+    const std::string & get_type_info() const final { return this->type_id; }
 
     /* ---------------------------------------------------------------------- */
     /**
      * allows to add a value to `Property` during construction of the
      * neighbourhood.
      */
-    inline void push_back(reference ref) {
+    void push_back(reference ref) {
       // use tag dispatch to use the proper definition
       // of the push_in_vector function
       this->push_back(
@@ -137,7 +137,7 @@ namespace rascal {
      * Function for adding Eigen-based matrix data to `property`
      */
     template <typename Derived>
-    inline void push_back(const Eigen::DenseBase<Derived> & ref) {
+    void push_back(const Eigen::DenseBase<Derived> & ref) {
       // use tag dispatch to use the proper definition
       // of the push_in_vector function
       this->push_back(
@@ -149,10 +149,8 @@ namespace rascal {
     /**
      * Property accessor by cluster ref
      */
-    // template <size_t CallerLayer, size_t ParentLayer , size_t NeighbourLayer,
-    // size_t Order_= Order> inline std::enable_if_t<not(Order_==1), reference>
     template <size_t CallerLayer>
-    inline reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
+    reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that "
                     "does not exist at this depth in the "
@@ -161,8 +159,8 @@ namespace rascal {
     }
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>
-    inline std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
-                            reference>                            // NOLINT
+    std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
+                     reference>                            // NOLINT
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       // #BUG8486@(all) we can just use the managers function to get the
       // corresponding cluster index, no need to save this in the cluster
@@ -173,7 +171,7 @@ namespace rascal {
     /**
      * Accessor for property by index for properties
      */
-    inline reference operator[](const size_t & index) {
+    reference operator[](size_t index) {
       // use tag dispatch to use the proper definition
       // of the get function
       return this->get(
@@ -182,17 +180,17 @@ namespace rascal {
     }
 
    protected:
-    inline void push_back(reference ref, StaticSize) {
+    void push_back(reference ref, StaticSize) {
       Value::push_in_vector(this->values, ref);
     }
 
-    inline void push_back(reference ref, DynamicSize) {
+    void push_back(reference ref, DynamicSize) {
       Value::push_in_vector(this->values, ref, this->get_nb_row(),
                             this->get_nb_col());
     }
 
     template <typename Derived>
-    inline void push_back(const Eigen::DenseBase<Derived> & ref, StaticSize) {
+    void push_back(const Eigen::DenseBase<Derived> & ref, StaticSize) {
       static_assert(Derived::RowsAtCompileTime == NbRow,
                     "NbRow has incorrect size.");
       static_assert(Derived::ColsAtCompileTime == NbCol,
@@ -200,25 +198,24 @@ namespace rascal {
       Value::push_in_vector(this->values, ref);
     }
     template <typename Derived>
-    inline void push_back(const Eigen::DenseBase<Derived> & ref, DynamicSize) {
+    void push_back(const Eigen::DenseBase<Derived> & ref, DynamicSize) {
       Value::push_in_vector(this->values, ref, this->get_nb_row(),
                             this->get_nb_col());
     }
 
-    inline reference get(const size_t & index, StaticSize) {
+    reference get(size_t index, StaticSize) {
       return Value::get_ref(this->values[index * NbRow * NbCol]);
     }
 
-    inline reference get(const size_t & index, DynamicSize) {
+    reference get(size_t index, DynamicSize) {
       return get_ref(this->values[index * this->get_nb_comp()]);
     }
 
     //! get a reference
-    inline reference get_ref(T & value) {
+    reference get_ref(T & value) {
       return reference(&value, this->get_nb_row(), this->get_nb_col());
     }
 
-   protected:
     std::string type_id{};
   };
 

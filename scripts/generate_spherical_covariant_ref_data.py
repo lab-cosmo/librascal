@@ -1,5 +1,3 @@
-
-
 from ase.io import read
 import numpy as np
 
@@ -8,12 +6,11 @@ import ase
 import json
 import sys
 sys.path.insert(0, '../build/')
-import rascal.lib as lrl
-import rascal
-from rascal.utils import ostream_redirect
+
 from rascal.representations import SphericalCovariants
-
-
+from rascal.utils import ostream_redirect
+import rascal
+import rascal.lib as lrl
 #############################################################################
 
 def get_feature_vector(hypers, frames):
@@ -26,6 +23,7 @@ def get_feature_vector(hypers, frames):
     return feature_vector
 
 #############################################################################
+
 
 def dump_reference_json():
     import ubjson
@@ -66,15 +64,17 @@ def dump_reference_json():
         for cutoff in cutoffs:
             print(fn, cutoff)
             data['rep_info'].append([])
-            for soap_type, gaussian_sigma, max_radial, max_angular, inversion_symmetry, Lambda in product(soap_types, gaussian_sigmas,
-            max_radials, max_angulars, inversion_symmetries, Lambdas):
+            for (soap_type, gaussian_sigma, max_radial,
+                 max_angular, inversion_symmetry, Lambda) in product(
+                    soap_types, gaussian_sigmas, max_radials, max_angulars,
+                    inversion_symmetries, Lambdas):
                 hypers = {"interaction_cutoff": cutoff,
                           "cutoff_smooth_width": 0.5,
                           "max_radial": max_radial,
                           "max_angular": max_angular,
                           "gaussian_sigma_type": "Constant",
                           "gaussian_sigma_constant": gaussian_sigma,
-                          "cutoff_function_type": "Cosine",
+                          "cutoff_function_type": "ShiftedCosine",
                           "radial_basis": "GTO",
                           "normalize": True,
                           "soap_type": soap_type,
@@ -87,9 +87,9 @@ def dump_reference_json():
                 data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                  hypers=copy(soap.hypers)))
 
-    with open(path+
-                "tests/reference_data/spherical_covariants_reference.ubjson",
-                'wb') as f:
+    with open(path +
+              "tests/reference_data/spherical_covariants_reference.ubjson",
+              'wb') as f:
         ubjson.dump(data, f)
 
 ##############################################################################

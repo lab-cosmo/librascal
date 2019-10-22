@@ -1,17 +1,20 @@
-from .base import (NeighbourList, NeighbourListFactory, is_valid_structure,
+from ..lib import neighbour_list
+from .base import (NeighbourListFactory, is_valid_structure,
  adapt_structure, StructureCollectionFactory)
 from collections.abc import Iterable
-
+import numpy as np
 
 class AtomsList(object):
     """
-    A wrapper class for a stack of managers precompiled on the C++ side of the form Strict->NeighbourList->Center.
-    A container for atoms/centers/atomic environments.
+    A wrapper class for a stack of managers precompiled on the C++ side of the
+    form Strict->NeighbourList->Center.  A container for atoms/centers/atomic
+    environments.
 
     Attributes
     ----------
     nl_options : dict
-        Parameters for each layer of the wrapped structure manager. Parameters can be specified for these layers: center, neighbourlist and strict.
+        Parameters for each layer of the wrapped structure manager. Parameters
+        can be specified for these layers: center, neighbourlist and strict.
 
     Methods
     -------
@@ -27,9 +30,9 @@ class AtomsList(object):
                 managers.add_structures(frames)
             elif start is not None and length is None:
                 managers.add_structures(frames, start=start)
-            elif start is not None and not length is None:
+            elif start is not None and length is not None:
                 managers.add_structures(frames, start=start, length=length)
-            elif start is None and not length is None:
+            elif start is None and length is not None:
                 managers.add_structures(frames, length=length)
         else:
             # if python structure
@@ -51,8 +54,10 @@ class AtomsList(object):
 
     def __iter__(self):
         return self.managers
+
     def __getitem__(self, key):
         return self.managers[key]
+
     def get_dense_feature_matrix(self, calculator):
         """
         Parameters
@@ -64,7 +69,8 @@ class AtomsList(object):
         represenation_matrix : ndarray
             returns the representation bound to the calculator as dense matrix.
         """
-        return self.managers.get_dense_feature_matrix(calculator._representation)
+        return self.managers.get_dense_feature_matrix(
+                calculator._representation)
 
 
 def get_neighbourlist(structure, options):
@@ -76,7 +82,7 @@ def get_neighbourlist(structure, options):
 def convert_to_structure_list(frames):
     if not isinstance(frames, Iterable):
         frames = [frames]
-    structure_list = NeighbourList.AtomicStructureList()
+    structure_list = neighbour_list.AtomicStructureList()
     for frame in frames:
         if is_valid_structure(frame):
             structure = frame
@@ -122,4 +128,9 @@ def unpack_ase(frame):
     numbers = frame.get_atomic_numbers()
     pbc = frame.get_pbc().astype(int)
 
-    return adapt_structure(cell=cell, positions=positions, atom_types=numbers, pbc=pbc)
+    if "center_atoms_mask" in frame.arrays.keys():
+        center_atoms_mask = frame.get_array("center_atoms_mask")
+    else:
+        center_atoms_mask = np.ones_like(numbers, dtype=bool)
+
+    return adapt_structure(cell=cell, positions=positions, atom_types=numbers, pbc=pbc, center_atoms_mask=center_atoms_mask)

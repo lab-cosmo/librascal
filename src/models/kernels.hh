@@ -1,5 +1,5 @@
 /**
- * file   kernels.hh
+ * @file   kernels.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -68,13 +68,19 @@ namespace rascal {
         }
       }
 
+      /**
+       * Compute the kernel between 2 set of structure(s)
+       *
+       * @tparam StructureManagers should be an iterable over shared pointer
+       *          of structure managers like ManagerCollection
+       */
       template <
           class Property_t, internal::TargetType Type,
           std::enable_if_t<Type == internal::TargetType::Structure, int> = 0,
           class StructureManagers>
-      inline math::Matrix_t compute(StructureManagers & managers_a,
-                                    StructureManagers & managers_b,
-                                    const std::string & representation_name) {
+      math::Matrix_t compute(StructureManagers & managers_a,
+                             StructureManagers & managers_b,
+                             const std::string & representation_name) {
         math::Matrix_t kernel(managers_a.size(), managers_b.size());
         auto integer_power{math::MakePositiveIntegerPower<double>(this->zeta)};
         size_t ii_A{0};
@@ -98,7 +104,8 @@ namespace rascal {
       }
 
       /**
-       * Compute the kernel between 2 set of structures for a given representation specified by the name.
+       * Compute the kernel between 2 set of structures for a given
+       * representation specified by the name.
        *
        * @param managers_a a ManagerCollection or similar collection of
        * structure managers
@@ -112,9 +119,9 @@ namespace rascal {
       template <class Property_t, internal::TargetType Type,
                 std::enable_if_t<Type == internal::TargetType::Atom, int> = 0,
                 class StructureManagers>
-      inline math::Matrix_t compute(const StructureManagers & managers_a,
-                                    const StructureManagers & managers_b,
-                                    const std::string & representation_name) {
+      math::Matrix_t compute(const StructureManagers & managers_a,
+                             const StructureManagers & managers_b,
+                             const std::string & representation_name) {
         size_t n_centersA{0};
         for (const auto & manager_a : managers_a) {
           n_centersA += manager_a->size();
@@ -148,13 +155,14 @@ namespace rascal {
   }  // namespace internal
 
   template <internal::KernelType Type, class Hypers>
-  decltype(auto) make_kernel_impl(const Hypers & hypers) {
+  std::shared_ptr<internal::KernelImplBase>
+  make_kernel_impl(const Hypers & hypers) {
     return std::static_pointer_cast<internal::KernelImplBase>(
         std::make_shared<internal::KernelImpl<Type>>(hypers));
   }
 
   template <internal::KernelType Type>
-  decltype(auto) downcast_kernel_impl(
+  std::shared_ptr<internal::KernelImpl<Type>> downcast_kernel_impl(
       std::shared_ptr<internal::KernelImplBase> & kernel_impl) {
     return std::static_pointer_cast<internal::KernelImpl<Type>>(kernel_impl);
   }
@@ -180,7 +188,7 @@ namespace rascal {
       }
 
       auto kernel_type_str = hypers.at("name").get<std::string>();
-      if (kernel_type_str.compare("Cosine") == 0) {
+      if (kernel_type_str == "Cosine") {
         this->kernel_type = KernelType::Cosine;
         this->kernel_impl = make_kernel_impl<KernelType::Cosine>(hypers);
       } else {
@@ -190,9 +198,9 @@ namespace rascal {
       }
     }
 
-
     /*
-     * The root compute kernel function. It computes the kernel between 2 set of structures for a given representation specified by the calculator.
+     * The root compute kernel function. It computes the kernel between 2 set of
+     * structures for a given representation specified by the calculator.
      *
      * @param calculator the calculator which has been used to calculate
      * the representation on the two managers
@@ -231,10 +239,9 @@ namespace rascal {
 
     template <class Property_t, internal::TargetType Type,
               class StructureManagers>
-    inline math::Matrix_t
-    compute_helper(const std::string & representation_name,
-                   const StructureManagers & managers_a,
-                   const StructureManagers & managers_b) {
+    math::Matrix_t compute_helper(const std::string & representation_name,
+                                  const StructureManagers & managers_a,
+                                  const StructureManagers & managers_b) {
       using internal::KernelType;
 
       switch (this->kernel_type) {

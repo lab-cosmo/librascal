@@ -1,5 +1,5 @@
 /**
- * file   json_io.cc
+ * @file   json_io.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -28,7 +28,6 @@
 #include "json_io.hh"
 
 namespace rascal {
-
   namespace json_io {
 
     json load(const std::string & filename) {
@@ -58,9 +57,7 @@ namespace rascal {
     }
 
     json load_bin(const std::string & filename) {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(filename, ref_data_ubjson);
-      return json::from_ubjson(ref_data_ubjson);
+      return json::from_ubjson(internal::read_binary_file(filename));
     }
 
     /* ---------------------------------------------------------------------- */

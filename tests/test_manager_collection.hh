@@ -37,8 +37,8 @@
 
 namespace rascal {
 
-  struct StrictNLCollectionFixture : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+  struct StrictNLCollectionFixture : MultipleStructureManagerNLCCStrictFixture {
+    using Parent = MultipleStructureManagerNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
     StrictNLCollectionFixture() : Parent{} {};
@@ -46,8 +46,8 @@ namespace rascal {
     ~StrictNLCollectionFixture() = default;
 
     std::string filename{"reference_data/dft-smiles_500.ubjson"};
-    int start{0};
-    int length{10};
+    int start{5};
+    int length{3};
   };
 
   /**
