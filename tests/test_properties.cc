@@ -101,7 +101,7 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
 
-    atom_vector_property.resize(true);// TODO(junge): fix this!!
+    atom_vector_property.resize(true);  // TODO(junge): fix this!!
     atom_dynamic_vector_property.resize(true);
     if (verbose) {
       std::cout << ">> atom_vector_property size ";
@@ -133,7 +133,7 @@ namespace rascal {
   }
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_sequence_test, Fix,
                                    atom_vector_property_fixtures, Fix) {
-    Fix::atom_scalar_property.fill_sequence(true); // TODO(till)
+    Fix::atom_scalar_property.fill_sequence(true);  // TODO(till)
     size_t counter{0};
     for (auto atom : Fix::manager) {
       BOOST_CHECK_EQUAL(Fix::atom_scalar_property[atom], counter);

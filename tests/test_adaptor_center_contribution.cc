@@ -123,11 +123,12 @@ namespace rascal {
           make_adapted_manager<AdaptorCenterContribution>(manager)};
       adaptor_strict->update();
       std::cout << "adaptor size : " << adaptor_strict->size() << std::endl;
-      std::cout << "adaptor size_wg : " << adaptor_strict->get_size_with_ghosts()
-                << std::endl;
+      std::cout << "adaptor size_wg : "
+                << adaptor_strict->get_size_with_ghosts() << std::endl;
       for (auto atom : adaptor_strict) {
         std::cout << "atom " << atom.back() << ", of size " << atom.size()
-                  <<" position:" << std::endl << atom.get_position() << std::endl;
+                  << " position:" << std::endl
+                  << atom.get_position() << std::endl;
         int counter{0};
         for (auto pair : atom) {
           std::cout << counter++ << ", " << pair.back() << std::endl;

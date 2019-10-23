@@ -28,9 +28,9 @@
 // Detects which compiler is used
 #if defined(__clang__)
 #define CLANG_COMPILER
-#elif((defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ > 6))
+#elif ((defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ > 6)) //NOLINT
 #define GCC_COMPILER_7_AND_UPPER
-#elif((defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ <= 6))
+#elif ((defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ <= 6)) //NOLINT
 #define GCC_COMPILER_6_AND_LOWER
 #endif
 

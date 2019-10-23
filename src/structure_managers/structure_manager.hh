@@ -1018,12 +1018,13 @@ namespace rascal {
     inline iterator begin() {
       std::array<size_t, Order> counters{this->it.get_counters()};
       auto offset = this->get_manager().get_offset(counters);
-      return iterator(*this, int(HasCenterPairOrderOne), offset);
+      return iterator(*this, static_cast<int>(HasCenterPairOrderOne), offset);
     }
 
     //! end of the iterations over the cluster itself
     inline iterator end() {
-      return iterator(*this, std::max(this->size(), size_t(HasCenterPairOrderOne)),
+      return iterator(*this,
+                      std::max(this->size(), size_t(HasCenterPairOrderOne)),
                       std::numeric_limits<size_t>::max());
     }
 
