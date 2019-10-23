@@ -79,9 +79,8 @@ namespace rascal {
      */
     namespace details {
       //! unsingned integer power
-      template <typename Scalar_>
-      inline Scalar_ pow_u(Scalar_ x, size_t n) {
-        Scalar_ value{1};
+      inline double pow_u(double x, size_t n) {
+        double value{1};
 
         /* repeated squaring method
          * returns 0.0^0 = 1.0, so continuous in x
@@ -98,8 +97,7 @@ namespace rascal {
       }
 
       //! integer power
-      template <typename Scalar_>
-      inline double pow_i(const Scalar_ & x, int n) {
+      inline double pow_i(double x, int n) {
         size_t un{0};
         double value{static_cast<double>(x)};
 
@@ -123,82 +121,17 @@ namespace rascal {
     //! integer power
     inline double pow(size_t x, int n) { return details::pow_i(x, n); }
 
-    //! unsingned integer power
+    //! unsigned integer power
     inline double pow(double x, size_t n) { return details::pow_u(x, n); }
 
-    //! unsingned integer power
+    //! unsigned integer power
     inline int pow(int x, size_t n) { return details::pow_u(x, n); }
 
-    //! unsingned integer power
+    //! unsigned integer power
     inline size_t pow(size_t x, size_t n) { return details::pow_u(x, n); }
 
     //! general power
     inline double pow(double x, double n) { return std::pow(x, n); }
-
-    /**
-     * Compute a cosine-type switching function for smooth cutoffs
-     *
-     * @param cutoff Outer (strict) cutoff, beyond which this function becomes
-     *               zero
-     *
-     * @param smooth_width Width over which the smoothing function extends;
-     *                     the function becomes one for r less than
-     *                     cutoff - smooth_width
-     *
-     * @param r Distance at which to evaluate the switching function
-     *
-     * The functional form is:
-     *
-     * sw(r) = 1/2 + 1/2 cos(pi * (r - cutoff + smooth_width) / smooth_width)
-     *
-     * if r is within the cutoff region (cutoff - smooth_width < r <= cutoff);
-     * if r is outside (> cutoff) the function is zero; if r is inside, the
-     * function is 1.
-     *
-     * Specifying smooth_width less than cutoff is not an error.
-     * If smooth_width is equal to zero the result will just be a step
-     * function.
-     *
-     */
-    inline double switching_function_cosine(double r, double cutoff,
-                                            double smooth_width) {
-      if (r <= (cutoff - smooth_width)) {
-        return 1.0;
-      } else if (r > cutoff) {
-        return 0.0;
-      }
-      double r_scaled{PI * (r - cutoff + smooth_width) / smooth_width};
-      return (0.5 * (1. + std::cos(r_scaled)));
-    }
-
-    /**
-     * Compute the derivative of the cosine-type switching function
-     *
-     * @param cutoff Outer (strict) cutoff, beyond which this function becomes
-     *               zero
-     *
-     * @param smooth_width Width over which the smoothing function extends;
-     *                     the function becomes one for r less than
-     *                     cutoff - smooth_width
-     *
-     * @param r Distance at which to evaluate the derivative
-     *
-     * The functional form is:
-     *
-     * dsw/dr (r) = -pi/(2*smooth_width) * sin(pi * (r - cutoff + smooth_width)
-     *                                              / smooth_width)
-     */
-    inline double derivative_switching_funtion_cosine(double r, double cutoff,
-                                                      double smooth_width) {
-      if (r <= (cutoff - smooth_width)) {
-        return 0.0;
-      } else if (r > cutoff) {
-        return 0.0;
-      }
-      double r_scaled{PI * (r - cutoff + smooth_width) / smooth_width};
-      return (-0.5 * PI / smooth_width * std::sin(r_scaled));
-    }
-
   }  // namespace math
 }  // namespace rascal
 

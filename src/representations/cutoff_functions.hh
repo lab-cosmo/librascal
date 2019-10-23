@@ -41,6 +41,69 @@
 namespace rascal {
 
   namespace internal {
+    /**
+     * Compute a cosine-type switching function for smooth cutoffs
+     *
+     * @param cutoff Outer (strict) cutoff, beyond which this function becomes
+     *               zero
+     *
+     * @param smooth_width Width over which the smoothing function extends;
+     *                     the function becomes one for r less than
+     *                     cutoff - smooth_width
+     *
+     * @param r Distance at which to evaluate the switching function
+     *
+     * The functional form is:
+     *
+     * sw(r) = 1/2 + 1/2 cos(pi * (r - cutoff + smooth_width) / smooth_width)
+     *
+     * if r is within the cutoff region (cutoff - smooth_width < r <= cutoff);
+     * if r is outside (> cutoff) the function is zero; if r is inside, the
+     * function is 1.
+     *
+     * Specifying smooth_width less than cutoff is not an error.
+     * If smooth_width is equal to zero the result will just be a step
+     * function.
+     *
+     */
+    inline double switching_function_cosine(double r, double cutoff,
+                                            double smooth_width) {
+      if (r <= (cutoff - smooth_width)) {
+        return 1.0;
+      } else if (r > cutoff) {
+        return 0.0;
+      }
+      double r_scaled{math::PI * (r - cutoff + smooth_width) / smooth_width};
+      return (0.5 * (1. + std::cos(r_scaled)));
+    }
+
+    /**
+     * Compute the derivative of the cosine-type switching function
+     *
+     * @param cutoff Outer (strict) cutoff, beyond which this function becomes
+     *               zero
+     *
+     * @param smooth_width Width over which the smoothing function extends;
+     *                     the function becomes one for r less than
+     *                     cutoff - smooth_width
+     *
+     * @param r Distance at which to evaluate the derivative
+     *
+     * The functional form is:
+     *
+     * dsw/dr (r) = -pi/(2*smooth_width) * sin(pi * (r - cutoff + smooth_width)
+     *                                              / smooth_width)
+     */
+    inline double derivative_switching_funtion_cosine(double r, double cutoff,
+                                                      double smooth_width) {
+      if (r <= (cutoff - smooth_width)) {
+        return 0.0;
+      } else if (r > cutoff) {
+        return 0.0;
+      }
+      double r_scaled{math::PI * (r - cutoff + smooth_width) / smooth_width};
+      return (-0.5 * math::PI / smooth_width * std::sin(r_scaled));
+    }
 
     /**
      * List of implemented cutoff function
@@ -94,13 +157,13 @@ namespace rascal {
       }
 
       double f_c(double distance) {
-        return math::switching_function_cosine(distance, this->cutoff,
-                                               this->smooth_width);
+        return switching_function_cosine(distance, this->cutoff,
+                                         this->smooth_width);
       }
 
       double df_c(double distance) {
-        return math::derivative_switching_funtion_cosine(distance, this->cutoff,
-                                                         this->smooth_width);
+        return derivative_switching_funtion_cosine(distance, this->cutoff,
+                                                   this->smooth_width);
       }
 
       //! keep the hypers
@@ -194,17 +257,17 @@ namespace rascal {
 
       double f_c(double distance) {
         return this->value(distance) *
-               math::switching_function_cosine(distance, this->cutoff,
-                                               this->smooth_width);
+               switching_function_cosine(distance, this->cutoff,
+                                         this->smooth_width);
       }
 
       double df_c(double distance) {
         double df_c1{this->grad(distance) *
-                     math::switching_function_cosine(distance, this->cutoff,
-                                                     this->smooth_width)};
+                     switching_function_cosine(distance, this->cutoff,
+                                               this->smooth_width)};
         double df_c2{this->value(distance) *
-                     math::derivative_switching_funtion_cosine(
-                         distance, this->cutoff, this->smooth_width)};
+                     derivative_switching_funtion_cosine(distance, this->cutoff,
+                                                         this->smooth_width)};
         return df_c1 + df_c2;
       }
 
