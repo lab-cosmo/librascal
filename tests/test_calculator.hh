@@ -638,8 +638,9 @@ namespace rascal {
       // Count all the keys in the sparse gradient structure where the gradient
       // is nonzero (i.e. where the key has an entry in the structure)
       for (auto neigh : center) {
+        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
         n_entries_neighbours +=
-            (gradients_sparse[swap_pair_ref(neigh)].get_keys().size() *
+            (gradients_sparse[swapped_ref].get_keys().size() *
              n_entries_per_key);
       }
       // Packed array containing: The center coefficients (all species) and
@@ -696,12 +697,14 @@ namespace rascal {
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
       size_t n_entries_neighbours{0};
       for (auto neigh : center) {
+        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
         n_entries_neighbours +=
-            (gradients_sparse[swap_pair_ref(neigh)].get_keys().size() *
+            (gradients_sparse[swapped_ref].get_keys().size() *
              n_entries_per_key);
       }
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
           grad_coeffs_pairs(3, n_entries_center + n_entries_neighbours);
+      grad_coeffs_pairs.setZero();
 
       // Use the exact same iteration pattern as in f()  to guarantee that the
       // gradients appear in the same place as their corresponding data
@@ -718,14 +721,20 @@ namespace rascal {
       for (auto neigh : center) {
         // We need grad_i c^{ji} -- using just 'neigh' would give us
         // grad_j c^{ij}, hence the swap
-        auto neigh_swap{swap_pair_ref(neigh)};
-        auto & gradients_neigh{gradients_sparse[neigh_swap]};
-        auto keys_neigh{gradients_neigh.get_keys()};
+        auto neigh_swap_images{swap_pair_ref(neigh)};
+        auto & gradients_neigh_first{gradients_sparse[neigh_swap_images.front()]};
+        // The set of species keys should be the same for all images of i
+        auto keys_neigh{gradients_neigh_first.get_keys()};
         for (auto key : keys_neigh) {
-          Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-              gradients_neigh[key].data(), 3, n_entries_per_key);
-          grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
-              grad_coeffs_flat;
+          // For each key, accumulate gradients over periodic images of the atom
+          // that moves in the finite-difference step
+          for (auto neigh_swap : neigh_swap_images) {
+            auto & gradients_neigh{gradients_sparse[neigh_swap]};
+            Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
+                gradients_neigh[key].data(), 3, n_entries_per_key);
+            grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
+                grad_coeffs_flat;
+          }
           result_idx += n_entries_per_key;
         }
       }
@@ -743,10 +752,13 @@ namespace rascal {
     /**
      * Swap a ClusterRef (i, j) so it refers to (j, i) instead
      *
+     * This returns all pairs (j, i') where i' is either i or any of its
+     * periodic images within the cutoff of j
+     *
      * @todo wouldn't this be better as a member of StructureManager
      *       (viz. AdaptorNeighbourList<whatever>)?
      */
-    PairRef_t swap_pair_ref(const PairRef_t & pair_ref) {
+    std::vector<PairRef_t> swap_pair_ref(const PairRef_t & pair_ref) {
       const double image_pos_tol = 1E-7;
       auto center_manager{extract_underlying_manager<0>(structure_manager)};
       auto atomic_structure{center_manager->get_atomic_structure()};
@@ -760,19 +772,23 @@ namespace rascal {
       size_t i_index{structure_manager->get_atom_index(pair_ref.front())};
       auto i_position{structure_manager->get_position(i_index)};
       // Iterate until (j,i) is found
+      std::vector<PairRef_t> new_pairs;
       for (auto new_pair : new_center) {
         auto i_trial_position = new_pair.get_position();
         auto i_wrapped_position = atomic_structure.wrap_explicit_positions(
                                                             i_trial_position);
         if ((i_wrapped_position - i_position).norm() < image_pos_tol) {
-          return new_pair;
+          new_pairs.emplace_back(std::move(new_pair));
         }
       }
-      std::stringstream err_str{};
-      err_str << "Didn't find symmetric pair for pair (i=" << pair_ref.front()
-              << ", j=" << pair_ref.back() << "); access index for j = "
-              << access_index;
-      throw std::range_error(err_str.str());
+      if (new_pairs.size() == 0) {
+        std::stringstream err_str{};
+        err_str << "Didn't find any pairs for pair (i=" << pair_ref.front()
+                << ", j=" << pair_ref.back() << "); access index for j = "
+                << access_index;
+        throw std::range_error(err_str.str());
+      }
+      return new_pairs;
     }
   };
 
