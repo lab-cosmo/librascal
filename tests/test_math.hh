@@ -471,6 +471,9 @@ namespace rascal {
   };
 
   struct Hyp1f1GradientProvider {
+
+    static const size_t n_arguments = 1;
+
     Hyp1f1GradientProvider(size_t max_radial, size_t max_angular, double fac_a,
                            Eigen::Ref<Eigen::VectorXd> fac_b)
         : max_radial{max_radial}, max_angular{max_angular}, fac_a{fac_a} {
