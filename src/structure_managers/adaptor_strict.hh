@@ -260,10 +260,6 @@ namespace rascal {
       return this->dir_vec->operator[](pair);
     }
 
-    inline bool get_consider_ghost_neighbours() const {
-      return this->manager->get_consider_ghost_neighbours();
-    }
-
     const std::vector<int> get_manager_atom_tag_list() {
       return this->atom_tag_list[0];
     }

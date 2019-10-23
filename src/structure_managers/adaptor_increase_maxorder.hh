@@ -143,8 +143,6 @@ namespace rascal {
     template <class... Args>
     void update(Args &&... arguments);
 
-    inline bool get_consider_ghost_neighbours() const { return true; }
-
     /**
      * Returns the linear indices of the clusters (whose atom tags are stored
      * in counters). For example when counters is just the list of atoms, it

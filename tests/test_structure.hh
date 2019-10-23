@@ -347,7 +347,7 @@ namespace rascal {
 
     PairFixtureFile()
         : pair_manager{make_adapted_manager<AdaptorNeighbourList>(
-              this->fixture.manager, this->fixture.cutoff, true)} {
+              this->fixture.manager, this->fixture.cutoff)} {
       this->pair_manager->update();
     }
 

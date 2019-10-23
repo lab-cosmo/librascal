@@ -300,16 +300,6 @@ namespace rascal {
       return this->implementation().get_size_with_ghosts();
     }
 
-    // template <size_t MaxOrder = traits::MaxOrder>
-    // inline std::enable_if_t<(MaxOrder > 1), bool>
-    // get_consider_ghost_neighbours() const {
-    //   return this->implementation().get_consider_ghost_neighbours();
-    // }
-    // template <size_t MaxOrder = traits::MaxOrder>
-    // inline std::enable_if_t<not(MaxOrder > 1), bool>
-    // get_consider_ghost_neighbours() const {
-    //   return false;
-    // }
     //! number of atoms, pairs, triplets in respective manager
     inline size_t nb_clusters(size_t order) const final {
       return this->implementation().get_nb_clusters(order);

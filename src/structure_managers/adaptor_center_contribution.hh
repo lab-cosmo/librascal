@@ -145,10 +145,6 @@ namespace rascal {
       return this->atom_tag_list[order - 1].size();
     }
 
-    inline bool get_consider_ghost_neighbours() const {
-      return this->manager->get_consider_ghost_neighbours();
-    }
-
     inline size_t get_size() const { return this->manager->get_size(); }
 
     inline size_t get_size_with_ghosts() const {

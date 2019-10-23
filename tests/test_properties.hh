@@ -64,17 +64,16 @@ namespace rascal {
     ManagerPtr_t manager;
   };
 
-  template <class StackFixture, bool consider_ghost_neighbours_>
+  template <class StackFixture>
   struct AdaptorNeighbourListStackFixture : StackFixture {
     using Parent = StackFixture;
     using Manager_t = AdaptorNeighbourList<typename Parent::Manager_t>;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
-    const double consider_ghost_neighbours{consider_ghost_neighbours_};
     const double cutoff{1.};
     AdaptorNeighbourListStackFixture()
         : manager{make_adapted_manager<AdaptorNeighbourList>(
-              StackFixture::manager, cutoff, consider_ghost_neighbours)} {
+              StackFixture::manager, cutoff)} {
       manager->update();
     }
     ManagerPtr_t manager;
@@ -210,13 +209,6 @@ namespace rascal {
     TripleScalarProperty_t triple_property;
   };
 
-  template <bool consider_ghost_neighbours>
-  struct ANL_SMC_StackFixture_Helper {
-    using type =
-        AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture,
-                                         consider_ghost_neighbours>;
-  };
-
   /* Helper struct to concat tuple type. The same functionality using directly
    * a boost list does not work. Therefore we do the workaround with tuples.
    */
@@ -243,23 +235,19 @@ namespace rascal {
    * returns compiler errors.
    */
   using ANLWithGhosts_SMC_StackFixture =
-      AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture,
-                                       true>;
-  using ANLWithoutGhosts_SMC_StackFixture =
-      AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture,
-                                       false>;
+      AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture>;
 
-  /* The general procedure here is, that the tuple_some_description contains all
+  /**
+   * The general procedure here is, that the tuple_some_description contains all
    * the types in a tuple, and type_some_description contains the boost list so
-   * it can be used for the templated tests of boost. See test_properties.cc for
-   * usage of these structs (e.g. atom_vector_property_fixtures_with_ghosts).
+   * it can be used for the templated tests of boost. See test_properties.cc
+   * for usage of these structs
+   * (e.g. atom_vector_property_fixtures_with_ghosts).
    */
   struct OrderOnePropertyBoostList {
-    template <bool consider_ghost_neighbours>
     struct OrderTwoFixtureStacksTuple {
-      using ANL_SMC_TemplatedStackFixture =
-          AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture,
-                                           consider_ghost_neighbours>;
+      using ANL_SMC_TemplatedStackFixture = AdaptorNeighbourListStackFixture<
+          StructureManagerCentersStackFixture>;
       using type = std::tuple<
           AtomPropertyFixture<ANL_SMC_TemplatedStackFixture>,
           AtomPropertyFixture<
@@ -280,22 +268,20 @@ namespace rascal {
             AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<
                 AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>>>;
 
-    using tuple_order_2_with_ghosts = OrderTwoFixtureStacksTuple<true>::type;
-    using tuple_with_ghosts =
-        tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type;
-    using type_with_ghosts = pack_into_list<tuple_with_ghosts>::type;
-    using tuple_without_ghosts = OrderTwoFixtureStacksTuple<false>::type;
-    using type_without_ghosts = pack_into_list<tuple_without_ghosts>::type;
-    using tuple = tuple_cat<tuple_with_ghosts, tuple_without_ghosts>::type;
-    using type = pack_into_list<tuple>::type;
+    using tuple_order_2_with_ghosts = OrderTwoFixtureStacksTuple::type;
+    using type = pack_into_list<
+      tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type>::type;
+    // using type_with_ghosts = pack_into_list<tuple_with_ghosts>::type;
+    // using tuple_without_ghosts = OrderTwoFixtureStacksTuple<false>::type;
+    // using type_without_ghosts = pack_into_list<tuple_without_ghosts>::type;
+    // using tuple = tuple_cat<tuple_with_ghosts, tuple_without_ghosts>::type;
+    // using type = pack_into_list<tuple>::type;
   };
 
   struct OrderTwoPropertyBoostList {
-    template <bool consider_ghost_neighbours>
     struct OrderTwoFixtureStacksTuple {
-      using ANL_SMC_TemplatedStackFixture =
-          AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture,
-                                           consider_ghost_neighbours>;
+      using ANL_SMC_TemplatedStackFixture = AdaptorNeighbourListStackFixture<
+          StructureManagerCentersStackFixture>;
       using type = std::tuple<
           PairPropertyFixture<ANL_SMC_TemplatedStackFixture>,
           PairPropertyFixture<
@@ -313,15 +299,15 @@ namespace rascal {
             AdaptorMaxOrderStackFixture<AdaptorStrictStackFixture<
                 AdaptorHalfListStackFixture<ANLWithGhosts_SMC_StackFixture>>>>>;
 
-    using tuple_order_2_with_ghosts = OrderTwoFixtureStacksTuple<true>::type;
+    using tuple_order_2_with_ghosts = OrderTwoFixtureStacksTuple::type;
     using tuple_with_ghosts =
         tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type;
-    using type_with_ghosts = pack_into_list<tuple_with_ghosts>::type;
+    using type = pack_into_list<tuple_with_ghosts>::type;
 
-    using tuple_without_ghosts = OrderTwoFixtureStacksTuple<false>::type;
-    using type_without_ghosts = pack_into_list<tuple_without_ghosts>::type;
-    using tuple = tuple_cat<tuple_without_ghosts, tuple_with_ghosts>::type;
-    using type = pack_into_list<tuple>::type;
+    // using tuple_without_ghosts = OrderTwoFixtureStacksTuple<false>::type;
+    // using type_without_ghosts = pack_into_list<tuple_without_ghosts>::type;
+    // using tuple = tuple_cat<tuple_without_ghosts, tuple_with_ghosts>::type;
+    // using type = pack_into_list<tuple>::type;
   };
 
   struct OrderThreePropertyBoostList {

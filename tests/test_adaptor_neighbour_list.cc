@@ -508,7 +508,7 @@ namespace rascal {
 
         // build neighbourlist
         auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(
-            manager, cutoff_tmp, true)};
+            manager, cutoff_tmp)};
 
         // make strict for counting neighbours
         auto adaptor_strict{

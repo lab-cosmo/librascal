@@ -336,20 +336,14 @@ namespace rascal {
       auto center_atoms_mask = extract_underlying_manager<0>(manager_no_center)
                                    ->get_center_atoms_mask();
 
-      if (not manager->get_consider_ghost_neighbours()) {
-        auto natoms = manager->get_size();
-        auto natoms2 = manager->get_nb_clusters(1);
-        BOOST_CHECK_EQUAL(natoms, natoms2);
+      auto natoms = manager->get_size();
+      auto natoms2 = manager->get_nb_clusters(1);
+      BOOST_CHECK_EQUAL(natoms, natoms2);
 
-        auto n_center_atom = center_atoms_mask.count();
-        natoms = manager_no_center->get_size();
-        natoms2 = manager_no_center->get_nb_clusters(1);
-        BOOST_CHECK_EQUAL(n_center_atom, natoms);
-      } else {
-        auto natoms = manager->get_size_with_ghosts();
-        auto natoms2 = manager->get_nb_clusters(1);
-        BOOST_CHECK_EQUAL(natoms, natoms2);
-      }
+      auto n_center_atom = center_atoms_mask.count();
+      natoms = manager_no_center->get_size();
+      natoms2 = manager_no_center->get_nb_clusters(1);
+      BOOST_CHECK_EQUAL(n_center_atom, natoms);
 
       if (verbose) {
         std::cout << "center_atoms_mask: " << center_atoms_mask.transpose()

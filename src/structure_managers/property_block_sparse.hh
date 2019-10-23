@@ -528,12 +528,8 @@ namespace rascal {
      * ghost atoms.
      */
     template <size_t Order_ = Order, std::enable_if_t<(Order_ == 1), int> = 0>
-    size_t get_validated_property_length(bool consider_ghost_atoms) {
-      if (consider_ghost_atoms) {
-        return this->get_manager().size_with_ghosts();
-      } else {
-        return this->get_manager().size();
-      }
+    size_t get_validated_property_length() {
+      return this->get_manager().size_with_ghosts();
     }
 
     /**
@@ -542,15 +538,15 @@ namespace rascal {
      */
     template <size_t Order_ = Order, std::enable_if_t<(Order_ > 1), int> = 0>
     size_t
-    get_validated_property_length(bool /*consider_ghost_atoms*/ = false) {
+    get_validated_property_length() {
       return this->base_manager.nb_clusters(Order_);
     }
 
     //! Adjust size of values (only increases, never frees)
 
-    inline void resize(bool consider_ghost_atoms = false) {
+    inline void resize() {
       size_t new_size{
-          this->get_validated_property_length<Order>(consider_ghost_atoms)};
+          this->get_validated_property_length<Order>()};
       this->values.resize(new_size);
     }
 

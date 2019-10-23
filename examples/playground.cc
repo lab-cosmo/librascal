@@ -64,10 +64,7 @@ int main() {
   json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments",
-            {{"cutoff", cutoff},
-             {"consider_ghost_neighbours", false},
-             {"skin", 0.}}}};
+           {"initialization_arguments", {{"cutoff", cutoff}, {"skin", 0.}}}};
 
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
