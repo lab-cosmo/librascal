@@ -31,7 +31,7 @@
 
 #include <iostream>
 
-using namespace rascal::math;
+using namespace rascal::math;  // NOLINT
 
 void SphericalHarmonics::precompute(size_t max_angular,
                                     bool calculate_derivatives) {
