@@ -1055,7 +1055,7 @@ namespace rascal {
       return this->it.get_counters();
     }
     std::array<size_t, 1> get_offsets() const { return this->it.get_offsets(); }
-    //!`atom_cluster_indices` is an initially contiguous numbering of atoms
+    //! `atom_cluster_indices` is an initially contiguous numbering of atoms
     Iterator_t & it;
 
     /**
