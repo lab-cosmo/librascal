@@ -7,7 +7,7 @@ class Kernel(object):
 
     """ Computes the kernel from an representation """
 
-    def __init__(self, representation, name='Cosine', target_type='structure',
+    def __init__(self, representation, name='Cosine', target_type='Structure',
                  **kwargs):
         """
         Initialize the kernel with the given parameters
@@ -23,11 +23,18 @@ class Kernel(object):
             (currently) only option
 
         target_type : string
-            Type of target (prediction) properties, either 'atomic' (kernel is
-            between atomic environments) or 'structure' (kernel is summed over
+            Type of target (prediction) properties, either 'Atom' (kernel is
+            between atomic environments) or 'Structure' (kernel is summed over
             atoms in a structure) (default)
 
         """
+
+        # This case cannot handled by the c++ side because cannot deduce the type inside a json therefore the zeta has to be checked here.
+        if (name == 'Cosine' and 'zeta' in kwargs):
+            # should be positive integer
+            zeta = kwargs['zeta']
+            if not(zeta > 0 and zeta % 1 == 0):
+                raise ValueError("The given zeta has to be a positive integer.")
         hypers = dict(name=name,target_type=target_type)
         hypers.update(**kwargs)
         hypers_str = json.dumps(hypers)

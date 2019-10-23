@@ -182,9 +182,15 @@ namespace rascal {
           this->target_type = TargetType::Structure;
         } else if (hypers["target_type"] == "Atom") {
           this->target_type = TargetType::Atom;
+        } else {
+          throw std::runtime_error("Given target_type " +
+                                   hypers["target_type"].get<std::string>() +
+                                   " is not known."
+                                   " It is either 'Structure' or 'Atom')");
         }
       } else {
-        throw std::runtime_error(R"(target_type is either structure or atom)");
+        throw std::runtime_error(
+            R"(No target_type given. It is either 'Structure' or Atom')");
       }
 
       auto kernel_type_str = hypers.at("name").get<std::string>();
