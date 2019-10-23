@@ -27,8 +27,8 @@
 
 #include "rascal/math/hyp1f1.hh"
 
-using namespace rascal::math;
-using namespace rascal::math::internal;
+using namespace rascal::math;            // NOLINT
+using namespace rascal::math::internal;  // NOLINT
 
 /**
  * Utilities to apply the recurrence relations of 1F1 from maximal

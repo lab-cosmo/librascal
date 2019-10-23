@@ -27,7 +27,7 @@
  */
 
 #include "rascal/math/gauss_legendre.hh"
-using namespace rascal::math;
+using namespace rascal::math;  // NOLINT
 
 MatrixX2_t rascal::math::compute_gauss_legendre_points_weights(double r_st,
                                                                double r_nd,

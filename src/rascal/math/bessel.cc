@@ -27,7 +27,7 @@
  */
 
 #include "rascal/math/bessel.hh"
-using namespace rascal::math;
+using namespace rascal::math;  // NOLINT
 
 void ModifiedSphericalBessel::precompute(
     size_t l_max, const Eigen::Ref<const Eigen::VectorXd> & x_v) {
