@@ -32,6 +32,10 @@
 #include "rascal/math/hyp1f1.hh"
 #include "rascal/math/utils.hh"
 
+#include <Eigen/Core>
+
+#include <vector>
+
 namespace rascal {
   namespace math {
 
@@ -56,13 +60,19 @@ namespace rascal {
      * \f]
      * from
      * http://mathworld.wolfram.com/ModifiedSphericalBesselFunctionoftheFirstKind.html
-     * // NOLINT
      */
     class ModifiedSphericalBessel {
      public:
-      using ref = Eigen::Ref<const Eigen::ArrayXXd>;
-
       ModifiedSphericalBessel() = default;
+
+      /**
+       * Compute all the MBSFs for the given x-values up to the given order
+       *
+       * The MBSFs are accurate when the expected value is > 1e-100. Below this
+       * threshold the MBSFs are set to 0 because of the numerical noise
+       * arrising below 1e-150.
+       */
+      void calc(double distance, double fac_a);
 
       /**
        * Initialize arrays for the computation of
@@ -70,27 +80,20 @@ namespace rascal {
        *                 first exponential; see equation above)
        */
       void precompute(size_t l_max,
-                      const Eigen::Ref<const Eigen::VectorXd> & x_v) {
-        this->x_v = x_v.array();
-        this->n_max = x_v.size();
-        this->bessel_values.resize(this->n_max, l_max + 1);
-        this->bessel_arg.resize(this->n_max);
-        this->bessel_arg_i.resize(this->n_max);
-        this->exp_bessel_arg.resize(this->n_max);
-        this->bessel_arg_pow.resize(this->n_max);
-        this->efac.resize(this->n_max);
-        this->l_max = l_max;
-        this->order_max = static_cast<int>(this->l_max + 1);
-        this->igammas.resize(2);
-        int ii{0};
-        for (int order{this->order_max - 2}; order < this->order_max; ++order) {
-          this->hyp1f1s.emplace_back(static_cast<double>(order + 1),
-                                     static_cast<double>(2 * order + 2));
-          this->igammas[ii] = 1. / std::tgamma(1.5 + order);
-          ii++;
-        }
-      }
+                      const Eigen::Ref<const Eigen::VectorXd> & x_v);
 
+      /**
+       * Return a reference to the precomputed Bessel function values
+       *
+       * @return Eigen::Array (2-D) of Bessel function values.  The different
+       *         arguments (xs) go along the rows, while the column indexes
+       *         the orders (n-values).
+       *         Note that a reference is returned to avoid unnecessary
+       *         copies.
+       */
+      Eigen::Ref<Eigen::ArrayXXd> get_values() { return bessel_values; }
+
+     private:
       /**
        * Compute the MBSFs times two exponentials that complete the square
        * using upward recursion. This is stable when 2*a*r*x_n > 50, so
@@ -102,26 +105,7 @@ namespace rascal {
        * @param n_rows number of rows where the recursion is applicable
        *               from the bottom
        */
-      void upward_recursion(double distance, double fac_a, int n_rows) {
-        auto vals = this->bessel_values.bottomRows(n_rows);
-        // i_0(z) = sinh(z) / z
-        vals.col(0) =
-            (Eigen::exp(-fac_a * (x_v.tail(n_rows) - distance).square()) -
-             Eigen::exp(-fac_a * (x_v.tail(n_rows) + distance).square())) *
-            0.5 * this->bessel_arg_i.tail(n_rows);
-        // i_1(z) = cosh(z)/z - i_0(z)/z
-        vals.col(1) =
-            ((Eigen::exp(-fac_a * (x_v.tail(n_rows) - distance).square()) +
-              Eigen::exp(-fac_a * (x_v.tail(n_rows) + distance).square())) *
-             0.5 * this->bessel_arg_i.tail(n_rows)) -
-            vals.col(0) * this->bessel_arg_i.tail(n_rows);
-
-        for (int order{2}; order < this->order_max; ++order) {
-          vals.col(order) =
-              vals.col(order - 2) - vals.col(order - 1) * (2. * order - 1.) *
-                                        this->bessel_arg_i.tail(n_rows);
-        }
-      }
+      void upward_recursion(double distance, double fac_a, int n_rows);
 
       /**
        * Compute the MBSFs times two exponentials using downward recurence
@@ -145,97 +129,9 @@ namespace rascal {
        * @param n_rows number of rows where the recursion is applicable
        *               from the top
        */
-      void downward_recursion(double distance, double fac_a, int n_rows) {
-        auto vals = this->bessel_values.topRows(n_rows);
-        this->exp_bessel_arg = Eigen::exp(-this->bessel_arg.head(n_rows));
-        this->efac = std::exp(-fac_a * distance * distance) *
-                     Eigen::exp(-fac_a * this->x_v.head(n_rows).square());
-        for (int i_order{0}; i_order < 2; ++i_order) {
-          int order{this->order_max - 2 + i_order};
-          auto & hyp1f1{this->hyp1f1s[i_order]};
-          for (int ii{0}; ii < n_rows; ++ii) {
-            vals(ii, order) =
-                this->exp_bessel_arg[ii] * this->igammas[i_order] *
-                math::pow(this->bessel_arg[ii] * 0.5, order) * 0.5 *
-                math::SQRT_PI * hyp1f1.calc(2. * this->bessel_arg[ii]);
-          }
-          vals.col(order) *= this->efac;
-        }
-
-        for (int order{this->order_max - 3}; order >= 0; --order) {
-          vals.col(order) =
-              vals.col(order + 2) + vals.col(order + 1) * (2. * order + 3.) *
-                                        this->bessel_arg_i.head(n_rows);
-        }
-      }
-
-      /**
-       * Compute all the MBSFs for the given x-values up to the given order
-       *
-       * The MBSFs are accurate when the expected value is > 1e-100. Below this
-       * threshold the MBSFs are set to 0 because of the numerical noise
-       * arrising below 1e-150.
-       */
-      void calc(double distance, double fac_a) {
-        this->bessel_arg = (2. * fac_a * distance) * this->x_v;
-        this->bessel_arg_i = this->bessel_arg.inverse();
-
-        if (this->l_max == 0) {
-          // recursions are not valid for l_max==0 so direct computation
-          // i_0(z) = sinh(z) / z
-          this->bessel_values.col(0) =
-              (Eigen::exp(-fac_a * (x_v - distance).square()) -
-              Eigen::exp(-fac_a * (x_v + distance).square())) *
-              0.5 * this->bessel_arg_i;
-        } else {
-          // for l_max > 0 downward/upward_recursion functions are applicable
-          // find the index where bessel_arg is larger than 50
-          // (bessel_arg is sorted by increasing order)
-          int n_down{0};
-          for (; n_down < this->n_max; ++n_down) {
-            if (this->bessel_arg[n_down] > 50) {
-              ++n_down;
-              break;
-            }
-          }
-          // apply downward recurence where bessel_arg < 50
-          if (n_down > 0) {
-            this->downward_recursion(distance, fac_a, n_down);
-          }
-
-          // apply upward recurence where bessel_arg > 50
-          int n_up{this->n_max - n_down};
-          if (n_up > 0) {
-            this->upward_recursion(distance, fac_a, n_up);
-          }
-        }
-
-        // Set small values to 0 because the recursion looses accuracy for very
-        // small values. Also on the python side it avoids some unexpected
-        // interpretation of values that are strictly speaking outside of the
-        // range of double precision
-        bessel_values = bessel_values.unaryExpr([](double d) {
-          if (d < 1e-100) {
-            return 0.;
-          } else {
-            return d;
-          }
-        });
-      }
-
-      /**
-       * Return a reference to the precomputed Bessel function values
-       *
-       * @return Eigen::Array (2-D) of Bessel function values.  The different
-       *         arguments (xs) go along the rows, while the column indexes
-       *         the orders (n-values).
-       *         Note that a reference is returned to avoid unnecessary
-       *         copies.
-       */
-      auto get_values() { return ref(bessel_values); }
+      void downward_recursion(double distance, double fac_a, int n_rows);
 
       Eigen::ArrayXXd bessel_values{};
-
       Eigen::ArrayXd bessel_arg{};
       Eigen::ArrayXd bessel_arg_i{};
       Eigen::ArrayXd bessel_arg_pow{};
