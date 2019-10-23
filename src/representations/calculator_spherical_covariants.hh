@@ -303,29 +303,31 @@ namespace rascal {
       std::shared_ptr<StructureManager> manager) {
     using math::pow;
 
-    size_t n_row{pow(this->max_radial, 2_n)};
+    size_t n_row{pow(this->max_radial, 2_size_t)};
     // number of combinations of l1 and l2 satisfying the triangle constraint
     size_t n_col{0};
     if (this->inversion_symmetry == false) {
       n_col = static_cast<size_t>(
-          (2 + this->lambda - 3 * pow(this->lambda, 2_n) +
+          (2 + this->lambda - 3 * pow(this->lambda, 2_size_t) +
            2 * this->max_angular + 4 * this->lambda * this->max_angular) /
           2 * (2 * this->lambda + 1));
     } else {
       n_col =
           static_cast<size_t>(
-              std::ceil(pow(this->max_angular + 1, 2_n) / 2.0) -
+              std::ceil(pow(this->max_angular + 1, 2_size_t) / 2.0) -
               pow(1.0 + std::floor((this->lambda - 1) / 2.0), 2) -
-              std::floor(pow(this->max_angular + 1 - this->lambda, 2_n) / 2.0) *
+              std::floor(pow(this->max_angular + 1 - this->lambda, 2_size_t) /
+                         2.0) *
                   (this->lambda % 2) -
-              (std::ceil(pow(this->max_angular + 1 - this->lambda, 2_n) / 2.0) -
+              (std::ceil(pow(this->max_angular + 1 - this->lambda, 2_size_t) /
+                         2.0) -
                (this->max_angular - this->lambda + 1)) *
                   (1.0 - this->lambda % 2)) *
           (2 * this->lambda + 1);
       if (this->lambda % 2 == 1) {
         n_col = static_cast<size_t>(
             0.5 *
-                (2 + this->lambda - 3 * pow(this->lambda, 2_n) +
+                (2 + this->lambda - 3 * pow(this->lambda, 2_size_t) +
                  2 * this->max_angular + 4 * this->lambda * this->max_angular) *
                 (2 * this->lambda + 1) -
             static_cast<int>(n_col));
@@ -430,14 +432,14 @@ namespace rascal {
                       int m3s{static_cast<int>(m3 - l3)};
                       for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
                         int m1s{static_cast<int>(m1 - l1)};
-                        size_t lm1{pow(l1, 2_n) + m1};
+                        size_t lm1{pow(l1, 2_size_t) + m1};
                         for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
                           int m2s{static_cast<int>(m2 - l2)};
                           if ((m1s + m2s + m3s != 0) &&
                               (m1s + m2s - m3s != 0)) {
                             continue;
                           }
-                          size_t lm2{pow(l2, 2_n) + m2};
+                          size_t lm2{pow(l2, 2_size_t) + m2};
                           complex coef1c, coef2c;
                           double w3j = this->wigner_3js[wigner_count];
                           // usual formulae for converting from real to complex

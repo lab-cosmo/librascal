@@ -245,7 +245,7 @@ namespace rascal {
         if (this->rate > math::DBL_FTOL) {
           double ff{math::pow(distance / this->scale, this->exponent)};
           factor = -this->rate * this->exponent * ff / distance /
-                   math::pow(this->rate + ff, 2_n);
+                   math::pow(this->rate + ff, 2_size_t);
         } else if (this->exponent == 0) {
           factor = 0.;
         } else {
