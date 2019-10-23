@@ -299,7 +299,7 @@ namespace rascal {
             auto row_full = rep_full.row(i_center);
             auto row_no_center = rep_no_center.row(i_no_center);
             auto diff = (row_full - row_no_center).norm();
-            BOOST_CHECK_LE(diff, math::dbl_ftol);
+            BOOST_CHECK_LE(diff, math::DBL_FTOL);
             if (verbose) {
               std::cout << "Center idx: " << i_center << " Diff: " << diff
                         << std::endl;

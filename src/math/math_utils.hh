@@ -49,31 +49,32 @@ namespace rascal {
   }
 
   namespace math {
-
-    // Reminder: C++ floating-point literals are automatically of type double
-    /// Pi to more digits than anyone could possibly need
-    const double PI = 3.14159265358979323846264338327950288419716939937510;
-    const double SQRT_PI =
-        1.7724538509055160272981674833411451827975494561223871282;
-    const double SQRT_TWO = std::sqrt(2.0);
-    const double INV_SQRT_TWO = std::sqrt(0.5);
-    const double SQRT_THREE = std::sqrt(3.0);
+    /// π to more digits than anyone could possibly need
+    constexpr double PI = 3.14159265358979323846264338327950288;
+    /// sqrt(π)
+    constexpr double SQRT_PI = 1.772453850905516027298167483341145182;
+    /// sqrt(2)
+    constexpr double SQRT_TWO = 1.41421356237309504880168872420969808;
+    /// 1 / sqrt(2)
+    constexpr double INV_SQRT_TWO = 0.707106781186547524400844362104849039;
+    /// sqrt(3)
+    constexpr double SQRT_THREE = 1.7320508075688772935274463415058723;
 
     /// How small a number must be to be considered effectively zero
-    const double dbl_ftol = 100.0 * std::numeric_limits<double>::epsilon();
-
+    constexpr double DBL_FTOL = 100.0 * std::numeric_limits<double>::epsilon();
     /// How large a number must be to be considered infinity
-    const double DOVERFLOW = std::numeric_limits<double>::infinity();
+    constexpr double DOVERFLOW = std::numeric_limits<double>::infinity();
 
     // define some usefull matrix type
     using Matrix_t =
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+    using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
     using Vector_t = Eigen::Matrix<double, 1, Eigen::Dynamic, Eigen::RowMajor>;
 
-    using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
     using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
     using MatrixX2_Ref = typename Eigen::Ref<const MatrixX2_t>;
     using Vector_Ref = typename Eigen::Ref<const Vector_t>;
+
     /**
      * Define integer powers and wrap the different cases under the same name
      */
