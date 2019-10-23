@@ -42,6 +42,7 @@
 #include <Eigen/Dense>
 
 #include <fstream>
+#include <iostream>
 #include <string>
 
 namespace rascal {
