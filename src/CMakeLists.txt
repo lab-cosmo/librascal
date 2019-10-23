@@ -36,6 +36,7 @@ set(RASCAL_SOURCES
     rascal/utils.cc
     rascal/utils/sparsify_fps.cc
     rascal/math/bessel.cc
+    rascal/math/hyp1f1.cc
     rascal/structure_managers/structure_manager_lammps.cc
     rascal/structure_managers/structure_manager_centers.cc
     rascal/representations/calculator_base.cc
