@@ -29,13 +29,16 @@ class Kernel(object):
 
         """
 
-        # This case cannot handled by the c++ side because cannot deduce the type inside a json therefore the zeta has to be checked here.
+        # This case cannot handled by the c++ side because c++ cannot deduce the
+        # type from arguments inside a json, so it has to be casted in the c++
+        # side. Therefore zeta has to be checked here.
         if (name == 'Cosine' and 'zeta' in kwargs):
             # should be positive integer
             zeta = kwargs['zeta']
             if not(zeta > 0 and zeta % 1 == 0):
-                raise ValueError("The given zeta has to be a positive integer.")
-        hypers = dict(name=name,target_type=target_type)
+                raise ValueError(
+                    "The given zeta has to be a positive integer.")
+        hypers = dict(name=name, target_type=target_type)
         hypers.update(**kwargs)
         hypers_str = json.dumps(hypers)
         self._representation = representation._representation
