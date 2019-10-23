@@ -407,7 +407,7 @@ namespace rascal {
     }
   }
 
-  using simple_periodic_fixtures =
+  using gradient_fixtures =
       boost::mpl::list<CalculatorFixture<SingleHypersSphericalExpansion>,
                        CalculatorFixture<SingleHypersSphericalInvariants>>;
 
@@ -417,7 +417,7 @@ namespace rascal {
    * multi-species, primitive and supercells)
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_representation_gradients, Fix,
-                                   simple_periodic_fixtures, Fix) {
+                                   gradient_fixtures, Fix) {
     auto & managers = Fix::managers;
     auto & hypers = Fix::representation_hypers;
     auto & representations = Fix::representations;
