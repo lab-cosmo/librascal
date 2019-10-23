@@ -375,7 +375,7 @@ namespace rascal {
           double fd_quotient{0.};
           size_t nonzero_count{0};
           for (int dim_idx{0}; dim_idx < fd_derivatives.size(); dim_idx++) {
-            if (std::abs(directional(dim_idx)) < 10 * math::dbl_ftol) {
+            if (std::abs(directional(dim_idx)) < 10 * math::DBL_FTOL) {
               fd_error += fd_derivatives(dim_idx);
             } else {
               fd_quotient += (fd_derivatives(dim_idx) / directional(dim_idx));
