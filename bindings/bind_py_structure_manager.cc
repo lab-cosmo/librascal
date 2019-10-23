@@ -411,9 +411,8 @@ namespace rascal {
     using ImplementationPtr_t = std::shared_ptr<Implementation_t>;
     using PyManager_t = PyManager<Manager_t>;
     static void bind_adaptor_init(PyManager_t & adaptor) {
-      adaptor.def(py::init<std::shared_ptr<Implementation_t>, double, bool>(),
+      adaptor.def(py::init<std::shared_ptr<Implementation_t>, double>(),
                   py::arg("manager"), py::arg("cutoff"),
-                  py::arg("consider_ghost_neighbours") = false,
                   py::keep_alive<1, 2>());
     }
 
@@ -421,14 +420,11 @@ namespace rascal {
                                            py::module & m_adaptor) {
       m_adaptor.def(
           name.c_str(),
-          [](ImplementationPtr_t manager, double cutoff,
-             bool consider_ghost_neighbours) {
+          [](ImplementationPtr_t manager, double cutoff) {
             return make_adapted_manager<AdaptorNeighbourList, Implementation_t>(
-                manager, cutoff, consider_ghost_neighbours);
+                manager, cutoff);
           },
-          py::arg("manager"), py::arg("cutoff"),
-          py::arg("consider_ghost_neighbours") = false,
-          py::return_value_policy::copy);
+          py::arg("manager"), py::arg("cutoff"), py::return_value_policy::copy);
     }
   };
 

@@ -37,10 +37,6 @@ namespace rascal {
   // TODO(felix) TODO(alex) test dynamic sized Property completely
   BOOST_AUTO_TEST_SUITE(Property_tests);
 
-  using atom_vector_property_fixtures_with_ghosts =
-      OrderOnePropertyBoostList::type_with_ghosts;
-  using atom_vector_property_fixtures_without_ghosts =
-      OrderOnePropertyBoostList::type_without_ghosts;
   using atom_vector_property_fixtures = OrderOnePropertyBoostList::type;
   using pair_property_fixtures = OrderTwoPropertyBoostList::type;
   using triple_property_fixtures = OrderThreePropertyBoostList::type;
@@ -105,8 +101,8 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
 
-    atom_vector_property.resize(true);  // TODO(junge): fix this!!
-    atom_dynamic_vector_property.resize(true);
+    atom_vector_property.resize();
+    atom_dynamic_vector_property.resize();
     if (verbose) {
       std::cout << ">> atom_vector_property size ";
       std::cout << atom_vector_property.size();
@@ -137,7 +133,7 @@ namespace rascal {
   }
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_sequence_test, Fix,
                                    atom_vector_property_fixtures, Fix) {
-    Fix::atom_scalar_property.fill_sequence(true);  // TODO(till)
+    Fix::atom_scalar_property.fill_sequence();
     size_t counter{0};
     for (auto atom : Fix::manager) {
       BOOST_CHECK_EQUAL(Fix::atom_scalar_property[atom], counter);
@@ -157,16 +153,12 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
 
-    Fix::atom_scalar_property.resize(
-        Fix::manager->get_consider_ghost_neighbours());
-    Fix::atom_vector_property.resize(
-        Fix::manager->get_consider_ghost_neighbours());
-    Fix::atom_dynamic_vector_property.resize(
-        Fix::manager->get_consider_ghost_neighbours());
-    Fix::atom_dynamic_scalar_property.resize(
-        Fix::manager->get_consider_ghost_neighbours());
-    Fix::sparse_atom_scalar_property.resize(
-        Fix::manager->get_consider_ghost_neighbours());
+    Fix::atom_scalar_property.resize();
+    Fix::atom_vector_property.resize();
+    Fix::atom_dynamic_vector_property.resize();
+    Fix::atom_dynamic_scalar_property.resize();
+    Fix::sparse_atom_scalar_property.resize();
+
     if (verbose) {
       std::cout << ">> atom_vector_property size ";
       std::cout << Fix::atom_vector_property.size();
@@ -227,8 +219,7 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
 
-    Fix::atom_vector_property.resize(
-        Fix::manager->get_consider_ghost_neighbours());
+    Fix::atom_vector_property.resize();
     Fix::pair_property.resize();
     if (verbose) {
       std::cout << ">> atom_vector_property size ";
@@ -266,16 +257,13 @@ namespace rascal {
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
-      std::cout << " and consider_ghost_neighbours=";
-      std::cout << Fix::manager->get_consider_ghost_neighbours();
       std::cout << ", manager size " << Fix::manager->get_size();
       std::cout << ", manager size with ghosts "
                 << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
 
-    Fix::atom_vector_property.resize(
-        Fix::manager->get_consider_ghost_neighbours());
+    Fix::atom_vector_property.resize();
     Fix::pair_property.resize();
     Fix::triple_property.resize();
     if (verbose) {
@@ -323,13 +311,12 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * If consider_ghost_neighbours is true the atoms index should
-   * correspond to the cluster index of order 1 when StructureManagerCenters is
-   * used as  root implementation and no filtering on order 1 has been done.
+   * The atoms index should correspond to the cluster index of order 1 when
+   * StructureManagerCenters is used as  root implementation and no filtering on
+   * order 1 has been done.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_vector_property_fixtures_tests, Fix,
-                                   atom_vector_property_fixtures_with_ghosts,
-                                   Fix) {
+                                   atom_vector_property_fixtures, Fix) {
     bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
@@ -366,15 +353,13 @@ namespace rascal {
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
-      std::cout << " and consider_ghost_neighbours=";
-      std::cout << Fix::manager->get_consider_ghost_neighbours();
       std::cout << ", manager size " << Fix::manager->get_size();
       std::cout << ", manager size with ghosts "
                 << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
     // initalize the positions
-    Fix::atom_scalar_property.resize(false);
+    Fix::atom_scalar_property.resize();
     if (verbose) {
       std::cout
           << ">> Property for consider_ghost_atoms=false resized to size ";
@@ -457,14 +442,13 @@ namespace rascal {
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();
-      std::cout << " and consider_ghost_neighbours=";
-      std::cout << Fix::manager->get_consider_ghost_neighbours();
+
       std::cout << ", manager size " << Fix::manager->get_size();
       std::cout << ", manager size with ghosts "
                 << Fix::manager->get_size_with_ghosts();
       std::cout << " starts now." << std::endl;
     }
-    Fix::atom_scalar_property.resize(false);
+    Fix::atom_scalar_property.resize();
     // initalize the positions
     if (verbose) {
       std::cout << ">> atom_vector_property resized to size ";

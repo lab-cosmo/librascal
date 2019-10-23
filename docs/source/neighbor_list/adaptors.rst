@@ -28,11 +28,6 @@ The basic idea is to anchor a mesh at the origin of the supplied cell. This over
 All center and ghost atoms are then sorted into boxes. These boxes are indexed and the neighbourhood for each atom is built based on it's surrounding.
 The resulting neighbourlist is full and not strict.
 
-One peculiarity has to be mentiond. It is the flag ``consider_ghost_neighbours``.
-The standard behaviour of the adaptor is to provide neighbours of the initial list of atoms. It does not provide a neighbourlist for the ghost atoms.
-This corresponds to ``consider_ghost_neighbours=false``. And it is fine if only a pair list is needed for whatever comes afterwards.
-But if triplets are constructed subsequently, the neighbours of ghost atoms are needed. Some atomic representations have three-body terms and they can not be constructed if the ghost atoms do not have neighbours.
-
 AdaptorHalfList
 ***************
 :class:`~AdaptorHalfList` provides to functionality to reduce a full neighbourlist to a half list. After construction the iteration over all possible pairs in an atomic structure yields each pair only once.

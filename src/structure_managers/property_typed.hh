@@ -203,12 +203,8 @@ namespace rascal {
      * ghost atoms.
      */
     template <size_t Order_ = Order, std::enable_if_t<(Order_ == 1), int> = 0>
-    size_t get_validated_property_length(bool consider_ghost_atoms) {
-      if (consider_ghost_atoms) {
-        return this->get_manager().size_with_ghosts();
-      } else {
-        return this->get_manager().size();
-      }
+    size_t get_validated_property_length() {
+      return this->get_manager().size_with_ghosts();
     }
 
     /**
@@ -216,8 +212,7 @@ namespace rascal {
      * `Order` the notion of ghosts does not exist. _Ghost pairs_ do not exist.
      */
     template <size_t Order_ = Order, std::enable_if_t<(Order_ > 1), int> = 0>
-    size_t
-    get_validated_property_length(bool /*consider_ghost_atoms*/ = false) {
+    size_t get_validated_property_length() {
       return this->base_manager.nb_clusters(Order);
     }
 
@@ -227,9 +222,9 @@ namespace rascal {
      * their own propery value independent from its correpsonding central atom.
      * This function is used for all Order 1 ManagerImplementations
      */
-    void fill_sequence(bool consider_ghost_atoms = false) {
+    inline void fill_sequence() {
       // adjust size of values (only increases, never frees)
-      this->resize(consider_ghost_atoms);
+      this->resize();
       for (size_t i{0}; i < this->values.size(); ++i) {
         values[i] = i;
       }
@@ -240,11 +235,9 @@ namespace rascal {
     }
 
     //! Adjust size of values (only increases, never frees)
-    void resize(bool consider_ghost_atoms = false) {
+    inline void resize() {
       auto n_components = this->get_nb_comp();
-      size_t new_size =
-          this->get_validated_property_length(consider_ghost_atoms) *
-          n_components;
+      size_t new_size = this->get_validated_property_length() * n_components;
       this->values.resize(new_size);
     }
 

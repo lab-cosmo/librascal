@@ -472,14 +472,12 @@ namespace rascal {
      * radius or extends an existing neighbourlist to the next order
      */
     AdaptorNeighbourList(ImplementationPtr_t manager, double cutoff,
-                         bool consider_ghost_neighbours = false,
                          double skin = 0.);
 
     AdaptorNeighbourList(ImplementationPtr_t manager,
                          const Hypers_t & adaptor_hypers)
         : AdaptorNeighbourList(
               manager, adaptor_hypers.at("cutoff").template get<double>(),
-              optional_argument_ghost(adaptor_hypers),
               optional_argument_skin(adaptor_hypers)) {}
 
     //! Copy constructor
@@ -498,16 +496,7 @@ namespace rascal {
     //! Move assignment operator
     AdaptorNeighbourList & operator=(AdaptorNeighbourList && other) = default;
 
-    bool optional_argument_ghost(const Hypers_t & adaptor_hypers) {
-      bool consider_ghost_neighbours{false};
-      if (adaptor_hypers.find("consider_ghost_neighbours") !=
-          adaptor_hypers.end()) {
-        consider_ghost_neighbours = adaptor_hypers["consider_ghost_neighbours"];
-      }
-      return consider_ghost_neighbours;
-    }
-
-    double optional_argument_skin(const Hypers_t & adaptor_hypers) {
+    inline double optional_argument_skin(const Hypers_t & adaptor_hypers) {
       double skin{0.};
       if (adaptor_hypers.find("skin") != adaptor_hypers.end()) {
         skin = adaptor_hypers["skin"];
@@ -528,11 +517,6 @@ namespace rascal {
 
     //! Returns cutoff radius of the neighbourhood manager
     double get_cutoff() const { return this->cutoff; }
-
-    //! check whether neighbours of ghosts were considered
-    bool get_consider_ghost_neighbours() const {
-      return this->consider_ghost_neighbours;
-    }
 
     /**
      * Returns the linear indices of the clusters (whose atom tags are stored
@@ -634,9 +618,14 @@ namespace rascal {
       }
     }
 
-    /* If consider_ghost_neighbours=true and the atom tag corresponds to an
-     * ghost atom, then it returns it cluster index of the atom in the original
-     * cell.
+    //! Returns atom type given an atom tag, also works for ghost atoms
+    inline int & get_atom_type(int atom_tag) {
+      // return this->atom_types[this->get_atom_index(atom_tag)];
+      return this->atom_types[atom_tag];
+    }
+
+    /** The atom tag corresponds to an ghost atom, then it returns it cluster
+     * index of the atom in the original cell.
      */
     size_t get_atom_index(const int atom_tag) const {
       return this->atom_index_from_atom_tag_list[atom_tag];
@@ -745,13 +734,13 @@ namespace rascal {
     //! Stores neighbour's atom tag in a list in sequence of atoms
     std::vector<int> neighbours_atom_tag{};
 
-    /* Returns the atoms cluster index when accessing it with the atom's atomic
-     * index in a list in sequence of atoms.
-     * List of atom tags which have a correpsonding cluster index of order 1.
-     * if consider_ghost_neighbours is false ghost atoms will have a unique atom
-     * index but no cluster index of order 1. For this case the cluster index
-     * the atom in the cell at origin is used.
-     * */
+    /**
+     * Returns the atoms cluster index when accessing it with the atom's atomic
+     * index in a list in sequence of atoms.  List of atom tags which have a
+     * correpsonding cluster index of order 1.  If ghost atoms have been added
+     * they have their own new index.
+     *
+     */
     std::vector<size_t> atom_index_from_atom_tag_list{};
 
     //! Stores the offset for each atom to accessing `neighbours`, this variable
@@ -787,9 +776,6 @@ namespace rascal {
     //! ghost atom type
     std::vector<int> ghost_types{};
 
-    //! whether or not to consider neighbours of ghost atoms
-    const bool consider_ghost_neighbours;
-
    private:
   };
 
@@ -798,11 +784,10 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
       std::shared_ptr<ManagerImplementation> manager, double cutoff,
-      bool consider_ghost_neighbours, double skin)
+      double skin)
       : manager{std::move(manager)}, cutoff{cutoff}, skin2{skin * skin},
         atom_tag_list{}, atom_types{}, ghost_atom_tag_list{}, nb_neigh{},
-        neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0},
-        consider_ghost_neighbours{consider_ghost_neighbours} {
+        neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
     if (this->skin2 > 0.) {
       throw std::runtime_error(
@@ -869,7 +854,7 @@ namespace rascal {
       auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
       auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
-      atom_cluster_indices.fill_sequence(true);  // TODO(junge): fix this
+      atom_cluster_indices.fill_sequence();
       pair_cluster_indices.fill_sequence();
       ++this->n_update;
     }
