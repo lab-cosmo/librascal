@@ -147,19 +147,21 @@ namespace rascal {
     state.counters.insert({{"max_radial", fix.max_radial},
                            {"max_angular", fix.max_angular},
                            {"cutoff", fix.cutoff},
+                           {"accuracy", std::log10(fix.error_bound)},
                            {"nb_neighbours", fix.nb_neighbours}});
   }
 
   /**
    * Hyp1f1 for the scalar interpolator
+   *
+   * auto intp_fix{InterpolatorScalarBFixture<Hyp1f1Dataset>()};
+   * BENCHMARK_CAPTURE(bm_hyp1f1, , intp_fix)
+   *     ->Apply(all_combinations_of_arguments<Hyp1f1Dataset>)
+   *     ->Complexity();
+   * BENCHMARK_CAPTURE(bm_hyp1f1_intp, , intp_fix)
+   *     ->Apply(all_combinations_of_arguments<Hyp1f1Dataset>)
+   *     ->Complexity();
    */
-  auto intp_fix{InterpolatorScalarBFixture<Hyp1f1Dataset>()};
-  BENCHMARK_CAPTURE(bm_hyp1f1, , intp_fix)
-      ->Apply(all_combinations_of_arguments<Hyp1f1Dataset>)
-      ->Complexity();
-  BENCHMARK_CAPTURE(bm_hyp1f1_intp, , intp_fix)
-      ->Apply(all_combinations_of_arguments<Hyp1f1Dataset>)
-      ->Complexity();
 
   /**
    * RadialContribution for the matrix interpolator

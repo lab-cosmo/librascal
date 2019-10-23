@@ -155,13 +155,16 @@ namespace rascal {
       static const json data = {
           {"nbs_iterations", {0}},             // dummy
           {"ranges", {std::make_pair(0, 0)}},  // dummy
-          {"log_error_bounds", {-8}},
+          {"log_error_bounds", {-8, -10, -12}},
           {"func_names", {SupportedVecFunc::Dummy}},  // dummy
           {"radial_angular",
            {std::make_pair(3, 4), std::make_pair(6, 6), std::make_pair(8, 6)}},
           {"random", {true}},  // dummy
-          {"filenames", {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}},
-          {"cutoffs", {10}}};
+          {"filenames", {"reference_data/small_molecule.json"}},
+          // please use only one file because google benchmark cant put strings
+          // into their `Counter`, therefore the filename cannot be printed
+          // {"filenames", {"reference_data/methane.json"}},
+          {"cutoffs", {4}}};
       return data;
     }
   };
@@ -173,9 +176,9 @@ namespace rascal {
     using SupportedFunc = typename BaseInterpolatorDataset::SupportedFunc;
     static const json data() {
       static const json data = {
-          {"nbs_iterations", {1e3, 1e4, 1e5, 1e6}},
+          {"nbs_iterations", {1e3}},
           {"ranges", {std::make_pair(0, 16)}},
-          {"log_error_bounds", {-10}},
+          {"log_error_bounds", {-6, -8, -10, -12}},
           {"func_names", {SupportedVecFunc::RadialContribution}},
           {"radial_angular", {std::make_pair(6, 6)}},
           {"random", {true}}};
@@ -188,7 +191,7 @@ namespace rascal {
     static const json data() {
       static const json data = {{"nbs_iterations", {1e3, 1e4, 1e5, 1e6}},
                                 {"ranges", {std::make_pair(0, 16)}},
-                                {"log_error_bounds", {-8}},
+                                {"log_error_bounds", {-6, -8, -10, -12}},
                                 {"func_names", {SupportedFunc::Hyp1f1}},
                                 {"random", {true}}};
       return data;

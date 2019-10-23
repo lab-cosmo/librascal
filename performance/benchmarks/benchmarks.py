@@ -16,6 +16,6 @@ def timer(func):
             end_time = time.perf_counter()      # 2
             times[i] = end_time - start_time    # 3
         run_time = sum(times)/len(times)
-        print(f"Finished {func.__name__!r} in {run_time:.6f} secs from {nb_iterations} runs")
+        print(f"Finished in {run_time:.6f} secs is mean time for {nb_iterations} runs")
         return value
     return wrapper_timer

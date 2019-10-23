@@ -180,6 +180,7 @@ if(${BUILD_BENCHMARKS})
       COMMAND ./benchmark_interpolator
                          --benchmark_counters_tabular=true
                          ${RUN_BENCHMARKS_FLAGS}
+      COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/performance/benchmarks/benchmark_spherical_representations.py" 
     )
 
   # puts the Weffc++ flag back to the compilation process
