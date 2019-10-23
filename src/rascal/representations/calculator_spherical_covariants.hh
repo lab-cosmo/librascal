@@ -127,9 +127,8 @@ namespace rascal {
                 } else if (m3s == 0) {
                   wigner_3js(n_elements) = w3j1;
                 }
-                //*/
                 // change to the following for agreement with SOAPFAST
-                //(different definition of the real spherical harmonics)
+                // (different definition of the real spherical harmonics)
                 /*
                 if (m3s > 0) { wigner_3js.push_back((w3j1 + pow(-1,
                 m3s)*w3j2)/sqrt(2.0)); } else if (m3s == 0) {
