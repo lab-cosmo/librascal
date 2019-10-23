@@ -66,13 +66,12 @@ namespace rascal {
      */
     template <typename T>
     std::string GetBindingTypeName() {
-        static std::map<std::string, std::string> replacement_map = {
-            {"StructureManager", ""}, {"Adaptor", ""}, {"Calculator", ""}
-        };
+      static std::map<std::string, std::string> replacement_map = {
+          {"StructureManager", ""}, {"Adaptor", ""}, {"Calculator", ""}};
 
-        std::string name = type_name<T>();
-        for (const auto & map : replacement_map) {
-            replace(name, map.first, map.second);
+      std::string name = type_name<T>();
+      for (const auto & map : replacement_map) {
+        replace(name, map.first, map.second);
       }
 
       return name;

@@ -66,7 +66,7 @@ int main() {
   // manager.update("alanine-X.json");
   auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(
       manager, cutoff)};
-  std::string filename{"alanine-X.json"};
+  std::string filename{"reference_data/alanine-X.json"};
   pair_manager->update(filename);
 
   // Loop over the defined quadruplets and calculate the respective

@@ -93,12 +93,12 @@ namespace rascal {
             hypers.at("smooth_width").at("value").get<double>();
       }
 
-      inline double f_c(double distance) {
+      double f_c(double distance) {
         return math::switching_function_cosine(distance, this->cutoff,
                                                this->smooth_width);
       }
 
-      inline double df_c(double distance) {
+      double df_c(double distance) {
         return math::derivative_switching_funtion_cosine(distance, this->cutoff,
                                                          this->smooth_width);
       }
@@ -151,7 +151,7 @@ namespace rascal {
         this->scale = hypers.at("scale").at("value").get<double>();
       }
 
-      inline double f_c(double distance) {
+      double f_c(double distance) {
         double factor{0.};
         if (this->rate > math::dbl_ftol) {
           factor = this->rate / (this->rate + math::pow(distance / this->scale,
@@ -165,7 +165,7 @@ namespace rascal {
                                                         this->smooth_width);
       }
 
-      inline double df_c(double distance) {
+      double df_c(double distance) {
         double factor{0.};
         if (this->rate < math::dbl_ftol) {
           factor = -this->exponent / distance *
@@ -198,13 +198,13 @@ namespace rascal {
   }  // namespace internal
 
   template <internal::CutoffFunctionType Type, class Hypers>
-  decltype(auto) make_cutoff_function(const Hypers & fc_hypers) {
+  auto make_cutoff_function(const Hypers & fc_hypers) {
     return std::static_pointer_cast<internal::CutoffFunctionBase>(
         std::make_shared<internal::CutoffFunction<Type>>(fc_hypers));
   }
 
   template <internal::CutoffFunctionType Type>
-  decltype(auto) downcast_cutoff_function(
+  auto downcast_cutoff_function(
       std::shared_ptr<internal::CutoffFunctionBase> & cutoff_function) {
     return std::static_pointer_cast<internal::CutoffFunction<Type>>(
         cutoff_function);

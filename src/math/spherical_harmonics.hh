@@ -600,7 +600,7 @@ namespace rascal {
         }  // for (l in [0, lmax])
       }
 
-      inline const MatrixX2_Ref get_cos_sin_m_phi() {
+      const MatrixX2_Ref get_cos_sin_m_phi() {
         return MatrixX2_Ref(this->cos_sin_m_phi);
       }
 
@@ -608,7 +608,7 @@ namespace rascal {
       // more than it would have in standard libaries, we return only the
       // segment of size (max_angular+1, max_angular+1) as other standard
       // libaries.
-      inline const Matrix_Ref get_assoc_legendre_polynom() {
+      const Matrix_Ref get_assoc_legendre_polynom() {
         return Matrix_Ref(this->assoc_legendre_polynom)
             .topLeftCorner(this->max_angular + 1, this->max_angular + 1);
       }
@@ -616,7 +616,7 @@ namespace rascal {
       // Returns the (max_angular+1, max_angular+2) matrix related to the
       // associated legendre polynomial with only zeros entries in the last
       // column. Used for testing purposes.
-      inline const Matrix_Ref get_assoc_legendre_polynom_raw() {
+      const Matrix_Ref get_assoc_legendre_polynom_raw() {
         return Matrix_Ref(this->assoc_legendre_polynom);
       }
 
@@ -629,9 +629,7 @@ namespace rascal {
        *          format (\f$m\f$ varies fastest, from \f$-\ell\f$ to
        *          \f$\ell\f$, and \f$\ell\f$ from 0 to \f$\ell_\text{max}\f$).
        */
-      inline const Vector_Ref get_harmonics() {
-        return Vector_Ref(this->harmonics);
-      }
+      const Vector_Ref get_harmonics() { return Vector_Ref(this->harmonics); }
 
       /**
        * Access the Cartesian gradients of the harmonics, if computed
@@ -646,7 +644,7 @@ namespace rascal {
        *          in compact format (\f$m\f$ varies fastest, from \f$-\ell\f$ to
        *          \f$\ell\f$, and \f$\ell\f$ from 0 to \f$\ell_\text{max}\f$).
        */
-      inline const Matrix_Ref get_harmonics_derivatives() {
+      const Matrix_Ref get_harmonics_derivatives() {
         return Matrix_Ref(this->harmonics_derivatives);
       }
     };

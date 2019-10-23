@@ -140,7 +140,7 @@ namespace rascal {
     template <class... Args>
     void update(Args &&... arguments);
 
-    inline bool get_consider_ghost_neighbours() const { return true; }
+    bool get_consider_ghost_neighbours() const { return true; }
 
     /**
      * Returns the linear indices of the clusters (whose atom tags are stored
@@ -150,11 +150,10 @@ namespace rascal {
      * number entries in the list of pairs before i,j appears.
      */
     template <size_t Order>
-    inline size_t
-    get_offset_impl(const std::array<size_t, Order> & counters) const;
+    size_t get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Returns the number of clusters of size cluster_size
-    inline size_t get_nb_clusters(size_t order) const {
+    size_t get_nb_clusters(size_t order) const {
       switch (order) {
       case traits::MaxOrder: {
         return this->neighbours_atom_tag.size();
@@ -166,35 +165,30 @@ namespace rascal {
       }
     }
 
-    inline size_t get_size_with_ghosts() const {
+    size_t get_size_with_ghosts() const {
       return this->manager->get_size_with_ghosts();
     }
 
     //! Returns number of clusters of the original manager
-    inline size_t get_size() const { return this->manager->get_size(); }
+    size_t get_size() const { return this->manager->get_size(); }
 
     //! Returns position of an atom with index atom_tag
-    inline Vector_ref get_position(size_t atom_tag) {
+    Vector_ref get_position(size_t atom_tag) {
       return this->manager->get_position(atom_tag);
     }
 
     //! Returns position of the given atom object (useful for users)
-    inline Vector_ref get_position(const AtomRef_t & atom) {
+    Vector_ref get_position(const AtomRef_t & atom) {
       return this->manager->get_position(atom.get_index());
     }
 
     //! get atom type from underlying manager
-    inline int get_atom_type(int atom_tag) const {
-      return this->manager->get_atom_type(atom_tag);
-    }
-
-    //! get atom type from underlying manager
-    inline int & get_atom_type(int atom_tag) {
+    int get_atom_type(int atom_tag) const {
       return this->manager->get_atom_type(atom_tag);
     }
 
     //! return atom type
-    inline int & get_atom_type(const AtomRef_t & atom) {
+    int get_atom_type(const AtomRef_t & atom) const {
       return this->manager->get_atom_type(atom.get_atom_tag());
     }
 
@@ -202,15 +196,14 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    inline int get_neighbour_atom_tag(const Parent &, size_t index) const {
+    int get_neighbour_atom_tag(const Parent &, size_t index) const {
       return this->manager->get_neighbour_atom_tag(*this->manager, index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
-    inline int
-    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
-                           size_t index) const {
+    int get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                               size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
@@ -233,7 +226,7 @@ namespace rascal {
 
     //! Returns the number of neighbors of a given cluster
     template <size_t Order, size_t Layer>
-    inline size_t
+    size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
@@ -262,12 +255,10 @@ namespace rascal {
 
    protected:
     //! Extends the list containing the number of neighbours with a 0
-    inline void add_entry_number_of_neighbours() {
-      this->nb_neigh.push_back(0);
-    }
+    void add_entry_number_of_neighbours() { this->nb_neigh.push_back(0); }
 
     //! Adds a given atom tag as new cluster neighbour
-    inline void add_neighbour_of_cluster(const int atom_tag) {
+    void add_neighbour_of_cluster(const int atom_tag) {
       // adds `atom_tag` to neighbours
       this->neighbours_atom_tag.push_back(atom_tag);
       // increases the number of neighbours
@@ -275,7 +266,7 @@ namespace rascal {
     }
 
     //! Sets the correct offsets for accessing neighbours
-    inline void set_offsets() {
+    void set_offsets() {
       auto n_tuples{nb_neigh.size()};
       if (n_tuples > 0) {
         this->offsets.reserve(n_tuples);
@@ -485,7 +476,7 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   template <size_t Order>
-  inline size_t AdaptorMaxOrder<ManagerImplementation>::get_offset_impl(
+  size_t AdaptorMaxOrder<ManagerImplementation>::get_offset_impl(
       const std::array<size_t, Order> & counters) const {
     static_assert(Order < traits::MaxOrder,
                   "this implementation handles only up to the respective"

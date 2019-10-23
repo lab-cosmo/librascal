@@ -104,38 +104,33 @@ namespace rascal {
     }
 
     //! return position vector of an atom given the atom tag
-    inline Vector_ref get_position(int atom_tag) {
+    Vector_ref get_position(int atom_tag) {
       auto * xval{this->x[this->get_atom_index(atom_tag)]};
       return Vector_ref(xval);
     }
 
     //! return position vector of an atom given the atom tag
-    inline Vector_ref get_position(const AtomRef_t & atom) {
+    Vector_ref get_position(const AtomRef_t & atom) {
       return this->get_position(this->get_atom_index(atom.get_index()));
     }
 
     //! get const atom type reference given an atom_tag
-    inline int get_atom_type(int atom_tag) const {
-      return this->type[this->get_atom_index(atom_tag)];
-    }
-
-    //! Returns atom type given an atom tag
-    inline int & get_atom_type(int atom_tag) {
+    int get_atom_type(int atom_tag) const {
       return this->type[this->get_atom_index(atom_tag)];
     }
 
     //! return number of I atoms in the list
-    inline size_t get_size() const { return this->inum; }
+    size_t get_size() const { return this->inum; }
 
     //! return number of center and ghost atoms
-    inline size_t get_size_with_ghosts() const { return this->tot_num; }
+    size_t get_size_with_ghosts() const { return this->tot_num; }
 
     //! Lammps does not have ghost atoms
-    inline bool get_consider_ghost_neighbours() const { return false; }
+    bool get_consider_ghost_neighbours() const { return false; }
 
     //! return the number of neighbours of a given atom
     template <size_t Order, size_t Layer>
-    inline size_t
+    size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
@@ -145,9 +140,8 @@ namespace rascal {
     //! return the index-th neighbour of the last atom in a cluster with
     //! cluster_size = 1 (atoms) which can be used to construct pairs
     template <size_t Order, size_t Layer>
-    inline int
-    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
-                           size_t index) const {
+    int get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                               size_t index) const {
       static_assert(Order == traits::MaxOrder - 1,
                     "this implementation only handles atoms and identify its "
                     "index-th neighbour.");
@@ -160,8 +154,7 @@ namespace rascal {
      * dummy and is used for consistency in other words, atom_tag is the
      * global LAMMPS atom tag.
      */
-    inline int get_neighbour_atom_tag(const Parent &,
-                                      size_t cluster_index) const {
+    int get_neighbour_atom_tag(const Parent &, size_t cluster_index) const {
       return this->ilist[cluster_index];
     }
 
@@ -170,7 +163,7 @@ namespace rascal {
     // ensures quick memory access would be super inefficient. However
     // firstneigh also uses this kind of access structure and is given by
     // lammps, so it should be fine.
-    inline int get_atom_index(int atom_tag) const {
+    int get_atom_index(int atom_tag) const {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
 
@@ -179,8 +172,7 @@ namespace rascal {
      * pair in which the atom is the I atom this only works for atom
      */
     template <size_t Order>
-    inline size_t
-    get_offset_impl(const std::array<size_t, Order> & counters) const;
+    size_t get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     /**
      * return the number of clusters of size cluster_size.  Can only handle
@@ -268,7 +260,7 @@ namespace rascal {
    * pair in which the atom is the I atom this only works for atom
    */
   template <size_t Order>
-  inline size_t StructureManagerLammps::get_offset_impl(
+  size_t StructureManagerLammps::get_offset_impl(
       const std::array<size_t, Order> & counters) const {
     // The static assert with <= is necessary, because the template parameter
     // ``Order`` is one Order higher than the MaxOrder at the current level. The

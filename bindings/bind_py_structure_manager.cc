@@ -86,7 +86,7 @@ namespace rascal {
   //! Bind clusters of different orders
   //! (up to quadruplet)
   template <size_t Order, typename SMI>
-  decltype(auto) add_cluster(py::module & m) {
+  auto add_cluster(py::module & m) {
     using ClusterRef = ClusterRef_t<SMI, Order>;
     using ClusterRefKey = ClusterRefkey_t<SMI, Order>;
 
@@ -126,7 +126,7 @@ namespace rascal {
 
   //! Bind iterator and ClusterRef for Order >= 2
   template <typename StructureManagerImplementation, size_t Order>
-  decltype(auto) add_iterator(
+  auto add_iterator(
       py::module & m,
       PyClusterRef<StructureManagerImplementation, Order - 1> & py_cluster) {
     // Order-1 for PyClusterRef because it is the
@@ -146,9 +146,8 @@ namespace rascal {
 
   //! bind iterator and ClusterRef for Order == 1
   template <typename StructureManagerImplementation, size_t Order>
-  decltype(auto)
-  add_iterator(py::module & m,
-               PyManager<StructureManagerImplementation> & manager) {
+  auto add_iterator(py::module & m,
+                    PyManager<StructureManagerImplementation> & manager) {
     using Child = StructureManagerImplementation;
     using Parent = typename Child::Parent;
 
@@ -198,7 +197,7 @@ namespace rascal {
   };
 
   template <typename Manager_t>
-  decltype(auto) add_manager(py::module & mod) {
+  auto add_manager(py::module & mod) {
     using Parent = typename Manager_t::Parent;
     std::string manager_name = internal::GetBindingTypeName<Manager_t>();
     py::class_<Manager_t, Parent, std::shared_ptr<Manager_t>> manager(
@@ -212,8 +211,7 @@ namespace rascal {
    * is not binded twice.
    */
   template <typename Manager_t>
-  decltype(auto) add_manager_safe(py::module & mod,
-                                  const std::string & manager_name) {
+  auto add_manager_safe(py::module & mod, const std::string & manager_name) {
     using Parent = typename Manager_t::Parent;
     py::class_<Manager_t, Parent, std::shared_ptr<Manager_t>> manager(
         mod, manager_name.c_str());
@@ -226,7 +224,7 @@ namespace rascal {
    * of the structure manager need to be bound.
    */
   template <typename StructureManagerImplementation>
-  decltype(auto) add_structure_manager_interface(py::module & m) {
+  auto add_structure_manager_interface(py::module & m) {
     using Child = StructureManagerImplementation;
     using Parent = typename Child::Parent;
 
@@ -240,8 +238,8 @@ namespace rascal {
 
   //! templated function for adding a StructureManager implementation
   template <typename StructureManagerImplementation>
-  decltype(auto) add_structure_manager_implementation(py::module & m,
-                                                      py::module & m_internal) {
+  auto add_structure_manager_implementation(py::module & m,
+                                            py::module & m_internal) {
     using Child = StructureManagerImplementation;
     constexpr static size_t MaxOrder = Child::traits::MaxOrder;
 

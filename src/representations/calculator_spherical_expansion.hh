@@ -181,14 +181,14 @@ namespace rascal {
 
     //! Utility to make shared pointer and cast to base class
     template <AtomicSmearingType Type, class Hypers>
-    decltype(auto) make_atomic_smearing(const Hypers & sigma_hypers) {
+    auto make_atomic_smearing(const Hypers & sigma_hypers) {
       return std::static_pointer_cast<AtomicSmearingSpecificationBase>(
           std::make_shared<AtomicSmearingSpecification<Type>>(sigma_hypers));
     }
 
     //! Utility to cast base to child class
     template <AtomicSmearingType Type>
-    decltype(auto) downcast_atomic_smearing(
+    auto downcast_atomic_smearing(
         const std::shared_ptr<AtomicSmearingSpecificationBase> &
             atomic_smearing) {
       return std::static_pointer_cast<AtomicSmearingSpecification<Type>>(
@@ -624,16 +624,16 @@ namespace rascal {
             unitary * eigs_invsqrt.matrix().asDiagonal() * unitary.adjoint();
       }
 
-      inline Matrix_t get_radial_orthonormalization_matrix() const {
+      Matrix_t get_radial_orthonormalization_matrix() const {
         return this->radial_norm_factors.asDiagonal() *
                this->radial_ortho_matrix;
       }
 
-      inline Matrix_Ref get_radial_integral_neighbour() const {
+      Matrix_Ref get_radial_integral_neighbour() const {
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
-      inline Matrix_Ref get_radial_neighbour_derivative() const {
+      Matrix_Ref get_radial_neighbour_derivative() const {
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
@@ -1199,9 +1199,22 @@ namespace rascal {
           hypers.at("radial_contribution").get<json>();
       auto radial_contribution_type =
           radial_contribution_hypers.at("type").get<std::string>();
+
+      // create the class that will compute the radial terms of the
+      // expansion. the atomic smearing is an integral part of the
+      // radial contribution
       if (radial_contribution_type == "GTO") {
+        auto rc_shared = std::make_shared<
+            internal::RadialContribution<RadialBasisType::GTO>>(hypers);
+        this->atomic_smearing_type = rc_shared->atomic_smearing_type;
+        this->radial_integral = rc_shared;
         this->radial_integral_type = RadialBasisType::GTO;
+
       } else if (radial_contribution_type == "DVR") {
+        auto rc_shared = std::make_shared<
+            internal::RadialContribution<RadialBasisType::DVR>>(hypers);
+        this->atomic_smearing_type = rc_shared->atomic_smearing_type;
+        this->radial_integral = rc_shared;
         this->radial_integral_type = RadialBasisType::DVR;
       } else {
         throw std::logic_error("Requested Radial contribution type \'" +
@@ -1359,7 +1372,7 @@ namespace rascal {
         internal::OptimizationType OptType, class StructureManager,
         std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
                          int> = 0>
-    inline void compute_loop(StructureManager & managers) {
+    void compute_loop(StructureManager & managers) {
       for (auto & manager : managers) {
         this->compute_impl<FcType, RadialType, SmearingType, OptType>(manager);
       }
@@ -1373,7 +1386,7 @@ namespace rascal {
               std::enable_if_t<
                   not(internal::is_proper_iterator<StructureManager>::value),
                   int> = 0>
-    inline void compute_loop(StructureManager & manager) {
+    void compute_loop(StructureManager & manager) {
       this->compute_impl<FcType, RadialType, SmearingType, OptType>(manager);
     }
 
@@ -1382,7 +1395,7 @@ namespace rascal {
               internal::RadialBasisType RadialType,
               internal::AtomicSmearingType SmearingType,
               internal::OptimizationType OptType, class StructureManager>
-    inline void compute_impl(std::shared_ptr<StructureManager> manager);
+    void compute_impl(std::shared_ptr<StructureManager> manager);
 
    protected:
     double interaction_cutoff{};

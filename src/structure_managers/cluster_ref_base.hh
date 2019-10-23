@@ -53,10 +53,10 @@ namespace rascal {
     ClusterRefBase & operator=(ClusterRefBase && other) = delete;
 
     //! returns the order of the cluster
-    inline size_t get_order() const { return this->order; }
+    size_t get_order() const { return this->order; }
 
     //! returns the layer of the cluster
-    inline size_t get_cluster_layer() const { return this->layer; }
+    size_t get_cluster_layer() const { return this->layer; }
 
    protected:
     const size_t order;  //!< cluster order: atom, pair, ...

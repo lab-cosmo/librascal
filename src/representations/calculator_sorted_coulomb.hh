@@ -85,7 +85,8 @@ namespace rascal {
        * @param distance_mat distance matrix between all the atoms in the
        *                      neighbourhood
        */
-      static decltype(auto) get_coulomb_matrix_sorting_order(
+      static std::vector<std::pair<size_t, distiter>>
+      get_coulomb_matrix_sorting_order(
           const Eigen::Ref<const Eigen::MatrixXd> & distance_mat,
           const Eigen::Ref<const Eigen::MatrixXd> &) {
         // initialize the distances to be sorted. the center is always first
@@ -121,7 +122,8 @@ namespace rascal {
        * @param coulomb_mat coulomb matris between all the atoms in the
        *                      neighbourhood
        */
-      static decltype(auto) get_coulomb_matrix_sorting_order(
+      static std::vector<std::pair<size_t, distiter>>
+      get_coulomb_matrix_sorting_order(
           const Eigen::Ref<const Eigen::MatrixXd> &,
           const Eigen::Ref<const Eigen::MatrixXd> & coulomb_mat) {
         // initialize the distances to be sorted. the center is always first
@@ -215,9 +217,9 @@ namespace rascal {
     void compute(StructureManager & managers);
 
     //! set hypers
-    inline void set_hyperparameters(const Hypers_t & /*hypers*/);
+    void set_hyperparameters(const Hypers_t & /*hypers*/);
 
-    inline void update_central_cutoff(double /*cutoff*/);
+    void update_central_cutoff(double /*cutoff*/);
 
     /**
      * check if size of the calculator is enough for current structure
@@ -248,7 +250,7 @@ namespace rascal {
         internal::CMSortAlgorithm AlgorithmType, class StructureManager,
         std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
                          int> = 0>
-    inline void compute_loop(StructureManager & managers) {
+    void compute_loop(StructureManager & managers) {
       for (auto & manager : managers) {
         this->compute_impl<AlgorithmType>(manager);
       }
@@ -258,14 +260,14 @@ namespace rascal {
               std::enable_if_t<
                   not(internal::is_proper_iterator<StructureManager>::value),
                   int> = 0>
-    inline void compute_loop(StructureManager & manager) {
+    void compute_loop(StructureManager & manager) {
       this->compute_impl<AlgorithmType>(manager);
     }
     /* -------------------- compute-loop-end -------------------- */
 
     //! Implementation of compute representation
     template <internal::CMSortAlgorithm AlgorithmType, class StructureManager>
-    inline void compute_impl(std::shared_ptr<StructureManager> & manager);
+    void compute_impl(std::shared_ptr<StructureManager> & manager);
 
     //! returns the distance matrix for a central atom
     template <class StructureManager>
@@ -302,8 +304,7 @@ namespace rascal {
     }
 
     //! scale cutoff factor depending on distance and decay
-    inline double get_cutoff_factor(double distance, double cutoff,
-                                    double decay) {
+    double get_cutoff_factor(double distance, double cutoff, double decay) {
       if (distance <= cutoff - decay) {
         return 1.;
       } else if (distance > cutoff) {
@@ -317,7 +318,7 @@ namespace rascal {
     }
 
     //! get the size of a feature vector from the hyper parameters
-    inline size_t get_n_feature() { return this->size * (this->size + 1) / 2; }
+    size_t get_n_feature() { return this->size * (this->size + 1) / 2; }
 
     /* -------------------- rep-variables-start -------------------- */
     // list of hyperparameters specific to the coulomb matrix
@@ -501,7 +502,7 @@ namespace rascal {
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
-      double & dik{manager->get_distance(neigh_i)};
+      double dik{manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
@@ -516,7 +517,7 @@ namespace rascal {
     for (auto neigh_i : center) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
-      double & dik{manager->get_distance(neigh_i)};
+      double dik{manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
