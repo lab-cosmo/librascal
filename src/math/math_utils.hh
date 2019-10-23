@@ -44,7 +44,8 @@ namespace rascal {
    * for unsigned long. Both have equivalent underlying storage but not the
    * same type...
    */
-  constexpr std::size_t operator"" _n(unsigned long long int n) {  // NOLINT
+  constexpr std::size_t
+  operator"" _size_t(unsigned long long int n) {  // NOLINT
     return n;
   }
 
