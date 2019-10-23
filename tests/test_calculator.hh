@@ -416,12 +416,13 @@ namespace rascal {
     ~SimplePeriodicNLCCStrictFixture() = default;
 
     const std::vector<std::string> filenames{
-        "reference_data/diamond_2atom.json",
-        "reference_data/diamond_2atom_distorted.json",
-        "reference_data/diamond_cubic_distorted.json",
-        "reference_data/SiC_moissanite.json",
-        "reference_data/SiCGe_wurtzite_like.json",
-        "reference_data/SiC_moissanite_supercell.json"};
+        //"reference_data/diamond_2atom.json",
+        //"reference_data/diamond_2atom_distorted.json",
+        "reference_data/diamond_cubic_distorted.json"
+        //"reference_data/SiC_moissanite.json",
+        //"reference_data/SiCGe_wurtzite_like.json",
+        //"reference_data/SiC_moissanite_supercell.json"
+    };
     const double cutoff{2.5};
     const double cutoff_skin{0.};
 
@@ -746,20 +747,31 @@ namespace rascal {
      *       (viz. AdaptorNeighbourList<whatever>)?
      */
     PairRef_t swap_pair_ref(const PairRef_t & pair_ref) {
+      const double image_pos_tol = 1E-7;
+      auto center_manager{extract_underlying_manager<0>(structure_manager)};
+      auto atomic_structure{center_manager->get_atomic_structure()};
       // Get the atom index to the corresponding atom tag
-      size_t access_index = structure_manager->get_atom_index(pair_ref.back());
+      size_t access_index{structure_manager->get_atom_index(pair_ref.back())};
       auto new_center_it{structure_manager->get_iterator_at(access_index)};
       // Return cluster ref at which the iterator is currently pointing
       auto && new_center{*new_center_it};
+      // Get the position of the original central atom (to find all its periodic
+      // images)
+      size_t i_index{structure_manager->get_atom_index(pair_ref.front())};
+      auto i_position{structure_manager->get_position(i_index)};
       // Iterate until (j,i) is found
       for (auto new_pair : new_center) {
-        if (new_pair.back() == pair_ref.front()) {
+        auto i_trial_position = new_pair.get_position();
+        auto i_wrapped_position = atomic_structure.wrap_explicit_positions(
+                                                            i_trial_position);
+        if ((i_wrapped_position - i_position).norm() < image_pos_tol) {
           return new_pair;
         }
       }
       std::stringstream err_str{};
       err_str << "Didn't find symmetric pair for pair (i=" << pair_ref.front()
-              << ", j=" << pair_ref.back() << ").";
+              << ", j=" << pair_ref.back() << "); access index for j = "
+              << access_index;
       throw std::range_error(err_str.str());
     }
   };
