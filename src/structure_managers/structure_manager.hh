@@ -1002,7 +1002,8 @@ namespace rascal {
 
     //! end of the iterations over the cluster itself
     inline iterator end() {
-      return iterator(*this, std::max(this->size(), size_t(HasCenterPairOrderOne)),
+      return iterator(*this,
+                      std::max(this->size(), size_t(HasCenterPairOrderOne)),
                       std::numeric_limits<size_t>::max());
     }
 

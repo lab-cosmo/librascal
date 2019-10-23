@@ -285,8 +285,8 @@ namespace rascal {
 
     //! Construct for reaching the MaxOrder and adding neighbours of at MaxOrder
     //! (the work is done at the Order-th recursion, when IsTail is true)
-    template <size_t Order,  AdaptorTraits::NeighbourListType NeighbourListType, bool IsCompactCluster,
-              bool IsTail>
+    template <size_t Order, AdaptorTraits::NeighbourListType NeighbourListType,
+              bool IsCompactCluster, bool IsTail>
     struct AddOrderLoop;
 
     //! Stores the number of neighbours for every traits::MaxOrder-1-clusters
@@ -302,6 +302,7 @@ namespace rascal {
     std::vector<size_t> offsets{};
 
     bool compute_compact_clusters{false};
+
    private:
   };
 
@@ -329,8 +330,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   //! structure for static looping up until pair order
   template <class ManagerImplementation>
-  template <size_t Order,  AdaptorTraits::NeighbourListType NeighbourListType, bool IsCompactCluster,
-            bool IsTail>
+  template <size_t Order, AdaptorTraits::NeighbourListType NeighbourListType,
+            bool IsCompactCluster, bool IsTail>
   struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop {
     static constexpr int OldMaxOrder{ManagerImplementation::traits::MaxOrder};
     using ClusterRef_t =
@@ -344,12 +345,13 @@ namespace rascal {
         typename ManagerImplementation::template ClusterRef<1>;
 
     // do nothing, if MaxOrder is not reached, except call the next order
-    static void loop(AtomClusterRef_t & atom,
-                     ClusterRef_t & cluster, size_t start_index,
+    static void loop(AtomClusterRef_t & atom, ClusterRef_t & cluster,
+                     size_t start_index,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
       size_t new_start_index{
-          (start_index  + 1) *
-          int(NeighbourListType == AdaptorTraits::NeighbourListType::half)};
+          (start_index + 1) *
+          static_cast<int>(NeighbourListType ==
+                           AdaptorTraits::NeighbourListType::half)};
 
       using Iterator_t = typename ClusterRef_t::iterator;
       using NextCluster_t = typename Iterator_t::value_type;
@@ -357,8 +359,8 @@ namespace rascal {
            next_cluster_it != cluster.end(); ++next_cluster_it) {
         auto && next_cluster{*next_cluster_it};
         constexpr size_t previous_order{NextCluster_t::order() - 1};
-        auto & next_cluster_indices{std::get<previous_order>(
-            manager.cluster_indices_container)};
+        auto & next_cluster_indices{
+            std::get<previous_order>(manager.cluster_indices_container)};
 
         // keep copying underlying cluster indices, they are not changed
         auto indices{next_cluster.get_cluster_indices()};
@@ -368,7 +370,6 @@ namespace rascal {
         if (NeighbourListType == AdaptorTraits::NeighbourListType::half) {
           ++new_start_index;
         }
-
       }
     }
   };
@@ -384,9 +385,10 @@ namespace rascal {
    * the j-atoms of each pair as an i-atom in a triplet (center).
    */
   template <class ManagerImplementation>
-  template <size_t Order,  AdaptorTraits::NeighbourListType NeighbourListType, bool IsCompactCluster>
+  template <size_t Order, AdaptorTraits::NeighbourListType NeighbourListType,
+            bool IsCompactCluster>
   struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop<
-      Order,  NeighbourListType, IsCompactCluster, true> {
+      Order, NeighbourListType, IsCompactCluster, true> {
     static constexpr int OldMaxOrder{ManagerImplementation::traits::MaxOrder};
 
     using ClusterRef_t =
@@ -398,8 +400,8 @@ namespace rascal {
 
     //! loop through the orders to get to the maximum order, this is agnostic to
     //! the underlying MaxOrder, just goes to the maximum
-    static void loop(AtomClusterRef_t & atom,
-                     ClusterRef_t & cluster, size_t start_index,
+    static void loop(AtomClusterRef_t & atom, ClusterRef_t & cluster,
+                     size_t start_index,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
       // add an entry for the current clusters' neighbours
       manager.add_entry_number_of_neighbours();
@@ -407,8 +409,8 @@ namespace rascal {
       // collect all possible neighbours of the cluster: collection of all
       // neighbours of current _central_ atoms for a centered cluster.
       if (NeighbourListType == AdaptorTraits::NeighbourListType::half) {
-        for (auto pair_it{atom.get_iterator_at(start_index)}; pair_it != atom.end();
-             ++pair_it) {
+        for (auto pair_it{atom.get_iterator_at(start_index)};
+             pair_it != atom.end(); ++pair_it) {
           if (IsCompactCluster) {
             throw std::runtime_error("Not implemented yet.");
           } else {

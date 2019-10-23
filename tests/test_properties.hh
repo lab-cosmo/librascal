@@ -162,7 +162,7 @@ namespace rascal {
     std::string atom_dynamic_vector_property_metadata{"distances"};
 
     AtomPropertyFixture()
-      : StackFixture{}, atom_scalar_property{*this->manager, "dummy_scalar"},
+        : StackFixture{}, atom_scalar_property{*this->manager, "dummy_scalar"},
           atom_vector_property{*this->manager, atom_vector_property_metadata},
           atom_dynamic_scalar_property{
               *this->manager, 1, 1, atom_dynamic_vector_unit_property_metadata},
