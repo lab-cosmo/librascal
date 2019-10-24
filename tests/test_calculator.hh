@@ -233,7 +233,11 @@ namespace rascal {
     ~SphericalCovariantsTestData() = default;
     bool verbose{false};
     std::string ref_filename{
+<<<<<<< HEAD
         "../reference_data/outputs/spherical_covariants_reference.ubjson"};
+=======
+        "reference_data/outputs/spherical_covariants_reference.ubjson"};
+>>>>>>> 85f4f78f... moved test output files to reference_data/outputs; changed filenames in existing code; verified make without error
   };
 
   template <class MultipleStructureFixture>
@@ -529,7 +533,11 @@ namespace rascal {
     ~SphericalExpansionTestData() = default;
     bool verbose{false};
     std::string ref_filename{
+<<<<<<< HEAD
         "../reference_data/outputs/spherical_expansion_reference.ubjson"};
+=======
+        "reference_data/outputs/spherical_expansion_reference.ubjson"};
+>>>>>>> 85f4f78f... moved test output files to reference_data/outputs; changed filenames in existing code; verified make without error
   };
 
   /**
@@ -897,7 +905,11 @@ namespace rascal {
     json ref_data{};
     json factory_args{};
 
+<<<<<<< HEAD
     std::string ref_filename{"../reference_data/outputs/sorted_coulomb_reference.ubjson"};
+=======
+    std::string ref_filename{"reference_data/outputs/sorted_coulomb_reference.ubjson"};
+>>>>>>> 85f4f78f... moved test output files to reference_data/outputs; changed filenames in existing code; verified make without error
     bool verbose{false};
   };
 
