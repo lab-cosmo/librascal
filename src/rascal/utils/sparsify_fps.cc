@@ -25,7 +25,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rascal/utils/sparsify_utilities.hh"
+#include "rascal/utils/sparsify_fps.hh"
 
 #define DO_TIMING 1
 #ifdef DO_TIMING
