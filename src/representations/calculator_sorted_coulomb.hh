@@ -499,7 +499,7 @@ namespace rascal {
     auto && central_cutoff{this->central_cutoff};
 
     type_factor_mat(0, 0) = 0.5 * std::pow(Zk, 2.4);
-    for (auto neigh_i : center) {
+    for (auto neigh_i : center.get_pairs()) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
       double dik{manager->get_distance(neigh_i)};
@@ -514,14 +514,14 @@ namespace rascal {
     }
 
     // compute the neighbour to neighbour part of the coulomb matrix
-    for (auto neigh_i : center) {
+    for (auto neigh_i : center.get_pairs()) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
       double dik{manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
-      for (auto neigh_j : center) {
+      for (auto neigh_j : center.get_pairs()) {
         size_t idx_j{neigh_j.get_index() + 1};
         // work only on the lower diagonal
         if (idx_i >= idx_j)

@@ -72,7 +72,7 @@ namespace rascal {
       if (verbose) {
         std::cout << "atom " << atom.back() << std::endl;
       }
-      for (auto pair : atom) {
+      for (auto pair : atom.get_pairs()) {
         npairs1++;
         if (verbose) {
           std::cout << " pair " << pair.back() << " glob "
@@ -113,7 +113,7 @@ namespace rascal {
         std::cout << "position: " << atom.get_position() << std::endl;
       }
 
-      for (auto pair : atom) {
+      for (auto pair : atom.get_pairs()) {
         npairs++;
         if (verbose) {
           std::cout << "   complete pair " << atom.back() << " " << pair.back()
@@ -169,7 +169,7 @@ namespace rascal {
       BOOST_CHECK_EQUAL(atom_type, SM3->get_atom_type(atom_tag));
 
       auto atom_position = atom.get_position();
-      for (auto pair : atom) {
+      for (auto pair : atom.get_pairs()) {
         auto neighbour_atom_tag = pair.get_internal_neighbour_atom_tag();
         auto neighbour_type = pair.get_atom_type();
         BOOST_CHECK_EQUAL(neighbour_type,

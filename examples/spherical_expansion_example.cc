@@ -140,7 +140,7 @@ int main(int argc, char * argv[]) {
         3 * n_species_center, expansions_coefficients_gradient.get_nb_comp());
     std::cout << std::endl;
     size_t neigh_count{0};
-    for (auto neigh : center) {
+    for (auto neigh : center.get_pairs()) {
       if (neigh_count >= n_neigh_print) {
         break;
       }

@@ -69,7 +69,7 @@ This is best explained with a code snippet
       // iterates over order-1 clusters (atoms)
       ri = pos[atom] //accesses the position of an iterated atom
 
-      for (auto pair: atom) {
+      for (auto pair: atom.get_pairs()) {
         // iterates over order-2 clusters (pairs)
         dij = dist[pair]  // accesses the distance between the two atoms
 

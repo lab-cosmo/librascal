@@ -179,6 +179,10 @@ namespace rascal {
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
                                                    StructureManager_t>;
 
+    //! helper to identify if Manager_t has TargetOrder in AvailableOrdersList
+    template <size_t TargetOrder>
+    static constexpr bool HasOrder = internal::is_order_available<TargetOrder>(typename traits::AvailableOrdersList{});
+
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     using Property_t =
@@ -823,6 +827,9 @@ namespace rascal {
     using IndexConstArray_t = typename ThisParentClass::IndexConstArray;
     using IndexArray_t = typename ThisParentClass::IndexArray;
 
+    template <size_t TargetOrder>
+    static constexpr bool OrderOneAndHasOrder{Manager_t::HasOrder<TargetOrder> and Order == 1};
+
     static constexpr bool HasCenterPairOrderOne{traits::HasCenterPair and
                                                 Order == 1};
 
@@ -908,7 +915,7 @@ namespace rascal {
     auto get_atom_ii() {
       static_assert(traits::MaxOrder > 1, "Need neighbors to get one");
 
-      auto && atom_ii_it = this->with_self_pair().begin();
+      auto && atom_ii_it = this->get_pairs_with_self_pair().begin();
       constexpr static size_t ClusterLayer_{
           ManagerImplementation::template cluster_layer_from_order<2>()};
       auto atom_ii = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_ii_it);
@@ -932,7 +939,7 @@ namespace rascal {
       auto && atom_j_index = manager.get_atom_index(atom_j_tag);
       auto && atom_j_it = manager.get_iterator_at(atom_j_index, 0);
       auto && atom_j = *atom_j_it;
-      auto && atom_jj_it = atom_j.with_self_pair().begin();
+      auto && atom_jj_it = atom_j.get_pairs_with_self_pair().begin();
       constexpr static size_t ClusterLayer_{
           ManagerImplementation::template cluster_layer_from_order<2>()};
       auto atom_jj = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_jj_it);
@@ -1037,59 +1044,63 @@ namespace rascal {
 
    public:
 
-    // TODO(felix) remove MaxOrder trait and use AvailableOrdersList instead
-    //! helper to identify if Manager_t has TargetOrder in AvailableOrdersList
-    template <size_t TargetOrder>
-    static constexpr bool HasOrder = internal::is_order_available<TargetOrder>(typename Manager_t::traits::AvailableOrdersList{});
+    /**
+     * Return an iterable over the clusters of order == Order
+     * associated with the current central atom.
+     * @param start starting index for the iteration from offset
+     */
+    template <size_t Order_>
+    CustomProxy<Order_> get_clusters_of_order(size_t start = 0) {
+      static_assert(Order_ > 1, "Clusters should at least contain 2 atoms, i.e. Order >= 2.");
+      std::array<size_t, Order_ - 1> counters{this->it.get_counters()};
+      size_t offset{this->get_manager().get_offset(counters)};
+      size_t finish{this->size()};
+      return CustomProxy<Order_>(*this, start, offset, finish);
+    }
 
     /**
      * Return an iterable for Order == 2 that includes the neighbors (or pairs)
      * associated with the current central atom.
-     * if HasCenterPairOrderOne == true then the iteration avoids
-     * including the self_pair, i.e. reference to the central atom as a pair.
      */
-    template <bool T = HasOrder<2>, std::enable_if_t<T, int> = 0>
+    template <bool T = OrderOneAndHasOrder<2>, std::enable_if_t<T, int> = 0>
     CustomProxy<2> get_pairs() {
-      std::array<size_t, 1> counters{this->it.get_counters()};
-      size_t offset{this->get_manager().get_offset(counters)};
-      size_t finish{this->size()};
       // avoid if statement or sfinae by casting the bool to
       // size_t which turns out to give 0 if false and 1
       // if true, the expected behavior.
       size_t start{static_cast<size_t>(HasCenterPairOrderOne)};
-      return CustomProxy<2>(*this, start, offset, finish);
+      return this->get_clusters_of_order<2>(start);
     }
 
 
     /**
      * Return an iterable for Order == 2 that includes the neighbors (or
      * pairs) associated with the current central atom and the self pair,
-     * i.e. ClusterRef<2> refering to the central atom if
+     * i.e. a ClusterRef<2> refering to the central atom if
      * HasCenterPair == true.
      * If HasCenterPair == false then its the regular iteration.
      */
-    template <bool T = HasOrder<2>, std::enable_if_t<T, int> = 0>
+    template <bool T = OrderOneAndHasOrder<2>, std::enable_if_t<T, int> = 0>
     CustomProxy<2> get_pairs_with_self_pair() {
-      std::array<size_t, 1> counters{this->it.get_counters()};
-      size_t offset{this->get_manager().get_offset(counters)};
-      size_t finish{this->size()};
-      size_t start{0};
-      return CustomProxy<2>(*this, start, offset, finish);
+      return this->get_clusters_of_order<2>();
     }
 
     /**
      * Return an iterable for Order == 3 that includes the triplets associated
      * with the current central atom.
      */
-    template <bool T = HasOrder<3>, std::enable_if_t<T, int> = 0>
+    template <bool T = OrderOneAndHasOrder<3>, std::enable_if_t<T, int> = 0>
     CustomProxy<3> get_triplets() {
-      std::array<size_t, 2> counters{this->it.get_counters()};
-      size_t offset{this->get_manager().get_offset(counters)};
-      size_t finish{this->size()};
-      size_t start{0};
-      return CustomProxy<3>(*this, start, offset, finish);
+      return this->get_clusters_of_order<3>();
     }
 
+    /**
+     * Return an iterable for Order == 4 that includes the quadruplets
+     * associated with the current central atom.
+     */
+    template <bool T = OrderOneAndHasOrder<4>, std::enable_if_t<T, int> = 0>
+    CustomProxy<4> get_quadruplets() {
+      return this->get_clusters_of_order<4>();
+    }
 
   };
 
@@ -1157,15 +1168,15 @@ namespace rascal {
 
     friend ClusterRef_t;
     // determine the container type
-    // tag(felix) Manager_t or typename Manager_t::template ClusterRef<2>
+    // tag(felix) Manager_t or typename Manager_t::template ClusterRef<Order>
     using Container_t =
         std::conditional_t<Order == 1, Manager_t,
-                           typename Manager_t::template ClusterRef<Order - 1>>;
+                           typename Manager_t::template ClusterRef<1>>;
     static_assert(Order > 0, "Order has to be positive");
 
     // tag(felix) MaxOrder trait should become a list of available orders
-    static_assert(Order <= traits::MaxOrder,
-                  "Order > MaxOrder, impossible iterator");
+    // static_assert(Order <= traits::MaxOrder,
+    //               "Order > MaxOrder, impossible iterator");
 
     using AtomRef_t = typename Manager_t::AtomRef;
 
@@ -1290,6 +1301,7 @@ namespace rascal {
         return counters;
       }
     }
+    
     std::array<size_t, Order> get_offsets() {
       std::array<size_t, Order> offsets;
       offsets[Order - 1] = this->offset;

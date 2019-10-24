@@ -165,7 +165,7 @@ int main(int argc, char * argv[]) {
     // clang-format on
     std::cout << std::endl;
     size_t neigh_count{0};
-    for (auto neigh : center) {
+    for (auto neigh : center.get_pairs()) {
       if (neigh_count >= n_neigh_print) {
         break;
       }

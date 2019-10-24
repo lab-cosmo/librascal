@@ -333,7 +333,7 @@ namespace rascal {
     for (auto atom : *this->manager) {
       auto atom_tag{atom.get_atom_tag()};
 
-      for (auto pair : atom) {
+      for (auto pair : atom.get_pairs()) {
         auto neighbour_atom_index{
             this->get_atom_index(pair.get_internal_neighbour_atom_tag())};
 
@@ -365,7 +365,7 @@ namespace rascal {
       atom_cluster_indices.push_back(indices);
 
       int nneigh{0};
-      for (auto pair : atom) {
+      for (auto pair : atom.get_pairs()) {
         // add existing pairs
         auto neighbour_atom_tag = pair.get_internal_neighbour_atom_tag();
         this->neighbours_atom_tag.push_back(neighbour_atom_tag);

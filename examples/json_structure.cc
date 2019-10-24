@@ -107,7 +107,7 @@ int main() {
                             AdaptorStrict>(manager, adaptors);
   std::cout << "manager iteration over (strict) pairs" << std::endl;
   for (auto atom : man) {
-    for (auto pair : atom) {
+    for (auto pair : atom.get_pairs()) {
       std::cout << "strict pair (" << atom.get_atom_tag() << ", "
                 << pair.get_atom_tag() << ") global index "
                 << pair.get_global_index() << std::endl;

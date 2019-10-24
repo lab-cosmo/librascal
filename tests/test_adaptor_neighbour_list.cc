@@ -93,7 +93,7 @@ namespace rascal {
     }
     int np{0};
     for (auto atom : pair_manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.get_pairs()) {
         np++;
       }
     }
@@ -137,7 +137,7 @@ namespace rascal {
       if (verbose) {
         std::cout << "pair manager atom " << atom.back() << std::endl;
       }
-      for (auto pair : atom) {
+      for (auto pair : atom.get_pairs()) {
         n_pairs++;
         if (verbose) {
           std::cout << "   complete pair " << atom.back() << " " << pair.back()
@@ -165,7 +165,7 @@ namespace rascal {
     constexpr bool verbose{false};
 
     for (auto atom : pair_manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.get_pairs()) {
         auto atom_j_index = pair_manager->get_atom_index(pair.back());
         auto atom_j = pair.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag_list();
@@ -200,7 +200,7 @@ namespace rascal {
         if (verbose) {
           std::cout << "atom " << atom.back() << std::endl;
         }
-        for (auto pair : atom) {
+        for (auto pair : atom.get_pairs()) {
           n_pairs++;
           if (verbose) {
             std::cout << "   complete pair " << atom.back() << " "
@@ -272,7 +272,7 @@ namespace rascal {
       }
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
-        for (auto pair : atom) {
+        for (auto pair : atom.get_pairs()) {
           double dist = {(atom.get_position() - pair.get_position()).norm()};
           if (dist < cutoff_tmp) {
             neighbours_per_atom1.back()++;
@@ -290,7 +290,7 @@ namespace rascal {
       }
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
-        for (auto pair : atom) {
+        for (auto pair : atom.get_pairs()) {
           double dist = {(atom.get_position() - pair.get_position()).norm()};
           if (dist < cutoff_tmp) {
             neighbours_per_atom2.back()++;
@@ -370,7 +370,7 @@ namespace rascal {
 
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
-        for (auto pair : atom) {
+        for (auto pair : atom.get_pairs()) {
           double dist = {(atom.get_position() - pair.get_position()).norm()};
           bool is_in{dist < cutoff_tmp};
           if (verbose) {
@@ -386,7 +386,7 @@ namespace rascal {
 
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
-        for (auto pair : atom) {
+        for (auto pair : atom.get_pairs()) {
           double dist = {(atom.get_position() - pair.get_position()).norm()};
           bool is_in{dist < cutoff_tmp};
           if (verbose) {
@@ -521,7 +521,7 @@ namespace rascal {
         // count strict neighbours
         for (auto atom : adaptor_strict) {
           neighbours[i].push_back(0);
-          for (auto pair : atom) {
+          for (auto pair : atom.get_pairs()) {
             neighbours[i].back()++;
           }
         }
@@ -574,7 +574,7 @@ namespace rascal {
         std::cout << "atom? " << atom.back() << std::endl;
       }
       auto n_pairs{0};
-      for (auto pair : atom) {
+      for (auto pair : atom.get_pairs()) {
         n_pairs++;
         if (verbose) {
           std::cout << "   complete pair " << atom.back() << " " << pair.back()

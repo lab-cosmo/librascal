@@ -346,7 +346,7 @@ namespace rascal {
       // neighbours per atom counter to correct for offsets
       int nneigh{0};
 
-      for (auto pair : atom) {
+      for (auto pair : atom.get_pairs()) {
         constexpr auto PairLayer{compute_cluster_layer<pair.order()>(
             typename traits::LayerByOrder{})};
 

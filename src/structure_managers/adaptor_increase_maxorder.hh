@@ -338,7 +338,7 @@ namespace rascal {
     // do nothing, if MaxOrder is not reached, except call the next order
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
-      for (auto next_cluster : cluster) {
+      for (auto next_cluster : cluster.template get_clusters_of_order<Order>()) {
         auto & next_cluster_indices{std::get<next_cluster.order() - 1>(
             manager.cluster_indices_container)};
 
@@ -408,7 +408,7 @@ namespace rascal {
 
         // collect all possible neighbours of the cluster: collection of all
         // neighbours of current_i_atoms
-        for (auto pair : j_cluster) {
+        for (auto pair : j_cluster.get_pairs()) {
           auto j_add = pair.back();
           if (j_add > i_atoms.back()) {
             current_j_atoms.insert(j_add);

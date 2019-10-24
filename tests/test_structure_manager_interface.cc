@@ -110,7 +110,7 @@ namespace rascal {
     auto pair_reference{0};
 
     for (auto atom : manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.get_pairs()) {
         auto global_index = pair.get_global_index();
         BOOST_CHECK_EQUAL(pair_reference, global_index);
         pair_reference++;
