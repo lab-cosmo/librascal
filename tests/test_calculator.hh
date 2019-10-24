@@ -416,9 +416,9 @@ namespace rascal {
     ~SimplePeriodicNLCCStrictFixture() = default;
 
     const std::vector<std::string> filenames{
-        //"reference_data/diamond_2atom.json",
+        "reference_data/diamond_2atom.json"
         //"reference_data/diamond_2atom_distorted.json",
-        "reference_data/diamond_cubic_distorted.json"
+        //"reference_data/diamond_cubic_distorted.json",
         //"reference_data/SiC_moissanite.json",
         //"reference_data/SiCGe_wurtzite_like.json",
         //"reference_data/SiC_moissanite_supercell.json"
@@ -662,7 +662,8 @@ namespace rascal {
         // being taken)
         // The nonzero gradient keys are already indicated in the sparse
         // gradient structure
-        auto keys_neigh{gradients_sparse[swap_pair_ref(neigh)].get_keys()};
+        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
+        auto keys_neigh{gradients_sparse[swapped_ref].get_keys()};
         for (auto & key : keys_neigh) {
           Eigen::Map<Eigen::ArrayXd> data_flat(data_neigh[key].data(),
                                                n_entries_per_key);
@@ -725,10 +726,10 @@ namespace rascal {
         auto & gradients_neigh_first{gradients_sparse[neigh_swap_images.front()]};
         // The set of species keys should be the same for all images of i
         auto keys_neigh{gradients_neigh_first.get_keys()};
-        for (auto key : keys_neigh) {
+        for (auto & key : keys_neigh) {
           // For each key, accumulate gradients over periodic images of the atom
           // that moves in the finite-difference step
-          for (auto neigh_swap : neigh_swap_images) {
+          for (auto & neigh_swap : neigh_swap_images) {
             auto & gradients_neigh{gradients_sparse[neigh_swap]};
             Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
                 gradients_neigh[key].data(), 3, n_entries_per_key);
