@@ -640,7 +640,6 @@ namespace rascal {
                 .colwise()
                 .mean()
                 .maxCoeff()};
-        std::cout << error << std::endl;
         return error;
       }
 
