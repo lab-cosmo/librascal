@@ -5,29 +5,43 @@ import json
 
 class Kernel(object):
 
-    """ Computes the kernel from an representation """
+    """
+    Computes the kernel from an representation
+    Initialize the kernel with the given parameters
 
-    def __init__(self, representation, name='Cosine', target_type='Structure',
-                 **kwargs):
-        """
-        Initialize the kernel with the given parameters
+    Parameters
+    ----------
+
+    representation : Calculator
+        Representation calculator associated with the kernel
+
+    name : string
+        Type of kernel, 'Cosine' (aka dot-product) is the default and
+        (currently) only option.
+
+    target_type : string
+        Type of target (prediction) properties, must be either 'Atom'(the kernel
+        is between atomic environments) or 'Structure' (the kernel is summed over
+        atoms in a structure) which is the default case
+
+    Methods
+    -------
+    __call__(X, Y=None)
+        Compute the kernel.
 
         Parameters
         ----------
+        X : AtomList or ManagerCollection (C++ class)
+            Container of atomic structures.
 
-        representation : Calculator
-            Representation calculator associated with the kernel
+        Returns
+        -------
+        kernel_matrix: ndarray
 
-        name : string
-            Type of kernel, 'Cosine' (aka dot-product) is the default and
-            (currently) only option
+    """
 
-        target_type : string
-            Type of target (prediction) properties, either 'Atom' (kernel is
-            between atomic environments) or 'Structure' (kernel is summed over
-            atoms in a structure) (default)
-
-        """
+    def __init__(self, representation, name='Cosine', target_type='Structure',
+                 **kwargs):
 
         # This case cannot handled by the c++ side because c++ cannot deduce the
         # type from arguments inside a json, so it has to be casted in the c++
@@ -46,18 +60,6 @@ class Kernel(object):
         self._kernel = Kernelcpp(hypers_str)
 
     def __call__(self, X, Y=None):
-        """
-        Compute the kernel.
-
-        Parameters
-        ----------
-        X : AtomList or ManagerCollection (C++ class)
-            Container of atomic structures.
-
-        Returns
-        -------
-        kernel_matrix: ndarray
-        """
         if Y is None:
             Y = X
         if isinstance(X, AtomsList):
