@@ -1,8 +1,12 @@
+from collections.abc import Iterable
+from functools import reduce
+from operator import and_
+
+import numpy as np
+
 from ..lib import neighbour_list
 from .base import (NeighbourListFactory, is_valid_structure,
- adapt_structure, StructureCollectionFactory)
-from collections.abc import Iterable
-import numpy as np
+                   adapt_structure, StructureCollectionFactory)
 
 class AtomsList(object):
     """
@@ -122,6 +126,11 @@ def unpack_ase(frame):
     -------
     StructureManagerCenters
         base structure manager.
+
+    If the frame has an ase.atoms.arrays entry called
+    'center_atoms_mask' then it will be used as the center mask
+    (surprise) for any representations computed on this
+    StructureManager.
     """
     cell = frame.get_cell()
     positions = frame.get_positions()
@@ -133,4 +142,128 @@ def unpack_ase(frame):
     else:
         center_atoms_mask = np.ones_like(numbers, dtype=bool)
 
-    return adapt_structure(cell=cell, positions=positions, atom_types=numbers, pbc=pbc, center_atoms_mask=center_atoms_mask)
+    return adapt_structure(cell=cell, positions=positions,
+                           atom_types=numbers, pbc=pbc,
+                           center_atoms_mask=center_atoms_mask)
+
+
+def mask_center_atoms_by_id(frame, id_select=None, id_blacklist=None):
+    """Mask the centers (center-select) of an ASE atoms object, by index
+
+    Parameters
+    ----------
+    frame: ase.Atoms
+        Atomic structure to mask
+
+    id_select: list of int
+        List of atom IDs to select
+
+    id_blacklist: list of int
+        List of atom IDs to exclude
+
+    Returns
+    -------
+    None (the Atoms object is modified directly)
+
+    Notes
+    -----
+    The default is to select all atoms.  If `id_select` is provided,
+    select only those atoms.  If only `id_blacklist` is provided, select
+    all atoms *except* those in the blacklist.  If both are provided,
+    atoms are first selected based on `id_select` and then excluded based
+    on `id_blacklist`.  If the atoms object already has a mask, then
+    `id_select` is applied first using the `or` operation, then
+    `id_blacklist` is applied using the `and not` operation (so the order
+    of precedence is: blacklist, selection, previous mask).
+
+    This logic allows this function to be combined with
+    `mask_center_atoms_by_species` to allow mixed species/id-based
+    masking.
+    """
+    if 'center_atoms_mask' not in frame.arrays:
+        # add a default mask
+        if id_select is not None:
+            mask = np.zeros((frame.get_number_of_atoms(),), dtype='bool')
+        else:
+            mask = np.ones((frame.get_number_of_atoms(),), dtype='bool')
+    else:
+        mask = frame.arrays['center_atoms_mask']
+    if id_select is not None:
+        mask[id_select] = True
+    if id_blacklist is not None:
+        mask[id_blacklist] = False
+    frame.arrays['center_atoms_mask'] = mask
+
+
+def mask_center_atoms_by_species(frame, species_select=[],
+                                 species_blacklist=[]):
+    """Mask the centers of an ASE atoms object, by atomic species
+
+    Parameters
+    ----------
+    frame: ase.Atoms
+        Atomic structure to mask
+
+    species_select: list of int or str
+        List of atomic numbers, or species symbols, to select.
+        Should be of consistent type across list.
+
+    species_blacklist: list of int or str
+        List of atomic numbers, or species symbols, to exclude.
+        Should be of consistent type across list.
+
+    Returns
+    -------
+    None (the Atoms object is modified directly)
+
+    Notes
+    -----
+    The default is to select all atoms.  If `species_select` is
+    provided, select only those atoms whose species is in the list.  If
+    only `species_blacklist` is provided, select all atoms *except*
+    those whose species is in the blacklist.  If both are provided,
+    atoms are first selected based on `species_select` and then excluded
+    based on `species_blacklist`.  If the atoms object already has a
+    mask, then `species_select` is applied first using the `or`
+    operation, then `species_blacklist` is applied using the `and not`
+    operation (so the order of precedence is: blacklist, selection,
+    previous mask).
+
+    This logic allows this function to be combined with
+    `mask_center_atoms_by_id` to allow mixed species/id-based masking.
+    """
+    select_is_str = reduce(and_,
+                           map(lambda x: isinstance(x, str), species_select),
+                           True)
+    select_is_int = reduce(and_,
+                           map(lambda x: isinstance(x, int), species_select),
+                           True)
+    blacklist_is_str = reduce(
+            and_, map(lambda x: isinstance(x, str), species_blacklist), True)
+    blacklist_is_int = reduce(
+            and_, map(lambda x: isinstance(x, int), species_blacklist), True)
+    if select_is_str:
+        id_select = np.isin(frame.get_chemical_symbols(), species_select)
+    elif select_is_int:
+        id_select = np.isin(frame.get_atomic_numbers(), species_select)
+    else:
+        raise ValueError("Species select must be either all string or all int")
+    if blacklist_is_str:
+        id_blacklist = np.isin(frame.get_chemical_symbols(), species_blacklist)
+    elif blacklist_is_int:
+        id_blacklist = np.isin(frame.get_atomic_numbers(), species_blacklist)
+    else:
+        raise ValueError(
+                "Species blacklist must be either all string or all int")
+    if 'center_atoms_mask' not in frame.arrays:
+        # add a default mask
+        if species_select:
+            old_mask = np.zeros((frame.get_number_of_atoms(),), dtype='bool')
+        else:
+            old_mask = np.ones((frame.get_number_of_atoms(),), dtype='bool')
+    else:
+        old_mask = frame.arrays['center_atoms_mask']
+    # Python's "bitwise" operators do per-element logical operations in NumPy
+    # see for instance https://docs.scipy.org/doc/numpy/reference/ufuncs.html#comparison-functions
+    mask = (old_mask | id_select) & ~id_blacklist
+    frame.arrays['center_atoms_mask'] = mask

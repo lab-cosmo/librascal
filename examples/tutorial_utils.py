@@ -204,7 +204,7 @@ class SOAP_tutorial(object):
             "41467_2018_6972_MOESM4_ESM.txt")
 
     def __init__(self,
-                 input_file='./data/small_molecules-1000.xyz',
+                 input_file='./reference_data/small_molecules-1000.xyz',
                  auto_download_csd500=True,
                  training_percentage=0.8,
                  interactive = False, verbose=True, hyperparameters=dict(
@@ -231,7 +231,7 @@ class SOAP_tutorial(object):
                     sys.stderr.write("Reason: " + e.reason + "\n")
                 elif hasattr(e, "code"):
                     sys.stderr.write("HTTP error: {:d}\n".format(e.code))
-        file_options = ['./data/{}'.format(f) for f in os.listdir('./data') if f.endswith('xyz')]
+        file_options = ['./reference_data/{}'.format(f) for f in os.listdir('./data') if f.endswith('xyz')]
         if(input_file!=None):
             file_options.insert(0, input_file)
             if(input_file in file_options[1:]):
@@ -394,7 +394,7 @@ class SOAP_tutorial(object):
             self.trained[self.sliders['property_to_ml'].value] = True
     def predict_test_set(self):
         self.plot_prediction_func(frame_idx = self.test_idx)
-    def predict_new_set(self, filename = './data/small_molecules-1000.xyz', num_frames=''):
+    def predict_new_set(self, filename = './reference_data/small_molecules-1000.xyz', num_frames=''):
         frames=np.array(read(filename, ":{}".format(num_frames)))
         properties = extract_property(frames, self.sliders['property_to_ml'].value)
         self.plot_prediction_func(y_known=properties, frames=frames)

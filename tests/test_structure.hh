@@ -101,7 +101,8 @@ namespace rascal {
     // initialize manager variable
     ManagerFixtureFile()
         : ManagerFixture<ManagerImplementation>{}, cutoff{3.5},
-          filename{"simple_cubic_9.json"}  // initialize current fixture
+          filename{"reference_data/simple_cubic_9.json"}
+    // initialize current fixture
     {
       this->manager->update(filename);
     }
