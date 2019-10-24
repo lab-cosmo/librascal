@@ -121,6 +121,9 @@ endif()
 
 ########## START CONFIGURATION ##########
 
+# Find correct python version
+find_package(PythonLibsNew 3 MODULE REQUIRED)
+
 # set the name of the c++ libraries
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
@@ -364,3 +367,10 @@ if(AUTOPEP8_FOUND)
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts" "")
 endif()
+
+# Removes every file in the build folder except the external libraries to
+# prevent redownloading external libraries
+add_custom_target(
+    deepclean
+    COMMAND "${PYTHON_EXECUTABLE}" ${CMAKE_SOURCE_DIR}/scripts/developer_utils.py deepclean
+  )
