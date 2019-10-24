@@ -30,8 +30,6 @@
 
 #include "bind_include.hh"
 
-#include "rascal/utils/sparsify_utilities.hh"
-
 namespace rascal {
   void utils_binding(py::module &);
 }
