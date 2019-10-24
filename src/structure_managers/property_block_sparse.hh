@@ -110,8 +110,10 @@ namespace rascal {
       using VectorMap_Ref = typename Eigen::Map<Vector_t>;
       using Self_t = InternallySortedKeyMap<K, V>;
       //! the data holder.
-      Data_t data{};
+      Data_t & data;
       Map_t map{};
+      size_t global_offset;
+      size_t total_length{0};
       bool normalized{false};
 
       // some member types
@@ -201,7 +203,7 @@ namespace rascal {
       }
 
       //! Default constructor
-      InternallySortedKeyMap() = default;
+      InternallySortedKeyMap(Data_t& data, const size_t & global_offset) :data{data}, global_offset{global_offset} {};
 
       //! Copy constructor
       InternallySortedKeyMap(const InternallySortedKeyMap & other) = default;
@@ -272,37 +274,33 @@ namespace rascal {
       }
 
       /**
-       * resize the underlying data to the proper size and can initialize
-       * the elements
+       * resize the underlying data to the proper size
        */
       template <typename Key_List>
-      void resize(const Key_List & keys, int n_row, int n_col,
-                  const Precision_t & val) {
-        this->resize(keys, n_row, n_col);
-        this->data = val;
-      }
-
-      template <typename Key_List>
-      void resize(const Key_List & keys, int n_row, int n_col) {
+      void set_map(const Key_List & keys, int n_row, int n_col) {
         std::vector<SortedKey_t> skeys{};
         for (auto && key : keys) {
           SortedKey_t skey{key};
           skeys.push_back(skey);
         }
-        this->resize(skeys, n_row, n_col);
+        this->set_map(skeys, n_row, n_col);
       }
 
-      void resize(const std::vector<SortedKey_t> & skeys, int n_row,
+      void set_map(const std::vector<SortedKey_t> & skeys, int n_row,
                   int n_col) {
-        int new_size{0};
+        int current_position{this->global_offset};
         for (auto && skey : skeys) {
           if (this->count(skey) == 0) {
             auto && key{skey.get_key()};
-            this->map[key] = std::make_tuple(new_size, n_row, n_col);
-            new_size += static_cast<int>(n_row * n_col);
+            this->map[key] = std::make_tuple(current_position, n_row, n_col);
+            current_position += static_cast<int>(n_row * n_col);
           }
         }
-        this->data.resize(new_size);
+        this->total_length = current_position;
+      }
+
+      size_t get_total_length() const {
+        return this->total_length;
       }
 
       //! Returns the number of elements with key that compares equivalent to
@@ -317,11 +315,13 @@ namespace rascal {
         return this->map.count(skey.get_key());
       }
 
-      //! Erases all elements from the container. After this call, size()
-      //! returns zero.
+      //! clear the map but does not change the underlying data
       void clear() noexcept {
-        this->data.clear();
         this->map.clear();
+      }
+
+      VectorMap_Ref get_full_vector() {
+        return VectorMap_Ref(&this->data[this->global_offset], this->total_length)};
       }
 
       /**
@@ -334,24 +334,32 @@ namespace rascal {
         return keys;
       }
 
-      void multiply_elements_by(double fac) { this->data *= fac; }
+      void multiply_elements_by(double fac) {
+        auto block{this->get_full_vector()};
+        block *= fac;
+      }
 
       /**
        * l^2 norm of the entire vector
        */
-      Precision_t norm() const { return this->data.matrix().norm(); }
+      Precision_t norm() const {
+        auto block{this->get_full_vector()};
+        return block.norm();
+      }
 
       Precision_t squaredNorm() const {
-        return this->data.matrix().squaredNorm();
+        auto block{this->get_full_vector()};
+        return block.squaredNorm();
       }
 
       /**
        * squared l^2 norm of the entire vector (sum of squared elements)
        */
       void normalize() {
-        double norm = this->data.matrix().norm();
+        double norm{this->norm()};
+        auto block{this->get_full_vector()};
         if (std::abs(norm) > 0.) {
-          this->data /= norm;
+          block /= norm;
         }
       }
 
@@ -470,10 +478,13 @@ namespace rascal {
     using Key_t = Key;
     using Keys_t = std::set<Key_t>;
     using InputData_t = internal::InternallySortedKeyMap<Key_t, Matrix_t>;
-    using Data_t = std::vector<InputData_t>;
+    using Data_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
+    using Maps_t = std::vector<InputData_t>;
+    // using Data_t = std::vector<InputData_t>;
 
    protected:
     Data_t values{};
+    Maps_t maps{};
     std::string type_id{};
 
    public:
