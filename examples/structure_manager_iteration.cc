@@ -61,16 +61,16 @@ int main() {
    *
    * `crystal_structure.json` is a fully periodic metallic hcp structure.
    *
-   * `alanine-X.json` is a unit cell of a polyalanine chain.
+   * `../reference_data/alanine-X-examples.json` is a unit cell of a polyalanine chain.
    *
-   * `alanine-center-select.json` is the same with only the heavy (non-H) atoms
+   * `../alanine-center-select.json` is the same with only the heavy (non-H) atoms
    *                              selected for iteration.
    *
    * `simple_cubic_9.json` is an artificial 9-atom test structure.
    */
 
   std::string filename{"reference_data/small_molecule.json"};
-  // std::string filename{"alanine-X.json"};
+  // std::string filename{"../reference_data/alanine-X-examples.json"};
   // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
 
   std::cout << "Reading structure " << filename << std::endl;
