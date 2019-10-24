@@ -36,8 +36,14 @@ class TestCosineKernel(unittest.TestCase):
             cosine_kernel = Kernel(rep, name="Cosine", target_type=target_type, zeta=2)
             cosine_kernel(features)
 
+        # wrong name 
+        with self.assertRaises(RuntimeError):
+            Kernel(rep, name="WrongName", target_type="Structure", zeta=2)
+        # wrong target_type
+        with self.assertRaises(RuntimeError):
+            Kernel(rep, name="Cosine", target_type="WrongType", zeta=2)
         # wrong zeta
         with self.assertRaises(ValueError):
-            Kernel(rep, name='Cosine', target_type="Structure", zeta=2.5)
+            Kernel(rep, name="Cosine", target_type="Structure", zeta=2.5)
         with self.assertRaises(ValueError):
-            Kernel(rep, name='Cosine', target_type="Structure", zeta=-2)
+            Kernel(rep, name="Cosine", target_type="Structure", zeta=-2)
