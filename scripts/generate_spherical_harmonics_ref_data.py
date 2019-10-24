@@ -126,7 +126,7 @@ def dump_reference_json():
                          harmonics=harmonics, alps=alps))
     if verbose:
         print(len(data))
-    with open(path+"tests/reference_data/spherical_harmonics_reference.ubjson",
+    with open(path+"tests/reference_data/outputs/spherical_harmonics_reference.ubjson",
               'wb') as f:
         ubjson.dump(data, f)
 

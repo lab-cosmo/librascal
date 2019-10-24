@@ -96,7 +96,7 @@ def dump_reference_json():
                     dict(feature_matrix=x.tolist(),
                             hypers=copy(sph_expn.hypers)))
 
-    with open(path+"tests/reference_data/spherical_expansion_reference.ubjson",
+    with open(path+"tests/reference_data/outputs/spherical_expansion_reference.ubjson",
               'wb') as f:
         ubjson.dump(data, f)
 

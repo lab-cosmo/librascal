@@ -48,5 +48,6 @@ for fn in fns:
 with open(os.path.join(path,
                        "tests",
                        "reference_data",
+                       "outputs",
                        "sorted_coulomb_reference.ubjson"), 'wb') as f:
     ubjson.dump(data, f)

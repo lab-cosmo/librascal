@@ -97,7 +97,7 @@ def dump_reference_json():
                             hypers=copy(soap.hypers)))
 
     with open(path+
-        "tests/reference_data/spherical_invariants_reference.ubjson",
+        "tests/reference_data/outputs/spherical_invariants_reference.ubjson",
                         'wb') as f:
                 ubjson.dump(data, f)
 
