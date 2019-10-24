@@ -50,7 +50,7 @@ namespace rascal {
        * for (size_t i{0}; i < fix.nb_iterations; i++) {
        *  benchmark::DoNotOptimize(
        *      fix.func(fix.ref_points(i % fix.ref_points.size())));
-       *}
+       * }
        */
       for (size_t i{0}; i < fix.nb_iterations; i++) {
         tmp(i % fix.ref_points.size()) =
