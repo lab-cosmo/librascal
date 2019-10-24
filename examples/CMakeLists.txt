@@ -8,5 +8,5 @@ foreach(_file_ ${examples})
 endforeach()
 
 configure_file("${CMAKE_SOURCE_DIR}/reference_data/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
-configure_file("${CMAKE_SOURCE_DIR}/examples/reference_data/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
-configure_file("${CMAKE_SOURCE_DIR}/tests/reference_data/alanine-center-select.json" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file("${CMAKE_SOURCE_DIR}/reference_data/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file("${CMAKE_SOURCE_DIR}/reference_data/alanine-center-select.json" ${CMAKE_BINARY_DIR} COPYONLY)
