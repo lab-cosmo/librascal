@@ -113,7 +113,7 @@ namespace rascal {
 
     json ref_data{};
     math::ModifiedSphericalBessel j_v_complete_square{};
-    bool verbose{true};
+    bool verbose{false};
   };
 
   /**
