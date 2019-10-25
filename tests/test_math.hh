@@ -58,7 +58,8 @@ namespace rascal {
 
     ~SphericalHarmonicsRefFixture() = default;
 
-    std::string ref_filename = "../reference_data/outputs/spherical_harmonics_test.json";
+    std::string ref_filename ="../reference_data/outputs/"+
+                              "spherical_harmonics_test.json";
 
     using StdVector2Dim_t = std::vector<std::vector<double>>;
     using StdVector3Dim_t = std::vector<std::vector<std::vector<double>>>;
@@ -76,8 +77,8 @@ namespace rascal {
 
     ~SphericalHarmonicsClassRefFixture() = default;
 
-    std::string ref_filename =
-        "../reference_data/outputs/spherical_harmonics_reference.ubjson";
+    std::string ref_filename = "../reference_data/outputs/"+
+                               "spherical_harmonics_reference.ubjson";
     json ref_data{};
     // TODO(alex) replace this with one variable VerbosityValues verbosity
     // for general test information
@@ -94,7 +95,8 @@ namespace rascal {
 
     ~GaussLegendreRefFixture() = default;
 
-    std::string ref_filename = "../reference_data/outputs/gauss_legendre_reference.ubjson";
+    std::string ref_filename ="../reference_data/outputs/"+
+                              "gauss_legendre_reference.ubjson";
 
     json ref_data{};
     bool verbose{false};
@@ -107,8 +109,8 @@ namespace rascal {
 
     ~ModifiedBesselFirstKindRefFixture() = default;
 
-    std::string ref_filename =
-        "../reference_data/outputs/modified_bessel_first_kind_reference.json";
+    std::string ref_filename = "../reference_data/outputs/"+
+                               "modified_bessel_first_kind_reference.json";
 
     json ref_data{};
     math::ModifiedSphericalBessel j_v_complete_square{};
@@ -415,7 +417,8 @@ namespace rascal {
 
     ~Hyp1F1RefFixture() = default;
 
-    std::string ref_filename = "../reference_data/outputs/hyp1f1_reference.ubjson";
+    std::string ref_filename = "../reference_data/outputs/"+
+                               "hyp1f1_reference.ubjson";
 
     json ref_data{};
     bool verbose{false};
