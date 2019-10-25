@@ -34,7 +34,14 @@ from ase.io import read
 
 import benchmarks
 
-import rascal
+try:
+    import rascal
+except ImportError as error:
+    # Output expected ImportErrors.
+    sys.exit("Could not import rascal. This file should be run from ./librascal/build folder, if rascal is not globally installed.")
+
+# It could be that the file is correctly run, but these imports are not valid
+# anymore, this ensures that the user gets a different error message for this case
 from rascal.representations import SphericalInvariants
 from rascal.representations import SphericalExpansion
 
