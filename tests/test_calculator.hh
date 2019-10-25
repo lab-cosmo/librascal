@@ -638,6 +638,12 @@ namespace rascal {
       // Count all the keys in the sparse gradient structure where the gradient
       // is nonzero (i.e. where the key has an entry in the structure)
       for (auto neigh : center) {
+        // TODO(max,felix) there should be a way to write "if neigh is ghost"
+        if (static_cast<size_t>(neigh.get_atom_tag())
+            >= this->structure_manager->get_size()) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
         auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
         n_entries_neighbours +=
             (gradients_sparse[swapped_ref].get_keys().size() *
@@ -655,6 +661,11 @@ namespace rascal {
         result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
+        if (static_cast<size_t>(neigh.get_atom_tag())
+            >= this->structure_manager->get_size()) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
         auto & data_neigh{data_sparse[neigh]};
         // The neighbour gradient (i =/= j) only contributes to certain species
         // channels (keys), in the case of SOAP and SphExpn those keys
@@ -698,6 +709,11 @@ namespace rascal {
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
       size_t n_entries_neighbours{0};
       for (auto neigh : center) {
+        if (static_cast<size_t>(neigh.get_atom_tag())
+            >= this->structure_manager->get_size()) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
         auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
         n_entries_neighbours +=
             (gradients_sparse[swapped_ref].get_keys().size() *
@@ -720,6 +736,11 @@ namespace rascal {
         result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
+        if (static_cast<size_t>(neigh.get_atom_tag())
+            >= this->structure_manager->get_size()) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
         // We need grad_i c^{ji} -- using just 'neigh' would give us
         // grad_j c^{ij}, hence the swap
         auto neigh_swap_images{swap_pair_ref(neigh)};
