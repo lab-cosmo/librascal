@@ -31,10 +31,10 @@
 #ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_STRICT_HH_
 #define SRC_STRUCTURE_MANAGERS_ADAPTOR_STRICT_HH_
 
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
-#include "structure_managers/updateable_base.hh"
 #include "rascal_utility.hh"
+#include "structure_managers/property.hh"
+#include "structure_managers/structure_manager.hh"
+#include "structure_managers/updateable_base.hh"
 
 namespace rascal {
   /*

@@ -25,13 +25,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <boost/test/unit_test.hpp>
-
 #include "rascal_utility.hh"
-
 #include "structure_managers/cluster_ref_key.hh"
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/structure_manager_centers.hh"
+
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 

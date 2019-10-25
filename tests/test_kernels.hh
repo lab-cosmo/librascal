@@ -30,10 +30,10 @@
 #ifndef TESTS_TEST_KERNELS_HH_
 #define TESTS_TEST_KERNELS_HH_
 
-#include "test_adaptor.hh"
-#include "test_manager_collection.hh"
-#include "test_calculator.hh"
 #include "models/kernels.hh"
+#include "test_adaptor.hh"
+#include "test_calculator.hh"
+#include "test_manager_collection.hh"
 
 namespace rascal {
 

@@ -31,6 +31,7 @@
 #define SRC_MATH_SPHERICAL_HARMONICS_HH_
 
 #include "math_utils.hh"
+
 #include <iostream>
 #include <vector>
 

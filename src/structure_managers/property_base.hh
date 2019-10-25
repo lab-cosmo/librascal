@@ -33,9 +33,9 @@
 #include "basic_types.hh"
 #include "structure_managers/structure_manager_base.hh"
 
+#include <array>
 #include <string>
 #include <vector>
-#include <array>
 
 namespace rascal {
 

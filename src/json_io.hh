@@ -37,6 +37,7 @@
 #include "rascal_utility.hh"
 
 #include <Eigen/Dense>
+
 #include <fstream>
 
 // For convenience

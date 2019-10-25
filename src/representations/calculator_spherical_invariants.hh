@@ -31,22 +31,22 @@
 #ifndef SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_
 #define SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_
 
+#include "math/math_utils.hh"
+#include "rascal_utility.hh"
 #include "representations/calculator_base.hh"
 #include "representations/calculator_spherical_expansion.hh"
-#include "structure_managers/structure_manager.hh"
 #include "structure_managers/property_block_sparse.hh"
-#include "rascal_utility.hh"
-#include "math/math_utils.hh"
-
+#include "structure_managers/structure_manager.hh"
 #include "wigxjpf.h"
+
+#include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
 
 #include <algorithm>
 #include <cmath>
 #include <exception>
-#include <vector>
-#include <Eigen/Dense>
-#include <Eigen/Eigenvalues>
 #include <unordered_set>
+#include <vector>
 
 namespace rascal {
 

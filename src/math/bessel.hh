@@ -29,8 +29,8 @@
 #ifndef SRC_MATH_BESSEL_HH_
 #define SRC_MATH_BESSEL_HH_
 
-#include "math/math_utils.hh"
 #include "math/hyp1f1.hh"
+#include "math/math_utils.hh"
 
 namespace rascal {
   namespace math {

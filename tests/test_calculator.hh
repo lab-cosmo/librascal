@@ -29,22 +29,21 @@
 #ifndef TESTS_TEST_CALCULATOR_HH_
 #define TESTS_TEST_CALCULATOR_HH_
 
+#include "atomic_structure.hh"
+#include "json_io.hh"
+#include "rascal_utility.hh"
+#include "representations/calculator_base.hh"
+#include "representations/calculator_sorted_coulomb.hh"
+#include "representations/calculator_spherical_covariants.hh"
+#include "representations/calculator_spherical_expansion.hh"
+#include "representations/calculator_spherical_invariants.hh"
+#include "structure_managers/structure_manager_collection.hh"
 #include "test_adaptor.hh"
 #include "test_math.hh"
 #include "test_structure.hh"
-#include "atomic_structure.hh"
-#include "structure_managers/structure_manager_collection.hh"
-#include "representations/calculator_base.hh"
-#include "representations/calculator_sorted_coulomb.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "representations/calculator_spherical_covariants.hh"
 
-#include "json_io.hh"
-#include "rascal_utility.hh"
-
-#include <tuple>
 #include <memory>
+#include <tuple>
 
 namespace rascal {
 

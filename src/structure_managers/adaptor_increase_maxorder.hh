@@ -30,11 +30,11 @@
 #ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_INCREASE_MAXORDER_HH_
 #define SRC_STRUCTURE_MANAGERS_ADAPTOR_INCREASE_MAXORDER_HH_
 
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
-#include "rascal_utility.hh"
-#include "lattice.hh"
 #include "basic_types.hh"
+#include "lattice.hh"
+#include "rascal_utility.hh"
+#include "structure_managers/property.hh"
+#include "structure_managers/structure_manager.hh"
 
 #include <set>
 #include <vector>

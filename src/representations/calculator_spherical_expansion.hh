@@ -30,27 +30,28 @@
 #ifndef SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
 #define SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
 
-#include "representations/calculator_base.hh"
-#include "representations/cutoff_functions.hh"
-#include "structure_managers/structure_manager.hh"
-#include "rascal_utility.hh"
-#include "math/math_utils.hh"
-#include "math/spherical_harmonics.hh"
-#include "math/hyp1f1.hh"
 #include "math/bessel.hh"
 #include "math/gauss_legendre.hh"
+#include "math/hyp1f1.hh"
+#include "math/math_utils.hh"
+#include "math/spherical_harmonics.hh"
+#include "rascal_utility.hh"
+#include "representations/calculator_base.hh"
+#include "representations/cutoff_functions.hh"
 #include "structure_managers/property_block_sparse.hh"
+#include "structure_managers/structure_manager.hh"
+
+#include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
 
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <memory>
 #include <exception>
+#include <memory>
 #include <sstream>
-#include <vector>
-#include <Eigen/Dense>
-#include <Eigen/Eigenvalues>
 #include <unordered_set>
+#include <vector>
 
 namespace rascal {
 
