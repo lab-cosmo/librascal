@@ -37,7 +37,8 @@
 #include "representations/calculator_spherical_expansion.hh"
 #include "structure_managers/property_block_sparse.hh"
 #include "structure_managers/structure_manager.hh"
-#include "wigxjpf.h"
+
+#include <wigxjpf.h>
 
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
