@@ -29,6 +29,7 @@
 #define SRC_RASCAL_UTILITY_HH_
 
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>

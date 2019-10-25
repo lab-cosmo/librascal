@@ -37,6 +37,8 @@
 #include "math/spherical_harmonics.hh"
 #include "rascal_utility.hh"
 
+#include <boost/test/unit_test.hpp>
+
 #include <Eigen/Dense>
 
 #include <fstream>
