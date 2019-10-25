@@ -62,11 +62,11 @@ int main() {
    */
 
   // read atomic structure from the JSON file
-  // manager.read_structure_from_json("../reference_data/alanine-X-examples.json");
-  // manager.update("../reference_data/alanine-X-examples.json");
+  // manager.read_structure_from_json("../reference_data/inputs/alanine-X-examples.json");
+  // manager.update("../reference_data/inputs/alanine-X-examples.json");
   auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(
       manager, cutoff)};
-  std::string filename{"../reference_data/alanine-X.json"};
+  std::string filename{"../reference_data/inputs/alanine-X.json"};
   pair_manager->update(filename);
 
   // Loop over the defined quadruplets and calculate the respective

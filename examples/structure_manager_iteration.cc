@@ -69,7 +69,7 @@ int main() {
    * `simple_cubic_9.json` is an artificial 9-atom test structure.
    */
 
-  std::string filename{"reference_data/small_molecule.json"};
+  std::string filename{"reference_data/inputs/small_molecule.json"};
   // std::string filename{"../reference_data/alanine-X-examples.json"};
   // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
 
