@@ -43,35 +43,42 @@ def dump_reference_json():
     path = '../'
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
-    data = dict(i_complete_square=[])
-    # 1 test the special case in the bessel function and 20 test that we
-    # can ramp up l_max safely
-    max_orders = [1,20]
-    for max_order in max_orders:
-        orders = list(range(max_order))
-        # gaussian sigma in [0.1, 0.9]
-        alphas = np.linspace(0.6, 50, 10)
-        # looks at rc up to 10
-        xns = np.linspace(0.005, 10, 15)
-        # atoms should not be much closer than this
-        rijs = np.linspace(0.5, 10, 15)
+    data = dict(i_exp=[], i_complete_square=[])
+    max_order = 20
+    orders = list(range(max_order))
+    xs = np.logspace(-2, 3.8, 300)
+    for x in xs:
+        vals = []
+        for order in orders:
+            val = sbesseli(order, x)
+            vals.append(float(val))
+        data["i_exp"].append(dict(x=x, max_order=max_order, vals=vals))
 
-        for alpha in alphas:
-            for rij in rijs:
-                vals = []
-                for xn in xns:
-                    vals.append([])
-                    for order in orders:
-                        val = sbesseli_complete_square(order, alpha, rij, xn)
-                        vals[-1].append(val)
-                # avoid values that are too small for ubjson to be interpreted
-                # as doubles
-                vals = np.array(vals)
-                vals[vals < 1e-300] = 0.
-                data["i_complete_square"].append(
-                    dict(alpha=alpha, rij=rij, xs=xns.tolist(),
-                        max_order=max_order, vals=vals.tolist()))
+    # gaussian sigma in [0.1, 0.9]
+    alphas = np.linspace(0.6, 50, 10)
+    # looks at rc up to 10
+    xns = np.linspace(0.005, 10, 15)
+    # atoms should not be much closer than this
+    rijs = np.linspace(0.5, 10, 15)
 
+    for alpha in alphas:
+        for rij in rijs:
+            vals = []
+            for xn in xns:
+                vals.append([])
+                for order in orders:
+                    val = sbesseli_complete_square(order, alpha, rij, xn)
+                    vals[-1].append(val)
+            data["i_complete_square"].append(
+                dict(alpha=alpha, rij=rij, xs=xns.tolist(),
+                     max_order=max_order, vals=vals))
+
+    # data = [data]
+    # with open(
+    #       (path +
+    #        "reference_data/outputs/modified_bessel_first_kind_reference.ubjson",
+    #       'wb') as f:
+    #     ubjson.dump(data,f)
     with open(os.path.join(
             path, outputs_path,
             "modified_bessel_first_kind_reference.json"), 'w') as f:
