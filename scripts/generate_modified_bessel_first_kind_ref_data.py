@@ -77,7 +77,7 @@ def dump_reference_json():
     # data = [data]
     # with open(
     #       (path +
-    #        "tests/reference_data/modified_bessel_first_kind_reference.ubjson",
+    #        "reference_data/outputs/modified_bessel_first_kind_reference.ubjson",
     #       'wb') as f:
     #     ubjson.dump(data,f)
     with open(os.path.join(
