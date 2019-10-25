@@ -443,6 +443,7 @@ namespace rascal {
                      manager, calculator);
         if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
           std::cout << "Testing structure: " << *filename_it << std::endl;
+          std::cout << "With hypers: " << hyper << std::endl;
         }
         do {
           test_gradients(grad_fix.get_calculator(), grad_fix);

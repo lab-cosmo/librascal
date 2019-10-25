@@ -416,9 +416,9 @@ namespace rascal {
     ~SimplePeriodicNLCCStrictFixture() = default;
 
     const std::vector<std::string> filenames{
-        "reference_data/diamond_2atom.json"
-        //"reference_data/diamond_2atom_distorted.json",
-        //"reference_data/diamond_cubic_distorted.json",
+        "reference_data/diamond_2atom.json",
+        "reference_data/diamond_2atom_distorted.json",
+        "reference_data/diamond_cubic_distorted.json"
         //"reference_data/SiC_moissanite.json",
         //"reference_data/SiCGe_wurtzite_like.json",
         //"reference_data/SiC_moissanite_supercell.json"
@@ -458,7 +458,7 @@ namespace rascal {
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}},
         {{"type", "RadialScaling"},
-         {"cutoff", {{"value", 4.0}, {"unit", "AA"}}},
+         {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}},
          {"rate", {{"value", 1.}, {"unit", "AA"}}},
          {"exponent", {{"value", 3}, {"unit", ""}}},
@@ -754,7 +754,7 @@ namespace rascal {
             auto & gradients_neigh{gradients_sparse[neigh_swap]};
             Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
                 gradients_neigh[key].data(), 3, n_entries_per_key);
-            grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
+            grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) +=
                 grad_coeffs_flat;
           }
           result_idx += n_entries_per_key;
