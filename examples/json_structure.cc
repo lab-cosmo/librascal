@@ -71,7 +71,7 @@ int main() {
 
   // Read in an atomic structure from a JSON file...
   AtomicStructure<3> structure{};
-  // std::string filename{"reference_data/inputs/"+
+  // std::string filename{"reference_data/inputs/"
   //                      "CaCrP2O7_mvc-11955_symmetrized.json"};
   std::string filename{"../reference_data/inputs/alanine-center-select.json"};
   structure.set_structure(filename);
