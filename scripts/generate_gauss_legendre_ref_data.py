@@ -6,7 +6,11 @@ from numpy.polynomial.legendre import leggauss
 import numpy as np
 import ubjson
 
-# Computes the sample points and weights for Gauss-Legendre quadrature and rescales them. 
+rascal_reference_path = 'reference_data/'
+inputs_path = rascal_reference_path + "inputs/"
+outputs_path = rascal_reference_path + "outputs/"
+
+# Computes the sample points and weights for Gauss-Legendre quadrature and rescales them.
 def get_leggauss(order, a, b):
     x,w = leggauss(order)
     # rescaling
@@ -26,7 +30,7 @@ def dump_reference_json():
             x,w = get_leggauss(order, a, b)
             data.append(dict(a=a,b=b,order=order,points=x.tolist(),weights=w.tolist()))
     print(len(data))
-    with open(path+"tests/reference_data/gauss_legendre_reference.ubjson",'wb') as f:
+    with open(path+outputs_path+"gauss_legendre_reference.ubjson",'wb') as f:
         ubjson.dump(data,f)
 
 ##########################################################################################

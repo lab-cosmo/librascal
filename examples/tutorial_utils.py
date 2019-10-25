@@ -217,6 +217,12 @@ class SOAP_tutorial(object):
         self.verbose = verbose
         self.verbosity_wrap = lambda s: (None if not verbose else display(Markdown(s)))
 
+<<<<<<< HEAD:examples/tutorial_utils.py
+=======
+<<<<<<< HEAD:examples/utilities/tutorial_utils.py
+        file_options = ['./data/learning/{}'.format(f) for f in os.listdir('./data/learning/') if f.endswith('xyz')]
+=======
+>>>>>>> 7c711d25... Updated reference pointers in python scripts containing 'reference_data':examples/utilities/tutorial_utils.py
         if auto_download_csd500 and not os.path.isfile(os.path.join(
                 "data", self.csd500_filename)):
             try:
@@ -231,7 +237,12 @@ class SOAP_tutorial(object):
                     sys.stderr.write("Reason: " + e.reason + "\n")
                 elif hasattr(e, "code"):
                     sys.stderr.write("HTTP error: {:d}\n".format(e.code))
+<<<<<<< HEAD:examples/tutorial_utils.py
         file_options = ['./reference_data/{}'.format(f) for f in os.listdir('./data') if f.endswith('xyz')]
+=======
+        file_options = ['./reference_data/{}'.format(f) for f in os.listdir('./reference_data') if f.endswith('xyz')]
+>>>>>>> bc8d6270... Updated reference pointers in python scripts containing 'reference_data':examples/tutorial_utils.py
+>>>>>>> 7c711d25... Updated reference pointers in python scripts containing 'reference_data':examples/utilities/tutorial_utils.py
         if(input_file!=None):
             file_options.insert(0, input_file)
             if(input_file in file_options[1:]):
