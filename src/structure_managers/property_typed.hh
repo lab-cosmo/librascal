@@ -31,10 +31,10 @@
 #ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_TYPED_HH_
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_TYPED_HH_
 
-#include "rascal_utility.hh"
 #include "math/math_utils.hh"
-#include "structure_managers/property_base.hh"
+#include "rascal_utility.hh"
 #include "structure_managers/cluster_ref_key.hh"
+#include "structure_managers/property_base.hh"
 
 namespace rascal {
 

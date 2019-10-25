@@ -33,10 +33,12 @@
 
 #include "rascal_utility.hh"
 #include "structure_managers/property_typed.hh"
+
 #include <basic_types.hh>
-#include <cassert>
+
 #include <Eigen/Dense>
 
+#include <cassert>
 #include <type_traits>
 
 namespace rascal {

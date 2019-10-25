@@ -29,14 +29,14 @@
 #ifndef SRC_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_
 #define SRC_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_
 
-#include "rascal_utility.hh"
 #include "math/math_utils.hh"
+#include "rascal_utility.hh"
 #include "representations/calculator_base.hh"
 
-#include <vector>
-#include <memory>
-
 #include <Eigen/Dense>
+
+#include <memory>
+#include <vector>
 
 namespace rascal {
 

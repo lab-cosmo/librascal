@@ -37,8 +37,8 @@
 #include <Eigen/Dense>
 
 #include <cmath>
-#include <stdexcept>
 #include <iostream>
+#include <stdexcept>
 
 // TODO(markus): CHECK for skewedness
 namespace rascal {

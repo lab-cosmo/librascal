@@ -26,10 +26,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <boost/test/unit_test.hpp>
-
-#include "test_structure.hh"
 #include "structure_managers/adaptor_half_neighbour_list.hh"
+#include "test_structure.hh"
+
+#include <boost/test/unit_test.hpp>
 
 constexpr double TOLERANCE = 1e-12;
 

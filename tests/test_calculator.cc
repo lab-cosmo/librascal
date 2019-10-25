@@ -25,11 +25,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
-
 #include "test_calculator.hh"
+
 #include "test_math.hh"  // for the gradient test
+
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_test);

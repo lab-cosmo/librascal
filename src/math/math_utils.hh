@@ -30,9 +30,10 @@
 #define SRC_MATH_MATH_UTILS_HH_
 
 #include <Eigen/Dense>
+
 #include <cmath>
-#include <limits>
 #include <cstdint>
+#include <limits>
 
 namespace rascal {
   /**

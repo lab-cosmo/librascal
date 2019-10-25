@@ -30,16 +30,17 @@
 #define TESTS_TEST_MATH_HH_
 
 #include "json_io.hh"
+#include "math/bessel.hh"
+#include "math/gauss_legendre.hh"
+#include "math/hyp1f1.hh"
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
-#include "math/hyp1f1.hh"
-#include "math/gauss_legendre.hh"
-#include "math/bessel.hh"
 #include "rascal_utility.hh"
+
+#include <Eigen/Dense>
 
 #include <fstream>
 #include <string>
-#include <Eigen/Dense>
 
 namespace rascal {
 

@@ -32,24 +32,24 @@
  * Each actual implementation of a StructureManager is based on the given
  * interface
  */
-#include "structure_managers/structure_manager_base.hh"
+#include "json_io.hh"
+#include "rascal_utility.hh"
+#include "structure_managers/cluster_ref_key.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/property_block_sparse.hh"
-#include "structure_managers/cluster_ref_key.hh"
-#include "rascal_utility.hh"
-#include "json_io.hh"
+#include "structure_managers/structure_manager_base.hh"
 
 // Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
 // And standard header inclusion
-#include <cstddef>
 #include <array>
+#include <cstddef>
+#include <limits>
+#include <sstream>
+#include <tuple>
 #include <type_traits>
 #include <utility>
-#include <limits>
-#include <tuple>
-#include <sstream>
 
 namespace rascal {
 
