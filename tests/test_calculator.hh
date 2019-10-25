@@ -455,8 +455,8 @@ namespace rascal {
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}},
-         {"type", "RadialScaling"},
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}},
+        {{"type", "RadialScaling"},
          {"cutoff", {{"value", 4.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}},
          {"rate", {{"value", 1.}, {"unit", "AA"}}},
