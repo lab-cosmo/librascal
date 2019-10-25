@@ -102,21 +102,6 @@ namespace rascal {
       return key;
     }
   };
-
-  /**
-   * Overload of stdout stream for tuple standardisation for debugging purposes
-   */
-  template <typename T, size_t Order>
-  std::ostream & operator<<(std::ostream & os,
-                            const KeyStandardisation<T, Order> & index) {
-    os << "(";
-    for (size_t i = 0; i < Order - 1; ++i) {
-      os << index[i] << ", ";
-    }
-    os << index.back() << ")";
-    return os;
-  }
-
 }  // namespace rascal
 
 #endif  // SRC_UTILS_KEY_STANDARDISATION_HH_
