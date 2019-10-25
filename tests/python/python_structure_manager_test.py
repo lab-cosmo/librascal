@@ -5,6 +5,9 @@ import numpy as np
 import sys
 import faulthandler
 
+rascal_reference_path = 'reference_data/'
+inputs_path = rascal_reference_path + "inputs/"
+outputs_path = rascal_reference_path + "outputs/"
 
 def get_NL_reference(cutoff, cell, pbc, positions, atom_types):
     list_box = BoxList(cutoff, np.array(cell.T, order='C'),
@@ -68,7 +71,7 @@ class TestStructureManagerCenters(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = inputs_path + 'CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.nl_options = [
@@ -94,7 +97,7 @@ class TestNL(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = inputs_path + 'CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.cutoff = 3.
@@ -141,7 +144,7 @@ class TestNLStrict(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = inputs_path + 'CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.cutoff = 3.

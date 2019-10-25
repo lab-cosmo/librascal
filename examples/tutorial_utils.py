@@ -231,7 +231,7 @@ class SOAP_tutorial(object):
                     sys.stderr.write("Reason: " + e.reason + "\n")
                 elif hasattr(e, "code"):
                     sys.stderr.write("HTTP error: {:d}\n".format(e.code))
-        file_options = ['./reference_data/{}'.format(f) for f in os.listdir('./data') if f.endswith('xyz')]
+        file_options = ['./reference_data/{}'.format(f) for f in os.listdir('./reference_data') if f.endswith('xyz')]
         if(input_file!=None):
             file_options.insert(0, input_file)
             if(input_file in file_options[1:]):

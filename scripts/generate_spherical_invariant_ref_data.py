@@ -11,6 +11,10 @@ from rascal.representations import SphericalInvariants
 from rascal.utils import ostream_redirect
 import rascal
 
+rascal_reference_path = 'reference_data/'
+inputs_path = rascal_reference_path + "inputs/"
+outputs_path = rascal_reference_path + "outputs/"
+
 ############################################################################
 
 def get_feature_vector(hypers, frames):
@@ -45,12 +49,12 @@ def dump_reference_json():
 
     fns = [
         os.path.join(
-            path, "tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
-        os.path.join(path, "tests/reference_data/small_molecule.json")
+            path, inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(path, inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/small_molecule.json",
+        outputs_path + "CaCrP2O7_mvc-11955_symmetrized.json",
+        outputs_path + "small_molecule.json",
     ]
 
     data = dict(filenames=fns_to_write,
@@ -96,8 +100,8 @@ def dump_reference_json():
                     dict(feature_matrix=x.tolist(),
                             hypers=copy(soap.hypers)))
 
-    with open(path+
-        "tests/reference_data/spherical_invariants_reference.ubjson",
+    with open(path+outputs_path+
+        "spherical_invariants_reference.ubjson",
                         'wb') as f:
                 ubjson.dump(data, f)
 
@@ -121,7 +125,7 @@ def main(json_dump, save_kernel):
     lmax = test_hypers["max_angular"]
     nstr = '2'  # number of structures
 
-    frames = read('../tests/reference_data/dft-smiles_500.xyz', ':'+str(nstr))
+    frames = read(inputs_path + 'dft-smiles_500.xyz', ':'+str(nstr))
     species = set(
         [atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
@@ -134,7 +138,7 @@ def main(json_dump, save_kernel):
     x = get_feature_vector(test_hypers, frames)
     kernel = np.dot(x, x.T)
     if save_kernel is True:
-        np.save('kernel_soap_example_nu1.npy', kernel)
+        np.save(outputs_path + 'kernel_soap_example_nu1.npy', kernel)
 
 #------------------------------------------nu=2------------------------------#
 
@@ -142,11 +146,11 @@ def main(json_dump, save_kernel):
     x = get_feature_vector(test_hypers, frames)
     kernel = np.dot(x, x.T)
     if save_kernel is True:
-        np.save('kernel_soap_example_nu2.npy', kernel)
+        np.save(outputs_path + 'kernel_soap_example_nu2.npy', kernel)
 
 #------------------------------------------nu=3-----------------------------#
 
-    frames = read('../tests/reference_data/water_rotations.xyz', ':'+str(nstr))
+    frames = read(inputs_path + 'water_rotations.xyz', ':'+str(nstr))
     species = set(
         [atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
@@ -160,7 +164,7 @@ def main(json_dump, save_kernel):
     x = get_feature_vector(test_hypers, frames)
     kernel = np.dot(x, x.T)
     if save_kernel is True:
-        np.save('kernel_soap_example_nu3.npy', kernel)
+        np.save(outputs_path + 'kernel_soap_example_nu3.npy', kernel)
 
 #------------------dump json reference data--------------------------------#
 
