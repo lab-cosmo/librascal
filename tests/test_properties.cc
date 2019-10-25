@@ -205,7 +205,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_pair_property_test, Fix,
                                    pair_property_fixtures, Fix) {
-    bool verbose{true};
+    bool verbose{false};
     if (verbose) {
       std::cout << ">> Test for manager ";
       std::cout << Fix::manager->get_name();

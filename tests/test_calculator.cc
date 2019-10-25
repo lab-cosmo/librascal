@@ -215,13 +215,7 @@ namespace rascal {
       atomic_structure.center_atoms_mask = ArrayB_t::Zero(n_atoms);
       auto i_atom1 = static_cast<int>(n_atoms / 2);
       atomic_structure.center_atoms_mask[i_atom1] = true;
-      std::cout << "size before " << manager->get_size() << std::endl;
-      std::cout << "size ghosts " << manager->get_size_with_ghosts()
-                << std::endl;
       manager->update(atomic_structure);
-      std::cout << "size after " << manager->get_size() << std::endl;
-      std::cout << "size after ghosts " << manager->get_size_with_ghosts()
-                << std::endl;
       for (auto & hyper : hypers) {
         representations.emplace_back(hyper);
         representations.back().compute(manager);
