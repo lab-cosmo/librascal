@@ -215,7 +215,7 @@ namespace rascal {
     ~SphericalInvariantsTestData() = default;
     bool verbose{false};
     std::string ref_filename{
-        "reference_data/spherical_invariants_reference.ubjson"};
+        "reference_data/outputs/spherical_invariants_reference.ubjson"};
   };
 
   struct SphericalCovariantsTestData : TestData {
@@ -228,7 +228,7 @@ namespace rascal {
     ~SphericalCovariantsTestData() = default;
     bool verbose{false};
     std::string ref_filename{
-        "reference_data/spherical_covariants_reference.ubjson"};
+        "reference_data/outputs/spherical_covariants_reference.ubjson"};
   };
 
   template <class MultipleStructureFixture>
@@ -323,7 +323,7 @@ namespace rascal {
     ~SimpleStructureManagerNLCCStrictFixture() = default;
 
     const std::string filename{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
     const double cutoff{3.};
     const double cutoff_skin{0.};
 
@@ -415,16 +415,14 @@ namespace rascal {
     ~SimplePeriodicNLCCStrictFixture() = default;
 
     const std::vector<std::string> filenames{
-        "reference_data/simple_cubic_8.json",
-        "reference_data/diamond_2atom_distorted.json",
-        "reference_data/diamond_cubic_distorted.json",
-        "reference_data/SiCGe_wurtzite_like.json",
-        "reference_data/SiC_moissanite_supercell.json",
-        "reference_data/small_molecule.json",
-        "reference_data/methane.json"};
-    // Simpler structures for debugging:
-    //"reference_data/diamond_2atom.json",
-    //"reference_data/SiC_moissanite.json",
+        "reference_data/inputs/diamond_2atom.json",
+        "reference_data/inputs/diamond_2atom_distorted.json",
+        "reference_data/inputs/diamond_cubic_distorted.json",
+        "reference_data/inputs/SiC_moissanite.json",
+        "reference_data/inputs/SiCGe_wurtzite_like.json",
+        "reference_data/inputs/SiC_moissanite_supercell.json",
+        "reference_data/input/small_molecule.json",
+        "reference_data/input/methane.json"};
     const double cutoff{2.5};
     const double cutoff_skin{0.};
 
@@ -524,7 +522,7 @@ namespace rascal {
     ~SphericalExpansionTestData() = default;
     bool verbose{false};
     std::string ref_filename{
-        "reference_data/spherical_expansion_reference.ubjson"};
+        "reference_data/outputs/spherical_expansion_reference.ubjson"};
   };
 
   /**
@@ -968,7 +966,8 @@ namespace rascal {
     json ref_data{};
     json factory_args{};
 
-    std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
+    std::string ref_filename{
+        "reference_data/outputs/sorted_coulomb_reference.ubjson"};
     bool verbose{false};
   };
 
