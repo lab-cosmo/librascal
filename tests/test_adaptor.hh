@@ -180,9 +180,9 @@ namespace rascal {
     ~MultipleStructureManagerCentersFixture() = default;
 
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json"};
+        "../reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json",
+        "../reference_data/inputs/simple_cubic_8.json",
+        "../reference_data/inputs/small_molecule.json"};
 
     json factory_args{};
   };
@@ -219,9 +219,9 @@ namespace rascal {
 
     const bool consider_ghost_neighbours{false};
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json"};
+        "../reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json",
+        "../reference_data/inputs/simple_cubic_8.json",
+        "../reference_data/inputs/small_molecule.json"};
     const std::vector<double> cutoffs{{1., 2., 3.}};
     const std::vector<double> skins{0.};
 
@@ -264,9 +264,9 @@ namespace rascal {
 
     const bool consider_ghost_neighbours{false};
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json"};
+        "../reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json",
+        "../reference_data/inputs/simple_cubic_8.json",
+        "../reference_data/inputs/small_molecule.json"};
     const std::vector<double> cutoffs{{1., 2., 3.}};
     const std::vector<double> skins{0.};
 
@@ -300,7 +300,7 @@ namespace rascal {
 
     const bool consider_ghost_neighbours{false};
     const std::string filename{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+        "../reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
     const double cutoff{3.};
     const std::vector<double> skins{0.};
 
@@ -342,9 +342,9 @@ namespace rascal {
     ~MultipleStructureManagerNLStrictFixture() = default;
     const bool consider_ghost_neighbours{false};
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json"};
+        "../reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json",
+        "../reference_data/inputs/simple_cubic_8.json",
+        "../reference_data/inputs/small_molecule.json"};
     const std::vector<double> cutoffs{{2., 3.}};
     const std::vector<double> skins{0.};
 
@@ -390,9 +390,9 @@ namespace rascal {
     ~MultipleStructureManagerNLCCStrictFixture() = default;
     const bool consider_ghost_neighbours{false};
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json"};
+        "../reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json",
+        "../reference_data/inputs/simple_cubic_8.json",
+        "../reference_data/inputs/small_molecule.json"};
     const std::vector<double> cutoffs{{2., 3.}};
     const std::vector<double> skins{0.};
 
@@ -458,9 +458,9 @@ namespace rascal {
 
     const std::vector<bool> consider_ghost_neighbours_list{{false, true}};
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json"};
+        "../reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json",
+        "../reference_data/inputs/simple_cubic_8.json",
+        "../reference_data/inputs/small_molecule.json"};
 
     const std::vector<double> cutoffs{{2., 3.}};
     const std::vector<double> skins{0.};
@@ -529,10 +529,10 @@ namespace rascal {
 
     const std::vector<bool> consider_ghost_neighbours_list{{false, true}};
     const std::vector<std::string> filenames{
-        // "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        // "reference_data/molecular_crystal.json",
-        // "reference_data/simple_cubic_8.json",
-        "reference_data/small_molecule.json"};
+        // "../reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json",
+        // "../reference_data/inputs/molecular_crystal.json",
+        // "../reference_data/inputs/simple_cubic_8.json",
+        "../reference_data/inputs/small_molecule.json"};
     const std::vector<double> cutoffs{{2., 3.}};
     const std::vector<double> skins{0.};
 

@@ -276,7 +276,7 @@ add_custom_target(copy_reference_data ALL
 
 add_custom_command(OUTPUT copy_test_reference_data
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/tests/reference_data ${CMAKE_BINARY_DIR}/reference_data
+    ${CMAKE_SOURCE_DIR}/reference_data ${CMAKE_BINARY_DIR}/reference_data
     DEPENDS
         always_rebuild
   )

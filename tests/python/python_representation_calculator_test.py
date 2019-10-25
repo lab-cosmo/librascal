@@ -6,7 +6,7 @@ import numpy as np
 import sys
 import json
 
-rascal_reference_path = 'reference_data/'
+rascal_reference_path = '../reference_data/'
 inputs_path = rascal_reference_path + "inputs/"
 outputs_path = rascal_reference_path + "outputs/"
 
