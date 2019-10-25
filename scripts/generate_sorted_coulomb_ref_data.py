@@ -1,6 +1,10 @@
 """Script used to generate the sorted_coulomb_reference.ubjson reference file
 """
 
+rascal_reference_path = 'reference_data/'
+inputs_path = rascal_reference_path + "inputs/"
+outputs_path = rascal_reference_path + "outputs/"
+
 import os
 import sys
 path = os.path.abspath('../')
@@ -19,11 +23,11 @@ sorts = ['row_norm', 'distance']
 
 fns = [
     os.path.join(
-        path, "tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
-    os.path.join(path, "tests/reference_data/small_molecule.json")]
+        path, inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+    os.path.join(path, inputs_path, "small_molecule.json")]
 fns_to_write = [
-    "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-    "reference_data/small_molecule.json"
+    outputs_path + "CaCrP2O7_mvc-11955_symmetrized.json",
+    outputs_path + "small_molecule.json"
 ]
 
 data = dict(filenames=fns_to_write, cutoffs=cutoffs, rep_info=[])
@@ -47,7 +51,6 @@ for fn in fns:
                                              hypers=copy(hypers)))
 
 with open(os.path.join(path,
-                       "tests",
-                       "reference_data",
+                       outputs_path,
                        "sorted_coulomb_reference.ubjson"), 'wb') as f:
     ubjson.dump(data, f)

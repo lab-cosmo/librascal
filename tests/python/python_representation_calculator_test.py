@@ -7,6 +7,9 @@ import sys
 import json
 from copy import copy
 
+rascal_reference_path = 'reference_data/'
+inputs_path = rascal_reference_path + "inputs/"
+outputs_path = rascal_reference_path + "outputs/"
 
 class TestSortedCoulombRepresentation(unittest.TestCase):
     def setUp(self):
@@ -15,7 +18,7 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = inputs_path + 'CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
 
         self.hypers = dict(cutoff=3., sorting_algorithm='row_norm',
@@ -38,11 +41,11 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = inputs_path + 'CaCrP2O7_mvc-11955_symmetrized.json'
         self.frames = [load_json_frame(fn)]
-        fn = 'reference_data/SiC_moissanite_supercell.json'
+        fn = inputs_path + 'SiC_moissanite_supercell.json'
         self.frames += [load_json_frame(fn)]
-        fn = 'reference_data/methane.json'
+        fn = inputs_path + 'methane.json'
         self.frames += [load_json_frame(fn)]
 
         self.hypers = {"interaction_cutoff": 6.0,
@@ -68,9 +71,11 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fns = ['reference_data/CaCrP2O7_mvc-11955_symmetrized.json',
-               'reference_data/SiC_moissanite_supercell.json',
-               'reference_data/methane.json']
+        fns = [
+            inputs_path + 'CaCrP2O7_mvc-11955_symmetrized.json',
+            inputs_path + 'SiC_moissanite_supercell.json',
+            inputs_path + 'methane.json'
+        ]
         self.frames = [load_json_frame(fn) for fn in fns]
 
         global_species = []
