@@ -389,7 +389,8 @@ namespace rascal {
     using ClusterRef_t = typename Fix::Manager_t::template ClusterRef<2>;
     using RadialIntegral_t =
         internal::RadialContribution<internal::RadialBasisType::GTO>;
-    GradientTestFixture test_data{"reference_data/radial_derivative_test.json"};
+    GradientTestFixture test_data{
+        "reference_data/unknown/radial_derivative_test.json"};
     auto && it_manager{managers.front()->begin()};  // Need only one manager
     auto && atom{*it_manager};
     auto && it_atom{atom.begin()};
