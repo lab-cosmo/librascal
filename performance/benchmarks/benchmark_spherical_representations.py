@@ -25,7 +25,10 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 """
 
-import sys
+# This file should be executed from the building directory
+# quick solution for loading 
+import sys, os
+sys.path.insert(0, os.getcwd())
 
 from ase.io import read
 
@@ -34,13 +37,6 @@ import benchmarks
 import rascal
 from rascal.representations import SphericalInvariants
 from rascal.representations import SphericalExpansion
-
-# This file should be executed from the building directory
-# quick solution for loading 
-RASCAL_DIR = ".."
-BUILD_DIR = RASCAL_DIR+"/build"
-sys.path.insert(0, BUILD_DIR)
-
 
 # Benchmark hyperparameters 
 NB_ITERATIONS_PER_REPRESENTATION = 20
