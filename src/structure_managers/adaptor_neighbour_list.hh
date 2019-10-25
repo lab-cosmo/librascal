@@ -555,10 +555,10 @@ namespace rascal {
 
     //! Returns position of an atom with index atom_tag
     inline Vector_ref get_position(size_t atom_tag) {
-      if (atom_tag < this->n_atoms) {
+      if (atom_tag < this->n_centers) {
         return this->manager->get_position(atom_tag);
       } else {
-        return this->get_ghost_position(atom_tag - this->n_atoms);
+        return this->get_ghost_position(atom_tag - this->n_centers);
       }
     }
 
@@ -677,7 +677,7 @@ namespace rascal {
      * necessary, because the underlying manager is not known at this
      * layer. Therefore we can not add positions to the existing array, but have
      * to add positions to a ghost array. This also means, that the get_position
-     * function will need to branch, depending on the atom_tag > n_atoms and
+     * function will need to branch, depending on the atom_tag > n_centers and
      * offset with n_ghosts to access ghost positions.
      */
 
@@ -776,9 +776,6 @@ namespace rascal {
      */
     size_t n_ghosts;
 
-    //! number of atoms in the unit cell
-    size_t n_atoms{};
-
     //! counts the number of time the neighbour list has been updated
     size_t n_update{0};
 
@@ -847,8 +844,8 @@ namespace rascal {
     if (this->need_update) {
       // set the number of centers
       this->n_centers = this->manager->get_size();
-      this->n_atoms = this->manager->get_n_atoms();
-      this->n_ghosts = 0;
+      // this->n_atoms = this->manager->get_n_atoms();
+      this->n_ghosts = 0; //this->manager->get_size_with_ghosts();
       //! Reset cluster_indices for adaptor to fill with sequence
       internal::for_each(this->cluster_indices_container,
                          internal::ResizePropertyToZero());
@@ -951,8 +948,8 @@ namespace rascal {
       // positions min/max for ghost atoms -> this is the actual bounding box
       ghost_min[i] = mesh_min[i] + cutoff;
       double lghost{lmesh - 2 * cutoff};
-      double n_ghosts{std::ceil(lghost / cutoff)};
-      ghost_max[i] = n_ghosts * cutoff + ghost_min[i];
+      double n_ghost_boxes{std::ceil(lghost / cutoff)};
+      ghost_max[i] = n_ghost_boxes * cutoff + ghost_min[i];
     }
 
     // Periodicity related multipliers. Now the mesh coordinates are calculated
@@ -1006,22 +1003,34 @@ namespace rascal {
       ntot *= nrep_in_dim;
     }
 
-    // before generating ghost atoms, all existing atoms are added to the list
-    // of current atoms to start the full list of current i-atoms and ghosts
-    // This is done before the ghost atom generation, to have them all
-    // contiguously at the beginning of the list.
-    for (size_t atom_tag{0}; atom_tag < this->n_atoms; ++atom_tag) {
+    // Before generating periodic replicas atoms (also termed ghost atoms), all
+    // existing center atoms are added to the list of current atoms to start the
+    // full list of current i-atoms to have them all contiguously at the
+    // beginning of the list.
+    for (size_t atom_tag{0}; atom_tag < this->manager->get_size(); ++atom_tag) {
       auto atom_type = this->manager->get_atom_type(atom_tag);
       auto cluster_index = this->manager->get_atom_index(atom_tag);
-      if (atom_tag < this->n_centers) {
-        this->atom_tag_list.push_back(atom_tag);
-      }
+      this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);
       this->atom_index_from_atom_tag_list.push_back(cluster_index);
     }
 
+    // And before generating periodic replicas (termed ghost atoms), previous
+    // ghost atoms are added to the list of ghost atoms with their associated
+    // data.
+    for (size_t atom_tag{this->manager->get_size()};
+         atom_tag < this->manager->get_size_with_ghosts(); ++atom_tag) {
+      auto pos = this->manager->get_position(atom_tag);
+      auto atom_type = this->manager->get_atom_type(atom_tag);
+      auto new_atom_tag{this->n_centers + this->n_ghosts};
+      this->add_ghost_atom(new_atom_tag, pos, atom_type);
+      size_t cluster_index = this->manager->get_atom_index(atom_tag);
+      this->atom_index_from_atom_tag_list.push_back(cluster_index);
+    }
+
     // generate ghost atom tags and positions
-    for (size_t atom_tag{0}; atom_tag < this->n_atoms; ++atom_tag) {
+    for (size_t atom_tag{0}; atom_tag < this->manager->get_size_with_ghosts();
+         ++atom_tag) {
       auto pos = this->manager->get_position(atom_tag);
       auto atom_type = this->manager->get_atom_type(atom_tag);
 
@@ -1036,7 +1045,7 @@ namespace rascal {
 
           if (flag_inside) {
             // next atom tag is size, since start is at index = 0
-            auto new_atom_tag{this->n_atoms + this->n_ghosts};
+            auto new_atom_tag{this->n_centers + this->n_ghosts};
             this->add_ghost_atom(new_atom_tag, pos_ghost, atom_type);
             // adds origin atom cluster_index if true
             // adds ghost atom cluster index if false
@@ -1051,7 +1060,7 @@ namespace rascal {
     internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
 
     // sorting the atoms and ghosts inside the cell into boxes
-    auto n_potential_neighbours{this->n_atoms + this->n_ghosts};
+    auto n_potential_neighbours{this->n_centers + this->n_ghosts};
     for (size_t atom_tag{0}; atom_tag < n_potential_neighbours; ++atom_tag) {
       auto pos = this->get_position(atom_tag);
       Vector_t dpos = pos - mesh_min;

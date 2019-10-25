@@ -50,7 +50,8 @@ namespace rascal {
       auto & structure = this->structures[i_manager];
       auto & center_atoms_mask = structure.center_atoms_mask;
       BOOST_CHECK_EQUAL(manager->get_size(), center_atoms_mask.count());
-      BOOST_CHECK_EQUAL(manager->get_nb_clusters(1), center_atoms_mask.count());
+      // #180 wrong test
+      //BOOST_CHECK_EQUAL(manager->get_nb_clusters(1), center_atoms_mask.count());
 
       int atom_counter{0};
 
@@ -139,11 +140,12 @@ namespace rascal {
                           ManagerFixture<StructureManagerCenters>) {
     int i_manager{0};
     for (auto & manager : this->managers) {
-      auto natoms = manager->size();
+      auto natoms1 = manager->size();
       auto natoms2 = manager->get_size();
       auto natoms3 = manager->get_nb_clusters(1);
-      BOOST_CHECK_EQUAL(natoms, natoms2);
-      BOOST_CHECK_EQUAL(natoms, natoms3);
+      auto natoms4 = manager->get_size_with_ghosts();
+      BOOST_CHECK_EQUAL(natoms1, natoms2);
+      BOOST_CHECK_EQUAL(natoms3, natoms4);
       auto & structure = this->structures[i_manager];
       auto & positions = structure.positions;
       auto & atom_types = structure.atom_types;
