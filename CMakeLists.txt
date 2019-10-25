@@ -73,7 +73,9 @@ option(USER "Switch installation folder" OFF)
 
 set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
 
-SET(TYPE_ARCHITECTURE "native" CACHE STRING "Choose the type of architecture to compile to in release mode. Default is to let the compiler decide")
+SET(TYPE_ARCHITECTURE "native" CACHE STRING
+    "Choose the type of architecture to compile to in release mode."
+)
 
 ########## COMPILATION FLAGS ##########
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++ -Wno-non-virtual-dtor")
@@ -203,7 +205,7 @@ if(CPPLINT_FOUND)
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples" "--filter=-build/namespaces")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples" "")
 endif()
 
 # Check for clang-format
