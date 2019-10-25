@@ -20,6 +20,7 @@ from queue import Queue
 import multiprocessing
 
 style = {'description_width': 'initial'}
+<<<<<<< HEAD:examples/tutorial_utils.py
 hyper_vals = {
 # "soap_type": dict(options = ["PowerSpectrum", "RadialSpectrum"], name = "Body Order"),
             "interaction_cutoff":dict(options = [2.0,5.0],name = r"$r_{cut}$"),
@@ -460,3 +461,5 @@ class SOAP_tutorial(object):
 
         for nf in tqdm(np.random.randint(2,ref, size=min(N, ref))):
             f(frame_idx=np.random.randint(len(self.frames),size=nf), pretend=True)
+=======
+>>>>>>> 9d17acc5... cleaning references:examples/utilities/tutorial_utils.py
