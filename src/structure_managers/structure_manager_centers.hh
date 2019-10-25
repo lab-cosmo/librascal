@@ -155,7 +155,7 @@ namespace rascal {
     //! Default constructor, values are set during .update() function
     StructureManagerCenters()
         : atoms_object{}, lattice{}, atoms_index{}, offsets{},
-          n_center_atoms{}, natoms{} {}
+          n_centers{}, n_ghosts{} {}
 
     //! Copy constructor
     StructureManagerCenters(const StructureManagerCenters & other) = delete;
@@ -239,13 +239,15 @@ namespace rascal {
     }
 
     //! returns number of I atoms in the list
-    size_t get_size() const { return this->n_center_atoms; }
+    inline size_t get_size() const { return this->n_centers; }
 
     //! returns number of I atoms in the list, since at this level, center atoms
     //! and ghost atoms are not distinguishable.
     // TODO(markus): reminder for including this in possible future scenario for
     // domain decomposion.
-    inline size_t get_size_with_ghosts() const { return this->n_center_atoms; }
+    inline size_t get_size_with_ghosts() const {
+      return this->n_centers + this->n_ghosts;
+    }
 
     //! returns the number of neighbours of a given i atom
     template <size_t Order, size_t Layer>
@@ -311,8 +313,6 @@ namespace rascal {
       return this->atoms_object;
     }
 
-    size_t get_n_atoms() const { return this->natoms; }
-
    protected:
     //! makes atom tag lists and offsets
     void build();
@@ -331,7 +331,7 @@ namespace rascal {
      *   - atoms_index[0] lists all i-atoms that will be centered on and at the
      * back the atoms that won't be centered on are indexed too.
      *
-     * The size of the manager is n_center_atoms so the loop over the center
+     * The size of the manager is n_centers so the loop over the center
      * atoms does not include the atoms that are not centered on.
      *
      * This array is expected to be accessed with atom_tags.
@@ -351,10 +351,10 @@ namespace rascal {
     std::vector<size_t> offsets{};
 
     //! Total number of center atoms in the structure
-    size_t n_center_atoms{};
+    size_t n_centers{};
 
-    //! Total number of atoms in the structure
-    size_t natoms{};
+    //! Total number of masked neighbour atoms in the structure
+    size_t n_ghosts{};
 
     //! number of time the structure has been updated
     size_t n_update{0};

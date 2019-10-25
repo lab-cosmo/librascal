@@ -93,7 +93,7 @@ int main() {
   manager->update(structure);
 
   std::cout << "Number of centers: " << manager->get_size() << std::endl;
-  std::cout << "Number of atoms (total): " << manager->get_n_atoms()
+  std::cout << "Number of atoms (total): " << manager->get_size_with_ghosts()
             << std::endl;
   std::cout << "manager iteration over atoms" << std::endl;
   for (auto atom : manager) {
