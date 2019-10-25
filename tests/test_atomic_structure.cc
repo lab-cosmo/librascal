@@ -38,8 +38,8 @@ namespace rascal {
     ~AtomicStructureFixture() = default;
 
     std::string ref_filename1 =
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json";
-    std::string ref_filename2 = "reference_data/small_molecule.json";
+        "../reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json";
+    std::string ref_filename2 = "../reference_data/inputs/small_molecule.json";
 
     bool verbose{false};
   };
@@ -96,10 +96,10 @@ namespace rascal {
 
     // load structure from a json formated file
     structure1.set_structure(
-        std::string("./reference_data/dummy_structure.json"));
+        std::string("./../reference_data/inputs/dummy_structure.json"));
     structure1.wrap();
     structure2.set_structure(
-        std::string("./reference_data/dummy_structure_wrapped.json"));
+        std::string("./../reference_data/inputs/dummy_structure_wrapped.json"));
 
     // check if identical with itself
     double skin2{1e-15};

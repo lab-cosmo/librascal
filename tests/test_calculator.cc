@@ -387,7 +387,7 @@ namespace rascal {
     using ClusterRef_t = typename Fix::Manager_t::template ClusterRef<2>;
     using RadialIntegral_t =
         internal::RadialContribution<internal::RadialBasisType::GTO>;
-    GradientTestFixture test_data{"reference_data/radial_derivative_test.json"};
+    GradientTestFixture test_data{"../reference_data/radial_derivative_test.json"};
     auto && it_manager{managers.front()->begin()};  // Need only one manager
     auto && atom{*it_manager};
     auto && it_atom{atom.begin()};
@@ -435,7 +435,7 @@ namespace rascal {
             calculator(representations.back(), manager, structures.back());
         RepresentationManagerGradientFixture<typename Fix::Representation_t,
                                              typename Fix::Manager_t>
-            grad_fix("reference_data/spherical_expansion_gradient_test.json",
+            grad_fix("../reference_data/spherical_expansion_gradient_test.json",
                      manager, calculator);
         if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
           std::cout << "Testing structure: " << *filename_it << std::endl;
