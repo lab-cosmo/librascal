@@ -131,7 +131,7 @@ namespace rascal {
      * Typically c == 1, r_0 > 0 and m is a positive integer.
      *
      * Gradients for the radial scaling are:
-     * 
+     *
      *         ╭ -m /( (r/r_0)^m * r), if c == 0
      *         |
      * u'(r) = ┤ 0, if m == 0
@@ -181,21 +181,25 @@ namespace rascal {
         } else if (this->exponent == 0) {
           factor = 0.;
         } else {
-          factor = - this->exponent / distance /
+          factor = -this->exponent / distance /
                    math::pow(distance / this->scale, this->exponent);
         }
         return factor;
       }
 
       double f_c(double distance) {
-        return this->value(distance) * math::switching_function_cosine(distance, this->cutoff, this->smooth_width);
+        return this->value(distance) *
+               math::switching_function_cosine(distance, this->cutoff,
+                                               this->smooth_width);
       }
 
       double df_c(double distance) {
-        double df_c1{this->grad(distance) * math::switching_function_cosine(distance, this->cutoff,
-                                                        this->smooth_width)};
-        double df_c2{this->value(distance) * math::derivative_switching_funtion_cosine(distance, this->cutoff,
-                                                        this->smooth_width)};
+        double df_c1{this->grad(distance) *
+                     math::switching_function_cosine(distance, this->cutoff,
+                                                     this->smooth_width)};
+        double df_c2{this->value(distance) *
+                     math::derivative_switching_funtion_cosine(
+                         distance, this->cutoff, this->smooth_width)};
         return df_c1 + df_c2;
       }
 
