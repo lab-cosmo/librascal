@@ -130,6 +130,14 @@ namespace rascal {
      *
      * Typically c == 1, r_0 > 0 and m is a positive integer.
      *
+     * Gradients for the radial scaling are:
+     * 
+     *         ╭ -m /( (r/r_0)^m * r), if c == 0
+     *         |
+     * u'(r) = ┤ 0, if m == 0
+     *         |
+     *         ╰ -m c (r/r_0)^m / (r * (c + (r/r_0)^m)^2), else
+     *
      */
     template <>
     struct CutoffFunction<internal::CutoffFunctionType::RadialScaling>
