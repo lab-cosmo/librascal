@@ -503,7 +503,7 @@ namespace rascal {
 
   template <class CutoffFunction>
   struct CutoffGradientProvider {
-    CutoffGradientProvider(CutoffFunction & cutoff)
+    explicit CutoffGradientProvider(CutoffFunction & cutoff)
         : cutoff_calculator{cutoff} {}
 
     ~CutoffGradientProvider() = default;
