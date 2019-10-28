@@ -501,6 +501,29 @@ namespace rascal {
     Eigen::VectorXd fac_b{};
   };
 
+  template <class CutoffFunction>
+  struct CutoffGradientProvider {
+    CutoffGradientProvider(CutoffFunction& cutoff) : cutoff_calculator{cutoff} { }
+
+    ~CutoffGradientProvider() = default;
+
+    Eigen::MatrixXd
+    f(const Eigen::Matrix<double, 1, 1> & input_v) {
+      Eigen::MatrixXd result(1,1);
+      result(0) = this->cutoff_calculator.f_c(input_v(0));
+      return result;
+    }
+
+    Eigen::MatrixXd
+    grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
+      Eigen::MatrixXd result(1,1);
+      result(0) = this->cutoff_calculator.df_c(input_v(0));
+      return result;
+    }
+    static const size_t n_arguments = 1;
+    CutoffFunction& cutoff_calculator;
+  };
+
 }  // namespace rascal
 
 #endif  // TESTS_TEST_MATH_HH_
