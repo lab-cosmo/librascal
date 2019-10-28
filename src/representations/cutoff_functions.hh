@@ -151,7 +151,7 @@ namespace rascal {
         this->scale = hypers.at("scale").at("value").get<double>();
       }
 
-      double f_c(double distance) {
+      double value(double distance) {
         double factor{0.};
         if (this->rate > math::dbl_ftol) {
           factor = this->rate / (this->rate + math::pow(distance / this->scale,
@@ -161,11 +161,10 @@ namespace rascal {
         } else {
           factor = math::pow(distance / this->scale, -this->exponent);
         }
-        return factor * math::switching_function_cosine(distance, this->cutoff,
-                                                        this->smooth_width);
+        return factor;
       }
 
-      double df_c(double distance) {
+      double grad(double distance) {
         double factor{0.};
         if (this->rate < math::dbl_ftol) {
           factor = -this->exponent / distance *
@@ -177,8 +176,20 @@ namespace rascal {
           factor = this->rate * this->exponent * ff / distance *
                    math::pow(this->rate + ff, -2);
         }
-        return factor * math::derivative_switching_funtion_cosine(
-                            distance, this->cutoff, this->smooth_width);
+        return factor;
+      }
+
+      double f_c(double distance) {
+        return this->value(distance) * math::switching_function_cosine(distance, this->cutoff,
+                                                        this->smooth_width);
+      }
+
+      double df_c(double distance) {
+        double df_c1{this->grad(distance) * math::switching_function_cosine(distance, this->cutoff,
+                                                        this->smooth_width)};
+        double df_c2{this->value(distance) * math::derivative_switching_funtion_cosine(distance, this->cutoff,
+                                                        this->smooth_width)};
+        return df_c1 * df_c2;
       }
 
       //! keep the hypers
