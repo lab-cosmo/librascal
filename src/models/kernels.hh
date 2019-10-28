@@ -227,7 +227,7 @@ namespace rascal {
         return this->compute_helper<Property_t, TargetType::Atom>(
             representation_name, managers_a, managers_b);
       default:
-        throw std::logic_error("The combination of parameter is not handdled.");
+        throw std::logic_error("The combination of parameter is not handled.");
       }
     }
 
@@ -243,7 +243,7 @@ namespace rascal {
         return kernel->template compute<Property_t, Type>(
             managers_a, managers_b, representation_name);
       } else {
-        throw std::logic_error("The combination of parameter is not handdled.");
+        throw std::logic_error("The combination of parameter is not handled.");
       }
     }
 
