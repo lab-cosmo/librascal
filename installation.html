@@ -377,7 +377,7 @@ sudo apt-get install pandoc doxygen graphviz
 </div>
 <p>Then to build the documentation run:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> build
-cmake -DENABLE_DOC<span class="o">=</span>ON ..
+cmake -DBUILD_DOC<span class="o">=</span>ON ..
 make doc
 </pre></div>
 </div>
@@ -493,12 +493,13 @@ inclusion in the
 <ul class="simple">
 <li><p>Common cmake flags:</p>
 <ul>
+<li><p>-DCMAKE_CXX_COMPILER</p></li>
 <li><p>-DCMAKE_C_COMPILER</p></li>
+<li><p>-DCMAKE_BUILD_TYPE</p></li>
 <li><p>-DBUILD_BINDINGS</p></li>
 <li><p>-DUSER</p></li>
 <li><p>-DINSTALL_PATH</p></li>
-<li><p>-DCMAKE_BUILD_TYPE</p></li>
-<li><p>-DENABLE_DOC</p></li>
+<li><p>-DBUILD_DOC</p></li>
 <li><p>-DBUILD_TESTS</p></li>
 </ul>
 </li>
