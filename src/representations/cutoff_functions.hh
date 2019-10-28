@@ -126,18 +126,23 @@ namespace rascal {
      * r_0 -> scale
      * m -> exponent
      *
-     * with the cosine switching function.
+     * multiplied by the cosine switching function defined in
+     * math::switching_function_cosine() (which comes with additional parameters
+     * `cutoff` and `smooth_width`).
      *
      * Typically c == 1, r_0 > 0 and m is a positive integer.
      *
-     * Gradients for the radial scaling are:
+     * Derivatives for the radial scaling component are:
      *
      *         ╭ -m /( (r/r_0)^m * r), if c == 0
      *         |
      * u'(r) = ┤ 0, if m == 0
      *         |
-     *         ╰ -m c (r/r_0)^m / (r * (c + (r/r_0)^m)^2), else
+     *         ╰ -m c (r/r_0)^m / (r * (c + (r/r_0)^m)^2), otherwise
      *
+     * These are combined with the cosine switching function derivatives using
+     * the Leibniz product rule to get the derivative of the final radial
+     * modulation function.
      */
     template <>
     struct CutoffFunction<internal::CutoffFunctionType::RadialScaling>
