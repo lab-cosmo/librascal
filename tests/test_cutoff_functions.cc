@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "test_math.hh"
 #include "representations/cutoff_functions.hh"
+#include "test_math.hh"
 
 #include <boost/test/unit_test.hpp>
 
@@ -41,13 +41,14 @@ namespace rascal {
   BOOST_AUTO_TEST_CASE(shifted_cosine_gradient_test) {
     static const bool verbose{false};
     std::vector<json> fc_hypers{
-      R"({
+        R"({
         "type": "ShiftedCosine",
         "cutoff": {"value": 3, "unit": "AA"},
         "smooth_width": {"value": 0.5, "unit": "AA"}
       })"_json,
-      };
-    using Cutoff_t = internal::CutoffFunction<internal::CutoffFunctionType::ShiftedCosine>;
+    };
+    using Cutoff_t =
+        internal::CutoffFunction<internal::CutoffFunctionType::ShiftedCosine>;
 
     for (auto & fc_hyper : fc_hypers) {
       if (verbose) {
@@ -58,7 +59,8 @@ namespace rascal {
 
       CutoffGradientProvider<Cutoff_t> cutoff_calculator(cutoff);
 
-      GradientTestFixture fix{"../tests/reference_data/cutoff_function_test.json"};
+      GradientTestFixture fix{
+          "../tests/reference_data/cutoff_function_test.json"};
       test_gradients(cutoff_calculator, fix);
     }
   }
@@ -70,7 +72,7 @@ namespace rascal {
   BOOST_AUTO_TEST_CASE(radial_scaling_gradient_test) {
     static const bool verbose{false};
     std::vector<json> fc_hypers{
-      R"({
+        R"({
         "type": "RadialScaling",
         "cutoff": {"value": 3, "unit": "AA"},
         "smooth_width": {"value": 0.5, "unit": "AA"},
@@ -78,7 +80,7 @@ namespace rascal {
         "scale": {"value": 2, "unit": "AA"} ,
         "exponent": {"value": 3, "unit": ""}
       })"_json,
-      R"({
+        R"({
         "type": "RadialScaling",
         "cutoff": {"value": 3, "unit": "AA"},
         "smooth_width": {"value": 0.5, "unit": "AA"},
@@ -86,7 +88,7 @@ namespace rascal {
         "scale": {"value": 2, "unit": "AA"} ,
         "exponent": {"value": 3, "unit": ""}
       })"_json,
-      R"({
+        R"({
         "type": "RadialScaling",
         "cutoff": {"value": 3, "unit": "AA"},
         "smooth_width": {"value": 0.5, "unit": "AA"},
@@ -94,8 +96,9 @@ namespace rascal {
         "scale": {"value": 2, "unit": "AA"} ,
         "exponent": {"value": 0, "unit": ""}
       })"_json,
-      };
-    using Cutoff_t = internal::CutoffFunction<internal::CutoffFunctionType::RadialScaling>;
+    };
+    using Cutoff_t =
+        internal::CutoffFunction<internal::CutoffFunctionType::RadialScaling>;
 
     for (auto & fc_hyper : fc_hypers) {
       if (verbose) {
@@ -106,11 +109,11 @@ namespace rascal {
 
       CutoffGradientProvider<Cutoff_t> cutoff_calculator(cutoff);
 
-      GradientTestFixture fix{"../tests/reference_data/cutoff_function_test.json"};
+      GradientTestFixture fix{
+          "../tests/reference_data/cutoff_function_test.json"};
       test_gradients(cutoff_calculator, fix);
     }
   }
-
 
   /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
