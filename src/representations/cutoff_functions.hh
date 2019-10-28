@@ -159,29 +159,28 @@ namespace rascal {
         } else if (this->exponent == 0) {
           factor = 1.;
         } else {
-          factor = math::pow(distance / this->scale, -this->exponent);
+          factor = 1. / math::pow(distance / this->scale, this->exponent);
         }
         return factor;
       }
 
       double grad(double distance) {
         double factor{0.};
-        if (this->rate < math::dbl_ftol) {
-          factor = -this->exponent / distance *
-                   math::pow(distance / this->scale, -this->exponent);
+        if (this->rate > math::dbl_ftol) {
+          double ff{math::pow(distance / this->scale, this->exponent)};
+          factor = -this->rate * this->exponent * ff / distance /
+                   math::pow(this->rate + ff, 2_n);
         } else if (this->exponent == 0) {
           factor = 0.;
         } else {
-          double ff{math::pow(distance / this->scale, this->exponent)};
-          factor = this->rate * this->exponent * ff / distance *
-                   math::pow(this->rate + ff, -2);
+          factor = - this->exponent / distance /
+                   math::pow(distance / this->scale, this->exponent);
         }
         return factor;
       }
 
       double f_c(double distance) {
-        return this->value(distance) * math::switching_function_cosine(distance, this->cutoff,
-                                                        this->smooth_width);
+        return this->value(distance) * math::switching_function_cosine(distance, this->cutoff, this->smooth_width);
       }
 
       double df_c(double distance) {
@@ -189,7 +188,7 @@ namespace rascal {
                                                         this->smooth_width)};
         double df_c2{this->value(distance) * math::derivative_switching_funtion_cosine(distance, this->cutoff,
                                                         this->smooth_width)};
-        return df_c1 * df_c2;
+        return df_c1 + df_c2;
       }
 
       //! keep the hypers
