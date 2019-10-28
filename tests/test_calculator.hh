@@ -38,6 +38,7 @@
 #include "representations/calculator_spherical_expansion.hh"
 #include "representations/calculator_spherical_invariants.hh"
 #include "structure_managers/structure_manager_collection.hh"
+#include "structure_managers/cluster_ref_key.hh"
 #include "test_adaptor.hh"
 #include "test_math.hh"
 #include "test_structure.hh"
@@ -456,13 +457,7 @@ namespace rascal {
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}},
-        {{"type", "RadialScaling"},
-         {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}},
-         {"rate", {{"value", 1.}, {"unit", "AA"}}},
-         {"exponent", {{"value", 3}, {"unit", ""}}},
-         {"scale", {{"value", 2.}, {"unit", "AA"}}}}};
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
@@ -596,6 +591,8 @@ namespace rascal {
 
     using PairRef_t =
         typename RepManager::template ClusterRef_t<StructureManager, 2>;
+
+    using PairRefKey_t = typename PairRef_t::ThisParentClass;
 
     // type of the data structure holding the representation and its gradients
     using Prop_t = typename RepManager::template Property_t<StructureManager>;
@@ -780,7 +777,7 @@ namespace rascal {
      * @todo wouldn't this be better as a member of StructureManager
      *       (viz. AdaptorNeighbourList<whatever>)?
      */
-    std::vector<PairRef_t> swap_pair_ref(const PairRef_t & pair_ref) {
+    std::vector<PairRefKey_t> swap_pair_ref(const PairRef_t & pair_ref) {
       const double image_pos_tol = 1E-7;
       auto center_manager{extract_underlying_manager<0>(structure_manager)};
       auto atomic_structure{center_manager->get_atomic_structure()};
@@ -793,11 +790,13 @@ namespace rascal {
       // images)
       size_t i_index{structure_manager->get_atom_index(pair_ref.front())};
       auto i_position{structure_manager->get_position(i_index)};
+      // std::cout << "cutoff: " << structure_manager->get_cutoff()<<std::endl;
       // Iterate until (j,i) is found
-      std::vector<PairRef_t> new_pairs;
+      std::vector<PairRefKey_t> new_pairs;
+      using Positions_t = Eigen::Matrix<double, 3, Eigen::Dynamic>;
       for (auto new_pair : new_center) {
-        auto i_trial_position = new_pair.get_position();
-        auto i_wrapped_position = atomic_structure.wrap_explicit_positions(
+        Positions_t i_trial_position = new_pair.get_position();
+        Positions_t i_wrapped_position = atomic_structure.wrap_explicit_positions(
                                                             i_trial_position);
         if ((i_wrapped_position - i_position).norm() < image_pos_tol) {
           new_pairs.emplace_back(std::move(new_pair));
