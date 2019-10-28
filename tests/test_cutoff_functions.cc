@@ -60,7 +60,7 @@ namespace rascal {
       CutoffGradientProvider<Cutoff_t> cutoff_calculator(cutoff);
 
       GradientTestFixture fix{
-          "../tests/reference_data/cutoff_function_test.json"};
+          "reference_data/cutoff_function_test.json"};
       test_gradients(cutoff_calculator, fix);
     }
   }
@@ -110,7 +110,7 @@ namespace rascal {
       CutoffGradientProvider<Cutoff_t> cutoff_calculator(cutoff);
 
       GradientTestFixture fix{
-          "../tests/reference_data/cutoff_function_test.json"};
+          "reference_data/cutoff_function_test.json"};
       test_gradients(cutoff_calculator, fix);
     }
   }
