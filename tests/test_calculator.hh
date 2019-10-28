@@ -617,6 +617,7 @@ namespace rascal {
       auto center = *center_it;
       Structure_t modified_structure{this->atomic_structure};
       modified_structure.positions.col(center.get_index()) = center_position;
+      modified_structure.wrap();
       this->structure_manager->update(modified_structure);
       this->representation.compute(this->structure_manager);
 
