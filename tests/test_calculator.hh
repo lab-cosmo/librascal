@@ -570,41 +570,45 @@ namespace rascal {
   };
 
   /**
-   * Calculator specialized to testing the gradient of a Calculator
+   * Gradient provider specialized to testing the gradient of a Calculator
    *
    * The gradient is tested center-by-center, by iterating over each center and
    * doing finite displacements on its position.  This iteration should normally
    * be done by the RepresentationManagerGradientFixture class.
    *
+   * In the case of periodic structures, the gradient is accumulated only onto
+   * _real_ atoms, but the motion of all _images_ of the "moving" atom (the one
+   * with respect to which the gradient is being taken) is taken into account.
+   *
    * Initialize with a Calculator, a StructureManager, and an
    * AtomicStructure representing the original structure (before modifying with
-   * finite-difference displacments).  The gradient of the representation with
+   * finite-difference displacements).  The gradient of the representation with
    * respect to the center position can then be tested, as usual, with
    * test_gradients() (defined in test_math.hh).
    */
-  template <typename RepManager, class StructureManager>
+  template <typename RepCalculator, class StructureManager>
   class RepresentationManagerGradientCalculator {
    public:
     static constexpr int Dim = StructureManager::traits::Dim;
     using Structure_t = AtomicStructure<Dim>;
-    using Key_t = typename RepManager::Key_t;
+    using Key_t = typename RepCalculator::Key_t;
     static const size_t n_arguments = Dim;
 
     using PairRef_t =
-        typename RepManager::template ClusterRef_t<StructureManager, 2>;
+        typename RepCalculator::template ClusterRef_t<StructureManager, 2>;
 
     using PairRefKey_t = typename PairRef_t::ThisParentClass;
 
     // type of the data structure holding the representation and its gradients
-    using Prop_t = typename RepManager::template Property_t<StructureManager>;
+    using Prop_t = typename RepCalculator::template Property_t<StructureManager>;
     using PropGrad_t =
-        typename RepManager::template PropertyGradient_t<StructureManager>;
+        typename RepCalculator::template PropertyGradient_t<StructureManager>;
 
     template <typename T, class V>
     friend class RepresentationManagerGradientFixture;
 
     RepresentationManagerGradientCalculator(
-        RepManager & representation,
+        RepCalculator & representation,
         std::shared_ptr<StructureManager> structure_manager,
         Structure_t atomic_structure)
         : representation{representation}, structure_manager{structure_manager},
@@ -759,7 +763,7 @@ namespace rascal {
     }
 
    private:
-    RepManager & representation;
+    RepCalculator & representation;
     std::shared_ptr<StructureManager> structure_manager;
     Structure_t atomic_structure;
     typename StructureManager::iterator center_it;
@@ -767,10 +771,12 @@ namespace rascal {
     inline void advance_center() { ++this->center_it; }
 
     /**
-     * Swap a ClusterRef (i, j) so it refers to (j, i) instead
+     * Swap a ClusterRef<order=2> (i, j) so it refers to (j, i) instead
      *
-     * This returns all pairs (j, i') where i' is either i or any of its
-     * periodic images within the cutoff of j
+     * @return std::vector of ClusterRefKeys or order 2 (pair keys) of all pairs
+     *         (j, i') where i' is either i or any of its periodic images within
+     *         the cutoff of j. The atom j, on the other hand, must be a real
+     *         atom (not a ghost or periodic image).
      *
      * @todo wouldn't this be better as a member of StructureManager
      *       (viz. AdaptorNeighbourList<whatever>)?
@@ -817,12 +823,12 @@ namespace rascal {
    * Holds data (i.e. function values, gradient directions) and iterates through
    * the list of centers
    */
-  template <typename RepManager_t, class StructureManager_t>
+  template <typename RepCalculator_t, class StructureManager_t>
   class RepresentationManagerGradientFixture : public GradientTestFixture {
    public:
     using StdVector2Dim_t = std::vector<std::vector<double>>;
     using Calculator_t =
-        RepresentationManagerGradientCalculator<RepManager_t,
+        RepresentationManagerGradientCalculator<RepCalculator_t,
                                                 StructureManager_t>;
 
     static const size_t n_arguments = 3;
