@@ -1,5 +1,5 @@
 /**
- * file   test_calculator.cc
+ * @file   test_calculator.cc
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *

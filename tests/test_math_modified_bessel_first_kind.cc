@@ -1,5 +1,5 @@
 /**
- * file   test_math_modified_bessel_first_kind.cc
+ * @file   test_math_modified_bessel_first_kind.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *

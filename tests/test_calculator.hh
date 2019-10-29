@@ -820,8 +820,8 @@ namespace rascal {
   /**
    * Test fixture holding the gradient calculator and structure manager
    *
-   * Holds data (i.e. function values, gradient directions) and iterates through
-   * the list of centers
+   * Holds data (function values, gradient directions, verbosity) and iterates
+   * through the list of centers
    */
   template <typename RepCalculator_t, class StructureManager_t>
   class RepresentationManagerGradientFixture : public GradientTestFixture {
@@ -833,6 +833,16 @@ namespace rascal {
 
     static const size_t n_arguments = 3;
 
+    /**
+     * Initialize a gradient test fixture
+     *
+     * @param filename JSON file holding gradient test parameters, format
+     *                 documented in GradientTestFixture
+     *
+     * @param structure StructureManager on which to test
+     *
+     * @param calc RepresentationCalculator whose gradient is being tested
+     */
     RepresentationManagerGradientFixture(
         std::string filename, std::shared_ptr<StructureManager_t> structure,
         Calculator_t & calc)
