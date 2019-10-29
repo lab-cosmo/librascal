@@ -11,7 +11,7 @@ import json
 
 rascal_reference_path = 'reference_data/'
 inputs_path = rascal_reference_path + "inputs/"
-outputs_path = rascal_reference_path + "outputs/"
+outputs_path = rascal_reference_path + "tests_only/"
 
 # Computes the sample points and weights for Gauss-Legendre quadrature
 # and rescales them.
@@ -77,7 +77,7 @@ def dump_reference_json():
     # data = [data]
     # with open(
     #       (path +
-    #        "reference_data/outputs/modified_bessel_first_kind_reference.ubjson",
+    #        "reference_data/tests_only/modified_bessel_first_kind_reference.ubjson",
     #       'wb') as f:
     #     ubjson.dump(data,f)
     with open(os.path.join(

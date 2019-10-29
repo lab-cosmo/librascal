@@ -9,7 +9,7 @@ import ubjson
 
 rascal_reference_path = 'reference_data/'
 inputs_path = rascal_reference_path + "inputs/"
-outputs_path = rascal_reference_path + "outputs/"
+outputs_path = rascal_reference_path + "tests_only/"
 
 
 # Computes the sample points and weights for Gauss-Legendre quadrature and rescales them.
