@@ -33,7 +33,25 @@
 #include <boost/test/unit_test.hpp>
 
 namespace rascal {
-  BOOST_AUTO_TEST_SUITE(representation_test);
+  /* ---------------------------------------------------------------------- */
+
+  using multiple_fixtures =
+      boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb<
+                           MultipleStructureManagerNLStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalExpansion<
+                           MultipleStructureManagerNLCCStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalInvariants<
+                           MultipleStructureManagerNLCCStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalCovariants<
+                           MultipleStructureManagerNLCCStrictFixture>>>;
+
+  using fixtures_ref_test =
+      boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
+                       CalculatorFixture<SphericalExpansionTestData>,
+                       CalculatorFixture<SphericalInvariantsTestData>,
+                       CalculatorFixture<SphericalCovariantsTestData>>;
+
+BOOST_AUTO_TEST_SUITE(representation_test);
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -85,25 +103,7 @@ namespace rascal {
     }
   }
 
-  /* ---------------------------------------------------------------------- */
-
-  using multiple_fixtures =
-      boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb<
-                           MultipleStructureManagerNLStrictFixture>>,
-                       CalculatorFixture<MultipleStructureSphericalExpansion<
-                           MultipleStructureManagerNLCCStrictFixture>>,
-                       CalculatorFixture<MultipleStructureSphericalInvariants<
-                           MultipleStructureManagerNLCCStrictFixture>>,
-                       CalculatorFixture<MultipleStructureSphericalCovariants<
-                           MultipleStructureManagerNLCCStrictFixture>>>;
-
-  using fixtures_ref_test =
-      boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
-                       CalculatorFixture<SphericalExpansionTestData>,
-                       CalculatorFixture<SphericalInvariantsTestData>,
-                       CalculatorFixture<SphericalCovariantsTestData>>;
-
-  /* ---------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
   /**
    * Test if the constructor runs and that the name is properly set
    */
@@ -209,7 +209,7 @@ namespace rascal {
     using ArrayB_t = typename AtomicStructure<3>::ArrayB_t;
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
-    // using Property_t = typename Fix::Property_t;
+    using Property_t = typename Fix::Property_t;
     auto & hypers = Fix::representation_hypers;
     for (auto & manager : managers) {
       auto man = extract_underlying_manager<0>(manager);
@@ -221,11 +221,11 @@ namespace rascal {
       manager->update(atomic_structure);
       for (auto & hyper : hypers) {
         representations.emplace_back(hyper);
+        std::string property_name{representations.back().get_name()};
         representations.back().compute(manager);
-        // auto & prop = manager->template get_validated_property_ref<Property_t>(
-        //     representations.back().get_name());
-        //BUG #180, TODO(markus), correct sizing of property to _centers_
-        // BOOST_CHECK_EQUAL(prop.get_nb_item(), 1);
+        auto prop{manager->template get_validated_property<Property_t>(
+            property_name)};
+        BOOST_CHECK_EQUAL(prop->get_nb_item(), 1);
       }
     }
   }
@@ -286,8 +286,7 @@ namespace rascal {
             prop_no_center.get_dense_feature_matrix();
 
         BOOST_CHECK_EQUAL(rep_full.cols(), rep_no_center.cols());
-        //BUG #180, TODO(markus), correct sizing of property to _centers_
-        //BOOST_CHECK_EQUAL(center_atoms_mask.count(), rep_no_center.rows());
+        BOOST_CHECK_EQUAL(center_atoms_mask.count(), rep_no_center.rows());
 
         if (verbose) {
           std::cout << "rep dim: " << rep_no_center.rows() << ", "
@@ -346,9 +345,8 @@ namespace rascal {
                 property_name)};
         auto test_representation = property.get_dense_feature_matrix();
 
-        // BUG #180, TODO(markus), correct sizing of property to _centers_
-        // BOOST_CHECK_EQUAL(ref_representation.size(),
-        //                   test_representation.rows());
+        BOOST_CHECK_EQUAL(ref_representation.size(),
+                          test_representation.rows());
         double avg_diff{0.};
         for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
           BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
