@@ -202,7 +202,7 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    std::array<int, 1> get_neighbour_atom_tag(const Parent &, size_t index) const {
+    int get_neighbour_atom_tag(const Parent &, size_t index) const {
       return this->manager->get_neighbour_atom_tag(*this->manager, index);
     }
 
@@ -420,10 +420,11 @@ namespace rascal {
                           current_i_atoms.begin(), current_i_atoms.end(),
                           std::inserter(atoms_to_add, atoms_to_add.begin()));
 
-      // tag(felix) this should add an array of indicies
+      // tag(felix) dummy tag for the j atom in the ijk triplet
+      // only there waiting for the rework of this class
       if (atoms_to_add.size() > 0) {
         for (auto j : atoms_to_add) {
-          manager.add_neighbour_of_cluster(j);
+          manager.add_neighbour_of_cluster(std::array<int, 2>{0,static_cast<int>(j)});
         }
       }
     }

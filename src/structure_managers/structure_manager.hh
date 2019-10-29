@@ -647,27 +647,35 @@ namespace rascal {
   namespace internal {
     //! helper function that allows to append extra elements to an array It
     //! returns the given array, plus one element
-    template <typename T, size_t Size1, size_t Size2, int... Indices1, int... Indices2>
+    template <typename T, size_t Size, int... Indices>
+    std::array<T, Size + 1>
+    append_array_helper(const std::array<T, Size> & arr, T && t,
+                        std::integer_sequence<int, Indices...>) {
+      return std::array<T, Size + 1>{{arr[Indices]..., std::forward<T>(t)}};
+    }
+
+    //! template function allows to add an element to an array
+    template <typename T, size_t Size>
+    std::array<T, Size + 1> append_array(const std::array<T, Size> & arr,
+                                         T && t) {
+      return append_array_helper(arr, std::forward<T>(t),
+                                 std::make_integer_sequence<int, Size>{});
+    }
+
+    template <typename T, size_t Size1, int... Indices1, size_t Size2, int... Indices2>
     std::array<T, Size1 + Size2>
-    append_array_helper(const std::array<T, Size1> & arr1, const std::array<T, Size2> & arr2, std::integer_sequence<int, Indices1...>,
+    concat_array_helper(const std::array<T, Size1> & arr1, const std::array<T, Size2> & arr2, std::integer_sequence<int, Indices1...>,
                         std::integer_sequence<int, Indices2...>) {
       return std::array<T, Size1 + Size2>{{arr1[Indices1]..., arr2[Indices2]...}};
     }
 
-    // //! template function allows to add an element to an array
-    // template <typename T, size_t Size1, size_t Size2 = 1, bool B = std::is_array<T>::value, std::enable_if_t<not(B), int> = 0>
-    // std::array<T, Size1 + 1> append_array(const std::array<T, Size1> & arr,
-    //                                      T && t) {
-    //   return append_array(arr, std::array<T, 1>{t});
-    // }
-
-     //! template function allows to add an element to an array
+    //! template function allows to add an element to an array
     template <typename T, size_t Size1, size_t Size2>
-    std::array<T, Size1 + Size2> append_array(
+    std::array<T, Size1 + Size2> concat_array(
                                          const std::array<T, Size1> & arr1,
                                          const std::array<T, Size2> & arr2) {
-      return append_array_helper(arr1, arr2,
-                                 std::make_integer_sequence<int, Size1>{}.
+      return concat_array_helper(arr1, arr2,
+                                 std::make_integer_sequence<int, Size1>{},
                                  std::make_integer_sequence<int, Size2>{});
     }
 
@@ -1186,6 +1194,8 @@ namespace rascal {
 
     static constexpr bool IsOrderOne{Order == 1};
 
+    static constexpr bool IsOrderOneOrTwo{IsOrderOne or (Order == 2)};
+
     // determine the container type
     using Container_t =
         std::conditional_t<IsOrderOne, Manager_t,
@@ -1282,17 +1292,31 @@ namespace rascal {
         : container{cont}, index{start}, offset{offset} {}
 
     //! add atomic indices in current iteration
+    template <bool T = IsOrderOneOrTwo, std::enable_if_t<T, int> = 0>
     AtomIndex_t get_atom_tag_list() {
       return internal::append_array(
           container.get_atom_tag_list(),
-          this->get_manager().get_neighbour_atom_tag(container, this->index));
+          this->get_manager().implementation().get_neighbour_atom_tag(container, this->index));
     }
-
     //! add atomic indices in current iteration
+    template <bool T = IsOrderOneOrTwo, std::enable_if_t<T, int> = 0>
     AtomIndex_t get_atom_tag_list() const {
       return internal::append_array(
           container.get_atom_tag_list(),
-          this->get_manager().get_neighbour_atom_tag(container, this->index));
+          this->get_manager().implementation().get_neighbour_atom_tag(container, this->index));
+    }
+
+    template <bool T = IsOrderOneOrTwo, std::enable_if_t<not(T), int> = 0>
+    AtomIndex_t get_atom_tag_list() {
+      return internal::concat_array(
+          container.get_atom_tag_list(),
+          this->get_manager().implementation().get_neighbour_atom_tag(container, this->index));
+    }
+    template <bool T = IsOrderOneOrTwo, std::enable_if_t<not(T), int> = 0>
+    AtomIndex_t get_atom_tag_list() const {
+      return internal::concat_array(
+          container.get_atom_tag_list(),
+          this->get_manager().implementation().get_neighbour_atom_tag(container, this->index));
     }
 
     //! returns the current index of the cluster in iteration

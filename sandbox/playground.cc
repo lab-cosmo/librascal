@@ -155,7 +155,9 @@ int main() {
 
   for (auto center : triplet_manager) {
     auto ctag = center.get_atom_tag();
-    std::cout << "Center: " << ctag << " n. neighbors " << center.size()
+    // std::cout << "Center: " << ctag << " n. neighbors " << center.size()
+    //           << std::endl;
+    std::cout << "Center: " << ctag << " n. neighbors " 
               << std::endl;
     for (auto triplet : center.get_triplets()) {
       std::cout << "triplet (" << center.get_atom_tag() << ", "
