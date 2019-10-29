@@ -897,7 +897,8 @@ namespace rascal {
     json ref_data{};
     json factory_args{};
 
-    std::string ref_filename{"../reference_data/outputs/sorted_coulomb_reference.ubjson"};
+    std::string ref_filename{"../reference_data/outputs/"
+                             "sorted_coulomb_reference.ubjson"};
     bool verbose{false};
   };
 
