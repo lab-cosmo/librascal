@@ -29,19 +29,20 @@
 #ifndef TESTS_TEST_MATH_HH_
 #define TESTS_TEST_MATH_HH_
 
-#include "tests.hh"
 #include "json_io.hh"
-#include "math/math_interface.hh"
+#include "math/bessel.hh"
+#include "math/gauss_legendre.hh"
+#include "math/hyp1f1.hh"
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
-#include "math/hyp1f1.hh"
-#include "math/gauss_legendre.hh"
-#include "math/bessel.hh"
 #include "rascal_utility.hh"
+
+#include <boost/test/unit_test.hpp>
+
+#include <Eigen/Dense>
 
 #include <fstream>
 #include <string>
-#include <Eigen/Dense>
 
 namespace rascal {
 
@@ -498,6 +499,28 @@ namespace rascal {
     size_t max_angular;
     double fac_a{};
     Eigen::VectorXd fac_b{};
+  };
+
+  template <class CutoffFunction>
+  struct CutoffGradientProvider {
+    explicit CutoffGradientProvider(CutoffFunction & cutoff)
+        : cutoff_calculator{cutoff} {}
+
+    ~CutoffGradientProvider() = default;
+
+    Eigen::MatrixXd f(const Eigen::Matrix<double, 1, 1> & input_v) {
+      Eigen::MatrixXd result(1, 1);
+      result(0) = this->cutoff_calculator.f_c(input_v(0));
+      return result;
+    }
+
+    Eigen::MatrixXd grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
+      Eigen::MatrixXd result(1, 1);
+      result(0) = this->cutoff_calculator.df_c(input_v(0));
+      return result;
+    }
+    static const size_t n_arguments = 1;
+    CutoffFunction & cutoff_calculator;
   };
 
 }  // namespace rascal

@@ -25,11 +25,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
-#include "test_structure.hh"
-#include "structure_managers/adaptor_half_neighbour_list.hh"
 #include "structure_managers/adaptor_full_neighbour_list.hh"
+#include "structure_managers/adaptor_half_neighbour_list.hh"
+#include "test_structure.hh"
 
+#include <boost/test/unit_test.hpp>
+
+constexpr double TOLERANCE = 1e-14;
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(half_neighbourlist_adaptor_test);
@@ -103,7 +105,7 @@ namespace rascal {
 
     BOOST_CHECK_EQUAL(npairs_full, 4);
     BOOST_CHECK_EQUAL(npairs_half, 2);
-    BOOST_CHECK(relative_error < tol * tol / 100 / 100);
+    BOOST_CHECK(relative_error < TOLERANCE * TOLERANCE);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -183,7 +185,7 @@ namespace rascal {
     auto val{distance_sum_full - distance_sum_full_half_full};
     auto relative_error = val * val / (distance_sum_full * distance_sum_full);
     // check if the sum and square of all distances is the same
-    BOOST_CHECK(relative_error < tol * tol / 100 / 100);
+    BOOST_CHECK(relative_error < TOLERANCE * TOLERANCE);
 
     // check counted number of pairs during iteration
     BOOST_CHECK_EQUAL(npairs, npairs_adapted);

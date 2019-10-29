@@ -26,11 +26,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
-#include "test_structure.hh"
 #include "structure_managers/species_manager.hh"
+#include "test_structure.hh"
 
-#include <map>
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 
@@ -76,7 +76,7 @@ namespace rascal {
       auto species{tup.first};
       auto nb_atoms{tup.second};
       auto nb_filtered{
-          Fix::species_manager[std::array<int, 1>{species}].size()};
+          Fix::species_manager[std::array<int, 1>{{species}}].size()};
       BOOST_CHECK_EQUAL(nb_atoms, nb_filtered);
     }
   }

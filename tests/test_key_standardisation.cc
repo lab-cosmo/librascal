@@ -25,11 +25,25 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
 #include "utils/key_standardisation.hh"
+
 #include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
+  /**
+   * Overload of stdout stream for tuple standardisation for debugging purposes
+   */
+  template <typename T, size_t Order>
+  std::ostream & operator<<(std::ostream & os,
+                            const KeyStandardisation<T, Order> & index) {
+    os << "(";
+    for (size_t i = 0; i < Order - 1; ++i) {
+      os << index[i] << ", ";
+    }
+    os << index.back() << ")";
+    return os;
+  }
 
   BOOST_AUTO_TEST_SUITE(key_standardisation_test);
   /* ---------------------------------------------------------------------- */

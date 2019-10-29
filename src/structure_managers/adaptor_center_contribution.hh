@@ -29,10 +29,10 @@
 #ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_CENTER_CONTRIBUTION_HH_
 #define SRC_STRUCTURE_MANAGERS_ADAPTOR_CENTER_CONTRIBUTION_HH_
 
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
-#include "structure_managers/updateable_base.hh"
 #include "rascal_utility.hh"
+#include "structure_managers/property.hh"
+#include "structure_managers/structure_manager.hh"
+#include "structure_managers/updateable_base.hh"
 
 namespace rascal {
   /*
@@ -354,7 +354,7 @@ namespace rascal {
       atom_cluster_indices.push_back(indices);
 
       auto && atom_tag = atom.get_atom_tag();
-      AtomIndex_t self_atom_tag_list{atom_tag, atom_tag};
+      AtomIndex_t self_atom_tag_list{{atom_tag, atom_tag}};
 
       std::array<size_t, PairLayer + 1> self_indices_pair;
       self_indices_pair[PairLayer] = pair_counter;

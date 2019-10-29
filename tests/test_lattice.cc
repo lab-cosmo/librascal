@@ -25,8 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
 #include "test_lattice.hh"
+
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
   constexpr static double lattice_tol{1e-10 * 100};

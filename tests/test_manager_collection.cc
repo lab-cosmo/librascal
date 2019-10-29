@@ -29,6 +29,9 @@
 
 #include "test_manager_collection.hh"
 
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
+
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(manager_collection_test);

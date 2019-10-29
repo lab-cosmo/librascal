@@ -32,24 +32,24 @@
  * Each actual implementation of a StructureManager is based on the given
  * interface
  */
-#include "structure_managers/structure_manager_base.hh"
+#include "json_io.hh"
+#include "rascal_utility.hh"
+#include "structure_managers/cluster_ref_key.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/property_block_sparse.hh"
-#include "structure_managers/cluster_ref_key.hh"
-#include "rascal_utility.hh"
-#include "json_io.hh"
+#include "structure_managers/structure_manager_base.hh"
 
 // Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
 // And standard header inclusion
-#include <cstddef>
 #include <array>
+#include <cstddef>
+#include <limits>
+#include <sstream>
+#include <tuple>
 #include <type_traits>
 #include <utility>
-#include <limits>
-#include <tuple>
-#include <sstream>
 
 namespace rascal {
 
@@ -651,7 +651,7 @@ namespace rascal {
     std::array<T, Size + 1>
     append_array_helper(const std::array<T, Size> & arr, T && t,
                         std::integer_sequence<int, Indices...>) {
-      return std::array<T, Size + 1>{arr[Indices]..., std::forward<T>(t)};
+      return std::array<T, Size + 1>{{arr[Indices]..., std::forward<T>(t)}};
     }
 
     //! template function allows to add an element to an array
@@ -1110,7 +1110,7 @@ namespace rascal {
     species_aggregator_helper(const std::array<int, Order> & array,
                               const Manager & manager,
                               std::index_sequence<Indices...> /*indices*/) {
-      return std::array<int, Order>{manager.atom_type(array[Indices])...};
+      return std::array<int, Order>{{manager.atom_type(array[Indices])...}};
     }
 
     template <class Manager, size_t Order, size_t... Indices>

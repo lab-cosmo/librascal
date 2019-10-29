@@ -30,9 +30,9 @@
 #ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_HALF_NEIGHBOUR_LIST_HH_
 #define SRC_STRUCTURE_MANAGERS_ADAPTOR_HALF_NEIGHBOUR_LIST_HH_
 
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
 #include "rascal_utility.hh"
+#include "structure_managers/property.hh"
+#include "structure_managers/structure_manager.hh"
 
 namespace rascal {
   /**

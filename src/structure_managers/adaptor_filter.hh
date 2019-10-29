@@ -30,10 +30,10 @@
 #ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_FILTER_HH_
 #define SRC_STRUCTURE_MANAGERS_ADAPTOR_FILTER_HH_
 
-#include "structure_managers/structure_manager.hh"
+#include "rascal_utility.hh"
 #include "structure_managers/cluster_ref_key.hh"
 #include "structure_managers/filter_base.hh"
-#include "rascal_utility.hh"
+#include "structure_managers/structure_manager.hh"
 
 #include <type_traits>
 

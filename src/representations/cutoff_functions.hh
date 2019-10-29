@@ -29,14 +29,14 @@
 #ifndef SRC_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_
 #define SRC_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_
 
-#include "rascal_utility.hh"
 #include "math/math_utils.hh"
+#include "rascal_utility.hh"
 #include "representations/calculator_base.hh"
 
-#include <vector>
-#include <memory>
-
 #include <Eigen/Dense>
+
+#include <memory>
+#include <vector>
 
 namespace rascal {
 
@@ -126,10 +126,23 @@ namespace rascal {
      * r_0 -> scale
      * m -> exponent
      *
-     * with the cosine switching function.
+     * multiplied by the cosine switching function defined in
+     * math::switching_function_cosine() (which comes with additional parameters
+     * `cutoff` and `smooth_width`).
      *
      * Typically c == 1, r_0 > 0 and m is a positive integer.
      *
+     * Derivatives for the radial scaling component are:
+     *
+     *         ╭ -m /( (r/r_0)^m * r), if c == 0
+     *         |
+     * u'(r) = ┤ 0, if m == 0
+     *         |
+     *         ╰ -m c (r/r_0)^m / (r * (c + (r/r_0)^m)^2), otherwise
+     *
+     * These are combined with the cosine switching function derivatives using
+     * the Leibniz product rule to get the derivative of the final radial
+     * modulation function.
      */
     template <>
     struct CutoffFunction<internal::CutoffFunctionType::RadialScaling>
@@ -151,7 +164,7 @@ namespace rascal {
         this->scale = hypers.at("scale").at("value").get<double>();
       }
 
-      double f_c(double distance) {
+      double value(double distance) {
         double factor{0.};
         if (this->rate > math::dbl_ftol) {
           factor = this->rate / (this->rate + math::pow(distance / this->scale,
@@ -159,26 +172,40 @@ namespace rascal {
         } else if (this->exponent == 0) {
           factor = 1.;
         } else {
-          factor = math::pow(distance / this->scale, -this->exponent);
+          factor = 1. / math::pow(distance / this->scale, this->exponent);
         }
-        return factor * math::switching_function_cosine(distance, this->cutoff,
-                                                        this->smooth_width);
+        return factor;
       }
 
-      double df_c(double distance) {
+      double grad(double distance) {
         double factor{0.};
-        if (this->rate < math::dbl_ftol) {
-          factor = -this->exponent / distance *
-                   math::pow(distance / this->scale, -this->exponent);
+        if (this->rate > math::dbl_ftol) {
+          double ff{math::pow(distance / this->scale, this->exponent)};
+          factor = -this->rate * this->exponent * ff / distance /
+                   math::pow(this->rate + ff, 2_n);
         } else if (this->exponent == 0) {
           factor = 0.;
         } else {
-          double ff{math::pow(distance / this->scale, this->exponent)};
-          factor = this->rate * this->exponent * ff / distance *
-                   math::pow(this->rate + ff, -2);
+          factor = -this->exponent / distance /
+                   math::pow(distance / this->scale, this->exponent);
         }
-        return factor * math::derivative_switching_funtion_cosine(
-                            distance, this->cutoff, this->smooth_width);
+        return factor;
+      }
+
+      double f_c(double distance) {
+        return this->value(distance) *
+               math::switching_function_cosine(distance, this->cutoff,
+                                               this->smooth_width);
+      }
+
+      double df_c(double distance) {
+        double df_c1{this->grad(distance) *
+                     math::switching_function_cosine(distance, this->cutoff,
+                                                     this->smooth_width)};
+        double df_c2{this->value(distance) *
+                     math::derivative_switching_funtion_cosine(
+                         distance, this->cutoff, this->smooth_width)};
+        return df_c1 + df_c2;
       }
 
       //! keep the hypers

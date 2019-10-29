@@ -28,14 +28,14 @@
 #ifndef SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_COLLECTION_HH_
 #define SRC_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_COLLECTION_HH_
 
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "structure_managers/property.hh"
-#include "structure_managers/updateable_base.hh"
+#include "atomic_structure.hh"
+#include "json_io.hh"
 #include "math/math_utils.hh"
 #include "rascal_utility.hh"
-#include "json_io.hh"
-#include "atomic_structure.hh"
+#include "structure_managers/make_structure_manager.hh"
+#include "structure_managers/property.hh"
+#include "structure_managers/structure_manager.hh"
+#include "structure_managers/updateable_base.hh"
 
 namespace rascal {
 

@@ -28,11 +28,12 @@
 #ifndef SRC_RASCAL_UTILITY_HH_
 #define SRC_RASCAL_UTILITY_HH_
 
-#include <utility>
 #include <string>
-#include <vector>
-#include <typeinfo>
+#include <tuple>
 #include <type_traits>
+#include <typeinfo>
+#include <utility>
+#include <vector>
 
 namespace rascal {
   namespace internal {

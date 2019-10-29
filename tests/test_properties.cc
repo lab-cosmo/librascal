@@ -29,6 +29,10 @@
 
 #include "test_properties.hh"
 
+#include <boost/test/unit_test.hpp>
+
+constexpr double TOLERANCE = 1e-10;
+
 namespace rascal {
   // TODO(felix) TODO(alex) test dynamic sized Property completely
   BOOST_AUTO_TEST_SUITE(Property_tests);
@@ -120,10 +124,10 @@ namespace rascal {
 
     for (auto atom : manager) {
       auto error = (atom_vector_property[atom] - atom.get_position()).norm();
-      BOOST_CHECK_LE(error, tol * 100);
+      BOOST_CHECK_LE(error, TOLERANCE);
       auto error_dynamic =
           (atom_dynamic_vector_property[atom] - atom.get_position()).norm();
-      BOOST_CHECK_LE(error_dynamic, tol * 100);
+      BOOST_CHECK_LE(error_dynamic, TOLERANCE);
     }
 
     if (verbose) {
@@ -191,11 +195,11 @@ namespace rascal {
     for (auto atom : Fix::manager->with_ghosts()) {
       auto error =
           (Fix::atom_vector_property[atom] - atom.get_position()).norm();
-      BOOST_CHECK_LE(error, tol * 100);
+      BOOST_CHECK_LE(error, TOLERANCE);
       auto error_dynamic =
           (Fix::atom_dynamic_vector_property[atom] - atom.get_position())
               .norm();
-      BOOST_CHECK_LE(error_dynamic, tol * 100);
+      BOOST_CHECK_LE(error_dynamic, TOLERANCE);
       BOOST_CHECK_EQUAL(Fix::atom_scalar_property[atom], counter);
       eigen_counter << counter;
       BOOST_CHECK_EQUAL(Fix::atom_dynamic_scalar_property[atom], eigen_counter);
@@ -245,7 +249,7 @@ namespace rascal {
     for (auto atom : Fix::manager->with_ghosts()) {
       auto error =
           (Fix::atom_vector_property[atom] - atom.get_position()).norm();
-      BOOST_CHECK_LE(error, tol * 100);
+      BOOST_CHECK_LE(error, TOLERANCE);
       for (auto pair : atom.get_pairs()) {
         BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
       }
@@ -297,7 +301,7 @@ namespace rascal {
     for (auto atom : Fix::manager->with_ghosts()) {
       auto error =
           (Fix::atom_vector_property[atom] - atom.get_position()).norm();
-      BOOST_CHECK_LE(error, tol * 100);
+      BOOST_CHECK_LE(error, TOLERANCE);
       for (auto pair : atom.get_pairs()) {
         BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
       }
@@ -556,7 +560,7 @@ namespace rascal {
           auto error = (Fix::atom_vector_property[atom] -
                         Fix::atom_vector_property[pair])
                            .norm();
-          BOOST_CHECK_LE(error, tol * 100);
+          BOOST_CHECK_LE(error, TOLERANCE);
         }
       }
     }
@@ -644,7 +648,7 @@ namespace rascal {
     for (auto atom : Fix::manager) {
       auto error =
           (Fix::atom_vector_property[atom] - atom.get_position()).norm();
-      BOOST_CHECK_LE(error, tol * 100);
+      BOOST_CHECK_LE(error, TOLERANCE);
       Eigen::Matrix<size_t, Fix::DynSize(), Eigen::Dynamic> tmp(Fix::DynSize(),
                                                                 1);
       tmp << counter++, counter, counter;
@@ -655,10 +659,10 @@ namespace rascal {
       error = (Fix::atom_vector_property[atom] -
                Fix::atom_dynamic_vector_property[atom])
                   .norm();
-      BOOST_CHECK_LE(error, tol * 100);
+      BOOST_CHECK_LE(error, TOLERANCE);
       error =
           (Fix::atom_vector_property[atom] - FakeSizedProperty[atom]).norm();
-      BOOST_CHECK_LE(error, tol * 100);
+      BOOST_CHECK_LE(error, TOLERANCE);
       for (auto pair : atom.get_pairs()) {
         BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
       }
@@ -696,7 +700,7 @@ namespace rascal {
       for (auto pair : atom.get_pairs()) {
         auto dist{(atom.get_position() - pair.get_position()).norm()};
         auto error{Fix::pair_property[pair] - dist};
-        BOOST_CHECK_LE(error, tol / 100);
+        BOOST_CHECK_LE(error, TOLERANCE);
       }
     }
     if (verbose) {
@@ -832,14 +836,14 @@ namespace rascal {
         }
         if (verbose)
           std::cout << "error1: " << error1 << std::endl;
-        BOOST_CHECK_LE(std::sqrt(error1), tol * 100);
+        BOOST_CHECK_LE(std::sqrt(error1), TOLERANCE);
         for (auto & key : keys_list[i_manager][i_center]) {
           auto error2 = (sparse_features[i_manager](center, key) -
                          test_datas[i_manager][i_center][key])
                             .norm();
           if (verbose)
             std::cout << "error2: " << error2 << std::endl;
-          BOOST_CHECK_LE(error2, tol * 100);
+          BOOST_CHECK_LE(error2, TOLERANCE);
         }
         i_center++;
       }

@@ -7,3 +7,19 @@ AlwaysBreakTemplateDeclarations: true
 ColumnLimit: 80
 KeepEmptyLinesAtTheStartOfBlocks: false
 IndentWidth: 2
+# rules related to include sorting
+SortIncludes: true
+IncludeBlocks: Regroup
+IncludeCategories:
+  # Headers in "" with extension, i.e. rascal headers
+  - Regex:           '"[[:alnum:]/_]+\.h+p*"'
+    Priority:        1
+  # Headers in <> with extension, i.e. external libraries headers
+  - Regex:           '<[[:alnum:]/_]+\.h+p*>'
+    Priority:        2
+  # Eigen headers look like standard library headers
+  - Regex:           '<Eigen/[[:alnum:]]+>'
+    Priority:        3
+  # Headers in <> without extension, i.e. usually c/c++ standard library headers
+  - Regex:           '<[[:alnum:]_]+>'
+    Priority:        4

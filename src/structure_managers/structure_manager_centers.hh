@@ -34,19 +34,19 @@
 
 // inclusion of librascal data structure, each manager is based on the interface
 // given in `structure_manager.hh`
-#include "structure_managers/structure_manager.hh"
-#include "lattice.hh"
 #include "atomic_structure.hh"
 #include "basic_types.hh"
 #include "json_io.hh"
+#include "lattice.hh"
+#include "structure_managers/structure_manager.hh"
 
 // data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
 // standard header inclusion
+#include <array>
 #include <stdexcept>
 #include <vector>
-#include <array>
 
 /**
  * All functions and classes are in the namespace <code>rascal</code>, which

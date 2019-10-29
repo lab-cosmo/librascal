@@ -29,9 +29,10 @@
 #define SRC_UTILS_SPARSIFY_UTILITIES_HH_
 
 #include "basic_types.hh"
-#include <tuple>
 
 #include <Eigen/Dense>
+
+#include <tuple>
 
 namespace rascal {
   namespace utils {

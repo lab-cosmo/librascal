@@ -31,18 +31,19 @@
 #include "atomic_structure.hh"
 #include "rascal_utility.hh"
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl_bind.h>
 #include <pybind11/eigen.h>
-#include <pybind11/stl.h>
 #include <pybind11/iostream.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 // for the hasattr function to test the module namespace
 #include <pybind11/pytypes.h>
 
 #include <Eigen/Dense>
-#include <vector>
+
 #include <map>
 #include <memory>
+#include <vector>
 
 /*
  * Prevent vector of atomic structures from being copied into a Python list,

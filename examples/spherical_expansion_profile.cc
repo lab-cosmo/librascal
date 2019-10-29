@@ -25,26 +25,25 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_center_contribution.hh"
-#include "structure_managers/make_structure_manager.hh"
+#include "atomic_structure.hh"
+#include "basic_types.hh"
 #include "rascal_utility.hh"
 #include "representations/calculator_sorted_coulomb.hh"
 #include "representations/calculator_spherical_expansion.hh"
 #include "representations/calculator_spherical_invariants.hh"
-#include "basic_types.hh"
-#include "atomic_structure.hh"
+#include "structure_managers/adaptor_center_contribution.hh"
+#include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/adaptor_strict.hh"
+#include "structure_managers/make_structure_manager.hh"
+#include "structure_managers/structure_manager_centers.hh"
 
-#include <iostream>
-#include <basic_types.hh>
-#include <cmath>
-#include <list>
-#include <functional>
-#include <string>
-#include <initializer_list>
 #include <chrono>
+#include <cmath>
+#include <functional>
+#include <initializer_list>
+#include <iostream>
+#include <list>
+#include <string>
 
 // using namespace std;
 using namespace rascal;  // NOLINT

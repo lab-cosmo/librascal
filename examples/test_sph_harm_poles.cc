@@ -25,12 +25,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <iostream>
-#include <iomanip>
-#include <cmath>
-
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
+
+#include <cmath>
+#include <iomanip>
+#include <iostream>
 
 using rascal::math::PI;
 using rascal::math::SphericalHarmonics;

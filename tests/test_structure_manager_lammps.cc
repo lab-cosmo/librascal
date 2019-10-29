@@ -27,10 +27,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
 #include "test_structure.hh"
 
-#include <iostream>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 

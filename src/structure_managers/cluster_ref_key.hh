@@ -34,9 +34,9 @@
 
 #include <Eigen/Dense>
 
-#include <tuple>
 #include <array>
 #include <iostream>
+#include <tuple>
 
 namespace rascal {
   /* ---------------------------------------------------------------------- */

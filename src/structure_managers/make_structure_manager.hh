@@ -28,12 +28,11 @@
 #ifndef SRC_STRUCTURE_MANAGERS_MAKE_STRUCTURE_MANAGER_HH_
 #define SRC_STRUCTURE_MANAGERS_MAKE_STRUCTURE_MANAGER_HH_
 
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
-
-#include "rascal_utility.hh"
-#include "json_io.hh"
 #include "atomic_structure.hh"
+#include "json_io.hh"
+#include "rascal_utility.hh"
+#include "structure_managers/property.hh"
+#include "structure_managers/structure_manager.hh"
 
 #include <type_traits>
 
