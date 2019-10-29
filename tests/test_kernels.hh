@@ -1,5 +1,5 @@
 /**
- * file test_kernels.hh
+ * @file test_kernels.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
