@@ -48,6 +48,28 @@ Math utilities (namespace :cpp:class:`rascal::math`)
     :project: rascal
     :members:
 
+Gradient tests (developer)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All representations in libRascal should implement, or plan to implement,
+gradients (derivatives w.r.t. the Cartesian positions of all the atoms) so that
+they can be used to run dynamics.  This is often a complex and error-prone task,
+so a finite-difference gradient checker is provided to check the gradients of
+any representation calculator -- or any math function in general -- and ensure
+that the analytical and finite-difference gradients match up.
+
+To check the gradient of a new representation calculator, it should suffice to
+use the classes RepresentationManagerGradientCalculator (to provide the function
+and its gradient) and RepresentationManagerGradientFixture (to assist in
+iterating over the atoms of the structure).  An example of its usage is shown
+below, excerpted from :file:`tests/test_calculator.cc`:
+
+.. literalinclude:: ../../../tests/test_calculator.cc
+   :language: cpp
+   :lines: 430-436, 441-444
+   :dedent: 2
+
+
 Index
 ~~~~~
 
