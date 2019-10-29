@@ -417,12 +417,16 @@ namespace rascal {
     ~SimplePeriodicNLCCStrictFixture() = default;
 
     const std::vector<std::string> filenames{
-        "reference_data/diamond_2atom.json",
         "reference_data/diamond_2atom_distorted.json",
         "reference_data/diamond_cubic_distorted.json",
-        "reference_data/SiC_moissanite.json",
         "reference_data/SiCGe_wurtzite_like.json",
-        "reference_data/SiC_moissanite_supercell.json"};
+        "reference_data/SiC_moissanite_supercell.json",
+        "reference_data/small_molecule.json",
+        "reference_data/methane.json"
+    };
+    // Simpler structures for debugging:
+        //"reference_data/diamond_2atom.json",
+        //"reference_data/SiC_moissanite.json",
     const double cutoff{2.5};
     const double cutoff_skin{0.};
 
