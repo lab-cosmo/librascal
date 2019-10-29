@@ -61,8 +61,8 @@ any representation calculator -- or any mathematical function in general -- and
 ensure that the analytical and finite-difference gradients match up.
 
 To check the gradient of a new representation calculator, it should suffice to
-use the classes RepresentationManagerGradientCalculator (to provide the function
-and its gradient) and RepresentationManagerGradientFixture (to assist in
+use the classes RepresentationCalculatorGradientProvider (to provide the function
+and its gradient) and RepresentationCalculatorGradientFixture (to assist in
 iterating over the atoms of the structure).  An example of its usage is shown
 below, excerpted from :file:`tests/test_calculator.cc`:
 
@@ -79,11 +79,11 @@ that manager.
 
 A more detailed documentation of these two classes follows:
 
-.. doxygenclass:: rascal::RepresentationManagerGradientCalculator
+.. doxygenclass:: rascal::RepresentationCalculatorGradientProvider
    :project: rascal
    :members:
 
-.. doxygenclass:: rascal::RepresentationManagerGradientFixture
+.. doxygenclass:: rascal::RepresentationCalculatorGradientFixture
    :project: rascal
    :members:
 

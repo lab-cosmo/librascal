@@ -574,7 +574,7 @@ namespace rascal {
    *
    * The gradient is tested center-by-center, by iterating over each center and
    * doing finite displacements on its position.  This iteration should normally
-   * be done by the RepresentationManagerGradientFixture class.
+   * be done by the RepresentationCalculatorGradientFixture class.
    *
    * In the case of periodic structures, the gradient is accumulated only onto
    * _real_ atoms, but the motion of all _images_ of the "moving" atom (the one
@@ -587,7 +587,7 @@ namespace rascal {
    * test_gradients() (defined in test_math.hh).
    */
   template <typename RepCalculator, class StructureManager>
-  class RepresentationManagerGradientCalculator {
+  class RepresentationCalculatorGradientProvider {
    public:
     static constexpr size_t Dim = 3;
     static constexpr size_t n_arguments = Dim;
@@ -605,9 +605,9 @@ namespace rascal {
         typename RepCalculator::template PropertyGradient_t<StructureManager>;
 
     template <typename T, class V>
-    friend class RepresentationManagerGradientFixture;
+    friend class RepresentationCalculatorGradientFixture;
 
-    RepresentationManagerGradientCalculator(
+    RepresentationCalculatorGradientProvider(
         RepCalculator & representation,
         std::shared_ptr<StructureManager> structure_manager,
         Structure_t atomic_structure)
@@ -615,7 +615,7 @@ namespace rascal {
           atomic_structure{atomic_structure}, center_it{
                                                   structure_manager->begin()} {}
 
-    ~RepresentationManagerGradientCalculator() = default;
+    ~RepresentationCalculatorGradientProvider() = default;
 
     Eigen::Array<double, 1, Eigen::Dynamic>
     f(const Eigen::Ref<const Eigen::Vector3d> & center_position) {
@@ -824,12 +824,12 @@ namespace rascal {
    * through the list of centers
    */
   template <typename RepCalculator_t, class StructureManager_t>
-  class RepresentationManagerGradientFixture : public GradientTestFixture {
+  class RepresentationCalculatorGradientFixture : public GradientTestFixture {
    public:
     using StdVector2Dim_t = std::vector<std::vector<double>>;
     using Calculator_t =
-        RepresentationManagerGradientCalculator<RepCalculator_t,
-                                                StructureManager_t>;
+        RepresentationCalculatorGradientProvider<RepCalculator_t,
+                                                 StructureManager_t>;
 
     static const size_t n_arguments = 3;
 
@@ -843,7 +843,7 @@ namespace rascal {
      *
      * @param calc RepresentationCalculator whose gradient is being tested
      */
-    RepresentationManagerGradientFixture(
+    RepresentationCalculatorGradientFixture(
         std::string filename, std::shared_ptr<StructureManager_t> structure,
         Calculator_t & calc)
         : structure{structure}, center_it{structure->begin()}, calculator{
@@ -859,7 +859,7 @@ namespace rascal {
       }
     }
 
-    ~RepresentationManagerGradientFixture() = default;
+    ~RepresentationCalculatorGradientFixture() = default;
 
     const Calculator_t & get_calculator() { return calculator; }
 

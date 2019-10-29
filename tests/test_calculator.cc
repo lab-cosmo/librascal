@@ -430,10 +430,10 @@ namespace rascal {
         representations.emplace_back(hyper);
         structures.emplace_back();
         structures.back().set_structure(*filename_it);
-        RepresentationManagerGradientCalculator<typename Fix::Representation_t,
-                                                typename Fix::Manager_t>
+        RepresentationCalculatorGradientProvider<typename Fix::Representation_t,
+                                                 typename Fix::Manager_t>
             calculator(representations.back(), manager, structures.back());
-        RepresentationManagerGradientFixture<typename Fix::Representation_t,
+        RepresentationCalculatorGradientFixture<typename Fix::Representation_t,
                                              typename Fix::Manager_t>
             grad_fix("reference_data/spherical_expansion_gradient_test.json",
                      manager, calculator);
