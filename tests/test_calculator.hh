@@ -585,7 +585,7 @@ namespace rascal {
   template <typename RepManager, class StructureManager>
   class RepresentationManagerGradientCalculator {
    public:
-    static const int Dim = StructureManager::traits::Dim;
+    static constexpr int Dim = StructureManager::traits::Dim;
     using Structure_t = AtomicStructure<Dim>;
     using Key_t = typename RepManager::Key_t;
     static const size_t n_arguments = Dim;
