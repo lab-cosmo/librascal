@@ -422,8 +422,7 @@ namespace rascal {
         "reference_data/diamond_cubic_distorted.json",
         "reference_data/SiC_moissanite.json",
         "reference_data/SiCGe_wurtzite_like.json",
-        "reference_data/SiC_moissanite_supercell.json"
-    };
+        "reference_data/SiC_moissanite_supercell.json"};
     const double cutoff{2.5};
     const double cutoff_skin{0.};
 
@@ -600,7 +599,8 @@ namespace rascal {
     using PairRefKey_t = typename PairRef_t::ThisParentClass;
 
     // type of the data structure holding the representation and its gradients
-    using Prop_t = typename RepCalculator::template Property_t<StructureManager>;
+    using Prop_t =
+        typename RepCalculator::template Property_t<StructureManager>;
     using PropGrad_t =
         typename RepCalculator::template PropertyGradient_t<StructureManager>;
 
@@ -743,7 +743,8 @@ namespace rascal {
         // We need grad_i c^{ji} -- using just 'neigh' would give us
         // grad_j c^{ij}, hence the swap
         auto neigh_swap_images{swap_pair_ref(neigh)};
-        auto & gradients_neigh_first{gradients_sparse[neigh_swap_images.front()]};
+        auto & gradients_neigh_first{
+            gradients_sparse[neigh_swap_images.front()]};
         // The set of species keys should be the same for all images of i
         auto keys_neigh{gradients_neigh_first.get_keys()};
         for (auto & key : keys_neigh) {
@@ -800,8 +801,8 @@ namespace rascal {
       using Positions_t = Eigen::Matrix<double, Dim, Eigen::Dynamic>;
       for (auto new_pair : new_center) {
         Positions_t i_trial_position = new_pair.get_position();
-        Positions_t i_wrapped_position = atomic_structure.wrap_explicit_positions(
-                                                            i_trial_position);
+        Positions_t i_wrapped_position =
+            atomic_structure.wrap_explicit_positions(i_trial_position);
         if ((i_wrapped_position - i_position).norm() < image_pos_tol) {
           new_pairs.emplace_back(std::move(new_pair));
         }
@@ -809,8 +810,8 @@ namespace rascal {
       if (new_pairs.size() == 0) {
         std::stringstream err_str{};
         err_str << "Didn't find any pairs for pair (i=" << pair_ref.front()
-                << ", j=" << pair_ref.back() << "); access index for j = "
-                << access_index;
+                << ", j=" << pair_ref.back()
+                << "); access index for j = " << access_index;
         throw std::range_error(err_str.str());
       }
       return new_pairs;
