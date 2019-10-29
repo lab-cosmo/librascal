@@ -32,6 +32,7 @@
 #include "representations/calculator_spherical_expansion.hh"
 #include "representations/calculator_spherical_invariants.hh"
 #include "structure_managers/adaptor_center_contribution.hh"
+#include "structure_managers/adaptor_increase_maxorder.hh"
 #include "structure_managers/adaptor_neighbour_list.hh"
 #include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/make_structure_manager.hh"
@@ -66,10 +67,18 @@ using namespace rascal;  // NOLINT
         std::cout << "FALSE " << std::endl;
       }
     };
+
+  template<size_t val>
+  struct BB {
+    static void print(){
+        std::cout << "val " << val << std::endl;
+      }
+  };
+
 int main() {
   // Test1()();
   // std::string filename{"reference_data/dft-smiles_500.ubjson"};
-  std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+  std::string filename{"../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   //  std::string filename{"reference_data/alloy-small.json"};
   // std::string filename{"reference_data/alloy-small.json"};
   // std::string filename{"reference_data/diamond_cubic.json"};
@@ -77,6 +86,8 @@ int main() {
 
   double cutoff{3.};
   AA<internal::is_order_available<5>(std::index_sequence<3,4,8,7>{})>::print();
+
+  BB<internal::get_last_element_in_sequence(std::index_sequence<3,4,8,7>{})>::print();
 
   std::cout << "Order is available " <<
       internal::is_order_available<5>(std::index_sequence<3,4,8,7>{}) << std::endl;
@@ -139,6 +150,21 @@ int main() {
     //   std::cout << "triplet: " << std::endl;
     // }
   }
+
+  auto triplet_manager{make_adapted_manager<AdaptorMaxOrder>(manager)};
+
+  for (auto center : triplet_manager) {
+    auto ctag = center.get_atom_tag();
+    std::cout << "Center: " << ctag << " n. neighbors " << center.size()
+              << std::endl;
+    for (auto triplet : center.get_triplets()) {
+      std::cout << "triplet (" << center.get_atom_tag() << ", "
+                << triplet.get_atom_tag()
+                << ") global index " << triplet.get_global_index()
+                << std::endl;
+    }
+  }
+
 
   return (0);
 }

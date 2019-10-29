@@ -96,6 +96,8 @@ namespace rascal {
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
 
+    static constexpr size_t AdditionalOrder{internal::get_last_element_in_sequence(typename traits::AvailableOrdersList{})};
+
     static_assert(traits::MaxOrder > 2,
                   "ManagerImplementation needs at least a pair list for"
                   " extension.");
@@ -200,29 +202,20 @@ namespace rascal {
      * Returns the id of the index-th (neighbour) atom of the cluster that is
      * the full structure/atoms object, i.e. simply the id of the index-th atom
      */
-    int get_neighbour_atom_tag(const Parent &, size_t index) const {
+    std::array<int, 1> get_neighbour_atom_tag(const Parent &, size_t index) const {
       return this->manager->get_neighbour_atom_tag(*this->manager, index);
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
-    template <size_t Order, size_t Layer>
-    int get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+    // tag(felix) this should return an array
+    template <size_t Layer>
+    std::array<int, AdditionalOrder - 1> get_neighbour_atom_tag(const ClusterRefKey<1, Layer> & cluster,
                                size_t index) const {
-      static_assert(Order < traits::MaxOrder,
-                    "this implementation only handles up to traits::MaxOrder");
-
-      // necessary helper construct for static branching
-      using IncreaseHelper_t =
-          internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
-
-      if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_neighbour_atom_tag(*this->manager, cluster,
-                                                        index);
-      } else {
-        auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
-        return this->neighbours_atom_tag[offset + index];
-      }
+      auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
+      return this->neighbours_atom_tag[offset + index];
     }
+
+
 
     size_t get_atom_index(const int atom_tag) const {
       return this->manager->get_atom_index(atom_tag);
@@ -262,7 +255,9 @@ namespace rascal {
     void add_entry_number_of_neighbours() { this->nb_neigh.push_back(0); }
 
     //! Adds a given atom tag as new cluster neighbour
-    void add_neighbour_of_cluster(const int atom_tag) {
+    // tag(felix) this could have in principle more than one tag
+    void add_neighbour_of_cluster(const std::array<int, AdditionalOrder - 1> atom_tag) {
+    // void add_neighbour_of_cluster(const int atom_tag) {
       // adds `atom_tag` to neighbours
       this->neighbours_atom_tag.push_back(atom_tag);
       // increases the number of neighbours
@@ -292,7 +287,8 @@ namespace rascal {
     std::vector<size_t> nb_neigh{};
 
     //! Stores all neighbours atom tag of traits::MaxOrder-1-clusters
-    std::vector<int> neighbours_atom_tag{};
+    std::vector< std::array<int, AdditionalOrder - 1> > neighbours_atom_tag{};
+    // std::vector< int > neighbours_atom_tag{};
 
     /**
      * Stores the offsets of traits::MaxOrder-1-*clusters for accessing
@@ -338,7 +334,7 @@ namespace rascal {
     // do nothing, if MaxOrder is not reached, except call the next order
     static void loop(ClusterRef_t & cluster,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
-      for (auto next_cluster : cluster.template get_clusters_of_order<Order>()) {
+      for (auto next_cluster : cluster.template get_clusters_of_order<Order+1>()) {
         auto & next_cluster_indices{std::get<next_cluster.order() - 1>(
             manager.cluster_indices_container)};
 
@@ -416,12 +412,15 @@ namespace rascal {
         }
       }
 
+
+
       // delete existing cluster atoms from list to build additional neighbours
       std::vector<size_t> atoms_to_add{};
       std::set_difference(current_j_atoms.begin(), current_j_atoms.end(),
                           current_i_atoms.begin(), current_i_atoms.end(),
                           std::inserter(atoms_to_add, atoms_to_add.begin()));
 
+      // tag(felix) this should add an array of indicies
       if (atoms_to_add.size() > 0) {
         for (auto j : atoms_to_add) {
           manager.add_neighbour_of_cluster(j);
