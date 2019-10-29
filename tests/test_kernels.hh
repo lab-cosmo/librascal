@@ -133,7 +133,9 @@ namespace rascal {
     std::vector<json> representation_hypers{};
     std::vector<json> kernel_hypers{};
 
-    std::string ref_filename{"reference_data/kernel_reference.ubjson"};
+    const bool consider_ghost_neighbours{false};
+    std::string ref_filename{
+        "reference_data/tests_only/kernel_reference.ubjson"};
     std::string filename{""};
     int start{0};
     int length{0};

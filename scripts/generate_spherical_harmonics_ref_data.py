@@ -14,7 +14,7 @@ from functools import reduce
 
 rascal_reference_path = 'reference_data/'
 inputs_path = rascal_reference_path + "inputs/"
-outputs_path = rascal_reference_path + "outputs/"
+outputs_path = rascal_reference_path + "tests_only/"
 
 def load_unit_vectors_from_json():
     fn = inputs_path + "spherical_harmonics_test.json"
