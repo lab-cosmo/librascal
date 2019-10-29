@@ -837,6 +837,8 @@ namespace rascal {
                                                  StructureManager_t>;
 
     static const size_t n_arguments = 3;
+    /** Some representations have quite large FD truncation errors */
+    double fd_error_tol{1E-4};
 
     /**
      * Initialize a gradient test fixture
