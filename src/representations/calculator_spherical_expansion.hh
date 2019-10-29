@@ -1094,8 +1094,9 @@ namespace rascal {
     using math::PI;
     using math::pow;
 
-    auto && expansions_coefficients{
-        manager->template get_property_ref<Prop_t>(this->get_name())};
+    constexpr bool ExcludeGhosts{true};
+    auto && expansions_coefficients{*manager->template get_property_ptr<Prop_t>(
+        this->get_name(), ExcludeGhosts)};
 
     auto && expansions_coefficients_gradient{
         manager->template get_property_ref<PropGrad_t>(

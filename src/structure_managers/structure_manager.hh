@@ -423,7 +423,9 @@ namespace rascal {
     get_validated_property_ref(const std::string & name) const {
       return *this->get_validated_property<UserProperty_t>(name);
     }
-    /*  Returns the typed property. Throws an error if property type given from
+
+    /**
+     *  Returns the typed property. Throws an error if property type given from
      *  user does not match actual property type.
      */
     template <typename UserProperty_t>
@@ -448,14 +450,49 @@ namespace rascal {
      * @throw runtime_error if UserProperty_t is not compatible with property
      * of the given name
      */
-    template <typename UserProperty_t>
-    std::shared_ptr<UserProperty_t> get_property_ptr(const std::string & name) {
+    template <
+        typename UserProperty_t,
+        typename std::enable_if_t<UserProperty_t::Order != 1, void *> = nullptr>
+    std::shared_ptr<UserProperty_t>
+    get_property_ptr(const std::string & name,
+                     const std::string & metadata = "no metadata") {
       if (this->has_property(name)) {
         auto property{this->get_property(name)};
         UserProperty_t::check_compatibility(*property);
         return std::static_pointer_cast<UserProperty_t>(property);
       } else {
-        auto property{std::make_shared<UserProperty_t>(this->implementation())};
+        auto property{
+            std::make_shared<UserProperty_t>(this->implementation(), metadata)};
+        this->register_property(property, name);
+        return property;
+      }
+    }
+
+    /**
+     * Get a atom property of a given name, possibly excluding ghosts. Create it
+     * if it does not exist.
+     *
+     * @tparam UserProperty_t full type of the property to return
+     *
+     * @param name name of the property to get
+     *
+     * @throw runtime_error if UserProperty_t is not compatible with property
+     * of the given name
+     */
+    template <
+        typename UserProperty_t,
+        typename std::enable_if_t<UserProperty_t::Order == 1, void *> = nullptr>
+    std::shared_ptr<UserProperty_t>
+    get_property_ptr(const std::string & name,
+                     const bool & exclude_ghosts = false,
+                     const std::string & metadata = "no metadata") {
+      if (this->has_property(name)) {
+        auto property{this->get_property(name)};
+        UserProperty_t::check_compatibility(*property);
+        return std::static_pointer_cast<UserProperty_t>(property);
+      } else {
+        auto property{std::make_shared<UserProperty_t>(
+            this->implementation(), metadata, exclude_ghosts)};
         this->register_property(property, name);
         return property;
       }

@@ -50,8 +50,6 @@ namespace rascal {
       auto & structure = this->structures[i_manager];
       auto & center_atoms_mask = structure.center_atoms_mask;
       BOOST_CHECK_EQUAL(manager->get_size(), center_atoms_mask.count());
-      // #180 wrong test
-      //BOOST_CHECK_EQUAL(manager->get_nb_clusters(1), center_atoms_mask.count());
 
       int atom_counter{0};
 
