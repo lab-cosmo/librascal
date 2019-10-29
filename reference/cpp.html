@@ -5969,8 +5969,14 @@ template&lt;&gt;<br /><span class="target" id="structrascal_1_1StructureManager_
 </div>
  u(r) = ┤ 1, if m == 0 | ╰ c / (c + (r/r_0)^m), else</p>
 <p>c -&gt; rate r_0 -&gt; scale m -&gt; exponent</p>
-<p>with the cosine switching function.</p>
-<p>Typically c == 1, r_0 &gt; 0 and m is a positive integer. </p>
+<p>multiplied by the cosine switching function defined in <a class="reference internal" href="#math__utils_8hh_1a54d667ea256be9958e0f4107018e6b91"><span class="std std-ref">math::switching_function_cosine()</span></a> (which comes with additional parameters <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> and <code class="docutils literal notranslate"><span class="pre">smooth_width</span></code>).</p>
+<p>Typically c == 1, r_0 &gt; 0 and m is a positive integer.</p>
+<p>Derivatives for the radial scaling component are: <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    ╭ -m /( (r/r_0)^m * r), if c == 0
+    |
+</pre></div>
+</div>
+ u’(r) = ┤ 0, if m == 0 | ╰ -m c (r/r_0)^m / (r * (c + (r/r_0)^m)^2), otherwise</p>
+<p>These are combined with the cosine switching function derivatives using the Leibniz product rule to get the derivative of the final radial modulation function. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
