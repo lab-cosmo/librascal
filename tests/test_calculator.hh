@@ -589,9 +589,10 @@ namespace rascal {
   template <typename RepCalculator, class StructureManager>
   class RepresentationManagerGradientCalculator {
    public:
-    using Structure_t = AtomicStructure<3>;
+    static constexpr size_t Dim = 3;
+    static constexpr size_t n_arguments = Dim;
+    using Structure_t = AtomicStructure<Dim>;
     using Key_t = typename RepCalculator::Key_t;
-    static const size_t n_arguments = 3;
 
     using PairRef_t =
         typename RepCalculator::template ClusterRef_t<StructureManager, 2>;
@@ -688,10 +689,10 @@ namespace rascal {
       return data_pairs.transpose();
     }
 
-    Eigen::Array<double, 3, Eigen::Dynamic>
+    Eigen::Array<double, Dim, Eigen::Dynamic>
     grad_f(const Eigen::Ref<const Eigen::Vector3d> & /*center_position*/) {
       using Matrix3Xd_RowMaj_t =
-          Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>;
+          Eigen::Matrix<double, Dim, Eigen::Dynamic, Eigen::RowMajor>;
       // Assume f() was already called and updated the position
       // center_it->position() = center_position;
       // representation.compute();
@@ -718,19 +719,19 @@ namespace rascal {
             (gradients_sparse[swapped_ref].get_keys().size() *
              n_entries_per_key);
       }
-      Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
-          grad_coeffs_pairs(3, n_entries_center + n_entries_neighbours);
+      Eigen::Matrix<double, Dim, Eigen::Dynamic, Eigen::RowMajor>
+          grad_coeffs_pairs(Dim, n_entries_center + n_entries_neighbours);
       grad_coeffs_pairs.setZero();
 
       // Use the exact same iteration pattern as in f()  to guarantee that the
       // gradients appear in the same place as their corresponding data
       size_t result_idx{0};
       for (auto & key : keys_center) {
-        // Here the 'flattening' retains the 3 Cartesian dimensions as rows,
+        // Here the 'flattening' retains the three Cartesian dimensions as rows,
         // since they vary the slowest within each key
         Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-            gradients_center[key].data(), 3, n_entries_per_key);
-        grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
+            gradients_center[key].data(), Dim, n_entries_per_key);
+        grad_coeffs_pairs.block(0, result_idx, Dim, n_entries_per_key) =
             grad_coeffs_flat;
         result_idx += n_entries_per_key;
       }
@@ -751,8 +752,8 @@ namespace rascal {
           for (auto & neigh_swap : neigh_swap_images) {
             auto & gradients_neigh{gradients_sparse[neigh_swap]};
             Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-                gradients_neigh[key].data(), 3, n_entries_per_key);
-            grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) +=
+                gradients_neigh[key].data(), Dim, n_entries_per_key);
+            grad_coeffs_pairs.block(0, result_idx, Dim, n_entries_per_key) +=
                 grad_coeffs_flat;
           }
           result_idx += n_entries_per_key;
@@ -796,7 +797,7 @@ namespace rascal {
       // std::cout << "cutoff: " << structure_manager->get_cutoff()<<std::endl;
       // Iterate until (j,i) is found
       std::vector<PairRefKey_t> new_pairs;
-      using Positions_t = Eigen::Matrix<double, 3, Eigen::Dynamic>;
+      using Positions_t = Eigen::Matrix<double, Dim, Eigen::Dynamic>;
       for (auto new_pair : new_center) {
         Positions_t i_trial_position = new_pair.get_position();
         Positions_t i_wrapped_position = atomic_structure.wrap_explicit_positions(
