@@ -93,8 +93,7 @@ namespace rascal {
                 manager_b->template get_validated_property_ref<Property_t>(
                     representation_name)};
 
-            kernel(ii_A, ii_B) =
-                propA.dot(propB).array().pow(this->zeta).mean();
+            kernel(ii_A, ii_B) = this->pow_zeta(propA.dot(propB)).mean();
             ++ii_B;
           }
           ++ii_A;
@@ -134,21 +133,43 @@ namespace rascal {
         size_t ii_A{0};
         for (auto & manager_a : managers_a) {
           size_t ii_B{0};
+          auto a_size = manager_a->size();
           auto && propA{
               manager_a->template get_validated_property_ref<Property_t>(
                   representation_name)};
           for (auto & manager_b : managers_b) {
+            auto b_size = manager_b->size();
             auto && propB{
                 manager_b->template get_validated_property_ref<Property_t>(
                     representation_name)};
 
-            kernel.block(ii_A, ii_B, manager_a->size(), manager_b->size()) =
-                propA.dot(propB).array().pow(this->zeta);
-            ii_B += manager_b->size();
+            kernel.block(ii_A, ii_B, a_size, b_size) =
+                this->pow_zeta(propA.dot(propB));
+            ii_B += b_size;
           }
-          ii_A += manager_a->size();
+          ii_A += a_size;
         }
         return kernel;
+      }
+
+     private:
+      // optimized version of kernel.pow(this->zeta), using specialized cases
+      // for  zeta==1, 2, and 3. The generic case uses a for loop, which can
+      // be faster that std::pow, while introducing a few more numerical
+      // errors.
+      math::Matrix_t pow_zeta(math::Matrix_t && kernel) {
+        if (this->zeta == 1) {
+          return std::move(kernel);
+        } else if (this->zeta == 2) {
+          kernel = kernel.array().square();
+        } else if (this->zeta == 3) {
+          kernel = kernel.array().cube();
+        } else {
+          kernel = kernel.unaryExpr([zeta = this->zeta](double v) {
+            return math::pow(v, zeta);
+          });
+        }
+        return std::move(kernel);
       }
     };
   }  // namespace internal
