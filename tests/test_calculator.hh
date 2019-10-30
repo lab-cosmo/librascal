@@ -781,12 +781,8 @@ namespace rascal {
      *         (j, i') where i' is either i or any of its periodic images within
      *         the cutoff of j. The atom j, on the other hand, must be a real
      *         atom (not a ghost or periodic image).
-     *
-     * @todo wouldn't this be better as a member of StructureManager
-     *       (viz. AdaptorNeighbourList<whatever>)?
      */
     std::vector<PairRefKey_t> swap_pair_ref(const PairRef_t & pair_ref) {
-      const double image_pos_tol = 1E-7;
       auto center_manager{extract_underlying_manager<0>(structure_manager)};
       auto atomic_structure{center_manager->get_atomic_structure()};
       // Get the atom index to the corresponding atom tag
@@ -794,21 +790,15 @@ namespace rascal {
       auto new_center_it{structure_manager->get_iterator_at(access_index)};
       // Return cluster ref at which the iterator is currently pointing
       auto && new_center{*new_center_it};
-      // Get the position of the original central atom (to find all its periodic
-      // images)
       size_t i_index{structure_manager->get_atom_index(pair_ref.front())};
-      auto i_position{structure_manager->get_position(i_index)};
 
-      // Iterate until (j,i) is found
+      // Find all (j, i') pairs
       std::vector<PairRefKey_t> new_pairs;
-      using Positions_t = Eigen::Matrix<double, 3, Eigen::Dynamic>;
       for (auto new_pair : new_center) {
-        // go through the neighbors of atom j and wrap them into the cell
-        // to test if they match atom i
-        Positions_t i_trial_position = new_pair.get_position();
-        Positions_t i_wrapped_position =
-            atomic_structure.wrap_explicit_positions(i_trial_position);
-        if ((i_wrapped_position - i_position).norm() < image_pos_tol) {
+        size_t i_trial_index{
+            structure_manager->get_atom_index(new_pair.back())};
+        // Is this the i (old center) atom or any of its images?
+        if (i_trial_index == i_index) {
           new_pairs.emplace_back(std::move(new_pair));
         }
       }
@@ -838,7 +828,11 @@ namespace rascal {
                                                  StructureManager_t>;
 
     static const size_t n_arguments = 3;
-    /** Some representations have quite large FD truncation errors */
+    /**
+     * Increased error tolerance because some representations have quite large
+     * finite-difference truncation errors (and possibly numerical issues for
+     * very small displacements)
+     */
     double fd_error_tol{1E-4};
 
     /**
