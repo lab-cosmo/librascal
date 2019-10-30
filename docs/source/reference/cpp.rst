@@ -68,8 +68,15 @@ below, excerpted from :file:`tests/test_calculator.cc`:
 
 .. literalinclude:: ../../../tests/test_calculator.cc
    :language: cpp
-   :lines: 430-436, 441-444
-   :dedent: 4
+   :start-after: grad-test-example-start1
+   :end-before: grad-test-example-end1
+   :dedent: 8
+
+.. literalinclude:: ../../../tests/test_calculator.cc
+   :language: cpp
+   :start-after: grad-test-example-start2
+   :end-before: grad-test-example-end2
+   :dedent: 8
 
 where :cpp:var:`representations.back()` is a
 :cpp:class:`RepresentationCalculator`,
