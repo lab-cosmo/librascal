@@ -138,27 +138,6 @@ namespace rascal {
     }
 
     /**
-     * Wrap a set of explicitly provided positions into this structure's cell
-     *
-     * Like wrap(), but uses a set of user-specified positions instead of the
-     * atomic positions of this structure.j
-     *
-     * @param input_positions The positions to wrap
-     */
-    Positions_t wrap_explicit_positions(Positions_t input_positions) {
-      Positions_t scaled_positions = this->cell.inverse() * input_positions;
-      auto functor{math::MakePositivePyMod(1.)};
-
-      for (int i_dim{0}; i_dim < Dim; ++i_dim) {
-        if (this->pbc[i_dim]) {
-          scaled_positions.row(i_dim) =
-              scaled_positions.row(i_dim).unaryExpr(functor);
-        }
-      }
-      return this->cell * scaled_positions;
-    }
-
-    /**
      * Set the atomic structure. The expected input are similar to the member
      * variable of the AtomicStructure class.
      *
