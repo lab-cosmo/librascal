@@ -625,6 +625,14 @@ namespace rascal {
       return this->cluster_indices_container;
     }
 
+    //! return if the cluster's last atom is a ghost atom or not
+    template <size_t Order>
+    bool is_ghost_atom(const ClusterRef<Order>& cluster) {
+      auto && atom_tag = static_cast<size_t>(cluster.get_atom_tag());
+      auto && n_centers = this->get_size();
+      return atom_tag >= n_centers;
+    }
+
     /**
      * Tuple which contains MaxOrder number of cluster_index lists for
      * reference with increasing layer depth. It is filled upon construction
