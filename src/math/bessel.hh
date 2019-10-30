@@ -201,7 +201,7 @@ namespace rascal {
         }
 
         // set small values to 0.
-        bessel_values.unaryExpr([](double d) {
+        bessel_values = bessel_values.unaryExpr([](double d) {
           if (d < 1e-100) {
             return 0.;
           } else {
