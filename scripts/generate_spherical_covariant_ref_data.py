@@ -12,8 +12,8 @@ from rascal.utils import ostream_redirect
 from rascal.representations import SphericalCovariants
 
 rascal_reference_path = 'reference_data/'
-inputs_path = rascal_reference_path + "inputs/"
-dump_path = rascal_reference_path + "tests_only/"
+inputs_path = os.path.join(rascal_reference_path, "inputs")
+dump_path = os.path.join(rascal_reference_path, "tests_only")
 
 #############################################################################
 
@@ -49,19 +49,19 @@ def dump_reference_json():
     Lambdas = [1]
     fns = [
         os.path.join(
-            path, inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+            path, inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"), 
         os.path.join(path, inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
-        dump_path + "CaCrP2O7_mvc-11955_symmetrized.json",
-        dump_path + "small_molecule.json",
+        os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"), 
+        os.path.join(dump_path, "small_molecule.json"), 
     ]
 
-    data = dict(filenames=fns_to_write,
-                cutoffs=cutoffs,
-                gaussian_sigmas=gaussian_sigmas,
-                max_radials=max_radials,
-                soap_types=soap_types,
+    data = dict(filenames=fns_to_write, 
+                cutoffs=cutoffs, 
+                gaussian_sigmas=gaussian_sigmas, 
+                max_radials=max_radials, 
+                soap_types=soap_types, 
                 rep_info=[])
 
     for fn in fns:
@@ -69,31 +69,31 @@ def dump_reference_json():
         for cutoff in cutoffs:
             print(fn, cutoff)
             data['rep_info'].append([])
-            for (soap_type, gaussian_sigma, max_radial,
+            for (soap_type, gaussian_sigma, max_radial, 
                  max_angular, inversion_symmetry, Lambda) in product(
-                    soap_types, gaussian_sigmas, max_radials, max_angulars,
+                    soap_types, gaussian_sigmas, max_radials, max_angulars, 
                     inversion_symmetries, Lambdas):
-                hypers = {"interaction_cutoff": cutoff,
-                          "cutoff_smooth_width": 0.5,
-                          "max_radial": max_radial,
-                          "max_angular": max_angular,
-                          "gaussian_sigma_type": "Constant",
-                          "gaussian_sigma_constant": gaussian_sigma,
-                          "cutoff_function_type": "ShiftedCosine",
-                          "radial_basis": "GTO",
-                          "normalize": True,
-                          "soap_type": soap_type,
-                          "inversion_symmetry": inversion_symmetry,
+                hypers = {"interaction_cutoff": cutoff, 
+                          "cutoff_smooth_width": 0.5, 
+                          "max_radial": max_radial, 
+                          "max_angular": max_angular, 
+                          "gaussian_sigma_type": "Constant", 
+                          "gaussian_sigma_constant": gaussian_sigma, 
+                          "cutoff_function_type": "ShiftedCosine", 
+                          "radial_basis": "GTO", 
+                          "normalize": True, 
+                          "soap_type": soap_type, 
+                          "inversion_symmetry": inversion_symmetry, 
                           "lam": Lambda}
                 soap = SphericalCovariants(**hypers)
                 soap_vectors = soap.transform(frames)
                 x = soap_vectors.get_features(soap)
                 x[np.abs(x) < 1e-300] = 0.
-                data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
+                data['rep_info'][-1].append(dict(feature_matrix=x.tolist(), 
                                                  hypers=copy(soap.hypers)))
 
-    with open(path + dump_path +
-              "spherical_covariants_reference.ubjson",
+    with open(os.path.join(path, dump_path, 
+              "spherical_covariants_reference.ubjson", 
               'wb') as f:
         ubjson.dump(data, f)
 
@@ -106,18 +106,18 @@ def main(json_dump, save_kernel):
     lmax = 5
     lam = 2
 
-    test_hypers = {"interaction_cutoff": 3.0,
-                   "cutoff_smooth_width": 0.0,
-                   "max_radial": nmax,
-                   "max_angular": lmax,
-                   "gaussian_sigma_type": "Constant",
-                   "gaussian_sigma_constant": 0.3,
-                   "soap_type": "LambdaSpectrum",
-                   "lam": lam,
+    test_hypers = {"interaction_cutoff": 3.0, 
+                   "cutoff_smooth_width": 0.0, 
+                   "max_radial": nmax, 
+                   "max_angular": lmax, 
+                   "gaussian_sigma_type": "Constant", 
+                   "gaussian_sigma_constant": 0.3, 
+                   "soap_type": "LambdaSpectrum", 
+                   "lam": lam, 
                    "inversion_symmetry": True}
 
     nstr = '2'  # number of structures
-    frames = read(inputs_path + 'water_rotations.xyz', ':'+str(nstr))
+    frames = read(os.path.join(inputs_path, 'water_rotations.xyz'), ':'+str(nstr))
     species = set(
         [atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
@@ -138,7 +138,7 @@ def main(json_dump, save_kernel):
         for j in range(x0):
             kernel[i, j] /= sqrtnorm[i]*sqrtnorm[j]
     if save_kernel is True:
-        np.save(dump_path + 'kernel_soap_example_lambda'+str(lam)+'.npy', kernel)
+        np.save(os.path.join(dump_path, 'kernel_soap_example_lambda', str(lam), '.npy'), kernel)
 
 #-------------------dump json reference data------------------------#
 
@@ -150,9 +150,9 @@ def main(json_dump, save_kernel):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-json_dump', action='store_true',
+    parser.add_argument('-json_dump', action='store_true', 
                         help='Switch for dumping json')
-    parser.add_argument('-save_kernel', action='store_true',
+    parser.add_argument('-save_kernel', action='store_true', 
                         help='Switch for dumping json')
     args = parser.parse_args()
     main(args.json_dump, args.save_kernel)

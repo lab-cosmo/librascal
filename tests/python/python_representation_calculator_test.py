@@ -7,9 +7,10 @@ import sys
 import json
 from copy import copy
 
-rascal_reference_path = 'reference_data/'
-inputs_path = rascal_reference_path + "inputs/"
-dump_path = rascal_reference_path + "tests_only/"
+rascal_reference_path = 'reference_data'
+inputs_path = os.path.join(rascal_reference_path, "inputs")
+dump_path = os.path.join(rascal_reference_path, "tests_only")
+
 
 class TestSortedCoulombRepresentation(unittest.TestCase):
     def setUp(self):
@@ -18,7 +19,7 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = inputs_path + 'CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json')
         self.frame = load_json_frame(fn)
 
         self.hypers = dict(cutoff=3., sorting_algorithm='row_norm',
@@ -41,12 +42,12 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = inputs_path + 'CaCrP2O7_mvc-11955_symmetrized.json'
-        self.frames = [load_json_frame(fn)]
-        fn = inputs_path + 'SiC_moissanite_supercell.json'
-        self.frames += [load_json_frame(fn)]
-        fn = inputs_path + 'methane.json'
-        self.frames += [load_json_frame(fn)]
+        fns = [
+            os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json'),
+            os.path.join(inputs_path, 'SiC_moissanite_supercell.json'),
+            os.path.join(inputs_path, 'methane.json'),
+        ]
+        self.frames = [load_json_frame(fn) for fn in fns]
 
         self.hypers = {"interaction_cutoff": 6.0,
                        "cutoff_smooth_width": 1.0,
@@ -72,9 +73,9 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         """
 
         fns = [
-            inputs_path + 'CaCrP2O7_mvc-11955_symmetrized.json',
-            inputs_path + 'SiC_moissanite_supercell.json',
-            inputs_path + 'methane.json'
+            os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json'),
+            os.path.join(inputs_path, 'SiC_moissanite_supercell.json'),
+            os.path.join(inputs_path, 'methane.json'),
         ]
         self.frames = [load_json_frame(fn) for fn in fns]
 

@@ -2,8 +2,8 @@
 """
 
 rascal_reference_path = 'reference_data/'
-inputs_path = rascal_reference_path + "inputs/"
-dump_path = rascal_reference_path + "tests_only/"
+inputs_path = os.path.join(rascal_reference_path,"inputs")
+dump_path = os.path.join(rascal_reference_path,"tests_only")
 
 import os
 import sys
@@ -26,8 +26,10 @@ fns = [
         path, inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
     os.path.join(path, inputs_path, "small_molecule.json")]
 fns_to_write = [
-    dump_path + "CaCrP2O7_mvc-11955_symmetrized.json",
-    dump_path + "small_molecule.json"
+    os.path.join(dump_path,
+		 "CaCrP2O7_mvc-11955_symmetrized.json"),
+    os.path.join(dump_path ,
+		 "small_molecule.json)"
 ]
 
 data = dict(filenames=fns_to_write, cutoffs=cutoffs, rep_info=[])
