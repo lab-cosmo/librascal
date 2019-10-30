@@ -14,7 +14,7 @@ class TestCosineKernel(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = 'reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
 
         self.hypers = dict(soap_type="PowerSpectrum",

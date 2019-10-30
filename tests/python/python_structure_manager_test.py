@@ -213,7 +213,7 @@ class CenterSelectTest(unittest.TestCase):
     """
 
     def setUp(self):
-        filename = 'reference_data/small_molecule.json'
+        filename = 'reference_data/inputs/small_molecule.json'
         self.frame = ase.io.read(filename)
         self.natoms = self.frame.get_number_of_atoms()
 

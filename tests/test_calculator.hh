@@ -215,7 +215,7 @@ namespace rascal {
     ~SphericalInvariantsTestData() = default;
     bool verbose{false};
     std::string ref_filename{
-        "reference_data/outputs/spherical_invariants_reference.ubjson"};
+        "reference_data/tests_only/spherical_invariants_reference.ubjson"};
   };
 
   struct SphericalCovariantsTestData : TestData {
@@ -228,7 +228,7 @@ namespace rascal {
     ~SphericalCovariantsTestData() = default;
     bool verbose{false};
     std::string ref_filename{
-        "reference_data/outputs/spherical_covariants_reference.ubjson"};
+        "reference_data/tests_only/spherical_covariants_reference.ubjson"};
   };
 
   template <class MultipleStructureFixture>
@@ -421,8 +421,8 @@ namespace rascal {
         "reference_data/inputs/SiC_moissanite.json",
         "reference_data/inputs/SiCGe_wurtzite_like.json",
         "reference_data/inputs/SiC_moissanite_supercell.json",
-        "reference_data/input/small_molecule.json",
-        "reference_data/input/methane.json"};
+        "reference_data/inputs/small_molecule.json",
+        "reference_data/inputs/methane.json"};
     const double cutoff{2.5};
     const double cutoff_skin{0.};
 
