@@ -589,29 +589,29 @@ namespace rascal {
    * respect to the center position can then be tested, as usual, with
    * test_gradients() (defined in test_math.hh).
    */
-  template <typename RepCalculator, class StructureManager>
+  template <typename Calculator, class StructureManager>
   class RepresentationCalculatorGradientProvider {
    public:
     using Structure_t = AtomicStructure<3>;
-    using Key_t = typename RepCalculator::Key_t;
+    using Key_t = typename Calculator::Key_t;
     static const size_t n_arguments = 3;
 
     using PairRef_t =
-        typename RepCalculator::template ClusterRef_t<StructureManager, 2>;
+        typename Calculator::template ClusterRef_t<StructureManager, 2>;
 
     using PairRefKey_t = typename PairRef_t::ThisParentClass;
 
     // type of the data structure holding the representation and its gradients
     using Prop_t =
-        typename RepCalculator::template Property_t<StructureManager>;
+        typename Calculator::template Property_t<StructureManager>;
     using PropGrad_t =
-        typename RepCalculator::template PropertyGradient_t<StructureManager>;
+        typename Calculator::template PropertyGradient_t<StructureManager>;
 
     template <typename T, class V>
     friend class RepresentationCalculatorGradientFixture;
 
     RepresentationCalculatorGradientProvider(
-        RepCalculator & representation,
+        Calculator & representation,
         std::shared_ptr<StructureManager> structure_manager,
         Structure_t atomic_structure)
         : representation{representation}, structure_manager{structure_manager},
@@ -766,7 +766,7 @@ namespace rascal {
     }
 
    private:
-    RepCalculator & representation;
+    Calculator & representation;
     std::shared_ptr<StructureManager> structure_manager;
     Structure_t atomic_structure;
     typename StructureManager::iterator center_it;
@@ -818,13 +818,12 @@ namespace rascal {
    * Holds data (function values, gradient directions, verbosity) and iterates
    * through the list of centers
    */
-  template <typename RepCalculator_t, class StructureManager_t>
+  template <typename Calculator, class StructureManager>
   class RepresentationCalculatorGradientFixture : public GradientTestFixture {
    public:
     using StdVector2Dim_t = std::vector<std::vector<double>>;
-    using Calculator_t =
-        RepresentationCalculatorGradientProvider<RepCalculator_t,
-                                                 StructureManager_t>;
+    using Provider_t =
+        RepresentationCalculatorGradientProvider<Calculator, StructureManager>;
 
     static const size_t n_arguments = 3;
     /**
@@ -845,9 +844,9 @@ namespace rascal {
      * @param calc RepresentationCalculator whose gradient is being tested
      */
     RepresentationCalculatorGradientFixture(
-        std::string filename, std::shared_ptr<StructureManager_t> structure,
-        Calculator_t & calc)
-        : structure{structure}, center_it{structure->begin()}, calculator{
+        std::string filename, std::shared_ptr<StructureManager> structure,
+        Provider_t & calc)
+        : structure{structure}, center_it{structure->begin()}, provider{
                                                                    calc} {
       json input_data = json_io::load(filename);
 
@@ -862,7 +861,7 @@ namespace rascal {
 
     ~RepresentationCalculatorGradientFixture() = default;
 
-    const Calculator_t & get_calculator() { return calculator; }
+    const Provider_t & get_provider() { return provider; }
 
     /**
      * Go to the next center in the structure
@@ -871,7 +870,7 @@ namespace rascal {
      */
     inline void advance_center() {
       ++this->center_it;
-      this->calculator.advance_center();
+      this->provider.advance_center();
       if (this->has_next()) {
         this->function_inputs = get_function_inputs();
       }
@@ -888,9 +887,9 @@ namespace rascal {
       return inputs_new;
     }
 
-    std::shared_ptr<StructureManager_t> structure;
-    typename StructureManager_t::iterator center_it;
-    Calculator_t & calculator;
+    std::shared_ptr<StructureManager> structure;
+    typename StructureManager::iterator center_it;
+    Provider_t & provider;
   };
 
   template <class MultipleStructureFixture>
