@@ -55,6 +55,7 @@ class AtomsList(object):
                         print(
                         "Neighbourlist of structure"+
                         " {} failed because: ".format(ii) + str(e))
+                    ii += 1
 
         self.managers = managers
 
