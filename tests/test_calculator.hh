@@ -645,7 +645,7 @@ namespace rascal {
       // is nonzero (i.e. where the key has an entry in the structure)
       for (auto neigh : center) {
         // TODO(max,felix) there should be a way to write "if neigh is ghost"
-        if (this->structure_manager->is_ghost_atom()) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
         }
@@ -666,7 +666,7 @@ namespace rascal {
         result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
-        if (this->structure_manager->is_ghost_atom()) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
         }
@@ -713,7 +713,7 @@ namespace rascal {
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
       size_t n_entries_neighbours{0};
       for (auto neigh : center) {
-        if (this->structure_manager->is_ghost_atom()) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
         }
@@ -739,7 +739,7 @@ namespace rascal {
         result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
-        if (this->structure_manager->is_ghost_atom()) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
         }
