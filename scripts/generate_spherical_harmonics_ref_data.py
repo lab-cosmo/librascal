@@ -14,7 +14,7 @@ from functools import reduce
 
 rascal_reference_path = 'reference_data/'
 inputs_path = rascal_reference_path + "inputs/"
-outputs_path = rascal_reference_path + "outputs/"
+dump_path = rascal_reference_path + "tests_only/"
 
 def load_unit_vectors_from_json():
     fn = inputs_path + "spherical_harmonics_test.json"
@@ -129,7 +129,7 @@ def dump_reference_json():
                          harmonics=harmonics, alps=alps))
     if verbose:
         print(len(data))
-    with open(path+outputs_path+"spherical_harmonics_reference.ubjson",
+    with open(path+dump_path+"spherical_harmonics_reference.ubjson",
               'wb') as f:
         ubjson.dump(data, f)
 

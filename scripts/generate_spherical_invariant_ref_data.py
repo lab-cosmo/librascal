@@ -13,7 +13,7 @@ import rascal.lib as lrl
 
 rascal_reference_path = 'reference_data/'
 inputs_path = rascal_reference_path + "inputs/"
-outputs_path = rascal_reference_path + "outputs/"
+dump_path = rascal_reference_path + "tests_only/"
 
 ############################################################################
 
@@ -54,8 +54,8 @@ def dump_reference_json():
         os.path.join(path, inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
-        outputs_path + "CaCrP2O7_mvc-11955_symmetrized.json",
-        outputs_path + "small_molecule.json",
+        dump_path + "CaCrP2O7_mvc-11955_symmetrized.json",
+        dump_path + "small_molecule.json",
     ]
 
     data = dict(filenames=fns_to_write,
@@ -101,8 +101,10 @@ def dump_reference_json():
                     dict(feature_matrix=x.tolist(),
                          hypers=copy(soap.hypers)))
 
-    with open(path + outputs_path + "spherical_invariants_reference.ubjson", 'wb') as f:
-        ubjson.dump(data, f)
+    with open(path+dump_path+
+        "spherical_invariants_reference.ubjson",
+                        'wb') as f:
+                ubjson.dump(data, f)
 
 #############################################################################
 
@@ -137,7 +139,7 @@ def main(json_dump, save_kernel):
     x = get_feature_vector(test_hypers, frames)
     kernel = np.dot(x, x.T)
     if save_kernel is True:
-        np.save(outputs_path + 'kernel_soap_example_nu1.npy', kernel)
+        np.save(dump_path + 'kernel_soap_example_nu1.npy', kernel)
 
 #------------------------------------------nu=2------------------------------#
 
@@ -145,7 +147,7 @@ def main(json_dump, save_kernel):
     x = get_feature_vector(test_hypers, frames)
     kernel = np.dot(x, x.T)
     if save_kernel is True:
-        np.save(outputs_path + 'kernel_soap_example_nu2.npy', kernel)
+        np.save(dump_path + 'kernel_soap_example_nu2.npy', kernel)
 
 #------------------------------------------nu=3-----------------------------#
 
@@ -163,7 +165,7 @@ def main(json_dump, save_kernel):
     x = get_feature_vector(test_hypers, frames)
     kernel = np.dot(x, x.T)
     if save_kernel is True:
-        np.save(outputs_path + 'kernel_soap_example_nu3.npy', kernel)
+        np.save(dump_path + 'kernel_soap_example_nu3.npy', kernel)
 
 #------------------dump json reference data--------------------------------#
 

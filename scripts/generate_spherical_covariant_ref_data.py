@@ -13,7 +13,7 @@ from rascal.representations import SphericalCovariants
 
 rascal_reference_path = 'reference_data/'
 inputs_path = rascal_reference_path + "inputs/"
-outputs_path = rascal_reference_path + "outputs/"
+dump_path = rascal_reference_path + "tests_only/"
 
 #############################################################################
 
@@ -53,8 +53,8 @@ def dump_reference_json():
         os.path.join(path, inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
-        outputs_path + "CaCrP2O7_mvc-11955_symmetrized.json",
-        outputs_path + "small_molecule.json",
+        dump_path + "CaCrP2O7_mvc-11955_symmetrized.json",
+        dump_path + "small_molecule.json",
     ]
 
     data = dict(filenames=fns_to_write,
@@ -92,7 +92,7 @@ def dump_reference_json():
                 data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                  hypers=copy(soap.hypers)))
 
-    with open(path + outputs_path +
+    with open(path + dump_path +
               "spherical_covariants_reference.ubjson",
               'wb') as f:
         ubjson.dump(data, f)
@@ -138,7 +138,7 @@ def main(json_dump, save_kernel):
         for j in range(x0):
             kernel[i, j] /= sqrtnorm[i]*sqrtnorm[j]
     if save_kernel is True:
-        np.save(outputs_path + 'kernel_soap_example_lambda'+str(lam)+'.npy', kernel)
+        np.save(dump_path + 'kernel_soap_example_lambda'+str(lam)+'.npy', kernel)
 
 #-------------------dump json reference data------------------------#
 
