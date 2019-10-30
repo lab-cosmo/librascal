@@ -433,11 +433,11 @@ namespace rascal {
         /* ---- grad-test-example-start1 ---- */
         RepresentationCalculatorGradientProvider<typename Fix::Representation_t,
                                                  typename Fix::Manager_t>
-            calculator(representations.back(), manager, structures.back());
+            provider(representations.back(), manager, structures.back());
         RepresentationCalculatorGradientFixture<typename Fix::Representation_t,
                                                 typename Fix::Manager_t>
             grad_fix("reference_data/spherical_expansion_gradient_test.json",
-                     manager, calculator);
+                     manager, provider);
         /* ---- grad-test-example-end1 ---- */
         if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
           std::cout << "Testing structure: " << *filename_it << std::endl;
@@ -445,7 +445,7 @@ namespace rascal {
         }
         /* ---- grad-test-example-start2 ---- */
         do {
-          test_gradients(grad_fix.get_calculator(), grad_fix);
+          test_gradients(grad_fix.get_provider(), grad_fix);
           grad_fix.advance_center();
         } while (grad_fix.has_next());
         /* ---- grad-test-example-end2 ---- */
