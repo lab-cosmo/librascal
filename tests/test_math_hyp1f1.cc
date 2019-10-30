@@ -136,7 +136,7 @@ namespace rascal {
     Hyp1f1GradientProvider hyp1f1_calculator{max_radial, max_angular, fac_a,
                                              fac_b};
     GradientTestFixture fix{
-        "reference_data/unknown/radial_derivative_test.json"};
+        "reference_data/tests_only/radial_derivative_test.json"};
     test_gradients(hyp1f1_calculator, fix);
   }
 
