@@ -644,7 +644,6 @@ namespace rascal {
       // Count all the keys in the sparse gradient structure where the gradient
       // is nonzero (i.e. where the key has an entry in the structure)
       for (auto neigh : center) {
-        // TODO(max,felix) there should be a way to write "if neigh is ghost"
         if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
