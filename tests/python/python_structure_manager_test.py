@@ -6,7 +6,7 @@ from rascal.neighbourlist.structure_manager import (
 from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np
-import sys
+import sys, os
 import faulthandler
 
 rascal_reference_path = 'reference_data'
