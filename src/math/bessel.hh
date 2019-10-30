@@ -200,7 +200,9 @@ namespace rascal {
           this->upward_recursion(distance, fac_a, n_up);
         }
 
-        // set small values to 0.
+        // set small values to 0. On the python side it avoids some unexpected
+        // interpretation of values that are strictly speaking outside of the
+        // range of double precision
         bessel_values = bessel_values.unaryExpr([](double d) {
           if (d < 1e-100) {
             return 0.;
