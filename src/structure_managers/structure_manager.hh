@@ -1000,7 +1000,7 @@ namespace rascal {
 
     //! returns its own size
     // tag(felix) lost its meaning now
-    size_t size() { return this->get_manager().get_cluster_size(*this); }
+    // size_t size() { return this->get_manager().get_cluster_size(*this); }
     //! return iterator index - this is used in cluster_indices_container as
     //! well as accessing properties
     size_t get_index() const { return this->it.index; }
@@ -1048,22 +1048,25 @@ namespace rascal {
       using iterator = typename Manager_t::template Iterator<TargetOrder>;
 
       CustomProxy(ClusterRef_t & cluster_ref, const size_t & start,
-                  const size_t & offset, const size_t & finish)
-          : cluster_ref{cluster_ref}, start{start}, offset{offset},
-            finish{finish} {}
+                  const size_t & offset)
+          : cluster_ref{cluster_ref}, start{start}, offset{offset} {}
 
       iterator begin() {
         return iterator(cluster_ref, this->start, this->offset);
       }
       //! end of the iterations over the cluster itself
       iterator end() {
-        return iterator(cluster_ref, this->finish,
+        return iterator(cluster_ref, this->size(),
                         std::numeric_limits<size_t>::max());
       }
+
+      size_t size() {
+        return cluster_ref.get_manager().get_cluster_size(cluster_ref);
+      }
+
       ClusterRef_t & cluster_ref;
       size_t start;
       size_t offset;
-      size_t finish;
     };
 
    public:
@@ -1078,8 +1081,7 @@ namespace rascal {
       static_assert(Order_ > 1, "Clusters should at least contain 2 atoms, i.e. Order >= 2.");
       std::array<size_t, 1> counters{this->it.get_counters()};
       size_t offset{this->get_manager().get_offset(counters)};
-      size_t finish{this->size()};
-      return CustomProxy<Order_>(*this, start, offset, finish);
+      return CustomProxy<Order_>(*this, start, offset);
     }
 
     /**

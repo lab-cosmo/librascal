@@ -67,7 +67,7 @@ namespace rascal {
     using AvailableOrdersList = typename internal::AppendAvailableOrder<3, typename parent_traits::AvailableOrdersList>::type;
     // Extend the layer by one with the new MaxOrder
     using LayerByOrder =
-        typename LayerExtender<MaxOrder,
+        typename LayerExtender<3,
                                typename parent_traits::LayerByOrder>::type;
   };
 

@@ -133,7 +133,7 @@ int main() {
   std::cout << "n_centers: " << manager->size() << std::endl;
   for (auto center : manager) {
     auto ctag = center.get_atom_tag();
-    std::cout << "Center: " << ctag << " n. neighbors " << center.size()
+    std::cout << "Center: " << ctag << " n. neighbors " << center.get_pairs().size()
               << std::endl;
 
     for (auto neigh : center.get_pairs_with_self_pair()) {
@@ -155,10 +155,10 @@ int main() {
 
   for (auto center : triplet_manager) {
     auto ctag = center.get_atom_tag();
-    // std::cout << "Center: " << ctag << " n. neighbors " << center.size()
-    //           << std::endl;
-    std::cout << "Center: " << ctag << " n. neighbors " 
+    std::cout << "Center: " << ctag << " n. neighbors " << center.get_triplets().size()
               << std::endl;
+    // std::cout << "Center: " << ctag << " n. neighbors "
+    //           << std::endl;
     for (auto triplet : center.get_triplets()) {
       std::cout << "triplet (" << center.get_atom_tag() << ", "
                 << triplet.get_atom_tag()
