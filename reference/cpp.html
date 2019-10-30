@@ -922,8 +922,8 @@ Eigen)matrix, sized <span class="math notranslate nohighlight">\(m_\text{max}\)<
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4N6rascalli2_nEy">
-<span class="target" id="namespacerascal_1ab32997fcceba5192f76636207a1c47b5"></span><em class="property">constexpr</em> std::size_t <code class="sig-name descname">operator&quot;&quot;_n</code><span class="sig-paren">(</span>unsigned long long int <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascalli2_nEy" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4N6rascalli7_size_tEy">
+<span class="target" id="namespacerascal_1a7ffd52cedef6eb1aaf8e64222f4ca65b"></span><em class="property">constexpr</em> std::size_t <code class="sig-name descname">operator&quot;&quot;_size_t</code><span class="sig-paren">(</span>unsigned long long int <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascalli7_size_tEy" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>User defined literal operator to initialize size_t literals</p>
 <p>linter wants std::uint64_t to avoid the C style type but litterals are of type unsigned long long while std::uint64_t on 64bits machines stands for unsigned long. Both have equivalent underlying storage but not the same type… </p>
 </dd></dl>
@@ -939,16 +939,6 @@ Eigen)matrix, sized <span class="math notranslate nohighlight">\(m_\text{max}\)<
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4I_N8internal23SphericalCovariantsTypeE0EN6rascal36make_spherical_covariants_precomputeEDaRK6Hypers">
-<span class="target" id="namespacerascal_1a400402ccb277baf225a008f611fa1122"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal23SphericalCovariantsTypeE" title="rascal::internal::SphericalCovariantsType">SphericalCovariantsType</a> <code class="sig-name descname">Type</code>, class <code class="sig-name descname">Hypers</code>&gt;<br />auto <code class="sig-name descname">make_spherical_covariants_precompute</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I_N8internal23SphericalCovariantsTypeE0EN6rascal36make_spherical_covariants_precomputeEDaRK6Hypers" title="rascal::make_spherical_covariants_precompute::Hypers">Hypers</a> &amp;<em>hypers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_N8internal23SphericalCovariantsTypeE0EN6rascal36make_spherical_covariants_precomputeEDaRK6Hypers" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4I_N8internal23SphericalCovariantsTypeEEN6rascal40downcast_spherical_covariants_precomputeEDaRKNSt10shared_ptrIN8internal37SphericalInvariantsPrecomputationBaseEEE">
-<span class="target" id="namespacerascal_1a7eb90f8cf78ba00ac70e91fb4ded99dd"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal23SphericalCovariantsTypeE" title="rascal::internal::SphericalCovariantsType">SphericalCovariantsType</a> <code class="sig-name descname">Type</code>&gt;<br />auto <code class="sig-name descname">downcast_spherical_covariants_precompute</code><span class="sig-paren">(</span><em class="property">const</em> std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseE" title="rascal::internal::SphericalInvariantsPrecomputationBase">SphericalInvariantsPrecomputationBase</a>&gt; &amp;<em>spherical_covariants_precompute</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_N8internal23SphericalCovariantsTypeEEN6rascal40downcast_spherical_covariants_precomputeEDaRKNSt10shared_ptrIN8internal37SphericalInvariantsPrecomputationBaseEEE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="_CPPv4I_N8internal15RadialBasisTypeE0EN6rascal20make_radial_integralEDaRK6Hypers">
 <span class="target" id="namespacerascal_1a18b3928db0e95d51ca44e3fc6e5a0956"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">Type</code>, class <code class="sig-name descname">Hypers</code>&gt;<br />auto <code class="sig-name descname">make_radial_integral</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I_N8internal15RadialBasisTypeE0EN6rascal20make_radial_integralEDaRK6Hypers" title="rascal::make_radial_integral::Hypers">Hypers</a> &amp;<em>basis_hypers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_N8internal15RadialBasisTypeE0EN6rascal20make_radial_integralEDaRK6Hypers" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
@@ -956,16 +946,6 @@ Eigen)matrix, sized <span class="math notranslate nohighlight">\(m_\text{max}\)<
 <dl class="function">
 <dt id="_CPPv4I_N8internal15RadialBasisTypeEEN6rascal24downcast_radial_integralEDaRKNSt10shared_ptrIN8internal22RadialContributionBaseEEE">
 <span class="target" id="namespacerascal_1afd7b7ce95fa0bb8c2652aa9dceaa7338"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">Type</code>&gt;<br />auto <code class="sig-name descname">downcast_radial_integral</code><span class="sig-paren">(</span><em class="property">const</em> std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal22RadialContributionBaseE" title="rascal::internal::RadialContributionBase">RadialContributionBase</a>&gt; &amp;<em>radial_integral</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_N8internal15RadialBasisTypeEEN6rascal24downcast_radial_integralEDaRKNSt10shared_ptrIN8internal22RadialContributionBaseEEE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4I_N8internal23SphericalInvariantsTypeE0EN6rascal36make_spherical_invariants_precomputeEDaRK6Hypers">
-<span class="target" id="namespacerascal_1a8afa39b2ae8591cb6ee4300999d9ed0b"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal23SphericalInvariantsTypeE" title="rascal::internal::SphericalInvariantsType">SphericalInvariantsType</a> <code class="sig-name descname">Type</code>, class <code class="sig-name descname">Hypers</code>&gt;<br />auto <code class="sig-name descname">make_spherical_invariants_precompute</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I_N8internal23SphericalInvariantsTypeE0EN6rascal36make_spherical_invariants_precomputeEDaRK6Hypers" title="rascal::make_spherical_invariants_precompute::Hypers">Hypers</a> &amp;<em>hypers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_N8internal23SphericalInvariantsTypeE0EN6rascal36make_spherical_invariants_precomputeEDaRK6Hypers" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4I_N8internal23SphericalInvariantsTypeEEN6rascal40downcast_spherical_invariants_precomputeEDaRKNSt10shared_ptrIN8internal37SphericalInvariantsPrecomputationBaseEEE">
-<span class="target" id="namespacerascal_1abdbf3d48348e0f3fee3e3f4a7c7f248a"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal23SphericalInvariantsTypeE" title="rascal::internal::SphericalInvariantsType">SphericalInvariantsType</a> <code class="sig-name descname">Type</code>&gt;<br />auto <code class="sig-name descname">downcast_spherical_invariants_precompute</code><span class="sig-paren">(</span><em class="property">const</em> std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseE" title="rascal::internal::SphericalInvariantsPrecomputationBase">SphericalInvariantsPrecomputationBase</a>&gt; &amp;<em>spherical_invariants_precompute</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_N8internal23SphericalInvariantsTypeEEN6rascal40downcast_spherical_invariants_precomputeEDaRKNSt10shared_ptrIN8internal37SphericalInvariantsPrecomputationBaseEEE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -5487,11 +5467,6 @@ template&lt;&gt;<br /><span class="target" id="structrascal_1_1StructureManager_
 <span class="target" id="namespacerascal_1_1internal_1abbf45d6c8c1868248eec87e81cf9f2b7ae392a756fe59707e58bc9cd51fcaedfa"></span><code class="sig-name descname">LambdaSpectrum</code><a class="headerlink" href="#_CPPv4N6rascal8internal14LambdaSpectrumE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
-<dl class="enumerator">
-<dt id="_CPPv4N6rascal8internal4End_E">
-<span class="target" id="namespacerascal_1_1internal_1abbf45d6c8c1868248eec87e81cf9f2b7a85620e9873da37e5c02ba401e9cf0062"></span><code class="sig-name descname">End_</code><a class="headerlink" href="#_CPPv4N6rascal8internal4End_E" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="enum">
@@ -5507,11 +5482,6 @@ template&lt;&gt;<br /><span class="target" id="structrascal_1_1StructureManager_
 <dl class="enumerator">
 <dt id="_CPPv4N6rascal8internal3DVRE">
 <span class="target" id="namespacerascal_1_1internal_1a140d556a83c4efcb5315c1e1020c71ffa72c4a7956ff226f2a18ce4163c4186b9"></span><code class="sig-name descname">DVR</code><a class="headerlink" href="#_CPPv4N6rascal8internal3DVRE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="enumerator">
-<dt id="_CPPv4N6rascal8internal4End_E">
-<span class="target" id="namespacerascal_1_1internal_1a140d556a83c4efcb5315c1e1020c71ffa85620e9873da37e5c02ba401e9cf0062"></span><code class="sig-name descname">End_</code><br /></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -5536,11 +5506,6 @@ template&lt;&gt;<br /><span class="target" id="structrascal_1_1StructureManager_
 <span class="target" id="namespacerascal_1_1internal_1aa450ec7bdde1c42906510d7a0bd58622afdc32a55217f1ca054f1f2b51ef4f6ec"></span><code class="sig-name descname">Radial</code><a class="headerlink" href="#_CPPv4N6rascal8internal6RadialE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
-<dl class="enumerator">
-<dt id="_CPPv4N6rascal8internal4End_E">
-<span class="target" id="namespacerascal_1_1internal_1aa450ec7bdde1c42906510d7a0bd58622a85620e9873da37e5c02ba401e9cf0062"></span><code class="sig-name descname">End_</code><br /></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="enum">
@@ -5562,11 +5527,6 @@ template&lt;&gt;<br /><span class="target" id="structrascal_1_1StructureManager_
 <span class="target" id="namespacerascal_1_1internal_1a42b93b859bb75d09e66f8ca2b789cbe2a0c5dc93e57da49d039ecd29704b891d6"></span><code class="sig-name descname">BiSpectrum</code><a class="headerlink" href="#_CPPv4N6rascal8internal10BiSpectrumE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
-<dl class="enumerator">
-<dt>
-<span class="target" id="namespacerascal_1_1internal_1a42b93b859bb75d09e66f8ca2b789cbe2a85620e9873da37e5c02ba401e9cf0062"></span><code class="sig-name descname">End_</code><br /></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="enum">
@@ -5584,35 +5544,11 @@ template&lt;&gt;<br /><span class="target" id="structrascal_1_1StructureManager_
 <span class="target" id="namespacerascal_1_1internal_1ae2d01adc3fdd4fece8b58ada26036ce3af96dd8ef019cd9a7c6a0f270f747988b"></span><code class="sig-name descname">RadialScaling</code><a class="headerlink" href="#_CPPv4N6rascal8internal13RadialScalingE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
-<dl class="enumerator">
-<dt>
-<span class="target" id="namespacerascal_1_1internal_1ae2d01adc3fdd4fece8b58ada26036ce3a85620e9873da37e5c02ba401e9cf0062"></span><code class="sig-name descname">End_</code><br /></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Functions</p>
-<dl class="function">
-<dt id="_CPPv4I0EN6rascal8internal9enumValueE6size_t4Enum">
-<span class="target" id="namespacerascal_1_1internal_1a4e619ea3652c87037f9fb69110d4d49b"></span>template&lt;typename <code class="sig-name descname">Enum</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">enumValue</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN6rascal8internal9enumValueE6size_t4Enum" title="rascal::internal::enumValue::Enum">Enum</a> <em>e</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN6rascal8internal9enumValueE6size_t4Enum" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>get the underlying value of the enum </p>
-<p>Utilities to combine Enum to flatten the nested switch cases The caveat is that the enum list need to be finished with the End_ taken from: <a class="reference external" href="https://www.fluentcpp.com/2017/06/27/how-to-collapse-nested-switch-statements/">https://www.fluentcpp.com/2017/06/27/how-to-collapse-nested-switch-statements/</a> // NOLINT </p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4I0EN6rascal8internal8enumSizeE6size_tv">
-<span class="target" id="namespacerascal_1_1internal_1ae68d8169392427b3ad5aadce6ee79cca"></span>template&lt;typename <code class="sig-name descname">Enum</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">enumSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN6rascal8internal8enumSizeE6size_tv" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>compute the lenght of the enum assuming the last element is End_ </p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4I00EN6rascal8internal12combineEnumsE6size_t5Enum15Enum2">
-<span class="target" id="namespacerascal_1_1internal_1a93e12ec19aa751562ef6d9253bc7630e"></span>template&lt;typename <code class="sig-name descname">Enum1</code>, typename <code class="sig-name descname">Enum2</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">combineEnums</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00EN6rascal8internal12combineEnumsE6size_t5Enum15Enum2" title="rascal::internal::combineEnums::Enum1">Enum1</a> <em>e1</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal8internal12combineEnumsE6size_t5Enum15Enum2" title="rascal::internal::combineEnums::Enum2">Enum2</a> <em>e2</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I00EN6rascal8internal12combineEnumsE6size_t5Enum15Enum2" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>combine 2 enum into a new integer making sure types are properly provided </p>
-</dd></dl>
-
 <dl class="function">
 <dt>
 <span class="target" id="namespacerascal_1_1internal_1a1bd91c12db9d2c22c5c0ca85d1dc223b"></span><code class="sig-name descname">template&lt;size_t N, size_t... Seq&gt;constexpr std::index_sequence&lt;N + Seq...&gt; rascal::internal::add_to_sequence(std::index_sequence&lt; Seq... &gt;)</code></dt>
@@ -5703,6 +5639,11 @@ template&lt;&gt;<br /><span class="target" id="structrascal_1_1StructureManager_
 </dd></dl>
 
 <dl class="function">
+<dt id="_CPPv4N6rascal8internal21precompute_wigner_3jsE6size_tb6size_t">
+<span class="target" id="namespacerascal_1_1internal_1aa3ba6adac0f7705b6b62c01c4f9d118b"></span>Eigen::ArrayXd <code class="sig-name descname">precompute_wigner_3js</code><span class="sig-paren">(</span>size_t <em>max_angular</em>, bool <em>inversion_symmetry</em>, size_t <em>lambda</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal21precompute_wigner_3jsE6size_tb6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="_CPPv4I_18AtomicSmearingType0EN6rascal8internal20make_atomic_smearingEDaRK6Hypers">
 <span class="target" id="namespacerascal_1_1internal_1a44a57a86b8623364b420374b9f17b74e"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">Type</code>, class <code class="sig-name descname">Hypers</code>&gt;<br />auto <code class="sig-name descname">make_atomic_smearing</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType0EN6rascal8internal20make_atomic_smearingEDaRK6Hypers" title="rascal::internal::make_atomic_smearing::Hypers">Hypers</a> &amp;<em>sigma_hypers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_18AtomicSmearingType0EN6rascal8internal20make_atomic_smearingEDaRK6Hypers" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Utility to make shared pointer and cast to base class. </p>
@@ -5712,6 +5653,54 @@ template&lt;&gt;<br /><span class="target" id="structrascal_1_1StructureManager_
 <dt id="_CPPv4I_18AtomicSmearingTypeEN6rascal8internal24downcast_atomic_smearingEDaRKNSt10shared_ptrI31AtomicSmearingSpecificationBaseEE">
 <span class="target" id="namespacerascal_1_1internal_1ade03fc0111892638de52a1f020270627"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">Type</code>&gt;<br />auto <code class="sig-name descname">downcast_atomic_smearing</code><span class="sig-paren">(</span><em class="property">const</em> std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal31AtomicSmearingSpecificationBaseE" title="rascal::internal::AtomicSmearingSpecificationBase">AtomicSmearingSpecificationBase</a>&gt; &amp;<em>atomic_smearing</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_18AtomicSmearingTypeEN6rascal8internal24downcast_atomic_smearingEDaRKNSt10shared_ptrI31AtomicSmearingSpecificationBaseEE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Utility to cast base to child class. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N6rascal8internal20precompute_l_factorsE6size_t">
+<span class="target" id="namespacerascal_1_1internal_1a47a289d7d4eeb557489ebe6129de66ef"></span>Eigen::VectorXd <code class="sig-name descname">precompute_l_factors</code><span class="sig-paren">(</span>size_t <em>max_angular</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal20precompute_l_factorsE6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>factor of 1 / sqrt(2*l+1) in front of the powerspectrum </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N6rascal8internal22precompute_wigner_w3jsE6size_tb">
+<span class="target" id="namespacerascal_1_1internal_1ac88c8fa46423697f09cfb39589959a77"></span>Eigen::ArrayXd <code class="sig-name descname">precompute_wigner_w3js</code><span class="sig-paren">(</span>size_t <em>max_angular</em>, bool <em>inversion_symmetry</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal22precompute_wigner_w3jsE6size_tb" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Wigner pre-factors. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N6rascal8internal25switching_function_cosineEddd">
+<span class="target" id="namespacerascal_1_1internal_1a719605c33899a7a5096890d6f0d19c47"></span>double <code class="sig-name descname">switching_function_cosine</code><span class="sig-paren">(</span>double <em>r</em>, double <em>cutoff</em>, double <em>smooth_width</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal25switching_function_cosineEddd" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Compute a cosine-type switching function for smooth cutoffs</p>
+<p><p>The functional form is:</p>
+<dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cutoff</span></code>: Outer (strict) cutoff, beyond which this function becomes zero</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">smooth_width</span></code>: Width over which the smoothing function extends; the function becomes one for r less than cutoff - smooth_width</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">r</span></code>: Distance at which to evaluate the switching function</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+<p>sw(r) = 1/2 + 1/2 cos(pi * (r - cutoff + smooth_width) / smooth_width)</p>
+<p>if r is within the cutoff region (cutoff - smooth_width &lt; r &lt;= cutoff); if r is outside (&gt; cutoff) the function is zero; if r is inside, the function is 1.</p>
+<p>Specifying smooth_width less than cutoff is not an error. If smooth_width is equal to zero the result will just be a step function. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N6rascal8internal35derivative_switching_funtion_cosineEddd">
+<span class="target" id="namespacerascal_1_1internal_1a039ad2b728c0d73fb593981182988788"></span>double <code class="sig-name descname">derivative_switching_funtion_cosine</code><span class="sig-paren">(</span>double <em>r</em>, double <em>cutoff</em>, double <em>smooth_width</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal35derivative_switching_funtion_cosineEddd" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Compute the derivative of the cosine-type switching function</p>
+<p><p>The functional form is:</p>
+<dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cutoff</span></code>: Outer (strict) cutoff, beyond which this function becomes zero</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">smooth_width</span></code>: Width over which the smoothing function extends; the function becomes one for r less than cutoff - smooth_width</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">r</span></code>: Distance at which to evaluate the derivative</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+<p>dsw/dr (r) = -pi/(2*smooth_width) * sin(pi * (r - cutoff + smooth_width) / smooth_width) </p>
 </dd></dl>
 
 <dl class="function">
@@ -5969,7 +5958,7 @@ template&lt;&gt;<br /><span class="target" id="structrascal_1_1StructureManager_
 </div>
  u(r) = ┤ 1, if m == 0 | ╰ c / (c + (r/r_0)^m), else</p>
 <p>c -&gt; rate r_0 -&gt; scale m -&gt; exponent</p>
-<p>multiplied by the cosine switching function defined in <a class="reference internal" href="#math__utils_8hh_1a54d667ea256be9958e0f4107018e6b91"><span class="std std-ref">math::switching_function_cosine()</span></a> (which comes with additional parameters <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> and <code class="docutils literal notranslate"><span class="pre">smooth_width</span></code>).</p>
+<p>multiplied by the cosine switching function defined in <a class="reference internal" href="#namespacerascal_1_1internal_1a719605c33899a7a5096890d6f0d19c47"><span class="std std-ref">math::switching_function_cosine()</span></a> (which comes with additional parameters <code class="docutils literal notranslate"><span class="pre">cutoff</span></code> and <code class="docutils literal notranslate"><span class="pre">smooth_width</span></code>).</p>
 <p>Typically c == 1, r_0 &gt; 0 and m is a positive integer.</p>
 <p>Derivatives for the radial scaling component are: <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    ╭ -m /( (r/r_0)^m * r), if c == 0
     |
@@ -6918,66 +6907,6 @@ template&lt;&gt;<br /><span class="target" id="classrascal_1_1internal_1_1Period
 </dd></dl>
 
 <dl class="class">
-<dt id="_CPPv4IEN6rascal8internal33SphericalInvariantsPrecomputationIN23SphericalInvariantsType13PowerSpectrumEEE">
-<span class="target" id="structrascal_1_1internal_1_1SphericalInvariantsPrecomputation_3_01SphericalInvariantsType_1_1PowerSpectrum_01_4"></span>template&lt;&gt;<br /><em class="property">struct </em><code class="sig-name descname">SphericalInvariantsPrecomputation</code>&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal23SphericalInvariantsTypeE" title="rascal::internal::SphericalInvariantsType">SphericalInvariantsType</a>::PowerSpectrum&gt; : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseE" title="rascal::internal::SphericalInvariantsPrecomputationBase">SphericalInvariantsPrecomputationBase</a><a class="headerlink" href="#_CPPv4IEN6rascal8internal33SphericalInvariantsPrecomputationIN23SphericalInvariantsType13PowerSpectrumEEE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Public Members</p>
-<dl class="member">
-<dt id="_CPPv4N6rascal8internal33SphericalInvariantsPrecomputation9l_factorsE">
-<span class="target" id="structrascal_1_1internal_1_1SphericalInvariantsPrecomputation_3_01SphericalInvariantsType_1_1PowerSpectrum_01_4_1a1e3fc810de129fc3a1eb24ff8b859318"></span>Eigen::VectorXd <code class="sig-name descname">l_factors</code> = {}<a class="headerlink" href="#_CPPv4N6rascal8internal33SphericalInvariantsPrecomputation9l_factorsE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>factor of 1 / sqrt(2*l+1) in front of the powerspectrum </p>
-</dd></dl>
-
-</div>
-</dd></dl>
-
-<dl class="class">
-<dt id="_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseE">
-<span class="target" id="structrascal_1_1internal_1_1SphericalInvariantsPrecomputationBase"></span><em class="property">struct </em><code class="sig-name descname">SphericalInvariantsPrecomputationBase</code><a class="headerlink" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><em>#include &lt;calculator_spherical_invariants.hh&gt;</em><p>Base class for the specification of the atomic smearing. </p>
-<p>Subclassed by rascal::internal::SphericalCovariantsPrecomputation&lt; SphericalCovariantsType::LambdaSpectrum &gt;, rascal::internal::SphericalInvariantsPrecomputation&lt; SphericalInvariantsType::BiSpectrum &gt;, <a class="reference internal" href="#structrascal_1_1internal_1_1SphericalInvariantsPrecomputation_3_01SphericalInvariantsType_1_1PowerSpectrum_01_4"><span class="std std-ref">rascal::internal::SphericalInvariantsPrecomputation&lt; SphericalInvariantsType::PowerSpectrum &gt;</span></a>, rascal::internal::SphericalInvariantsPrecomputation&lt; SphericalInvariantsType::RadialSpectrum &gt;</p>
-<div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Public Functions</p>
-<dl class="function">
-<dt id="_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBase37SphericalInvariantsPrecomputationBaseEv">
-<span class="target" id="structrascal_1_1internal_1_1SphericalInvariantsPrecomputationBase_1a6ea443d20c55bd3d010a6d9d07fb5902"></span><code class="sig-name descname">SphericalInvariantsPrecomputationBase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBase37SphericalInvariantsPrecomputationBaseEv" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Constructor. </p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseD0Ev">
-<span class="target" id="structrascal_1_1internal_1_1SphericalInvariantsPrecomputationBase_1a7686f4bc6ae3623cab1304cb5f947bbd"></span><em class="property">virtual</em> <code class="sig-name descname">~SphericalInvariantsPrecomputationBase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseD0Ev" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Destructor. </p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBase37SphericalInvariantsPrecomputationBaseERK37SphericalInvariantsPrecomputationBase">
-<span class="target" id="structrascal_1_1internal_1_1SphericalInvariantsPrecomputationBase_1a9294c2386972bd2f768fcecdc4fb76a1"></span><code class="sig-name descname">SphericalInvariantsPrecomputationBase</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBase37SphericalInvariantsPrecomputationBaseEv" title="rascal::internal::SphericalInvariantsPrecomputationBase::SphericalInvariantsPrecomputationBase">SphericalInvariantsPrecomputationBase</a> &amp;<em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBase37SphericalInvariantsPrecomputationBaseERK37SphericalInvariantsPrecomputationBase" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Copy constructor. </p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBase37SphericalInvariantsPrecomputationBaseERR37SphericalInvariantsPrecomputationBase">
-<span class="target" id="structrascal_1_1internal_1_1SphericalInvariantsPrecomputationBase_1a031eb9c3a9d1a4e85723420014a649b3"></span><code class="sig-name descname">SphericalInvariantsPrecomputationBase</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBase37SphericalInvariantsPrecomputationBaseEv" title="rascal::internal::SphericalInvariantsPrecomputationBase::SphericalInvariantsPrecomputationBase">SphericalInvariantsPrecomputationBase</a> &amp;&amp;<em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBase37SphericalInvariantsPrecomputationBaseERR37SphericalInvariantsPrecomputationBase" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Move constructor. </p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseaSERK37SphericalInvariantsPrecomputationBase">
-<span class="target" id="structrascal_1_1internal_1_1SphericalInvariantsPrecomputationBase_1acc37c24816eeba52cbf683cc47adbfec"></span><a class="reference internal" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseE" title="rascal::internal::SphericalInvariantsPrecomputationBase">SphericalInvariantsPrecomputationBase</a> &amp;<code class="sig-name descname">operator=</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseE" title="rascal::internal::SphericalInvariantsPrecomputationBase">SphericalInvariantsPrecomputationBase</a> &amp;<em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseaSERK37SphericalInvariantsPrecomputationBase" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Copy assignment operator. </p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseaSERR37SphericalInvariantsPrecomputationBase">
-<span class="target" id="structrascal_1_1internal_1_1SphericalInvariantsPrecomputationBase_1a71c0e878beb482e0d506b477cb3b21c0"></span><a class="reference internal" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseE" title="rascal::internal::SphericalInvariantsPrecomputationBase">SphericalInvariantsPrecomputationBase</a> &amp;<code class="sig-name descname">operator=</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseE" title="rascal::internal::SphericalInvariantsPrecomputationBase">SphericalInvariantsPrecomputationBase</a> &amp;&amp;<em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal37SphericalInvariantsPrecomputationBaseaSERR37SphericalInvariantsPrecomputationBase" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Move assignment operator. </p>
-</dd></dl>
-
-</div>
-</dd></dl>
-
-<dl class="class">
 <dt id="_CPPv4I_6size_tEN6rascal8internal7StencilE">
 <span class="target" id="classrascal_1_1internal_1_1Stencil"></span>template&lt;size_t <code class="sig-name descname">Dim</code>&gt;<br /><em class="property">class </em><code class="sig-name descname">Stencil</code><a class="headerlink" href="#_CPPv4I_6size_tEN6rascal8internal7StencilE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><em>#include &lt;adaptor_neighbour_list.hh&gt;</em><p>stencil iterator for simple, dimension-dependent stencils to access the neighbouring boxes of the cell algorithm </p>
@@ -7285,13 +7214,13 @@ template&lt;&gt;<br /><span class="target" id="classrascal_1_1internal_1_1Stenci
 <dd></dd></dl>
 
 <dl class="type">
-<dt id="_CPPv4N6rascal4math8Vector_tE">
-<span class="target" id="math__utils_8hh_1a95348e3f0a337751b003ab52d3dc0f68"></span><em class="property">using </em><code class="sig-name descname">Vector_t</code> = Eigen::Matrix&lt;double, 1, Eigen::Dynamic, Eigen::RowMajor&gt;<a class="headerlink" href="#_CPPv4N6rascal4math8Vector_tE" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4N6rascal4math10MatrixX2_tE">
+<span class="target" id="math__utils_8hh_1af0f38e4678930d4b9a911009013d18c2"></span><em class="property">using </em><code class="sig-name descname">MatrixX2_t</code> = Eigen::Matrix&lt;double, Eigen::Dynamic, 2&gt;<a class="headerlink" href="#_CPPv4N6rascal4math10MatrixX2_tE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
-<dt id="_CPPv4N6rascal4math10MatrixX2_tE">
-<span class="target" id="math__utils_8hh_1af0f38e4678930d4b9a911009013d18c2"></span><em class="property">using </em><code class="sig-name descname">MatrixX2_t</code> = Eigen::Matrix&lt;double, Eigen::Dynamic, 2&gt;<a class="headerlink" href="#_CPPv4N6rascal4math10MatrixX2_tE" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4N6rascal4math8Vector_tE">
+<span class="target" id="math__utils_8hh_1a95348e3f0a337751b003ab52d3dc0f68"></span><em class="property">using </em><code class="sig-name descname">Vector_t</code> = Eigen::Matrix&lt;double, 1, Eigen::Dynamic, Eigen::RowMajor&gt;<a class="headerlink" href="#_CPPv4N6rascal4math8Vector_tE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
@@ -7373,19 +7302,19 @@ template&lt;&gt;<br /><span class="target" id="classrascal_1_1internal_1_1Stenci
 <dl class="function">
 <dt id="_CPPv4N6rascal4math3powEd6size_t">
 <span class="target" id="math__utils_8hh_1ac18e82febeb17834c448bc124b91c598"></span>double <code class="sig-name descname">pow</code><span class="sig-paren">(</span>double <em>x</em>, size_t <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math3powEd6size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>unsingned integer power </p>
+<dd><p>unsigned integer power </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4N6rascal4math3powEi6size_t">
 <span class="target" id="math__utils_8hh_1adac807153516e69bf222d7219cb29149"></span>int <code class="sig-name descname">pow</code><span class="sig-paren">(</span>int <em>x</em>, size_t <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math3powEi6size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>unsingned integer power </p>
+<dd><p>unsigned integer power </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4N6rascal4math3powE6size_t6size_t">
 <span class="target" id="math__utils_8hh_1a85681ab46e9223ec939766a9354d8579"></span>size_t <code class="sig-name descname">pow</code><span class="sig-paren">(</span>size_t <em>x</em>, size_t <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math3powE6size_t6size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>unsingned integer power </p>
+<dd><p>unsigned integer power </p>
 </dd></dl>
 
 <dl class="function">
@@ -7394,97 +7323,48 @@ template&lt;&gt;<br /><span class="target" id="classrascal_1_1internal_1_1Stenci
 <dd><p>general power </p>
 </dd></dl>
 
-<dl class="function">
-<dt id="_CPPv4I0EN6rascal4math6py_modE3Num3Num3Num">
-<span class="target" id="math__utils_8hh_1abb4ed1d54cbf33c9e517c0378ae489a0"></span>template&lt;class <code class="sig-name descname">Num</code>&gt;<br /><a class="reference internal" href="#_CPPv4I0EN6rascal4math6py_modE3Num3Num3Num" title="rascal::math::py_mod::Num">Num</a> <code class="sig-name descname">py_mod</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN6rascal4math6py_modE3Num3Num3Num" title="rascal::math::py_mod::Num">Num</a> <em>x</em>, <a class="reference internal" href="#_CPPv4I0EN6rascal4math6py_modE3Num3Num3Num" title="rascal::math::py_mod::Num">Num</a> <em>divisor</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN6rascal4math6py_modE3Num3Num3Num" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Modulo that follows python standard, i.e. (-3) % 5 == 2 (python) and not (-3) % 5 == -3 (C++).</p>
-<p><dl class="simple">
-<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">divisor</span></code>: is a positive divisor </p></li>
-</ul>
-</dd>
-<dt><strong>Template Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Num</span></code>: type of the double modulo </p></li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N6rascal4math25switching_function_cosineEddd">
-<span class="target" id="math__utils_8hh_1a54d667ea256be9958e0f4107018e6b91"></span>double <code class="sig-name descname">switching_function_cosine</code><span class="sig-paren">(</span>double <em>r</em>, double <em>cutoff</em>, double <em>smooth_width</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math25switching_function_cosineEddd" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Compute a cosine-type switching function for smooth cutoffs</p>
-<p><p>The functional form is:</p>
-<dl class="simple">
-<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">cutoff</span></code>: Outer (strict) cutoff, beyond which this function becomes zero</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">smooth_width</span></code>: Width over which the smoothing function extends; the function becomes one for r less than cutoff - smooth_width</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">r</span></code>: Distance at which to evaluate the switching function</p></li>
-</ul>
-</dd>
-</dl>
-</p>
-<p>sw(r) = 1/2 + 1/2 cos(pi * (r - cutoff + smooth_width) / smooth_width)</p>
-<p>if r is within the cutoff region (cutoff - smooth_width &lt; r &lt;= cutoff); if r is outside (&gt; cutoff) the function is zero; if r is inside, the function is 1.</p>
-<p>Specifying smooth_width less than cutoff is not an error. If smooth_width is equal to zero the result will just be a step function. </p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N6rascal4math35derivative_switching_funtion_cosineEddd">
-<span class="target" id="math__utils_8hh_1add8312e9812d392a0740619dcaf81ccb"></span>double <code class="sig-name descname">derivative_switching_funtion_cosine</code><span class="sig-paren">(</span>double <em>r</em>, double <em>cutoff</em>, double <em>smooth_width</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math35derivative_switching_funtion_cosineEddd" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Compute the derivative of the cosine-type switching function</p>
-<p><p>The functional form is:</p>
-<dl class="simple">
-<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">cutoff</span></code>: Outer (strict) cutoff, beyond which this function becomes zero</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">smooth_width</span></code>: Width over which the smoothing function extends; the function becomes one for r less than cutoff - smooth_width</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">r</span></code>: Distance at which to evaluate the derivative</p></li>
-</ul>
-</dd>
-</dl>
-</p>
-<p>dsw/dr (r) = -pi/(2*smooth_width) * sin(pi * (r - cutoff + smooth_width) / smooth_width) </p>
-</dd></dl>
-
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Variables</p>
 <dl class="member">
 <dt id="_CPPv4N6rascal4math2PIE">
-<span class="target" id="math__utils_8hh_1af3421fd762b21e52c691e136de638b8d"></span><em class="property">const</em> double <code class="sig-name descname">PI</code> = 3.14159265358979323846264338327950288419716939937510<a class="headerlink" href="#_CPPv4N6rascal4math2PIE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Pi to more digits than anyone could possibly need. </p>
+<span class="target" id="math__utils_8hh_1a8c4df39a5662e7715938489926af41d3"></span><em class="property">constexpr</em> double <code class="sig-name descname">PI</code> = 3.14159265358979323846264338327950288<a class="headerlink" href="#_CPPv4N6rascal4math2PIE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>π to more digits than anyone could possibly need. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N6rascal4math7SQRT_PIE">
-<span class="target" id="math__utils_8hh_1aea1b02bd140f6a97b63e6987123d6322"></span><em class="property">const</em> double <code class="sig-name descname">SQRT_PI</code> = 1.7724538509055160272981674833411451827975494561223871282<a class="headerlink" href="#_CPPv4N6rascal4math7SQRT_PIE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<span class="target" id="math__utils_8hh_1aebe011acb129561e258676818c16ec88"></span><em class="property">constexpr</em> double <code class="sig-name descname">SQRT_PI</code> = 1.772453850905516027298167483341145182<a class="headerlink" href="#_CPPv4N6rascal4math7SQRT_PIE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>sqrt(π) </p>
+</dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N6rascal4math8SQRT_TWOE">
-<span class="target" id="math__utils_8hh_1ab8d43f47695898b699c2fbce30cf6b8c"></span><em class="property">const</em> double <code class="sig-name descname">SQRT_TWO</code> = std::sqrt(2.0)<a class="headerlink" href="#_CPPv4N6rascal4math8SQRT_TWOE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<span class="target" id="math__utils_8hh_1a1526d7d9d4bc382808850b2a5064e9d2"></span><em class="property">constexpr</em> double <code class="sig-name descname">SQRT_TWO</code> = 1.41421356237309504880168872420969808<a class="headerlink" href="#_CPPv4N6rascal4math8SQRT_TWOE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>sqrt(2) </p>
+</dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N6rascal4math12INV_SQRT_TWOE">
-<span class="target" id="math__utils_8hh_1a47ba556803ba7e53e0ee7055d9ff5215"></span><em class="property">const</em> double <code class="sig-name descname">INV_SQRT_TWO</code> = std::sqrt(0.5)<a class="headerlink" href="#_CPPv4N6rascal4math12INV_SQRT_TWOE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<span class="target" id="math__utils_8hh_1a844f092a02286630c521bb871d1d8eb7"></span><em class="property">constexpr</em> double <code class="sig-name descname">INV_SQRT_TWO</code> = 0.707106781186547524400844362104849039<a class="headerlink" href="#_CPPv4N6rascal4math12INV_SQRT_TWOE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>1 / sqrt(2) </p>
+</dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N6rascal4math10SQRT_THREEE">
-<span class="target" id="math__utils_8hh_1a64f7321ba66d5b1c3d008925683648af"></span><em class="property">const</em> double <code class="sig-name descname">SQRT_THREE</code> = std::sqrt(3.0)<a class="headerlink" href="#_CPPv4N6rascal4math10SQRT_THREEE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<span class="target" id="math__utils_8hh_1a2bc7d85427d338d5cd3d1aafea784714"></span><em class="property">constexpr</em> double <code class="sig-name descname">SQRT_THREE</code> = 1.7320508075688772935274463415058723<a class="headerlink" href="#_CPPv4N6rascal4math10SQRT_THREEE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>sqrt(3) </p>
+</dd></dl>
 
 <dl class="member">
-<dt id="_CPPv4N6rascal4math8dbl_ftolE">
-<span class="target" id="math__utils_8hh_1aa2817f4e8859f0a375df3b9656fc997a"></span><em class="property">const</em> double <code class="sig-name descname">dbl_ftol</code> = 100.0 * std::numeric_limits&lt;double&gt;::epsilon()<a class="headerlink" href="#_CPPv4N6rascal4math8dbl_ftolE" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4N6rascal4math8DBL_FTOLE">
+<span class="target" id="math__utils_8hh_1a72a4707017b9408f52acb84be109aaa2"></span><em class="property">constexpr</em> double <code class="sig-name descname">DBL_FTOL</code> = 100.0 * std::numeric_limits&lt;double&gt;::epsilon()<a class="headerlink" href="#_CPPv4N6rascal4math8DBL_FTOLE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>How small a number must be to be considered effectively zero. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N6rascal4math9DOVERFLOWE">
-<span class="target" id="math__utils_8hh_1a840450df615f69dfa290508e45179ba7"></span><em class="property">const</em> double <code class="sig-name descname">DOVERFLOW</code> = std::numeric_limits&lt;double&gt;::infinity()<a class="headerlink" href="#_CPPv4N6rascal4math9DOVERFLOWE" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="math__utils_8hh_1a5bdf512b4ed9f5ff8f45e6ac52aa0f92"></span><em class="property">constexpr</em> double <code class="sig-name descname">DOVERFLOW</code> = std::numeric_limits&lt;double&gt;::infinity()<a class="headerlink" href="#_CPPv4N6rascal4math9DOVERFLOWE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>How large a number must be to be considered infinity. </p>
 </dd></dl>
 
@@ -7658,26 +7538,6 @@ template&lt;&gt;<br /><span class="target" id="classrascal_1_1internal_1_1Stenci
 </dd></dl>
 
 </div>
-</dd></dl>
-
-<dl class="class">
-<dt id="_CPPv4I0EN6rascal4math24MakePositiveIntegerPowerE">
-<span class="target" id="structrascal_1_1math_1_1MakePositiveIntegerPower"></span>template&lt;typename <code class="sig-name descname">Scalar</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">MakePositiveIntegerPower</code><a class="headerlink" href="#_CPPv4I0EN6rascal4math24MakePositiveIntegerPowerE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><em>#include &lt;math_utils.hh&gt;</em><p>Defines an integer power functor, which is used as CustomUnaryOp object to apply elementwise integer power operations on an Eigen::MatrixBase object e.g. :</p>
-<p>Eigen::VectorXd vec(3); vec &lt;&lt; 5,10,20; auto functor{MakePositiveIntegerPower(2)}; vec.unaryExpr(functor); // result is vec = [25,100,400]</p>
-<p><dl class="simple">
-<dt><strong>Template Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Scalar</span></code>: can be of type: double, int and uint </p></li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="_CPPv4N6rascal4math17MakePositivePyModE">
-<span class="target" id="structrascal_1_1math_1_1MakePositivePyMod"></span><em class="property">struct </em><code class="sig-name descname">MakePositivePyMod</code><a class="headerlink" href="#_CPPv4N6rascal4math17MakePositivePyModE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><em>#include &lt;math_utils.hh&gt;</em><p>Defines a modulo function that follows python standard behaviour </p>
 </dd></dl>
 
 <dl class="class">
@@ -7911,14 +7771,14 @@ Eigen)matrix, sized <span class="math notranslate nohighlight">\(m_\text{max}\)<
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Functions</p>
 <dl class="function">
-<dt id="_CPPv4I0EN6rascal4math7details5pow_uE7Scalar_7Scalar_6size_t">
-<span class="target" id="namespacerascal_1_1math_1_1details_1a3c876f88a3311967c9b993237be07e5c"></span>template&lt;typename <code class="sig-name descname">Scalar_</code>&gt;<br /><a class="reference internal" href="#_CPPv4I0EN6rascal4math7details5pow_uE7Scalar_7Scalar_6size_t" title="rascal::math::details::pow_u::Scalar_">Scalar_</a> <code class="sig-name descname">pow_u</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN6rascal4math7details5pow_uE7Scalar_7Scalar_6size_t" title="rascal::math::details::pow_u::Scalar_">Scalar_</a> <em>x</em>, size_t <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN6rascal4math7details5pow_uE7Scalar_7Scalar_6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4N6rascal4math7details5pow_uEd6size_t">
+<span class="target" id="namespacerascal_1_1math_1_1details_1aa8bf9db76df148324f8a9ca0e038d77d"></span>double <code class="sig-name descname">pow_u</code><span class="sig-paren">(</span>double <em>x</em>, size_t <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math7details5pow_uEd6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>unsingned integer power </p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4I0EN6rascal4math7details5pow_iEdRK7Scalar_i">
-<span class="target" id="namespacerascal_1_1math_1_1details_1a9e208c6b2d25c07cdfcc5b16c5035449"></span>template&lt;typename <code class="sig-name descname">Scalar_</code>&gt;<br />double <code class="sig-name descname">pow_i</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal4math7details5pow_iEdRK7Scalar_i" title="rascal::math::details::pow_i::Scalar_">Scalar_</a> &amp;<em>x</em>, int <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN6rascal4math7details5pow_iEdRK7Scalar_i" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4N6rascal4math7details5pow_iEdi">
+<span class="target" id="namespacerascal_1_1math_1_1details_1a1920492ff204972ede3311d9b06e9409"></span>double <code class="sig-name descname">pow_i</code><span class="sig-paren">(</span>double <em>x</em>, int <em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math7details5pow_iEdi" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>integer power </p>
 </dd></dl>
 
