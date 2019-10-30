@@ -3,7 +3,7 @@
 
 rascal_reference_path = 'reference_data/'
 inputs_path = rascal_reference_path + "inputs/"
-outputs_path = rascal_reference_path + "outputs/"
+dump_path = rascal_reference_path + "tests_only/"
 
 import os
 import sys
@@ -26,8 +26,8 @@ fns = [
         path, inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
     os.path.join(path, inputs_path, "small_molecule.json")]
 fns_to_write = [
-    outputs_path + "CaCrP2O7_mvc-11955_symmetrized.json",
-    outputs_path + "small_molecule.json"
+    dump_path + "CaCrP2O7_mvc-11955_symmetrized.json",
+    dump_path + "small_molecule.json"
 ]
 
 data = dict(filenames=fns_to_write, cutoffs=cutoffs, rep_info=[])
@@ -51,6 +51,6 @@ for fn in fns:
                                              hypers=copy(hypers)))
 
 with open(os.path.join(path,
-                       outputs_path,
+                       dump_path,
                        "sorted_coulomb_reference.ubjson"), 'wb') as f:
     ubjson.dump(data, f)

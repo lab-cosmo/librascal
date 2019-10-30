@@ -530,7 +530,7 @@ namespace rascal {
     ~SphericalExpansionTestData() = default;
     bool verbose{false};
     std::string ref_filename{
-        "reference_data/outputs/spherical_expansion_reference.ubjson"};
+        "reference_data/tests_only/spherical_expansion_reference.ubjson"};
   };
 
   /**

@@ -11,7 +11,7 @@ import faulthandler
 
 rascal_reference_path = 'reference_data/'
 inputs_path = rascal_reference_path + "inputs/"
-outputs_path = rascal_reference_path + "outputs/"
+dump_path = rascal_reference_path + "tests_only/"
 
 def get_NL_reference(cutoff, cell, pbc, positions, atom_types):
     list_box = BoxList(cutoff, np.array(cell.T, order='C'),
