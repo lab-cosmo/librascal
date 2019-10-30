@@ -798,11 +798,13 @@ namespace rascal {
       // images)
       size_t i_index{structure_manager->get_atom_index(pair_ref.front())};
       auto i_position{structure_manager->get_position(i_index)};
-      // std::cout << "cutoff: " << structure_manager->get_cutoff()<<std::endl;
+     
       // Iterate until (j,i) is found
       std::vector<PairRefKey_t> new_pairs;
       using Positions_t = Eigen::Matrix<double, 3, Eigen::Dynamic>;
       for (auto new_pair : new_center) {
+        // go through the neighbors of atom j and wrap them into the cell 
+        // to test if they match atom i
         Positions_t i_trial_position = new_pair.get_position();
         Positions_t i_wrapped_position =
             atomic_structure.wrap_explicit_positions(i_trial_position);
