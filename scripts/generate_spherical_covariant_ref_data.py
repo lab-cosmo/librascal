@@ -13,7 +13,7 @@ from rascal.representations import SphericalCovariants
 
 rascal_reference_path = 'reference_data/'
 inputs_path = rascal_reference_path + "inputs/"
-outputs_path = rascal_reference_path + "tests_only/"
+outputs_path = rascal_reference_path + "outputs/"
 
 #############################################################################
 
