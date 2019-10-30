@@ -215,7 +215,7 @@ namespace rascal {
     ~SphericalInvariantsTestData() = default;
     bool verbose{false};
     std::string ref_filename{
-        "reference_data/tests_only/spherical_invariants_reference.ubjson"};
+        "reference_data/outputs/spherical_invariants_reference.ubjson"};
   };
 
   struct SphericalCovariantsTestData : TestData {
@@ -228,7 +228,7 @@ namespace rascal {
     ~SphericalCovariantsTestData() = default;
     bool verbose{false};
     std::string ref_filename{
-        "reference_data/tests_only/spherical_covariants_reference.ubjson"};
+        "reference_data/outputs/spherical_covariants_reference.ubjson"};
   };
 
   template <class MultipleStructureFixture>
@@ -530,7 +530,7 @@ namespace rascal {
     ~SphericalExpansionTestData() = default;
     bool verbose{false};
     std::string ref_filename{
-        "reference_data/tests_only/spherical_expansion_reference.ubjson"};
+        "reference_data/outputs/spherical_expansion_reference.ubjson"};
   };
 
   /**
