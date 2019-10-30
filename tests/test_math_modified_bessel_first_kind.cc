@@ -51,6 +51,15 @@ namespace rascal {
       this->j_v_complete_square.calc(rij, alpha);
       auto vals{this->j_v_complete_square.get_values()};
 
+      // test that values are eithe > 1e-100 or 0
+      for (size_t i_x{0}; i_x < xs.size(); ++i_x) {
+        for (size_t order{0}; order < max_order; ++order) {
+          if (vals(i_x, order) > 0) {
+            BOOST_TEST(vals(i_x, order) > 9e-101);
+          }
+        }
+      }
+
       for (size_t i_x{0}; i_x < xs.size(); ++i_x) {
         for (size_t order{0}; order < max_order; ++order) {
           double rel_error{0.};
@@ -75,7 +84,6 @@ namespace rascal {
             BOOST_CHECK_LE(rel_error, 1e3 * math::dbl_ftol);
           }
         }
-        // break;
       }
     }
   }
