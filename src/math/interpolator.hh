@@ -861,6 +861,8 @@ namespace rascal {
 
       // virtual Ω interpolate(double x);
       // virtual Ω interpolate_derivative(double x);
+      double x1{0.};
+      double x2{0.};
 
      protected:
       /*
@@ -913,8 +915,6 @@ namespace rascal {
       virtual void compute_grid_error() = 0;
 
       // The boundary points of the range of interpolation
-      double x1{0.};
-      double x2{0.};
       // grid in the range [x1,x2]
       Vector_t grid{};
       double error_bound{1e-5};

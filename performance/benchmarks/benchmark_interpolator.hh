@@ -266,9 +266,12 @@ namespace rascal {
         for (int i{0}; i < this->ref_points.size(); i++) {
           this->ref_points(i) = points_tmp(rand_r(&SEED) % this->nb_ref_points);
         }
-	std::cout << "x1 " << this->x1 << " x2" << this->x2 << std::endl;
+        std::cout << std::endl;
+        std::cout << "x1 " << this->x1 << " x2 " << this->x2 << std::endl;
+        std::cout << std::endl;
         for (int i{0}; i < this->ref_points.size(); i++) {
-	  assert(this->ref_points(i) >= this->x1 && this->ref_points(i) <= this->x2);
+          assert(this->ref_points(i) >= this->x1 &&
+                 this->ref_points(i) <= this->x2);
         }
       } else {
         this->ref_points =
