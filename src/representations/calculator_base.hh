@@ -28,16 +28,17 @@
 #ifndef SRC_REPRESENTATIONS_CALCULATOR_BASE_HH_
 #define SRC_REPRESENTATIONS_CALCULATOR_BASE_HH_
 
-#include "structure_managers/structure_manager_base.hh"
-#include "structure_managers/property_block_sparse.hh"
 #include "json_io.hh"
+#include "structure_managers/property_block_sparse.hh"
+#include "structure_managers/structure_manager_base.hh"
 
-#include <string>
-#include <vector>
+#include <Eigen/Dense>
+
 #include <iostream>
 #include <set>
+#include <string>
 #include <unordered_map>
-#include <Eigen/Dense>
+#include <vector>
 
 namespace rascal {
 

@@ -79,12 +79,10 @@ namespace rascal {
    */
   size_t StructureManagerLammps::get_nb_clusters(int order) const {
     switch (order) {
-    case 1: {
+    case 1:
       return inum;
-    }
-    case 2: {
+    case 2:
       return nb_pairs;
-    }
     default:
       throw std::runtime_error("Can only handle single atoms and pairs");
     }

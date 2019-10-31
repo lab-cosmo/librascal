@@ -66,7 +66,7 @@ namespace rascal {
         // starting guess for the ith root
         z = std::cos(math::PI * (ii + 0.75) / (order_n + 0.5));
         double z1{0.};
-        while (std::abs(z - z1) > dbl_ftol) {
+        while (std::abs(z - z1) > DBL_FTOL) {
           double p1{1.}, p2{0.};
           // use LP 3-term recurrence relation with p1/2/3
           for (int jj{0}; jj < order_n; ++jj) {

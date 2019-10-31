@@ -28,14 +28,13 @@
 #ifndef BINDINGS_BIND_PY_REPRESENTATION_CALCULATOR_HH_
 #define BINDINGS_BIND_PY_REPRESENTATION_CALCULATOR_HH_
 
-#include "representations/calculator_base.hh"
-#include "representations/calculator_sorted_coulomb.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "representations/calculator_spherical_covariants.hh"
-
 #include "bind_include.hh"
 #include "bind_py_structure_manager.hh"
+#include "representations/calculator_base.hh"
+#include "representations/calculator_sorted_coulomb.hh"
+#include "representations/calculator_spherical_covariants.hh"
+#include "representations/calculator_spherical_expansion.hh"
+#include "representations/calculator_spherical_invariants.hh"
 
 namespace rascal {
   void add_representation_calculators(py::module &, py::module &);

@@ -28,18 +28,18 @@
 #ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 
-#include "rascal_utility.hh"
 #include "math/math_utils.hh"
-#include "structure_managers/property_base.hh"
+#include "rascal_utility.hh"
 #include "structure_managers/cluster_ref_key.hh"
+#include "structure_managers/property_base.hh"
 
-#include <unordered_map>
-#include <set>
-#include <list>
-#include <map>
 #include <algorithm>
 #include <iterator>
+#include <list>
+#include <map>
+#include <set>
 #include <type_traits>
+#include <unordered_map>
 
 namespace rascal {
   namespace internal {

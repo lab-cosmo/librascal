@@ -31,6 +31,7 @@
 #define SRC_MATH_SPHERICAL_HARMONICS_HH_
 
 #include "math_utils.hh"
+
 #include <iostream>
 #include <vector>
 
@@ -285,7 +286,7 @@ namespace rascal {
         if (std::abs((direction[0] * direction[0] +
                       direction[1] * direction[1] +
                       direction[2] * direction[2]) -
-                     1.0) > math::dbl_ftol) {
+                     1.0) > math::DBL_FTOL) {
           std::cerr << "Warning: SphericalHarmonics::calc()";
           std::cerr << ": Direction vector unnormalized, normalizing it now";
           std::cerr << std::endl;
@@ -302,7 +303,7 @@ namespace rascal {
         double sqrt_xy = std::hypot(direction_normed[0], direction_normed[1]);
         // For a vector along the z-axis, define phi=0
         double cos_phi{1.0}, sin_phi{0.0};
-        if (sqrt_xy >= math::dbl_ftol) {
+        if (sqrt_xy >= math::DBL_FTOL) {
           cos_phi = direction_normed[0] / sqrt_xy;
           sin_phi = direction_normed[1] / sqrt_xy;
         }

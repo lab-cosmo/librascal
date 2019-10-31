@@ -30,15 +30,12 @@
 #ifndef TESTS_TEST_PROPERTIES_HH_
 #define TESTS_TEST_PROPERTIES_HH_
 
-#include "tests.hh"
-#include "test_structure.hh"
-#include "test_adaptor.hh"
-
 #include "structure_managers/property.hh"
 #include "structure_managers/property_block_sparse.hh"
+#include "test_adaptor.hh"
+#include "test_structure.hh"
 
-#include <random>
-#include <set>
+#include <boost/mpl/list.hpp>
 
 namespace rascal {
 

@@ -32,6 +32,7 @@
 #include "atomic_structure.hh"
 
 #include <Eigen/Dense>
+
 #include <cmath>
 
 namespace rascal {

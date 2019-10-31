@@ -29,8 +29,8 @@
 #ifndef SRC_MATH_BESSEL_HH_
 #define SRC_MATH_BESSEL_HH_
 
-#include "math/math_utils.hh"
 #include "math/hyp1f1.hh"
+#include "math/math_utils.hh"
 
 namespace rascal {
   namespace math {
@@ -200,6 +200,7 @@ namespace rascal {
           this->upward_recursion(distance, fac_a, n_up);
         }
 
+        // WARNING: this does nothing
         // set small values to 0.
         bessel_values.unaryExpr([](double d) {
           if (d < 1e-100) {

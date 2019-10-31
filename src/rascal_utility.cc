@@ -19,11 +19,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "rascal_utility.hh"
+
 #include <cstdlib>
 #include <fstream>
 #include <iterator>
-
-#include "rascal_utility.hh"
 
 #ifdef __GNUG__
 #include <cxxabi.h>

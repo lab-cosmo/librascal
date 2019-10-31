@@ -31,17 +31,17 @@
 #ifndef SRC_STRUCTURE_MANAGERS_SPECIES_MANAGER_HH_
 #define SRC_STRUCTURE_MANAGERS_SPECIES_MANAGER_HH_
 
-#include "structure_managers/structure_manager.hh"
 #include "structure_managers/adaptor_filter.hh"
 #include "structure_managers/property.hh"
+#include "structure_managers/structure_manager.hh"
 #include "structure_managers/updateable_base.hh"
 #include "utils/key_standardisation.hh"
 
-#include <type_traits>
 #include <array>
-#include <tuple>
 #include <map>
 #include <memory>
+#include <tuple>
+#include <type_traits>
 
 namespace rascal {
 
