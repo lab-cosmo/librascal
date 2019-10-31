@@ -67,17 +67,17 @@ namespace rascal {
 
     std::array<size_t, 1> arr_order_one =
         index_sequence_to_array(order_one_seq{});
-    std::array<size_t, 1> arr_order_one_ref = {1};
+    std::array<size_t, 1> arr_order_one_ref = {{1}};
     BOOST_CHECK(arr_order_one == arr_order_one_ref);
 
     std::array<size_t, 2> arr_order_two =
         index_sequence_to_array(order_two_seq{});
-    std::array<size_t, 2> arr_order_two_ref = {1, 1};
+    std::array<size_t, 2> arr_order_two_ref = {{1, 1}};
     BOOST_CHECK(arr_order_two == arr_order_two_ref);
 
     std::array<size_t, 3> arr_order_three =
         index_sequence_to_array(order_three_seq{});
-    std::array<size_t, 3> arr_order_three_ref = {1, 1, 0};
+    std::array<size_t, 3> arr_order_three_ref = {{1, 1, 0}};
     BOOST_CHECK(arr_order_three == arr_order_three_ref);
     if (verbose) {
       print_index_sequence(std::make_index_sequence<5>{});

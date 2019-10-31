@@ -133,7 +133,7 @@ namespace rascal {
   template <size_t... Ints>
   constexpr std::array<size_t, sizeof...(Ints)> index_sequence_to_array(
       const std::index_sequence<Ints...> & /*layers_by_order*/) {
-    return std::array<size_t, sizeof...(Ints)>{Ints...};
+    return std::array<size_t, sizeof...(Ints)>{{Ints...}};
   }
 
   /**
@@ -157,8 +157,8 @@ namespace rascal {
                   "ActiveMaxOrder should not greater than the MaxOrder.");
     // transforms the LayersByOrder to an array
     //constexpr size_t arr[] = {LayersByOrder...};
-    constexpr std::array<size_t, sizeof...(LayersByOrder)> arr{
-        LayersByOrder...};
+    constexpr std::array<size_t, sizeof...(LayersByOrder)> arr {{
+        LayersByOrder...}};
     return *std::min_element(std::begin(arr), std::begin(arr) + ActiveMaxOrder);
   }
 
