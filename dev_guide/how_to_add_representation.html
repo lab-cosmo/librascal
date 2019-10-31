@@ -105,6 +105,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#write-a-calculator-for-a-representation">Write a Calculator for a representation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#implementing-several-types-of-the-same-representation">Implementing several types of the same representation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#write-the-python-bindings-of-a-new-representation">Write the python bindings of a new representation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#implement-and-test-gradients">Implement and test gradients</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="how_to_test.html">How to write a test</a></li>
@@ -211,6 +212,7 @@
 <li><p><a class="reference internal" href="#write-a-calculator-for-a-representation" id="id6">Write a Calculator for a representation</a></p></li>
 <li><p><a class="reference internal" href="#implementing-several-types-of-the-same-representation" id="id7">Implementing several types of the same representation</a></p></li>
 <li><p><a class="reference internal" href="#write-the-python-bindings-of-a-new-representation" id="id8">Write the python bindings of a new representation</a></p></li>
+<li><p><a class="reference internal" href="#implement-and-test-gradients" id="id9">Implement and test gradients</a></p></li>
 </ul>
 </li>
 </ul>
@@ -512,6 +514,20 @@ Fast and Accurate Modeling of Molecular Atomization Energies with Machine Learni
 Physical Review Letters, 108(5), 58301. <a class="reference external" href="https://doi.org/10.1103/PhysRevLett.108.058301">https://doi.org/10.1103/PhysRevLett.108.058301</a></p>
 </dd>
 </dl>
+</div>
+<div class="section" id="implement-and-test-gradients">
+<h2><a class="toc-backref" href="#id9">Implement and test gradients</a><a class="headerlink" href="#implement-and-test-gradients" title="Permalink to this headline">¶</a></h2>
+<p>In principle, all libRascal representations should implement gradients with
+respect to the atomic positions.  Currently the only representations to do so
+are the <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">SphericalExpansion</span></code> and <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">SphericalInvariants</span></code>
+(tensor order 0, body order 0–1 a.k.a. “RadialSpectrum” and “PowerSpectrum”) in
+the GTO radial basis.  Until we come up with a general, standard way of
+implementing gradients for any representation, please see those implementations
+for guidance.</p>
+<p>Once you’ve implemented the gradient – or derivative – of any function in
+libRascal, you must test that it actually corresponds to the gradient of the
+function that it purpots to be.  A finite-difference testing function is
+provided for this purpose; see <a class="reference internal" href="how_to_test.html#testing-gradients"><span class="std std-ref">Testing gradients</span></a> for details.</p>
 </div>
 </div>
 
