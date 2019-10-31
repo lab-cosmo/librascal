@@ -25,12 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <structure_managers/structure_manager_centers.hh>
-#include <structure_managers/make_structure_manager.hh>
-#include <structure_managers/adaptor_neighbour_list.hh>
-#include <structure_managers/property.hh>
-
-#include "json.hpp"
+#include "external/json.hpp"
+#include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/make_structure_manager.hh"
+#include "structure_managers/property.hh"
+#include "structure_managers/structure_manager_centers.hh"
 
 #include <iostream>
 #include <vector>

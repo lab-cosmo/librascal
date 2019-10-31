@@ -26,9 +26,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
-#include "test_structure.hh"
 #include "structure_managers/adaptor_half_neighbour_list.hh"
+#include "test_structure.hh"
+
+#include <boost/test/unit_test.hpp>
+
+constexpr double TOLERANCE = 1e-12;
 
 namespace rascal {
 
@@ -177,7 +180,7 @@ namespace rascal {
 
         auto neighbour_position = pair.get_position();
         auto diff_pos_pair = (neighbour_position - atom_position).norm();
-        BOOST_CHECK_CLOSE(diff_pos_pair, 1., tol);
+        BOOST_CHECK_CLOSE(diff_pos_pair, 1., TOLERANCE);
 
         for (auto triplet : pair) {
           if (verbose) {
@@ -193,7 +196,7 @@ namespace rascal {
 
           auto triplet_position = triplet.get_position();
           auto diff_pos_triplet = (triplet_position - atom_position).norm();
-          BOOST_CHECK_CLOSE(diff_pos_triplet, 1., tol);
+          BOOST_CHECK_CLOSE(diff_pos_triplet, 1., TOLERANCE);
         }
       }
     }

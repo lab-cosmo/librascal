@@ -30,9 +30,10 @@
 #define SRC_MATH_MATH_UTILS_HH_
 
 #include <Eigen/Dense>
+
 #include <cmath>
-#include <limits>
 #include <cstdint>
+#include <limits>
 
 namespace rascal {
   /**
@@ -43,44 +44,45 @@ namespace rascal {
    * for unsigned long. Both have equivalent underlying storage but not the
    * same type...
    */
-  constexpr std::size_t operator"" _n(unsigned long long int n) {  // NOLINT
+  constexpr std::size_t
+  operator"" _size_t(unsigned long long int n) {  // NOLINT
     return n;
   }
 
   namespace math {
-
-    // Reminder: C++ floating-point literals are automatically of type double
-    /// Pi to more digits than anyone could possibly need
-    const double PI = 3.14159265358979323846264338327950288419716939937510;
-    const double SQRT_PI =
-        1.7724538509055160272981674833411451827975494561223871282;
-    const double SQRT_TWO = std::sqrt(2.0);
-    const double INV_SQRT_TWO = std::sqrt(0.5);
-    const double SQRT_THREE = std::sqrt(3.0);
+    /// π to more digits than anyone could possibly need
+    constexpr double PI = 3.14159265358979323846264338327950288;
+    /// sqrt(π)
+    constexpr double SQRT_PI = 1.772453850905516027298167483341145182;
+    /// sqrt(2)
+    constexpr double SQRT_TWO = 1.41421356237309504880168872420969808;
+    /// 1 / sqrt(2)
+    constexpr double INV_SQRT_TWO = 0.707106781186547524400844362104849039;
+    /// sqrt(3)
+    constexpr double SQRT_THREE = 1.7320508075688772935274463415058723;
 
     /// How small a number must be to be considered effectively zero
-    const double dbl_ftol = 100.0 * std::numeric_limits<double>::epsilon();
-
+    constexpr double DBL_FTOL = 100.0 * std::numeric_limits<double>::epsilon();
     /// How large a number must be to be considered infinity
-    const double DOVERFLOW = std::numeric_limits<double>::infinity();
+    constexpr double DOVERFLOW = std::numeric_limits<double>::infinity();
 
     // define some usefull matrix type
     using Matrix_t =
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+    using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
     using Vector_t = Eigen::Matrix<double, 1, Eigen::Dynamic, Eigen::RowMajor>;
 
-    using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
     using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
     using MatrixX2_Ref = typename Eigen::Ref<const MatrixX2_t>;
     using Vector_Ref = typename Eigen::Ref<const Vector_t>;
+
     /**
      * Define integer powers and wrap the different cases under the same name
      */
     namespace details {
       //! unsingned integer power
-      template <typename Scalar_>
-      inline Scalar_ pow_u(Scalar_ x, size_t n) {
-        Scalar_ value{1};
+      inline double pow_u(double x, size_t n) {
+        double value{1};
 
         /* repeated squaring method
          * returns 0.0^0 = 1.0, so continuous in x
@@ -97,8 +99,7 @@ namespace rascal {
       }
 
       //! integer power
-      template <typename Scalar_>
-      inline double pow_i(const Scalar_ & x, int n) {
+      inline double pow_i(double x, int n) {
         size_t un{0};
         double value{static_cast<double>(x)};
 
@@ -122,127 +123,17 @@ namespace rascal {
     //! integer power
     inline double pow(size_t x, int n) { return details::pow_i(x, n); }
 
-    //! unsingned integer power
+    //! unsigned integer power
     inline double pow(double x, size_t n) { return details::pow_u(x, n); }
 
-    //! unsingned integer power
+    //! unsigned integer power
     inline int pow(int x, size_t n) { return details::pow_u(x, n); }
 
-    //! unsingned integer power
+    //! unsigned integer power
     inline size_t pow(size_t x, size_t n) { return details::pow_u(x, n); }
 
     //! general power
     inline double pow(double x, double n) { return std::pow(x, n); }
-
-    /**
-     * Modulo that follows python standard, i.e. (-3) % 5 == 2 (python) and not
-     * (-3) % 5 == -3 (C++).
-     *
-     * @param divisor is a positive divisor
-     * @tparam Num type of the double modulo
-     */
-    template <class Num>
-    Num py_mod(Num x, Num divisor) {
-      assert(divisor > 0.);
-      Num m{std::fmod(x, divisor)};
-      return m + (m < 0 ? divisor : 0);
-    }
-
-    /**
-     * Defines an integer power functor, which is used as CustomUnaryOp object
-     * to apply elementwise integer power operations on an Eigen::MatrixBase
-     * object e.g. :
-     *
-     *   Eigen::VectorXd vec(3);
-     *   vec << 5,10,20;
-     *   auto functor{MakePositiveIntegerPower(2)};
-     *   vec.unaryExpr(functor);
-     *   // result is vec = [25,100,400]
-     *
-     * @tparam Scalar can be of type: double, int and uint
-     */
-    template <typename Scalar>
-    struct MakePositiveIntegerPower {
-      typedef Scalar result_type;
-      size_t b;
-      explicit MakePositiveIntegerPower(size_t b) : b{b} {}
-
-      Scalar operator()(const Scalar & a) const { return pow(a, this->b); }
-    };
-
-    /**
-     * Defines a modulo function that follows python standard behaviour
-     */
-    struct MakePositivePyMod {
-      double divisor;
-      explicit MakePositivePyMod(double divisor) : divisor{divisor} {}
-      double operator()(double a) const { return py_mod(a, this->divisor); }
-    };
-
-    /**
-     * Compute a cosine-type switching function for smooth cutoffs
-     *
-     * @param cutoff Outer (strict) cutoff, beyond which this function becomes
-     *               zero
-     *
-     * @param smooth_width Width over which the smoothing function extends;
-     *                     the function becomes one for r less than
-     *                     cutoff - smooth_width
-     *
-     * @param r Distance at which to evaluate the switching function
-     *
-     * The functional form is:
-     *
-     * sw(r) = 1/2 + 1/2 cos(pi * (r - cutoff + smooth_width) / smooth_width)
-     *
-     * if r is within the cutoff region (cutoff - smooth_width < r <= cutoff);
-     * if r is outside (> cutoff) the function is zero; if r is inside, the
-     * function is 1.
-     *
-     * Specifying smooth_width less than cutoff is not an error.
-     * If smooth_width is equal to zero the result will just be a step
-     * function.
-     *
-     */
-    inline double switching_function_cosine(double r, double cutoff,
-                                            double smooth_width) {
-      if (r <= (cutoff - smooth_width)) {
-        return 1.0;
-      } else if (r > cutoff) {
-        return 0.0;
-      }
-      double r_scaled{PI * (r - cutoff + smooth_width) / smooth_width};
-      return (0.5 * (1. + std::cos(r_scaled)));
-    }
-
-    /**
-     * Compute the derivative of the cosine-type switching function
-     *
-     * @param cutoff Outer (strict) cutoff, beyond which this function becomes
-     *               zero
-     *
-     * @param smooth_width Width over which the smoothing function extends;
-     *                     the function becomes one for r less than
-     *                     cutoff - smooth_width
-     *
-     * @param r Distance at which to evaluate the derivative
-     *
-     * The functional form is:
-     *
-     * dsw/dr (r) = -pi/(2*smooth_width) * sin(pi * (r - cutoff + smooth_width)
-     *                                              / smooth_width)
-     */
-    inline double derivative_switching_funtion_cosine(double r, double cutoff,
-                                                      double smooth_width) {
-      if (r <= (cutoff - smooth_width)) {
-        return 0.0;
-      } else if (r > cutoff) {
-        return 0.0;
-      }
-      double r_scaled{PI * (r - cutoff + smooth_width) / smooth_width};
-      return (-0.5 * PI / smooth_width * std::sin(r_scaled));
-    }
-
   }  // namespace math
 }  // namespace rascal
 

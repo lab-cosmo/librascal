@@ -25,9 +25,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
 #include "test_calculator.hh"
+
 #include "test_math.hh"  // for the gradient test
+
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_test);
@@ -296,7 +299,7 @@ namespace rascal {
             auto row_full = rep_full.row(i_center);
             auto row_no_center = rep_no_center.row(i_no_center);
             auto diff = (row_full - row_no_center).norm();
-            BOOST_CHECK_LE(diff, math::dbl_ftol);
+            BOOST_CHECK_LE(diff, math::DBL_FTOL);
             if (verbose) {
               std::cout << "Center idx: " << i_center << " Diff: " << diff
                         << std::endl;

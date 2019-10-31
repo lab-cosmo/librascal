@@ -31,28 +31,29 @@
 #ifndef SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
 #define SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
 
-#include "representations/calculator_base.hh"
-#include "representations/cutoff_functions.hh"
-#include "structure_managers/structure_manager.hh"
-#include "rascal_utility.hh"
-#include "math/math_utils.hh"
-#include "math/spherical_harmonics.hh"
-#include "math/hyp1f1.hh"
 #include "math/bessel.hh"
 #include "math/gauss_legendre.hh"
+#include "math/hyp1f1.hh"
 #include "math/interpolator.hh"
+#include "math/math_utils.hh"
+#include "math/spherical_harmonics.hh"
+#include "rascal_utility.hh"
+#include "representations/calculator_base.hh"
+#include "representations/cutoff_functions.hh"
 #include "structure_managers/property_block_sparse.hh"
+#include "structure_managers/structure_manager.hh"
+
+#include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
 
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <memory>
 #include <exception>
+#include <memory>
 #include <sstream>
-#include <vector>
-#include <Eigen/Dense>
-#include <Eigen/Eigenvalues>
 #include <unordered_set>
+#include <vector>
 
 namespace rascal {
 
@@ -1428,16 +1429,14 @@ namespace rascal {
     using internal::CutoffFunctionType;
 
     switch (this->cutoff_function_type) {
-    case CutoffFunctionType::ShiftedCosine: {
+    case CutoffFunctionType::ShiftedCosine:
       this->compute_by_radial_contribution<CutoffFunctionType::ShiftedCosine>(
           managers);
       break;
-    }
-    case CutoffFunctionType::RadialScaling: {
+    case CutoffFunctionType::RadialScaling:
       this->compute_by_radial_contribution<CutoffFunctionType::RadialScaling>(
           managers);
       break;
-    }
     default:
       // The control flow really should never reach here.  But just in case,
       // provide the necessary information to debug this problem.
@@ -1511,9 +1510,8 @@ namespace rascal {
       err_message << static_cast<int>(this->atomic_smearing_type);
       err_message << ")" << std::endl;
       throw std::logic_error(err_message.str());
-      break;
     }
-  }
+  }  // namespace rascal
 
   /**
    * Compute the spherical expansion

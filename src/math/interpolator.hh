@@ -29,12 +29,13 @@
 #ifndef SRC_MATH_INTERPOLATOR_HH_
 #define SRC_MATH_INTERPOLATOR_HH_
 
-#include <functional>
+#include "math_utils.hh"
+
+#include <cassert>
 #include <forward_list>
+#include <functional>
 #include <iostream>
 #include <limits>
-#include <cassert>
-#include "math_utils.hh"
 
 namespace rascal {
   namespace math {
@@ -82,14 +83,23 @@ namespace rascal {
      * search methods for non adaptive grids, which were removed but can be
      * found here if needed:
      * https://gist.github.com/agoscinski/59b103998c7faae979dbbc672e8048f6.js
+     *
      */
 
     struct UniformGridType {
       static bool is_grid_uniform(const Vector_Ref & grid) {
-        double step_size = grid(1) - grid(0);
+        // checks if the grid is in ascending order
+        for (int i = 0; i < grid.size() - 2; i++) {
+          if (grid(i + 1) > grid(i)) {
+            return false;
+          }
+        }
+
+        // checks if the cell/step size is the same everywhere
+        const double step_size = grid(1) - grid(0);
         for (int i = 0; i < grid.size() - 2; i++) {
           // h_i - h_0 > ε
-          if (std::abs((grid(i + 1) - grid(i)) - step_size) > dbl_ftol) {
+          if (std::abs((grid(i + 1) - grid(i)) - step_size) > DBL_FTOL) {
             return false;
           }
         }
@@ -309,6 +319,11 @@ namespace rascal {
       void initialize(const Vector_Ref & grid,
                       const Vector_Ref & evaluated_grid) {
         this->h = grid(1) - grid(0);
+        if (this->h < DBL_FTOL) {
+          throw std::runtime_error("Grid cell/step size is too small. The "
+                                   "mininum supported cell/step size is " +
+                                   std::to_string(DBL_FTOL) + ".");
+        }
         this->h_sq_6 = this->h * this->h / 6.0;
         this->compute_second_derivative(evaluated_grid);
         this->initialized = true;
@@ -361,7 +376,6 @@ namespace rascal {
       inline void compute_second_derivative(const Vector_Ref & yv, double dfx1,
                                             double dfx2) {
         // Bad xa input to routine splint
-        assert(this->h > dbl_ftol);
         int n{static_cast<int>(yv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
@@ -393,7 +407,6 @@ namespace rascal {
        */
       inline void compute_second_derivative(const Vector_Ref & yv) {
         // Bad xa input to routine splint
-        assert(this->h > dbl_ftol);
         int n{static_cast<int>(yv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
@@ -418,10 +431,9 @@ namespace rascal {
         this->second_derivative_h_sq_6 = y2 * this->h_sq_6;
       }
 
-      inline double interpolate_for_one_point(const Vector_Ref & xx,
-                                              const Vector_Ref & yy, int j1,
-                                              double x) const {
-        assert(this->h > dbl_ftol);
+      inline double
+      interpolate_for_one_point(const Vector_Ref & xx, const Vector_Ref & yy,
+                                int j1, double x) const {
         int klo{j1}, khi{j1 + 1};
         // percentage of grid cell start to x
         double a{(xx(khi) - x) / this->h};
@@ -438,7 +450,6 @@ namespace rascal {
                                                          const Vector_Ref & yy,
                                                          int j1,
                                                          double x) const {
-        assert(this->h > dbl_ftol);
         int klo{j1}, khi{j1 + 1};
         double a{(xx(khi) - x) / this->h};
         // Because we can assume a+b=1, we simplify the calculation of b
@@ -507,8 +518,8 @@ namespace rascal {
                              const Matrix_Ref & evaluated_grid, double x,
                              int nearest_grid_index_to_x) const {
         assert(this->initialized);
-        return this->interpolate_derivative_for_one_point(grid, evaluated_grid,
-                                               nearest_grid_index_to_x, x);
+        return this->interpolate_derivative_for_one_point(
+            grid, evaluated_grid, nearest_grid_index_to_x, x);
       }
 
      private:
@@ -1006,6 +1017,7 @@ namespace rascal {
           throw std::logic_error(
               "The grid and evaluated grid must match in size");
         }
+
         if (not(UniformGridType::is_grid_uniform(Vector_Ref(this->grid)))) {
           throw std::logic_error("The grid has to be uniform.");
         }

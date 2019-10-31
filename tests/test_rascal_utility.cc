@@ -25,9 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
 #include "rascal_utility.hh"
 #include "representations/calculator_spherical_expansion.hh"
+
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 

@@ -30,9 +30,9 @@
 #ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_FULL_NEIGHBOUR_LIST_HH_
 #define SRC_STRUCTURE_MANAGERS_ADAPTOR_FULL_NEIGHBOUR_LIST_HH_
 
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
 #include "rascal_utility.hh"
+#include "structure_managers/property.hh"
+#include "structure_managers/structure_manager.hh"
 
 namespace rascal {
   /**
@@ -142,17 +142,12 @@ namespace rascal {
     //! returns the number of atoms or pairs
     size_t get_nb_clusters(int order) const {
       switch (order) {
-      case 1: {
+      case 1:
         return this->manager->get_nb_clusters(order);
-        break;
-      }
-      case 2: {
+      case 2:
         return this->neighbours_atom_tag.size();
-        break;
-      }
-      default: {
+      default:
         throw std::runtime_error("Can only handle single atoms and pairs.");
-      }
       }
     }
 

@@ -42,7 +42,7 @@
 #include "benchmarks.hh"
 #include "representations/calculator_spherical_expansion.hh"
 #include "representations/calculator_spherical_invariants.hh"
-#include "json.hpp"
+#include "json_io.hh"
 
 namespace rascal {
 
@@ -160,10 +160,10 @@ namespace rascal {
           {"radial_angular",
            {std::make_pair(3, 4), std::make_pair(6, 6), std::make_pair(8, 6)}},
           {"random", {true}},  // dummy
-          {"filenames", {"reference_data/small_molecule.json"}},
+          {"filenames", {"../tests/reference_data/small_molecule.json"}},
           // please use only one file because google benchmark cant put strings
           // into their `Counter`, therefore the filename cannot be printed
-          // {"filenames", {"reference_data/methane.json"}},
+          // {"filenames", {"../tests/reference_data/methane.json"}},
           {"cutoffs", {4}}};
       return data;
     }

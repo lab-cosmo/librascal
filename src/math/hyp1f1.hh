@@ -28,7 +28,6 @@
 #ifndef SRC_MATH_HYP1F1_HH_
 #define SRC_MATH_HYP1F1_HH_
 
-#include "math/math_interface.hh"
 #include "math/math_utils.hh"
 
 #include <map>
@@ -99,7 +98,7 @@ namespace rascal {
           : a{a}, b{b}, mmax{mmax}, prefac{std::tgamma(a) / std::tgamma(b)},
             tolerance{tolerance} {
         // when a == b, 1F1 is an exponential
-        if (std::abs(1 - this->b / this->a) < dbl_ftol) {
+        if (std::abs(1 - this->b / this->a) < DBL_FTOL) {
           this->is_exp = true;
         } else {
           coeff.resize(mmax);
@@ -260,7 +259,7 @@ namespace rascal {
           this->is_n_and_l = true;
         }
 
-        if (std::abs(1 - this->b / this->a) < dbl_ftol) {
+        if (std::abs(1 - this->b / this->a) < DBL_FTOL) {
           this->is_exp = true;
         } else {
           coeff.resize(mmax);
@@ -458,7 +457,7 @@ namespace rascal {
         // power series and asymptotic expansion. basically we choose
         // the method that requires fewer terms for a chosen target accuracy.
         // the asymptotic expansion tends to blow up at the switching point.
-        if (std::abs(1 - this->b / this->a) > dbl_ftol) {
+        if (std::abs(1 - this->b / this->a) > DBL_FTOL) {
           this->find_switching_point();
           // fix the number of terms needed for the numerical derivative
           // with nterms_s and nterms_a

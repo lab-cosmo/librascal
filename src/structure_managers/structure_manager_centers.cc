@@ -28,9 +28,9 @@
 
 #include "structure_managers/structure_manager_centers.hh"
 
-#include <numeric>
 #include <fstream>
 #include <iostream>
+#include <numeric>
 
 namespace rascal {
 

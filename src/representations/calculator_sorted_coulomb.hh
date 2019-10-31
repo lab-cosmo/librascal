@@ -28,14 +28,15 @@
 #ifndef SRC_REPRESENTATIONS_CALCULATOR_SORTED_COULOMB_HH_
 #define SRC_REPRESENTATIONS_CALCULATOR_SORTED_COULOMB_HH_
 
-#include "representations/calculator_base.hh"
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
 #include "rascal_utility.hh"
+#include "representations/calculator_base.hh"
+#include "structure_managers/property.hh"
+#include "structure_managers/structure_manager.hh"
 
-#include <vector>
-#include <algorithm>
 #include <math.h>
+
+#include <algorithm>
+#include <vector>
 
 namespace rascal {
 
