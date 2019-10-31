@@ -2,7 +2,8 @@
  * @file   test_cluster_ref_key.hh
  *
  * @author Alexander Goscinski <alexander.goscinski@epfl.ch>
- * @date   10 Thu 2019
+ *
+ * @date   10 Oct 2019
  *
  * @brief  tests for the cluster ref key layer computation utilities
  *
@@ -32,12 +33,6 @@
 #include <tuple>
 #include "structure_managers/cluster_ref_key.hh"
 
-/**
- * Prints the index sequence of an std::index_sequence type by recursively
- * printing the head element.
- *
- * @param _ the std::index_sequnce to print
- */
 namespace rascal {
   struct LayerFixture {
     // {1}
@@ -49,8 +44,9 @@ namespace rascal {
   };
 
   /**
-   * Prints the index sequence `Ints` defined in the std::index_sequence type of
-   * the parameter `sequence` by recursively printing the head element.
+   * Helper function which prints the index sequence `Ints` defined in the
+   * std::index_sequence type of the parameter `sequence` by recursively
+   * printing the head element.
    *
    * @param sequence sequence to be printed
    */
@@ -65,8 +61,9 @@ namespace rascal {
   }
 
   /**
-   * Prints the index sequence defined in the std::index_sequence type of the
-   * parameter `sequence` up to template parameter `Length`
+   * Helper function which prints the index sequence defined in the
+   * std::index_sequence type of the parameter `sequence` up to template
+   * parameter `Length`
    *
    * @tparam Length
    * @param sequence sequence to be printed

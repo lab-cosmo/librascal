@@ -99,8 +99,8 @@ namespace rascal {
    * @return returns the `Index` elment in the index sequence.
    */
   template <size_t Index, size_t... Ints>
-  constexpr size_t
-  get_index(const std::index_sequence<Ints...> & /*index_sequence*/) {
+  constexpr size_t get_index_from_sequence(
+      const std::index_sequence<Ints...> & /*index_sequence*/) {
     return std::get<Index>(std::make_tuple(Ints...));
   }
 
@@ -119,7 +119,7 @@ namespace rascal {
     static_assert(Order > 0, "Order is <1 this should not be.");
     static_assert(Order <= sizeof...(Ints),
                   "Order should be within the MaxOrder.");
-    return get_index<Order - 1>(layers_by_order);
+    return get_index_from_sequence<Order - 1>(layers_by_order);
   }
 
   /**
@@ -131,8 +131,8 @@ namespace rascal {
    * @return returns `Ints` as array
    */
   template <size_t... Ints>
-  constexpr std::array<size_t, sizeof...(Ints)>
-  get_layers(const std::index_sequence<Ints...> & /*layers_by_order*/) {
+  constexpr std::array<size_t, sizeof...(Ints)> index_sequence_to_array(
+      const std::index_sequence<Ints...> & /*layers_by_order*/) {
     return std::array<size_t, sizeof...(Ints)>{Ints...};
   }
 
@@ -156,7 +156,9 @@ namespace rascal {
     static_assert(ActiveMaxOrder <= sizeof...(LayersByOrder),
                   "ActiveMaxOrder should not greater than the MaxOrder.");
     // transforms the LayersByOrder to an array
-    constexpr size_t arr[] = {LayersByOrder...};
+    //constexpr size_t arr[] = {LayersByOrder...};
+    constexpr std::array<size_t, sizeof...(LayersByOrder)> arr{
+        LayersByOrder...};
     return *std::min_element(std::begin(arr), std::begin(arr) + ActiveMaxOrder);
   }
 

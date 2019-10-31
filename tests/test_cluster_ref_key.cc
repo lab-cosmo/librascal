@@ -2,7 +2,8 @@
  * @file   test_cluster_ref_key.cc
  *
  * @author Alexander Goscinski <alexander.goscinski@epfl.ch>
- * @date   10 Thu 2019
+ *
+ * @date   10 Oct 2019
  *
  * @brief  tests for the cluster ref key layer computation utilities
  *
@@ -57,21 +58,28 @@ namespace rascal {
   }
 
   /**
-   * tests the get_layers function
+   * tests the index_sequence_to_array function
    */
-  BOOST_FIXTURE_TEST_CASE(test_get_layers, LayerFixture) {
-    std::array<size_t, 1> arr_order_one = get_layers(order_one_seq{});
+  BOOST_FIXTURE_TEST_CASE(test_index_sequence_to_array, LayerFixture) {
+    bool verbose{false};
+
+    std::array<size_t, 1> arr_order_one =
+        index_sequence_to_array(order_one_seq{});
     std::array<size_t, 1> arr_order_one_ref = {1};
     BOOST_CHECK(arr_order_one == arr_order_one_ref);
 
-    std::array<size_t, 2> arr_order_two = get_layers(order_two_seq{});
+    std::array<size_t, 2> arr_order_two =
+        index_sequence_to_array(order_two_seq{});
     std::array<size_t, 2> arr_order_two_ref = {1, 1};
     BOOST_CHECK(arr_order_two == arr_order_two_ref);
 
-    std::array<size_t, 3> arr_order_three = get_layers(order_three_seq{});
+    std::array<size_t, 3> arr_order_three =
+        index_sequence_to_array(order_three_seq{});
     std::array<size_t, 3> arr_order_three_ref = {1, 1, 0};
     BOOST_CHECK(arr_order_three == arr_order_three_ref);
-    print_index_sequence(std::make_index_sequence<5>{});
+    if (verbose) {
+      print_index_sequence(std::make_index_sequence<5>{});
+    }
   }
 
   /**
