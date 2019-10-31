@@ -34,7 +34,6 @@ set(rascal_sources
     json_io.cc
     units.cc
     rascal_utility.cc
-    math/math_utils.cc
     utils/sparsify_fps.cc
     structure_managers/structure_manager_lammps.cc
     structure_managers/structure_manager_centers.cc

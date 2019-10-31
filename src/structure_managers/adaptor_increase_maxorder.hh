@@ -155,13 +155,10 @@ namespace rascal {
     //! Returns the number of clusters of size cluster_size
     size_t get_nb_clusters(size_t order) const {
       switch (order) {
-      case traits::MaxOrder: {
+      case traits::MaxOrder:
         return this->neighbours_atom_tag.size();
-        break;
-      }
       default:
         return this->manager->get_nb_clusters(order);
-        break;
       }
     }
 

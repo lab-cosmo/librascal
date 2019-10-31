@@ -545,17 +545,12 @@ namespace rascal {
     //! Returns the number of clusters of size cluster_size
     size_t get_nb_clusters(size_t order) const {
       switch (order) {
-      case 1: {
+      case 1:
         return this->get_size_with_ghosts();
-        break;
-      }
-      case 2: {
+      case 2:
         return this->neighbours_atom_tag.size();
-        break;
-      }
       default:
         throw std::runtime_error("Can only handle single atoms and pairs.");
-        break;
       }
     }
 
