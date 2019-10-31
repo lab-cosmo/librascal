@@ -52,74 +52,55 @@ ENDIF()
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
 "Release" "Debug" "RelWithDebInfo" "MinSizeRel")
 
-project(rascal)
+message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
+
+project(rascal CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_SHARED_LIBS ON)
-set(RASCAL_PYTHON_MAJOR_VERSION 3)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(rascalTools)
 
 ########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ########
-set(BUILD_BINDINGS "ON" CACHE BOOL
-  "If on, the python bindings will be built.")
+option(BUILD_BINDINGS "Build the python bindings" ON)
+option(BUILD_EXAMPLES "Build the examples" ON)
+option(BUILD_TESTS "Build the unit tests" OFF)
+option(BUILD_DOC "Build documentation" OFF)
+option(USER "Switch installation folder" OFF)
 
-set(BUILD_EXAMPLES "ON" CACHE BOOL
-  "If on, the examples will be built.")
+set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
 
-set(USER "OFF" CACHE BOOL
-  "Switch installation folder")
-
-set(INSTALL_PATH "" CACHE STRING
-  "Path to install the libraries")
-
-set(ENABLE_DOC "OFF" CACHE BOOL
-  "If on, a target 'dev_doc' (which builds the documentation) is added.")
-
-set(BUILD_TESTS "OFF" CACHE BOOL
-  "If on, builds the unit tests")
-
-set(ENABLE_PROFILING "OFF" CACHE BOOL
-  "If on, adds gprof profiling information to some of the examples. \
-  (GNU compilers only)")
-
-SET(TYPE_ARCHITECTURE "native" CACHE STRING "Choose the type of architecture to compile to in release mode. Default is to let the compiler decide")
-
-
-message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
+SET(TYPE_ARCHITECTURE "native" CACHE STRING
+    "Choose the type of architecture to compile to in release mode."
+)
 
 ########## COMPILATION FLAGS ##########
-add_compile_options(-Wall -Wextra)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
-# to avoid conflicts with built-in functions
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++ -Wno-non-virtual-dtor")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
+    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
+    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"
-    OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-  # using Clang
-  add_compile_options(-Wno-missing-braces)
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
 
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  # using GCC
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-non-virtual-dtor")
-  string( TOLOWER "${CMAKE_BUILD_TYPE}" build_type )
-  if ("release" STREQUAL "${build_type}" )
-    add_compile_options("-march=${TYPE_ARCHITECTURE}")
-  endif()
-  if ("debug" STREQUAL "${build_type}" )
-    add_compile_options(-O0)
-  endif()
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-  # using Intel C++
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-  # using Visual Studio C++
+    # Add -march=${TYPE_ARCHITECTURE} (-march=native by default) to the release
+    # build flags
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -march=${TYPE_ARCHITECTURE}")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=${TYPE_ARCHITECTURE}")
+
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -march=${TYPE_ARCHITECTURE}")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=${TYPE_ARCHITECTURE}")
 endif()
 
 ########## START CONFIGURATION ##########
+
+# Find correct python version
+find_package(PythonLibsNew 3 MODULE REQUIRED)
 
 # set the name of the c++ libraries
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
@@ -131,34 +112,8 @@ else()
   set(WIGXJPF_NAME "wigxjpfo")
 endif()
 
-# include_directories(SYSTEM
-#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/inc
-#   ${CMAKE_SOURCE_DIR}/build/external/wigxjpf/cfg
-#   )
-
 add_external_package(wigxjpf VERSION 1.9 CONFIG)
-
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
-
-
-# Try to find optional cpp linter
-include(cpplint)
-
-# Check for clang-format
-include(clangformat)
-
-# CHeck for autopep8
-include(autopep8)
-
-include_directories(
-  ${CMAKE_SOURCE_DIR}/tests
-  ${CMAKE_SOURCE_DIR}/src
- )
-
-include_directories(SYSTEM
-  ${CMAKE_SOURCE_DIR}/external
-  )
-
 
 # set up bindings
 if(BUILD_BINDINGS)
@@ -217,152 +172,68 @@ endif()
 
 message(STATUS "Installation ROOT: ${CMAKE_INSTALL_PREFIX}")
 
-
 # Always use full RPATH
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
-# utility to force copy of files...
-add_custom_command(
-    OUTPUT always_rebuild
-    COMMAND ${CMAKE_COMMAND} -E echo
-  )
+add_subdirectory(src)
 
-# set up the tests
-if (${BUILD_TESTS})
-  find_package(Boost REQUIRED COMPONENTS unit_test_framework )
-  enable_testing()
-  # build c++ tests and add to test suite
-  file( GLOB TEST_SRCS "${CMAKE_SOURCE_DIR}/tests/test_*.cc")
-
-  add_executable(main_test_suite tests/main_test_suite.cc ${TEST_SRCS})
-
-  # https://stackoverflow.com/questions/7781374/boost-test-linking
-  ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
-
-  target_include_directories(main_test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
-  target_link_libraries(main_test_suite ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
-  add_test(main_test_suite main_test_suite --report_level=detailed --build_info=TRUE)
-  configure_file("tests/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("tests/simple_cubic_9.json" ${CMAKE_BINARY_DIR} COPYONLY)
-
-
-  if(BUILD_BINDINGS)
-
-    add_custom_target(py_test ALL
-      DEPENDS
-        copy_test_py
-      )
-
-    add_dependencies(py_test main_test_suite)
-
-    add_custom_command(OUTPUT copy_test_py
-      COMMAND ${CMAKE_COMMAND} -E copy_directory
-      ${CMAKE_SOURCE_DIR}/tests/python ${CMAKE_BINARY_DIR}/
-      DEPENDS
-          always_rebuild
-    )
-
-    add_test(python_binding_test python_binding_tests.py)
-  endif()
-
-
-endif(${BUILD_TESTS})
-
-# copy reference data that might be used in the example
-add_custom_target(copy_reference_data ALL
-    DEPENDS
-    copy_test_reference_data
-  )
-
-add_custom_command(OUTPUT copy_test_reference_data
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/tests/reference_data ${CMAKE_BINARY_DIR}/reference_data
-    DEPENDS
-        always_rebuild
-  )
-
-# put it there to avoid warnings from boost tests
-add_compile_options(-Werror) # warnings are errors!
-
-# compile the library
-add_subdirectory(
-  ${CMAKE_SOURCE_DIR}/src/
-  )
-
-# set up bindings
-if(BUILD_BINDINGS)
-add_subdirectory(
-  ${CMAKE_SOURCE_DIR}/bindings/
-)
+enable_testing()
+if(BUILD_TESTS)
+    add_subdirectory(tests)
 endif()
 
-# set up documentation
-if (${ENABLE_DOC})
-  add_subdirectory(
-    ${CMAKE_SOURCE_DIR}/docs/
-    )
-endif (${ENABLE_DOC})
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
-if (${BUILD_EXAMPLES})
-  # compile exmaples executables
-  file( GLOB binaries "${CMAKE_SOURCE_DIR}/examples/*.cc")
-  foreach(binaryfile ${binaries})
-    get_filename_component(binaryname  ${binaryfile} NAME_WE)
-    add_executable(${binaryname} ${binaryfile})
-    target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
-  endforeach(binaryfile ${binaries})
-  configure_file("${CMAKE_SOURCE_DIR}/examples/crystal_structure.json" ${CMAKE_BINARY_DIR} COPYONLY)
-  configure_file("${CMAKE_SOURCE_DIR}/examples/alanine-X.json" ${CMAKE_BINARY_DIR} COPYONLY)
+if(BUILD_BINDINGS)
+    add_subdirectory(bindings)
+endif()
 
-  # Add profiling information for the appropriate examples
-  if (ENABLE_PROFILING)
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    target_compile_options("soap_profile" PRIVATE -ggdb)
-      # target_compile_options("soap_profile" PRIVATE -pg)
-      # set_target_properties("soap_profile" PROPERTIES LINK_FLAGS -pg)
-    endif()
-  endif()
-endif (${BUILD_EXAMPLES})
+if(BUILD_DOC)
+    add_subdirectory(docs)
+endif()
 
-
-# or copy them
-file (GLOB pybins "${CMAKE_SOURCE_DIR}/bin/*.py")
-foreach(pybin ${pybins})
-  get_filename_component(binaryname  ${pybin} NAME_WE)
-  configure_file(
-    ${pybin}
-    "${CMAKE_BINARY_DIR}/${binaryname}.py"
-    COPYONLY)
-endforeach(pybin ${pybins})
-
+# Try to find optional cpp linter
+include(cpplint)
 # Checking hh/cc files for compliance with coding conventions
 if(CPPLINT_FOUND)
   # register the folders to check for cpp code conventions compliance
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
-  "--filter=-build/namespaces")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples" "")
 endif()
 
+# Check for clang-format
+include(clangformat)
 # Add all hh/cc files for autoformatting with clang-format
 if(CLANG_FORMAT_FOUND)
   # register the folders to apply clang-format with given configuration
   # .clang-format in project root folder
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings")
   clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
 endif()
 
+# Check for autopep8
+include(autopep8)
 # Add python files for autoformatting with autopep8
 if(AUTOPEP8_FOUND)
   # register the folders to apply autopep8 with given configuration
   # .pycodestyle in project root folder
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts" "")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts")
 endif()
+
+# Removes every file in the build folder except the external libraries to
+# prevent redownloading external libraries
+add_custom_target(
+    deepclean
+    COMMAND "${PYTHON_EXECUTABLE}" ${CMAKE_SOURCE_DIR}/scripts/developer_utils.py deepclean
+  )

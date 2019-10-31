@@ -28,16 +28,17 @@
 #ifndef SRC_REPRESENTATIONS_CALCULATOR_BASE_HH_
 #define SRC_REPRESENTATIONS_CALCULATOR_BASE_HH_
 
-#include "structure_managers/structure_manager_base.hh"
-#include "structure_managers/property_block_sparse.hh"
 #include "json_io.hh"
+#include "structure_managers/property_block_sparse.hh"
+#include "structure_managers/structure_manager_base.hh"
 
-#include <string>
-#include <vector>
+#include <Eigen/Dense>
+
 #include <iostream>
 #include <set>
+#include <string>
 #include <unordered_map>
-#include <Eigen/Dense>
+#include <vector>
 
 namespace rascal {
 
@@ -76,21 +77,19 @@ namespace rascal {
     void check_hyperparameters(const ReferenceHypers_t &, const Hypers_t &);
 
     //! return the name of the calculator
-    inline const std::string & get_name() const { return this->name; }
+    const std::string & get_name() const { return this->name; }
 
     //! return the name of the calculator's gradients
-    inline std::string get_gradient_name() const {
+    std::string get_gradient_name() const {
       return this->name + std::string("_gradients");
     }
 
-    inline const std::string & get_prefix() const {
-      return this->default_prefix;
-    }
+    const std::string & get_prefix() const { return this->default_prefix; }
 
     //! set the name of the calculator
-    inline void set_name(const std::string & name) { this->name = name; }
+    void set_name(const std::string & name) { this->name = name; }
     //! set the prefix for the default naming of the representation
-    inline void set_default_prefix(const std::string & default_prefix) {
+    void set_default_prefix(const std::string & default_prefix) {
       this->default_prefix = default_prefix;
     }
     /**
@@ -98,7 +97,7 @@ namespace rascal {
      * register the computed representation
      * if not provided use the hypers to generate a unique identifier
      */
-    inline void set_name(const Hypers_t & hyper) {
+    void set_name(const Hypers_t & hyper) {
       if (hyper.count("identifier") == 1) {
         this->set_name(this->default_prefix +
                        hyper["identifier"].get<std::string>());

@@ -25,8 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
 #include "test_structure.hh"
+
+#include <boost/test/unit_test.hpp>
+
+constexpr double TOLERANCE = 1e-14;
 
 namespace rascal {
 
@@ -68,6 +71,21 @@ namespace rascal {
         }
         ++atom_counter;
       }
+      ++i_manager;
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Check that the atom in unit cell check is properly done
+   */
+  BOOST_FIXTURE_TEST_CASE(atom_bound_test,
+                          ManagerFixture<StructureManagerCenters>) {
+    int i_manager{0};
+    for (auto & manager : this->managers) {
+      auto & structure = this->structures[i_manager];
+      structure.positions.col(0) << -0.5, -0.5, -0.5;
+      BOOST_CHECK_THROW(manager->update(structure), std::runtime_error);
       ++i_manager;
     }
   }
@@ -144,7 +162,7 @@ namespace rascal {
         auto pos = atom.get_position();
         auto pos_reference = positions.col(index);
         auto position_error = (pos - pos_reference).norm();
-        BOOST_CHECK(position_error < tol / 100);
+        BOOST_CHECK(position_error < TOLERANCE);
       }
       ++i_manager;
     }

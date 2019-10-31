@@ -31,20 +31,23 @@
 #ifndef SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_
 #define SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_
 
+#include "math/math_utils.hh"
+#include "rascal_utility.hh"
 #include "representations/calculator_base.hh"
 #include "representations/calculator_spherical_expansion.hh"
-#include "structure_managers/structure_manager.hh"
 #include "structure_managers/property_block_sparse.hh"
-#include "rascal_utility.hh"
-#include "math/math_utils.hh"
+#include "structure_managers/structure_manager.hh"
+
+#include <wigxjpf.h>
+
+#include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
 
 #include <algorithm>
 #include <cmath>
 #include <exception>
-#include <vector>
-#include <Eigen/Dense>
-#include <Eigen/Eigenvalues>
 #include <unordered_set>
+#include <vector>
 
 namespace rascal {
 
@@ -53,161 +56,93 @@ namespace rascal {
       RadialSpectrum,
       PowerSpectrum,
       BiSpectrum,
-      End_
     };
 
-    /**
-     * Base class for the specification of the atomic smearing.
-     */
-    struct SphericalInvariantsPrecomputationBase {
-      //! Constructor
-      SphericalInvariantsPrecomputationBase() = default;
-      //! Destructor
-      virtual ~SphericalInvariantsPrecomputationBase() = default;
-      //! Copy constructor
-      SphericalInvariantsPrecomputationBase(
-          const SphericalInvariantsPrecomputationBase & other) = delete;
-      //! Move constructor
-      SphericalInvariantsPrecomputationBase(
-          SphericalInvariantsPrecomputationBase && other) = default;
-      //! Copy assignment operator
-      SphericalInvariantsPrecomputationBase &
-      operator=(const SphericalInvariantsPrecomputationBase & other) = delete;
-      //! Move assignment operator
-      SphericalInvariantsPrecomputationBase &
-      operator=(SphericalInvariantsPrecomputationBase && other) = default;
-
-      using Hypers_t = CalculatorBase::Hypers_t;
-    };
-
-    template <SphericalInvariantsType SpectrumType>
-    struct SphericalInvariantsPrecomputation {};
-
-    template <>
-    struct SphericalInvariantsPrecomputation<
-        SphericalInvariantsType::RadialSpectrum>
-        : SphericalInvariantsPrecomputationBase {
-      using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
-      explicit SphericalInvariantsPrecomputation(const Hypers_t &) {}
-    };
-
-    template <>
-    struct SphericalInvariantsPrecomputation<
-        SphericalInvariantsType::PowerSpectrum>
-        : SphericalInvariantsPrecomputationBase {
-      using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
-      explicit SphericalInvariantsPrecomputation(const Hypers_t & hypers) {
-        this->max_angular = hypers.at("max_angular");
-        this->l_factors.resize(this->max_angular + 1);
-        for (size_t l{0}; l < this->max_angular + 1; ++l) {
-          this->l_factors(l) = math::pow(std::sqrt(2 * l + 1), -1);
-        }
-      }
-
-      size_t max_angular{0};
-      //! factor of 1 / sqrt(2*l+1) in front of the powerspectrum
+    //! factor of 1 / sqrt(2*l+1) in front of the powerspectrum
+    inline Eigen::VectorXd precompute_l_factors(size_t max_angular) {
       Eigen::VectorXd l_factors{};
-    };
+      l_factors.resize(max_angular + 1);
+      for (size_t l{0}; l < max_angular + 1; ++l) {
+        l_factors(l) = math::pow(std::sqrt(2 * l + 1), -1);
+      }
+      return l_factors;
+    }
 
-    template <>
-    struct SphericalInvariantsPrecomputation<
-        SphericalInvariantsType::BiSpectrum>
-        : SphericalInvariantsPrecomputationBase {
-      using Hypers_t = typename SphericalInvariantsPrecomputationBase::Hypers_t;
-      explicit SphericalInvariantsPrecomputation(const Hypers_t & hypers) {
-        this->max_angular = hypers.at("max_angular").get<size_t>();
-        this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
-        // get the number of non zero elements in the w3j
-        int n_elements{0};
-        for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
-          for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
-            for (size_t l3{0}; l3 < this->max_angular + 1; ++l3) {
-              if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
-                  (l1 > l2 + l3)) {
+    //! Wigner pre-factors
+    inline Eigen::ArrayXd precompute_wigner_w3js(size_t max_angular,
+                                                 bool inversion_symmetry) {
+      Eigen::ArrayXd wigner_w3js{};
+      // get the number of non zero elements in the w3j
+      int n_elements{0};
+      for (size_t l1{0}; l1 < max_angular + 1; ++l1) {
+        for (size_t l2{0}; l2 < max_angular + 1; ++l2) {
+          for (size_t l3{0}; l3 < max_angular + 1; ++l3) {
+            if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
+                (l1 > l2 + l3)) {
+              continue;
+            }
+            if (inversion_symmetry) {
+              if ((l1 + l2 + l3) % 2 == 1) {
                 continue;
               }
-              if (this->inversion_symmetry == true) {
-                if ((l1 + l2 + l3) % 2 == 1) {
-                  continue;
-                }
-              }
-              for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
-                int m1s{static_cast<int>(m1 - l1)};
-                for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
-                  int m2s{static_cast<int>(m2 - l2)};
-                  for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
-                    int m3s{static_cast<int>(m3 - l3)};
-                    if (m1s + m2s + m3s != 0) {
-                      continue;
-                    }
-                    ++n_elements;
+            }
+            for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
+              int m1s{static_cast<int>(m1 - l1)};
+              for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
+                int m2s{static_cast<int>(m2 - l2)};
+                for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
+                  int m3s{static_cast<int>(m3 - l3)};
+                  if (m1s + m2s + m3s != 0) {
+                    continue;
                   }
+                  ++n_elements;
                 }
               }
             }
           }
         }
-
-        this->wigner_w3js.resize(n_elements);
-        n_elements = 0;
-        wig_table_init(2 * (this->max_angular + 1), 3);
-        wig_temp_init(2 * (this->max_angular + 1));
-        for (size_t l1{0}; l1 < this->max_angular + 1; ++l1) {
-          for (size_t l2{0}; l2 < this->max_angular + 1; ++l2) {
-            for (size_t l3{0}; l3 < this->max_angular + 1; ++l3) {
-              if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
-                  (l1 > l2 + l3)) {
-                continue;
-              }
-              if (this->inversion_symmetry == true) {
-                if ((l1 + l2 + l3) % 2 == 1) {
-                  continue;
-                }
-              }
-              for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
-                int m1s{static_cast<int>(m1 - l1)};
-                for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
-                  int m2s{static_cast<int>(m2 - l2)};
-                  for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
-                    int m3s{static_cast<int>(m3 - l3)};
-                    if (m1s + m2s + m3s != 0) {
-                      continue;
-                    }
-                    this->wigner_w3js(n_elements) = wig3jj(
-                        2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s, 2 * m3s);
-                    ++n_elements;
-                  }
-                }
-              }
-            }
-          }
-        }
-        wig_temp_free();
-        wig_table_free();
       }
 
-      size_t max_angular{0};
-      bool inversion_symmetry{};
-      Eigen::ArrayXd wigner_w3js{};
-    };
+      wigner_w3js.resize(n_elements);
+      n_elements = 0;
+      wig_table_init(2 * (max_angular + 1), 3);
+      wig_temp_init(2 * (max_angular + 1));
+      for (size_t l1{0}; l1 < max_angular + 1; ++l1) {
+        for (size_t l2{0}; l2 < max_angular + 1; ++l2) {
+          for (size_t l3{0}; l3 < max_angular + 1; ++l3) {
+            if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
+                (l1 > l2 + l3)) {
+              continue;
+            }
+            if (inversion_symmetry) {
+              if ((l1 + l2 + l3) % 2 == 1) {
+                continue;
+              }
+            }
+            for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
+              int m1s{static_cast<int>(m1 - l1)};
+              for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
+                int m2s{static_cast<int>(m2 - l2)};
+                for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
+                  int m3s{static_cast<int>(m3 - l3)};
+                  if (m1s + m2s + m3s != 0) {
+                    continue;
+                  }
+                  wigner_w3js(n_elements) =
+                      wig3jj(2 * l1, 2 * l2, 2 * l3, 2 * m1s, 2 * m2s, 2 * m3s);
+                  ++n_elements;
+                }
+              }
+            }
+          }
+        }
+      }
+      wig_temp_free();
+      wig_table_free();
+
+      return wigner_w3js;
+    }
   }  // namespace internal
-
-  template <internal::SphericalInvariantsType Type, class Hypers>
-  decltype(auto) make_spherical_invariants_precompute(const Hypers & hypers) {
-    return std::static_pointer_cast<
-        internal::SphericalInvariantsPrecomputationBase>(
-        std::make_shared<internal::SphericalInvariantsPrecomputation<Type>>(
-            hypers));
-  }
-
-  template <internal::SphericalInvariantsType Type>
-  decltype(auto) downcast_spherical_invariants_precompute(
-      const std::shared_ptr<internal::SphericalInvariantsPrecomputationBase> &
-          spherical_invariants_precompute) {
-    return std::static_pointer_cast<
-        internal::SphericalInvariantsPrecomputation<Type>>(
-        spherical_invariants_precompute);
-  }
 
   class CalculatorSphericalInvariants : public CalculatorBase {
    public:
@@ -217,12 +152,14 @@ namespace rascal {
     template <class StructureManager>
     using Property_t =
         BlockSparseProperty<double, 1, 0, StructureManager, Key_t>;
+
     template <class StructureManager>
     using PropertyGradient_t =
         BlockSparseProperty<double, 2, 0, StructureManager, Key_t>;
 
     template <class StructureManager>
     using Dense_t = typename Property_t<StructureManager>::Dense_t;
+
     template <class StructureManager>
     using Data_t = typename Property_t<StructureManager>::Data_t;
 
@@ -255,15 +192,12 @@ namespace rascal {
     operator=(CalculatorSphericalInvariants && other) = default;
 
     void set_hyperparameters(const Hypers_t & hypers) {
-      using internal::enumValue;
-      using internal::SphericalInvariantsPrecomputationBase;
       using internal::SphericalInvariantsType;
 
       this->max_radial = hypers.at("max_radial").get<size_t>();
       this->max_angular = hypers.at("max_angular").get<size_t>();
       this->normalize = hypers.at("normalize").get<bool>();
-      this->spherical_invariants_type_str =
-          hypers.at("soap_type").get<std::string>();
+      auto soap_type = hypers.at("soap_type").get<std::string>();
 
       if (hypers.find("compute_gradients") != hypers.end()) {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();
@@ -271,40 +205,24 @@ namespace rascal {
         this->compute_gradients = false;
       }
 
-      if (this->spherical_invariants_type_str.compare("PowerSpectrum") == 0) {
-        this->spherical_invariants_type =
-            SphericalInvariantsType::PowerSpectrum;
-        this->precompute_spherical_invariants[enumValue(
-            SphericalInvariantsType::PowerSpectrum)] =
-            make_spherical_invariants_precompute<
-                SphericalInvariantsType::PowerSpectrum>(hypers);
-      } else if (this->spherical_invariants_type_str.compare(
-                     "RadialSpectrum") == 0) {
-        this->spherical_invariants_type =
-            SphericalInvariantsType::RadialSpectrum;
-        this->precompute_spherical_invariants[enumValue(
-            SphericalInvariantsType::RadialSpectrum)] =
-            make_spherical_invariants_precompute<
-                SphericalInvariantsType::RadialSpectrum>(hypers);
+      if (soap_type == "PowerSpectrum") {
+        this->type = SphericalInvariantsType::PowerSpectrum;
+        this->l_factors = internal::precompute_l_factors(this->max_angular);
+      } else if (soap_type == "RadialSpectrum") {
+        this->type = SphericalInvariantsType::RadialSpectrum;
         if (this->max_angular > 0) {
           throw std::logic_error("max_angular should be 0 with RadialSpectrum");
         }
-      } else if (this->spherical_invariants_type_str.compare("BiSpectrum") ==
-                 0) {
-        this->spherical_invariants_type =
-            internal::SphericalInvariantsType::BiSpectrum;
-        this->precompute_spherical_invariants[enumValue(
-            SphericalInvariantsType::BiSpectrum)] =
-            make_spherical_invariants_precompute<
-                SphericalInvariantsType::BiSpectrum>(hypers);
+      } else if (soap_type == "BiSpectrum") {
+        this->type = internal::SphericalInvariantsType::BiSpectrum;
         this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
-
+        this->wigner_w3js = internal::precompute_wigner_w3js(
+            this->max_angular, this->inversion_symmetry);
       } else {
-        throw std::logic_error("Requested SphericalInvariants type \'" +
-                               this->spherical_invariants_type_str +
-                               "\' has not been implemented.  Must be one of" +
-                               ": \'PowerSpectrum or RadialSpectrum\', " +
-                               "\'BiSpectrum\'.");
+        throw std::logic_error(
+            "Requested SphericalInvariants type \'" + soap_type +
+            "\' has not been implemented.  Must be one of" +
+            ": 'PowerSpectrum', 'RadialSpectrum', or 'BiSpectrum'.");
       }
 
       this->set_name(hypers);
@@ -400,18 +318,19 @@ namespace rascal {
 
     CalculatorSphericalExpansion rep_expansion;
 
-    internal::SphericalInvariantsType spherical_invariants_type{};
-    //! collection of precomputation for the different body order
-    std::array<std::shared_ptr<internal::SphericalInvariantsPrecomputationBase>,
-               internal::enumSize<internal::SphericalInvariantsType>()>
-        precompute_spherical_invariants{};
-    std::string spherical_invariants_type_str{};
+    internal::SphericalInvariantsType type{};
+
+    // precomputed l-factors the PowerSpectrum
+    Eigen::VectorXd l_factors{};
+
+    // precomputed wigner symbols for the BiSpectrum
+    Eigen::ArrayXd wigner_w3js{};
   };
 
   template <class StructureManager>
   void CalculatorSphericalInvariants::compute(StructureManager & managers) {
     using internal::SphericalInvariantsType;
-    switch (this->spherical_invariants_type) {
+    switch (this->type) {
     case SphericalInvariantsType::RadialSpectrum:
       this->compute_loop<SphericalInvariantsType::RadialSpectrum>(managers);
       break;
@@ -441,17 +360,9 @@ namespace rascal {
             StructureManager>;
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
-    using internal::enumValue;
     constexpr static int n_spatial_dimensions = StructureManager::dim();
     using internal::SphericalInvariantsType;
     using math::pow;
-
-    // get the relevant precomputation object and unpack the useful infos
-    auto precomputation{downcast_spherical_invariants_precompute<
-        SphericalInvariantsType::PowerSpectrum>(
-        this->precompute_spherical_invariants[enumValue(
-            SphericalInvariantsType::PowerSpectrum)])};
-    auto & l_factors{precomputation->l_factors};
 
     // Compute the spherical expansions of the current structure
     rep_expansion.compute(manager);
@@ -522,7 +433,7 @@ namespace rascal {
             }
           }
           // multiply with the precomputed factors
-          soap_vector_by_pair *= l_factors.asDiagonal();
+          soap_vector_by_pair *= this->l_factors.asDiagonal();
         }  // for el1 : coefficients
       }    // for el2 : coefficients
 
@@ -604,7 +515,8 @@ namespace rascal {
             }      // for cartesian_idx
 
             // The gradients also need the 1/sqrt(2l + 1) factors
-            soap_center_gradient_by_species_pair *= l_factors.asDiagonal();
+            soap_center_gradient_by_species_pair *=
+                this->l_factors.asDiagonal();
             // Scale off-(species-diagonal) elements so that the dot product
             // comes out right (carried over from soap vectors to gradients)
             if (spair_type[0] != spair_type[1]) {
@@ -637,7 +549,7 @@ namespace rascal {
                      ++cartesian_idx) {
                   size_t cartesian_offset_n{cartesian_idx * this->max_radial};
                   size_t cartesian_offset_n1n2{
-                      cartesian_idx * math::pow(this->max_radial, 2_n)};
+                      cartesian_idx * math::pow(this->max_radial, 2_size_t)};
                   n1n2 = 0;
                   for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                     for (size_t n2{0}; n2 < this->max_radial; ++n2) {
@@ -674,7 +586,7 @@ namespace rascal {
                      ++cartesian_idx) {
                   size_t cartesian_offset_n{cartesian_idx * this->max_radial};
                   size_t cartesian_offset_n1n2{
-                      cartesian_idx * math::pow(this->max_radial, 2_n)};
+                      cartesian_idx * math::pow(this->max_radial, 2_size_t)};
                   n1n2 = 0;
                   for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                     for (size_t n2{0}; n2 < this->max_radial; ++n2) {
@@ -700,7 +612,8 @@ namespace rascal {
               }        // if (neigh_type == spair_type[1])
 
               // Same factors as for the gradient wrt center
-              soap_neigh_gradient_by_species_pair *= l_factors.asDiagonal();
+              soap_neigh_gradient_by_species_pair *=
+                  this->l_factors.asDiagonal();
               if (spair_type[0] != spair_type[1]) {
                 soap_neigh_gradient_by_species_pair *= math::SQRT_TWO;
               }
@@ -891,7 +804,8 @@ namespace rascal {
 
         if (this->normalize) {
           double coefficients_norm_inv{1. / coefficients.norm()};
-          double coefficients_norm_inv3{math::pow(coefficients_norm_inv, 3_n)};
+          double coefficients_norm_inv3{
+              math::pow(coefficients_norm_inv, 3_size_t)};
 
           soap_center_gradient.multiply_elements_by(coefficients_norm_inv);
 
@@ -978,19 +892,9 @@ namespace rascal {
       std::shared_ptr<StructureManager> manager) {
     using PropExp_t =
         typename CalculatorSphericalExpansion::Property_t<StructureManager>;
-    // using PropGradExp_t = typename
-    // CalculatorSphericalExpansion::PropertyGradient_t<StructureManager>;
     using Prop_t = Property_t<StructureManager>;
-    // using PropGrad_t = PropertyGradient_t<StructureManager>;
-    using internal::enumValue;
     using internal::SphericalInvariantsType;
     using math::pow;
-
-    auto precomputation{downcast_spherical_invariants_precompute<
-        SphericalInvariantsType::BiSpectrum>(
-        this->precompute_spherical_invariants[enumValue(
-            SphericalInvariantsType::BiSpectrum)])};
-    auto & wigner_w3js{precomputation->wigner_w3js};
 
     rep_expansion.compute(manager);
 
@@ -1070,17 +974,17 @@ namespace rascal {
 
                           for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
                             int m1s{static_cast<int>(m1 - l1)};
-                            size_t lm1{math::pow(l1, 2_n) + m1};
+                            size_t lm1{math::pow(l1, 2_size_t) + m1};
                             for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
                               int m2s{static_cast<int>(m2 - l2)};
-                              size_t lm2{math::pow(l2, 2_n) + m2};
+                              size_t lm2{math::pow(l2, 2_size_t) + m2};
                               for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
                                 int m3s{static_cast<int>(m3 - l3)};
                                 if (m1s + m2s + m3s != 0) {
                                   continue;
                                 }
-                                size_t lm3{math::pow(l3, 2_n) + m3};
-                                double w3j = wigner_w3js[wigner_count];
+                                size_t lm3{math::pow(l3, 2_size_t) + m3};
+                                double w3j = this->wigner_w3js[wigner_count];
                                 complex coef1c, coef2c, coef3c;
                                 // usual formulae for converting from real to
                                 // complex
@@ -1167,17 +1071,18 @@ namespace rascal {
   CalculatorSphericalInvariants::initialize_per_center_bispectrum_soap_vectors(
       Invariants & soap_vectors, ExpansionCoeff & expansions_coefficients,
       std::shared_ptr<StructureManager> manager) {
-    size_t n_row{math::pow(this->max_radial, 3_n)};
+    size_t n_row{math::pow(this->max_radial, 3_size_t)};
     size_t n_col{0};
     double max_ang{static_cast<double>(this->max_angular)};
     if (this->inversion_symmetry == false) {
       n_col = static_cast<size_t>(1.0 + 2.0 * max_ang +
-                                  1.5 * math::pow(max_ang, 2_n) +
-                                  math::pow(max_ang, 3_n) * 0.5);
+                                  1.5 * math::pow(max_ang, 2_size_t) +
+                                  math::pow(max_ang, 3_size_t) * 0.5);
     } else {
-      n_col = static_cast<size_t>(std::floor(
-          ((math::pow(max_ang + 1.0, 2_n) + 1) * (2 * (max_ang + 1.0) + 3)) /
-          8.0));
+      n_col = static_cast<size_t>(
+          std::floor(((math::pow(max_ang + 1.0, 2_size_t) + 1) *
+                      (2 * (max_ang + 1.0) + 3)) /
+                     8.0));
     }
 
     // clear the data container and resize it
@@ -1192,7 +1097,7 @@ namespace rascal {
       internal::Sorted<false> is_not_sorted{};
 
       std::vector<internal::SortedKey<Key_t>> triplet_list{};
-      auto & center_type{center.get_atom_type()};
+      auto center_type{center.get_atom_type()};
       Key_t triplet_type{center_type, center_type, center_type};
       // TODO(felix) optimize this loop
       for (const auto & el1 : coefficients) {
@@ -1219,7 +1124,7 @@ namespace rascal {
           ExpansionCoeff & expansions_coefficients,
           std::shared_ptr<StructureManager> manager) {
     constexpr static int n_spatial_dimensions = StructureManager::dim();
-    size_t n_row{math::pow(this->max_radial, 2_n)};
+    size_t n_row{math::pow(this->max_radial, 2_size_t)};
     size_t n_col{this->max_angular + 1};
 
     // clear the data container and resize it
@@ -1240,7 +1145,7 @@ namespace rascal {
       internal::Sorted<true> is_sorted{};
 
       std::vector<internal::SortedKey<Key_t>> pair_list{};
-      auto & center_type{center.get_atom_type()};
+      auto center_type{center.get_atom_type()};
       Key_t pair_type{center_type, center_type};
       // avoid checking the order in pair_type by ensuring it has already been
       // done

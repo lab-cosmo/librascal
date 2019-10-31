@@ -29,8 +29,8 @@
 #ifndef SRC_MATH_BESSEL_HH_
 #define SRC_MATH_BESSEL_HH_
 
-#include "math/math_utils.hh"
 #include "math/hyp1f1.hh"
+#include "math/math_utils.hh"
 
 namespace rascal {
   namespace math {
@@ -176,7 +176,7 @@ namespace rascal {
        * threshold the MBSFs are set to 0 because of the numerical noise
        * arrising below 1e-150.
        */
-      inline void calc(double distance, double fac_a) {
+      void calc(double distance, double fac_a) {
         this->bessel_arg = (2. * fac_a * distance) * this->x_v;
         this->bessel_arg_i = this->bessel_arg.inverse();
         // find the index where bessel_arg is larger than 50
@@ -200,6 +200,7 @@ namespace rascal {
           this->upward_recursion(distance, fac_a, n_up);
         }
 
+        // WARNING: this does nothing
         // set small values to 0.
         bessel_values.unaryExpr([](double d) {
           if (d < 1e-100) {

@@ -27,6 +27,8 @@
 
 #include "test_cluster_ref_key.hh"
 
+#include <boost/test/unit_test.hpp>
+
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(test_cluster_ref_key);
 

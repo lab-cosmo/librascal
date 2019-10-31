@@ -1,5 +1,5 @@
 /**
- * file test_kernels.cc
+ * @file test_kernels.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -28,6 +28,9 @@
  */
 
 #include "test_kernels.hh"
+
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(kernels_test);

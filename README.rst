@@ -43,6 +43,10 @@ welcome, as long as you keep the above in mind.
 
 .. end-intro
 
+See `Helpers for Developers`_ below for some essential tools if you want to help
+develop libRascal.  Be sure to also read `CONTRIBUTING.rst <CONTRIBUTING.rst>`_
+if you plan on making a contribution.
+
 Installation
 ------------
 
@@ -132,159 +136,207 @@ The library supports several alternative builds that have additional
 dependencies. Note that the ``ncurses`` GUI for cmake (ccmake) is quite
 helpful to customize the build options.
 
-1. Tests
+Tests
+^^^^^
 
-   Librascal source code is extensively tested (both c++ and python).
-   The BOOST unit_test_framework is requiered to build the tests (see
-   BOOST.md for further details on how to install the boost library). To
-   build and run the tests:
+Librascal source code is extensively tested (both c++ and python).
+The BOOST unit_test_framework is requiered to build the tests (see
+BOOST.md for further details on how to install the boost library). To
+build and run the tests:
 
-   .. code:: shell
+.. code:: shell
 
-      cd build
-      cmake -DBUILD_TESTS=ON ..
-      make
-      ctest -V
+   cd build
+   cmake -DBUILD_TESTS=ON ..
+   make
+   ctest -V
 
-   In addition to testing the behaviour of the code, the test suite also check
-   for formatting compliance with the clang-format and autopep8 packages (these
-   dependencies are optional). To install these dependencies on ubuntu:
+In addition to testing the behaviour of the code, the test suite also check
+for formatting compliance with the clang-format and autopep8 packages (these
+dependencies are optional). To install these dependencies on ubuntu:
 
-   .. code:: shell
+.. code:: shell
 
-      sudo apt-get install clang-format
-      pip3 install autopep8
+   sudo apt-get install clang-format
+   pip3 install autopep8
 
-2. Build Type
+Build Type
+^^^^^^^^^^
 
-   Several build types are available Release (default), Debug and
-   RelWithDebInfo. To build an alternative mode
+Several build types are available Release (default), Debug and
+RelWithDebInfo. To build an alternative mode
 
-   .. code:: shell
+.. code:: shell
 
-      cd build
-      cmake -DCMAKE_BUILD_TYPE=Debug
-      ..
-      make
+   cd build
+   cmake -DCMAKE_BUILD_TYPE=Debug
+   ..
+   make
 
-   Or
+Or
 
-   .. code:: shell
+.. code:: shell
 
-      cd build
-      cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo  \\
-         CMAKE_C_FLAGS_RELWITHDEBUBINFO="-03 -g -DNDEBUG" ..
-      make
+   cd build
+   cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo  \\
+      CMAKE_C_FLAGS_RELWITHDEBUBINFO="-03 -g -DNDEBUG" ..
+   make
 
-3. Documentation
+Documentation
+^^^^^^^^^^^^^
 
-   The documentation relies on the sphinx (with nbsphinx and breathe
-   extensions), doxygen, pandoc, and graphviz
-   packages. To install them on ubuntu:
+The documentation relies on the sphinx (with nbsphinx and breathe
+extensions), doxygen, pandoc, and graphviz
+packages. To install them on ubuntu:
 
-   .. code:: shell
+.. code:: shell
 
-     pip3 install sphinx sphinx_rtd_theme breathe nbsphinx
-     sudo apt-get install pandoc doxygen graphviz
+  pip3 install sphinx sphinx_rtd_theme breathe nbsphinx
+  sudo apt-get install pandoc doxygen graphviz
 
-   Then to build the documentation run:
+Then to build the documentation run:
 
-   .. code:: shell
+.. code:: shell
 
-     cd build
-     cmake -DENABLE_DOC=ON ..
-     make doc
+  cd build
+  cmake -DBUILD_DOC=ON ..
+  make doc
 
-   and open :file:`build/docs/html/index.html` in a browser.
+and open :file:`build/docs/html/index.html` in a browser.
 
-4. Helpers for Developers
+Bindings
+^^^^^^^^
 
-   -  To remove all the cmake files/folders except for the external
-      library (enable glob and remove):
+Librascal relies on the pybind11 library to automate the generation
+of the python bindings which are built by default. Nevertheless, to
+build only the c++ library:
 
-   .. code:: shell
+.. code:: shell
 
-      shopt -s extglob
-      rm -fr -- !(external|third-party)
+   cd build
+   cmake -DBUILD_BINDINGS=OFF ..
+   make
 
-   -  To help developers conform their contribution to the coding
-      convention, the formatting of new functionalities can be automated
-      using clang-format (for the c++ files) and autopep8 (for the
-      python files). The .clang-format and .pycodestyle files define
-      common settings to be used.
+Installing rascal
+^^^^^^^^^^^^^^^^^
 
-      To enable these functionalities (optional) you can install these
-      tools with:
+.. code:: shell
 
-      .. code:: shell
+   mkdir ../build
+   cd build
+   cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_BINDINGS=ON ..
+   make install
 
-         sudo apt-get install clang-format
-         pip install autopep8
+Helpers for Developers
+~~~~~~~~~~~~~~~~~~~~~~
 
-      The automatic formating of the c++ and python files can be
-      trigered by:
+Deepclean
+^^^^^^^^^
 
-      .. code:: shell
+To remove all the cmake files/folders except for the external
+library (enable glob and remove):
 
-         cd build
-         cmake ..
-         make pretty-cpp
-         make pretty-python
+.. code:: shell
 
-      Please use these tools with caution as they can potentially
-      introduce unwanted changes to the code. If code needs to be
-      specifically excluded from auto formatting, e.g. a matrix which
-      should be human-readable, code comments tells the formatters to
-      ignore lines:
+   shopt -s extglob
+   rm -fr -- !(external|third-party)
 
-      C++
+Automatic code formatting
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      .. code:: C++
+To help developers conform their contribution to the coding
+convention, the formatting of new functionalities can be automated
+using clang-format (for the c++ files) and autopep8 (for the
+python files). The .clang-format and .pycodestyle files define
+common settings to be used.
 
-         // clang-format off
-         SOME CODE TO IGNORE
-         // clang-format on
+To enable these functionalities (optional) you can install these
+tools with:
 
-      python
+.. code:: shell
 
-      .. code:: python
+   sudo apt-get install clang-format
+   pip install autopep8
 
-         SOME LINE TO IGNORE # noqa
+The automatic formating of the c++ and python files can be
+trigered by:
 
-      where ``noqa`` stands for ``no`` ``q``\ uality ``a``\ ssurance.
+.. code:: shell
 
-5. Bindings
+   cd build
+   cmake ..
+   make pretty-cpp
+   make pretty-python
 
-   Librascal relies on the pybind11 library to automate the generation
-   of the python bindings which are built by default. Nevertheless, to
-   build only the c++ library:
+Please use these tools with caution as they can potentially
+introduce unwanted changes to the code. If code needs to be
+specifically excluded from auto formatting, e.g. a matrix which
+should be human-readable, code comments tells the formatters to
+ignore lines:
 
-   .. code:: shell
+- C++
 
-      cd build
-      cmake -DBUILD_BINDINGS=OFF ..
-      make
+  .. code:: C++
 
-6. Installing rascal
+     // clang-format off
+     SOME CODE TO IGNORE
+     // clang-format on
 
-   .. code:: shell
+- python
 
-      mkdir ../build
-      cd build
-      cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_BINDINGS=ON ..
-      make install
+  .. code:: python
+
+     SOME LINE TO IGNORE # noqa
+
+  where ``noqa`` stands for ``no`` ``q``\ uality ``a``\ ssurance.
+
+Jupyter notebooks
+^^^^^^^^^^^^^^^^^
+
+If you are contributing any code in IPython/Jupyter notebooks, *please*
+install the `nbstripout` extension (available e.g. on
+`github <https://github.com/kynan/nbstripout#installation>`_ and
+`PyPI <https://pypi.org/project/nbstripout/>`_).  After installing,
+activate it for this project by running:
+
+.. code:: shell
+
+   nbstripout --install --attributes .gitattributes
+
+from the top-level repository directory.  Please note that that
+``nbstripout`` will not strip output from cells with the metadata fields
+``keep_output`` or ``init_cell`` set to ``True``, so use these fields
+judiciously.  You can ignore these settings with the following command:
+
+.. code:: shell
+
+   git config filter.nbstripout.extrakeys '\
+      cell.metadata.keep_output cell.metadata.init_cell'
+
+(The keys ``metadata.kernel_spec.name`` and
+``metadata.kernel_spec.display_name`` may also be useful to reduce diff
+noise.)
+
+Nonetheless, it is highly discouraged to contribute code in the form of
+notebooks; even with filters like ``nbstripout`` they're a hassle to use
+in version control.  Use them only for tutorials or *stable* examples that
+are either meant to be run *interactively* or are meant to be processed by
+`sphinx` (`nbsphinx <https://nbsphinx.readthedocs.io/en/latest/>`_) for
+inclusion in the
+`tutorials page <https://cosmo-epfl.github.io/librascal/tutorials/tutorials.html>`_.
 
 Miscellaneous Information
 -------------------------
 
 -  Common cmake flags:
 
+   -  -DCMAKE_CXX_COMPILER
    -  -DCMAKE_C_COMPILER
+   -  -DCMAKE_BUILD_TYPE
    -  -DBUILD_BINDINGS
    -  -DUSER
    -  -DINSTALL_PATH
-   -  -DCMAKE_BUILD_TYPE
-   -  -DENABLE_DOC
+   -  -DBUILD_DOC
    -  -DBUILD_TESTS
 
 -  Special flags:

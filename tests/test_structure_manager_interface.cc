@@ -25,8 +25,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
 #include "test_structure.hh"
+
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
+
+constexpr double TOLERANCE = 1e-14;
 
 namespace rascal {
 
@@ -77,11 +81,11 @@ namespace rascal {
       auto position_error =
           (atom.get_position() - manager->position(index)).norm();
 
-      BOOST_CHECK(position_error < tol / 100);
+      BOOST_CHECK(position_error < TOLERANCE);
 
       position_error =
           (atom.get_position() - manager->position(atom.back())).norm();
-      BOOST_CHECK(position_error < tol / 100);
+      BOOST_CHECK(position_error < TOLERANCE);
     }
   }
 
@@ -126,11 +130,11 @@ namespace rascal {
         // check positions
         auto position_error =
             (pair.get_position() - manager->position(index)).norm();
-        BOOST_CHECK(position_error < tol / 100);
+        BOOST_CHECK(position_error < TOLERANCE);
 
         position_error =
             (pair.get_position() - manager->position(pair.back())).norm();
-        BOOST_CHECK(position_error < tol / 100);
+        BOOST_CHECK(position_error < TOLERANCE);
       }
     }
   }

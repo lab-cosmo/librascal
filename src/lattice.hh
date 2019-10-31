@@ -32,6 +32,7 @@
 #include "atomic_structure.hh"
 
 #include <Eigen/Dense>
+
 #include <cmath>
 
 namespace rascal {
@@ -128,7 +129,7 @@ namespace rascal {
      * Calculates the reciprocal space lattice vectors from the cartesian real
      * space lattice vectors and the reciprocal space cell lengths
      */
-    inline void set_reciprocal_vectors() {
+    void set_reciprocal_vectors() {
       Vec_t c_abg = cell_angles.array().cos();
 
       //! Cell volume
@@ -162,9 +163,8 @@ namespace rascal {
     }
     /* ---------------------------------------------------------------------- */
     template <typename DerivedA, typename DerivedB>
-    inline void crossproduct(const Eigen::MatrixBase<DerivedA> & v1,
-                             const Eigen::MatrixBase<DerivedB> & v2,
-                             Vec_t & v3) {
+    void crossproduct(const Eigen::MatrixBase<DerivedA> & v1,
+                      const Eigen::MatrixBase<DerivedB> & v2, Vec_t & v3) {
       v3[0] = v1[1] * v2[2] - v1[2] * v2[1];
       v3[1] = v1[2] * v2[0] - v1[0] * v2[2];
       v3[2] = v1[0] * v2[1] - v1[1] * v2[0];
@@ -175,7 +175,7 @@ namespace rascal {
      * Calculates the transformation matrix to transform absolute cartesian
      * coordinates to fractional/scaled coordinates
      */
-    inline void set_transformation_matrix() {
+    void set_transformation_matrix() {
       Vec_t c_abg = cell_angles.array().cos();
       Vec_t s_abg = cell_angles.array().sin();
 
@@ -216,9 +216,8 @@ namespace rascal {
      * absolute cartesian coordinates (position)
      */
     template <typename DerivedA, typename DerivedB>
-    inline void
-    get_cartesian2scaled(const Eigen::MatrixBase<DerivedA> & position,
-                         Eigen::MatrixBase<DerivedB> & position_sc) {
+    void get_cartesian2scaled(const Eigen::MatrixBase<DerivedA> & position,
+                              Eigen::MatrixBase<DerivedB> & position_sc) {
       position_sc = this->cartesian2scaled.transpose() * position;
     }
 
@@ -226,9 +225,8 @@ namespace rascal {
      * from the fractional/scaled coordinates (position_sc)
      */
     template <typename DerivedA, typename DerivedB>
-    inline void
-    get_scaled2cartesian(const Eigen::MatrixBase<DerivedA> & position_sc,
-                         Eigen::MatrixBase<DerivedB> & position) {
+    void get_scaled2cartesian(const Eigen::MatrixBase<DerivedA> & position_sc,
+                              Eigen::MatrixBase<DerivedB> & position) {
       position = this->scaled2cartesian.transpose() * position_sc;
     }
 

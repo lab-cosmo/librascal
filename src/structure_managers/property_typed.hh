@@ -31,10 +31,10 @@
 #ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_TYPED_HH_
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_TYPED_HH_
 
-#include "rascal_utility.hh"
 #include "math/math_utils.hh"
-#include "structure_managers/property_base.hh"
+#include "rascal_utility.hh"
 #include "structure_managers/cluster_ref_key.hh"
+#include "structure_managers/property_base.hh"
 
 namespace rascal {
 
@@ -168,7 +168,7 @@ namespace rascal {
                  Order,
                  PropertyLayer,
                  metadata},
-          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
+          type_id{typeid(Self_t).name()} {}
 
     //! Default constructor
     TypedProperty() = delete;
@@ -229,7 +229,7 @@ namespace rascal {
      * their own propery value independent from its correpsonding central atom.
      * This function is used for all Order 1 ManagerImplementations
      */
-    inline void fill_sequence(bool consider_ghost_atoms = false) {
+    void fill_sequence(bool consider_ghost_atoms = false) {
       // adjust size of values (only increases, never frees)
       this->resize(consider_ghost_atoms);
       for (size_t i{0}; i < this->values.size(); ++i) {
@@ -242,7 +242,7 @@ namespace rascal {
     }
 
     //! Adjust size of values (only increases, never frees)
-    inline void resize(bool consider_ghost_atoms = false) {
+    void resize(bool consider_ghost_atoms = false) {
       auto n_components = this->get_nb_comp();
       size_t new_size =
           this->get_validated_property_length(consider_ghost_atoms) *
@@ -262,7 +262,7 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     //! Property accessor by cluster ref
     template <size_t CallerLayer>
-    inline reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
+    reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
@@ -270,8 +270,8 @@ namespace rascal {
     }
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>
-    inline std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
-                            reference>                            // NOLINT
+    std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
+                     reference>                            // NOLINT
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](
           static_cast<Manager_t &>(this->base_manager)
@@ -284,10 +284,7 @@ namespace rascal {
                               this->get_nb_row(), this->get_nb_col());
     }
 
-    // //! getter to the underlying data storage
-    // inline std::vector<T> & get_raw_data() { return this->values; }
-
-    inline void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features) {
+    void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features) {
       size_t n_center{this->get_nb_item()};
       auto n_cols{this->get_nb_comp()};
       auto mat = reference(this->values.data(), n_cols, n_center);
@@ -301,9 +298,7 @@ namespace rascal {
 
     //! get number of different distinct element in the property
     //! (typically the number of center)
-    inline size_t get_nb_item() const {
-      return values.size() / this->get_nb_comp();
-    }
+    size_t get_nb_item() const { return values.size() / this->get_nb_comp(); }
 
     /**
      * Accessor for last pushed entry for dynamically sized properties
@@ -314,7 +309,7 @@ namespace rascal {
                               this->get_nb_row(), this->get_nb_col());
     }
 
-    inline Matrix_t get_dense_feature_matrix() {
+    Matrix_t get_dense_feature_matrix() {
       auto nb_centers{this->get_nb_item()};
       auto nb_features{this->get_nb_comp()};
       Matrix_t features(nb_centers, nb_features);

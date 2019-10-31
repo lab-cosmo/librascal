@@ -28,18 +28,18 @@
 #ifndef SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 #define SRC_STRUCTURE_MANAGERS_PROPERTY_BLOCK_SPARSE_HH_
 
-#include "rascal_utility.hh"
 #include "math/math_utils.hh"
-#include "structure_managers/property_base.hh"
+#include "rascal_utility.hh"
 #include "structure_managers/cluster_ref_key.hh"
+#include "structure_managers/property_base.hh"
 
-#include <unordered_map>
-#include <set>
-#include <list>
-#include <map>
 #include <algorithm>
 #include <iterator>
+#include <list>
+#include <map>
+#include <set>
 #include <type_traits>
+#include <unordered_map>
 
 namespace rascal {
   namespace internal {
@@ -93,9 +93,9 @@ namespace rascal {
       }
 
       //! access or insert specified element. use with caution !
-      inline Value_t & operator[](size_t id) { return this->data[id]; }
+      Value_t & operator[](size_t id) { return this->data[id]; }
 
-      inline const Key_t & get_key() const { return data; }
+      const Key_t & get_key() const { return data; }
     };
 
     template <class K, class V>
@@ -308,12 +308,12 @@ namespace rascal {
       //! Returns the number of elements with key that compares equivalent to
       //! the specified argument, which is either 1 or 0 since this container
       //! does not allow duplicates.
-      decltype(auto) count(const key_type & key) {
+      size_t count(const key_type & key) {
         SortedKey_t skey{key};
         return this->count(skey);
       }
 
-      decltype(auto) count(const SortedKey_t & skey) {
+      size_t count(const SortedKey_t & skey) {
         return this->map.count(skey.get_key());
       }
 
@@ -334,21 +334,21 @@ namespace rascal {
         return keys;
       }
 
-      inline void multiply_elements_by(double fac) { this->data *= fac; }
+      void multiply_elements_by(double fac) { this->data *= fac; }
 
       /**
        * l^2 norm of the entire vector
        */
-      inline Precision_t norm() const { return this->data.matrix().norm(); }
+      Precision_t norm() const { return this->data.matrix().norm(); }
 
-      inline Precision_t squaredNorm() const {
+      Precision_t squaredNorm() const {
         return this->data.matrix().squaredNorm();
       }
 
       /**
        * squared l^2 norm of the entire vector (sum of squared elements)
        */
-      inline void normalize() {
+      void normalize() {
         double norm = this->data.matrix().norm();
         if (std::abs(norm) > 0.) {
           this->data /= norm;
@@ -361,7 +361,7 @@ namespace rascal {
        *
        * relevant only when the keys have 2 indices
        */
-      inline void multiply_off_diagonal_elements_by(double fac) {
+      void multiply_off_diagonal_elements_by(double fac) {
         for (const auto & el : this->map) {
           auto && pair_type{el.first};
           auto && pos{el.second};
@@ -376,7 +376,7 @@ namespace rascal {
       /**
        * dot product with another internally sorted map
        */
-      inline Precision_t dot(Self_t & B) {
+      Precision_t dot(Self_t & B) {
         Precision_t val{0.};
         auto keys_b{B.get_keys()};
         auto unique_keys{this->intersection(keys_b)};
@@ -398,7 +398,7 @@ namespace rascal {
        * A = left_side_mat*A where A are all the key blocks
        */
       template <typename Derived>
-      inline void lhs_dot(const Eigen::EigenBase<Derived> & left_side_mat) {
+      void lhs_dot(const Eigen::EigenBase<Derived> & left_side_mat) {
         for (const auto & el : this->map) {
           auto && pos{el.second};
           auto block{reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
@@ -408,7 +408,7 @@ namespace rascal {
       }
 
       template <int Dim, typename Derived>
-      inline void lhs_dot_der(const Eigen::EigenBase<Derived> & left_side_mat) {
+      void lhs_dot_der(const Eigen::EigenBase<Derived> & left_side_mat) {
         for (const auto & el : this->map) {
           auto && pos{el.second};
           auto blocks{reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
@@ -486,7 +486,7 @@ namespace rascal {
                  Order,
                  PropertyLayer,
                  metadata},
-          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
+          type_id{typeid(Self_t).name()} {}
 
     //! Default constructor
     BlockSparseProperty() = delete;
@@ -506,9 +506,9 @@ namespace rascal {
     //! Move assignment operator
     BlockSparseProperty & operator=(BlockSparseProperty && other) = default;
 
-    static inline void check_compatibility(PropertyBase & other) {
+    static void check_compatibility(PropertyBase & other) {
       // check ``type`` compatibility
-      auto type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()};
+      auto type_id{typeid(Self_t).name()};
       if (not(other.get_type_info() == type_id)) {
         std::stringstream err_str{};
         err_str << "Incompatible types: '" << other.get_type_info() << "' != '"
@@ -556,27 +556,25 @@ namespace rascal {
     }
 
     //! Adjust size of values (only increases, never frees)
-
-    inline void resize(bool consider_ghost_atoms = false) {
+    void resize(bool consider_ghost_atoms = false) {
       size_t new_size{
           this->get_validated_property_length<Order>(consider_ghost_atoms)};
       this->values.resize(new_size);
     }
 
-    inline size_t size() const { return this->values.size(); }
+    size_t size() const { return this->values.size(); }
 
     //! clear all the content of the property
-    inline void clear() { this->values.clear(); }
+    void clear() { this->values.clear(); }
 
-    inline Manager_t & get_manager() {
+    Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);
     }
 
     /* -------------------------------------------------------------------- */
     //! Property accessor by cluster ref
     template <size_t CallerLayer>
-    inline decltype(auto)
-    operator[](const ClusterRefKey<Order, CallerLayer> & id) {
+    InputData_t & operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
@@ -590,21 +588,18 @@ namespace rascal {
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
               std::enable_if_t<(Order_ == 1) and (CallerOrder == 2),  // NOLINT
                                int> = 0>                              // NOLINT
-    inline decltype(auto)
+    InputData_t &
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](this->get_manager().get_atom_index(
           id.get_internal_neighbour_atom_tag()));
     }
 
     //! Accessor for property by index for dynamically sized properties
-    inline InputData_t & operator[](size_t index) {
-      return this->values[index];
-    }
+    InputData_t & operator[](size_t index) { return this->values[index]; }
 
     template <size_t CallerLayer>
-    inline decltype(auto)
-    operator()(const ClusterRefKey<Order, CallerLayer> & id,
-               const Key_t & key) {
+    DenseRef_t operator()(const ClusterRefKey<Order, CallerLayer> & id,
+                          const Key_t & key) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
@@ -613,7 +608,7 @@ namespace rascal {
     }
 
     //! Accessor for property by index for dynamically sized properties
-    inline DenseRef_t operator()(size_t index, const Key_t & key) {
+    DenseRef_t operator()(size_t index, const Key_t & key) {
       auto && val = this->values[index].at(key);
       return DenseRef_t(&val(0, 0), val.rows(), val.cols());
     }
@@ -621,8 +616,7 @@ namespace rascal {
     //! Accessor for property by cluster index and return a dense
     //! representation of the property associated to this cluster
     template <size_t CallerLayer>
-    inline Matrix_t
-    get_dense_row(const ClusterRefKey<Order, CallerLayer> & id) {
+    Matrix_t get_dense_row(const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
@@ -630,7 +624,7 @@ namespace rascal {
       return this->get_dense_row(id.get_cluster_index(CallerLayer));
     }
 
-    inline Matrix_t get_dense_row(size_t index) {
+    Matrix_t get_dense_row(size_t index) {
       auto keys = this->values[index].get_keys();
       Matrix_t feature_row = Matrix_t::Zero(this->get_nb_comp(), keys.size());
       size_t i_col{0};
@@ -658,8 +652,8 @@ namespace rascal {
      * building the feature matrix
      *
      */
-    inline void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features,
-                                          const Keys_t & all_keys) {
+    void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features,
+                                   const Keys_t & all_keys) {
       int inner_size{this->get_nb_comp()};
       int i_row{0};
       size_t n_center{this->values.size()};
@@ -683,7 +677,7 @@ namespace rascal {
      * Get a dense feature matrix Ncenter x Nfeatures. The keys to use are
      * deduced from the local storage.
      */
-    inline Matrix_t get_dense_feature_matrix() {
+    Matrix_t get_dense_feature_matrix() {
       auto all_keys = this->get_keys();
       size_t n_elements{this->size()};
       int inner_size{this->get_nb_comp()};
@@ -696,7 +690,7 @@ namespace rascal {
     /**
      * @return set of unique keys at the level of the structure
      */
-    inline Keys_t get_keys() {
+    Keys_t get_keys() {
       Keys_t all_keys{};
       size_t n_center{this->values.size()};
       for (size_t i_center{0}; i_center < n_center; i_center++) {
@@ -710,10 +704,10 @@ namespace rascal {
 
     //! get number of different distinct element in the property
     //! (typically the number of center)
-    inline size_t get_nb_item() const { return this->size(); }
+    size_t get_nb_item() const { return this->size(); }
 
     template <size_t CallerLayer>
-    inline decltype(auto)
+    std::vector<Key_t>
     get_keys(const ClusterRefKey<Order, CallerLayer> & id) const {
       // static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
       static_assert(CallerLayer >= PropertyLayer,
@@ -727,7 +721,7 @@ namespace rascal {
      * assumes order == 1 for the moment should use SFINAE to take care of
      * the case order == 2
      */
-    inline Matrix_t dot(Self_t & B) {
+    Matrix_t dot(Self_t & B) {
       Matrix_t mat(this->size(), B.size());
       auto && manager_a{this->get_manager()};
       auto && manager_b{B.get_manager()};

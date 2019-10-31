@@ -30,23 +30,22 @@
 # Boston, MA 02111-1307, USA.
 # =============================================================================
 
+set(rascal_sources
+    json_io.cc
+    units.cc
+    rascal_utility.cc
+    utils/sparsify_fps.cc
+    structure_managers/structure_manager_lammps.cc
+    structure_managers/structure_manager_centers.cc
+    representations/calculator_base.cc
+)
 
+add_library(${LIBRASCAL_NAME} ${rascal_sources})
 
-add_library("${LIBRASCAL_NAME}" "")
+target_include_directories(${LIBRASCAL_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_options(${LIBRASCAL_NAME} PRIVATE -Werror)
 
-set(rascal_SRC
-  ${CMAKE_CURRENT_SOURCE_DIR}/json_io.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/units.cc
-  )
-target_sources("${LIBRASCAL_NAME}" PRIVATE ${rascal_SRC})
+target_link_libraries(${LIBRASCAL_NAME} PUBLIC Eigen3::Eigen)
+target_link_libraries(${LIBRASCAL_NAME} PUBLIC ${WIGXJPF_NAME})
 
-
-target_link_libraries("${LIBRASCAL_NAME}" PUBLIC Eigen3::Eigen)
-target_link_libraries("${LIBRASCAL_NAME}" PUBLIC "${WIGXJPF_NAME}")
-
-add_subdirectory(structure_managers)
-add_subdirectory(representations)
-add_subdirectory(utils)
-add_subdirectory(math)
-
-install(TARGETS "${LIBRASCAL_NAME}" DESTINATION lib)
+install(TARGETS ${LIBRASCAL_NAME} DESTINATION lib)

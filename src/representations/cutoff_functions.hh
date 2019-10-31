@@ -29,23 +29,86 @@
 #ifndef SRC_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_
 #define SRC_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_
 
-#include "rascal_utility.hh"
 #include "math/math_utils.hh"
+#include "rascal_utility.hh"
 #include "representations/calculator_base.hh"
 
-#include <vector>
-#include <memory>
-
 #include <Eigen/Dense>
+
+#include <memory>
+#include <vector>
 
 namespace rascal {
 
   namespace internal {
+    /**
+     * Compute a cosine-type switching function for smooth cutoffs
+     *
+     * @param cutoff Outer (strict) cutoff, beyond which this function becomes
+     *               zero
+     *
+     * @param smooth_width Width over which the smoothing function extends;
+     *                     the function becomes one for r less than
+     *                     cutoff - smooth_width
+     *
+     * @param r Distance at which to evaluate the switching function
+     *
+     * The functional form is:
+     *
+     * sw(r) = 1/2 + 1/2 cos(pi * (r - cutoff + smooth_width) / smooth_width)
+     *
+     * if r is within the cutoff region (cutoff - smooth_width < r <= cutoff);
+     * if r is outside (> cutoff) the function is zero; if r is inside, the
+     * function is 1.
+     *
+     * Specifying smooth_width less than cutoff is not an error.
+     * If smooth_width is equal to zero the result will just be a step
+     * function.
+     *
+     */
+    inline double switching_function_cosine(double r, double cutoff,
+                                            double smooth_width) {
+      if (r <= (cutoff - smooth_width)) {
+        return 1.0;
+      } else if (r > cutoff) {
+        return 0.0;
+      }
+      double r_scaled{math::PI * (r - cutoff + smooth_width) / smooth_width};
+      return (0.5 * (1. + std::cos(r_scaled)));
+    }
+
+    /**
+     * Compute the derivative of the cosine-type switching function
+     *
+     * @param cutoff Outer (strict) cutoff, beyond which this function becomes
+     *               zero
+     *
+     * @param smooth_width Width over which the smoothing function extends;
+     *                     the function becomes one for r less than
+     *                     cutoff - smooth_width
+     *
+     * @param r Distance at which to evaluate the derivative
+     *
+     * The functional form is:
+     *
+     * dsw/dr (r) = -pi/(2*smooth_width) * sin(pi * (r - cutoff + smooth_width)
+     *                                              / smooth_width)
+     */
+    inline double derivative_switching_funtion_cosine(double r, double cutoff,
+                                                      double smooth_width) {
+      if (r <= (cutoff - smooth_width)) {
+        return 0.0;
+      } else if (r > cutoff) {
+        return 0.0;
+      }
+      double r_scaled{math::PI * (r - cutoff + smooth_width) / smooth_width};
+      return (-0.5 * math::PI / smooth_width * std::sin(r_scaled));
+    }
 
     /**
      * List of implemented cutoff function
      */
-    enum class CutoffFunctionType { ShiftedCosine, RadialScaling, End_ };
+    enum class CutoffFunctionType { ShiftedCosine, RadialScaling };
 
     struct CutoffFunctionBase {
       //! Constructor
@@ -93,14 +156,14 @@ namespace rascal {
             hypers.at("smooth_width").at("value").get<double>();
       }
 
-      inline double f_c(double distance) {
-        return math::switching_function_cosine(distance, this->cutoff,
-                                               this->smooth_width);
+      double f_c(double distance) {
+        return switching_function_cosine(distance, this->cutoff,
+                                         this->smooth_width);
       }
 
-      inline double df_c(double distance) {
-        return math::derivative_switching_funtion_cosine(distance, this->cutoff,
-                                                         this->smooth_width);
+      double df_c(double distance) {
+        return derivative_switching_funtion_cosine(distance, this->cutoff,
+                                                   this->smooth_width);
       }
 
       //! keep the hypers
@@ -126,10 +189,23 @@ namespace rascal {
      * r_0 -> scale
      * m -> exponent
      *
-     * with the cosine switching function.
+     * multiplied by the cosine switching function defined in
+     * math::switching_function_cosine() (which comes with additional parameters
+     * `cutoff` and `smooth_width`).
      *
      * Typically c == 1, r_0 > 0 and m is a positive integer.
      *
+     * Derivatives for the radial scaling component are:
+     *
+     *         ╭ -m /( (r/r_0)^m * r), if c == 0
+     *         |
+     * u'(r) = ┤ 0, if m == 0
+     *         |
+     *         ╰ -m c (r/r_0)^m / (r * (c + (r/r_0)^m)^2), otherwise
+     *
+     * These are combined with the cosine switching function derivatives using
+     * the Leibniz product rule to get the derivative of the final radial
+     * modulation function.
      */
     template <>
     struct CutoffFunction<internal::CutoffFunctionType::RadialScaling>
@@ -151,34 +227,48 @@ namespace rascal {
         this->scale = hypers.at("scale").at("value").get<double>();
       }
 
-      inline double f_c(double distance) {
+      double value(double distance) {
         double factor{0.};
-        if (this->rate > math::dbl_ftol) {
+        if (this->rate > math::DBL_FTOL) {
           factor = this->rate / (this->rate + math::pow(distance / this->scale,
                                                         this->exponent));
         } else if (this->exponent == 0) {
           factor = 1.;
         } else {
-          factor = math::pow(distance / this->scale, -this->exponent);
+          factor = 1. / math::pow(distance / this->scale, this->exponent);
         }
-        return factor * math::switching_function_cosine(distance, this->cutoff,
-                                                        this->smooth_width);
+        return factor;
       }
 
-      inline double df_c(double distance) {
+      double grad(double distance) {
         double factor{0.};
-        if (this->rate < math::dbl_ftol) {
-          factor = -this->exponent / distance *
-                   math::pow(distance / this->scale, -this->exponent);
+        if (this->rate > math::DBL_FTOL) {
+          double ff{math::pow(distance / this->scale, this->exponent)};
+          factor = -this->rate * this->exponent * ff / distance /
+                   math::pow(this->rate + ff, 2_size_t);
         } else if (this->exponent == 0) {
           factor = 0.;
         } else {
-          double ff{math::pow(distance / this->scale, this->exponent)};
-          factor = this->rate * this->exponent * ff / distance *
-                   math::pow(this->rate + ff, -2);
+          factor = -this->exponent / distance /
+                   math::pow(distance / this->scale, this->exponent);
         }
-        return factor * math::derivative_switching_funtion_cosine(
-                            distance, this->cutoff, this->smooth_width);
+        return factor;
+      }
+
+      double f_c(double distance) {
+        return this->value(distance) *
+               switching_function_cosine(distance, this->cutoff,
+                                         this->smooth_width);
+      }
+
+      double df_c(double distance) {
+        double df_c1{this->grad(distance) *
+                     switching_function_cosine(distance, this->cutoff,
+                                               this->smooth_width)};
+        double df_c2{this->value(distance) *
+                     derivative_switching_funtion_cosine(distance, this->cutoff,
+                                                         this->smooth_width)};
+        return df_c1 + df_c2;
       }
 
       //! keep the hypers
@@ -198,13 +288,13 @@ namespace rascal {
   }  // namespace internal
 
   template <internal::CutoffFunctionType Type, class Hypers>
-  decltype(auto) make_cutoff_function(const Hypers & fc_hypers) {
+  auto make_cutoff_function(const Hypers & fc_hypers) {
     return std::static_pointer_cast<internal::CutoffFunctionBase>(
         std::make_shared<internal::CutoffFunction<Type>>(fc_hypers));
   }
 
   template <internal::CutoffFunctionType Type>
-  decltype(auto) downcast_cutoff_function(
+  auto downcast_cutoff_function(
       std::shared_ptr<internal::CutoffFunctionBase> & cutoff_function) {
     return std::static_pointer_cast<internal::CutoffFunction<Type>>(
         cutoff_function);

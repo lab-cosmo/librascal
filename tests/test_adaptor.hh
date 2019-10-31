@@ -31,7 +31,6 @@
 #ifndef TESTS_TEST_ADAPTOR_HH_
 #define TESTS_TEST_ADAPTOR_HH_
 
-#include "tests.hh"
 #include "test_structure.hh"
 
 #include <random>
@@ -223,7 +222,7 @@ namespace rascal {
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{1., 2., 3.}};
-    const std::vector<double> skins{{0., 0.3}};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };
@@ -268,7 +267,7 @@ namespace rascal {
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{1., 2., 3.}};
-    const std::vector<double> skins{{0., 0.3}};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };
@@ -302,7 +301,7 @@ namespace rascal {
     const std::string filename{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
     const double cutoff{3.};
-    const std::vector<double> skins{{0., 0.1, 0.3}};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };
@@ -346,7 +345,7 @@ namespace rascal {
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{2., 3.}};
-    const std::vector<double> skins{{0., 0.3}};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };
@@ -394,7 +393,7 @@ namespace rascal {
         "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{2., 3.}};
-    const std::vector<double> skins{{0., 0.3}};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };
@@ -463,7 +462,7 @@ namespace rascal {
         "reference_data/small_molecule.json"};
 
     const std::vector<double> cutoffs{{2., 3.}};
-    const std::vector<double> skins{{0., 0.3}};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };
@@ -534,7 +533,7 @@ namespace rascal {
         // "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{2., 3.}};
-    const std::vector<double> skins{{0., 0.3}};
+    const std::vector<double> skins{0.};
 
     json factory_args{};
   };

@@ -25,12 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <structure_managers/structure_manager_centers.hh>
-#include <structure_managers/make_structure_manager.hh>
-#include <structure_managers/adaptor_neighbour_list.hh>
-#include <structure_managers/property.hh>
-
-#include "json.hpp"
+#include "external/json.hpp"
+#include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/make_structure_manager.hh"
+#include "structure_managers/property.hh"
+#include "structure_managers/structure_manager_centers.hh"
 
 #include <iostream>
 #include <vector>
@@ -66,7 +65,7 @@ int main() {
   // manager.update("alanine-X.json");
   auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(
       manager, cutoff)};
-  std::string filename{"alanine-X.json"};
+  std::string filename{"reference_data/alanine-X.json"};
   pair_manager->update(filename);
 
   // Loop over the defined quadruplets and calculate the respective

@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# This hook checks whether any ipython or juypyter notebooks have been
+# changed in the commit and then checks whether nbstripout
+# (https://github.com/kynan/nbstripout) has been installed correctly
+#
+# This hook will not be executed using default git configurations.
+#
+# To use this hook, execute:
+# 	git config core.hooksPath shared_hooks
+
+NBS=$(echo $(git diff --full-index --cached $against --name-only) | sort | grep "ipynb")
+
+if [ ! -z "$NBS" ] ; then
+    command -v nbstripout --is-installed >/dev/null 2>&1 || { echo >&2 "I require nbstripout but it's not installed. Aborting commit."; exit 1; }
+fi
+
+# If there are whitespace errors, print the offending file names and fail.
+exec git diff --full-index --check --cached $against --

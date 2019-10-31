@@ -28,20 +28,19 @@
 #ifndef BINDINGS_BIND_PY_STRUCTURE_MANAGER_HH_
 #define BINDINGS_BIND_PY_STRUCTURE_MANAGER_HH_
 
-#include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/structure_manager_lammps.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_increase_maxorder.hh"
-#include "structure_managers/adaptor_half_neighbour_list.hh"
+#include "bind_include.hh"
+#include "structure_managers/adaptor_center_contribution.hh"
 #include "structure_managers/adaptor_full_neighbour_list.hh"
+#include "structure_managers/adaptor_half_neighbour_list.hh"
+#include "structure_managers/adaptor_increase_maxorder.hh"
+#include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/adaptor_strict.hh"
 #include "structure_managers/make_structure_manager.hh"
 #include "structure_managers/structure_manager.hh"
 #include "structure_managers/structure_manager_base.hh"
+#include "structure_managers/structure_manager_centers.hh"
 #include "structure_managers/structure_manager_collection.hh"
-#include "structure_managers/adaptor_center_contribution.hh"
-
-#include "bind_include.hh"
+#include "structure_managers/structure_manager_lammps.hh"
 
 namespace rascal {
   void add_structure_managers(py::module &, py::module & /*m_unused*/);

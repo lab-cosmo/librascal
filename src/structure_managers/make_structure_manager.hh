@@ -28,12 +28,11 @@
 #ifndef SRC_STRUCTURE_MANAGERS_MAKE_STRUCTURE_MANAGER_HH_
 #define SRC_STRUCTURE_MANAGERS_MAKE_STRUCTURE_MANAGER_HH_
 
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/property.hh"
-
-#include "rascal_utility.hh"
-#include "json_io.hh"
 #include "atomic_structure.hh"
+#include "json_io.hh"
+#include "rascal_utility.hh"
+#include "structure_managers/property.hh"
+#include "structure_managers/structure_manager.hh"
 
 #include <type_traits>
 
@@ -133,7 +132,7 @@ namespace rascal {
       ManagerPtr_t manager;
       NextFactory_t next_stack;
 
-      decltype(auto) get_manager() { return this->next_stack.get_manager(); }
+      auto get_manager() { return this->next_stack.get_manager(); }
     };
 
     //! End of recursion
@@ -176,8 +175,8 @@ namespace rascal {
   template <typename Manager,
             template <class> class... AdaptorImplementationPack,
             typename Hypers_t>
-  decltype(auto) make_structure_manager_stack(const Hypers_t & structure_inputs,
-                                              const Hypers_t & adaptor_inputs) {
+  auto make_structure_manager_stack(const Hypers_t & structure_inputs,
+                                    const Hypers_t & adaptor_inputs) {
     // check input consistency
     if (not adaptor_inputs.is_array()) {
       throw std::runtime_error(
@@ -330,8 +329,8 @@ namespace rascal {
   struct make_structure_manager_stack_with_hypers_and_typeholder<
       std::tuple<T...>> {
     template <typename Hypers_t>
-    static decltype(auto) apply(const Hypers_t & structure_inputs,
-                                const Hypers_t & adaptor_inputs) {
+    static auto apply(const Hypers_t & structure_inputs,
+                      const Hypers_t & adaptor_inputs) {
       return internal::make_structure_manager_stack_with_hypers_util<
           T...>::apply(structure_inputs, adaptor_inputs);
     }
@@ -352,8 +351,8 @@ namespace rascal {
   template <typename Manager,
             template <class> class... AdaptorImplementationPack,
             typename Hypers_t>
-  decltype(auto) stack_adaptors(std::shared_ptr<Manager> & manager_base,
-                                const Hypers_t & hypers) {
+  auto stack_adaptors(std::shared_ptr<Manager> & manager_base,
+                      const Hypers_t & hypers) {
     // build the stack of adaptors
     auto factory = internal::AdaptorFactory_hypers<
         0, Manager, AdaptorImplementationPack...>(manager_base, hypers);
@@ -379,7 +378,7 @@ namespace rascal {
       std::shared_ptr<Manager_t> manager;
       type next_stack;
 
-      decltype(auto) get_manager() { return this->next_stack.get_manager(); }
+      auto get_manager() { return this->next_stack.get_manager(); }
     };
 
     template <typename StructureManager>
@@ -390,14 +389,13 @@ namespace rascal {
 
       std::shared_ptr<StructureManager> manager;
 
-      decltype(auto) get_manager() { return this->manager->get_shared_ptr(); }
+      auto get_manager() { return this->manager->get_shared_ptr(); }
     };
 
   }  // namespace internal
 
   template <int TargetLevel, typename StructureManager>
-  decltype(auto)
-  extract_underlying_manager(std::shared_ptr<StructureManager> manager) {
+  auto extract_underlying_manager(std::shared_ptr<StructureManager> manager) {
     static constexpr int n_step_below =
         StructureManager::traits::StackLevel - TargetLevel;
     static_assert(

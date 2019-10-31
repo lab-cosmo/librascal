@@ -9,7 +9,25 @@ rm -rf gh-pages/*
 
 cp -a build/docs/html/. gh-pages/.
 
-mkdir -p gh-pages/.circleci && cp -a .circleci/. gh-pages/.circleci/.
+# disable CircleCI on gh-pages branch
+mkdir -p gh-pages/.circleci
+cat << EOF > gh-pages/.circleci/config.yml
+version: 2
+
+jobs:
+  build:
+    docker:
+      # Very small docker image
+      - image: alpine:3
+    steps:
+      - run: echo "done"
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+EOF
 
 cd gh-pages
 git add -A

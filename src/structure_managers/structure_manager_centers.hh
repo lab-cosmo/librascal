@@ -34,19 +34,19 @@
 
 // inclusion of librascal data structure, each manager is based on the interface
 // given in `structure_manager.hh`
-#include "structure_managers/structure_manager.hh"
-#include "lattice.hh"
 #include "atomic_structure.hh"
 #include "basic_types.hh"
 #include "json_io.hh"
+#include "lattice.hh"
+#include "structure_managers/structure_manager.hh"
 
 // data types and operations are based on the Eigen library
 #include <Eigen/Dense>
 
 // standard header inclusion
+#include <array>
 #include <stdexcept>
 #include <vector>
-#include <array>
 
 /**
  * All functions and classes are in the namespace <code>rascal</code>, which
@@ -196,49 +196,37 @@ namespace rascal {
      * Returns a traits::Dim by traits::Dim matrix with the cell vectors of the
      * structure.
      */
-    inline Cell_ref get_cell() { return Cell_ref(this->atoms_object.cell); }
+    Cell_ref get_cell() { return Cell_ref(this->atoms_object.cell); }
 
     //! Returns the type of a given atom, given an AtomRef
-    inline int & get_atom_type(int atom_tag) {
-      auto && atom_index{this->get_atom_index(atom_tag)};
-      return this->atoms_object.atom_types(atom_index);
-    }
-
-    //! Returns the type of a given atom, given an AtomRef
-    inline int get_atom_type(int atom_tag) const {
+    int get_atom_type(int atom_tag) const {
       auto && atom_index{this->get_atom_index(atom_tag)};
       return this->atoms_object.atom_types(atom_index);
     }
 
     //! Returns an a map with all atom types.
-    inline AtomTypes_ref get_atom_types() {
-      AtomTypes_ref val(this->atoms_object.atom_types);
-      return val;
-    }
-
-    //! Returns an a map with all atom types.
-    inline ConstAtomTypes_ref get_atom_types() const {
+    ConstAtomTypes_ref get_atom_types() const {
       ConstAtomTypes_ref val(this->atoms_object.atom_types);
       return val;
     }
 
     //! Returns a map of size traits::Dim with 0/1 for periodicity
-    inline PBC_ref get_periodic_boundary_conditions() {
+    PBC_ref get_periodic_boundary_conditions() {
       return PBC_ref(this->atoms_object.pbc);
     }
 
-    inline ArrayB_ref get_center_atoms_mask() {
+    ArrayB_ref get_center_atoms_mask() {
       return ArrayB_ref(this->atoms_object.center_atoms_mask);
     }
 
     //! Returns the position of an atom, given an AtomRef
-    inline Vector_ref get_position(const AtomRef_t & atom) {
+    Vector_ref get_position(const AtomRef_t & atom) {
       auto atom_tag{atom.get_index()};
       return this->get_position(atom_tag);
     }
 
     //! Returns the position of an atom, given an atom tag
-    inline Vector_ref get_position(int atom_tag) {
+    Vector_ref get_position(int atom_tag) {
       auto && atom_index{this->get_atom_index(atom_tag)};
       auto p = this->get_positions();
       auto * xval{p.col(atom_index).data()};
@@ -246,20 +234,20 @@ namespace rascal {
     }
 
     //! returns a map to all atomic positions.
-    inline Positions_ref get_positions() {
+    Positions_ref get_positions() {
       return Positions_ref(this->atoms_object.positions);
     }
 
     //! returns number of I atoms in the list
-    inline size_t get_size() const { return this->n_center_atoms; }
+    size_t get_size() const { return this->n_center_atoms; }
 
     //! returns number of I atoms in the list, since at this level, center atoms
     //! and ghost atoms are not distinguishable.
-    inline size_t get_size_with_ghosts() const { return this->n_center_atoms; }
+    size_t get_size_with_ghosts() const { return this->n_center_atoms; }
 
     //! returns the number of neighbours of a given i atom
     template <size_t Order, size_t Layer>
-    inline size_t get_cluster_size_impl(
+    size_t get_cluster_size_impl(
         const ClusterRefKey<Order, Layer> & /*cluster*/) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
@@ -267,18 +255,16 @@ namespace rascal {
     }
 
     template <size_t Order, size_t Layer>
-    inline decltype(auto)
-    get_atom_index(const ClusterRefKey<Order, Layer> & cluster) const {
+    size_t get_atom_index(const ClusterRefKey<Order, Layer> & cluster) const {
       return this->get_atom_index(cluster.get_atom_tag());
     }
 
-    inline size_t get_atom_index(int atom_tag) const {
+    size_t get_atom_index(int atom_tag) const {
       return std::get<0>(this->atoms_index)[atom_tag];
     }
 
     //! dummy function, since no neighbours are present her
-    inline int get_neighbour_atom_tag(const Parent & /*parent*/,
-                                      size_t index) const {
+    int get_neighbour_atom_tag(const Parent & /*parent*/, size_t index) const {
       // dummy argument is the atom itself, because if does not make sense at
       // this order
       return index;
@@ -286,25 +272,23 @@ namespace rascal {
 
     //! Dummy function, since neighbours are not present at this Order
     template <size_t Order, size_t Layer>
-    inline int
-    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & /*cluster*/,
-                           size_t /*index*/) const {
+    int get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & /*cluster*/,
+                               size_t /*index*/) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation only handles atoms.");
       return 0;
     }
 
-    inline int get_atom_tag(int raw_index) const { return raw_index; }
+    int get_atom_tag(int raw_index) const { return raw_index; }
 
-    inline size_t get_atom_tag(size_t raw_index) const { return raw_index; }
+    size_t get_atom_tag(size_t raw_index) const { return raw_index; }
 
     /**
      * Return the linear index of cluster (i.e., the count at which
      * this cluster appears in an iteration
      */
     template <size_t Order>
-    inline size_t
-    get_offset_impl(const std::array<size_t, Order> & counters) const;
+    size_t get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t order) const;
@@ -321,11 +305,11 @@ namespace rascal {
       this->build();
     }
 
-    inline const AtomicStructure<traits::Dim> & get_atomic_structure() const {
+    const AtomicStructure<traits::Dim> & get_atomic_structure() const {
       return this->atoms_object;
     }
 
-    inline size_t get_n_atoms() const { return this->natoms; }
+    size_t get_n_atoms() const { return this->natoms; }
 
    protected:
     //! makes atom tag lists and offsets
@@ -377,7 +361,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   //! used for construction (not for iteration)
   template <size_t Order>
-  inline size_t StructureManagerCenters::get_offset_impl(
+  size_t StructureManagerCenters::get_offset_impl(
       const std::array<size_t, Order> & /*counters*/) const {
     static_assert(Order == 1, "This manager only handles atoms.");
     return 0;

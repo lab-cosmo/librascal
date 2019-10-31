@@ -5,14 +5,8 @@ version: 2
 # indicated by the CC/CXX environment variables.
 default_job: &default_job
   docker:
-    - image: ubuntu:18.04
+    - image: cosmoepfl/rascal-ci:1
   steps:
-    - run:
-        name: Install dependencies
-        command: |
-          apt update -y
-          apt install -y git cmake python3.6 python3-pip libboost-test-dev
-          ${APT_EXTRA_INSTALL}
     - checkout
     - run:
         name: Install Python dependencies
@@ -37,73 +31,40 @@ jobs:
     environment:
       CC: gcc-5
       CXX: g++-5
-      APT_EXTRA_INSTALL: apt install -y gcc-5 g++-5
     <<: *default_job
-  gcc-6:
+  gcc-9:
     environment:
-      CC: gcc-6
-      CXX: g++-6
-      APT_EXTRA_INSTALL: apt install -y gcc-6 g++-6
+      CC: gcc-9
+      CXX: g++-9
     <<: *default_job
-  gcc-7:
+  gcc-9-debug:
     environment:
-      CC: gcc-7
-      CXX: g++-7
-      # Not actually needed since gcc-7 is the default on Ubuntu 18.04
-      # but this protect use against unwanted changes
-      APT_EXTRA_INSTALL: apt install -y gcc-7 g++-7
-    <<: *default_job
-  gcc-7-debug:
-    environment:
-      CC: gcc-7
-      CXX: g++-7
-      # Not actually needed since gcc-7 is the default on Ubuntu 18.04
-      # but this protect use against unwanted changes
-      APT_EXTRA_INSTALL: apt install -y gcc-7 g++-7
+      CC: gcc-9
+      CXX: g++-9
       CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug
     <<: *default_job
   clang-4:
     environment:
       CC: clang-4.0
       CXX: clang++-4.0
-      APT_EXTRA_INSTALL: apt install -y clang-4.0
     <<: *default_job
-  clang-5:
+  clang-9:
     environment:
-      CC: clang-5.0
-      CXX: clang++-5.0
-      APT_EXTRA_INSTALL: apt install -y clang-5.0
+      CC: clang-9
+      CXX: clang++-9
     <<: *default_job
-  clang-6:
+  clang-9-debug:
     environment:
-      CC: clang-6.0
-      CXX: clang++-6.0
-      APT_EXTRA_INSTALL: apt install -y clang-6.0
-    <<: *default_job
-  clang-7:
-    environment:
-      CC: clang-7
-      CXX: clang++-7
-      APT_EXTRA_INSTALL: apt install -y clang-7
-    <<: *default_job
-  clang-7-debug:
-    environment:
-      CC: clang-7
-      CXX: clang++-7
-      APT_EXTRA_INSTALL: apt install -y clang-7
+      CC: clang-9
+      CXX: clang++-9
+      APT_EXTRA_INSTALL: apt install -y clang-9
       CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug
     <<: *default_job
   # Special job only building the documentation
   docs:
     docker:
-    - image: ubuntu:18.04
+    - image: cosmoepfl/rascal-ci:1
     steps:
-      - run:
-          name: Install dependencies
-          command: |
-            apt update -y
-            apt install -y git cmake python3.6 python3-pip
-            apt install -y doxygen pandoc
       - checkout
       - run:
           name: Install Python dependencies
@@ -113,7 +74,7 @@ jobs:
           command: |
             mkdir build
             cd build
-            cmake -DENABLE_DOC=ON -DBUILD_BINDINGS=ON ..
+            cmake -DBUILD_DOC=ON -DBUILD_BINDINGS=ON ..
       - run:
           name: Build docs
           command: cd build && make doc
@@ -129,13 +90,8 @@ jobs:
   # Special job only linting the code
   lint:
     docker:
-    - image: ubuntu:18.04
+    - image: cosmoepfl/rascal-ci:1
     steps:
-      - run:
-          name: Install dependencies
-          command: |
-            apt update -y
-            apt install -y git cmake python3.6 python3-pip
       - checkout
       - run:
           name: Install Python dependencies
@@ -157,11 +113,8 @@ workflows:
       - lint
       - docs
       - gcc-5
-      - gcc-6
-      - gcc-7
-      - gcc-7-debug
+      - gcc-9
+      - gcc-9-debug
       - clang-4
-      - clang-5
-      - clang-6
-      - clang-7
-      - clang-7-debug
+      - clang-9
+      - clang-9-debug

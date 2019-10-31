@@ -29,8 +29,8 @@
 #ifndef TESTS_TEST_CLUSTER_REF_KEY_HH_
 #define TESTS_TEST_CLUSTER_REF_KEY_HH_
 
-#include "tests.hh"
 #include <tuple>
+#include <vector>
 #include "structure_managers/cluster_ref_key.hh"
 
 namespace rascal {

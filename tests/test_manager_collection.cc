@@ -1,5 +1,5 @@
 /**
- * file test_manager_collection.cc
+ * @file test_manager_collection.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -28,6 +28,9 @@
  */
 
 #include "test_manager_collection.hh"
+
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 

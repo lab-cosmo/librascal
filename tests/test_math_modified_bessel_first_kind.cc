@@ -1,5 +1,5 @@
 /**
- * file   test_math_modified_bessel_first_kind.cc
+ * @file   test_math_modified_bessel_first_kind.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
@@ -25,8 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
 #include "test_math.hh"
+
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 
@@ -63,7 +64,7 @@ namespace rascal {
           // the MBSFs are set to 0 if < 1e-100 so no point checking with
           // the reference then. Note the MBSFs are very accurate when < 1e-200
           if (ref_vals[i_x][order] > 1e-90 and vals(i_x, order) > 1e-90) {
-            if ((rel_error > 1e3 * math::dbl_ftol) and this->verbose) {
+            if ((rel_error > 1e3 * math::DBL_FTOL) and this->verbose) {
               std::cout << " order=" << order << " x=" << xs[i_x]
                         << " alpha=" << alpha << " rij=" << rij
                         << " diff=" << rel_error
@@ -71,7 +72,7 @@ namespace rascal {
                         << " val=" << vals(i_x, order) << std::endl;
             }
 
-            BOOST_CHECK_LE(rel_error, 1e3 * math::dbl_ftol);
+            BOOST_CHECK_LE(rel_error, 1e3 * math::DBL_FTOL);
           }
         }
         // break;

@@ -109,10 +109,10 @@ namespace rascal {
     virtual void send_changed_structure_signal() = 0;
 
     //! Setter function for update statue variable
-    inline void set_update_status(const bool sig) { this->updated = sig; }
+    void set_update_status(const bool sig) { this->updated = sig; }
 
     //! Getter function for update status variable.
-    inline bool get_update_status() const { return this->updated; }
+    bool get_update_status() const { return this->updated; }
 
    protected:
     //! List of children which are stacked on top of current object.

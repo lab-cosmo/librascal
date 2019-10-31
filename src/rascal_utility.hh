@@ -28,24 +28,12 @@
 #ifndef SRC_RASCAL_UTILITY_HH_
 #define SRC_RASCAL_UTILITY_HH_
 
-// Detects which compiler is used
-#if defined(__clang__)
-#define CLANG_COMPILER
-#elif((defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ > 8))
-// there is a slight modification in the output of __PRETTY_FUNCTION__ in gcc 9
-// here we expect it to be forwarded to newer versions
-#define GCC_COMPILER_9_AND_UPPER
-#elif((defined(__GNUC__) || defined(__GNUG__)) && (__GNUC__ <= 8))
-#define GCC_COMPILER_8_AND_LOWER
-#endif
-
-#include <utility>
 #include <string>
-#include <regex>  // NOLINT
 #include <tuple>
-#include <map>
-#include <fstream>
 #include <type_traits>
+#include <typeinfo>
+#include <utility>
+#include <vector>
 
 namespace rascal {
   namespace internal {
@@ -112,45 +100,6 @@ namespace rascal {
     struct AdaptorTypeStacker<ManagerImplementation, AdaptorImplementation> {
       using type = AdaptorImplementation<ManagerImplementation>;
     };
-    /* ---------------------------------------------------------------------- */
-    /**
-     * Utilities to combine Enum to flatten the nested switch cases
-     * The caveat is that the enum list need to be finished with the
-     * End_
-     * taken from:
-     * https://www.fluentcpp.com/2017/06/27/how-to-collapse-nested-switch-statements/
-     * // NOLINT
-     */
-
-    //! get the underlying value of the enum
-    template <typename Enum>
-    constexpr size_t enumValue(Enum e) {
-      return static_cast<size_t>(e);
-    }
-
-    //! compute the lenght of the enum assuming the last element is End_
-    template <typename Enum>
-    constexpr size_t enumSize() {
-      return enumValue(Enum::End_);
-    }
-
-    //! combine 2 enum into a new integer making sure types are properly
-    //! provided
-    // template <typename Enum1, typename Enum2>
-    // struct CombineEnums {
-    //   constexpr size_t operator()(Enum1 e1, Enum2 e2) {
-    //     return enumValue(e1) * enumSize<Enum2>() + enumValue(e2);
-    //   }
-    // };
-    // the above code does not compile with gcc 5 and 6 (4 and 7 works though)
-    // and clang has no problem. it has to do with the implementation of the
-    // standard see for more details
-    // https://stackoverflow.com/questions/16493652/constexpr-not-working-if-the-function-is-declared-inside-class-scope
-    // // NOLINT
-    template <typename Enum1, typename Enum2>
-    constexpr size_t combineEnums(Enum1 e1, Enum2 e2) {
-      return enumValue(e1) + enumSize<Enum1>() * enumValue(e2);
-    }
 
     /* ---------------------------------------------------------------------- */
     /**
@@ -249,128 +198,36 @@ namespace rascal {
     };
 
     /* ---------------------------------------------------------------------- */
-    // inspiered from
-    // https://blog.molecular-matters.com/2015/12/11/getting-
-    // the-type-of-a-template-argument-as-string-without-rtti/
-    /**
-     * Transforms the template typename to a string.
-     * This functionality is compiler dependant so for the moment
-     * clang and gcc are compatible.
-     * @template T type that should be stringifyied
-     */
+
+    //! Get the demangled name of a c++ type, as returned by
+    //! `typeinfo(...).name()`
+    std::string type_name_demangled(const char * name);
+
+    //! Replace all occurences of `pattern` by `replacement` in `string`
+    void replace(std::string & string, const std::string & pattern,
+                 const std::string & replacement);
+
+    //! return a human readable form of the template parameter type name
     template <typename T>
-    struct GetTypeNameHelper {
-      /**
-       * Get the type name
-       * @returns std::string name of the type
-       */
-      static const std::string GetTypeName() {
-// The output of of Pretty Function depends on the compiler
-// the #define strings is a pain to split
-#if defined(GCC_COMPILER_9_AND_UPPER)
-#define FUNCTION_MACRO __PRETTY_FUNCTION__
-#define PREFIX                                                                 \
-  "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() " \
-  "[with T = "                                                        // NOLINT
-#define SUFFIX_1 "; std::string = std::__cxx11::basic_string<char>]"  // NOLINT
-#define SUFFIX_2 ""
-#define NUM_TYPE_REPEATS 1
-#elif defined(GCC_COMPILER_8_AND_LOWER)
-#define FUNCTION_MACRO __PRETTY_FUNCTION__
-#define PREFIX                                                                 \
-  "static const string rascal::internal::GetTypeNameHelper<T>::GetTypeName() " \
-  "[with T = "  // NOLINT
-#define SUFFIX_1                                                               \
-  "; std::__cxx11::string = std::__cxx11::basic_string<char>]"  // NOLINT
-#define SUFFIX_2 ""
-#define NUM_TYPE_REPEATS 1
-#elif defined(CLANG_COMPILER)
-#define FUNCTION_MACRO __PRETTY_FUNCTION__
-#define PREFIX "static const std::string rascal::internal::GetTypeNameHelper<"
-#define SUFFIX_1 ">::GetTypeName() [T ="
-#define SUFFIX_2 "]"
-#define NUM_TYPE_REPEATS 2
-#else
-#error "No implementation for current compiler"
-#endif
+    std::string type_name() {
+      std::string full_name = type_name_demangled(typeid(T).name());
 
-        const size_t funcNameLength{sizeof(FUNCTION_MACRO) - 1u};
-        const size_t prefixLength{sizeof(PREFIX) - 1u};
-        const size_t suffixLength{sizeof(SUFFIX_1) - 1u + sizeof(SUFFIX_2) -
-                                  1u};
-        const size_t typeLength{
-            (funcNameLength - (prefixLength + suffixLength)) /
-            NUM_TYPE_REPEATS};
-        std::string typeName{FUNCTION_MACRO + prefixLength, typeLength};
-        return typeName;
-#undef FUNCTION_MACRO
-#undef PREFIX
-#undef SUFFIX_1
-#undef SUFFIX_2
-#undef NUM_TYPE_REPEATS
-      }
-    };
-    //! return a pretty form of the template typename
-    template <typename T>
-    std::string GetTypeName() {
-      std::string full_typeName = GetTypeNameHelper<T>::GetTypeName();
-
-      std::string tn2{
-          std::regex_replace(full_typeName, std::regex("rascal::"), "")};
-      std::string tn3{std::regex_replace(tn2, std::regex("<"), "_")};
-      std::string tn4{std::regex_replace(tn3, std::regex(">"), "")};
-      std::string tn5{std::regex_replace(tn4, std::regex(" "), "")};
-      std::string tn6{std::regex_replace(tn5, std::regex(","), "_")};
-      return tn6;
+      replace(full_name, "rascal::", "");
+      replace(full_name, "<", "_");
+      replace(full_name, ">", "");
+      replace(full_name, " ", "");
+      replace(full_name, ",", "_");
+      return full_name;
     }
 
-    /**
-     * Reads a binary file and puts it into a vector
-     * Taken from
-     * https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars
-     * // NOLINT
-     */
-    template <typename BINARY>
-    void read_binary_file(const std::string & filename,
-                          std::vector<BINARY> & vec) {
-      // open the file:
-      std::ifstream file(filename, std::ios::binary);
+    //! Reads a binary file
+    //!
+    //! @throw std::runtime_error if the file can't be opened
+    std::vector<uint8_t> read_binary_file(const std::string & filename);
 
-      if (not file.is_open()) {
-        throw std::runtime_error(std::string("Could not open the file: ") +
-                                 filename);
-      }
-      // Stop eating new lines in binary mode!!!
-      file.unsetf(std::ios::skipws);
-
-      // get its size:
-      std::streampos fileSize;
-
-      file.seekg(0, std::ios::end);
-      fileSize = file.tellg();
-      file.seekg(0, std::ios::beg);
-
-      // reserve capacity
-      vec.reserve(fileSize);
-
-      // read the data:
-      vec.insert(vec.begin(), std::istream_iterator<BINARY>(file),
-                 std::istream_iterator<BINARY>());
-    }
-
-    /**
-     * extract the extension from a filename as the charaters after the last
-     * "."
-     * if it is not found it return an empty string
-     */
-    inline std::string get_filename_extension(const std::string & filename) {
-      auto const pos = filename.find_last_of(".");
-      std::string extension{""};
-      if (pos != std::string::npos) {
-        extension = filename.substr(pos + 1);
-      }
-      return extension;
-    }
+    //! Extract the extension from a filename as the charaters after the last
+    //! ".". If no extension is found, return an empty string.
+    std::string get_filename_extension(const std::string & filename);
 
   }  // namespace internal
 }  // namespace rascal

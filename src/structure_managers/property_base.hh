@@ -33,9 +33,9 @@
 #include "basic_types.hh"
 #include "structure_managers/structure_manager_base.hh"
 
+#include <array>
 #include <string>
 #include <vector>
-#include <array>
 
 namespace rascal {
 
@@ -66,54 +66,50 @@ namespace rascal {
     virtual const std::string & get_type_info() const = 0;
 
     //! returns the number of degrees of freedom stored per cluster
-    inline Dim_t get_nb_comp() const { return this->nb_comp; }
+    Dim_t get_nb_comp() const { return this->nb_comp; }
 
     //! updates the number of degrees of freedom stored per cluster
-    inline void update_nb_comp() {
-      this->nb_comp = this->nb_row * this->nb_col;
-    }
+    void update_nb_comp() { this->nb_comp = this->nb_row * this->nb_col; }
 
     //! returns the number of rows stored per cluster
-    inline Dim_t get_nb_row() const { return this->nb_row; }
+    Dim_t get_nb_row() const { return this->nb_row; }
 
     //! sets the number of rows stored per cluster
-    inline void set_nb_row(const Dim_t & nb_row) {
+    void set_nb_row(const Dim_t & nb_row) {
       this->nb_row = nb_row;
       this->update_nb_comp();
     }
 
     //! returns the number of columns stored per cluster
-    inline Dim_t get_nb_col() const { return this->nb_col; }
+    Dim_t get_nb_col() const { return this->nb_col; }
 
     //! sets the number of columns stored per cluster
-    inline void set_nb_col(const Dim_t & nb_col) {
+    void set_nb_col(const Dim_t & nb_col) {
       this->nb_col = nb_col;
       this->update_nb_comp();
     }
 
-    inline void set_shape(const Dim_t & nb_row, const Dim_t & nb_col) {
+    void set_shape(const Dim_t & nb_row, const Dim_t & nb_col) {
       this->nb_row = nb_row;
       this->nb_col = nb_col;
       this->update_nb_comp();
     }
 
     //! returns the cluster order
-    inline Dim_t get_order() const { return this->order; }
+    Dim_t get_order() const { return this->order; }
 
     //! returns the property layer
-    inline Dim_t get_property_layer() const { return this->property_layer; }
+    Dim_t get_property_layer() const { return this->property_layer; }
 
     //! returns the metadata string
-    inline std::string get_metadata() const { return this->metadata; }
+    std::string get_metadata() const { return this->metadata; }
 
     /**
      * Controls the is_updated flag
      */
-    inline bool is_updated() const { return this->updated; }
+    bool is_updated() const { return this->updated; }
 
-    inline void set_updated_status(bool is_updated) {
-      this->updated = is_updated;
-    }
+    void set_updated_status(bool is_updated) { this->updated = is_updated; }
 
    protected:
     //!< base-class reference to StructureManager

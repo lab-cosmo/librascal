@@ -1,5 +1,5 @@
 /**
- * file   test_calculator.cc
+ * @file   test_calculator.cc
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -25,9 +25,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
 #include "test_calculator.hh"
+
 #include "test_math.hh"  // for the gradient test
+
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(representation_test);
@@ -296,7 +299,7 @@ namespace rascal {
             auto row_full = rep_full.row(i_center);
             auto row_no_center = rep_no_center.row(i_no_center);
             auto diff = (row_full - row_no_center).norm();
-            BOOST_CHECK_LE(diff, math::dbl_ftol);
+            BOOST_CHECK_LE(diff, math::DBL_FTOL);
             if (verbose) {
               std::cout << "Center idx: " << i_center << " Diff: " << diff
                         << std::endl;
@@ -324,7 +327,6 @@ namespace rascal {
     using Std2DArray_t = std::vector<std::vector<double>>;
 
     const auto & rep_infos{ref_data.at("rep_info").template get<json>()};
-    // feature_matrices = data["feature_matrices"];
 
     size_t manager_i{0};
     for (auto & manager : managers) {
@@ -344,6 +346,7 @@ namespace rascal {
 
         BOOST_CHECK_EQUAL(ref_representation.size(),
                           test_representation.rows());
+        double avg_diff{0.};
         for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
           BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
                             test_representation.cols());
@@ -351,7 +354,7 @@ namespace rascal {
                ++col_i) {
             auto diff{std::abs(ref_representation[row_i][col_i] -
                                test_representation(row_i, col_i))};
-            BOOST_CHECK_LE(diff, 6e-12);
+            avg_diff += diff;
             if (verbose and diff > 6e-12) {
               std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", "
                         << col_i << " \t " << ref_representation[row_i][col_i]
@@ -359,6 +362,7 @@ namespace rascal {
                         << std::endl;
             }
           }
+          BOOST_CHECK_LE(avg_diff / test_representation.size(), 6e-12);
         }
       }
       manager_i += 1;
@@ -403,7 +407,7 @@ namespace rascal {
     }
   }
 
-  using simple_periodic_fixtures =
+  using gradient_fixtures =
       boost::mpl::list<CalculatorFixture<SingleHypersSphericalExpansion>,
                        CalculatorFixture<SingleHypersSphericalInvariants>>;
 
@@ -413,7 +417,7 @@ namespace rascal {
    * multi-species, primitive and supercells)
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_representation_gradients, Fix,
-                                   simple_periodic_fixtures, Fix) {
+                                   gradient_fixtures, Fix) {
     auto & managers = Fix::managers;
     auto & hypers = Fix::representation_hypers;
     auto & representations = Fix::representations;
@@ -426,23 +430,25 @@ namespace rascal {
         representations.emplace_back(hyper);
         structures.emplace_back();
         structures.back().set_structure(*filename_it);
-        // The finite-difference tests don't work with periodic boundary
-        // conditions -- moving one atom moves all its periodic images, too
-        structures.back().pbc.setZero();
-        RepresentationManagerGradientCalculator<typename Fix::Representation_t,
+        /* ---- grad-test-example-start1 ---- */
+        RepresentationCalculatorGradientProvider<typename Fix::Representation_t,
+                                                 typename Fix::Manager_t>
+            provider(representations.back(), manager, structures.back());
+        RepresentationCalculatorGradientFixture<typename Fix::Representation_t,
                                                 typename Fix::Manager_t>
-            calculator(representations.back(), manager, structures.back());
-        RepresentationManagerGradientFixture<typename Fix::Representation_t,
-                                             typename Fix::Manager_t>
             grad_fix("reference_data/spherical_expansion_gradient_test.json",
-                     manager, calculator);
+                     manager, provider);
+        /* ---- grad-test-example-end1 ---- */
         if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
           std::cout << "Testing structure: " << *filename_it << std::endl;
+          std::cout << "With hypers: " << hyper << std::endl;
         }
+        /* ---- grad-test-example-start2 ---- */
         do {
-          test_gradients(grad_fix.get_calculator(), grad_fix);
+          test_gradients(grad_fix.get_provider(), grad_fix);
           grad_fix.advance_center();
         } while (grad_fix.has_next());
+        /* ---- grad-test-example-end2 ---- */
       }
       ++filename_it;
     }

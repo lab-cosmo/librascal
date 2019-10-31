@@ -1,5 +1,5 @@
 /**
- * file test_kernels.hh
+ * @file test_kernels.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -30,11 +30,10 @@
 #ifndef TESTS_TEST_KERNELS_HH_
 #define TESTS_TEST_KERNELS_HH_
 
-#include "tests.hh"
-#include "test_adaptor.hh"
-#include "test_manager_collection.hh"
-#include "test_calculator.hh"
 #include "models/kernels.hh"
+#include "test_adaptor.hh"
+#include "test_calculator.hh"
+#include "test_manager_collection.hh"
 
 namespace rascal {
 
@@ -56,7 +55,7 @@ namespace rascal {
           }
         }
       }
-    };
+    }
     ~StrictNLKernelFixture() = default;
 
     std::vector<json> representation_hypers{};
@@ -92,9 +91,8 @@ namespace rascal {
     using Representation_t = CalculatorSphericalInvariants;
 
     DataSphericalInvariantsKernelFixture() {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(ref_filename, ref_data_ubjson);
-      auto datas = json::from_ubjson(ref_data_ubjson);
+      auto datas =
+          json::from_ubjson(internal::read_binary_file(this->ref_filename));
       this->ref_data = datas["rep_info"]["spherical_invariants"];
       this->filename = datas["filename"];
       this->start = datas["start"];

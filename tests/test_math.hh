@@ -29,19 +29,20 @@
 #ifndef TESTS_TEST_MATH_HH_
 #define TESTS_TEST_MATH_HH_
 
-#include "tests.hh"
 #include "json_io.hh"
-#include "math/math_interface.hh"
+#include "math/bessel.hh"
+#include "math/gauss_legendre.hh"
+#include "math/hyp1f1.hh"
 #include "math/math_utils.hh"
 #include "math/spherical_harmonics.hh"
-#include "math/hyp1f1.hh"
-#include "math/gauss_legendre.hh"
-#include "math/bessel.hh"
 #include "rascal_utility.hh"
+
+#include <boost/test/unit_test.hpp>
+
+#include <Eigen/Dense>
 
 #include <fstream>
 #include <string>
-#include <Eigen/Dense>
 
 namespace rascal {
 
@@ -70,9 +71,8 @@ namespace rascal {
 
   struct SphericalHarmonicsClassRefFixture {
     SphericalHarmonicsClassRefFixture() {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(this->ref_filename, ref_data_ubjson);
-      this->ref_data = json::from_ubjson(ref_data_ubjson);
+      this->ref_data =
+          json::from_ubjson(internal::read_binary_file(this->ref_filename));
     }
 
     ~SphericalHarmonicsClassRefFixture() = default;
@@ -89,9 +89,8 @@ namespace rascal {
 
   struct GaussLegendreRefFixture {
     GaussLegendreRefFixture() {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(this->ref_filename, ref_data_ubjson);
-      this->ref_data = json::from_ubjson(ref_data_ubjson);
+      this->ref_data =
+          json::from_ubjson(internal::read_binary_file(this->ref_filename));
     }
 
     ~GaussLegendreRefFixture() = default;
@@ -149,7 +148,7 @@ namespace rascal {
   };
 
   /**
-   * Fixture for testing a the gradient of a real function of N real arguments
+   * Fixture for testing the gradient of a real function of N real arguments
    *
    * (Verifies that the gradient is the same as the converged value of the
    * finite-difference approximation along the given directions)
@@ -167,6 +166,9 @@ namespace rascal {
    * @param displacement_directions List of vectors along which to displace the
    *                                inputs, in case "direction_mode" is
    *                                "Provided".
+   *
+   * @param verbosity Level of verbosity to use when printing test info, as
+   *        string ("NORMAL", "INFO", or "DEBUG")
    */
   class GradientTestFixture {
    public:
@@ -223,10 +225,14 @@ namespace rascal {
       return directions;
     }
 
+    /** Levels of verbosity for the gradient test */
     enum struct VerbosityValue {
-      NORMAL = 0,  // Print nothing
-      INFO = 10,   // Print one line of info for each gradient step
-      DEBUG = 20   // Print as much as possible
+      /** Print nothing */
+      NORMAL = 0,
+      /** Print one line of info for each gradient step */
+      INFO = 10,
+      /** Print as much as possible */
+      DEBUG = 20
     };
 
     static VerbosityValue get_verbosity(json & input_data) {
@@ -305,18 +311,18 @@ namespace rascal {
    * The function_calculator object may be of any type, as long as it provides
    * two functions, f() and grad_f(), to calculate the function and its gradient
    * (derivative for functions with one input, Jacobian for functions with
-   * multiple outputs -- the output dimension is expected to correspond to
+   * multiple outputs - the output dimension is expected to correspond to
    * columns).  Both functions must accept an Eigen::Vector, corresponding to
    * the function input, of dimension determined in the data file (read by
    * GradientTestFixture).  This function additionally guarantees that f() will
    * be called before grad_f() with the same input.
    *
-   * If the functions f() and grad_f() are designed to accept fixed-size vectors
-   * (i.e. if the size of the argument is known at compile time), be sure to
-   * define, in the FunctionProvider class, a
-   * `constexpr static size_t n_arguments` member with the size of the argument
-   * vector.  This will ensure that the gradient tester uses the corresponding
-   * fixed-size Eigen vectors/matrices as inputs.
+   * @note If the functions f() and grad_f() are designed to accept fixed-size
+   * vectors (i.e. if the size of the argument is known at compile time), be
+   * sure to define, in the FunctionProvider class, a `constexpr static size_t
+   * n_arguments` member with the size of the argument vector.  This will ensure
+   * that the gradient tester uses the corresponding fixed-size Eigen
+   * vectors/matrices as inputs.
    */
   template <typename FunctionProvider_t, typename TestFixture_t>
   void test_gradients(FunctionProvider_t function_calculator,
@@ -360,7 +366,7 @@ namespace rascal {
         // TODO(max) this inner loop is a good candidate to move to its own
         // function... if we can pass along those argument typedefs as well
         double min_error{HUGE_VAL};
-        for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
+        for (double dx = 1E-3; dx > 1E-10; dx *= 0.1) {
           if (params.verbosity >= VerbosityValue::INFO) {
             std::cout << "dx = " << dx << "\t";
           }
@@ -376,7 +382,7 @@ namespace rascal {
           double fd_quotient{0.};
           size_t nonzero_count{0};
           for (int dim_idx{0}; dim_idx < fd_derivatives.size(); dim_idx++) {
-            if (std::abs(directional(dim_idx)) < 10 * math::dbl_ftol) {
+            if (std::abs(directional(dim_idx)) < 10 * math::DBL_FTOL) {
               fd_error += fd_derivatives(dim_idx);
             } else {
               fd_quotient += (fd_derivatives(dim_idx) / directional(dim_idx));
@@ -411,9 +417,8 @@ namespace rascal {
 
   struct Hyp1F1RefFixture {
     Hyp1F1RefFixture() {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(this->ref_filename, ref_data_ubjson);
-      this->ref_data = json::from_ubjson(ref_data_ubjson);
+      this->ref_data =
+          json::from_ubjson(internal::read_binary_file(this->ref_filename));
     }
 
     ~Hyp1F1RefFixture() = default;
@@ -501,6 +506,28 @@ namespace rascal {
     size_t max_angular;
     double fac_a{};
     Eigen::VectorXd fac_b{};
+  };
+
+  template <class CutoffFunction>
+  struct CutoffGradientProvider {
+    explicit CutoffGradientProvider(CutoffFunction & cutoff)
+        : cutoff_calculator{cutoff} {}
+
+    ~CutoffGradientProvider() = default;
+
+    Eigen::MatrixXd f(const Eigen::Matrix<double, 1, 1> & input_v) {
+      Eigen::MatrixXd result(1, 1);
+      result(0) = this->cutoff_calculator.f_c(input_v(0));
+      return result;
+    }
+
+    Eigen::MatrixXd grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
+      Eigen::MatrixXd result(1, 1);
+      result(0) = this->cutoff_calculator.df_c(input_v(0));
+      return result;
+    }
+    static const size_t n_arguments = 1;
+    CutoffFunction & cutoff_calculator;
   };
 
 }  // namespace rascal

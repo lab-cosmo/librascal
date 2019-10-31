@@ -1,4 +1,8 @@
+import ase.io
+
 from rascal.neighbourlist import get_neighbourlist
+from rascal.neighbourlist.structure_manager import (
+        mask_center_atoms_by_species, mask_center_atoms_by_id)
 from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np
@@ -57,7 +61,7 @@ def get_NL_strict_reference(cutoff, cell, pbc, positions, atom_types):
                     neighlist[icenter].append(jneigh)
                     neighdist[icenter].append(dist)
                     neightype[icenter].append(atom_types[jneigh])
-                    dirVec[icenter].append(rr/dist)
+                    dirVec[icenter].append(rr / dist)
     return neighpos, neighlist, neightype, neighdist, dirVec
 
 
@@ -68,7 +72,7 @@ class TestStructureManagerCenters(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.nl_options = [
@@ -94,7 +98,7 @@ class TestNL(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.cutoff = 3.
@@ -131,7 +135,7 @@ class TestNL(unittest.TestCase):
 
             for ii, center in enumerate(manager):
                 for jj, neigh in enumerate(center):
-                    dist = np.linalg.norm(neigh.position-center.position)
+                    dist = np.linalg.norm(neigh.position - center.position)
 
 
 class TestNLStrict(unittest.TestCase):
@@ -141,7 +145,7 @@ class TestNLStrict(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = '../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.cutoff = 3.
@@ -185,9 +189,9 @@ class TestNLStrict(unittest.TestCase):
             for ii, center in enumerate(manager):
                 dists, dirVecs = [], []
                 for jj, neigh in enumerate(center):
-                    dist = np.linalg.norm(neigh.position-center.position)
+                    dist = np.linalg.norm(neigh.position - center.position)
                     dists.append(dist)
-                    dirVecs.append((neigh.position-center.position)/dist)
+                    dirVecs.append((neigh.position - center.position) / dist)
 
                 ref_dists, dists = np.array(neighdist[ii]), np.array(dists)
                 ref_dirVecs, dirVecs = np.array(
@@ -195,3 +199,106 @@ class TestNLStrict(unittest.TestCase):
                 # sort because the order is not the same
                 ref_sort_ids, sort_ids = np.argsort(
                     ref_dists), np.argsort(dists)
+
+class CenterSelectTest(unittest.TestCase):
+
+    """Test the center-select Python interface
+
+    Make sure it produces the right masks for a variety of inputs
+    """
+
+    def setUp(self):
+        filename = 'reference_data/small_molecule.json'
+        self.frame = ase.io.read(filename)
+        self.natoms = self.frame.get_number_of_atoms()
+
+    def get_mask(self):
+        return self.frame.arrays['center_atoms_mask']
+
+    def check_mask(self, test_mask):
+        self.assertTrue(np.all(self.get_mask() == test_mask))
+
+    def test_mask_id_select(self):
+        mask_center_atoms_by_id(self.frame, np.arange(5))
+        test_mask = np.zeros((self.natoms,), dtype='bool')
+        test_mask[:5] = True
+        self.check_mask(test_mask)
+        # Now try it with an existing mask
+        mask_center_atoms_by_id(self.frame, np.arange(3, 7))
+        test_mask[:7] = True
+        self.check_mask(test_mask)
+        mask_center_atoms_by_id(self.frame, id_blacklist=[0,])
+        test_mask[0] = False
+        self.check_mask(test_mask)
+
+    def test_mask_id_blacklist(self):
+        mask_center_atoms_by_id(self.frame, id_blacklist=np.arange(5))
+        test_mask = np.ones((self.natoms,), dtype='bool')
+        test_mask[:5] = False
+        self.check_mask(test_mask)
+        mask_center_atoms_by_id(self.frame, id_blacklist=np.arange(3, 7))
+        test_mask[:7] = False
+        self.check_mask(test_mask)
+        mask_center_atoms_by_id(self.frame, id_select=[0,])
+        test_mask[0] = True
+        self.check_mask(test_mask)
+
+    def test_mask_id_both(self):
+        mask_center_atoms_by_id(self.frame, id_select=np.arange(7),
+                                id_blacklist=np.arange(3, 9))
+        test_mask = np.zeros((self.natoms,), dtype='bool')
+        test_mask[:3] = True
+        self.check_mask(test_mask)
+
+    def test_mask_species_select(self):
+        mask_center_atoms_by_species(self.frame, ['C', 'H'])
+        test_mask = np.array([0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1], dtype='bool')
+        self.check_mask(test_mask)
+        mask_center_atoms_by_species(self.frame, ['N',])
+        test_mask[[0, 2, 4, 6]] = True
+        self.check_mask(test_mask)
+        mask_center_atoms_by_species(self.frame, species_blacklist=['H',])
+        test_mask[[9, 10]] = False
+        self.check_mask(test_mask)
+
+    def test_mask_species_blacklist(self):
+        mask_center_atoms_by_species(self.frame, species_blacklist=['C', 'H'])
+        test_mask = np.array([1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0], dtype='bool')
+        self.check_mask(test_mask)
+        mask_center_atoms_by_species(self.frame, species_blacklist=['N',])
+        test_mask[[0, 2, 4, 6]] = False
+        self.check_mask(test_mask)
+        mask_center_atoms_by_species(self.frame, species_select=['H',])
+        test_mask[[9, 10]] = True
+        self.check_mask(test_mask)
+
+    def test_mask_species_both(self):
+        mask_center_atoms_by_species(self.frame, species_select=['C', 'N'],
+                                     species_blacklist=['N', 'H'])
+        test_mask = np.array([0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0], dtype='bool')
+        self.check_mask(test_mask)
+
+    def test_mask_species_numeric(self):
+        # Can also select by atomic number
+        mask_center_atoms_by_species(self.frame, species_select=[1, 6])
+        test_mask = np.array([0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1], dtype='bool')
+        self.check_mask(test_mask)
+
+    def test_mask_species_numeric_combined(self):
+        mask_center_atoms_by_species(self.frame, species_select=['C', 'N'],
+                                     species_blacklist=[7, 1])
+        test_mask = np.array([0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0], dtype='bool')
+        self.check_mask(test_mask)
+        # And check that mixed symbol-numeric lists are disallowed
+        with self.assertRaises(ValueError):
+            mask_center_atoms_by_species(self.frame, species_select=['C', 1])
+        with self.assertRaises(ValueError):
+            mask_center_atoms_by_species(self.frame,
+                                         species_blacklist=['C', 1])
+
+    def test_mask_species_and_id(self):
+        mask_center_atoms_by_species(self.frame, species_select=['C',])
+        mask_center_atoms_by_id(self.frame, id_blacklist=np.arange(3))
+        test_mask = np.zeros((self.natoms,), dtype='bool')
+        test_mask[3] = True
+        self.check_mask(test_mask)
