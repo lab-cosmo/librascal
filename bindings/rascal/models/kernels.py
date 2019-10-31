@@ -20,7 +20,7 @@ class Kernel(object):
         (currently) only option.
 
     target_type : string
-        Type of target (prediction) properties, must be either 'Atom'(the kernel
+        Type of target (prediction) properties, must be either 'Atom' (the kernel
         is between atomic environments) or 'Structure' (the kernel is summed over
         atoms in a structure) which is the default case
 
