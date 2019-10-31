@@ -122,9 +122,10 @@ namespace rascal {
     for (auto _ : state) {
       for (size_t i{0}; i < fix.nb_iterations; i++) {
         double x = fix.ref_points(i % fix.ref_points.size());
+        std::cout << "x is " << x << " at position " << i << std::endl;
         if (not (x >= fix.intp->x1 && 
                 x <= fix.intp->x2)) {
-            std::cout << "this x has problem in loop " << fix.ref_points(i) << " at position " << i << std::endl;
+            std::cout << "this x has problem in loop " << x << " at position " << i << std::endl;
         }
         tmp = fix.intp->interpolate(x);
       }
