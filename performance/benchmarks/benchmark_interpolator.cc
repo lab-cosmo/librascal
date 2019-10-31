@@ -121,7 +121,12 @@ namespace rascal {
     std::cout << std::endl;
     for (auto _ : state) {
       for (size_t i{0}; i < fix.nb_iterations; i++) {
-        tmp = fix.intp->interpolate(fix.ref_points(i % fix.ref_points.size()));
+        double x = fix.ref_points(i % fix.ref_points.size());
+        if (not (x >= fix.intp->x1 && 
+                x <= fix.intp->x2)) {
+            std::cout << "this x has problem in loop " << fix.ref_points(i) << " at position " << i << std::endl;
+        }
+        tmp = fix.intp->interpolate(x);
       }
     }
     state.SetComplexityN(fix.nb_iterations);
