@@ -457,12 +457,12 @@ namespace rascal {
    */
   template <typename Precision_t, size_t Order_, size_t PropertyLayer,
             class Manager, typename Key>
-  class BlockSparseProperty : public PropertyBase {
+  class BlockSparsePropertyBase : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using Manager_t = Manager;
-    using Self_t =
-        BlockSparseProperty<Precision_t, Order_, PropertyLayer, Manager, Key>;
+    using Self_t = BlockSparsePropertyBase<Precision_t, Order_, PropertyLayer,
+                                           Manager, Key>;
     using traits = typename Manager::traits;
 
     using Matrix_t = math::Matrix_t;
@@ -473,14 +473,14 @@ namespace rascal {
     using Data_t = std::vector<InputData_t>;
 
     constexpr static size_t Order{Order_};
+
    protected:
     Data_t values{};
     std::string type_id;
 
-   public:
     //! constructor
-    BlockSparseProperty(Manager_t & manager,
-                        std::string metadata = "no metadata")
+    BlockSparsePropertyBase(Manager_t & manager,
+                            std::string metadata = "no metadata")
         : Parent{static_cast<StructureManagerBase &>(manager),
                  0,
                  0,
@@ -489,23 +489,28 @@ namespace rascal {
                  metadata},
           type_id{typeid(Self_t).name()} {}
 
+   public:
+    //! resize underlying data storage
+    virtual void resize() = 0;
     //! Default constructor
-    BlockSparseProperty() = delete;
+    BlockSparsePropertyBase() = delete;
 
     //! Copy constructor
-    BlockSparseProperty(const BlockSparseProperty & other) = delete;
+    BlockSparsePropertyBase(const BlockSparsePropertyBase & other) = delete;
 
     //! Move constructor
-    BlockSparseProperty(BlockSparseProperty && other) = default;
+    BlockSparsePropertyBase(BlockSparsePropertyBase && other) = default;
 
     //! Destructor
-    virtual ~BlockSparseProperty() = default;
+    virtual ~BlockSparsePropertyBase() = default;
 
     //! Copy assignment operator
-    BlockSparseProperty & operator=(const BlockSparseProperty & other) = delete;
+    BlockSparsePropertyBase &
+    operator=(const BlockSparsePropertyBase & other) = delete;
 
     //! Move assignment operator
-    BlockSparseProperty & operator=(BlockSparseProperty && other) = default;
+    BlockSparsePropertyBase &
+    operator=(BlockSparsePropertyBase && other) = default;
 
     static void check_compatibility(PropertyBase & other) {
       // check ``type`` compatibility
@@ -538,20 +543,11 @@ namespace rascal {
      * `Order` the notion of ghosts does not exist. _Ghost pairs_ do not exist.
      */
     template <size_t Order__ = Order, std::enable_if_t<(Order__ > 1), int> = 0>
-    size_t
-    get_validated_property_length() {
+    size_t get_validated_property_length() {
       return this->base_manager.nb_clusters(Order__);
     }
 
-    //! Adjust size of values (only increases, never frees)
-
-    inline void resize() {
-      size_t new_size{
-          this->get_validated_property_length<Order>()};
-      this->values.resize(new_size);
-    }
-
-    size_t size() const { return this->values.size(); }
+    inline size_t size() const { return this->values.size(); }
 
     //! clear all the content of the property
     void clear() { this->values.clear(); }
@@ -576,7 +572,7 @@ namespace rascal {
      */
     template <size_t CallerOrder, size_t CallerLayer, size_t Order__ = Order,
               std::enable_if_t<(Order__ == 1) and (CallerOrder == 2),  // NOLINT
-                               int> = 0>                              // NOLINT
+                               int> = 0>                               // NOLINT
     inline decltype(auto)
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](this->get_manager().get_atom_index(
@@ -736,12 +732,53 @@ namespace rascal {
   /**
    * Typed ``property`` class definition, inherits from the base property class
    */
+  template <typename Precision_t, size_t Order_, size_t PropertyLayer,
+            class Manager, typename Key>
+  class BlockSparseProperty
+      : public BlockSparsePropertyBase<Precision_t, Order_, PropertyLayer,
+                                       Manager, Key> {
+   public:
+    using Parent = BlockSparsePropertyBase<Precision_t, Order_, PropertyLayer,
+                                           Manager, Key>;
+    using Manager_t = Manager;
+    using Self_t = BlockSparsePropertyBase<Precision_t, Order_, PropertyLayer,
+                                           Manager, Key>;
+    using traits = typename Manager::traits;
+
+    using Matrix_t = math::Matrix_t;
+    using DenseRef_t = Eigen::Map<Matrix_t>;
+    using Key_t = Key;
+    using Keys_t = std::set<Key_t>;
+    using InputData_t = internal::InternallySortedKeyMap<Key_t, Matrix_t>;
+    using Data_t = std::vector<InputData_t>;
+
+    constexpr static size_t Order{Order_};
+
+    //! constructor
+    BlockSparseProperty(Manager_t & manager,
+                        std::string metadata = "no metadata")
+        : Parent{manager, metadata} {}
+
+    virtual ~BlockSparseProperty() = default;
+
+    //! Adjust size of values (only increases, never frees)
+    inline void resize() final {
+      size_t new_size{this->template get_validated_property_length<Order>()};
+      this->values.resize(new_size);
+    }
+  };
+
+  /**
+   * Typed ``property`` class definition, inherits from the base property class
+   */
   template <typename Precision_t, size_t PropertyLayer, class Manager,
             typename Key>
   class BlockSparseProperty<Precision_t, 1, PropertyLayer, Manager, Key>
-      : public PropertyBase {
+      : public BlockSparsePropertyBase<Precision_t, 1, PropertyLayer, Manager,
+                                       Key> {
    public:
-    using Parent = PropertyBase;
+    using Parent =
+        BlockSparsePropertyBase<Precision_t, 1, PropertyLayer, Manager, Key>;
     using Manager_t = Manager;
     using Self_t =
         BlockSparseProperty<Precision_t, 1, PropertyLayer, Manager, Key>;
@@ -755,24 +792,13 @@ namespace rascal {
     using Data_t = std::vector<InputData_t>;
 
     constexpr static size_t Order{1};
-   protected:
-    Data_t values{};
-    std::string type_id;
-    const bool exclude_ghosts;
 
    public:
     //! constructor
     BlockSparseProperty(Manager_t & manager,
                         std::string metadata = "no metadata",
                         bool exclude_ghosts = false)
-        : Parent{static_cast<StructureManagerBase &>(manager),
-                 0,
-                 0,
-                 Order,
-                 PropertyLayer,
-                 metadata},
-          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()},
-          exclude_ghosts{exclude_ghosts} {}
+      : Parent{manager, metadata}, exclude_ghosts{exclude_ghosts} {}
 
     //! Default constructor
     BlockSparseProperty() = delete;
@@ -786,233 +812,16 @@ namespace rascal {
     //! Destructor
     virtual ~BlockSparseProperty() = default;
 
-    //! Copy assignment operator
-    BlockSparseProperty & operator=(const BlockSparseProperty & other) = delete;
-
-    //! Move assignment operator
-    BlockSparseProperty & operator=(BlockSparseProperty && other) = default;
-
-    static inline void check_compatibility(PropertyBase & other) {
-      // check ``type`` compatibility
-      auto type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()};
-      if (not(other.get_type_info() == type_id)) {
-        std::stringstream err_str{};
-        err_str << "Incompatible types: '" << other.get_type_info() << "' != '"
-                << type_id << "'.";
-        throw std::runtime_error(err_str.str());
-      }
-    }
-
-    /* --------------------------------------------------------------------- */
-
-    //! return info about the type
-    const std::string & get_type_info() const final { return this->type_id; }
-
-    /**
-     * This function is only valid for `Order == 1` and where the user has a
-     * choice of sizing the `Property` for either including or not including
-     * ghost atoms.
-     */
-    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 1), int> = 0>
-    size_t get_validated_property_length() {
-      return (this->exclude_ghosts ? this->get_manager().size()
-                                   : this->get_manager().size_with_ghosts());
-    }
-
-    /**
-     * This function is used for sizing the Property for `Order > 1`. At this
-     * `Order` the notion of ghosts does not exist. _Ghost pairs_ do not exist.
-     */
-    template <size_t Order__ = Order, std::enable_if_t<(Order__ > 1), int> = 0>
-    size_t
-    get_validated_property_length() {
-      return this->base_manager.nb_clusters(Order__);
-    }
-
     //! Adjust size of values (only increases, never frees)
-
-    inline void resize() {
-      size_t new_size{this->get_validated_property_length<Order>()};
+    inline void resize() final {
+      size_t new_size{this->exclude_ghosts
+                          ? this->get_manager().size()
+                          : this->get_manager().size_with_ghosts()};
       this->values.resize(new_size);
     }
 
-    inline size_t size() const { return this->values.size(); }
-
-    //! clear all the content of the property
-    inline void clear() { this->values.clear(); }
-
-    inline Manager_t & get_manager() {
-      return static_cast<Manager_t &>(this->base_manager);
-    }
-
-    /* -------------------------------------------------------------------- */
-    //! Property accessor by cluster ref
-    template <size_t CallerLayer>
-    inline decltype(auto)
-    operator[](const ClusterRefKey<Order, CallerLayer> & id) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-
-      return this->operator[](id.get_cluster_index(CallerLayer));
-    }
-
-    /**
-     * Access a property of order 1 with a clusterRef of order 2
-     */
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order__ = Order,
-              std::enable_if_t<(Order__ == 1) and (CallerOrder == 2),  // NOLINT
-                               int> = 0>                              // NOLINT
-    InputData_t &
-    operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
-      return this->operator[](this->get_manager().get_atom_index(
-          id.get_internal_neighbour_atom_tag()));
-    }
-
-    //! Accessor for property by index for dynamically sized properties
-    InputData_t & operator[](size_t index) { return this->values[index]; }
-
-    template <size_t CallerLayer>
-    DenseRef_t operator()(const ClusterRefKey<Order, CallerLayer> & id,
-                          const Key_t & key) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-
-      return this->operator()(id.get_cluster_index(CallerLayer), key);
-    }
-
-    //! Accessor for property by index for dynamically sized properties
-    DenseRef_t operator()(size_t index, const Key_t & key) {
-      auto && val = this->values[index].at(key);
-      return DenseRef_t(&val(0, 0), val.rows(), val.cols());
-    }
-
-    //! Accessor for property by cluster index and return a dense
-    //! representation of the property associated to this cluster
-    template <size_t CallerLayer>
-    Matrix_t get_dense_row(const ClusterRefKey<Order, CallerLayer> & id) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-
-      return this->get_dense_row(id.get_cluster_index(CallerLayer));
-    }
-
-    Matrix_t get_dense_row(size_t index) {
-      auto keys = this->values[index].get_keys();
-      Matrix_t feature_row = Matrix_t::Zero(this->get_nb_comp(), keys.size());
-      size_t i_col{0};
-      for (const auto & key : keys) {
-        size_t i_row{0};
-        for (int i_pos{0}; i_pos < this->get_nb_comp(); i_pos++) {
-          feature_row(i_row, i_col) = this->values[index][key](i_pos);
-          i_row++;
-        }
-        i_col++;
-      }
-      return feature_row;
-    }
-
-    /**
-     * Fill a dense feature matrix with layout Ncenter x Nfeatures
-     * when Order == 1.
-     * It is filled in the lexicografical order provided by all_keys and the
-     * missing entries are filled with zeros.
-     * The features are flattened out following the underlying storage order.
-     *
-     * @param features dense Eigen matrix of the proper size
-     *
-     * @param all_keys set of all the keys that should be considered when
-     * building the feature matrix
-     *
-     */
-    void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features,
-                                   const Keys_t & all_keys) {
-      int inner_size{this->get_nb_comp()};
-      int i_row{0};
-      size_t n_center{this->values.size()};
-      for (size_t i_center{0}; i_center < n_center; i_center++) {
-        int i_feat{0};
-        for (const auto & key : all_keys) {
-          if (this->values[i_center].count(key) == 1) {
-            for (int i_pos{0}; i_pos < inner_size; i_pos++) {
-              features(i_row, i_feat) = this->values[i_center][key](i_pos);
-              i_feat++;
-            }
-          } else {
-            i_feat += inner_size;
-          }
-        }  // keys
-        i_row++;
-      }  // centers
-    }
-
-    /**
-     * Get a dense feature matrix Ncenter x Nfeatures. The keys to use are
-     * deduced from the local storage.
-     */
-    Matrix_t get_dense_feature_matrix() {
-      auto all_keys = this->get_keys();
-      size_t n_elements{this->size()};
-      int inner_size{this->get_nb_comp()};
-      Matrix_t features =
-          Matrix_t::Zero(n_elements, inner_size * all_keys.size());
-      this->fill_dense_feature_matrix(features, all_keys);
-      return features;
-    }
-
-    /**
-     * @return set of unique keys at the level of the structure
-     */
-    Keys_t get_keys() {
-      Keys_t all_keys{};
-      size_t n_center{this->values.size()};
-      for (size_t i_center{0}; i_center < n_center; i_center++) {
-        auto keys = this->values[i_center].get_keys();
-        for (auto & key : keys) {
-          all_keys.insert(key);
-        }
-      }
-      return all_keys;
-    }
-
-    //! get number of different distinct element in the property
-    //! (typically the number of center)
-    size_t get_nb_item() const { return this->size(); }
-
-    template <size_t CallerLayer>
-    std::vector<Key_t>
-    get_keys(const ClusterRefKey<Order, CallerLayer> & id) const {
-      // static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-      return this->values[id.get_cluster_index(CallerLayer)].get_keys();
-    }
-
-    /**
-     * dot product between property block sparse A and B
-     * assumes order == 1 for the moment should use SFINAE to take care of
-     * the case order == 2
-     */
-    Matrix_t dot(Self_t & B) {
-      Matrix_t mat(this->size(), B.size());
-      auto && manager_a{this->get_manager()};
-      auto && manager_b{B.get_manager()};
-      int i_row{0};
-      for (auto centerA : manager_a) {
-        auto && rowA{this->operator[](centerA)};
-        int i_col{0};
-        for (auto centerB : manager_b) {
-          auto && rowB{B[centerB]};
-          mat(i_row, i_col) = rowA.dot(rowB);
-          ++i_col;
-        }
-        ++i_row;
-      }
-      return mat;
-    }
+   protected:
+    const bool exclude_ghosts;
   };
 
 }  // namespace rascal
