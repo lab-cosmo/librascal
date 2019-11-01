@@ -141,7 +141,7 @@ namespace rascal {
     Fix::atom_scalar_property.fill_sequence(
         Fix::manager->get_consider_ghost_neighbours());
     size_t counter{0};
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       BOOST_CHECK_EQUAL(Fix::atom_scalar_property[atom], counter);
       counter++;
     }
@@ -175,7 +175,7 @@ namespace rascal {
       std::cout << std::endl;
     }
     size_t counter{0};
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       if (verbose) {
         std::cout << ">> Atom with tag " << atom.get_atom_tag();
         std::cout << std::endl;
@@ -192,7 +192,7 @@ namespace rascal {
 
     counter = 0;
     Eigen::MatrixXd eigen_counter(1, 1);
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       auto error =
           (Fix::atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, TOLERANCE);
@@ -238,7 +238,7 @@ namespace rascal {
       std::cout << std::endl;
     }
     int pair_property_counter{};
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       Fix::atom_vector_property[atom] = atom.get_position();
       for (auto pair : atom.get_pairs()) {
         Fix::pair_property[pair] = ++pair_property_counter;
@@ -246,7 +246,7 @@ namespace rascal {
     }
 
     pair_property_counter = 0;
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       auto error =
           (Fix::atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, TOLERANCE);
@@ -290,7 +290,7 @@ namespace rascal {
       std::cout << std::endl;
     }
     int pair_property_counter{};
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       Fix::atom_vector_property[atom] = atom.get_position();
       for (auto pair : atom.get_pairs()) {
         Fix::pair_property[pair] = ++pair_property_counter;
@@ -298,7 +298,7 @@ namespace rascal {
     }
 
     pair_property_counter = 0;
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       auto error =
           (Fix::atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, TOLERANCE);
@@ -308,7 +308,7 @@ namespace rascal {
     }
 
     int triple_property_counter{};
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       Fix::atom_vector_property[atom] = atom.get_position();
       for (auto triple : atom.get_triplets()) {
         Fix::triple_property[triple] = ++triple_property_counter;
@@ -316,7 +316,7 @@ namespace rascal {
     }
 
     triple_property_counter = 0;
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       for (auto triple : atom.get_triplets()) {
         BOOST_CHECK_EQUAL(Fix::triple_property[triple],
                           ++triple_property_counter);
@@ -413,7 +413,7 @@ namespace rascal {
       std::cout << counters.size() << std::endl;
     }
     // add the position to the atom and count how often this happens
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       for (auto pair : atom.get_pairs()) {
         if (verbose) {
           std::cout << ">> Atom with tag ";
@@ -495,7 +495,7 @@ namespace rascal {
     }
 
     // add the position to the atom and count how often this happens
-    for (auto atom : Fix::manager->with_ghosts()) {
+    for (auto atom : Fix::manager) {
       for (auto triplet : atom.get_triplets()) {
         if (verbose) {
           std::cout << ">> Atom with tag "
