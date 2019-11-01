@@ -124,7 +124,6 @@ namespace rascal {
         std::runtime_error);
     BOOST_REQUIRE_NO_THROW(structure.set_structure(
         std::string("./reference_data/small_molecule.json")));
-
   }
 
   /* ---------------------------------------------------------------------- */
