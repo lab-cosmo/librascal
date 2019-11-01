@@ -1370,10 +1370,6 @@ namespace rascal {
        * @pre x is in range [x1,x2]
        */
       inline Vector_t interpolate_to_vector_derivative(double x) {
-        // x is outside of range
-        if (not(x >= this->x1 && x <= this->x2)) {
-          std::cout << " x is " << x << std::endl;
-        }
         assert(x >= this->x1 && x <= this->x2);
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate_derivative(
