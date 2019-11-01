@@ -71,7 +71,7 @@ namespace rascal {
       const std::shared_ptr<
           InterpolatorScalarUniformCubicSpline<RefinementMethod, ErrorMethod>> &
           intp) {
-    Vector_Ref test_grid{intp->get_test_grid()};
+    Vector_t test_grid{intp->get_test_grid()};
     Vector_t test_grid_interpolated{intp->interpolate(Vector_Ref(test_grid))};
     Vector_t test_grid_evaluated{intp->eval(Vector_Ref(test_grid))};
     Vector_t error_grid{
@@ -90,7 +90,7 @@ namespace rascal {
       const std::shared_ptr<
           InterpolatorMatrixUniformCubicSpline<RefinementMethod, ErrorMethod>> &
           intp) {
-    Vector_Ref test_grid{intp->get_test_grid()};
+    Vector_t test_grid{intp->get_test_grid()};
     Matrix_t test_grid_interpolated{
         intp->interpolate_to_vector(Vector_Ref(test_grid))};
     Matrix_t test_grid_evaluated{intp->eval(Vector_Ref(test_grid))};
