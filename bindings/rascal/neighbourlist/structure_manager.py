@@ -44,17 +44,15 @@ class AtomsList(object):
             managers = StructureCollectionFactory(nl_options)
             try:
                 managers.add_structures(structures)
-            except Exception as e:
-                print("Neighbourlist of structures failed because: " + str(e) +
-                "\n Trying one at a time.")
+            except:
+                print("""Neighbourlist of structures failed. trying
+                one at a time.""")
                 ii = 0
                 for structure, manager in zip(structures, managers):
                     try:
                         manager.update(structure)
-                    except Exception as e:
-                        print(
-                        "Neighbourlist of structure"+
-                        " {} failed because: ".format(ii) + str(e))
+                    except:
+                        print("Structure Rep computation {} failed".format(ii))
 
         self.managers = managers
 
