@@ -45,17 +45,9 @@ class AtomsList(object):
             try:
                 managers.add_structures(structures)
             except Exception as e:
-                print("Neighbourlist of structures failed because: " + str(e) +
-                "\n Trying one at a time.")
-                ii = 0
-                for structure, manager in zip(structures, managers):
-                    try:
-                        manager.update(structure)
-                    except Exception as e:
-                        print(
-                        "Neighbourlist of structure"+
-                        " {} failed because: ".format(ii) + str(e))
-                    ii += 1
+                raise RuntimeError("Neighbourlist of structures failed "
+                + "because: " + str(e))
+
 
         self.managers = managers
 
@@ -99,8 +91,42 @@ def convert_to_structure_list(frames):
             else:
                 raise RuntimeError(
                     'Cannot convert structure of type {}'.format(type(frame)))
+        structure = sanitize_non_periodic_structure(structure)
         structure_list.append(**structure)
     return structure_list
+
+def sanitize_non_periodic_structure(structure):
+    """
+    Rascal expects a unit cell that contains all the atoms even if the
+    structure is not periodic.
+    If the cell is set to 0 and the structure is not periodic then it
+    is adapted to contain the atoms and the atoms are shifted inside the unit
+    cell.
+
+    Parameters
+    ----------
+    structure : a valid structure as per is_valid_structure
+
+
+    Returns
+    -------
+    a valid structure as per is_valid_structure
+        cell and positions have been modified if structure is not periodic
+    """
+
+    if np.all(structure['pbc'] == 0):
+        cell = structure['cell']
+        if np.allclose(cell,np.zeros((3,3))):
+            pos = structure['positions']
+            bounds = np.array([pos.min(axis=1),pos.max(axis=1)])
+            bounding_box_lengths = bounds[1]-bounds[0]
+            new_cell = np.diag(bounding_box_lengths)
+            CoM = pos.mean(axis=1)
+            disp = 0.5*bounding_box_lengths - CoM
+            new_pos = pos + disp[:,None]
+            structure['positions'] = new_pos
+    return structure
+
 
 
 def is_ase_Atoms(frame):
