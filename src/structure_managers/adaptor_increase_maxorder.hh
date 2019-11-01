@@ -495,7 +495,7 @@ namespace rascal {
       for (auto j_atom_tag : j_atom_tags) {
         // add an entry for the current clusters' neighbours
         for (auto k_atom_tag : j_atom_tags) {
-          if (j_atom_tag == k_atom_tag){ continue;}
+          if (j_atom_tag > k_atom_tag){ continue;}
           this->add_neighbour_of_cluster(std::array<int, 2>{j_atom_tag,k_atom_tag});
         }
       }
