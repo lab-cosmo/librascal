@@ -156,7 +156,7 @@ namespace rascal {
         auto type = atom.get_atom_type();
         BOOST_CHECK_EQUAL(type, atom_types[index]);
 
-        auto cluster_size = manager->get_cluster_size(atom);
+        auto cluster_size = manager->template get_cluster_size<1>(atom);
         BOOST_CHECK_EQUAL(cluster_size, 1);
 
         auto pos = atom.get_position();

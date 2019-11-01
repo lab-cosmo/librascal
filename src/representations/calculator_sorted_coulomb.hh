@@ -232,7 +232,7 @@ namespace rascal {
     template <class StructureManager>
     void check_size_compatibility(StructureManager & manager) {
       for (auto center : manager) {
-        auto n_neighbours{center.size()};
+        auto n_neighbours{center.get_pairs().size()};
         if (n_neighbours > this->size) {
           std::cout << "size is too small for this "
                        "structure and has been reset to: "
@@ -457,7 +457,7 @@ namespace rascal {
           Eigen::MatrixXd::Zero(this->size * (this->size + 1) / 2, 1);
 
       // n_neighbour counts the central atom and the neighbours
-      size_t n_neighbour{center.size() + 1};
+      size_t n_neighbour{center.get_pairs().size() + 1};
 
       // the local distance matrix. Ones to avoid overflow in the div.
       Eigen::MatrixXd distance_mat =

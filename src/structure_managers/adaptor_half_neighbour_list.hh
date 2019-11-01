@@ -243,18 +243,10 @@ namespace rascal {
     template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(TargetOrder < traits::MaxOrder,
-                    "this implementation only handles atoms and pairs");
-      /*
-       * The static assert with <= is necessary, because the template parameter
-       * ``Order`` is one Order higher than the MaxOrder at the current
-       * level. The return type of this function is used to build the next Order
-       * iteration.
-       */
       static_assert(TargetOrder <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
-      if (TargetOrder < (traits::MaxOrder - 1)) {
+      if (TargetOrder < traits::MaxOrder) {
         return this->manager->template get_cluster_size_impl<TargetOrder>(cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);

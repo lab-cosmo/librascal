@@ -393,7 +393,7 @@ namespace rascal {
     GradientTestFixture test_data{"reference_data/radial_derivative_test.json"};
     auto && it_manager{managers.front()->begin()};  // Need only one manager
     auto && atom{*it_manager};
-    auto && it_atom{atom.begin()};
+    auto && it_atom{atom.get_pairs().begin()};
     auto && pair{*it_atom};  // Need only one (arbitrary) pair
     auto manager = managers.front();
     for (auto & hyper : hypers) {

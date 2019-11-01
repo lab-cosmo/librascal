@@ -496,18 +496,18 @@ namespace rascal {
 
     // add the position to the atom and count how often this happens
     for (auto atom : Fix::manager->with_ghosts()) {
-      for (auto pair : atom.get_triplets()) {
+      for (auto triplet : atom.get_triplets()) {
         if (verbose) {
           std::cout << ">> Atom with tag "
-                    << triple.get_internal_neighbour_atom_tag();
+                    << triplet.get_internal_neighbour_atom_tag();
           std::cout << " and cluster index "
                     << Fix::manager->get_atom_index(
-                            triple.get_internal_neighbour_atom_tag());
+                            triplet.get_internal_neighbour_atom_tag());
           std::cout << std::endl;
         }
-        Fix::atom_scalar_property[triple]++;
+        Fix::atom_scalar_property[triplet]++;
         counters.at(Fix::manager->get_atom_index(
-            triple.get_internal_neighbour_atom_tag()))++;
+            triplet.get_internal_neighbour_atom_tag()))++;
       }
     }
     for (auto atom : Fix::manager) {

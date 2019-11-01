@@ -63,7 +63,6 @@ namespace rascal {
     constexpr static size_t MaxOrder{MaxOrder_};
     using AvailableOrdersList = typename parent_traits::AvailableOrdersList;
     //! New Layer
-    //! TODO: Is this the correct way to initialize the increased order?
     using LayerByOrder =
         typename LayerIncreaser<MaxOrder_,
                                 typename parent_traits::LayerByOrder>::type;
@@ -274,7 +273,7 @@ namespace rascal {
       static_assert(Order <= traits::MaxOrder - 1,
                     "Order exceeds maxorder for this filter.");
       constexpr auto nb_neigh_layer{
-          compute_cluster_layer<TagetOrder-1>(typename traits::LayerByOrder{})};
+          compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};
       return this->nb_neigh[TargetOrder-1][cluster.get_cluster_index(nb_neigh_layer)];
     }
 

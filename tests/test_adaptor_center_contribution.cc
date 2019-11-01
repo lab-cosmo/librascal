@@ -237,7 +237,7 @@ namespace rascal {
       i_center = 0;
       for (auto atom : adaptor) {
         int counter{0};
-        for (auto pair : atom..get_pairs_with_self_pair()) {
+        for (auto pair : atom.get_pairs_with_self_pair()) {
           BOOST_CHECK_EQUAL(ref[i_center][counter], prop[pair]);
           ++counter;
         }

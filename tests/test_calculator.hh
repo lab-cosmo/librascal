@@ -752,7 +752,7 @@ namespace rascal {
       // Return cluster ref at which the iterator is currently pointing
       auto && new_center{*new_center_it};
       // Iterate until (j,i) is found
-      for (auto new_pair : new_center) {
+      for (auto new_pair : new_center.get_pairs()) {
         if (new_pair.back() == pair_ref.front()) {
           return new_pair;
         }

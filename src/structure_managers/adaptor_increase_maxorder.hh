@@ -246,20 +246,15 @@ namespace rascal {
     }
 
     //! Returns the number of neighbors of a given cluster
-    template <size_t TargetOrder, size_t Order, size_t Layer, bool T = (TargetOrder < traits::MaxOrder - 1), std::enable_if_t<T, int> = 0>
+    template <size_t TargetOrder, size_t Order, size_t Layer, bool T = (TargetOrder < traits::MaxOrder), std::enable_if_t<T, int> = 0>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(TargetOrder < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
-      /*
-       * Here it is traits::MaxOrder-1, because only the current manager has the
-       * right answer to the number of neighbours of the MaxOrder-1 tuple. This
-       * is the 'else' case.
-       */
       return this->manager->template get_cluster_size<TargetOrder>(cluster);
     }
 
-    template <size_t TargetOrder, size_t Order, size_t Layer, bool T = (TargetOrder < traits::MaxOrder - 1), std::enable_if_t<not(T), int> = 0>
+    template <size_t TargetOrder, size_t Order, size_t Layer, bool T = (TargetOrder < traits::MaxOrder), std::enable_if_t<not(T), int> = 0>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(TargetOrder == traits::MaxOrder,

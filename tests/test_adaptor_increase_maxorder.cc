@@ -122,15 +122,16 @@ namespace rascal {
           std::cout << "   complete pair " << atom.back() << " " << pair.back()
                     << " glob " << pair.get_global_index() << std::endl;
         }
-        for (auto triplet : pair) {
-          n_triplets++;
-          if (verbose) {
-            std::cout << "             triplet " << triplet.back() << " global "
-                      << triplet.get_global_index() << std::endl;
-            std::cout << "                         complete " << atom.back()
-                      << " " << pair.back() << " " << triplet.back()
-                      << std::endl;
-          }
+      }
+      for (auto triplet : atom.get_triplets()) {
+        n_triplets++;
+        if (verbose) {
+          auto tags = triplet.get_atom_tag_list();
+          std::cout << "             triplet " << triplet.back() << " global "
+                    << triplet.get_global_index() << std::endl;
+          std::cout << "                         complete " << tags[0]
+                    << " " << tags[1] << " " << tags[2]
+                    << std::endl;
         }
       }
     }
@@ -181,23 +182,24 @@ namespace rascal {
         auto neighbour_position = pair.get_position();
         auto diff_pos_pair = (neighbour_position - atom_position).norm();
         BOOST_CHECK_CLOSE(diff_pos_pair, 1., TOLERANCE);
+      }
 
-        for (auto triplet : pair) {
-          if (verbose) {
-            std::cout << "triplet " << atom.back() << " " << pair.back() << " "
-                      << triplet.back() << std::endl;
-          }
-          auto neighbour_of_neighbour_atom_tag =
-              triplet.get_internal_neighbour_atom_tag();
-          auto neighbour_of_neighbour_type = triplet.get_atom_type();
-          BOOST_CHECK_EQUAL(
-              neighbour_of_neighbour_type,
-              SM3->get_atom_type(neighbour_of_neighbour_atom_tag));
-
-          auto triplet_position = triplet.get_position();
-          auto diff_pos_triplet = (triplet_position - atom_position).norm();
-          BOOST_CHECK_CLOSE(diff_pos_triplet, 1., TOLERANCE);
+      for (auto triplet : atom.get_triplets()) {
+        if (verbose) {
+          auto tags = triplet.get_atom_tag_list();
+          std::cout << "triplet " << tags[0] << " " << tags[1] << " "
+                    << tags[2] << std::endl;
         }
+        auto neighbour_of_neighbour_atom_tag =
+            triplet.get_internal_neighbour_atom_tag();
+        auto neighbour_of_neighbour_type = triplet.get_atom_type();
+        BOOST_CHECK_EQUAL(
+            neighbour_of_neighbour_type,
+            SM3->get_atom_type(neighbour_of_neighbour_atom_tag));
+
+        auto triplet_position = triplet.get_position();
+        auto diff_pos_triplet = (triplet_position - atom_position).norm();
+        BOOST_CHECK_CLOSE(diff_pos_triplet, 1., TOLERANCE);
       }
     }
   }
