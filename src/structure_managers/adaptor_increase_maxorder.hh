@@ -351,116 +351,6 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  //! structure for static looping up until pair order
-  template <class ManagerImplementation>
-  template <size_t Order, bool IsDummy>
-  struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop {
-    static constexpr int OldMaxOrder{ManagerImplementation::traits::MaxOrder};
-    using ClusterRef_t =
-        typename ManagerImplementation::template ClusterRef<Order>;
-
-    using NextOrderLoop = AddOrderLoop<Order + 1, (Order + 1 == OldMaxOrder)>;
-
-    // do nothing, if MaxOrder is not reached, except call the next order
-    static void loop(ClusterRef_t & cluster,
-                     AdaptorMaxOrder<ManagerImplementation> & manager) {
-      for (auto next_cluster :
-           cluster.template get_clusters_of_order<Order + 1>()) {
-        auto & next_cluster_indices{std::get<next_cluster.order() - 1>(
-            manager.cluster_indices_container)};
-
-        // keep copying underlying cluster indices, they are not changed
-        auto indices{next_cluster.get_cluster_indices()};
-        next_cluster_indices.push_back(indices);
-
-        NextOrderLoop::loop(next_cluster, manager);
-      }
-    }
-  };
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * At desired MaxOrder (plus one), here is where the magic happens and the
-   * neighbours of the same order are added as the Order+1.  add check for non
-   * half neighbour list.
-   *
-   * TODO: currently, this implementation is not distinguishing between minimal
-   * and full lists. E.g. this has to be adjusted to include both, the i- and
-   * the j-atoms of each pair as an i-atom in a triplet (center).
-   */
-  template <class ManagerImplementation>
-  template <size_t Order>
-  struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop<Order, true> {
-    static constexpr int OldMaxOrder{ManagerImplementation::traits::MaxOrder};
-
-    using ClusterRef_t =
-        typename ManagerImplementation::template ClusterRef<Order>;
-
-    using traits = typename AdaptorMaxOrder<ManagerImplementation>::traits;
-
-    //! loop through the orders to get to the maximum order, this is agnostic to
-    //! the underlying MaxOrder, just goes to the maximum
-    static void loop(ClusterRef_t & cluster,
-                     AdaptorMaxOrder<ManagerImplementation> & manager) {
-      // get all i_atoms to find neighbours to extend the cluster to the next
-      // order
-      auto i_atoms = cluster.get_atom_tag_list();
-
-      // vector of existing i_atoms in `cluster` to avoid doubling of atoms in
-      // final list
-      std::vector<size_t> current_i_atoms{};
-
-      // a set of new neighbours for the cluster, which will be added to extend
-      // the cluster
-      std::set<size_t> current_j_atoms{};
-
-      // access to underlying manager for access to atom pairs
-      auto & manager_tmp{cluster.get_manager()};
-
-      // add an entry for the current clusters' neighbours
-      manager.add_entry_number_of_neighbours();
-
-      // careful: i_atoms can include ghosts: ghosts have to be ignored, since
-      // they to not have a neighbour list themselves, they are only neighbours
-      for (auto atom_tag : i_atoms) {
-        current_i_atoms.push_back(atom_tag);
-        size_t access_index = manager.get_neighbour_atom_tag(manager, atom_tag);
-
-        // construct a shifted iterator to constuct a ClusterRef<1>
-        auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
-
-        // ClusterRef<1> as dereference from iterator to get pairs of the
-        // i_atoms
-        auto && j_cluster{*iterator_at_position};
-
-        // collect all possible neighbours of the cluster: collection of all
-        // neighbours of current_i_atoms
-        for (auto pair : j_cluster.get_pairs()) {
-          auto j_add = pair.back();
-          if (j_add > i_atoms.back()) {
-            current_j_atoms.insert(j_add);
-          }
-        }
-      }
-
-      // delete existing cluster atoms from list to build additional neighbours
-      std::vector<size_t> atoms_to_add{};
-      std::set_difference(current_j_atoms.begin(), current_j_atoms.end(),
-                          current_i_atoms.begin(), current_i_atoms.end(),
-                          std::inserter(atoms_to_add, atoms_to_add.begin()));
-
-      // tag(felix) dummy tag for the j atom in the ijk triplet
-      // only there waiting for the rework of this class
-      if (atoms_to_add.size() > 0) {
-        for (auto j : atoms_to_add) {
-          manager.add_neighbour_of_cluster(
-              std::array<int, 2>{0, static_cast<int>(j)});
-        }
-      }
-    }
-  };
-
-  /* ---------------------------------------------------------------------- */
   /**
    * This is the loop, which runs recursively goes to the maximum Order and then
    * increases it by one (i.e. pairs->triplets, triplets->quadruplets, etc.
@@ -505,7 +395,7 @@ namespace rascal {
             continue;
           }
           this->add_neighbour_of_cluster(
-              std::array<int, 2>{j_atom_tag, k_atom_tag});
+              std::array<int, 2>{{j_atom_tag, k_atom_tag}});
         }
       }
 

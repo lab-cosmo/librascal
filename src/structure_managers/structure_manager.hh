@@ -179,11 +179,13 @@ namespace rascal {
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
                                                    StructureManager_t>;
 
+
     //! helper to identify if Manager_t has TargetOrder in AvailableOrdersList
     template <size_t TargetOrder>
-    static constexpr bool HasOrder = internal::is_order_available<TargetOrder>(
+    static constexpr bool has_order() {
+      return internal::is_order_available<TargetOrder>(
         typename traits::AvailableOrdersList{});
-
+    }
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     using Property_t =
@@ -848,9 +850,10 @@ namespace rascal {
 
     static constexpr bool IsOrderOne{Order == 1};
 
+
     template <size_t TargetOrder>
     static constexpr bool OrderOneAndHasOrder{
-        Manager_t::HasOrder<TargetOrder> and IsOrderOne};
+        Manager_t::template has_order<TargetOrder>() and IsOrderOne};
 
     static constexpr bool HasCenterPairOrderOne{traits::HasCenterPair and
                                                 IsOrderOne};

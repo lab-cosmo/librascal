@@ -100,7 +100,7 @@ namespace rascal {
     template <size_t... Orders>
     constexpr size_t
     get_last_element_in_sequence(std::index_sequence<Orders...> /* sep*/) {
-      constexpr std::array<size_t, sizeof...(Orders)> arr = {Orders...};
+      constexpr std::array<size_t, sizeof...(Orders)> arr = {{Orders...}};
       return arr.back();
     }
     /**
