@@ -228,6 +228,9 @@ namespace rascal {
      * if consdier_ghost_atoms is true, ghost atoms also can have
      * their own propery value independent from its correpsonding central atom.
      * This function is used for all Order 1 ManagerImplementations
+     *
+     * when filling an element of cluster_indices_container this function
+     * should only be used when Layer == 0 at a particular Order.
      */
     void fill_sequence(bool consider_ghost_atoms = false) {
       // adjust size of values (only increases, never frees)

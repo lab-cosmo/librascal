@@ -130,10 +130,10 @@ namespace rascal {
     bool get_consider_ghost_neighbours() const { return false; }
 
     //! return the number of neighbours of a given atom
-    template <size_t Order, size_t Layer>
+    template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order <= traits::MaxOrder,
+      static_assert(TargetOrder <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       return this->numneigh[this->get_atom_index(cluster.get_atom_tag())];
     }

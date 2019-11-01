@@ -657,10 +657,10 @@ namespace rascal {
     int get_atom_type(int atom_tag) const { return this->atom_types[atom_tag]; }
 
     //! Returns the number of neighbors of a given cluster
-    template <size_t Order, size_t Layer>
+    template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order <= traits::MaxOrder,
+      static_assert(TargetOrder <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
 
       auto && access_index = cluster.get_cluster_index(Layer);

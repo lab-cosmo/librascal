@@ -268,14 +268,14 @@ namespace rascal {
     }
 
     //! return the number of neighbours of a given atom
-    template <size_t Order, size_t Layer>
+    template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "Order exceeds maxorder for this filter.");
       constexpr auto nb_neigh_layer{
-          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
-      return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
+          compute_cluster_layer<TagetOrder-1>(typename traits::LayerByOrder{})};
+      return this->nb_neigh[TargetOrder-1][cluster.get_cluster_index(nb_neigh_layer)];
     }
 
     /**

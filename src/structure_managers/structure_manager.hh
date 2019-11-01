@@ -498,9 +498,9 @@ namespace rascal {
       return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
     }
 
-    template <size_t Order, size_t Layer>
+    template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
-      return this->implementation().get_cluster_size_impl(cluster);
+      return this->implementation().template get_cluster_size_impl<TargetOrder>(cluster);
     }
 
     /**
@@ -719,11 +719,6 @@ namespace rascal {
     //! manager
     template <>
     struct IncreaseHelper<false> {
-      template <class Manager_t, class Cluster_t>
-      static size_t get_cluster_size(const Manager_t & manager,
-                                     const Cluster_t & cluster) {
-        return manager.get_cluster_size_impl(cluster);
-      }
 
       template <class Manager_t, class Container_t>
       static size_t get_offset(const Manager_t & manager,
@@ -1009,7 +1004,7 @@ namespace rascal {
     // TODO(alex) should be equal cluster_indices.back()
     // improve documentation
     size_t get_global_index() const {
-      return this->get_manager().get_offset(*this);
+      return this->it.get_cluster_index();
     }
     //! returns the atom tags, which constitute the cluster
     const std::array<int, Order> & get_atom_tag_list() const {
@@ -1049,7 +1044,12 @@ namespace rascal {
 
       CustomProxy(ClusterRef_t & cluster_ref, const size_t & start,
                   const size_t & offset)
-          : cluster_ref{cluster_ref}, start{start}, offset{offset} {}
+          : cluster_ref{cluster_ref}, start{start}, offset{offset} {
+            if (TargetOrder == 3) {
+              std::cout <<"Proxy "<< start<<", "<<offset
+                        <<", "<< this->size() << std::endl;
+            }
+          }
 
       iterator begin() {
         return iterator(cluster_ref, this->start, this->offset);
@@ -1061,7 +1061,7 @@ namespace rascal {
       }
 
       size_t size() {
-        return cluster_ref.get_manager().get_cluster_size(cluster_ref);
+        return cluster_ref.get_manager().template get_cluster_size<TargetOrder>(cluster_ref);
       }
 
       ClusterRef_t & cluster_ref;
@@ -1079,8 +1079,12 @@ namespace rascal {
     template <size_t Order_, bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
     CustomProxy<Order_> get_clusters_of_order(size_t start = 0) {
       static_assert(Order_ > 1, "Clusters should at least contain 2 atoms, i.e. Order >= 2.");
-      std::array<size_t, 1> counters{this->it.get_counters()};
+      std::array<size_t, Order_-1> counters{};
+      counters.back() = this->get_index();
       size_t offset{this->get_manager().get_offset(counters)};
+      if (Order_ == 3) {
+        std::cout <<"conters "<< counters.back() << ", "<<offset<<std::endl;
+      }
       return CustomProxy<Order_>(*this, start, offset);
     }
 
@@ -1255,8 +1259,7 @@ namespace rascal {
           this->get_manager().get_cluster_indices_container());
       using Ref_t = typename std::remove_reference_t<decltype(
           cluster_indices_properties)>::reference;
-      Ref_t cluster_indices =
-          cluster_indices_properties[this->get_cluster_index()];
+      Ref_t cluster_indices{cluster_indices_properties[this->get_cluster_index()]};
       return ClusterRef_t(*this, this->get_atom_tag_list(), cluster_indices);
     }
 
@@ -1312,13 +1315,13 @@ namespace rascal {
     AtomIndex_t get_atom_tag_list() {
       return internal::concat_array(
           container.get_atom_tag_list(),
-          this->get_manager().implementation().get_neighbour_atom_tag(container, this->index));
+          this->get_manager().implementation().get_neighbour_atom_tag_tt(container, this->index));
     }
     template <bool T = IsOrderOneOrTwo, std::enable_if_t<not(T), int> = 0>
     AtomIndex_t get_atom_tag_list() const {
       return internal::concat_array(
           container.get_atom_tag_list(),
-          this->get_manager().implementation().get_neighbour_atom_tag(container, this->index));
+          this->get_manager().implementation().get_neighbour_atom_tag_tt(container, this->index));
     }
 
     //! returns the current index of the cluster in iteration
@@ -1340,8 +1343,6 @@ namespace rascal {
       std::array<size_t, 1> counters{this->index};
       return counters;
     }
-
-
 
     template <bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
     std::array<size_t, 1> get_offsets() {

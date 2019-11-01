@@ -122,47 +122,66 @@ int main() {
   adaptors.emplace_back(ad1b);
   adaptors.emplace_back(ad2);
 
-  auto manager =
-      make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList,
-                                   AdaptorCenterContribution, AdaptorStrict>(
-          structure, adaptors);
+   auto manager =
+       make_structure_manager_stack<StructureManagerCenters,
+                                    AdaptorNeighbourList,
+                                    AdaptorCenterContribution, AdaptorStrict>(
+           structure, adaptors);
+//  auto manager =
+//      make_structure_manager_stack<StructureManagerCenters,
+//                                   AdaptorNeighbourList, AdaptorStrict>(
+//          structure, adaptors);
 
 
 
-  std::cout << "n_centers: " << manager->size() << std::endl;
-  for (auto center : manager) {
-    auto ctag = center.get_atom_tag();
-    std::cout << "Center: " << ctag << " n. neighbors " << center.get_pairs().size()
-              << std::endl;
+   std::cout << "n_centers: " << manager->size() << std::endl;
+   for (auto center : manager) {
+     auto ctag = center.get_atom_tag();
+     std::cout << "Center: " << ctag << " n. neighbors " << center.get_pairs().size()
+               << std::endl;
 
-    for (auto neigh : center.get_pairs_with_self_pair()) {
-      auto tag_list = neigh.get_atom_tag_list();
+     for (auto neigh : center.get_pairs()) {
+       auto tag_list = neigh.get_atom_tag_list();
 
-      auto atom_j = neigh.get_atom_j();
-      auto atom_j_tag = atom_j.get_atom_tag_list();
-      auto atom_j_ids = atom_j.get_cluster_indices();
-      std::cout << "neigh: " << tag_list[0] << ", " << tag_list[1] << ", "
-                << " tag_j: " << atom_j_tag[0] << ", " << atom_j_ids[0]
-                << std::endl;
-    }
-    // for (auto triplet : center.get_triplets()) {
-    //   std::cout << "triplet: " << std::endl;
-    // }
-  }
+       auto atom_j = neigh.get_atom_j();
+       auto atom_j_tag = atom_j.get_atom_tag_list();
+       auto atom_j_ids = atom_j.get_cluster_indices();
+       std::cout << "neigh: " << tag_list[0] << ", " << tag_list[1] << ", "
+                 << " tag_j: " << atom_j_tag[0] << ", " << atom_j_ids[0]
+                 << " -- global index " << neigh.get_global_index()
+                 <<std::endl;
+     }
+     // for (auto triplet : center.get_triplets()) {
+     //   std::cout << "triplet: " << std::endl;
+     // }
+   }
+
 
   auto triplet_manager{make_adapted_manager<AdaptorMaxOrder>(manager)};
+  triplet_manager->update();
+
+//  for (auto center : triplet_manager) {
+//    auto proxy = center.get_pairs();
+//    auto it = proxy.begin();
+//    auto neigh = *it;
+//    auto pos = neigh.get_position();
+//  }
 
   for (auto center : triplet_manager) {
     auto ctag = center.get_atom_tag();
-    std::cout << "Center: " << ctag << " n. neighbors " << center.get_triplets().size()
+    auto it = center.get_triplets();
+    auto size{it.size()};
+    std::cout << "Center: " << ctag << " n. neighbors " << size
               << std::endl;
-    // std::cout << "Center: " << ctag << " n. neighbors "
-    //           << std::endl;
+//     std::cout << "Center: " << ctag << " n. neighbors "
+//               << std::endl;
+
     for (auto triplet : center.get_triplets()) {
-      std::cout << "triplet (" << center.get_atom_tag() << ", "
-                << triplet.get_atom_tag()
+      auto tags = triplet.get_atom_tag_list();
+      std::cout << center.get_atom_tag() << " triplet ("
+                << tags[0] << ", " << tags[1] << ", " << tags[2]
                 << ") global index " << triplet.get_global_index()
+              << ") index " << triplet.get_index()
                 << std::endl;
     }
   }

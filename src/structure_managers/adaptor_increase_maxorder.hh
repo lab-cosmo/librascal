@@ -66,9 +66,11 @@ namespace rascal {
     // Order that has been added.
     using AvailableOrdersList = typename internal::AppendAvailableOrder<3, typename parent_traits::AvailableOrdersList>::type;
     // Extend the layer by one with the new MaxOrder
+    using LL = typename LayerIncreaser<parent_traits::MaxOrder,
+                        typename parent_traits::LayerByOrder>::type;
     using LayerByOrder =
-        typename LayerExtender<3,
-                               typename parent_traits::LayerByOrder>::type;
+        typename LayerExtender<MaxOrder,
+                               LL>::type;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -97,6 +99,11 @@ namespace rascal {
     using Hypers_t = typename Parent::Hypers_t;
 
     static constexpr size_t AdditionalOrder{internal::get_last_element_in_sequence(typename traits::AvailableOrdersList{})};
+
+    constexpr static auto AtomLayer{
+        Manager_t::template cluster_layer_from_order<1>()};
+    constexpr static auto PairLayer{
+        Manager_t::template cluster_layer_from_order<2>()};
 
     static_assert(traits::MaxOrder > 2,
                   "ManagerImplementation needs at least a pair list for"
@@ -155,8 +162,19 @@ namespace rascal {
      * (i.e. specifying pairs), for each pair of indices i,j it returns the
      * number entries in the list of pairs before i,j appears.
      */
-    template <size_t Order>
-    size_t get_offset_impl(const std::array<size_t, Order> & counters) const;
+    template <size_t Order, bool T = (Order < 2), std::enable_if_t<T, int> = 0>
+    size_t get_offset_impl(const std::array<size_t, Order> & counters) const {
+      return this->manager->get_offset(counters);
+    }
+
+    template <size_t Order, bool T = (Order < 2), std::enable_if_t<not(T), int> = 0>
+    size_t get_offset_impl(const std::array<size_t, Order> & counters) const {
+      auto j{counters.back()};
+      auto main_offset{this->offsets[j]};
+      std::cout << "offset " << j << ", " << main_offset << std::endl;
+      return main_offset;
+    }
+
 
     //! Returns the number of clusters of size cluster_size
     size_t get_nb_clusters(size_t order) const {
@@ -209,7 +227,13 @@ namespace rascal {
     //! Returns the id of the index-th neighbour atom of a given cluster
     // tag(felix) this should return an array
     template <size_t Layer>
-    std::array<int, AdditionalOrder - 1> get_neighbour_atom_tag(const ClusterRefKey<1, Layer> & cluster,
+    int get_neighbour_atom_tag(const ClusterRefKey<1, Layer> & cluster,
+                               size_t index) const {
+      return this->manager->get_neighbour_atom_tag(cluster, index);;
+    }
+
+    template <size_t Layer>
+    std::array<int, AdditionalOrder - 1> get_neighbour_atom_tag_tt(const ClusterRefKey<1, Layer> & cluster,
                                size_t index) const {
       auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
       return this->neighbours_atom_tag[offset + index];
@@ -222,27 +246,33 @@ namespace rascal {
     }
 
     //! Returns the number of neighbors of a given cluster
-    template <size_t Order, size_t Layer>
+    template <size_t TargetOrder, size_t Order, size_t Layer, bool T = (TargetOrder < traits::MaxOrder - 1), std::enable_if_t<T, int> = 0>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order < traits::MaxOrder,
+      static_assert(TargetOrder < traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
       /*
        * Here it is traits::MaxOrder-1, because only the current manager has the
        * right answer to the number of neighbours of the MaxOrder-1 tuple. This
        * is the 'else' case.
        */
+      return this->manager->template get_cluster_size<TargetOrder>(cluster);
+    }
 
-      // necessary helper construct for static branching
-      using IncreaseHelper_t =
-          internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
-
-      if (Order < (traits::MaxOrder - 1)) {
-        return IncreaseHelper_t::get_cluster_size(*this->manager, cluster);
-      } else {
-        auto access_index = cluster.get_cluster_index(Layer);
-        return this->nb_neigh[access_index];
+    template <size_t TargetOrder, size_t Order, size_t Layer, bool T = (TargetOrder < traits::MaxOrder - 1), std::enable_if_t<not(T), int> = 0>
+    size_t
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
+      static_assert(TargetOrder == traits::MaxOrder,
+                    "this implementation handles only the respective MaxOrder");
+      auto access_index = cluster.get_cluster_index(Layer);
+      auto cluster_indices = cluster.get_cluster_indices();
+      std::cout << std::endl;
+      std::cout <<"cluster size "<< Layer << ", "<< access_index ;
+      for (int ii{0}; ii < cluster_indices.size(); ii++) {
+        std::cout << ", " << cluster_indices[ii];
       }
+      std::cout  << std::endl;
+      return this->nb_neigh[access_index];
     }
 
     //! Get the manager used to build the instance
@@ -268,8 +298,7 @@ namespace rascal {
     void set_offsets() {
       auto n_tuples{nb_neigh.size()};
       if (n_tuples > 0) {
-        this->offsets.reserve(n_tuples);
-        this->offsets.resize(1);
+        this->offsets.emplace_back(0);
         for (size_t i{0}; i < n_tuples; ++i) {
           this->offsets.emplace_back(this->offsets[i] + this->nb_neigh[i]);
         }
@@ -443,27 +472,57 @@ namespace rascal {
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
 
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+    auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
     this->nb_neigh.clear();
     this->offsets.clear();
     this->neighbours_atom_tag.clear();
 
     // #BUG8486@(markus) I now append the ghost atoms to the cluster index
     // container
-    for (auto atom : this->manager->with_ghosts()) {
-      //  Order 1, but variable Order is at 0, atoms, index 0
-      using AddOrderLoop =
-          AddOrderLoop<atom.order(), atom.order() == (traits::MaxOrder - 1)>;
-
-      auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
-
-      auto indices = atom.get_cluster_indices();
+    for (auto atom : this->manager) {
+      Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
+      indices.template head<AtomLayer>() = atom.get_cluster_indices();
+      indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
 
-      AddOrderLoop::loop(atom, *this);
+      std::vector<int> j_atom_tags{};
+      for (auto pair : atom.get_pairs()) {
+        j_atom_tags.push_back(pair.get_atom_tag());
+
+        Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;
+        indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
+        indices_pair(PairLayer) = indices_pair(PairLayer - 1);;
+        pair_cluster_indices.push_back(indices_pair);
+      }
+
+      this->add_entry_number_of_neighbours();
+      for (auto j_atom_tag : j_atom_tags) {
+        // add an entry for the current clusters' neighbours
+        for (auto k_atom_tag : j_atom_tags) {
+          if (j_atom_tag == k_atom_tag){ continue;}
+          this->add_neighbour_of_cluster(std::array<int, 2>{j_atom_tag,k_atom_tag});
+        }
+      }
+
+
+      //  Order 1, but variable Order is at 0, atoms, index 0
+      // using AddOrderLoop =
+      //     AddOrderLoop<atom.order(), atom.order() == (traits::MaxOrder - 1)>;
+
+      // auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+
+      // auto indices = atom.get_cluster_indices();
+      // atom_cluster_indices.push_back(indices);
+
+      // AddOrderLoop::loop(atom, *this);
+
     }
     // correct the offsets for the new cluster order
     this->set_offsets();
 
+    // atom_cluster_indices.fill_sequence();
+    // pair_cluster_indices.fill_sequence();
     // add correct cluster_indices for the highest order
     auto & max_cluster_indices{
         std::get<traits::MaxOrder - 1>(this->cluster_indices_container)};
@@ -471,53 +530,9 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  /**
-   * Returns the linear indices of the clusters (whose atom tags are stored
-   * in counters). For example when counters is just the list of atoms, it
-   * returns the index of each atom. If counters is a list of pairs of indices
-   * (i.e. specifying pairs), for each pair of indices i,j it returns the number
-   * entries in the list of pairs before i,j appears.
-   */
-  template <class ManagerImplementation>
-  template <size_t Order>
-  size_t AdaptorMaxOrder<ManagerImplementation>::get_offset_impl(
-      const std::array<size_t, Order> & counters) const {
-    static_assert(Order < traits::MaxOrder,
-                  "this implementation handles only up to the respective"
-                  " MaxOrder");
-    // Order accessor: 0 - atoms
-    //                 1 - pairs
-    //                 2 - triplets
-    //                 etc.
-    // Order is determined by the ClusterRef building iterator, not by the Order
-    // of the built iterator
 
-    // necessary construct for static branching
-    using IncreaseHelper_t =
-        internal::IncreaseHelper<Order == (traits::MaxOrder - 1)>;
 
-    if (Order < (traits::MaxOrder - 1)) {
-      // If not accessible at this order, call lower Order offsets from lower
-      // order manager or push through to lower levels, if adaptors are stacked.
-      return IncreaseHelper_t::get_offset(*this->manager, counters);
-    } else {
-      // Counters is an array to call parent offset multiplet. This can then be
-      // used to access the actual offset for the Order which was built here.
-      // It needs to be cast into a smaller one to access the order of this
-      // Cluster(Order-1) from the manager below
-      std::array<size_t, Order - 1> counters_below{};
-      for (size_t c_index{0}; c_index < Order - 1; ++c_index) {
-        counters_below[c_index] = counters[c_index];
-      }
-      // Linear index of the Cluster (Order-1)
-      auto i{this->manager->get_offset_impl(counters_below)};
-      // Number of cluster in its current iteration
-      auto j{counters[Order - 1]};
-      auto tuple_index{i + j};
-      auto main_offset{this->offsets[tuple_index]};
-      return main_offset;
-    }
-  }
+
 }  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_ADAPTOR_INCREASE_MAXORDER_HH_

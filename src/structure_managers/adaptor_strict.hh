@@ -206,10 +206,10 @@ namespace rascal {
     }
 
     //! return the number of neighbours of a given atom
-    template <size_t Order, size_t Layer>
+    template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order <= traits::MaxOrder,
+      static_assert(TargetOrder <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       constexpr auto nb_neigh_layer{
           compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
@@ -406,7 +406,6 @@ namespace rascal {
        * possible optimisation).
        */
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
-
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
