@@ -192,6 +192,16 @@ namespace rascal {
         throw std::runtime_error(err_str.str());
       }
 
+      // if the cell is filled with zeros
+      if (((cell.array()).abs() < 1e-10).all()) {
+        std::stringstream err_str{};
+        std::stringstream err_str{};
+        err_str << "The unit cell should not be filled with zeros but it "
+                << "should contain all the atoms even if the structure is not "
+                << "periodic."
+        throw std::runtime_error(err_str.str());
+      }
+
       this->cell = cell;
       this->atom_types = atom_types;
       this->pbc = pbc;
