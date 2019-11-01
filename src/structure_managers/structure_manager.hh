@@ -181,7 +181,8 @@ namespace rascal {
 
     //! helper to identify if Manager_t has TargetOrder in AvailableOrdersList
     template <size_t TargetOrder>
-    static constexpr bool HasOrder = internal::is_order_available<TargetOrder>(typename traits::AvailableOrdersList{});
+    static constexpr bool HasOrder = internal::is_order_available<TargetOrder>(
+        typename traits::AvailableOrdersList{});
 
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
@@ -500,7 +501,8 @@ namespace rascal {
 
     template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
-      return this->implementation().template get_cluster_size_impl<TargetOrder>(cluster);
+      return this->implementation().template get_cluster_size_impl<TargetOrder>(
+          cluster);
     }
 
     /**
@@ -662,24 +664,26 @@ namespace rascal {
                                  std::make_integer_sequence<int, Size>{});
     }
 
-    template <typename T, size_t Size1, int... Indices1, size_t Size2, int... Indices2>
+    template <typename T, size_t Size1, int... Indices1, size_t Size2,
+              int... Indices2>
     std::array<T, Size1 + Size2>
-    concat_array_helper(const std::array<T, Size1> & arr1, const std::array<T, Size2> & arr2, std::integer_sequence<int, Indices1...>,
+    concat_array_helper(const std::array<T, Size1> & arr1,
+                        const std::array<T, Size2> & arr2,
+                        std::integer_sequence<int, Indices1...>,
                         std::integer_sequence<int, Indices2...>) {
-      return std::array<T, Size1 + Size2>{{arr1[Indices1]..., arr2[Indices2]...}};
+      return std::array<T, Size1 + Size2>{
+          {arr1[Indices1]..., arr2[Indices2]...}};
     }
 
     //! template function allows to add an element to an array
     template <typename T, size_t Size1, size_t Size2>
-    std::array<T, Size1 + Size2> concat_array(
-                                         const std::array<T, Size1> & arr1,
-                                         const std::array<T, Size2> & arr2) {
+    std::array<T, Size1 + Size2>
+    concat_array(const std::array<T, Size1> & arr1,
+                 const std::array<T, Size2> & arr2) {
       return concat_array_helper(arr1, arr2,
                                  std::make_integer_sequence<int, Size1>{},
                                  std::make_integer_sequence<int, Size2>{});
     }
-
-
 
     // #BUG8486@(till) changed name Counters to Container, because we handle an
     // object which can be as manager or clusterref, and this is is name
@@ -719,7 +723,6 @@ namespace rascal {
     //! manager
     template <>
     struct IncreaseHelper<false> {
-
       template <class Manager_t, class Container_t>
       static size_t get_offset(const Manager_t & manager,
                                const Container_t & container) {
@@ -846,7 +849,8 @@ namespace rascal {
     static constexpr bool IsOrderOne{Order == 1};
 
     template <size_t TargetOrder>
-    static constexpr bool OrderOneAndHasOrder{Manager_t::HasOrder<TargetOrder> and IsOrderOne};
+    static constexpr bool OrderOneAndHasOrder{
+        Manager_t::HasOrder<TargetOrder> and IsOrderOne};
 
     static constexpr bool HasCenterPairOrderOne{traits::HasCenterPair and
                                                 IsOrderOne};
@@ -1003,9 +1007,7 @@ namespace rascal {
     //! iteration)
     // TODO(alex) should be equal cluster_indices.back()
     // improve documentation
-    size_t get_global_index() const {
-      return this->it.get_cluster_index();
-    }
+    size_t get_global_index() const { return this->it.get_cluster_index(); }
     //! returns the atom tags, which constitute the cluster
     const std::array<int, Order> & get_atom_tag_list() const {
       return this->atom_tag_list;
@@ -1045,11 +1047,11 @@ namespace rascal {
       CustomProxy(ClusterRef_t & cluster_ref, const size_t & start,
                   const size_t & offset)
           : cluster_ref{cluster_ref}, start{start}, offset{offset} {
-            if (TargetOrder == 3) {
-              std::cout <<"Proxy "<< start<<", "<<offset
-                        <<", "<< this->size() << std::endl;
-            }
-          }
+        if (TargetOrder == 3) {
+          std::cout << "Proxy " << start << ", " << offset << ", "
+                    << this->size() << std::endl;
+        }
+      }
 
       iterator begin() {
         return iterator(cluster_ref, this->start, this->offset);
@@ -1061,7 +1063,8 @@ namespace rascal {
       }
 
       size_t size() {
-        return cluster_ref.get_manager().template get_cluster_size<TargetOrder>(cluster_ref);
+        return cluster_ref.get_manager().template get_cluster_size<TargetOrder>(
+            cluster_ref);
       }
 
       ClusterRef_t & cluster_ref;
@@ -1070,7 +1073,6 @@ namespace rascal {
     };
 
    public:
-
     /**
      * Return an iterable over the clusters of order == Order
      * associated with the current central atom.
@@ -1078,12 +1080,15 @@ namespace rascal {
      */
     template <size_t Order_, bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
     CustomProxy<Order_> get_clusters_of_order(size_t start = 0) {
-      static_assert(Order_ > 1, "Clusters should at least contain 2 atoms, i.e. Order >= 2.");
-      std::array<size_t, Order_-1> counters{};
+      static_assert(
+          Order_ > 1,
+          "Clusters should at least contain 2 atoms, i.e. Order >= 2.");
+      std::array<size_t, Order_ - 1> counters{};
       counters.back() = this->get_index();
       size_t offset{this->get_manager().get_offset(counters)};
       if (Order_ == 3) {
-        std::cout <<"conters "<< counters.back() << ", "<<offset<<std::endl;
+        std::cout << "conters " << counters.back() << ", " << offset
+                  << std::endl;
       }
       return CustomProxy<Order_>(*this, start, offset);
     }
@@ -1100,7 +1105,6 @@ namespace rascal {
       size_t start{static_cast<size_t>(HasCenterPairOrderOne)};
       return this->get_clusters_of_order<2>(start);
     }
-
 
     /**
      * Return an iterable for Order == 2 that includes the neighbors (or
@@ -1131,7 +1135,6 @@ namespace rascal {
     CustomProxy<4> get_quadruplets() {
       return this->get_clusters_of_order<4>();
     }
-
   };
 
   namespace internal {
@@ -1200,7 +1203,7 @@ namespace rascal {
 
     static constexpr bool IsOrderOne{Order == 1};
 
-    static constexpr bool IsOrderOneOrTwo{IsOrderOne or (Order == 2)};
+    static constexpr bool IsOrderOneOrTwo{IsOrderOne or (Order == 2)};// NOLINT
 
     // determine the container type
     using Container_t =
@@ -1259,7 +1262,8 @@ namespace rascal {
           this->get_manager().get_cluster_indices_container());
       using Ref_t = typename std::remove_reference_t<decltype(
           cluster_indices_properties)>::reference;
-      Ref_t cluster_indices{cluster_indices_properties[this->get_cluster_index()]};
+      Ref_t cluster_indices{
+          cluster_indices_properties[this->get_cluster_index()]};
       return ClusterRef_t(*this, this->get_atom_tag_list(), cluster_indices);
     }
 
@@ -1301,27 +1305,31 @@ namespace rascal {
     AtomIndex_t get_atom_tag_list() {
       return internal::append_array(
           container.get_atom_tag_list(),
-          this->get_manager().implementation().get_neighbour_atom_tag(container, this->index));
+          this->get_manager().implementation().get_neighbour_atom_tag(
+              container, this->index));
     }
     //! add atomic indices in current iteration
     template <bool T = IsOrderOneOrTwo, std::enable_if_t<T, int> = 0>
     AtomIndex_t get_atom_tag_list() const {
       return internal::append_array(
           container.get_atom_tag_list(),
-          this->get_manager().implementation().get_neighbour_atom_tag(container, this->index));
+          this->get_manager().implementation().get_neighbour_atom_tag(
+              container, this->index));
     }
 
     template <bool T = IsOrderOneOrTwo, std::enable_if_t<not(T), int> = 0>
     AtomIndex_t get_atom_tag_list() {
       return internal::concat_array(
           container.get_atom_tag_list(),
-          this->get_manager().implementation().get_neighbour_atom_tag_tt(container, this->index));
+          this->get_manager().implementation().get_neighbour_atom_tag_tt(
+              container, this->index));
     }
     template <bool T = IsOrderOneOrTwo, std::enable_if_t<not(T), int> = 0>
     AtomIndex_t get_atom_tag_list() const {
       return internal::concat_array(
           container.get_atom_tag_list(),
-          this->get_manager().implementation().get_neighbour_atom_tag_tt(container, this->index));
+          this->get_manager().implementation().get_neighbour_atom_tag_tt(
+              container, this->index));
     }
 
     //! returns the current index of the cluster in iteration
@@ -1352,13 +1360,13 @@ namespace rascal {
 
     template <bool T = IsOrderOne, std::enable_if_t<not(T), int> = 0>
     std::array<size_t, 2> get_counters() {
-      auto&& parental_counters = this->container.get_counters();
+      auto && parental_counters = this->container.get_counters();
       std::array<size_t, 2> counters{parental_counters[0], this->index};
       return counters;
     }
     template <bool T = IsOrderOne, std::enable_if_t<not(T), int> = 0>
     std::array<size_t, 2> get_offsets() {
-      auto&& parental_offsets = this->container.get_offsets();
+      auto && parental_offsets = this->container.get_offsets();
       std::array<size_t, 2> offsets{parental_offsets[0], this->offset};
       return offsets;
     }

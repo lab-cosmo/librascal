@@ -52,9 +52,11 @@ namespace rascal {
           return true;
         }
 
-        template <bool T = is_order_available, std::enable_if_t<not(T), int> = 0>
+        template <bool T = is_order_available,
+                  std::enable_if_t<not(T), int> = 0>
         static constexpr bool get_is_order_available() {
-          return IsOrderAvailableHelper<TargetOrder, Orders...>::get_is_order_available();
+          return IsOrderAvailableHelper<TargetOrder,
+                                        Orders...>::get_is_order_available();
         }
       };
       //! end of recursion
@@ -67,18 +69,19 @@ namespace rascal {
           return true;
         }
 
-        template <bool T = is_order_available, std::enable_if_t<not(T), int> = 0>
+        template <bool T = is_order_available,
+                  std::enable_if_t<not(T), int> = 0>
         static constexpr bool get_is_order_available() {
           return false;
         }
       };
-    }
+    }  // namespace details
 
     /**
      * Append an order to the list of orders available
      */
     template <size_t NewOrder, class T>
-    struct AppendAvailableOrder { };
+    struct AppendAvailableOrder {};
 
     template <size_t NewOrder, size_t... Orders>
     struct AppendAvailableOrder<NewOrder, std::index_sequence<Orders...>> {
@@ -90,11 +93,13 @@ namespace rascal {
      */
     template <size_t TargetOrder, size_t... Orders>
     constexpr bool is_order_available(std::index_sequence<Orders...> /* sep*/) {
-      return details::IsOrderAvailableHelper<TargetOrder,Orders...>::get_is_order_available();
+      return details::IsOrderAvailableHelper<
+          TargetOrder, Orders...>::get_is_order_available();
     }
 
     template <size_t... Orders>
-    constexpr size_t get_last_element_in_sequence(std::index_sequence<Orders...> /* sep*/) {
+    constexpr size_t
+    get_last_element_in_sequence(std::index_sequence<Orders...> /* sep*/) {
       constexpr std::array<size_t, sizeof...(Orders)> arr = {Orders...};
       return arr.back();
     }

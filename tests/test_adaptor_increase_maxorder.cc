@@ -129,9 +129,8 @@ namespace rascal {
           auto tags = triplet.get_atom_tag_list();
           std::cout << "             triplet " << triplet.back() << " global "
                     << triplet.get_global_index() << std::endl;
-          std::cout << "                         complete " << tags[0]
-                    << " " << tags[1] << " " << tags[2]
-                    << std::endl;
+          std::cout << "                         complete " << tags[0] << " "
+                    << tags[1] << " " << tags[2] << std::endl;
         }
       }
     }
@@ -187,15 +186,14 @@ namespace rascal {
       for (auto triplet : atom.get_triplets()) {
         if (verbose) {
           auto tags = triplet.get_atom_tag_list();
-          std::cout << "triplet " << tags[0] << " " << tags[1] << " "
-                    << tags[2] << std::endl;
+          std::cout << "triplet " << tags[0] << " " << tags[1] << " " << tags[2]
+                    << std::endl;
         }
         auto neighbour_of_neighbour_atom_tag =
             triplet.get_internal_neighbour_atom_tag();
         auto neighbour_of_neighbour_type = triplet.get_atom_type();
-        BOOST_CHECK_EQUAL(
-            neighbour_of_neighbour_type,
-            SM3->get_atom_type(neighbour_of_neighbour_atom_tag));
+        BOOST_CHECK_EQUAL(neighbour_of_neighbour_type,
+                          SM3->get_atom_type(neighbour_of_neighbour_atom_tag));
 
         auto triplet_position = triplet.get_position();
         auto diff_pos_triplet = (triplet_position - atom_position).norm();

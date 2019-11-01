@@ -247,7 +247,8 @@ namespace rascal {
                     "this implementation handles only the respective MaxOrder");
 
       if (TargetOrder < traits::MaxOrder) {
-        return this->manager->template get_cluster_size_impl<TargetOrder>(cluster);
+        return this->manager->template get_cluster_size_impl<TargetOrder>(
+            cluster);
       } else {
         auto access_index = cluster.get_cluster_index(Layer);
         return nb_neigh[access_index];

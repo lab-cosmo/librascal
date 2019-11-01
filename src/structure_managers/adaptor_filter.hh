@@ -274,7 +274,8 @@ namespace rascal {
                     "Order exceeds maxorder for this filter.");
       constexpr auto nb_neigh_layer{
           compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};
-      return this->nb_neigh[TargetOrder-1][cluster.get_cluster_index(nb_neigh_layer)];
+      return this->nb_neigh[TargetOrder - 1]
+                           [cluster.get_cluster_index(nb_neigh_layer)];
     }
 
     /**

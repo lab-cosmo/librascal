@@ -130,9 +130,8 @@ int main() {
   for (auto atom : triplet_manager) {
     for (auto triplet : atom.get_triplets()) {
       std::cout << "triplet (" << atom.get_atom_tag() << ", "
-                << triplet.get_atom_tag()
-                << ") global index " << triplet.get_global_index()
-                << std::endl;
+                << triplet.get_atom_tag() << ") global index "
+                << triplet.get_global_index() << std::endl;
     }
   }
 }

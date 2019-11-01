@@ -502,7 +502,7 @@ namespace rascal {
                     << triplet.get_internal_neighbour_atom_tag();
           std::cout << " and cluster index "
                     << Fix::manager->get_atom_index(
-                            triplet.get_internal_neighbour_atom_tag());
+                           triplet.get_internal_neighbour_atom_tag());
           std::cout << std::endl;
         }
         Fix::atom_scalar_property[triplet]++;
