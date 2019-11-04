@@ -1,5 +1,5 @@
 /**
- * file   test_math_spherical_harmonics.cc
+ * @file   test_math_spherical_harmonics.cc
  *
  * @section LICENSE
  *
