@@ -102,6 +102,7 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Python</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#atoms-and-cells">Atoms and cells</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#representations">Representations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#models">Models</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="cpp.html">C++ documentation</a></li>
@@ -518,6 +519,45 @@ Atomistic Systems. Physical Review Letters, 120(3), 036002.
 <code class="sig-name descname">update_hyperparameters</code><span class="sig-paren">(</span><em class="sig-param">**hypers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_covariants.html#SphericalCovariants.update_hyperparameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalCovariants.update_hyperparameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store the given dict of hyperparameters</p>
 <p>Also updates the internal json-like representation</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="models">
+<h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="rascal.models.Kernel">
+<em class="property">class </em><code class="sig-prename descclassname">rascal.models.</code><code class="sig-name descname">Kernel</code><span class="sig-paren">(</span><em class="sig-param">representation</em>, <em class="sig-param">name='Cosine'</em>, <em class="sig-param">target_type='Structure'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/models/kernels.html#Kernel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.models.Kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the kernel from an representation
+Initialize the kernel with the given parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>representation</strong> (<em>Calculator</em>) – Representation calculator associated with the kernel</p></li>
+<li><p><strong>name</strong> (<em>string</em>) – Type of kernel, ‘Cosine’ (aka dot-product) is the default and
+(currently) only option.</p></li>
+<li><p><strong>target_type</strong> (<em>string</em>) – Type of target (prediction) properties, must be either ‘Atom’ (the kernel
+is between atomic environments) or ‘Structure’ (the kernel is summed over
+atoms in a structure), which is the default</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="rascal.models.Kernel.__call__">
+<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">Y=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/models/kernels.html#Kernel.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.models.Kernel.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>AtomList</em><em> or </em><em>ManagerCollection</em><em> (</em><em>C++ class</em><em>)</em>) – Container of atomic structures.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>kernel_matrix</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

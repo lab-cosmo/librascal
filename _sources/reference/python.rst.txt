@@ -24,3 +24,8 @@ Representations
 
 .. autoclass:: rascal.representations.SphericalCovariants
    :members:
+
+Models
+===============
+.. autoclass:: rascal.models.Kernel
+   :members:
