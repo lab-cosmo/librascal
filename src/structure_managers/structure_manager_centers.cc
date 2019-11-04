@@ -87,6 +87,12 @@ namespace rascal {
   // returns the number of cluster at Order=1, which is the number of atoms
   size_t StructureManagerCenters::get_nb_clusters(size_t order) const {
     if (order == 1) {
+      /**
+       * Note: The case for order=1 is abmiguous: one possible answer is the
+       * number of centers the other possibility is the number of centers +
+       * ghost atoms. Please use the get_size or get_size_with_ghosts member
+       * functions
+       */
       return this->n_centers + this->n_ghosts;
     } else {
       throw std::string("ERROR : Order != 1");

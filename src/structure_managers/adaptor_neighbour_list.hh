@@ -531,10 +531,12 @@ namespace rascal {
     //! Returns the number of clusters of size cluster_size
     size_t get_nb_clusters(size_t order) const {
       switch (order) {
-      // case 1: {
-      //   return this->get_size_with_ghosts();
-      //   break;
-      // }
+      /**
+       * Note: The case for order=1 is abmiguous: one possible answer is the
+       * number of centers the other possibility is the number of centers +
+       * ghost atoms. Please use the get_size or get_size_with_ghosts member
+       * functions
+       */
       case 2: {
         return this->neighbours_atom_tag.size();
       default:

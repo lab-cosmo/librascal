@@ -142,9 +142,13 @@ namespace rascal {
     //! returns the number of atoms or pairs
     size_t get_nb_clusters(int order) const {
       switch (order) {
-      case 1:
-        return this->manager->get_nb_clusters(order);
-      case 2:
+        /**
+         * Note: The case for order=1 is abmiguous: one possible answer is the
+         * number of centers the other possibility is the number of centers +
+         * ghost atoms. Please use the get_size or get_size_with_ghosts member
+         * functions
+         */
+      case 2: {
         return this->neighbours_atom_tag.size();
       default:
         throw std::runtime_error("Can only handle single atoms and pairs.");
@@ -152,7 +156,7 @@ namespace rascal {
     }
 
     //! returns the number of atoms
-    size_t get_size() const { return this->get_nb_clusters(1); }
+    inline size_t get_size() const { return this->manager->get_size(); }
 
     //! returns the number of atoms
     size_t get_size_with_ghosts() const {
