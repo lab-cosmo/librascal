@@ -81,6 +81,12 @@ namespace rascal {
     switch (order) {
     case 1: {
       return inum;
+      /**
+       * Note: The case for order=1 is abmiguous: one possible answer is the
+       * number of centers the other possibility is the number of centers +
+       * ghost atoms. Please use the get_size or get_size_with_ghosts member
+       * functions
+       */
     }
     case 2: {
       return nb_pairs;

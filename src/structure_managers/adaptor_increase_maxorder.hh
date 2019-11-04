@@ -156,6 +156,12 @@ namespace rascal {
 
     //! Returns the number of clusters of size cluster_size
     inline size_t get_nb_clusters(size_t order) const {
+      /**
+       * Note: The case for order=1 is abmiguous: one possible answer is the
+       * number of centers the other possibility is the number of centers +
+       * ghost atoms. Please use the get_size or get_size_with_ghosts member
+       * functions
+       */
       switch (order) {
       case traits::MaxOrder: {
         return this->neighbours_atom_tag.size();

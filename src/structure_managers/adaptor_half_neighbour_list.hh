@@ -149,10 +149,12 @@ namespace rascal {
     //! returns the number of atoms or pairs
     inline size_t get_nb_clusters(int order) const {
       switch (order) {
-      case 1: {
-        return this->manager->get_nb_clusters(order);
-        break;
-      }
+        /**
+         * Note: The case for order=1 is abmiguous: one possible answer is the
+         * number of centers the other possibility is the number of centers +
+         * ghost atoms. Please use the get_size or get_size_with_ghosts member
+         * functions
+         */
       case 2: {
         return this->neighbours_atom_tag.size();
         break;

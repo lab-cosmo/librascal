@@ -91,9 +91,9 @@ int main() {
   auto manager = make_structure_manager<StructureManagerCenters>();
   manager->update(structure);
 
-  std::cout << "Number of centers: " << manager->get_size() << std::endl;
-  std::cout << "Number of atoms (total): " << manager->get_size_with_ghosts()
-            << std::endl;
+  std::cout << "Number of center atoms: " << manager->get_size() << std::endl;
+  std::cout << "Number of atoms in total (centers and ghosts): "
+            << manager->get_size_with_ghosts() << std::endl;
   std::cout << "manager iteration over atoms" << std::endl;
   for (auto atom : manager) {
     std::cout << "atom " << atom.get_atom_tag() << " global index "

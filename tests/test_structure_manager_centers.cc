@@ -140,10 +140,9 @@ namespace rascal {
     for (auto & manager : this->managers) {
       auto natoms1 = manager->size();
       auto natoms2 = manager->get_size();
-      auto natoms3 = manager->get_nb_clusters(1);
-      auto natoms4 = manager->get_size_with_ghosts();
+      auto natoms3 = manager->get_size_with_ghosts();
       BOOST_CHECK_EQUAL(natoms1, natoms2);
-      BOOST_CHECK_EQUAL(natoms3, natoms4);
+      BOOST_CHECK_EQUAL(natoms3, 22);
       auto & structure = this->structures[i_manager];
       auto & positions = structure.positions;
       auto & atom_types = structure.atom_types;
