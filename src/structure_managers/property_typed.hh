@@ -144,7 +144,13 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Typed ``property`` class definition, inherits from the base property class
+   * Typed ``property`` base class definition, inherits from the base property
+   * class. This intermediate base class is necessary to specialize between Atom
+   * (Order=1) Properties and others. Because Order=1 Properties are able to be
+   * sized to two different options: `size` and `size with ghosts`. Typically
+   * one only wants the `size` and that it the default optiont. But e.g. for
+   * `cluster_indices` the size needs to include space for the number of atoms
+   * plus ghosts.
    */
   template <typename T, size_t Order_, size_t PropertyLayer, class Manager>
   class TypedPropertyBase : public PropertyBase {
@@ -318,8 +324,10 @@ namespace rascal {
     std::vector<T> values{};  //!< storage for properties
   };
 
+  /* ---------------------------------------------------------------------- */
   /**
-   * Typed ``property`` class definition, inherits from the base property class
+   * Typed ``property`` class definition, inherits from the base property
+   * class
    */
   template <typename T, size_t Order_, size_t PropertyLayer, class Manager>
   class TypedProperty
@@ -342,6 +350,9 @@ namespace rascal {
                   std::string metadata = "no metadata")
         : Parent{manager, nb_row, nb_col, metadata} {}
 
+    //! Move constructor
+    TypedProperty(TypedProperty && other) = default;
+
     virtual ~TypedProperty() = default;
 
     //! Adjust size of values (only increases, never frees)
@@ -352,9 +363,10 @@ namespace rascal {
     }
   };
 
+  /* ---------------------------------------------------------------------- */
   /**
    * Typed ``property`` specialised for atom properties (extra storage for
-   * whether or not to exclude ghosts
+   * whether or not to exclude ghosts)
    */
   template <typename T, size_t PropertyLayer, class Manager>
   class TypedProperty<T, 1, PropertyLayer, Manager>
@@ -364,7 +376,7 @@ namespace rascal {
     using Parent = TypedPropertyBase<T, 1, PropertyLayer, Manager>;
     using Value_t = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = Manager;
-    using Self_t = TypedProperty<T, Order, PropertyLayer, Manager>;
+    using Self_t = TypedProperty<T, 1, PropertyLayer, Manager>;
     using traits = typename Manager::traits;
     using Matrix_t = math::Matrix_t;
 
@@ -379,6 +391,11 @@ namespace rascal {
         : Parent{manager, nb_row, nb_col, metadata}, exclude_ghosts{
                                                          exclude_ghosts} {}
 
+    //! Move constructor
+    TypedProperty(TypedProperty && other) = default;
+
+    virtual ~TypedProperty() = default;
+
     //! Adjust size of values (only increases, never frees)
     inline void resize() final {
       const auto n_components{this->get_nb_comp()};
@@ -392,6 +409,7 @@ namespace rascal {
    protected:
     const bool exclude_ghosts;
   };
+
 }  // namespace rascal
 
 #endif  // SRC_STRUCTURE_MANAGERS_PROPERTY_TYPED_HH_

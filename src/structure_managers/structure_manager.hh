@@ -149,16 +149,6 @@ namespace rascal {
             std::move(PropertyTypes(manager))...);
       }
     };
-    /* Resolves the type of the cluster_indices to the corresponding Eigen::Map
-     * object
-     */
-    // template<typename ClusterIndicesType, size_t Layer>
-    // static inline IndexConstArray_t &
-    // cast_cluster_indices_const(ClusterIndicesType cluster_indices) {
-    //}
-    // template<size_t Order, size_t ClusterLayer, size_t ParentLayer, size_t
-    // NeighbourLayer>
-
   }  // namespace internal
 
   /* ---------------------------------------------------------------------- */

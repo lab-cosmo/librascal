@@ -799,7 +799,7 @@ namespace rascal {
     BlockSparseProperty(Manager_t & manager,
                         std::string metadata = "no metadata",
                         bool exclude_ghosts = false)
-      : Parent{manager, metadata}, exclude_ghosts{exclude_ghosts} {}
+        : Parent{manager, metadata}, exclude_ghosts{exclude_ghosts} {}
 
     //! Default constructor
     BlockSparseProperty() = delete;
