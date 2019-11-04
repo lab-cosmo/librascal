@@ -120,3 +120,19 @@ The last step is to write a python class in ``bindings/rascal/representations/``
 .. [#two] Rupp, M., Tkatchenko, A., Müller, K.-R., & von Lilienfeld, O. A. (2011).
         Fast and Accurate Modeling of Molecular Atomization Energies with Machine Learning.
         Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301
+
+Implement and test gradients
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In principle, all libRascal representations should implement gradients with
+respect to the atomic positions.  Currently the only representations to do so
+are the :cpp:class:`SphericalExpansion` and :cpp:class:`SphericalInvariants`
+(tensor order 0, body order 0--1 a.k.a. "RadialSpectrum" and "PowerSpectrum") in
+the GTO radial basis.  Until we come up with a general, standard way of
+implementing gradients for any representation, please see those implementations
+for guidance.
+
+Once you've implemented the gradient -- or derivative -- of any function in
+libRascal, you must test that it actually corresponds to the gradient of the
+function that it purpots to be.  A finite-difference testing function is
+provided for this purpose; see :ref:`testing_gradients` for details.

@@ -1,5 +1,5 @@
 /**
- * file   test_math_gauss_legendre.cc
+ * @file   test_math_gauss_legendre.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
@@ -50,16 +50,16 @@ namespace rascal {
         double points_rel_error{(val(ii, 0) - points_ref[ii])};
         double weigths_rel_error{(val(ii, 1) - weights_ref[ii])};
 
-        if ((points_rel_error > math::dbl_ftol or
-             weigths_rel_error > math::dbl_ftol) and
+        if ((points_rel_error > math::DBL_FTOL or
+             weigths_rel_error > math::DBL_FTOL) and
             this->verbose) {
           std::cout << " a=" << a << " b=" << b << " order=" << order
                     << " point_err=" << points_rel_error
                     << " weight_err=" << weigths_rel_error << std::endl;
         }
 
-        BOOST_CHECK_LE(points_rel_error, math::dbl_ftol);
-        BOOST_CHECK_LE(weigths_rel_error, math::dbl_ftol);
+        BOOST_CHECK_LE(points_rel_error, math::DBL_FTOL);
+        BOOST_CHECK_LE(weigths_rel_error, math::DBL_FTOL);
       }
     }
   }

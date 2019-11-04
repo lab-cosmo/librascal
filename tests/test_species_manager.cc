@@ -1,5 +1,5 @@
 /**
- * file    test_species_manager.cc
+ * @file    test_species_manager.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Till Junge <till.junge@epfl.ch>

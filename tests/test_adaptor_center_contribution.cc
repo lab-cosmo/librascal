@@ -1,5 +1,5 @@
 /**
- * file   test_adaptor_center_contribution.cc
+ * @file   test_adaptor_center_contribution.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *

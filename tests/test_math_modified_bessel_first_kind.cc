@@ -1,5 +1,5 @@
 /**
- * file   test_math_modified_bessel_first_kind.cc
+ * @file   test_math_modified_bessel_first_kind.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
@@ -51,6 +51,15 @@ namespace rascal {
       this->j_v_complete_square.calc(rij, alpha);
       auto vals{this->j_v_complete_square.get_values()};
 
+      // test that values are eithe > 1e-100 or 0
+      for (size_t i_x{0}; i_x < xs.size(); ++i_x) {
+        for (size_t order{0}; order < max_order; ++order) {
+          if (vals(i_x, order) > 0) {
+            BOOST_TEST(vals(i_x, order) > 9e-101);
+          }
+        }
+      }
+
       for (size_t i_x{0}; i_x < xs.size(); ++i_x) {
         for (size_t order{0}; order < max_order; ++order) {
           double rel_error{0.};
@@ -64,7 +73,7 @@ namespace rascal {
           // the MBSFs are set to 0 if < 1e-100 so no point checking with
           // the reference then. Note the MBSFs are very accurate when < 1e-200
           if (ref_vals[i_x][order] > 1e-90 and vals(i_x, order) > 1e-90) {
-            if ((rel_error > 1e3 * math::dbl_ftol) and this->verbose) {
+            if ((rel_error > 1e3 * math::DBL_FTOL) and this->verbose) {
               std::cout << " order=" << order << " x=" << xs[i_x]
                         << " alpha=" << alpha << " rij=" << rij
                         << " diff=" << rel_error
@@ -72,10 +81,9 @@ namespace rascal {
                         << " val=" << vals(i_x, order) << std::endl;
             }
 
-            BOOST_CHECK_LE(rel_error, 1e3 * math::dbl_ftol);
+            BOOST_CHECK_LE(rel_error, 1e3 * math::DBL_FTOL);
           }
         }
-        // break;
       }
     }
   }

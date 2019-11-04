@@ -1,5 +1,5 @@
 /**
- * file   test_calculator.cc
+ * @file   test_calculator.cc
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  *
@@ -299,7 +299,7 @@ namespace rascal {
             auto row_full = rep_full.row(i_center);
             auto row_no_center = rep_no_center.row(i_no_center);
             auto diff = (row_full - row_no_center).norm();
-            BOOST_CHECK_LE(diff, math::dbl_ftol);
+            BOOST_CHECK_LE(diff, math::DBL_FTOL);
             if (verbose) {
               std::cout << "Center idx: " << i_center << " Diff: " << diff
                         << std::endl;
@@ -407,7 +407,7 @@ namespace rascal {
     }
   }
 
-  using simple_periodic_fixtures =
+  using gradient_fixtures =
       boost::mpl::list<CalculatorFixture<SingleHypersSphericalExpansion>,
                        CalculatorFixture<SingleHypersSphericalInvariants>>;
 
@@ -417,7 +417,7 @@ namespace rascal {
    * multi-species, primitive and supercells)
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_representation_gradients, Fix,
-                                   simple_periodic_fixtures, Fix) {
+                                   gradient_fixtures, Fix) {
     auto & managers = Fix::managers;
     auto & hypers = Fix::representation_hypers;
     auto & representations = Fix::representations;
@@ -430,23 +430,25 @@ namespace rascal {
         representations.emplace_back(hyper);
         structures.emplace_back();
         structures.back().set_structure(*filename_it);
-        // The finite-difference tests don't work with periodic boundary
-        // conditions -- moving one atom moves all its periodic images, too
-        structures.back().pbc.setZero();
-        RepresentationManagerGradientCalculator<typename Fix::Representation_t,
+        /* ---- grad-test-example-start1 ---- */
+        RepresentationCalculatorGradientProvider<typename Fix::Representation_t,
+                                                 typename Fix::Manager_t>
+            provider(representations.back(), manager, structures.back());
+        RepresentationCalculatorGradientFixture<typename Fix::Representation_t,
                                                 typename Fix::Manager_t>
-            calculator(representations.back(), manager, structures.back());
-        RepresentationManagerGradientFixture<typename Fix::Representation_t,
-                                             typename Fix::Manager_t>
             grad_fix("reference_data/spherical_expansion_gradient_test.json",
-                     manager, calculator);
+                     manager, provider);
+        /* ---- grad-test-example-end1 ---- */
         if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
           std::cout << "Testing structure: " << *filename_it << std::endl;
+          std::cout << "With hypers: " << hyper << std::endl;
         }
+        /* ---- grad-test-example-start2 ---- */
         do {
-          test_gradients(grad_fix.get_calculator(), grad_fix);
+          test_gradients(grad_fix.get_provider(), grad_fix);
           grad_fix.advance_center();
         } while (grad_fix.has_next());
+        /* ---- grad-test-example-end2 ---- */
       }
       ++filename_it;
     }

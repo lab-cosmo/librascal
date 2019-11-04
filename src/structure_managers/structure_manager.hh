@@ -507,6 +507,18 @@ namespace rascal {
           cluster);
     }
 
+    //! return if the atom (Order == 1) or neighboring atom (Order == 2)
+    //! is a ghost atom
+    template <size_t Order>
+    bool is_ghost_atom(const ClusterRef<Order>& cluster) {
+      static_assert(Order <= 2, R"(Usage of this function for clusters of order
+      larger than 3 is ambiguous.)");
+      auto && atom_tag = static_cast<size_t>(cluster.get_atom_tag());
+      auto && n_centers = this->size();
+      return (atom_tag >= n_centers);
+    }
+
+
     /**
      * Get atom_tag of index-th neighbour of this cluster, e.g. j-th
      * neighbour of atom i or k-th neighbour of pair i-j, etc.

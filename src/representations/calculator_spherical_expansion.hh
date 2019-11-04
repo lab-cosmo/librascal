@@ -61,13 +61,13 @@ namespace rascal {
      * List of possible Radial basis that can be used by the spherical
      * expansion.
      */
-    enum class RadialBasisType { GTO, DVR, End_ };
+    enum class RadialBasisType { GTO, DVR };
 
     /**
      * List of possible atomic smearing for the definition of the atomic
      * density. If not specified, the gaussian type smearing is implided.
      */
-    enum class AtomicSmearingType { Constant, PerSpecies, Radial, End_ };
+    enum class AtomicSmearingType { Constant, PerSpecies, Radial };
 
     /**
      * Base class for the specification of the atomic smearing.
@@ -1015,16 +1015,14 @@ namespace rascal {
     using internal::CutoffFunctionType;
 
     switch (this->cutoff_function_type) {
-    case CutoffFunctionType::ShiftedCosine: {
+    case CutoffFunctionType::ShiftedCosine:
       this->compute_by_radial_contribution<CutoffFunctionType::ShiftedCosine>(
           managers);
       break;
-    }
-    case CutoffFunctionType::RadialScaling: {
+    case CutoffFunctionType::RadialScaling:
       this->compute_by_radial_contribution<CutoffFunctionType::RadialScaling>(
           managers);
       break;
-    }
     default:
       // The control flow really should never reach here.  But just in case,
       // provide the necessary information to debug this problem.
@@ -1046,21 +1044,14 @@ namespace rascal {
     using internal::AtomicSmearingType;
     using internal::RadialBasisType;
 
-    switch (internal::combineEnums(this->radial_integral_type,
-                                   this->atomic_smearing_type)) {
-    case internal::combineEnums(RadialBasisType::GTO,
-                                AtomicSmearingType::Constant): {
+    assert(this->atomic_smearing_type == AtomicSmearingType::Constant);
+    if (this->radial_integral_type == RadialBasisType::GTO) {
       this->compute_loop<FcType, RadialBasisType::GTO,
                          AtomicSmearingType::Constant>(managers);
-      break;
-    }
-    case internal::combineEnums(RadialBasisType::DVR,
-                                AtomicSmearingType::Constant): {
+    } else if (this->radial_integral_type == RadialBasisType::DVR) {
       this->compute_loop<FcType, RadialBasisType::DVR,
                          AtomicSmearingType::Constant>(managers);
-      break;
-    }
-    default:
+    } else {
       // The control flow really should never reach here.  In this case, any
       // "invalid combination of parameters" should have already been handled at
       // the parameter processing stage where the user can be notified in a
@@ -1076,9 +1067,8 @@ namespace rascal {
       err_message << static_cast<int>(this->atomic_smearing_type);
       err_message << ")" << std::endl;
       throw std::logic_error(err_message.str());
-      break;
     }
-  }
+  }  // namespace rascal
 
   /**
    * Compute the spherical expansion
@@ -1157,6 +1147,8 @@ namespace rascal {
               center) /
           sqrt(4.0 * PI);
 
+      auto atom_i_tag = center.get_atom_tag();
+
       for (auto neigh : center.get_pairs()) {
         auto dist{manager->get_distance(neigh)};
         auto direction{manager->get_direction_vector(neigh)};
@@ -1188,9 +1180,15 @@ namespace rascal {
           l_block_idx += l_block_size;
         }
 
+        auto && atom_j = neigh.get_atom_j();
+        auto atom_j_tag = atom_j.get_atom_tag();
+
         // compute the gradients of the coefficients with respect to
         // atoms positions
-        if (this->compute_gradients) {
+        // but only if the neighbour is _not_ an image of the center!
+        // (the periodic images move with the center, so their contribution to
+        // the center gradient is zero)
+        if (this->compute_gradients and (atom_j_tag != atom_i_tag)) { // NOLINT
           std::vector<Key_t> neigh_types{neigh_type};
           coefficients_neigh_gradient.resize(
               neigh_types, n_spatial_dimensions * n_row, n_col, 0.);

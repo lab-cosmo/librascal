@@ -1,5 +1,5 @@
 /**
- * file   test_math_spherical_harmonics.cc
+ * @file   test_math_spherical_harmonics.cc
  *
  * @section LICENSE
  *
@@ -93,7 +93,7 @@ namespace rascal {
       }
       double rel_error{
           (harmonics_calculator.get_harmonics() - harmonics_ref).norm()};
-      BOOST_CHECK_LE(rel_error, 2 * math::dbl_ftol);
+      BOOST_CHECK_LE(rel_error, 2 * math::DBL_FTOL);
       // TODO(alex) check with main_test_suite -l success and remove
       if (verbose) {
         std::cout << ">> Boost check perfomed." << std::endl;
@@ -173,7 +173,7 @@ namespace rascal {
       double rel_error{
           (harmonics_calculator.get_assoc_legendre_polynom() - alps_ref)
               .norm()};
-      BOOST_CHECK_LE(rel_error, 10 * math::dbl_ftol);
+      BOOST_CHECK_LE(rel_error, 10 * math::DBL_FTOL);
       // Checks if the additional last column of the associated legendre
       // polynomial matrix contains only zero entries
       BOOST_CHECK_EQUAL(harmonics_calculator.get_assoc_legendre_polynom_raw()
@@ -209,8 +209,8 @@ namespace rascal {
                                 std::cos(m_idx * phi_test(phi_idx)))};
         auto sin_error{std::abs(cos_sin_m_phi(m_idx, 1) -
                                 std::sin(m_idx * phi_test(phi_idx)))};
-        BOOST_CHECK_LE(cos_error, math::dbl_ftol);
-        BOOST_CHECK_LE(sin_error, math::dbl_ftol);
+        BOOST_CHECK_LE(cos_error, math::DBL_FTOL);
+        BOOST_CHECK_LE(sin_error, math::DBL_FTOL);
       }
     }
   }

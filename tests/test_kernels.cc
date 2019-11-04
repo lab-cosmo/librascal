@@ -1,5 +1,5 @@
 /**
- * file test_kernels.cc
+ * @file test_kernels.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
