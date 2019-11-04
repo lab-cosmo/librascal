@@ -147,7 +147,7 @@ namespace rascal {
     inline size_t get_size() const { return this->manager->get_size(); }
 
     inline size_t get_size_with_ghosts() const {
-      return this->get_nb_clusters(1);
+      return this->atom_tag_list[0].size();
     }
 
     inline Vector_ref get_position(int index) {
