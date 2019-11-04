@@ -1,3 +1,8 @@
+import rascal
+import rascal.lib as lrl
+from rascal.representations import SphericalInvariants
+from rascal.models import Kernel
+from rascal.utils import ostream_redirect
 from ase.io import read
 import numpy as np
 import argparse
@@ -6,13 +11,9 @@ import json
 import sys
 sys.path.insert(0, '../build/')
 
-from rascal.utils import ostream_redirect
-from rascal.models import Kernel
-from rascal.representations import SphericalInvariants
-import rascal.lib as lrl
-import rascal
 
 # dump radial and power spectra for methane
+
 def dump_reference_json():
     import ubjson
     import os

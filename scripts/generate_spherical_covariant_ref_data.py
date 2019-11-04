@@ -1,3 +1,7 @@
+import rascal.lib as lrl
+import rascal
+from rascal.utils import ostream_redirect
+from rascal.representations import SphericalCovariants
 from ase.io import read
 import numpy as np
 
@@ -7,11 +11,8 @@ import json
 import sys
 sys.path.insert(0, '../build/')
 
-from rascal.representations import SphericalCovariants
-from rascal.utils import ostream_redirect
-import rascal
-import rascal.lib as lrl
 #############################################################################
+
 
 def get_feature_vector(hypers, frames):
     with ostream_redirect():

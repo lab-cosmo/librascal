@@ -87,7 +87,7 @@ class SphericalCovariants(object):
             cutoff_smooth_width=cutoff_smooth_width
         )
         cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
-                                **cutoff_function_parameters)
+                                                      **cutoff_function_parameters)
 
         gaussian_density = dict(
             type=gaussian_sigma_type,

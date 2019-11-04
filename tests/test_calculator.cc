@@ -48,7 +48,7 @@ namespace rascal {
                        CalculatorFixture<SphericalInvariantsTestData>,
                        CalculatorFixture<SphericalCovariantsTestData>>;
 
-BOOST_AUTO_TEST_SUITE(representation_test);
+  BOOST_AUTO_TEST_SUITE(representation_test);
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_SUITE(representation_test);
     }
   }
 
-    /* ---------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------- */
   /**
    * Test if the constructor runs and that the name is properly set
    */

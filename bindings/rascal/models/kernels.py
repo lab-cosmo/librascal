@@ -28,7 +28,7 @@ class Kernel(object):
             atoms in a structure) (default)
 
         """
-        hypers = dict(name=name,target_type=target_type)
+        hypers = dict(name=name, target_type=target_type)
         hypers.update(**kwargs)
         hypers_str = json.dumps(hypers)
         self._representation = representation._representation
