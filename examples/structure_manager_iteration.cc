@@ -84,7 +84,7 @@ int main() {
 
   // `pair_manager` is constructed with the `manager` and a `cutoff`.
   auto pair_manager{
-      make_adapted_manager<AdaptorNeighbourList>(manager, cutoff, true)};
+      make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
   // By invoking the `.update()` method, a neighbour list is built.
   pair_manager->update();
 
