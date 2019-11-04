@@ -28,21 +28,20 @@
 #ifndef PERFORMANCE_BENCHMARKS_BENCHMARK_INTERPOLATOR_HH_
 #define PERFORMANCE_BENCHMARKS_BENCHMARK_INTERPOLATOR_HH_
 
-#include <functional>
-#include <map>
-#include <iostream>
-
-#include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_center_contribution.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/make_structure_manager.hh"
-
-#include "math/interpolator.hh"
 #include "benchmarks.hh"
+#include "json_io.hh"
+#include "math/interpolator.hh"
 #include "representations/calculator_spherical_expansion.hh"
 #include "representations/calculator_spherical_invariants.hh"
-#include "json_io.hh"
+#include "structure_managers/adaptor_center_contribution.hh"
+#include "structure_managers/adaptor_neighbour_list.hh"
+#include "structure_managers/adaptor_strict.hh"
+#include "structure_managers/make_structure_manager.hh"
+#include "structure_managers/structure_manager_centers.hh"
+
+#include <functional>
+#include <iostream>
+#include <map>
 
 namespace rascal {
 
@@ -539,7 +538,7 @@ namespace rascal {
                  {"consider_ghost_neighbours", false},
                  {"skin", 0.}}}};
       json ad2{{"name", "AdaptorCenterContribution"},
-                {"initialization_arguments", {}}};
+               {"initialization_arguments", {}}};
       // hyperparameters for the strict adaptor
       json ad3{{"name", "AdaptorStrict"},
                {"initialization_arguments", {{"cutoff", this->cutoff}}}};

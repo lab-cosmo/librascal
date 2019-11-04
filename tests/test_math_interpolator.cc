@@ -198,7 +198,8 @@ namespace rascal {
       intp_finite_diff_error =
           compute_intp_finite_diff_error<AbsoluteErrorMethod>(
               intp, derivative_func, ref_points);
-      BOOST_CHECK((intp_finite_diff_error - intp_derivative_error) > -1e-10);
+      BOOST_CHECK((intp_finite_diff_error - intp_derivative_error) >
+                  -math::DBL_FTOL);
       if (verbose) {
         std::cout << "Interpolator derivative compared to estimation of "
                      "derivative using finite difference with the interpolated"

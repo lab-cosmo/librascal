@@ -56,7 +56,7 @@ using Manager_t = AdaptorStrict<
 using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
 using PropGrad_t =
     typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
-
+bool VERBOSE{false};
 int main(int argc, char * argv[]) {
   if (argc < 2) {
     std::cerr << "Must provide atomic structure json filename as argument";
@@ -133,12 +133,13 @@ int main(int argc, char * argv[]) {
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
 
-  // TODO(max) remove comments or make verbose flag
-  // auto expn = representation.get_representation_full();
-  // std::cout << "Sample SphericalExpansion elements " << std::endl
-  //           << expn(0, 0) << " " << expn(0, 1) << " " << expn(0, 2) << "\n"
-  //           << expn(1, 0) << " " << expn(1, 1) << " " << expn(1, 2) << "\n"
-  //           << expn(2, 0) << " " << expn(2, 1) << " " << expn(2, 2) << "\n";
+  if (VERBOSE) {
+    auto expn = representation.get_representation_full();
+    std::cout << "Sample SphericalExpansion elements " << std::endl
+              << expn(0, 0) << " " << expn(0, 1) << " " << expn(0, 2) << "\n"
+              << expn(1, 0) << " " << expn(1, 1) << " " << expn(1, 2) << "\n"
+              << expn(2, 0) << " " << expn(2, 1) << " " << expn(2, 2) << "\n";
+  }
 
   // Profile again, this time with gradients
   hypers["compute_gradients"] = true;
@@ -157,16 +158,17 @@ int main(int argc, char * argv[]) {
   std::cout << "Ratio (with gradients / without gradients): "
             << elapsed_grad.count() / elapsed.count() << std::endl;
 
-  // TODO(max) remove comments or make verbose flag
-  // auto expn2 = representation_gradients.get_representation_full();
-  // std::cout << "Sample SphericalExpansion elements (should be identical) "
-  //           << std::endl
-  //           << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) <<
-  //           "\n"
-  //           << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) <<
-  //           "\n"
-  //           << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2) <<
-  //           "\n";
+  if (VERBOSE) {
+    auto expn2 = representation_gradients.get_representation_full();
+    std::cout << "Sample SphericalExpansion elements (should be identical) "
+              << std::endl
+              << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) <<
+              "\n"
+              << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) <<
+              "\n"
+              << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2) <<
+              "\n";
+  }
   // TODO(max) print out analogous gradient components, for now see
   // spherical_expansion_example
 }

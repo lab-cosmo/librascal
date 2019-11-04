@@ -29,16 +29,16 @@
 #ifndef PERFORMANCE_BENCHMARKS_BENCHMARKS_HH_
 #define PERFORMANCE_BENCHMARKS_BENCHMARKS_HH_
 
-#include <benchmark/benchmark.h>
-#include <functional>
-#include <map>
-#include <iostream>
+#include "json_io.hh"
 
+#include <benchmark/benchmark.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <fstream>
 
-#include "json_io.hh"
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <map>
 
 namespace rascal {
   /* Helper function to create all tuple combinations between the vectors of

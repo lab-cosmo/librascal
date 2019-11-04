@@ -30,9 +30,9 @@
 
 #include "json.hpp"
 #include "json_io.hh"
-#include "profile_utility.hh"
-#include "math/interpolator.hh"
 #include "math/hyp1f1.hh"
+#include "math/interpolator.hh"
+#include "profile_utility.hh"
 
 #include <chrono>
 
@@ -46,10 +46,13 @@ using math::InterpolatorScalarUniformCubicSpline;
 using math::RefinementMethod_t;
 using math::Vector_t;
 
-/* Please execute this file one time before using the profiler to create the
- * grid.
+/**
+ * If one wants to profile only the interpolate function, please execute this
+ * file one time before using the profiler to create the grid with the
+ * interpolator. The computed grid is then used in the second run. If one wants
+ * to profile the interpolate function together with the grid initialization
+ * process, be sure to delete the *.grid file before.
  */
-
 int main() {
   // hyp1f1 parameters
   double n = 5;

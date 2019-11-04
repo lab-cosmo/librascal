@@ -25,12 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "test_math.hh"
 #include "math/interpolator.hh"
 #include "representations/calculator_spherical_expansion.hh"
+#include "test_math.hh"
 
 #include <boost/mpl/list.hpp>
-
 
 #ifndef TESTS_TEST_MATH_INTERPOLATOR_HH_
 #define TESTS_TEST_MATH_INTERPOLATOR_HH_

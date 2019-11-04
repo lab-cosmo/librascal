@@ -431,9 +431,9 @@ namespace rascal {
         this->second_derivative_h_sq_6 = y2 * this->h_sq_6;
       }
 
-      inline double
-      interpolate_for_one_point(const Vector_Ref & xx, const Vector_Ref & yy,
-                                int j1, double x) const {
+      inline double interpolate_for_one_point(const Vector_Ref & xx,
+                                              const Vector_Ref & yy, int j1,
+                                              double x) const {
         int klo{j1}, khi{j1 + 1};
         // percentage of grid cell start to x
         double a{(xx(khi) - x) / this->h};

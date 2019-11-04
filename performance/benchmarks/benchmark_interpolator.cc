@@ -108,21 +108,12 @@ namespace rascal {
   template <class BFixture>
   void bm_radial_contr_intp(benchmark::State & state, BFixture & fix) {
     fix.setup(state);
-    // to prevent optimization
+    // To prevent that this step is optimized away from the compiler we copy
+    // the results to some temporary.
     Matrix_t tmp = Matrix_t::Zero(fix.max_radial, fix.max_angular + 1);
-    std::cout << std::endl;
-    std::cout << "x1 " << fix.intp->x1 << " x2 " << fix.intp->x2 << std::endl;
-    for (int i{0}; i < fix.ref_points.size(); i++) {
-      if (not (fix.ref_points(i) >= fix.intp->x1 &&
-              fix.ref_points(i) <= fix.intp->x2)) {
-          std::cout << "this x has problems " << fix.ref_points(i) << " at position " << i << std::endl;
-      }
-    }
-    std::cout << std::endl;
     for (auto _ : state) {
       for (size_t i{0}; i < fix.nb_iterations; i++) {
-        double x = fix.ref_points(i % fix.ref_points.size());
-        tmp = fix.intp->interpolate(x);
+        tmp = fix.intp->interpolate(fix.ref_points(i % fix.ref_points.size()));
       }
     }
     state.SetComplexityN(fix.nb_iterations);
@@ -151,8 +142,6 @@ namespace rascal {
     for (auto _ : state) {
       fix.representation_ptr->compute(fix.manager);
     }
-    // TODO(alex) I would like to print interpolator information, but it is
-    // covered under a lot of layers, not sure if
     state.SetComplexityN(fix.max_radial * (fix.max_angular + 1));
     state.counters.insert({{"max_radial", fix.max_radial},
                            {"max_angular", fix.max_angular},
@@ -163,24 +152,23 @@ namespace rascal {
 
   /**
    * Hyp1f1 for the scalar interpolator
-   *
-   * auto intp_fix{InterpolatorScalarBFixture<Hyp1f1Dataset>()};
-   * BENCHMARK_CAPTURE(bm_hyp1f1, , intp_fix)
-   *     ->Apply(all_combinations_of_arguments<Hyp1f1Dataset>)
-   *     ->Complexity();
-   * BENCHMARK_CAPTURE(bm_hyp1f1_intp, , intp_fix)
-   *     ->Apply(all_combinations_of_arguments<Hyp1f1Dataset>)
-   *     ->Complexity();
    */
+  auto intp_fix{InterpolatorScalarBFixture<Hyp1f1Dataset>()};
+  BENCHMARK_CAPTURE(bm_hyp1f1, /*name*/, intp_fix)
+      ->Apply(all_combinations_of_arguments<Hyp1f1Dataset>)
+      ->Complexity();
+  BENCHMARK_CAPTURE(bm_hyp1f1_intp, /*name*/, intp_fix)
+      ->Apply(all_combinations_of_arguments<Hyp1f1Dataset>)
+      ->Complexity();
 
   /**
    * RadialContribution for the matrix interpolator
    */
   auto intp_mat_fix{InterpolatorMatrixBFixture<RadialContributionDataset>()};
-  BENCHMARK_CAPTURE(bm_radial_contr, , intp_mat_fix)
+  BENCHMARK_CAPTURE(bm_radial_contr, /* name */, intp_mat_fix)
       ->Apply(all_combinations_of_arguments<RadialContributionDataset>)
       ->Complexity();
-  BENCHMARK_CAPTURE(bm_radial_contr_intp, , intp_mat_fix)
+  BENCHMARK_CAPTURE(bm_radial_contr_intp, /* name */, intp_mat_fix)
       ->Apply(all_combinations_of_arguments<RadialContributionDataset>)
       ->Complexity();
 

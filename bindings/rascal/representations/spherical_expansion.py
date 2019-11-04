@@ -48,6 +48,7 @@ class SphericalExpansion(object):
         http://link.aps.org/doi/10.1103/PhysRevB.87.184115
 
     """
+
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0.,
@@ -74,7 +75,7 @@ class SphericalExpansion(object):
             cutoff_smooth_width=cutoff_smooth_width
         )
         cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
-                                **cutoff_function_parameters)
+                                                      **cutoff_function_parameters)
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
@@ -87,24 +88,27 @@ class SphericalExpansion(object):
         if 'type' in optimization_args:
             if optimization_args['type'] == 'Spline':
                 if 'accuracy' in optimization_args:
-                    accuracy=optimization_args['accuracy']
+                    accuracy = optimization_args['accuracy']
                 else:
-                    accuracy=1e-8
+                    accuracy = 1e-8
                 if 'range' in optimization_args:
-                    spline_range=optimization_args['range']
+                    spline_range = optimization_args['range']
                 else:
-                    #TODO(felix) remove this when there is a check for the distance for the usage of the interpolator in the RadialContribution
+                    # TODO(felix) remove this when there is a check for the
+                    # distance for the usage of the interpolator in the 
+                    # RadialContribution
                     print("Warning: default parameter for spline range is used.")
-                    spline_range=(0, interaction_cutoff)
-                optimization_args={'type':'Spline', 'accuracy':accuracy, 'range':{'begin':spline_range[0], 'end':spline_range[1]}}
+                    spline_range = (0, interaction_cutoff)
+                optimization_args = {'type': 'Spline', 'accuracy': accuracy, 'range': {
+                    'begin': spline_range[0], 'end': spline_range[1]}}
             elif optimization_args['type'] == 'None':
-                optimization_args=dict({'type':'None'})
+                optimization_args = dict({'type': 'None'})
             else:
                 print('Optimization type is not known. Switching to no'
                       ' optimization.')
-                optimization_args=dict({'type':'None'})
+                optimization_args = dict({'type': 'None'})
         else:
-            optimization_args=dict({'type':'None'})
+            optimization_args = dict({'type': 'None'})
         radial_contribution = dict(
             type=radial_basis,
             optimization=optimization_args

@@ -1,5 +1,5 @@
 /**
- * @file  profile_scalar_cubic_spline.hh
+ * @file  profile_utility.hh
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
@@ -30,6 +30,7 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
+
 #include <fstream>
 
 namespace rascal {
