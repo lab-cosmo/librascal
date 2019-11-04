@@ -23,6 +23,7 @@ class AtomsList(object):
     Methods
     -------
     """
+
     def __init__(self, frames, nl_options, start=None, length=None):
         self.nl_options = nl_options
         self._frames = frames
@@ -64,7 +65,7 @@ class AtomsList(object):
             returns the representation bound to the calculator as dense matrix.
         """
         return self.managers.get_dense_feature_matrix(
-                calculator._representation)
+            calculator._representation)
 
 
 def get_neighbourlist(structure, options):

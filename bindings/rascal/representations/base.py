@@ -27,6 +27,7 @@ def CalculatorFactory(rep_options):
                 name, list(_representations.keys())))
     return _representations[name](*rep_options['args'])
 
+
 def cutoff_function_dict_switch(cutoff_function_type, **kwargs):
     """
     return appropriate dict for the cutoff function parameters
@@ -68,7 +69,7 @@ def cutoff_function_dict_switch(cutoff_function_type, **kwargs):
             ),
         )
     else:
-        raise NotImplementedError('cutoff_function: '+cutoff_function_type+
-                                    ' has not been implemented.')
+        raise NotImplementedError('cutoff_function: '+cutoff_function_type +
+                                  ' has not been implemented.')
 
     return cutoff_function_dict

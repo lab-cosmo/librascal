@@ -243,8 +243,8 @@ namespace rascal {
    */
   struct OrderOnePropertyBoostList {
     struct OrderTwoFixtureStacksTuple {
-      using ANL_SMC_TemplatedStackFixture = AdaptorNeighbourListStackFixture<
-          StructureManagerCentersStackFixture>;
+      using ANL_SMC_TemplatedStackFixture =
+          AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture>;
       using type = std::tuple<
           AtomPropertyFixture<ANL_SMC_TemplatedStackFixture>,
           AtomPropertyFixture<
@@ -267,7 +267,7 @@ namespace rascal {
 
     using tuple_order_2_with_ghosts = OrderTwoFixtureStacksTuple::type;
     using type = pack_into_list<
-      tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type>::type;
+        tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type>::type;
     // using type_with_ghosts = pack_into_list<tuple_with_ghosts>::type;
     // using tuple_without_ghosts = OrderTwoFixtureStacksTuple<false>::type;
     // using type_without_ghosts = pack_into_list<tuple_without_ghosts>::type;
@@ -277,8 +277,8 @@ namespace rascal {
 
   struct OrderTwoPropertyBoostList {
     struct OrderTwoFixtureStacksTuple {
-      using ANL_SMC_TemplatedStackFixture = AdaptorNeighbourListStackFixture<
-          StructureManagerCentersStackFixture>;
+      using ANL_SMC_TemplatedStackFixture =
+          AdaptorNeighbourListStackFixture<StructureManagerCentersStackFixture>;
       using type = std::tuple<
           PairPropertyFixture<ANL_SMC_TemplatedStackFixture>,
           PairPropertyFixture<
