@@ -212,7 +212,7 @@ namespace rascal {
       return this->manager->get_neighbour_atom_tag(neighbour_index);
     }
 
-    //! return the number of neighbours of a given atom
+    //! return the number of neighbours of a given atom at a given TargetOrder
     template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {

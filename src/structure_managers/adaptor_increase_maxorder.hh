@@ -64,6 +64,7 @@ namespace rascal {
     // TODO(felix) here we assume that only triplets can be added. need to
     // changed after the rework of AdaptorMaxOrder so that it passes the
     // Order that has been added.
+    // index_sequence listing the orders available in the manager
     using AvailableOrdersList = typename internal::AppendAvailableOrder<
         3, typename parent_traits::AvailableOrdersList>::type;
     // Extend the layer by one with the new MaxOrder
@@ -243,7 +244,11 @@ namespace rascal {
       return this->manager->get_atom_index(atom_tag);
     }
 
-    //! Returns the number of neighbors of a given cluster
+    /**
+     * Returns the number of neighbors of a given atom at a given TargetOrder
+     * use implementation of the previous manager when
+     * TargetOrder != AddedOrder
+     */
     template <size_t TargetOrder, size_t Order, size_t Layer,
               bool T = (TargetOrder < traits::MaxOrder),
               std::enable_if_t<T, int> = 0>
@@ -254,6 +259,8 @@ namespace rascal {
       return this->manager->template get_cluster_size<TargetOrder>(cluster);
     }
 
+    //! use implementation of the previous manager when not at
+    //! TargetOrder == AddedOrder
     template <size_t TargetOrder, size_t Order, size_t Layer,
               bool T = (TargetOrder < traits::MaxOrder),
               std::enable_if_t<not(T), int> = 0>

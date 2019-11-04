@@ -652,7 +652,7 @@ namespace rascal {
     //! Returns the type of a given atom, given an AtomRef
     int get_atom_type(int atom_tag) const { return this->atom_types[atom_tag]; }
 
-    //! Returns the number of neighbors of a given cluster
+    //! Returns the number of neighbors of a given atom at a given TargetOrder
     template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {

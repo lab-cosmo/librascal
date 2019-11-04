@@ -97,6 +97,9 @@ namespace rascal {
           TargetOrder, Orders...>::get_is_order_available();
     }
 
+    /**
+     * extract the last element of an index_sequence
+     */
     template <size_t... Orders>
     constexpr size_t
     get_last_element_in_sequence(std::index_sequence<Orders...> /* sep*/) {

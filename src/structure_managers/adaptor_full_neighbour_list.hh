@@ -228,13 +228,15 @@ namespace rascal {
       return this->offsets[counters.front()];
     }
 
-    //! Returns the number of neighbours of a given cluster
+    //! Returns the number of neighbours of a given atom at a given TargetOrder
+    //! use implementation of the previous manager when not at TargetOrder == 1
     template <size_t TargetOrder, size_t Order, size_t Layer>
     typename std::enable_if_t<(TargetOrder < (traits::MaxOrder - 1)), size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       return this->manager->template get_cluster_size<TargetOrder>(cluster);
     }
 
+    //! use implementation of the previous manager when not at TargetOrder == 2
     template <size_t TargetOrder, size_t Order, size_t Layer>
     typename std::enable_if_t<not(TargetOrder < traits::MaxOrder - 1), size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
