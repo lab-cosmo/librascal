@@ -255,8 +255,6 @@ namespace rascal {
 
     //! returns number of I atoms in the list, since at this level, center atoms
     //! and ghost atoms are not distinguishable.
-    // TODO(markus): reminder for including this in possible future scenario for
-    // domain decomposion.
     inline size_t get_size_with_ghosts() const {
       return this->n_centers + this->n_ghosts;
     }
