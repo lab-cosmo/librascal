@@ -827,7 +827,7 @@ namespace rascal {
       // set the number of centers
       this->n_centers = this->manager->get_size();
       // this->n_atoms = this->manager->get_n_atoms();
-      this->n_ghosts = 0; //this->manager->get_size_with_ghosts();
+      this->n_ghosts = 0;  // this->manager->get_size_with_ghosts();
       //! Reset cluster_indices for adaptor to fill with sequence
       internal::for_each(this->cluster_indices_container,
                          internal::ResizePropertyToZero());
@@ -1071,7 +1071,14 @@ namespace rascal {
       this->nb_neigh.push_back(nneigh);
     }
 
-    // TODO(markus): this is a quick fix!
+    /**
+     * All the ghost atom neighbours have to be added explicitly as zero. This
+     * is done after adding the neighbours of centers because ghost atoms are
+     * listed after the center atoms in the respective data
+     * structures. Technically ghost atoms can not have any neighbour, i.e. not
+     * even '0'. It should be _nothing_. But that is not possible with our data
+     * structure.
+     */
     for (auto center : this->get_manager().only_ghosts()) {
       int nneigh{0};
       this->nb_neigh.push_back(nneigh);

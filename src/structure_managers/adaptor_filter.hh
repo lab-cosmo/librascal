@@ -202,7 +202,6 @@ namespace rascal {
     }
 
     //! returns the number of atoms
-    // TODO(markus) this function does not make sense here
     inline size_t get_size_with_ghosts() const {
       return this->manager->get_size_with_ghosts();
     }
