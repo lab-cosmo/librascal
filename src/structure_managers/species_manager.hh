@@ -249,9 +249,9 @@ namespace rascal {
     /**
      * Helper struct that loops over a cluster or manager, and
      * segregates the iteratee (i.e. the next higher order clusters)
-     * by species. If the loop has not reached the highest cluster
-     * order (i.e. MaxOrder), it recursively loops also over the next
-     * higher order clusters.
+     * by species.
+     * TODO(markus,felix) probably not really needed since the orders might be
+     * discontinuous.
      */
     template <class ManagerImplementation, size_t MaxOrder,
               size_t CurrentOrder = 2, bool Stop = false>

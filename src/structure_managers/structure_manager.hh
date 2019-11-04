@@ -690,7 +690,7 @@ namespace rascal {
           {arr1[Indices1]..., arr2[Indices2]...}};
     }
 
-    //! template function allows to add an element to an array
+    //! concatenate 2 array
     template <typename T, size_t Size1, size_t Size2>
     std::array<T, Size1 + Size2>
     concat_array(const std::array<T, Size1> & arr1,
@@ -710,6 +710,8 @@ namespace rascal {
      * static branching to redirect to the correct function to get sizes,
      * offsets and neighbours. Used later by adaptors which modify or extend
      * the neighbourlist to access the correct offset.
+     *
+     * TODO(felix) get rid of this helper using sfinae
      */
     template <bool AtMaxOrder>
     struct IncreaseHelper {
@@ -1013,30 +1015,17 @@ namespace rascal {
     //! return a const reference to the manager with maximum layer
     const Manager_t & get_manager() const { return this->it.get_manager(); }
 
-    //! returns its own size
-    // tag(felix) lost its meaning now
-    // size_t size() { return this->get_manager().get_cluster_size(*this); }
     //! return iterator index - this is used in cluster_indices_container as
     //! well as accessing properties
     size_t get_index() const { return this->it.index; }
-    //! returns the clusters index (e.g. the 4-th pair of all pairs in this
-    //! iteration)
-    // TODO(alex) should be equal cluster_indices.back()
-    // improve documentation
+
+    //! returns the clusters index refering to the whole list of current
+    //! clusters
     size_t get_global_index() const { return this->it.get_cluster_index(); }
     //! returns the atom tags, which constitute the cluster
     const std::array<int, Order> & get_atom_tag_list() const {
       return this->atom_tag_list;
     }
-
-    /**
-     * Allows to set the atom tag at the atom index (cluster of Order 1 index)
-     *
-     * @param index atom index (cluster of Order 1 index)
-     */
-    // void set_atom_tag(const size_t index, const int tag) {
-    //   this->atom_tag_list[index] = tag;
-    // }
 
     Iterator_t & get_iterator() { return this->it; }
     const Iterator_t & get_iterator() const { return this->it; }
@@ -1069,22 +1058,26 @@ namespace rascal {
         }
       }
 
+      //! end of the iterations over the clusters of order TargetOrder
       iterator begin() {
         return iterator(cluster_ref, this->start, this->offset);
       }
-      //! end of the iterations over the cluster itself
+      //! end of the iterations over the clusters
       iterator end() {
         return iterator(cluster_ref, this->size(),
                         std::numeric_limits<size_t>::max());
       }
-
+      //! get the number of neighbors of the center at Order == TargetOrder
       size_t size() {
         return cluster_ref.get_manager().template get_cluster_size<TargetOrder>(
             cluster_ref);
       }
 
       ClusterRef_t & cluster_ref;
+      //! starting index of the iteration
       size_t start;
+      //! offset with which to start the iteration in the list of all clusters
+      //! of Order == TargetOrder
       size_t offset;
     };
 
@@ -1360,18 +1353,10 @@ namespace rascal {
 
     //! returns the counters - which is the position in a list at each
     //! Order.
-    // tag(felix) change the behaviour to account for the fact that
-    // the data is at Order == 1 or 2
     template <bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
     std::array<size_t, 1> get_counters() {
       std::array<size_t, 1> counters{this->index};
       return counters;
-    }
-
-    template <bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
-    std::array<size_t, 1> get_offsets() {
-      std::array<size_t, 1> offsets{this->offset};
-      return offsets;
     }
 
     template <bool T = IsOrderOne, std::enable_if_t<not(T), int> = 0>
@@ -1380,6 +1365,15 @@ namespace rascal {
       std::array<size_t, 2> counters{parental_counters[0], this->index};
       return counters;
     }
+
+    //! get offsets at which the current clusters at several orders should
+    //! start
+    template <bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
+    std::array<size_t, 1> get_offsets() {
+      std::array<size_t, 1> offsets{this->offset};
+      return offsets;
+    }
+    
     template <bool T = IsOrderOne, std::enable_if_t<not(T), int> = 0>
     std::array<size_t, 2> get_offsets() {
       auto && parental_offsets = this->container.get_offsets();

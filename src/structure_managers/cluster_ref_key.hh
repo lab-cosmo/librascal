@@ -206,10 +206,6 @@ namespace rascal {
 
     static constexpr bool IsOrderOne{Order == 1};
 
-    // using AtomIndex_t =
-    //     std::conditional_t<IsOrderOne, std::array<int, 1>,
-    //                        std::array<int, 2>>;
-
     using AtomIndex_t = std::array<int, Order>;
 
     //! Default constructor
