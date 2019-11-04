@@ -91,6 +91,11 @@ namespace rascal {
     static_assert(traits::MaxOrder < 3,
                   "AdaptorHalfList does not work with Order > 2.");
 
+    constexpr static auto AtomLayer{
+        Manager_t::template cluster_layer_from_order<1>()};
+    constexpr static auto PairLayer{
+        Manager_t::template cluster_layer_from_order<2>()};
+
     // TODO(markus): add this to all structure managers
     // static_assert(parent_traits::NeighbourListType
     //               == AdaptorTraits::NeighbourListType::full,
@@ -322,8 +327,6 @@ namespace rascal {
     for (auto && atom : this->manager->with_ghosts()) {
       // Add new depth layer for atoms (see LayerByOrder for possible
       // optimisation).
-      constexpr auto AtomLayer{
-          compute_cluster_layer<atom.order()>(typename traits::LayerByOrder{})};
 
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
@@ -338,9 +341,6 @@ namespace rascal {
       int nneigh{0};
 
       for (auto pair : atom) {
-        constexpr auto PairLayer{compute_cluster_layer<pair.order()>(
-            typename traits::LayerByOrder{})};
-
         auto index_j{pair.get_atom_tag()};
 
         // This is the actual check for the half neighbour list: only pairs with

@@ -1079,8 +1079,9 @@ namespace rascal {
      * even '0'. It should be _nothing_. But that is not possible with our data
      * structure.
      */
-    for (auto center : this->get_manager().only_ghosts()) {
-      int nneigh{0};
+    int nneigh{0};
+    for (auto && dummy : this->get_manager().only_ghosts()) {
+      std::ignore = dummy;
       this->nb_neigh.push_back(nneigh);
     }
   }
