@@ -1,5 +1,5 @@
 /**
- * file   test_math_gauss_legendre.cc
+ * @file   test_math_gauss_legendre.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *

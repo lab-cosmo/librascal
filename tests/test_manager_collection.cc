@@ -1,5 +1,5 @@
 /**
- * file test_manager_collection.cc
+ * @file test_manager_collection.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
