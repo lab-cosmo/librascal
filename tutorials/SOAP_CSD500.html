@@ -504,7 +504,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>(&#39;./reference_data/CSD-500.xyz&#39;, &lt;http.client.HTTPMessage at 0x7fcb8dc3ac18&gt;)
+<span></span>(&#39;./reference_data/CSD-500.xyz&#39;, &lt;http.client.HTTPMessage at 0x7f8a47e49fd0&gt;)
 </pre></div>
 </div>
 </div>
@@ -618,14 +618,42 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Neighbourlist of structures failed. trying
-                one at a time.
-Structure Rep computation 0 failed
-CPU times: user 1.14 ms, sys: 1.03 ms, total: 2.17 ms
-Wall time: 1.73 ms
+
+<span class="ansi-red-fg">RuntimeError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">~/project/build/rascal/neighbourlist/structure_manager.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, frames, nl_options, start, length)</span>
+<span class="ansi-green-intense-fg ansi-bold">     45</span>             <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 46</span><span class="ansi-red-fg">                 </span>managers<span class="ansi-blue-fg">.</span>add_structures<span class="ansi-blue-fg">(</span>structures<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     47</span>             <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-red-fg">RuntimeError</span>: Some of the atoms in the structure are not
+                           inside the unit cell. Please wrap them inside it
+                           with at least tolerance of 1e-10.
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">RuntimeError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;timed exec&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+
+<span class="ansi-green-fg">~/project/build/rascal/representations/spherical_invariants.py</span> in <span class="ansi-cyan-fg">transform</span><span class="ansi-blue-fg">(self, frames)</span>
+<span class="ansi-green-intense-fg ansi-bold">    150</span>         &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    151</span>         <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> isinstance<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span> AtomsList<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 152</span><span class="ansi-red-fg">             </span>frames <span class="ansi-blue-fg">=</span> AtomsList<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>nl_options<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    153</span>
+<span class="ansi-green-intense-fg ansi-bold">    154</span>         self<span class="ansi-blue-fg">.</span>_representation<span class="ansi-blue-fg">.</span>compute<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">.</span>managers<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/project/build/rascal/neighbourlist/structure_manager.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, frames, nl_options, start, length)</span>
+<span class="ansi-green-intense-fg ansi-bold">     47</span>             <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     48</span>                 raise RuntimeError(&#34;Neighbourlist of structures failed &#34;
+<span class="ansi-green-fg">---&gt; 49</span><span class="ansi-red-fg">                 + &#34;because: &#34; + str(e))
+</span><span class="ansi-green-intense-fg ansi-bold">     50</span>
+<span class="ansi-green-intense-fg ansi-bold">     51</span>
+
+<span class="ansi-red-fg">RuntimeError</span>: Neighbourlist of structures failed because: Some of the atoms in the structure are not
+                           inside the unit cell. Please wrap them inside it
+                           with at least tolerance of 1e-10.
 </pre></div></div>
 </div>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
@@ -633,6 +661,19 @@ Wall time: 1.73 ms
 <span></span><span class="n">X</span> <span class="o">=</span> <span class="n">representation</span><span class="o">.</span><span class="n">get_dense_feature_matrix</span><span class="p">(</span><span class="n">soap</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-14-ef4ba23a9316&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>X <span class="ansi-blue-fg">=</span> representation<span class="ansi-blue-fg">.</span>get_dense_feature_matrix<span class="ansi-blue-fg">(</span>soap<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>T
+
+<span class="ansi-red-fg">NameError</span>: name &#39;representation&#39; is not defined
+</pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
@@ -644,13 +685,17 @@ Wall time: 1.73 ms
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
-</pre></div>
+<div class="prompt empty docutils container">
 </div>
-<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>(0, 0)
-</pre></div>
-</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-15-bc5f1a0adac8&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>X<span class="ansi-blue-fg">.</span>shape
+
+<span class="ansi-red-fg">NameError</span>: name &#39;X&#39; is not defined
+</pre></div></div>
 </div>
 </div>
 <div class="section" id="Learning-the-chemical-shifts-of-a-set-of-crystal-structures">
@@ -760,24 +805,53 @@ Wall time: 1.73 ms
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Neighbourlist of structures failed. trying
-                one at a time.
-Structure Rep computation 0 failed
+
+<span class="ansi-red-fg">RuntimeError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">~/project/build/rascal/neighbourlist/structure_manager.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, frames, nl_options, start, length)</span>
+<span class="ansi-green-intense-fg ansi-bold">     45</span>             <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 46</span><span class="ansi-red-fg">                 </span>managers<span class="ansi-blue-fg">.</span>add_structures<span class="ansi-blue-fg">(</span>structures<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     47</span>             <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-red-fg">RuntimeError</span>: Some of the atoms in the structure are not
+                           inside the unit cell. Please wrap them inside it
+                           with at least tolerance of 1e-10.
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">RuntimeError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-17-c3f75ea3f4d1&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>compute_representation<span class="ansi-blue-fg">(</span>soap<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">compute_representation</span><span class="ansi-blue-fg">(representation, frames)</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-green-fg">def</span> compute_representation<span class="ansi-blue-fg">(</span>representation<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg">     </span>result <span class="ansi-blue-fg">=</span> representation<span class="ansi-blue-fg">.</span>transform<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>     <span class="ansi-green-fg">return</span> result
+<span class="ansi-green-intense-fg ansi-bold">      4</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> <span class="ansi-red-fg">#def compute_representation(frames):</span>
+
+<span class="ansi-green-fg">~/project/build/rascal/representations/spherical_invariants.py</span> in <span class="ansi-cyan-fg">transform</span><span class="ansi-blue-fg">(self, frames)</span>
+<span class="ansi-green-intense-fg ansi-bold">    150</span>         &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    151</span>         <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> isinstance<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span> AtomsList<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 152</span><span class="ansi-red-fg">             </span>frames <span class="ansi-blue-fg">=</span> AtomsList<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>nl_options<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    153</span>
+<span class="ansi-green-intense-fg ansi-bold">    154</span>         self<span class="ansi-blue-fg">.</span>_representation<span class="ansi-blue-fg">.</span>compute<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">.</span>managers<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/project/build/rascal/neighbourlist/structure_manager.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, frames, nl_options, start, length)</span>
+<span class="ansi-green-intense-fg ansi-bold">     47</span>             <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     48</span>                 raise RuntimeError(&#34;Neighbourlist of structures failed &#34;
+<span class="ansi-green-fg">---&gt; 49</span><span class="ansi-red-fg">                 + &#34;because: &#34; + str(e))
+</span><span class="ansi-green-intense-fg ansi-bold">     50</span>
+<span class="ansi-green-intense-fg ansi-bold">     51</span>
+
+<span class="ansi-red-fg">RuntimeError</span>: Neighbourlist of structures failed because: Some of the atoms in the structure are not
+                           inside the unit cell. Please wrap them inside it
+                           with at least tolerance of 1e-10.
 </pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
-</pre></div>
-</div>
-<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;rascal.neighbourlist.structure_manager.AtomsList at 0x7fcb8daad710&gt;
-</pre></div>
-</div>
 </div>
 </div>
 <div class="section" id="With-the-full-power-spectrum">
@@ -876,9 +950,47 @@ Structure Rep computation 0 failed
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Neighbourlist of structures failed. trying
-                one at a time.
-Structure Rep computation 0 failed
+
+<span class="ansi-red-fg">RuntimeError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">~/project/build/rascal/neighbourlist/structure_manager.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, frames, nl_options, start, length)</span>
+<span class="ansi-green-intense-fg ansi-bold">     45</span>             <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 46</span><span class="ansi-red-fg">                 </span>managers<span class="ansi-blue-fg">.</span>add_structures<span class="ansi-blue-fg">(</span>structures<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     47</span>             <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-red-fg">RuntimeError</span>: Some of the atoms in the structure are not
+                           inside the unit cell. Please wrap them inside it
+                           with at least tolerance of 1e-10.
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">RuntimeError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-26-acf4215baa49&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>features <span class="ansi-blue-fg">=</span> compute_representation<span class="ansi-blue-fg">(</span>soap<span class="ansi-blue-fg">,</span> frames_train<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">compute_representation</span><span class="ansi-blue-fg">(representation, frames)</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-green-fg">def</span> compute_representation<span class="ansi-blue-fg">(</span>representation<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg">     </span>result <span class="ansi-blue-fg">=</span> representation<span class="ansi-blue-fg">.</span>transform<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>     <span class="ansi-green-fg">return</span> result
+<span class="ansi-green-intense-fg ansi-bold">      4</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> <span class="ansi-red-fg">#def compute_representation(frames):</span>
+
+<span class="ansi-green-fg">~/project/build/rascal/representations/spherical_invariants.py</span> in <span class="ansi-cyan-fg">transform</span><span class="ansi-blue-fg">(self, frames)</span>
+<span class="ansi-green-intense-fg ansi-bold">    150</span>         &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    151</span>         <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> isinstance<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span> AtomsList<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 152</span><span class="ansi-red-fg">             </span>frames <span class="ansi-blue-fg">=</span> AtomsList<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>nl_options<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    153</span>
+<span class="ansi-green-intense-fg ansi-bold">    154</span>         self<span class="ansi-blue-fg">.</span>_representation<span class="ansi-blue-fg">.</span>compute<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">.</span>managers<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/project/build/rascal/neighbourlist/structure_manager.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, frames, nl_options, start, length)</span>
+<span class="ansi-green-intense-fg ansi-bold">     47</span>             <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     48</span>                 raise RuntimeError(&#34;Neighbourlist of structures failed &#34;
+<span class="ansi-green-fg">---&gt; 49</span><span class="ansi-red-fg">                 + &#34;because: &#34; + str(e))
+</span><span class="ansi-green-intense-fg ansi-bold">     50</span>
+<span class="ansi-green-intense-fg ansi-bold">     51</span>
+
+<span class="ansi-red-fg">RuntimeError</span>: Neighbourlist of structures failed because: Some of the atoms in the structure are not
+                           inside the unit cell. Please wrap them inside it
+                           with at least tolerance of 1e-10.
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -891,13 +1003,17 @@ Structure Rep computation 0 failed
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
-</pre></div>
+<div class="prompt empty docutils container">
 </div>
-<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;rascal.neighbourlist.structure_manager.AtomsList at 0x7fcb8daada58&gt;
-</pre></div>
-</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-27-224628ecf868&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>features
+
+<span class="ansi-red-fg">NameError</span>: name &#39;features&#39; is not defined
+</pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
@@ -914,18 +1030,11 @@ Structure Rep computation 0 failed
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-<span class="ansi-red-fg">AttributeError</span>Traceback (most recent call last)
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
 <span class="ansi-green-fg">&lt;ipython-input-28-539c7625fc7a&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
 <span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>kernel <span class="ansi-blue-fg">=</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">)</span>
 
-<span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">compute_atomic_kernel</span><span class="ansi-blue-fg">(zeta, rep1, rep2)</span>
-<span class="ansi-green-intense-fg ansi-bold">      9</span> <span class="ansi-green-fg">def</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> rep1<span class="ansi-blue-fg">,</span> rep2<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     10</span>     <span class="ansi-green-fg">if</span> rep2 <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 11</span><span class="ansi-red-fg">         </span>kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_atomic<span class="ansi-blue-fg">(</span>rep2<span class="ansi-blue-fg">,</span> zeta<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     12</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     13</span>         kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_atomic<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">AttributeError</span>: &#39;AtomsList&#39; object has no attribute &#39;cosine_kernel_atomic&#39;
+<span class="ansi-red-fg">NameError</span>: name &#39;features&#39; is not defined
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -1086,43 +1195,61 @@ Structure Rep computation 0 failed
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Neighbourlist of structures failed. trying
-                one at a time.
-Structure Rep computation 0 failed
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-<span class="ansi-red-fg">AttributeError</span>Traceback (most recent call last)
+<span class="ansi-red-fg">RuntimeError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">~/project/build/rascal/neighbourlist/structure_manager.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, frames, nl_options, start, length)</span>
+<span class="ansi-green-intense-fg ansi-bold">     45</span>             <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 46</span><span class="ansi-red-fg">                 </span>managers<span class="ansi-blue-fg">.</span>add_structures<span class="ansi-blue-fg">(</span>structures<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     47</span>             <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-red-fg">RuntimeError</span>: Some of the atoms in the structure are not
+                           inside the unit cell. Please wrap them inside it
+                           with at least tolerance of 1e-10.
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">RuntimeError</span>Traceback (most recent call last)
 <span class="ansi-green-fg">&lt;ipython-input-36-06fbc99774ab&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
 <span class="ansi-green-intense-fg ansi-bold">      1</span> zeta <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">2</span>
 <span class="ansi-green-intense-fg ansi-bold">      2</span> Lambda <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">10</span>
 <span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span>krr<span class="ansi-blue-fg">,</span>k <span class="ansi-blue-fg">=</span> train_krr_model<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> Lambda<span class="ansi-blue-fg">,</span> soap<span class="ansi-blue-fg">,</span> frames_train<span class="ansi-blue-fg">,</span> y_train<span class="ansi-blue-fg">)</span>
 
 <span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">train_krr_model</span><span class="ansi-blue-fg">(zeta, Lambda, representation, frames, y, jitter)</span>
+<span class="ansi-green-intense-fg ansi-bold">     75</span>
 <span class="ansi-green-intense-fg ansi-bold">     76</span> <span class="ansi-green-fg">def</span> train_krr_model<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span>Lambda<span class="ansi-blue-fg">,</span>representation<span class="ansi-blue-fg">,</span>frames<span class="ansi-blue-fg">,</span>y<span class="ansi-blue-fg">,</span>jitter<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1e-8</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     77</span>     features <span class="ansi-blue-fg">=</span> compute_representation<span class="ansi-blue-fg">(</span>representation<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">---&gt; 78</span><span class="ansi-red-fg">     </span>kernel <span class="ansi-blue-fg">=</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 77</span><span class="ansi-red-fg">     </span>features <span class="ansi-blue-fg">=</span> compute_representation<span class="ansi-blue-fg">(</span>representation<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     78</span>     kernel <span class="ansi-blue-fg">=</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">)</span>
 <span class="ansi-green-intense-fg ansi-bold">     79</span>     <span class="ansi-red-fg"># adjust the kernel so that it is properly scaled</span>
-<span class="ansi-green-intense-fg ansi-bold">     80</span>     delta <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>std<span class="ansi-blue-fg">(</span>y<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">/</span> np<span class="ansi-blue-fg">.</span>mean<span class="ansi-blue-fg">(</span>kernel<span class="ansi-blue-fg">.</span>diagonal<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
 
-<span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">compute_atomic_kernel</span><span class="ansi-blue-fg">(zeta, rep1, rep2)</span>
-<span class="ansi-green-intense-fg ansi-bold">      9</span> <span class="ansi-green-fg">def</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> rep1<span class="ansi-blue-fg">,</span> rep2<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     10</span>     <span class="ansi-green-fg">if</span> rep2 <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 11</span><span class="ansi-red-fg">         </span>kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_atomic<span class="ansi-blue-fg">(</span>rep2<span class="ansi-blue-fg">,</span> zeta<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     12</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     13</span>         kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_atomic<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">compute_representation</span><span class="ansi-blue-fg">(representation, frames)</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-green-fg">def</span> compute_representation<span class="ansi-blue-fg">(</span>representation<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg">     </span>result <span class="ansi-blue-fg">=</span> representation<span class="ansi-blue-fg">.</span>transform<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>     <span class="ansi-green-fg">return</span> result
+<span class="ansi-green-intense-fg ansi-bold">      4</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> <span class="ansi-red-fg">#def compute_representation(frames):</span>
 
-<span class="ansi-red-fg">AttributeError</span>: &#39;AtomsList&#39; object has no attribute &#39;cosine_kernel_atomic&#39;
+<span class="ansi-green-fg">~/project/build/rascal/representations/spherical_invariants.py</span> in <span class="ansi-cyan-fg">transform</span><span class="ansi-blue-fg">(self, frames)</span>
+<span class="ansi-green-intense-fg ansi-bold">    150</span>         &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    151</span>         <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> isinstance<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span> AtomsList<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 152</span><span class="ansi-red-fg">             </span>frames <span class="ansi-blue-fg">=</span> AtomsList<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>nl_options<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    153</span>
+<span class="ansi-green-intense-fg ansi-bold">    154</span>         self<span class="ansi-blue-fg">.</span>_representation<span class="ansi-blue-fg">.</span>compute<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">.</span>managers<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/project/build/rascal/neighbourlist/structure_manager.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, frames, nl_options, start, length)</span>
+<span class="ansi-green-intense-fg ansi-bold">     47</span>             <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     48</span>                 raise RuntimeError(&#34;Neighbourlist of structures failed &#34;
+<span class="ansi-green-fg">---&gt; 49</span><span class="ansi-red-fg">                 + &#34;because: &#34; + str(e))
+</span><span class="ansi-green-intense-fg ansi-bold">     50</span>
+<span class="ansi-green-intense-fg ansi-bold">     51</span>
+
+<span class="ansi-red-fg">RuntimeError</span>: Neighbourlist of structures failed because: Some of the atoms in the structure are not
+                           inside the unit cell. Please wrap them inside it
+                           with at least tolerance of 1e-10.
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -1220,43 +1347,61 @@ Structure Rep computation 0 failed
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Neighbourlist of structures failed. trying
-                one at a time.
-Structure Rep computation 0 failed
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-<span class="ansi-red-fg">AttributeError</span>Traceback (most recent call last)
+<span class="ansi-red-fg">RuntimeError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">~/project/build/rascal/neighbourlist/structure_manager.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, frames, nl_options, start, length)</span>
+<span class="ansi-green-intense-fg ansi-bold">     45</span>             <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 46</span><span class="ansi-red-fg">                 </span>managers<span class="ansi-blue-fg">.</span>add_structures<span class="ansi-blue-fg">(</span>structures<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     47</span>             <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-red-fg">RuntimeError</span>: Some of the atoms in the structure are not
+                           inside the unit cell. Please wrap them inside it
+                           with at least tolerance of 1e-10.
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">RuntimeError</span>Traceback (most recent call last)
 <span class="ansi-green-fg">&lt;ipython-input-41-6cd322b49906&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
 <span class="ansi-green-intense-fg ansi-bold">      1</span> zeta <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">2</span>
 <span class="ansi-green-intense-fg ansi-bold">      2</span> Lambda <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">5e-3</span>
 <span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span>krr<span class="ansi-blue-fg">,</span>k <span class="ansi-blue-fg">=</span> train_krr_model<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> Lambda<span class="ansi-blue-fg">,</span> soap<span class="ansi-blue-fg">,</span> frames_train<span class="ansi-blue-fg">,</span> y_train<span class="ansi-blue-fg">)</span>
 
 <span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">train_krr_model</span><span class="ansi-blue-fg">(zeta, Lambda, representation, frames, y, jitter)</span>
+<span class="ansi-green-intense-fg ansi-bold">     75</span>
 <span class="ansi-green-intense-fg ansi-bold">     76</span> <span class="ansi-green-fg">def</span> train_krr_model<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span>Lambda<span class="ansi-blue-fg">,</span>representation<span class="ansi-blue-fg">,</span>frames<span class="ansi-blue-fg">,</span>y<span class="ansi-blue-fg">,</span>jitter<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1e-8</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     77</span>     features <span class="ansi-blue-fg">=</span> compute_representation<span class="ansi-blue-fg">(</span>representation<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">---&gt; 78</span><span class="ansi-red-fg">     </span>kernel <span class="ansi-blue-fg">=</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 77</span><span class="ansi-red-fg">     </span>features <span class="ansi-blue-fg">=</span> compute_representation<span class="ansi-blue-fg">(</span>representation<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     78</span>     kernel <span class="ansi-blue-fg">=</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">,</span> features<span class="ansi-blue-fg">)</span>
 <span class="ansi-green-intense-fg ansi-bold">     79</span>     <span class="ansi-red-fg"># adjust the kernel so that it is properly scaled</span>
-<span class="ansi-green-intense-fg ansi-bold">     80</span>     delta <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>std<span class="ansi-blue-fg">(</span>y<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">/</span> np<span class="ansi-blue-fg">.</span>mean<span class="ansi-blue-fg">(</span>kernel<span class="ansi-blue-fg">.</span>diagonal<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
 
-<span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">compute_atomic_kernel</span><span class="ansi-blue-fg">(zeta, rep1, rep2)</span>
-<span class="ansi-green-intense-fg ansi-bold">      9</span> <span class="ansi-green-fg">def</span> compute_atomic_kernel<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">,</span> rep1<span class="ansi-blue-fg">,</span> rep2<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     10</span>     <span class="ansi-green-fg">if</span> rep2 <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 11</span><span class="ansi-red-fg">         </span>kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_atomic<span class="ansi-blue-fg">(</span>rep2<span class="ansi-blue-fg">,</span> zeta<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     12</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     13</span>         kernel <span class="ansi-blue-fg">=</span> rep1<span class="ansi-blue-fg">.</span>cosine_kernel_atomic<span class="ansi-blue-fg">(</span>zeta<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">&lt;ipython-input-16-255ce4925fd8&gt;</span> in <span class="ansi-cyan-fg">compute_representation</span><span class="ansi-blue-fg">(representation, frames)</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-green-fg">def</span> compute_representation<span class="ansi-blue-fg">(</span>representation<span class="ansi-blue-fg">,</span> frames<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg">     </span>result <span class="ansi-blue-fg">=</span> representation<span class="ansi-blue-fg">.</span>transform<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>     <span class="ansi-green-fg">return</span> result
+<span class="ansi-green-intense-fg ansi-bold">      4</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> <span class="ansi-red-fg">#def compute_representation(frames):</span>
 
-<span class="ansi-red-fg">AttributeError</span>: &#39;AtomsList&#39; object has no attribute &#39;cosine_kernel_atomic&#39;
+<span class="ansi-green-fg">~/project/build/rascal/representations/spherical_invariants.py</span> in <span class="ansi-cyan-fg">transform</span><span class="ansi-blue-fg">(self, frames)</span>
+<span class="ansi-green-intense-fg ansi-bold">    150</span>         &#34;&#34;&#34;
+<span class="ansi-green-intense-fg ansi-bold">    151</span>         <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> isinstance<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span> AtomsList<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 152</span><span class="ansi-red-fg">             </span>frames <span class="ansi-blue-fg">=</span> AtomsList<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>nl_options<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    153</span>
+<span class="ansi-green-intense-fg ansi-bold">    154</span>         self<span class="ansi-blue-fg">.</span>_representation<span class="ansi-blue-fg">.</span>compute<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">.</span>managers<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/project/build/rascal/neighbourlist/structure_manager.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, frames, nl_options, start, length)</span>
+<span class="ansi-green-intense-fg ansi-bold">     47</span>             <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     48</span>                 raise RuntimeError(&#34;Neighbourlist of structures failed &#34;
+<span class="ansi-green-fg">---&gt; 49</span><span class="ansi-red-fg">                 + &#34;because: &#34; + str(e))
+</span><span class="ansi-green-intense-fg ansi-bold">     50</span>
+<span class="ansi-green-intense-fg ansi-bold">     51</span>
+
+<span class="ansi-red-fg">RuntimeError</span>: Neighbourlist of structures failed because: Some of the atoms in the structure are not
+                           inside the unit cell. Please wrap them inside it
+                           with at least tolerance of 1e-10.
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -1544,12 +1689,12 @@ Structure Rep computation 0 failed
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-<span class="ansi-red-fg">IndexError</span>Traceback (most recent call last)
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
 <span class="ansi-green-fg">&lt;ipython-input-52-e241bba0a2ba&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
 <span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>plt<span class="ansi-blue-fg">.</span>scatter<span class="ansi-blue-fg">(</span>X<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span>X<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span>s<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">3</span><span class="ansi-blue-fg">)</span>
 <span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-red-fg">#plt.savefig(&#39;PCA.png&#39;,dpi=300)</span>
 
-<span class="ansi-red-fg">IndexError</span>: index 0 is out of bounds for axis 1 with size 0
+<span class="ansi-red-fg">NameError</span>: name &#39;X&#39; is not defined
 </pre></div></div>
 </div>
 </div>
@@ -2414,7 +2559,7 @@ if (IPython.notebook.kernel != null) {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area rendered_html docutils container">
-<div id='dfdcb191-fc22-482e-a0c8-0795c20bbb8f'></div></div>
+<div id='252c7653-e3c9-41f9-a04b-28067264c2ed'></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -2428,7 +2573,7 @@ if (IPython.notebook.kernel != null) {
 <span class="ansi-green-intense-fg ansi-bold">      2</span> plt<span class="ansi-blue-fg">.</span>scatter<span class="ansi-blue-fg">(</span>X<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span>X<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span>s<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">3</span><span class="ansi-blue-fg">)</span>
 <span class="ansi-green-intense-fg ansi-bold">      3</span> iwdg
 
-<span class="ansi-red-fg">NameError</span>: name &#39;iwdg&#39; is not defined
+<span class="ansi-red-fg">NameError</span>: name &#39;X&#39; is not defined
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
