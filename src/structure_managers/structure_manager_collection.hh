@@ -250,7 +250,7 @@ namespace rascal {
       auto property_name{this->get_calculator_name(calculator, false)};
 
       auto && property_ =
-          managers[0]->template get_property_ref<Prop_t>(property_name);
+          *managers[0]->template get_property_ptr<Prop_t>(property_name);
       // assume inner_size is consistent for all managers
       int inner_size{property_.get_nb_comp()};
 
@@ -285,7 +285,7 @@ namespace rascal {
         int i_row{0};
         for (auto & manager : managers) {
           auto && property =
-              manager->template get_property_ref<Prop_t>(property_name);
+              *manager->template get_property_ptr<Prop_t>(property_name);
           auto n_rows_manager = property.get_nb_item();
           property.fill_dense_feature_matrix(
               features.block(i_row, 0, n_rows_manager, inner_size));
@@ -308,7 +308,7 @@ namespace rascal {
         Keys_t all_keys{};
         for (auto & manager : managers) {
           auto && property =
-              manager->template get_property_ref<Prop_t>(property_name);
+              *manager->template get_property_ptr<Prop_t>(property_name);
           auto keys = property.get_keys();
           all_keys.insert(keys.begin(), keys.end());
         }
@@ -319,7 +319,7 @@ namespace rascal {
         int i_row{0};
         for (auto & manager : managers) {
           auto && property =
-              manager->template get_property_ref<Prop_t>(property_name);
+              *manager->template get_property_ptr<Prop_t>(property_name);
           auto n_rows_manager = property.size();
           property.fill_dense_feature_matrix(
               features.block(i_row, 0, n_rows_manager, n_cols), all_keys);
@@ -363,7 +363,7 @@ namespace rascal {
 
       for (auto & manager : this->managers) {
         auto && property =
-            manager->template get_property_ref<Prop_t>(property_name);
+            *manager->template get_property_ptr<Prop_t>(property_name);
         auto keys = property.get_keys();
         all_keys.insert(keys.begin(), keys.end());
       }
@@ -388,7 +388,7 @@ namespace rascal {
 
       for (auto & manager : this->managers) {
         auto && property =
-            manager->template get_property_ref<Prop_t>(property_name);
+            *manager->template get_property_ptr<Prop_t>(property_name);
         n_elements += property.get_nb_item();
       }
 

@@ -1090,7 +1090,7 @@ namespace rascal {
         this->get_name(), ExcludeGhosts)};
 
     auto && expansions_coefficients_gradient{
-        manager->template get_property_ref<PropGrad_t>(
+        *manager->template get_property_ptr<PropGrad_t>(
             this->get_gradient_name())};
 
     // if the representation has already been computed for the current

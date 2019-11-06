@@ -2,6 +2,8 @@
  * @file   structure_manager.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
+ * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   05 Apr 2018
  *
@@ -461,9 +463,8 @@ namespace rascal {
      * @throw runtime_error if UserProperty_t is not compatible with property
      * of the given name
      */
-    template <
-        typename UserProperty_t,
-        typename std::enable_if_t<UserProperty_t::Order == 1, int> = 0>
+    template <typename UserProperty_t,
+              typename std::enable_if_t<UserProperty_t::Order == 1, int> = 0>
     std::shared_ptr<UserProperty_t>
     get_property_ptr(const std::string & name,
                      const bool & exclude_ghosts = false,
@@ -478,11 +479,6 @@ namespace rascal {
         this->register_property(property, name);
         return property;
       }
-    }
-
-    template <typename UserProperty_t>
-    UserProperty_t & get_property_ref(const std::string & name) {
-      return *this->template get_property_ptr<UserProperty_t>(name);
     }
 
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>

@@ -3,6 +3,7 @@
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   06 Aug 2018
  *

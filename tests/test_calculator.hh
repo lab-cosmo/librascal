@@ -621,10 +621,10 @@ namespace rascal {
       this->structure_manager->update(modified_structure);
       this->representation.compute(this->structure_manager);
 
-      auto && data_sparse{structure_manager->template get_property_ref<Prop_t>(
+      auto && data_sparse{*structure_manager->template get_property_ptr<Prop_t>(
           representation.get_name())};
       auto && gradients_sparse{
-          structure_manager->template get_property_ref<PropGrad_t>(
+          *structure_manager->template get_property_ptr<PropGrad_t>(
               representation.get_gradient_name())};
       auto ii_pair = center.get_atom_ii();
       auto & data_center{data_sparse[ii_pair]};
@@ -692,10 +692,10 @@ namespace rascal {
       // representation.compute();
       auto center = *center_it;
 
-      auto && data_sparse{structure_manager->template get_property_ref<Prop_t>(
+      auto && data_sparse{*structure_manager->template get_property_ptr<Prop_t>(
           representation.get_name())};
       auto && gradients_sparse{
-          structure_manager->template get_property_ref<PropGrad_t>(
+          *structure_manager->template get_property_ptr<PropGrad_t>(
               representation.get_gradient_name())};
       auto ii_pair = center.get_atom_ii();
       auto & gradients_center{gradients_sparse[ii_pair]};
