@@ -71,6 +71,20 @@ class AtomsList(object):
         return self.managers.get_dense_feature_matrix(
                 calculator._representation)
 
+    def get_sparse_feature_matrix(self, calculator):
+        """
+        Parameters
+        -------
+        calculator : one of the representation calculators named Spherical*
+
+        Returns
+        -------
+        representation_matrix : dict of ndarray
+            returns the representation bound to the calculator as dense matrix.
+        """
+        return self.managers.get_sparse_feature_matrix(
+                calculator._representation)
+
 
 def get_neighbourlist(structure, options):
     manager = NeighbourListFactory(options)

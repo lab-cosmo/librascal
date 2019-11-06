@@ -263,71 +263,6 @@ namespace rascal {
       return features;
     }
 
-   protected:
-    /**
-     * Helper classes to deal with the differentiation between Property and
-     * BlockSparseProperty when filling the feature matrix.
-     */
-    template <typename T>
-    struct FeatureMatrixHelper {};
-
-    template <typename T, size_t Order, size_t PropertyLayer, int NbRow,
-              int NbCol>
-    struct FeatureMatrixHelper<
-        Property<T, Order, PropertyLayer, Manager_t, NbRow, NbCol>> {
-      using Prop_t = Property<T, Order, PropertyLayer, Manager_t, NbRow, NbCol>;
-      template <class StructureManagers, class Matrix>
-      static void apply(StructureManagers & managers,
-                        const std::string & property_name, Matrix & features,
-                        int n_rows, int inner_size) {
-        features.resize(n_rows, inner_size);
-        features.setZero();
-        int i_row{0};
-        for (auto & manager : managers) {
-          auto && property =
-              manager->template get_property_ref<Prop_t>(property_name);
-          auto n_rows_manager = property.get_nb_item();
-          property.fill_dense_feature_matrix(
-              features.block(i_row, 0, n_rows_manager, inner_size));
-          i_row += n_rows_manager;
-        }
-      }
-    };
-
-    template <typename T, size_t Order, size_t PropertyLayer, typename Key>
-    struct FeatureMatrixHelper<
-        BlockSparseProperty<T, Order, PropertyLayer, Manager_t, Key>> {
-      using Prop_t =
-          BlockSparseProperty<T, Order, PropertyLayer, Manager_t, Key>;
-      using Keys_t = typename Prop_t::Keys_t;
-
-      template <class StructureManagers, class Matrix>
-      static void apply(StructureManagers & managers,
-                        const std::string & property_name, Matrix & features,
-                        int n_rows, int inner_size) {
-        Keys_t all_keys{};
-        for (auto & manager : managers) {
-          auto && property =
-              manager->template get_property_ref<Prop_t>(property_name);
-          auto keys = property.get_keys();
-          all_keys.insert(keys.begin(), keys.end());
-        }
-
-        size_t n_cols{all_keys.size() * inner_size};
-        features.resize(n_rows, n_cols);
-        features.setZero();
-        int i_row{0};
-        for (auto & manager : managers) {
-          auto && property =
-              manager->template get_property_ref<Prop_t>(property_name);
-          auto n_rows_manager = property.size();
-          property.fill_dense_feature_matrix(
-              features.block(i_row, 0, n_rows_manager, n_cols), all_keys);
-          i_row += n_rows_manager;
-        }
-      }
-    };
-
     /**
      * @param calculator a calculator
      * @param is_gradients wether to return the name associated with the
@@ -394,6 +329,73 @@ namespace rascal {
 
       return n_elements;
     }
+
+   protected:
+    /**
+     * Helper classes to deal with the differentiation between Property and
+     * BlockSparseProperty when filling the feature matrix.
+     */
+    template <typename T>
+    struct FeatureMatrixHelper {};
+
+    template <typename T, size_t Order, size_t PropertyLayer, int NbRow,
+              int NbCol>
+    struct FeatureMatrixHelper<
+        Property<T, Order, PropertyLayer, Manager_t, NbRow, NbCol>> {
+      using Prop_t = Property<T, Order, PropertyLayer, Manager_t, NbRow, NbCol>;
+      template <class StructureManagers, class Matrix>
+      static void apply(StructureManagers & managers,
+                        const std::string & property_name, Matrix & features,
+                        int n_rows, int inner_size) {
+        features.resize(n_rows, inner_size);
+        features.setZero();
+        int i_row{0};
+        for (auto & manager : managers) {
+          auto && property =
+              manager->template get_property_ref<Prop_t>(property_name);
+          auto n_rows_manager = property.get_nb_item();
+          property.fill_dense_feature_matrix(
+              features.block(i_row, 0, n_rows_manager, inner_size));
+          i_row += n_rows_manager;
+        }
+      }
+    };
+
+    template <typename T, size_t Order, size_t PropertyLayer, typename Key>
+    struct FeatureMatrixHelper<
+        BlockSparseProperty<T, Order, PropertyLayer, Manager_t, Key>> {
+      using Prop_t =
+          BlockSparseProperty<T, Order, PropertyLayer, Manager_t, Key>;
+      using Keys_t = typename Prop_t::Keys_t;
+
+      template <class StructureManagers, class Matrix>
+      static void apply(StructureManagers & managers,
+                        const std::string & property_name, Matrix & features,
+                        int n_rows, int inner_size) {
+        Keys_t all_keys{};
+        for (auto & manager : managers) {
+          auto && property =
+              manager->template get_property_ref<Prop_t>(property_name);
+          auto keys = property.get_keys();
+          all_keys.insert(keys.begin(), keys.end());
+        }
+
+        size_t n_cols{all_keys.size() * inner_size};
+        features.resize(n_rows, n_cols);
+        features.setZero();
+        int i_row{0};
+        for (auto & manager : managers) {
+          auto && property =
+              manager->template get_property_ref<Prop_t>(property_name);
+          auto n_rows_manager = property.size();
+          property.fill_dense_feature_matrix(
+              features.block(i_row, 0, n_rows_manager, n_cols), all_keys);
+          i_row += n_rows_manager;
+        }
+      }
+    };
+
+
   };
 
 }  // namespace rascal

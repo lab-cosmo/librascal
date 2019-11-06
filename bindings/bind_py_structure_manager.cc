@@ -458,6 +458,96 @@ namespace rascal {
         py::call_guard<py::gil_scoped_release>());
   }
 
+  /**
+   * Bind a getter for the feature matrix comming from BlockSparseProperty.
+   *
+   * it will return a dictionary with keys->atomic number vals->feature mat
+   * the feature matrices size is (n_centers, inner_size)
+   */
+  template <class Calculator, class ManagerCollection_t,
+            class ManagerCollectionBinder>
+  void
+  bind_sparse_feature_matrix_getter(ManagerCollectionBinder & manager_collection) {
+    manager_collection.def(
+        "get_sparse_feature_matrix",
+        [](ManagerCollection_t & managers, Calculator & calculator) {
+          using Manager_t = typename ManagerCollection_t::Manager_t;
+          using Prop_t = typename Calculator::template Property_t<Manager_t>;
+          using Keys_t = typename Prop_t::Keys_t;
+          using VecMap_t = Eigen::Map<math::Vector_t>;
+
+          auto property_name{managers.get_calculator_name(calculator, false)};
+
+          auto && property_ =
+              managers[0]->template get_property_ref<Prop_t>(property_name);
+          // assume inner_size is consistent for all managers
+          int inner_size{property_.get_nb_comp()};
+          auto n_rows{managers.get_number_of_elements(calculator, false)};
+
+          // holder for the feature matrices to put in feature_dict
+          math::Matrix_t features{};
+
+          features.resize(n_rows, inner_size);
+          features.setZero();
+
+          // get  the keys for the dictionary
+          Keys_t all_keys{};
+          for (auto & manager : managers) {
+            auto && property =
+                manager->template get_property_ref<Prop_t>(property_name);
+            auto keys = property.get_keys();
+            all_keys.insert(keys.begin(), keys.end());
+          }
+
+
+          // create a dict for the features
+          py::dict feature_dict;
+          py::list keys_list;
+          for (auto & key : all_keys) {
+            py::list l;
+            for (auto & ii : key) {
+              l.append(ii);
+            }
+            // convert it to a tuple
+            py::tuple t_key(l);
+            keys_list.append(t_key);
+            // feature_dict[t_key] = features;
+          }
+
+          int i_key{0};
+          for (auto & key : all_keys) {
+            int i_center_global{0};
+            auto t_key{keys_list[i_key]};
+            // auto & feat_global = feature_dict[t_key];
+            for (auto & manager : managers) {
+              auto && property =
+                  manager->template get_property_ref<Prop_t>(property_name);
+              // size_t n_center{property.size()};
+
+              for (auto center : manager) {
+                auto && prop_row = property[center];
+                if (prop_row.count(key)==1) {
+                  // get the feature and flatten the array
+                  auto feat_row = VecMap_t(prop_row[key].data(), inner_size);
+                  features.row(i_center_global) = feat_row;
+                }
+
+                // for (int i_feat{0}; i_feat < inner_size; ++i_feat) {
+                //   feat_global(i_center_global, i_feat) = feat_row(i_feat);
+                // }
+                i_center_global++;
+              }
+            }
+            feature_dict[t_key] = features;
+            features.setZero();
+            ++i_key;
+          }
+          return feature_dict;
+
+
+        });
+  }
+
   template <typename Manager, template <class> class... Adaptor>
   void bind_structure_manager_collection(py::module & m_str_mng) {
     using ManagerCollection_t = ManagerCollection<Manager, Adaptor...>;
@@ -530,6 +620,9 @@ namespace rascal {
     bind_feature_matrix_getter<CalculatorSphericalInvariants,
                                ManagerCollection_t>(manager_collection);
     bind_feature_matrix_getter<CalculatorSphericalCovariants,
+                               ManagerCollection_t>(manager_collection);
+
+    bind_sparse_feature_matrix_getter<CalculatorSphericalInvariants,
                                ManagerCollection_t>(manager_collection);
   }
 
