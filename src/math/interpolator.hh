@@ -391,7 +391,7 @@ namespace rascal {
         // back substitution
         qn = 0.5;
         u(n - 1) = (3.0 / this->h) * (dfx2 - (yv(n - 1) - yv(n - 2)) / this->h);
-        y2(n - 1) = (u(n - 1) - p * u(n - 2)) / (p * y2(n - 2) + 1.0);
+        y2(n - 1) = (u(n - 1) - qn * u(n - 2)) / (qn * y2(n - 2) + 1.0);
         for (int k{n - 2}; k >= 0; k--) {
           y2(k) = y2(k) * y2(k + 1) + u(k);
         }
