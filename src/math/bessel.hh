@@ -200,7 +200,6 @@ namespace rascal {
           this->upward_recursion(distance, fac_a, n_up);
         }
 
-
         // Set small values to 0 because the recursion looses accuracy for very
         // small values. Also on the python side it avoids some unexpected
         // interpretation of values that are strictly speaking outside of the

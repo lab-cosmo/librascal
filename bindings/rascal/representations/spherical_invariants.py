@@ -86,7 +86,7 @@ class SphericalInvariants(object):
             cutoff_smooth_width=cutoff_smooth_width
         )
         cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
-                                **cutoff_function_parameters)
+                                                      **cutoff_function_parameters)
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
@@ -195,13 +195,16 @@ class SphericalInvariants(object):
         elif self.hypers['soap_type'] == 'PowerSpectrum':
             for sp1 in species:
                 for sp2 in species:
-                    if sp1 > sp2: continue
-                    keys.append([sp1,sp2])
+                    if sp1 > sp2:
+                        continue
+                    keys.append([sp1, sp2])
         elif self.hypers['soap_type'] == 'BiSpectrum':
             for sp1 in species:
                 for sp2 in species:
-                    if sp1 > sp2: continue
+                    if sp1 > sp2:
+                        continue
                     for sp3 in species:
-                        if sp2 > sp3: continue
-                        keys.append([sp1,sp2,sp3])
+                        if sp2 > sp3:
+                            continue
+                        keys.append([sp1, sp2, sp3])
         return keys

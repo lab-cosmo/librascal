@@ -466,8 +466,8 @@ namespace rascal {
    */
   template <class Calculator, class ManagerCollection_t,
             class ManagerCollectionBinder>
-  void
-  bind_sparse_feature_matrix_getter(ManagerCollectionBinder & manager_collection) {
+  void bind_sparse_feature_matrix_getter(
+      ManagerCollectionBinder & manager_collection) {
     manager_collection.def(
         "get_sparse_feature_matrix",
         [](ManagerCollection_t & managers, Calculator & calculator) {
@@ -499,7 +499,6 @@ namespace rascal {
             all_keys.insert(keys.begin(), keys.end());
           }
 
-
           // create a dict for the features
           py::dict feature_dict;
           py::list keys_list;
@@ -526,7 +525,7 @@ namespace rascal {
 
               for (auto center : manager) {
                 auto && prop_row = property[center];
-                if (prop_row.count(key)==1) {
+                if (prop_row.count(key) == 1) {
                   // get the feature and flatten the array
                   auto feat_row = VecMap_t(prop_row[key].data(), inner_size);
                   features.row(i_center_global) = feat_row;
@@ -542,7 +541,8 @@ namespace rascal {
         });
     manager_collection.def(
         "get_dense_feature_matrix",
-        [](ManagerCollection_t & managers, const Calculator& calculator, py::list & all_keys_l) {
+        [](ManagerCollection_t & managers, const Calculator & calculator,
+           py::list & all_keys_l) {
           std::set<std::vector<int>> all_keys;
           // convert the list of keys from python in to the propert type
           for (py::handle key_l : all_keys_l) {
@@ -550,10 +550,12 @@ namespace rascal {
             all_keys.insert(key);
           }
 
-          auto features = managers.get_dense_feature_matrix_blocksparse(calculator, all_keys);
+          auto features = managers.get_dense_feature_matrix_blocksparse(
+              calculator, all_keys);
 
           return features;
-        }, R"(Get the dense feature matrix associated with the calculator and
+        },
+        R"(Get the dense feature matrix associated with the calculator and
         the collection of structures (managers) using the list of keys
         provided. Only applicable when Calculator uses BlockSparseProperty.)");
   }
@@ -633,7 +635,7 @@ namespace rascal {
                                ManagerCollection_t>(manager_collection);
 
     bind_sparse_feature_matrix_getter<CalculatorSphericalInvariants,
-                               ManagerCollection_t>(manager_collection);
+                                      ManagerCollection_t>(manager_collection);
   }
 
   /**

@@ -87,7 +87,7 @@ class SphericalCovariants(object):
             cutoff_smooth_width=cutoff_smooth_width
         )
         cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
-                                **cutoff_function_parameters)
+                                                      **cutoff_function_parameters)
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
@@ -199,6 +199,7 @@ class SphericalCovariants(object):
         if self.hypers['soap_type'] == 'LambdaSpectrum':
             for sp1 in species:
                 for sp2 in species:
-                    if sp1 > sp2: continue
-                    keys.append([sp1,sp2])
+                    if sp1 > sp2:
+                        continue
+                    keys.append([sp1, sp2])
         return keys

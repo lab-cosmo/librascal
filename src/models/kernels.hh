@@ -165,9 +165,8 @@ namespace rascal {
         } else if (this->zeta == 3) {
           kernel = kernel.array().cube();
         } else {
-          kernel = kernel.unaryExpr([zeta = this->zeta](double v) {
-            return math::pow(v, zeta);
-          });
+          kernel = kernel.unaryExpr(
+              [zeta = this->zeta](double v) { return math::pow(v, zeta); });
         }
         return std::move(kernel);
       }

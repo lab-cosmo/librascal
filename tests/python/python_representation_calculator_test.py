@@ -96,24 +96,24 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         features = rep.transform(self.frames)
 
         test = features.get_dense_feature_matrix(rep)
-        kk_ref = np.dot(test,test.T)
+        kk_ref = np.dot(test, test.T)
 
         # test that the feature matrix exported to python in various ways
         # are equivalent
         X_t = features.get_dense_feature_matrix(rep, self.global_species)
-        kk = np.dot(X_t,X_t.T)
-        self.assertTrue(np.allclose(kk,kk_ref))
+        kk = np.dot(X_t, X_t.T)
+        self.assertTrue(np.allclose(kk, kk_ref))
 
         X_t = features.get_dense_feature_matrix(rep, self.global_species+[70])
-        kk = np.dot(X_t,X_t.T)
-        self.assertTrue(np.allclose(kk,kk_ref))
+        kk = np.dot(X_t, X_t.T)
+        self.assertTrue(np.allclose(kk, kk_ref))
 
         species = copy(self.global_species)
         species.pop()
         X_t = features.get_dense_feature_matrix(rep, species)
-        kk = np.dot(X_t,X_t.T)
-        self.assertFalse(np.allclose(kk,kk_ref))
+        kk = np.dot(X_t, X_t.T)
+        self.assertFalse(np.allclose(kk, kk_ref))
 
         X_t = features.get_sparse_feature_matrix(rep)
-        kk = dot(X_t,X_t)
-        self.assertTrue(np.allclose(kk,kk_ref))
+        kk = dot(X_t, X_t)
+        self.assertTrue(np.allclose(kk, kk_ref))

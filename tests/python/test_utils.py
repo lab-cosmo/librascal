@@ -8,17 +8,19 @@ def intersection(X, Y=None):
     else:
         return list(set(list(X.keys())+list(Y.keys())))
 
-def dot(X,Y=None):
+
+def dot(X, Y=None):
     key_intersection = intersection(X, Y)
 
     if Y is None:
         Y = X
     N = X[key_intersection[0]].shape[0]
     M = Y[key_intersection[0]].shape[0]
-    K = np.zeros((N,M))
+    K = np.zeros((N, M))
     for key in key_intersection:
-        K += np.dot(X[key],Y[key].T)
+        K += np.dot(X[key], Y[key].T)
     return K
+
 
 def adapt_structure(cell, positions, numbers, pbc):
     cell = np.array(cell.T, order='F')

@@ -276,7 +276,9 @@ namespace rascal {
      * used to build the dense matrix are in all_keys.
      */
     template <class Calculator>
-    Matrix_t get_dense_feature_matrix_blocksparse(const Calculator & calculator, const std::set<std::vector<int>> & all_keys) {
+    Matrix_t get_dense_feature_matrix_blocksparse(
+        const Calculator & calculator,
+        const std::set<std::vector<int>> & all_keys) {
       using Prop_t = typename Calculator::template Property_t<Manager_t>;
 
       auto property_name{this->get_calculator_name(calculator, false)};
@@ -443,7 +445,6 @@ namespace rascal {
                         const std::string & property_name, Matrix & features,
                         int n_rows, int inner_size,
                         const std::set<std::vector<int>> & all_keys) {
-
         size_t n_cols{all_keys.size() * inner_size};
         features.resize(n_rows, n_cols);
         features.setZero();
@@ -458,7 +459,6 @@ namespace rascal {
         }
       }
     };
-
   };
 
 }  // namespace rascal

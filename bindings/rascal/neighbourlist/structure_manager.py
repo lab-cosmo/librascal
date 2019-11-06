@@ -8,6 +8,7 @@ from ..lib import neighbour_list
 from .base import (NeighbourListFactory, is_valid_structure,
                    adapt_structure, StructureCollectionFactory)
 
+
 class AtomsList(object):
     """
     A wrapper class for a stack of managers precompiled on the C++ side of the
@@ -23,6 +24,7 @@ class AtomsList(object):
     Methods
     -------
     """
+
     def __init__(self, frames, nl_options, start=None, length=None):
         self.nl_options = nl_options
         self._frames = frames
@@ -46,8 +48,7 @@ class AtomsList(object):
                 managers.add_structures(structures)
             except Exception as e:
                 raise RuntimeError("Neighbourlist of structures failed "
-                + "because: " + str(e))
-
+                                   + "because: " + str(e))
 
         self.managers = managers
 
@@ -95,7 +96,7 @@ class AtomsList(object):
             dense matrix.
         """
         return self.managers.get_sparse_feature_matrix(
-                calculator._representation)
+            calculator._representation)
 
 
 def get_neighbourlist(structure, options):
@@ -121,6 +122,7 @@ def convert_to_structure_list(frames):
         structure_list.append(**structure)
     return structure_list
 
+
 def sanitize_non_periodic_structure(structure):
     """
     Rascal expects a unit cell that contains all the atoms even if the
@@ -142,17 +144,16 @@ def sanitize_non_periodic_structure(structure):
 
     if np.all(structure['pbc'] == 0):
         cell = structure['cell']
-        if np.allclose(cell,np.zeros((3,3))):
+        if np.allclose(cell, np.zeros((3, 3))):
             pos = structure['positions']
-            bounds = np.array([pos.min(axis=1),pos.max(axis=1)])
+            bounds = np.array([pos.min(axis=1), pos.max(axis=1)])
             bounding_box_lengths = bounds[1]-bounds[0]
             new_cell = np.diag(bounding_box_lengths)
             CoM = pos.mean(axis=1)
             disp = 0.5*bounding_box_lengths - CoM
-            new_pos = pos + disp[:,None]
+            new_pos = pos + disp[:, None]
             structure['positions'] = new_pos
     return structure
-
 
 
 def is_ase_Atoms(frame):
@@ -294,9 +295,9 @@ def mask_center_atoms_by_species(frame, species_select=[],
                            map(lambda x: isinstance(x, int), species_select),
                            True)
     blacklist_is_str = reduce(
-            and_, map(lambda x: isinstance(x, str), species_blacklist), True)
+        and_, map(lambda x: isinstance(x, str), species_blacklist), True)
     blacklist_is_int = reduce(
-            and_, map(lambda x: isinstance(x, int), species_blacklist), True)
+        and_, map(lambda x: isinstance(x, int), species_blacklist), True)
     if select_is_str:
         id_select = np.isin(frame.get_chemical_symbols(), species_select)
     elif select_is_int:
@@ -309,7 +310,7 @@ def mask_center_atoms_by_species(frame, species_select=[],
         id_blacklist = np.isin(frame.get_atomic_numbers(), species_blacklist)
     else:
         raise ValueError(
-                "Species blacklist must be either all string or all int")
+            "Species blacklist must be either all string or all int")
     if 'center_atoms_mask' not in frame.arrays:
         # add a default mask
         if species_select:
