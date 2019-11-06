@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <set>
 #include <vector>
+#include <algorithm>
 
 namespace rascal {
   /**
