@@ -209,7 +209,7 @@ namespace rascal {
 
     void setup(const ::benchmark::State & state) {
       const json data = Dataset::data();
-      // Because in the two initialization processes share parameters of the
+      // Because the two initialization processes share parameters of the
       // json string, therefore we check the change of parameters before
       // anything is initialized
       bool interpolator_parameters_changed{

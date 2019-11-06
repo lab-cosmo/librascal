@@ -40,10 +40,10 @@
 namespace rascal {
   namespace math {
     /**
-     * To allow flexibility of the interpolator for
-     * experimenting while giving the possibility to optimize the interpolator
-     * for certain methods, the interpolator class itself is only a skeleton to
-     * execute these interpolator methods.
+     * To allow flexibility of the interpolator for experimenting while giving
+     * the possibility to optimize the interpolator for certain methods, the
+     * interpolator class itself is only a skeleton to execute these
+     * interpolator methods.
      *
      * An interpolator can be constructed given an error bound or a uniform
      * grid. The error is computed by creating a `test_grid` and compare the
@@ -59,20 +59,21 @@ namespace rascal {
      * test_grid   the test grid to estimate the error
      * ε           error function
      *
-     * The interpolation method is
-     * contained in the InterpolationMethod, for the creation of the grid and
-     * test grid contained in the UniformGridRational, a search method to find
-     * the nearest grid point before a point for interpolation contained in
-     * SearchMethod and a method for computing an error term contained in
-     * ErrorMethod.
+     * The interpolation method is contained in the InterpolationMethod, for the
+     * creation of the grid and test grid contained in the UniformGridRational,
+     * a search method to find the nearest grid point before a point for
+     * interpolation contained in SearchMethod and a method for computing an
+     * error term contained in ErrorMethod.
      *
      * The Interpolator class hierarchy is split into
      * Interpolator (abstract) -> YOUR_INTERPOLATOR_IMPLEMENTATION. An
-     * interpolator implementation can be very general, it can be tailored for flexibility with multiple
-     * combinations of methods or very focused to allow for application specific
-     * optimization. The same goes for the interpolator methods which can be
-     * used interchangeably with other methods or can depend on specific
-     * combinations e.g. the `CubicSplineScalarUniform` only works together with the `UniformGridRational` class.
+     * interpolator implementation can be very general, it can be tailored for
+     * flexibility with multiple combinations of methods or very focused to
+     * allow for application specific optimization. The same goes for the
+     * interpolator methods which can be used interchangeably with other methods
+     * or can depend on specific combinations e.g. the
+     * `CubicSplineScalarUniform` only works together with the
+     * `UniformGridRational` class.
      *
      * While testing different methods it has turned out that the interpolator
      * is most optimal for uniform grids, therefore the interpolation methods
@@ -464,10 +465,10 @@ namespace rascal {
       // h*h/6.0
       double h_sq_6{0};
       /**
-       * The second derivative is the solution vector of the linear system of the
-       * tridiagonal toeplitz matrix derived by the conditions of cubic spline.
-       * The linear system can be found in
-       * http://mathworld.wolfram.com/CubicSpline.html 
+       * The second derivative is the solution vector of the linear system of
+       * the tridiagonal toeplitz matrix derived by the conditions of cubic
+       * spline. The linear system can be found in
+       * http://mathworld.wolfram.com/CubicSpline.html
        *
        * In
        * addition we already multiply them with precomputed coefficients derived
@@ -921,7 +922,7 @@ namespace rascal {
       double error_bound{1e-5};
       double grid_error{0.};
 
-      int max_grid_points{10000000}; // 1e7
+      int max_grid_points{10000000};  // 1e7
       int degree_of_fineness{5};
       bool error_below_bound{false};
 
@@ -1485,7 +1486,8 @@ namespace rascal {
        * known, one can initialize the interpolator with these values to
        * obtain a higher accuracy with the interpolation method. A more
        * descriptive explanation for the boundary conditions can be found in
-       * https://en.wikiversity.org/wiki/Cubic_Spline_Interpolation#Boundary_Conditions
+       *
+       https://en.wikiversity.org/wiki/Cubic_Spline_Interpolation#Boundary_Conditions
 
        */
       bool clamped_boundary_conditions{false};
