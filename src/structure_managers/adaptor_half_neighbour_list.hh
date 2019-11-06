@@ -32,6 +32,7 @@
 
 #include "structure_managers/property.hh"
 #include "structure_managers/structure_manager.hh"
+//#include "structure_managers/cluster_ref_key.hh"
 #include "rascal_utility.hh"
 
 namespace rascal {

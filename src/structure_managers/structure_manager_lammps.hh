@@ -123,7 +123,7 @@ namespace rascal {
     size_t get_size() const { return this->inum; }
 
     //! return number of center and ghost atoms
-    inline size_t get_size_with_ghosts() const { return this->tot_num; }
+    size_t get_size_with_ghosts() const { return this->tot_num; }
 
     //! return the number of neighbours of a given atom
     template <size_t Order, size_t Layer>
