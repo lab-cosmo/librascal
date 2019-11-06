@@ -270,35 +270,6 @@ namespace rascal {
     }
 
     /**
-     * get the dense feature matrix associated with the property built
-     * with calculator in the elements of the manager collection.
-     * Applicable only representations held in BlockSparseProperty. The keys
-     * used to build the dense matrix are in all_keys.
-     */
-    template <class Calculator>
-    Matrix_t get_dense_feature_matrix_blocksparse(
-        const Calculator & calculator,
-        const std::set<std::vector<int>> & all_keys) {
-      using Prop_t = typename Calculator::template Property_t<Manager_t>;
-
-      auto property_name{this->get_calculator_name(calculator, false)};
-
-      auto && property_ =
-          managers[0]->template get_property_ref<Prop_t>(property_name);
-      // assume inner_size is consistent for all managers
-      int inner_size{property_.get_nb_comp()};
-
-      Matrix_t features{};
-
-      auto n_rows{this->get_number_of_elements(calculator, false)};
-
-      FeatureMatrixHelper<Prop_t>::apply(this->managers, property_name,
-                                         features, n_rows, inner_size,
-                                         all_keys);
-      return features;
-    }
-
-    /**
      * @param calculator a calculator
      * @param is_gradients wether to return the name associated with the
      * features or their gradients
@@ -421,30 +392,6 @@ namespace rascal {
           all_keys.insert(keys.begin(), keys.end());
         }
 
-        size_t n_cols{all_keys.size() * inner_size};
-        features.resize(n_rows, n_cols);
-        features.setZero();
-        int i_row{0};
-        for (auto & manager : managers) {
-          auto && property =
-              manager->template get_property_ref<Prop_t>(property_name);
-          auto n_rows_manager = property.size();
-          property.fill_dense_feature_matrix(
-              features.block(i_row, 0, n_rows_manager, n_cols), all_keys);
-          i_row += n_rows_manager;
-        }
-      }
-
-      /**
-       * Fill features matrix with the representation labeled with
-       * property_name present in managers using the list of keys
-       * all_keys_in instead of the keys present in managers like above
-       */
-      template <class StructureManagers, class Matrix>
-      static void apply(StructureManagers & managers,
-                        const std::string & property_name, Matrix & features,
-                        int n_rows, int inner_size,
-                        const std::set<std::vector<int>> & all_keys) {
         size_t n_cols{all_keys.size() * inner_size};
         features.resize(n_rows, n_cols);
         features.setZero();

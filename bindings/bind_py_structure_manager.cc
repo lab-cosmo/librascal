@@ -543,15 +543,39 @@ namespace rascal {
         "get_dense_feature_matrix",
         [](ManagerCollection_t & managers, const Calculator & calculator,
            py::list & all_keys_l) {
-          std::set<std::vector<int>> all_keys;
-          // convert the list of keys from python in to the propert type
+          using Manager_t = typename ManagerCollection_t::Manager_t;
+          using Prop_t = typename Calculator::template Property_t<Manager_t>;
+          using Keys_t = typename Prop_t::Keys_t;
+          Keys_t all_keys;
+          // convert the list of keys from python in to the proper type
           for (py::handle key_l : all_keys_l) {
             auto key = py::cast<std::vector<int>>(key_l);
             all_keys.insert(key);
           }
 
-          auto features = managers.get_dense_feature_matrix_blocksparse(
-              calculator, all_keys);
+          auto property_name{managers.get_calculator_name(calculator, false)};
+
+          auto && property_ =
+              managers[0]->template get_property_ref<Prop_t>(property_name);
+          // assume inner_size is consistent for all managers
+          int inner_size{property_.get_nb_comp()};
+
+          math::Matrix_t features{};
+
+          auto n_rows{managers.get_number_of_elements(calculator, false)};
+          size_t n_cols{all_keys.size() * inner_size};
+          features.resize(n_rows, n_cols);
+          features.setZero();
+
+          int i_row{0};
+          for (auto & manager : managers) {
+            auto && property =
+                manager->template get_property_ref<Prop_t>(property_name);
+            auto n_rows_manager = property.size();
+            property.fill_dense_feature_matrix(
+                features.block(i_row, 0, n_rows_manager, n_cols), all_keys);
+            i_row += n_rows_manager;
+          }
 
           return features;
         },
