@@ -2,6 +2,8 @@
  * @file   property_block_sparse.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
+ * @author Till Junge <till.junge@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   03 April 2019
  *
