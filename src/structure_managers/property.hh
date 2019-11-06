@@ -94,7 +94,7 @@ namespace rascal {
     explicit Property(Manager_t & manager, std::string metadata = "no metadata",
                       const bool & exclude_ghosts = false)
         : Parent{manager, NbRow, NbCol, metadata, exclude_ghosts},
-          type_id{internal::GetTypeNameHelper<Self_t>::GetTypeName()} {}
+          type_id{typeid(Self_t).name()} {}
 
     //! Copy constructor
     Property(const Property & other) = delete;

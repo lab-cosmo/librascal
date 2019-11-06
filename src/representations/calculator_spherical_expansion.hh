@@ -1189,7 +1189,7 @@ namespace rascal {
         // but only if the neighbour is _not_ an image of the center!
         // (the periodic images move with the center, so their contribution to
         // the center gradient is zero)
-        if (this->compute_gradients and (atom_j_tag != atom_i_tag)) { // NOLINT
+        if (this->compute_gradients and (atom_j_tag != atom_i_tag)) {  // NOLINT
           std::vector<Key_t> neigh_types{neigh_type};
           coefficients_neigh_gradient.resize(
               neigh_types, n_spatial_dimensions * n_row, n_col, 0.);

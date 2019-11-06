@@ -134,7 +134,7 @@ namespace rascal {
           return *this;
         }
         //! inequality
-        bool operator!=(const iterator & other) const {
+        inline bool operator!=(const iterator & other) const {
           return this->index != other.index;
         }
 
@@ -145,11 +145,11 @@ namespace rascal {
         size_t index;
       };
       //! stl conformance
-      iterator begin() const { return iterator(*this); }
+      inline iterator begin() const { return iterator(*this); }
       //! stl conformance
-      iterator end() const { return iterator(*this, false); }
+      inline iterator end() const { return iterator(*this, false); }
       //! stl conformance
-      size_t size() const { return ipow(3, Dim); }
+      inline size_t size() const { return ipow(3, Dim); }
 
      protected:
       //! locations of this domain
@@ -210,7 +210,7 @@ namespace rascal {
           return *this;
         }
         //! inequality
-        bool operator!=(const iterator & other) const {
+        inline bool operator!=(const iterator & other) const {
           return this->index != other.index;
         }
 
@@ -219,11 +219,11 @@ namespace rascal {
         size_t index;  //!< index of currect pointed-to pixel
       };
       //! stl conformance
-      iterator begin() const { return iterator(*this); }
+      inline iterator begin() const { return iterator(*this); }
       //! stl conformance
-      iterator end() const { return iterator(*this, false); }
+      inline iterator end() const { return iterator(*this, false); }
       //! stl conformance
-      size_t size() const { return this->ntot; }
+      inline size_t size() const { return this->ntot; }
 
      protected:
       const std::array<int, Dim> origin;  //!< minimum repetitions
@@ -280,7 +280,7 @@ namespace rascal {
           return *this;
         }
         //! inequality
-        bool operator!=(const iterator & other) const {
+        inline bool operator!=(const iterator & other) const {
           return this->index != other.index;
         }
 
@@ -289,11 +289,11 @@ namespace rascal {
         size_t index;                    //!< index of currect pointed-to voxel
       };
       //! stl conformance
-      iterator begin() const { return iterator(*this); }
+      inline iterator begin() const { return iterator(*this); }
       //! stl conformance
-      iterator end() const { return iterator(*this, false); }
+      inline iterator end() const { return iterator(*this, false); }
       //! stl conformance
-      size_t size() const { return ipow(2, Dim); }
+      inline size_t size() const { return ipow(2, Dim); }
 
      protected:
       const std::array<double, 2 * Dim>
@@ -322,8 +322,7 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     //! get the cell index for a position
     template <class Vector_t>
-    std::array<int, Vector_t::SizeAtCompileTime>
-    get_box_index(const Vector_t & position, double rc) {
+    decltype(auto) get_box_index(const Vector_t & position, double rc) {
       auto constexpr dimension{Vector_t::SizeAtCompileTime};
 
       std::array<int, dimension> nidx{};
@@ -516,7 +515,7 @@ namespace rascal {
     void update(Args &&... arguments);
 
     //! Returns cutoff radius of the neighbourhood manager
-    double get_cutoff() const { return this->cutoff; }
+    inline double get_cutoff() const { return this->cutoff; }
 
     /**
      * Returns the linear indices of the clusters (whose atom tags are stored
@@ -526,10 +525,11 @@ namespace rascal {
      * number entries in the list of pairs before i,j appears.
      */
     template <size_t Order>
-    size_t get_offset_impl(const std::array<size_t, Order> & counters) const;
+    inline size_t
+    get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Returns the number of clusters of size cluster_size
-    size_t get_nb_clusters(size_t order) const {
+    inline size_t get_nb_clusters(size_t order) const {
       switch (order) {
       /**
        * Note: The case for order=1 is abmiguous: one possible answer is the
@@ -539,6 +539,8 @@ namespace rascal {
        */
       case 2: {
         return this->neighbours_atom_tag.size();
+        break;
+      }
       default:
         throw std::runtime_error("Can only handle pairs.");
         break;
@@ -546,7 +548,7 @@ namespace rascal {
     }
 
     //! Returns number of clusters of the original manager
-    size_t get_size() const { return this->n_centers; }
+    inline size_t get_size() const { return this->n_centers; }
 
     //! total number of atoms used for neighbour list, including ghosts
     inline size_t get_size_with_ghosts() const {
@@ -563,29 +565,39 @@ namespace rascal {
     }
 
     //! ghost positions are only available for MaxOrder == 2
-    Vector_ref get_ghost_position(const size_t ghost_atom_index) {
+    inline Vector_ref get_ghost_position(const size_t ghost_atom_index) {
       auto p = this->get_ghost_positions();
       auto * xval{p.col(ghost_atom_index).data()};
       return Vector_ref(xval);
     }
 
-    Positions_ref get_ghost_positions() {
+    inline Positions_ref get_ghost_positions() {
       return Positions_ref(this->ghost_positions.data(), traits::Dim,
                            this->ghost_positions.size() / traits::Dim);
     }
 
     //! ghost types are only available for MaxOrder=2
-    int get_ghost_type(size_t atom_tag) const {
-      return this->ghost_types[atom_tag];
+    inline int get_ghost_type(size_t atom_tag) const {
+      auto && p{this->get_ghost_types()};
+      return p[atom_tag];
+    }
+
+    //! ghost types are only available for MaxOrder=2
+    inline int & get_ghost_type(size_t atom_tag) {
+      auto && p{this->get_ghost_types()};
+      return p[atom_tag];
     }
 
     //! provides access to the atomic types of ghost atoms
-    const std::vector<int> & get_ghost_types() const {
+    inline std::vector<int> & get_ghost_types() { return this->ghost_types; }
+
+    //! provides access to the atomic types of ghost atoms
+    inline const std::vector<int> & get_ghost_types() const {
       return this->ghost_types;
     }
 
     //! Returns position of the given atom object (useful for users)
-    Vector_ref get_position(const AtomRef_t & atom) {
+    inline Vector_ref get_position(const AtomRef_t & atom) {
       return this->manager->get_position(atom.get_index());
     }
 
@@ -596,14 +608,16 @@ namespace rascal {
      * This is called when ClusterRefKey<1, Layer> so we refer to a center
      * atoms. this function does the same job as get_atom_tag would do.
      */
-    int get_neighbour_atom_tag(const Parent &, size_t iteration_index) const {
+    inline int get_neighbour_atom_tag(const Parent &,
+                                      size_t iteration_index) const {
       return this->atom_tag_list[iteration_index];
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
-    int get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
-                               size_t iteration_index) const {
+    inline int
+    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                           size_t iteration_index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
@@ -629,16 +643,18 @@ namespace rascal {
     /** The atom tag corresponds to an ghost atom, then it returns it cluster
      * index of the atom in the original cell.
      */
-    size_t get_atom_index(const int atom_tag) const {
+    inline size_t get_atom_index(const int atom_tag) const {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    int get_atom_type(int atom_tag) const { return this->atom_types[atom_tag]; }
+    inline int get_atom_type(int atom_tag) const {
+      return this->atom_types[atom_tag];
+    }
 
     //! Returns the number of neighbors of a given cluster
     template <size_t Order, size_t Layer>
-    size_t
+    inline size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order <= traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
@@ -672,8 +688,8 @@ namespace rascal {
      * is needed, because ghost atoms are also included in the buildup of the
      * pair list.
      */
-    void add_ghost_atom(int atom_tag, const Vector_t & position,
-                        int atom_type) {
+    inline void add_ghost_atom(int atom_tag, const Vector_t & position,
+                               int atom_type) {
       // first add it to the list of atoms
       this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);
@@ -687,10 +703,12 @@ namespace rascal {
     }
 
     //! Extends the list containing the number of neighbours with a 0
-    void add_entry_number_of_neighbours() { this->nb_neigh.push_back(0); }
+    inline void add_entry_number_of_neighbours() {
+      this->nb_neigh.push_back(0);
+    }
 
     //! Sets the correct offsets for accessing neighbours
-    void set_offsets() {
+    inline void set_offsets() {
       auto && n_tuples{nb_neigh.size()};
       if (n_tuples > 0) {
         this->offsets.reserve(n_tuples);
@@ -1098,7 +1116,7 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   template <size_t Order>
-  size_t AdaptorNeighbourList<ManagerImplementation>::get_offset_impl(
+  inline size_t AdaptorNeighbourList<ManagerImplementation>::get_offset_impl(
       const std::array<size_t, Order> & counters) const {
     // The static assert with <= is necessary, because the template parameter
     // ``Order`` is one Order higher than the MaxOrder at the current

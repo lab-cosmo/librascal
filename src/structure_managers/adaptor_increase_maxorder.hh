@@ -36,9 +36,9 @@
 #include "structure_managers/property.hh"
 #include "structure_managers/structure_manager.hh"
 
+#include <algorithm>
 #include <set>
 #include <vector>
-#include <algorithm>
 
 namespace rascal {
   /**

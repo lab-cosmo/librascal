@@ -30,9 +30,10 @@
 #ifndef SRC_STRUCTURE_MANAGERS_ADAPTOR_HALF_NEIGHBOUR_LIST_HH_
 #define SRC_STRUCTURE_MANAGERS_ADAPTOR_HALF_NEIGHBOUR_LIST_HH_
 
-#include "rascal_utility.hh"
 #include "structure_managers/property.hh"
 #include "structure_managers/structure_manager.hh"
+//#include "structure_managers/cluster_ref_key.hh"
+#include "rascal_utility.hh"
 
 namespace rascal {
   /**
@@ -143,10 +144,10 @@ namespace rascal {
      * returns the cutoff from the underlying manager which built the
      * neighbourlist
      */
-    double get_cutoff() const { return this->manager->get_cutoff(); }
+    inline double get_cutoff() const { return this->manager->get_cutoff(); }
 
     //! returns the number of atoms or pairs
-    size_t get_nb_clusters(int order) const {
+    inline size_t get_nb_clusters(int order) const {
       switch (order) {
         /**
          * Note: The case for order=1 is abmiguous: one possible answer is the
@@ -156,33 +157,37 @@ namespace rascal {
          */
       case 2: {
         return this->neighbours_atom_tag.size();
-      default:
+        break;
+      }
+      default: {
         throw std::runtime_error("Can only handle single atoms and pairs.");
+      }
       }
     }
 
     //! returns the number of center atoms
-    size_t get_size() const { return this->manager->get_size(); }
+    inline size_t get_size() const { return this->manager->get_size(); }
 
     //! returns the number of atoms
-    size_t get_size_with_ghosts() const {
+    inline size_t get_size_with_ghosts() const {
       return this->manager->get_size_with_ghosts();
     }
 
     //! returns position of the given atom tag
-    Vector_ref get_position(int index) {
+    inline Vector_ref get_position(int index) {
       return this->manager->get_position(index);
     }
 
     //! returns position of the given atom object
-    Vector_ref get_position(const AtomRef_t & atom) {
+    inline Vector_ref get_position(const AtomRef_t & atom) {
       return this->manager->get_position(atom.get_index());
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
-    int get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
-                               size_t index) const {
+    inline int
+    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                           size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
@@ -200,7 +205,7 @@ namespace rascal {
     }
 
     //! get atom_tag of the index-th atom in manager
-    int get_neighbour_atom_tag(const Parent &, size_t index) const {
+    inline int get_neighbour_atom_tag(const Parent &, size_t index) const {
       return this->manager->get_neighbour_atom_tag(*this->manager, index);
     }
 
@@ -208,13 +213,23 @@ namespace rascal {
       return this->manager->get_atom_index(atom_tag);
     }
 
-    //! return atom type, const ref
-    int get_atom_type(const AtomRef_t & atom) const {
+    //! return atom type
+    inline int get_atom_type(const AtomRef_t & atom) {
       return this->manager->get_atom_type(atom.get_index());
     }
 
+    //! return atom type, const ref
+    inline int get_atom_type(const AtomRef_t & atom) const {
+      return this->manager->get_atom_type(atom.get_index());
+    }
+
+    //! Returns atom type given an atom tag
+    inline int get_atom_type(int atom_id) {
+      return this->manager->get_atom_type(atom_id);
+    }
+
     //! Returns a constant atom type given an atom tag
-    int get_atom_type(int atom_id) const {
+    inline int get_atom_type(int atom_id) const {
       return this->manager->get_atom_type(atom_id);
     }
 
@@ -223,7 +238,8 @@ namespace rascal {
      * cluster appears in an iteration
      */
     template <size_t Order>
-    size_t get_offset_impl(const std::array<size_t, Order> & counters) const {
+    inline size_t
+    get_offset_impl(const std::array<size_t, Order> & counters) const {
       // The static assert with <= is necessary, because the template parameter
       // ``Order`` is one Order higher than the MaxOrder at the current
       // level. The return type of this function is used to build the next Order
@@ -239,7 +255,7 @@ namespace rascal {
 
     //! Returns the number of neighbours of a given cluster
     template <size_t Order, size_t Layer>
-    size_t
+    inline size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles atoms and pairs");

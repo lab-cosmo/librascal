@@ -87,8 +87,7 @@ namespace rascal {
        * ghost atoms. Please use the get_size or get_size_with_ghosts member
        * functions
        */
-    }
-    case 2: {
+    case 2:
       return nb_pairs;
     default:
       throw std::runtime_error("Can only handle single atoms and pairs");
