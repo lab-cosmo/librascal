@@ -440,9 +440,8 @@ namespace rascal {
      * @throw runtime_error if UserProperty_t is not compatible with property
      * of the given name
      */
-    template <
-        typename UserProperty_t,
-        typename std::enable_if_t<UserProperty_t::Order != 1, void *> = nullptr>
+    template <typename UserProperty_t,
+              typename std::enable_if_t<UserProperty_t::Order != 1, int> = 0>
     std::shared_ptr<UserProperty_t>
     get_property_ptr(const std::string & name,
                      const std::string & metadata = "no metadata") {
@@ -471,7 +470,7 @@ namespace rascal {
      */
     template <
         typename UserProperty_t,
-        typename std::enable_if_t<UserProperty_t::Order == 1, void *> = nullptr>
+        typename std::enable_if_t<UserProperty_t::Order == 1, int> = 0>
     std::shared_ptr<UserProperty_t>
     get_property_ptr(const std::string & name,
                      const bool & exclude_ghosts = false,
