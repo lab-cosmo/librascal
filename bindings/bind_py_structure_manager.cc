@@ -531,10 +531,6 @@ namespace rascal {
                   auto feat_row = VecMap_t(prop_row[key].data(), inner_size);
                   features.row(i_center_global) = feat_row;
                 }
-
-                // for (int i_feat{0}; i_feat < inner_size; ++i_feat) {
-                //   feat_global(i_center_global, i_feat) = feat_row(i_feat);
-                // }
                 i_center_global++;
               }
             }
@@ -543,9 +539,23 @@ namespace rascal {
             ++i_key;
           }
           return feature_dict;
-
-
         });
+    manager_collection.def(
+        "get_dense_feature_matrix",
+        [](ManagerCollection_t & managers, const Calculator& calculator, py::list & all_keys_l) {
+          std::set<std::vector<int>> all_keys;
+          // convert the list of keys from python in to the propert type
+          for (py::handle key_l : all_keys_l) {
+            auto key = py::cast<std::vector<int>>(key_l);
+            all_keys.insert(key);
+          }
+
+          auto features = managers.get_dense_feature_matrix_blocksparse(calculator, all_keys);
+
+          return features;
+        }, R"(Get the dense feature matrix associated with the calculator and
+        the collection of structures (managers) using the list of keys
+        provided. Only applicable when Calculator uses BlockSparseProperty.)");
   }
 
   template <typename Manager, template <class> class... Adaptor>

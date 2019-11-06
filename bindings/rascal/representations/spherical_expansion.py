@@ -150,3 +150,12 @@ class SphericalExpansion(object):
         """
         return (self.hypers['n_species'] * self.hypers['max_radial']
                 * (self.hypers['max_angular'] + 1)**2)
+
+    def get_keys(self, species):
+        """
+        return the proper list of keys used to build the representation
+        """
+        keys = []
+        for sp in species:
+                keys.append([sp])
+        return keys

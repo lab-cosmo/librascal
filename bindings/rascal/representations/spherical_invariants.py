@@ -183,3 +183,25 @@ class SphericalInvariants(object):
             raise ValueError('Only soap_type = RadialSpectrum || '
                              'PowerSpectrum || BiSpectrum '
                              'implemented for now')
+
+    def get_keys(self, species):
+        """
+        return the proper list of keys used to build the representation
+        """
+        keys = []
+        if self.hypers['soap_type'] == 'RadialSpectrum':
+            for sp in species:
+                keys.append([sp])
+        elif self.hypers['soap_type'] == 'PowerSpectrum':
+            for sp1 in species:
+                for sp2 in species:
+                    if sp1 > sp2: continue
+                    keys.append([sp1,sp2])
+        elif self.hypers['soap_type'] == 'BiSpectrum':
+            for sp1 in species:
+                for sp2 in species:
+                    if sp1 > sp2: continue
+                    for sp3 in species:
+                        if sp2 > sp3: continue
+                        keys.append([sp1,sp2,sp3])
+        return keys

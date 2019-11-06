@@ -190,3 +190,15 @@ class SphericalCovariants(object):
         else:
             raise ValueError('Only soap_type = LambdaSpectrum '
                              'implemented for now')
+
+    def get_keys(self, species):
+        """
+        return the proper list of keys used to build the representation
+        """
+        keys = []
+        if self.hypers['soap_type'] == 'LambdaSpectrum':
+            for sp1 in species:
+                for sp2 in species:
+                    if sp1 > sp2: continue
+                    keys.append([sp1,sp2])
+        return keys
