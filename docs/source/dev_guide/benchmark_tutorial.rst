@@ -37,5 +37,5 @@ This file is a skeleton file for writing your own benchmark. It explains the
 core featuers of google benchmarks and our own added functionalities in the
 ``performance/benchmarks/benchmarks.hh`` file.
 
-.. literalinclude:: ../../../examples/benchmark_tutorial.cc
+.. literalinclude:: ../tutorials/benchmark_tutorial.cc
     :language: c++

@@ -1,10 +1,5 @@
 
 file(GLOB examples "${CMAKE_CURRENT_SOURCE_DIR}/*.cc")
-# removes benchmark file which should only be compiled if benchmarks is on
-# which is not the responsibility of the examples cmake file
-get_filename_component(benchmark_tutorial_path "${CMAKE_CURRENT_SOURCE_DIR}/benchmark_tutorial.cc" ABSOLUTE)
-list(REMOVE_ITEM examples "${benchmark_tutorial_path}")
-#
 
 foreach(_file_ ${examples})
     get_filename_component(_name_ ${_file_} NAME_WE)
