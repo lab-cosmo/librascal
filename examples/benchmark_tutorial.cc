@@ -25,7 +25,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "benchmarks.hh"
+#include "../performance/benchmarks/benchmarks.hh"
 
 namespace rascal {
   /**

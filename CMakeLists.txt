@@ -142,6 +142,19 @@ if(${BUILD_BENCHMARKS})
     # surpresses the "'CSVReporter' is deprecated" errors when compiling benchmark.cc
     set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations" )
   endforeach(binaryfile ${binaries})
+  # For compilation of benchmark_tutorial begin
+  set(binaryfile "${CMAKE_SOURCE_DIR}/examples/benchmark_tutorial.cc")
+  get_filename_component(binaryname "${CMAKE_SOURCE_DIR}/examples/benchmark_tutorial.cc" NAME_WE)
+  add_executable(${binaryname} ${binaryfile})
+  target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
+  target_link_libraries(${binaryname} Threads::Threads)
+  target_link_libraries(${binaryname} benchmark)
+  set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations" )
+  # end
+
+  # surpresses the "'CSVReporter' is deprecated" errors when compiling benchmark.cc
+  set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations" )
+
   # Runs all benchmarks in succession, add new benchmarks with the RUN_BENCHMARK_FLAGS  
   add_custom_target(
       benchmarks

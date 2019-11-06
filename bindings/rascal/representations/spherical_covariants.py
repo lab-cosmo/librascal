@@ -11,7 +11,7 @@ class SphericalCovariants(object):
     Computes a SphericalCovariants representation, i.e. lambda spectrum.
 
     Hyperparameters
-    ----------
+    ---------------
     interaction_cutoff : float
         Maximum pairwise distance for atoms to be considered in
         expansion

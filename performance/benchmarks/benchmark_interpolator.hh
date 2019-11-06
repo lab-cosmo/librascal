@@ -106,6 +106,7 @@ namespace rascal {
     enum class SupportedVecFunc { RadialContribution, Dummy };
   };
 
+  /* -------------------- benchmark-parameters-start -------------------- */
   /**
    * Interpolator Dataset explanation
    *  static const json data = {
@@ -138,7 +139,9 @@ namespace rascal {
    *      // parameter only for `SphericalExpansion` AdaptorStrict cutoff
    *      {"cutoffs", {8}}};
    */
+  /* -------------------- benchmark-parameters-end -------------------- */
 
+  /* -------------------- benchmark-dataset-start -------------------- */
   /**
    * Dataset for testing the spherical representations with interpolator. To
    * avoid code repetition `SphericalRepresentationBFixture` inherits from
@@ -167,6 +170,7 @@ namespace rascal {
       return data;
     }
   };
+  /* -------------------- benchmark-dataset-end -------------------- */
 
   /**
    * RadialContributionDataset
@@ -265,9 +269,6 @@ namespace rascal {
         for (int i{0}; i < this->ref_points.size(); i++) {
           this->ref_points(i) = points_tmp(rand_r(&SEED) % this->nb_ref_points);
         }
-        std::cout << std::endl;
-        std::cout << "x1 " << this->x1 << " x2 " << this->x2 << std::endl;
-        std::cout << std::endl;
         for (int i{0}; i < this->ref_points.size(); i++) {
           assert(this->ref_points(i) >= this->x1 &&
                  this->ref_points(i) <= this->x2);
