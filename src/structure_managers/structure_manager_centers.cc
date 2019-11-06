@@ -70,8 +70,9 @@ namespace rascal {
     double tol{1e-10};
     if ((positions_scaled.array().rowwise().minCoeff() < -tol).any() or
         (positions_scaled.array().rowwise().maxCoeff() > 1. + tol).any()) {
-      std::string error{R"(Some of the positions in the structure are not
-                            inside the unit cell. Please wrap the atoms.)"};
+      std::string error{R"(Some of the atoms in the structure are not
+                           inside the unit cell. Please wrap them inside it
+                           with at least tolerance of 1e-10.)"};
       throw std::runtime_error(error);
     }
 

@@ -112,6 +112,21 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Test that unit cell filled with zeros is properly caught
+   */
+  BOOST_FIXTURE_TEST_CASE(empty_unit_cell_test, AtomicStructureFixture) {
+    AtomicStructure<3> structure{};
+
+    // load structure from a json formated file
+    BOOST_CHECK_THROW(structure.set_structure(
+        std::string("./reference_data/small_molecule_no_cell.json")),
+        std::runtime_error);
+    BOOST_REQUIRE_NO_THROW(structure.set_structure(
+        std::string("./reference_data/small_molecule.json")));
+  }
+
+  /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal
