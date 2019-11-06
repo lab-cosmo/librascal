@@ -40,10 +40,10 @@
 namespace rascal {
   namespace math {
     /**
-     * To allow flexibility for the behaviour of the interpolator for
+     * To allow flexibility of the interpolator for
      * experimenting while giving the possibility to optimize the interpolator
      * for certain methods, the interpolator class itself is only a skeleton to
-     * execute these interpolator rationals/methods.
+     * execute these interpolator methods.
      *
      * An interpolator can be constructed given an error bound or a uniform
      * grid. The error is computed by creating a `test_grid` and compare the
@@ -59,7 +59,6 @@ namespace rascal {
      * test_grid   the test grid to estimate the error
      * ε           error function
      *
-     *
      * The interpolation method is
      * contained in the InterpolationMethod, for the creation of the grid and
      * test grid contained in the UniformGridRational, a search method to find
@@ -68,12 +67,12 @@ namespace rascal {
      * ErrorMethod.
      *
      * The Interpolator class hierarchy is split into
-     * Interpolator (abstract) -> YOUR_INTERPOLATOR_IMPLEMENTATION An
-     * interpolator implementation can be very general an allow multiple
-     * combination of methods to allow flexibility or very rigid to allow better
+     * Interpolator (abstract) -> YOUR_INTERPOLATOR_IMPLEMENTATION. An
+     * interpolator implementation can be very general, it can be tailored for flexibility with multiple
+     * combinations of methods or very focused to allow for application specific
      * optimization. The same goes for the interpolator methods which can be
-     * used interchangeable with other methods or depend that certain other
-     * methods are used.
+     * used interchangeably with other methods or can depend on specific
+     * combinations e.g. the `CubicSplineScalarUniform` only works together with the `UniformGridRational` class.
      *
      * While testing different methods it has turned out that the interpolator
      * is most optimal for uniform grids, therefore the interpolation methods
@@ -82,7 +81,7 @@ namespace rascal {
      * There has been an implementation for an adaptive refinement method and
      * search methods for non adaptive grids, which were removed but can be
      * found here if needed:
-     * https://gist.github.com/agoscinski/59b103998c7faae979dbbc672e8048f6.js
+     * https://gist.github.com/agoscinski/59b103998c7faae979dbbc672e8048f6
      *
      */
 
@@ -153,7 +152,8 @@ namespace rascal {
 
     /**
      * Linear UniformGridRational increases the number of points by `slope`
-     * times `degree_of_fineness` in each step.
+     * times `degree_of_fineness` in each step. So the number of grid points
+     * increases linearly with the `slope` parameter.
      *
      * The uniform grid uses the points in between grid points as test grid. The
      * refined grid adds `slope` number of points to grid.
@@ -200,26 +200,22 @@ namespace rascal {
     template <>
     class UniformGridRational<RefinementMethod_t::Exponential> {
      public:
-      UniformGridRational<RefinementMethod_t::Exponential>(int base = 2)
-          : base_{base} {}
+      UniformGridRational<RefinementMethod_t::Exponential>() {}
 
       Vector_t compute_grid(double x1, double x2,
                             int degree_of_fineness) const {
-        double nb_grid_points = base_ << degree_of_fineness;
+        double nb_grid_points = 2 << degree_of_fineness;
         return Vector_t::LinSpaced(nb_grid_points, x1, x2);
       }
       Vector_t compute_test_grid(double x1, double x2,
                                  int degree_of_fineness) const {
-        double nb_grid_points = base_ << degree_of_fineness;
+        double nb_grid_points = 2 << degree_of_fineness;
         // half of a step size in the grid to get the inner grid points
         // step size = (x2-x1)/(nb_grid_points-1)
         double offset{(x2 - x1) / (2 * (nb_grid_points - 1))};
         return Vector_t::LinSpaced(nb_grid_points - 1, x1 + offset,
                                    x2 - offset);
       }
-
-     private:
-      int base_;
     };
 
     enum class InterpolationMethod_t {
@@ -379,7 +375,7 @@ namespace rascal {
         int n{static_cast<int>(yv.size())};
         Vector_t y2 = Vector_t::Zero(n);
         Vector_t u = Vector_t::Zero(n);
-        double p;
+        double p, qn;
 
         // forward sweeping
         y2(0) = -0.5;
@@ -392,7 +388,7 @@ namespace rascal {
         }
 
         // back substitution
-        p = 0.5;  // qn=0.5 but we just reuse p because it is not needed anyway
+        qn = 0.5;
         u(n - 1) = (3.0 / this->h) * (dfx2 - (yv(n - 1) - yv(n - 2)) / this->h);
         y2(n - 1) = (u(n - 1) - p * u(n - 2)) / (p * y2(n - 2) + 1.0);
         for (int k{n - 2}; k >= 0; k--) {
@@ -434,7 +430,8 @@ namespace rascal {
       inline double interpolate_for_one_point(const Vector_Ref & xx,
                                               const Vector_Ref & yy, int j1,
                                               double x) const {
-        int klo{j1}, khi{j1 + 1};
+        int klo{j1};
+        int khi{j1 + 1};
         // percentage of grid cell start to x
         double a{(xx(khi) - x) / this->h};
         // percentage of x to grid cell end, because a+b = 1 we can simplify
@@ -450,7 +447,8 @@ namespace rascal {
                                                          const Vector_Ref & yy,
                                                          int j1,
                                                          double x) const {
-        int klo{j1}, khi{j1 + 1};
+        int klo{j1};
+        int khi{j1 + 1};
         double a{(xx(khi) - x) / this->h};
         // Because we can assume a+b=1, we simplify the calculation of b
         double b{1 - a};
@@ -466,13 +464,14 @@ namespace rascal {
       // h*h/6.0
       double h_sq_6{0};
       /**
-       * This term is the solution vector of the linear system of the
+       * The second derivative is the solution vector of the linear system of the
        * tridiagonal toeplitz matrix derived by the conditions of cubic spline.
        * The linear system can be found in
-       * http://mathworld.wolfram.com/CubicSpline.html These terms are the
-       * remaining constants of the second derivative of the cubic spline. In
+       * http://mathworld.wolfram.com/CubicSpline.html 
+       *
+       * In
        * addition we already multiply them with precomputed coefficients derived
-       * by assuming a uniform grid y2 *h*h/6
+       * by assuming a uniform grid second_derivative *h*h/6
        */
       Vector_t second_derivative_h_sq_6{};
     };
@@ -555,9 +554,10 @@ namespace rascal {
       inline Vector_t interpolate_for_one_point(const Vector_Ref & xx,
                                                 const Matrix_Ref & yy, int j1,
                                                 double x) const {
-        int klo{j1}, khi{j1 + 1};
+        int klo{j1};
+        int khi{j1 + 1};
         // Bad xa input to routine splint
-        assert(h != 0.0);
+        assert(h > DBL_FTOL);
         double a{(xx(khi) - x) / this->h};
         // Because we can assume a+b=1, we simplify the calculation of b
         double b{1 - a};
@@ -574,9 +574,10 @@ namespace rascal {
       interpolate_derivative_for_one_point(const Vector_Ref & xx,
                                            const Matrix_Ref & yy, int j1,
                                            double x) const {
-        int klo{j1}, khi{j1 + 1};
+        int klo{j1};
+        int khi{j1 + 1};
         // Bad xa input to routine splint
-        assert(h != 0.0);
+        assert(h > DBL_FTOL);
         double a{(xx(khi) - x) / this->h};
         // Because we can assume a+b=1, we simplify the calculation of b
         double b{1 - a};
@@ -744,8 +745,8 @@ namespace rascal {
 
     /**
      * The purpose of the search method is to obtain from a point x in
-     * the range [x1,x2] the nearest grid point. With nearest the grid point
-     * the point just before point x is meant (floor rounding is used).
+     * the range [x1,x2] the nearest grid point. The nearest the grid point
+     * via the floor rounding of x.
      *
      *                     x1     x        x2
      *                            |
@@ -803,7 +804,7 @@ namespace rascal {
     class Interpolator {
      public:
       /**
-       * Different constructors for the interpolator, to be able to run the
+       * Different constructors for the interpolator to be able to run the
        * interpolator with only the required parameters, but also to fine tune
        * different functionalities for an expert use. The detailed explanation
        * of each parameter can be seen in the protected constructor. Sets the
@@ -892,7 +893,7 @@ namespace rascal {
         }
       };
 
-      Interpolator(Vector_t grid, bool)
+      Interpolator(Vector_t grid, bool /*dummy_for_overloading*/)
           : grid{grid}, intp_method{InterpolationMethod()},
             grid_rational{UniformGridRational()}, search_method{
                                                       UniformSearchMethod()} {}
@@ -920,7 +921,7 @@ namespace rascal {
       double error_bound{1e-5};
       double grid_error{0.};
 
-      int max_grid_points{10000000};  // 1e7
+      int max_grid_points{10000000}; // 1e7
       int degree_of_fineness{5};
       bool error_below_bound{false};
 
@@ -1145,7 +1146,7 @@ namespace rascal {
        * This computes parameters which are needed in the benchmarks for
        * evaluation.
        */
-      void compute_paratemeters_for_evaluation() {
+      void compute_parameters_for_evaluation() {
         Vector_t test_grid{this->grid_rational.compute_test_grid(
             this->x1, this->x2, this->degree_of_fineness)};
         Vector_t test_grid_interpolated{this->interpolate(test_grid)};
@@ -1166,7 +1167,9 @@ namespace rascal {
       /**
        * If the first derivative of the function at the boundary points is
        * known, one can initialize the interpolator with these values to obtain
-       * a higher accuracy with the interpolation method.
+       * a higher accuracy with the interpolation method. A more descriptive
+       * explanation for the boundary conditions can be found in
+       * https://en.wikiversity.org/wiki/Cubic_Spline_Interpolation#Boundary_Conditions
        */
       bool clamped_boundary_conditions{false};
       // f'(x1)
@@ -1369,7 +1372,7 @@ namespace rascal {
        *
        * @pre x is in range [x1,x2]
        */
-      inline Vector_t interpolate_to_vector_derivative(double x) {
+      inline Vector_t interpolate_to_vector_derivative(const double x) {
         assert(x >= this->x1 && x <= this->x2);
         int nearest_grid_index_to_x{this->search_method.search(x, this->grid)};
         return this->intp_method.interpolate_derivative(
@@ -1415,7 +1418,7 @@ namespace rascal {
        * @param x
        * @return evaluation of f on x, f(x)
        */
-      Vector_t eval(double x) {
+      Vector_t eval(const double x) {
         return Eigen::Map<Vector_t>(this->function(x).data(),
                                     this->matrix_size);
       }
@@ -1480,7 +1483,10 @@ namespace rascal {
       /**
        * If the first derivative of the function at the boundary points is
        * known, one can initialize the interpolator with these values to
-       * obtain a higher accuracy with the interpolation method.
+       * obtain a higher accuracy with the interpolation method. A more
+       * descriptive explanation for the boundary conditions can be found in
+       * https://en.wikiversity.org/wiki/Cubic_Spline_Interpolation#Boundary_Conditions
+
        */
       bool clamped_boundary_conditions{false};
       // f'(x1)
