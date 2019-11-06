@@ -92,7 +92,7 @@ namespace rascal {
      public:
       // Parameter used to fix the sum when evaluating the numerical
       // derivatives.
-      size_t n_terms{100};
+      int n_terms{100};
 
       Hyp1f1Series(double a, double b, size_t mmax, double tolerance = 1e-14)
           : a{a}, b{b}, mmax{mmax}, prefac{std::tgamma(a) / std::tgamma(b)},
@@ -247,7 +247,7 @@ namespace rascal {
      public:
       // Parameter used to fix the sum when evaluating the numerical
       // derivatives.
-      size_t n_terms{20};
+      int n_terms{20};
 
       Hyp1f1Asymptotic(double a, double b, size_t mmax,
                        double tolerance = 1e-14)
@@ -479,12 +479,12 @@ namespace rascal {
       double calc_numerical_derivative(double z, double h) {
         if (z > this->z_asympt) {
           double fzp{this->hyp1f1_asymptotic.calc(z + h)};
-          size_t n_terms{this->hyp1f1_asymptotic.n_terms};
+          int n_terms{this->hyp1f1_asymptotic.n_terms};
           double fzm{this->hyp1f1_asymptotic.calc(z - h, false, n_terms)};
           return (fzp - fzm) / (2 * h);
         } else {
           double fzp{this->hyp1f1_series.calc(z + h)};
-          size_t n_terms{this->hyp1f1_series.n_terms};
+          int n_terms{this->hyp1f1_series.n_terms};
           double fzm{this->hyp1f1_series.calc(z - h, false, n_terms)};
           return (fzp - fzm) / (2 * h);
         }
