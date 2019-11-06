@@ -69,9 +69,11 @@ int main(int argc, char * argv[]) {
   std::string filename{argv[1]};
 
   double cutoff{5.};
-  json hypers{
-      {"max_radial", 8}, {"max_angular", 6}, {"compute_gradients", false}};
-
+  json hypers{{"max_radial", 8},
+              {"max_angular", 6},
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", true},
+              {"compute_gradients", false}};
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
                  {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
@@ -134,7 +136,8 @@ int main(int argc, char * argv[]) {
             << std::endl;
 
   if (VERBOSE) {
-    auto expn = representation.get_representation_full();
+    auto expn = manager->template get_property_ref<PropGrad_t>(
+                 representation.get_gradient_name()).get_dense_feature_matrix();
     std::cout << "Sample SphericalExpansion elements " << std::endl
               << expn(0, 0) << " " << expn(0, 1) << " " << expn(0, 2) << "\n"
               << expn(1, 0) << " " << expn(1, 1) << " " << expn(1, 2) << "\n"
@@ -159,7 +162,8 @@ int main(int argc, char * argv[]) {
             << elapsed_grad.count() / elapsed.count() << std::endl;
 
   if (VERBOSE) {
-    auto expn2 = representation_gradients.get_representation_full();
+    auto expn2 = manager->template get_property_ref<PropGrad_t>(
+                 representation_gradients.get_gradient_name()).get_dense_feature_matrix();
     std::cout << "Sample SphericalExpansion elements (should be identical) "
               << std::endl
               << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) <<

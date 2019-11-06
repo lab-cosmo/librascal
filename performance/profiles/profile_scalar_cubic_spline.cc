@@ -28,7 +28,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "json.hpp"
 #include "json_io.hh"
 #include "math/hyp1f1.hh"
 #include "math/interpolator.hh"

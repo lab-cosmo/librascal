@@ -69,6 +69,7 @@ include(rascalTools)
 option(BUILD_BINDINGS "Build the python bindings" ON)
 option(BUILD_EXAMPLES "Build the examples" ON)
 option(BUILD_BENCHMARKS "Build the benchmarks" OFF)
+option(BUILD_PROFILES "Build the files for profiling" OFF)
 option(BUILD_TESTS "Build the unit tests" OFF)
 option(BUILD_DOC "Build documentation" OFF)
 option(USER "Switch installation folder" OFF)
@@ -131,34 +132,21 @@ if(${BUILD_BENCHMARKS})
   mark_as_advanced(RUN_BENCHMARKS_FLAGS)
 
   # Compile benchmark files
-  file( GLOB binaries "${CMAKE_SOURCE_DIR}/performance/benchmarks/*.cc")
-  foreach(binaryfile ${binaries})
-    get_filename_component(binaryname  ${binaryfile} NAME_WE)
-    add_executable(${binaryname} ${binaryfile})
-    target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
-    target_link_libraries(${binaryname} Threads::Threads)
-    target_link_libraries(${binaryname} benchmark)
-
-    # surpresses the "'CSVReporter' is deprecated" errors when compiling benchmark.cc
-    set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations" )
-  endforeach(binaryfile ${binaries})
-  # For compilation of benchmark_tutorial begin
-  set(binaryfile "${CMAKE_SOURCE_DIR}/docs/source/tutorials/benchmark_tutorial.cc")
-  get_filename_component(binaryname "${CMAKE_SOURCE_DIR}/docs/source/tutorials/benchmark_tutorial.cc" NAME_WE)
-  add_executable(${binaryname} ${binaryfile})
-  target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
-  target_link_libraries(${binaryname} Threads::Threads)
-  target_link_libraries(${binaryname} benchmark)
-  set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations" )
-  # end
+  #set(binaryfile "${CMAKE_SOURCE_DIR}/docs/source/tutorials/benchmark_tutorial.cc")
+  #set(binaryname "benchmark_tutorial")
+  #message(WARNING ${binaryname})
+  #message(WARNING ${binaryfile})
+  #add_executable(${binaryname} ${binaryfile})
+  #target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
+  #target_link_libraries(${binaryname} Threads::Threads)
+  #target_link_libraries(${binaryname} benchmark)
 
   # surpresses the "'CSVReporter' is deprecated" errors when compiling benchmark.cc
-  set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations" )
-
+  #set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations" )
   # Runs all benchmarks in succession, add new benchmarks with the RUN_BENCHMARK_FLAGS  
   add_custom_target(
       benchmarks
-      COMMAND ./benchmark_interpolator
+      COMMAND ./performance/benchmarks/benchmark_interpolator
                          --benchmark_counters_tabular=true
                          ${RUN_BENCHMARKS_FLAGS}
       COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/performance/benchmarks/benchmark_spherical_representations.py" 
@@ -240,6 +228,14 @@ endif()
 
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if(BUILD_BENCHMARKS)
+    add_subdirectory(performance/benchmarks)
+endif()
+
+if(BUILD_PROFILES)
+    add_subdirectory(performance/profiles)
 endif()
 
 if(BUILD_BINDINGS)
