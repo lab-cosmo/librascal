@@ -384,7 +384,6 @@ namespace rascal {
     using reference = typename Value_t::reference;
 
     //! constructor for atom properties with optional ghost exclusion
-    template <typename std::enable_if_t<Order == 1, void *> = nullptr>
     TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
                   std::string metadata = "no metadata",
                   bool exclude_ghosts = false)
