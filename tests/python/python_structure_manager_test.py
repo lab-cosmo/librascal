@@ -228,7 +228,7 @@ class CenterSelectTest(unittest.TestCase):
         mask_center_atoms_by_id(self.frame, np.arange(3, 7))
         test_mask[:7] = True
         self.check_mask(test_mask)
-        mask_center_atoms_by_id(self.frame, id_blacklist=[0, ])
+        mask_center_atoms_by_id(self.frame, id_blacklist=[0])
         test_mask[0] = False
         self.check_mask(test_mask)
 
@@ -240,7 +240,7 @@ class CenterSelectTest(unittest.TestCase):
         mask_center_atoms_by_id(self.frame, id_blacklist=np.arange(3, 7))
         test_mask[:7] = False
         self.check_mask(test_mask)
-        mask_center_atoms_by_id(self.frame, id_select=[0, ])
+        mask_center_atoms_by_id(self.frame, id_select=[0])
         test_mask[0] = True
         self.check_mask(test_mask)
 

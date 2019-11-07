@@ -1,16 +1,14 @@
+import argparse
+import ase
+import json
+import sys
+sys.path.insert(0, '../build/')
 import rascal.lib as lrl
 import rascal
 from rascal.utils import ostream_redirect
 from rascal.representations import SphericalCovariants
 from ase.io import read
 import numpy as np
-
-import argparse
-import ase
-import json
-import sys
-sys.path.insert(0, '../build/')
-
 #############################################################################
 
 

@@ -92,8 +92,8 @@ class AtomsList(object):
         Returns
         -------
         representation_matrix : dict of ndarray
-            returns the representation bound to the calculator as a dict of
-            dense matrix.
+            returns a dictionary associating tuples of atomic numbers sorted
+            alphabetically to the corresponding feature matrices
         """
         return self.managers.get_sparse_feature_matrix(
             calculator._representation)

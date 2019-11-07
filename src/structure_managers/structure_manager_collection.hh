@@ -246,8 +246,11 @@ namespace rascal {
     /**
      * get the dense feature matrix associated with the property built
      * with calculator in the elements of the manager collection.
+     *
      * In the case of BlockSparseProperty the keys considered are the ones
-     * present in the manager collection.
+     * present in the manager collection. In other words it means that the
+     * size of the output array (nb of columns) depends on the species present
+     * in the structures held by manager_collection.
      */
     template <class Calculator>
     Matrix_t get_dense_feature_matrix(const Calculator & calculator) {

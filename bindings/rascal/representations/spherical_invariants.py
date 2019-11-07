@@ -207,4 +207,8 @@ class SphericalInvariants(object):
                         if sp2 > sp3:
                             continue
                         keys.append([sp1, sp2, sp3])
+        else:
+            raise ValueError('Only soap_type = RadialSpectrum || '
+                             'PowerSpectrum || BiSpectrum '
+                             'implemented for now')
         return keys

@@ -499,41 +499,38 @@ namespace rascal {
             all_keys.insert(keys.begin(), keys.end());
           }
 
-          // create a dict for the features
-          py::dict feature_dict;
           py::list keys_list;
-          for (auto & key : all_keys) {
+          for (const auto & key : all_keys) {
             py::list l;
-            for (auto & ii : key) {
+            for (const auto & ii : key) {
               l.append(ii);
             }
             // convert it to a tuple
             py::tuple t_key(l);
             keys_list.append(t_key);
-            // feature_dict[t_key] = features;
           }
 
+          // create a dict for the features
+          py::dict feature_dict;
           int i_key{0};
-          for (auto & key : all_keys) {
-            int i_center_global{0};
+          for (const auto & key : all_keys) {
+            int current_center{0};
             auto t_key{keys_list[i_key]};
-            // auto & feat_global = feature_dict[t_key];
             for (auto & manager : managers) {
               auto && property =
                   manager->template get_property_ref<Prop_t>(property_name);
-              // size_t n_center{property.size()};
 
               for (auto center : manager) {
                 auto && prop_row = property[center];
                 if (prop_row.count(key) == 1) {
                   // get the feature and flatten the array
                   auto feat_row = VecMap_t(prop_row[key].data(), inner_size);
-                  features.row(i_center_global) = feat_row;
+                  features.row(current_center) = feat_row;
                 }
-                i_center_global++;
+                current_center++;
               }
             }
-            feature_dict[t_key] = features;
+            feature_dict[t_key] = std::move(features);
             features.setZero();
             ++i_key;
           }
@@ -658,7 +655,12 @@ namespace rascal {
     bind_feature_matrix_getter<CalculatorSphericalCovariants,
                                ManagerCollection_t>(manager_collection);
 
+    // bind some special getters 
+    bind_sparse_feature_matrix_getter<CalculatorSphericalExpansion,
+                                      ManagerCollection_t>(manager_collection);
     bind_sparse_feature_matrix_getter<CalculatorSphericalInvariants,
+                                      ManagerCollection_t>(manager_collection);
+    bind_sparse_feature_matrix_getter<CalculatorSphericalCovariants,
                                       ManagerCollection_t>(manager_collection);
   }
 

@@ -1,7 +1,3 @@
-import rascal
-from rascal.utils import ostream_redirect
-from rascal.representations import SphericalInvariants
-import rascal.lib as lrl
 from ase.io import read
 import numpy as np
 import argparse
@@ -10,7 +6,10 @@ import json
 import sys
 sys.path.insert(0, '../build/')
 
-
+import rascal
+from rascal.utils import ostream_redirect
+from rascal.representations import SphericalInvariants
+import rascal.lib as lrl
 ############################################################################
 
 
