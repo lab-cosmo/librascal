@@ -373,9 +373,9 @@ namespace rascal {
                       {"initialization_arguments", {}}};
             json ad2{{"name", "AdaptorStrict"},
                      {"initialization_arguments", {{"cutoff", cutoff}}}};
-            adaptors.emplace_back(ad1);
+            adaptors.push_back(ad1);
             adaptors.push_back(ad1b);
-            adaptors.emplace_back(ad2);
+            adaptors.push_back(ad2);
 
             parameters["structure"] = structure;
             parameters["adaptors"] = adaptors;
@@ -414,7 +414,7 @@ namespace rascal {
         std::uniform_int_distribution<int> uni(1, n_atoms - 2);
         for (auto && cutoff : this->cutoffs) {
           for (auto && skin : this->skins) {
-            for (auto && consider_ghost_neighbours :
+            for (bool consider_ghost_neighbours :
                  this->consider_ghost_neighbours_list) {
               atomic_structure.set_structure(filename);
 
@@ -483,7 +483,7 @@ namespace rascal {
         std::uniform_int_distribution<int> uni(1, n_atoms - 2);
         for (auto && cutoff : this->cutoffs) {
           for (auto && skin : this->skins) {
-            for (auto && consider_ghost_neighbours :
+            for (bool consider_ghost_neighbours :
                  this->consider_ghost_neighbours_list) {
               atomic_structure.set_structure(filename);
               json parameters;
