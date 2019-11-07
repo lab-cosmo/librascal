@@ -467,6 +467,8 @@ namespace rascal {
    * (2) will return a dense feature matrix using the user provided keys to
    * build it instead of using the ones present in the manager collection.
    * The feature size is (n_centers, inner_size*all_keys_l.size())
+   *
+   * inner_size is the number of components of the property (.get_nb_comp())
    */
   template <class Calculator, class ManagerCollection_t,
             class ManagerCollectionBinder>
