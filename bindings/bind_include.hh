@@ -28,8 +28,8 @@
 #ifndef BINDINGS_BIND_INCLUDE_HH_
 #define BINDINGS_BIND_INCLUDE_HH_
 
-#include "atomic_structure.hh"
-#include "rascal_utility.hh"
+#include "rascal/atomic_structure.hh"
+#include "rascal/utils.hh"
 
 #include <pybind11/eigen.h>
 #include <pybind11/iostream.h>

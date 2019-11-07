@@ -1,5 +1,5 @@
 /**
- * file   structure_manager_iteration.cc
+ * @file   examples/structure_manager_iteration.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -26,13 +26,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <structure_managers/adaptor_half_neighbour_list.hh>
-#include <structure_managers/adaptor_increase_maxorder.hh>
-#include <structure_managers/adaptor_neighbour_list.hh>
-#include <structure_managers/adaptor_strict.hh>
-#include <structure_managers/make_structure_manager.hh>
-#include <structure_managers/property.hh>
-#include <structure_managers/structure_manager_centers.hh>
+#include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_increase_maxorder.hh"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/property.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
 
 /**
  * This small example highlight the possibilities of adapting a structure

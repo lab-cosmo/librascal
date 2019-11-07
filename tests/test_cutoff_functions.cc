@@ -25,8 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "representations/cutoff_functions.hh"
 #include "test_math.hh"
+
+#include "rascal/representations/cutoff_functions.hh"
 
 #include <boost/test/unit_test.hpp>
 
@@ -59,8 +60,7 @@ namespace rascal {
 
       CutoffGradientProvider<Cutoff_t> cutoff_calculator(cutoff);
 
-      GradientTestFixture fix{
-          "reference_data/cutoff_function_test.json"};
+      GradientTestFixture fix{"reference_data/cutoff_function_test.json"};
       test_gradients(cutoff_calculator, fix);
     }
   }
@@ -109,8 +109,7 @@ namespace rascal {
 
       CutoffGradientProvider<Cutoff_t> cutoff_calculator(cutoff);
 
-      GradientTestFixture fix{
-          "reference_data/cutoff_function_test.json"};
+      GradientTestFixture fix{"reference_data/cutoff_function_test.json"};
       test_gradients(cutoff_calculator, fix);
     }
   }

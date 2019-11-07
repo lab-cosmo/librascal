@@ -25,7 +25,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "utils/sparsify_utilities.hh"
+#include "rascal/utils/sparsify_utilities.hh"
 
 #include <boost/test/unit_test.hpp>
 

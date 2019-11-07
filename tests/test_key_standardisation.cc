@@ -25,7 +25,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "utils/key_standardisation.hh"
+#include "rascal/utils/key_standardisation.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>

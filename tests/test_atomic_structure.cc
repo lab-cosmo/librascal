@@ -25,7 +25,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "atomic_structure.hh"
+#include "rascal/atomic_structure.hh"
 
 #include <boost/test/unit_test.hpp>
 
@@ -119,9 +119,9 @@ namespace rascal {
     AtomicStructure<3> structure{};
 
     // load structure from a json formated file
-    BOOST_CHECK_THROW(structure.set_structure(
-        std::string("./reference_data/small_molecule_no_cell.json")),
-        std::runtime_error);
+    BOOST_CHECK_THROW(structure.set_structure(std::string(
+                          "./reference_data/small_molecule_no_cell.json")),
+                      std::runtime_error);
     BOOST_REQUIRE_NO_THROW(structure.set_structure(
         std::string("./reference_data/small_molecule.json")));
   }
