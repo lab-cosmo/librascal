@@ -11,15 +11,18 @@ IndentWidth: 2
 SortIncludes: true
 IncludeBlocks: Regroup
 IncludeCategories:
-  # Headers in "" with extension, i.e. rascal headers
+  # rascal headers in "" with extension
+  - Regex:           '"rascal/[[:alnum:]/_]+\.h+p*"'
+    Priority:        2
+  # Headers in "" with extension, i.e. local headers
   - Regex:           '"[[:alnum:]/_]+\.h+p*"'
     Priority:        1
   # Headers in <> with extension, i.e. external libraries headers
   - Regex:           '<[[:alnum:]/_]+\.h+p*>'
-    Priority:        2
+    Priority:        3
   # Eigen headers look like standard library headers
   - Regex:           '<Eigen/[[:alnum:]]+>'
-    Priority:        3
+    Priority:        4
   # Headers in <> without extension, i.e. usually c/c++ standard library headers
   - Regex:           '<[[:alnum:]_]+>'
-    Priority:        4
+    Priority:        5

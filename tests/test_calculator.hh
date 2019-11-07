@@ -29,19 +29,20 @@
 #ifndef TESTS_TEST_CALCULATOR_HH_
 #define TESTS_TEST_CALCULATOR_HH_
 
-#include "atomic_structure.hh"
-#include "json_io.hh"
-#include "rascal_utility.hh"
-#include "representations/calculator_base.hh"
-#include "representations/calculator_sorted_coulomb.hh"
-#include "representations/calculator_spherical_covariants.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "structure_managers/structure_manager_collection.hh"
-#include "structure_managers/cluster_ref_key.hh"
 #include "test_adaptor.hh"
 #include "test_math.hh"
 #include "test_structure.hh"
+
+#include "rascal/atomic_structure.hh"
+#include "rascal/json_io.hh"
+#include "rascal/representations/calculator_base.hh"
+#include "rascal/representations/calculator_sorted_coulomb.hh"
+#include "rascal/representations/calculator_spherical_covariants.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/structure_managers/cluster_ref_key.hh"
+#include "rascal/structure_managers/structure_manager_collection.hh"
+#include "rascal/utils.hh"
 
 #include <memory>
 #include <tuple>
@@ -422,11 +423,10 @@ namespace rascal {
         "reference_data/SiCGe_wurtzite_like.json",
         "reference_data/SiC_moissanite_supercell.json",
         "reference_data/small_molecule.json",
-        "reference_data/methane.json"
-    };
+        "reference_data/methane.json"};
     // Simpler structures for debugging:
-        //"reference_data/diamond_2atom.json",
-        //"reference_data/SiC_moissanite.json",
+    //"reference_data/diamond_2atom.json",
+    //"reference_data/SiC_moissanite.json",
     const double cutoff{2.5};
     const double cutoff_skin{0.};
 
@@ -602,8 +602,7 @@ namespace rascal {
     using PairRefKey_t = typename PairRef_t::ThisParentClass;
 
     // type of the data structure holding the representation and its gradients
-    using Prop_t =
-        typename Calculator::template Property_t<StructureManager>;
+    using Prop_t = typename Calculator::template Property_t<StructureManager>;
     using PropGrad_t =
         typename Calculator::template PropertyGradient_t<StructureManager>;
 
@@ -846,8 +845,7 @@ namespace rascal {
     RepresentationCalculatorGradientFixture(
         std::string filename, std::shared_ptr<StructureManager> structure,
         Provider_t & calc)
-        : structure{structure}, center_it{structure->begin()}, provider{
-                                                                   calc} {
+        : structure{structure}, center_it{structure->begin()}, provider{calc} {
       json input_data = json_io::load(filename);
 
       this->function_inputs = this->get_function_inputs();

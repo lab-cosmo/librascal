@@ -25,10 +25,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rascal_utility.hh"
-#include "structure_managers/cluster_ref_key.hh"
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/structure_manager_centers.hh"
+#include "rascal/structure_managers/cluster_ref_key.hh"
+#include "rascal/structure_managers/structure_manager.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
+#include "rascal/utils.hh"
 
 #include <boost/test/unit_test.hpp>
 

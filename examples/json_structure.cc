@@ -1,5 +1,5 @@
 /**
- * file   json_structure.cc
+ * @file   examples/json_structure.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -26,17 +26,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "json_io.hh"
-#include "rascal_utility.hh"
-#include "representations/calculator_sorted_coulomb.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "structure_managers/structure_manager_centers.hh"
-
-#include <basic_types.hh>
+#include "rascal/basic_types.hh"
+#include "rascal/json_io.hh"
+#include "rascal/representations/calculator_sorted_coulomb.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
+#include "rascal/utils.hh"
 
 #include <cmath>
 #include <functional>
