@@ -480,11 +480,11 @@ namespace rascal {
           using Manager_t = typename ManagerCollection_t::Manager_t;
           using Prop_t = typename Calculator::template Property_t<Manager_t>;
           using Keys_t = typename Prop_t::Keys_t;
-          using VecMap_t = Eigen::Map<math::Vector_t>;
+          using VecMap_t = const Eigen::Map<const math::Vector_t>;
 
           auto property_name{managers.get_calculator_name(calculator, false)};
 
-          auto && property_ =
+          const auto & property_ =
               managers[0]->template get_property_ref<Prop_t>(property_name);
 
           int inner_size{property_.get_nb_comp()};
@@ -499,9 +499,9 @@ namespace rascal {
           // get  the keys for the dictionary
           Keys_t all_keys{};
           for (auto & manager : managers) {
-            auto && property =
+            const auto & property =
                 manager->template get_property_ref<Prop_t>(property_name);
-            auto keys = property.get_keys();
+            const auto keys = property.get_keys();
             all_keys.insert(keys.begin(), keys.end());
             // inner_size should be consistent for all managers
             assert(inner_size == property.get_nb_comp());
@@ -526,14 +526,14 @@ namespace rascal {
             int current_center{0};
             auto t_key{keys_list[i_key]};
             for (auto & manager : managers) {
-              auto & property =
+              const auto & property =
                   manager->template get_property_ref<Prop_t>(property_name);
 
               for (auto center : manager) {
-                auto & prop_row = property[center];
+                const auto & prop_row = property[center];
                 if (prop_row.count(key) == 1) {
                   // get the feature and flatten the array
-                  auto feat_row = VecMap_t(prop_row[key].data(), inner_size);
+                  const auto feat_row = VecMap_t(prop_row[key].data(), inner_size);
                   features.row(current_center) = feat_row;
                 }
                 current_center++;
@@ -561,7 +561,7 @@ namespace rascal {
 
           auto property_name{managers.get_calculator_name(calculator, false)};
 
-          auto && property_ =
+          const auto & property_ =
               managers[0]->template get_property_ref<Prop_t>(property_name);
           // assume inner_size is consistent for all managers
           int inner_size{property_.get_nb_comp()};
@@ -575,7 +575,7 @@ namespace rascal {
 
           int i_row{0};
           for (auto & manager : managers) {
-            auto && property =
+            const auto & property =
                 manager->template get_property_ref<Prop_t>(property_name);
             auto n_rows_manager = property.size();
             property.fill_dense_feature_matrix(
