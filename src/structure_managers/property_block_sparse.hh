@@ -583,7 +583,8 @@ namespace rascal {
     }
 
     template <size_t CallerLayer>
-    const InputData_t & operator[](const ClusterRefKey<Order, CallerLayer> & id) const {
+    const InputData_t &
+    operator[](const ClusterRefKey<Order, CallerLayer> & id) const {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
@@ -615,7 +616,9 @@ namespace rascal {
     //! Accessor for property by index for dynamically sized properties
     InputData_t & operator[](size_t index) { return this->values[index]; }
 
-    const InputData_t & operator[](size_t index) const { return this->values[index]; }
+    const InputData_t & operator[](size_t index) const {
+      return this->values[index];
+    }
 
     template <size_t CallerLayer>
     DenseRef_t operator()(const ClusterRefKey<Order, CallerLayer> & id,
@@ -679,10 +682,10 @@ namespace rascal {
       size_t n_center{this->values.size()};
       for (size_t i_center{0}; i_center < n_center; i_center++) {
         int i_feat{0};
-        const auto& center_val = this->values[i_center];
+        const auto & center_val = this->values[i_center];
         for (const auto & key : all_keys) {
           if (this->values[i_center].count(key) == 1) {
-            const auto& center_key_val = center_val[key];
+            const auto & center_key_val = center_val[key];
             for (int i_pos{0}; i_pos < inner_size; i_pos++) {
               features(i_row, i_feat) = center_key_val(i_pos);
               i_feat++;

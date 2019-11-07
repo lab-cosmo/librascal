@@ -533,7 +533,8 @@ namespace rascal {
                 const auto & prop_row = property[center];
                 if (prop_row.count(key) == 1) {
                   // get the feature and flatten the array
-                  const auto feat_row = VecMap_t(prop_row[key].data(), inner_size);
+                  const auto feat_row =
+                      VecMap_t(prop_row[key].data(), inner_size);
                   features.row(current_center) = feat_row;
                 }
                 current_center++;
