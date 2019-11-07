@@ -68,9 +68,9 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fns = ['reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json',
-          'reference_data/inputs/SiC_moissanite_supercell.json',
-          'reference_data/inputs/methane.json']
+        fns = ['reference_data/CaCrP2O7_mvc-11955_symmetrized.json',
+          'reference_data/SiC_moissanite_supercell.json',
+          'reference_data/methane.json']
         self.frames = [load_json_frame(fn) for fn in fns]
 
         global_species = []
