@@ -59,7 +59,7 @@ namespace rascal {
 
     template <class StructureManager>
     using Property_t =
-        BlockSparseProperty<double, 1, 0, StructureManager, Key_t>;
+        BlockSparseProperty<double, 2, 0, StructureManager, Key_t>;
 
     template <class StructureManager>
     using PropertyGradient_t =
@@ -100,17 +100,40 @@ namespace rascal {
     operator=(CalculatorPairDistances && other) = default;
 
     void set_hyperparameters(const Hypers_t & hypers) {
-      using internal::SphericalInvariantsType;
 
-      this->max_radial = hypers.at("max_radial").get<size_t>();
-      this->max_angular = hypers.at("max_angular").get<size_t>();
-      this->normalize = hypers.at("normalize").get<bool>();
+	  
+	  if (hypers.find("cutoff_per_pair_type") != hypers.end()) {
+		  this->cutoff_per_pair_type = hypers.at("cutoff_per_pair_type").get<bool>();
+	  }
+	  if (this->cutoff_per_pair_type) {
+		  throw std::logic_error("Cutoff per pair type is not yet supported" );	  
+	  }
+	  auto fc_hypers = hypers.at("cutoff_function").get<json>();
+      auto fc_type = fc_hypers.at("type").get<std::string>();
+      this->interaction_cutoff = fc_hypers.at("cutoff").at("value");
+      this->cutoff_smooth_width = fc_hypers.at("smooth_width").at("value");
+      if (fc_type == "ShiftedCosine") {
+        this->cutoff_function_type = CutoffFunctionType::ShiftedCosine;
+        this->cutoff_function =
+            make_cutoff_function<CutoffFunctionType::ShiftedCosine>(fc_hypers);
+      } else if (fc_type == "RadialScaling") {
+        this->cutoff_function_type = CutoffFunctionType::RadialScaling;
+        this->cutoff_function =
+            make_cutoff_function<CutoffFunctionType::RadialScaling>(fc_hypers);
+      } else {
+        throw std::logic_error("Requested cutoff function type \'" + fc_type +
+                               "\' has not been implemented.  Must be one of" +
+                               ": \'ShiftedCosine\' or 'RadialScaling'.");
+      }
 
       if (hypers.find("compute_gradients") != hypers.end()) {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();
       } else {  // Default false (don't compute gradients)
         this->compute_gradients = false;
       }
+      
+      
+	  // Implement scaling function for power laws here
 
 
       this->set_name(hypers);
@@ -155,11 +178,13 @@ namespace rascal {
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
    protected:
-    size_t max_radial{};
-    size_t max_angular{};
-    bool normalize{};
+    double interaction_cutoff{};
+    double cutoff_smooth_width{};
     bool compute_gradients{};
-    bool inversion_symmetry{false};
+    bool cutoff_per_pair_type{false};
+    
+    std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
+    internal::CutoffFunctionType cutoff_function_type{};
   };
 
   template <class StructureManager>
@@ -192,8 +217,17 @@ namespace rascal {
     // use special container to tell that there is not need to sort when
     // using operator[] of soap_vector
     internal::SortedKey<Key_t> spair_type{pair_type};
-
+	
+	size_t number_of_pairs = 0;
+	for (auto center : manager){
+	  number_of_pairs += center.get_size();
+	}
+	
+	pair_distances.resize(number_of_pairs);
+	
     for (auto center : manager) {
+	  for (auto neigh : center) {
+		  pair_distances[spair_type][neigh] = neigh.get_distance();
       // auto & soap_vector{soap_vectors[center]};
       /*for (const auto & el1 : coefficients) {
         spair_type[0] = el1.first[0];
