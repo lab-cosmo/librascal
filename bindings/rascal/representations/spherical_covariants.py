@@ -202,4 +202,8 @@ class SphericalCovariants(object):
                     if sp1 > sp2:
                         continue
                     keys.append([sp1, sp2])
+        else:
+            raise ValueError('Only soap_type = LambdaSpectrum '
+                             'implemented for now')
+
         return keys

@@ -484,7 +484,7 @@ namespace rascal {
 
           auto && property_ =
               managers[0]->template get_property_ref<Prop_t>(property_name);
-          // assume inner_size is consistent for all managers
+
           int inner_size{property_.get_nb_comp()};
           auto n_rows{managers.get_number_of_elements(calculator, false)};
 
@@ -501,6 +501,8 @@ namespace rascal {
                 manager->template get_property_ref<Prop_t>(property_name);
             auto keys = property.get_keys();
             all_keys.insert(keys.begin(), keys.end());
+            // inner_size should be consistent for all managers
+            assert(inner_size == property.get_nb_comp());
           }
 
           py::list keys_list;
@@ -518,14 +520,15 @@ namespace rascal {
           py::dict feature_dict;
           int i_key{0};
           for (const auto & key : all_keys) {
+            // counter refering to centers across structures
             int current_center{0};
             auto t_key{keys_list[i_key]};
             for (auto & manager : managers) {
-              auto && property =
+              auto & property =
                   manager->template get_property_ref<Prop_t>(property_name);
 
               for (auto center : manager) {
-                auto && prop_row = property[center];
+                auto & prop_row = property[center];
                 if (prop_row.count(key) == 1) {
                   // get the feature and flatten the array
                   auto feat_row = VecMap_t(prop_row[key].data(), inner_size);
