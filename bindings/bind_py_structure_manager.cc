@@ -459,10 +459,14 @@ namespace rascal {
   }
 
   /**
-   * Bind a getter for the feature matrix comming from BlockSparseProperty.
+   * Bind getters for the feature matrix comming from BlockSparseProperty.
    *
-   * it will return a dictionary with keys->atomic number vals->feature mat
-   * the feature matrices size is (n_centers, inner_size)
+   * (1) will return a dictionary associating atomic number to features.
+   * The feature matrices size is (n_centers, inner_size)
+   *
+   * (2) will return a dense feature matrix using the user provided keys to
+   * build it instead of using the ones present in the manager collection.
+   * The feature size is (n_centers, inner_size*all_keys_l.size())
    */
   template <class Calculator, class ManagerCollection_t,
             class ManagerCollectionBinder>
