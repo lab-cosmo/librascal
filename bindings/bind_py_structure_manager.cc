@@ -480,7 +480,7 @@ namespace rascal {
           using Manager_t = typename ManagerCollection_t::Manager_t;
           using Prop_t = typename Calculator::template Property_t<Manager_t>;
           using Keys_t = typename Prop_t::Keys_t;
-          using VecMap_t = const Eigen::Map<const math::Vector_t>;
+          using ConstVecMap_t = const Eigen::Map<const math::Vector_t>;
           if (managers.size() == 0) {
             throw std::runtime_error(R"(There are no structure to get features from)");
           }
@@ -536,7 +536,7 @@ namespace rascal {
                 if (prop_row.count(key) == 1) {
                   // get the feature and flatten the array
                   const auto feat_row =
-                      VecMap_t(prop_row[key].data(), inner_size);
+                      ConstVecMap_t(prop_row[key].data(), inner_size);
                   features.row(current_center) = feat_row;
                 }
                 current_center++;
