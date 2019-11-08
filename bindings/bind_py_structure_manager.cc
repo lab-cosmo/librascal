@@ -481,7 +481,9 @@ namespace rascal {
           using Prop_t = typename Calculator::template Property_t<Manager_t>;
           using Keys_t = typename Prop_t::Keys_t;
           using VecMap_t = const Eigen::Map<const math::Vector_t>;
-
+          if (managers.size() == 0) {
+            throw std::runtime_error(R"(There are no structure to get features from)");
+          }
           auto property_name{managers.get_calculator_name(calculator, false)};
 
           const auto & property_ =
@@ -553,6 +555,9 @@ namespace rascal {
           using Manager_t = typename ManagerCollection_t::Manager_t;
           using Prop_t = typename Calculator::template Property_t<Manager_t>;
           using Keys_t = typename Prop_t::Keys_t;
+          if (managers.size() == 0) {
+            throw std::runtime_error(R"(There are no structure to get features from)");
+          }
           Keys_t all_keys;
           // convert the list of keys from python in to the proper type
           for (py::handle key_l : all_keys_l) {
