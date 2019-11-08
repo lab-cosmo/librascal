@@ -118,7 +118,7 @@ endif()
 add_external_package(wigxjpf VERSION 1.9 CONFIG)
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 
-# Integrate google benchmark
+# integrate google benchmark
 if(${BUILD_BENCHMARKS})
   # removes the Weffc++ from the compilation of the benchmarks
   string(REPLACE "-Weffc++" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -126,24 +126,13 @@ if(${BUILD_BENCHMARKS})
   find_package(Threads REQUIRED)
   add_external_package(benchmark VERSION 1.5.0 CONFIG)  
 
+  # runs all benchmarks in succession, add new benchmarks with the RUN_BENCHMARK_FLAGS  
   set(RUN_BENCHMARKS_FLAGS "" CACHE
       "Additional flags to run all benchmarks. See ./benchmark_interpolator"
       "--help for available flags")
   mark_as_advanced(RUN_BENCHMARKS_FLAGS)
-
-  # Compile benchmark files
-  #set(binaryfile "${CMAKE_SOURCE_DIR}/docs/source/tutorials/benchmark_tutorial.cc")
-  #set(binaryname "benchmark_tutorial")
-  #message(WARNING ${binaryname})
-  #message(WARNING ${binaryfile})
-  #add_executable(${binaryname} ${binaryfile})
-  #target_link_libraries(${binaryname} "${LIBRASCAL_NAME}")
-  #target_link_libraries(${binaryname} Threads::Threads)
-  #target_link_libraries(${binaryname} benchmark)
-
-  # surpresses the "'CSVReporter' is deprecated" errors when compiling benchmark.cc
-  #set_target_properties(${binaryname} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations" )
-  # Runs all benchmarks in succession, add new benchmarks with the RUN_BENCHMARK_FLAGS  
+    
+  # one target to execute all benchmarks with the user flags
   add_custom_target(
       benchmarks
       COMMAND ./performance/benchmarks/benchmark_interpolator
