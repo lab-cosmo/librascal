@@ -144,6 +144,12 @@ namespace rascal {
     auto rep_lambda_soap =
         add_representation_calculator<Calc4_t>(mod, m_internal);
     bind_compute_function_helper<ManagerList_1_t>(rep_lambda_soap);
+    
+    using Calc5_t = CalculatorPairDistances;
+    auto rep_pair_distances =
+        add_representation_calculator<Calc5_t>(mod, m_internal);
+    bind_compute_function_helper<ManagerList_1_t>(rep_pair_distances);
+
   }
 
 }  // namespace rascal

@@ -28,14 +28,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_
-#define SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_
+#ifndef SRC_REPRESENTATIONS_CALCULATOR_PAIR_DISTANCES_HH_
+#define SRC_REPRESENTATIONS_CALCULATOR_PAIR_DISTANCES_HH_
 
 #include "math/math_utils.hh"
 #include "rascal_utility.hh"
 #include "representations/calculator_base.hh"
 #include "representations/calculator_spherical_expansion.hh"
-// #include "representations/calculator_spherical_invariants.hh"
+#include "representations/cutoff_functions.hh"
 #include "structure_managers/property_block_sparse.hh"
 #include "structure_managers/structure_manager.hh"
 
@@ -52,7 +52,7 @@
 
 namespace rascal {
 
-  class CalculatorSphericalInvariants : public CalculatorBase {
+  class CalculatorPairDistances : public CalculatorBase {
    public:
     using Hypers_t = typename CalculatorBase::Hypers_t;
     using Key_t = typename CalculatorBase::Key_t;
@@ -75,7 +75,7 @@ namespace rascal {
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
 
     explicit CalculatorPairDistances(const Hypers_t & hyper)
-        : CalculatorBase{}, rep_expansion{hyper} {
+        : CalculatorBase{} {
       this->set_default_prefix("pair_distances_");
       this->set_hyperparameters(hyper);
     }
@@ -100,7 +100,7 @@ namespace rascal {
     operator=(CalculatorPairDistances && other) = default;
 
     void set_hyperparameters(const Hypers_t & hypers) {
-
+	  using internal::CutoffFunctionType;
 	  
 	  if (hypers.find("cutoff_per_pair_type") != hypers.end()) {
 		  this->cutoff_per_pair_type = hypers.at("cutoff_per_pair_type").get<bool>();
@@ -160,7 +160,7 @@ namespace rascal {
                          int> = 0>
     void compute_loop(StructureManager & managers) {
       for (auto & manager : managers) {
-        this->compute_impl<BodyOrder>(manager);
+        this->compute_impl(manager);
       }
     }
 
@@ -170,7 +170,7 @@ namespace rascal {
             not(internal::is_proper_iterator<StructureManager>::value), int> =
             0>
     void compute_loop(StructureManager & manager) {
-      this->compute_impl<BodyOrder>(manager);
+      this->compute_impl(manager);
     }
 
     //! compute representation @f$ \nu == 1 @f$
@@ -196,17 +196,17 @@ namespace rascal {
   void CalculatorPairDistances::compute_impl(
       std::shared_ptr<StructureManager> manager) {
     using Prop_t = Property_t<StructureManager>;
-    using PropGrad_t = PropertyGradient_t<StructureManager>;
-    constexpr static int n_spatial_dimensions = StructureManager::dim();
+    // using PropGrad_t = PropertyGradient_t<StructureManager>;
+    // constexpr static int n_spatial_dimensions = StructureManager::dim();
     using math::pow;
 
     auto && pair_distances{
         manager->template get_property_ref<Prop_t>(this->get_name())};
 
-    auto && pair_distance_gradients{
+    /*auto && pair_distance_gradients{
         manager->template get_property_ref<PropGrad_t>(
             this->get_gradient_name())};
-
+	*/
     // if the representation has already been computed for the current
     // structure then do nothing
     if (pair_distances.is_updated()) {
@@ -218,43 +218,21 @@ namespace rascal {
     // using operator[] of soap_vector
     internal::SortedKey<Key_t> spair_type{pair_type};
 	
-	size_t number_of_pairs = 0;
-	for (auto center : manager){
-	  number_of_pairs += center.get_size();
-	}
-	
-	pair_distances.resize(number_of_pairs);
+	pair_distances.resize();
 	
     for (auto center : manager) {
 	  for (auto neigh : center) {
-		  pair_distances[spair_type][neigh] = neigh.get_distance();
-      // auto & soap_vector{soap_vectors[center]};
-      /*for (const auto & el1 : coefficients) {
-        spair_type[0] = el1.first[0];
-        auto & coef1{el1.second};
-
-        for (const auto & el2 : coefficients) {
-          // avoid computing p^{ab} and p^{ba} since p^{ab} = p^{ba}^T
-          if (spair_type[0] > el2.first[0]) {
-            continue;
-          }
-          spair_type[1] = el2.first[0];
-          auto & coef2{el2.second};
-          auto && soap_vector_by_pair{soap_vector[spair_type]};
-          
-
-        }  // for el1 : coefficients
-      }    // for el2 : coefficients
-      */
-      
+		  pair_distances[neigh][spair_type].resize(1,1);
+		  pair_distances[neigh][spair_type](0,0) = manager->get_distance(neigh);
 
 
-      if (this->compute_gradients) {
+      // if (this->compute_gradients) {
 		// Compute Gradients
-      }        // if compute gradients
+      //}        // if compute gradients
+      }        // for neigh : center 
     }          // for center : manager
-  }            // compute_powerspectrum()
-
+  }            // compute_impl()
+  
 }  // namespace rascal
 
-#endif  // SRC_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_
+#endif  // SRC_REPRESENTATIONS_CALCULATOR_PAIR_DISTANCES_HH_

@@ -35,6 +35,7 @@
 #include "representations/calculator_spherical_covariants.hh"
 #include "representations/calculator_spherical_expansion.hh"
 #include "representations/calculator_spherical_invariants.hh"
+#include "representations/calculator_pair_distances.hh"
 
 namespace rascal {
   void add_representation_calculators(py::module &, py::module &);
