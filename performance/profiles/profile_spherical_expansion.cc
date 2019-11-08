@@ -163,7 +163,8 @@ int main(int argc, char * argv[]) {
 
   if (VERBOSE) {
     auto expn2 = manager->template get_property_ref<PropGrad_t>(
-                 representation_gradients.get_gradient_name()).get_dense_feature_matrix();
+                 representation_gradients.get_gradient_name())
+                 .get_dense_feature_matrix();
     std::cout << "Sample SphericalExpansion elements (should be identical) "
               << std::endl
               << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) <<
