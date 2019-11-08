@@ -6,7 +6,7 @@ def intersection(X, Y=None):
     if Y is None:
         return list(X.keys())
     else:
-        return list(set(list(X.keys())+list(Y.keys())))
+        return list(set(X.keys()).intersection(Y.keys()))
 
 
 def dot(X, Y=None):
