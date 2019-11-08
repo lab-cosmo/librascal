@@ -126,12 +126,12 @@ if(${BUILD_BENCHMARKS})
   find_package(Threads REQUIRED)
   add_external_package(benchmark VERSION 1.5.0 CONFIG)  
 
-  # runs all benchmarks in succession, add new benchmarks with the RUN_BENCHMARK_FLAGS  
+  # runs all benchmarks in succession, add new benchmarks with the RUN_BENCHMARK_FLAGS
   set(RUN_BENCHMARKS_FLAGS "" CACHE
       "Additional flags to run all benchmarks. See ./benchmark_interpolator"
       "--help for available flags")
   mark_as_advanced(RUN_BENCHMARKS_FLAGS)
-    
+
   # one target to execute all benchmarks with the user flags
   add_custom_target(
       benchmarks
