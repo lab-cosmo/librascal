@@ -5291,17 +5291,17 @@ bool <code class="sig-name descname">get_update_status</code><span class="sig-pa
 <p class="breathe-sectiondef-title rubric">Typedefs</p>
 <dl class="type">
 <dt>
+<em class="property">using </em><code class="sig-name descname">distiter</code> = <em class="property">typename</em> std::vector&lt;double&gt;::const_iterator<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
 <em class="property">using </em><code class="sig-name descname">void_t</code> = <em class="property">typename</em> make_void&lt;Ts...&gt;::type<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
 <dt>
 <em class="property">using </em><code class="sig-name descname">make_index_range</code> = decltype(add_to_sequence&lt;Min&gt;(std::make_index_sequence&lt;Max - Min&gt;()))<br /></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt>
-<em class="property">using </em><code class="sig-name descname">distiter</code> = <em class="property">typename</em> std::vector&lt;double&gt;::const_iterator<br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -5440,76 +5440,6 @@ bool <code class="sig-name descname">get_update_status</code><span class="sig-pa
 <p class="breathe-sectiondef-title rubric">Functions</p>
 <dl class="function">
 <dt>
-<code class="sig-name descname">template&lt;size_t N, size_t... Seq&gt;constexpr std::index_sequence&lt;N + Seq...&gt; rascal::internal::add_to_sequence(std::index_sequence&lt; Seq... &gt;)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;class <code class="sig-name descname">F</code>, size_t... <code class="sig-name descname">Is</code>&gt;<br /><em class="property">constexpr</em> auto <code class="sig-name descname">index_apply_impl</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0_Dp6size_tEN6rascal8internal16index_apply_implEDa1FNSt14index_sequenceIDp2IsEE" title="rascal::internal::index_apply_impl::F">F</a> <em>func</em>, std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I0_Dp6size_tEN6rascal8internal16index_apply_implEDa1FNSt14index_sequenceIDp2IsEE" title="rascal::internal::index_apply_impl::Is">Is</a>...&gt;<span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;size_t <code class="sig-name descname">Min</code>, size_t <code class="sig-name descname">Max</code>, class <code class="sig-name descname">F</code>&gt;<br /><em class="property">constexpr</em> auto <code class="sig-name descname">index_apply</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_6size_t_6size_t0EN6rascal8internal11index_applyEDa1F" title="rascal::internal::index_apply::F">F</a> <em>func</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;size_t <code class="sig-name descname">Min</code>, size_t <code class="sig-name descname">Max</code>, class <code class="sig-name descname">Tuple</code>&gt;<br /><em class="property">constexpr</em> auto <code class="sig-name descname">take_range</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_6size_t_6size_t0EN6rascal8internal10take_rangeEDa5Tuple" title="rascal::internal::take_range::Tuple">Tuple</a> <em>t</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;class <code class="sig-name descname">Tuple</code>, class <code class="sig-name descname">F</code>&gt;<br /><em class="property">constexpr</em> auto <code class="sig-name descname">apply</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00EN6rascal8internal5applyEDa1F5Tuple" title="rascal::internal::apply::F">F</a> <em>func</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal8internal5applyEDa1F5Tuple" title="rascal::internal::apply::Tuple">Tuple</a> <em>t</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;typename <code class="sig-name descname">Func</code>, typename <code class="sig-name descname">Last</code>&gt;<br />void <code class="sig-name descname">for_each_impl</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00EN6rascal8internal13for_each_implEvRR4FuncRR4Last" title="rascal::internal::for_each_impl::Func">Func</a> &amp;&amp;<em>f</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal8internal13for_each_implEvRR4FuncRR4Last" title="rascal::internal::for_each_impl::Last">Last</a> &amp;&amp;<em>last</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;typename <code class="sig-name descname">Func</code>, typename <code class="sig-name descname">Head</code>, typename ...<code class="sig-name descname">Tail</code>&gt;<br />void <code class="sig-name descname">for_each_impl</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00DpEN6rascal8internal13for_each_implEvRR4FuncRR4HeadDpRR4Tail" title="rascal::internal::for_each_impl::Func">Func</a> &amp;&amp;<em>f</em>, <a class="reference internal" href="#_CPPv4I00DpEN6rascal8internal13for_each_implEvRR4FuncRR4HeadDpRR4Tail" title="rascal::internal::for_each_impl::Head">Head</a> &amp;&amp;<em>head</em>, <a class="reference internal" href="#_CPPv4I00DpEN6rascal8internal13for_each_implEvRR4FuncRR4HeadDpRR4Tail" title="rascal::internal::for_each_impl::Tail">Tail</a>&amp;&amp;... <em>tail</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;typename <code class="sig-name descname">Func</code>, size_t... <code class="sig-name descname">Indices</code>, typename ...<code class="sig-name descname">Args</code>&gt;<br />void <code class="sig-name descname">for_each_helper</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0_Dp6size_tDpEN6rascal8internal15for_each_helperEvRR4FuncNSt14index_sequenceIDp7IndicesEERRNSt5tupleIDp4ArgsEE" title="rascal::internal::for_each_helper::Func">Func</a> &amp;&amp;<em>f</em>, std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I0_Dp6size_tDpEN6rascal8internal15for_each_helperEvRR4FuncNSt14index_sequenceIDp7IndicesEERRNSt5tupleIDp4ArgsEE" title="rascal::internal::for_each_helper::Indices">Indices</a>...&gt;, std::tuple&lt;<a class="reference internal" href="#_CPPv4I0_Dp6size_tDpEN6rascal8internal15for_each_helperEvRR4FuncNSt14index_sequenceIDp7IndicesEERRNSt5tupleIDp4ArgsEE" title="rascal::internal::for_each_helper::Args">Args</a>...&gt; &amp;&amp;<em>tup</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;typename <code class="sig-name descname">Func</code>, typename ...<code class="sig-name descname">Args</code>&gt;<br />void <code class="sig-name descname">for_each</code><span class="sig-paren">(</span>std::tuple&lt;<a class="reference internal" href="#_CPPv4I0DpEN6rascal8internal8for_eachEvRNSt5tupleIDp4ArgsEERR4Func" title="rascal::internal::for_each::Args">Args</a>...&gt; &amp;<em>tup</em>, <a class="reference internal" href="#_CPPv4I0DpEN6rascal8internal8for_eachEvRNSt5tupleIDp4ArgsEERR4Func" title="rascal::internal::for_each::Func">Func</a> &amp;&amp;<em>f</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-std::string <code class="sig-name descname">type_name_demangled</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>name</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-void <code class="sig-name descname">replace</code><span class="sig-paren">(</span>std::string &amp;<em>string</em>, <em class="property">const</em> std::string &amp;<em>pattern</em>, <em class="property">const</em> std::string &amp;<em>replacement</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;typename <code class="sig-name descname">T</code>&gt;<br />std::string <code class="sig-name descname">type_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-std::vector&lt;uint8_t&gt; <code class="sig-name descname">read_binary_file</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>filename</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-std::string <code class="sig-name descname">get_filename_extension</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>filename</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
 Eigen::ArrayXd <code class="sig-name descname">precompute_wigner_3js</code><span class="sig-paren">(</span>size_t <em>max_angular</em>, bool <em>inversion_symmetry</em>, size_t <em>lambda</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -5601,6 +5531,76 @@ template&lt;class <code class="sig-name descname">Manager</code>, size_t <code c
 <dl class="function">
 <dt>
 template&lt;class <code class="sig-name descname">Manager</code>, size_t <code class="sig-name descname">Order</code>, size_t... <code class="sig-name descname">Indices</code>&gt;<br />std::array&lt;int, <a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal18species_aggregatorENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7Manager" title="rascal::internal::species_aggregator::Order">Order</a>&gt; <code class="sig-name descname">species_aggregator</code><span class="sig-paren">(</span><em class="property">const</em> std::array&lt;int, <a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal18species_aggregatorENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7Manager" title="rascal::internal::species_aggregator::Order">Order</a>&gt; &amp;<em>index_array</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal18species_aggregatorENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7Manager" title="rascal::internal::species_aggregator::Manager">Manager</a> &amp;<em>manager</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">template&lt;size_t N, size_t... Seq&gt;constexpr std::index_sequence&lt;N + Seq...&gt; rascal::internal::add_to_sequence(std::index_sequence&lt; Seq... &gt;)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">F</code>, size_t... <code class="sig-name descname">Is</code>&gt;<br /><em class="property">constexpr</em> auto <code class="sig-name descname">index_apply_impl</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0_Dp6size_tEN6rascal8internal16index_apply_implEDa1FNSt14index_sequenceIDp2IsEE" title="rascal::internal::index_apply_impl::F">F</a> <em>func</em>, std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I0_Dp6size_tEN6rascal8internal16index_apply_implEDa1FNSt14index_sequenceIDp2IsEE" title="rascal::internal::index_apply_impl::Is">Is</a>...&gt;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">Min</code>, size_t <code class="sig-name descname">Max</code>, class <code class="sig-name descname">F</code>&gt;<br /><em class="property">constexpr</em> auto <code class="sig-name descname">index_apply</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_6size_t_6size_t0EN6rascal8internal11index_applyEDa1F" title="rascal::internal::index_apply::F">F</a> <em>func</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">Min</code>, size_t <code class="sig-name descname">Max</code>, class <code class="sig-name descname">Tuple</code>&gt;<br /><em class="property">constexpr</em> auto <code class="sig-name descname">take_range</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_6size_t_6size_t0EN6rascal8internal10take_rangeEDa5Tuple" title="rascal::internal::take_range::Tuple">Tuple</a> <em>t</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Tuple</code>, class <code class="sig-name descname">F</code>&gt;<br /><em class="property">constexpr</em> auto <code class="sig-name descname">apply</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00EN6rascal8internal5applyEDa1F5Tuple" title="rascal::internal::apply::F">F</a> <em>func</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal8internal5applyEDa1F5Tuple" title="rascal::internal::apply::Tuple">Tuple</a> <em>t</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">Func</code>, typename <code class="sig-name descname">Last</code>&gt;<br />void <code class="sig-name descname">for_each_impl</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00EN6rascal8internal13for_each_implEvRR4FuncRR4Last" title="rascal::internal::for_each_impl::Func">Func</a> &amp;&amp;<em>f</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal8internal13for_each_implEvRR4FuncRR4Last" title="rascal::internal::for_each_impl::Last">Last</a> &amp;&amp;<em>last</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">Func</code>, typename <code class="sig-name descname">Head</code>, typename ...<code class="sig-name descname">Tail</code>&gt;<br />void <code class="sig-name descname">for_each_impl</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00DpEN6rascal8internal13for_each_implEvRR4FuncRR4HeadDpRR4Tail" title="rascal::internal::for_each_impl::Func">Func</a> &amp;&amp;<em>f</em>, <a class="reference internal" href="#_CPPv4I00DpEN6rascal8internal13for_each_implEvRR4FuncRR4HeadDpRR4Tail" title="rascal::internal::for_each_impl::Head">Head</a> &amp;&amp;<em>head</em>, <a class="reference internal" href="#_CPPv4I00DpEN6rascal8internal13for_each_implEvRR4FuncRR4HeadDpRR4Tail" title="rascal::internal::for_each_impl::Tail">Tail</a>&amp;&amp;... <em>tail</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">Func</code>, size_t... <code class="sig-name descname">Indices</code>, typename ...<code class="sig-name descname">Args</code>&gt;<br />void <code class="sig-name descname">for_each_helper</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0_Dp6size_tDpEN6rascal8internal15for_each_helperEvRR4FuncNSt14index_sequenceIDp7IndicesEERRNSt5tupleIDp4ArgsEE" title="rascal::internal::for_each_helper::Func">Func</a> &amp;&amp;<em>f</em>, std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I0_Dp6size_tDpEN6rascal8internal15for_each_helperEvRR4FuncNSt14index_sequenceIDp7IndicesEERRNSt5tupleIDp4ArgsEE" title="rascal::internal::for_each_helper::Indices">Indices</a>...&gt;, std::tuple&lt;<a class="reference internal" href="#_CPPv4I0_Dp6size_tDpEN6rascal8internal15for_each_helperEvRR4FuncNSt14index_sequenceIDp7IndicesEERRNSt5tupleIDp4ArgsEE" title="rascal::internal::for_each_helper::Args">Args</a>...&gt; &amp;&amp;<em>tup</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">Func</code>, typename ...<code class="sig-name descname">Args</code>&gt;<br />void <code class="sig-name descname">for_each</code><span class="sig-paren">(</span>std::tuple&lt;<a class="reference internal" href="#_CPPv4I0DpEN6rascal8internal8for_eachEvRNSt5tupleIDp4ArgsEERR4Func" title="rascal::internal::for_each::Args">Args</a>...&gt; &amp;<em>tup</em>, <a class="reference internal" href="#_CPPv4I0DpEN6rascal8internal8for_eachEvRNSt5tupleIDp4ArgsEERR4Func" title="rascal::internal::for_each::Func">Func</a> &amp;&amp;<em>f</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+std::string <code class="sig-name descname">type_name_demangled</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>name</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+void <code class="sig-name descname">replace</code><span class="sig-paren">(</span>std::string &amp;<em>string</em>, <em class="property">const</em> std::string &amp;<em>pattern</em>, <em class="property">const</em> std::string &amp;<em>replacement</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">T</code>&gt;<br />std::string <code class="sig-name descname">type_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+std::vector&lt;uint8_t&gt; <code class="sig-name descname">read_binary_file</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>filename</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+std::string <code class="sig-name descname">get_filename_extension</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>filename</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
