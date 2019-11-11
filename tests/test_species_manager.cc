@@ -26,8 +26,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "structure_managers/species_manager.hh"
 #include "test_structure.hh"
+
+#include "rascal/structure_managers/species_manager.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
