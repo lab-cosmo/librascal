@@ -459,11 +459,11 @@ namespace rascal {
    */
   template <typename Precision_t, size_t Order_, size_t PropertyLayer,
             class Manager, typename Key>
-  class BlockSparsePropertyBase : public PropertyBase {
+  class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using Manager_t = Manager;
-    using Self_t = BlockSparsePropertyBase<Precision_t, Order_, PropertyLayer,
+    using Self_t = BlockSparseProperty<Precision_t, Order_, PropertyLayer,
                                            Manager, Key>;
     using traits = typename Manager::traits;
 
@@ -475,44 +475,76 @@ namespace rascal {
     using Data_t = std::vector<InputData_t>;
 
     constexpr static size_t Order{Order_};
+    constexpr static bool IsOrderOne{Order == 1};
 
    protected:
     Data_t values{};
     std::string type_id;
+    /**
+     * boolean deciding on including the ghost atoms in the sizing of the
+     * property when Order == 1
+     */
+    const bool exclude_ghosts;
+
+   public:
 
     //! constructor
-    BlockSparsePropertyBase(Manager_t & manager,
-                            std::string metadata = "no metadata")
+    BlockSparseProperty(Manager_t & manager,
+                            std::string metadata = "no metadata",
+                            bool exclude_ghosts = false)
         : Parent{static_cast<StructureManagerBase &>(manager),
                  0,
                  0,
                  Order,
                  PropertyLayer,
                  metadata},
-          type_id{typeid(Self_t).name()} {}
+          type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
 
-   public:
-    //! resize underlying data storage
-    virtual void resize() = 0;
+    /**
+     * Adjust size of values (only increases, never frees).
+     *
+     * Uses SFINAE to differenciate behavior between IsOrderOne == true/false.
+     * IsOrderOne == false then the size of the property is directly taken
+     * from the manager.
+     * IsOrderOne == true then the size of the property depends on the bolean
+     * exclude_ghosts. By default it is set to false so that property size is
+     * always larger than what could be needed.
+     */
+    template <bool T = IsOrderOne, std::enable_if_t<not(T), int> = 0>
+    void resize() {
+      size_t new_size{this->template get_validated_property_length<Order>()};
+      this->values.resize(new_size);
+    }
+
+    //! Adjust size of values (only increases, never frees).
+    template <bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
+    void resize() {
+      size_t new_size{this->exclude_ghosts
+                          ? this->get_manager().size()
+                          : this->get_manager().size_with_ghosts()};
+      this->values.resize(new_size);
+    }
+
+
     //! Default constructor
-    BlockSparsePropertyBase() = delete;
+    BlockSparseProperty() = delete;
 
     //! Copy constructor
-    BlockSparsePropertyBase(const BlockSparsePropertyBase & other) = delete;
+    BlockSparseProperty(const BlockSparseProperty & other) = delete;
 
     //! Move constructor
-    BlockSparsePropertyBase(BlockSparsePropertyBase && other) = default;
+    BlockSparseProperty(BlockSparseProperty && other) = default;
 
     //! Destructor
-    virtual ~BlockSparsePropertyBase() = default;
+    virtual ~BlockSparseProperty() = default;
 
     //! Copy assignment operator
-    BlockSparsePropertyBase &
-    operator=(const BlockSparsePropertyBase & other) = delete;
+    BlockSparseProperty &
+    operator=(const BlockSparseProperty & other) = delete;
 
     //! Move assignment operator
-    BlockSparsePropertyBase &
-    operator=(BlockSparsePropertyBase && other) = default;
+    BlockSparseProperty &
+    operator=(BlockSparseProperty && other) = default;
 
     static void check_compatibility(PropertyBase & other) {
       // check ``type`` compatibility
@@ -535,7 +567,7 @@ namespace rascal {
      * choice of sizing the `Property` for either including or not including
      * ghost atoms.
      */
-    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 1), int> = 0>
+    template <bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
     size_t get_validated_property_length() {
       return this->get_manager().size_with_ghosts();
     }
@@ -544,10 +576,19 @@ namespace rascal {
      * This function is used for sizing the Property for `Order > 1`. At this
      * `Order` the notion of ghosts does not exist. _Ghost pairs_ do not exist.
      */
-    template <size_t Order__ = Order, std::enable_if_t<(Order__ > 1), int> = 0>
+    template <bool T = IsOrderOne, std::enable_if_t<not(T), int> = 0>
     size_t get_validated_property_length() {
-      return this->base_manager.nb_clusters(Order__);
+      return this->base_manager.nb_clusters(Order);
     }
+
+    /**
+     * This function is used for sizing the Property for `Order == 0`. It is
+     * always 1 in this case.
+     */
+    // template <bool T = (Order == 0), std::enable_if_t<T, int> = 0>
+    // size_t get_validated_property_length() {
+    //   return 1;
+    // }
 
     inline size_t size() const { return this->values.size(); }
 
@@ -572,9 +613,9 @@ namespace rascal {
     /**
      * Access a property of order 1 with a clusterRef of order 2
      */
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order__ = Order,
-              std::enable_if_t<(Order__ == 1) and (CallerOrder == 2),  // NOLINT
-                               int> = 0>                               // NOLINT
+    template <size_t CallerOrder, size_t CallerLayer,
+          bool T = (IsOrderOne and (CallerOrder == 2)), // NOLINT
+              std::enable_if_t<T, int> = 0>   // NOLINT
     inline decltype(auto)
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](this->get_manager().get_atom_index(
@@ -729,101 +770,6 @@ namespace rascal {
       }
       return mat;
     }
-  };
-
-  /**
-   * Typed ``property`` class definition, inherits from the base property class
-   */
-  template <typename Precision_t, size_t Order_, size_t PropertyLayer,
-            class Manager, typename Key>
-  class BlockSparseProperty
-      : public BlockSparsePropertyBase<Precision_t, Order_, PropertyLayer,
-                                       Manager, Key> {
-   public:
-    using Parent = BlockSparsePropertyBase<Precision_t, Order_, PropertyLayer,
-                                           Manager, Key>;
-    using Manager_t = Manager;
-    using Self_t = BlockSparsePropertyBase<Precision_t, Order_, PropertyLayer,
-                                           Manager, Key>;
-    using traits = typename Manager::traits;
-
-    using Matrix_t = math::Matrix_t;
-    using DenseRef_t = Eigen::Map<Matrix_t>;
-    using Key_t = Key;
-    using Keys_t = std::set<Key_t>;
-    using InputData_t = internal::InternallySortedKeyMap<Key_t, Matrix_t>;
-    using Data_t = std::vector<InputData_t>;
-
-    constexpr static size_t Order{Order_};
-
-    //! constructor
-    BlockSparseProperty(Manager_t & manager,
-                        std::string metadata = "no metadata")
-        : Parent{manager, metadata} {}
-
-    virtual ~BlockSparseProperty() = default;
-
-    //! Adjust size of values (only increases, never frees)
-    inline void resize() final {
-      size_t new_size{this->template get_validated_property_length<Order>()};
-      this->values.resize(new_size);
-    }
-  };
-
-  /**
-   * Typed ``property`` class definition, inherits from the base property class
-   */
-  template <typename Precision_t, size_t PropertyLayer, class Manager,
-            typename Key>
-  class BlockSparseProperty<Precision_t, 1, PropertyLayer, Manager, Key>
-      : public BlockSparsePropertyBase<Precision_t, 1, PropertyLayer, Manager,
-                                       Key> {
-   public:
-    using Parent =
-        BlockSparsePropertyBase<Precision_t, 1, PropertyLayer, Manager, Key>;
-    using Manager_t = Manager;
-    using Self_t =
-        BlockSparseProperty<Precision_t, 1, PropertyLayer, Manager, Key>;
-    using traits = typename Manager::traits;
-
-    using Matrix_t = math::Matrix_t;
-    using DenseRef_t = Eigen::Map<Matrix_t>;
-    using Key_t = Key;
-    using Keys_t = std::set<Key_t>;
-    using InputData_t = internal::InternallySortedKeyMap<Key_t, Matrix_t>;
-    using Data_t = std::vector<InputData_t>;
-
-    constexpr static size_t Order{1};
-
-   public:
-    //! constructor
-    BlockSparseProperty(Manager_t & manager,
-                        std::string metadata = "no metadata",
-                        bool exclude_ghosts = false)
-        : Parent{manager, metadata}, exclude_ghosts{exclude_ghosts} {}
-
-    //! Default constructor
-    BlockSparseProperty() = delete;
-
-    //! Copy constructor
-    BlockSparseProperty(const BlockSparseProperty & other) = delete;
-
-    //! Move constructor
-    BlockSparseProperty(BlockSparseProperty && other) = default;
-
-    //! Destructor
-    virtual ~BlockSparseProperty() = default;
-
-    //! Adjust size of values (only increases, never frees)
-    inline void resize() final {
-      size_t new_size{this->exclude_ghosts
-                          ? this->get_manager().size()
-                          : this->get_manager().size_with_ghosts()};
-      this->values.resize(new_size);
-    }
-
-   protected:
-    const bool exclude_ghosts;
   };
 
 }  // namespace rascal
