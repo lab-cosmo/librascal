@@ -1,5 +1,5 @@
 /**
- * @file  benchmark_interpolator.cc
+ * @file  performance/benchmarks/benchmark_interpolator.cc
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *

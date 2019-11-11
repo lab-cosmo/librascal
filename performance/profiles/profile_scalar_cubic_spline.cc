@@ -1,5 +1,5 @@
 /**
- * @file  profile_scalar_cubic_spline.hh
+ * @file  performance/profiles/profile_scalar_cubic_spline.hh
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
@@ -28,10 +28,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "json_io.hh"
-#include "math/hyp1f1.hh"
-#include "math/interpolator.hh"
-#include "profile_utility.hh"
+#include "rascal/json_io.hh"
+#include "rascal/math/hyp1f1.hh"
+#include "rascal/math/interpolator.hh"
+#include "utils.hh"
 
 #include <chrono>
 

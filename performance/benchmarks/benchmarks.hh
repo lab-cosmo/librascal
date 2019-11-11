@@ -1,5 +1,5 @@
 /**
- * @file  benchmarks.hh
+ * @file  performance/benchmarks/benchmarks.hh
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
@@ -29,7 +29,7 @@
 #ifndef PERFORMANCE_BENCHMARKS_BENCHMARKS_HH_
 #define PERFORMANCE_BENCHMARKS_BENCHMARKS_HH_
 
-#include "json_io.hh"
+#include "rascal/json_io.hh"
 
 #include <benchmark/benchmark.h>
 #include <sys/stat.h>

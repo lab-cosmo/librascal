@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "math/interpolator.hh"
-#include "representations/calculator_spherical_expansion.hh"
+#include "rascal/math/interpolator.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
 #include "test_math.hh"
 
 #include <boost/mpl/list.hpp>

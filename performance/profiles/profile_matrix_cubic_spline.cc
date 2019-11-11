@@ -1,5 +1,5 @@
 /**
- * @file  profile_matrix_cubic_spline.cc
+ * @file  performance/profiles/profile_matrix_cubic_spline.cc
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
@@ -28,10 +28,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "json_io.hh"
-#include "math/interpolator.hh"
-#include "profile_utility.hh"
-#include "representations/calculator_spherical_expansion.hh"
+#include "rascal/json_io.hh"
+#include "rascal/math/interpolator.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+#include "utils.hh"
 
 #include <chrono>
 

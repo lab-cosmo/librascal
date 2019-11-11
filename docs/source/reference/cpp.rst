@@ -54,4 +54,6 @@ Index
  .. doxygennamespace:: rascal
     :project: rascal
     :members:
+    :outline:
+    :no-link:
 

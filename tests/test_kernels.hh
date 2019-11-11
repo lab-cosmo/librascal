@@ -1,5 +1,5 @@
 /**
- * file test_kernels.hh
+ * @file test_kernels.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -30,10 +30,11 @@
 #ifndef TESTS_TEST_KERNELS_HH_
 #define TESTS_TEST_KERNELS_HH_
 
-#include "models/kernels.hh"
 #include "test_adaptor.hh"
 #include "test_calculator.hh"
 #include "test_manager_collection.hh"
+
+#include "rascal/models/kernels.hh"
 
 namespace rascal {
 

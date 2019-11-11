@@ -1,5 +1,5 @@
 /**
- * @file  benchmark_interpolator.hh
+ * @file  performance/benchmarks/benchmark_interpolator.hh
  *
  * @author  Alexander Goscinski <alexander.goscinski@epfl.ch>
  *
@@ -28,16 +28,16 @@
 #ifndef PERFORMANCE_BENCHMARKS_BENCHMARK_INTERPOLATOR_HH_
 #define PERFORMANCE_BENCHMARKS_BENCHMARK_INTERPOLATOR_HH_
 
+#include "rascal/json_io.hh"
+#include "rascal/math/interpolator.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/structure_managers/adaptor_center_contribution.hh"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
 #include "benchmarks.hh"
-#include "json_io.hh"
-#include "math/interpolator.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "structure_managers/adaptor_center_contribution.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "structure_managers/structure_manager_centers.hh"
 
 #include <functional>
 #include <iostream>

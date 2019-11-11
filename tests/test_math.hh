@@ -29,13 +29,13 @@
 #ifndef TESTS_TEST_MATH_HH_
 #define TESTS_TEST_MATH_HH_
 
-#include "json_io.hh"
-#include "math/bessel.hh"
-#include "math/gauss_legendre.hh"
-#include "math/hyp1f1.hh"
-#include "math/math_utils.hh"
-#include "math/spherical_harmonics.hh"
-#include "rascal_utility.hh"
+#include "rascal/json_io.hh"
+#include "rascal/math/bessel.hh"
+#include "rascal/math/gauss_legendre.hh"
+#include "rascal/math/hyp1f1.hh"
+#include "rascal/math/spherical_harmonics.hh"
+#include "rascal/math/utils.hh"
+#include "rascal/utils.hh"
 
 #include <boost/test/unit_test.hpp>
 
@@ -148,7 +148,7 @@ namespace rascal {
   };
 
   /**
-   * Fixture for testing a the gradient of a real function of N real arguments
+   * Fixture for testing the gradient of a real function of N real arguments
    *
    * (Verifies that the gradient is the same as the converged value of the
    * finite-difference approximation along the given directions)
@@ -166,6 +166,9 @@ namespace rascal {
    * @param displacement_directions List of vectors along which to displace the
    *                                inputs, in case "direction_mode" is
    *                                "Provided".
+   *
+   * @param verbosity Level of verbosity to use when printing test info, as
+   *        string ("NORMAL", "INFO", or "DEBUG")
    */
   class GradientTestFixture {
    public:
@@ -222,10 +225,14 @@ namespace rascal {
       return directions;
     }
 
+    /** Levels of verbosity for the gradient test */
     enum struct VerbosityValue {
-      NORMAL = 0,  // Print nothing
-      INFO = 10,   // Print one line of info for each gradient step
-      DEBUG = 20   // Print as much as possible
+      /** Print nothing */
+      NORMAL = 0,
+      /** Print one line of info for each gradient step */
+      INFO = 10,
+      /** Print as much as possible */
+      DEBUG = 20
     };
 
     static VerbosityValue get_verbosity(json & input_data) {
@@ -304,18 +311,18 @@ namespace rascal {
    * The function_calculator object may be of any type, as long as it provides
    * two functions, f() and grad_f(), to calculate the function and its gradient
    * (derivative for functions with one input, Jacobian for functions with
-   * multiple outputs -- the output dimension is expected to correspond to
+   * multiple outputs - the output dimension is expected to correspond to
    * columns).  Both functions must accept an Eigen::Vector, corresponding to
    * the function input, of dimension determined in the data file (read by
    * GradientTestFixture).  This function additionally guarantees that f() will
    * be called before grad_f() with the same input.
    *
-   * If the functions f() and grad_f() are designed to accept fixed-size vectors
-   * (i.e. if the size of the argument is known at compile time), be sure to
-   * define, in the FunctionProvider class, a
-   * `constexpr static size_t n_arguments` member with the size of the argument
-   * vector.  This will ensure that the gradient tester uses the corresponding
-   * fixed-size Eigen vectors/matrices as inputs.
+   * @note If the functions f() and grad_f() are designed to accept fixed-size
+   * vectors (i.e. if the size of the argument is known at compile time), be
+   * sure to define, in the FunctionProvider class, a `constexpr static size_t
+   * n_arguments` member with the size of the argument vector.  This will ensure
+   * that the gradient tester uses the corresponding fixed-size Eigen
+   * vectors/matrices as inputs.
    */
   template <typename FunctionProvider_t, typename TestFixture_t>
   void test_gradients(FunctionProvider_t function_calculator,
@@ -359,7 +366,7 @@ namespace rascal {
         // TODO(max) this inner loop is a good candidate to move to its own
         // function... if we can pass along those argument typedefs as well
         double min_error{HUGE_VAL};
-        for (double dx = 1E-2; dx > 1E-10; dx *= 0.1) {
+        for (double dx = 1E-3; dx > 1E-10; dx *= 0.1) {
           if (params.verbosity >= VerbosityValue::INFO) {
             std::cout << "dx = " << dx << "\t";
           }

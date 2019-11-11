@@ -29,18 +29,20 @@
 #ifndef TESTS_TEST_CALCULATOR_HH_
 #define TESTS_TEST_CALCULATOR_HH_
 
-#include "atomic_structure.hh"
-#include "json_io.hh"
-#include "rascal_utility.hh"
-#include "representations/calculator_base.hh"
-#include "representations/calculator_sorted_coulomb.hh"
-#include "representations/calculator_spherical_covariants.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "structure_managers/structure_manager_collection.hh"
 #include "test_adaptor.hh"
 #include "test_math.hh"
 #include "test_structure.hh"
+
+#include "rascal/atomic_structure.hh"
+#include "rascal/json_io.hh"
+#include "rascal/representations/calculator_base.hh"
+#include "rascal/representations/calculator_sorted_coulomb.hh"
+#include "rascal/representations/calculator_spherical_covariants.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/structure_managers/cluster_ref_key.hh"
+#include "rascal/structure_managers/structure_manager_collection.hh"
+#include "rascal/utils.hh"
 
 #include <memory>
 #include <tuple>
@@ -402,7 +404,7 @@ namespace rascal {
                  {"initialization_arguments",
                   {{"cutoff", cutoff},
                    {"skin", cutoff_skin},
-                   {"consider_ghost_neighbours", false}}}};
+                   {"consider_ghost_neighbours", true}}}};
         json ad1b{{"name", "AdaptorCenterContribution"},
                   {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
@@ -421,14 +423,15 @@ namespace rascal {
     ~SimplePeriodicNLCCStrictFixture() = default;
 
     const std::vector<std::string> filenames{
-        "reference_data/simple_cubic_3.json",
-        "reference_data/simple_cubic_8.json",
-        "reference_data/diamond_2atom.json",
         "reference_data/diamond_2atom_distorted.json",
         "reference_data/diamond_cubic_distorted.json",
-        "reference_data/SiC_moissanite.json",
         "reference_data/SiCGe_wurtzite_like.json",
-        "reference_data/SiC_moissanite_supercell.json"};
+        "reference_data/SiC_moissanite_supercell.json",
+        "reference_data/small_molecule.json",
+        "reference_data/methane.json"};
+    // Simpler structures for debugging:
+    //"reference_data/diamond_2atom.json",
+    //"reference_data/SiC_moissanite.json",
     const double cutoff{2.5};
     const double cutoff_skin{0.};
 
@@ -462,13 +465,7 @@ namespace rascal {
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}},
-        {{"type", "RadialScaling"},
-         {"cutoff", {{"value", 4.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}},
-         {"rate", {{"value", 1.}, {"unit", "AA"}}},
-         {"exponent", {{"value", 3}, {"unit", ""}}},
-         {"scale", {{"value", 2.}, {"unit", "AA"}}}}};
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
@@ -581,51 +578,58 @@ namespace rascal {
   };
 
   /**
-   * Calculator specialized to testing the gradient of a Calculator
+   * Gradient provider specialized to testing the gradient of a Calculator
    *
    * The gradient is tested center-by-center, by iterating over each center and
    * doing finite displacements on its position.  This iteration should normally
-   * be done by the RepresentationManagerGradientFixture class.
+   * be done by the RepresentationCalculatorGradientFixture class.
+   *
+   * In the case of periodic structures, the gradient is accumulated only onto
+   * _real_ atoms, but the motion of all _images_ of the "moving" atom (the one
+   * with respect to which the gradient is being taken) is taken into account.
    *
    * Initialize with a Calculator, a StructureManager, and an
    * AtomicStructure representing the original structure (before modifying with
-   * finite-difference displacments).  The gradient of the representation with
+   * finite-difference displacements).  The gradient of the representation with
    * respect to the center position can then be tested, as usual, with
    * test_gradients() (defined in test_math.hh).
    */
-  template <typename RepManager, class StructureManager>
-  class RepresentationManagerGradientCalculator {
+  template <typename Calculator, class StructureManager>
+  class RepresentationCalculatorGradientProvider {
    public:
     using Structure_t = AtomicStructure<3>;
-    using Key_t = typename RepManager::Key_t;
+    using Key_t = typename Calculator::Key_t;
     static const size_t n_arguments = 3;
 
     using PairRef_t =
-        typename RepManager::template ClusterRef_t<StructureManager, 2>;
+        typename Calculator::template ClusterRef_t<StructureManager, 2>;
+
+    using PairRefKey_t = typename PairRef_t::ThisParentClass;
 
     // type of the data structure holding the representation and its gradients
-    using Prop_t = typename RepManager::template Property_t<StructureManager>;
+    using Prop_t = typename Calculator::template Property_t<StructureManager>;
     using PropGrad_t =
-        typename RepManager::template PropertyGradient_t<StructureManager>;
+        typename Calculator::template PropertyGradient_t<StructureManager>;
 
     template <typename T, class V>
-    friend class RepresentationManagerGradientFixture;
+    friend class RepresentationCalculatorGradientFixture;
 
-    RepresentationManagerGradientCalculator(
-        RepManager & representation,
+    RepresentationCalculatorGradientProvider(
+        Calculator & representation,
         std::shared_ptr<StructureManager> structure_manager,
         Structure_t atomic_structure)
         : representation{representation}, structure_manager{structure_manager},
           atomic_structure{atomic_structure}, center_it{
                                                   structure_manager->begin()} {}
 
-    ~RepresentationManagerGradientCalculator() = default;
+    ~RepresentationCalculatorGradientProvider() = default;
 
     Eigen::Array<double, 1, Eigen::Dynamic>
     f(const Eigen::Ref<const Eigen::Vector3d> & center_position) {
       auto center = *center_it;
       Structure_t modified_structure{this->atomic_structure};
       modified_structure.positions.col(center.get_index()) = center_position;
+      modified_structure.wrap();
       this->structure_manager->update(modified_structure);
       this->representation.compute(this->structure_manager);
 
@@ -644,8 +648,13 @@ namespace rascal {
       // Count all the keys in the sparse gradient structure where the gradient
       // is nonzero (i.e. where the key has an entry in the structure)
       for (auto neigh : center) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
+        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
         n_entries_neighbours +=
-            (gradients_sparse[swap_pair_ref(neigh)].get_keys().size() *
+            (gradients_sparse[swapped_ref].get_keys().size() *
              n_entries_per_key);
       }
       // Packed array containing: The center coefficients (all species) and
@@ -660,6 +669,10 @@ namespace rascal {
         result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
         auto & data_neigh{data_sparse[neigh]};
         // The neighbour gradient (i =/= j) only contributes to certain species
         // channels (keys), in the case of SOAP and SphExpn those keys
@@ -667,7 +680,8 @@ namespace rascal {
         // being taken)
         // The nonzero gradient keys are already indicated in the sparse
         // gradient structure
-        auto keys_neigh{gradients_sparse[swap_pair_ref(neigh)].get_keys()};
+        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
+        auto keys_neigh{gradients_sparse[swapped_ref].get_keys()};
         for (auto & key : keys_neigh) {
           Eigen::Map<Eigen::ArrayXd> data_flat(data_neigh[key].data(),
                                                n_entries_per_key);
@@ -702,12 +716,18 @@ namespace rascal {
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
       size_t n_entries_neighbours{0};
       for (auto neigh : center) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
+        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
         n_entries_neighbours +=
-            (gradients_sparse[swap_pair_ref(neigh)].get_keys().size() *
+            (gradients_sparse[swapped_ref].get_keys().size() *
              n_entries_per_key);
       }
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
           grad_coeffs_pairs(3, n_entries_center + n_entries_neighbours);
+      grad_coeffs_pairs.setZero();
 
       // Use the exact same iteration pattern as in f()  to guarantee that the
       // gradients appear in the same place as their corresponding data
@@ -722,16 +742,27 @@ namespace rascal {
         result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
         // We need grad_i c^{ji} -- using just 'neigh' would give us
         // grad_j c^{ij}, hence the swap
-        auto neigh_swap{swap_pair_ref(neigh)};
-        auto & gradients_neigh{gradients_sparse[neigh_swap]};
-        auto keys_neigh{gradients_neigh.get_keys()};
-        for (auto key : keys_neigh) {
-          Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-              gradients_neigh[key].data(), 3, n_entries_per_key);
-          grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
-              grad_coeffs_flat;
+        auto neigh_swap_images{swap_pair_ref(neigh)};
+        auto & gradients_neigh_first{
+            gradients_sparse[neigh_swap_images.front()]};
+        // The set of species keys should be the same for all images of i
+        auto keys_neigh{gradients_neigh_first.get_keys()};
+        for (auto & key : keys_neigh) {
+          // For each key, accumulate gradients over periodic images of the atom
+          // that moves in the finite-difference step
+          for (auto & neigh_swap : neigh_swap_images) {
+            auto & gradients_neigh{gradients_sparse[neigh_swap]};
+            Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
+                gradients_neigh[key].data(), 3, n_entries_per_key);
+            grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) +=
+                grad_coeffs_flat;
+          }
           result_idx += n_entries_per_key;
         }
       }
@@ -739,7 +770,7 @@ namespace rascal {
     }
 
    private:
-    RepManager & representation;
+    Calculator & representation;
     std::shared_ptr<StructureManager> structure_manager;
     Structure_t atomic_structure;
     typename StructureManager::iterator center_it;
@@ -747,51 +778,79 @@ namespace rascal {
     inline void advance_center() { ++this->center_it; }
 
     /**
-     * Swap a ClusterRef (i, j) so it refers to (j, i) instead
+     * Swap a ClusterRef<order=2> (i, j) so it refers to (j, i) instead
      *
-     * @todo wouldn't this be better as a member of StructureManager
-     *       (viz. AdaptorNeighbourList<whatever>)?
+     * @return std::vector of ClusterRefKeys or order 2 (pair keys) of all pairs
+     *         (j, i') where i' is either i or any of its periodic images within
+     *         the cutoff of j. The atom j, on the other hand, must be a real
+     *         atom (not a ghost or periodic image).
      */
-    PairRef_t swap_pair_ref(const PairRef_t & pair_ref) {
+    std::vector<PairRefKey_t> swap_pair_ref(const PairRef_t & pair_ref) {
+      auto center_manager{extract_underlying_manager<0>(structure_manager)};
+      auto atomic_structure{center_manager->get_atomic_structure()};
       // Get the atom index to the corresponding atom tag
-      size_t access_index = structure_manager->get_atom_index(pair_ref.back());
+      size_t access_index{structure_manager->get_atom_index(pair_ref.back())};
       auto new_center_it{structure_manager->get_iterator_at(access_index)};
       // Return cluster ref at which the iterator is currently pointing
       auto && new_center{*new_center_it};
-      // Iterate until (j,i) is found
+      size_t i_index{structure_manager->get_atom_index(pair_ref.front())};
+
+      // Find all (j, i') pairs
+      std::vector<PairRefKey_t> new_pairs;
       for (auto new_pair : new_center) {
-        if (new_pair.back() == pair_ref.front()) {
-          return new_pair;
+        size_t i_trial_index{
+            structure_manager->get_atom_index(new_pair.back())};
+        // Is this the i (old center) atom or any of its images?
+        if (i_trial_index == i_index) {
+          new_pairs.emplace_back(std::move(new_pair));
         }
       }
-      std::stringstream err_str{};
-      err_str << "Didn't find symmetric pair for pair (i=" << pair_ref.front()
-              << ", j=" << pair_ref.back() << ").";
-      throw std::range_error(err_str.str());
+      if (new_pairs.size() == 0) {
+        std::stringstream err_str{};
+        err_str << "Didn't find any pairs for pair (i=" << pair_ref.front()
+                << ", j=" << pair_ref.back()
+                << "); access index for j = " << access_index;
+        throw std::range_error(err_str.str());
+      }
+      return new_pairs;
     }
   };
 
   /**
    * Test fixture holding the gradient calculator and structure manager
    *
-   * Holds data (i.e. function values, gradient directions) and iterates through
-   * the list of centers
+   * Holds data (function values, gradient directions, verbosity) and iterates
+   * through the list of centers
    */
-  template <typename RepManager_t, class StructureManager_t>
-  class RepresentationManagerGradientFixture : public GradientTestFixture {
+  template <typename Calculator, class StructureManager>
+  class RepresentationCalculatorGradientFixture : public GradientTestFixture {
    public:
     using StdVector2Dim_t = std::vector<std::vector<double>>;
-    using Calculator_t =
-        RepresentationManagerGradientCalculator<RepManager_t,
-                                                StructureManager_t>;
+    using Provider_t =
+        RepresentationCalculatorGradientProvider<Calculator, StructureManager>;
 
     static const size_t n_arguments = 3;
+    /**
+     * Increased error tolerance because some representations have quite large
+     * finite-difference truncation errors (and possibly numerical issues for
+     * very small displacements)
+     */
+    double fd_error_tol{1E-4};
 
-    RepresentationManagerGradientFixture(
-        std::string filename, std::shared_ptr<StructureManager_t> structure,
-        Calculator_t & calc)
-        : structure{structure}, center_it{structure->begin()}, calculator{
-                                                                   calc} {
+    /**
+     * Initialize a gradient test fixture
+     *
+     * @param filename JSON file holding gradient test parameters, format
+     *                 documented in GradientTestFixture
+     *
+     * @param structure StructureManager on which to test
+     *
+     * @param calc RepresentationCalculator whose gradient is being tested
+     */
+    RepresentationCalculatorGradientFixture(
+        std::string filename, std::shared_ptr<StructureManager> structure,
+        Provider_t & calc)
+        : structure{structure}, center_it{structure->begin()}, provider{calc} {
       json input_data = json_io::load(filename);
 
       this->function_inputs = this->get_function_inputs();
@@ -803,9 +862,9 @@ namespace rascal {
       }
     }
 
-    ~RepresentationManagerGradientFixture() = default;
+    ~RepresentationCalculatorGradientFixture() = default;
 
-    const Calculator_t & get_calculator() { return calculator; }
+    const Provider_t & get_provider() { return provider; }
 
     /**
      * Go to the next center in the structure
@@ -814,7 +873,7 @@ namespace rascal {
      */
     inline void advance_center() {
       ++this->center_it;
-      this->calculator.advance_center();
+      this->provider.advance_center();
       if (this->has_next()) {
         this->function_inputs = get_function_inputs();
       }
@@ -831,9 +890,9 @@ namespace rascal {
       return inputs_new;
     }
 
-    std::shared_ptr<StructureManager_t> structure;
-    typename StructureManager_t::iterator center_it;
-    Calculator_t & calculator;
+    std::shared_ptr<StructureManager> structure;
+    typename StructureManager::iterator center_it;
+    Provider_t & provider;
   };
 
   template <class MultipleStructureFixture>
