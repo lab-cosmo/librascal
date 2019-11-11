@@ -58,7 +58,7 @@ class AtomsList(object):
     def __getitem__(self, key):
         return self.managers[key]
 
-    def get_dense_feature_matrix(self, calculator, species=None):
+    def get_features(self, calculator, species=None):
         """
         Parameters
         -------
@@ -74,16 +74,16 @@ class AtomsList(object):
         """
 
         if species is None:
-            X = self.managers.get_dense_feature_matrix(
+            X = self.managers.get_features(
                 calculator._representation)
         else:
             keys_list = calculator.get_keys(species)
-            X = self.managers.get_dense_feature_matrix(
+            X = self.managers.get_features(
                 calculator._representation, keys_list)
 
         return X
 
-    def get_sparse_feature_matrix(self, calculator):
+    def get_features_by_species(self, calculator):
         """
         Parameters
         -------
@@ -95,7 +95,7 @@ class AtomsList(object):
             returns a dictionary associating tuples of atomic numbers sorted
             alphabetically to the corresponding feature matrices
         """
-        return self.managers.get_sparse_feature_matrix(
+        return self.managers.get_features_by_species(
             calculator._representation)
 
 

@@ -453,8 +453,8 @@ namespace rascal {
   void
   bind_feature_matrix_getter(ManagerCollectionBinder & manager_collection) {
     manager_collection.def(
-        "get_dense_feature_matrix",
-        &ManagerCollection_t::template get_dense_feature_matrix<Calculator>,
+        "get_features",
+        &ManagerCollection_t::template get_features<Calculator>,
         py::call_guard<py::gil_scoped_release>());
   }
 
@@ -475,7 +475,7 @@ namespace rascal {
   void bind_sparse_feature_matrix_getter(
       ManagerCollectionBinder & manager_collection) {
     manager_collection.def(
-        "get_sparse_feature_matrix",
+        "get_features_by_species",
         [](ManagerCollection_t & managers, Calculator & calculator) {
           using Manager_t = typename ManagerCollection_t::Manager_t;
           using Prop_t = typename Calculator::template Property_t<Manager_t>;
@@ -549,7 +549,7 @@ namespace rascal {
           return feature_dict;
         });
     manager_collection.def(
-        "get_dense_feature_matrix",
+        "get_features",
         [](ManagerCollection_t & managers, const Calculator & calculator,
            py::list & all_keys_l) {
           using Manager_t = typename ManagerCollection_t::Manager_t;

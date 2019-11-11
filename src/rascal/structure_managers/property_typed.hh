@@ -310,7 +310,7 @@ namespace rascal {
                               this->get_nb_row(), this->get_nb_col());
     }
 
-    Matrix_t get_dense_feature_matrix() {
+    Matrix_t get_features() {
       auto nb_centers{this->get_nb_item()};
       auto nb_features{this->get_nb_comp()};
       Matrix_t features(nb_centers, nb_features);

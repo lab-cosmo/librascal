@@ -702,7 +702,7 @@ namespace rascal {
      * Get a dense feature matrix Ncenter x Nfeatures. The keys to use are
      * deduced from the local storage.
      */
-    Matrix_t get_dense_feature_matrix() {
+    Matrix_t get_features() {
       auto all_keys = this->get_keys();
       size_t n_elements{this->size()};
       int inner_size{this->get_nb_comp()};

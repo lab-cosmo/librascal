@@ -38,7 +38,7 @@ for fn in fns:
             rep = SortedCoulombMatrix(cutoff, sorting_algorithm=sort)
             frame = read(fn)
             features = rep.transform(frame)
-            test = features.get_dense_feature_matrix(rep)
+            test = features.get_features(rep)
             hypers['size'] = rep.size
             hypers['central_cutoff'] = cutoff
             print(rep.size)

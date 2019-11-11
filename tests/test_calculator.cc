@@ -132,7 +132,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Test that the function get_dense_feature_matrix from managerCollection and
+   * Test that the function get_features from managerCollection and
    * Property return the same dense matrix
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_dense_feature_comparison, Fix,
@@ -155,10 +155,10 @@ namespace rascal {
         ManagerCollection_t collection{};
         auto & prop = manager->template get_validated_property_ref<Property_t>(
             representations.back().get_name());
-        math::Matrix_t feat_prop = prop.get_dense_feature_matrix();
+        math::Matrix_t feat_prop = prop.get_features();
         collection.add_structure(manager);
         math::Matrix_t feat_col =
-            collection.get_dense_feature_matrix(representations.back());
+            collection.get_features(representations.back());
 
         BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
         BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
@@ -276,13 +276,13 @@ namespace rascal {
 
         auto & prop = manager->template get_validated_property_ref<Property_t>(
             representation.get_name());
-        math::Matrix_t rep_full = prop.get_dense_feature_matrix();
+        math::Matrix_t rep_full = prop.get_features();
 
         auto & prop_no_center =
             manager_no_center->template get_validated_property_ref<Property_t>(
                 representation.get_name());
         math::Matrix_t rep_no_center =
-            prop_no_center.get_dense_feature_matrix();
+            prop_no_center.get_features();
 
         BOOST_CHECK_EQUAL(rep_full.cols(), rep_no_center.cols());
         BOOST_CHECK_EQUAL(center_atoms_mask.count(), rep_no_center.rows());
@@ -342,7 +342,7 @@ namespace rascal {
         auto && property{
             manager->template get_validated_property_ref<Property_t>(
                 property_name)};
-        auto test_representation = property.get_dense_feature_matrix();
+        auto test_representation = property.get_features();
 
         BOOST_CHECK_EQUAL(ref_representation.size(),
                           test_representation.rows());

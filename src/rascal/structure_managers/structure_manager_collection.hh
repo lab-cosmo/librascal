@@ -253,7 +253,7 @@ namespace rascal {
      * in the structures held by manager_collection.
      */
     template <class Calculator>
-    Matrix_t get_dense_feature_matrix(const Calculator & calculator) {
+    Matrix_t get_features(const Calculator & calculator) {
       using Prop_t = typename Calculator::template Property_t<Manager_t>;
 
       auto property_name{this->get_calculator_name(calculator, false)};

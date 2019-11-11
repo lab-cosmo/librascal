@@ -18,7 +18,7 @@ def get_soap_vectors(hypers, frames):
     with ostream_redirect():
         sph_expn = SphericalExpansion(**hypers)
         expansions = sph_expn.transform(frames)
-        soap_vectors = expansions.get_dense_feature_matrix(sph_expn)
+        soap_vectors = expansions.get_features(sph_expn)
     return soap_vectors
 
 ###############################################################################
@@ -90,7 +90,7 @@ def dump_reference_json():
 
                 sph_expn = SphericalExpansion(**hypers)
                 expansions = sph_expn.transform(frames)
-                x = expansions.get_dense_feature_matrix(sph_expn)
+                x = expansions.get_features(sph_expn)
                 x[np.abs(x) < 1e-300] = 0.
                 data['rep_info'][-1].append(
                     dict(feature_matrix=x.tolist(),
