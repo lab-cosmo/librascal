@@ -1,11 +1,11 @@
 /**
- * @file   examples/spherical_expansion_profile.cc
+ * @file   performance/profiles/profile_spherical_invariants.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
  * @date   7 May 2019
  *
- * @brief  Example for profiling the spherical expansion
+ * @brief  Example for profiling the spherical invariants (SOAP)
  *
  * Copyright © 2018 Max Veit, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -50,12 +50,11 @@ using namespace rascal;  // NOLINT
 
 const int N_ITERATIONS = 1000;
 
+using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+
 using Representation_t = CalculatorSphericalInvariants;
-using Manager_t = AdaptorStrict<
-    AdaptorCenterContribution<AdaptorNeighbourList<StructureManagerCenters>>>;
-using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
-using PropGrad_t =
-    typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
+
+using Property_t = typename Representation_t::template Property_t<Manager_t>;
 
 int main(int argc, char * argv[]) {
   if (argc < 2) {
@@ -69,8 +68,11 @@ int main(int argc, char * argv[]) {
   std::string filename{argv[1]};
 
   double cutoff{5.};
-  json hypers{
-      {"max_radial", 8}, {"max_angular", 6}, {"compute_gradients", false}};
+  json hypers{{"max_radial", 8},
+              {"max_angular", 6},
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", true},
+              {"compute_gradients", false}};
 
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
@@ -86,7 +88,9 @@ int main(int argc, char * argv[]) {
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+            {{"cutoff", cutoff},
+             {"consider_ghost_neighbours", false},
+             {"skin", 0.}}}};
   json ad1b{{"name", "AdaptorCenterContribution"},
             {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
@@ -127,44 +131,12 @@ int main(int argc, char * argv[]) {
     representation.compute(manager);
   }
   finish = std::chrono::high_resolution_clock::now();
-
-  elapsed = finish - start;
-  std::cout << "Compute representation"
-            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
-            << std::endl;
-
-  // auto expn = representation.get_representation_full();
-  // std::cout << "Sample SphericalExpansion elements " << std::endl
-  //           << expn(0, 0) << " " << expn(0, 1) << " " << expn(0, 2) << "\n"
-  //           << expn(1, 0) << " " << expn(1, 1) << " " << expn(1, 2) << "\n"
-  //           << expn(2, 0) << " " << expn(2, 1) << " " << expn(2, 2) << "\n";
-
-  // Profile again, this time with gradients
-  hypers["compute_gradients"] = true;
-  Representation_t representation_gradients{hypers};
-  start = std::chrono::high_resolution_clock::now();
-  // This is the part that should get profiled
-  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
-    representation_gradients.compute(manager);
-  }
-  finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed_grad{};
   elapsed_grad = finish - start;
   std::cout << "Compute representation with gradients"
             << " elapsed: " << elapsed_grad.count() / N_ITERATIONS << " seconds"
             << std::endl;
-  std::cout << "Ratio (with gradients / without gradients): "
-            << elapsed_grad.count() / elapsed.count() << std::endl;
-
-  // auto expn2 = representation_gradients.get_representation_full();
-  // std::cout << "Sample SphericalExpansion elements (should be identical) "
-  //           << std::endl
-  //           << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) <<
-  //           "\n"
-  //           << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) <<
-  //           "\n"
-  //           << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2) <<
-  //           "\n";
-  // TODO(max) print out analogous gradient components, for now see
-  // spherical_expansion_example
+  // auto property_name{representation.get_name()};
+  // auto&& property{manager->template
+  // get_validated_property_ref<Property_t>(property_name)};
 }
