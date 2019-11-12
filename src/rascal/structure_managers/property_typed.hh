@@ -171,8 +171,8 @@ namespace rascal {
     constexpr static bool IsOrderOne{Order == 1};
 
     TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
-                      std::string metadata = "no metadata",
-                      bool exclude_ghosts = false)
+                  std::string metadata = "no metadata",
+                  bool exclude_ghosts = false)
         : Parent{static_cast<StructureManagerBase &>(manager),
                  nb_row,
                  nb_col,

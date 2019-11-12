@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rascal/utils.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/utils.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
@@ -36,9 +36,9 @@ namespace rascal {
   // TODO(all) not sure about the naming convention of tests, camelcase ...
   BOOST_AUTO_TEST_SUITE(RascalUtilityTests);
 
-  using internal::RadialBasisType;
   using internal::AtomicSmearingType;
   using internal::OptimizationType;
+  using internal::RadialBasisType;
 
   /*
    * enum class RadialBasisType { GTO, DVR, End_ };

@@ -95,7 +95,7 @@ class SphericalExpansion(object):
                     spline_range = optimization_args['range']
                 else:
                     # TODO(felix) remove this when there is a check for the
-                    # distance for the usage of the interpolator in the 
+                    # distance for the usage of the interpolator in the
                     # RadialContribution
                     print("Warning: default parameter for spline range is used.")
                     spline_range = (0, interaction_cutoff)

@@ -426,7 +426,6 @@ namespace rascal {
       this->properties[name] = property;
     }
 
-
     /**
      * Get a atom property of a given name, possibly excluding ghosts. Create it
      * if it does not exist.

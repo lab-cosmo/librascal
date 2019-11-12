@@ -463,8 +463,8 @@ namespace rascal {
    public:
     using Parent = PropertyBase;
     using Manager_t = Manager;
-    using Self_t = BlockSparseProperty<Precision_t, Order_, PropertyLayer,
-                                           Manager, Key>;
+    using Self_t =
+        BlockSparseProperty<Precision_t, Order_, PropertyLayer, Manager, Key>;
     using traits = typename Manager::traits;
 
     using Matrix_t = math::Matrix_t;
@@ -489,8 +489,8 @@ namespace rascal {
    public:
     //! constructor
     BlockSparseProperty(Manager_t & manager,
-                            std::string metadata = "no metadata",
-                            bool exclude_ghosts = false)
+                        std::string metadata = "no metadata",
+                        bool exclude_ghosts = false)
         : Parent{static_cast<StructureManagerBase &>(manager),
                  0,
                  0,
@@ -512,12 +512,10 @@ namespace rascal {
     ~BlockSparseProperty() = default;
 
     //! Copy assignment operator
-    BlockSparseProperty &
-    operator=(const BlockSparseProperty & other) = delete;
+    BlockSparseProperty & operator=(const BlockSparseProperty & other) = delete;
 
     //! Move assignment operator
-    BlockSparseProperty &
-    operator=(BlockSparseProperty && other) = default;
+    BlockSparseProperty & operator=(BlockSparseProperty && other) = default;
 
     static void check_compatibility(PropertyBase & other) {
       // check ``type`` compatibility
@@ -601,8 +599,8 @@ namespace rascal {
      * Access a property of order 1 with a clusterRef of order 2
      */
     template <size_t CallerOrder, size_t CallerLayer,
-          bool T = (IsOrderOne and (CallerOrder == 2)), // NOLINT
-              std::enable_if_t<T, int> = 0>   // NOLINT
+              bool T = (IsOrderOne and (CallerOrder == 2)),  // NOLINT
+              std::enable_if_t<T, int> = 0>                  // NOLINT
     inline decltype(auto)
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](this->get_manager().get_atom_index(
@@ -611,7 +609,7 @@ namespace rascal {
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order__ = Order,
               std::enable_if_t<(Order__ == 1) and (CallerOrder == 2),  // NOLINT
-                               int> = 0>                              // NOLINT
+                               int> = 0>                               // NOLINT
     const InputData_t &
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) const {
       return this->operator[](this->get_manager().get_atom_index(
