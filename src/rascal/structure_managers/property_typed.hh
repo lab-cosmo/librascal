@@ -158,6 +158,7 @@ namespace rascal {
 
     using value_type = typename Value_t::value_type;
     using reference = typename Value_t::reference;
+    using const_reference = typename Value_t::const_reference;
 
     //! constructor
     TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
@@ -284,10 +285,10 @@ namespace rascal {
                               this->get_nb_row(), this->get_nb_col());
     }
 
-    void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features) {
+    void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features) const {
       size_t n_center{this->get_nb_item()};
       auto n_cols{this->get_nb_comp()};
-      auto mat = reference(this->values.data(), n_cols, n_center);
+      auto mat = const_reference(this->values.data(), n_cols, n_center);
       for (size_t i_center{0}; i_center < n_center; i_center++) {
         for (int i_pos{0}; i_pos < n_cols; i_pos++) {
           // the storage order is swapped here because mat is ColMajor
@@ -309,7 +310,7 @@ namespace rascal {
                               this->get_nb_row(), this->get_nb_col());
     }
 
-    Matrix_t get_dense_feature_matrix() {
+    Matrix_t get_features() {
       auto nb_centers{this->get_nb_item()};
       auto nb_features{this->get_nb_comp()};
       Matrix_t features(nb_centers, nb_features);

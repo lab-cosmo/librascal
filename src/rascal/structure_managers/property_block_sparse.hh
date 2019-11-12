@@ -266,7 +266,7 @@ namespace rascal {
                          std::get<2>(pos));
       }
       const_reference operator[](const SortedKey_t & skey) const {
-        auto & pos{this->map[skey.get_key()]};
+        auto & pos{this->map.at(skey.get_key())};
         return const_reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
                                std::get<2>(pos));
       }
@@ -308,12 +308,12 @@ namespace rascal {
       //! Returns the number of elements with key that compares equivalent to
       //! the specified argument, which is either 1 or 0 since this container
       //! does not allow duplicates.
-      size_t count(const key_type & key) {
+      size_t count(const key_type & key) const {
         SortedKey_t skey{key};
         return this->count(skey);
       }
 
-      size_t count(const SortedKey_t & skey) {
+      size_t count(const SortedKey_t & skey) const {
         return this->map.count(skey.get_key());
       }
 
@@ -582,6 +582,16 @@ namespace rascal {
       return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
+    template <size_t CallerLayer>
+    const InputData_t &
+    operator[](const ClusterRefKey<Order, CallerLayer> & id) const {
+      static_assert(CallerLayer >= PropertyLayer,
+                    "You are trying to access a property that does not exist at"
+                    "this depth in the adaptor stack.");
+
+      return this->operator[](id.get_cluster_index(CallerLayer));
+    }
+
     /**
      * Access a property of order 1 with a clusterRef of order 2
      */
@@ -594,8 +604,21 @@ namespace rascal {
           id.get_internal_neighbour_atom_tag()));
     }
 
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
+              std::enable_if_t<(Order_ == 1) and (CallerOrder == 2),  // NOLINT
+                               int> = 0>                              // NOLINT
+    const InputData_t &
+    operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) const {
+      return this->operator[](this->get_manager().get_atom_index(
+          id.get_internal_neighbour_atom_tag()));
+    }
+
     //! Accessor for property by index for dynamically sized properties
     InputData_t & operator[](size_t index) { return this->values[index]; }
+
+    const InputData_t & operator[](size_t index) const {
+      return this->values[index];
+    }
 
     template <size_t CallerLayer>
     DenseRef_t operator()(const ClusterRefKey<Order, CallerLayer> & id,
@@ -653,16 +676,18 @@ namespace rascal {
      *
      */
     void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features,
-                                   const Keys_t & all_keys) {
+                                   const Keys_t & all_keys) const {
       int inner_size{this->get_nb_comp()};
       int i_row{0};
       size_t n_center{this->values.size()};
       for (size_t i_center{0}; i_center < n_center; i_center++) {
         int i_feat{0};
+        const auto & center_val = this->values[i_center];
         for (const auto & key : all_keys) {
           if (this->values[i_center].count(key) == 1) {
+            const auto & center_key_val = center_val[key];
             for (int i_pos{0}; i_pos < inner_size; i_pos++) {
-              features(i_row, i_feat) = this->values[i_center][key](i_pos);
+              features(i_row, i_feat) = center_key_val(i_pos);
               i_feat++;
             }
           } else {
@@ -677,7 +702,7 @@ namespace rascal {
      * Get a dense feature matrix Ncenter x Nfeatures. The keys to use are
      * deduced from the local storage.
      */
-    Matrix_t get_dense_feature_matrix() {
+    Matrix_t get_features() {
       auto all_keys = this->get_keys();
       size_t n_elements{this->size()};
       int inner_size{this->get_nb_comp()};
@@ -690,7 +715,7 @@ namespace rascal {
     /**
      * @return set of unique keys at the level of the structure
      */
-    Keys_t get_keys() {
+    Keys_t get_keys() const {
       Keys_t all_keys{};
       size_t n_center{this->values.size()};
       for (size_t i_center{0}; i_center < n_center; i_center++) {

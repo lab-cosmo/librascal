@@ -73,7 +73,7 @@ class SphericalExpansion(object):
             cutoff_smooth_width=cutoff_smooth_width
         )
         cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
-                                **cutoff_function_parameters)
+                                                      **cutoff_function_parameters)
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
@@ -150,3 +150,12 @@ class SphericalExpansion(object):
         """
         return (self.hypers['n_species'] * self.hypers['max_radial']
                 * (self.hypers['max_angular'] + 1)**2)
+
+    def get_keys(self, species):
+        """
+        return the proper list of keys used to build the representation
+        """
+        keys = []
+        for sp in species:
+            keys.append([sp])
+        return keys

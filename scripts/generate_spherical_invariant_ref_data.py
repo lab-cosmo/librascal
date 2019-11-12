@@ -6,12 +6,12 @@ import json
 import sys
 sys.path.insert(0, '../build/')
 
-import rascal.lib as lrl
-from rascal.representations import SphericalInvariants
-from rascal.utils import ostream_redirect
 import rascal
-
+from rascal.utils import ostream_redirect
+from rascal.representations import SphericalInvariants
+import rascal.lib as lrl
 ############################################################################
+
 
 def get_feature_vector(hypers, frames):
     with ostream_redirect():
@@ -19,7 +19,7 @@ def get_feature_vector(hypers, frames):
         soap_vectors = soap.transform(frames)
         print('Feature vector size: %.3fMB' %
               (soap.get_num_coefficients()*8.0/1.0e6))
-        feature_vector = soap_vectors.get_dense_feature_matrix(soap)
+        feature_vector = soap_vectors.get_features(soap)
     return feature_vector
 
 ##############################################################################
@@ -67,8 +67,8 @@ def dump_reference_json():
             data['rep_info'].append([])
             for (soap_type, gaussian_sigma,
                  max_radial, max_angular, rad_basis) in product(
-                        soap_types, gaussian_sigmas, max_radials,
-                        max_angulars, radial_basis):
+                    soap_types, gaussian_sigmas, max_radials,
+                    max_angulars, radial_basis):
                 if 'RadialSpectrum' == soap_type:
                     max_angular = 0
                 if "BiSpectrum" == soap_type:
@@ -77,29 +77,29 @@ def dump_reference_json():
                     inversion_symmetry = True
 
                 hypers = {"interaction_cutoff": cutoff,
-                        "cutoff_smooth_width": 0.5,
-                        "max_radial": max_radial,
-                        "max_angular": max_angular,
-                        "gaussian_sigma_type": "Constant",
-                        "normalize": True,
-                        "cutoff_function_type": "ShiftedCosine",
-                        "radial_basis": rad_basis,
-                        "gaussian_sigma_constant": gaussian_sigma,
-                        "soap_type": soap_type,
-                        "inversion_symmetry": inversion_symmetry, }
+                          "cutoff_smooth_width": 0.5,
+                          "max_radial": max_radial,
+                          "max_angular": max_angular,
+                          "gaussian_sigma_type": "Constant",
+                          "normalize": True,
+                          "cutoff_function_type": "ShiftedCosine",
+                          "radial_basis": rad_basis,
+                          "gaussian_sigma_constant": gaussian_sigma,
+                          "soap_type": soap_type,
+                          "inversion_symmetry": inversion_symmetry, }
 
                 soap = SphericalInvariants(**hypers)
                 soap_vectors = soap.transform(frames)
-                x = soap_vectors.get_dense_feature_matrix(soap)
+                x = soap_vectors.get_features(soap)
                 x[np.abs(x) < 1e-300] = 0.
                 data['rep_info'][-1].append(
                     dict(feature_matrix=x.tolist(),
-                            hypers=copy(soap.hypers)))
+                         hypers=copy(soap.hypers)))
 
-    with open(path+
-        "tests/reference_data/spherical_invariants_reference.ubjson",
-                        'wb') as f:
-                ubjson.dump(data, f)
+    with open(path +
+              "tests/reference_data/spherical_invariants_reference.ubjson",
+              'wb') as f:
+        ubjson.dump(data, f)
 
 #############################################################################
 
@@ -112,7 +112,7 @@ def main(json_dump, save_kernel):
                    "cutoff_smooth_width": 0.0,
                    "max_radial": nmax,
                    "max_angular": lmax,
-                   "normalize":True,
+                   "normalize": True,
                    "gaussian_sigma_type": "Constant",
                    "gaussian_sigma_constant": 0.3,
                    "soap_type": "PowerSpectrum"}

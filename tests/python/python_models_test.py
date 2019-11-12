@@ -33,10 +33,11 @@ class TestCosineKernel(unittest.TestCase):
         features = rep.transform([self.frame])
 
         for target_type in ["Atom", "Structure"]:
-            cosine_kernel = Kernel(rep, name="Cosine", target_type=target_type, zeta=2)
+            cosine_kernel = Kernel(
+                rep, name="Cosine", target_type=target_type, zeta=2)
             cosine_kernel(features)
 
-        # wrong name 
+        # wrong name
         with self.assertRaises(RuntimeError):
             Kernel(rep, name="WrongName", target_type="Structure", zeta=2)
         with self.assertRaises(RuntimeError):
