@@ -1,12 +1,11 @@
 download_external_project(benchmark
     URL "https://github.com/google/benchmark.git"
+    TAG "v${_benchmark_version}"
     BACKEND GIT
     THIRD_PARTY_SRC_DIR ${_benchmark_external_dir}
     BUILD_COMMAND ""
     ${_benchmark_UPDATE}
     )
-
-# TODO(all) download external project always downloads this one, but other packages like Eigen are not always downloaded, does anyone have a clue?
 
 set(benchmark_SOURCE_DIR "${_benchmark_external_dir}/${package}")
 
