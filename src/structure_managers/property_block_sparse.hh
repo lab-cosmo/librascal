@@ -500,32 +500,6 @@ namespace rascal {
                  metadata},
           type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
 
-    /**
-     * Adjust size of values (only increases, never frees).
-     *
-     * Uses SFINAE to differenciate behavior between IsOrderOne == true/false.
-     * IsOrderOne == false then the size of the property is directly taken
-     * from the manager.
-     * IsOrderOne == true then the size of the property depends on the bolean
-     * exclude_ghosts. By default it is set to false so that property size is
-     * always larger than what could be needed.
-     */
-    template <bool T = IsOrderOne, std::enable_if_t<not(T), int> = 0>
-    void resize() {
-      size_t new_size{this->template get_validated_property_length<Order>()};
-      this->values.resize(new_size);
-    }
-
-    //! Adjust size of values (only increases, never frees).
-    template <bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
-    void resize() {
-      size_t new_size{this->exclude_ghosts
-                          ? this->get_manager().size()
-                          : this->get_manager().size_with_ghosts()};
-      this->values.resize(new_size);
-    }
-
-
     //! Default constructor
     BlockSparseProperty() = delete;
 
@@ -563,32 +537,36 @@ namespace rascal {
     const std::string & get_type_info() const final { return this->type_id; }
 
     /**
-     * This function is only valid for `Order == 1` and where the user has a
-     * choice of sizing the `Property` for either including or not including
-     * ghost atoms.
+     * Adjust size of values (only increases, never frees).
+     *
+     * Uses SFINAE to differenciate behavior between values of Order.
+     * Order > 1 then the size of the property is directly taken
+     * from the manager.
+     * Order == 0 then the size of the property is 1.
+     * Order == 1 then the size of the property depends on the bolean
+     * exclude_ghosts. By default it is set to false so that property size is
+     * always larger than what could be needed.
      */
-    template <bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
-    size_t get_validated_property_length() {
-      return this->get_manager().size_with_ghosts();
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ > 1), int> = 0>
+    void resize() {
+      size_t new_size{this->base_manager.nb_clusters(Order)};
+      this->values.resize(new_size);
     }
 
-    /**
-     * This function is used for sizing the Property for `Order > 1`. At this
-     * `Order` the notion of ghosts does not exist. _Ghost pairs_ do not exist.
-     */
-    template <bool T = IsOrderOne, std::enable_if_t<not(T), int> = 0>
-    size_t get_validated_property_length() {
-      return this->base_manager.nb_clusters(Order);
+    //! Adjust size of values (only increases, never frees).
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 0), int> = 0>
+    void resize() {
+      this->values.resize(1);
     }
 
-    /**
-     * This function is used for sizing the Property for `Order == 0`. It is
-     * always 1 in this case.
-     */
-    // template <bool T = (Order == 0), std::enable_if_t<T, int> = 0>
-    // size_t get_validated_property_length() {
-    //   return 1;
-    // }
+    //! Adjust size of values (only increases, never frees).
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 1), int> = 0>
+    void resize() {
+      size_t new_size{this->exclude_ghosts
+                          ? this->get_manager().size()
+                          : this->get_manager().size_with_ghosts()};
+      this->values.resize(new_size);
+    }
 
     inline size_t size() const { return this->values.size(); }
 

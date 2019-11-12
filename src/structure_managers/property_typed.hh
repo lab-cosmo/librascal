@@ -154,12 +154,12 @@ namespace rascal {
    * plus ghosts.
    */
   template <typename T, size_t Order_, size_t PropertyLayer, class Manager>
-  class TypedPropertyBase : public PropertyBase {
+  class TypedProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using Value_t = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = Manager;
-    using Self_t = TypedPropertyBase<T, Order_, PropertyLayer, Manager>;
+    using Self_t = TypedProperty<T, Order_, PropertyLayer, Manager>;
     using traits = typename Manager::traits;
     using Matrix_t = math::Matrix_t;
 
@@ -167,37 +167,36 @@ namespace rascal {
     using reference = typename Value_t::reference;
 
     constexpr static size_t Order{Order_};
+    constexpr static bool IsOrderOne{Order == 1};
 
-   protected:
-    //! protected constructor to force use of TypedProperty instead
-    TypedPropertyBase(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
-                      std::string metadata = "no metadata")
+    TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
+                      std::string metadata = "no metadata",
+                      bool exclude_ghosts = false)
         : Parent{static_cast<StructureManagerBase &>(manager),
                  nb_row,
                  nb_col,
                  Order,
                  PropertyLayer,
                  metadata},
-          type_id{typeid(Self_t).name()} {}
+          type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
 
-   public:
     //! Default constructor
-    TypedPropertyBase() = delete;
+    TypedProperty() = delete;
 
     //! Copy constructor
-    TypedPropertyBase(const TypedPropertyBase & other) = delete;
+    TypedProperty(const TypedProperty & other) = delete;
 
     //! Move constructor
-    TypedPropertyBase(TypedPropertyBase && other) = default;
+    TypedProperty(TypedProperty && other) = default;
 
     //! Destructor
-    virtual ~TypedPropertyBase() = default;
+    virtual ~TypedProperty() = default;
 
     //! Copy assignment operator
-    TypedPropertyBase & operator=(const TypedPropertyBase & other) = delete;
+    TypedProperty & operator=(const TypedProperty & other) = delete;
 
     //! Move assignment operator
-    TypedPropertyBase & operator=(TypedPropertyBase && other) = default;
+    TypedProperty & operator=(TypedProperty && other) = default;
 
     /* ---------------------------------------------------------------------- */
     //! return runtime info about the stored (e.g., numerical) type
@@ -209,26 +208,40 @@ namespace rascal {
     }
 
     /**
-     * This function is only valid for `Order == 1` and where the user has a
-     * choice of sizing the `Property` for either including or not including
-     * ghost atoms.
-     */
-    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 1), int> = 0>
-    size_t get_validated_property_length() {
-      return this->get_manager().size_with_ghosts();
-    }
-
-    /**
-     * This function is used for sizing the Property for `Order > 1`. At this
-     * `Order` the notion of ghosts does not exist. _Ghost pairs_ do not exist.
+     * Adjust size of values (only increases, never frees).
+     *
+     * Uses SFINAE to differenciate behavior between values of Order.
+     * Order > 1 then the size of the property is directly taken
+     * from the manager.
+     * Order == 0 then the size of the property is 1.
+     * Order == 1 then the size of the property depends on the bolean
+     * exclude_ghosts. By default it is set to false so that property size is
+     * always larger than what could be needed.
      */
     template <size_t Order__ = Order, std::enable_if_t<(Order__ > 1), int> = 0>
-    size_t get_validated_property_length() {
-      return this->base_manager.nb_clusters(Order);
+    void resize() {
+      auto n_components = this->get_nb_comp();
+      size_t new_size = this->base_manager.nb_clusters(Order) * n_components;
+      this->values.resize(new_size);
     }
 
-    //! resizes the underlying storage
-    virtual void resize() = 0;
+    //! Adjust size of values (only increases, never frees).
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 0), int> = 0>
+    void resize() {
+      auto n_components = this->get_nb_comp();
+      this->values.resize(n_components);
+    }
+
+    //! Adjust size of values (only increases, never frees).
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 1), int> = 0>
+    void resize() {
+      const auto n_components{this->get_nb_comp()};
+      const size_t new_size{(this->exclude_ghosts
+                                 ? this->get_manager().size()
+                                 : this->get_manager().size_with_ghosts()) *
+                            n_components};
+      this->values.resize(new_size);
+    }
 
     /**
      * Fill sequence, used for *_cluster_indices initialization
@@ -323,91 +336,12 @@ namespace rascal {
    protected:
     std::string type_id;
     std::vector<T> values{};  //!< storage for properties
-  };
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Typed ``property`` class definition, inherits from the base property
-   * class
-   */
-  template <typename T, size_t Order_, size_t PropertyLayer, class Manager>
-  class TypedProperty
-      : public TypedPropertyBase<T, Order_, PropertyLayer, Manager> {
-   public:
-    using Parent = TypedPropertyBase<T, Order_, PropertyLayer, Manager>;
-    using Value_t = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
-    using Manager_t = Manager;
-    using Self_t = TypedPropertyBase<T, Order_, PropertyLayer, Manager>;
-    using traits = typename Manager::traits;
-    using Matrix_t = math::Matrix_t;
-
-    using value_type = typename Value_t::value_type;
-    using reference = typename Value_t::reference;
-
-    constexpr static size_t Order{Order_};
-
-    //!  constructor
-    TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
-                  std::string metadata = "no metadata")
-        : Parent{manager, nb_row, nb_col, metadata} {}
-
-    //! Move constructor
-    TypedProperty(TypedProperty && other) = default;
-
-    virtual ~TypedProperty() = default;
-
-    //! Adjust size of values (only increases, never frees)
-    inline void resize() final {
-      auto n_components = this->get_nb_comp();
-      size_t new_size = this->base_manager.nb_clusters(Order) * n_components;
-      this->values.resize(new_size);
-    }
-  };
-
-  /* ---------------------------------------------------------------------- */
-  /**
-   * Typed ``property`` specialised for atom properties (extra storage for
-   * whether or not to exclude ghosts)
-   */
-  template <typename T, size_t PropertyLayer, class Manager>
-  class TypedProperty<T, 1, PropertyLayer, Manager>
-      : public TypedPropertyBase<T, 1, PropertyLayer, Manager> {
-   public:
-    constexpr static Dim_t Order{1};
-    using Parent = TypedPropertyBase<T, 1, PropertyLayer, Manager>;
-    using Value_t = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
-    using Manager_t = Manager;
-    using Self_t = TypedProperty<T, 1, PropertyLayer, Manager>;
-    using traits = typename Manager::traits;
-    using Matrix_t = math::Matrix_t;
-
-    using value_type = typename Value_t::value_type;
-    using reference = typename Value_t::reference;
-
-    //! constructor for atom properties with optional ghost exclusion
-    TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
-                  std::string metadata = "no metadata",
-                  bool exclude_ghosts = false)
-        : Parent{manager, nb_row, nb_col, metadata}, exclude_ghosts{
-                                                         exclude_ghosts} {}
-
-    //! Move constructor
-    TypedProperty(TypedProperty && other) = default;
-
-    virtual ~TypedProperty() = default;
-
-    //! Adjust size of values (only increases, never frees)
-    inline void resize() final {
-      const auto n_components{this->get_nb_comp()};
-      const size_t new_size{(this->exclude_ghosts
-                                 ? this->get_manager().size()
-                                 : this->get_manager().size_with_ghosts()) *
-                            n_components};
-      this->values.resize(new_size);
-    }
-
-   protected:
+    /**
+     * boolean deciding on including the ghost atoms in the sizing of the
+     * property when Order == 1
+     */
     const bool exclude_ghosts;
+
   };
 
 }  // namespace rascal

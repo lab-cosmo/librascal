@@ -481,6 +481,33 @@ namespace rascal {
       }
     }
 
+    // /**
+    //  * Get a atom property of a given name, possibly excluding ghosts. Create it
+    //  * if it does not exist.
+    //  *
+    //  * @tparam UserProperty_t full type of the property to return
+    //  *
+    //  * @param name name of the property to get
+    //  *
+    //  * @throw runtime_error if UserProperty_t is not compatible with property
+    //  * of the given name
+    //  */
+    // std::shared_ptr<UserProperty_t>
+    // get_property_ptr(const std::string & name,
+    //                  const bool & exclude_ghosts = false,
+    //                  const std::string & metadata = "no metadata") {
+    //   if (this->has_property(name)) {
+    //     auto property{this->get_property(name)};
+    //     UserProperty_t::check_compatibility(*property);
+    //     return std::static_pointer_cast<UserProperty_t>(property);
+    //   } else {
+    //     auto property{std::make_shared<UserProperty_t>(
+    //         this->implementation(), metadata, exclude_ghosts)};
+    //     this->register_property(property, name);
+    //     return property;
+    //   }
+    // }
+
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>
     get_property(const std::string & name) const {
