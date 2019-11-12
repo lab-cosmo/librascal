@@ -226,12 +226,6 @@
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
-<dt id="_CPPv4N6rascal8internal18RadialContribution18RadialContributionERK8Hypers_t">
-<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1afa3299b16da6cab87fd8c5a6bcb46bf3"></span><code class="sig-name descname">RadialContribution</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal18RadialContribution18RadialContributionERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Constructor. </p>
-</dd></dl>
-
-<dl class="function">
 <dt id="_CPPv4N6rascal8internal18RadialContribution19set_hyperparametersERK8Hypers_t">
 <span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a386d15fbbca6fe167f620a14c616d8eb"></span>void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal18RadialContribution19set_hyperparametersERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Set hyperparameters. <dl class="simple">
@@ -244,22 +238,34 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="_CPPv4I_18AtomicSmearingTypeEN6rascal8internal18RadialContribution20compute_contributionE8Matrix_tKdKd">
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a937a6ec4141ea54010c9fd8009a7c22e"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute_contribution</code><span class="sig-paren">(</span><em class="property">const</em> double <em>distance</em>, <em class="property">const</em> double <em>sigma</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_18AtomicSmearingTypeEN6rascal8internal18RadialContribution20compute_contributionE8Matrix_tKdKd" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Define the contribution from a neighbour atom to the expansion without requiring a cluster object so it can be used with the interpolator. </p>
+</dd></dl>
+
+<dl class="function">
 <dt id="_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE">
-<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a44cd0dba69d0c5d126a5f04a46bfeb37"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />Vector_Ref <code class="sig-name descname">compute_center_contribution</code><span class="sig-paren">(</span>ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_center_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_center_contribution::Layer">Layer</a>&gt; &amp;<em>center</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a44cd0dba69d0c5d126a5f04a46bfeb37"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal10Vector_RefE" title="rascal::Vector_Ref">Vector_Ref</a> <code class="sig-name descname">compute_center_contribution</code><span class="sig-paren">(</span>ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_center_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_center_contribution::Layer">Layer</a>&gt; &amp;<em>center</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>define the contribution from the central atom to the expansion </p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE">
-<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a25fe92b95e2cc3b9a7a6aea7f4449ada"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />Matrix_Ref <code class="sig-name descname">compute_neighbour_contribution</code><span class="sig-paren">(</span>double <em>distance</em>, ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4N6rascal8internal18RadialContribution27compute_center_contributionEd">
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a9dc46d68c483f4aadba9a96dd58bd035"></span><a class="reference internal" href="#_CPPv4N6rascal10Vector_RefE" title="rascal::Vector_Ref">Vector_Ref</a> <code class="sig-name descname">compute_center_contribution</code><span class="sig-paren">(</span>double <em>fac_a</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal18RadialContribution27compute_center_contributionEd" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>define the contribution from the central atom to the expansion </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a0c973751d6733ea79cbeb75a109a1622"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal10Matrix_RefE" title="rascal::Matrix_Ref">Matrix_Ref</a> <code class="sig-name descname">compute_neighbour_contribution</code><span class="sig-paren">(</span><em class="property">const</em> double <em>distance</em>, <em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>define the contribution from a neighbour atom to the expansion </p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE">
-<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a6082b3c26a30febaa2a88d797814c9c7"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />Matrix_Ref <code class="sig-name descname">compute_neighbour_derivative</code><span class="sig-paren">(</span>double <em>distance</em>, ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Layer">Layer</a>&gt;&amp;<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1ac39ed06793eb3087138274b4b297a6e6"></span>template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal10Matrix_RefE" title="rascal::Matrix_Ref">Matrix_Ref</a> <code class="sig-name descname">compute_neighbour_derivative</code><span class="sig-paren">(</span><em class="property">const</em> double <em>distance</em>, <em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Layer">Layer</a>&gt;&amp;<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Compute the radial derivative of the neighbour contribution</p>
-<p>Note that you <em>must</em> call <a class="reference internal" href="#structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a25fe92b95e2cc3b9a7a6aea7f4449ada"><span class="std std-ref">compute_neighbour_contribution()</span></a> first to populate the relevant arrays!</p>
+<p>Note that you <em>must</em> call <a class="reference internal" href="#structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a0c973751d6733ea79cbeb75a109a1622"><span class="std std-ref">compute_neighbour_contribution()</span></a> first to populate the relevant arrays!</p>
 <p>The derivative is taken with respect to the pair distance, <span class="math notranslate nohighlight">\(r_{ij}\)</span>. In order to get the radial component of the gradient, remember to multiply by the direction vector <span class="math notranslate nohighlight">\( \renewcommand{\vec}[1]{\mathbf{#1}} \hat{\vec{r}_{ij}} \)</span> (and not the vector itself), since <div class="math notranslate nohighlight">
 \[ \let\grad\nabla \grad_{\vec{r}_i} f(r_{ij}) = \frac{\dd f}{\dd r_{ij}} \frac{- \vec{r}_{ij}}{r_{ij}} = \frac{\dd f}{\dd r_{ij}} -\hat{\vec{r}_{ij}}. \]</div>
 </p>
@@ -298,7 +304,7 @@
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv4N6rascal8internal18RadialContribution18RadialContributionERK8Hypers_t">
-<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1DVR_01_4_1a501f466b0b53a8f4a8d5bdc109cfa98e"></span><code class="sig-name descname">RadialContribution</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><br /></dt>
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1DVR_01_4_1a501f466b0b53a8f4a8d5bdc109cfa98e"></span><code class="sig-name descname">RadialContribution</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal18RadialContribution18RadialContributionERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Constructor. </p>
 </dd></dl>
 
@@ -346,20 +352,20 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE">
-<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1DVR_01_4_1a5245ab65c09d7f7a2362de31688d0d69"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />Vector_Ref <code class="sig-name descname">compute_center_contribution</code><span class="sig-paren">(</span>ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_center_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_center_contribution::Layer">Layer</a>&gt; &amp;<em>center</em><span class="sig-paren">)</span><br /></dt>
+<dt id="_CPPv4N6rascal8internal18RadialContribution27compute_center_contributionEKd">
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1DVR_01_4_1ae14999fdb33b8b215bc8c30550f15fbc"></span><a class="reference internal" href="#_CPPv4N6rascal10Vector_RefE" title="rascal::Vector_Ref">Vector_Ref</a> <code class="sig-name descname">compute_center_contribution</code><span class="sig-paren">(</span><em class="property">const</em> double <em>fac_a</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal18RadialContribution27compute_center_contributionEKd" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>define the contribution from the central atom to the expansion </p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE">
-<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1DVR_01_4_1accb5eed7e41e5632c1e51265566b3e9c"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />Matrix_Ref <code class="sig-name descname">compute_neighbour_contribution</code><span class="sig-paren">(</span>double <em>distance</em>, ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span><br /></dt>
+<dt id="_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1DVR_01_4_1affe0115228070bd4102a83c5320c425c"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal10Matrix_RefE" title="rascal::Matrix_Ref">Matrix_Ref</a> <code class="sig-name descname">compute_neighbour_contribution</code><span class="sig-paren">(</span><em class="property">const</em> double <em>distance</em>, <em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span><br /></dt>
 <dd><p>define the contribution from a neighbour atom to the expansion </p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE">
-<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1DVR_01_4_1ab0868cd14e45fe97ac82ba8ffa24bd2f"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />Matrix_Ref <code class="sig-name descname">compute_neighbour_derivative</code><span class="sig-paren">(</span>double, ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Layer">Layer</a>&gt;&amp;<span class="sig-paren">)</span><br /></dt>
+<dt id="_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1DVR_01_4_1a7b63207b33e8cab6eefb32c71800d00c"></span>template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal10Matrix_RefE" title="rascal::Matrix_Ref">Matrix_Ref</a> <code class="sig-name descname">compute_neighbour_derivative</code><span class="sig-paren">(</span><em class="property">const</em> double, <em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Layer">Layer</a>&gt;&amp;<span class="sig-paren">)</span><br /></dt>
 <dd><p>Compute the radial derivative of the neighbour contribution</p>
 <p></p>
 </dd></dl>
@@ -463,20 +469,20 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager">
-<span class="target" id="classrascal_1_1CalculatorSphericalExpansion_1a550b59ad20276030f0a3acf958244b8c"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">FcType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RadialType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">SmearingType</code>, class <code class="sig-name descname">StructureManager</code>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::is_proper_iterator&lt;<a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="rascal::CalculatorSphericalExpansion::compute_loop::StructureManager">StructureManager</a>&gt;::value, int&gt; = 0&gt;<br />void <code class="sig-name descname">compute_loop</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="rascal::CalculatorSphericalExpansion::compute_loop::StructureManager">StructureManager</a> &amp;<em>managers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>loop over a collection of manangers if it is an iterator. Or just call <a class="reference internal" href="#classrascal_1_1CalculatorSphericalExpansion_1a519613fda6c9ae92ed157e7ef81b3019"><span class="std std-ref">compute_impl()</span></a> if it’s a single manager (see below) </p>
+<dt id="_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager">
+<span class="target" id="classrascal_1_1CalculatorSphericalExpansion_1a830c37a4bd68011eb9efa3c12580a457"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">FcType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RadialType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">SmearingType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a> <code class="sig-name descname">OptType</code>, class <code class="sig-name descname">StructureManager</code>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::is_proper_iterator&lt;<a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="rascal::CalculatorSphericalExpansion::compute_loop::StructureManager">StructureManager</a>&gt;::value, int&gt; = 0&gt;<br />void <code class="sig-name descname">compute_loop</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="rascal::CalculatorSphericalExpansion::compute_loop::StructureManager">StructureManager</a> &amp;<em>managers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>loop over a collection of manangers if it is an iterator. Or just call <a class="reference internal" href="#classrascal_1_1CalculatorSphericalExpansion_1a547a01ac5ddf951067a904b7647c39a7"><span class="std std-ref">compute_impl()</span></a> if it’s a single manager (see below) </p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0_NSt11enable_if_tIXnot(internal::is_proper_iterator&lt;-StructureManager-&gt;::value)EiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager">
-<span class="target" id="classrascal_1_1CalculatorSphericalExpansion_1a6ab9cd737d28a241d7fb004b5e2be022"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">FcType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RadialType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">SmearingType</code>, class <code class="sig-name descname">StructureManager</code>, std::enable_if_t&lt;not(internal::is_proper_iterator&lt; StructureManager &gt;::value), int&gt; = 0&gt;<br />void <code class="sig-name descname">compute_loop</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0_NSt11enable_if_tIXnot(internal::is_proper_iterator&lt; StructureManager &gt;::value)EiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="rascal::CalculatorSphericalExpansion::compute_loop::StructureManager">StructureManager</a> &amp;<em>manager</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0_NSt11enable_if_tIXnot(internal::is_proper_iterator<-StructureManager->::value)EiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIXnot(internal::is_proper_iterator&lt;-StructureManager-&gt;::value)EiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager">
+<span class="target" id="classrascal_1_1CalculatorSphericalExpansion_1a078934ae0a7109347ead85b6c41c6da7"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">FcType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RadialType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">SmearingType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a> <code class="sig-name descname">OptType</code>, class <code class="sig-name descname">StructureManager</code>, std::enable_if_t&lt;not(internal::is_proper_iterator&lt; StructureManager &gt;::value), int&gt; = 0&gt;<br />void <code class="sig-name descname">compute_loop</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIXnot(internal::is_proper_iterator&lt; StructureManager &gt;::value)EiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="rascal::CalculatorSphericalExpansion::compute_loop::StructureManager">StructureManager</a> &amp;<em>manager</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIXnot(internal::is_proper_iterator<-StructureManager->::value)EiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>single manager case </p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0EN6rascal28CalculatorSphericalExpansion12compute_implEvNSt10shared_ptrI16StructureManagerEE">
-<span class="target" id="classrascal_1_1CalculatorSphericalExpansion_1a519613fda6c9ae92ed157e7ef81b3019"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">FcType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RadialType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">SmearingType</code>, class <code class="sig-name descname">StructureManager</code>&gt;<br />void <code class="sig-name descname">compute_impl</code><span class="sig-paren">(</span>std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0EN6rascal28CalculatorSphericalExpansion12compute_implEvNSt10shared_ptrI16StructureManagerEE" title="rascal::CalculatorSphericalExpansion::compute_impl::StructureManager">StructureManager</a>&gt; <em>manager</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0EN6rascal28CalculatorSphericalExpansion12compute_implEvNSt10shared_ptrI16StructureManagerEE" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0EN6rascal28CalculatorSphericalExpansion12compute_implEvNSt10shared_ptrI16StructureManagerEE">
+<span class="target" id="classrascal_1_1CalculatorSphericalExpansion_1a547a01ac5ddf951067a904b7647c39a7"></span>template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">FcType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RadialType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">SmearingType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a> <code class="sig-name descname">OptType</code>, class <code class="sig-name descname">StructureManager</code>&gt;<br />void <code class="sig-name descname">compute_impl</code><span class="sig-paren">(</span>std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0EN6rascal28CalculatorSphericalExpansion12compute_implEvNSt10shared_ptrI16StructureManagerEE" title="rascal::CalculatorSphericalExpansion::compute_impl::StructureManager">StructureManager</a>&gt; <em>manager</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0EN6rascal28CalculatorSphericalExpansion12compute_implEvNSt10shared_ptrI16StructureManagerEE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Compute the spherical exansion given several options. </p>
 <p>Compute the spherical expansion </p>
 </dd></dl>
@@ -953,6 +959,56 @@ Eigen)matrix, sized <span class="math notranslate nohighlight">\(m_\text{max}\)<
 
 <dl class="type">
 <dt>
+<em class="property">using </em><code class="sig-name descname">IntpScalarUniformCubicSpline</code> = <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::InterpolatorScalarUniformCubicSpline&lt;<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math18RefinementMethod_tE" title="rascal::math::RefinementMethod_t">RefinementMethod_t</a>::Exponential&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">IntpScalarUniformCubicSplineRelativeError</code> = <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::InterpolatorScalarUniformCubicSpline&lt;<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math18RefinementMethod_tE" title="rascal::math::RefinementMethod_t">RefinementMethod_t</a>::Exponential, <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::ErrorMethod&lt;<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetric_tE" title="rascal::math::ErrorMetric_t">ErrorMetric_t</a>::Relative&gt;&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">IntpMatrixUniformCubicSpline</code> = <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::InterpolatorMatrixUniformCubicSpline&lt;<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math18RefinementMethod_tE" title="rascal::math::RefinementMethod_t">RefinementMethod_t</a>::Exponential&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">interpolator_fixtures</code> = boost::mpl::list&lt;InterpolatorFixture&lt;<a class="reference internal" href="#_CPPv4N6rascal28IntpScalarUniformCubicSplineE" title="rascal::IntpScalarUniformCubicSpline">IntpScalarUniformCubicSpline</a>&gt;, InterpolatorFixture&lt;<a class="reference internal" href="#_CPPv4N6rascal41IntpScalarUniformCubicSplineRelativeErrorE" title="rascal::IntpScalarUniformCubicSplineRelativeError">IntpScalarUniformCubicSplineRelativeError</a>&gt;, InterpolatorFixture&lt;<a class="reference internal" href="#_CPPv4N6rascal28IntpMatrixUniformCubicSplineE" title="rascal::IntpMatrixUniformCubicSpline">IntpMatrixUniformCubicSpline</a>&gt;&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">Vector_t</code> = <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">Matrix_t</code> = <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">Vector_Ref</code> = <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">Matrix_Ref</code> = <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">AbsoluteErrorMethod</code> = <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::ErrorMethod&lt;<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetric_tE" title="rascal::math::ErrorMetric_t">ErrorMetric_t</a>::Absolute&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">RelativeErrorMethod</code> = <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::ErrorMethod&lt;<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetric_tE" title="rascal::math::ErrorMetric_t">ErrorMetric_t</a>::Relative&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
 <em class="property">using </em><code class="sig-name descname">atom_vector_property_fixtures_with_ghosts</code> = OrderOnePropertyBoostList::type_with_ghosts<br /></dt>
 <dd></dd></dl>
 
@@ -1062,6 +1118,16 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title
 <dl class="function">
 <dt>
 template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">Type</code>&gt;<br />auto <code class="sig-name descname">downcast_radial_integral</code><span class="sig-paren">(</span><em class="property">const</em> std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal22RadialContributionBaseE" title="rascal::internal::RadialContributionBase">RadialContributionBase</a>&gt; &amp;<em>radial_integral</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RBT</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a> <code class="sig-name descname">OT</code>, class <code class="sig-name descname">Hypers</code>&gt;<br />auto <code class="sig-name descname">make_radial_integral_handler</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0EN6rascal28make_radial_integral_handlerEDaRK6Hypers" title="rascal::make_radial_integral_handler::Hypers">Hypers</a> &amp;<em>basis_hypers</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RBT</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a> <code class="sig-name descname">OT</code>&gt;<br />auto <code class="sig-name descname">downcast_radial_integral_handler</code><span class="sig-paren">(</span><em class="property">const</em> std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal22RadialContributionBaseE" title="rascal::internal::RadialContributionBase">RadialContributionBase</a>&gt; &amp;<em>radial_integral</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -1566,6 +1632,71 @@ template&lt;typename <code class="sig-name descname">FunctionProvider_t</code>, 
 
 <dl class="function">
 <dt>
+<code class="sig-name descname">BOOST_AUTO_TEST_SUITE</code><span class="sig-paren">(</span>MathInterpolatorTests<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>interpolator_constructor_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal21interpolator_fixturesE" title="rascal::interpolator_fixtures">interpolator_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>functions_interpolator_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal21interpolator_fixturesE" title="rascal::interpolator_fixtures">interpolator_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>hyp1f1_interpolator_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal21interpolator_fixturesE" title="rascal::interpolator_fixtures">interpolator_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE</code><span class="sig-paren">(</span>radial_contribution_test, InterpolatorFixture&lt;<a class="reference internal" href="#_CPPv4N6rascal28IntpScalarUniformCubicSplineE" title="rascal::IntpScalarUniformCubicSpline">IntpScalarUniformCubicSpline</a>&gt;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>functions_derivative_interpolator_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal21interpolator_fixturesE" title="rascal::interpolator_fixtures">interpolator_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE</code><span class="sig-paren">(</span>radial_contribution_matrix_interpolator_test, InterpolatorFixture&lt;<a class="reference internal" href="#_CPPv4N6rascal28IntpMatrixUniformCubicSplineE" title="rascal::IntpMatrixUniformCubicSpline">IntpMatrixUniformCubicSpline</a>&gt;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">static</em> double <code class="sig-name descname">convert_to_scalar</code><span class="sig-paren">(</span><em class="property">const</em> double <em>x</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">static</em> double <code class="sig-name descname">convert_to_scalar</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> &amp;<em>mat</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">ErrorMethod</code>, class <code class="sig-name descname">Interpolator</code>&gt;<br /><em class="property">static</em> double <code class="sig-name descname">compute_intp_error</code><span class="sig-paren">(</span>std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal18compute_intp_errorEdRNSt10shared_ptrI12InterpolatorEENSt8functionIFddEEERKN4math10Vector_RefE" title="rascal::compute_intp_error::Interpolator">Interpolator</a>&gt; &amp;<em>intp</em>, std::function&lt;double<span class="sig-paren">(</span>double<span class="sig-paren">)</span>&gt; <em>ref_func</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>ref_points</em>, <span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">ErrorMethod</code>, class <code class="sig-name descname">Interpolator</code>&gt;<br /><em class="property">static</em> double <code class="sig-name descname">compute_intp_derivative_error</code><span class="sig-paren">(</span><em class="property">const</em> std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29compute_intp_derivative_errorEdRKNSt10shared_ptrI12InterpolatorEENSt8functionIFddEEERKN4math10Vector_RefE" title="rascal::compute_intp_derivative_error::Interpolator">Interpolator</a>&gt; &amp;<em>intp</em>, std::function&lt;double<span class="sig-paren">(</span>double<span class="sig-paren">)</span>&gt; <em>derivative_func</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>ref_points</em>, <span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">ErrorMethod</code>, class <code class="sig-name descname">Interpolator</code>&gt;<br /><em class="property">static</em> double <code class="sig-name descname">compute_intp_finite_diff_error</code><span class="sig-paren">(</span><em class="property">const</em> std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal30compute_intp_finite_diff_errorEdRKNSt10shared_ptrI12InterpolatorEENSt8functionIFddEEERKN4math10Vector_RefE" title="rascal::compute_intp_finite_diff_error::Interpolator">Interpolator</a>&gt; &amp;<em>intp</em>, std::function&lt;double<span class="sig-paren">(</span>double<span class="sig-paren">)</span>&gt; <em>derivative_func</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>ref_points</em>, <span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">ErrorMethod</code>&gt;<br /><em class="property">static</em> double <code class="sig-name descname">compute_finite_diff_error</code><span class="sig-paren">(</span>std::function&lt;double<span class="sig-paren">(</span>double<span class="sig-paren">)</span>&gt; <em>func</em>, std::function&lt;double<span class="sig-paren">(</span>double<span class="sig-paren">)</span>&gt; <em>derivative_func</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>ref_points</em>, <span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 <code class="sig-name descname">BOOST_AUTO_TEST_SUITE</code><span class="sig-paren">(</span>MathBesselFirstKindTests<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -1702,6 +1833,16 @@ template&lt;typename <code class="sig-name descname">FunctionProvider_t</code>, 
 <dl class="function">
 <dt>
 <code class="sig-name descname">BOOST_FIXTURE_TEST_CASE</code><span class="sig-paren">(</span>meta_data_test, BlockSparsePropertyFixture&lt;1&gt;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_AUTO_TEST_SUITE</code><span class="sig-paren">(</span>RascalUtilityTests<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_AUTO_TEST_CASE</code><span class="sig-paren">(</span>combine_enums_test<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2978,17 +3119,17 @@ DenseRef_t <code class="sig-name descname">operator()</code><span class="sig-par
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">CallerLayer</code>&gt;<br />Matrix_t <code class="sig-name descname">get_dense_row</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;Order, <a class="reference internal" href="#_CPPv4I_6size_tEN6rascal19BlockSparseProperty13get_dense_rowE8Matrix_tRK13ClusterRefKeyI5Order11CallerLayerE" title="rascal::BlockSparseProperty::get_dense_row::CallerLayer">CallerLayer</a>&gt; &amp;<em>id</em><span class="sig-paren">)</span><br /></dt>
+template&lt;size_t <code class="sig-name descname">CallerLayer</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a> <code class="sig-name descname">get_dense_row</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;Order, <a class="reference internal" href="#_CPPv4I_6size_tEN6rascal19BlockSparseProperty13get_dense_rowE8Matrix_tRK13ClusterRefKeyI5Order11CallerLayerE" title="rascal::BlockSparseProperty::get_dense_row::CallerLayer">CallerLayer</a>&gt; &amp;<em>id</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">fill_dense_feature_matrix</code><span class="sig-paren">(</span>Eigen::Ref&lt;Matrix_t&gt; <em>features</em>, <em class="property">const</em> Keys_t &amp;<em>all_keys</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+void <code class="sig-name descname">fill_dense_feature_matrix</code><span class="sig-paren">(</span>Eigen::Ref&lt;<a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a>&gt; <em>features</em>, <em class="property">const</em> Keys_t &amp;<em>all_keys</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-Matrix_t <code class="sig-name descname">get_features</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a> <code class="sig-name descname">get_features</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3003,7 +3144,7 @@ size_t <code class="sig-name descname">get_nb_item</code><span class="sig-paren"
 
 <dl class="function">
 <dt>
-Matrix_t <code class="sig-name descname">dot</code><span class="sig-paren">(</span>Self_t &amp;<em>B</em><span class="sig-paren">)</span><br /></dt>
+<a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a> <code class="sig-name descname">dot</code><span class="sig-paren">(</span>Self_t &amp;<em>B</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -3336,17 +3477,17 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title
 
 <dl class="function">
 <dt>
-template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">FcType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RadialType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">SmearingType</code>, class <code class="sig-name descname">StructureManager</code>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::is_proper_iterator&lt;<a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="rascal::CalculatorSphericalExpansion::compute_loop::StructureManager">StructureManager</a>&gt;::value, int&gt; = 0&gt;<br />void <code class="sig-name descname">compute_loop</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="rascal::CalculatorSphericalExpansion::compute_loop::StructureManager">StructureManager</a> &amp;<em>managers</em><span class="sig-paren">)</span><br /></dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">FcType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RadialType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">SmearingType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a> <code class="sig-name descname">OptType</code>, class <code class="sig-name descname">StructureManager</code>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::is_proper_iterator&lt;<a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="rascal::CalculatorSphericalExpansion::compute_loop::StructureManager">StructureManager</a>&gt;::value, int&gt; = 0&gt;<br />void <code class="sig-name descname">compute_loop</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="rascal::CalculatorSphericalExpansion::compute_loop::StructureManager">StructureManager</a> &amp;<em>managers</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">FcType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RadialType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">SmearingType</code>, class <code class="sig-name descname">StructureManager</code>, std::enable_if_t&lt;not(internal::is_proper_iterator&lt; StructureManager &gt;::value), int&gt; = 0&gt;<br />void <code class="sig-name descname">compute_loop</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0_NSt11enable_if_tIXnot(internal::is_proper_iterator&lt; StructureManager &gt;::value)EiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="rascal::CalculatorSphericalExpansion::compute_loop::StructureManager">StructureManager</a> &amp;<em>manager</em><span class="sig-paren">)</span><br /></dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">FcType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RadialType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">SmearingType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a> <code class="sig-name descname">OptType</code>, class <code class="sig-name descname">StructureManager</code>, std::enable_if_t&lt;not(internal::is_proper_iterator&lt; StructureManager &gt;::value), int&gt; = 0&gt;<br />void <code class="sig-name descname">compute_loop</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIXnot(internal::is_proper_iterator&lt; StructureManager &gt;::value)EiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager" title="rascal::CalculatorSphericalExpansion::compute_loop::StructureManager">StructureManager</a> &amp;<em>manager</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">FcType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RadialType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">SmearingType</code>, class <code class="sig-name descname">StructureManager</code>&gt;<br />void <code class="sig-name descname">compute_impl</code><span class="sig-paren">(</span>std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE0EN6rascal28CalculatorSphericalExpansion12compute_implEvNSt10shared_ptrI16StructureManagerEE" title="rascal::CalculatorSphericalExpansion::compute_impl::StructureManager">StructureManager</a>&gt; <em>manager</em><span class="sig-paren">)</span><br /></dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">FcType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RadialType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">SmearingType</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a> <code class="sig-name descname">OptType</code>, class <code class="sig-name descname">StructureManager</code>&gt;<br />void <code class="sig-name descname">compute_impl</code><span class="sig-paren">(</span>std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0EN6rascal28CalculatorSphericalExpansion12compute_implEvNSt10shared_ptrI16StructureManagerEE" title="rascal::CalculatorSphericalExpansion::compute_impl::StructureManager">StructureManager</a>&gt; <em>manager</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -3880,7 +4021,7 @@ template&lt;typename <code class="sig-name descname">T</code>&gt;<br />ManagerPt
 
 <dl class="function">
 <dt>
-template&lt;class <code class="sig-name descname">Calculator</code>&gt;<br />Matrix_t <code class="sig-name descname">get_features</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal17ManagerCollection12get_featuresE8Matrix_tRK10Calculator" title="rascal::ManagerCollection::get_features::Calculator">Calculator</a> &amp;<em>calculator</em><span class="sig-paren">)</span><br /></dt>
+template&lt;class <code class="sig-name descname">Calculator</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a> <code class="sig-name descname">get_features</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal17ManagerCollection12get_featuresE8Matrix_tRK10Calculator" title="rascal::ManagerCollection::get_features::Calculator">Calculator</a> &amp;<em>calculator</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -5400,6 +5541,11 @@ bool <code class="sig-name descname">get_update_status</code><span class="sig-pa
 <code class="sig-name descname">DVR</code><br /></dt>
 <dd></dd></dl>
 
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">End_</code><br /></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="enum">
@@ -5419,6 +5565,32 @@ bool <code class="sig-name descname">get_update_status</code><span class="sig-pa
 <dl class="enumerator">
 <dt>
 <code class="sig-name descname">Radial</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">End_</code><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="enum">
+<dt>
+<em class="property">enum </em><code class="sig-name descname">OptimizationType</code><br /></dt>
+<dd><p><em>Values:</em></p>
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">None</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">Interpolator</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">End_</code><br /></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -5466,6 +5638,11 @@ bool <code class="sig-name descname">get_update_status</code><span class="sig-pa
 <dl class="function">
 <dt>
 Eigen::ArrayXd <code class="sig-name descname">precompute_wigner_3js</code><span class="sig-paren">(</span>size_t <em>max_angular</em>, bool <em>inversion_symmetry</em>, size_t <em>lambda</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">constexpr</em> size_t <code class="sig-name descname">combine_to_radial_contribution_type</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <em>basis_type</em>, <a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <em>smearing_type</em>, <a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a> <em>opt_type</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -5556,6 +5733,26 @@ template&lt;class <code class="sig-name descname">Manager</code>, size_t <code c
 <dl class="function">
 <dt>
 template&lt;class <code class="sig-name descname">Manager</code>, size_t <code class="sig-name descname">Order</code>, size_t... <code class="sig-name descname">Indices</code>&gt;<br />std::array&lt;int, <a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal18species_aggregatorENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7Manager" title="rascal::internal::species_aggregator::Order">Order</a>&gt; <code class="sig-name descname">species_aggregator</code><span class="sig-paren">(</span><em class="property">const</em> std::array&lt;int, <a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal18species_aggregatorENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7Manager" title="rascal::internal::species_aggregator::Order">Order</a>&gt; &amp;<em>index_array</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal18species_aggregatorENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7Manager" title="rascal::internal::species_aggregator::Manager">Manager</a> &amp;<em>manager</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">Enum</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">enum_value</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN6rascal8internal10enum_valueE6size_t4Enum" title="rascal::internal::enum_value::Enum">Enum</a> <em>e</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">Enum</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">enum_size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">Enum1</code>, typename <code class="sig-name descname">Enum2</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">combine_enums</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00EN6rascal8internal13combine_enumsE6size_t5Enum15Enum2" title="rascal::internal::combine_enums::Enum1">Enum1</a> <em>e1</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal8internal13combine_enumsE6size_t5Enum15Enum2" title="rascal::internal::combine_enums::Enum2">Enum2</a> <em>e2</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">Enum1</code>, typename <code class="sig-name descname">Enum2</code>, typename <code class="sig-name descname">Enum3</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">combine_enums</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I000EN6rascal8internal13combine_enumsE6size_t5Enum15Enum25Enum3" title="rascal::internal::combine_enums::Enum1">Enum1</a> <em>e1</em>, <a class="reference internal" href="#_CPPv4I000EN6rascal8internal13combine_enumsE6size_t5Enum15Enum25Enum3" title="rascal::internal::combine_enums::Enum2">Enum2</a> <em>e2</em>, <a class="reference internal" href="#_CPPv4I000EN6rascal8internal13combine_enumsE6size_t5Enum15Enum25Enum3" title="rascal::internal::combine_enums::Enum3">Enum3</a> <em>e3</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -6186,6 +6383,12 @@ template&lt;&gt;<br />bool <code class="sig-name descname">operator!=</code><spa
 
 <dl class="class">
 <dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <code class="sig-name descname">RBT</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">RadialContribution</code><br /></dt>
+<dd><p>Subclassed by rascal::internal::RadialContributionHandler&lt; RBT, AtomicSmearingType::Constant, OptimizationType::Interpolator &gt;, rascal::internal::RadialContributionHandler&lt; RBT, AtomicSmearingType::Constant, OptimizationType::None &gt;</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
 template&lt;&gt;<br /><em class="property">struct </em><code class="sig-name descname">RadialContribution</code>&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a>::DVR&gt; : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal22RadialContributionBaseE" title="rascal::internal::RadialContributionBase">RadialContributionBase</a><br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
@@ -6226,17 +6429,17 @@ void <code class="sig-name descname">set_hyperparameters</code><span class="sig-
 
 <dl class="function">
 <dt>
-template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />Vector_Ref <code class="sig-name descname">compute_center_contribution</code><span class="sig-paren">(</span>ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_center_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_center_contribution::Layer">Layer</a>&gt; &amp;<em>center</em><span class="sig-paren">)</span><br /></dt>
+<a class="reference internal" href="#_CPPv4N6rascal10Vector_RefE" title="rascal::Vector_Ref">Vector_Ref</a> <code class="sig-name descname">compute_center_contribution</code><span class="sig-paren">(</span><em class="property">const</em> double <em>fac_a</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />Matrix_Ref <code class="sig-name descname">compute_neighbour_contribution</code><span class="sig-paren">(</span>double <em>distance</em>, ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span><br /></dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal10Matrix_RefE" title="rascal::Matrix_Ref">Matrix_Ref</a> <code class="sig-name descname">compute_neighbour_contribution</code><span class="sig-paren">(</span><em class="property">const</em> double <em>distance</em>, <em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />Matrix_Ref <code class="sig-name descname">compute_neighbour_derivative</code><span class="sig-paren">(</span>double, ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Layer">Layer</a>&gt;&amp;<span class="sig-paren">)</span><br /></dt>
+template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal10Matrix_RefE" title="rascal::Matrix_Ref">Matrix_Ref</a> <code class="sig-name descname">compute_neighbour_derivative</code><span class="sig-paren">(</span><em class="property">const</em> double, <em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Layer">Layer</a>&gt;&amp;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -6249,27 +6452,32 @@ template&lt;&gt;<br /><em class="property">struct </em><code class="sig-name des
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt>
-<code class="sig-name descname">RadialContribution</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
 void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />Vector_Ref <code class="sig-name descname">compute_center_contribution</code><span class="sig-paren">(</span>ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_center_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_center_contribution::Layer">Layer</a>&gt; &amp;<em>center</em><span class="sig-paren">)</span><br /></dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute_contribution</code><span class="sig-paren">(</span><em class="property">const</em> double <em>distance</em>, <em class="property">const</em> double <em>sigma</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />Matrix_Ref <code class="sig-name descname">compute_neighbour_contribution</code><span class="sig-paren">(</span>double <em>distance</em>, ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span><br /></dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal10Vector_RefE" title="rascal::Vector_Ref">Vector_Ref</a> <code class="sig-name descname">compute_center_contribution</code><span class="sig-paren">(</span>ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_center_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_center_contribution::Layer">Layer</a>&gt; &amp;<em>center</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />Matrix_Ref <code class="sig-name descname">compute_neighbour_derivative</code><span class="sig-paren">(</span>double <em>distance</em>, ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefdR13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Layer">Layer</a>&gt;&amp;<span class="sig-paren">)</span><br /></dt>
+<a class="reference internal" href="#_CPPv4N6rascal10Vector_RefE" title="rascal::Vector_Ref">Vector_Ref</a> <code class="sig-name descname">compute_center_contribution</code><span class="sig-paren">(</span>double <em>fac_a</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <code class="sig-name descname">AST</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal10Matrix_RefE" title="rascal::Matrix_Ref">Matrix_Ref</a> <code class="sig-name descname">compute_neighbour_contribution</code><span class="sig-paren">(</span><em class="property">const</em> double <em>distance</em>, <em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_contribution::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal10Matrix_RefE" title="rascal::Matrix_Ref">Matrix_Ref</a> <code class="sig-name descname">compute_neighbour_derivative</code><span class="sig-paren">(</span><em class="property">const</em> double <em>distance</em>, <em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Layer">Layer</a>&gt;&amp;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -6661,6 +6869,62 @@ std::vector&lt;std::vector&lt;double&gt;&gt; <code class="sig-name descname">pos
 
 </div>
 <div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Enums</p>
+<dl class="enum">
+<dt>
+<em class="property">enum </em><code class="sig-name descname">RefinementMethod_t</code><br /></dt>
+<dd><p><em>Values:</em></p>
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">Exponential</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">Linear</code><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="enum">
+<dt>
+<em class="property">enum </em><code class="sig-name descname">InterpolationMethod_t</code><br /></dt>
+<dd><p><em>Values:</em></p>
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">CubicSplineScalarUniform</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">CubicSplineVectorUniform</code><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="enum">
+<dt>
+<em class="property">enum </em><code class="sig-name descname">ErrorMetric_t</code><br /></dt>
+<dd><p><em>Values:</em></p>
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">Absolute</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">Relative</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">AbsoluteRelative</code><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Functions</p>
 <dl class="function">
 <dt>
@@ -6761,6 +7025,65 @@ double <code class="sig-name descname">pow</code><span class="sig-paren">(</span
 <dd></dd></dl>
 
 </div>
+<dl class="class">
+<dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetric_tE" title="rascal::math::ErrorMetric_t">ErrorMetric_t</a> <code class="sig-name descname">Metric</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">ErrorMethod</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Functions</p>
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Eigen_Ref</code>&gt;<br /><em class="property">static</em> bool <code class="sig-name descname">is_error_below_bound</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal4math11ErrorMethod20is_error_below_boundEbRK9Eigen_RefRK9Eigen_Refd" title="rascal::math::ErrorMethod::is_error_below_bound::Eigen_Ref">Eigen_Ref</a>&amp;, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal4math11ErrorMethod20is_error_below_boundEbRK9Eigen_RefRK9Eigen_Refd" title="rascal::math::ErrorMethod::is_error_below_bound::Eigen_Ref">Eigen_Ref</a>&amp;, double<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+template&lt;&gt;<br /><em class="property">struct </em><code class="sig-name descname">ErrorMethod</code>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetric_tE" title="rascal::math::ErrorMetric_t">ErrorMetric_t</a>::Absolute&gt;<br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Functions</p>
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Eigen_Ref</code>&gt;<br /><em class="property">static</em> double <code class="sig-name descname">compute_global_error</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal4math11ErrorMethod20compute_global_errorEdRK9Eigen_RefRK9Eigen_Ref" title="rascal::math::ErrorMethod::compute_global_error::Eigen_Ref">Eigen_Ref</a> &amp;<em>values</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal4math11ErrorMethod20compute_global_errorEdRK9Eigen_RefRK9Eigen_Ref" title="rascal::math::ErrorMethod::compute_global_error::Eigen_Ref">Eigen_Ref</a> &amp;<em>references</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">static</em> <a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">compute_pointwise_error</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>values</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>references</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">static</em> <a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute_pointwise_error</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a> &amp;<em>values</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a> &amp;<em>references</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+template&lt;&gt;<br /><em class="property">struct </em><code class="sig-name descname">ErrorMethod</code>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetric_tE" title="rascal::math::ErrorMetric_t">ErrorMetric_t</a>::Relative&gt;<br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Functions</p>
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Eigen_Ref</code>&gt;<br /><em class="property">static</em> double <code class="sig-name descname">compute_global_error</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal4math11ErrorMethod20compute_global_errorEdRK9Eigen_RefRK9Eigen_Ref" title="rascal::math::ErrorMethod::compute_global_error::Eigen_Ref">Eigen_Ref</a> &amp;<em>values</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal4math11ErrorMethod20compute_global_errorEdRK9Eigen_RefRK9Eigen_Ref" title="rascal::math::ErrorMethod::compute_global_error::Eigen_Ref">Eigen_Ref</a> &amp;<em>references</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">static</em> <a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">compute_pointwise_error</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>values</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>references</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">static</em> <a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute_pointwise_error</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a> &amp;<em>values</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a> &amp;<em>references</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
 <dl class="class">
 <dt>
 <em class="property">class </em><code class="sig-name descname">Hyp1f1</code><br /></dt>
@@ -6870,6 +7193,184 @@ void <code class="sig-name descname">calc_direct</code><span class="sig-paren">(
 
 <dl class="class">
 <dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math21InterpolationMethod_tE" title="rascal::math::InterpolationMethod_t">InterpolationMethod_t</a> <code class="sig-name descname">Type</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">InterpolationMethod</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+void <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+void <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a>&amp;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+double <code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;, double, int<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+double <code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a>&amp;, double, int<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+template&lt;&gt;<br /><em class="property">class </em><code class="sig-name descname">InterpolationMethod</code>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math21InterpolationMethod_tE" title="rascal::math::InterpolationMethod_t">InterpolationMethod_t</a>::CubicSplineScalarUniform&gt;<br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+double <code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>grid</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>evaluated_grid</em>, double <em>x</em>, int <em>nearest_grid_index_to_x</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+double <code class="sig-name descname">interpolate_derivative</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>grid</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>evaluated_grid</em>, double <em>x</em>, int <em>nearest_grid_index_to_x</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+template&lt;&gt;<br /><em class="property">class </em><code class="sig-name descname">InterpolationMethod</code>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math21InterpolationMethod_tE" title="rascal::math::InterpolationMethod_t">InterpolationMethod_t</a>::CubicSplineVectorUniform&gt;<br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>grid</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a> &amp;<em>evaluated_grid</em>, double <em>x</em>, int <em>nearest_grid_index_to_x</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">interpolate_derivative</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>grid</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a> &amp;<em>evaluated_grid</em>, double <em>x</em>, int <em>nearest_grid_index_to_x</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+template&lt;class <code class="sig-name descname">InterpolationMethod</code>, class <code class="sig-name descname">UniformGridRational</code>, class <code class="sig-name descname">ErrorMethod</code>&gt;<br /><em class="property">class </em><code class="sig-name descname">Interpolator</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<code class="sig-name descname">Interpolator</code><span class="sig-paren">(</span>double <em>x1</em>, double <em>x2</em>, double <em>error_bound</em>, int <em>max_grid_points</em>, int <em>initial_degree_of_fineness</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">Interpolator</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <em>grid</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math18RefinementMethod_tE" title="rascal::math::RefinementMethod_t">RefinementMethod_t</a> <code class="sig-name descname">RefinementMethod</code>, class <code class="sig-name descname">ErrorMethod_</code> = <a class="reference internal" href="#_CPPv4IEN6rascal4math11ErrorMethodIN13ErrorMetric_t8AbsoluteEEE" title="rascal::math::ErrorMethod&lt;ErrorMetric_t::Absolute&gt;">ErrorMethod</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetric_tE" title="rascal::math::ErrorMetric_t">ErrorMetric_t</a>::Absolute&gt;&gt;<br /><em class="property">class </em><code class="sig-name descname">InterpolatorMatrixUniformCubicSpline</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::Interpolator&lt;<a class="reference internal" href="#_CPPv4IEN6rascal4math19InterpolationMethodIN21InterpolationMethod_t24CubicSplineVectorUniformEEE" title="rascal::math::InterpolationMethod&lt;InterpolationMethod_t::CubicSplineVectorUniform&gt;">InterpolationMethod</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math21InterpolationMethod_tE" title="rascal::math::InterpolationMethod_t">InterpolationMethod_t</a>::CubicSplineVectorUniform&gt;, UniformGridRational&lt;<a class="reference internal" href="#_CPPv4I_18RefinementMethod_t0EN6rascal4math36InterpolatorMatrixUniformCubicSplineE" title="rascal::math::InterpolatorMatrixUniformCubicSpline::RefinementMethod">RefinementMethod</a>&gt;, <a class="reference internal" href="#_CPPv4I_18RefinementMethod_t0EN6rascal4math36InterpolatorMatrixUniformCubicSplineE" title="rascal::math::InterpolatorMatrixUniformCubicSpline::ErrorMethod_">ErrorMethod_</a>&gt;<br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<code class="sig-name descname">InterpolatorMatrixUniformCubicSpline</code><span class="sig-paren">(</span>std::function&lt;<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a><span class="sig-paren">(</span>double<span class="sig-paren">)</span>&gt; <em>function</em>, double <em>x1</em>, double <em>x2</em>, double <em>error_bound</em>, int <em>cols</em>, int <em>rows</em>, int <em>max_grid_points</em> = 100000, int <em>initial_degree_of_fineness</em> = 5, bool <em>clamped_boundary_conditions</em> = false, double <em>dfx1</em> = 0, double <em>dfx2</em> = 0, <span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">InterpolatorMatrixUniformCubicSpline</code><span class="sig-paren">(</span>std::function&lt;double<span class="sig-paren">(</span>double<span class="sig-paren">)</span>&gt; <em>function</em>, double <em>x1</em>, double <em>x2</em>, double <em>error_bound</em>, int <em>max_grid_points</em> = 100000, int <em>initial_degree_of_fineness</em> = 5, bool <em>clamped_boundary_conditions</em> = false, double <em>dfx1</em> = 0, double <em>dfx2</em> = 0, <span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">InterpolatorMatrixUniformCubicSpline</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <em>grid</em>, <a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <em>evaluated_grid</em>, int <em>cols</em>, int <em>rows</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">interpolate</code><span class="sig-paren">(</span>double <em>x</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">interpolate_derivative</code><span class="sig-paren">(</span>double <em>x</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">interpolate_to_vector</code><span class="sig-paren">(</span>double <em>x</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">interpolate_to_vector</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>points</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">interpolate_to_vector_derivative</code><span class="sig-paren">(</span><em class="property">const</em> double <em>x</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">interpolate_to_vector_derivative</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>points</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">interpolate_dummy</code><span class="sig-paren">(</span><em class="property">const</em> double <em>x</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="property">const</em> double <em>x</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>grid</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math18RefinementMethod_tE" title="rascal::math::RefinementMethod_t">RefinementMethod_t</a> <code class="sig-name descname">RefinementMethod</code>, class <code class="sig-name descname">ErrorMethod_</code> = <a class="reference internal" href="#_CPPv4IEN6rascal4math11ErrorMethodIN13ErrorMetric_t8AbsoluteEEE" title="rascal::math::ErrorMethod&lt;ErrorMetric_t::Absolute&gt;">ErrorMethod</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetric_tE" title="rascal::math::ErrorMetric_t">ErrorMetric_t</a>::Absolute&gt;&gt;<br /><em class="property">class </em><code class="sig-name descname">InterpolatorScalarUniformCubicSpline</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::Interpolator&lt;<a class="reference internal" href="#_CPPv4IEN6rascal4math19InterpolationMethodIN21InterpolationMethod_t24CubicSplineScalarUniformEEE" title="rascal::math::InterpolationMethod&lt;InterpolationMethod_t::CubicSplineScalarUniform&gt;">InterpolationMethod</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math21InterpolationMethod_tE" title="rascal::math::InterpolationMethod_t">InterpolationMethod_t</a>::CubicSplineScalarUniform&gt;, UniformGridRational&lt;<a class="reference internal" href="#_CPPv4I_18RefinementMethod_t0EN6rascal4math36InterpolatorScalarUniformCubicSplineE" title="rascal::math::InterpolatorScalarUniformCubicSpline::RefinementMethod">RefinementMethod</a>&gt;, <a class="reference internal" href="#_CPPv4I_18RefinementMethod_t0EN6rascal4math36InterpolatorScalarUniformCubicSplineE" title="rascal::math::InterpolatorScalarUniformCubicSpline::ErrorMethod_">ErrorMethod_</a>&gt;<br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<code class="sig-name descname">InterpolatorScalarUniformCubicSpline</code><span class="sig-paren">(</span>std::function&lt;double<span class="sig-paren">(</span>double<span class="sig-paren">)</span>&gt; <em>function</em>, double <em>x1</em>, double <em>x2</em>, double <em>error_bound</em>, int <em>max_grid_points</em> = 100000, int <em>initial_degree_of_fineness</em> = 5, bool <em>clamped_boundary_conditions</em> = false, double <em>dfx1</em> = 0, double <em>dfx2</em> = 0, <span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">InterpolatorScalarUniformCubicSpline</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <em>grid</em>, <a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <em>evaluated_grid</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+double <code class="sig-name descname">interpolate</code><span class="sig-paren">(</span>double <em>x</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+double <code class="sig-name descname">interpolate_derivative</code><span class="sig-paren">(</span>double <em>x</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
 <em class="property">class </em><code class="sig-name descname">ModifiedSphericalBessel</code><br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
@@ -6959,6 +7460,42 @@ void <code class="sig-name descname">compute_spherical_harmonics_derivatives</co
 <dl class="function">
 <dt>
 <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a> <code class="sig-name descname">get_harmonics_derivatives</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math18RefinementMethod_tE" title="rascal::math::RefinementMethod_t">RefinementMethod_t</a> <code class="sig-name descname">Method</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">UniformGridRational</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">compute_grid</code><span class="sig-paren">(</span>double, double, int<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">compute_test_grid</code><span class="sig-paren">(</span>double, double, int<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-name descname">UniformSearchMethod</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+void <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>grid</em>, size_t <em>nb_support_points</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+int <code class="sig-name descname">search</code><span class="sig-paren">(</span>double <em>x</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;<span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 </div>

@@ -230,6 +230,7 @@
                  <span class="n">cutoff_function_type</span><span class="o">=</span><span class="s2">&quot;ShiftedCosine&quot;</span><span class="p">,</span>
                  <span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;PowerSpectrum&quot;</span><span class="p">,</span> <span class="n">inversion_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">radial_basis</span><span class="o">=</span><span class="s2">&quot;GTO&quot;</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">optimization_args</span><span class="o">=</span><span class="p">{},</span>
                  <span class="n">cutoff_function_parameters</span><span class="o">=</span><span class="nb">dict</span><span class="p">()):</span>
         <span class="sd">&quot;&quot;&quot;Construct a SphericalExpansion representation</span>
 
@@ -258,8 +259,35 @@
                 <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;AA&#39;</span>
             <span class="p">),</span>
         <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;type&#39;</span> <span class="ow">in</span> <span class="n">optimization_args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Spline&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;accuracy&#39;</span> <span class="ow">in</span> <span class="n">optimization_args</span><span class="p">:</span>
+                    <span class="n">accuracy</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">accuracy</span> <span class="o">=</span> <span class="mf">1e-8</span>
+                <span class="k">if</span> <span class="s1">&#39;range&#39;</span> <span class="ow">in</span> <span class="n">optimization_args</span><span class="p">:</span>
+                    <span class="n">spline_range</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s1">&#39;range&#39;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># TODO(felix) remove this when there is a check for the</span>
+                    <span class="c1"># distance for the usage of the interpolator in the</span>
+                    <span class="c1"># RadialContribution</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: default parameter for spline range is used.&quot;</span><span class="p">)</span>
+                    <span class="n">spline_range</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">interaction_cutoff</span><span class="p">)</span>
+                <span class="n">optimization_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Spline&#39;</span><span class="p">,</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="n">accuracy</span><span class="p">,</span> <span class="s1">&#39;range&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;begin&#39;</span><span class="p">:</span> <span class="n">spline_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="n">spline_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]}}</span>
+            <span class="k">elif</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
+                <span class="n">optimization_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;None&#39;</span><span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Optimization type is not known. Switching to no&#39;</span>
+                      <span class="s1">&#39; optimization.&#39;</span><span class="p">)</span>
+                <span class="n">optimization_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;None&#39;</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">optimization_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;None&#39;</span><span class="p">})</span>
+
         <span class="n">radial_contribution</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="nb">type</span><span class="o">=</span><span class="n">radial_basis</span><span class="p">,</span>
+            <span class="n">optimization</span><span class="o">=</span><span class="n">optimization_args</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">update_hyperparameters</span><span class="p">(</span><span class="n">cutoff_function</span><span class="o">=</span><span class="n">cutoff_function</span><span class="p">,</span>

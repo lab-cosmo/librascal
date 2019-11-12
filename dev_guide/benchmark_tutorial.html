@@ -1,0 +1,514 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>How to run benchmark for different parameters &mdash; Rascal 0.0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/rascal.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API reference" href="../reference/index.html" />
+    <link rel="prev" title="Coding Convention" href="coding-convention.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Rascal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whitepaper.html">Goals &amp; Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SOAP.html">SOAP Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../representation/representations.html">Representations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../neighbor_list/neighbor-list-manager.html">Neighbor List Manager</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="developer.html">Developer’s guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="how_to_contribute.html">How to contribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how_to_misc.html">How to edit the documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how_to_misc.html#how-to-edit-a-readme">How to edit a Readme</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how_to_add_representation.html">How to add a new representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how_to_test.html">How to write a test</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how_to_test.html#how-to-run-the-tests">How to run the tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coding-convention.html">Coding Convention</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">How to run benchmark for different parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-add-a-new-benchmark">How to add a new benchmark</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rascal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="developer.html">Developer’s guide</a> &raquo;</li>
+        
+      <li>How to run benchmark for different parameters</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/dev_guide/benchmark_tutorial.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="contents local topic" id="contents">
+<span id="benchmark-tutorial"></span><ul class="simple">
+<li><p><a class="reference internal" href="#how-to-run-benchmark-for-different-parameters" id="id1">How to run benchmark for different parameters</a></p></li>
+<li><p><a class="reference internal" href="#how-to-add-a-new-benchmark" id="id2">How to add a new benchmark</a></p></li>
+</ul>
+</div>
+<div class="section" id="how-to-run-benchmark-for-different-parameters">
+<h1><a class="toc-backref" href="#id1">How to run benchmark for different parameters</a><a class="headerlink" href="#how-to-run-benchmark-for-different-parameters" title="Permalink to this headline">¶</a></h1>
+<p>To change the parameters of the benchmarks you have to go the corresponding
+header file of the benchmark and change the parameters. Here an example for the
+interpolator</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * Dataset for testing the spherical representations with interpolator. To</span>
+<span class="cm"> * avoid code repetition `SphericalRepresentationBFixture` inherits from</span>
+<span class="cm"> * `InterpolatorBFixture`. Because of the inheritance, all data parameters of</span>
+<span class="cm"> * required by `InterpolatorBFixture` are also required by</span>
+<span class="cm"> * `SphericalRepresentationBFixture`. But since not all of these parameters</span>
+<span class="cm"> * are needed for the `SphericalRepresentationBFixture` we give them dummy</span>
+<span class="cm"> * values.</span>
+<span class="cm"> */</span>
+<span class="k">struct</span> <span class="nl">SphericalDataset</span> <span class="p">:</span> <span class="k">public</span> <span class="n">BaseInterpolatorDataset</span> <span class="p">{</span>
+  <span class="k">using</span> <span class="n">SupportedFunc</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">BaseInterpolatorDataset</span><span class="o">::</span><span class="n">SupportedFunc</span><span class="p">;</span>
+  <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="nf">data</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">{</span><span class="s">&quot;nbs_iterations&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">0</span><span class="p">}},</span>             <span class="c1">// dummy</span>
+        <span class="p">{</span><span class="s">&quot;ranges&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)}},</span>  <span class="c1">// dummy</span>
+        <span class="p">{</span><span class="s">&quot;log_error_bounds&quot;</span><span class="p">,</span> <span class="p">{</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">12</span><span class="p">}},</span>
+        <span class="p">{</span><span class="s">&quot;func_names&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">SupportedVecFunc</span><span class="o">::</span><span class="n">Dummy</span><span class="p">}},</span>  <span class="c1">// dummy</span>
+        <span class="p">{</span><span class="s">&quot;radial_angular&quot;</span><span class="p">,</span>
+         <span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">)}},</span>
+        <span class="p">{</span><span class="s">&quot;random&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nb">true</span><span class="p">}},</span>  <span class="c1">// dummy</span>
+        <span class="p">{</span><span class="s">&quot;filenames&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;../tests/reference_data/small_molecule.json&quot;</span><span class="p">}},</span>
+        <span class="c1">// please use only one file because google benchmark cant put strings</span>
+        <span class="c1">// into their `Counter`, therefore the filename cannot be printed</span>
+        <span class="c1">// {&quot;filenames&quot;, {&quot;../tests/reference_data/methane.json&quot;}},</span>
+        <span class="p">{</span><span class="s">&quot;cutoffs&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">4</span><span class="p">}}};</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>At the beginning of the header file there should be a description of each
+parameter.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * Interpolator Dataset explanation</span>
+<span class="cm"> *  static const json data = {</span>
+<span class="cm"> *      // number of usages of the interpolation function on a grid, note this</span>
+<span class="cm"> * is independent from the google benchmark parameter</span>
+<span class="cm"> *      {&quot;nbs_iterations&quot;, {1e3}},</span>
+<span class="cm"> *</span>
+<span class="cm"> *      // the range of the interpolator</span>
+<span class="cm"> *      {&quot;ranges&quot;, {std::make_pair(0, 16)}},</span>
+<span class="cm"> *</span>
+<span class="cm"> *      // the log function of the interpolator parameter error bound</span>
+<span class="cm"> *      {&quot;log_error_bounds&quot;, {-8}},</span>
+<span class="cm"> *</span>
+<span class="cm"> *      // the function used to interpolate</span>
+<span class="cm"> *      {&quot;func_names&quot;, {SupportedVecFunc::RadialContribution}},</span>
+<span class="cm"> *</span>
+<span class="cm"> *      // the parameters for `RadialContribution` or `SphericalExpansion` a</span>
+<span class="cm"> *      // pair of (max_radial, max_angular)</span>
+<span class="cm"> *      {&quot;radial_angular&quot;, {std::make_pair(3, 3)},</span>
+<span class="cm"> *</span>
+<span class="cm"> *      // if the grid used for interpolation should be generated randomly,</span>
+<span class="cm"> *      // this is performance critical when using the search method hunt or</span>
+<span class="cm"> *      // locate in the interpolator</span>
+<span class="cm"> *      {&quot;random&quot;, {true}},</span>
+<span class="cm"> *</span>
+<span class="cm"> *      // parameter only for `SphericalExpansion`</span>
+<span class="cm"> *      {&quot;filenames&quot;,</span>
+<span class="cm"> *       {&quot;reference_data/CaCrP2O7_mvc-11955_symmetrized.json&quot;}},</span>
+<span class="cm"> *</span>
+<span class="cm"> *      // parameter only for `SphericalExpansion` AdaptorStrict cutoff</span>
+<span class="cm"> *      {&quot;cutoffs&quot;, {8}}};</span>
+<span class="cm"> */</span>
+</pre></div>
+</div>
+<p>After changing the parameters, recompile the code and run the benchmark.
+Because google benchmark is currently not able to print benchmark results
+of type string, string parameters like <code class="docutils literal notranslate"><span class="pre">filename</span></code> should be also kept to a
+single value to be sure which parameter is used. For other parameters different
+combinations can be printed.</p>
+</div>
+<div class="section" id="how-to-add-a-new-benchmark">
+<h1><a class="toc-backref" href="#id2">How to add a new benchmark</a><a class="headerlink" href="#how-to-add-a-new-benchmark" title="Permalink to this headline">¶</a></h1>
+<p>This file is a skeleton file for writing your own benchmark. It explains the
+core featuers of google benchmarks and our own added functionalities in the
+<code class="docutils literal notranslate"><span class="pre">performance/benchmarks/benchmarks.hh</span></code> file.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * file  benchmark_tutorial.cc</span>
+<span class="cm"> *</span>
+<span class="cm"> * @author  Alexander Goscinski &lt;alexander.goscinski@epfl.ch&gt;</span>
+<span class="cm"> *</span>
+<span class="cm"> * @date   22 August 2019</span>
+<span class="cm"> *</span>
+<span class="cm"> * @brief tutorial how to write a benchmark file</span>
+<span class="cm"> *</span>
+<span class="cm"> * Copyright  2019 Alexander Goscinski, COSMO (EPFL), LAMMM (EPFL)</span>
+<span class="cm"> *</span>
+<span class="cm"> * rascal is free software; you can redistribute it and/or</span>
+<span class="cm"> * modify it under the terms of the GNU Lesser General Public License as</span>
+<span class="cm"> * published by the Free Software Foundation, either version 3, or (at</span>
+<span class="cm"> * your option) any later version.</span>
+<span class="cm"> *</span>
+<span class="cm"> * rascal is distributed in the hope that it will be useful, but</span>
+<span class="cm"> * WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="cm"> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU</span>
+<span class="cm"> * Lesser General Public License for more details.</span>
+<span class="cm"> *</span>
+<span class="cm"> * You should have received a copy of the GNU Lesser General Public License</span>
+<span class="cm"> * along with this software; see the file LICENSE. If not, write to the</span>
+<span class="cm"> * Free Software Foundation, Inc., 59 Temple Place - Suite 330,</span>
+<span class="cm"> * Boston, MA 02111-1307, USA.</span>
+<span class="cm"> */</span>
+
+<span class="cp">#include</span> <span class="cpf">&quot;../performance/benchmarks/benchmarks.hh&quot;</span><span class="cp"></span>
+
+<span class="k">namespace</span> <span class="n">rascal</span> <span class="p">{</span>
+  <span class="cm">/**</span>
+<span class="cm">   * Structure holding the data, the data is created inside a static function,</span>
+<span class="cm">   * because non primitives cannot be static as member variable.</span>
+<span class="cm">   */</span>
+  <span class="k">struct</span> <span class="n">SampleData</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="n">data</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">static</span> <span class="n">json</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{{</span><span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}},</span>
+                          <span class="p">{</span><span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;crystal.json&quot;</span><span class="p">,</span> <span class="s">&quot;cube.json&quot;</span><span class="p">}}};</span>
+      <span class="k">return</span> <span class="n">data</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * We have the naming convention to call fixtures in the benchmarks BFixture</span>
+<span class="cm">   * to potential prevent collision with the tests. All new BFixtures should</span>
+<span class="cm">   * inherit from `BaseBFixture` to inherit a lookup table for the json</span>
+<span class="cm">   * keys in the data json in the Dataset template parameter e.g. &quot;x&quot; and &quot;name&quot;</span>
+<span class="cm">   * in the `SampleData`. According to the json standard a json does have no</span>
+<span class="cm">   * deterministic order, therefore a map has to be built, mapping the json</span>
+<span class="cm">   * keys to the correct position when accesing the json with an index.</span>
+<span class="cm">   */</span>
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Dataset</span><span class="o">&gt;</span>
+  <span class="k">class</span> <span class="nc">MyBFixture</span> <span class="o">:</span> <span class="k">public</span> <span class="n">BaseBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span> <span class="p">{</span>
+   <span class="k">public</span><span class="o">:</span>
+    <span class="k">using</span> <span class="n">Parent</span> <span class="o">=</span> <span class="n">BaseBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="n">MyBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span><span class="p">()</span> <span class="o">:</span> <span class="n">Parent</span><span class="p">()</span> <span class="p">{}</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * By convention we use a setup function which handles the initialization of</span>
+<span class="cm">     * new parameters, it should be invoked at the start of the benchmark.</span>
+<span class="cm">     */</span>
+    <span class="kt">void</span> <span class="n">setup</span><span class="p">(</span><span class="n">benchmark</span><span class="o">::</span><span class="n">State</span> <span class="o">&amp;</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">old_name</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">;</span>
+
+      <span class="c1">// initialize</span>
+      <span class="n">json</span> <span class="n">data</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">::</span><span class="n">data</span><span class="p">();</span>
+      <span class="c1">// lookup takes the indices inside the state and gets parameter x from</span>
+      <span class="c1">// dataset at these indices</span>
+      <span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="k">template</span> <span class="n">lookup</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="n">state</span><span class="p">);</span>
+      <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="k">template</span> <span class="n">lookup</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="n">state</span><span class="p">);</span>
+
+      <span class="c1">// this check tests if the data has actually changed, if it has changed</span>
+      <span class="c1">// then we do the costly initialization.</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">!=</span> <span class="n">old_name</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Some very costly initialization</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Costly initialization.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="kt">int</span> <span class="n">x</span><span class="p">{};</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">{};</span>
+  <span class="p">};</span>
+
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">BFixture</span><span class="o">&gt;</span>
+  <span class="kt">void</span> <span class="n">bm_example</span><span class="p">(</span><span class="n">benchmark</span><span class="o">::</span><span class="n">State</span> <span class="o">&amp;</span> <span class="n">state</span><span class="p">,</span> <span class="n">BFixture</span> <span class="o">&amp;</span> <span class="n">fix</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">fix</span><span class="p">.</span><span class="n">setup</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;bm_example invoked &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">fix</span><span class="p">.</span><span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;, &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">fix</span><span class="p">.</span><span class="n">name</span>
+              <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="c1">//</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">_</span> <span class="p">:</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// do some tests for speed</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * The `all_combinations_of_arguments` function is used to produce all</span>
+<span class="cm">   * combinations from the parameters included in a `Dataset` structure. The</span>
+<span class="cm">   * parameters are accessible in the benchmark function with the benchmark</span>
+<span class="cm">   * state. However, the google benchmark library only allows to give indices as</span>
+<span class="cm">   * parameters. Therefore only combinations of indices are accessible from the</span>
+<span class="cm">   * benchmark state. Furthermore, since a json does not have a deterministic</span>
+<span class="cm">   * order by standard, we cannot directly use the indices to access the data in</span>
+<span class="cm">   * the json. A map has to be built from the json key to the correct position</span>
+<span class="cm">   * when accessing the json with an index. This is done in the `BaseBFixture`.</span>
+<span class="cm">   * Inside the `BaseBFixture class the `lookup` function can be used with the</span>
+<span class="cm">   * data json, the state and the targeted property to access it at the correct</span>
+<span class="cm">   * position.</span>
+<span class="cm">   */</span>
+  <span class="k">auto</span> <span class="n">myfix</span><span class="p">{</span><span class="n">MyBFixture</span><span class="o">&lt;</span><span class="n">SampleData</span><span class="o">&gt;</span><span class="p">()};</span>
+  <span class="n">BENCHMARK_CAPTURE</span><span class="p">(</span><span class="n">bm_example</span><span class="p">,</span> <span class="cm">/* some_name_if_wanted */</span><span class="p">,</span> <span class="n">myfix</span><span class="p">)</span>
+      <span class="o">-&gt;</span><span class="n">Apply</span><span class="p">(</span><span class="n">all_combinations_of_arguments</span><span class="o">&lt;</span><span class="n">SampleData</span><span class="o">&gt;</span><span class="p">);</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * This benchmark should make clear how the different depths of iterations</span>
+<span class="cm">   * work in google benchmark there is the `benchmark_repetitions` flag which</span>
+<span class="cm">   * can be given when executing the benchmark. This parameter controls how</span>
+<span class="cm">   * often each benchmark function is invoked. There are two more non-accessible</span>
+<span class="cm">   * parameters controlling the number of invokes of a benchmark function. One</span>
+<span class="cm">   * controls how often a benchmark is executed per repetition. Simply put, this</span>
+<span class="cm">   * parameter is an additional repetiton of the benchmark function. The other</span>
+<span class="cm">   * parameter controls the number of iterations inside the for-loop on the</span>
+<span class="cm">   * state. These two hidden parameters can be manipulated implicitly with the</span>
+<span class="cm">   * `benchmark_min_time` flag, but google benchmark itself handles how the time</span>
+<span class="cm">   * changes the two parameters. To understand this better, please execute this</span>
+<span class="cm">   * benchmark multiple times with different values.</span>
+<span class="cm">   */</span>
+  <span class="kt">void</span> <span class="nf">BM_StringCompare</span><span class="p">(</span><span class="n">benchmark</span><span class="o">::</span><span class="n">State</span> <span class="o">&amp;</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Preiteration &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s1</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="sc">&#39;-&#39;</span><span class="p">);</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s2</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="sc">&#39;-&#39;</span><span class="p">);</span>
+    <span class="cm">/* We do not print inside the iterations because this value can be seen when</span>
+<span class="cm">     * the benchmarks are run.</span>
+<span class="cm">     */</span>
+    <span class="c1">// BEGIN ITERATION</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">_</span> <span class="p">:</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">benchmark</span><span class="o">::</span><span class="n">DoNotOptimize</span><span class="p">(</span><span class="n">s1</span><span class="p">.</span><span class="n">compare</span><span class="p">(</span><span class="n">s2</span><span class="p">));</span>
+    <span class="p">}</span>  <span class="c1">// END ITERATION</span>
+    <span class="n">state</span><span class="p">.</span><span class="n">SetComplexityN</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * `RangeMultiplier` is the exponential base for all ranges given later by</span>
+<span class="cm">   * `Range` or `Ranges`. The first parameter 1 &lt;&lt; 10 results in parameters</span>
+<span class="cm">   * (1,2,4,8), the second (1,2,4,8,16)</span>
+<span class="cm">   */</span>
+  <span class="n">BENCHMARK</span><span class="p">(</span><span class="n">BM_StringCompare</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">RangeMultiplier</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Range</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">18</span><span class="p">);</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Repetition repeats everything in this case 3 times and calculates</span>
+<span class="cm">   * averages</span>
+<span class="cm">   */</span>
+  <span class="n">BENCHMARK</span><span class="p">(</span><span class="n">BM_StringCompare</span><span class="p">)</span>
+      <span class="o">-&gt;</span><span class="n">RangeMultiplier</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+      <span class="o">-&gt;</span><span class="n">Range</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">18</span><span class="p">)</span>
+      <span class="o">-&gt;</span><span class="n">Repetitions</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Google benchmark can estimate the complexity. To estimate the complexity</span>
+<span class="cm">   * inside the benchmark the parameter determing the size is required.</span>
+<span class="cm">   */</span>
+  <span class="n">BENCHMARK</span><span class="p">(</span><span class="n">BM_StringCompare</span><span class="p">)</span>
+      <span class="o">-&gt;</span><span class="n">RangeMultiplier</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+      <span class="o">-&gt;</span><span class="n">Range</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">18</span><span class="p">)</span>
+      <span class="o">-&gt;</span><span class="n">Complexity</span><span class="p">();</span>
+  <span class="c1">// alternatively an own complexity function can be given</span>
+  <span class="c1">//-&gt;Range(1&lt;&lt;10, 1&lt;&lt;18)-&gt;Complexity([](auto n)-&gt;double{return n;});</span>
+
+<span class="p">}</span>  <span class="c1">// namespace rascal</span>
+<span class="n">BENCHMARK_MAIN</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../reference/index.html" class="btn btn-neutral float-right" title="API reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="coding-convention.html" class="btn btn-neutral float-left" title="Coding Convention" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti,
+Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
