@@ -365,7 +365,6 @@ namespace rascal {
         constexpr size_t previous_order{NextCluster_t::order() - 1};
         auto & next_cluster_indices{
             std::get<previous_order>(manager.cluster_indices_container)};
-
         // keep copying underlying cluster indices, they are not changed
         auto indices{next_cluster.get_cluster_indices()};
         next_cluster_indices.push_back(indices);
