@@ -418,6 +418,7 @@ namespace rascal {
     ~SimplePeriodicNLCCStrictFixture() = default;
 
     const std::vector<std::string> filenames{
+        "reference_data/simple_cubic_8.json",
         "reference_data/diamond_2atom_distorted.json",
         "reference_data/diamond_cubic_distorted.json",
         "reference_data/SiCGe_wurtzite_like.json",

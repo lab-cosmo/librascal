@@ -449,6 +449,7 @@ namespace rascal {
       }
       if (this->compute_gradients) {
         auto ii_pair = center.get_atom_ii();
+        auto atom_i_tag = center.get_atom_tag();
         auto & grad_center_coefficients{
             expansions_coefficients_gradient[ii_pair]};
         auto & soap_center_gradient{soap_vector_gradients[ii_pair]};
@@ -523,8 +524,16 @@ namespace rascal {
               soap_center_gradient_by_species_pair *= math::SQRT_TWO;
             }
 
+
             // Sum the gradients wrt the neighbour atom position
             for (auto neigh : center) {
+              auto && atom_j = neigh.get_atom_j();
+              auto atom_j_tag = atom_j.get_atom_tag();
+              // compute grad contribution only if the neighbour is _not_ an
+              // image of the center
+              if (atom_j_tag == atom_i_tag) {
+                continue;
+              }
               auto & grad_neigh_coefficients{
                   expansions_coefficients_gradient[neigh]};
               auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
@@ -681,6 +690,13 @@ namespace rascal {
 
           // Aaand do the same thing for the gradients wrt neighbouring atoms
           for (auto neigh : center) {
+            auto && atom_j = neigh.get_atom_j();
+            auto atom_j_tag = atom_j.get_atom_tag();
+            // compute grad contribution only if the neighbour is _not_ an
+            // image of the center
+            if (atom_j_tag == atom_i_tag) {
+              continue;
+            }
             auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
             Eigen::Vector3d soap_vector_dot_neigh_gradient{};
             soap_vector_dot_neigh_gradient.setZero();
