@@ -20,7 +20,7 @@ Each adaptor only stores the additional information it generates during construc
 Within librascal we decided to distinguish between two cases for atoms. An atom can be treated as a **center** or as a **ghost**. These two terms are ambiguous because they are used differently in different contexts and they are important for some consideration of what is possible with this library. Before going into the details of adapting atomic structures to a specific use case, we therefore define the two groups:
 
 1. **Ghost** atoms are all atoms which are either masked out or only neighbours, sometimes termed *j-atoms*. These include the newly generated periodic images in the :class:`~AdaptorNeighbourList`.
-2. **Center** atoms are atoms which are to be worked on and whose environments are to be evaluated, i.e. *i-atoms*.
+2. **Center** atoms are atoms which are to be worked with and whose environments are to be evaluated, i.e. *i-atoms*.
 
 The respespective consequences of this definition are further detailed in the classes where they are relevant for the implementation.
 
