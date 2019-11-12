@@ -283,7 +283,7 @@ namespace rascal {
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order__ = Order>
     std::enable_if_t<(Order__ == 1) and (CallerOrder > 1),  // NOLINT
-                            reference>                             // NOLINT
+                     reference>                             // NOLINT
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](
           static_cast<Manager_t &>(this->base_manager)
@@ -310,9 +310,7 @@ namespace rascal {
 
     //! get number of different distinct element in the property
     //! (typically the number of center)
-    size_t get_nb_item() const {
-      return values.size() / this->get_nb_comp();
-    }
+    size_t get_nb_item() const { return values.size() / this->get_nb_comp(); }
 
     /**
      * Accessor for last pushed entry for dynamically sized properties

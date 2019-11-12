@@ -453,7 +453,7 @@ namespace rascal {
       // already precomputed a-factor
 
       Matrix_Ref compute_neighbour_contribution(const double distance,
-                                                       const double fac_a) {
+                                                const double fac_a) {
         using math::pow;
         using std::sqrt;
 

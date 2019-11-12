@@ -178,9 +178,8 @@ namespace rascal {
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
-    int
-    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
-                           size_t index) const {
+    int get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                               size_t index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
@@ -231,8 +230,7 @@ namespace rascal {
      * cluster appears in an iteration
      */
     template <size_t Order>
-    size_t
-    get_offset_impl(const std::array<size_t, Order> & counters) const {
+    size_t get_offset_impl(const std::array<size_t, Order> & counters) const {
       // The static assert with <= is necessary, because the template parameter
       // ``Order`` is one Order higher than the MaxOrder at the current
       // level. The return type of this function is used to build the next Order
