@@ -171,6 +171,7 @@
 <span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="p">(</span><span class="n">NeighbourListFactory</span><span class="p">,</span> <span class="n">is_valid_structure</span><span class="p">,</span>
                    <span class="n">adapt_structure</span><span class="p">,</span> <span class="n">StructureCollectionFactory</span><span class="p">)</span>
 
+
 <span class="k">class</span> <span class="nc">AtomsList</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A wrapper class for a stack of managers precompiled on the C++ side of the</span>
@@ -186,6 +187,7 @@
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frames</span><span class="p">,</span> <span class="n">nl_options</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nl_options</span> <span class="o">=</span> <span class="n">nl_options</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_frames</span> <span class="o">=</span> <span class="n">frames</span>
@@ -209,8 +211,7 @@
                 <span class="n">managers</span><span class="o">.</span><span class="n">add_structures</span><span class="p">(</span><span class="n">structures</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Neighbourlist of structures failed &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot;because: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-
+                                   <span class="o">+</span> <span class="s2">&quot;because: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">managers</span> <span class="o">=</span> <span class="n">managers</span>
 
@@ -220,19 +221,45 @@
     <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">get_dense_feature_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculator</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        -------</span>
 <span class="sd">        calculator : Calculator (an object owning a _representation object)</span>
+
+<span class="sd">        species :  list of atomic number to use for building the dense feature</span>
+<span class="sd">        matrix computed with calculators of name Spherical*</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        represenation_matrix : ndarray</span>
 <span class="sd">            returns the representation bound to the calculator as dense matrix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_dense_feature_matrix</span><span class="p">(</span>
+
+        <span class="k">if</span> <span class="n">species</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span>
                 <span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">keys_list</span> <span class="o">=</span> <span class="n">calculator</span><span class="o">.</span><span class="n">get_keys</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span>
+                <span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">,</span> <span class="n">keys_list</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">X</span>
+
+    <span class="k">def</span> <span class="nf">get_features_by_species</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculator</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        -------</span>
+<span class="sd">        calculator : one of the representation calculators named Spherical*</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        representation_matrix : dict of ndarray</span>
+<span class="sd">            returns a dictionary associating tuples of atomic numbers sorted</span>
+<span class="sd">            alphabetically to the corresponding feature matrices</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_features_by_species</span><span class="p">(</span>
+            <span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">get_neighbourlist</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
@@ -258,6 +285,7 @@
         <span class="n">structure_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">**</span><span class="n">structure</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">structure_list</span>
 
+
 <span class="k">def</span> <span class="nf">sanitize_non_periodic_structure</span><span class="p">(</span><span class="n">structure</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Rascal expects a unit cell that contains all the atoms even if the</span>
@@ -279,17 +307,16 @@
 
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">structure</span><span class="p">[</span><span class="s1">&#39;pbc&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
         <span class="n">cell</span> <span class="o">=</span> <span class="n">structure</span><span class="p">[</span><span class="s1">&#39;cell&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))):</span>
             <span class="n">pos</span> <span class="o">=</span> <span class="n">structure</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">]</span>
-            <span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">pos</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="n">pos</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)])</span>
+            <span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">pos</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">pos</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)])</span>
             <span class="n">bounding_box_lengths</span> <span class="o">=</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">new_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">bounding_box_lengths</span><span class="p">)</span>
             <span class="n">CoM</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">disp</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">bounding_box_lengths</span> <span class="o">-</span> <span class="n">CoM</span>
-            <span class="n">new_pos</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">disp</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span>
+            <span class="n">new_pos</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">disp</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
             <span class="n">structure</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_pos</span>
     <span class="k">return</span> <span class="n">structure</span>
-
 
 
 <span class="k">def</span> <span class="nf">is_ase_Atoms</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
@@ -431,9 +458,9 @@
                            <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">species_select</span><span class="p">),</span>
                            <span class="kc">True</span><span class="p">)</span>
     <span class="n">blacklist_is_str</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
-            <span class="n">and_</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="n">species_blacklist</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">and_</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="n">species_blacklist</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">blacklist_is_int</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
-            <span class="n">and_</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">species_blacklist</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">and_</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">species_blacklist</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">select_is_str</span><span class="p">:</span>
         <span class="n">id_select</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">(),</span> <span class="n">species_select</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">select_is_int</span><span class="p">:</span>
@@ -446,7 +473,7 @@
         <span class="n">id_blacklist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">(),</span> <span class="n">species_blacklist</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Species blacklist must be either all string or all int&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;Species blacklist must be either all string or all int&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="s1">&#39;center_atoms_mask&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
         <span class="c1"># add a default mask</span>
         <span class="k">if</span> <span class="n">species_select</span><span class="p">:</span>

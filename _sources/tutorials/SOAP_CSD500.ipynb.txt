@@ -205,7 +205,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "X = representation.get_dense_feature_matrix(soap).T"
+    "X = representation.get_features
    ]
   },
   {

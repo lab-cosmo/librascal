@@ -249,7 +249,7 @@
             <span class="n">cutoff_smooth_width</span><span class="o">=</span><span class="n">cutoff_smooth_width</span>
         <span class="p">)</span>
         <span class="n">cutoff_function</span> <span class="o">=</span> <span class="n">cutoff_function_dict_switch</span><span class="p">(</span><span class="n">cutoff_function_type</span><span class="p">,</span>
-                                <span class="o">**</span><span class="n">cutoff_function_parameters</span><span class="p">)</span>
+                                                      <span class="o">**</span><span class="n">cutoff_function_parameters</span><span class="p">)</span>
 
         <span class="n">gaussian_density</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="nb">type</span><span class="o">=</span><span class="n">gaussian_sigma_type</span><span class="p">,</span>
@@ -345,7 +345,36 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Only soap_type = RadialSpectrum || &#39;</span>
                              <span class="s1">&#39;PowerSpectrum || BiSpectrum &#39;</span>
-                             <span class="s1">&#39;implemented for now&#39;</span><span class="p">)</span></div></div>
+                             <span class="s1">&#39;implemented for now&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SphericalInvariants.get_keys"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SphericalInvariants.get_keys">[docs]</a>    <span class="k">def</span> <span class="nf">get_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return the proper list of keys used to build the representation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;soap_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RadialSpectrum&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="n">species</span><span class="p">:</span>
+                <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">sp</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;soap_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PowerSpectrum&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">sp1</span> <span class="ow">in</span> <span class="n">species</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">sp2</span> <span class="ow">in</span> <span class="n">species</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">sp1</span> <span class="o">&gt;</span> <span class="n">sp2</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">sp1</span><span class="p">,</span> <span class="n">sp2</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;soap_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;BiSpectrum&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">sp1</span> <span class="ow">in</span> <span class="n">species</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">sp2</span> <span class="ow">in</span> <span class="n">species</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">sp1</span> <span class="o">&gt;</span> <span class="n">sp2</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="k">for</span> <span class="n">sp3</span> <span class="ow">in</span> <span class="n">species</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">sp2</span> <span class="o">&gt;</span> <span class="n">sp3</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">sp1</span><span class="p">,</span> <span class="n">sp2</span><span class="p">,</span> <span class="n">sp3</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Only soap_type = RadialSpectrum || &#39;</span>
+                             <span class="s1">&#39;PowerSpectrum || BiSpectrum &#39;</span>
+                             <span class="s1">&#39;implemented for now&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">keys</span></div></div>
 </pre></div>
 
            </div>

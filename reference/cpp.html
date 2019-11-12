@@ -1916,6 +1916,11 @@ template&lt;class <code class="sig-name descname">Calculator</code>, class <code
 
 <dl class="function">
 <dt>
+template&lt;class <code class="sig-name descname">Calculator</code>, class <code class="sig-name descname">ManagerCollection_t</code>, class <code class="sig-name descname">ManagerCollectionBinder</code>&gt;<br />void <code class="sig-name descname">bind_sparse_feature_matrix_getter</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I000EN6rascal33bind_sparse_feature_matrix_getterEvR23ManagerCollectionBinder" title="rascal::bind_sparse_feature_matrix_getter::ManagerCollectionBinder">ManagerCollectionBinder</a> &amp;<em>manager_collection</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 template&lt;typename <code class="sig-name descname">Manager</code>, template&lt;class&gt; class ...<code class="sig-name descname">Adaptor</code>&gt;<br />void <code class="sig-name descname">bind_structure_manager_collection</code><span class="sig-paren">(</span>py::module &amp;<em>m_str_mng</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -2978,17 +2983,17 @@ template&lt;size_t <code class="sig-name descname">CallerLayer</code>&gt;<br />M
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">fill_dense_feature_matrix</code><span class="sig-paren">(</span>Eigen::Ref&lt;Matrix_t&gt; <em>features</em>, <em class="property">const</em> Keys_t &amp;<em>all_keys</em><span class="sig-paren">)</span><br /></dt>
+void <code class="sig-name descname">fill_dense_feature_matrix</code><span class="sig-paren">(</span>Eigen::Ref&lt;Matrix_t&gt; <em>features</em>, <em class="property">const</em> Keys_t &amp;<em>all_keys</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-Matrix_t <code class="sig-name descname">get_dense_feature_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+Matrix_t <code class="sig-name descname">get_features</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-Keys_t <code class="sig-name descname">get_keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+Keys_t <code class="sig-name descname">get_keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3871,6 +3876,26 @@ size_t <code class="sig-name descname">size</code><span class="sig-paren">(</spa
 <dl class="function">
 <dt>
 template&lt;typename <code class="sig-name descname">T</code>&gt;<br />ManagerPtr_t <code class="sig-name descname">operator[]</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN6rascal17ManagerCollectionixE12ManagerPtr_t1T" title="rascal::ManagerCollection::operator[]::T">T</a> <em>index</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Calculator</code>&gt;<br />Matrix_t <code class="sig-name descname">get_features</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal17ManagerCollection12get_featuresE8Matrix_tRK10Calculator" title="rascal::ManagerCollection::get_features::Calculator">Calculator</a> &amp;<em>calculator</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Calculator</code>&gt;<br />std::string <code class="sig-name descname">get_calculator_name</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal17ManagerCollection19get_calculator_nameENSt6stringERK10Calculatorb" title="rascal::ManagerCollection::get_calculator_name::Calculator">Calculator</a> &amp;<em>calculator</em>, bool <em>is_gradients</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Calculator</code>&gt;<br />auto <code class="sig-name descname">get_keys</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal17ManagerCollection8get_keysEDaRK10Calculatorb" title="rascal::ManagerCollection::get_keys::Calculator">Calculator</a> &amp;<em>calculator</em>, bool <em>is_gradients</em> = false<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Calculator</code>&gt;<br />size_t <code class="sig-name descname">get_number_of_elements</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal17ManagerCollection22get_number_of_elementsE6size_tRK10Calculatorb" title="rascal::ManagerCollection::get_number_of_elements::Calculator">Calculator</a> &amp;<em>calculator</em>, bool <em>is_gradients</em> = false<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -5900,7 +5925,7 @@ template&lt;typename <code class="sig-name descname">Key_List</code>&gt;<br />vo
 
 <dl class="function">
 <dt>
-size_t <code class="sig-name descname">count</code><span class="sig-paren">(</span><em class="property">const</em> key_type &amp;<em>key</em><span class="sig-paren">)</span><br /></dt>
+size_t <code class="sig-name descname">count</code><span class="sig-paren">(</span><em class="property">const</em> key_type &amp;<em>key</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
