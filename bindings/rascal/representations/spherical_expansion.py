@@ -55,12 +55,14 @@ class SphericalExpansion(object):
                  cutoff_function_type="ShiftedCosine",
                  n_species=1, radial_basis="GTO",
                  method='thread', n_workers=1, disable_pbar=False,
+                 optimization_args={},
                  cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
         class documentation
         """
+
         self.name = 'sphericalexpansion'
         self.hypers = dict()
         self.update_hyperparameters(
@@ -82,9 +84,36 @@ class SphericalExpansion(object):
                 unit='A'
             ),
         )
+
+        if 'type' in optimization_args:
+            if optimization_args['type'] == 'Spline':
+                if 'accuracy' in optimization_args:
+                    accuracy = optimization_args['accuracy']
+                else:
+                    accuracy = 1e-8
+                if 'range' in optimization_args:
+                    spline_range = optimization_args['range']
+                else:
+                    # TODO(felix) remove this when there is a check for the
+                    # distance for the usage of the interpolator in the 
+                    # RadialContribution
+                    print("Warning: default parameter for spline range is used.")
+                    spline_range = (0, interaction_cutoff)
+                optimization_args = {'type': 'Spline', 'accuracy': accuracy, 'range': {
+                    'begin': spline_range[0], 'end': spline_range[1]}}
+            elif optimization_args['type'] == 'None':
+                optimization_args = dict({'type': 'None'})
+            else:
+                print('Optimization type is not known. Switching to no'
+                      ' optimization.')
+                optimization_args = dict({'type': 'None'})
+        else:
+            optimization_args = dict({'type': 'None'})
         radial_contribution = dict(
             type=radial_basis,
+            optimization=optimization_args
         )
+
         self.update_hyperparameters(cutoff_function=cutoff_function,
                                     gaussian_density=gaussian_density,
                                     radial_contribution=radial_contribution)

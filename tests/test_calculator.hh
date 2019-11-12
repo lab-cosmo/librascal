@@ -65,7 +65,6 @@ namespace rascal {
 
       for (auto && filename : filenames) {
         for (auto && cutoff : cutoffs) {
-          // std::cout << filename << " " << cutoff << std::endl;
           json parameters;
           json structure{{"filename", filename}};
           json adaptors;
@@ -374,7 +373,13 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> radial_contribution_hypers{
+        {{"type", "GTO"}},
+        {{"type", "GTO"},
+         {"optimization",
+          {{"type", "Spline"},
+           {"accuracy", 1e-5},
+           {"range", {{"begin", 0.}, {"end", 3.}}}}}}};
     std::vector<json> rep_hypers{
         {{"max_radial", 4}, {"max_angular", 2}, {"compute_gradients", true}},
         {{"max_radial", 6}, {"max_angular", 4}, {"compute_gradients", true}}};
@@ -559,8 +564,8 @@ namespace rascal {
     Eigen::Array<double, 1, Eigen::Dynamic>
     grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
-      result = this->radial_integral->template compute_neighbour_derivative<
-          internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
+      result = this->radial_integral->template compute_neighbour_derivative(
+          input_v(0), this->pair);
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;

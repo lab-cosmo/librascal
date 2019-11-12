@@ -1,7 +1,8 @@
 # =============================================================================
 # file   CMakeLists.txt
 #
-# @author Till Junge <till.junge@epfl.ch
+# @author Alexander Goscinski <alexander.goscinski@epfl.ch>
+# @author Till Junge <till.junge@epfl.ch>
 # @author Felix Musil <felix.musil@epfl.ch>
 # @author Markus Stricker <markus.stricker@epfl.ch>
 #
@@ -67,6 +68,8 @@ include(rascalTools)
 ########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ########
 option(BUILD_BINDINGS "Build the python bindings" ON)
 option(BUILD_EXAMPLES "Build the examples" ON)
+option(BUILD_BENCHMARKS "Build the benchmarks" OFF)
+option(BUILD_PROFILES "Build the files for profiling" OFF)
 option(BUILD_TESTS "Build the unit tests" OFF)
 option(BUILD_DOC "Build documentation" OFF)
 option(USER "Switch installation folder" OFF)
@@ -114,6 +117,33 @@ endif()
 
 add_external_package(wigxjpf VERSION 1.9 CONFIG)
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
+
+# integrate google benchmark
+if(${BUILD_BENCHMARKS})
+  # removes the Weffc++ from the compilation of the benchmarks
+  string(REPLACE "-Weffc++" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+  find_package(Threads REQUIRED)
+  add_external_package(benchmark VERSION 1.5.0 CONFIG)  
+
+  # runs all benchmarks in succession, add new benchmarks with the RUN_BENCHMARK_FLAGS
+  set(RUN_BENCHMARKS_FLAGS "" CACHE
+      "Additional flags to run all benchmarks. See ./benchmark_interpolator"
+      "--help for available flags")
+  mark_as_advanced(RUN_BENCHMARKS_FLAGS)
+
+  # one target to execute all benchmarks with the user flags
+  add_custom_target(
+      benchmarks
+      COMMAND ./performance/benchmarks/benchmark_interpolator
+                         --benchmark_counters_tabular=true
+                         ${RUN_BENCHMARKS_FLAGS}
+      COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/performance/benchmarks/benchmark_spherical_representations.py" 
+    )
+
+  # puts the Weffc++ flag back to the compilation process
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
+endif(${BUILD_BENCHMARKS})
 
 # set up bindings
 if(BUILD_BINDINGS)
@@ -189,6 +219,14 @@ if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
+if(BUILD_BENCHMARKS)
+    add_subdirectory(performance/benchmarks)
+endif()
+
+if(BUILD_PROFILES)
+    add_subdirectory(performance/profiles)
+endif()
+
 if(BUILD_BINDINGS)
     add_subdirectory(bindings)
 endif()
@@ -205,7 +243,10 @@ if(CPPLINT_FOUND)
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples" "")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/benchmarks" "")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/profiles" "")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
+  "--filter=-build/namespaces")
 endif()
 
 # Check for clang-format
@@ -214,10 +255,12 @@ include(clangformat)
 if(CLANG_FORMAT_FOUND)
   # register the folders to apply clang-format with given configuration
   # .clang-format in project root folder
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
   clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/benchmarks" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/profiles" "")
 endif()
 
 # Check for autopep8

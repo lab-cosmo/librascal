@@ -67,6 +67,7 @@ class SphericalInvariants(object):
                  cutoff_function_type="ShiftedCosine",
                  soap_type="PowerSpectrum", inversion_symmetry=True,
                  radial_basis="GTO", normalize=True,
+                 optimization_args={},
                  cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
@@ -95,8 +96,35 @@ class SphericalInvariants(object):
                 unit='AA'
             ),
         )
+
+        if 'type' in optimization_args:
+            if optimization_args['type'] == 'Spline':
+                if 'accuracy' in optimization_args:
+                    accuracy = optimization_args['accuracy']
+                else:
+                    accuracy = 1e-8
+                if 'range' in optimization_args:
+                    spline_range = optimization_args['range']
+                else:
+                    # TODO(felix) remove this when there is a check for the
+                    # distance for the usage of the interpolator in the
+                    # RadialContribution
+                    print("Warning: default parameter for spline range is used.")
+                    spline_range = (0, interaction_cutoff)
+                optimization_args = {'type': 'Spline', 'accuracy': accuracy, 'range': {
+                    'begin': spline_range[0], 'end': spline_range[1]}}
+            elif optimization_args['type'] == 'None':
+                optimization_args = dict({'type': 'None'})
+            else:
+                print('Optimization type is not known. Switching to no'
+                      ' optimization.')
+                optimization_args = dict({'type': 'None'})
+        else:
+            optimization_args = dict({'type': 'None'})
+
         radial_contribution = dict(
             type=radial_basis,
+            optimization=optimization_args
         )
 
         self.update_hyperparameters(cutoff_function=cutoff_function,

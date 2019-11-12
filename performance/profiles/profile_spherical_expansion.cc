@@ -1,5 +1,5 @@
 /**
- * @file   examples/spherical_expansion_profile.cc
+ * @file   performance/profiles/profile_spherical_expansion.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
@@ -56,7 +56,7 @@ using Manager_t = AdaptorStrict<
 using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
 using PropGrad_t =
     typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
-
+bool VERBOSE{false};
 int main(int argc, char * argv[]) {
   if (argc < 2) {
     std::cerr << "Must provide atomic structure json filename as argument";
@@ -69,9 +69,11 @@ int main(int argc, char * argv[]) {
   std::string filename{argv[1]};
 
   double cutoff{5.};
-  json hypers{
-      {"max_radial", 8}, {"max_angular", 6}, {"compute_gradients", false}};
-
+  json hypers{{"max_radial", 8},
+              {"max_angular", 6},
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", true},
+              {"compute_gradients", false}};
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
                  {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
@@ -133,11 +135,14 @@ int main(int argc, char * argv[]) {
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
 
-  // auto expn = representation.get_representation_full();
-  // std::cout << "Sample SphericalExpansion elements " << std::endl
-  //           << expn(0, 0) << " " << expn(0, 1) << " " << expn(0, 2) << "\n"
-  //           << expn(1, 0) << " " << expn(1, 1) << " " << expn(1, 2) << "\n"
-  //           << expn(2, 0) << " " << expn(2, 1) << " " << expn(2, 2) << "\n";
+  if (VERBOSE) {
+    auto expn = manager->template get_property_ref<PropGrad_t>(
+                 representation.get_gradient_name()).get_dense_feature_matrix();
+    std::cout << "Sample SphericalExpansion elements " << std::endl
+              << expn(0, 0) << " " << expn(0, 1) << " " << expn(0, 2) << "\n"
+              << expn(1, 0) << " " << expn(1, 1) << " " << expn(1, 2) << "\n"
+              << expn(2, 0) << " " << expn(2, 1) << " " << expn(2, 2) << "\n";
+  }
 
   // Profile again, this time with gradients
   hypers["compute_gradients"] = true;
@@ -156,15 +161,19 @@ int main(int argc, char * argv[]) {
   std::cout << "Ratio (with gradients / without gradients): "
             << elapsed_grad.count() / elapsed.count() << std::endl;
 
-  // auto expn2 = representation_gradients.get_representation_full();
-  // std::cout << "Sample SphericalExpansion elements (should be identical) "
-  //           << std::endl
-  //           << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) <<
-  //           "\n"
-  //           << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) <<
-  //           "\n"
-  //           << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2) <<
-  //           "\n";
+  if (VERBOSE) {
+    auto expn2 = manager->template get_property_ref<PropGrad_t>(
+                 representation_gradients.get_gradient_name())
+                 .get_dense_feature_matrix();
+    std::cout << "Sample SphericalExpansion elements (should be identical) "
+              << std::endl
+              << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) <<
+              "\n"
+              << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) <<
+              "\n"
+              << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2) <<
+              "\n";
+  }
   // TODO(max) print out analogous gradient components, for now see
   // spherical_expansion_example
 }
