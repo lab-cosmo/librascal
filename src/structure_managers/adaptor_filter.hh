@@ -214,7 +214,7 @@ namespace rascal {
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer,
               bool HasDistances = traits::HasDistances>
-    const std::enable_if_t<HasDistances, double>
+    inline std::enable_if_t<HasDistances, double &>
     get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       static_assert(HasDistances == traits::HasDistances,
                     "HasDistances is used for SFINAE, please don't specify it");

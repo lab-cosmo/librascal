@@ -1018,7 +1018,7 @@ namespace rascal {
     iterator begin() {
       std::array<size_t, Order> counters{this->it.get_counters()};
       auto offset = this->get_manager().get_offset(counters);
-      return iterator(*this, 1, offset);
+      return iterator(*this, static_cast<int>(HasCenterPairOrderOne), offset);
     }
 
     //! end of the iterations over the cluster itself
