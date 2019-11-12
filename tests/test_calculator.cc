@@ -281,8 +281,7 @@ namespace rascal {
         auto & prop_no_center =
             manager_no_center->template get_validated_property_ref<Property_t>(
                 representation.get_name());
-        math::Matrix_t rep_no_center =
-            prop_no_center.get_features();
+        math::Matrix_t rep_no_center = prop_no_center.get_features();
 
         BOOST_CHECK_EQUAL(rep_full.cols(), rep_no_center.cols());
         BOOST_CHECK_EQUAL(center_atoms_mask.count(), rep_no_center.rows());

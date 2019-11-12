@@ -262,11 +262,13 @@ namespace rascal {
       //! access or insert specified element
       reference operator[](const SortedKey_t & skey) {
         auto & pos{this->map[skey.get_key()]};
+        assert(std::get<1>(pos) * std::get<2>(pos) > 0);
         return reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
                          std::get<2>(pos));
       }
       const_reference operator[](const SortedKey_t & skey) const {
         auto & pos{this->map.at(skey.get_key())};
+        assert(std::get<1>(pos) * std::get<2>(pos) > 0);
         return const_reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
                                std::get<2>(pos));
       }
