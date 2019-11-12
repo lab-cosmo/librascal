@@ -46,7 +46,7 @@ jobs:
     environment:
       CC: gcc-9
       CXX: g++-9
-      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug
+      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=
     <<: *default_job
   clang-4:
     environment:
@@ -63,7 +63,7 @@ jobs:
       CC: clang-9
       CXX: clang++-9
       APT_EXTRA_INSTALL: apt install -y clang-9
-      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug
+      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=
     <<: *default_job
   # Special job only building the documentation
   docs:
