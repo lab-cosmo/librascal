@@ -767,7 +767,7 @@ namespace rascal {
     Structure_t atomic_structure;
     typename StructureManager::iterator center_it;
 
-    inline void advance_center() { ++this->center_it; }
+    void advance_center() { ++this->center_it; }
 
     /**
      * Swap a ClusterRef<order=2> (i, j) so it refers to (j, i) instead
@@ -863,7 +863,7 @@ namespace rascal {
      *
      * Not (yet) implemented as iterator because that overcomplicates things
      */
-    inline void advance_center() {
+    void advance_center() {
       ++this->center_it;
       this->provider.advance_center();
       if (this->has_next()) {
@@ -871,7 +871,7 @@ namespace rascal {
       }
     }
 
-    inline bool has_next() { return (this->center_it != structure->end()); }
+    bool has_next() { return (this->center_it != structure->end()); }
 
    private:
     StdVector2Dim_t get_function_inputs() {

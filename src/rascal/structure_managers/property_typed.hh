@@ -250,7 +250,7 @@ namespace rascal {
      * their own propery value independent from its correpsonding central
      * atom. This function is used for all Order 1 ManagerImplementations
      */
-    inline void fill_sequence() {
+    void fill_sequence() {
       // adjust size of values (only increases, never frees)
       this->resize();
       for (size_t i{0}; i < this->values.size(); ++i) {
@@ -282,7 +282,7 @@ namespace rascal {
     }
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order__ = Order>
-    inline std::enable_if_t<(Order__ == 1) and (CallerOrder > 1),  // NOLINT
+    std::enable_if_t<(Order__ == 1) and (CallerOrder > 1),  // NOLINT
                             reference>                             // NOLINT
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](
@@ -310,7 +310,7 @@ namespace rascal {
 
     //! get number of different distinct element in the property
     //! (typically the number of center)
-    inline size_t get_nb_item() const {
+    size_t get_nb_item() const {
       return values.size() / this->get_nb_comp();
     }
 

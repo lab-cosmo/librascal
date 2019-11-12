@@ -154,7 +154,7 @@ namespace rascal {
     size_t get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Returns the number of clusters of size cluster_size
-    inline size_t get_nb_clusters(size_t order) const {
+    size_t get_nb_clusters(size_t order) const {
       /**
        * Note: The case for order=1 is abmiguous: one possible answer is the
        * number of centers the other possibility is the number of centers +

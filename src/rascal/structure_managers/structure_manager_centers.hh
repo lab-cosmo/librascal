@@ -239,11 +239,11 @@ namespace rascal {
     }
 
     //! returns number of I atoms in the list
-    inline size_t get_size() const { return this->n_centers; }
+    size_t get_size() const { return this->n_centers; }
 
     //! returns number of I atoms in the list, since at this level, center atoms
     //! and ghost atoms are not distinguishable.
-    inline size_t get_size_with_ghosts() const {
+    size_t get_size_with_ghosts() const {
       return this->n_centers + this->n_ghosts;
     }
 

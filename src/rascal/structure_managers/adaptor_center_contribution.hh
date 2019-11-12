@@ -141,7 +141,7 @@ namespace rascal {
     //! returns the linked cell cutoff for the adaptor
     double get_cutoff() const { return this->manager->get_cutoff(); }
 
-    inline size_t get_nb_clusters(int order) const {
+    size_t get_nb_clusters(int order) const {
       /**
        * Note: The case for order=1 is abmiguous: one possible answer is the
        * number of centers the other possibility is the number of centers +
@@ -151,9 +151,9 @@ namespace rascal {
       return this->atom_tag_list[order - 1].size();
     }
 
-    inline size_t get_size() const { return this->manager->get_size(); }
+    size_t get_size() const { return this->manager->get_size(); }
 
-    inline size_t get_size_with_ghosts() const {
+    size_t get_size_with_ghosts() const {
       return this->manager->get_size_with_ghosts();
     }
 

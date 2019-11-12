@@ -565,7 +565,7 @@ namespace rascal {
       this->values.resize(new_size);
     }
 
-    inline size_t size() const { return this->values.size(); }
+    size_t size() const { return this->values.size(); }
 
     //! clear all the content of the property
     void clear() { this->values.clear(); }
@@ -601,7 +601,7 @@ namespace rascal {
     template <size_t CallerOrder, size_t CallerLayer,
               bool T = (IsOrderOne and (CallerOrder == 2)),  // NOLINT
               std::enable_if_t<T, int> = 0>                  // NOLINT
-    inline decltype(auto)
+    InputData_t &
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](this->get_manager().get_atom_index(
           id.get_internal_neighbour_atom_tag()));
@@ -617,7 +617,7 @@ namespace rascal {
     }
 
     //! Accessor for property by index for dynamically sized properties
-    inline InputData_t & operator[](size_t index) {
+    InputData_t & operator[](size_t index) {
       return this->values[index];
     }
 
@@ -626,7 +626,7 @@ namespace rascal {
     }
 
     template <size_t CallerLayer>
-    inline decltype(auto)
+    DenseRef_t
     operator()(const ClusterRefKey<Order, CallerLayer> & id,
                const Key_t & key) {
       static_assert(CallerLayer >= PropertyLayer,
@@ -637,7 +637,7 @@ namespace rascal {
     }
 
     //! Accessor for property by index for dynamically sized properties
-    inline DenseRef_t operator()(size_t index, const Key_t & key) {
+    DenseRef_t operator()(size_t index, const Key_t & key) {
       auto && val = this->values[index].at(key);
       return DenseRef_t(&val(0, 0), val.rows(), val.cols());
     }
@@ -645,7 +645,7 @@ namespace rascal {
     //! Accessor for property by cluster index and return a dense
     //! representation of the property associated to this cluster
     template <size_t CallerLayer>
-    inline Matrix_t
+    Matrix_t
     get_dense_row(const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
@@ -654,7 +654,7 @@ namespace rascal {
       return this->get_dense_row(id.get_cluster_index(CallerLayer));
     }
 
-    inline Matrix_t get_dense_row(size_t index) {
+    Matrix_t get_dense_row(size_t index) {
       auto keys = this->values[index].get_keys();
       Matrix_t feature_row = Matrix_t::Zero(this->get_nb_comp(), keys.size());
       size_t i_col{0};
@@ -736,10 +736,10 @@ namespace rascal {
 
     //! get number of different distinct element in the property
     //! (typically the number of center)
-    inline size_t get_nb_item() const { return this->size(); }
+    size_t get_nb_item() const { return this->size(); }
 
     template <size_t CallerLayer>
-    inline decltype(auto)
+    std::vector<Key_t>
     get_keys(const ClusterRefKey<Order, CallerLayer> & id) const {
       // static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
       static_assert(CallerLayer >= PropertyLayer,
@@ -753,7 +753,7 @@ namespace rascal {
      * assumes order == 1 for the moment should use SFINAE to take care of
      * the case order == 2
      */
-    inline Matrix_t dot(Self_t & B) {
+    Matrix_t dot(Self_t & B) {
       Matrix_t mat(this->size(), B.size());
       auto && manager_a{this->get_manager()};
       auto && manager_b{B.get_manager()};

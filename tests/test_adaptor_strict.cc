@@ -44,7 +44,7 @@ namespace rascal {
       >;
 
   using multiple_fixtures = boost::mpl::list<
-      // MultipleStructureFixture<MultipleStructureManagerNLFixture>  //,
+      MultipleStructureFixture<MultipleStructureManagerNLFixture> ,
       MultipleStructureFixture<MultipleStructureManagerNLCCFixture>>;
 
   BOOST_AUTO_TEST_SUITE(adaptor_strict_test);

@@ -452,7 +452,7 @@ namespace rascal {
       // Define the contribution from a neighbour atom to the expansion with an
       // already precomputed a-factor
 
-      inline Matrix_Ref compute_neighbour_contribution(const double distance,
+      Matrix_Ref compute_neighbour_contribution(const double distance,
                                                        const double fac_a) {
         using math::pow;
         using std::sqrt;
@@ -524,7 +524,7 @@ namespace rascal {
        * the central atom
        */
       template <size_t Order, size_t Layer>
-      inline Matrix_Ref compute_neighbour_derivative(
+      Matrix_Ref compute_neighbour_derivative(
           const double distance, const ClusterRefKey<Order, Layer> & /*pair*/) {
         using math::PI;
         using math::pow;
@@ -825,7 +825,7 @@ namespace rascal {
        * @todo still needs to be implemented for the DVR radial basis
        */
       template <size_t Order, size_t Layer>
-      inline Matrix_Ref compute_neighbour_derivative(
+      Matrix_Ref compute_neighbour_derivative(
           const double /*distance*/,
           const ClusterRefKey<Order, Layer> & /*pair*/) {
         using math::PI;
@@ -899,18 +899,18 @@ namespace rascal {
       }
 
       template <size_t Order, size_t Layer>
-      inline Matrix_Ref
+      Matrix_Ref
       compute_neighbour_contribution(const double distance,
                                      const ClusterRefKey<Order, Layer> &) {
         return Parent::compute_neighbour_contribution(distance, this->fac_a);
       }
 
-      inline Matrix_Ref compute_neighbour_contribution(const double) {
+      Matrix_Ref compute_neighbour_contribution(const double) {
         return Parent::compute_neighbour_contribution(this->fac_a);
       }
 
       template <size_t Order, size_t Layer>
-      inline Matrix_Ref
+      Matrix_Ref
       compute_neighbour_derivative(const double distance,
                                    const ClusterRefKey<Order, Layer> & pair) {
         return Parent::compute_neighbour_derivative(distance, pair);
@@ -969,7 +969,7 @@ namespace rascal {
       }
 
       template <size_t Order, size_t Layer>
-      inline Matrix_Ref
+      Matrix_Ref
       compute_neighbour_contribution(const double distance,
                                      const ClusterRefKey<Order, Layer> &) {
         // TODO(alex) TODO(felix) include an check that the distance is within
@@ -979,7 +979,7 @@ namespace rascal {
       }
 
       template <size_t Order, size_t Layer>
-      inline Matrix_Ref
+      Matrix_Ref
       compute_neighbour_derivative(const double distance,
                                    const ClusterRefKey<Order, Layer> &) {
         this->radial_neighbour_derivative =
