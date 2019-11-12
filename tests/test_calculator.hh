@@ -616,7 +616,11 @@ namespace rascal {
         Structure_t atomic_structure)
         : representation{representation}, structure_manager{structure_manager},
           atomic_structure{atomic_structure}, center_it{
-                                                  structure_manager->begin()} {}
+                                                  structure_manager->begin()} {
+      for (auto center : this->structure_manager) {
+        this->n_neighbors.push_back(center.size());
+      }
+    }
 
     ~RepresentationCalculatorGradientProvider() = default;
 
@@ -627,6 +631,14 @@ namespace rascal {
       modified_structure.positions.col(center.get_index()) = center_position;
       modified_structure.wrap();
       this->structure_manager->update(modified_structure);
+      int i_center{0};
+      for (auto center : this->structure_manager) {
+        if (this->n_neighbors[i_center] != center.size()) {
+          throw std::runtime_error(R"(The number of neighbors has changed when making finite displacements. This happens because a neighbor is almost at the cutoff boundary so please change the structure or the cutoff to avoid this.)");
+        }
+        ++i_center;
+      }
+
       this->representation.compute(this->structure_manager);
 
       auto && data_sparse{structure_manager->template get_property_ref<Prop_t>(
@@ -770,6 +782,7 @@ namespace rascal {
     std::shared_ptr<StructureManager> structure_manager;
     Structure_t atomic_structure;
     typename StructureManager::iterator center_it;
+    std::vector<size_t> n_neighbors{};
 
     inline void advance_center() { ++this->center_it; }
 
