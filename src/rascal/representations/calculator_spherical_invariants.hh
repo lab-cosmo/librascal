@@ -524,7 +524,6 @@ namespace rascal {
               soap_center_gradient_by_species_pair *= math::SQRT_TWO;
             }
 
-
             // Sum the gradients wrt the neighbour atom position
             for (auto neigh : center) {
               auto && atom_j = neigh.get_atom_j();

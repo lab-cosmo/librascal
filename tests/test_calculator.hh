@@ -639,7 +639,11 @@ namespace rascal {
       int i_center{0};
       for (auto center : this->structure_manager) {
         if (this->n_neighbors[i_center] != center.size()) {
-          throw std::runtime_error(R"(The number of neighbors has changed when making finite displacements. This happens because a neighbor is almost at the cutoff boundary so please change the structure or the cutoff to avoid this.)");
+          throw std::runtime_error(
+              R"(The number of neighbors has changed when making finite
+              displacements. This happens because a neighbor is almost at the
+              cutoff boundary so please change the structure or the cutoff to
+              avoid this.)");
         }
         ++i_center;
       }
