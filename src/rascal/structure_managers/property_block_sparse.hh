@@ -609,8 +609,8 @@ namespace rascal {
           id.get_internal_neighbour_atom_tag()));
     }
 
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-              std::enable_if_t<(Order_ == 1) and (CallerOrder == 2),  // NOLINT
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order__ = Order,
+              std::enable_if_t<(Order__ == 1) and (CallerOrder == 2),  // NOLINT
                                int> = 0>                              // NOLINT
     const InputData_t &
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) const {
