@@ -487,7 +487,6 @@ namespace rascal {
     const bool exclude_ghosts;
 
    public:
-
     //! constructor
     BlockSparseProperty(Manager_t & manager,
                             std::string metadata = "no metadata",

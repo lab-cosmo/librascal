@@ -83,14 +83,7 @@ namespace rascal {
     //! Default constructor
     Property() = delete;
 
-    //! Constructor with Manager
-    template <size_t MyOrder = Order, std::enable_if_t<MyOrder != 1, int> = 0>
-    explicit Property(Manager_t & manager, std::string metadata = "no metadata")
-        : Parent{manager, NbRow, NbCol, metadata}, type_id{
-                                                       typeid(Self_t).name()} {}
-
     //! Constructor with Manager with optional ghost exclusion
-    template <size_t MyOrder = Order, std::enable_if_t<MyOrder == 1, int> = 0>
     explicit Property(Manager_t & manager, std::string metadata = "no metadata",
                       const bool & exclude_ghosts = false)
         : Parent{manager, NbRow, NbCol, metadata, exclude_ghosts},
