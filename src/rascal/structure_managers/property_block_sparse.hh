@@ -617,18 +617,15 @@ namespace rascal {
     }
 
     //! Accessor for property by index for dynamically sized properties
-    InputData_t & operator[](size_t index) {
-      return this->values[index];
-    }
+    InputData_t & operator[](size_t index) { return this->values[index]; }
 
     const InputData_t & operator[](size_t index) const {
       return this->values[index];
     }
 
     template <size_t CallerLayer>
-    DenseRef_t
-    operator()(const ClusterRefKey<Order, CallerLayer> & id,
-               const Key_t & key) {
+    DenseRef_t operator()(const ClusterRefKey<Order, CallerLayer> & id,
+                          const Key_t & key) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
@@ -645,8 +642,7 @@ namespace rascal {
     //! Accessor for property by cluster index and return a dense
     //! representation of the property associated to this cluster
     template <size_t CallerLayer>
-    Matrix_t
-    get_dense_row(const ClusterRefKey<Order, CallerLayer> & id) {
+    Matrix_t get_dense_row(const ClusterRefKey<Order, CallerLayer> & id) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");

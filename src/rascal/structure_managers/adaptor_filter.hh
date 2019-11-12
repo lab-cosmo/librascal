@@ -235,9 +235,8 @@ namespace rascal {
 
     //! get atom_tag of index-th neighbour of this cluster
     template <size_t Order, size_t Layer>
-    int
-    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
-                           int index) const {
+    int get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                               int index) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "this implementation only handles upto traits::MaxOrder");
       auto && offset = this->offsets[Order][cluster.get_cluster_index(Layer)];
@@ -245,8 +244,7 @@ namespace rascal {
     }
 
     //! get atom_tag of the index-th atom in manager
-    int get_neighbour_atom_tag(const Parent & /*parent*/,
-                                      size_t index) const {
+    int get_neighbour_atom_tag(const Parent & /*parent*/, size_t index) const {
       return this->atom_tag_list[0][index];
     }
 
@@ -285,8 +283,7 @@ namespace rascal {
      * this cluster appears in an iteration
      */
     template <size_t Order>
-    size_t
-    get_offset_impl(const std::array<size_t, Order> & counters) const {
+    size_t get_offset_impl(const std::array<size_t, Order> & counters) const {
       return this->offsets[Order][counters.back()];
     }
 

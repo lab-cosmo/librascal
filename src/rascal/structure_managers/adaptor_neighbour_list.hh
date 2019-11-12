@@ -322,7 +322,8 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     //! get the cell index for a position
     template <class Vector_t>
-    std::array<int, Vector_t::SizeAtCompileTime> get_box_index(const Vector_t & position, double rc) {
+    std::array<int, Vector_t::SizeAtCompileTime>
+    get_box_index(const Vector_t & position, double rc) {
       auto constexpr dimension{Vector_t::SizeAtCompileTime};
 
       std::array<int, dimension> nidx{};
@@ -525,8 +526,7 @@ namespace rascal {
      * number entries in the list of pairs before i,j appears.
      */
     template <size_t Order>
-    size_t
-    get_offset_impl(const std::array<size_t, Order> & counters) const;
+    size_t get_offset_impl(const std::array<size_t, Order> & counters) const;
 
     //! Returns the number of clusters of size cluster_size
     size_t get_nb_clusters(size_t order) const {
@@ -608,16 +608,14 @@ namespace rascal {
      * This is called when ClusterRefKey<1, Layer> so we refer to a center
      * atoms. this function does the same job as get_atom_tag would do.
      */
-    int get_neighbour_atom_tag(const Parent &,
-                                      size_t iteration_index) const {
+    int get_neighbour_atom_tag(const Parent &, size_t iteration_index) const {
       return this->atom_tag_list[iteration_index];
     }
 
     //! Returns the id of the index-th neighbour atom of a given cluster
     template <size_t Order, size_t Layer>
-    int
-    get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
-                           size_t iteration_index) const {
+    int get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
+                               size_t iteration_index) const {
       static_assert(Order < traits::MaxOrder,
                     "this implementation only handles up to traits::MaxOrder");
 
@@ -648,9 +646,7 @@ namespace rascal {
     }
 
     //! Returns the type of a given atom, given an AtomRef
-    int get_atom_type(int atom_tag) const {
-      return this->atom_types[atom_tag];
-    }
+    int get_atom_type(int atom_tag) const { return this->atom_types[atom_tag]; }
 
     //! Returns the number of neighbors of a given cluster
     template <size_t Order, size_t Layer>
@@ -689,7 +685,7 @@ namespace rascal {
      * pair list.
      */
     void add_ghost_atom(int atom_tag, const Vector_t & position,
-                               int atom_type) {
+                        int atom_type) {
       // first add it to the list of atoms
       this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);
@@ -703,9 +699,7 @@ namespace rascal {
     }
 
     //! Extends the list containing the number of neighbours with a 0
-    void add_entry_number_of_neighbours() {
-      this->nb_neigh.push_back(0);
-    }
+    void add_entry_number_of_neighbours() { this->nb_neigh.push_back(0); }
 
     //! Sets the correct offsets for accessing neighbours
     void set_offsets() {
