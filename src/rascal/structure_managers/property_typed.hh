@@ -191,7 +191,7 @@ namespace rascal {
     TypedProperty(TypedProperty && other) = default;
 
     //! Destructor
-    virtual ~TypedProperty() = default;
+    ~TypedProperty() = default;
 
     //! Copy assignment operator
     TypedProperty & operator=(const TypedProperty & other) = delete;

@@ -509,7 +509,7 @@ namespace rascal {
     BlockSparseProperty(BlockSparseProperty && other) = default;
 
     //! Destructor
-    virtual ~BlockSparseProperty() = default;
+    ~BlockSparseProperty() = default;
 
     //! Copy assignment operator
     BlockSparseProperty &
