@@ -118,32 +118,10 @@ endif()
 add_external_package(wigxjpf VERSION 1.9 CONFIG)
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
 
-# integrate google benchmark
-if(${BUILD_BENCHMARKS})
-  # removes the Weffc++ from the compilation of the benchmarks
-  string(REPLACE "-Weffc++" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-
+if(BUILD_BENCHMARKS)
   find_package(Threads REQUIRED)
-  add_external_package(benchmark VERSION 1.5.0 CONFIG)  
-
-  # runs all benchmarks in succession, add new benchmarks with the RUN_BENCHMARK_FLAGS
-  set(RUN_BENCHMARKS_FLAGS "" CACHE
-      "Additional flags to run all benchmarks. See ./benchmark_interpolator"
-      "--help for available flags")
-  mark_as_advanced(RUN_BENCHMARKS_FLAGS)
-
-  # one target to execute all benchmarks with the user flags
-  add_custom_target(
-      benchmarks
-      COMMAND ./performance/benchmarks/benchmark_interpolator
-                         --benchmark_counters_tabular=true
-                         ${RUN_BENCHMARKS_FLAGS}
-      COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/performance/benchmarks/benchmark_spherical_representations.py" 
-    )
-
-  # puts the Weffc++ flag back to the compilation process
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weffc++")
-endif(${BUILD_BENCHMARKS})
+  add_external_package(benchmark VERSION 1.5.0 CONFIG)
+endif()
 
 # set up bindings
 if(BUILD_BINDINGS)
