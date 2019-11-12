@@ -449,9 +449,147 @@ namespace rascal {
   void
   bind_feature_matrix_getter(ManagerCollectionBinder & manager_collection) {
     manager_collection.def(
-        "get_dense_feature_matrix",
-        &ManagerCollection_t::template get_dense_feature_matrix<Calculator>,
+        "get_features",
+        &ManagerCollection_t::template get_features<Calculator>,
         py::call_guard<py::gil_scoped_release>());
+  }
+
+  /**
+   * Bind getters for the feature matrix comming from BlockSparseProperty.
+   *
+   * (1) will return a dictionary associating atomic number to features.
+   * The feature matrices size is (n_centers, inner_size)
+   *
+   * (2) will return a dense feature matrix using the user provided keys to
+   * build it instead of using the ones present in the manager collection.
+   * The feature size is (n_centers, inner_size*all_keys_l.size())
+   *
+   * inner_size is the number of components of the property (.get_nb_comp())
+   */
+  template <class Calculator, class ManagerCollection_t,
+            class ManagerCollectionBinder>
+  void bind_sparse_feature_matrix_getter(
+      ManagerCollectionBinder & manager_collection) {
+    manager_collection.def(
+        "get_features_by_species",
+        [](ManagerCollection_t & managers, Calculator & calculator) {
+          using Manager_t = typename ManagerCollection_t::Manager_t;
+          using Prop_t = typename Calculator::template Property_t<Manager_t>;
+          using Keys_t = typename Prop_t::Keys_t;
+          using ConstVecMap_t = const Eigen::Map<const math::Vector_t>;
+          if (managers.size() == 0) {
+            throw std::runtime_error(R"(There are no structure to get features from)");
+          }
+          auto property_name{managers.get_calculator_name(calculator, false)};
+
+          const auto & property_ =
+              managers[0]->template get_property_ref<Prop_t>(property_name);
+
+          int inner_size{property_.get_nb_comp()};
+          auto n_rows{managers.get_number_of_elements(calculator, false)};
+
+          // holder for the feature matrices to put in feature_dict
+          math::Matrix_t features{};
+
+          features.resize(n_rows, inner_size);
+          features.setZero();
+
+          // get  the keys for the dictionary
+          Keys_t all_keys{};
+          for (auto & manager : managers) {
+            const auto & property =
+                manager->template get_property_ref<Prop_t>(property_name);
+            const auto keys = property.get_keys();
+            all_keys.insert(keys.begin(), keys.end());
+            // inner_size should be consistent for all managers
+            assert(inner_size == property.get_nb_comp());
+          }
+
+          py::list keys_list;
+          for (const auto & key : all_keys) {
+            py::list l;
+            for (const auto & ii : key) {
+              l.append(ii);
+            }
+            // convert it to a tuple
+            py::tuple t_key(l);
+            keys_list.append(t_key);
+          }
+
+          // create a dict for the features
+          py::dict feature_dict;
+          int i_key{0};
+          for (const auto & key : all_keys) {
+            // counter refering to centers across structures
+            int current_center{0};
+            auto t_key{keys_list[i_key]};
+            for (auto & manager : managers) {
+              const auto & property =
+                  manager->template get_property_ref<Prop_t>(property_name);
+
+              for (auto center : manager) {
+                const auto & prop_row = property[center];
+                if (prop_row.count(key) == 1) {
+                  // get the feature and flatten the array
+                  const auto feat_row =
+                      ConstVecMap_t(prop_row[key].data(), inner_size);
+                  features.row(current_center) = feat_row;
+                }
+                current_center++;
+              }
+            }
+            feature_dict[t_key] = std::move(features);
+            features.setZero();
+            ++i_key;
+          }
+          return feature_dict;
+        });
+    manager_collection.def(
+        "get_features",
+        [](ManagerCollection_t & managers, const Calculator & calculator,
+           py::list & all_keys_l) {
+          using Manager_t = typename ManagerCollection_t::Manager_t;
+          using Prop_t = typename Calculator::template Property_t<Manager_t>;
+          using Keys_t = typename Prop_t::Keys_t;
+          if (managers.size() == 0) {
+            throw std::runtime_error(R"(There are no structure to get features from)");
+          }
+          Keys_t all_keys;
+          // convert the list of keys from python in to the proper type
+          for (py::handle key_l : all_keys_l) {
+            auto key = py::cast<std::vector<int>>(key_l);
+            all_keys.insert(key);
+          }
+
+          auto property_name{managers.get_calculator_name(calculator, false)};
+
+          const auto & property_ =
+              managers[0]->template get_property_ref<Prop_t>(property_name);
+          // assume inner_size is consistent for all managers
+          int inner_size{property_.get_nb_comp()};
+
+          math::Matrix_t features{};
+
+          auto n_rows{managers.get_number_of_elements(calculator, false)};
+          size_t n_cols{all_keys.size() * inner_size};
+          features.resize(n_rows, n_cols);
+          features.setZero();
+
+          int i_row{0};
+          for (auto & manager : managers) {
+            const auto & property =
+                manager->template get_property_ref<Prop_t>(property_name);
+            auto n_rows_manager = property.size();
+            property.fill_dense_feature_matrix(
+                features.block(i_row, 0, n_rows_manager, n_cols), all_keys);
+            i_row += n_rows_manager;
+          }
+
+          return features;
+        },
+        R"(Get the dense feature matrix associated with the calculator and
+        the collection of structures (managers) using the list of keys
+        provided. Only applicable when Calculator uses BlockSparseProperty.)");
   }
 
   template <typename Manager, template <class> class... Adaptor>
@@ -527,6 +665,13 @@ namespace rascal {
                                ManagerCollection_t>(manager_collection);
     bind_feature_matrix_getter<CalculatorSphericalCovariants,
                                ManagerCollection_t>(manager_collection);
+    // bind some special getters
+    bind_sparse_feature_matrix_getter<CalculatorSphericalExpansion,
+                                      ManagerCollection_t>(manager_collection);
+    bind_sparse_feature_matrix_getter<CalculatorSphericalInvariants,
+                                      ManagerCollection_t>(manager_collection);
+    bind_sparse_feature_matrix_getter<CalculatorSphericalCovariants,
+                                      ManagerCollection_t>(manager_collection);
   }
 
   /**

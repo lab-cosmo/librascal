@@ -36,7 +36,7 @@ hypers = {'interaction_cutoff': 5.0,
 representation = SphericalInvariants(**hypers)
 atoms_transformed = representation.transform(molecules)
 print("Number of feature vectors computed: {:d}".format(
-    atoms_transformed.get_dense_feature_matrix(representation).shape[0]))
+    atoms_transformed.get_features(representation).shape[0]))
 
 print("Now masking out the first 5 atoms of each molecule.")
 n_remaining_centers = sum(np.sum((mol.get_atomic_numbers()[5:] == 6))
@@ -47,4 +47,4 @@ for molecule in molecules:
     mask_center_atoms_by_id(molecule, id_blacklist=np.arange(5))
 atoms_transformed = representation.transform(molecules)
 print("Number of feature vectors computed: {:d}".format(
-    atoms_transformed.get_dense_feature_matrix(representation).shape[0]))
+    atoms_transformed.get_features(representation).shape[0]))

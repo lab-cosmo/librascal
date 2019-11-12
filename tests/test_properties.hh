@@ -30,10 +30,11 @@
 #ifndef TESTS_TEST_PROPERTIES_HH_
 #define TESTS_TEST_PROPERTIES_HH_
 
-#include "structure_managers/property.hh"
-#include "structure_managers/property_block_sparse.hh"
 #include "test_adaptor.hh"
 #include "test_structure.hh"
+
+#include "rascal/structure_managers/property.hh"
+#include "rascal/structure_managers/property_block_sparse.hh"
 
 #include <boost/mpl/list.hpp>
 

@@ -31,8 +31,9 @@
 #ifndef TESTS_TEST_MANAGER_COLLECTION_HH_
 #define TESTS_TEST_MANAGER_COLLECTION_HH_
 
-#include "structure_managers/structure_manager_collection.hh"
 #include "test_adaptor.hh"
+
+#include "rascal/structure_managers/structure_manager_collection.hh"
 
 namespace rascal {
 

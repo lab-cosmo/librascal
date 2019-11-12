@@ -356,9 +356,9 @@ namespace rascal {
                       {"initialization_arguments", {}}};
             json ad2{{"name", "AdaptorStrict"},
                      {"initialization_arguments", {{"cutoff", cutoff}}}};
-            adaptors.emplace_back(ad1);
+            adaptors.push_back(ad1);
             adaptors.push_back(ad1b);
-            adaptors.emplace_back(ad2);
+            adaptors.push_back(ad2);
 
             parameters["structure"] = structure;
             parameters["adaptors"] = adaptors;

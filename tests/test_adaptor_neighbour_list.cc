@@ -27,9 +27,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "atomic_structure.hh"
 #include "test_adaptor.hh"
 #include "test_structure.hh"
+
+#include "rascal/atomic_structure.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>

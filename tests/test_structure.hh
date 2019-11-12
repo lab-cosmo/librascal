@@ -33,17 +33,17 @@
 #ifndef TESTS_TEST_STRUCTURE_HH_
 #define TESTS_TEST_STRUCTURE_HH_
 
-#include "rascal_utility.hh"
-#include "structure_managers/adaptor_center_contribution.hh"
-#include "structure_managers/adaptor_half_neighbour_list.hh"
-#include "structure_managers/adaptor_increase_maxorder.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/structure_manager_base.hh"
-#include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/structure_manager_lammps.hh"
+#include "rascal/structure_managers/adaptor_center_contribution.hh"
+#include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_increase_maxorder.hh"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/structure_manager.hh"
+#include "rascal/structure_managers/structure_manager_base.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
+#include "rascal/structure_managers/structure_manager_lammps.hh"
+#include "rascal/utils.hh"
 
 namespace rascal {
 

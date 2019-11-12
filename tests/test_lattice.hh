@@ -28,8 +28,8 @@
 #ifndef TESTS_TEST_LATTICE_HH_
 #define TESTS_TEST_LATTICE_HH_
 
-#include "atomic_structure.hh"
-#include "lattice.hh"
+#include "rascal/atomic_structure.hh"
+#include "rascal/lattice.hh"
 
 namespace rascal {
 

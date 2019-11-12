@@ -44,7 +44,11 @@ class AtomsList(object):
             # if python structure
             structures = convert_to_structure_list(frames)
             managers = StructureCollectionFactory(nl_options)
-            managers.add_structures(structures)
+            try:
+                managers.add_structures(structures)
+            except Exception as e:
+                raise RuntimeError("Neighbourlist of structures failed "
+                                   + "because: " + str(e))
 
         self.managers = managers
 
@@ -54,18 +58,44 @@ class AtomsList(object):
     def __getitem__(self, key):
         return self.managers[key]
 
-    def get_dense_feature_matrix(self, calculator):
+    def get_features(self, calculator, species=None):
         """
         Parameters
         -------
         calculator : Calculator (an object owning a _representation object)
+
+        species :  list of atomic number to use for building the dense feature
+        matrix computed with calculators of name Spherical*
 
         Returns
         -------
         represenation_matrix : ndarray
             returns the representation bound to the calculator as dense matrix.
         """
-        return self.managers.get_dense_feature_matrix(
+
+        if species is None:
+            X = self.managers.get_features(
+                calculator._representation)
+        else:
+            keys_list = calculator.get_keys(species)
+            X = self.managers.get_features(
+                calculator._representation, keys_list)
+
+        return X
+
+    def get_features_by_species(self, calculator):
+        """
+        Parameters
+        -------
+        calculator : one of the representation calculators named Spherical*
+
+        Returns
+        -------
+        representation_matrix : dict of ndarray
+            returns a dictionary associating tuples of atomic numbers sorted
+            alphabetically to the corresponding feature matrices
+        """
+        return self.managers.get_features_by_species(
             calculator._representation)
 
 
