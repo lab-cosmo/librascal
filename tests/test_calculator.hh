@@ -791,6 +791,7 @@ namespace rascal {
     std::shared_ptr<StructureManager> structure_manager;
     Structure_t atomic_structure;
     typename StructureManager::iterator center_it;
+    //! count the number of neighbours of each centers
     std::vector<size_t> n_neighbors{};
 
     inline void advance_center() { ++this->center_it; }
