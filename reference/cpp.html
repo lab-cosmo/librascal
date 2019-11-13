@@ -96,7 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../SOAP.html">SOAP Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../representation/representations.html">Representations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../models/models.html">Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../neighbor_list/neighbor-list-manager.html">Neighbor List Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../neighbour_list/neighbour-list-manager.html">Neighbour List Manager</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dev_guide/developer.html">Developer’s guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="python.html">Python</a></li>
@@ -1009,16 +1009,6 @@ Eigen)matrix, sized <span class="math notranslate nohighlight">\(m_\text{max}\)<
 
 <dl class="type">
 <dt>
-<em class="property">using </em><code class="sig-name descname">atom_vector_property_fixtures_with_ghosts</code> = OrderOnePropertyBoostList::type_with_ghosts<br /></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt>
-<em class="property">using </em><code class="sig-name descname">atom_vector_property_fixtures_without_ghosts</code> = OrderOnePropertyBoostList::type_without_ghosts<br /></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt>
 <em class="property">using </em><code class="sig-name descname">atom_vector_property_fixtures</code> = OrderOnePropertyBoostList::type<br /></dt>
 <dd></dd></dl>
 
@@ -1034,12 +1024,7 @@ Eigen)matrix, sized <span class="math notranslate nohighlight">\(m_\text{max}\)<
 
 <dl class="type">
 <dt>
-<em class="property">using </em><code class="sig-name descname">ANLWithGhosts_SMC_StackFixture</code> = AdaptorNeighbourListStackFixture&lt;StructureManagerCentersStackFixture, true&gt;<br /></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt>
-<em class="property">using </em><code class="sig-name descname">ANLWithoutGhosts_SMC_StackFixture</code> = AdaptorNeighbourListStackFixture&lt;StructureManagerCentersStackFixture, false&gt;<br /></dt>
+<em class="property">using </em><code class="sig-name descname">ANLWithGhosts_SMC_StackFixture</code> = AdaptorNeighbourListStackFixture&lt;StructureManagerCentersStackFixture&gt;<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
@@ -1777,7 +1762,7 @@ template&lt;class <code class="sig-name descname">ErrorMethod</code>&gt;<br /><e
 
 <dl class="function">
 <dt>
-<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>atom_vector_property_fixtures_tests, Fix, <a class="reference internal" href="#_CPPv4N6rascal41atom_vector_property_fixtures_with_ghostsE" title="rascal::atom_vector_property_fixtures_with_ghosts">atom_vector_property_fixtures_with_ghosts</a>, Fix<span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>atom_vector_property_fixtures_tests, Fix, <a class="reference internal" href="#_CPPv4N6rascal29atom_vector_property_fixturesE" title="rascal::atom_vector_property_fixtures">atom_vector_property_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2285,7 +2270,7 @@ size_t <code class="sig-name descname">get_size_with_ghosts</code><span class="s
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>, bool <code class="sig-name descname">HasDistances</code> = traits::HasDistances&gt;<br /><em class="property">const</em> std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_bENK6rascal13AdaptorFilter12get_distanceEKNSt11enable_if_tI12HasDistancesdEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_distance::HasDistances">HasDistances</a>, double&gt; <code class="sig-name descname">get_distance</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_bENK6rascal13AdaptorFilter12get_distanceEKNSt11enable_if_tI12HasDistancesdEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_distance::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_bENK6rascal13AdaptorFilter12get_distanceEKNSt11enable_if_tI12HasDistancesdEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_distance::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>, bool <code class="sig-name descname">HasDistances</code> = traits::HasDistances&gt;<br />std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_bENK6rascal13AdaptorFilter12get_distanceENSt11enable_if_tI12HasDistancesRdEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_distance::HasDistances">HasDistances</a>, double&amp;&gt; <code class="sig-name descname">get_distance</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_bENK6rascal13AdaptorFilter12get_distanceENSt11enable_if_tI12HasDistancesRdEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_distance::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_bENK6rascal13AdaptorFilter12get_distanceENSt11enable_if_tI12HasDistancesRdEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_distance::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2305,12 +2290,22 @@ int <code class="sig-name descname">get_neighbour_atom_tag</code><span class="si
 
 <dl class="function">
 <dt>
+int &amp;<code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span><em class="property">const</em> AtomRef_t &amp;<em>atom</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 int <code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span><em class="property">const</em> AtomRef_t &amp;<em>atom</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-int <code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span>int <em>atom_id</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+int &amp;<code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span>int <em>atom_id</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+int <code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span>int &amp;<em>atom_id</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2423,7 +2418,17 @@ int <code class="sig-name descname">get_neighbour_atom_tag</code><span class="si
 
 <dl class="function">
 <dt>
+int &amp;<code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span><em class="property">const</em> AtomRef_t &amp;<em>atom</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 int <code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span><em class="property">const</em> AtomRef_t &amp;<em>atom</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+int &amp;<code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span>int <em>atom_id</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2541,17 +2546,22 @@ int <code class="sig-name descname">get_neighbour_atom_tag</code><span class="si
 
 <dl class="function">
 <dt>
+int <code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span><em class="property">const</em> AtomRef_t &amp;<em>atom</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 int <code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span><em class="property">const</em> AtomRef_t &amp;<em>atom</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-int <code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span>int <em>atom_id</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+int <code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span>int <em>atom_id</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-bool <code class="sig-name descname">get_consider_ghost_neighbours</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+int <code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span>int <em>atom_id</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2680,12 +2690,12 @@ ImplementationPtr_t <code class="sig-name descname">get_previous_manager</code><
 </div>
 <dl class="class">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">AddOrderLoop</code>&lt;<a class="reference internal" href="#_CPPv4I_6size_tEN6rascal15AdaptorMaxOrder12AddOrderLoopI5OrderXL1EEEE" title="rascal::AdaptorMaxOrder::AddOrderLoop&lt;Order, true&gt;::Order">Order</a>, true&gt;<br /></dt>
+template&lt;size_t <code class="sig-name descname">Order</code>, <a class="reference internal" href="#_CPPv4N6rascal13AdaptorTraitsE" title="rascal::AdaptorTraits">AdaptorTraits</a>::<a class="reference internal" href="#_CPPv4N6rascal13AdaptorTraits17NeighbourListTypeE" title="rascal::AdaptorTraits::NeighbourListType">NeighbourListType</a> <code class="sig-name descname">NeighbourListType</code>, bool <code class="sig-name descname">IsCompactCluster</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">AddOrderLoop</code>&lt;<a class="reference internal" href="#_CPPv4I_6size_t_N13AdaptorTraits17NeighbourListTypeE_bEN6rascal15AdaptorMaxOrder12AddOrderLoopI5Order17NeighbourListType16IsCompactClusterXL1EEEE" title="rascal::AdaptorMaxOrder::AddOrderLoop&lt;Order, NeighbourListType, IsCompactCluster, true&gt;::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_N13AdaptorTraits17NeighbourListTypeE_bEN6rascal15AdaptorMaxOrder12AddOrderLoopI5Order17NeighbourListType16IsCompactClusterXL1EEEE" title="rascal::AdaptorMaxOrder::AddOrderLoop&lt;Order, NeighbourListType, IsCompactCluster, true&gt;::NeighbourListType">NeighbourListType</a>, <a class="reference internal" href="#_CPPv4I_6size_t_N13AdaptorTraits17NeighbourListTypeE_bEN6rascal15AdaptorMaxOrder12AddOrderLoopI5Order17NeighbourListType16IsCompactClusterXL1EEEE" title="rascal::AdaptorMaxOrder::AddOrderLoop&lt;Order, NeighbourListType, IsCompactCluster, true&gt;::IsCompactCluster">IsCompactCluster</a>, true&gt;<br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Static Functions</p>
 <dl class="function">
 <dt>
-template&lt;&gt;<br /><em class="property">static</em> void <code class="sig-name descname">loop</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal12ClusterRef_tE" title="rascal::ClusterRef_t">ClusterRef_t</a> &amp;<em>cluster</em>, AdaptorMaxOrder&lt;ManagerImplementation&gt; &amp;<em>manager</em><span class="sig-paren">)</span><br /></dt>
+template&lt;&gt;<br /><em class="property">static</em> void <code class="sig-name descname">loop</code><span class="sig-paren">(</span>AtomClusterRef_t &amp;<em>atom</em>, <a class="reference internal" href="#_CPPv4N6rascal12ClusterRef_tE" title="rascal::ClusterRef_t">ClusterRef_t</a> &amp;<em>cluster</em>, size_t <em>start_index</em>, AdaptorMaxOrder&lt;ManagerImplementation&gt; &amp;<em>manager</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -2705,7 +2715,7 @@ template&lt;class <code class="sig-name descname">ManagerImplementation</code>&g
 
 <dl class="function">
 <dt>
-<code class="sig-name descname">AdaptorNeighbourList</code><span class="sig-paren">(</span>ImplementationPtr_t <em>manager</em>, double <em>cutoff</em>, bool <em>consider_ghost_neighbours</em> = false, double <em>skin</em> = 0.<span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">AdaptorNeighbourList</code><span class="sig-paren">(</span>ImplementationPtr_t <em>manager</em>, double <em>cutoff</em>, double <em>skin</em> = 0.<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2750,11 +2760,6 @@ double <code class="sig-name descname">get_cutoff</code><span class="sig-paren">
 
 <dl class="function">
 <dt>
-bool <code class="sig-name descname">get_consider_ghost_neighbours</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
 template&lt;size_t <code class="sig-name descname">Order</code>&gt;<br />size_t <code class="sig-name descname">get_offset_impl</code><span class="sig-paren">(</span><em class="property">const</em> std::array&lt;size_t, <a class="reference internal" href="#_CPPv4I_6size_tENK6rascal20AdaptorNeighbourList15get_offset_implE6size_tRKNSt5arrayI6size_t5OrderEE" title="rascal::AdaptorNeighbourList::get_offset_impl::Order">Order</a>&gt; &amp;<em>counters</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
@@ -2790,6 +2795,16 @@ int <code class="sig-name descname">get_ghost_type</code><span class="sig-paren"
 
 <dl class="function">
 <dt>
+int &amp;<code class="sig-name descname">get_ghost_type</code><span class="sig-paren">(</span>size_t <em>atom_tag</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+std::vector&lt;int&gt; &amp;<code class="sig-name descname">get_ghost_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 <em class="property">const</em> std::vector&lt;int&gt; &amp;<code class="sig-name descname">get_ghost_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
@@ -2806,6 +2821,16 @@ int <code class="sig-name descname">get_neighbour_atom_tag</code><span class="si
 <dl class="function">
 <dt>
 template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />int <code class="sig-name descname">get_neighbour_atom_tag</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal20AdaptorNeighbourList22get_neighbour_atom_tagEiRK13ClusterRefKeyI5Order5LayerE6size_t" title="rascal::AdaptorNeighbourList::get_neighbour_atom_tag::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal20AdaptorNeighbourList22get_neighbour_atom_tagEiRK13ClusterRefKeyI5Order5LayerE6size_t" title="rascal::AdaptorNeighbourList::get_neighbour_atom_tag::Layer">Layer</a>&gt; &amp;<em>cluster</em>, size_t <em>iteration_index</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+int &amp;<code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span>int <em>atom_tag</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+size_t <code class="sig-name descname">get_atom_index</code><span class="sig-paren">(</span><em class="property">const</em> int <em>atom_tag</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3039,12 +3064,12 @@ template&lt;class <code class="sig-name descname">StackFixture</code>&gt;<br /><
 
 <dl class="class">
 <dt>
-template&lt;typename <code class="sig-name descname">Precision_t</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">PropertyLayer</code>, class <code class="sig-name descname">Manager</code>, typename <code class="sig-name descname">Key</code>&gt;<br /><em class="property">class </em><code class="sig-name descname">BlockSparseProperty</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal12PropertyBaseE" title="rascal::PropertyBase">PropertyBase</a><br /></dt>
+template&lt;typename <code class="sig-name descname">Precision_t</code>, size_t <code class="sig-name descname">Order_</code>, size_t <code class="sig-name descname">PropertyLayer</code>, class <code class="sig-name descname">Manager</code>, typename <code class="sig-name descname">Key</code>&gt;<br /><em class="property">class </em><code class="sig-name descname">BlockSparseProperty</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal12PropertyBaseE" title="rascal::PropertyBase">PropertyBase</a><br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt>
-<code class="sig-name descname">BlockSparseProperty</code><span class="sig-paren">(</span>Manager_t &amp;<em>manager</em>, std::string <em>metadata</em> = &quot;no metadata&quot;<span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">BlockSparseProperty</code><span class="sig-paren">(</span>Manager_t &amp;<em>manager</em>, std::string <em>metadata</em> = &quot;no metadata&quot;, bool <em>exclude_ghosts</em> = false<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3054,17 +3079,17 @@ template&lt;typename <code class="sig-name descname">Precision_t</code>, size_t 
 
 <dl class="function">
 <dt>
-<code class="sig-name descname">BlockSparseProperty</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal19BlockSparseProperty19BlockSparsePropertyER9Manager_tNSt6stringE" title="rascal::BlockSparseProperty::BlockSparseProperty">BlockSparseProperty</a> &amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">BlockSparseProperty</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal19BlockSparseProperty19BlockSparsePropertyER9Manager_tNSt6stringEb" title="rascal::BlockSparseProperty::BlockSparseProperty">BlockSparseProperty</a> &amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-<code class="sig-name descname">BlockSparseProperty</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal19BlockSparseProperty19BlockSparsePropertyER9Manager_tNSt6stringE" title="rascal::BlockSparseProperty::BlockSparseProperty">BlockSparseProperty</a> &amp;&amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">BlockSparseProperty</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal19BlockSparseProperty19BlockSparsePropertyER9Manager_tNSt6stringEb" title="rascal::BlockSparseProperty::BlockSparseProperty">BlockSparseProperty</a> &amp;&amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-<em class="property">virtual</em> <code class="sig-name descname">~BlockSparseProperty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">~BlockSparseProperty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3084,12 +3109,17 @@ BlockSparseProperty &amp;<code class="sig-name descname">operator=</code><span c
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order_</code> = Order, std::enable_if_t&lt;(<a class="reference internal" href="#_CPPv4I_6size_t_NSt11enable_if_tIXeq6Order_L1EEiEEEN6rascal19BlockSparseProperty29get_validated_property_lengthE6size_tb" title="rascal::BlockSparseProperty::get_validated_property_length::Order_">Order_</a> == 1), int&gt; = 0&gt;<br />size_t <code class="sig-name descname">get_validated_property_length</code><span class="sig-paren">(</span>bool <em>consider_ghost_atoms</em><span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">template&lt;size_t Order__ = Order, std::enable_if_t&lt;(Order__ &gt; 1&gt;void rascal::BlockSparseProperty::resize()</code></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">resize</code><span class="sig-paren">(</span>bool <em>consider_ghost_atoms</em> = false<span class="sig-paren">)</span><br /></dt>
+template&lt;size_t <code class="sig-name descname">Order__</code> = Order, std::enable_if_t&lt;(<a class="reference internal" href="#_CPPv4I_6size_t_NSt11enable_if_tIXeq7Order__L0EEiEEEN6rascal19BlockSparseProperty6resizeEvv" title="rascal::BlockSparseProperty::resize::Order__">Order__</a> == 0), int&gt; = 0&gt;<br />void <code class="sig-name descname">resize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">Order__</code> = Order, std::enable_if_t&lt;(<a class="reference internal" href="#_CPPv4I_6size_t_NSt11enable_if_tIXeq7Order__L1EEiEEEN6rascal19BlockSparseProperty6resizeEvv" title="rascal::BlockSparseProperty::resize::Order__">Order__</a> == 1), int&gt; = 0&gt;<br />void <code class="sig-name descname">resize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3104,7 +3134,7 @@ template&lt;size_t <code class="sig-name descname">CallerLayer</code>&gt;<br />I
 
 <dl class="function">
 <dt>
-<code class="sig-name descname">template&lt;size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order, std::enable_if_t&lt;(Order_==1) and(CallerOrder==2), int &gt; = 0&gt;InputData_t&amp; rascal::BlockSparseProperty::operator[](const  ClusterRefKey &lt; CallerOrder, CallerLayer &gt; &amp; id)</code></dt>
+<code class="sig-name descname">template&lt;size_t CallerOrder, size_t CallerLayer, bool T = (IsOrderOne and (CallerOrder == 2)), std::enable_if_t&lt; T, int &gt; = 0&gt;InputData_t&amp; rascal::BlockSparseProperty::operator[](const  ClusterRefKey &lt; CallerOrder, CallerLayer &gt; &amp; id)</code></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4090,7 +4120,7 @@ template&lt;typename <code class="sig-name descname">T</code>, size_t <code clas
 
 <dl class="function">
 <dt>
-<code class="sig-name descname">Property</code><span class="sig-paren">(</span>Manager_t &amp;<em>manager</em>, std::string <em>metadata</em> = &quot;no metadata&quot;<span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">Property</code><span class="sig-paren">(</span>Manager_t &amp;<em>manager</em>, std::string <em>metadata</em> = &quot;no metadata&quot;, <em class="property">const</em> bool &amp;<em>exclude_ghosts</em> = false<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4157,7 +4187,7 @@ reference <code class="sig-name descname">operator[]</code><span class="sig-pare
 <dl class="class">
 <dt>
 <em class="property">class </em><code class="sig-name descname">PropertyBase</code><br /></dt>
-<dd><p>Subclassed by rascal::BlockSparseProperty&lt; Precision_t, Order, PropertyLayer, Manager, Key &gt;, rascal::TypedProperty&lt; T, Order, PropertyLayer, Manager &gt;</p>
+<dd><p>Subclassed by rascal::BlockSparseProperty&lt; Precision_t, Order_, PropertyLayer, Manager, Key &gt;, rascal::TypedProperty&lt; T, Order_, PropertyLayer, Manager &gt;, rascal::TypedProperty&lt; T, Order, PropertyLayer, Manager &gt;</p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
@@ -4538,7 +4568,12 @@ template&lt;typename <code class="sig-name descname">UserProperty_t</code>&gt;<b
 
 <dl class="function">
 <dt>
-template&lt;typename <code class="sig-name descname">UserProperty_t</code>&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal16StructureManager16get_property_ptrENSt10shared_ptrI14UserProperty_tEERKNSt6stringE" title="rascal::StructureManager::get_property_ptr::UserProperty_t">UserProperty_t</a>&gt; <code class="sig-name descname">get_property_ptr</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em><span class="sig-paren">)</span><br /></dt>
+template&lt;typename <code class="sig-name descname">UserProperty_t</code>&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I0ENK6rascal16StructureManager22get_validated_propertyENSt10shared_ptrI14UserProperty_tEERKNSt6stringE" title="rascal::StructureManager::get_validated_property::UserProperty_t">UserProperty_t</a>&gt; <code class="sig-name descname">get_validated_property</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">UserProperty_t</code>&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal16StructureManager16get_property_ptrENSt10shared_ptrI14UserProperty_tEERKNSt6stringERKbRKNSt6stringE" title="rascal::StructureManager::get_property_ptr::UserProperty_t">UserProperty_t</a>&gt; <code class="sig-name descname">get_property_ptr</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, <em class="property">const</em> bool &amp;<em>exclude_ghosts</em> = false, <em class="property">const</em> std::string &amp;<em>metadata</em> = &quot;no metadata&quot;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4751,6 +4786,16 @@ template&lt;bool <code class="sig-name descname">T</code> = HasCenterPairOrderOn
 <dl class="function">
 <dt>
 template&lt;&gt;<br />iterator <code class="sig-name descname">end</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;&gt;<br />iterator <code class="sig-name descname">get_iterator_at</code><span class="sig-paren">(</span><em class="property">const</em> size_t &amp;<em>start</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;&gt;<br />iterator <code class="sig-name descname">get_iterator_at</code><span class="sig-paren">(</span><em class="property">const</em> size_t &amp;<em>start</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -5194,11 +5239,6 @@ size_t <code class="sig-name descname">get_size_with_ghosts</code><span class="s
 
 <dl class="function">
 <dt>
-bool <code class="sig-name descname">get_consider_ghost_neighbours</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
 template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />size_t <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal22StructureManagerLammps21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::StructureManagerLammps::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal22StructureManagerLammps21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::StructureManagerLammps::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
@@ -5243,15 +5283,9 @@ void <code class="sig-name descname">update_self</code><span class="sig-paren">(
 
 <dl class="class">
 <dt>
-template&lt;typename <code class="sig-name descname">T</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">PropertyLayer</code>, class <code class="sig-name descname">Manager</code>&gt;<br /><em class="property">class </em><code class="sig-name descname">TypedProperty</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal12PropertyBaseE" title="rascal::PropertyBase">PropertyBase</a><br /></dt>
-<dd><p>Subclassed by rascal::Property&lt; T, Order, PropertyLayer, Manager, NbRow, NbCol &gt;</p>
-<div class="breathe-sectiondef docutils container">
+template&lt;typename <code class="sig-name descname">T</code>, size_t <code class="sig-name descname">Order_</code>, size_t <code class="sig-name descname">PropertyLayer</code>, class <code class="sig-name descname">Manager</code>&gt;<br /><em class="property">class </em><code class="sig-name descname">TypedProperty</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal12PropertyBaseE" title="rascal::PropertyBase">PropertyBase</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
-<dl class="function">
-<dt>
-<code class="sig-name descname">TypedProperty</code><span class="sig-paren">(</span>Manager_t &amp;<em>manager</em>, <a class="reference internal" href="#_CPPv4N6rascal5Dim_tE" title="rascal::Dim_t">Dim_t</a> <em>nb_row</em>, <a class="reference internal" href="#_CPPv4N6rascal5Dim_tE" title="rascal::Dim_t">Dim_t</a> <em>nb_col</em> = 1, std::string <em>metadata</em> = &quot;no metadata&quot;<span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
 <dl class="function">
 <dt>
 <code class="sig-name descname">TypedProperty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
@@ -5259,17 +5293,17 @@ template&lt;typename <code class="sig-name descname">T</code>, size_t <code clas
 
 <dl class="function">
 <dt>
-<code class="sig-name descname">TypedProperty</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal13TypedProperty13TypedPropertyER9Manager_t5Dim_t5Dim_tNSt6stringE" title="rascal::TypedProperty::TypedProperty">TypedProperty</a> &amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">TypedProperty</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal13TypedProperty13TypedPropertyEv" title="rascal::TypedProperty::TypedProperty">TypedProperty</a> &amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-<code class="sig-name descname">TypedProperty</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal13TypedProperty13TypedPropertyER9Manager_t5Dim_t5Dim_tNSt6stringE" title="rascal::TypedProperty::TypedProperty">TypedProperty</a> &amp;&amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">TypedProperty</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal13TypedProperty13TypedPropertyEv" title="rascal::TypedProperty::TypedProperty">TypedProperty</a> &amp;&amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-<em class="property">virtual</em> <code class="sig-name descname">~TypedProperty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">~TypedProperty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -5289,7 +5323,22 @@ TypedProperty &amp;<code class="sig-name descname">operator=</code><span class="
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">resize</code><span class="sig-paren">(</span>bool <em>consider_ghost_atoms</em> = false<span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">template&lt;size_t Order__ = Order, std::enable_if_t&lt;(Order__ &gt; 1&gt;void rascal::TypedProperty::resize()</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">Order__</code> = Order, std::enable_if_t&lt;(<a class="reference internal" href="#_CPPv4I_6size_t_NSt11enable_if_tIXeq7Order__L0EEiEEEN6rascal13TypedProperty6resizeEvv" title="rascal::TypedProperty::resize::Order__">Order__</a> == 0), int&gt; = 0&gt;<br />void <code class="sig-name descname">resize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">Order__</code> = Order, std::enable_if_t&lt;(<a class="reference internal" href="#_CPPv4I_6size_t_NSt11enable_if_tIXeq7Order__L1EEiEEEN6rascal13TypedProperty6resizeEvv" title="rascal::TypedProperty::resize::Order__">Order__</a> == 1), int&gt; = 0&gt;<br />void <code class="sig-name descname">resize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+void <code class="sig-name descname">fill_sequence</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
