@@ -233,6 +233,8 @@ namespace rascal {
       this->initialized = true;
     }
 
+    virtual ~InterpolatorBFixture() = default;
+
     bool initialized{false};
     double x1{0};
     double x2{0};
@@ -555,13 +557,7 @@ namespace rascal {
           AdaptorCenterContribution, AdaptorStrict>(structure, adaptors);
       this->manager->update(atomic_structure);
 
-      this->nb_neighbours = 0;
-      for (auto center : this->manager) {
-        for (auto _ : center) {
-          this->nb_neighbours++;
-        }
-      }
-
+      this->nb_neighbours = this->manager->get_nb_clusters(2);
       // make representation manager
       json hypers{{"max_radial", this->max_radial},
                   {"max_angular", this->max_angular},

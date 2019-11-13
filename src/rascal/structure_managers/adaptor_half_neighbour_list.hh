@@ -91,6 +91,11 @@ namespace rascal {
     static_assert(traits::MaxOrder < 3,
                   "AdaptorHalfList does not work with Order > 2.");
 
+    constexpr static auto AtomLayer{
+        Manager_t::template cluster_layer_from_order<1>()};
+    constexpr static auto PairLayer{
+        Manager_t::template cluster_layer_from_order<2>()};
+
     // TODO(markus): add this to all structure managers
     // static_assert(parent_traits::NeighbourListType
     //               == AdaptorTraits::NeighbourListType::full,
@@ -143,12 +148,19 @@ namespace rascal {
     //! returns the number of atoms or pairs
     size_t get_nb_clusters(int order) const {
       switch (order) {
-      case 1:
-        return this->manager->get_nb_clusters(order);
-      case 2:
+        /**
+         * Note: The case for order=1 is abmiguous: one possible answer is the
+         * number of centers the other possibility is the number of centers +
+         * ghost atoms. Please use the get_size or get_size_with_ghosts member
+         * functions
+         */
+      case 2: {
         return this->neighbours_atom_tag.size();
-      default:
+        break;
+      }
+      default: {
         throw std::runtime_error("Can only handle single atoms and pairs.");
+      }
       }
     }
 
@@ -199,19 +211,24 @@ namespace rascal {
       return this->manager->get_atom_index(atom_tag);
     }
 
+    //! return atom type
+    int get_atom_type(const AtomRef_t & atom) {
+      return this->manager->get_atom_type(atom.get_index());
+    }
+
     //! return atom type, const ref
     int get_atom_type(const AtomRef_t & atom) const {
       return this->manager->get_atom_type(atom.get_index());
     }
 
-    //! Returns a constant atom type given an atom tag
-    int get_atom_type(int atom_id) const {
+    //! Returns atom type given an atom tag
+    int get_atom_type(int atom_id) {
       return this->manager->get_atom_type(atom_id);
     }
 
-    //! check whether neighbours of ghosts were considered
-    bool get_consider_ghost_neighbours() const {
-      return this->manager->get_consider_ghost_neighbours();
+    //! Returns a constant atom type given an atom tag
+    int get_atom_type(int atom_id) const {
+      return this->manager->get_atom_type(atom_id);
     }
 
     /**
@@ -324,26 +341,23 @@ namespace rascal {
     // counter for total number of pairs (minimal list) for cluster_indices
     size_t pair_counter{0};
 
-    for (auto atom : this->manager->with_ghosts()) {
+    for (auto && atom : this->manager->with_ghosts()) {
       // Add new depth layer for atoms (see LayerByOrder for possible
       // optimisation).
-      constexpr auto AtomLayer{
-          compute_cluster_layer<atom.order()>(typename traits::LayerByOrder{})};
 
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
+    }
 
+    for (auto && atom : this->manager) {
       auto index_i{atom.get_atom_tag()};
 
       // neighbours per atom counter to correct for offsets
       int nneigh{0};
 
       for (auto pair : atom) {
-        constexpr auto PairLayer{compute_cluster_layer<pair.order()>(
-            typename traits::LayerByOrder{})};
-
         auto index_j{pair.get_atom_tag()};
 
         // This is the actual check for the half neighbour list: only pairs with

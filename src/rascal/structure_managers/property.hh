@@ -3,6 +3,7 @@
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   05 Apr 2018
  *
@@ -81,10 +82,11 @@ namespace rascal {
     //! Default constructor
     Property() = delete;
 
-    //! Constructor with Manager
-    explicit Property(Manager_t & manager, std::string metadata = "no metadata")
-        : Parent{manager, NbRow, NbCol, metadata}, type_id{
-                                                       typeid(Self_t).name()} {}
+    //! Constructor with Manager with optional ghost exclusion
+    explicit Property(Manager_t & manager, std::string metadata = "no metadata",
+                      const bool & exclude_ghosts = false)
+        : Parent{manager, NbRow, NbCol, metadata, exclude_ghosts},
+          type_id{typeid(Self_t).name()} {}
 
     //! Copy constructor
     Property(const Property & other) = delete;

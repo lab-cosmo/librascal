@@ -411,9 +411,8 @@ namespace rascal {
     using ImplementationPtr_t = std::shared_ptr<Implementation_t>;
     using PyManager_t = PyManager<Manager_t>;
     static void bind_adaptor_init(PyManager_t & adaptor) {
-      adaptor.def(py::init<std::shared_ptr<Implementation_t>, double, bool>(),
+      adaptor.def(py::init<std::shared_ptr<Implementation_t>, double>(),
                   py::arg("manager"), py::arg("cutoff"),
-                  py::arg("consider_ghost_neighbours") = false,
                   py::keep_alive<1, 2>());
     }
 
@@ -421,14 +420,11 @@ namespace rascal {
                                            py::module & m_adaptor) {
       m_adaptor.def(
           name.c_str(),
-          [](ImplementationPtr_t manager, double cutoff,
-             bool consider_ghost_neighbours) {
+          [](ImplementationPtr_t manager, double cutoff) {
             return make_adapted_manager<AdaptorNeighbourList, Implementation_t>(
-                manager, cutoff, consider_ghost_neighbours);
+                manager, cutoff);
           },
-          py::arg("manager"), py::arg("cutoff"),
-          py::arg("consider_ghost_neighbours") = false,
-          py::return_value_policy::copy);
+          py::arg("manager"), py::arg("cutoff"), py::return_value_policy::copy);
     }
   };
 
@@ -487,7 +483,7 @@ namespace rascal {
           auto property_name{managers.get_calculator_name(calculator, false)};
 
           const auto & property_ =
-              managers[0]->template get_property_ref<Prop_t>(property_name);
+              *managers[0]->template get_property_ptr<Prop_t>(property_name);
 
           int inner_size{property_.get_nb_comp()};
           auto n_rows{managers.get_number_of_elements(calculator, false)};
@@ -502,7 +498,7 @@ namespace rascal {
           Keys_t all_keys{};
           for (auto & manager : managers) {
             const auto & property =
-                manager->template get_property_ref<Prop_t>(property_name);
+                *manager->template get_property_ptr<Prop_t>(property_name);
             const auto keys = property.get_keys();
             all_keys.insert(keys.begin(), keys.end());
             // inner_size should be consistent for all managers
@@ -529,7 +525,7 @@ namespace rascal {
             auto t_key{keys_list[i_key]};
             for (auto & manager : managers) {
               const auto & property =
-                  manager->template get_property_ref<Prop_t>(property_name);
+                  *manager->template get_property_ptr<Prop_t>(property_name);
 
               for (auto center : manager) {
                 const auto & prop_row = property[center];
@@ -569,7 +565,7 @@ namespace rascal {
           auto property_name{managers.get_calculator_name(calculator, false)};
 
           const auto & property_ =
-              managers[0]->template get_property_ref<Prop_t>(property_name);
+              *managers[0]->template get_property_ptr<Prop_t>(property_name);
           // assume inner_size is consistent for all managers
           int inner_size{property_.get_nb_comp()};
 
@@ -583,7 +579,7 @@ namespace rascal {
           int i_row{0};
           for (auto & manager : managers) {
             const auto & property =
-                manager->template get_property_ref<Prop_t>(property_name);
+                *manager->template get_property_ptr<Prop_t>(property_name);
             auto n_rows_manager = property.size();
             property.fill_dense_feature_matrix(
                 features.block(i_row, 0, n_rows_manager, n_cols), all_keys);

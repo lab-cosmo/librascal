@@ -83,8 +83,7 @@ int main(int argc, char * argv[]) {
   json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+           {"initialization_arguments", {{"cutoff", cutoff}}}};
   json ad1b{{"name", "AdaptorCenterContribution"},
             {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
@@ -116,9 +115,9 @@ int main(int argc, char * argv[]) {
   std::cout << std::endl;
 
   auto && expansions_coefficients{
-      manager->template get_property_ref<Prop_t>(representation.get_name())};
+      *manager->template get_property_ptr<Prop_t>(representation.get_name())};
   auto && expansions_coefficients_gradient{
-      manager->template get_property_ref<PropGrad_t>(
+      *manager->template get_property_ptr<PropGrad_t>(
           representation.get_gradient_name())};
 
   size_t center_count{0};

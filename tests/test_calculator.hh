@@ -68,11 +68,8 @@ namespace rascal {
           json parameters;
           json structure{{"filename", filename}};
           json adaptors;
-          json ad1{
-              {"name", "AdaptorNeighbourList"},
-              {"initialization_arguments",
-               {{"cutoff", cutoff},
-                {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+          json ad1{{"name", "AdaptorNeighbourList"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
           json ad1b{{"name", "AdaptorCenterContribution"},
                     {"initialization_arguments", {}}};
           json ad2{{"name", "AdaptorStrict"},
@@ -91,7 +88,6 @@ namespace rascal {
 
     ~TestData() = default;
 
-    const bool consider_ghost_neighbours{false};
     json ref_data{};
     json factory_args{};
   };
@@ -309,9 +305,7 @@ namespace rascal {
       json adaptors;
       json ad1{{"name", "AdaptorNeighbourList"},
                {"initialization_arguments",
-                {{"cutoff", cutoff},
-                 {"skin", cutoff_skin},
-                 {"consider_ghost_neighbours", false}}}};
+                {{"cutoff", cutoff}, {"skin", cutoff_skin}}}};
       json ad1b{{"name", "AdaptorCenterContribution"},
                 {"initialization_arguments", {}}};
       json ad2{{"name", "AdaptorStrict"},
@@ -402,9 +396,7 @@ namespace rascal {
         json adaptors;
         json ad1{{"name", "AdaptorNeighbourList"},
                  {"initialization_arguments",
-                  {{"cutoff", cutoff},
-                   {"skin", cutoff_skin},
-                   {"consider_ghost_neighbours", true}}}};
+                  {{"cutoff", cutoff}, {"skin", cutoff_skin}}}};
         json ad1b{{"name", "AdaptorCenterContribution"},
                   {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
@@ -650,10 +642,10 @@ namespace rascal {
 
       this->representation.compute(this->structure_manager);
 
-      auto && data_sparse{structure_manager->template get_property_ref<Prop_t>(
+      auto && data_sparse{*structure_manager->template get_property_ptr<Prop_t>(
           representation.get_name())};
       auto && gradients_sparse{
-          structure_manager->template get_property_ref<PropGrad_t>(
+          *structure_manager->template get_property_ptr<PropGrad_t>(
               representation.get_gradient_name())};
       auto ii_pair = center.get_atom_ii();
       auto & data_center{data_sparse[ii_pair]};
@@ -721,10 +713,10 @@ namespace rascal {
       // representation.compute();
       auto center = *center_it;
 
-      auto && data_sparse{structure_manager->template get_property_ref<Prop_t>(
+      auto && data_sparse{*structure_manager->template get_property_ptr<Prop_t>(
           representation.get_name())};
       auto && gradients_sparse{
-          structure_manager->template get_property_ref<PropGrad_t>(
+          *structure_manager->template get_property_ptr<PropGrad_t>(
               representation.get_gradient_name())};
       auto ii_pair = center.get_atom_ii();
       auto & gradients_center{gradients_sparse[ii_pair]};
@@ -794,7 +786,7 @@ namespace rascal {
     //! count the number of neighbours of each centers
     std::vector<size_t> n_neighbors{};
 
-    inline void advance_center() { ++this->center_it; }
+    void advance_center() { ++this->center_it; }
 
     /**
      * Swap a ClusterRef<order=2> (i, j) so it refers to (j, i) instead
@@ -890,7 +882,7 @@ namespace rascal {
      *
      * Not (yet) implemented as iterator because that overcomplicates things
      */
-    inline void advance_center() {
+    void advance_center() {
       ++this->center_it;
       this->provider.advance_center();
       if (this->has_next()) {
@@ -898,7 +890,7 @@ namespace rascal {
       }
     }
 
-    inline bool has_next() { return (this->center_it != structure->end()); }
+    bool has_next() { return (this->center_it != structure->end()); }
 
    private:
     StdVector2Dim_t get_function_inputs() {
@@ -958,11 +950,8 @@ namespace rascal {
           json parameters;
           json structure{{"filename", filename}};
           json adaptors;
-          json ad1{
-              {"name", "AdaptorNeighbourList"},
-              {"initialization_arguments",
-               {{"cutoff", cutoff},
-                {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+          json ad1{{"name", "AdaptorNeighbourList"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
           json ad2{{"name", "AdaptorStrict"},
                    {"initialization_arguments", {{"cutoff", cutoff}}}};
           adaptors.emplace_back(ad1);
@@ -976,7 +965,6 @@ namespace rascal {
       }
     }
 
-    const bool consider_ghost_neighbours{false};
     json ref_data{};
     json factory_args{};
 

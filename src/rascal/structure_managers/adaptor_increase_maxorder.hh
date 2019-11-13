@@ -36,6 +36,7 @@
 #include "rascal/structure_managers/structure_manager.hh"
 #include "rascal/utils.hh"
 
+#include <algorithm>
 #include <set>
 #include <vector>
 
@@ -65,6 +66,8 @@ namespace rascal {
     using LayerByOrder =
         typename LayerExtender<MaxOrder,
                                typename parent_traits::LayerByOrder>::type;
+    constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
+        parent_traits::NeighbourListType};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -140,8 +143,6 @@ namespace rascal {
     template <class... Args>
     void update(Args &&... arguments);
 
-    bool get_consider_ghost_neighbours() const { return true; }
-
     /**
      * Returns the linear indices of the clusters (whose atom tags are stored
      * in counters). For example when counters is just the list of atoms, it
@@ -154,6 +155,12 @@ namespace rascal {
 
     //! Returns the number of clusters of size cluster_size
     size_t get_nb_clusters(size_t order) const {
+      /**
+       * Note: The case for order=1 is abmiguous: one possible answer is the
+       * number of centers the other possibility is the number of centers +
+       * ghost atoms. Please use the get_size or get_size_with_ghosts member
+       * functions
+       */
       switch (order) {
       case traits::MaxOrder:
         return this->neighbours_atom_tag.size();
@@ -251,6 +258,9 @@ namespace rascal {
     }
 
    protected:
+    template <bool IsCompactCluster>
+    void update_self_helper();
+
     //! Extends the list containing the number of neighbours with a 0
     void add_entry_number_of_neighbours() { this->nb_neigh.push_back(0); }
 
@@ -278,7 +288,9 @@ namespace rascal {
     ImplementationPtr_t manager;
 
     //! Construct for reaching the MaxOrder and adding neighbours of at MaxOrder
-    template <size_t Order, bool IsDummy>
+    //! (the work is done at the Order-th recursion, when IsTail is true)
+    template <size_t Order, AdaptorTraits::NeighbourListType NeighbourListType,
+              bool IsCompactCluster, bool IsTail>
     struct AddOrderLoop;
 
     //! Stores the number of neighbours for every traits::MaxOrder-1-clusters
@@ -292,6 +304,8 @@ namespace rascal {
      * `neighbours`, from where nb_neigh can be counted
      */
     std::vector<size_t> offsets{};
+
+    bool compute_compact_clusters{false};
 
    private:
   };
@@ -320,26 +334,45 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   //! structure for static looping up until pair order
   template <class ManagerImplementation>
-  template <size_t Order, bool IsDummy>
+  template <size_t Order, AdaptorTraits::NeighbourListType NeighbourListType,
+            bool IsCompactCluster, bool IsTail>
   struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop {
     static constexpr int OldMaxOrder{ManagerImplementation::traits::MaxOrder};
     using ClusterRef_t =
         typename ManagerImplementation::template ClusterRef<Order>;
 
-    using NextOrderLoop = AddOrderLoop<Order + 1, (Order + 1 == OldMaxOrder)>;
+    using NextOrderLoop =
+        AddOrderLoop<Order + 1, NeighbourListType, IsCompactCluster,
+                     (Order + 1 == OldMaxOrder)>;
+
+    using AtomClusterRef_t =
+        typename ManagerImplementation::template ClusterRef<1>;
 
     // do nothing, if MaxOrder is not reached, except call the next order
-    static void loop(ClusterRef_t & cluster,
+    static void loop(AtomClusterRef_t & atom, ClusterRef_t & cluster,
+                     size_t start_index,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
-      for (auto next_cluster : cluster) {
-        auto & next_cluster_indices{std::get<next_cluster.order() - 1>(
-            manager.cluster_indices_container)};
+      size_t new_start_index{
+          (start_index + 1) *
+          static_cast<int>(NeighbourListType ==
+                           AdaptorTraits::NeighbourListType::half)};
 
+      using Iterator_t = typename ClusterRef_t::iterator;
+      using NextCluster_t = typename Iterator_t::value_type;
+      for (Iterator_t next_cluster_it{cluster.get_iterator_at(start_index)};
+           next_cluster_it != cluster.end(); ++next_cluster_it) {
+        auto && next_cluster{*next_cluster_it};
+        constexpr size_t previous_order{NextCluster_t::order() - 1};
+        auto & next_cluster_indices{
+            std::get<previous_order>(manager.cluster_indices_container)};
         // keep copying underlying cluster indices, they are not changed
         auto indices{next_cluster.get_cluster_indices()};
         next_cluster_indices.push_back(indices);
 
-        NextOrderLoop::loop(next_cluster, manager);
+        NextOrderLoop::loop(atom, next_cluster, new_start_index, manager);
+        if (NeighbourListType == AdaptorTraits::NeighbourListType::half) {
+          ++new_start_index;
+        }
       }
     }
   };
@@ -355,69 +388,50 @@ namespace rascal {
    * the j-atoms of each pair as an i-atom in a triplet (center).
    */
   template <class ManagerImplementation>
-  template <size_t Order>
-  struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop<Order, true> {
+  template <size_t Order, AdaptorTraits::NeighbourListType NeighbourListType,
+            bool IsCompactCluster>
+  struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop<
+      Order, NeighbourListType, IsCompactCluster, true> {
     static constexpr int OldMaxOrder{ManagerImplementation::traits::MaxOrder};
 
     using ClusterRef_t =
         typename ManagerImplementation::template ClusterRef<Order>;
+    using AtomClusterRef_t =
+        typename ManagerImplementation::template ClusterRef<1>;
 
     using traits = typename AdaptorMaxOrder<ManagerImplementation>::traits;
 
     //! loop through the orders to get to the maximum order, this is agnostic to
     //! the underlying MaxOrder, just goes to the maximum
-    static void loop(ClusterRef_t & cluster,
+    static void loop(AtomClusterRef_t & atom, ClusterRef_t & cluster,
+                     size_t start_index,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
-      // get all i_atoms to find neighbours to extend the cluster to the next
-      // order
-      auto i_atoms = cluster.get_atom_tag_list();
-
-      // vector of existing i_atoms in `cluster` to avoid doubling of atoms in
-      // final list
-      std::vector<size_t> current_i_atoms{};
-
-      // a set of new neighbours for the cluster, which will be added to extend
-      // the cluster
-      std::set<size_t> current_j_atoms{};
-
-      // access to underlying manager for access to atom pairs
-      auto & manager_tmp{cluster.get_manager()};
-
       // add an entry for the current clusters' neighbours
       manager.add_entry_number_of_neighbours();
 
-      // careful: i_atoms can include ghosts: ghosts have to be ignored, since
-      // they to not have a neighbour list themselves, they are only neighbours
-      for (auto atom_tag : i_atoms) {
-        current_i_atoms.push_back(atom_tag);
-        size_t access_index = manager.get_neighbour_atom_tag(manager, atom_tag);
-
-        // construct a shifted iterator to constuct a ClusterRef<1>
-        auto iterator_at_position{manager_tmp.get_iterator_at(access_index)};
-
-        // ClusterRef<1> as dereference from iterator to get pairs of the
-        // i_atoms
-        auto && j_cluster{*iterator_at_position};
-
-        // collect all possible neighbours of the cluster: collection of all
-        // neighbours of current_i_atoms
-        for (auto pair : j_cluster) {
-          auto j_add = pair.back();
-          if (j_add > i_atoms.back()) {
-            current_j_atoms.insert(j_add);
+      // collect all possible neighbours of the cluster: collection of all
+      // neighbours of current _central_ atoms for a centered cluster.
+      if (NeighbourListType == AdaptorTraits::NeighbourListType::half) {
+        for (auto pair_it{atom.get_iterator_at(start_index)};
+             pair_it != atom.end(); ++pair_it) {
+          if (IsCompactCluster) {
+            throw std::runtime_error("Not implemented yet.");
+          } else {
+            manager.add_neighbour_of_cluster((*pair_it).back());
           }
         }
-      }
-
-      // delete existing cluster atoms from list to build additional neighbours
-      std::vector<size_t> atoms_to_add{};
-      std::set_difference(current_j_atoms.begin(), current_j_atoms.end(),
-                          current_i_atoms.begin(), current_i_atoms.end(),
-                          std::inserter(atoms_to_add, atoms_to_add.begin()));
-
-      if (atoms_to_add.size() > 0) {
-        for (auto j : atoms_to_add) {
-          manager.add_neighbour_of_cluster(j);
+      } else {
+        auto && i_atoms{cluster.get_atom_tag_list()};
+        for (auto pair : atom) {
+          auto && j_atom{pair.back()};
+          if (std::find(i_atoms.begin(), i_atoms.end(), j_atom) ==
+              i_atoms.end()) {
+            if (IsCompactCluster) {
+              throw std::runtime_error("Not implemented yet.");
+            } else {
+              manager.add_neighbour_of_cluster(j_atom);
+            }
+          }
         }
       }
     }
@@ -425,11 +439,24 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * This is the loop, which runs recursively goes to the maximum Order and then
-   * increases it by one (i.e. pairs->triplets, triplets->quadruplets, etc.
+   * Dispatch to the approprate loop
    */
   template <class ManagerImplementation>
   void AdaptorMaxOrder<ManagerImplementation>::update_self() {
+    if (this->compute_compact_clusters) {
+      this->template update_self_helper<true>();
+    } else {
+      this->template update_self_helper<false>();
+    }
+  }
+  /**
+   * This is the loop, which runs recursively goes to the maximum Order and
+   * then increases it by one (i.e. pairs->triplets, triplets->quadruplets,
+   * etc.
+   */
+  template <class ManagerImplementation>
+  template <bool IsCompactCluster>
+  void AdaptorMaxOrder<ManagerImplementation>::update_self_helper() {
     static_assert(traits::MaxOrder > 2,
                   "No neighbourlist present; extension not possible.");
 
@@ -442,17 +469,18 @@ namespace rascal {
 
     // #BUG8486@(markus) I now append the ghost atoms to the cluster index
     // container
-    for (auto atom : this->manager->with_ghosts()) {
+    for (auto atom : this->manager) {
       //  Order 1, but variable Order is at 0, atoms, index 0
-      using AddOrderLoop =
-          AddOrderLoop<atom.order(), atom.order() == (traits::MaxOrder - 1)>;
+      using AddOrderLoop = AddOrderLoop<atom.order(), traits::NeighbourListType,
+                                        IsCompactCluster,
+                                        atom.order() == (traits::MaxOrder - 1)>;
 
       auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
 
       auto indices = atom.get_cluster_indices();
       atom_cluster_indices.push_back(indices);
 
-      AddOrderLoop::loop(atom, *this);
+      AddOrderLoop::loop(atom, atom, 0, *this);
     }
     // correct the offsets for the new cluster order
     this->set_offsets();
@@ -468,8 +496,8 @@ namespace rascal {
    * Returns the linear indices of the clusters (whose atom tags are stored
    * in counters). For example when counters is just the list of atoms, it
    * returns the index of each atom. If counters is a list of pairs of indices
-   * (i.e. specifying pairs), for each pair of indices i,j it returns the number
-   * entries in the list of pairs before i,j appears.
+   * (i.e. specifying pairs), for each pair of indices i,j it returns the
+   * number entries in the list of pairs before i,j appears.
    */
   template <class ManagerImplementation>
   template <size_t Order>
@@ -482,8 +510,8 @@ namespace rascal {
     //                 1 - pairs
     //                 2 - triplets
     //                 etc.
-    // Order is determined by the ClusterRef building iterator, not by the Order
-    // of the built iterator
+    // Order is determined by the ClusterRef building iterator, not by the
+    // Order of the built iterator
 
     // necessary construct for static branching
     using IncreaseHelper_t =
@@ -491,13 +519,14 @@ namespace rascal {
 
     if (Order < (traits::MaxOrder - 1)) {
       // If not accessible at this order, call lower Order offsets from lower
-      // order manager or push through to lower levels, if adaptors are stacked.
+      // order manager or push through to lower levels, if adaptors are
+      // stacked.
       return IncreaseHelper_t::get_offset(*this->manager, counters);
     } else {
-      // Counters is an array to call parent offset multiplet. This can then be
-      // used to access the actual offset for the Order which was built here.
-      // It needs to be cast into a smaller one to access the order of this
-      // Cluster(Order-1) from the manager below
+      // Counters is an array to call parent offset multiplet. This can then
+      // be used to access the actual offset for the Order which was built
+      // here. It needs to be cast into a smaller one to access the order of
+      // this Cluster(Order-1) from the manager below
       std::array<size_t, Order - 1> counters_below{};
       for (size_t c_index{0}; c_index < Order - 1; ++c_index) {
         counters_below[c_index] = counters[c_index];

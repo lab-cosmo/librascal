@@ -59,6 +59,8 @@ namespace rascal {
     using LayerByOrder =
         typename LayerIncreaser<MaxOrder,
                                 typename parent_traits::LayerByOrder>::type;
+    constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
+        parent_traits::NeighbourListType};
   };
 
   /**
@@ -90,7 +92,7 @@ namespace rascal {
     using Distance_t = typename This::template Property_t<double, 2, 1>;
     using DirectionVector_t = typename This::template Property_t<double, 2, 3>;
 
-    static_assert(traits::MaxOrder > 1,
+    static_assert(traits::MaxOrder == 2,
                   "ManagerImlementation needs to handle pairs");
     constexpr static auto AtomLayer{
         Manager_t::template cluster_layer_from_order<1>()};
@@ -137,13 +139,15 @@ namespace rascal {
     double get_cutoff() const { return this->cutoff; }
 
     size_t get_nb_clusters(int order) const {
-      assert(order > 0);
+      assert(order == 2);
       return this->atom_tag_list[order - 1].size();
     }
 
     size_t get_size() const { return this->manager->get_size(); }
 
-    size_t get_size_with_ghosts() const { return this->get_nb_clusters(1); }
+    size_t get_size_with_ghosts() const {
+      return this->atom_tag_list[0].size();
+    }
 
     Vector_ref get_position(int index) {
       return this->manager->get_position(index);
@@ -234,10 +238,6 @@ namespace rascal {
     const Vector_ref
     get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
       return this->dir_vec->operator[](pair);
-    }
-
-    bool get_consider_ghost_neighbours() const {
-      return this->manager->get_consider_ghost_neighbours();
     }
 
     const std::vector<int> get_manager_atom_tag_list() {
@@ -396,9 +396,7 @@ namespace rascal {
 
     double rc2{this->cutoff * this->cutoff};
 
-    // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
-    // either actually with ghosts, or only returns the number of centers.
-    for (auto atom : this->manager.get()->with_ghosts()) {
+    for (auto && atom : this->manager) {
       this->add_atom(atom);
       /**
        * Add new layer for atoms (see LayerByOrder for
@@ -409,6 +407,7 @@ namespace rascal {
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
+
       for (auto pair : atom.with_self_pair()) {
         auto vec_ij{pair.get_position() - atom.get_position()};
         double distance2{(vec_ij).squaredNorm()};
@@ -430,6 +429,19 @@ namespace rascal {
           pair_counter++;
         }
       }
+    }
+
+    for (auto && atom : this->manager->only_ghosts()) {
+      this->add_atom(atom);
+      /**
+       * Add new layer for atoms (see LayerByOrder for
+       * possible optimisation).
+       */
+      Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
+
+      indices.template head<AtomLayer>() = atom.get_cluster_indices();
+      indices(AtomLayer) = indices(AtomLayer - 1);
+      atom_cluster_indices.push_back(indices);
     }
 
     this->distance->set_updated_status(true);

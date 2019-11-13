@@ -184,6 +184,11 @@ namespace rascal {
     /**
      * return the number of 'neighbours' (i.e., number of pairs for an atom,
      * number of triplets for a pair, etc) of a given order.
+     *
+     * Note: The case for order=1 is abmiguous: one possible answer is the
+     * number of centers the other possibility is the number of centers +
+     * ghost atoms. Please use the get_size or get_size_with_ghosts member
+     * functions.
      */
     size_t get_nb_clusters(int order) const {
       return this->atom_tag_list[order - 1].size();
@@ -209,7 +214,7 @@ namespace rascal {
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer,
               bool HasDistances = traits::HasDistances>
-    const std::enable_if_t<HasDistances, double>
+    std::enable_if_t<HasDistances, double &>
     get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       static_assert(HasDistances == traits::HasDistances,
                     "HasDistances is used for SFINAE, please don't specify it");
@@ -244,6 +249,16 @@ namespace rascal {
     }
 
     //! return atom type
+    int & get_atom_type(const AtomRef_t & atom) {
+      /**
+       * careful, atom refers to our local index, for the manager, we need its
+       * index:
+       */
+      auto && original_atom{this->atom_tag_list[0][atom.get_index()]};
+      return this->manager->get_atom_type(original_atom);
+    }
+
+    //! return atom type
     int get_atom_type(const AtomRef_t & atom) const {
       // careful, atom refers to our local index, for the manager, we need its
       // index:
@@ -252,7 +267,13 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom tag
-    int get_atom_type(int atom_id) const {
+    int & get_atom_type(int atom_id) {
+      auto && type{this->manager->get_atom_type(atom_id)};
+      return type;
+    }
+
+    //! Returns a constant atom type given an atom tag
+    int get_atom_type(int & atom_id) const {
       auto && type{this->manager->get_atom_type(atom_id)};
       return type;
     }
@@ -298,8 +319,8 @@ namespace rascal {
     /**
      * main function during construction of the filtered view
      * @param cluster last atom of cluster is added to the filter
-     * @param Order select whether it is an i-atom (order=1), j-atom (order=2),
-     * or ...
+     * @param Order select whether it is an i-atom (order=1), j-atom
+     * (order=2), or ...
      */
     template <size_t Order>
     void add_atom(const InputClusterRef_t<Order> & cluster) {
@@ -335,8 +356,8 @@ namespace rascal {
      */
     std::array<std::vector<int>, traits::MaxOrder> atom_tag_list{};
     /**
-     * store the number of j-atoms for every i-atom (nb_neigh[1]), the number of
-     * k-atoms for every j-atom (nb_neigh[2]), etc
+     * store the number of j-atoms for every i-atom (nb_neigh[1]), the number
+     * of k-atoms for every j-atom (nb_neigh[2]), etc
      */
     std::array<std::vector<size_t>, traits::MaxOrder> nb_neigh{};
     /**

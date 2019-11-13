@@ -378,12 +378,13 @@ namespace rascal {
 
     // Compute the spherical expansions of the current structure
     rep_expansion.compute(manager);
+    constexpr bool ExcludeGhosts{true};
     auto && expansions_coefficients{
-        manager->template get_property_ref<PropExp_t>(
-            rep_expansion.get_name())};
+        *manager->template get_property_ptr<PropExp_t>(rep_expansion.get_name(),
+                                                       ExcludeGhosts)};
 
-    auto && soap_vectors{
-        manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && soap_vectors{*manager->template get_property_ptr<Prop_t>(
+        this->get_name(), ExcludeGhosts)};
 
     // if the representation has already been computed for the current
     // structure then do nothing
