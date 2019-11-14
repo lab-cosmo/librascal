@@ -28,9 +28,15 @@ development of librascal also beforehand. Some thing are easier to talk about in
 person.
 
 So once you have added something to the code base and checked locally if the
-checks pass merged and/or rebase on top of the current state of the master
-branch, you are ready to create a PR. Upon creating the PR our continuous
-integration spins up and does further checks with different compilers.
+checks pass. Checks include the code tests as well as the checks for coding
+style as far as they can be checked automatically. You should also have added
+tests for your added functionality or adjusted tests, which conflict with a new
+design. The next step is to merge or rebase with the master branch. If
+necessary, add changes to the code to comply with any other added tests coming
+in from the updated master branch if they were not resolved in the merging or
+rebase process. Then you are ready to create your PR. Upon creating the PR our
+continuous integration spins up and does further checks with different compilers
+and compiling modes such as debug.
 
 Now it is time for review. Github provides a button for review requests. Most of
 the time the suggested persons for review are a good first address. Add some so that they are notified.
