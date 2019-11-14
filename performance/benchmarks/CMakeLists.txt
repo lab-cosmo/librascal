@@ -29,6 +29,5 @@ add_custom_target(
     COMMAND "PYTHONPATH=${CMAKE_BINARY_DIR}" ${PYTHON_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/benchmark_spherical_representations.py
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    DEPENDS ${ALL_BENCHMARKS}
-
+    DEPENDS ${ALL_BENCHMARKS} copy_python_bindings
 )
