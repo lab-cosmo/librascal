@@ -1,14 +1,9 @@
+# Default style
+BasedOnStyle: LLVM
+# Customization
 AccessModifierOffset: -1
-SpacesBeforeTrailingComments: 2
-NamespaceIndentation: All
-SortIncludes: false
-PointerAlignment: Middle
 AlwaysBreakTemplateDeclarations: true
 ColumnLimit: 80
-KeepEmptyLinesAtTheStartOfBlocks: false
-IndentWidth: 2
-# rules related to include sorting
-SortIncludes: true
 IncludeBlocks: Regroup
 IncludeCategories:
   # rascal headers in "" with extension
@@ -26,3 +21,9 @@ IncludeCategories:
   # Headers in <> without extension, i.e. usually c/c++ standard library headers
   - Regex:           '<[[:alnum:]_]+>'
     Priority:        5
+IndentWidth: 2
+KeepEmptyLinesAtTheStartOfBlocks: false
+NamespaceIndentation: All
+PointerAlignment: Middle
+SortIncludes: true
+SpacesBeforeTrailingComments: 2
