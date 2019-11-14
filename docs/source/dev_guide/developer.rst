@@ -14,6 +14,5 @@ We strongly advise our contributors to check these guidlines before submitting t
    how_to_add_representation
    how_to_test
    coding-convention
+   review_process
    benchmark_tutorial
-
-
