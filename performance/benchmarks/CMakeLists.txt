@@ -14,9 +14,6 @@ foreach(benchmark ${benchmarks})
   target_link_libraries(${name} Threads::Threads)
   target_link_libraries(${name} benchmark)
   list(APPEND ALL_BENCHMARKS ${name})
-
-  # surpresses the "'CSVReporter' is deprecated" errors when compiling benchmark.cc
-  set_target_properties(${name} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations" )
 endforeach()
 
 # one target to execute all benchmarks with the user flags
