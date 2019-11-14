@@ -61,7 +61,7 @@ optimizations_args = [
 radial_bases = ['GTO', 'DVR']
 
 
-@benchmarks.timer
+@benchmarks.bench
 def transform_representation(representation, frames, **kwargs):
     representation.transform(frames)
 

@@ -24,24 +24,25 @@
 # Boston, MA 02111-1307, USA.
 
 import functools
-import time
+from timeit import default_timer as timer
 
-# Global parameters for benchmark
-nb_iterations = 5
+DEFAULT_ITERATIONS = 100
 
 
-def timer(func):
+def bench(func):
     """Print the runtime of the decorated function"""
     @functools.wraps(func)
     def wrapper_timer(*args, **kwargs):
-        nb_iterations = kwargs['nb_iterations']
-        times = nb_iterations * [0]
+        nb_iterations = kwargs.get('nb_iterations', DEFAULT_ITERATIONS)
+
+        total_time = 0.0
         for i in range(nb_iterations):
-            start_time = time.perf_counter()
+            start_time = timer()
             value = func(*args, **kwargs)
-            end_time = time.perf_counter()
-            times[i] = end_time - start_time
-        run_time = sum(times) / len(times)
-        print(f"Finished in {run_time:.6f} secs is mean time for {nb_iterations} runs")
+            end_time = timer()
+            total_time += end_time - start_time
+
+        total_time /= nb_iterations
+        print(f"Finished in {total_time*1e6:.2f} ns over {nb_iterations} runs")
         return value
     return wrapper_timer
