@@ -30,12 +30,12 @@
 
 #include "bind_include.hh"
 #include "bind_py_structure_manager.hh"
-#include "representations/calculator_base.hh"
-#include "representations/calculator_sorted_coulomb.hh"
-#include "representations/calculator_spherical_covariants.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "representations/calculator_pair_distances.hh"
+#include "rascal/representations/calculator_base.hh"
+#include "rascal/representations/calculator_sorted_coulomb.hh"
+#include "rascal/representations/calculator_spherical_covariants.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/representations/calculator_pair_distances.hh"
 
 namespace rascal {
   void add_representation_calculators(py::module &, py::module &);

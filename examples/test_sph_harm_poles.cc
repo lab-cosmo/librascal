@@ -1,5 +1,5 @@
 /**
- * file   test_sph_harm_poles.cc
+ * @file   examples/test_sph_harm_poles.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "math/math_utils.hh"
-#include "math/spherical_harmonics.hh"
+#include "rascal/math/spherical_harmonics.hh"
+#include "rascal/math/utils.hh"
 
 #include <cmath>
 #include <iomanip>

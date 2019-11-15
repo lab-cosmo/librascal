@@ -1,5 +1,5 @@
 /**
- * file   playground.cc
+ * @file   examples/playground.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -25,18 +25,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "basic_types.hh"
-#include "models/kernels.hh"
-#include "rascal_utility.hh"
-#include "representations/calculator_sorted_coulomb.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "structure_managers/adaptor_center_contribution.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/structure_manager_collection.hh"
+#include "rascal/basic_types.hh"
+#include "rascal/models/kernels.hh"
+#include "rascal/representations/calculator_sorted_coulomb.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/structure_managers/adaptor_center_contribution.hh"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
+#include "rascal/structure_managers/structure_manager_collection.hh"
+#include "rascal/utils.hh"
 
 #include <cmath>
 #include <functional>
@@ -62,10 +62,7 @@ int main() {
   json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments",
-            {{"cutoff", cutoff},
-             {"consider_ghost_neighbours", false},
-             {"skin", 0.}}}};
+           {"initialization_arguments", {{"cutoff", cutoff}, {"skin", 0.}}}};
 
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};

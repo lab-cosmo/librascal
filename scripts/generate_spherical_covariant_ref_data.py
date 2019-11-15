@@ -1,17 +1,16 @@
-from ase.io import read
-import numpy as np
-
 import argparse
 import ase
 import json
 import sys
 sys.path.insert(0, '../build/')
-
-from rascal.representations import SphericalCovariants
-from rascal.utils import ostream_redirect
-import rascal
 import rascal.lib as lrl
+import rascal
+from rascal.utils import ostream_redirect
+from rascal.representations import SphericalCovariants
+from ase.io import read
+import numpy as np
 #############################################################################
+
 
 def get_feature_vector(hypers, frames):
     with ostream_redirect():
@@ -19,7 +18,7 @@ def get_feature_vector(hypers, frames):
         soap_vectors = soap.transform(frames)
         print('Feature vector size: %.3fMB' %
               (soap.get_num_coefficients()*8.0/1.0e6))
-        feature_vector = soap_vectors.get_dense_feature_matrix(soap)
+        feature_vector = soap_vectors.get_features(soap)
     return feature_vector
 
 #############################################################################
@@ -82,7 +81,7 @@ def dump_reference_json():
                           "lam": Lambda}
                 soap = SphericalCovariants(**hypers)
                 soap_vectors = soap.transform(frames)
-                x = soap_vectors.get_dense_feature_matrix(soap)
+                x = soap_vectors.get_features(soap)
                 x[np.abs(x) < 1e-300] = 0.
                 data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                  hypers=copy(soap.hypers)))

@@ -11,7 +11,7 @@ class SphericalCovariants(object):
     Computes a SphericalCovariants representation, i.e. lambda spectrum.
 
     Hyperparameters
-    ----------
+    ---------------
     interaction_cutoff : float
         Maximum pairwise distance for atoms to be considered in
         expansion
@@ -87,7 +87,7 @@ class SphericalCovariants(object):
             cutoff_smooth_width=cutoff_smooth_width
         )
         cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
-                                **cutoff_function_parameters)
+                                                      **cutoff_function_parameters)
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
@@ -190,3 +190,20 @@ class SphericalCovariants(object):
         else:
             raise ValueError('Only soap_type = LambdaSpectrum '
                              'implemented for now')
+
+    def get_keys(self, species):
+        """
+        return the proper list of keys used to build the representation
+        """
+        keys = []
+        if self.hypers['soap_type'] == 'LambdaSpectrum':
+            for sp1 in species:
+                for sp2 in species:
+                    if sp1 > sp2:
+                        continue
+                    keys.append([sp1, sp2])
+        else:
+            raise ValueError('Only soap_type = LambdaSpectrum '
+                             'implemented for now')
+
+        return keys

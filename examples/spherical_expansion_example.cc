@@ -1,5 +1,5 @@
 /**
- * file   spherical_expansion_example.cc
+ * @file   examples/spherical_expansion_example.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
@@ -25,17 +25,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "atomic_structure.hh"
-#include "basic_types.hh"
-#include "rascal_utility.hh"
-#include "representations/calculator_sorted_coulomb.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "structure_managers/adaptor_center_contribution.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "structure_managers/structure_manager_centers.hh"
+#include "rascal/atomic_structure.hh"
+#include "rascal/basic_types.hh"
+#include "rascal/representations/calculator_sorted_coulomb.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/structure_managers/adaptor_center_contribution.hh"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
+#include "rascal/utils.hh"
 
 #include <chrono>
 #include <cmath>
@@ -83,8 +83,7 @@ int main(int argc, char * argv[]) {
   json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+           {"initialization_arguments", {{"cutoff", cutoff}}}};
   json ad1b{{"name", "AdaptorCenterContribution"},
             {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
@@ -116,9 +115,9 @@ int main(int argc, char * argv[]) {
   std::cout << std::endl;
 
   auto && expansions_coefficients{
-      manager->template get_property_ref<Prop_t>(representation.get_name())};
+      *manager->template get_property_ptr<Prop_t>(representation.get_name())};
   auto && expansions_coefficients_gradient{
-      manager->template get_property_ref<PropGrad_t>(
+      *manager->template get_property_ptr<PropGrad_t>(
           representation.get_gradient_name())};
 
   size_t center_count{0};

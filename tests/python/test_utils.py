@@ -2,6 +2,26 @@ import json
 import numpy as np
 
 
+def intersection(X, Y=None):
+    if Y is None:
+        return list(X.keys())
+    else:
+        return list(set(X.keys()).intersection(Y.keys()))
+
+
+def dot(X, Y=None):
+    key_intersection = intersection(X, Y)
+
+    if Y is None:
+        Y = X
+    N = X[key_intersection[0]].shape[0]
+    M = Y[key_intersection[0]].shape[0]
+    K = np.zeros((N, M))
+    for key in key_intersection:
+        K += np.dot(X[key], Y[key].T)
+    return K
+
+
 def adapt_structure(cell, positions, numbers, pbc):
     cell = np.array(cell.T, order='F')
     positions = np.array(positions.T, order='F')
@@ -31,8 +51,9 @@ def load_json_frame(fn):
     with open(fn, 'r') as f:
         data = json.load(f)
     ids = data['ids']
-    structure = {key: np.array(val)
-                 for idx in ids for key, val in data[str(idx)].items()}
+    keys = ['cell', 'positions', 'numbers', 'pbc']
+    structure = {key: np.array(data[str(idx)][key])
+                 for idx in ids for key in keys}
 
     return adapt_structure(**structure)
 
