@@ -484,7 +484,7 @@ namespace rascal {
 
     ~Hyp1f1GradientProvider() = default;
 
-    Eigen::Ref<Eigen::Array<double, 1, Eigen::Dynamic>>
+    Eigen::Array<double, 1, Eigen::Dynamic>
     f(const Eigen::Matrix<double, 1, 1> & input_v) {
       this->hyp1f1_calculator.calc(input_v(0), this->fac_a, this->fac_b);
       Eigen::MatrixXd result(this->max_radial, this->max_angular + 1);
@@ -494,7 +494,7 @@ namespace rascal {
       return result_flat;
     }
 
-    Eigen::Ref<Eigen::Array<double, 1, Eigen::Dynamic>>
+    Eigen::Array<double, 1, Eigen::Dynamic>
     grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
       this->hyp1f1_calculator.calc(input_v(0), this->fac_a, this->fac_b, true);
       Eigen::MatrixXd result(this->max_radial, this->max_angular + 1);
