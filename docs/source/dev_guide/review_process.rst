@@ -8,69 +8,103 @@ Review process
 
 This short description should serve as a rough guideline on how we deal with
 reviews on pull requests (PR). Some PRs are easy, others are hard. Some require
-multiple changes and continous feedback, others can be merged in flawlessly. So
-this text should communicate our intent and style and not be a go/no-go
-situation.
+multiple changes and continuous feedback, others can be merged in
+flawlessly. The purpose of this text is to communicate our intent and style and
+should not be seen as *law*.
 
 After successfully adding a new feature, doing maintenance, sorting out a bug or
 adding new documentation, in short: contributing to the codebase in any form,
-the tests we have employed should all pass. These include tests for
-functionality on the C++ as well as the python side but also include checks for
-code style as far as they can be automated (see our :ref:`Conding convention
-<coding-convention>` for details on the style). We also have a custom target for
-make to help with autoformatting C++ as well as Python code.
+you should ensure that all existing and new tests should pass. These include
+tests for functionality on the C++ as well as the python side but also include
+tests for code style as far as they can be automated (see our :ref:`Coding
+convention <coding-convention>` for details on the style). We also have a custom
+``make`` target to help with autoformatting C++ as well as Python code.
 
-Further, we provide a PR template on github with several checkmarks to help
-start and streamline the process. Please make use of it and get rid of all
-unnecessary points, which just globber the PR message. To make it easy for
-possible reviewers do not hesitate to contact any of the people invovled in the
-development of librascal also beforehand. Some thing are easier to talk about in
-person.
+Further, we provide a PR template on Github with several checkmarks to help
+start and streamline the review process. Please make use of it though you can
+remove points that are irrelevant to the PR. This template is intended to help
+you in preparing your contribution for the review process and includes the main
+point which will be raised in any case. Also we highly encourage the use of the
+*Draft* PR functionality Github provides. We see it as a way to start a
+discussion about the contribution and the proposed changes and it does not have
+to be polished at that stage. The difference between a Draft PR and a normal PR
+is minor. The Draft stage signals that it is up for discussion and contributions
+while one the other hand treating it like a normal PR in the sense that all the
+continuous integration tools are applied and there is an immediate feedback from
+automatic tests. Do not hesitate to contact us at any stage if you are unsure
+about anything.
 
-So once you have added something to the code base and checked locally if the
-checks pass. Checks include the code tests as well as the checks for coding
-style as far as they can be checked automatically. You should also have added
-tests for your added functionality or adjusted tests, which conflict with a new
-design. The next step is to merge or rebase with the master branch. If
-necessary, add changes to the code to comply with any other added tests coming
-in from the updated master branch if they were not resolved in the merging or
-rebase process. Then you are ready to create your PR. Upon creating the PR our
-continuous integration spins up and does further checks with different compilers
-and compiling modes such as debug.
+Once you have added something to the code base and please check locally if the
+tests pass. These tests include the code tests as well as the tests for code
+style as far as they can be checked automatically. You should also add tests for
+new functionality. Likewise, if your changes break existing tests, be sure to
+update (not disable!) the affected tests so that they pass. The next step is to
+merge or rebase with the master branch (if you are unsure about which option, do
+not hesitate to contact us). If necessary, add changes to the code to comply
+with any other added tests coming in from the updated master branch if they were
+not resolved in the merging or rebase process. If your PR started out as a
+Draft, this is now the time to create a normal PR. If the PR never went into a
+Draft PR this is the point where you would create create the PR. Upon creating
+the PR the continuous integration tools run a set of rigorous tests with
+different compilers and compiling modes such as debug to ensure compatibility
+with the our defined set of options.
 
-Now it is time for review. Github provides a button for review requests. Most of
-the time the suggested persons for review are a good first address. Add some so that they are notified.
+Once the PR is ready for review (all items on the checklist are completed), use
+the Github button to notify specific developers to review the changes.
 
-To help speed up the process we follow some rough guidelines so you know what
-you can expect from a reviewer's role and we know what we have to do:
+To help speed up the process we follow some rough guidelines so everyone knows
+what to expect from a reviewer's role:
 
- #. If someone starts a review, this person is the go-to person to finish the
-    review on the PR and should see it through as fast as possible. This means
-    following up the the requested changes and staying part of the
-    discussion. And it also includes the approval in the end. As fast as
-    possible is often the best way to avoid having to re-merge with the master
-    branch if it is changing.
+ * Once the reviewers' concerns have been addressed, this person is responsible
+   for approving them as soon as possible. This not only ensures that the
+   changes are available to everyone as soon as they are ready, but also
+   minimizes the need for further merges with master and associated extra work.
 
- #. Single comments without actually providing a review are allowed and
-    encouraged, but should be used sparsely. They can be really helpful if
-    something might be overseen. But if you want changes and involve yourself in
-    the process, make a proper review and take the responsibility to see it
-    through.
+ * Single comments without actually providing a review are allowed and
+   encouraged, but should be used sparsely. They can be really helpful if
+   something might be overseen. But if you want changes and involve yourself in
+   the process, make a proper review and take the responsibility to see it
+   through.
 
-Sometimes there is a lot of commit noise and the master changes and sometimes
-the proper order of PR, Review, Requested Changed, remerge, etc. can be
-cumbersome. There are no rules to make this easy so please decide on the basis
-of the fact that we want a clean compiling master branch. To elaborate on this,
-here are a few examples
+ * If you are a reviewer and you start adding changes yourself (excluding the
+   one-line propositions that Github provides or just cosmetics) another person
+   should become the reviewer. This is to ensure that any part is reviewed by
+   someone else other than the creator.
 
- #. A PR is approved but there are still changes added afterwards. While this
-    can not be avoided completely, it should not be the norm. As the PR
-    requester and if the changes are not only of cosmetic nature, as a courtesy
-    please ask the approving reviewer again for feedback on the changes.
+A last note related to our own experience. If it happens that your PR falls into
+a busy time with a lot of changes on the master branch which are unrelated to
+you, do not hesitate to contact us if the any issues arise *after* your PR has
+been approved. While we discourage changes after the PR has been approved,
+sometimes it is necessary to be able to merge with master. There are no rules to
+make this easy so please decide on the basis of the fact that we want a clean
+compiling master branch. To elaborate on this, here are a few examples
 
- #. Changes due to merge or rebase with master because the master branch changed
-    can not be avoided. If the PR was approved, master changed and the result
-    are conflicts with the PR, this of course has to be solved. Again, as a
-    courtesy, please ask for feedback on the changes again because
-    merges/rebases can be complicated and we want to avoid a broken master
-    branch.
+ * A PR is approved but there are still changes added afterwards. While this can
+   not be avoided completely, it should not be the norm. As the PR requester and
+   if the changes are not only of cosmetic nature, as a courtesy please ask the
+   approving reviewer again for feedback on the changes.
+
+ * Changes due to merge or rebase with master because the master branch changed
+   can not be avoided. If the PR was approved, master changed and the result are
+   conflicts with the PR, this of course has to be solved. Again, as a courtesy,
+   please ask for feedback on the changes again because merges/rebases can be
+   complicated and we want to avoid a broken master branch.
+
+**TL;DR**
+ * We want a clean and tested master branch that is why we review code and use
+   continuous integration tools.
+ * Contact us if you have any questions.
+ * Start the discussion about your contribution early by using the
+   Draft-Pull-Request feature of Github.
+ * Use our Pull-Request template in preparing your PR.
+ * Add tests for added functionality.
+ * Make sure your proposed changes pass the all existing tests, change (not
+   disable!) them if necessary.
+ * Document your contribution.
+
+For reviewers
+ * Single line comments are ok, but consider a proper review.
+ * If you started a review, you are responsible for seeing it through.
+ * Finish the PR fast by reviewing the requested changes.
+ * If you start changing code on a PR as a reviewer, ask another person to
+   review you code.
