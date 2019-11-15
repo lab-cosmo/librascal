@@ -66,9 +66,9 @@ namespace rascal {
 
         /**
          * Computes G(a,b,z)
-         * @param z -> pow(alpha * r_ij, 2) / (alpha + beta)
-         * @param z2 -> argument of exp(-alpha*r_ij^2)
-         * @param ez2 -> exp(-alpha*r_ij^2)
+         * @param z -> @f$ pow(alpha * r_ij, 2) / (alpha + beta) @f$
+         * @param z2 -> argument of @f$ exp(-alpha*r_ij^2) @f$
+         * @param ez2 -> @f$ exp(-alpha*r_ij^2) @f$
          *
          * @warning the derivative outputed from this function is not dG/dz
          * but @f$ d1F1/dz * \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha
@@ -278,7 +278,7 @@ namespace rascal {
 
       /**
        *  Computes G and dG/dz*dz/dr using recursion relations with
-       *  z = (alpha * r_ij)**2 / (alpha + fac_b)
+       *  @f$ z = (alpha * r_ij)**2 / (alpha + fac_b) @f$
        */
       void calc_recursion(double r_ij, double alpha, const Vector_Ref & fac_b);
 
