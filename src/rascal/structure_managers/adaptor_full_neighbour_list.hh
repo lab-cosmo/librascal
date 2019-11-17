@@ -142,17 +142,24 @@ namespace rascal {
     //! returns the number of atoms or pairs
     size_t get_nb_clusters(int order) const {
       switch (order) {
-      case 1:
-        return this->manager->get_nb_clusters(order);
-      case 2:
+        /**
+         * Note: The case for order=1 is abmiguous: one possible answer is the
+         * number of centers the other possibility is the number of centers +
+         * ghost atoms. Please use the get_size or get_size_with_ghosts member
+         * functions
+         */
+      case 2: {
         return this->neighbours_atom_tag.size();
-      default:
+        break;
+      }
+      default: {
         throw std::runtime_error("Can only handle single atoms and pairs.");
+      }
       }
     }
 
     //! returns the number of atoms
-    size_t get_size() const { return this->get_nb_clusters(1); }
+    size_t get_size() const { return this->manager->get_size(); }
 
     //! returns the number of atoms
     size_t get_size_with_ghosts() const {
@@ -198,9 +205,19 @@ namespace rascal {
       return this->manager->get_atom_index(atom_tag);
     }
 
+    //! return atom type
+    int & get_atom_type(const AtomRef_t & atom) {
+      return this->manager->get_atom_type(atom.get_index());
+    }
+
     //! return atom type, const ref
     int get_atom_type(const AtomRef_t & atom) const {
       return this->manager->get_atom_type(atom.get_index());
+    }
+
+    //! Returns atom type given an atom tag
+    int & get_atom_type(int atom_id) {
+      return this->manager->get_atom_type(atom_id);
     }
 
     //! Returns a constant atom type given an atom tag

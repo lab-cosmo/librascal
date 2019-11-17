@@ -2,6 +2,8 @@
  * @file   rascal/structure_managers/structure_manager.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
+ * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   05 Apr 2018
  *
@@ -289,16 +291,6 @@ namespace rascal {
       return this->implementation().get_size_with_ghosts();
     }
 
-    template <size_t MaxOrder = traits::MaxOrder>
-    std::enable_if_t<(MaxOrder > 1), bool>
-    get_consider_ghost_neighbours() const {
-      return this->implementation().get_consider_ghost_neighbours();
-    }
-    template <size_t MaxOrder = traits::MaxOrder>
-    std::enable_if_t<not(MaxOrder > 1), bool>
-    get_consider_ghost_neighbours() const {
-      return false;
-    }
     //! number of atoms, pairs, triplets in respective manager
     size_t nb_clusters(size_t order) const final {
       return this->implementation().get_nb_clusters(order);
@@ -416,7 +408,9 @@ namespace rascal {
     get_validated_property_ref(const std::string & name) const {
       return *this->get_validated_property<UserProperty_t>(name);
     }
-    /*  Returns the typed property. Throws an error if property type given from
+
+    /**
+     *  Returns the typed property. Throws an error if property type given from
      *  user does not match actual property type.
      */
     template <typename UserProperty_t>
@@ -431,32 +425,36 @@ namespace rascal {
                            const std::string & name) {
       this->properties[name] = property;
     }
+
     /**
-     * Get a property of a given name. Create it if it does not exist.
+     * Get a atom property of a given name, possibly excluding ghosts. Create it
+     * if it does not exist.
      *
      * @tparam UserProperty_t full type of the property to return
      *
      * @param name name of the property to get
      *
+     * @param exclude_ghosts change property sizing behavior when Order == 1
+     * and when the property does not already exist.
+     *
      * @throw runtime_error if UserProperty_t is not compatible with property
      * of the given name
      */
     template <typename UserProperty_t>
-    std::shared_ptr<UserProperty_t> get_property_ptr(const std::string & name) {
+    std::shared_ptr<UserProperty_t>
+    get_property_ptr(const std::string & name,
+                     const bool & exclude_ghosts = false,
+                     const std::string & metadata = "no metadata") {
       if (this->has_property(name)) {
         auto property{this->get_property(name)};
         UserProperty_t::check_compatibility(*property);
         return std::static_pointer_cast<UserProperty_t>(property);
       } else {
-        auto property{std::make_shared<UserProperty_t>(this->implementation())};
+        auto property{std::make_shared<UserProperty_t>(
+            this->implementation(), metadata, exclude_ghosts)};
         this->register_property(property, name);
         return property;
       }
-    }
-
-    template <typename UserProperty_t>
-    UserProperty_t & get_property_ref(const std::string & name) {
-      return *this->template get_property_ptr<UserProperty_t>(name);
     }
 
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
@@ -996,13 +994,32 @@ namespace rascal {
     iterator begin() {
       std::array<size_t, Order> counters{this->it.get_counters()};
       auto offset = this->get_manager().get_offset(counters);
-      return iterator(*this, 1, offset);
+      return iterator(*this, static_cast<int>(HasCenterPairOrderOne), offset);
     }
 
     //! end of the iterations over the cluster itself
     iterator end() {
-      return iterator(*this, this->size(), std::numeric_limits<size_t>::max());
+      return iterator(*this,
+                      std::max(this->size(), size_t(HasCenterPairOrderOne)),
+                      std::numeric_limits<size_t>::max());
     }
+
+    /**
+     * Directly obtain the iterator to the n-th iterate
+     */
+    iterator get_iterator_at(const size_t & start) {
+      auto && offset{this->get_manager().get_offset(this->it.get_counters())};
+      return iterator(*this, start, offset);
+    }
+
+    /**
+     * Directly obtain the iterator to the n-th iterate
+     */
+    iterator get_iterator_at(const size_t & start) const {
+      auto && offset{this->get_manager().get_offset(this->it.get_counters())};
+      return iterator(*this, start, offset);
+    }
+
     //! returns its own size
     size_t size() { return this->get_manager().get_cluster_size(*this); }
     //! return iterator index - this is used in cluster_indices_container as

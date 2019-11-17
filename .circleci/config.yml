@@ -18,8 +18,7 @@ default_job: &default_job
           cd build
           cmake ${CMAKE_EXTRA} -DBUILD_BINDINGS=ON -DBUILD_TESTS=ON \
                 -DBUILD_EXAMPLES=ON -DBUILD_PROFILES=ON \
-                -DBUILD_BENCHMARKS=ON -DRUN_HAVE_STD_REGEX=0 \
-                -DRUN_BENCHMARKS_FLAGS=--benchmark_min_time=0.0000001 \
+                -DBUILD_BENCHMARKS=ON -DRUN_BENCHMARKS_FLAGS=--benchmark_min_time=0.0000001 \
                 -DCPPLINT=CPPLINT-NOTFOUND \
                 -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..
     - run:
@@ -46,7 +45,7 @@ jobs:
     environment:
       CC: gcc-9
       CXX: g++-9
-      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug
+      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=
     <<: *default_job
   clang-4:
     environment:
@@ -63,7 +62,7 @@ jobs:
       CC: clang-9
       CXX: clang++-9
       APT_EXTRA_INSTALL: apt install -y clang-9
-      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug
+      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=
     <<: *default_job
   # Special job only building the documentation
   docs:

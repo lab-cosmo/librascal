@@ -28,6 +28,8 @@
 #ifndef PERFORMANCE_BENCHMARKS_BENCHMARK_INTERPOLATOR_HH_
 #define PERFORMANCE_BENCHMARKS_BENCHMARK_INTERPOLATOR_HH_
 
+#include "benchmarks.hh"
+
 #include "rascal/json_io.hh"
 #include "rascal/math/interpolator.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
@@ -37,7 +39,6 @@
 #include "rascal/structure_managers/adaptor_strict.hh"
 #include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/structure_managers/structure_manager_centers.hh"
-#include "benchmarks.hh"
 
 #include <functional>
 #include <iostream>
@@ -162,10 +163,10 @@ namespace rascal {
           {"radial_angular",
            {std::make_pair(3, 4), std::make_pair(6, 6), std::make_pair(8, 6)}},
           {"random", {true}},  // dummy
-          {"filenames", {"../tests/reference_data/small_molecule.json"}},
+          {"filenames", {"tests/reference_data/small_molecule.json"}},
           // please use only one file because google benchmark cant put strings
           // into their `Counter`, therefore the filename cannot be printed
-          // {"filenames", {"../tests/reference_data/methane.json"}},
+          // {"filenames", {"tests/reference_data/methane.json"}},
           {"cutoffs", {4}}};
       return data;
     }
@@ -231,6 +232,8 @@ namespace rascal {
           this->template lookup<size_t>(data, "nbs_iterations", state);
       this->initialized = true;
     }
+
+    virtual ~InterpolatorBFixture() = default;
 
     bool initialized{false};
     double x1{0};
@@ -554,13 +557,7 @@ namespace rascal {
           AdaptorCenterContribution, AdaptorStrict>(structure, adaptors);
       this->manager->update(atomic_structure);
 
-      this->nb_neighbours = 0;
-      for (auto center : this->manager) {
-        for (auto _ : center) {
-          this->nb_neighbours++;
-        }
-      }
-
+      this->nb_neighbours = this->manager->get_nb_clusters(2);
       // make representation manager
       json hypers{{"max_radial", this->max_radial},
                   {"max_angular", this->max_angular},

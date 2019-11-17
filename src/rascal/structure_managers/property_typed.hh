@@ -3,6 +3,7 @@
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   06 Aug 2018
  *
@@ -144,15 +145,21 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Typed ``property`` class definition, inherits from the base property class
+   * Typed ``property`` base class definition, inherits from the base property
+   * class. This intermediate base class is necessary to specialize between Atom
+   * (Order=1) Properties and others. Because Order=1 Properties are able to be
+   * sized to two different options: `size` and `size with ghosts`. Typically
+   * one only wants the `size` and that it the default optiont. But e.g. for
+   * `cluster_indices` the size needs to include space for the number of atoms
+   * plus ghosts.
    */
-  template <typename T, size_t Order, size_t PropertyLayer, class Manager>
+  template <typename T, size_t Order_, size_t PropertyLayer, class Manager>
   class TypedProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using Value_t = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = Manager;
-    using Self_t = TypedProperty<T, Order, PropertyLayer, Manager>;
+    using Self_t = TypedProperty<T, Order_, PropertyLayer, Manager>;
     using traits = typename Manager::traits;
     using Matrix_t = math::Matrix_t;
 
@@ -160,16 +167,19 @@ namespace rascal {
     using reference = typename Value_t::reference;
     using const_reference = typename Value_t::const_reference;
 
-    //! constructor
+    constexpr static size_t Order{Order_};
+    constexpr static bool IsOrderOne{Order == 1};
+
     TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
-                  std::string metadata = "no metadata")
+                  std::string metadata = "no metadata",
+                  bool exclude_ghosts = false)
         : Parent{static_cast<StructureManagerBase &>(manager),
                  nb_row,
                  nb_col,
                  Order,
                  PropertyLayer,
                  metadata},
-          type_id{typeid(Self_t).name()} {}
+          type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
 
     //! Default constructor
     TypedProperty() = delete;
@@ -181,7 +191,7 @@ namespace rascal {
     TypedProperty(TypedProperty && other) = default;
 
     //! Destructor
-    virtual ~TypedProperty() = default;
+    ~TypedProperty() = default;
 
     //! Copy assignment operator
     TypedProperty & operator=(const TypedProperty & other) = delete;
@@ -198,41 +208,51 @@ namespace rascal {
       return static_cast<Manager_t &>(this->base_manager);
     }
 
-    template <size_t Order_ = Order, std::enable_if_t<(Order_ == 1), int> = 0>
-    size_t get_validated_property_length(bool consider_ghost_atoms) {
-      if (consider_ghost_atoms) {
-        if (traits::MaxOrder < 2) {
-          throw std::runtime_error(
-              "consider_ghost_atoms is true,"
-              " but can only be use for underlying manager with"
-              " MaxOrder at least 2.");
-        }
-        if (not(this->get_manager().get_consider_ghost_neighbours())) {
-          throw std::runtime_error(
-              "consider_ghost_atoms is true,"
-              " but underlying manager does not have ghost atoms in"
-              " cluster_indices_container. Turn consider_ghost_neighbours"
-              " on, to consider ghost atoms with independent property values"
-              " from their corresponding central atoms.");
-        }
-        return this->get_manager().size_with_ghosts();
-      }
-      return this->get_manager().size();
-    }
-    template <size_t Order_ = Order,
-              std::enable_if_t<not(Order_ == 1), int> = 0>
-    size_t get_validated_property_length(bool = false) {
-      return this->base_manager.nb_clusters(Order);
+    /**
+     * Adjust size of values (only increases, never frees).
+     *
+     * Uses SFINAE to differenciate behavior between values of Order.
+     * Order > 1 then the size of the property is directly taken
+     * from the manager.
+     * Order == 0 then the size of the property is 1.
+     * Order == 1 then the size of the property depends on the bolean
+     * exclude_ghosts. By default it is set to false so that property size is
+     * always larger than what could be needed.
+     */
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ > 1), int> = 0>
+    void resize() {
+      auto n_components = this->get_nb_comp();
+      size_t new_size = this->base_manager.nb_clusters(Order) * n_components;
+      this->values.resize(new_size);
     }
 
-    /* Fill sequence, used for *_cluster_indices initialization
+    //! Adjust size of values (only increases, never frees).
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 0), int> = 0>
+    void resize() {
+      auto n_components = this->get_nb_comp();
+      this->values.resize(n_components);
+    }
+
+    //! Adjust size of values (only increases, never frees).
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 1), int> = 0>
+    void resize() {
+      const auto n_components{this->get_nb_comp()};
+      const size_t new_size{(this->exclude_ghosts
+                                 ? this->get_manager().size()
+                                 : this->get_manager().size_with_ghosts()) *
+                            n_components};
+      this->values.resize(new_size);
+    }
+
+    /**
+     * Fill sequence, used for *_cluster_indices initialization
      * if consdier_ghost_atoms is true, ghost atoms also can have
-     * their own propery value independent from its correpsonding central atom.
-     * This function is used for all Order 1 ManagerImplementations
+     * their own propery value independent from its correpsonding central
+     * atom. This function is used for all Order 1 ManagerImplementations
      */
-    void fill_sequence(bool consider_ghost_atoms = false) {
+    void fill_sequence() {
       // adjust size of values (only increases, never frees)
-      this->resize(consider_ghost_atoms);
+      this->resize();
       for (size_t i{0}; i < this->values.size(); ++i) {
         values[i] = i;
       }
@@ -240,15 +260,6 @@ namespace rascal {
       // the property was not up to date (no need to check here if it should
       // be updated)
       this->set_updated_status(true);
-    }
-
-    //! Adjust size of values (only increases, never frees)
-    void resize(bool consider_ghost_atoms = false) {
-      auto n_components = this->get_nb_comp();
-      size_t new_size =
-          this->get_validated_property_length(consider_ghost_atoms) *
-          n_components;
-      this->values.resize(new_size);
     }
 
     //! Returns the size of one component
@@ -270,9 +281,9 @@ namespace rascal {
       return this->operator[](id.get_cluster_index(CallerLayer));
     }
 
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>
-    std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
-                     reference>                            // NOLINT
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order__ = Order>
+    std::enable_if_t<(Order__ == 1) and (CallerOrder > 1),  // NOLINT
+                     reference>                             // NOLINT
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](
           static_cast<Manager_t &>(this->base_manager)
@@ -319,9 +330,15 @@ namespace rascal {
     }
 
    protected:
-    std::string type_id{};
+    std::string type_id;
     std::vector<T> values{};  //!< storage for properties
+    /**
+     * boolean deciding on including the ghost atoms in the sizing of the
+     * property when Order == 1
+     */
+    const bool exclude_ghosts;
   };
+
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_STRUCTURE_MANAGERS_PROPERTY_TYPED_HH_

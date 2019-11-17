@@ -112,7 +112,7 @@ namespace rascal {
         "reference_data/modified_bessel_first_kind_reference.ubjson";
 
     json ref_data{};
-    bool verbose{true};
+    bool verbose{false};
   };
 
   /**

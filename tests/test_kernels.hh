@@ -104,9 +104,7 @@ namespace rascal {
         json structure{};
         json adaptors;
         json ad1{{"name", "AdaptorNeighbourList"},
-                 {"initialization_arguments",
-                  {{"cutoff", cutoff},
-                   {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+                 {"initialization_arguments", {{"cutoff", cutoff}}}};
         json ad1b{{"name", "AdaptorCenterContribution"},
                   {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
@@ -135,7 +133,6 @@ namespace rascal {
     std::vector<json> representation_hypers{};
     std::vector<json> kernel_hypers{};
 
-    const bool consider_ghost_neighbours{false};
     std::string ref_filename{"reference_data/kernel_reference.ubjson"};
     std::string filename{""};
     int start{0};

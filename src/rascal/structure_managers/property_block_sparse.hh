@@ -2,6 +2,8 @@
  * @file   rascal/structure_managers/property_block_sparse.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
+ * @author Till Junge <till.junge@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   03 April 2019
  *
@@ -262,11 +264,13 @@ namespace rascal {
       //! access or insert specified element
       reference operator[](const SortedKey_t & skey) {
         auto & pos{this->map[skey.get_key()]};
+        assert(std::get<1>(pos) * std::get<2>(pos) > 0);
         return reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
                          std::get<2>(pos));
       }
       const_reference operator[](const SortedKey_t & skey) const {
         auto & pos{this->map.at(skey.get_key())};
+        assert(std::get<1>(pos) * std::get<2>(pos) > 0);
         return const_reference(&this->data[std::get<0>(pos)], std::get<1>(pos),
                                std::get<2>(pos));
       }
@@ -455,14 +459,14 @@ namespace rascal {
   /**
    * Typed ``property`` class definition, inherits from the base property class
    */
-  template <typename Precision_t, size_t Order, size_t PropertyLayer,
+  template <typename Precision_t, size_t Order_, size_t PropertyLayer,
             class Manager, typename Key>
   class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using Manager_t = Manager;
     using Self_t =
-        BlockSparseProperty<Precision_t, Order, PropertyLayer, Manager, Key>;
+        BlockSparseProperty<Precision_t, Order_, PropertyLayer, Manager, Key>;
     using traits = typename Manager::traits;
 
     using Matrix_t = math::Matrix_t;
@@ -472,21 +476,30 @@ namespace rascal {
     using InputData_t = internal::InternallySortedKeyMap<Key_t, Matrix_t>;
     using Data_t = std::vector<InputData_t>;
 
+    constexpr static size_t Order{Order_};
+    constexpr static bool IsOrderOne{Order == 1};
+
    protected:
     Data_t values{};
-    std::string type_id{};
+    std::string type_id;
+    /**
+     * boolean deciding on including the ghost atoms in the sizing of the
+     * property when Order == 1
+     */
+    const bool exclude_ghosts;
 
    public:
     //! constructor
     BlockSparseProperty(Manager_t & manager,
-                        std::string metadata = "no metadata")
+                        std::string metadata = "no metadata",
+                        bool exclude_ghosts = false)
         : Parent{static_cast<StructureManagerBase &>(manager),
                  0,
                  0,
                  Order,
                  PropertyLayer,
                  metadata},
-          type_id{typeid(Self_t).name()} {}
+          type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
 
     //! Default constructor
     BlockSparseProperty() = delete;
@@ -498,7 +511,7 @@ namespace rascal {
     BlockSparseProperty(BlockSparseProperty && other) = default;
 
     //! Destructor
-    virtual ~BlockSparseProperty() = default;
+    ~BlockSparseProperty() = default;
 
     //! Copy assignment operator
     BlockSparseProperty & operator=(const BlockSparseProperty & other) = delete;
@@ -523,42 +536,34 @@ namespace rascal {
     const std::string & get_type_info() const final { return this->type_id; }
 
     /**
-     * the case consider_ghost_atoms == true is limited to cluster_index
-     * objects.
+     * Adjust size of values (only increases, never frees).
+     *
+     * Uses SFINAE to differenciate behavior between values of Order.
+     * Order > 1 then the size of the property is directly taken
+     * from the manager.
+     * Order == 0 then the size of the property is 1.
+     * Order == 1 then the size of the property depends on the bolean
+     * exclude_ghosts. By default it is set to false so that property size is
+     * always larger than what could be needed.
      */
-    template <size_t Order_ = Order, std::enable_if_t<(Order_ == 1), int> = 0>
-    size_t get_validated_property_length(bool consider_ghost_atoms) {
-      if (consider_ghost_atoms) {
-        if (traits::MaxOrder < 2) {
-          throw std::runtime_error(
-              "consider_ghost_atoms is true,"
-              " but can only be use for underlying manager with"
-              " MaxOrder at least 2.");
-        }
-        if (not(this->get_manager().get_consider_ghost_neighbours())) {
-          throw std::runtime_error(
-              "consider_ghost_atoms is true,"
-              " but underlying manager does not have ghost atoms in"
-              " cluster_indices_container. Turn consider_ghost_neighbours"
-              " on, to consider ghost atoms with independent property values"
-              " from their corresponding central atoms.");
-        }
-        return this->get_manager().size_with_ghosts();
-      }
-      return this->get_manager().size();
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ > 1), int> = 0>
+    void resize() {
+      size_t new_size{this->base_manager.nb_clusters(Order)};
+      this->values.resize(new_size);
     }
 
-    template <size_t Order_ = Order,
-              std::enable_if_t<not(Order_ == 1), int> = 0>
-    size_t
-    get_validated_property_length(bool /*consider_ghost_atoms*/ = false) {
-      return this->base_manager.nb_clusters(Order_);
+    //! Adjust size of values (only increases, never frees).
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 0), int> = 0>
+    void resize() {
+      this->values.resize(1);
     }
 
-    //! Adjust size of values (only increases, never frees)
-    void resize(bool consider_ghost_atoms = false) {
-      size_t new_size{
-          this->get_validated_property_length<Order>(consider_ghost_atoms)};
+    //! Adjust size of values (only increases, never frees).
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 1), int> = 0>
+    void resize() {
+      size_t new_size{this->exclude_ghosts
+                          ? this->get_manager().size()
+                          : this->get_manager().size_with_ghosts()};
       this->values.resize(new_size);
     }
 
@@ -595,18 +600,18 @@ namespace rascal {
     /**
      * Access a property of order 1 with a clusterRef of order 2
      */
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-              std::enable_if_t<(Order_ == 1) and (CallerOrder == 2),  // NOLINT
-                               int> = 0>                              // NOLINT
+    template <size_t CallerOrder, size_t CallerLayer,
+              bool T = (IsOrderOne and (CallerOrder == 2)),  // NOLINT
+              std::enable_if_t<T, int> = 0>                  // NOLINT
     InputData_t &
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](this->get_manager().get_atom_index(
           id.get_internal_neighbour_atom_tag()));
     }
 
-    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order,
-              std::enable_if_t<(Order_ == 1) and (CallerOrder == 2),  // NOLINT
-                               int> = 0>                              // NOLINT
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order__ = Order,
+              std::enable_if_t<(Order__ == 1) and (CallerOrder == 2),  // NOLINT
+                               int> = 0>                               // NOLINT
     const InputData_t &
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) const {
       return this->operator[](this->get_manager().get_atom_index(

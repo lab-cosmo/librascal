@@ -38,8 +38,11 @@ namespace rascal {
   // function for setting the internal data structures
   void StructureManagerCenters::build() {
     auto && center_atoms_mask = this->get_center_atoms_mask();
-    this->natoms = this->get_positions().size() / traits::Dim;
-    this->n_center_atoms = center_atoms_mask.count();
+    this->n_centers = center_atoms_mask.count();
+    size_t ntot{
+        static_cast<size_t>(this->get_positions().size() / traits::Dim)};
+    this->n_ghosts = ntot - this->n_centers;
+
     // initialize necessary data structure
     this->atoms_index[0].clear();
     this->offsets.clear();
@@ -47,14 +50,14 @@ namespace rascal {
                        internal::ResizePropertyToZero());
 
     // set the references to the center atoms positions and types
-    for (size_t id{0}; id < this->natoms; ++id) {
+    for (size_t id{0}; id < ntot; ++id) {
       if (center_atoms_mask(id)) {
         this->atoms_index[0].push_back(id);
         this->offsets.push_back(id);
       }
     }
 
-    for (size_t id{0}; id < this->natoms; ++id) {
+    for (size_t id{0}; id < ntot; ++id) {
       if (not center_atoms_mask(id)) {
         this->atoms_index[0].push_back(id);
         this->offsets.push_back(id);
@@ -84,7 +87,13 @@ namespace rascal {
   // returns the number of cluster at Order=1, which is the number of atoms
   size_t StructureManagerCenters::get_nb_clusters(size_t order) const {
     if (order == 1) {
-      return this->n_center_atoms;
+      /**
+       * Note: The case for order=1 is abmiguous: one possible answer is the
+       * number of centers the other possibility is the number of centers +
+       * ghost atoms. Please use the get_size or get_size_with_ghosts member
+       * functions
+       */
+      return this->n_centers + this->n_ghosts;
     } else {
       throw std::string("ERROR : Order != 1");
     }

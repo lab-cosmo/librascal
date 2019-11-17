@@ -33,6 +33,24 @@
 #include <boost/test/unit_test.hpp>
 
 namespace rascal {
+  /* ---------------------------------------------------------------------- */
+
+  using multiple_fixtures =
+      boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb<
+                           MultipleStructureManagerNLStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalExpansion<
+                           MultipleStructureManagerNLCCStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalInvariants<
+                           MultipleStructureManagerNLCCStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalCovariants<
+                           MultipleStructureManagerNLCCStrictFixture>>>;
+
+  using fixtures_ref_test =
+      boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
+                       CalculatorFixture<SphericalExpansionTestData>,
+                       CalculatorFixture<SphericalInvariantsTestData>,
+                       CalculatorFixture<SphericalCovariantsTestData>>;
+
   BOOST_AUTO_TEST_SUITE(representation_test);
 
   /* ---------------------------------------------------------------------- */
@@ -84,24 +102,6 @@ namespace rascal {
       BOOST_CHECK_EQUAL(true_order(idx_i), test_order[idx_i].first);
     }
   }
-
-  /* ---------------------------------------------------------------------- */
-
-  using multiple_fixtures =
-      boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb<
-                           MultipleStructureManagerNLStrictFixture>>,
-                       CalculatorFixture<MultipleStructureSphericalExpansion<
-                           MultipleStructureManagerNLCCStrictFixture>>,
-                       CalculatorFixture<MultipleStructureSphericalInvariants<
-                           MultipleStructureManagerNLCCStrictFixture>>,
-                       CalculatorFixture<MultipleStructureSphericalCovariants<
-                           MultipleStructureManagerNLCCStrictFixture>>>;
-
-  using fixtures_ref_test =
-      boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
-                       CalculatorFixture<SphericalExpansionTestData>,
-                       CalculatorFixture<SphericalInvariantsTestData>,
-                       CalculatorFixture<SphericalCovariantsTestData>>;
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -221,10 +221,11 @@ namespace rascal {
       manager->update(atomic_structure);
       for (auto & hyper : hypers) {
         representations.emplace_back(hyper);
+        std::string property_name{representations.back().get_name()};
         representations.back().compute(manager);
-        auto & prop = manager->template get_validated_property_ref<Property_t>(
-            representations.back().get_name());
-        BOOST_CHECK_EQUAL(prop.get_nb_item(), 1);
+        auto prop{manager->template get_validated_property<Property_t>(
+            property_name)};
+        BOOST_CHECK_EQUAL(prop->get_nb_item(), 1);
       }
     }
   }
@@ -281,8 +282,7 @@ namespace rascal {
         auto & prop_no_center =
             manager_no_center->template get_validated_property_ref<Property_t>(
                 representation.get_name());
-        math::Matrix_t rep_no_center =
-            prop_no_center.get_features();
+        math::Matrix_t rep_no_center = prop_no_center.get_features();
 
         BOOST_CHECK_EQUAL(rep_full.cols(), rep_no_center.cols());
         BOOST_CHECK_EQUAL(center_atoms_mask.count(), rep_no_center.rows());

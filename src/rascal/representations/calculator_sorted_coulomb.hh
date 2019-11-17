@@ -428,22 +428,22 @@ namespace rascal {
 
     // Get a reference to the data container where the computed representation
     // is stored in the corresponding structure manager
-    auto && coulomb_matrices{
-        manager->template get_property_ref<Prop_t>(this->get_name())};
+    constexpr bool ExcludeGhosts{true};
+    auto coulomb_matrices{manager->template get_property_ptr<Prop_t>(
+        this->get_name(), ExcludeGhosts)};
 
     // if the representation has already been computed for the current
     // structure then do nothing
-    if (coulomb_matrices.is_updated()) {
+    if (coulomb_matrices->is_updated()) {
       return;
     }
 
     this->check_size_compatibility(manager);
 
     // initialise the sorted coulomb_matrices in linear storage
-    coulomb_matrices.clear();
-    coulomb_matrices.set_nb_row(this->get_n_feature());
-    coulomb_matrices.resize();
-    // coulomb_matrices.set_shape(this->get_n_feature(), 1);
+    coulomb_matrices->clear();
+    coulomb_matrices->set_nb_row(this->get_n_feature());
+    coulomb_matrices->resize();
 
     // initialize the sorted linear coulomb matrix
     Eigen::MatrixXd lin_sorted_coulomb_mat(this->size * (this->size + 1) / 2,
@@ -482,7 +482,7 @@ namespace rascal {
       this->sort_and_linearize_coulomb_matrix(
           coulomb_mat, lin_sorted_coulomb_mat, sort_order);
 
-      coulomb_matrices[center] = lin_sorted_coulomb_mat;
+      (*coulomb_matrices)[center] = lin_sorted_coulomb_mat;
     }
   }
   /* -------------------- rep-options-compute-impl-end -------------------- */

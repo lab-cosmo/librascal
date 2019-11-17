@@ -367,20 +367,21 @@ namespace rascal {
     // Compute the spherical expansions of the current structure
     rep_expansion.compute(manager);
 
+    constexpr bool ExcludeGhosts{true};
     auto && expansions_coefficients{
-        manager->template get_property_ref<PropExp_t>(
-            rep_expansion.get_name())};
+        *manager->template get_property_ptr<PropExp_t>(rep_expansion.get_name(),
+                                                       ExcludeGhosts)};
 
     // No error if gradients not computed; just an empty array in that case
     auto && expansions_coefficients_gradient{
-        manager->template get_property_ref<PropGradExp_t>(
+        *manager->template get_property_ptr<PropGradExp_t>(
             rep_expansion.get_gradient_name())};
 
-    auto && soap_vectors{
-        manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && soap_vectors{*manager->template get_property_ptr<Prop_t>(
+        this->get_name(), ExcludeGhosts)};
 
     auto && soap_vector_gradients{
-        manager->template get_property_ref<PropGrad_t>(
+        *manager->template get_property_ptr<PropGrad_t>(
             this->get_gradient_name())};
 
     // if the representation has already been computed for the current
@@ -449,6 +450,7 @@ namespace rascal {
       }
       if (this->compute_gradients) {
         auto ii_pair = center.get_atom_ii();
+        auto atom_i_tag = center.get_atom_tag();
         auto & grad_center_coefficients{
             expansions_coefficients_gradient[ii_pair]};
         auto & soap_center_gradient{soap_vector_gradients[ii_pair]};
@@ -525,6 +527,13 @@ namespace rascal {
 
             // Sum the gradients wrt the neighbour atom position
             for (auto neigh : center) {
+              auto && atom_j = neigh.get_atom_j();
+              auto atom_j_tag = atom_j.get_atom_tag();
+              // compute grad contribution only if the neighbour is _not_ an
+              // image of the center
+              if (atom_j_tag == atom_i_tag) {
+                continue;
+              }
               auto & grad_neigh_coefficients{
                   expansions_coefficients_gradient[neigh]};
               auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
@@ -681,6 +690,13 @@ namespace rascal {
 
           // Aaand do the same thing for the gradients wrt neighbouring atoms
           for (auto neigh : center) {
+            auto && atom_j = neigh.get_atom_j();
+            auto atom_j_tag = atom_j.get_atom_tag();
+            // compute grad contribution only if the neighbour is _not_ an
+            // image of the center
+            if (atom_j_tag == atom_i_tag) {
+              continue;
+            }
             auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
             Eigen::Vector3d soap_vector_dot_neigh_gradient{};
             soap_vector_dot_neigh_gradient.setZero();
@@ -740,19 +756,20 @@ namespace rascal {
 
     rep_expansion.compute(manager);
 
+    constexpr bool ExcludeGhosts{true};
     auto && expansions_coefficients{
-        manager->template get_property_ref<PropExp_t>(
-            rep_expansion.get_name())};
+        *manager->template get_property_ptr<PropExp_t>(rep_expansion.get_name(),
+                                                       ExcludeGhosts)};
 
     auto & expansions_coefficients_gradient{
-        manager->template get_property_ref<PropGradExp_t>(
+        *manager->template get_property_ptr<PropGradExp_t>(
             rep_expansion.get_gradient_name())};
 
-    auto && soap_vectors{
-        manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && soap_vectors{*manager->template get_property_ptr<Prop_t>(
+        this->get_name(), ExcludeGhosts)};
 
     auto && soap_vector_gradients{
-        manager->template get_property_ref<PropGrad_t>(
+        *manager->template get_property_ptr<PropGrad_t>(
             this->get_gradient_name())};
     // if the representation has already been computed for the current
     // structure then do nothing
@@ -898,12 +915,13 @@ namespace rascal {
 
     rep_expansion.compute(manager);
 
+    constexpr bool ExcludeGhosts{true};
     auto && expansions_coefficients{
-        manager->template get_property_ref<PropExp_t>(
-            rep_expansion.get_name())};
+        *manager->template get_property_ptr<PropExp_t>(rep_expansion.get_name(),
+                                                       ExcludeGhosts)};
 
-    auto && soap_vectors{
-        manager->template get_property_ref<Prop_t>(this->get_name())};
+    auto && soap_vectors{*manager->template get_property_ptr<Prop_t>(
+        this->get_name(), ExcludeGhosts)};
 
     // if the representation has already been computed for the current
     // structure then do nothing

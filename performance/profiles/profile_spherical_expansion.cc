@@ -87,8 +87,7 @@ int main(int argc, char * argv[]) {
   json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+           {"initialization_arguments", {{"cutoff", cutoff}}}};
   json ad1b{{"name", "AdaptorCenterContribution"},
             {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
@@ -136,8 +135,10 @@ int main(int argc, char * argv[]) {
             << std::endl;
 
   if (VERBOSE) {
-    auto expn = manager->template get_property_ref<PropGrad_t>(
-                 representation.get_gradient_name()).get_features();
+    auto expn = manager
+                    ->template get_property_ptr<PropGrad_t>(
+                        representation.get_gradient_name())
+                    ->get_features();
     std::cout << "Sample SphericalExpansion elements " << std::endl
               << expn(0, 0) << " " << expn(0, 1) << " " << expn(0, 2) << "\n"
               << expn(1, 0) << " " << expn(1, 1) << " " << expn(1, 2) << "\n"
@@ -162,17 +163,16 @@ int main(int argc, char * argv[]) {
             << elapsed_grad.count() / elapsed.count() << std::endl;
 
   if (VERBOSE) {
-    auto expn2 = manager->template get_property_ref<PropGrad_t>(
-                 representation_gradients.get_gradient_name())
-                 .get_features();
+    auto expn2 = manager
+                     ->template get_property_ptr<PropGrad_t>(
+                         representation_gradients.get_gradient_name())
+                     ->get_features();
     std::cout << "Sample SphericalExpansion elements (should be identical) "
               << std::endl
-              << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) <<
-              "\n"
-              << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) <<
-              "\n"
-              << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2) <<
-              "\n";
+              << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) << "\n"
+              << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) << "\n"
+              << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2)
+              << "\n";
   }
   // TODO(max) print out analogous gradient components, for now see
   // spherical_expansion_example

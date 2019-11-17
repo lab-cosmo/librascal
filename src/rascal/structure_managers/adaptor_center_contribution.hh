@@ -60,6 +60,8 @@ namespace rascal {
     // increased in size so all the data belongs to the adaptor
     using LayerByOrder = std::index_sequence<
         ManagerImplementation::template cluster_layer_from_order<1>() + 1, 0>;
+    constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
+        parent_traits::NeighbourListType};
   };
 
   /**
@@ -140,16 +142,20 @@ namespace rascal {
     double get_cutoff() const { return this->manager->get_cutoff(); }
 
     size_t get_nb_clusters(int order) const {
+      /**
+       * Note: The case for order=1 is abmiguous: one possible answer is the
+       * number of centers the other possibility is the number of centers +
+       * ghost atoms. Please use the get_size or get_size_with_ghosts member
+       * functions
+       */
       return this->atom_tag_list[order - 1].size();
-    }
-
-    bool get_consider_ghost_neighbours() const {
-      return this->manager->get_consider_ghost_neighbours();
     }
 
     size_t get_size() const { return this->manager->get_size(); }
 
-    size_t get_size_with_ghosts() const { return this->get_nb_clusters(1); }
+    size_t get_size_with_ghosts() const {
+      return this->manager->get_size_with_ghosts();
+    }
 
     Vector_ref get_position(int index) {
       return this->manager->get_position(index);
@@ -275,6 +281,8 @@ namespace rascal {
       this->template add_atom<Order - 1>(cluster.back());
     }
 
+    // ManagerImplementation & get_manager() { return *this->manager; }
+
     ImplementationPtr_t manager;
 
     /**
@@ -338,9 +346,8 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
     size_t pair_counter{0};
-    // depending on the underlying neighbourlist, the proxy `.with_ghosts()` is
-    // either actually with ghosts, or only returns the number of centers.
-    for (auto atom : this->manager.get()->with_ghosts()) {
+
+    for (auto && atom : this->manager) {
       this->add_atom(atom);
       /*
        * Add new layer for atoms (see LayerByOrder for
@@ -351,7 +358,6 @@ namespace rascal {
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
-
       auto && atom_tag = atom.get_atom_tag();
       AtomIndex_t self_atom_tag_list{{atom_tag, atom_tag}};
 
@@ -372,6 +378,19 @@ namespace rascal {
         pair_cluster_indices.push_back(indices_pair);
         pair_counter++;
       }
+    }
+
+    for (auto && atom : this->manager->only_ghosts()) {
+      this->add_atom(atom);
+      /**
+       * Add new layer for atoms (see LayerByOrder for
+       * possible optimisation).
+       */
+      Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
+
+      indices.template head<AtomLayer>() = atom.get_cluster_indices();
+      indices(AtomLayer) = indices(AtomLayer - 1);
+      atom_cluster_indices.push_back(indices);
     }
   }
 }  // namespace rascal

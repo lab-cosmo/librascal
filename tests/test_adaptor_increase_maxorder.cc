@@ -72,7 +72,7 @@ namespace rascal {
       std::cout << ">> underlying manager " << std::endl;
     }
     size_t npairs1{0};
-    for (auto atom : pair_manager->with_ghosts()) {
+    for (auto atom : pair_manager) {
       if (verbose) {
         std::cout << "atom " << atom.back() << std::endl;
       }
@@ -168,8 +168,8 @@ namespace rascal {
     BOOST_CHECK_EQUAL(SM3->get_nb_clusters(3), 1);
 
     for (auto atom : SM3) {
-      auto atom_tag = atom.get_atom_tag();
-      auto atom_type = atom.get_atom_type();
+      auto && atom_tag = atom.get_atom_tag();
+      auto && atom_type = atom.get_atom_type();
       BOOST_CHECK_EQUAL(atom_type, SM3->get_atom_type(atom_tag));
 
       auto atom_position = atom.get_position();

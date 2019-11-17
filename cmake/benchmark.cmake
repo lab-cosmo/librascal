@@ -24,16 +24,15 @@ mark_as_advanced(BENCHMARK_ENABLE_INSTALL)
 mark_as_advanced(BENCHMARK_ENABLE_LTO)
 mark_as_advanced(BENCHMARK_USE_LIBCXX)
 
+# HACK around https://github.com/google/benchmark/issues/773
+# this might fail if we use another compiler than GCC/clang
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+
 add_subdirectory("${benchmark_SOURCE_DIR}")
 include_directories(SYSTEM "${benchmark_SOURCE_DIR}/include")
 
-# surpresses the "'CSVReporter' is deprecated" errors when compiling benchmark.cc
- set_target_properties(
-     benchmark PROPERTIES
-     COMPILE_FLAGS
-      "-Wno-deprecated-declarations"
-     )
+# surpresses the "'CSVReporter' is deprecated" some warnings in google benchmark code
+target_compile_options(benchmark PUBLIC -Wno-deprecated-declarations -Wno-effc++)
 
 set(${package}_FOUND TRUE CACHE INTERNAL "To avoid cyclic search" FORCE)
 set(${package}_FOUND_EXTERNAL TRUE CACHE INTERNAL "" FORCE)
-
