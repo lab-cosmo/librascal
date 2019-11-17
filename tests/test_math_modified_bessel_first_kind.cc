@@ -88,6 +88,24 @@ namespace rascal {
     }
   }
 
+  BOOST_AUTO_TEST_CASE(MBFs_gradient_test) {
+    std::vector<size_t> max_angulars{{3}};
+    // std::vector<double> alphas{{0.6,3.5,8.5,10,20,50}};
+    std::vector<double> alphas{{5.}};
+    // use same range as in the reference test
+    // Eigen::ArrayXd xs = Eigen::ArrayXd::LinSpaced(20, 0.005, 10);
+    Eigen::ArrayXd xs(2);
+    xs << 2.5, 3.5;
+    GradientTestFixture fix{"reference_data/mbfs_derivative_test.json"};
+
+    for (const auto & max_angular : max_angulars) {
+      for (const auto & alpha : alphas) {
+        ModifiedBesselFirstKindGradientsProvider mbf_calculator{xs, alpha, max_angular};
+        test_gradients(mbf_calculator, fix);
+      }
+    }
+  }
+
   /* ----------------------------------------------------------------------
    */
   BOOST_AUTO_TEST_SUITE_END();

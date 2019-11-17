@@ -123,6 +123,45 @@ namespace rascal {
    * See the documentation for test_gradients() below; the calculator object
    * passed to it must provide the functions f() and grad_f() as below.
    */
+  struct ModifiedBesselFirstKindGradientsProvider {
+    ModifiedBesselFirstKindGradientsProvider(const Eigen::ArrayXd& xs, const double& alpha, const size_t& max_angular) {
+      this->alpha = alpha;
+      this->xs = xs;
+      this->max_angular = max_angular;
+      this->j_v_complete_square.precompute(max_angular, this->xs);
+    }
+
+    static const size_t n_arguments = 1;
+    using Map_t = Eigen::Map<Eigen::ArrayXd>;
+    using Input_t = const Eigen::Matrix<double, 1, 1> &;
+
+    Eigen::ArrayXd f(Input_t inputs_v) {
+      double distance{inputs_v[0]};
+      this->j_v_complete_square.calc(distance, this->alpha);
+      Eigen::ArrayXXd result = this->j_v_complete_square.get_values();
+      Map_t result_flat(result.data(), result.size());
+      return result_flat;
+    }
+    Eigen::ArrayXd grad_f(Input_t inputs_v) {
+      double distance{inputs_v[0]};
+      this->j_v_complete_square.calc(distance, this->alpha);
+      Eigen::ArrayXXd result = this->j_v_complete_square.get_gradients();
+      Map_t result_flat(result.data(), result.size());
+      return result_flat;
+    }
+    double alpha{};
+    Eigen::ArrayXd xs{};
+    size_t max_angular{};
+    math::ModifiedSphericalBessel j_v_complete_square{true};
+  };
+
+  /**
+   * Wrapper of the SphericalHarmonics class to interface with the gradient
+   * tester
+   *
+   * See the documentation for test_gradients() below; the calculator object
+   * passed to it must provide the functions f() and grad_f() as below.
+   */
   template <size_t max_angular>
   struct SphericalHarmonicsGradientsCalculator {
     SphericalHarmonicsGradientsCalculator()

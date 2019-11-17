@@ -51,9 +51,15 @@ namespace rascal {
      * The recursion relation used here is:
      * \f[
      *    i_0(x) = sinh(x) / x
-     *    i_1(x) = (x*cosh(x) + sinh(x)) / x^2
+     *    i_1(x) = (x*cosh(x) - sinh(x)) / x^2
      *    i_n(x) = i_{n-2}(x) - (2n - 1)/x * i_{n-1}(x)
      * \f]
+     *
+     * The recursion relation to compute the gradient is:
+     * \f[
+     *    i'_n(x) = n i_{n-1}(x) / (2n+1) + (n + 1) i_{n+1}(x) / (2n+1)
+     * \f]
+     *
      * from
      * http://mathworld.wolfram.com/ModifiedSphericalBesselFunctionoftheFirstKind.html
      * // NOLINT
@@ -62,7 +68,9 @@ namespace rascal {
      public:
       using ref = Eigen::Ref<const Eigen::ArrayXXd>;
 
-      ModifiedSphericalBessel() = default;
+      explicit ModifiedSphericalBessel(bool compute_gradients = false) {
+        this->compute_gradients = compute_gradients;
+      }
 
       /**
        * Initialize arrays for the computation of
@@ -73,14 +81,24 @@ namespace rascal {
                       const Eigen::Ref<const Eigen::VectorXd> & x_v) {
         this->x_v = x_v.array();
         this->n_max = x_v.size();
-        this->bessel_values.resize(this->n_max, l_max + 1);
+        this->l_max = l_max;
+        if (this->compute_gradients) {
+          // to compute the gradients with the recursion formula we need one
+          // extra order for the values
+          this->order_max = static_cast<int>(this->l_max + 2);
+          this->bessel_gradients.resize(this->n_max, this->l_max+1);
+        } else {
+          this->order_max = static_cast<int>(this->l_max + 1);
+        }
+
+        // set the proper sizes
+        this->bessel_values.resize(this->n_max, this->order_max);
         this->bessel_arg.resize(this->n_max);
         this->bessel_arg_i.resize(this->n_max);
         this->exp_bessel_arg.resize(this->n_max);
-        this->bessel_arg_pow.resize(this->n_max);
         this->efac.resize(this->n_max);
-        this->l_max = l_max;
-        this->order_max = static_cast<int>(this->l_max + 1);
+
+        // precompute for downward recursion
         this->igammas.resize(2);
         int ii{0};
         for (int order{this->order_max - 2}; order < this->order_max; ++order) {
@@ -170,11 +188,44 @@ namespace rascal {
       }
 
       /**
+       * Compute all the MBSFs derivative for the given x-values up to the
+       * given order:
+       * \f[
+       *    df(r; x_n, a)/dr = -2ar e^{-ar^2} e^{-ax_n^2} i_l(2*a*r*x_n) +
+       *                       2ax_n e^{-ar^2} e^{-ax_n^2} i'_l(2*a*r*x_n)
+       * \f]
+       *
+       * using the recursion relation:
+       * \f[
+       *    i'_0(x) = i_1(x)
+       *    i'_n(x) = (n i_{n-1}(x) + (n + 1) i_{n+1}(x)) / (2n+1)
+       * \f]
+       *
+       * Expects that values have already been computed with an additional
+       * order
+       */
+      void gradient_recursion(double distance, double fac_a) {
+        this->efac = std::exp(-fac_a * distance * distance) *
+                     Eigen::exp(-fac_a * this->x_v.square());
+        // compute 1st part
+        this->bessel_gradients = this->bessel_values.leftCols(this->l_max+1).colwise() * (-2. * fac_a * distance * this->efac).array();
+        // initialize the gradients
+        this->efac *= 2. * fac_a * this->x_v;
+        this->bessel_gradients.col(0) += this->efac * this->bessel_values.col(1);
+        // use recurrence relationship
+        for (int i_order{1}; i_order < this->order_max-1; i_order++) {
+          this->bessel_gradients.col(i_order) += this->efac *
+           (i_order * this->bessel_values.col(i_order-1) +
+           (i_order + 1) * this->bessel_values.col(i_order+1)) / (2*i_order+1);
+        }
+      }
+
+      /**
        * Compute all the MBSFs for the given x-values up to the given order
        *
        * The MBSFs are accurate when the expected value is > 1e-100. Below this
        * threshold the MBSFs are set to 0 because of the numerical noise
-       * arrising below 1e-150.
+       * arising below 1e-150.
        */
       void calc(double distance, double fac_a) {
         this->bessel_arg = (2. * fac_a * distance) * this->x_v;
@@ -211,6 +262,19 @@ namespace rascal {
             return d;
           }
         });
+
+        // compute gradients
+        if (this->compute_gradients) {
+          this->gradient_recursion(distance, fac_a);
+        }
+
+        bessel_gradients = bessel_gradients.unaryExpr([](double d) {
+          if (std::abs(d) < 1e-100) {
+            return 0.;
+          } else {
+            return d;
+          }
+        });
       }
 
       /**
@@ -222,19 +286,29 @@ namespace rascal {
        *         Note that a reference is returned to avoid unnecessary
        *         copies.
        */
-      auto get_values() { return ref(bessel_values); }
+      auto get_values() {
+        if (this->compute_gradients) {
+          // when the gradient are computed bessel_values has one additional
+          // column that should not be returned
+          return ref(bessel_values.leftCols(this->l_max+1));
+        } else {
+          return ref(bessel_values);
+        }
+      }
+      auto get_gradients() { return ref(bessel_gradients); }
 
       Eigen::ArrayXXd bessel_values{};
+      Eigen::ArrayXXd bessel_gradients{};
 
       Eigen::ArrayXd bessel_arg{};
       Eigen::ArrayXd bessel_arg_i{};
-      Eigen::ArrayXd bessel_arg_pow{};
       Eigen::ArrayXd exp_bessel_arg{};
       Eigen::ArrayXd x_v{};
       Eigen::ArrayXd efac{};
       std::vector<Hyp1f1> hyp1f1s{};
       Eigen::ArrayXd igammas{};
 
+      bool compute_gradients{false};
       int order_max{};
       size_t l_max{};
       int n_max{};
