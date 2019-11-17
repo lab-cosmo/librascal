@@ -103,16 +103,15 @@ namespace rascal {
 
   struct ModifiedBesselFirstKindRefFixture {
     ModifiedBesselFirstKindRefFixture() {
-      this->ref_data = json_io::load_txt(this->ref_filename);
+      this->ref_data = json_io::load(this->ref_filename);
     }
 
     ~ModifiedBesselFirstKindRefFixture() = default;
 
     std::string ref_filename =
-        "reference_data/modified_bessel_first_kind_reference.json";
+        "reference_data/modified_bessel_first_kind_reference.ubjson";
 
     json ref_data{};
-    math::ModifiedSphericalBessel j_v_complete_square{};
     bool verbose{true};
   };
 
