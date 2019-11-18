@@ -369,11 +369,23 @@ namespace rascal {
     }
   }
 
-  using fixtures_with_gradients =
-      boost::mpl::list<RadialIntegralFixture<MultipleHypersSphericalExpansion,
-                                             internal::RadialBasisType::GTO>,
-                       RadialIntegralFixture<MultipleHypersSphericalExpansion,
-                                             internal::RadialBasisType::DVR>>;
+  using fixtures_with_gradients = boost::mpl::list<
+      RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
+                                   internal::RadialBasisType::GTO,
+                                   internal::AtomicSmearingType::Constant,
+                                   internal::OptimizationType::None>,
+      RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
+                                   internal::RadialBasisType::GTO,
+                                   internal::AtomicSmearingType::Constant,
+                                   internal::OptimizationType::Interpolator>,
+      RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
+                                   internal::RadialBasisType::DVR,
+                                   internal::AtomicSmearingType::Constant,
+                                   internal::OptimizationType::None>,
+      RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
+                                   internal::RadialBasisType::DVR,
+                                   internal::AtomicSmearingType::Constant,
+                                   internal::OptimizationType::Interpolator>>;
 
   /**
    * Test the derivative of the GTO radial integral in the SphericalExpansion

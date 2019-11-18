@@ -369,18 +369,18 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{
-        {{"type", "GTO"}},
-        {{"type", "DVR"}},
+        {{"type", "GTO"}, {"optimization", {{"type", "None"}}}},
+        {{"type", "DVR"}, {"optimization", {{"type", "None"}}}},
         {{"type", "GTO"},
          {"optimization",
           {{"type", "Spline"},
-           {"accuracy", 1e-5},
+           {"accuracy", 1e-12},
            {"range", {{"begin", 0.}, {"end", 3.}}}}}},
         {{"type", "DVR"},
          {"optimization",
           {{"type", "Spline"},
            {"accuracy", 1e-5},
-           {"range", {{"begin", 0.}, {"end", 3.}}}}}}};
+           {"range", {{"begin", 0.000001}, {"end", 3.}}}}}}};
     std::vector<json> rep_hypers{
         {{"max_radial", 4}, {"max_angular", 2}, {"compute_gradients", true}},
         {{"max_radial", 6}, {"max_angular", 4}, {"compute_gradients", true}}};
@@ -550,8 +550,8 @@ namespace rascal {
     Eigen::Array<double, 1, Eigen::Dynamic>
     f(const Eigen::Matrix<double, 1, 1> & input_v) {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
-      result = this->radial_integral->template compute_neighbour_contribution<
-          internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
+      result = this->radial_integral->template compute_neighbour_contribution(
+          input_v(0), this->pair);
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;
@@ -573,33 +573,83 @@ namespace rascal {
     size_t max_angular{4};
   };
 
-  template <class BaseFixture, internal::RadialBasisType Type>
-  struct RadialIntegralFixture : MultipleStructureFixture<BaseFixture> {
+  template <class BaseFixture, internal::RadialBasisType RadialType,
+            internal::AtomicSmearingType SmearingType,
+            internal::OptimizationType OptType>
+  struct RadialIntegralHandlerFixture : MultipleStructureFixture<BaseFixture> {
     using Parent = MultipleStructureFixture<BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
-    using RadialIntegral_t = internal::RadialContribution<Type>;
+    using RadialIntegral_t =
+        internal::RadialContributionHandler<RadialType, SmearingType, OptType>;
 
-    RadialIntegralFixture() : Parent{} {
+    RadialIntegralHandlerFixture() : Parent{} {
       // filter out the hypers that don't correspond to the current Type
       std::vector<json> hypers_temp;
+      // here it directly sets GTO DVR and only
       for (const auto & hyper : this->representation_hypers) {
+        // This block is to ignore hypers which do not agree with the type of
+        // the fixture. This way we do not have to create a fixture for each
+        // type while not using the wrong templated RadialIntegralHandler
+        // constructor
         auto radial_contribution_hypers =
             hyper.at("radial_contribution").template get<json>();
-        auto radial_contribution_type =
+        auto radial_contribution_type_name =
             radial_contribution_hypers.at("type").template get<std::string>();
-        if (radial_contribution_type == "GTO" and
-            Type == internal::RadialBasisType::GTO) {
-          hypers_temp.push_back(hyper);
-        } else if (radial_contribution_type == "DVR" and
-                   Type == internal::RadialBasisType::DVR) {
+        auto density_hypers =
+            hyper.at("gaussian_density").template get<json>();
+        auto smearing_type_name =
+            density_hypers.at("type").template get<std::string>();
+        auto optimization_hypers =
+            radial_contribution_hypers.at("optimization").template get<json>();
+        auto optimization_type_name =
+            optimization_hypers.at("type").template get<std::string>();
+
+        internal::RadialBasisType radial_contribution_type{};
+        internal::AtomicSmearingType smearing_type{};
+        internal::OptimizationType optimization_type{};
+        if (radial_contribution_type_name == "GTO") {
+          radial_contribution_type = internal::RadialBasisType::GTO;
+        } else if (radial_contribution_type_name == "DVR") {
+          radial_contribution_type = internal::RadialBasisType::DVR;
+        } else {
+          throw std::runtime_error(
+              "Wrong radial basis type for RadialIntegralHandler tests");
+        }
+
+        if (smearing_type_name == "Constant") {
+          smearing_type = internal::AtomicSmearingType::Constant;
+        } else {
+          throw std::runtime_error(
+              "Wrong smearing type for RadialIntegralHandler tests");
+        }
+
+        if (optimization_type_name == "None") {
+          optimization_type = internal::OptimizationType::None;
+        } else if (optimization_type_name == "Spline") {
+          optimization_type = internal::OptimizationType::Interpolator;
+        } else {
+          throw std::runtime_error(
+              "Wrong optimization type for RadialIntegralHandler tests");
+        }
+        auto hypers_radial_contribution_handler_type{
+            internal::combine_to_radial_contribution_type(
+                radial_contribution_type, smearing_type, optimization_type)};
+
+        auto radial_contribution_handler_type{
+            internal::combine_to_radial_contribution_type(
+                RadialType, SmearingType, OptType)};
+
+        if (hypers_radial_contribution_handler_type ==
+            radial_contribution_handler_type) {
           hypers_temp.push_back(hyper);
         }
       }
       this->representation_hypers.clear();
       this->representation_hypers = std::move(hypers_temp);
     }
-    ~RadialIntegralFixture() = default;
+    ~RadialIntegralHandlerFixture() = default;
   };
+
 
   /**
    * Gradient provider specialized to testing the gradient of a Calculator
