@@ -233,7 +233,7 @@ namespace rascal {
         this->bessel_arg = (2. * fac_a * distance) * this->x_v;
         this->bessel_arg_i = this->bessel_arg.inverse();
 
-        if (this->l_max == 0) {
+        if (this->order_max == 1) {
           // recursions are not valid for l_max==0 so direct computation
           // i_0(z) = sinh(z) / z
           this->bessel_values.col(0) =
@@ -247,7 +247,6 @@ namespace rascal {
           int n_down{0};
           for (; n_down < this->n_max; ++n_down) {
             if (this->bessel_arg[n_down] > 50) {
-              ++n_down;
               break;
             }
           }
