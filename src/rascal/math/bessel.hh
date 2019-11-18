@@ -180,6 +180,14 @@ namespace rascal {
           vals.col(order) *= this->efac;
         }
 
+        if (not vals.isFinite().all()) {
+          std::stringstream error{};
+          error << ": distance=" << std::to_string(distance)
+                << " fac_a=" << std::to_string(fac_a) << std::endl
+                << this->bessel_gradients << std::endl;
+          throw std::overflow_error(error.str());
+        }
+
         for (int order{this->order_max - 3}; order >= 0; --order) {
           vals.col(order) =
               vals.col(order + 2) + vals.col(order + 1) * (2. * order + 3.) *
@@ -237,7 +245,7 @@ namespace rascal {
         int n_down{0};
         for (; n_down < this->n_max; ++n_down) {
           if (this->bessel_arg[n_down] > 50) {
-            ++n_down;
+            // ++n_down;
             break;
           }
         }
@@ -252,6 +260,7 @@ namespace rascal {
         if (n_up > 0) {
           this->upward_recursion(distance, fac_a, n_up);
         }
+        assert(this->bessel_values.isFinite().all());
 
         // Set small values to 0 because the recursion looses accuracy for very
         // small values. Also on the python side it avoids some unexpected
@@ -268,15 +277,8 @@ namespace rascal {
         // compute gradients
         if (this->compute_gradients) {
           this->gradient_recursion(distance, fac_a);
+          assert(this->bessel_gradients.isFinite().all());
         }
-
-        // bessel_gradients = bessel_gradients.unaryExpr([](double d) {
-        //   if (std::abs(d) < 1e-100) {
-        //     return 0.;
-        //   } else {
-        //     return d;
-        //   }
-        // });
       }
 
       /**
