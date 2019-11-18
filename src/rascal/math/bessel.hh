@@ -180,14 +180,6 @@ namespace rascal {
           vals.col(order) *= this->efac;
         }
 
-        if (not vals.isFinite().all()) {
-          std::stringstream error{};
-          error << ": distance=" << std::to_string(distance)
-                << " fac_a=" << std::to_string(fac_a) << std::endl
-                << this->bessel_gradients << std::endl;
-          throw std::overflow_error(error.str());
-        }
-
         for (int order{this->order_max - 3}; order >= 0; --order) {
           vals.col(order) =
               vals.col(order + 2) + vals.col(order + 1) * (2. * order + 3.) *
