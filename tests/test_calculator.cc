@@ -438,7 +438,6 @@ namespace rascal {
                                                 typename Fix::Manager_t>
             grad_fix("reference_data/spherical_expansion_gradient_test.json",
                      manager, provider);
-        grad_fix.verbosity = GradientTestFixture::VerbosityValue::DEBUG;
         /* ---- grad-test-example-end1 ---- */
         if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
           std::cout << "Testing structure: " << *filename_it << std::endl;
