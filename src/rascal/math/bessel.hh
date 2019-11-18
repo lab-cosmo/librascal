@@ -205,12 +205,11 @@ namespace rascal {
        * order
        */
       void gradient_recursion(double distance, double fac_a) {
-        this->efac = std::exp(-fac_a * distance * distance) *
-                     Eigen::exp(-fac_a * this->x_v.square());
         // compute 1st part
-        this->bessel_gradients = this->bessel_values.leftCols(this->l_max+1).colwise() * (-2. * fac_a * distance * this->efac).array();
-        // initialize the gradients
-        this->efac *= 2. * fac_a * this->x_v;
+        this->bessel_gradients = this->bessel_values.leftCols(this->l_max+1);
+        this->bessel_gradients *= -2. * fac_a * distance;
+        // add 2nd part
+        this->efac = 2. * fac_a * this->x_v;
         this->bessel_gradients.col(0) += this->efac * this->bessel_values.col(1);
         // use recurrence relationship
         for (int i_order{1}; i_order < this->order_max-1; i_order++) {
@@ -268,13 +267,13 @@ namespace rascal {
           this->gradient_recursion(distance, fac_a);
         }
 
-        bessel_gradients = bessel_gradients.unaryExpr([](double d) {
-          if (std::abs(d) < 1e-100) {
-            return 0.;
-          } else {
-            return d;
-          }
-        });
+        // bessel_gradients = bessel_gradients.unaryExpr([](double d) {
+        //   if (std::abs(d) < 1e-100) {
+        //     return 0.;
+        //   } else {
+        //     return d;
+        //   }
+        // });
       }
 
       /**

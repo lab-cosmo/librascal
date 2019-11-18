@@ -545,10 +545,6 @@ namespace rascal {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
       result = this->radial_integral->template compute_neighbour_contribution<
           internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
-      // result.matrix().transpose() *=
-      //     this->radial_integral->radial_norm_factors.asDiagonal();
-      // result.matrix().transpose() *=
-      //     this->radial_integral->radial_ortho_matrix;
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;
@@ -568,6 +564,17 @@ namespace rascal {
     ClusterRef & pair;
     size_t max_radial{6};
     size_t max_angular{4};
+  };
+
+  template <class BaseFixture, typename RadialIntegral>
+  struct RadialIntegralFixture : MultipleStructureFixture<BaseFixture> {
+    using Parent = MultipleStructureFixture<BaseFixture>;
+    using Manager_t = typename Parent::Manager_t;
+    using RadialIntegral_t = RadialIntegral;
+    
+    RadialIntegralFixture() : Parent{} {}
+    ~RadialIntegralFixture() = default;
+
   };
 
   /**
