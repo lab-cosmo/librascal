@@ -14,40 +14,40 @@ should not be seen as *law*.
 
 After successfully adding a new feature, doing maintenance, sorting out a bug or
 adding new documentation, in short: contributing to the codebase in any form,
-you should ensure that all existing and new tests should pass. These include
-tests for functionality on the C++ as well as the python side but also include
-tests for code style as far as they can be automated (see our :ref:`Coding
-convention <coding-convention>` for details on the style). We also have a custom
-``make`` target to help with autoformatting C++ as well as Python code.
+you should ensure that all existing and new tests pass. These include tests for
+functionality on the C++ as well as the python side but also include tests for
+code style as far as they can be automated (see our :ref:`Coding convention
+<coding-convention>` for details on the style). We also have a custom ``make``
+target to help with autoformatting C++ as well as Python code.
 
 Further, we provide a PR template on Github with several checkmarks to help
-start and streamline the review process. Please make use of it though you can
+start and streamline the review process. Please make use of it, although you can
 remove points that are irrelevant to the PR. This template is intended to help
 you in preparing your contribution for the review process and includes the main
-point which will be raised in any case. Also we highly encourage the use of the
-*Draft* PR functionality Github provides. We see it as a way to start a
+points most commonly raised by reviewers. Also we highly encourage the use of
+the *Draft* PR functionality Github provides. We see it as a way to start a
 discussion about the contribution and the proposed changes and it does not have
 to be polished at that stage. The difference between a Draft PR and a normal PR
-is minor. The Draft stage signals that it is up for discussion and contributions
-while one the other hand treating it like a normal PR in the sense that all the
-continuous integration tools are applied and there is an immediate feedback from
-automatic tests. Do not hesitate to contact us at any stage if you are unsure
-about anything.
+is minor. The Draft stage signals that your contribution is not ready for review
+but up for discussion. But it is nevertheless treated by like a normal PR in the
+sense that all the continuous integration tools are applied and there is an
+immediate feedback from automatic tests. Do not hesitate to contact us at any
+stage if you are unsure about anything.
 
-Once you have added something to the code base and please check locally if the
+Once you have added something to the code base, please check locally if the
 tests pass. These tests include the code tests as well as the tests for code
 style as far as they can be checked automatically. You should also add tests for
 new functionality. Likewise, if your changes break existing tests, be sure to
-update (not disable!) the affected tests so that they pass. The next step is to
-merge or rebase with the master branch (if you are unsure about which option, do
-not hesitate to contact us). If necessary, add changes to the code to comply
+update (not deactivate!) the affected tests so that they pass. The next step is
+to merge or rebase with the master branch (if you are unsure about which option,
+do not hesitate to contact us). If necessary, add changes to the code to comply
 with any other added tests coming in from the updated master branch if they were
 not resolved in the merging or rebase process. If your PR started out as a
-Draft, this is now the time to create a normal PR. If the PR never went into a
-Draft PR this is the point where you would create create the PR. Upon creating
-the PR the continuous integration tools run a set of rigorous tests with
-different compilers and compiling modes such as debug to ensure compatibility
-with the our defined set of options.
+Draft, this is now the time to convert it to a normal PR. If the PR never went
+into a Draft PR this is the point where you would actually create the PR. Upon
+creating the PR the continuous integration tools run a set of extensive tests
+with different compilers and compiling modes, such as debug (mode), to ensure
+compatibility with a variety of pre-defined defined sets of options.
 
 Once the PR is ready for review (all items on the checklist are completed), use
 the Github button to notify specific developers to review the changes.
@@ -55,10 +55,14 @@ the Github button to notify specific developers to review the changes.
 To help speed up the process we follow some rough guidelines so everyone knows
 what to expect from a reviewer's role:
 
- * Once the reviewers' concerns have been addressed, this person is responsible
-   for approving them as soon as possible. This not only ensures that the
-   changes are available to everyone as soon as they are ready, but also
-   minimizes the need for further merges with master and associated extra work.
+ * The first person to leave a full review becomes the responsible reviewer for
+   that PR.
+
+ * Once the reviewers' concerns have been addressed, the same person is
+   responsible for approving them as soon as possible. This not only ensures
+   that the changes are available to everyone as soon as they are ready, but
+   also minimizes the need for further merges with master and associated extra
+   work.
 
  * Single comments without actually providing a review are allowed and
    encouraged, but should be used sparsely. They can be really helpful if
@@ -89,22 +93,3 @@ compiling master branch. To elaborate on this, here are a few examples
    conflicts with the PR, this of course has to be solved. Again, as a courtesy,
    please ask for feedback on the changes again because merges/rebases can be
    complicated and we want to avoid a broken master branch.
-
-**TL;DR**
- * We want a clean and tested master branch that is why we review code and use
-   continuous integration tools.
- * Contact us if you have any questions.
- * Start the discussion about your contribution early by using the
-   Draft-Pull-Request feature of Github.
- * Use our Pull-Request template in preparing your PR.
- * Add tests for added functionality.
- * Make sure your proposed changes pass the all existing tests, change (not
-   disable!) them if necessary.
- * Document your contribution.
-
-For reviewers
- * Single line comments are ok, but consider a proper review.
- * If you started a review, you are responsible for seeing it through.
- * Finish the PR fast by reviewing the requested changes.
- * If you start changing code on a PR as a reviewer, ask another person to
-   review you code.

@@ -8,7 +8,6 @@
 How to contribute
 -----------------
 
-
 If you want to add a new  a method that can be used in Rascal, please, first of all, be aware of the :ref:`code_structure`. Once you know how Rascal is subdivided, you can start thinking about the implementation of the new functionality.
 
 First of all, think about what you need and check if is already implemented (for example, if you need a special C++ structure or if you can use one of the basic types already implemented).
@@ -17,7 +16,6 @@ When you know what is necessary for your method, you can proceed in the implemen
 
 The new method should be written in C++14 in the **src** folder and should be named in a way that is clear what the method does (no method_3_bis.cc etc..). The file should start with a header reporting a few information such as the author, date, etc.. You can check the other .cc files in the directory for a quick reference.
 Before, jumping into the next paragraphs, please respect our :ref:`coding convention <coding-convention>`.
-
 
 Write the C++ method
 ^^^^^^^^^^^^^^^^^^^^
