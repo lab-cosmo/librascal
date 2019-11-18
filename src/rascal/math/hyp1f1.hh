@@ -444,8 +444,6 @@ namespace rascal {
           this->update_switching_point();
           i_it++;
         }
-        // to be safe take a slightly larger switching point
-        this->z_asympt = this->z_asympt * 1.1;
       }
 
      public:
@@ -469,11 +467,14 @@ namespace rascal {
 
       //! Compute @f${}_1F_1(a,b,z)@f$
       double calc(double z, bool derivative = false) {
+        double res{};
         if (z > this->z_asympt) {
-          return this->hyp1f1_asymptotic.calc(z, derivative);
+          res = this->hyp1f1_asymptotic.calc(z, derivative);
         } else {
-          return this->hyp1f1_series.calc(z, derivative);
+          res = this->hyp1f1_series.calc(z, derivative);
         }
+        assert(std::isfinite(res));
+        return res;
       }
 
       double calc_numerical_derivative(double z, double h) {
@@ -504,11 +505,14 @@ namespace rascal {
        * Hyp1f1SphericalExpansion.
        */
       double calc(double z, double z2, double ez2, bool derivative = false) {
+        double res{};
         if (z > this->z_asympt) {
-          return this->hyp1f1_asymptotic.calc(z, z2, derivative);
+          res = this->hyp1f1_asymptotic.calc(z, z2, derivative);
         } else {
-          return this->hyp1f1_series.calc(z, z2, ez2, derivative);
+          res = this->hyp1f1_series.calc(z, z2, ez2, derivative);
         }
+        assert(std::isfinite(res));
+        return res;
       }
     };
 

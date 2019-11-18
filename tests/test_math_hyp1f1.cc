@@ -83,7 +83,7 @@ namespace rascal {
         std::cout << func.get_z_switch() << std::endl;
       }
 
-      BOOST_CHECK_LE(der_consistency_rel_error, 3e5 * math::DBL_FTOL);
+      BOOST_CHECK_LE(der_consistency_rel_error, 2e6 * math::DBL_FTOL);
     }
   }
 
