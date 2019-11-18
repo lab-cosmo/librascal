@@ -232,25 +232,35 @@ namespace rascal {
       void calc(double distance, double fac_a) {
         this->bessel_arg = (2. * fac_a * distance) * this->x_v;
         this->bessel_arg_i = this->bessel_arg.inverse();
-        // find the index where bessel_arg is larger than 50
-        // (bessel_arg is sorted by increasing order)
-        int n_down{0};
-        for (; n_down < this->n_max; ++n_down) {
-          if (this->bessel_arg[n_down] > 50) {
-            // ++n_down;
-            break;
+
+        if (this->l_max == 0) {
+          // recursions are not valid for l_max==0 so direct computation
+          // i_0(z) = sinh(z) / z
+          this->bessel_values.col(0) =
+              (Eigen::exp(-fac_a * (x_v - distance).square()) -
+              Eigen::exp(-fac_a * (x_v + distance).square())) *
+              0.5 * this->bessel_arg_i;
+        } else {
+          // for l_max > 0 downward/upward_recursion functions are applicable
+          // find the index where bessel_arg is larger than 50
+          // (bessel_arg is sorted by increasing order)
+          int n_down{0};
+          for (; n_down < this->n_max; ++n_down) {
+            if (this->bessel_arg[n_down] > 50) {
+              ++n_down;
+              break;
+            }
           }
-        }
+          // apply downward recurence where bessel_arg < 50
+          if (n_down > 0) {
+            this->downward_recursion(distance, fac_a, n_down);
+          }
 
-        // apply downward recurence where bessel_arg < 50
-        if (n_down > 0) {
-          this->downward_recursion(distance, fac_a, n_down);
-        }
-
-        // apply upward recurence where bessel_arg > 50
-        int n_up{this->n_max - n_down};
-        if (n_up > 0) {
-          this->upward_recursion(distance, fac_a, n_up);
+          // apply upward recurence where bessel_arg > 50
+          int n_up{this->n_max - n_down};
+          if (n_up > 0) {
+            this->upward_recursion(distance, fac_a, n_up);
+          }
         }
         assert(this->bessel_values.isFinite().all());
 
