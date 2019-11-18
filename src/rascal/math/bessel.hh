@@ -234,14 +234,15 @@ namespace rascal {
         this->bessel_arg_i = this->bessel_arg.inverse();
 
         if (this->order_max == 1) {
-          // recursions are not valid for l_max==0 so direct computation
+          // recursions are not valid for order_max==1 so direct computation
           // i_0(z) = sinh(z) / z
           this->bessel_values.col(0) =
               (Eigen::exp(-fac_a * (x_v - distance).square()) -
               Eigen::exp(-fac_a * (x_v + distance).square())) *
               0.5 * this->bessel_arg_i;
         } else {
-          // for l_max > 0 downward/upward_recursion functions are applicable
+          // for order_max > 1 downward/upward_recursion functions are
+          // applicable
           // find the index where bessel_arg is larger than 50
           // (bessel_arg is sorted by increasing order)
           int n_down{0};
