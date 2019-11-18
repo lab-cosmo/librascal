@@ -38,6 +38,7 @@ set(RASCAL_SOURCES
 
     rascal/math/bessel.cc
     rascal/math/hyp1f1.cc
+    rascal/math/interpolator.cc
     rascal/math/gauss_legendre.cc
     rascal/math/spherical_harmonics.cc
 
