@@ -369,6 +369,7 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{
         {{"type", "GTO"}},
+        {{"type", "DVR"}},
         {{"type", "GTO"},
          {"optimization",
           {{"type", "Spline"},
@@ -566,13 +567,29 @@ namespace rascal {
     size_t max_angular{4};
   };
 
-  template <class BaseFixture, typename RadialIntegral>
+  template <class BaseFixture, internal::RadialBasisType Type>
   struct RadialIntegralFixture : MultipleStructureFixture<BaseFixture> {
     using Parent = MultipleStructureFixture<BaseFixture>;
     using Manager_t = typename Parent::Manager_t;
-    using RadialIntegral_t = RadialIntegral;
-    
-    RadialIntegralFixture() : Parent{} {}
+    using RadialIntegral_t = internal::RadialContribution<Type>;
+
+    RadialIntegralFixture() : Parent{} {
+      // filter out the hypers that don't correspond to the current Type
+      std::vector<json> hypers_temp;
+      for (const auto& hyper : this->representation_hypers) {
+        auto radial_contribution_hypers =
+          hyper.at("radial_contribution").template get<json>();
+        auto radial_contribution_type =
+          radial_contribution_hypers.at("type").template get<std::string>();
+        if (radial_contribution_type == "GTO" and Type == internal::RadialBasisType::GTO) {
+          hypers_temp.push_back(hyper);
+        } else if (radial_contribution_type == "DVR" and Type == internal::RadialBasisType::DVR) {
+          hypers_temp.push_back(hyper);
+        }
+      }
+      this->representation_hypers.clear();
+      this->representation_hypers = std::move(hypers_temp);
+    }
     ~RadialIntegralFixture() = default;
 
   };

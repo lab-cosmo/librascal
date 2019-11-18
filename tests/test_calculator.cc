@@ -370,7 +370,9 @@ namespace rascal {
   }
 
   using fixtures_with_gradients =
-      boost::mpl::list<RadialIntegralFixture<MultipleHypersSphericalExpansion,internal::RadialContribution<internal::RadialBasisType::GTO>>>;
+      boost::mpl::list<
+      RadialIntegralFixture<MultipleHypersSphericalExpansion,internal::RadialBasisType::GTO>,
+      RadialIntegralFixture<MultipleHypersSphericalExpansion,internal::RadialBasisType::DVR>>;
 
   /**
    * Test the derivative of the GTO radial integral in the SphericalExpansion
@@ -389,7 +391,7 @@ namespace rascal {
     // it's for an atom pair (hence the 2)
     using ClusterRef_t = typename Fix::Manager_t::template ClusterRef<2>;
     using RadialIntegral_t = typename Fix::RadialIntegral_t;
-    
+
     GradientTestFixture test_data{"reference_data/radial_derivative_test.json"};
     auto && it_manager{managers.front()->begin()};  // Need only one manager
     auto && atom{*it_manager};

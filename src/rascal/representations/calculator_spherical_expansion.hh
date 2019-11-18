@@ -712,6 +712,12 @@ namespace rascal {
         this->max_radial = hypers.at("max_radial");
         this->max_angular = hypers.at("max_angular");
 
+        if (hypers.find("compute_gradients") != hypers.end()) {
+          this->compute_gradients = hypers.at("compute_gradients").get<bool>();
+        } else {  // Default false (don't compute gradients)
+          this->compute_gradients = false;
+        }
+
         // init size of the member data
         // both precomputed quantities and actual expansion coefficients
         this->legendre_radial_factor.resize(this->max_radial);
@@ -764,7 +770,7 @@ namespace rascal {
 
         this->legendre_points = point_weight.col(0);
 
-        this->bessel.precompute(this->max_angular, this->legendre_points);
+        this->bessel.precompute(this->max_angular, this->legendre_points, this->compute_gradients);
       }
 
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
@@ -775,7 +781,7 @@ namespace rascal {
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
 
         // a = 1 / (2*\sigma^2)
-        double fac_a{0.5 * pow(smearing->get_gaussian_sigma(center), -2)};
+        double fac_a{0.5 / pow(smearing->get_gaussian_sigma(center), 2_size_t)};
         return this->compute_center_contribution(fac_a);
       }
 
@@ -800,7 +806,7 @@ namespace rascal {
         auto smearing{downcast_atomic_smearing<AST>(this->atomic_smearing)};
         double smearing_value{smearing->get_gaussian_sigma(pair)};
         // a = 1 / (2*\sigma^2)
-        double fac_a{0.5 * pow(smearing_value, -2)};
+        double fac_a{0.5 / pow(smearing_value, 2_size_t)};
         return this->compute_neighbour_contribution(distance, fac_a);
       }
 
@@ -821,18 +827,17 @@ namespace rascal {
 
       /**
        * Compute the radial derivative of the neighbour contribution
-       *
-       * @todo still needs to be implemented for the DVR radial basis
+       * Assumes that gradients of bessel have already been computed in
+       * compute_neighbour_contribution
        */
       template <size_t Order, size_t Layer>
       Matrix_Ref compute_neighbour_derivative(
           const double /*distance*/,
           const ClusterRefKey<Order, Layer> & /*pair*/) {
-        using math::PI;
-        using math::pow;
-        using std::sqrt;
+        this->radial_neighbour_derivative =
+            this->legendre_radial_factor.asDiagonal() *
+            this->bessel.get_gradients().matrix();
 
-        // TODO(max,felix) implement (!) -- these are dummy values
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
@@ -860,6 +865,7 @@ namespace rascal {
       double smearing{};
       size_t max_radial{};
       size_t max_angular{};
+      bool compute_gradients{};
 
       Vector_t legendre_radial_factor{};
       Vector_t legendre_points{};

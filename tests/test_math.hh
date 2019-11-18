@@ -128,7 +128,7 @@ namespace rascal {
       this->alpha = alpha;
       this->xs = xs;
       this->max_angular = max_angular;
-      this->j_v_complete_square.precompute(max_angular, this->xs);
+      this->j_v_complete_square.precompute(max_angular, this->xs, true);
     }
 
     static const size_t n_arguments = 1;
@@ -152,7 +152,7 @@ namespace rascal {
     double alpha{};
     Eigen::ArrayXd xs{};
     size_t max_angular{};
-    math::ModifiedSphericalBessel j_v_complete_square{true};
+    math::ModifiedSphericalBessel j_v_complete_square{};
   };
 
   /**

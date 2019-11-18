@@ -68,9 +68,7 @@ namespace rascal {
      public:
       using ref = Eigen::Ref<const Eigen::ArrayXXd>;
 
-      explicit ModifiedSphericalBessel(bool compute_gradients = false) {
-        this->compute_gradients = compute_gradients;
-      }
+      ModifiedSphericalBessel() = default;
 
       /**
        * Initialize arrays for the computation of
@@ -78,7 +76,8 @@ namespace rascal {
        *                 first exponential; see equation above)
        */
       void precompute(size_t l_max,
-                      const Eigen::Ref<const Eigen::VectorXd> & x_v) {
+                      const Eigen::Ref<const Eigen::VectorXd> & x_v, bool compute_gradients = false) {
+        this->compute_gradients = compute_gradients;
         this->x_v = x_v.array();
         this->n_max = x_v.size();
         this->l_max = l_max;
