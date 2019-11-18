@@ -323,7 +323,8 @@ namespace rascal {
     ~SimpleStructureManagerNLCCStrictFixture() = default;
 
     const std::string filename{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/small_molecule.json"};
     const double cutoff{3.};
     const double cutoff_skin{0.};
 
@@ -371,6 +372,11 @@ namespace rascal {
         {{"type", "GTO"}},
         {{"type", "DVR"}},
         {{"type", "GTO"},
+         {"optimization",
+          {{"type", "Spline"},
+           {"accuracy", 1e-5},
+           {"range", {{"begin", 0.}, {"end", 3.}}}}}},
+        {{"type", "DVR"},
          {"optimization",
           {{"type", "Spline"},
            {"accuracy", 1e-5},
