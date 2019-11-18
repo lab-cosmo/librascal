@@ -100,7 +100,8 @@ namespace rascal {
 
     for (const auto & max_angular : max_angulars) {
       for (const auto & alpha : alphas) {
-        ModifiedBesselFirstKindGradientsProvider mbf_calculator{xs, alpha, max_angular};
+        ModifiedBesselFirstKindGradientsProvider mbf_calculator{xs, alpha,
+                                                                max_angular};
         test_gradients(mbf_calculator, fix);
       }
     }

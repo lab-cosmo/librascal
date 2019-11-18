@@ -770,7 +770,8 @@ namespace rascal {
 
         this->legendre_points = point_weight.col(0);
 
-        this->bessel.precompute(this->max_angular, this->legendre_points, this->compute_gradients);
+        this->bessel.precompute(this->max_angular, this->legendre_points,
+                                this->compute_gradients);
       }
 
       template <AtomicSmearingType AST, size_t Order, size_t Layer>

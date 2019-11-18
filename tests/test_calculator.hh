@@ -576,14 +576,16 @@ namespace rascal {
     RadialIntegralFixture() : Parent{} {
       // filter out the hypers that don't correspond to the current Type
       std::vector<json> hypers_temp;
-      for (const auto& hyper : this->representation_hypers) {
+      for (const auto & hyper : this->representation_hypers) {
         auto radial_contribution_hypers =
-          hyper.at("radial_contribution").template get<json>();
+            hyper.at("radial_contribution").template get<json>();
         auto radial_contribution_type =
-          radial_contribution_hypers.at("type").template get<std::string>();
-        if (radial_contribution_type == "GTO" and Type == internal::RadialBasisType::GTO) {
+            radial_contribution_hypers.at("type").template get<std::string>();
+        if (radial_contribution_type == "GTO" and
+            Type == internal::RadialBasisType::GTO) {
           hypers_temp.push_back(hyper);
-        } else if (radial_contribution_type == "DVR" and Type == internal::RadialBasisType::DVR) {
+        } else if (radial_contribution_type == "DVR" and
+                   Type == internal::RadialBasisType::DVR) {
           hypers_temp.push_back(hyper);
         }
       }
@@ -591,7 +593,6 @@ namespace rascal {
       this->representation_hypers = std::move(hypers_temp);
     }
     ~RadialIntegralFixture() = default;
-
   };
 
   /**

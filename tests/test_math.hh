@@ -124,7 +124,9 @@ namespace rascal {
    * passed to it must provide the functions f() and grad_f() as below.
    */
   struct ModifiedBesselFirstKindGradientsProvider {
-    ModifiedBesselFirstKindGradientsProvider(const Eigen::ArrayXd& xs, const double& alpha, const size_t& max_angular) {
+    ModifiedBesselFirstKindGradientsProvider(const Eigen::ArrayXd & xs,
+                                             const double & alpha,
+                                             const size_t & max_angular) {
       this->alpha = alpha;
       this->xs = xs;
       this->max_angular = max_angular;

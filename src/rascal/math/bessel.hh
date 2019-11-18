@@ -76,7 +76,8 @@ namespace rascal {
        *                 first exponential; see equation above)
        */
       void precompute(size_t l_max,
-                      const Eigen::Ref<const Eigen::VectorXd> & x_v, bool compute_gradients = false) {
+                      const Eigen::Ref<const Eigen::VectorXd> & x_v,
+                      bool compute_gradients = false) {
         this->compute_gradients = compute_gradients;
         this->x_v = x_v.array();
         this->n_max = x_v.size();
@@ -85,7 +86,7 @@ namespace rascal {
           // to compute the gradients with the recursion formula we need one
           // extra order for the values
           this->order_max = static_cast<int>(this->l_max + 2);
-          this->bessel_gradients.resize(this->n_max, this->l_max+1);
+          this->bessel_gradients.resize(this->n_max, this->l_max + 1);
         } else {
           this->order_max = static_cast<int>(this->l_max + 1);
         }
@@ -205,16 +206,19 @@ namespace rascal {
        */
       void gradient_recursion(double distance, double fac_a) {
         // compute 1st part
-        this->bessel_gradients = this->bessel_values.leftCols(this->l_max+1);
+        this->bessel_gradients = this->bessel_values.leftCols(this->l_max + 1);
         this->bessel_gradients *= -2. * fac_a * distance;
         // add 2nd part
         this->efac = 2. * fac_a * this->x_v;
-        this->bessel_gradients.col(0) += this->efac * this->bessel_values.col(1);
+        this->bessel_gradients.col(0) +=
+            this->efac * this->bessel_values.col(1);
         // use recurrence relationship
-        for (int i_order{1}; i_order < this->order_max-1; i_order++) {
-          this->bessel_gradients.col(i_order) += this->efac *
-           (i_order * this->bessel_values.col(i_order-1) +
-           (i_order + 1) * this->bessel_values.col(i_order+1)) / (2*i_order+1);
+        for (int i_order{1}; i_order < this->order_max - 1; i_order++) {
+          this->bessel_gradients.col(i_order) +=
+              this->efac *
+              (i_order * this->bessel_values.col(i_order - 1) +
+               (i_order + 1) * this->bessel_values.col(i_order + 1)) /
+              (2 * i_order + 1);
         }
       }
 
@@ -288,7 +292,7 @@ namespace rascal {
         if (this->compute_gradients) {
           // when the gradient are computed bessel_values has one additional
           // column that should not be returned
-          return ref(bessel_values.leftCols(this->l_max+1));
+          return ref(bessel_values.leftCols(this->l_max + 1));
         } else {
           return ref(bessel_values);
         }
