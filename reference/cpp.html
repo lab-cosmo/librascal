@@ -690,27 +690,21 @@ StructureManager is compatible with the representation <dl class="simple">
 </p>
 <p>(this extra factor of <span class="math notranslate nohighlight">\(\frac{1}{\sqrt{2}}\)</span> is not included in the normalization of the associated Legendre polynomials defined above; however, all other normalization factors are.)</p>
 <p>Cartesian gradients can optionally be computed in addition.</p>
-<p>Part of the efficiency derives from moving the direction-independent calculations into a separate <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a6bcb6d26eb8eb6f6737332382ec5a1c1"><span class="std std-ref">precompute()</span></a> method; you must therefore call <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a6bcb6d26eb8eb6f6737332382ec5a1c1"><span class="std std-ref">precompute()</span></a> (which also sets <span class="math notranslate nohighlight">\(\ell_\text{max}\)</span>) before any call to <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a1c80957cc4410a97af291da31889ae72"><span class="std std-ref">calc()</span></a>.</p>
-<p>Once <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a1c80957cc4410a97af291da31889ae72"><span class="std std-ref">calc()</span></a> has been called for a direction vector, the results can be retrieved with <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a2b3e3964678b3308bdde9ce33eeffe37"><span class="std std-ref">get_harmonics()</span></a> (and the gradients, if computed, with <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a9cf51c3002a09dd81de642175907d615"><span class="std std-ref">get_harmonics_derivatives()</span></a>)</p>
+<p>Part of the efficiency derives from moving the direction-independent calculations into a separate <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a1846c9dfd06c97b8ad5259d21d6483a0"><span class="std std-ref">precompute()</span></a> method; you must therefore call <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a1846c9dfd06c97b8ad5259d21d6483a0"><span class="std std-ref">precompute()</span></a> (which also sets <span class="math notranslate nohighlight">\(\ell_\text{max}\)</span>) before any call to <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a3845f8eaeffcff0e03272f4012b2b427"><span class="std std-ref">calc()</span></a>.</p>
+<p>Once <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a3845f8eaeffcff0e03272f4012b2b427"><span class="std std-ref">calc()</span></a> has been called for a direction vector, the results can be retrieved with <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a2b3e3964678b3308bdde9ce33eeffe37"><span class="std std-ref">get_harmonics()</span></a> (and the gradients, if computed, with <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a9cf51c3002a09dd81de642175907d615"><span class="std std-ref">get_harmonics_derivatives()</span></a>)</p>
 <p>Note the storage order of the harmonics components here follows the “compressed” format, with the <span class="math notranslate nohighlight">\(\ell\)</span> index varying the slowest, from 0 to <span class="math notranslate nohighlight">\(\ell_\text{max}\)</span>, and <span class="math notranslate nohighlight">\(m\)</span> varying from <span class="math notranslate nohighlight">\(-\ell\)</span> to <span class="math notranslate nohighlight">\(\ell\)</span> for each value of <span class="math notranslate nohighlight">\(\ell\)</span>, for a total of <span class="math notranslate nohighlight">\((\ell_\text{max}+1)^2\)</span> components. For example, the first few entries of the array would have the <span class="math notranslate nohighlight">\((\ell, m)\)</span> numbers: (0,0) (1,-1) (1,0) (1, 1) (2, -2)…. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
-<dt id="_CPPv4N6rascal4math18SphericalHarmonics18SphericalHarmonicsEv">
-<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a2d0643e8266b5afb1c908e03808c43fe"></span><code class="sig-name descname">SphericalHarmonics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics18SphericalHarmonicsEv" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Constructs the class, but doesn’t precompute or set anything </p>
-</dd></dl>
-
-<dl class="function">
 <dt id="_CPPv4N6rascal4math18SphericalHarmonics18SphericalHarmonicsEb">
-<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a3d5f3ef30ea75234854941a134de9b46"></span><code class="sig-name descname">SphericalHarmonics</code><span class="sig-paren">(</span>bool <em>calculate_derivatives</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics18SphericalHarmonicsEb" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a884c2fa1725e79c01d5233b18ae6bf91"></span><code class="sig-name descname">SphericalHarmonics</code><span class="sig-paren">(</span>bool <em>calculate_derivatives</em> = false<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics18SphericalHarmonicsEb" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Construct a <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics"><span class="std std-ref">SphericalHarmonics</span></a> class with a default setting for whether to calculate the gradients</p>
 <p>Remember to call precompute to finish initialization </p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4N6rascal4math18SphericalHarmonics10precomputeE6size_tb">
-<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a6bcb6d26eb8eb6f6737332382ec5a1c1"></span>void <code class="sig-name descname">precompute</code><span class="sig-paren">(</span>size_t <em>max_angular</em>, bool <em>calculate_derivatives</em> = false<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics10precomputeE6size_tb" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4N18SphericalHarmonics10precomputeE6size_tb">
+<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a1846c9dfd06c97b8ad5259d21d6483a0"></span>void <code class="sig-name descname">precompute</code><span class="sig-paren">(</span>size_t <em>max_angular</em>, bool <em>calculate_derivatives</em> = false<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N18SphericalHarmonics10precomputeE6size_tb" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Precomputes as many parameters as possible</p>
 <p><dl class="simple">
 <dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
@@ -723,23 +717,8 @@ StructureManager is compatible with the representation <dl class="simple">
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4N6rascal4math18SphericalHarmonics30compute_assoc_legendre_polynomEd">
-<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a77545d63321b27f20147ccdf7dff4ed1"></span>void <code class="sig-name descname">compute_assoc_legendre_polynom</code><span class="sig-paren">(</span>double <em>cos_theta</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics30compute_assoc_legendre_polynomEd" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Compute a set of normalized associated Legendre polynomials</p>
-<p>These are normalized for use in computing the real spherical harmonics; see the class documentation for details. In particular, the <span class="math notranslate nohighlight">\(m=0\)</span> harmonics require an extra factor of <span class="math notranslate nohighlight">\(\frac{1}{\sqrt{2}}\)</span>. The negative-m functions are not computed due to symmetry.</p>
-<p><p>Stores the results as an (</p>
-Eigen)matrix containing the evaluated polynomials, sized <span class="math notranslate nohighlight">\(\ell_\text{max}\)</span> by <span class="math notranslate nohighlight">\((2\ell_\text{max} + 1)\)</span>; the row is indexed by <span class="math notranslate nohighlight">\(\ell\)</span> and the column by <span class="math notranslate nohighlight">\(m \geq 0\)</span>. <dl class="simple">
-<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">cos_theta</span></code>: (aka x) Where to evaluate the polynomial</p></li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N6rascal4math18SphericalHarmonics4calcERKN5Eigen3RefIKN5Eigen8Vector3dEEEb">
-<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a1c80957cc4410a97af291da31889ae72"></span>void <code class="sig-name descname">calc</code><span class="sig-paren">(</span><em class="property">const</em> Eigen::Ref&lt;<em class="property">const</em> Eigen::Vector3d&gt; &amp;<em>direction</em>, bool <em>calculate_derivatives</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics4calcERKN5Eigen3RefIKN5Eigen8Vector3dEEEb" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4N18SphericalHarmonics4calcERKN5Eigen3RefIKN5Eigen8Vector3dEEEb">
+<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a3845f8eaeffcff0e03272f4012b2b427"></span>void <code class="sig-name descname">calc</code><span class="sig-paren">(</span><em class="property">const</em> Eigen::Ref&lt;<em class="property">const</em> Eigen::Vector3d&gt; &amp;<em>direction</em>, bool <em>calculate_derivatives</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N18SphericalHarmonics4calcERKN5Eigen3RefIKN5Eigen8Vector3dEEEb" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Compute a full set of spherical harmonics given a direction vector. If calculate_derivatives flag is on, the derivatives are additionally computed. This function returns void, results have to be retrieved with get functions.</p>
 <p><dl class="simple">
 <dt><strong>Warning</strong></dt><dd><p>Prints warning and normalizes direction if it is not already normalized. </p>
@@ -756,42 +735,13 @@ Eigen)matrix containing the evaluated polynomials, sized <span class="math notra
 <dl class="function">
 <dt id="_CPPv4N6rascal4math18SphericalHarmonics4calcERKN5Eigen3RefIKN5Eigen8Vector3dEEE">
 <span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1ae632e98ed8132ef35928803681776673"></span>void <code class="sig-name descname">calc</code><span class="sig-paren">(</span><em class="property">const</em> Eigen::Ref&lt;<em class="property">const</em> Eigen::Vector3d&gt; &amp;<em>direction</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics4calcERKN5Eigen3RefIKN5Eigen8Vector3dEEE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Same as <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a1c80957cc4410a97af291da31889ae72"><span class="std std-ref">calc()</span></a>, but using the internal default to decide whether to compute derivatives. </p>
+<dd><p>Same as <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a3845f8eaeffcff0e03272f4012b2b427"><span class="std std-ref">calc()</span></a>, but using the internal default to decide whether to compute derivatives. </p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4N6rascal4math18SphericalHarmonics31compute_cos_sin_angle_multiplesEdd">
-<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a59f4ed87c5d1b2d79fd16ef59f7fd20a"></span>void <code class="sig-name descname">compute_cos_sin_angle_multiples</code><span class="sig-paren">(</span>double <em>cos_phi</em>, double <em>sin_phi</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics31compute_cos_sin_angle_multiplesEdd" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Compute <span class="math notranslate nohighlight">\(\cos(m\phi)\)</span> and <span class="math notranslate nohighlight">\(\sin(m\phi)\)</span> from the recurrence relations</p>
-<p>The relations are (these are the same recurrence relations used to calculate the Chebyshev polynomials):</p>
-<p><div class="math notranslate nohighlight">
-\[\begin{split}\begin{eqnarray} \cos(m\phi) &amp;=&amp; 2\cos(\phi)\cos((m-1)\phi) - \cos((m-2)\phi)\\ \sin(m\phi) &amp;=&amp; 2\cos(\phi)\sin((m-1)\phi) - \sin((m-2)\phi) \end{eqnarray}\end{split}\]</div>
-</p>
-<p>and they require only <span class="math notranslate nohighlight">\(\cos(\phi)\)</span> and <span class="math notranslate nohighlight">\(\sin(\phi)\)</span> to start.</p>
-<p><p>Stores the results as an (</p>
-Eigen)matrix, sized <span class="math notranslate nohighlight">\(m_\text{max}\)</span> by 2 with the <span class="math notranslate nohighlight">\(\cos(m\phi)\)</span> stored in the first column and <span class="math notranslate nohighlight">\(\sin(m\phi)\)</span> in the second column, with <span class="math notranslate nohighlight">\(m\)</span> being the row index <dl class="simple">
-<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">cos_phi</span></code>: Value of <span class="math notranslate nohighlight">\(\cos(\phi)\)</span> to start the relation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">sin_phi</span></code>: Value of <span class="math notranslate nohighlight">\(\sin(\phi)\)</span> to start the relation</p></li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N6rascal4math18SphericalHarmonics27compute_spherical_harmonicsEv">
-<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a167a954055fc639efeeff31b8382b278"></span>void <code class="sig-name descname">compute_spherical_harmonics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics27compute_spherical_harmonicsEv" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Combine the associated Legendre polynomials with the cos/sin(mφ) to compute the final spherical harmonics</p>
-<p>Stores the results as an (Eigen)matrix, sized <span class="math notranslate nohighlight">\((\ell_\text{max}+1)^2\)</span>. The index collects <span class="math notranslate nohighlight">\(\ell\)</span> and <span class="math notranslate nohighlight">\(m\)</span> quantum numbers stored in compact format ( <span class="math notranslate nohighlight">\(m\)</span> varies fastest, from <span class="math notranslate nohighlight">\(-\ell\)</span> to <span class="math notranslate nohighlight">\(\ell\)</span>, and <span class="math notranslate nohighlight">\(\ell\)</span> from 0 to <span class="math notranslate nohighlight">\(\ell_\text{max}\)</span>). </p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N6rascal4math18SphericalHarmonics39compute_spherical_harmonics_derivativesEdddd">
-<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a3fafe9f56b18fb57e412ae7de2b5778d"></span>void <code class="sig-name descname">compute_spherical_harmonics_derivatives</code><span class="sig-paren">(</span>double <em>sin_theta</em>, double <em>cos_theta</em>, double <em>sin_phi</em>, double <em>cos_phi</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics39compute_spherical_harmonics_derivativesEdddd" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Compute a full set of spherical harmonics and their Cartesian gradients</p>
-<p>Spherical harmonics are defined as described in <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a167a954055fc639efeeff31b8382b278"><span class="std std-ref">compute_spherical_harmonics()</span></a>. Gradients are defined with respect to motion of the central atom, which is the opposite sign of the usual definition with respect to the <em>arguments</em> of the <span class="math notranslate nohighlight">\(Y_\ell^m\)</span>. The actual Cartesian gradients include an extra factor of <span class="math notranslate nohighlight">\(\frac{1}{r}\)</span> that is not included here; the rest is independent of radius.</p>
-<p>Results are stored as in <a class="reference internal" href="#classrascal_1_1math_1_1SphericalHarmonics_1a167a954055fc639efeeff31b8382b278"><span class="std std-ref">compute_spherical_harmonics()</span></a>, but with an extra (row) index for the x, y, and z Cartesian components. </p>
+<dt id="_CPPv4N6rascal4math18SphericalHarmonics30get_assoc_legendre_polynom_rawEv">
+<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a0e7e620d5551ea4af86b92b542cb6a1f"></span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a> <code class="sig-name descname">get_assoc_legendre_polynom_raw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics30get_assoc_legendre_polynom_rawEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Returns the (max_angular+1, max_angular+2) matrix related to the associated legendre polynomial with only zeros entries in the last column. Used for testing purposes. </p>
 </dd></dl>
 
 <dl class="function">
@@ -834,8 +784,8 @@ Eigen)matrix, sized <span class="math notranslate nohighlight">\(m_\text{max}\)<
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4N6rascal4math6Hyp1f14calcEdddb">
-<span class="target" id="classrascal_1_1math_1_1Hyp1f1_1a9e59960605e6f41265728648474556ee"></span>double <code class="sig-name descname">calc</code><span class="sig-paren">(</span>double <em>z</em>, double <em>z2</em>, double <em>ez2</em>, bool <em>derivative</em> = false<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math6Hyp1f14calcEdddb" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv4N6Hyp1f14calcEdddb">
+<span class="target" id="classrascal_1_1math_1_1Hyp1f1_1ae9bbf104c9efc65c922c20bfdf7dad0f"></span>double <code class="sig-name descname">calc</code><span class="sig-paren">(</span>double <em>z</em>, double <em>z2</em>, double <em>ez2</em>, bool <em>derivative</em> = false<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6Hyp1f14calcEdddb" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Computes G(a,b,z) <dl class="simple">
 <dt><strong>Warning</strong></dt><dd><p>the derivative outputed from this function is not <span class="math notranslate nohighlight">\(dG/dz\)</span> but <span class="math notranslate nohighlight">\( \frac{\mathrm{d}\,{}_1F_1}{\mathrm{d}\,z} * \frac{\Gamma(a)}{\Gamma(b)} * \exp{-\alpha r_{ij}^2} \)</span>. We do this to avoid computing both <span class="math notranslate nohighlight">\(d{}_1F_1/dz\)</span> and <span class="math notranslate nohighlight">\({}_1F_1\)</span> when asking for gradients and perform this step in Hyp1f1SphericalExpansion. </p>
 </dd>
@@ -3022,7 +2972,7 @@ void <code class="sig-name descname">set_structure</code><span class="sig-paren"
 
 <dl class="function">
 <dt>
-bool <code class="sig-name descname">is_similar</code><span class="sig-paren">(</span>double<span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+bool <code class="sig-name descname">is_similar</code><span class="sig-paren">(</span>double <em>threshold2</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -6982,22 +6932,7 @@ std::vector&lt;std::vector&lt;double&gt;&gt; <code class="sig-name descname">pos
 
 <dl class="function">
 <dt>
-double <code class="sig-name descname">recurence_to_val_downward</code><span class="sig-paren">(</span>double <em>a</em>, double <em>b</em>, double <em>z</em>, double <em>M1p2p</em>, double <em>M1p1p</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-double <code class="sig-name descname">recurence_to_der_downward</code><span class="sig-paren">(</span>double <em>a</em>, double <em>b</em>, double <em>z</em>, double <em>M2p3p</em>, double <em>M1p2p</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-double <code class="sig-name descname">recurence_G_to_val_downward</code><span class="sig-paren">(</span>double <em>a</em>, double <em>b</em>, double <em>z</em>, double <em>M1p2p</em>, double <em>M1p1p</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-double <code class="sig-name descname">recurence_G_to_der_downward</code><span class="sig-paren">(</span>double, double <em>b</em>, double <em>z</em>, double <em>M2p3p</em>, double <em>M1p2p</em><span class="sig-paren">)</span><br /></dt>
+bool <code class="sig-name descname">is_grid_uniform</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>grid</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -7081,7 +7016,7 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetri
 <p class="breathe-sectiondef-title rubric">Public Static Functions</p>
 <dl class="function">
 <dt>
-template&lt;class <code class="sig-name descname">Eigen_Ref</code>&gt;<br /><em class="property">static</em> bool <code class="sig-name descname">is_error_below_bound</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal4math11ErrorMethod20is_error_below_boundEbRK9Eigen_RefRK9Eigen_Refd" title="rascal::math::ErrorMethod::is_error_below_bound::Eigen_Ref">Eigen_Ref</a>&amp;, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal4math11ErrorMethod20is_error_below_boundEbRK9Eigen_RefRK9Eigen_Refd" title="rascal::math::ErrorMethod::is_error_below_bound::Eigen_Ref">Eigen_Ref</a>&amp;, double<span class="sig-paren">)</span><br /></dt>
+template&lt;class <code class="sig-name descname">Eigen_Ref</code>&gt;<br /><em class="property">static</em> bool <code class="sig-name descname">is_error_below_bound</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal4math11ErrorMethod20is_error_below_boundEbRK9Eigen_RefRK9Eigen_Refd" title="rascal::math::ErrorMethod::is_error_below_bound::Eigen_Ref">Eigen_Ref</a> &amp;<em>values</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal4math11ErrorMethod20is_error_below_boundEbRK9Eigen_RefRK9Eigen_Refd" title="rascal::math::ErrorMethod::is_error_below_bound::Eigen_Ref">Eigen_Ref</a> &amp;<em>references</em>, double <em>error_bound</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -7153,47 +7088,6 @@ double <code class="sig-name descname">calc</code><span class="sig-paren">(</spa
 
 <dl class="class">
 <dt>
-<em class="property">class </em><code class="sig-name descname">Hyp1f1Asymptotic</code><br /></dt>
-<dd><div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Public Functions</p>
-<dl class="function">
-<dt>
-double <code class="sig-name descname">calc</code><span class="sig-paren">(</span>double <em>z</em>, double <em>z2</em>, bool <em>derivative</em> = false, int <em>n_terms</em> = -1<span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-double <code class="sig-name descname">calc</code><span class="sig-paren">(</span>double <em>z</em>, bool <em>derivative</em> = false, int <em>n_terms</em> = -1<span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-double <code class="sig-name descname">hyp2f0</code><span class="sig-paren">(</span>double <em>z</em>, bool <em>derivative</em>, int <em>n_terms</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-</div>
-</dd></dl>
-
-<dl class="class">
-<dt>
-<em class="property">class </em><code class="sig-name descname">Hyp1f1Series</code><br /></dt>
-<dd><div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Public Functions</p>
-<dl class="function">
-<dt>
-double <code class="sig-name descname">calc</code><span class="sig-paren">(</span>double <em>z</em>, double <em>z2</em>, double <em>ez2</em>, bool <em>derivative</em> = false, int <em>n_terms</em> = -1<span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-double <code class="sig-name descname">hyp1f1</code><span class="sig-paren">(</span>double <em>z</em>, bool <em>derivative</em>, int <em>n_terms</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-</div>
-</dd></dl>
-
-<dl class="class">
-<dt>
 <em class="property">class </em><code class="sig-name descname">Hyp1f1SphericalExpansion</code><br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
@@ -7214,17 +7108,17 @@ double <code class="sig-name descname">calc</code><span class="sig-paren">(</spa
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">calc</code><span class="sig-paren">(</span>double <em>r_ij</em>, double <em>alpha</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>fac_b</em>, bool <em>derivative</em> = false<span class="sig-paren">)</span><br /></dt>
+void <code class="sig-name descname">calc</code><span class="sig-paren">(</span>double <em>r_ij</em>, double <em>alpha</em>, <em class="property">const</em> Vector_Ref &amp;<em>fac_b</em>, bool <em>derivative</em> = false<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">calc_recursion</code><span class="sig-paren">(</span>double <em>r_ij</em>, double <em>alpha</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>fac_b</em><span class="sig-paren">)</span><br /></dt>
+void <code class="sig-name descname">calc_recursion</code><span class="sig-paren">(</span>double <em>r_ij</em>, double <em>alpha</em>, <em class="property">const</em> Vector_Ref &amp;<em>fac_b</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">calc_direct</code><span class="sig-paren">(</span>double <em>r_ij</em>, double <em>alpha</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>fac_b</em>, bool <em>derivative</em><span class="sig-paren">)</span><br /></dt>
+void <code class="sig-name descname">calc_direct</code><span class="sig-paren">(</span>double <em>r_ij</em>, double <em>alpha</em>, <em class="property">const</em> Vector_Ref &amp;<em>fac_b</em>, bool <em>derivative</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -7247,22 +7141,22 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math21Interpolat
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt>
-void <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;<span class="sig-paren">)</span><br /></dt>
+void <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>grid</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>evaluated_grid</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a>&amp;<span class="sig-paren">)</span><br /></dt>
+void <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>grid</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a> &amp;<em>evaluated_grid</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-double <code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;, double, int<span class="sig-paren">)</span><br /></dt>
+double <code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>grid</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>evaluated_grid</em>, double <em>x</em>, int <em>nearest_grid_index_to_x</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-double <code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a>&amp;, double, int<span class="sig-paren">)</span><br /></dt>
+double <code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>grid</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a> &amp;<em>evaluated_grid</em>, double <em>x</em>, int <em>nearest_grid_index_to_x</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -7324,7 +7218,7 @@ template&lt;class <code class="sig-name descname">InterpolationMethod</code>, cl
 
 <dl class="class">
 <dt>
-template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math18RefinementMethod_tE" title="rascal::math::RefinementMethod_t">RefinementMethod_t</a> <code class="sig-name descname">RefinementMethod</code>, class <code class="sig-name descname">ErrorMethod_</code> = <a class="reference internal" href="#_CPPv4IEN6rascal4math11ErrorMethodIN13ErrorMetric_t8AbsoluteEEE" title="rascal::math::ErrorMethod&lt;ErrorMetric_t::Absolute&gt;">ErrorMethod</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetric_tE" title="rascal::math::ErrorMetric_t">ErrorMetric_t</a>::Absolute&gt;&gt;<br /><em class="property">class </em><code class="sig-name descname">InterpolatorMatrixUniformCubicSpline</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::Interpolator&lt;<a class="reference internal" href="#_CPPv4IEN6rascal4math19InterpolationMethodIN21InterpolationMethod_t24CubicSplineVectorUniformEEE" title="rascal::math::InterpolationMethod&lt;InterpolationMethod_t::CubicSplineVectorUniform&gt;">InterpolationMethod</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math21InterpolationMethod_tE" title="rascal::math::InterpolationMethod_t">InterpolationMethod_t</a>::CubicSplineVectorUniform&gt;, UniformGridRational&lt;<a class="reference internal" href="#_CPPv4I_18RefinementMethod_t0EN6rascal4math36InterpolatorMatrixUniformCubicSplineE" title="rascal::math::InterpolatorMatrixUniformCubicSpline::RefinementMethod">RefinementMethod</a>&gt;, <a class="reference internal" href="#_CPPv4I_18RefinementMethod_t0EN6rascal4math36InterpolatorMatrixUniformCubicSplineE" title="rascal::math::InterpolatorMatrixUniformCubicSpline::ErrorMethod_">ErrorMethod_</a>&gt;<br /></dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math18RefinementMethod_tE" title="rascal::math::RefinementMethod_t">RefinementMethod_t</a> <code class="sig-name descname">RefinementMethod</code>, class <code class="sig-name descname">ErrorMethod_t</code> = <a class="reference internal" href="#_CPPv4IEN6rascal4math11ErrorMethodIN13ErrorMetric_t8AbsoluteEEE" title="rascal::math::ErrorMethod&lt;ErrorMetric_t::Absolute&gt;">ErrorMethod</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetric_tE" title="rascal::math::ErrorMetric_t">ErrorMetric_t</a>::Absolute&gt;&gt;<br /><em class="property">class </em><code class="sig-name descname">InterpolatorMatrixUniformCubicSpline</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::Interpolator&lt;<a class="reference internal" href="#_CPPv4IEN6rascal4math19InterpolationMethodIN21InterpolationMethod_t24CubicSplineVectorUniformEEE" title="rascal::math::InterpolationMethod&lt;InterpolationMethod_t::CubicSplineVectorUniform&gt;">InterpolationMethod</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math21InterpolationMethod_tE" title="rascal::math::InterpolationMethod_t">InterpolationMethod_t</a>::CubicSplineVectorUniform&gt;, UniformGridRational&lt;<a class="reference internal" href="#_CPPv4I_18RefinementMethod_t0EN6rascal4math36InterpolatorMatrixUniformCubicSplineE" title="rascal::math::InterpolatorMatrixUniformCubicSpline::RefinementMethod">RefinementMethod</a>&gt;, <a class="reference internal" href="#_CPPv4I_18RefinementMethod_t0EN6rascal4math36InterpolatorMatrixUniformCubicSplineE" title="rascal::math::InterpolatorMatrixUniformCubicSpline::ErrorMethod_t">ErrorMethod_t</a>&gt;<br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
@@ -7392,7 +7286,7 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math18Refinement
 
 <dl class="class">
 <dt>
-template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math18RefinementMethod_tE" title="rascal::math::RefinementMethod_t">RefinementMethod_t</a> <code class="sig-name descname">RefinementMethod</code>, class <code class="sig-name descname">ErrorMethod_</code> = <a class="reference internal" href="#_CPPv4IEN6rascal4math11ErrorMethodIN13ErrorMetric_t8AbsoluteEEE" title="rascal::math::ErrorMethod&lt;ErrorMetric_t::Absolute&gt;">ErrorMethod</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetric_tE" title="rascal::math::ErrorMetric_t">ErrorMetric_t</a>::Absolute&gt;&gt;<br /><em class="property">class </em><code class="sig-name descname">InterpolatorScalarUniformCubicSpline</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::Interpolator&lt;<a class="reference internal" href="#_CPPv4IEN6rascal4math19InterpolationMethodIN21InterpolationMethod_t24CubicSplineScalarUniformEEE" title="rascal::math::InterpolationMethod&lt;InterpolationMethod_t::CubicSplineScalarUniform&gt;">InterpolationMethod</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math21InterpolationMethod_tE" title="rascal::math::InterpolationMethod_t">InterpolationMethod_t</a>::CubicSplineScalarUniform&gt;, UniformGridRational&lt;<a class="reference internal" href="#_CPPv4I_18RefinementMethod_t0EN6rascal4math36InterpolatorScalarUniformCubicSplineE" title="rascal::math::InterpolatorScalarUniformCubicSpline::RefinementMethod">RefinementMethod</a>&gt;, <a class="reference internal" href="#_CPPv4I_18RefinementMethod_t0EN6rascal4math36InterpolatorScalarUniformCubicSplineE" title="rascal::math::InterpolatorScalarUniformCubicSpline::ErrorMethod_">ErrorMethod_</a>&gt;<br /></dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math18RefinementMethod_tE" title="rascal::math::RefinementMethod_t">RefinementMethod_t</a> <code class="sig-name descname">RefinementMethod</code>, class <code class="sig-name descname">ErrorMethod_t</code> = <a class="reference internal" href="#_CPPv4IEN6rascal4math11ErrorMethodIN13ErrorMetric_t8AbsoluteEEE" title="rascal::math::ErrorMethod&lt;ErrorMetric_t::Absolute&gt;">ErrorMethod</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math13ErrorMetric_tE" title="rascal::math::ErrorMetric_t">ErrorMetric_t</a>::Absolute&gt;&gt;<br /><em class="property">class </em><code class="sig-name descname">InterpolatorScalarUniformCubicSpline</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::Interpolator&lt;<a class="reference internal" href="#_CPPv4IEN6rascal4math19InterpolationMethodIN21InterpolationMethod_t24CubicSplineScalarUniformEEE" title="rascal::math::InterpolationMethod&lt;InterpolationMethod_t::CubicSplineScalarUniform&gt;">InterpolationMethod</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal4math21InterpolationMethod_tE" title="rascal::math::InterpolationMethod_t">InterpolationMethod_t</a>::CubicSplineScalarUniform&gt;, UniformGridRational&lt;<a class="reference internal" href="#_CPPv4I_18RefinementMethod_t0EN6rascal4math36InterpolatorScalarUniformCubicSplineE" title="rascal::math::InterpolatorScalarUniformCubicSpline::RefinementMethod">RefinementMethod</a>&gt;, <a class="reference internal" href="#_CPPv4I_18RefinementMethod_t0EN6rascal4math36InterpolatorScalarUniformCubicSplineE" title="rascal::math::InterpolatorScalarUniformCubicSpline::ErrorMethod_t">ErrorMethod_t</a>&gt;<br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
@@ -7425,27 +7319,17 @@ double <code class="sig-name descname">interpolate_derivative</code><span class=
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt>
-void <code class="sig-name descname">precompute</code><span class="sig-paren">(</span>size_t <em>l_max</em>, <em class="property">const</em> Eigen::Ref&lt;<em class="property">const</em> Eigen::VectorXd&gt; &amp;<em>x_v</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-void <code class="sig-name descname">upward_recursion</code><span class="sig-paren">(</span>double <em>distance</em>, double <em>fac_a</em>, int <em>n_rows</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-void <code class="sig-name descname">downward_recursion</code><span class="sig-paren">(</span>double <em>distance</em>, double <em>fac_a</em>, int <em>n_rows</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
 void <code class="sig-name descname">calc</code><span class="sig-paren">(</span>double <em>distance</em>, double <em>fac_a</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-auto <code class="sig-name descname">get_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+void <code class="sig-name descname">precompute</code><span class="sig-paren">(</span>size_t <em>l_max</em>, <em class="property">const</em> Eigen::Ref&lt;<em class="property">const</em> Eigen::VectorXd&gt; &amp;<em>x_v</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+Eigen::Ref&lt;Eigen::ArrayXXd&gt; <code class="sig-name descname">get_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -7458,22 +7342,12 @@ auto <code class="sig-name descname">get_values</code><span class="sig-paren">(<
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt>
-<code class="sig-name descname">SphericalHarmonics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-name descname">SphericalHarmonics</code><span class="sig-paren">(</span>bool <em>calculate_derivatives</em><span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">SphericalHarmonics</code><span class="sig-paren">(</span>bool <em>calculate_derivatives</em> = false<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
 void <code class="sig-name descname">precompute</code><span class="sig-paren">(</span>size_t <em>max_angular</em>, bool <em>calculate_derivatives</em> = false<span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-void <code class="sig-name descname">compute_assoc_legendre_polynom</code><span class="sig-paren">(</span>double <em>cos_theta</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -7488,17 +7362,7 @@ void <code class="sig-name descname">calc</code><span class="sig-paren">(</span>
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">compute_cos_sin_angle_multiples</code><span class="sig-paren">(</span>double <em>cos_phi</em>, double <em>sin_phi</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-void <code class="sig-name descname">compute_spherical_harmonics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-void <code class="sig-name descname">compute_spherical_harmonics_derivatives</code><span class="sig-paren">(</span>double <em>sin_theta</em>, double <em>cos_theta</em>, double <em>sin_phi</em>, double <em>cos_phi</em><span class="sig-paren">)</span><br /></dt>
+<em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Matrix_RefE" title="rascal::math::Matrix_Ref">Matrix_Ref</a> <code class="sig-name descname">get_assoc_legendre_polynom_raw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -7521,12 +7385,12 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math18Refinement
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt>
-<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">compute_grid</code><span class="sig-paren">(</span>double, double, int<span class="sig-paren">)</span><br /></dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">compute_grid</code><span class="sig-paren">(</span>double <em>x1</em>, double <em>x2</em>, int <em>degree_of_fineness</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">compute_test_grid</code><span class="sig-paren">(</span>double, double, int<span class="sig-paren">)</span><br /></dt>
+<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> <code class="sig-name descname">compute_test_grid</code><span class="sig-paren">(</span>double <em>x1</em>, double <em>x2</em>, int <em>degree_of_fineness</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -7539,12 +7403,12 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal4math18Refinement
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt>
-void <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a> &amp;<em>grid</em>, size_t <em>nb_support_points</em><span class="sig-paren">)</span><br /></dt>
+void <code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="property">const</em> Vector_Ref &amp;<em>grid</em>, size_t <em>nb_support_points</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-int <code class="sig-name descname">search</code><span class="sig-paren">(</span>double <em>x</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal4math10Vector_RefE" title="rascal::math::Vector_Ref">Vector_Ref</a>&amp;<span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+int <code class="sig-name descname">search</code><span class="sig-paren">(</span>double <em>x</em>, <em class="property">const</em> Vector_Ref&amp;<span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -7566,6 +7430,52 @@ double <code class="sig-name descname">pow_i</code><span class="sig-paren">(</sp
 <dd></dd></dl>
 
 </div>
+</dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">namespace </em><code class="sig-name descname">internal</code><br /></dt>
+<dd><dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-name descname">Hyp1f1Asymptotic</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+double <code class="sig-name descname">calc</code><span class="sig-paren">(</span>double <em>z</em>, double <em>z2</em>, bool <em>derivative</em> = false, int <em>n_terms</em> = -1<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+double <code class="sig-name descname">calc</code><span class="sig-paren">(</span>double <em>z</em>, bool <em>derivative</em> = false, int <em>n_terms</em> = -1<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+double <code class="sig-name descname">hyp2f0</code><span class="sig-paren">(</span>double <em>z</em>, bool <em>derivative</em>, int <em>n_terms</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-name descname">Hyp1f1Series</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+double <code class="sig-name descname">calc</code><span class="sig-paren">(</span>double <em>z</em>, double <em>z2</em>, double <em>ez2</em>, bool <em>derivative</em> = false, int <em>n_terms</em> = -1<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+double <code class="sig-name descname">hyp1f1</code><span class="sig-paren">(</span>double <em>z</em>, bool <em>derivative</em>, int <em>n_terms</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
 </dd></dl>
 
 </dd></dl>
@@ -7664,11 +7574,6 @@ double <code class="sig-name descname">pow_i</code><span class="sig-paren">(</sp
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Functions</p>
-<dl class="function">
-<dt>
-template&lt;size_t <code class="sig-name descname">ApplicationOrder</code>, class <code class="sig-name descname">Manager</code>, class <code class="sig-name descname">Function</code>, class ...<code class="sig-name descname">Args</code>&gt;<br />void <code class="sig-name descname">for_each_at_order</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_6size_t00DpEN6rascal5utils17for_each_at_orderEvR7ManagerRR8FunctionDpRR4Args" title="rascal::utils::for_each_at_order::Manager">Manager</a> &amp;<em>manager</em>, <a class="reference internal" href="#_CPPv4I_6size_t00DpEN6rascal5utils17for_each_at_orderEvR7ManagerRR8FunctionDpRR4Args" title="rascal::utils::for_each_at_order::Function">Function</a> &amp;&amp;<em>function</em>, <a class="reference internal" href="#_CPPv4I_6size_t00DpEN6rascal5utils17for_each_at_orderEvR7ManagerRR8FunctionDpRR4Args" title="rascal::utils::for_each_at_order::Args">Args</a>&amp;&amp;... <em>args</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
 <dl class="function">
 <dt>
 <a class="reference internal" href="#_CPPv4N6rascal5utils14FPSReturnTupleE" title="rascal::utils::FPSReturnTuple">FPSReturnTuple</a> <code class="sig-name descname">select_fps</code><span class="sig-paren">(</span><em class="property">const</em> Eigen::Ref&lt;<em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal5utils11RowMatrixXdE" title="rascal::utils::RowMatrixXd">RowMatrixXd</a>&gt; &amp;<em>feature_matrix</em>, int <em>n_sparse</em> = 0, int <em>i_first_point</em> = 0, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal5utils19FPSReturnTupleConstE" title="rascal::utils::FPSReturnTupleConst">FPSReturnTupleConst</a> &amp;<em>restart</em> = std::make_tuple(Eigen::ArrayXi(0), , )<span class="sig-paren">)</span><br /></dt>
