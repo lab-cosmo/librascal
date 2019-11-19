@@ -28,7 +28,7 @@ request" instead (or waiting to request reviewers).
 .. [*] You'd think this would be obvious, but far too many people ignore
        ``README``\ s in practice
 
-The TL;DR of our review process
+Summary of the review process
 ===============================
 
 A detailed description can be found in a separate document about the `review
@@ -43,7 +43,7 @@ For developers
  * Use our Pull-Request template in preparing your PR.
  * Add tests for added functionality.
  * Make sure your proposed changes pass the all existing tests, change (not
-   disable!) them if necessary.
+   deactivate) them if necessary.
  * Document your contribution.
 
 For reviewers
