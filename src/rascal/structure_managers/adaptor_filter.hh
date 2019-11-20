@@ -319,8 +319,8 @@ namespace rascal {
     /**
      * main function during construction of the filtered view
      * @param cluster last atom of cluster is added to the filter
-     * @param Order select whether it is an i-atom (order=1), j-atom
-     * (order=2), or ...
+     * @tparam Order select whether it is an i-atom (order=1), j-atom
+     *               (order=2), or ...
      */
     template <size_t Order>
     void add_atom(const InputClusterRef_t<Order> & cluster) {

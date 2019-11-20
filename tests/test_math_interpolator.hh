@@ -198,7 +198,7 @@ namespace rascal {
 
     // For a == b the hy1f1 function is the same as exp therefore we test the
     // case a != b radial = 5; angular = 4; a = 0.5 * (radial + angular + 3); b
-    // = angular + 1.5; math::Hyp1f1 hyp1f1{a, b, 200, 1e-15};
+    // = angular + 1.5;
     math::Hyp1f1 hyp1f1{0.5 * (5 + 4 + 3), 4 + 1.5, 200, 1e-15};
     const int max_radial{3};
     const int max_angular{max_radial - 1};
@@ -211,7 +211,7 @@ namespace rascal {
         {"cutoff_function", {{"cutoff", {{"value", 2.0}, {"unit", "AA"}}}}}};
 
     // a=0.5*(n+l+3), b = l+1.5, mmax, tolerance
-    RadialIntegral_t radial_contr{RadialIntegral_t(hypers)};
+    RadialIntegral_t radial_contr{hypers};
   };
 
 }  // namespace rascal

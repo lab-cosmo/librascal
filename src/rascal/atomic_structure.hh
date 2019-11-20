@@ -277,7 +277,10 @@ namespace rascal {
      * @param threshold2 tolerance parameter squared for the similarity
      *                    comparison
      */
-    bool is_similar(double) const { return true; }
+    bool is_similar(double threshold2) const {
+      (void)threshold2;
+      return true;
+    }
 
     bool is_similar(const json_io::AtomicJsonData &, double) { return false; }
 

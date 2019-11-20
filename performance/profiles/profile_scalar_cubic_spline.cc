@@ -35,6 +35,7 @@
 #include "rascal/math/interpolator.hh"
 
 #include <chrono>
+#include <iostream>
 
 static constexpr int N_REPETITIONS = 200;
 static unsigned int SEED = 1597463007;

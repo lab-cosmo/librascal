@@ -45,7 +45,6 @@
 #include <list>
 #include <string>
 
-// using namespace std;
 using namespace rascal;  // NOLINT
 
 using Representation_t = CalculatorSphericalExpansion;
@@ -67,8 +66,8 @@ int main(int argc, char * argv[]) {
   double cutoff{4.};
   json hypers{
       {"max_radial", 3}, {"max_angular", 2}, {"compute_gradients", true}};
-  //{"soap_type", "PowerSpectrum"},
-  //{"normalize", true}};
+  // {"soap_type", "PowerSpectrum"},
+  // {"normalize", true}};
 
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},

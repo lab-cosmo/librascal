@@ -29,7 +29,7 @@
 #ifndef SRC_RASCAL_MATH_UTILS_HH_
 #define SRC_RASCAL_MATH_UTILS_HH_
 
-#include <Eigen/Dense>
+#include <Eigen/Core>
 
 #include <cmath>
 #include <cstdint>

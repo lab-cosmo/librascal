@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_UTILS_SPARSIFY_UTILITIES_HH_
-#define SRC_RASCAL_UTILS_SPARSIFY_UTILITIES_HH_
+#ifndef SRC_RASCAL_UTILS_SPARSIFY_FPS_HH_
+#define SRC_RASCAL_UTILS_SPARSIFY_FPS_HH_
 
 #include "rascal/basic_types.hh"
 
@@ -96,4 +96,5 @@ namespace rascal {
                        int n_sparse = 0, int i_first_point = 0);
   }  // namespace utils
 }  // namespace rascal
-#endif  // SRC_RASCAL_UTILS_SPARSIFY_UTILITIES_HH_
+
+#endif  // SRC_RASCAL_UTILS_SPARSIFY_FPS_HH_

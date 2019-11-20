@@ -347,7 +347,7 @@ namespace rascal {
       double b = l + 1.5;
       // Important hyp1f1 a!=b, because for a==b the Hyp1f1 can be simplified
       // and computations does not take as long as it would on average
-      auto hyp1f1 = math::Hyp1f1(a, b + 1, 200, 1e-15);
+      auto hyp1f1 = Hyp1f1(a, b + 1, 200, 1e-15);
       this->func = [=](double x) mutable { return hyp1f1.calc(x); };
     }
 
