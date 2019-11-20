@@ -594,8 +594,7 @@ namespace rascal {
             hyper.at("radial_contribution").template get<json>();
         auto radial_contribution_type_name =
             radial_contribution_hypers.at("type").template get<std::string>();
-        auto density_hypers =
-            hyper.at("gaussian_density").template get<json>();
+        auto density_hypers = hyper.at("gaussian_density").template get<json>();
         auto smearing_type_name =
             density_hypers.at("type").template get<std::string>();
         auto optimization_hypers =
@@ -648,7 +647,6 @@ namespace rascal {
     }
     ~RadialIntegralHandlerFixture() = default;
   };
-
 
   /**
    * Gradient provider specialized to testing the gradient of a Calculator

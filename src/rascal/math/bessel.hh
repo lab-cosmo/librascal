@@ -100,7 +100,7 @@ namespace rascal {
        *         Note that a reference is returned to avoid unnecessary
        *         copies.
        */
-      Eigen::Ref<Eigen::ArrayXXd> get_values() {
+      auto get_values() {
         if (this->compute_gradients) {
           // when the gradient are computed bessel_values has one additional
           // column that should not be returned
