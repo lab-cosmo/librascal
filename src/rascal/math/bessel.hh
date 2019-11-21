@@ -71,8 +71,6 @@ namespace rascal {
      public:
       ModifiedSphericalBessel() = default;
 
-      using ref = Eigen::Ref<const Eigen::ArrayXXd>;
-
       /**
        * Compute all the MBSFs for the given x-values up to the given order
        *
@@ -91,6 +89,7 @@ namespace rascal {
                       const Eigen::Ref<const Eigen::VectorXd> & x_v,
                       bool compute_gradients = false);
 
+      using ArrayConstRef_t = Eigen::Ref<const Eigen::ArrayXXd>;
       /**
        * Return a reference to the already computed Bessel function values
        *
@@ -100,13 +99,13 @@ namespace rascal {
        *         Note that a reference is returned to avoid unnecessary
        *         copies.
        */
-      auto get_values() {
+      ArrayConstRef_t get_values() {
         if (this->compute_gradients) {
           // when the gradient are computed bessel_values has one additional
           // column that should not be returned
-          return ref(this->bessel_values.leftCols(this->l_max + 1));
+          return this->bessel_values.leftCols(this->l_max + 1);
         } else {
-          return ref(this->bessel_values);
+          return this->bessel_values;
         }
       }
 
@@ -119,7 +118,7 @@ namespace rascal {
        *         Note that a reference is returned to avoid unnecessary
        *         copies.
        */
-      auto get_gradients() { return ref(this->bessel_gradients); }
+      ArrayConstRef_t get_gradients() { return this->bessel_gradients; }
 
      private:
       /**
