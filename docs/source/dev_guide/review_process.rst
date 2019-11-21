@@ -81,7 +81,7 @@ you, do not hesitate to contact us if the any issues arise *after* your PR has
 been approved. While we discourage changes after the PR has been approved,
 sometimes it is necessary to be able to merge with master. There are no rules to
 make this easy so please decide on the basis of the fact that we want a clean
-compiling master branch. To elaborate on this, here are a few examples
+functional master branch. To elaborate on this, here are a few examples
 
  * A PR is approved but there are still changes added afterwards. While this can
    not be avoided completely, it should not be the norm. As the PR requester and
