@@ -10,15 +10,18 @@ This short description should serve as a rough guideline on how we deal with
 reviews on pull requests (PR). Some PRs are easy, others are hard. Some require
 multiple changes and continuous feedback, others can be merged in
 flawlessly. The purpose of this text is to communicate our intent and style and
-should not be seen as *law*.
+should not be seen as *law*. A summary of these guidelines can be found in
+``CONTRIBUTING.rst`` in the top level of the repository. If you haven't read that
+file, it would be a good idea to do that now.
 
 After successfully adding a new feature, doing maintenance, sorting out a bug or
 adding new documentation, in short: contributing to the codebase in any form,
 you should ensure that all existing and new tests pass. These include tests for
 functionality on the C++ as well as the python side but also include tests for
-code style as far as they can be automated for which the custom command is ``make lint`` (see our :ref:`Coding convention
-<coding-convention>` for details on the style). We also have a custom ``make pretty-cpp`` and ``make pretty-python``
-target to help with autoformatting C++ as well as Python code.
+code style as far as they can be automated for which the custom command is
+``make lint`` (see our :ref:`Coding convention <coding-convention>` for details
+on the style). We also have a custom ``make pretty-cpp`` and ``make
+pretty-python`` target to help with autoformatting C++ as well as Python code.
 
 Further, we provide a PR template on Github with several checkmarks to help
 start and streamline the review process. Please make use of it, although you can
