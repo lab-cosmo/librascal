@@ -36,4 +36,4 @@ At this point, you can code the method in the way that you want, but we remind y
       }
   }
 
-Once that the method that you need as been implemented, you can save the file(s) and proceed. Note that adding a ``.cc`` file requires its registration in the folder's CMakeLists.txt for it to be compiled.
+Once the method that you need has been implemented, you can save the file(s) and proceed. Note that adding a ``.cc`` file requires its registration in the folder's CMakeLists.txt for it to be compiled.
