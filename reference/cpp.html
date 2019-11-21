@@ -185,13 +185,13 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
@@ -366,8 +366,7 @@
 <dl class="function">
 <dt id="_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">
 <span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1DVR_01_4_1a7b63207b33e8cab6eefb32c71800d00c"></span>template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal10Matrix_RefE" title="rascal::Matrix_Ref">Matrix_Ref</a> <code class="sig-name descname">compute_neighbour_derivative</code><span class="sig-paren">(</span><em class="property">const</em> double, <em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::internal::RadialContribution::compute_neighbour_derivative::Layer">Layer</a>&gt;&amp;<span class="sig-paren">)</span><br /></dt>
-<dd><p>Compute the radial derivative of the neighbour contribution</p>
-<p></p>
+<dd><p>Compute the radial derivative of the neighbour contribution Assumes that gradients of bessel have already been computed in compute_neighbour_contribution </p>
 </dd></dl>
 
 </div>
@@ -874,7 +873,7 @@ StructureManager is compatible with the representation <dl class="simple">
 
 <dl class="type">
 <dt>
-<em class="property">using </em><code class="sig-name descname">fixtures_with_gradients</code> = boost::mpl::list&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;MultipleHypersSphericalExpansion&gt;&gt;<br /></dt>
+<em class="property">using </em><code class="sig-name descname">fixtures_with_gradients</code> = boost::mpl::list&lt;RadialIntegralHandlerFixture&lt;MultipleHypersSphericalExpansion, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a>::GTO, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a>::Constant, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a>::None&gt;, RadialIntegralHandlerFixture&lt;MultipleHypersSphericalExpansion, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a>::GTO, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a>::Constant, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a>::Interpolator&gt;, RadialIntegralHandlerFixture&lt;MultipleHypersSphericalExpansion, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a>::DVR, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a>::Constant, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a>::None&gt;, RadialIntegralHandlerFixture&lt;MultipleHypersSphericalExpansion, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a>::DVR, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a>::Constant, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a>::Interpolator&gt;&gt;<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
@@ -1638,6 +1637,11 @@ template&lt;class <code class="sig-name descname">ErrorMethod</code>&gt;<br /><e
 <dl class="function">
 <dt>
 <code class="sig-name descname">BOOST_FIXTURE_TEST_CASE</code><span class="sig-paren">(</span>math_bessel_test, ModifiedBesselFirstKindRefFixture<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_AUTO_TEST_CASE</code><span class="sig-paren">(</span>MBFs_gradient_test<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4037,7 +4041,7 @@ template&lt;&gt;<br /><em class="property">struct </em><code class="sig-name des
 <dl class="class">
 <dt>
 template&lt;class <code class="sig-name descname">BaseFixture</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">MultipleStructureFixture</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv4I0EN6rascal24MultipleStructureFixtureE" title="rascal::MultipleStructureFixture::BaseFixture">BaseFixture</a><br /></dt>
-<dd><p>Subclassed by rascal::CalculatorFixture&lt; BaseFixture &gt;, rascal::MultipleStructureSortedCoulomb&lt; MultipleStructureFixture &gt;, rascal::MultipleStructureSphericalCovariants&lt; MultipleStructureFixture &gt;, rascal::MultipleStructureSphericalExpansion&lt; MultipleStructureFixture &gt;, rascal::MultipleStructureSphericalInvariants&lt; MultipleStructureFixture &gt;</p>
+<dd><p>Subclassed by rascal::CalculatorFixture&lt; BaseFixture &gt;, rascal::MultipleStructureSortedCoulomb&lt; MultipleStructureFixture &gt;, rascal::MultipleStructureSphericalCovariants&lt; MultipleStructureFixture &gt;, rascal::MultipleStructureSphericalExpansion&lt; MultipleStructureFixture &gt;, rascal::MultipleStructureSphericalInvariants&lt; MultipleStructureFixture &gt;, rascal::RadialIntegralHandlerFixture&lt; BaseFixture, RadialType, SmearingType, OptType &gt;</p>
 </dd></dl>
 
 <dl class="class">
@@ -7324,12 +7328,17 @@ void <code class="sig-name descname">calc</code><span class="sig-paren">(</span>
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">precompute</code><span class="sig-paren">(</span>size_t <em>l_max</em>, <em class="property">const</em> Eigen::Ref&lt;<em class="property">const</em> Eigen::VectorXd&gt; &amp;<em>x_v</em><span class="sig-paren">)</span><br /></dt>
+void <code class="sig-name descname">precompute</code><span class="sig-paren">(</span>size_t <em>l_max</em>, <em class="property">const</em> Eigen::Ref&lt;<em class="property">const</em> Eigen::VectorXd&gt; &amp;<em>x_v</em>, bool <em>compute_gradients</em> = false<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-Eigen::Ref&lt;Eigen::ArrayXXd&gt; <code class="sig-name descname">get_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<a class="reference internal" href="#_CPPv4N6rascal15ArrayConstRef_tE" title="rascal::ArrayConstRef_t">ArrayConstRef_t</a> <code class="sig-name descname">get_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal15ArrayConstRef_tE" title="rascal::ArrayConstRef_t">ArrayConstRef_t</a> <code class="sig-name descname">get_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
