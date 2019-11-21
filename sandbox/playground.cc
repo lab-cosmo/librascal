@@ -1,11 +1,11 @@
 /**
- * @file   performance/profiles/profile_spherical_expansion.cc
+ * @file   examples/spherical_invariants_example.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
- * @date   7 May 2019
+ * @date   26 June 2019
  *
- * @brief  Example for profiling the spherical expansion
+ * @brief  Example for computing the spherical invariants (SOAP)
  *
  * Copyright © 2018 Max Veit, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -45,10 +45,7 @@
 #include <list>
 #include <string>
 
-// using namespace std;
 using namespace rascal;  // NOLINT
-
-const int N_ITERATIONS = 10;
 
 using Representation_t = CalculatorSphericalInvariants;
 using Manager_t = AdaptorStrict<
@@ -56,7 +53,7 @@ using Manager_t = AdaptorStrict<
 using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
 using PropGrad_t =
     typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
-bool VERBOSE{false};
+
 int main(int argc, char * argv[]) {
   if (argc < 2) {
     std::cerr << "Must provide atomic structure json filename as argument";
@@ -64,16 +61,15 @@ int main(int argc, char * argv[]) {
     return -1;
   }
 
-  // TODO(max) put these in a file so they can be varied systematically
-  // maybe together with the filename and iteration count
   std::string filename{argv[1]};
 
-  double cutoff{5.};
-  json hypers{{"max_radial", 8},
-              {"max_angular", 6},
+  double cutoff{4.};
+  json hypers{{"max_radial", 3},
+              {"max_angular", 2},
+              {"compute_gradients", true},
               {"soap_type", "PowerSpectrum"},
-              {"normalize", true},
-              {"compute_gradients", false}};
+              {"normalize", true}};
+
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
                  {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
@@ -101,79 +97,80 @@ int main(int argc, char * argv[]) {
                                    AdaptorCenterContribution, AdaptorStrict>(
           structure, adaptors);
 
-  AtomicStructure<3> ast{};
-  ast.set_structure(filename);
-
-  std::cout << "structure filename: " << filename << std::endl;
-
-  std::chrono::duration<double> elapsed{};
-
-  auto start = std::chrono::high_resolution_clock::now();
-  // This is the part that should get profiled
-  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
-    manager->update(ast);
-  }
-  auto finish = std::chrono::high_resolution_clock::now();
-
-  elapsed = finish - start;
-  std::cout << "Neighbour List"
-            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
-            << std::endl;
-
   Representation_t representation{hypers};
 
-  start = std::chrono::high_resolution_clock::now();
-  // This is the part that should get profiled
-  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
-    representation.compute(manager);
-  }
-  finish = std::chrono::high_resolution_clock::now();
+  representation.compute(manager);
 
-  elapsed = finish - start;
-  std::cout << "Compute representation"
-            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
+  constexpr size_t n_centers_print{4};
+  constexpr size_t n_neigh_print{4};
+
+  // Print the first few elements and gradients, so we know we're getting
+  // something
+  std::cout << "Expansion of first " << n_centers_print << " centers:";
+  std::cout << std::endl;
+  std::cout << "Note that the coefficients are printed with species pairs along"
+               " the columns and n-n'-l along the rows."
             << std::endl;
+  std::cout << "Gradients are printed with: First Cartesian component, "
+               "then species pairs, along the columns; n-n'-l along the rows.";
+  std::cout << std::endl;
+  size_t center_count{0};
 
-  if (VERBOSE) {
-    auto expn = manager
-                    ->template get_property_ptr<PropGrad_t>(
-                        representation.get_gradient_name())
-                    ->get_features();
-    std::cout << "Sample SphericalExpansion elements " << std::endl
-              << expn(0, 0) << " " << expn(0, 1) << " " << expn(0, 2) << "\n"
-              << expn(1, 0) << " " << expn(1, 1) << " " << expn(1, 2) << "\n"
-              << expn(2, 0) << " " << expn(2, 1) << " " << expn(2, 2) << "\n";
-  }
+  auto && soap_vectors{
+      *manager->template get_property_ptr<Prop_t>(representation.get_name())};
+  auto && soap_vector_gradients{*manager->template get_property_ptr<PropGrad_t>(
+      representation.get_gradient_name())};
 
-  // Profile again, this time with gradients
-  hypers["compute_gradients"] = true;
-  Representation_t representation_gradients{hypers};
-  start = std::chrono::high_resolution_clock::now();
-  // This is the part that should get profiled
-  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
-    representation_gradients.compute(manager);
-  }
-  finish = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsed_grad{};
-  elapsed_grad = finish - start;
-  std::cout << "Compute representation with gradients"
-            << " elapsed: " << elapsed_grad.count() / N_ITERATIONS << " seconds"
-            << std::endl;
-  std::cout << "Ratio (with gradients / without gradients): "
-            << elapsed_grad.count() / elapsed.count() << std::endl;
+  for (auto center : manager) {
+    if (center_count >= n_centers_print) {
+      break;
+    }
+    // size_t n_species_center{soap_vectors.get_keys(center).size()};
+    std::cout << "============================" << std::endl;
+    std::cout << "Center " << center.get_index();
+    std::cout << " of type " << center.get_atom_type() << std::endl;
+    // std::cout << soap_vectors.get_dense_row(center);
+    std::cout << std::endl;
+    auto keys_center = soap_vectors[center].get_keys();
+    std::cout << "Center data keys: ";
+    for (auto key : keys_center) {
+      std::cout << "(";
+      for (auto key_sp : key) {
+        std::cout << key_sp << ", ";
+      }
+      std::cout << "\b\b) ";
+    }
+    std::cout << std::endl;
+    auto ii_pair = center.get_atom_ii();
+    auto keys_grad_center = soap_vector_gradients[ii_pair].get_keys();
+    std::cout << "Center gradient keys: ";
+    for (auto key : keys_grad_center) {
+      std::cout << "(";
+      for (auto key_sp : key) {
+        std::cout << key_sp << ", ";
+      }
+      std::cout << "\b\b) ";
+    }
+    std::cout << std::endl;
 
-  if (VERBOSE) {
-    auto expn2 = manager
-                     ->template get_property_ptr<PropGrad_t>(
-                         representation_gradients.get_gradient_name())
-                     ->get_features();
-    std::cout << "Sample SphericalExpansion elements (should be identical) "
-              << std::endl
-              << expn2(0, 0) << " " << expn2(0, 1) << " " << expn2(0, 2) << "\n"
-              << expn2(1, 0) << " " << expn2(1, 1) << " " << expn2(1, 2) << "\n"
-              << expn2(2, 0) << " " << expn2(2, 1) << " " << expn2(2, 2)
-              << "\n";
+    size_t neigh_count{0};
+    for (auto neigh : center) {
+      if (neigh_count >= n_neigh_print) {
+        break;
+      }
+      auto neigh_type = neigh.get_atom_type();
+      auto keys_neigh = soap_vector_gradients[neigh].get_keys();
+      std::cout << "Neighbour "<< neigh_type<<" keys: ";
+      for (auto key : keys_neigh) {
+        std::cout << "(";
+        for (auto key_sp : key) {
+          std::cout << key_sp << ", ";
+        }
+        std::cout << "\b\b) ";
+      }
+      std::cout << std::endl;
+      ++neigh_count;
+    }
+    ++center_count;
   }
-  // TODO(max) print out analogous gradient components, for now see
-  // spherical_expansion_example
 }

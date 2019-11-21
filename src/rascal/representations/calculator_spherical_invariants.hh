@@ -537,9 +537,8 @@ namespace rascal {
               auto & grad_neigh_coefficients{
                   expansions_coefficients_gradient[neigh]};
               auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
-              auto && soap_neigh_gradient_by_species_pair{
-                  soap_neigh_gradient[spair_type]};
-              soap_neigh_gradient_by_species_pair.setZero();
+
+
 
               auto neigh_type = neigh.get_atom_type();
               if ((neigh_type != spair_type[0]) and
@@ -549,6 +548,10 @@ namespace rascal {
                 // avoid storing these empty species blocks
                 continue;
               }
+
+              auto && soap_neigh_gradient_by_species_pair{
+                  soap_neigh_gradient[spair_type]};
+              // soap_neigh_gradient_by_species_pair.setZero();
 
               // TODO(max) is there a symmetry here we can exploit?
               if (neigh_type == spair_type[0]) {
@@ -1200,18 +1203,18 @@ namespace rascal {
         soap_vector_gradients[ii_pair].resize(
             pair_list, n_spatial_dimensions * n_row, n_col, 0.);
 
-        // TODO(max,felix) needs work
-        /*
+
+
         // Neighbour gradients need a separate pair list because if the species
         // of j is not the same as either of the species for that SOAP entry,
         // the gradient is zero.
         for (auto neigh : center) {
+          auto neigh_type = neigh.get_atom_type();
           std::vector<internal::SortedKey<Key_t>> grad_pair_list{};
           for (const auto & el1 : coefficients) {
             auto && neigh_1_type{el1.first[0]};
             for (const auto & el2 : coefficients) {
               auto && neigh_2_type{el2.first[0]};
-              auto neigh_type = neigh.get_atom_type();
               if (neigh_1_type <= neigh_2_type) {
                 pair_type[0] = neigh_1_type;
                 pair_type[1] = neigh_2_type;
@@ -1222,11 +1225,9 @@ namespace rascal {
               }
             }
           }
-          */
-        for (auto neigh : center) {
           soap_vector_gradients[neigh].resize(
-              pair_list, n_spatial_dimensions * n_row, n_col, 0.);
-        }
+              grad_pair_list, n_spatial_dimensions * n_row, n_col, 0.);
+        } // auto neigh : center
       }  // if compute gradients
     }    // for center : manager
   }

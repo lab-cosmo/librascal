@@ -73,6 +73,7 @@ option(BUILD_PROFILES "Build the files for profiling" OFF)
 option(BUILD_TESTS "Build the unit tests" OFF)
 option(BUILD_DOC "Build documentation" OFF)
 option(USER "Switch installation folder" OFF)
+option(BUILD_SANDBOX "If on, builds the sandbox" OFF)
 
 set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
 
@@ -208,6 +209,10 @@ endif()
 if(BUILD_BINDINGS)
     add_subdirectory(bindings)
 endif()
+
+if (${BUILD_SANDBOX})
+    add_subdirectory(sandbox)
+endif (${BUILD_SANDBOX})
 
 if(BUILD_DOC)
     add_subdirectory(docs)
