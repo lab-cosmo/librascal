@@ -582,9 +582,10 @@ namespace rascal {
         internal::RadialContributionHandler<RadialType, SmearingType, OptType>;
 
     RadialIntegralHandlerFixture() : Parent{} {
-      // filter out the hypers that don't correspond to the current Type
+      // filter out the hypers that don't correspond to the current RadialType,
+      // SmearingType or OptType
       std::vector<json> hypers_temp;
-      // here it directly sets GTO DVR and only
+
       for (const auto & hyper : this->representation_hypers) {
         // This block is to ignore hypers which do not agree with the type of
         // the fixture. This way we do not have to create a fixture for each
