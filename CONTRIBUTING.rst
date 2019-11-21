@@ -35,7 +35,7 @@ A detailed description can be found in a separate document about the `review
 process <https://cosmo-epfl.github.io/librascal/dev_guide/review_process.html>`_
 
 For developers
- * We want a clean and tested master branch that is why we review code and use
+ * We want a clean and tested master branch, which is why we review code and use
    continuous integration tools.
  * Contact us if you have any questions.
  * Start the discussion about your contribution early by using the
