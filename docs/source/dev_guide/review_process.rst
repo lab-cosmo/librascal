@@ -29,7 +29,7 @@ the *Draft* PR functionality Github provides. We see it as a way to start a
 discussion about the contribution and the proposed changes and it does not have
 to be polished at that stage. The difference between a Draft PR and a normal PR
 is minor. The Draft stage signals that your contribution is not ready for review
-but up for discussion. But it is nevertheless treated by like a normal PR in the
+but up for discussion. But it is nevertheless treated like a normal PR in the
 sense that all the continuous integration tools are applied and there is an
 immediate feedback from automatic tests. Do not hesitate to contact us at any
 stage if you are unsure about anything.
