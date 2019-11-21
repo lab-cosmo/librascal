@@ -16,7 +16,7 @@ After successfully adding a new feature, doing maintenance, sorting out a bug or
 adding new documentation, in short: contributing to the codebase in any form,
 you should ensure that all existing and new tests pass. These include tests for
 functionality on the C++ as well as the python side but also include tests for
-code style as far as they can be automated (see our :ref:`Coding convention
+code style as far as they can be automated for which the custom command is ``make lint`` (see our :ref:`Coding convention
 <coding-convention>` for details on the style). We also have a custom ``make pretty-cpp`` and ``make pretty-python``
 target to help with autoformatting C++ as well as Python code.
 
