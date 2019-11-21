@@ -37,7 +37,7 @@ stage if you are unsure about anything.
 Once you have added something to the code base, please check locally if the
 tests pass. These tests include the code tests as well as the tests for code
 style as far as they can be checked automatically. You should also add tests for
-new functionality. Likewise, if your changes break existing tests, be sure to
+new functionalities. Likewise, if your changes break existing tests, be sure to
 update (not deactivate!) the affected tests so that they pass. The next step is
 to merge or rebase with the master branch (if you are unsure about which option,
 do not hesitate to contact us). If necessary, add changes to the code to comply
