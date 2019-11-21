@@ -184,11 +184,14 @@ namespace rascal {
 
       //! Compute @f${}_1F_1(a,b,z)@f$
       double calc(double z, bool derivative = false) {
+        double res{};
         if (z > this->z_asympt) {
-          return this->hyp1f1_asymptotic.calc(z, derivative);
+          res = this->hyp1f1_asymptotic.calc(z, derivative);
         } else {
-          return this->hyp1f1_series.calc(z, derivative);
+          res = this->hyp1f1_series.calc(z, derivative);
         }
+        assert(std::isfinite(res));
+        return res;
       }
 
       double calc_numerical_derivative(double z, double h);

@@ -30,17 +30,29 @@
 using namespace rascal::math;  // NOLINT
 
 void ModifiedSphericalBessel::precompute(
-    size_t l_max, const Eigen::Ref<const Eigen::VectorXd> & x_v) {
+    size_t l_max, const Eigen::Ref<const Eigen::VectorXd> & x_v,
+    bool compute_gradients) {
+  this->compute_gradients = compute_gradients;
   this->x_v = x_v.array();
   this->n_max = x_v.size();
-  this->bessel_values.resize(this->n_max, l_max + 1);
+  this->l_max = l_max;
+  if (this->compute_gradients) {
+    // to compute the gradients with the recursion formula we need one
+    // extra order for the values
+    this->order_max = static_cast<int>(this->l_max + 2);
+    this->bessel_gradients.resize(this->n_max, this->l_max + 1);
+  } else {
+    this->order_max = static_cast<int>(this->l_max + 1);
+  }
+
+  // set the proper sizes
+  this->bessel_values.resize(this->n_max, this->order_max);
   this->bessel_arg.resize(this->n_max);
   this->bessel_arg_i.resize(this->n_max);
   this->exp_bessel_arg.resize(this->n_max);
-  this->bessel_arg_pow.resize(this->n_max);
   this->efac.resize(this->n_max);
-  this->l_max = l_max;
-  this->order_max = static_cast<int>(this->l_max + 1);
+
+  // precompute for downward recursion
   this->igammas.resize(2);
   int ii{0};
   for (int order{this->order_max - 2}; order < this->order_max; ++order) {
@@ -95,25 +107,43 @@ void ModifiedSphericalBessel::downward_recursion(double distance, double fac_a,
   }
 }
 
+void ModifiedSphericalBessel::gradient_recursion(double distance,
+                                                 double fac_a) {
+  // compute 1st part
+  this->bessel_gradients = this->bessel_values.leftCols(this->l_max + 1);
+  this->bessel_gradients *= -2. * fac_a * distance;
+  // add 2nd part
+  this->efac = 2. * fac_a * this->x_v;
+  this->bessel_gradients.col(0) += this->efac * this->bessel_values.col(1);
+  // use recurrence relationship
+  for (int i_order{1}; i_order < this->order_max - 1; i_order++) {
+    this->bessel_gradients.col(i_order) +=
+        this->efac *
+        (i_order * this->bessel_values.col(i_order - 1) +
+         (i_order + 1) * this->bessel_values.col(i_order + 1)) /
+        (2 * i_order + 1);
+  }
+}
+
 void ModifiedSphericalBessel::calc(double distance, double fac_a) {
   this->bessel_arg = (2. * fac_a * distance) * this->x_v;
   this->bessel_arg_i = this->bessel_arg.inverse();
 
-  if (this->l_max == 0) {
-    // recursions are not valid for l_max==0 so direct computation
+  if (this->order_max == 1) {
+    // recursions are not valid for order_max==1 so direct computation
     // i_0(z) = sinh(z) / z
     this->bessel_values.col(0) =
         (Eigen::exp(-fac_a * (x_v - distance).square()) -
          Eigen::exp(-fac_a * (x_v + distance).square())) *
         0.5 * this->bessel_arg_i;
   } else {
-    // for l_max > 0 downward/upward_recursion functions are applicable
+    // for order_max > 1 downward/upward_recursion functions are
+    // applicable
     // find the index where bessel_arg is larger than 50
     // (bessel_arg is sorted by increasing order)
     int n_down{0};
     for (; n_down < this->n_max; ++n_down) {
       if (this->bessel_arg[n_down] > 50) {
-        ++n_down;
         break;
       }
     }
@@ -128,16 +158,23 @@ void ModifiedSphericalBessel::calc(double distance, double fac_a) {
       this->upward_recursion(distance, fac_a, n_up);
     }
   }
+  assert(this->bessel_values.isFinite().all());
 
   // Set small values to 0 because the recursion looses accuracy for very
   // small values. Also on the python side it avoids some unexpected
   // interpretation of values that are strictly speaking outside of the
   // range of double precision
-  bessel_values = bessel_values.unaryExpr([](double d) {
+  this->bessel_values = this->bessel_values.unaryExpr([](double d) {
     if (d < 1e-100) {
       return 0.;
     } else {
       return d;
     }
   });
+
+  // compute gradients
+  if (this->compute_gradients) {
+    this->gradient_recursion(distance, fac_a);
+    assert(this->bessel_gradients.isFinite().all());
+  }
 }
