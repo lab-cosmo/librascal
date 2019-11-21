@@ -41,7 +41,7 @@ For developers
  * Start the discussion about your contribution early by using the
    Draft-Pull-Request feature of Github.
  * Use our Pull-Request template in preparing your PR.
- * Add tests for added functionality.
+ * Provide tests for the new/changed functionalities in the test suite of the library.
  * Make sure your proposed changes pass the all existing tests, change (not
    deactivate) them if necessary.
  * Document your contribution.
