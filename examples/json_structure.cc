@@ -1,5 +1,5 @@
 /**
- * file   json_structure.cc
+ * @file   examples/json_structure.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -26,17 +26,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "json_io.hh"
-#include "rascal_utility.hh"
-#include "representations/calculator_sorted_coulomb.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "structure_managers/structure_manager_centers.hh"
-
-#include <basic_types.hh>
+#include "rascal/basic_types.hh"
+#include "rascal/json_io.hh"
+#include "rascal/representations/calculator_sorted_coulomb.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
+#include "rascal/utils.hh"
 
 #include <cmath>
 #include <functional>
@@ -55,8 +54,7 @@ int main() {
   double cutoff{2.};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+           {"initialization_arguments", {{"cutoff", cutoff}}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
@@ -93,9 +91,9 @@ int main() {
   auto manager = make_structure_manager<StructureManagerCenters>();
   manager->update(structure);
 
-  std::cout << "Number of centers: " << manager->get_size() << std::endl;
-  std::cout << "Number of atoms (total): " << manager->get_n_atoms()
-            << std::endl;
+  std::cout << "Number of center atoms: " << manager->get_size() << std::endl;
+  std::cout << "Number of atoms in total (centers and ghosts): "
+            << manager->get_size_with_ghosts() << std::endl;
   std::cout << "manager iteration over atoms" << std::endl;
   for (auto atom : manager) {
     std::cout << "atom " << atom.get_atom_tag() << " global index "

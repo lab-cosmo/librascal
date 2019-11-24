@@ -11,6 +11,10 @@ from python_representation_calculator_test import (
     TestSphericalInvariantsRepresentation
 )
 
+from python_models_test import (
+    TestCosineKernel
+)
+
 from python_math_test import TestMath
 
 from python_test_sparsify_fps import TestFPS

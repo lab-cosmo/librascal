@@ -25,8 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "representations/cutoff_functions.hh"
 #include "test_math.hh"
+
+#include "rascal/representations/cutoff_functions.hh"
 
 #include <boost/test/unit_test.hpp>
 

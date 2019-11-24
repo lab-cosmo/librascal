@@ -1,5 +1,5 @@
 /**
- * file   alanine_chain.cc
+ * @file   examples/alanine_chain.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -25,11 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "external/json.hpp"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "structure_managers/property.hh"
-#include "structure_managers/structure_manager_centers.hh"
+#include "rascal/external/json.hpp"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/property.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
 
 #include <iostream>
 #include <vector>

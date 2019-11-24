@@ -29,7 +29,6 @@
 #define BINDINGS_BIND_PY_UTILS_HH_
 
 #include "bind_include.hh"
-#include "utils/sparsify_utilities.hh"
 
 namespace rascal {
   void utils_binding(py::module &);

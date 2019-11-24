@@ -25,9 +25,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "structure_managers/adaptor_full_neighbour_list.hh"
-#include "structure_managers/adaptor_half_neighbour_list.hh"
 #include "test_structure.hh"
+
+#include "rascal/structure_managers/adaptor_full_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
 
 #include <boost/test/unit_test.hpp>
 
@@ -191,9 +192,6 @@ namespace rascal {
     BOOST_CHECK_EQUAL(npairs, npairs_adapted);
     // check for same number of atoms
     BOOST_CHECK_EQUAL(manager->size(), adaptor_full->size());
-    // check for number of atoms
-    BOOST_CHECK_EQUAL(manager->get_nb_clusters(1),
-                      adaptor_full->get_nb_clusters(1));
     // check for number of pairs
     BOOST_CHECK_EQUAL(manager->get_nb_clusters(2),
                       adaptor_full->get_nb_clusters(2));

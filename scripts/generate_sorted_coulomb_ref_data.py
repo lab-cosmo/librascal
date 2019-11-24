@@ -1,8 +1,3 @@
-from copy import copy
-from ase import Atoms
-from ase.io import read
-import json
-import ubjson
 """Script used to generate the sorted_coulomb_reference.ubjson reference file
 """
 
@@ -11,7 +6,13 @@ import sys
 path = os.path.abspath('../')
 sys.path.insert(0, os.path.join(path, 'build/'))
 sys.path.insert(0, os.path.join(path, 'tests/'))
+
 from rascal.representations import SortedCoulombMatrix
+from copy import copy
+from ase import Atoms
+from ase.io import read
+import json
+import ubjson
 
 cutoffs = [2, 3, 4, 5]
 sorts = ['row_norm', 'distance']
@@ -37,7 +38,7 @@ for fn in fns:
             rep = SortedCoulombMatrix(cutoff, sorting_algorithm=sort)
             frame = read(fn)
             features = rep.transform(frame)
-            test = features.get_dense_feature_matrix(rep)
+            test = features.get_features(rep)
             hypers['size'] = rep.size
             hypers['central_cutoff'] = cutoff
             print(rep.size)

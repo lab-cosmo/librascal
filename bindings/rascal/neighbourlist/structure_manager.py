@@ -8,6 +8,7 @@ from ..lib import neighbour_list
 from .base import (NeighbourListFactory, is_valid_structure,
                    adapt_structure, StructureCollectionFactory)
 
+
 class AtomsList(object):
     """
     A wrapper class for a stack of managers precompiled on the C++ side of the
@@ -23,6 +24,7 @@ class AtomsList(object):
     Methods
     -------
     """
+
     def __init__(self, frames, nl_options, start=None, length=None):
         self.nl_options = nl_options
         self._frames = frames
@@ -44,15 +46,9 @@ class AtomsList(object):
             managers = StructureCollectionFactory(nl_options)
             try:
                 managers.add_structures(structures)
-            except:
-                print("""Neighbourlist of structures failed. trying
-                one at a time.""")
-                ii = 0
-                for structure, manager in zip(structures, managers):
-                    try:
-                        manager.update(structure)
-                    except:
-                        print("Structure Rep computation {} failed".format(ii))
+            except Exception as e:
+                raise RuntimeError("Neighbourlist of structures failed "
+                                   + "because: " + str(e))
 
         self.managers = managers
 
@@ -62,19 +58,45 @@ class AtomsList(object):
     def __getitem__(self, key):
         return self.managers[key]
 
-    def get_dense_feature_matrix(self, calculator):
+    def get_features(self, calculator, species=None):
         """
         Parameters
         -------
         calculator : Calculator (an object owning a _representation object)
+
+        species :  list of atomic number to use for building the dense feature
+        matrix computed with calculators of name Spherical*
 
         Returns
         -------
         represenation_matrix : ndarray
             returns the representation bound to the calculator as dense matrix.
         """
-        return self.managers.get_dense_feature_matrix(
+
+        if species is None:
+            X = self.managers.get_features(
                 calculator._representation)
+        else:
+            keys_list = calculator.get_keys(species)
+            X = self.managers.get_features(
+                calculator._representation, keys_list)
+
+        return X
+
+    def get_features_by_species(self, calculator):
+        """
+        Parameters
+        -------
+        calculator : one of the representation calculators named Spherical*
+
+        Returns
+        -------
+        representation_matrix : dict of ndarray
+            returns a dictionary associating tuples of atomic numbers sorted
+            alphabetically to the corresponding feature matrices
+        """
+        return self.managers.get_features_by_species(
+            calculator._representation)
 
 
 def get_neighbourlist(structure, options):
@@ -96,8 +118,42 @@ def convert_to_structure_list(frames):
             else:
                 raise RuntimeError(
                     'Cannot convert structure of type {}'.format(type(frame)))
+        structure = sanitize_non_periodic_structure(structure)
         structure_list.append(**structure)
     return structure_list
+
+
+def sanitize_non_periodic_structure(structure):
+    """
+    Rascal expects a unit cell that contains all the atoms even if the
+    structure is not periodic.
+    If the cell is set to 0 and the structure is not periodic then it
+    is adapted to contain the atoms and the atoms are shifted inside the unit
+    cell.
+
+    Parameters
+    ----------
+    structure : a valid structure as per is_valid_structure
+
+
+    Returns
+    -------
+    a valid structure as per is_valid_structure
+        cell and positions have been modified if structure is not periodic
+    """
+
+    if np.all(structure['pbc'] == 0):
+        cell = structure['cell']
+        if np.allclose(cell, np.zeros((3, 3))):
+            pos = structure['positions']
+            bounds = np.array([pos.min(axis=1), pos.max(axis=1)])
+            bounding_box_lengths = bounds[1]-bounds[0]
+            new_cell = np.diag(bounding_box_lengths)
+            CoM = pos.mean(axis=1)
+            disp = 0.5*bounding_box_lengths - CoM
+            new_pos = pos + disp[:, None]
+            structure['positions'] = new_pos
+    return structure
 
 
 def is_ase_Atoms(frame):
@@ -239,9 +295,9 @@ def mask_center_atoms_by_species(frame, species_select=[],
                            map(lambda x: isinstance(x, int), species_select),
                            True)
     blacklist_is_str = reduce(
-            and_, map(lambda x: isinstance(x, str), species_blacklist), True)
+        and_, map(lambda x: isinstance(x, str), species_blacklist), True)
     blacklist_is_int = reduce(
-            and_, map(lambda x: isinstance(x, int), species_blacklist), True)
+        and_, map(lambda x: isinstance(x, int), species_blacklist), True)
     if select_is_str:
         id_select = np.isin(frame.get_chemical_symbols(), species_select)
     elif select_is_int:
@@ -254,7 +310,7 @@ def mask_center_atoms_by_species(frame, species_select=[],
         id_blacklist = np.isin(frame.get_atomic_numbers(), species_blacklist)
     else:
         raise ValueError(
-                "Species blacklist must be either all string or all int")
+            "Species blacklist must be either all string or all int")
     if 'center_atoms_mask' not in frame.arrays:
         # add a default mask
         if species_select:

@@ -197,12 +197,9 @@ namespace rascal {
             json parameters;
             json structure{{"filename", filename}};
             json adaptors;
-            json ad1{
-                {"name", "AdaptorNeighbourList"},
-                {"initialization_arguments",
-                 {{"cutoff", cutoff},
-                  {"skin", skin},
-                  {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+            json ad1{{"name", "AdaptorNeighbourList"},
+                     {"initialization_arguments",
+                      {{"cutoff", cutoff}, {"skin", skin}}}};
             adaptors.push_back(ad1);
 
             parameters["structure"] = structure;
@@ -216,7 +213,6 @@ namespace rascal {
 
     ~MultipleStructureManagerNLFixture() = default;
 
-    const bool consider_ghost_neighbours{false};
     const std::vector<std::string> filenames{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
@@ -239,12 +235,9 @@ namespace rascal {
             json parameters;
             json structure{{"filename", filename}};
             json adaptors;
-            json ad1{
-                {"name", "AdaptorNeighbourList"},
-                {"initialization_arguments",
-                 {{"cutoff", cutoff},
-                  {"skin", skin},
-                  {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+            json ad1{{"name", "AdaptorNeighbourList"},
+                     {"initialization_arguments",
+                      {{"cutoff", cutoff}, {"skin", skin}}}};
             json ad1b{{"name", "AdaptorCenterContribution"},
                       {"initialization_arguments", {}}};
             adaptors.push_back(ad1);
@@ -261,7 +254,6 @@ namespace rascal {
 
     ~MultipleStructureManagerNLCCFixture() = default;
 
-    const bool consider_ghost_neighbours{false};
     const std::vector<std::string> filenames{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
@@ -281,11 +273,9 @@ namespace rascal {
         json parameters;
         json structure{{"filename", filename}};
         json adaptors;
-        json ad1{{"name", "AdaptorNeighbourList"},
-                 {"initialization_arguments",
-                  {{"cutoff", cutoff},
-                   {"skin", skin},
-                   {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+        json ad1{
+            {"name", "AdaptorNeighbourList"},
+            {"initialization_arguments", {{"cutoff", cutoff}, {"skin", skin}}}};
         adaptors.push_back(ad1);
 
         parameters["structure"] = structure;
@@ -297,7 +287,6 @@ namespace rascal {
 
     ~MultipleStructureManagerNLRattleFixture() = default;
 
-    const bool consider_ghost_neighbours{false};
     const std::string filename{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
     const double cutoff{3.};
@@ -318,12 +307,9 @@ namespace rascal {
             json parameters;
             json structure{{"filename", filename}};
             json adaptors;
-            json ad1{
-                {"name", "AdaptorNeighbourList"},
-                {"initialization_arguments",
-                 {{"cutoff", cutoff},
-                  {"skin", skin},
-                  {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+            json ad1{{"name", "AdaptorNeighbourList"},
+                     {"initialization_arguments",
+                      {{"cutoff", cutoff}, {"skin", skin}}}};
             json ad2{{"name", "AdaptorStrict"},
                      {"initialization_arguments", {{"cutoff", cutoff}}}};
             adaptors.emplace_back(ad1);
@@ -339,7 +325,7 @@ namespace rascal {
     }
 
     ~MultipleStructureManagerNLStrictFixture() = default;
-    const bool consider_ghost_neighbours{false};
+
     const std::vector<std::string> filenames{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
@@ -363,19 +349,16 @@ namespace rascal {
             json parameters;
             json structure{{"filename", filename}};
             json adaptors;
-            json ad1{
-                {"name", "AdaptorNeighbourList"},
-                {"initialization_arguments",
-                 {{"cutoff", cutoff},
-                  {"skin", skin},
-                  {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+            json ad1{{"name", "AdaptorNeighbourList"},
+                     {"initialization_arguments",
+                      {{"cutoff", cutoff}, {"skin", skin}}}};
             json ad1b{{"name", "AdaptorCenterContribution"},
                       {"initialization_arguments", {}}};
             json ad2{{"name", "AdaptorStrict"},
                      {"initialization_arguments", {{"cutoff", cutoff}}}};
-            adaptors.emplace_back(ad1);
+            adaptors.push_back(ad1);
             adaptors.push_back(ad1b);
-            adaptors.emplace_back(ad2);
+            adaptors.push_back(ad2);
 
             parameters["structure"] = structure;
             parameters["adaptors"] = adaptors;
@@ -387,7 +370,7 @@ namespace rascal {
     }
 
     ~MultipleStructureManagerNLCCStrictFixture() = default;
-    const bool consider_ghost_neighbours{false};
+
     const std::vector<std::string> filenames{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
@@ -414,40 +397,34 @@ namespace rascal {
         std::uniform_int_distribution<int> uni(1, n_atoms - 2);
         for (auto && cutoff : this->cutoffs) {
           for (auto && skin : this->skins) {
-            for (auto && consider_ghost_neighbours :
-                 this->consider_ghost_neighbours_list) {
-              atomic_structure.set_structure(filename);
+            atomic_structure.set_structure(filename);
 
-              json parameters;
-              json structure = atomic_structure;
-              json adaptors;
-              json ad1{
-                  {"name", "AdaptorNeighbourList"},
-                  {"initialization_arguments",
-                   {{"cutoff", cutoff},
-                    {"skin", skin},
-                    {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
-              json ad1b{{"name", "AdaptorCenterContribution"},
-                        {"initialization_arguments", {}}};
-              adaptors.push_back(ad1);
-              adaptors.push_back(ad1b);
+            json parameters;
+            json structure = atomic_structure;
+            json adaptors;
+            json ad1{{"name", "AdaptorNeighbourList"},
+                     {"initialization_arguments",
+                      {{"cutoff", cutoff}, {"skin", skin}}}};
+            json ad1b{{"name", "AdaptorCenterContribution"},
+                      {"initialization_arguments", {}}};
+            adaptors.push_back(ad1);
+            adaptors.push_back(ad1b);
 
-              parameters["structure"] = structure;
-              parameters["adaptors"] = adaptors;
+            parameters["structure"] = structure;
+            parameters["adaptors"] = adaptors;
 
-              this->factory_args.emplace_back(parameters);
+            this->factory_args.emplace_back(parameters);
 
-              // generate a new structure
-              auto n_flips = uni(rng);
-              for (int i_it{0}; i_it < n_flips; ++i_it) {
-                auto i_idx = uni(rng);
-                atomic_structure.center_atoms_mask(i_idx) = false;
-              }
-
-              json structure_no_center = atomic_structure;
-              parameters["structure"] = structure_no_center;
-              this->factory_args.emplace_back(parameters);
+            // generate a new structure
+            auto n_flips = uni(rng);
+            for (int i_it{0}; i_it < n_flips; ++i_it) {
+              auto i_idx = uni(rng);
+              atomic_structure.center_atoms_mask(i_idx) = false;
             }
+
+            json structure_no_center = atomic_structure;
+            parameters["structure"] = structure_no_center;
+            this->factory_args.emplace_back(parameters);
           }
         }
       }
@@ -455,7 +432,6 @@ namespace rascal {
 
     ~MultipleStructureManagerNLCCFixtureCenterMask() = default;
 
-    const std::vector<bool> consider_ghost_neighbours_list{{false, true}};
     const std::vector<std::string> filenames{
         "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/simple_cubic_8.json",
@@ -483,42 +459,36 @@ namespace rascal {
         std::uniform_int_distribution<int> uni(1, n_atoms - 2);
         for (auto && cutoff : this->cutoffs) {
           for (auto && skin : this->skins) {
-            for (auto && consider_ghost_neighbours :
-                 this->consider_ghost_neighbours_list) {
-              atomic_structure.set_structure(filename);
-              json parameters;
-              json structure = atomic_structure;
-              json adaptors;
-              json ad1{
-                  {"name", "AdaptorNeighbourList"},
-                  {"initialization_arguments",
-                   {{"cutoff", cutoff},
-                    {"skin", skin},
-                    {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
-              json ad1b{{"name", "AdaptorCenterContribution"},
-                        {"initialization_arguments", {}}};
-              json ad2{{"name", "AdaptorStrict"},
-                       {"initialization_arguments", {{"cutoff", cutoff}}}};
-              adaptors.push_back(ad1);
-              adaptors.push_back(ad1b);
-              adaptors.push_back(ad2);
+            atomic_structure.set_structure(filename);
+            json parameters;
+            json structure = atomic_structure;
+            json adaptors;
+            json ad1{{"name", "AdaptorNeighbourList"},
+                     {"initialization_arguments",
+                      {{"cutoff", cutoff}, {"skin", skin}}}};
+            json ad1b{{"name", "AdaptorCenterContribution"},
+                      {"initialization_arguments", {}}};
+            json ad2{{"name", "AdaptorStrict"},
+                     {"initialization_arguments", {{"cutoff", cutoff}}}};
+            adaptors.push_back(ad1);
+            adaptors.push_back(ad1b);
+            adaptors.push_back(ad2);
 
-              parameters["structure"] = structure;
-              parameters["adaptors"] = adaptors;
+            parameters["structure"] = structure;
+            parameters["adaptors"] = adaptors;
 
-              this->factory_args.emplace_back(parameters);
+            this->factory_args.emplace_back(parameters);
 
-              // generate a new structure
-              auto n_flips = uni(rng);
-              for (int i_it{0}; i_it < n_flips; ++i_it) {
-                auto i_idx = uni(rng);
-                atomic_structure.center_atoms_mask(i_idx) = false;
-              }
-
-              json structure_no_center = atomic_structure;
-              parameters["structure"] = structure_no_center;
-              this->factory_args.emplace_back(parameters);
+            // generate a new structure
+            auto n_flips = uni(rng);
+            for (int i_it{0}; i_it < n_flips; ++i_it) {
+              auto i_idx = uni(rng);
+              atomic_structure.center_atoms_mask(i_idx) = false;
             }
+
+            json structure_no_center = atomic_structure;
+            parameters["structure"] = structure_no_center;
+            this->factory_args.emplace_back(parameters);
           }
         }
       }
@@ -526,11 +496,10 @@ namespace rascal {
 
     ~MultipleStructureManagerNLCCStrictFixtureCenterMask() = default;
 
-    const std::vector<bool> consider_ghost_neighbours_list{{false, true}};
     const std::vector<std::string> filenames{
-        // "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
         // "reference_data/molecular_crystal.json",
-        // "reference_data/simple_cubic_8.json",
+        "reference_data/simple_cubic_8.json",
         "reference_data/small_molecule.json"};
     const std::vector<double> cutoffs{{2., 3.}};
     const std::vector<double> skins{0.};

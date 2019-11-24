@@ -63,7 +63,7 @@ Contents
    SOAP
    representation/representations
    models/models
-   neighbor_list/neighbor-list-manager
+   neighbour_list/neighbour-list-manager
    dev_guide/developer
    reference/index
    bibliography

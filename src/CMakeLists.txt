@@ -30,17 +30,24 @@
 # Boston, MA 02111-1307, USA.
 # =============================================================================
 
-set(rascal_sources
-    json_io.cc
-    units.cc
-    rascal_utility.cc
-    utils/sparsify_fps.cc
-    structure_managers/structure_manager_lammps.cc
-    structure_managers/structure_manager_centers.cc
-    representations/calculator_base.cc
+set(RASCAL_SOURCES
+    rascal/json_io.cc
+    rascal/units.cc
+    rascal/utils.cc
+    rascal/utils/sparsify_fps.cc
+
+    rascal/math/bessel.cc
+    rascal/math/hyp1f1.cc
+    rascal/math/interpolator.cc
+    rascal/math/gauss_legendre.cc
+    rascal/math/spherical_harmonics.cc
+
+    rascal/structure_managers/structure_manager_lammps.cc
+    rascal/structure_managers/structure_manager_centers.cc
+    rascal/representations/calculator_base.cc
 )
 
-add_library(${LIBRASCAL_NAME} ${rascal_sources})
+add_library(${LIBRASCAL_NAME} ${RASCAL_SOURCES})
 
 target_include_directories(${LIBRASCAL_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(${LIBRASCAL_NAME} PRIVATE -Werror)

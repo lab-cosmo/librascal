@@ -124,13 +124,17 @@ namespace rascal {
       auto adaptor_strict{
           make_adapted_manager<AdaptorCenterContribution>(manager)};
       adaptor_strict->update();
-
+      if (verbose) {
+        std::cout << "adaptor size : " << adaptor_strict->size() << std::endl;
+        std::cout << "adaptor size_wg : "
+                  << adaptor_strict->get_size_with_ghosts() << std::endl;
+      }
       for (auto atom : adaptor_strict) {
         for (auto pair : atom.get_pairs()) {
           auto atom_j_index =
               adaptor_strict->get_atom_index(pair.get_atom_tag());
-          auto atom_j = pair.get_atom_j();
-          auto atom_j_tags = atom_j.get_atom_tag_list();
+          auto && atom_j = pair.get_atom_j();
+          auto && atom_j_tags = atom_j.get_atom_tag_list();
           if (verbose) {
             std::cout << "neigh: " << atom_j_index
                       << " tag_j: " << atom_j_tags[0] << std::endl;
