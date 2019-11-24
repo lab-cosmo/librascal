@@ -455,6 +455,13 @@ namespace rascal {
    * then increases it by one (i.e. pairs->triplets, triplets->quadruplets,
    * etc.
    */
+
+  template <size_t... Vals>
+  auto sequence2array(std::index_sequence<Vals...>) {
+    std::array<size_t, sizeof...(Vals)> arr = {{Vals...}};
+    return arr;
+  }
+
   template <class ManagerImplementation>
   template <bool IsCompactCluster>
   void AdaptorMaxOrder<ManagerImplementation>::update_self_helper() {
@@ -465,14 +472,23 @@ namespace rascal {
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
 
-    // auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
-    // auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
+    auto layers = sequence2array(typename traits::LayerByOrder{});
+
+    for (size_t ii{0}; ii < layers.size(); ii++) {
+      std::cout << "Order: " << ii+1 << " Layer: " << layers[ii] << std::endl;
+    }
+    auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
+
     this->nb_neigh.clear();
     this->offsets.clear();
     this->neighbours_atom_tag.clear();
 
     for (auto atom : this->manager) {
       // copy the underlying cluster indices of this->manager (not changed)
+      // do order == 1
+      auto indices{atom.get_cluster_indices()};
+      atom_cluster_indices.push_back(indices);
+      // do the rest
       AddOrderLoop::loop(atom, 0, *this);
 
       // loop over the highest order available in this->manager
