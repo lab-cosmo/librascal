@@ -1227,7 +1227,7 @@ namespace rascal {
           }
           soap_vector_gradients[neigh].resize(
               grad_pair_list, n_spatial_dimensions * n_row, n_col, 0.);
-        } // auto neigh : center
+        }  // auto neigh : center
       }  // if compute gradients
     }    // for center : manager
   }
