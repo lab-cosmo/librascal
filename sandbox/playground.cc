@@ -61,7 +61,7 @@ int main() {
   std::string rep_id{"pp"};
 
   double cutoff{3.};
-  
+
   json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
@@ -146,6 +146,12 @@ int main() {
             << std::is_sorted(new_tag_list.begin(), new_tag_list.end(), std::less_equal<int>())
             << std::endl;
 
+  std::vector<int> new_tag_list_s{{1,6,7,8}};
+  std::sort(new_tag_list_s.begin(), new_tag_list_s.end());
+  auto any_equal = std::adjacent_find(new_tag_list_s.begin(), new_tag_list_s.end());
+  std::cout << std::boolalpha
+            << (any_equal == new_tag_list_s.end())
+            << std::endl;
 
   return (0);
 }

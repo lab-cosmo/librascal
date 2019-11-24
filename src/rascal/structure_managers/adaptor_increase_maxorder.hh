@@ -276,13 +276,13 @@ namespace rascal {
       static_assert(TargetOrder == traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
       auto access_index = cluster.get_cluster_index(Layer);
-      auto cluster_indices = cluster.get_cluster_indices();
-      std::cout << std::endl;
-      std::cout << "cluster size " << Layer << ", " << access_index;
-      for (int ii{0}; ii < cluster_indices.size(); ii++) {
-        std::cout << ", " << cluster_indices[ii];
-      }
-      std::cout << std::endl;
+      // auto cluster_indices = cluster.get_cluster_indices();
+      // std::cout << std::endl;
+      // std::cout << "cluster size " << Layer << ", " << access_index;
+      // for (int ii{0}; ii < cluster_indices.size(); ii++) {
+      //   std::cout << ", " << cluster_indices[ii];
+      // }
+      // std::cout << std::endl;
       return this->nb_neigh[access_index];
     }
 
@@ -491,17 +491,18 @@ namespace rascal {
       // do the rest
       AddOrderLoop::loop(atom, 0, *this);
 
+      this->add_entry_number_of_neighbours();
+      std::array<int, traits::MaxOrder> new_tag_list{};
       // loop over the highest order available in this->manager
       for (auto cluster : atom.template get_clusters_of_order<traits::MaxOrder-1>()) {
-        this->add_entry_number_of_neighbours();
-        auto && tag_list{cluster.get_atom_tag_list()};
 
+        auto && tag_list{cluster.get_atom_tag_list()};
+        // copy the tags from the previous order skiping the center atom tag
+        for (size_t ii{0}; ii < traits::MaxOrder-1; ++ii) {
+          new_tag_list[ii] = tag_list[ii];
+        }
         for (auto pair : atom.template get_clusters_of_order<2>()) {
-          std::array<int, traits::MaxOrder-1> new_tag_list{};
-          // copy the tags from the previous order skiping the center atom tag
-          for (size_t ii{1}; ii < tag_list.size(); ++ii) {
-            new_tag_list[ii-1] = tag_list[ii];
-          }
+
           // copy to the last element the atom tag of the new order
           new_tag_list.back() = pair.get_atom_tag();
           if (traits::NeighbourListType == AdaptorTraits::NeighbourListType::half) {
@@ -511,7 +512,11 @@ namespace rascal {
               // only add strictly lexicographicaly ordered tags, e.g.
               // (1,2,2) is not valid and (1,2,3) is valid
               if (std::is_sorted(new_tag_list.begin(), new_tag_list.end(), std::less_equal<int>())) {
-                this->add_neighbour_of_cluster(new_tag_list);
+                std::array<int, traits::MaxOrder-1> tags{};
+                for (size_t ii{1}; ii < traits::MaxOrder; ++ii) {
+                  tags[ii-1] = new_tag_list[ii];
+                }
+                this->add_neighbour_of_cluster(tags);
               }
             }
           } else {
@@ -520,10 +525,15 @@ namespace rascal {
             } else {
               // only add tags_list where none of the tags are equal to one
               // another, e.g. (3,1,2) is valid but (3,2,3) is not.
-              std::sort(new_tag_list.begin(), new_tag_list.end());
-              auto any_equal = std::adjacent_find(new_tag_list.begin(), new_tag_list.end());
-              if (any_equal == new_tag_list.end()) {
-                this->add_neighbour_of_cluster(new_tag_list);
+              std::array<int, traits::MaxOrder> new_tag_list_s{new_tag_list};
+              std::sort(new_tag_list_s.begin(), new_tag_list_s.end());
+              auto any_equal = std::adjacent_find(new_tag_list_s.begin(), new_tag_list_s.end());
+              if (any_equal == new_tag_list_s.end()) {
+                std::array<int, traits::MaxOrder-1> tags{};
+                for (size_t ii{1}; ii < traits::MaxOrder; ++ii) {
+                  tags[ii-1] = new_tag_list[ii];
+                }
+                this->add_neighbour_of_cluster(tags);
               }
             }
           }

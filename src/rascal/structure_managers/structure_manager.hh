@@ -1049,10 +1049,10 @@ namespace rascal {
       CustomProxy(ClusterRef_t & cluster_ref, const size_t & start,
                   const size_t & offset)
           : cluster_ref{cluster_ref}, start{start}, offset{offset} {
-        if (TargetOrder == 3) {
-          std::cout << "Proxy " << start << ", " << offset << ", "
-                    << this->size() << std::endl;
-        }
+        // if (TargetOrder == 3) {
+        //   std::cout << "Proxy " << start << ", " << offset << ", "
+        //             << this->size() << std::endl;
+        // }
       }
 
       //! end of the iterations over the clusters of order TargetOrder
@@ -1092,10 +1092,10 @@ namespace rascal {
       std::array<size_t, Order_ - 1> counters{};
       counters.back() = this->get_index();
       size_t offset{this->get_manager().get_offset(counters)};
-      if (Order_ == 3) {
-        std::cout << "conters " << counters.back() << ", " << offset
-                  << std::endl;
-      }
+      // if (Order_ == 3) {
+      //   std::cout << "conters " << counters.back() << ", " << offset
+      //             << std::endl;
+      // }
       return CustomProxy<Order_>(*this, start, offset);
     }
 
