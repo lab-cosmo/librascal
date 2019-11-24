@@ -538,8 +538,6 @@ namespace rascal {
                   expansions_coefficients_gradient[neigh]};
               auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
 
-
-
               auto neigh_type = neigh.get_atom_type();
               if ((neigh_type != spair_type[0]) and
                   (neigh_type != spair_type[1])) {
@@ -1203,8 +1201,6 @@ namespace rascal {
         soap_vector_gradients[ii_pair].resize(
             pair_list, n_spatial_dimensions * n_row, n_col, 0.);
 
-
-
         // Neighbour gradients need a separate pair list because if the species
         // of j is not the same as either of the species for that SOAP entry,
         // the gradient is zero.
@@ -1228,8 +1224,8 @@ namespace rascal {
           soap_vector_gradients[neigh].resize(
               grad_pair_list, n_spatial_dimensions * n_row, n_col, 0.);
         }  // auto neigh : center
-      }  // if compute gradients
-    }    // for center : manager
+      }    // if compute gradients
+    }      // for center : manager
   }
 
   template <class StructureManager, class Invariants,

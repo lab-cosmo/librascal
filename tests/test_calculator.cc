@@ -32,6 +32,7 @@
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
+
 #include <set>
 
 namespace rascal {
@@ -322,30 +323,27 @@ namespace rascal {
    * Test if the keys for the PowerSpectrum's gradient are properly sparse on
    * the 1st center of CaCrP2O7_mvc-11955_symmetrized.json
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(sparse_grad_test, Fix,
-                                   grad_sparse_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(sparse_grad_test, Fix, grad_sparse_fixtures,
+                                   Fix) {
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     using Representation_t = typename Fix::Representation_t;
-    using PropGrad_t = typename Representation_t::template PropertyGradient_t<typename Fix::Manager_t>;
+    using PropGrad_t = typename Representation_t::template PropertyGradient_t<
+        typename Fix::Manager_t>;
     auto & hypers = Fix::representation_hypers;
     const bool verbose{false};
     // assumes the structure is CaCrP2O7_mvc-11955_symmetrized.json
     // the keys of the center contribution (1st center)
-    std::vector<std::vector<int>> all_keys{{8, 8}, {8, 15}, {8, 20}, {15, 15}, {15, 20}, {20, 20}};
+    std::vector<std::vector<int>> all_keys{{8, 8},   {8, 15},  {8, 20},
+                                           {15, 15}, {15, 20}, {20, 20}};
     // the list of keys for each neighbor (1st center)
     std::vector<std::vector<std::vector<int>>> neigh_keys{
-                {{8, 15}, {15, 15}, {15, 20}},
-                {{8, 8}, {8, 15}, {8, 20}},
-                {{8, 8}, {8, 15}, {8, 20}},
-                {{8, 8}, {8, 15}, {8, 20}},
-                {{8, 8}, {8, 15}, {8, 20}},
-                {{8, 8}, {8, 15}, {8, 20}},
-                {{8, 8}, {8, 15}, {8, 20}},
-                {{8, 8}, {8, 15}, {8, 20}},
-                {{8, 8}, {8, 15}, {8, 20}},
-                {{8, 8}, {8, 15}, {8, 20}},
-                {{8, 15}, {15, 15}, {15, 20}}};
+        {{8, 15}, {15, 15}, {15, 20}}, {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 15}, {15, 15}, {15, 20}}};
 
     for (auto & manager : managers) {
       for (auto & hyper : hypers) {
@@ -353,8 +351,9 @@ namespace rascal {
           representations.emplace_back(hyper);
           std::string property_name{representations.back().get_gradient_name()};
           representations.back().compute(manager);
-          auto && prop_grad{*manager->template get_validated_property<PropGrad_t>(
-            property_name)};
+          auto && prop_grad{
+              *manager->template get_validated_property<PropGrad_t>(
+                  property_name)};
           for (auto center : manager) {
             auto ii_pair = center.get_atom_ii();
             auto keys_grad_center = prop_grad.get_keys(ii_pair);
@@ -374,7 +373,8 @@ namespace rascal {
             for (size_t ii{0}; ii < keys_grad_center.size(); ii++) {
               BOOST_TEST(keys_grad_center[ii].size() == all_keys[ii].size());
               for (size_t jj{0}; jj < keys_grad_center[ii].size(); jj++) {
-                BOOST_TEST(keys_grad_center[ii] == all_keys[ii], boost::test_tools::per_element());
+                BOOST_TEST(keys_grad_center[ii] == all_keys[ii],
+                           boost::test_tools::per_element());
               }
             }
             int i_neigh{0};
@@ -382,7 +382,7 @@ namespace rascal {
               auto neigh_type = neigh.get_atom_type();
               auto keys_neigh = prop_grad[neigh].get_keys();
               if (verbose) {
-                std::cout << "Neighbour " << neigh_type<<" keys: ";
+                std::cout << "Neighbour " << neigh_type << " keys: ";
                 for (auto key : keys_neigh) {
                   std::cout << "{";
                   for (auto key_sp : key) {
@@ -397,7 +397,8 @@ namespace rascal {
               for (size_t ii{0}; ii < keys_neigh.size(); ii++) {
                 BOOST_TEST(keys_neigh[ii].size() == all_keys[ii].size());
                 for (size_t jj{0}; jj < keys_neigh[ii].size(); jj++) {
-                  BOOST_TEST(keys_neigh[ii] == neigh_keys[i_neigh][ii], boost::test_tools::per_element());
+                  BOOST_TEST(keys_neigh[ii] == neigh_keys[i_neigh][ii],
+                             boost::test_tools::per_element());
                 }
               }
               ++i_neigh;
