@@ -150,6 +150,7 @@ namespace rascal {
     }
   };
 
+  //! Bind special function only if MaxOrder > 1
   template <class ClusterRef, size_t MaxOrder>
   struct AddProperty {
     template <typename PyCluster>
@@ -215,7 +216,7 @@ namespace rascal {
   void add_iterators(py::module & m, PyCluterRef_t & py_cluster) {
     // index_sequence that goes from 1 to MaxOrder included
     using OrdersList = internal::make_index_range<
-        1, StructureManagerImplementation::traits::MaxOrder + 1>;
+        1, StructureManagerImplementation::traits::MaxOrder>;
     add_iterators_helpers<StructureManagerImplementation>(m, py_cluster,
                                                           OrdersList{});
   }
@@ -270,7 +271,6 @@ namespace rascal {
     manager.def(py::init<>());
 
     add_iterators<Child>(m_internal, manager);
-    // AddIterators<Child, 1, MaxOrder + 1>::static_for(m_internal, manager);
     return manager;
   }
 
@@ -726,10 +726,7 @@ namespace rascal {
         // bind_update_empty<Manager_t>(adaptor);
         bind_update_unpacked<Manager_t>(adaptor);
         // bind clusterRefs so that one can loop over adaptor
-
         add_iterators<Manager_t>(m_internal, adaptor);
-        // AddIterators<Manager_t, 1, MaxOrder + 1>::static_for(m_internal,
-        //                                                       adaptor);
         // bind the factory function
         bind_make_adapted_manager<AdaptorImplementation, ManagerImplementation>(
             m_nl);
@@ -763,8 +760,6 @@ namespace rascal {
         bind_update_unpacked<Manager_t>(adaptor);
         // bind clusterRefs so that one can loop over adaptor
         add_iterators<Manager_t>(m_internal, adaptor);
-        // AddIterators<Manager_t, 1, MaxOrder + 1>::static_for(m_internal,
-        //                                                       adaptor);
         // bind the factory function
         bind_make_adapted_manager<AdaptorImplementation, ManagerImplementation>(
             m_nl);

@@ -384,13 +384,6 @@ namespace rascal {
         cluster_indices.push_back(indices);
         NextOrderLoop::loop(atom, new_start_index, manager);
       }
-
-      // for (auto && pair : atom.template
-      // get_clusters_of_order<2>(start_index)) {
-      //   if (NeighbourListType == AdaptorTraits::NeighbourListType::half) {
-      //     ++new_start_index;
-      //   }
-      // }
     }
   };
 

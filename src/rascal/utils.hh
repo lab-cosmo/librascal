@@ -238,10 +238,10 @@ namespace rascal {
     add_to_sequence(std::index_sequence<Seq...>) {
       return {};
     }
-    // this goes from Min to Max-1
+    //! this goes from Min to Max
     template <size_t Min, size_t Max>
     using make_index_range =
-        decltype(add_to_sequence<Min>(std::make_index_sequence<Max - Min>()));
+        decltype(add_to_sequence<Min>(std::make_index_sequence<Max - Min+1>()));
 
     /* ---------------------------------------------------------------------- */
     //! Implementation of index_apply
@@ -256,7 +256,7 @@ namespace rascal {
      */
     template <size_t Min, size_t Max, class F>
     constexpr auto index_apply(F func) {
-      return index_apply_impl(func, make_index_range<Min, Max>{});
+      return index_apply_impl(func, make_index_range<Min, Max-1>{});
     }
 
     /**

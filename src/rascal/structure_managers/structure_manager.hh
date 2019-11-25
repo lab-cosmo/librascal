@@ -708,22 +708,9 @@ namespace rascal {
      * offsets and neighbours. Used later by adaptors which modify or extend
      * the neighbourlist to access the correct offset.
      *
-     * TODO(felix) get rid of this helper using sfinae
      */
     template <bool AtMaxOrder>
     struct IncreaseHelper {
-      template <class Manager_t, class Cluster_t>
-      static size_t get_cluster_size(const Manager_t & /*manager*/,
-                                     const Cluster_t & /*cluster*/) {
-        throw std::runtime_error("This branch should never exist"
-                                 " (cluster size).");
-      }
-      template <class Manager_t, class Container_t>
-      static size_t get_offset(const Manager_t & /*manager*/,
-                               const Container_t & /*container*/) {
-        throw std::runtime_error("This branch should never exist"
-                                 " (offset implementation).");
-      }
       template <class Manager_t, class Container_t>
       static int get_neighbour_atom_tag(const Manager_t & /*manager*/,
                                         const Container_t & /*container*/,
@@ -737,12 +724,6 @@ namespace rascal {
     //! manager
     template <>
     struct IncreaseHelper<false> {
-      template <class Manager_t, class Container_t>
-      static size_t get_offset(const Manager_t & manager,
-                               const Container_t & container) {
-        return manager.get_offset_impl(container);
-      }
-
       template <class Manager_t, class Container_t>
       static int get_neighbour_atom_tag(const Manager_t & manager,
                                         const Container_t & container,
@@ -886,9 +867,7 @@ namespace rascal {
     /**
      * This is a ClusterRef of Order=1, constructed from a higher Order.
      * This function here is self referencing right now. A ClusterRefKey
-     * with Order=1 is noeeded to construct it ?!
-     *
-     * tag(felix) what is the use for this constructor ?
+     * with Order=1 is needed to construct it ?!
      */
     ClusterRef(ClusterRefKey<1, 0> & cluster, Manager_t & manager)
         : ClusterRefKey<1, 0>(cluster.get_atom_tag_list(),
@@ -1183,9 +1162,6 @@ namespace rascal {
    * specialized for the case Order=1, when iterating over a manager and the
    * dereference are atoms, because then the container is a manager. For all
    * other cases, the container is the cluster of the Order below.
-   *
-   * tag(felix) change behaviour so that the container is the cluster of
-   * Order == 2 except for the special case
    */
   template <class ManagerImplementation>
   template <size_t Order>
@@ -1211,9 +1187,8 @@ namespace rascal {
 
     static_assert(Order > 0, "Order has to be positive");
 
-    // tag(felix) MaxOrder trait should become a list of available orders
-    // static_assert(Order <= traits::MaxOrder,
-    //               "Order > MaxOrder, impossible iterator");
+    static_assert(Order <= traits::MaxOrder,
+                  "Order > MaxOrder, impossible iterator");
 
     using AtomRef_t = typename Manager_t::AtomRef;
 
