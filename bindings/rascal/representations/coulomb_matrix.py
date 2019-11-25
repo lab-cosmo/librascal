@@ -106,6 +106,6 @@ class SortedCoulombMatrix(object):
         Nneigh = []
         for manager in managers:
             for center in manager:
-                Nneigh.append(center.size+1)
+                Nneigh.append(center.nb_pairs+1)
         size = int(np.max(Nneigh))
         return size
