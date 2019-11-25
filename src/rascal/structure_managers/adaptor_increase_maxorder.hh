@@ -62,14 +62,6 @@ namespace rascal {
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     // New MaxOrder upon construction
     constexpr static size_t MaxOrder{parent_traits::MaxOrder + 1};
-    // index_sequence listing the orders available in the manager
-    using AvailableOrdersList = typename internal::AppendAvailableOrder<
-        MaxOrder, typename parent_traits::AvailableOrdersList>::type;
-    // Extend the layer by one with the new MaxOrder
-    // using LL =
-    //     typename LayerIncreaser<parent_traits::MaxOrder,
-    //                             typename parent_traits::LayerByOrder>::type;
-    // using LayerByOrder = typename LayerExtender<MaxOrder, LL>::type;
     using LayerByOrder =
         typename LayerExtender<MaxOrder,
                                typename parent_traits::LayerByOrder>::type;

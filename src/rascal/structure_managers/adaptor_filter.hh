@@ -61,7 +61,6 @@ namespace rascal {
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     //! New MaxOrder upon construction!
     constexpr static size_t MaxOrder{MaxOrder_};
-    using AvailableOrdersList = typename parent_traits::AvailableOrdersList;
     //! New Layer
     using LayerByOrder =
         typename LayerIncreaser<MaxOrder_,

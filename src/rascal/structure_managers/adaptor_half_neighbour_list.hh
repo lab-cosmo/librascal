@@ -57,7 +57,6 @@ namespace rascal {
     constexpr static size_t MaxOrder{parent_traits::MaxOrder};
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::half};
-    using AvailableOrdersList = typename parent_traits::AvailableOrdersList;
     using LayerByOrder =
         typename LayerIncreaser<MaxOrder,
                                 typename parent_traits::LayerByOrder>::type;

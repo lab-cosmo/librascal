@@ -78,17 +78,6 @@ namespace rascal {
     }  // namespace details
 
     /**
-     * Append an order to the list of orders available
-     */
-    template <size_t NewOrder, class T>
-    struct AppendAvailableOrder {};
-
-    template <size_t NewOrder, size_t... Orders>
-    struct AppendAvailableOrder<NewOrder, std::index_sequence<Orders...>> {
-      using type = std::index_sequence<Orders..., NewOrder>;
-    };
-
-    /**
      * Find if TargetOrder is in the list of indices Orders.
      */
     template <size_t TargetOrder, size_t... Orders>
@@ -244,13 +233,12 @@ namespace rascal {
     /**
      * Implementation of the generation of an index sequence from Min to Max
      */
-
     template <size_t N, size_t... Seq>
     constexpr std::index_sequence<N + Seq...>
     add_to_sequence(std::index_sequence<Seq...>) {
       return {};
     }
-
+    // this goes from Min to Max-1
     template <size_t Min, size_t Max>
     using make_index_range =
         decltype(add_to_sequence<Min>(std::make_index_sequence<Max - Min>()));

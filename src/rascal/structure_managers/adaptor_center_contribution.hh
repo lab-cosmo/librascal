@@ -56,7 +56,6 @@ namespace rascal {
     constexpr static int Dim{parent_traits::Dim};
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     constexpr static size_t MaxOrder{parent_traits::MaxOrder};
-    using AvailableOrdersList = typename parent_traits::AvailableOrdersList;
     // Reset the Layer for the pair since the underlying iteration pool is
     // increased in size so all the data belongs to the adaptor
     using LayerByOrder = std::index_sequence<

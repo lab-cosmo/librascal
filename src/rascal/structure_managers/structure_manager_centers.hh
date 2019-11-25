@@ -74,7 +74,6 @@ namespace rascal {
     constexpr static bool HasDistances{false};
     constexpr static bool HasCenterPair{false};
     constexpr static int StackLevel{0};
-    using AvailableOrdersList = std::index_sequence<0, 1>;
     using LayerByOrder = std::index_sequence<0>;
   };
 

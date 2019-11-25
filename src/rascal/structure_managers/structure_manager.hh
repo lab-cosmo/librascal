@@ -181,11 +181,11 @@ namespace rascal {
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
                                                    StructureManager_t>;
 
-    //! helper to identify if Manager_t has TargetOrder in AvailableOrdersList
+    //! helper to identify if Manager_t has TargetOrder,
+    //! i.e. if  0 <= TargetOrder <= traits::MaxOrder
     template <size_t TargetOrder>
     static constexpr bool has_order() {
-      return internal::is_order_available<TargetOrder>(
-          typename traits::AvailableOrdersList{});
+      return internal::is_order_available<TargetOrder>(make_index_range<0, traits::MaxOrder+1>);
     }
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
