@@ -95,7 +95,7 @@ This is an example of code than can be used to print to the screen the positions
         auto center_type{center.get_atom_type()}; // get the atome type of the center
         std::cout << "Neighbors properties : " << endl;
 
-        for (auto neigh : center){
+        for (auto neigh : center.get_pairs()){
             int neigh_index{center.get_atom_index()}; // get the index of the neighbor
             Eigen::MatrixXd position{neigh.get_position()}; // get the position vector of the neighbor
             auto neigh_type{center.get_atom_type()}; // get the atome type of the neighbor
