@@ -123,32 +123,28 @@ namespace rascal {
     return py_cluster;
   }
 
-
   template <class StructureManagerImplementation, size_t Order>
   struct BindIterator {
     static_assert(Order >= 2, "starts at pairs");
     //! Bind iterator and ClusterRef for Order >= 2
     template <class PyClusterRef_t>
-    static auto add_iterator(
-        py::module & m,
-        PyClusterRef_t & py_cluster) {
-
+    static auto add_iterator(py::module & m, PyClusterRef_t & py_cluster) {
       // cluster from the previous iteration
       using Child = StructureManagerImplementation;
       using Parent = typename Child::Parent;
 
       // bind the iteration over clusterRef<1>
       using ClusterRef = typename Parent::template ClusterRef<1>;
-      std::map<size_t, std::string> names{{2, "get_pairs"},
-                                          {3, "get_triplets"},
-                                          {4, "get_quadruplets"}};
+      std::map<size_t, std::string> names{
+          {2, "get_pairs"}, {3, "get_triplets"}, {4, "get_quadruplets"}};
       py_cluster.def(
           names[Order].c_str(),
           [](ClusterRef & v) {
-              auto it = v.template get_clusters_of_order<Order>();
-              return py::make_iterator(it.begin(), it.end());
+            auto it = v.template get_clusters_of_order<Order>();
+            return py::make_iterator(it.begin(), it.end());
           },
-          py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+          py::keep_alive<0,
+                         1>()); /* Keep vector alive while iterator is used */
       auto py_cluster_new = add_cluster<Order, Child>(m);
       return py_cluster;
     }
@@ -158,8 +154,7 @@ namespace rascal {
   struct BindIterator<StructureManagerImplementation, 1> {
     //! bind iterator and ClusterRef for Order == 1
     template <class PyManager_t>
-    static auto add_iterator(py::module & m,
-                      PyManager_t & manager) {
+    static auto add_iterator(py::module & m, PyManager_t & manager) {
       using Child = StructureManagerImplementation;
       using Parent = typename Child::Parent;
 
@@ -167,13 +162,12 @@ namespace rascal {
       manager.def(
           "__iter__",
           [](Parent & v) { return py::make_iterator(v.begin(), v.end()); },
-          py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+          py::keep_alive<0,
+                         1>()); /* Keep vector alive while iterator is used */
       auto py_cluster = add_cluster<1, Child>(m);
       return py_cluster;
     }
   };
-
-
 
   /**
    * Bind the clusterRef allowing to iterate over the manager, atom, neigh...
@@ -183,11 +177,13 @@ namespace rascal {
   template <class StructureManagerImplementation, class PyCluterRef_t,
             size_t Order, size_t... Orders>
   void add_iterators_helpers(py::module & m, PyCluterRef_t & py_cluster,
-                    std::index_sequence<Order, Orders...> /*seq*/ ) {
+                             std::index_sequence<Order, Orders...> /*seq*/) {
     using NextOrders = std::index_sequence<Orders...>;
     auto py_cluster_new =
-        BindIterator<StructureManagerImplementation, Order>::add_iterator(m, py_cluster);
-    add_iterators_helpers<StructureManagerImplementation>(m, py_cluster_new, NextOrders{});
+        BindIterator<StructureManagerImplementation, Order>::add_iterator(
+            m, py_cluster);
+    add_iterators_helpers<StructureManagerImplementation>(m, py_cluster_new,
+                                                          NextOrders{});
   }
 
   /**
@@ -203,14 +199,17 @@ namespace rascal {
 
   //! end recursion
   template <class StructureManagerImplementation, class PyCluterRef_t>
-  void add_iterators_helpers(py::module & /* m*/, PyCluterRef_t & /*py_cluster */,
-                    std::index_sequence<> /*seq*/ ) { }
+  void add_iterators_helpers(py::module & /* m*/,
+                             PyCluterRef_t & /*py_cluster */,
+                             std::index_sequence<> /*seq*/) {}
 
   template <class StructureManagerImplementation, class PyCluterRef_t>
   void add_iterators(py::module & m, PyCluterRef_t & py_cluster) {
-    using AvailableOrdersList = typename StructureManagerImplementation::traits::AvailableOrdersList;
+    using AvailableOrdersList =
+        typename StructureManagerImplementation::traits::AvailableOrdersList;
     using OrdersList = typename PopFirstElement<AvailableOrdersList>::type;
-    add_iterators_helpers<StructureManagerImplementation>(m, py_cluster, OrdersList{});
+    add_iterators_helpers<StructureManagerImplementation>(m, py_cluster,
+                                                          OrdersList{});
   }
 
   template <typename Manager_t>

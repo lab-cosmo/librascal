@@ -694,7 +694,7 @@ namespace rascal {
           atomic_structure{atomic_structure}, center_it{
                                                   structure_manager->begin()} {
       for (auto center : this->structure_manager) {
-        this->n_neighbors.push_back(center.size());
+        this->n_neighbors.push_back(center.get_pairs().size());
       }
     }
 
@@ -709,7 +709,7 @@ namespace rascal {
       this->structure_manager->update(modified_structure);
       int i_center{0};
       for (auto center : this->structure_manager) {
-        if (this->n_neighbors[i_center] != center.size()) {
+        if (this->n_neighbors[i_center] != center.get_pairs().size()) {
           throw std::runtime_error(
               R"(The number of neighbors has changed when making finite
               displacements. This happens because a neighbor is almost at the

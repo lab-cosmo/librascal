@@ -102,9 +102,7 @@ namespace rascal {
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
 
-    static constexpr size_t AdditionalOrder{
-        internal::get_last_element_in_sequence(
-            typename traits::AvailableOrdersList{})};
+    static constexpr size_t AdditionalOrder{traits::MaxOrder};
 
     constexpr static auto AtomLayer{
         Manager_t::template cluster_layer_from_order<1>()};
@@ -176,7 +174,6 @@ namespace rascal {
     size_t get_offset_impl(const std::array<size_t, Order> & counters) const {
       auto j{counters.back()};
       auto main_offset{this->offsets[j]};
-      // std::cout << "offset " << j << ", " << main_offset << std::endl;
       return main_offset;
     }
 
@@ -276,13 +273,6 @@ namespace rascal {
       static_assert(TargetOrder == traits::MaxOrder,
                     "this implementation handles only the respective MaxOrder");
       auto access_index = cluster.get_cluster_index(Layer);
-      // auto cluster_indices = cluster.get_cluster_indices();
-      // std::cout << std::endl;
-      // std::cout << "cluster size " << Layer << ", " << access_index;
-      // for (int ii{0}; ii < cluster_indices.size(); ii++) {
-      //   std::cout << ", " << cluster_indices[ii];
-      // }
-      // std::cout << std::endl;
       return this->nb_neigh[access_index];
     }
 
@@ -393,7 +383,8 @@ namespace rascal {
           static_cast<int>(NeighbourListType ==
                            AdaptorTraits::NeighbourListType::half)};
       // copy the
-      for (auto && cluster : atom.template get_clusters_of_order<Order>(start_index)) {
+      for (auto && cluster :
+           atom.template get_clusters_of_order<Order>(start_index)) {
         auto & cluster_indices{
             std::get<Order - 1>(manager.cluster_indices_container)};
         // keep copying underlying cluster indices, they are not changed
@@ -402,7 +393,8 @@ namespace rascal {
         NextOrderLoop::loop(atom, new_start_index, manager);
       }
 
-      // for (auto && pair : atom.template get_clusters_of_order<2>(start_index)) {
+      // for (auto && pair : atom.template
+      // get_clusters_of_order<2>(start_index)) {
       //   if (NeighbourListType == AdaptorTraits::NeighbourListType::half) {
       //     ++new_start_index;
       //   }
@@ -435,7 +427,7 @@ namespace rascal {
     //! loop through the orders to get to the maximum order, this is agnostic to
     //! the underlying MaxOrder, just goes to the maximum
     static void loop(AtomClusterRef_t & /*atom */, size_t /*start_index */,
-                     AdaptorMaxOrder<ManagerImplementation> & /*manager */) { }
+                     AdaptorMaxOrder<ManagerImplementation> & /*manager */) {}
   };
 
   /* ---------------------------------------------------------------------- */
@@ -455,28 +447,24 @@ namespace rascal {
    * then increases it by one (i.e. pairs->triplets, triplets->quadruplets,
    * etc.
    */
-
-  template <size_t... Vals>
-  auto sequence2array(std::index_sequence<Vals...>) {
-    std::array<size_t, sizeof...(Vals)> arr = {{Vals...}};
-    return arr;
-  }
-
   template <class ManagerImplementation>
   template <bool IsCompactCluster>
   void AdaptorMaxOrder<ManagerImplementation>::update_self_helper() {
     static_assert(traits::MaxOrder > 2,
                   "No neighbourlist present; extension not possible.");
-    using AddOrderLoop = AddOrderLoop<2, traits::NeighbourListType,
-                                        IsCompactCluster, true>;
+    using AddOrderLoop =
+        AddOrderLoop<2, traits::NeighbourListType, IsCompactCluster, true>;
+    static constexpr bool HasCenterPairOrderTwo{traits::HasCenterPair and
+                                                traits::MaxOrder - 1 == 2};
+    // size_t turns out to give 0 if false and 1 if true. When adding Order==3
+    // to the manager the input manager could have center pairs and
+    // cluster_start avoid iterating over those
+    static constexpr size_t cluster_start{
+        static_cast<size_t>(HasCenterPairOrderTwo)};
+
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
 
-    auto layers = sequence2array(typename traits::LayerByOrder{});
-
-    for (size_t ii{0}; ii < layers.size(); ii++) {
-      std::cout << "Order: " << ii+1 << " Layer: " << layers[ii] << std::endl;
-    }
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
 
     this->nb_neigh.clear();
@@ -494,27 +482,29 @@ namespace rascal {
       this->add_entry_number_of_neighbours();
       std::array<int, traits::MaxOrder> new_tag_list{};
       // loop over the highest order available in this->manager
-      for (auto cluster : atom.template get_clusters_of_order<traits::MaxOrder-1>()) {
-
+      for (auto cluster :
+           atom.template get_clusters_of_order<traits::MaxOrder - 1>(
+               cluster_start)) {
         auto && tag_list{cluster.get_atom_tag_list()};
         // copy the tags from the previous order skiping the center atom tag
-        for (size_t ii{0}; ii < traits::MaxOrder-1; ++ii) {
+        for (size_t ii{0}; ii < traits::MaxOrder - 1; ++ii) {
           new_tag_list[ii] = tag_list[ii];
         }
         for (auto pair : atom.template get_clusters_of_order<2>()) {
-
           // copy to the last element the atom tag of the new order
           new_tag_list.back() = pair.get_atom_tag();
-          if (traits::NeighbourListType == AdaptorTraits::NeighbourListType::half) {
+          if (traits::NeighbourListType ==
+              AdaptorTraits::NeighbourListType::half) {
             if (IsCompactCluster) {
               throw std::runtime_error("Not implemented yet.");
             } else {
               // only add strictly lexicographicaly ordered tags, e.g.
-              // (1,2,2) is not valid and (1,2,3) is valid
-              if (std::is_sorted(new_tag_list.begin(), new_tag_list.end(), std::less_equal<int>())) {
-                std::array<int, traits::MaxOrder-1> tags{};
+              // (1,2,2) or (1,5,3) are not valid and (1,3,5) is valid
+              if (new_tag_list[traits::MaxOrder - 1] >
+                  new_tag_list[traits::MaxOrder - 2]) {
+                std::array<int, traits::MaxOrder - 1> tags{};
                 for (size_t ii{1}; ii < traits::MaxOrder; ++ii) {
-                  tags[ii-1] = new_tag_list[ii];
+                  tags[ii - 1] = new_tag_list[ii];
                 }
                 this->add_neighbour_of_cluster(tags);
               }
@@ -524,14 +514,15 @@ namespace rascal {
               throw std::runtime_error("Not implemented yet.");
             } else {
               // only add tags_list where none of the tags are equal to one
-              // another, e.g. (3,1,2) is valid but (3,2,3) is not.
+              // another, e.g. (3,1,2) is valid but (3,2,2) is not.
               std::array<int, traits::MaxOrder> new_tag_list_s{new_tag_list};
               std::sort(new_tag_list_s.begin(), new_tag_list_s.end());
-              auto any_equal = std::adjacent_find(new_tag_list_s.begin(), new_tag_list_s.end());
+              auto any_equal = std::adjacent_find(new_tag_list_s.begin(),
+                                                  new_tag_list_s.end());
               if (any_equal == new_tag_list_s.end()) {
-                std::array<int, traits::MaxOrder-1> tags{};
+                std::array<int, traits::MaxOrder - 1> tags{};
                 for (size_t ii{1}; ii < traits::MaxOrder; ++ii) {
-                  tags[ii-1] = new_tag_list[ii];
+                  tags[ii - 1] = new_tag_list[ii];
                 }
                 this->add_neighbour_of_cluster(tags);
               }

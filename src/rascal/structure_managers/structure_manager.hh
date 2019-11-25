@@ -181,12 +181,11 @@ namespace rascal {
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
                                                    StructureManager_t>;
 
-
     //! helper to identify if Manager_t has TargetOrder in AvailableOrdersList
     template <size_t TargetOrder>
     static constexpr bool has_order() {
       return internal::is_order_available<TargetOrder>(
-        typename traits::AvailableOrdersList{});
+          typename traits::AvailableOrdersList{});
     }
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
@@ -862,7 +861,6 @@ namespace rascal {
 
     static constexpr bool IsOrderOne{Order == 1};
 
-
     template <size_t TargetOrder>
     static constexpr bool OrderOneAndHasOrder{
         Manager_t::template has_order<TargetOrder>() and IsOrderOne};
@@ -1048,12 +1046,7 @@ namespace rascal {
 
       CustomProxy(ClusterRef_t & cluster_ref, const size_t & start,
                   const size_t & offset)
-          : cluster_ref{cluster_ref}, start{start}, offset{offset} {
-        // if (TargetOrder == 3) {
-        //   std::cout << "Proxy " << start << ", " << offset << ", "
-        //             << this->size() << std::endl;
-        // }
-      }
+          : cluster_ref{cluster_ref}, start{start}, offset{offset} {}
 
       //! end of the iterations over the clusters of order TargetOrder
       iterator begin() {
@@ -1092,10 +1085,6 @@ namespace rascal {
       std::array<size_t, Order_ - 1> counters{};
       counters.back() = this->get_index();
       size_t offset{this->get_manager().get_offset(counters)};
-      // if (Order_ == 3) {
-      //   std::cout << "conters " << counters.back() << ", " << offset
-      //             << std::endl;
-      // }
       return CustomProxy<Order_>(*this, start, offset);
     }
 
@@ -1209,7 +1198,8 @@ namespace rascal {
 
     static constexpr bool IsOrderOne{Order == 1};
 
-    static constexpr bool IsOrderOneOrTwo{IsOrderOne or (Order == 2)};// NOLINT
+    static constexpr bool IsOrderOneOrTwo{IsOrderOne or
+                                          (Order == 2)};  // NOLINT
 
     // determine the container type
     using Container_t =
