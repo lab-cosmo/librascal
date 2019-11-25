@@ -185,7 +185,8 @@ namespace rascal {
     //! i.e. if  0 <= TargetOrder <= traits::MaxOrder
     template <size_t TargetOrder>
     static constexpr bool has_order() {
-      return internal::is_order_available<TargetOrder>(std::make_index_sequence<traits::MaxOrder+1>{});
+      return internal::is_order_available<TargetOrder>(
+          std::make_index_sequence<traits::MaxOrder + 1>{});
     }
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>

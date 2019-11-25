@@ -138,12 +138,13 @@ namespace rascal {
       std::map<size_t, std::string> names{
           {2, "get_pairs"}, {3, "get_triplets"}, {4, "get_quadruplets"}};
       py_cluster.def(
-        names[Order].c_str(),
-        [](ClusterRef & v) {
-          auto it = v.template get_clusters_of_order<Order>();
-          return py::make_iterator(it.begin(), it.end());
-        },
-        py::keep_alive<0, 1>()); /* Keep vector alive while iterator is used */
+          names[Order].c_str(),
+          [](ClusterRef & v) {
+            auto it = v.template get_clusters_of_order<Order>();
+            return py::make_iterator(it.begin(), it.end());
+          },
+          py::keep_alive<0,
+                         1>()); /* Keep vector alive while iterator is used */
       auto py_cluster_new = add_cluster<Order, Child>(m);
       return py_cluster;
     }
@@ -153,16 +154,16 @@ namespace rascal {
   struct AddProperty {
     template <typename PyCluster>
     static void apply(PyCluster & py_cluster) {
-      py_cluster.def_property_readonly(
-        "nb_pairs",
-        [](ClusterRef & cluster) { return cluster.get_pairs().size(); });
+      py_cluster.def_property_readonly("nb_pairs", [](ClusterRef & cluster) {
+        return cluster.get_pairs().size();
+      });
     }
   };
 
   template <class ClusterRef>
   struct AddProperty<ClusterRef, 1> {
     template <typename PyCluster>
-    static void apply(PyCluster & /*py_cluster */) { }
+    static void apply(PyCluster & /*py_cluster */) {}
   };
 
   template <class StructureManagerImplementation>
@@ -176,9 +177,9 @@ namespace rascal {
       using ClusterRef = typename Parent::template ClusterRef<1>;
       // bind the iteration over the manager
       manager.def(
-        "__iter__",
-        [](Parent & v) { return py::make_iterator(v.begin(), v.end()); },
-        py::keep_alive<0, 1>());
+          "__iter__",
+          [](Parent & v) { return py::make_iterator(v.begin(), v.end()); },
+          py::keep_alive<0, 1>());
       auto py_cluster = add_cluster<1, Child>(m);
 
       AddProperty<ClusterRef, MaxOrder>::apply(py_cluster);
@@ -213,7 +214,8 @@ namespace rascal {
   template <class StructureManagerImplementation, class PyCluterRef_t>
   void add_iterators(py::module & m, PyCluterRef_t & py_cluster) {
     // index_sequence that goes from 1 to MaxOrder included
-    using OrdersList = internal::make_index_range<1, StructureManagerImplementation::traits::MaxOrder+1>;
+    using OrdersList = internal::make_index_range<
+        1, StructureManagerImplementation::traits::MaxOrder + 1>;
     add_iterators_helpers<StructureManagerImplementation>(m, py_cluster,
                                                           OrdersList{});
   }
