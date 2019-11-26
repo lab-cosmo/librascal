@@ -468,7 +468,7 @@ namespace rascal {
             const auto & expansion_coefficients_2{
                 coefficients[grad_species_2.first]};
             const auto & grad_center_coefficients_2{grad_species_2.second};
-            auto && soap_center_gradient_by_species_pair{
+            auto soap_center_gradient_by_species_pair{
                 soap_center_gradient[spair_type]};
 
             // Sum the gradients wrt the central atom position
@@ -547,9 +547,8 @@ namespace rascal {
                 continue;
               }
 
-              auto && soap_neigh_gradient_by_species_pair{
+              auto soap_neigh_gradient_by_species_pair{
                   soap_neigh_gradient[spair_type]};
-              // soap_neigh_gradient_by_species_pair.setZero();
 
               // TODO(max) is there a symmetry here we can exploit?
               if (neigh_type == spair_type[0]) {
