@@ -40,6 +40,7 @@
 #include "rascal/representations/calculator_spherical_covariants.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/representations/calculator_pair_distances.hh"
 #include "rascal/structure_managers/cluster_ref_key.hh"
 #include "rascal/structure_managers/structure_manager_collection.hh"
 #include "rascal/utils.hh"
@@ -969,6 +970,73 @@ namespace rascal {
     json factory_args{};
 
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
+    bool verbose{false};
+  };
+  
+  template <class MultipleStructureFixture>
+  struct MultipleStructurePairDistances : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorPairDistances;
+    MultipleStructurePairDistances() : Parent{} {
+      for (auto & fc_hyp : this->fc_hypers) {
+        json rep_hyp{};
+        rep_hyp["cutoff_function"] = fc_hyp;
+        this->representation_hypers.push_back(rep_hyp);
+      }
+    }
+    ~MultipleStructurePairDistances() = default;
+
+    std::vector<json> fc_hypers{
+        {{"type", "ShiftedCosine"},
+            {"cutoff", {{"value", 6.0}, {"unit", "AA"}}},
+            {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
+        {{"type", "ShiftedCosine"},
+            {"cutoff", {{"value", 4.0}, {"unit", "AA"}}},
+            {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
+    std::vector<json> representation_hypers{};
+  };  
+
+  struct PairDistancesTestData {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorStrict>;
+    using Representation_t = CalculatorPairDistances;
+    PairDistancesTestData() { this->get_ref(this->ref_filename); }
+    ~PairDistancesTestData() = default;
+
+    void get_ref(const std::string & ref_filename) {
+      this->ref_data =
+          json::from_ubjson(internal::read_binary_file(ref_filename));
+      auto filenames =
+          this->ref_data.at("filenames").get<std::vector<std::string>>();
+      auto cutoffs = this->ref_data.at("cutoffs").get<std::vector<double>>();
+
+      for (auto && filename : filenames) {
+        for (auto && cutoff : cutoffs) {
+          // std::cout << filename << " " << cutoff << std::endl;
+          json parameters;
+          json structure{{"filename", filename}};
+          json adaptors;
+          json ad1{{"name", "AdaptorNeighbourList"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
+          json ad2{{"name", "AdaptorStrict"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
+          adaptors.emplace_back(ad1);
+          adaptors.emplace_back(ad2);
+
+          parameters["structure"] = structure;
+          parameters["adaptors"] = adaptors;
+
+          this->factory_args.emplace_back(parameters);
+        }
+      }
+    }
+
+    json ref_data{};
+    json factory_args{};
+
+    std::string ref_filename{"reference_data/pair_distances_reference.ubjson"};
     bool verbose{false};
   };
 

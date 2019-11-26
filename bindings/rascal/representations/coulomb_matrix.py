@@ -1,3 +1,4 @@
+# vim: set encoding=utf-8
 import numpy as np
 import json
 

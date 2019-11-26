@@ -43,13 +43,17 @@ namespace rascal {
                        CalculatorFixture<MultipleStructureSphericalInvariants<
                            MultipleStructureManagerNLCCStrictFixture>>,
                        CalculatorFixture<MultipleStructureSphericalCovariants<
-                           MultipleStructureManagerNLCCStrictFixture>>>;
+                           MultipleStructureManagerNLCCStrictFixture>>,
+                       CalculatorFixture<MultipleStructurePairDistances<
+                           MultipleStructureManagerNLStrictFixture>>
+                           >;
 
   using fixtures_ref_test =
       boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
                        CalculatorFixture<SphericalExpansionTestData>,
                        CalculatorFixture<SphericalInvariantsTestData>,
-                       CalculatorFixture<SphericalCovariantsTestData>>;
+                       CalculatorFixture<SphericalCovariantsTestData>,
+                       CalculatorFixture<PairDistancesTestData>>;
 
   BOOST_AUTO_TEST_SUITE(representation_test);
 
@@ -438,7 +442,6 @@ namespace rascal {
                                                 typename Fix::Manager_t>
             grad_fix("reference_data/spherical_expansion_gradient_test.json",
                      manager, provider);
-        grad_fix.verbosity = GradientTestFixture::VerbosityValue::DEBUG;
         /* ---- grad-test-example-end1 ---- */
         if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {
           std::cout << "Testing structure: " << *filename_it << std::endl;

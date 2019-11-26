@@ -1,5 +1,5 @@
 /**
- * @file   calculator_spherical_invariants.hh
+ * @file   calculator_pair_distances.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -8,7 +8,7 @@
  *
  * @date   12 March 2019
  *
- * @brief  compute spherical invariants
+ * @brief  compute pair distances
  *
  * Copyright © 2019 Max Veit, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -101,12 +101,12 @@ namespace rascal {
 
     void set_hyperparameters(const Hypers_t & hypers) {
 	  using internal::CutoffFunctionType;
-	  
+
 	  if (hypers.find("cutoff_per_pair_type") != hypers.end()) {
 		  this->cutoff_per_pair_type = hypers.at("cutoff_per_pair_type").get<bool>();
 	  }
 	  if (this->cutoff_per_pair_type) {
-		  throw std::logic_error("Cutoff per pair type is not yet supported" );	  
+		  throw std::logic_error("Cutoff per pair type is not yet supported" );
 	  }
 	  auto fc_hypers = hypers.at("cutoff_function").get<json>();
       auto fc_type = fc_hypers.at("type").get<std::string>();
@@ -131,8 +131,8 @@ namespace rascal {
       } else {  // Default false (don't compute gradients)
         this->compute_gradients = false;
       }
-      
-      
+
+
 	  // Implement scaling function for power laws here
 
 
@@ -182,7 +182,7 @@ namespace rascal {
     double cutoff_smooth_width{};
     bool compute_gradients{};
     bool cutoff_per_pair_type{false};
-    
+
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
     internal::CutoffFunctionType cutoff_function_type{};
   };
@@ -201,7 +201,7 @@ namespace rascal {
     using math::pow;
 
     auto && pair_distances{
-        manager->template get_property_ptr<Prop_t>(this->get_name())};
+        *manager->template get_property_ptr<Prop_t>(this->get_name())};
 
     /*auto && pair_distance_gradients{
         manager->template get_property_ptr<PropGrad_t>(
@@ -217,22 +217,27 @@ namespace rascal {
     // use special container to tell that there is not need to sort when
     // using operator[] of soap_vector
     internal::SortedKey<Key_t> spair_type{pair_type};
-	
+    std::vector<internal::SortedKey<Key_t>> pair_list{spair_type};
+
+
+    pair_distances.clear();
+    pair_distances.set_shape(1, 1);
 	pair_distances.resize();
-	
+
     for (auto center : manager) {
 	  for (auto neigh : center) {
-		  pair_distances[neigh][spair_type].resize(1,1);
-		  pair_distances[neigh][spair_type](0,0) = manager->get_distance(neigh);
+          pair_distances[neigh].resize(pair_list, 1, 1);
+          // std::cout << manager->get_distance(neigh);
+		  pair_distances[neigh][spair_type](0) = manager->get_distance(neigh);
 
 
       // if (this->compute_gradients) {
 		// Compute Gradients
       //}        // if compute gradients
-      }        // for neigh : center 
+      }        // for neigh : center
     }          // for center : manager
   }            // compute_impl()
-  
+
 }  // namespace rascal
 
 #endif  // SRC_REPRESENTATIONS_CALCULATOR_PAIR_DISTANCES_HH_

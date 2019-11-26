@@ -453,6 +453,55 @@ namespace rascal {
         py::call_guard<py::gil_scoped_release>());
   }
 
+  namespace details {
+
+    /**
+     * Helper struct for the get_features_by_species binding function. It
+     * allows to differenciate the loop pattern between different Orders of
+     * the property.
+     */
+    template <size_t Order>
+    struct FeaturesBySpeciesOrderSwitchHelper {};
+
+    template <>
+    struct FeaturesBySpeciesOrderSwitchHelper<1> {
+      template<typename Property_t, typename Manager_t, typename Key_t, typename Mat_t>
+      static void loop(Property_t& property , Manager_t& manager, const size_t& inner_size, const Key_t& key, int& current_center, Mat_t& features) {
+        using ConstVecMap_t = const Eigen::Map<const math::Vector_t>;
+        for (auto center : manager) {
+          const auto & prop_row = property[center];
+          if (prop_row.count(key) == 1) {
+            // get the feature and flatten the array
+            const auto feat_row =
+                ConstVecMap_t(prop_row[key].data(), inner_size);
+            features.row(current_center) = feat_row;
+          }
+          current_center++;
+        }
+      }
+    };
+
+    template <>
+    struct FeaturesBySpeciesOrderSwitchHelper<2> {
+      template<typename Property_t, typename Manager_t, typename Key_t, typename Mat_t>
+      static void loop(Property_t& property , Manager_t& manager, const size_t& inner_size, const Key_t& key, int& current_center, Mat_t& features) {
+        using ConstVecMap_t = const Eigen::Map<const math::Vector_t>;
+        for (auto center : manager) {
+          for (auto pair : center) {
+            const auto & prop_row = property[pair];
+            if (prop_row.count(key) == 1) {
+              // get the feature and flatten the array
+              const auto feat_row =
+                  ConstVecMap_t(prop_row[key].data(), inner_size);
+              features.row(current_center) = feat_row;
+            }
+            current_center++;
+          }
+        }
+      }
+    };
+  }
+
   /**
    * Bind getters for the feature matrix comming from BlockSparseProperty.
    *
@@ -475,7 +524,8 @@ namespace rascal {
           using Manager_t = typename ManagerCollection_t::Manager_t;
           using Prop_t = typename Calculator::template Property_t<Manager_t>;
           using Keys_t = typename Prop_t::Keys_t;
-          using ConstVecMap_t = const Eigen::Map<const math::Vector_t>;
+          constexpr static size_t Order{Prop_t::Order};
+
           if (managers.size() == 0) {
             throw std::runtime_error(
                 R"(There are no structure to get features from)");
@@ -527,16 +577,7 @@ namespace rascal {
               const auto & property =
                   *manager->template get_property_ptr<Prop_t>(property_name);
 
-              for (auto center : manager) {
-                const auto & prop_row = property[center];
-                if (prop_row.count(key) == 1) {
-                  // get the feature and flatten the array
-                  const auto feat_row =
-                      ConstVecMap_t(prop_row[key].data(), inner_size);
-                  features.row(current_center) = feat_row;
-                }
-                current_center++;
-              }
+              details::FeaturesBySpeciesOrderSwitchHelper<Order>::loop(property, manager, inner_size, key, current_center, features);
             }
             feature_dict[t_key] = std::move(features);
             features.setZero();
