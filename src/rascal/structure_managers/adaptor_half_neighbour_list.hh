@@ -350,7 +350,7 @@ namespace rascal {
       // neighbours per atom counter to correct for offsets
       int nneigh{0};
 
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         auto index_j{pair.get_atom_tag()};
 
         // This is the actual check for the half neighbour list: only pairs with

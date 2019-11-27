@@ -930,7 +930,7 @@ namespace rascal {
     auto get_atom_ii() {
       static_assert(traits::MaxOrder > 1, "Need neighbors to get one");
 
-      auto && atom_ii_it = this->get_pairs_with_self_pair().begin();
+      auto && atom_ii_it = this->pairs_with_self_pair().begin();
       constexpr static size_t ClusterLayer_{
           ManagerImplementation::template cluster_layer_from_order<2>()};
       auto atom_ii = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_ii_it);
@@ -954,7 +954,7 @@ namespace rascal {
       auto && atom_j_index = manager.get_atom_index(atom_j_tag);
       auto && atom_j_it = manager.get_iterator_at(atom_j_index, 0);
       auto && atom_j = *atom_j_it;
-      auto && atom_jj_it = atom_j.get_pairs_with_self_pair().begin();
+      auto && atom_jj_it = atom_j.pairs_with_self_pair().begin();
       constexpr static size_t ClusterLayer_{
           ManagerImplementation::template cluster_layer_from_order<2>()};
       auto atom_jj = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_jj_it);
@@ -1074,7 +1074,7 @@ namespace rascal {
      * associated with the current central atom.
      */
     template <bool T = order_one_and_has_order<2>, std::enable_if_t<T, int> = 0>
-    CustomProxy<2> get_pairs() {
+    CustomProxy<2> pairs() {
       // avoid if statement or sfinae by casting the bool to
       // size_t which turns out to give 0 if false and 1
       // if true, the expected behavior.
@@ -1090,7 +1090,7 @@ namespace rascal {
      * If HasCenterPair == false then its the regular iteration.
      */
     template <bool T = order_one_and_has_order<2>, std::enable_if_t<T, int> = 0>
-    CustomProxy<2> get_pairs_with_self_pair() {
+    CustomProxy<2> pairs_with_self_pair() {
       return this->get_clusters_of_order<2>();
     }
 
@@ -1099,7 +1099,7 @@ namespace rascal {
      * with the current central atom.
      */
     template <bool T = order_one_and_has_order<3>, std::enable_if_t<T, int> = 0>
-    CustomProxy<3> get_triplets() {
+    CustomProxy<3> triplets() {
       return this->get_clusters_of_order<3>();
     }
 
@@ -1108,7 +1108,7 @@ namespace rascal {
      * associated with the current central atom.
      */
     template <bool T = order_one_and_has_order<4>, std::enable_if_t<T, int> = 0>
-    CustomProxy<4> get_quadruplets() {
+    CustomProxy<4> quadruplets() {
       return this->get_clusters_of_order<4>();
     }
   };

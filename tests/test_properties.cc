@@ -229,7 +229,7 @@ namespace rascal {
     int pair_property_counter{};
     for (auto atom : Fix::manager) {
       Fix::atom_vector_property[atom] = atom.get_position();
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         Fix::pair_property[pair] = ++pair_property_counter;
       }
     }
@@ -239,7 +239,7 @@ namespace rascal {
       auto error =
           (Fix::atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, TOLERANCE);
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
       }
     }
@@ -278,7 +278,7 @@ namespace rascal {
     int pair_property_counter{};
     for (auto atom : Fix::manager) {
       Fix::atom_vector_property[atom] = atom.get_position();
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         Fix::pair_property[pair] = ++pair_property_counter;
       }
     }
@@ -288,7 +288,7 @@ namespace rascal {
       auto error =
           (Fix::atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, TOLERANCE);
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
       }
     }
@@ -296,14 +296,14 @@ namespace rascal {
     int triple_property_counter{};
     for (auto atom : Fix::manager) {
       Fix::atom_vector_property[atom] = atom.get_position();
-      for (auto triple : atom.get_triplets()) {
+      for (auto triple : atom.triplets()) {
         Fix::triple_property[triple] = ++triple_property_counter;
       }
     }
 
     triple_property_counter = 0;
     for (auto atom : Fix::manager) {
-      for (auto triple : atom.get_triplets()) {
+      for (auto triple : atom.triplets()) {
         BOOST_CHECK_EQUAL(Fix::triple_property[triple],
                           ++triple_property_counter);
       }
@@ -397,7 +397,7 @@ namespace rascal {
     }
     // add the position to the atom and count how often this happens
     for (auto atom : Fix::manager) {
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         if (verbose) {
           std::cout << ">> Atom with tag ";
           std::cout << pair.get_internal_neighbour_atom_tag();
@@ -478,7 +478,7 @@ namespace rascal {
 
     // add the position to the atom and count how often this happens
     for (auto atom : Fix::manager) {
-      for (auto triplet : atom.get_triplets()) {
+      for (auto triplet : atom.triplets()) {
         if (verbose) {
           std::cout << ">> Atom with tag "
                     << triplet.get_internal_neighbour_atom_tag();
@@ -537,7 +537,7 @@ namespace rascal {
     }
 
     for (auto atom : Fix::manager) {
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         if (atom.back() == pair.back()) {
           auto error = (Fix::atom_vector_property[atom] -
                         Fix::atom_vector_property[pair])
@@ -616,7 +616,7 @@ namespace rascal {
 
       Fix::atom_dynamic_vector_unit_property[atom] << counter++, counter,
           counter;
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         Fix::pair_property[pair] = ++pair_property_counter;
       }
     }
@@ -645,7 +645,7 @@ namespace rascal {
       error =
           (Fix::atom_vector_property[atom] - FakeSizedProperty[atom]).norm();
       BOOST_CHECK_LE(error, TOLERANCE);
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
       }
     }
@@ -672,14 +672,14 @@ namespace rascal {
     Fix::pair_property.resize();
 
     for (auto atom : Fix::manager) {
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         Fix::pair_property[pair] =
             (atom.get_position() - pair.get_position()).norm();
       }
     }
 
     for (auto atom : Fix::manager) {
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         auto dist{(atom.get_position() - pair.get_position()).norm()};
         auto error{Fix::pair_property[pair] - dist};
         BOOST_CHECK_LE(error, TOLERANCE);

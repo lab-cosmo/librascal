@@ -136,7 +136,7 @@ namespace rascal {
       // bind the iteration over clusterRef<1>
       using ClusterRef = typename Parent::template ClusterRef<1>;
       std::map<size_t, std::string> names{
-          {2, "get_pairs"}, {3, "get_triplets"}, {4, "get_quadruplets"}};
+          {2, "pairs"}, {3, "triplets"}, {4, "quadruplets"}};
       py_cluster.def(
           names[Order].c_str(),
           [](ClusterRef & v) {
@@ -156,7 +156,7 @@ namespace rascal {
     template <typename PyCluster>
     static void apply(PyCluster & py_cluster) {
       py_cluster.def_property_readonly("nb_pairs", [](ClusterRef & cluster) {
-        return cluster.get_pairs().size();
+        return cluster.pairs().size();
       });
     }
   };

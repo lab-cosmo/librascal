@@ -92,10 +92,10 @@ int main() {
    std::cout << "n_centers: " << manager->size() << std::endl;
    for (auto center : manager) {
      auto ctag = center.get_atom_tag();
-     std::cout << "Center: " << ctag << " n. neighbors " << center.get_pairs().size()
+     std::cout << "Center: " << ctag << " n. neighbors " << center.pairs().size()
                << std::endl;
 
-     for (auto neigh : center.get_pairs()) {
+     for (auto neigh : center.pairs()) {
        auto tag_list = neigh.get_atom_tag_list();
 
        auto atom_j = neigh.get_atom_j();
@@ -106,7 +106,7 @@ int main() {
                  << " -- global index " << neigh.get_global_index()
                  <<std::endl;
      }
-     // for (auto triplet : center.get_triplets()) {
+     // for (auto triplet : center.triplets()) {
      //   std::cout << "triplet: " << std::endl;
      // }
    }
@@ -116,7 +116,7 @@ int main() {
   triplet_manager->update();
 
 //  for (auto center : triplet_manager) {
-//    auto proxy = center.get_pairs();
+//    auto proxy = center.pairs();
 //    auto it = proxy.begin();
 //    auto neigh = *it;
 //    auto pos = neigh.get_position();
@@ -124,14 +124,14 @@ int main() {
 
   for (auto center : triplet_manager) {
     auto ctag = center.get_atom_tag();
-    auto it = center.get_triplets();
+    auto it = center.triplets();
     auto size{it.size()};
     std::cout << "Center: " << ctag << " n. neighbors " << size
               << std::endl;
 //     std::cout << "Center: " << ctag << " n. neighbors "
 //               << std::endl;
 
-    for (auto triplet : center.get_triplets()) {
+    for (auto triplet : center.triplets()) {
       auto tags = triplet.get_atom_tag_list();
       std::cout << center.get_atom_tag() << " triplet ("
                 << tags[0] << ", " << tags[1] << ", " << tags[2]

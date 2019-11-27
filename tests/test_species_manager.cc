@@ -86,7 +86,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(pair_species_test, Fix, FixturesMax2, Fix) {
     std::map<std::array<int, 2>, int> species_counter{};
     for (auto && atom : Fix::fixture.manager) {
-      for (auto && pair : atom.get_pairs()) {
+      for (auto && pair : atom.pairs()) {
         species_counter[pair.get_atom_types()]++;
       }
     }

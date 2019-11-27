@@ -76,7 +76,7 @@ namespace rascal {
       if (verbose) {
         std::cout << "atom " << atom.back() << std::endl;
       }
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         npairs1++;
         if (verbose) {
           std::cout << " pair " << pair.back() << " glob "
@@ -117,14 +117,14 @@ namespace rascal {
         std::cout << "position: " << atom.get_position() << std::endl;
       }
 
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         npairs++;
         if (verbose) {
           std::cout << "   complete pair " << atom.back() << " " << pair.back()
                     << " glob " << pair.get_global_index() << std::endl;
         }
       }
-      for (auto triplet : atom.get_triplets()) {
+      for (auto triplet : atom.triplets()) {
         n_triplets++;
         if (verbose) {
           auto tags = triplet.get_atom_tag_list();
@@ -173,7 +173,7 @@ namespace rascal {
       BOOST_CHECK_EQUAL(atom_type, SM3->get_atom_type(atom_tag));
 
       auto atom_position = atom.get_position();
-      for (auto pair : atom.get_pairs()) {
+      for (auto pair : atom.pairs()) {
         auto neighbour_atom_tag = pair.get_internal_neighbour_atom_tag();
         auto neighbour_type = pair.get_atom_type();
         BOOST_CHECK_EQUAL(neighbour_type,
@@ -184,7 +184,7 @@ namespace rascal {
         BOOST_CHECK_CLOSE(diff_pos_pair, 1., TOLERANCE);
       }
 
-      for (auto triplet : atom.get_triplets()) {
+      for (auto triplet : atom.triplets()) {
         if (verbose) {
           auto tags = triplet.get_atom_tag_list();
           std::cout << "triplet " << tags[0] << " " << tags[1] << " " << tags[2]

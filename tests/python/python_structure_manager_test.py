@@ -134,7 +134,7 @@ class TestNL(unittest.TestCase):
                 self.cutoff, **structure)
 
             for ii, center in enumerate(manager):
-                for jj, neigh in enumerate(center.get_pairs()):
+                for jj, neigh in enumerate(center.pairs()):
                     dist = np.linalg.norm(neigh.position - center.position)
 
 
@@ -188,7 +188,7 @@ class TestNLStrict(unittest.TestCase):
                 self.cutoff, **structure)
             for ii, center in enumerate(manager):
                 dists, dirVecs = [], []
-                for jj, neigh in enumerate(center.get_pairs()):
+                for jj, neigh in enumerate(center.pairs()):
                     dist = np.linalg.norm(neigh.position - center.position)
                     dists.append(dist)
                     dirVecs.append((neigh.position - center.position) / dist)
