@@ -31,6 +31,7 @@
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/representations/calculator_spherical_invariants.hh"
 #include "rascal/structure_managers/adaptor_center_contribution.hh"
+#include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_strict.hh"
 #include "rascal/structure_managers/make_structure_manager.hh"
@@ -47,12 +48,13 @@
 
 using namespace rascal;  // NOLINT
 
-using Representation_t = CalculatorSphericalInvariants;
+using Representation_t = CalculatorSphericalExpansion;
 using Manager_t = AdaptorStrict<
-    AdaptorCenterContribution<AdaptorNeighbourList<StructureManagerCenters>>>;
-using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
+    AdaptorCenterContribution<AdaptorHalfList<
+                AdaptorNeighbourList<StructureManagerCenters>>>>;
+using Prop_t = typename CalculatorSphericalExpansion::Property_t<Manager_t>;
 using PropGrad_t =
-    typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
+    typename CalculatorSphericalExpansion::PropertyGradient_t<Manager_t>;
 
 int main(int argc, char * argv[]) {
   if (argc < 2) {
@@ -64,9 +66,9 @@ int main(int argc, char * argv[]) {
   std::string filename{argv[1]};
 
   double cutoff{4.};
-  json hypers{{"max_radial", 3},
-              {"max_angular", 2},
-              {"compute_gradients", true},
+  json hypers{{"max_radial", 1},
+              {"max_angular", 1},
+              {"compute_gradients", false},
               {"soap_type", "PowerSpectrum"},
               {"normalize", true}};
 
@@ -82,18 +84,21 @@ int main(int argc, char * argv[]) {
 
   json structure{{"filename", filename}};
   json adaptors;
-  json ad1{{"name", "AdaptorNeighbourList"},
+  json ad1a{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   json ad1b{{"name", "AdaptorCenterContribution"},
             {"initialization_arguments", {}}};
+  json ad1c{{"name", "AdaptorCenterContribution"},
+            {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
-  adaptors.emplace_back(ad1);
+  adaptors.emplace_back(ad1a);
   adaptors.emplace_back(ad1b);
+  adaptors.emplace_back(ad1c);
   adaptors.emplace_back(ad2);
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList,
+                                   AdaptorNeighbourList, AdaptorHalfList,
                                    AdaptorCenterContribution, AdaptorStrict>(
           structure, adaptors);
 
@@ -101,8 +106,9 @@ int main(int argc, char * argv[]) {
 
   representation.compute(manager);
 
-  constexpr size_t n_centers_print{4};
-  constexpr size_t n_neigh_print{4};
+  constexpr size_t n_centers_print{5};
+  constexpr size_t n_neigh_print{1000};
+  size_t center_count{0};
 
   // Print the first few elements and gradients, so we know we're getting
   // something
@@ -114,22 +120,22 @@ int main(int argc, char * argv[]) {
   std::cout << "Gradients are printed with: First Cartesian component, "
                "then species pairs, along the columns; n-n'-l along the rows.";
   std::cout << std::endl;
-  size_t center_count{0};
+
 
   auto && soap_vectors{
       *manager->template get_property_ptr<Prop_t>(representation.get_name())};
-  auto && soap_vector_gradients{*manager->template get_property_ptr<PropGrad_t>(
-      representation.get_gradient_name())};
+  // auto && soap_vector_gradients{*manager->template get_property_ptr<PropGrad_t>(
+  //     representation.get_gradient_name())};
 
   for (auto center : manager) {
     if (center_count >= n_centers_print) {
       break;
     }
-    // size_t n_species_center{soap_vectors.get_keys(center).size()};
+    size_t n_species_center{soap_vectors.get_keys(center).size()};
     std::cout << "============================" << std::endl;
     std::cout << "Center " << center.get_index();
     std::cout << " of type " << center.get_atom_type() << std::endl;
-    // std::cout << soap_vectors.get_dense_row(center);
+    std::cout << soap_vectors.get_dense_row(center);
     std::cout << std::endl;
     auto keys_center = soap_vectors[center].get_keys();
     std::cout << "Center data keys: ";
@@ -142,33 +148,43 @@ int main(int argc, char * argv[]) {
     }
     std::cout << std::endl;
     auto ii_pair = center.get_atom_ii();
-    auto keys_grad_center = soap_vector_gradients[ii_pair].get_keys();
-    std::cout << "Center gradient keys: ";
-    for (auto key : keys_grad_center) {
-      std::cout << "(";
-      for (auto key_sp : key) {
-        std::cout << key_sp << ", ";
-      }
-      std::cout << "\b\b) ";
-    }
-    std::cout << std::endl;
+    // auto keys_grad_center = soap_vector_gradients[ii_pair].get_keys();
+    // std::cout << "Center gradient keys: ";
+    // for (auto key : keys_grad_center) {
+    //   std::cout << "(";
+    //   for (auto key_sp : key) {
+    //     std::cout << key_sp << ", ";
+    //   }
+    //   std::cout << "\b\b) ";
+    // }
+    // std::cout << std::endl;
 
     size_t neigh_count{0};
     for (auto neigh : center) {
       if (neigh_count >= n_neigh_print) {
         break;
       }
-      auto neigh_type = neigh.get_atom_type();
-      auto keys_neigh = soap_vector_gradients[neigh].get_keys();
-      std::cout << "Neighbour "<< neigh_type<<" keys: ";
-      for (auto key : keys_neigh) {
-        std::cout << "(";
-        for (auto key_sp : key) {
-          std::cout << key_sp << ", ";
-        }
-        std::cout << "\b\b) ";
-      }
-      std::cout << std::endl;
+      // auto neigh_type = neigh.get_atom_type();
+      // auto tags = neigh.get_atom_tag_list();
+      // std::cout << "Neighbour "<< neigh_type<<" tags: ";
+
+      // std::cout << "(";
+      // for (auto tag : tags) {
+      //   std::cout << tag << ", ";
+      // }
+      // std::cout << "\b\b) ";
+
+      // std::cout << std::endl;
+      // auto keys_neigh = soap_vector_gradients[neigh].get_keys();
+      // std::cout << "Neighbour "<< neigh_type<<" keys: ";
+      // for (auto key : keys_neigh) {
+      //   std::cout << "(";
+      //   for (auto key_sp : key) {
+      //     std::cout << key_sp << ", ";
+      //   }
+      //   std::cout << "\b\b) ";
+      // }
+      // std::cout << std::endl;
       ++neigh_count;
     }
     ++center_count;

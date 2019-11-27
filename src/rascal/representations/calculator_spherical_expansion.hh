@@ -1571,9 +1571,7 @@ namespace rascal {
       expansions_coefficients_gradient.resize();
     }
 
-    /* @TODO(felix,max) use the parity of the spherical harmonics to use half
-     * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
-     */
+    // init the spherical expension coeffs
     for (auto center : manager) {
       auto & coefficients_center = expansions_coefficients[center];
       auto & coefficients_center_gradient =
@@ -1589,10 +1587,21 @@ namespace rascal {
       keys.insert({center_type});
       // initialize the expansion coefficients to 0
       coefficients_center.resize(keys, n_row, n_col, 0.);
+
       if (this->compute_gradients) {
         coefficients_center_gradient.resize(keys, n_spatial_dimensions * n_row,
                                             n_col, 0.);
       }
+    }
+
+    /* @TODO(felix,max) use the parity of the spherical harmonics to use half
+     * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
+     */
+    for (auto center : manager) {
+      auto & coefficients_center = expansions_coefficients[center];
+      auto & coefficients_center_gradient =
+          expansions_coefficients_gradient[center.get_atom_ii()];
+      Key_t center_type{center.get_atom_type()};
 
       // Start the accumulator with the central atom
       coefficients_center[center_type].col(0) +=
@@ -1600,8 +1609,16 @@ namespace rascal {
           sqrt(4.0 * PI);
 
       auto atom_i_tag = center.get_atom_tag();
+      // coeff C^{ij}_{nlm}
+      auto c_ij_nlm = math::Matrix_t(n_row, n_col);
+      // coeff (-1)^l C^{ji}_{nlm}
+      auto c_p_ij_nlm = math::Matrix_t(n_row, n_col);
 
       for (auto neigh : center) {
+        auto && atom_j = neigh.get_atom_j();
+        auto atom_j_tag = atom_j.get_atom_tag();
+        auto neigh_tag = neigh.get_atom_tag();
+        auto & coefficients_neigh{expansions_coefficients[atom_j]};
         auto dist{manager->get_distance(neigh)};
         auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
@@ -1617,22 +1634,37 @@ namespace rascal {
             radial_integral->template compute_neighbour_contribution(dist,
                                                                      neigh);
         double f_c{cutoff_function->f_c(dist)};
-        auto && coefficients_center_by_type{coefficients_center[neigh_type]};
+        auto coefficients_center_by_type{coefficients_center[neigh_type]};
+        auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
 
         // compute the coefficients
         size_t l_block_idx{0};
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              ++angular_l) {
           size_t l_block_size{2 * angular_l + 1};
-          coefficients_center_by_type.block(0, l_block_idx, max_radial,
-                                            l_block_size) +=
+          c_ij_nlm.block(0, l_block_idx, max_radial,
+                                            l_block_size) =
               (neighbour_contribution.col(angular_l) *
                (harmonics.segment(l_block_idx, l_block_size) * f_c));
           l_block_idx += l_block_size;
         }
+        coefficients_center_by_type += c_ij_nlm;
 
-        auto && atom_j = neigh.get_atom_j();
-        auto atom_j_tag = atom_j.get_atom_tag();
+
+        if (neigh_tag < static_cast<int>(manager->size())) {
+          l_block_idx = 0;
+          double parity{1};
+          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+              ++angular_l) {
+            size_t l_block_size{2 * angular_l + 1};
+            c_p_ij_nlm.block(0, l_block_idx, max_radial,
+                            l_block_size) = parity * c_ij_nlm.block(0, l_block_idx, max_radial,
+                                            l_block_size);
+            l_block_idx += l_block_size;
+            parity *= -1.;
+          }
+          coefficients_neigh_by_type += c_p_ij_nlm;
+        }
 
         // compute the gradients of the coefficients with respect to
         // atoms positions

@@ -304,9 +304,7 @@ namespace rascal {
   AdaptorHalfList<ManagerImplementation>::AdaptorHalfList(
       std::shared_ptr<ManagerImplementation> manager)
       : manager{std::move(manager)}, nb_neigh{},
-        neighbours_atom_tag{}, offsets{} {
-    // this->manager->add_child(this->get_weak_ptr());
-  }
+        neighbours_atom_tag{}, offsets{} {}
 
   /* ---------------------------------------------------------------------- */
   //! update function, which updates based on underlying manager
