@@ -163,10 +163,10 @@ namespace rascal {
           {"radial_angular",
            {std::make_pair(3, 4), std::make_pair(6, 6), std::make_pair(8, 6)}},
           {"random", {true}},  // dummy
-          {"filenames", {"../reference_data/inputs/small_molecule.json"}},
+          {"filenames", {"../../reference_data/inputs/small_molecule.json"}},
           // please use only one file because google benchmark cant put strings
           // into their `Counter`, therefore the filename cannot be printed
-          // {"filenames", {"../reference_data/inputs/methane.json"}},
+          // {"filenames", {"../../reference_data/inputs/methane.json"}},
           {"cutoffs", {4}}};
       return data;
     }
