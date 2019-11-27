@@ -368,23 +368,8 @@ namespace rascal {
     }
   }
 
-  using fixtures_with_gradients = boost::mpl::list<
-      RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
-                                   internal::RadialBasisType::GTO,
-                                   internal::AtomicSmearingType::Constant,
-                                   internal::OptimizationType::None>,
-      RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
-                                   internal::RadialBasisType::GTO,
-                                   internal::AtomicSmearingType::Constant,
-                                   internal::OptimizationType::Interpolator>,
-      RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
-                                   internal::RadialBasisType::DVR,
-                                   internal::AtomicSmearingType::Constant,
-                                   internal::OptimizationType::None>,
-      RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
-                                   internal::RadialBasisType::DVR,
-                                   internal::AtomicSmearingType::Constant,
-                                   internal::OptimizationType::Interpolator>>;
+  using fixtures_with_gradients =
+      boost::mpl::list<CalculatorFixture<MultipleHypersSphericalExpansion>>;
 
   /**
    * Test the derivative of the GTO radial integral in the SphericalExpansion
@@ -416,7 +401,6 @@ namespace rascal {
           std::make_shared<RadialIntegral_t>(hyper);
       // in C++17 the compiler would be able to deduce the template
       // arguments for itself >:/
-
       SphericalExpansionRadialDerivative<RadialIntegral_t, ClusterRef_t>
           calculator(radial_integral, pair);
       test_gradients(calculator, test_data);
