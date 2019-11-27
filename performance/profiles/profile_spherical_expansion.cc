@@ -48,7 +48,7 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 1000;
+const int N_ITERATIONS = 10;
 
 using Representation_t = CalculatorSphericalInvariants;
 using Manager_t = AdaptorStrict<

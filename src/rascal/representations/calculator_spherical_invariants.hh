@@ -468,7 +468,7 @@ namespace rascal {
             const auto & expansion_coefficients_2{
                 coefficients[grad_species_2.first]};
             const auto & grad_center_coefficients_2{grad_species_2.second};
-            auto && soap_center_gradient_by_species_pair{
+            auto soap_center_gradient_by_species_pair{
                 soap_center_gradient[spair_type]};
 
             // Sum the gradients wrt the central atom position
@@ -537,9 +537,6 @@ namespace rascal {
               auto & grad_neigh_coefficients{
                   expansions_coefficients_gradient[neigh]};
               auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
-              auto && soap_neigh_gradient_by_species_pair{
-                  soap_neigh_gradient[spair_type]};
-              soap_neigh_gradient_by_species_pair.setZero();
 
               auto neigh_type = neigh.get_atom_type();
               if ((neigh_type != spair_type[0]) and
@@ -549,6 +546,9 @@ namespace rascal {
                 // avoid storing these empty species blocks
                 continue;
               }
+
+              auto soap_neigh_gradient_by_species_pair{
+                  soap_neigh_gradient[spair_type]};
 
               // TODO(max) is there a symmetry here we can exploit?
               if (neigh_type == spair_type[0]) {
@@ -1200,18 +1200,16 @@ namespace rascal {
         soap_vector_gradients[ii_pair].resize(
             pair_list, n_spatial_dimensions * n_row, n_col, 0.);
 
-        // TODO(max,felix) needs work
-        /*
         // Neighbour gradients need a separate pair list because if the species
         // of j is not the same as either of the species for that SOAP entry,
         // the gradient is zero.
         for (auto neigh : center.get_pairs()) {
+          auto neigh_type = neigh.get_atom_type();
           std::vector<internal::SortedKey<Key_t>> grad_pair_list{};
           for (const auto & el1 : coefficients) {
             auto && neigh_1_type{el1.first[0]};
             for (const auto & el2 : coefficients) {
               auto && neigh_2_type{el2.first[0]};
-              auto neigh_type = neigh.get_atom_type();
               if (neigh_1_type <= neigh_2_type) {
                 pair_type[0] = neigh_1_type;
                 pair_type[1] = neigh_2_type;
@@ -1222,13 +1220,11 @@ namespace rascal {
               }
             }
           }
-          */
-        for (auto neigh : center.get_pairs()) {
           soap_vector_gradients[neigh].resize(
-              pair_list, n_spatial_dimensions * n_row, n_col, 0.);
-        }
-      }  // if compute gradients
-    }    // for center : manager
+              grad_pair_list, n_spatial_dimensions * n_row, n_col, 0.);
+        }  // auto neigh : center.get_pairs()
+      }    // if compute gradients
+    }      // for center : manager
   }
 
   template <class StructureManager, class Invariants,

@@ -1,20 +1,20 @@
 /**
- * file   playground.cc
+ * @file   sandbox/playground.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
- * @date   2018
+ * @date   26 June 2019
  *
- * @brief File to build and test new functionality
+ * @brief an executable to test ideas
  *
- * Copyright  2018 Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2019 Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
- * Rascal is free software; you can redistribute it and/or
+ * librascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3, or (at
  * your option) any later version.
  *
- * Rascal is distributed in the hope that it will be useful, but
+ * librascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.

@@ -438,6 +438,51 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
+  /** Contains a multi species periodic structure to test the sparsity of the
+   * gradient keys
+   */
+  struct ComplexPeriodicNLCCStrictFixture {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
+    using Structure_t = AtomicStructure<3>;
+
+    ComplexPeriodicNLCCStrictFixture() {
+      for (auto && filename : filenames) {
+        json parameters;
+        json structure{{"filename", filename}};
+        json adaptors;
+        json ad1{{"name", "AdaptorNeighbourList"},
+                 {"initialization_arguments",
+                  {{"cutoff", cutoff}, {"skin", cutoff_skin}}}};
+        json ad1b{{"name", "AdaptorCenterContribution"},
+                  {"initialization_arguments", {}}};
+        json ad2{{"name", "AdaptorStrict"},
+                 {"initialization_arguments", {{"cutoff", cutoff}}}};
+        adaptors.emplace_back(ad1);
+        adaptors.push_back(ad1b);
+        adaptors.emplace_back(ad2);
+
+        parameters["structure"] = structure;
+        parameters["adaptors"] = adaptors;
+
+        this->factory_args.emplace_back(parameters);
+      }
+    }
+
+    ~ComplexPeriodicNLCCStrictFixture() = default;
+
+    const std::vector<std::string> filenames{
+        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+
+    const double cutoff{3.5};
+    const double cutoff_skin{0.};
+
+    json factory_args{};
+    std::vector<Structure_t> structures{};
+  };
+
   struct SingleHypersSphericalExpansion : SimplePeriodicNLCCStrictFixture {
     using Parent = SimplePeriodicNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
@@ -516,6 +561,45 @@ namespace rascal {
                                   {"max_angular", 0},
                                   {"normalize", true},
                                   {"soap_type", "RadialSpectrum"},
+                                  {"compute_gradients", true}}};
+  };
+
+  struct ComplexHypersSphericalInvariants : ComplexPeriodicNLCCStrictFixture {
+    using Parent = ComplexPeriodicNLCCStrictFixture;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalInvariants;
+
+    ComplexHypersSphericalInvariants() : Parent{} {
+      for (auto & ri_hyp : this->radial_contribution_hypers) {
+        for (auto & fc_hyp : this->fc_hypers) {
+          for (auto & sig_hyp : this->density_hypers) {
+            for (auto & rep_hyp : this->rep_hypers) {
+              rep_hyp["cutoff_function"] = fc_hyp;
+              rep_hyp["gaussian_density"] = sig_hyp;
+              rep_hyp["radial_contribution"] = ri_hyp;
+              this->representation_hypers.push_back(rep_hyp);
+            }
+          }
+        }
+      }
+    };
+
+    ~ComplexHypersSphericalInvariants() = default;
+
+    std::vector<json> representation_hypers{};
+    std::vector<json> fc_hypers{
+        {{"type", "ShiftedCosine"},
+         {"cutoff", {{"value", 3.5}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+
+    std::vector<json> density_hypers{
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> rep_hypers{{{"max_radial", 2},
+                                  {"max_angular", 2},
+                                  {"normalize", true},
+                                  {"soap_type", "PowerSpectrum"},
                                   {"compute_gradients", true}}};
   };
 
