@@ -26,7 +26,6 @@
  */
 
 #include "test_calculator.hh"
-
 #include "test_math.hh"  // for the gradient test
 
 #include <boost/mpl/list.hpp>
