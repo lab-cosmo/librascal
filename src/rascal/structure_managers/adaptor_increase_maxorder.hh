@@ -94,7 +94,7 @@ namespace rascal {
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
     //! Order added by the adaptor
-    static constexpr size_t AdditionalOrder{traits::MaxOrder};
+    static constexpr size_t additional_order{traits::MaxOrder};
 
     static_assert(traits::MaxOrder > 2,
                   "ManagerImplementation needs at least a pair list for"
@@ -229,10 +229,10 @@ namespace rascal {
      * Return the atoms tags associated with the neighbors (triplet -> 2,
      * quadruplet -> 3) of cluster that have been added by this adaptor.
      * This function is only meant to build ClusterRef of order
-     * AdditionalOrder.
+     * additional_order.
      */
     template <size_t Layer>
-    std::array<int, AdditionalOrder - 1>
+    std::array<int, additional_order - 1>
     get_neighbour_atom_tag_tt(const ClusterRefKey<1, Layer> & cluster,
                               size_t index) const {
       auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
@@ -285,7 +285,7 @@ namespace rascal {
 
     //! Adds a given atom tag as new cluster neighbour
     void add_neighbour_of_cluster(
-        const std::array<int, AdditionalOrder - 1> atom_tag) {
+        const std::array<int, additional_order - 1> atom_tag) {
       // void add_neighbour_of_cluster(const int atom_tag) {
       // adds `atom_tag` to neighbours
       this->neighbours_atom_tag.push_back(atom_tag);
@@ -317,7 +317,7 @@ namespace rascal {
     std::vector<size_t> nb_neigh{};
 
     //! Stores all neighbours atom tag of traits::MaxOrder-1-clusters
-    std::vector<std::array<int, AdditionalOrder - 1>> neighbours_atom_tag{};
+    std::vector<std::array<int, additional_order - 1>> neighbours_atom_tag{};
     // std::vector< int > neighbours_atom_tag{};
 
     /**
@@ -373,8 +373,7 @@ namespace rascal {
     static void loop(AtomClusterRef_t & atom,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
       // copy the cluster indices of all orders below
-      for (auto && cluster :
-           atom.template get_clusters_of_order<Order>(0)) {
+      for (auto && cluster : atom.template get_clusters_of_order<Order>(0)) {
         auto & cluster_indices{
             std::get<Order - 1>(manager.cluster_indices_container)};
         // keep copying underlying cluster indices, they are not changed
@@ -433,13 +432,13 @@ namespace rascal {
                   "No neighbourlist present; extension not possible.");
     using AddOrderLoop =
         AddOrderLoop<2, traits::NeighbourListType, IsCompactCluster, true>;
-    static constexpr bool HasCenterPairOrderTwo{traits::HasCenterPair and
-                                                traits::MaxOrder - 1 == 2};
+    static constexpr bool has_center_pair_order_two{traits::HasCenterPair and
+                                                    traits::MaxOrder - 1 == 2};
     // size_t turns out to give 0 if false and 1 if true. When adding Order==3
     // to the manager the input manager could have center pairs and
     // cluster_start avoid iterating over those
     static constexpr size_t cluster_start{
-        static_cast<size_t>(HasCenterPairOrderTwo)};
+        static_cast<size_t>(has_center_pair_order_two)};
 
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());

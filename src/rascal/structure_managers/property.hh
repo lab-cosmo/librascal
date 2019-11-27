@@ -71,8 +71,8 @@ namespace rascal {
     using reference = typename Value::reference;
     using const_reference = typename Value::const_reference;
 
-    static constexpr bool IsStaticallySized{(NbCol != Eigen::Dynamic) and
-                                            (NbRow != Eigen::Dynamic)};
+    static constexpr bool is_statically_sized{(NbCol != Eigen::Dynamic) and
+                                              (NbRow != Eigen::Dynamic)};
 
     //! Empty type for tag dispatching to differenciate between
     //! the Dynamic and Static size case
@@ -132,7 +132,7 @@ namespace rascal {
       // of the push_in_vector function
       this->push_back(
           ref,
-          std::conditional_t<(IsStaticallySized), StaticSize, DynamicSize>{});
+          std::conditional_t<(is_statically_sized), StaticSize, DynamicSize>{});
     }
 
     /* ---------------------------------------------------------------------- */
@@ -145,7 +145,7 @@ namespace rascal {
       // of the push_in_vector function
       this->push_back(
           ref,
-          std::conditional_t<(IsStaticallySized), StaticSize, DynamicSize>{});
+          std::conditional_t<(is_statically_sized), StaticSize, DynamicSize>{});
     }
 
     /* ---------------------------------------------------------------------- */
@@ -179,7 +179,7 @@ namespace rascal {
       // of the get function
       return this->get(
           index,
-          std::conditional_t<(IsStaticallySized), StaticSize, DynamicSize>{});
+          std::conditional_t<(is_statically_sized), StaticSize, DynamicSize>{});
     }
 
    protected:

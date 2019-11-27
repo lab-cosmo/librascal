@@ -477,7 +477,7 @@ namespace rascal {
     using Data_t = std::vector<InputData_t>;
 
     constexpr static size_t Order{Order_};
-    constexpr static bool IsOrderOne{Order == 1};
+    constexpr static bool is_order_one{Order == 1};
 
    protected:
     Data_t values{};
@@ -601,8 +601,8 @@ namespace rascal {
      * Access a property of order 1 with a clusterRef of order 2
      */
     template <size_t CallerOrder, size_t CallerLayer,
-              bool T = (IsOrderOne and (CallerOrder == 2)),  // NOLINT
-              std::enable_if_t<T, int> = 0>                  // NOLINT
+              bool T = (is_order_one and (CallerOrder == 2)),  // NOLINT
+              std::enable_if_t<T, int> = 0>                    // NOLINT
     InputData_t &
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](this->get_manager().get_atom_index(
