@@ -135,7 +135,7 @@ namespace rascal {
    *
    *      // parameter only for `SphericalExpansion`
    *      {"filenames",
-   *       {"reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"}},
+   *       {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}},
    *
    *      // parameter only for `SphericalExpansion` AdaptorStrict cutoff
    *      {"cutoffs", {8}}};
@@ -163,10 +163,10 @@ namespace rascal {
           {"radial_angular",
            {std::make_pair(3, 4), std::make_pair(6, 6), std::make_pair(8, 6)}},
           {"random", {true}},  // dummy
-          {"filenames", {"reference_data/inputs/small_molecule.json"}},
+          {"filenames", {"../reference_data/inputs/small_molecule.json"}},
           // please use only one file because google benchmark cant put strings
           // into their `Counter`, therefore the filename cannot be printed
-          // {"filenames", {"reference_data/inputs/methane.json"}},
+          // {"filenames", {"../reference_data/inputs/methane.json"}},
           {"cutoffs", {4}}};
       return data;
     }
@@ -347,7 +347,7 @@ namespace rascal {
       double b = l + 1.5;
       // Important hyp1f1 a!=b, because for a==b the Hyp1f1 can be simplified
       // and computations does not take as long as it would on average
-      auto hyp1f1 = Hyp1f1(a, b + 1, 200, 1e-15);
+      auto hyp1f1 = math::Hyp1f1(a, b + 1, 200, 1e-15);
       this->func = [=](double x) mutable { return hyp1f1.calc(x); };
     }
 
