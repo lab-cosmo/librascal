@@ -376,7 +376,7 @@ namespace rascal {
               }
             }
             int i_neigh{0};
-            for (auto neigh : center) {
+            for (auto neigh : center.get_pairs()) {
               auto neigh_type = neigh.get_atom_type();
               auto keys_neigh = prop_grad[neigh].get_keys();
               if (verbose) {
