@@ -873,6 +873,11 @@ StructureManager is compatible with the representation <dl class="simple">
 
 <dl class="type">
 <dt>
+<em class="property">using </em><code class="sig-name descname">grad_sparse_fixtures</code> = boost::mpl::list&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;ComplexHypersSphericalInvariants&gt;&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
 <em class="property">using </em><code class="sig-name descname">fixtures_with_gradients</code> = boost::mpl::list&lt;RadialIntegralHandlerFixture&lt;MultipleHypersSphericalExpansion, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a>::GTO, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a>::Constant, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a>::None&gt;, RadialIntegralHandlerFixture&lt;MultipleHypersSphericalExpansion, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a>::GTO, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a>::Constant, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a>::Interpolator&gt;, RadialIntegralHandlerFixture&lt;MultipleHypersSphericalExpansion, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a>::DVR, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a>::Constant, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a>::None&gt;, RadialIntegralHandlerFixture&lt;MultipleHypersSphericalExpansion, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a>::DVR, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a>::Constant, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a>::Interpolator&gt;&gt;<br /></dt>
 <dd></dd></dl>
 
@@ -1392,6 +1397,11 @@ template&lt;typename <code class="sig-name descname">T</code>&gt;<br />auto <cod
 <dl class="function">
 <dt>
 <code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>multiple_center_mask_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal29multiple_center_mask_fixturesE" title="rascal::multiple_center_mask_fixtures">multiple_center_mask_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>sparse_grad_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal20grad_sparse_fixturesE" title="rascal::grad_sparse_fixtures">grad_sparse_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3692,6 +3702,12 @@ IndexConstArray <code class="sig-name descname">get_cluster_indices</code><span 
 <dt>
 template&lt;class <code class="sig-name descname">BaseFixture</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">CollectionFixture</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv4I0EN6rascal17CollectionFixtureE" title="rascal::CollectionFixture::BaseFixture">BaseFixture</a><br /></dt>
 <dd><p>Subclassed by rascal::KernelFixture&lt; BaseFixture &gt;</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">struct </em><code class="sig-name descname">ComplexPeriodicNLCCStrictFixture</code><br /></dt>
+<dd><p>Subclassed by rascal::ComplexHypersSphericalInvariants</p>
 </dd></dl>
 
 <dl class="class">
