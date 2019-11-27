@@ -69,7 +69,7 @@ include(rascalTools)
 option(BUILD_BINDINGS "Build the python bindings" ON)
 option(BUILD_EXAMPLES "Build the examples" ON)
 option(BUILD_BENCHMARKS "Build the benchmarks" OFF)
-option(BUILD_PROFILES "Build the files for profiling" OFF)
+option(BUILD_PROFILING "Build the files for profiling" OFF)
 option(BUILD_TESTS "Build the unit tests" OFF)
 option(BUILD_DOC "Build documentation" OFF)
 option(BUILD_SANDBOX "If on, builds the sandbox" OFF)
@@ -82,10 +82,6 @@ SET(TYPE_ARCHITECTURE "native" CACHE STRING
     "Choose the type of architecture to compile to in release mode."
 )
 
-
-set(ENABLE_PROFILING "OFF" CACHE BOOL
-  "If on, adds gprof profiling information to some of the examples. \
-  (GNU compilers only)")
 ########## COMPILATION FLAGS ##########
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++ -Wno-non-virtual-dtor")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
@@ -207,7 +203,7 @@ if(BUILD_BENCHMARKS)
     add_subdirectory(performance/benchmarks)
 endif()
 
-if(BUILD_PROFILES)
+if(BUILD_PROFILING)
     add_subdirectory(performance/profiles)
 endif()
 

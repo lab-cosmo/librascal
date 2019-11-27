@@ -93,13 +93,8 @@ namespace rascal {
         typename ManagerImplementation::template ClusterRef<Order>;
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
-
+    //! Order added by the adaptor
     static constexpr size_t AdditionalOrder{traits::MaxOrder};
-
-    constexpr static auto AtomLayer{
-        Manager_t::template cluster_layer_from_order<1>()};
-    constexpr static auto PairLayer{
-        Manager_t::template cluster_layer_from_order<2>()};
 
     static_assert(traits::MaxOrder > 2,
                   "ManagerImplementation needs at least a pair list for"
@@ -220,14 +215,22 @@ namespace rascal {
       return this->manager->get_neighbour_atom_tag(*this->manager, index);
     }
 
-    //! Returns the id of the index-th neighbour atom of a given cluster
-    // tag(felix) this should return an array
+    /**
+     * Returns the id of the index-th neighbour atom of a given cluster.
+     * This function is only meant to build ClusterRef of order 1 and 2.
+     */
     template <size_t Layer>
     int get_neighbour_atom_tag(const ClusterRefKey<1, Layer> & cluster,
                                size_t index) const {
       return this->manager->get_neighbour_atom_tag(cluster, index);
     }
 
+    /**
+     * Return the atoms tags associated with the neighbors (triplet -> 2,
+     * quadruplet -> 3) of cluster that have been added by this adaptor.
+     * This function is only meant to build ClusterRef of order
+     * AdditionalOrder.
+     */
     template <size_t Layer>
     std::array<int, AdditionalOrder - 1>
     get_neighbour_atom_tag_tt(const ClusterRefKey<1, Layer> & cluster,
@@ -281,7 +284,6 @@ namespace rascal {
     void add_entry_number_of_neighbours() { this->nb_neigh.push_back(0); }
 
     //! Adds a given atom tag as new cluster neighbour
-    // tag(felix) this could have in principle more than one tag
     void add_neighbour_of_cluster(
         const std::array<int, AdditionalOrder - 1> atom_tag) {
       // void add_neighbour_of_cluster(const int atom_tag) {
@@ -368,21 +370,17 @@ namespace rascal {
         typename ManagerImplementation::template ClusterRef<1>;
 
     // do nothing, if MaxOrder is not reached, except call the next order
-    static void loop(AtomClusterRef_t & atom, size_t start_index,
+    static void loop(AtomClusterRef_t & atom,
                      AdaptorMaxOrder<ManagerImplementation> & manager) {
-      size_t new_start_index{
-          (start_index + 1) *
-          static_cast<int>(NeighbourListType ==
-                           AdaptorTraits::NeighbourListType::half)};
-      // copy the
+      // copy the cluster indices of all orders below
       for (auto && cluster :
-           atom.template get_clusters_of_order<Order>(start_index)) {
+           atom.template get_clusters_of_order<Order>(0)) {
         auto & cluster_indices{
             std::get<Order - 1>(manager.cluster_indices_container)};
         // keep copying underlying cluster indices, they are not changed
         auto indices{cluster.get_cluster_indices()};
         cluster_indices.push_back(indices);
-        NextOrderLoop::loop(atom, new_start_index, manager);
+        NextOrderLoop::loop(atom, manager);
       }
     }
   };
@@ -392,10 +390,6 @@ namespace rascal {
    * At desired MaxOrder (plus one), here is where the magic happens and the
    * neighbours of the same order are added as the Order+1.  add check for non
    * half neighbour list.
-   *
-   * TODO: currently, this implementation is not distinguishing between minimal
-   * and full lists. E.g. this has to be adjusted to include both, the i- and
-   * the j-atoms of each pair as an i-atom in a triplet (center).
    */
   template <class ManagerImplementation>
   template <size_t Order, AdaptorTraits::NeighbourListType NeighbourListType,
@@ -411,7 +405,7 @@ namespace rascal {
 
     //! loop through the orders to get to the maximum order, this is agnostic to
     //! the underlying MaxOrder, just goes to the maximum
-    static void loop(AtomClusterRef_t & /*atom */, size_t /*start_index */,
+    static void loop(AtomClusterRef_t & /*atom */,
                      AdaptorMaxOrder<ManagerImplementation> & /*manager */) {}
   };
 
@@ -462,7 +456,7 @@ namespace rascal {
       auto indices{atom.get_cluster_indices()};
       atom_cluster_indices.push_back(indices);
       // do the rest
-      AddOrderLoop::loop(atom, 0, *this);
+      AddOrderLoop::loop(atom, *this);
 
       this->add_entry_number_of_neighbours();
       std::array<int, traits::MaxOrder> new_tag_list{};
