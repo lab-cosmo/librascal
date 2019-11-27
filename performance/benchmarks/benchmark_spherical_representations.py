@@ -49,7 +49,7 @@ from rascal.representations import SphericalExpansion
 NB_ITERATIONS_PER_REPRESENTATION = 20
 # global variable to make sure that range of interpolator agrees with cutoff
 INTERACTION_CUTOFF = 4
-input_files = ['../../reference_data/inputs/small_molecule.json', '../../reference_data/inputs/methane.json']
+input_files = ['reference_data/inputs/small_molecule.json', 'reference_data/inputs/methane.json']
 optimizations_args = [{'type':'None'}, \
                       {'type':'Spline', 'accuracy':1e-8, \
                        'range': (0,INTERACTION_CUTOFF)},
