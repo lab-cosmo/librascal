@@ -638,15 +638,15 @@ namespace rascal {
       return this->atom_types[atom_tag];
     }
 
+    //! Returns the type of a given atom, given an AtomRef
+    int get_atom_type(int atom_tag) const { return this->atom_types[atom_tag]; }
+
     /** The atom tag corresponds to an ghost atom, then it returns it cluster
      * index of the atom in the original cell.
      */
     size_t get_atom_index(const int atom_tag) const {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
-
-    //! Returns the type of a given atom, given an AtomRef
-    int get_atom_type(int atom_tag) const { return this->atom_types[atom_tag]; }
 
     //! Returns the number of neighbors of a given cluster
     template <size_t Order, size_t Layer>
