@@ -12,6 +12,10 @@ import sys
 sys.path.insert(0, '../build/')
 
 
+rascal_reference_path = 'reference_data/'
+inputs_path = os.path.join(rascal_reference_path, "inputs")
+dump_path = os.path.join(rascal_reference_path, "tests_only")
+
 # dump radial and power spectra for methane
 
 def dump_reference_json():
@@ -28,8 +32,8 @@ def dump_reference_json():
     max_angulars = [6]
     soap_types = ["RadialSpectrum", "PowerSpectrum"]
 
-    fn = os.path.join(path, "tests/reference_data/dft-smiles_500.xyz")
-    fn_to_write = "reference_data/dft-smiles_500.ubjson"
+    fn = os.path.join(path, inputs_path, "dft-smiles_500.xyz")
+    fn_to_write = os.path.join(dump_path, "dft-smiles_500.ubjson")
     start = 0
     length = 5
     representations = ['spherical_invariants']
@@ -92,7 +96,7 @@ def dump_reference_json():
                                                                                                   soap.nl_options),
                                                                                               hypers_kernel=copy(hypers_kernel)))
 
-    with open(path+"tests/reference_data/kernel_reference.ubjson", 'wb') as f:
+    with open(os.path.join(dump_path,"kernel_reference.ubjson"), 'wb') as f:
         ubjson.dump(data, f)
 
 ##########################################################################################

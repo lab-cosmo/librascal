@@ -452,7 +452,8 @@ namespace rascal {
             provider(representations.back(), manager, structures.back());
         RepresentationCalculatorGradientFixture<typename Fix::Representation_t,
                                                 typename Fix::Manager_t>
-            grad_fix("reference_data/spherical_expansion_gradient_test.json",
+            grad_fix("reference_data/tests_only/"
+                     "spherical_expansion_gradient_test.json",
                      manager, provider);
         /* ---- grad-test-example-end1 ---- */
         if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {

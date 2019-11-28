@@ -15,9 +15,9 @@ foreach(_file_ ${tests})
     add_test(
         NAME ${_name_}
         COMMAND ${_name_} --report_level=detailed --build_info=TRUE
-        # Run the tests in this directory to give them access to the reference
-        # data
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        # Run the tests in the root directory to give them access to the
+        # reference data
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
 endforeach()
 
@@ -25,9 +25,9 @@ if(BUILD_BINDINGS)
     add_test(
         NAME python_binding_test
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/python/python_binding_tests.py
-        # Run the tests in this directory to give them access to the reference
-        # data
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        # Run the tests in the root directory to give them access to the
+        # reference data
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
     # Tell python where to find the rascal module
     set_tests_properties(python_binding_test

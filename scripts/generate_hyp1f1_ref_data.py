@@ -9,6 +9,9 @@ import ubjson
 
 # dump radial and power spectra for methane
 
+rascal_reference_path = 'reference_data/'
+inputs_path = os.path.join(rascal_reference_path, "inputs")
+dump_path = os.path.join(rascal_reference_path, "tests_only")
 
 def dump_reference_json():
     path = '../'
@@ -27,7 +30,8 @@ def dump_reference_json():
                 der = float(a/b*hyp1f1(a+1, b+1, z))
                 data.append(dict(a=a, b=b, z=z, val=val, der=der))
     print(len(data))
-    with open(path+"tests/reference_data/hyp1f1_reference.ubjson", 'wb') as f:
+    with open(os.path.join(dump_path,
+			   "hyp1f1_reference.ubjson"), 'wb') as f:
         ubjson.dump(data, f)
 
 ##########################################################################################

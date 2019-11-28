@@ -10,6 +10,11 @@ from rascal.representations import SphericalExpansion
 from rascal.utils import ostream_redirect
 import rascal
 import rascal.lib as lrl
+
+rascal_reference_path = 'reference_data/'
+inputs_path = os.path.join(rascal_reference_path,"inputs")
+dump_path = os.path.join(rascal_reference_path,"tests_only")
+
 ###############################################################################
 ###############################################################################
 
@@ -45,12 +50,12 @@ def dump_reference_json():
     cutoff_function_types = ['ShiftedCosine', 'RadialScaling']
     fns = [
         os.path.join(
-            path, "tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
-        os.path.join(path, "tests/reference_data/small_molecule.json")
+            path, inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(path, inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/small_molecule.json",
+        os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(dump_path, "small_molecule.json"),
     ]
 
     data = dict(filenames=fns_to_write,
@@ -96,7 +101,8 @@ def dump_reference_json():
                     dict(feature_matrix=x.tolist(),
                          hypers=copy(sph_expn.hypers)))
 
-    with open(path+"tests/reference_data/spherical_expansion_reference.ubjson",
+    with open(os.path.join(path, dump_path,
+			   "spherical_expansion_reference.ubjson"),
               'wb') as f:
         ubjson.dump(data, f)
 
@@ -117,7 +123,7 @@ def main(json_dump, save_kernel):
     lmax = test_hypers["max_angular"]
     nstr = '5'  # number of structures
 
-    frames = read('../tests/reference_data/dft-smiles_500.xyz', ':'+str(nstr))
+    frames = read(os.path.join(inputs_path, 'dft-smiles_500.xyz'), ':'+str(nstr))
     species = set(
         [atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
@@ -125,7 +131,7 @@ def main(json_dump, save_kernel):
 
     x = get_soap_vectors(test_hypers, frames)
     if save_kernel is True:
-        np.save('spherical_expansion_example.npy', x)
+        np.save(os.path.join(dump_path, 'spherical_expansion_example.npy'), x)
 
 #--------------------------dump json reference data--------------------------#
 
