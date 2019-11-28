@@ -1611,8 +1611,6 @@ namespace rascal {
       auto atom_i_tag = center.get_atom_tag();
       // coeff C^{ij}_{nlm}
       auto c_ij_nlm = math::Matrix_t(n_row, n_col);
-      // coeff (-1)^l C^{ji}_{nlm}
-      auto c_p_ij_nlm = math::Matrix_t(n_row, n_col);
 
       for (auto neigh : center) {
         auto && atom_j = neigh.get_atom_j();
@@ -1657,13 +1655,12 @@ namespace rascal {
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
               ++angular_l) {
             size_t l_block_size{2 * angular_l + 1};
-            c_p_ij_nlm.block(0, l_block_idx, max_radial,
-                            l_block_size) = parity * c_ij_nlm.block(0, l_block_idx, max_radial,
+            coefficients_neigh_by_type.block(0, l_block_idx, max_radial,
+                            l_block_size) += parity * c_ij_nlm.block(0, l_block_idx, max_radial,
                                             l_block_size);
             l_block_idx += l_block_size;
             parity *= -1.;
           }
-          coefficients_neigh_by_type += c_p_ij_nlm;
         }
 
         // compute the gradients of the coefficients with respect to
