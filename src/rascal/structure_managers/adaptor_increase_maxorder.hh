@@ -62,6 +62,7 @@ namespace rascal {
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     // New MaxOrder upon construction
     constexpr static size_t MaxOrder{parent_traits::MaxOrder + 1};
+    // Extend the layer by one with the new MaxOrder
     using LayerByOrder =
         typename LayerExtender<MaxOrder,
                                typename parent_traits::LayerByOrder>::type;
@@ -217,7 +218,7 @@ namespace rascal {
 
     /**
      * Returns the id of the index-th neighbour atom of a given cluster.
-     * This function is only meant to build ClusterRef of order 1 and 2.
+     * This function is a helper to build ClusterRef of order 1 and 2.
      */
     template <size_t Layer>
     int get_neighbour_atom_tag(const ClusterRefKey<1, Layer> & cluster,
@@ -228,7 +229,7 @@ namespace rascal {
     /**
      * Return the atoms tags associated with the neighbors (triplet -> 2,
      * quadruplet -> 3) of cluster that have been added by this adaptor.
-     * This function is only meant to build ClusterRef of order
+     * This function is a helper to build ClusterRef of order
      * AdditionalOrder.
      */
     template <size_t Layer>
@@ -281,7 +282,6 @@ namespace rascal {
     //! Adds a given atom tag as new cluster neighbour
     void add_neighbour_of_cluster(
         const std::array<int, AdditionalOrder - 1> atom_tag) {
-      // void add_neighbour_of_cluster(const int atom_tag) {
       // adds `atom_tag` to neighbours
       this->neighbours_atom_tag.push_back(atom_tag);
       // increases the number of neighbours
@@ -306,14 +306,13 @@ namespace rascal {
     //! (the work is done at the Order-th recursion, when IsTail is true)
     template <size_t Order, AdaptorTraits::NeighbourListType NeighbourListType,
               bool IsCompactCluster, bool IsTail>
-    struct AddOrderLoop;
+    struct ForwardClusterIndices;
 
     //! Stores the number of neighbours for every traits::MaxOrder-1-clusters
     std::vector<size_t> nb_neigh{};
 
     //! Stores all neighbours atom tag of traits::MaxOrder-1-clusters
     std::vector<std::array<int, AdditionalOrder - 1>> neighbours_atom_tag{};
-    // std::vector< int > neighbours_atom_tag{};
 
     /**
      * Stores the offsets of traits::MaxOrder-1-*clusters for accessing
@@ -352,14 +351,14 @@ namespace rascal {
   template <class ManagerImplementation>
   template <size_t Order, AdaptorTraits::NeighbourListType NeighbourListType,
             bool IsCompactCluster, bool IsTail>
-  struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop {
+  struct AdaptorMaxOrder<ManagerImplementation>::ForwardClusterIndices {
     static constexpr int OldMaxOrder{ManagerImplementation::traits::MaxOrder};
     using ClusterRef_t =
         typename ManagerImplementation::template ClusterRef<Order>;
 
     using NextOrderLoop =
-        AddOrderLoop<Order + 1, NeighbourListType, IsCompactCluster,
-                     (Order + 1 <= OldMaxOrder)>;
+        ForwardClusterIndices<Order + 1, NeighbourListType, IsCompactCluster,
+                              (Order + 1 <= OldMaxOrder)>;
 
     using AtomClusterRef_t =
         typename ManagerImplementation::template ClusterRef<1>;
@@ -388,7 +387,7 @@ namespace rascal {
   template <class ManagerImplementation>
   template <size_t Order, AdaptorTraits::NeighbourListType NeighbourListType,
             bool IsCompactCluster>
-  struct AdaptorMaxOrder<ManagerImplementation>::AddOrderLoop<
+  struct AdaptorMaxOrder<ManagerImplementation>::ForwardClusterIndices<
       Order, NeighbourListType, IsCompactCluster, false> {
     static constexpr int OldMaxOrder{ManagerImplementation::traits::MaxOrder};
 
@@ -425,15 +424,16 @@ namespace rascal {
   void AdaptorMaxOrder<ManagerImplementation>::update_self_helper() {
     static_assert(traits::MaxOrder > 2,
                   "No neighbourlist present; extension not possible.");
-    using AddOrderLoop =
-        AddOrderLoop<2, traits::NeighbourListType, IsCompactCluster, true>;
-    static constexpr bool HasCenterPairOrderTwo{traits::HasCenterPair and
-                                                    traits::MaxOrder - 1 == 2};
+    using ForwardClusterIndices =
+        ForwardClusterIndices<2, traits::NeighbourListType, IsCompactCluster,
+                              true>;
+    static constexpr bool HasCenterPairAndIsOrderTwo{traits::HasCenterPair and
+                                                     traits::MaxOrder - 1 == 2};
     // size_t turns out to give 0 if false and 1 if true. When adding Order==3
     // to the manager the input manager could have center pairs and
     // ClusterStart avoid iterating over those
     static constexpr size_t ClusterStart{
-        static_cast<size_t>(HasCenterPairOrderTwo)};
+        static_cast<size_t>(HasCenterPairAndIsOrderTwo)};
 
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
@@ -450,7 +450,7 @@ namespace rascal {
       auto indices{atom.get_cluster_indices()};
       atom_cluster_indices.push_back(indices);
       // do the rest
-      AddOrderLoop::loop(atom, *this);
+      ForwardClusterIndices::loop(atom, *this);
 
       this->add_entry_number_of_neighbours();
       std::array<int, traits::MaxOrder> new_tag_list{};
@@ -459,12 +459,13 @@ namespace rascal {
            atom.template get_clusters_of_order<traits::MaxOrder - 1>(
                ClusterStart)) {
         auto && tag_list{cluster.get_atom_tag_list()};
-        // copy the tags from the previous order skiping the center atom tag
+        // copy the tags from the previous order
         for (size_t ii{0}; ii < traits::MaxOrder - 1; ++ii) {
           new_tag_list[ii] = tag_list[ii];
         }
         for (auto pair : atom.template get_clusters_of_order<2>()) {
-          // copy to the last element the atom tag of the new order
+          // copy the atom tag of the new order to the last element of the new
+          // tag list
           new_tag_list.back() = pair.get_atom_tag();
           if (traits::NeighbourListType ==
               AdaptorTraits::NeighbourListType::half) {
@@ -482,7 +483,8 @@ namespace rascal {
                 this->add_neighbour_of_cluster(tags);
               }
             }
-          } else {
+          } else if (traits::NeighbourListType ==
+                     AdaptorTraits::NeighbourListType::full) {
             if (IsCompactCluster) {
               throw std::runtime_error("Not implemented yet.");
             } else {
@@ -500,6 +502,8 @@ namespace rascal {
                 this->add_neighbour_of_cluster(tags);
               }
             }
+          } else {
+            throw std::runtime_error("Not implemented.");
           }
         }
       }

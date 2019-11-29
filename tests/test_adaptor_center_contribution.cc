@@ -130,6 +130,11 @@ namespace rascal {
                   << adaptor_strict->get_size_with_ghosts() << std::endl;
       }
       for (auto atom : adaptor_strict) {
+        if (verbose) {
+          std::cout << "atom " << atom.back() << ", of size "
+                    << atom.pairs().size() << " position:" << std::endl
+                    << atom.get_position() << std::endl;
+        }
         for (auto pair : atom.pairs()) {
           auto atom_j_index =
               adaptor_strict->get_atom_index(pair.get_atom_tag());

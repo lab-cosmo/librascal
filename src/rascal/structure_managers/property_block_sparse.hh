@@ -602,7 +602,7 @@ namespace rascal {
      */
     template <size_t CallerOrder, size_t CallerLayer,
               bool T = (IsOrderOne and (CallerOrder == 2)),  // NOLINT
-              std::enable_if_t<T, int> = 0>                    // NOLINT
+              std::enable_if_t<T, int> = 0>                  // NOLINT
     InputData_t &
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) {
       return this->operator[](this->get_manager().get_atom_index(

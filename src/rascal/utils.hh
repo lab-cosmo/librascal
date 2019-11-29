@@ -52,8 +52,7 @@ namespace rascal {
           return true;
         }
 
-        template <bool T = IsOrderAvailable,
-                  std::enable_if_t<not(T), int> = 0>
+        template <bool T = IsOrderAvailable, std::enable_if_t<not(T), int> = 0>
         static constexpr bool get_is_order_available() {
           return IsOrderAvailableHelper<TargetOrder,
                                         Orders...>::get_is_order_available();
@@ -69,8 +68,7 @@ namespace rascal {
           return true;
         }
 
-        template <bool T = IsOrderAvailable,
-                  std::enable_if_t<not(T), int> = 0>
+        template <bool T = IsOrderAvailable, std::enable_if_t<not(T), int> = 0>
         static constexpr bool get_is_order_available() {
           return false;
         }
@@ -81,7 +79,8 @@ namespace rascal {
      * Find if TargetOrder is in the list of indices Orders.
      */
     template <size_t TargetOrder, size_t... Orders>
-    static constexpr bool is_order_available(std::index_sequence<Orders...> /* sep*/) {
+    static constexpr bool
+    is_order_available(std::index_sequence<Orders...> /* sep*/) {
       return details::IsOrderAvailableHelper<
           TargetOrder, Orders...>::get_is_order_available();
     }

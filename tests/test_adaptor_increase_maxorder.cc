@@ -146,6 +146,8 @@ namespace rascal {
    * triplet list; SM is used as a shorthand for StructureManager. Checked
    * positions are specific to StructureManagerLammps and therefore hardcoded.
    *
+   * Test for the lexical ordering of the half neighbor list.
+   *
    * ``manager`` is a StructureManager with MaxOrder=2 and full neighbour list
    */
   BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
@@ -185,8 +187,11 @@ namespace rascal {
       }
 
       for (auto triplet : atom.triplets()) {
+        auto tags = triplet.get_atom_tag_list();
+        // test for the lexical ordering of the half neighbor list
+        BOOST_CHECK(
+            std::is_sorted(tags.begin(), tags.end(), std::less_equal<int>()));
         if (verbose) {
-          auto tags = triplet.get_atom_tag_list();
           std::cout << "triplet " << tags[0] << " " << tags[1] << " " << tags[2]
                     << std::endl;
         }

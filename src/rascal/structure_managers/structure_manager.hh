@@ -844,14 +844,15 @@ namespace rascal {
     static constexpr bool IsOrderOne{Order == 1};
 
     template <size_t TargetOrder>
-    static constexpr bool OrderOneAndHasOrder{
+    static constexpr bool IsOrderOneAndHasOrder{
         Manager_t::template has_order<TargetOrder>() and IsOrderOne};
 
-    static constexpr bool HasCenterPairOrderOne{traits::HasCenterPair and
-                                                    IsOrderOne};
-
-    static constexpr bool HasCenterPairOrderTwo{traits::HasCenterPair and
-                                                    Order == 2};
+    //! true if ClusterRef of Order 1 and the manager has self pairs
+    static constexpr bool HasCenterPairAndIsOrderOne{traits::HasCenterPair and
+                                                     IsOrderOne};
+    //! true if ClusterRef of Order 2 and the manager has self pairs
+    static constexpr bool HasCenterPairAndIsOrderTwo{traits::HasCenterPair and
+                                                     Order == 2};
     //! Default constructor
     ClusterRef() = delete;
 
@@ -926,7 +927,7 @@ namespace rascal {
      *
      * @return ClusterRefKey of order 2 and proper layer
      */
-    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
+    template <bool T = HasCenterPairAndIsOrderOne, std::enable_if_t<T, int> = 0>
     auto get_atom_ii() {
       static_assert(traits::MaxOrder > 1, "Need neighbors to get one");
 
@@ -947,7 +948,7 @@ namespace rascal {
      *
      * @return ClusterRefKey of order 2 and proper layer
      */
-    template <bool T = HasCenterPairOrderTwo, std::enable_if_t<T, int> = 0>
+    template <bool T = HasCenterPairAndIsOrderTwo, std::enable_if_t<T, int> = 0>
     auto get_atom_jj() {
       auto && manager = it.get_manager();
       auto && atom_j_tag = this->get_atom_tag();
@@ -1057,12 +1058,10 @@ namespace rascal {
      * associated with the current central atom.
      * @param start starting index for the iteration from offset
      */
-    template <size_t Order_, bool T = IsOrderOne,
-              std::enable_if_t<T, int> = 0>
+    template <size_t Order_, bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
     CustomProxy<Order_> get_clusters_of_order(size_t start = 0) {
-      static_assert(
-          Order_ > 1,
-          "Clusters should at least contain 2 atoms, i.e. Order >= 2.");
+      static_assert(Order_ > 1,
+                    "You should ask at least for pairs, i.e. Order_ >= 2.");
       std::array<size_t, Order_ - 1> counters{};
       counters.back() = this->get_index();
       size_t offset{this->get_manager().get_offset(counters)};
@@ -1073,12 +1072,12 @@ namespace rascal {
      * Return an iterable for Order == 2 that includes the neighbors (or pairs)
      * associated with the current central atom.
      */
-    template <bool T = OrderOneAndHasOrder<2>, std::enable_if_t<T, int> = 0>
+    template <bool T = IsOrderOneAndHasOrder<2>, std::enable_if_t<T, int> = 0>
     CustomProxy<2> pairs() {
       // avoid if statement or sfinae by casting the bool to
       // size_t which turns out to give 0 if false and 1
       // if true, the expected behavior.
-      size_t start{static_cast<size_t>(HasCenterPairOrderOne)};
+      size_t start{static_cast<size_t>(HasCenterPairAndIsOrderOne)};
       return this->get_clusters_of_order<2>(start);
     }
 
@@ -1089,7 +1088,7 @@ namespace rascal {
      * HasCenterPair == true.
      * If HasCenterPair == false then its the regular iteration.
      */
-    template <bool T = OrderOneAndHasOrder<2>, std::enable_if_t<T, int> = 0>
+    template <bool T = IsOrderOneAndHasOrder<2>, std::enable_if_t<T, int> = 0>
     CustomProxy<2> pairs_with_self_pair() {
       return this->get_clusters_of_order<2>();
     }
@@ -1098,7 +1097,7 @@ namespace rascal {
      * Return an iterable for Order == 3 that includes the triplets associated
      * with the current central atom.
      */
-    template <bool T = OrderOneAndHasOrder<3>, std::enable_if_t<T, int> = 0>
+    template <bool T = IsOrderOneAndHasOrder<3>, std::enable_if_t<T, int> = 0>
     CustomProxy<3> triplets() {
       return this->get_clusters_of_order<3>();
     }
@@ -1107,7 +1106,7 @@ namespace rascal {
      * Return an iterable for Order == 4 that includes the quadruplets
      * associated with the current central atom.
      */
-    template <bool T = OrderOneAndHasOrder<4>, std::enable_if_t<T, int> = 0>
+    template <bool T = IsOrderOneAndHasOrder<4>, std::enable_if_t<T, int> = 0>
     CustomProxy<4> quadruplets() {
       return this->get_clusters_of_order<4>();
     }
@@ -1177,7 +1176,7 @@ namespace rascal {
     static constexpr bool IsOrderOne{Order == 1};
 
     static constexpr bool IsOrderOneOrTwo{IsOrderOne or
-                                              (Order == 2)};  // NOLINT
+                                          (Order == 2)};  // NOLINT
 
     // determine the container type
     using Container_t =
@@ -1278,16 +1277,14 @@ namespace rascal {
     AtomIndex_t get_atom_tag_list() {
       return internal::append_array(
           container.get_atom_tag_list(),
-          this->get_manager().implementation().get_neighbour_atom_tag(
-              container, this->index));
+          this->get_manager().get_neighbour_atom_tag(container, this->index));
     }
     //! add atomic indices in current iteration
     template <bool T = IsOrderOneOrTwo, std::enable_if_t<T, int> = 0>
     AtomIndex_t get_atom_tag_list() const {
       return internal::append_array(
           container.get_atom_tag_list(),
-          this->get_manager().implementation().get_neighbour_atom_tag(
-              container, this->index));
+          this->get_manager().get_neighbour_atom_tag(container, this->index));
     }
 
     template <bool T = IsOrderOneOrTwo, std::enable_if_t<not(T), int> = 0>

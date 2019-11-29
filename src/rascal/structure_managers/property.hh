@@ -72,7 +72,7 @@ namespace rascal {
     using const_reference = typename Value::const_reference;
 
     static constexpr bool IsStaticallySized{(NbCol != Eigen::Dynamic) and
-                                              (NbRow != Eigen::Dynamic)};
+                                            (NbRow != Eigen::Dynamic)};
 
     //! Empty type for tag dispatching to differenciate between
     //! the Dynamic and Static size case
