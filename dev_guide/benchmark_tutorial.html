@@ -91,7 +91,6 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whitepaper.html">Goals &amp; Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../SOAP.html">SOAP Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../representation/representations.html">Representations</a></li>
@@ -233,10 +232,10 @@ interpolator</p>
         <span class="p">{</span><span class="s">&quot;radial_angular&quot;</span><span class="p">,</span>
          <span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">)}},</span>
         <span class="p">{</span><span class="s">&quot;random&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nb">true</span><span class="p">}},</span>  <span class="c1">// dummy</span>
-        <span class="p">{</span><span class="s">&quot;filenames&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;tests/reference_data/small_molecule.json&quot;</span><span class="p">}},</span>
+        <span class="p">{</span><span class="s">&quot;filenames&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;reference_data/inputs/small_molecule.json&quot;</span><span class="p">}},</span>
         <span class="c1">// please use only one file because google benchmark cant put strings</span>
         <span class="c1">// into their `Counter`, therefore the filename cannot be printed</span>
-        <span class="c1">// {&quot;filenames&quot;, {&quot;tests/reference_data/methane.json&quot;}},</span>
+        <span class="c1">// {&quot;filenames&quot;, {&quot;reference_data/inputs/methane.json&quot;}},</span>
         <span class="p">{</span><span class="s">&quot;cutoffs&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">4</span><span class="p">}}};</span>
     <span class="k">return</span> <span class="n">data</span><span class="p">;</span>
   <span class="p">}</span>
