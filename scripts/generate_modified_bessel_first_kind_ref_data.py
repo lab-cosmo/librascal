@@ -9,6 +9,9 @@ import numpy as np
 import ubjson
 import json
 
+rascal_reference_path = 'reference_data/'
+inputs_path = os.path.join(rascal_reference_path, "inputs")
+dump_path = os.path.join(rascal_reference_path, "tests_only")
 
 mp.dps = 20
 mp.prec = 100

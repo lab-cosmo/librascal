@@ -6,8 +6,12 @@ from rascal.neighbourlist.structure_manager import (
 from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np
-import sys
+import sys, os
 import faulthandler
+
+rascal_reference_path = 'reference_data'
+inputs_path = os.path.join(rascal_reference_path, "inputs")
+dump_path = os.path.join(rascal_reference_path, "tests_only")
 
 
 def get_NL_reference(cutoff, cell, pbc, positions, atom_types):
@@ -72,7 +76,7 @@ class TestStructureManagerCenters(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json')
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.nl_options = [
@@ -98,7 +102,7 @@ class TestNL(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json')
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.cutoff = 3.
@@ -145,7 +149,7 @@ class TestNLStrict(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json')
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.cutoff = 3.
@@ -209,7 +213,7 @@ class CenterSelectTest(unittest.TestCase):
     """
 
     def setUp(self):
-        filename = 'reference_data/small_molecule.json'
+        filename = 'reference_data/inputs/small_molecule.json'
         self.frame = ase.io.read(filename)
         self.natoms = self.frame.get_number_of_atoms()
 

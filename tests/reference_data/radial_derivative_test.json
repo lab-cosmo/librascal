@@ -1,6 +1,0 @@
-{
-    "function_inputs": [ [0.5], [1.0], [1.5], [2.0], [2.5] ],
-    "direction_mode": "Cartesian",
-    "fd_error_tol": 1E-6,
-    "verbosity": "NORMAL"
-}

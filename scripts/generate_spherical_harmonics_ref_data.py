@@ -12,9 +12,12 @@ from functools import reduce
 
 # shape (nb_unit_vectors,3)
 
+rascal_reference_path = 'reference_data/'
+inputs_path = os.path.join(rascal_reference_path,"inputs")
+dump_path = os.path.join(rascal_reference_path,"tests_only")
 
 def load_unit_vectors_from_json():
-    fn = "../tests/reference_data/spherical_harmonics_test.json"
+    fn = os.path.join(inputs_path, "spherical_harmonics_test.json")
     with open(fn, 'r') as f:
         data = json.load(f)
     return data['unit_vectors']
@@ -126,7 +129,8 @@ def dump_reference_json():
                          harmonics=harmonics, alps=alps))
     if verbose:
         print(len(data))
-    with open(path+"tests/reference_data/spherical_harmonics_reference.ubjson",
+    with open(os.path.join(path, dump_path, 
+			   "spherical_harmonics_reference.ubjson"),
               'wb') as f:
         ubjson.dump(data, f)
 
