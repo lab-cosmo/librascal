@@ -234,7 +234,7 @@ namespace rascal {
     template <size_t Layer>
     std::array<int, additional_order - 1>
     get_neighbour_atom_tag_current(const ClusterRefKey<1, Layer> & cluster,
-                              size_t index) const {
+                                   size_t index) const {
       auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
       return this->neighbours_atom_tag[offset + index];
     }
@@ -249,15 +249,16 @@ namespace rascal {
      * TargetOrder != AddedOrder
      */
     template <size_t TargetOrder, size_t Order, size_t Layer>
-    typename std::enable_if_t<TargetOrder <  traits::MaxOrder, size_t>
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
+        typename std::enable_if_t <
+        TargetOrder<traits::MaxOrder, size_t> get_cluster_size_impl(
+            const ClusterRefKey<Order, Layer> & cluster) const {
       return this->manager->template get_cluster_size<TargetOrder>(cluster);
     }
 
     //! Returns the number of neighbours of a given atom at a given TargetOrder
     //! at TargetOrder == MaxOrder use local data to give the nb of cluster
     template <size_t TargetOrder, size_t Order, size_t Layer>
-    typename std::enable_if_t<TargetOrder ==  traits::MaxOrder, size_t>
+    typename std::enable_if_t<TargetOrder == traits::MaxOrder, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       constexpr auto current_layer{
           compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};

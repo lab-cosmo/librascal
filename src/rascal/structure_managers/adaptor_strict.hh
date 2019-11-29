@@ -216,7 +216,7 @@ namespace rascal {
       constexpr auto nb_neigh_layer{
           compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};
       auto && access_index = cluster.get_cluster_index(nb_neigh_layer);
-      return std::get<TargetOrder-1>(nb_neigh)[access_index];
+      return std::get<TargetOrder - 1>(nb_neigh)[access_index];
     }
 
     //! Get the manager used to build the instance

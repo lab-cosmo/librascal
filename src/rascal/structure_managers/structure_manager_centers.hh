@@ -247,15 +247,6 @@ namespace rascal {
       return this->n_centers + this->n_ghosts;
     }
 
-    //! dummy implemenation to avoid compilation error. should not be used
-    template <size_t TargetOrder, size_t Order, size_t Layer>
-    size_t get_cluster_size_impl(
-        const ClusterRefKey<Order, Layer> & /*cluster*/) const {
-      // this implementation should not be used
-      assert(false);
-      return 1;
-    }
-
     template <size_t Order, size_t Layer>
     size_t get_atom_index(const ClusterRefKey<Order, Layer> & cluster) const {
       return this->get_atom_index(cluster.get_atom_tag());
