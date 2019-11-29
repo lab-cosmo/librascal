@@ -1,4 +1,13 @@
 {
+   Remove this when https://github.com/cosmo-epfl/librascal/issues/229 is fixed
+   Memcheck:Addr8
+   fun:_ZN6rascal13AdaptorFilterINS_22StructureManagerLammpsELm2EE11add_clusterILm2EEEvRKNS_16StructureManagerIS1_E10ClusterRefIXT_EEE
+   fun:_ZN6rascal19test_adaptor_filter13filter_2_testINS_13FilterFixtureINS_22StructureManagerLammpsELm2EEEE11test_methodEv
+   fun:_ZN6rascal19test_adaptor_filter21filter_2_test_invoker3runINS_13FilterFixtureINS_22StructureManagerLammpsELm2EEEEEvPN5boost4typeIT_EE
+}
+
+
+{
    boost unit test logger
    Memcheck:Leak
    ...
