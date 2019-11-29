@@ -245,20 +245,13 @@ namespace rascal {
     }
 
     //! Returns the number of neighbours of a given atom at a given TargetOrder
-    //! use implementation of the previous manager when not at TargetOrder == 1
+    //! Returns the number of pairs of a given center
     template <size_t TargetOrder, size_t Order, size_t Layer>
-    typename std::enable_if_t<(TargetOrder < (traits::MaxOrder - 1)), size_t>
+    typename std::enable_if_t<TargetOrder == 2, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      return this->manager->template get_cluster_size<TargetOrder>(cluster);
-    }
-
-    //! use implementation of the previous manager when not at TargetOrder == 2
-    template <size_t TargetOrder, size_t Order, size_t Layer>
-    typename std::enable_if_t<not(TargetOrder < traits::MaxOrder - 1), size_t>
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(TargetOrder == traits::MaxOrder,
-                    "this implementation handles only the respective MaxOrder");
-      auto access_index = cluster.get_cluster_index(Layer);
+      constexpr auto nb_neigh_layer{
+          compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};
+      auto access_index = cluster.get_cluster_index(nb_neigh_layer);
       return nb_neigh[access_index];
     }
 

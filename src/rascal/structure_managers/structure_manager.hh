@@ -1294,14 +1294,14 @@ namespace rascal {
     AtomIndex_t get_atom_tag_list() {
       return internal::concat_array(
           container.get_atom_tag_list(),
-          this->get_manager().implementation().get_neighbour_atom_tag_tt(
+          this->get_manager().implementation().get_neighbour_atom_tag_current(
               container, this->index));
     }
     template <bool T = is_order_one_or_two, std::enable_if_t<not(T), int> = 0>
     AtomIndex_t get_atom_tag_list() const {
       return internal::concat_array(
           container.get_atom_tag_list(),
-          this->get_manager().implementation().get_neighbour_atom_tag_tt(
+          this->get_manager().implementation().get_neighbour_atom_tag_current(
               container, this->index));
     }
 

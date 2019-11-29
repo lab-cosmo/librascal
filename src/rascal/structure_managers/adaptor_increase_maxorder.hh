@@ -233,7 +233,7 @@ namespace rascal {
      */
     template <size_t Layer>
     std::array<int, additional_order - 1>
-    get_neighbour_atom_tag_tt(const ClusterRefKey<1, Layer> & cluster,
+    get_neighbour_atom_tag_current(const ClusterRefKey<1, Layer> & cluster,
                               size_t index) const {
       auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
       return this->neighbours_atom_tag[offset + index];
@@ -248,26 +248,20 @@ namespace rascal {
      * use implementation of the previous manager when
      * TargetOrder != AddedOrder
      */
-    template <size_t TargetOrder, size_t Order, size_t Layer,
-              bool T = (TargetOrder < traits::MaxOrder),
-              std::enable_if_t<T, int> = 0>
-    size_t
+    template <size_t TargetOrder, size_t Order, size_t Layer>
+    typename std::enable_if_t<TargetOrder <  traits::MaxOrder, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(TargetOrder < traits::MaxOrder,
-                    "this implementation handles only the respective MaxOrder");
       return this->manager->template get_cluster_size<TargetOrder>(cluster);
     }
 
-    //! use implementation of the previous manager when not at
-    //! TargetOrder == AddedOrder
-    template <size_t TargetOrder, size_t Order, size_t Layer,
-              bool T = (TargetOrder < traits::MaxOrder),
-              std::enable_if_t<not(T), int> = 0>
-    size_t
+    //! Returns the number of neighbours of a given atom at a given TargetOrder
+    //! at TargetOrder == MaxOrder use local data to give the nb of cluster
+    template <size_t TargetOrder, size_t Order, size_t Layer>
+    typename std::enable_if_t<TargetOrder ==  traits::MaxOrder, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(TargetOrder == traits::MaxOrder,
-                    "this implementation handles only the respective MaxOrder");
-      auto access_index = cluster.get_cluster_index(Layer);
+      constexpr auto current_layer{
+          compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};
+      auto access_index = cluster.get_cluster_index(current_layer);
       return this->nb_neigh[access_index];
     }
 

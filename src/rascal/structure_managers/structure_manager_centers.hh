@@ -247,12 +247,12 @@ namespace rascal {
       return this->n_centers + this->n_ghosts;
     }
 
-    //! returns the number of neighbours of a given atom at a given TargetOrder
+    //! dummy implemenation to avoid compilation error. should not be used
     template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t get_cluster_size_impl(
         const ClusterRefKey<Order, Layer> & /*cluster*/) const {
-      static_assert(TargetOrder <= traits::MaxOrder,
-                    "this implementation only handles atoms.");
+      // this implementation should not be used
+      assert(false);
       return 1;
     }
 

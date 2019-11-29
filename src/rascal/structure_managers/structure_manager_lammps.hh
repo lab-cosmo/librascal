@@ -125,12 +125,11 @@ namespace rascal {
     //! return number of center and ghost atoms
     size_t get_size_with_ghosts() const { return this->tot_num; }
 
-    //! return the number of neighbours of a given atom at a given TargetOrder
+    //! Returns the number of neighbours of a given atom at a given TargetOrder
+    //! Returns the number of pairs of a given center
     template <size_t TargetOrder, size_t Order, size_t Layer>
-    size_t
+    typename std::enable_if_t<TargetOrder == 2, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(TargetOrder <= traits::MaxOrder,
-                    "this implementation only handles atoms and pairs");
       return this->numneigh[this->get_atom_index(cluster.get_atom_tag())];
     }
 
