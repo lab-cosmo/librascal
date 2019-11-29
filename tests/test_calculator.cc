@@ -48,9 +48,12 @@ namespace rascal {
 
   using fixtures_ref_test =
       boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
-                       CalculatorFixture<SphericalExpansionTestData>,
-                       CalculatorFixture<SphericalInvariantsTestData>,
-                       CalculatorFixture<SphericalCovariantsTestData>>;
+                       CalculatorFixture<SphericalExpansionTestData>>;
+  // using fixtures_ref_test =
+  //     boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
+  //                      CalculatorFixture<SphericalExpansionTestData>,
+  //                      CalculatorFixture<SphericalInvariantsTestData>,
+  //                      CalculatorFixture<SphericalCovariantsTestData>>;
 
   BOOST_AUTO_TEST_SUITE(representation_test);
 
@@ -417,7 +420,8 @@ namespace rascal {
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
-    auto & verbose = Fix::verbose;
+    // auto & verbose = Fix::verbose;
+    auto verbose = true;
     using Property_t = typename Fix::Property_t;
 
     // Choose the data depending on the current options
@@ -463,6 +467,7 @@ namespace rascal {
         }
       }
       manager_i += 1;
+      break;
     }
   }
 
@@ -520,9 +525,11 @@ namespace rascal {
     }
   }
 
+  // using gradient_fixtures =
+  //     boost::mpl::list<CalculatorFixture<SingleHypersSphericalExpansion>,
+  //                      CalculatorFixture<SingleHypersSphericalInvariants>>;
   using gradient_fixtures =
-      boost::mpl::list<CalculatorFixture<SingleHypersSphericalExpansion>,
-                       CalculatorFixture<SingleHypersSphericalInvariants>>;
+      boost::mpl::list<CalculatorFixture<SingleHypersSphericalExpansion>>;
 
   /**
    * Test the gradient of the SphericalExpansion and SphericalInvariants

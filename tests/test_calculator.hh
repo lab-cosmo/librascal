@@ -92,6 +92,52 @@ namespace rascal {
     json factory_args{};
   };
 
+  struct TestDataHalfNL {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorHalfList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
+    TestDataHalfNL() = default;
+
+    void get_ref(const std::string & ref_filename) {
+      this->ref_data =
+          json::from_ubjson(internal::read_binary_file(ref_filename));
+      auto filenames =
+          this->ref_data.at("filenames").get<std::vector<std::string>>();
+      auto cutoffs = this->ref_data.at("cutoffs").get<std::vector<double>>();
+
+      for (auto && filename : filenames) {
+        for (auto && cutoff : cutoffs) {
+          json parameters;
+          json structure{{"filename", filename}};
+          json adaptors;
+          json ad1{{"name", "AdaptorNeighbourList"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
+          json ad1b{{"name", "AdaptorHalfList"},
+            {"initialization_arguments", {}}};
+          json ad1c{{"name", "AdaptorCenterContribution"},
+            {"initialization_arguments", {}}};
+          json ad2{{"name", "AdaptorStrict"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
+          adaptors.emplace_back(ad1);
+          adaptors.emplace_back(ad1b);
+          adaptors.emplace_back(ad1c);
+          adaptors.emplace_back(ad2);
+
+          parameters["structure"] = structure;
+          parameters["adaptors"] = adaptors;
+
+          this->factory_args.emplace_back(parameters);
+        }
+      }
+    }
+
+    ~TestDataHalfNL() = default;
+
+    json ref_data{};
+    json factory_args{};
+  };
+
   template <typename MultipleStructureFixture>
   struct MultipleStructureSphericalInvariants : MultipleStructureFixture {
     using Parent = MultipleStructureFixture;
@@ -438,6 +484,62 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
+    /** Contains some simple periodic structures for testing complicated things
+   *  like gradients
+   */
+  struct SimplePeriodicNLHalfCCStrictFixture {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorHalfList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
+    using Structure_t = AtomicStructure<3>;
+
+    SimplePeriodicNLHalfCCStrictFixture() {
+      for (auto && filename : filenames) {
+        json parameters;
+        json structure{{"filename", filename}};
+        json adaptors;
+        json ad1a{{"name", "AdaptorNeighbourList"},
+                 {"initialization_arguments",
+                  {{"cutoff", cutoff}, {"skin", cutoff_skin}}}};
+        json ad1b{{"name", "AdaptorHalfList"},
+                  {"initialization_arguments", {}}};
+        json ad1c{{"name", "AdaptorCenterContribution"},
+                  {"initialization_arguments", {}}};
+        json ad2{{"name", "AdaptorStrict"},
+                 {"initialization_arguments", {{"cutoff", cutoff}}}};
+        adaptors.emplace_back(ad1a);
+        adaptors.push_back(ad1b);
+         adaptors.push_back(ad1c);
+        adaptors.emplace_back(ad2);
+
+        parameters["structure"] = structure;
+        parameters["adaptors"] = adaptors;
+
+        this->factory_args.emplace_back(parameters);
+      }
+    }
+
+    ~SimplePeriodicNLHalfCCStrictFixture() = default;
+
+    const std::vector<std::string> filenames{
+        "reference_data/simple_cubic_8.json",
+        "reference_data/diamond_2atom_distorted.json",
+        "reference_data/diamond_cubic_distorted.json",
+        "reference_data/SiCGe_wurtzite_like.json",
+        "reference_data/SiC_moissanite_supercell.json",
+        "reference_data/small_molecule.json",
+        "reference_data/methane.json"};
+    // Simpler structures for debugging:
+    // "reference_data/diamond_2atom.json",
+    // "reference_data/SiC_moissanite.json",
+    const double cutoff{2.5};
+    const double cutoff_skin{0.};
+
+    json factory_args{};
+    std::vector<Structure_t> structures{};
+  };
+
   /** Contains a multi species periodic structure to test the sparsity of the
    * gradient keys
    */
@@ -483,8 +585,8 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
-  struct SingleHypersSphericalExpansion : SimplePeriodicNLCCStrictFixture {
-    using Parent = SimplePeriodicNLCCStrictFixture;
+  struct SingleHypersSphericalExpansion : SimplePeriodicNLHalfCCStrictFixture {
+    using Parent = SimplePeriodicNLHalfCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
 
@@ -603,8 +705,8 @@ namespace rascal {
                                   {"compute_gradients", true}}};
   };
 
-  struct SphericalExpansionTestData : TestData {
-    using Parent = TestData;
+  struct SphericalExpansionTestData : TestDataHalfNL {
+    using Parent = TestDataHalfNL;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
 
@@ -616,6 +718,20 @@ namespace rascal {
     std::string ref_filename{
         "reference_data/spherical_expansion_reference.ubjson"};
   };
+
+  // struct SphericalExpansionTestData : TestDataHalfNL {
+  //   using Parent = TestDataHalfNL;
+  //   using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+  //   using Representation_t = CalculatorSphericalExpansion;
+
+  //   SphericalExpansionTestData() : Parent{} {
+  //     this->get_ref(this->ref_filename);
+  //   }
+  //   ~SphericalExpansionTestData() = default;
+  //   bool verbose{false};
+  //   std::string ref_filename{
+  //       "reference_data/spherical_expansion_reference.ubjson"};
+  // };
 
   /**
    * Calculator specialized to testing the derivative of the RadialIntegral

@@ -50,11 +50,15 @@ using namespace rascal;  // NOLINT
 
 using Representation_t = CalculatorSphericalExpansion;
 using Manager_t = AdaptorStrict<
+    AdaptorCenterContribution<
+                AdaptorNeighbourList<StructureManagerCenters>>>;
+using Prop_t = typename CalculatorSphericalExpansion::Property_t<Manager_t>;
+using ManagerHalf_t = AdaptorStrict<
     AdaptorCenterContribution<AdaptorHalfList<
                 AdaptorNeighbourList<StructureManagerCenters>>>>;
-using Prop_t = typename CalculatorSphericalExpansion::Property_t<Manager_t>;
-using PropGrad_t =
-    typename CalculatorSphericalExpansion::PropertyGradient_t<Manager_t>;
+using PropHalf_t = typename CalculatorSphericalExpansion::Property_t<ManagerHalf_t>;
+using PropGradHalf_t =
+    typename CalculatorSphericalExpansion::PropertyGradient_t<ManagerHalf_t>;
 
 int main(int argc, char * argv[]) {
   if (argc < 2) {
@@ -68,7 +72,7 @@ int main(int argc, char * argv[]) {
   double cutoff{4.};
   json hypers{{"max_radial", 1},
               {"max_angular", 1},
-              {"compute_gradients", false},
+              {"compute_gradients", true},
               {"soap_type", "PowerSpectrum"},
               {"normalize", true}};
 
@@ -84,27 +88,39 @@ int main(int argc, char * argv[]) {
 
   json structure{{"filename", filename}};
   json adaptors;
+  json adaptors_half;
   json ad1a{{"name", "AdaptorNeighbourList"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
-  json ad1b{{"name", "AdaptorCenterContribution"},
+  json ad1b{{"name", "AdaptorHalfList"},
             {"initialization_arguments", {}}};
   json ad1c{{"name", "AdaptorCenterContribution"},
             {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1a);
-  adaptors.emplace_back(ad1b);
   adaptors.emplace_back(ad1c);
   adaptors.emplace_back(ad2);
+
+  adaptors_half.emplace_back(ad1a);
+  adaptors_half.emplace_back(ad1b);
+  adaptors_half.emplace_back(ad1c);
+  adaptors_half.emplace_back(ad2);
   auto manager =
+      make_structure_manager_stack<StructureManagerCenters,
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>(
+          structure, adaptors);
+  auto manager_half =
       make_structure_manager_stack<StructureManagerCenters,
                                    AdaptorNeighbourList, AdaptorHalfList,
                                    AdaptorCenterContribution, AdaptorStrict>(
-          structure, adaptors);
+          structure, adaptors_half);
 
   Representation_t representation{hypers};
 
   representation.compute(manager);
+
+  representation.compute(manager_half);
 
   constexpr size_t n_centers_print{5};
   constexpr size_t n_neigh_print{1000};
@@ -124,19 +140,25 @@ int main(int argc, char * argv[]) {
 
   auto && soap_vectors{
       *manager->template get_property_ptr<Prop_t>(representation.get_name())};
+  auto && soap_vectors_half{
+      *manager_half->template get_property_ptr<PropHalf_t>(representation.get_name())};
   // auto && soap_vector_gradients{*manager->template get_property_ptr<PropGrad_t>(
   //     representation.get_gradient_name())};
 
   for (auto center : manager) {
-    if (center_count >= n_centers_print) {
-      break;
-    }
+    // if (center_count >= n_centers_print) {
+    //   break;
+    // }
     size_t n_species_center{soap_vectors.get_keys(center).size()};
     std::cout << "============================" << std::endl;
     std::cout << "Center " << center.get_index();
     std::cout << " of type " << center.get_atom_type() << std::endl;
-    std::cout << soap_vectors.get_dense_row(center);
-    std::cout << std::endl;
+    if (std::abs((soap_vectors.get_dense_row(center)-soap_vectors_half.get_dense_row(center)).mean()) > 1e-12) {
+      std::cout << "Ref: " << std::endl<< soap_vectors.get_dense_row(center);
+      std::cout << std::endl;
+      std::cout << "Test: " << std::endl<< soap_vectors_half.get_dense_row(center);
+      std::cout << std::endl;
+    }
     auto keys_center = soap_vectors[center].get_keys();
     std::cout << "Center data keys: ";
     for (auto key : keys_center) {
@@ -148,6 +170,24 @@ int main(int argc, char * argv[]) {
     }
     std::cout << std::endl;
     auto ii_pair = center.get_atom_ii();
+
+    auto half_it = manager_half->get_iterator_at(center_count, 0);
+    auto half_center = *(half_it);
+    std::cout << "Tags:  (";
+    for (auto neigh : half_center) {
+      auto neigh_type = neigh.get_atom_tag();
+      std::cout << neigh_type << ", ";
+    }
+    std::cout << "\b\b) ";
+    std::cout << std::endl;
+
+    std::cout << "Types: (";
+    for (auto neigh : half_center) {
+      auto neigh_type = neigh.get_atom_type();
+      std::cout << neigh_type << ", ";
+    }
+    std::cout << "\b\b) ";
+    std::cout << std::endl;
     // auto keys_grad_center = soap_vector_gradients[ii_pair].get_keys();
     // std::cout << "Center gradient keys: ";
     // for (auto key : keys_grad_center) {
@@ -159,11 +199,11 @@ int main(int argc, char * argv[]) {
     // }
     // std::cout << std::endl;
 
-    size_t neigh_count{0};
-    for (auto neigh : center) {
-      if (neigh_count >= n_neigh_print) {
-        break;
-      }
+    // size_t neigh_count{0};
+    // for (auto neigh : center) {
+    //   if (neigh_count >= n_neigh_print) {
+    //     break;
+    //   }
       // auto neigh_type = neigh.get_atom_type();
       // auto tags = neigh.get_atom_tag_list();
       // std::cout << "Neighbour "<< neigh_type<<" tags: ";
@@ -185,8 +225,8 @@ int main(int argc, char * argv[]) {
       //   std::cout << "\b\b) ";
       // }
       // std::cout << std::endl;
-      ++neigh_count;
-    }
+    //   ++neigh_count;
+    // }
     ++center_count;
   }
 }
