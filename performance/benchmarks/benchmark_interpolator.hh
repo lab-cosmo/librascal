@@ -135,7 +135,7 @@ namespace rascal {
    *
    *      // parameter only for `SphericalExpansion`
    *      {"filenames",
-   *       {"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"}},
+   *       {"reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"}},
    *
    *      // parameter only for `SphericalExpansion` AdaptorStrict cutoff
    *      {"cutoffs", {8}}};
