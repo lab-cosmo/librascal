@@ -18,8 +18,11 @@ if (${RASCAL_TESTS_USE_VALGRIND})
         "--track-origins=yes"
         # use dsymutil to extract debug symbols on macOS
         "--dsymutil=yes"
-        # remove errors from the OS
+        # remove errors from the OS/external libraries
         "--suppressions=${CMAKE_CURRENT_SOURCE_DIR}/valgrind.suppressions"
+        # uncomment the line below if you wan to generate suppressions for new
+        # errors
+        # "--gen-suppressions=all"
     )
 
 else()
