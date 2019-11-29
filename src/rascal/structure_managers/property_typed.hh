@@ -168,7 +168,7 @@ namespace rascal {
     using const_reference = typename Value_t::const_reference;
 
     constexpr static size_t Order{Order_};
-    constexpr static bool is_order_one{Order == 1};
+    constexpr static bool IsOrderOne{Order == 1};
 
     TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
                   std::string metadata = "no metadata",

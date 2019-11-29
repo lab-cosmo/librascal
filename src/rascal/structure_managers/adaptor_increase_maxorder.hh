@@ -94,7 +94,7 @@ namespace rascal {
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
     //! Order added by the adaptor
-    static constexpr size_t additional_order{traits::MaxOrder};
+    static constexpr size_t AdditionalOrder{traits::MaxOrder};
 
     static_assert(traits::MaxOrder > 2,
                   "ManagerImplementation needs at least a pair list for"
@@ -229,10 +229,10 @@ namespace rascal {
      * Return the atoms tags associated with the neighbors (triplet -> 2,
      * quadruplet -> 3) of cluster that have been added by this adaptor.
      * This function is only meant to build ClusterRef of order
-     * additional_order.
+     * AdditionalOrder.
      */
     template <size_t Layer>
-    std::array<int, additional_order - 1>
+    std::array<int, AdditionalOrder - 1>
     get_neighbour_atom_tag_current(const ClusterRefKey<1, Layer> & cluster,
                                    size_t index) const {
       auto && offset = this->offsets[cluster.get_cluster_index(Layer)];
@@ -280,7 +280,7 @@ namespace rascal {
 
     //! Adds a given atom tag as new cluster neighbour
     void add_neighbour_of_cluster(
-        const std::array<int, additional_order - 1> atom_tag) {
+        const std::array<int, AdditionalOrder - 1> atom_tag) {
       // void add_neighbour_of_cluster(const int atom_tag) {
       // adds `atom_tag` to neighbours
       this->neighbours_atom_tag.push_back(atom_tag);
@@ -312,7 +312,7 @@ namespace rascal {
     std::vector<size_t> nb_neigh{};
 
     //! Stores all neighbours atom tag of traits::MaxOrder-1-clusters
-    std::vector<std::array<int, additional_order - 1>> neighbours_atom_tag{};
+    std::vector<std::array<int, AdditionalOrder - 1>> neighbours_atom_tag{};
     // std::vector< int > neighbours_atom_tag{};
 
     /**
@@ -427,13 +427,13 @@ namespace rascal {
                   "No neighbourlist present; extension not possible.");
     using AddOrderLoop =
         AddOrderLoop<2, traits::NeighbourListType, IsCompactCluster, true>;
-    static constexpr bool has_center_pair_order_two{traits::HasCenterPair and
+    static constexpr bool HasCenterPairOrderTwo{traits::HasCenterPair and
                                                     traits::MaxOrder - 1 == 2};
     // size_t turns out to give 0 if false and 1 if true. When adding Order==3
     // to the manager the input manager could have center pairs and
-    // cluster_start avoid iterating over those
-    static constexpr size_t cluster_start{
-        static_cast<size_t>(has_center_pair_order_two)};
+    // ClusterStart avoid iterating over those
+    static constexpr size_t ClusterStart{
+        static_cast<size_t>(HasCenterPairOrderTwo)};
 
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
@@ -457,7 +457,7 @@ namespace rascal {
       // loop over the highest order available in this->manager
       for (auto cluster :
            atom.template get_clusters_of_order<traits::MaxOrder - 1>(
-               cluster_start)) {
+               ClusterStart)) {
         auto && tag_list{cluster.get_atom_tag_list()};
         // copy the tags from the previous order skiping the center atom tag
         for (size_t ii{0}; ii < traits::MaxOrder - 1; ++ii) {

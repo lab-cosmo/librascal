@@ -45,14 +45,14 @@ namespace rascal {
        */
       template <size_t TargetOrder, size_t Order, size_t... Orders>
       struct IsOrderAvailableHelper {
-        static constexpr bool is_order_available = (TargetOrder == Order);
+        static constexpr bool IsOrderAvailable = (TargetOrder == Order);
 
-        template <bool T = is_order_available, std::enable_if_t<T, int> = 0>
+        template <bool T = IsOrderAvailable, std::enable_if_t<T, int> = 0>
         static constexpr bool get_is_order_available() {
           return true;
         }
 
-        template <bool T = is_order_available,
+        template <bool T = IsOrderAvailable,
                   std::enable_if_t<not(T), int> = 0>
         static constexpr bool get_is_order_available() {
           return IsOrderAvailableHelper<TargetOrder,
@@ -62,14 +62,14 @@ namespace rascal {
       //! end of recursion
       template <size_t TargetOrder, size_t Order>
       struct IsOrderAvailableHelper<TargetOrder, Order> {
-        static constexpr bool is_order_available = (TargetOrder == Order);
+        static constexpr bool IsOrderAvailable = (TargetOrder == Order);
 
-        template <bool T = is_order_available, std::enable_if_t<T, int> = 0>
+        template <bool T = IsOrderAvailable, std::enable_if_t<T, int> = 0>
         static constexpr bool get_is_order_available() {
           return true;
         }
 
-        template <bool T = is_order_available,
+        template <bool T = IsOrderAvailable,
                   std::enable_if_t<not(T), int> = 0>
         static constexpr bool get_is_order_available() {
           return false;
@@ -81,7 +81,7 @@ namespace rascal {
      * Find if TargetOrder is in the list of indices Orders.
      */
     template <size_t TargetOrder, size_t... Orders>
-    constexpr bool is_order_available(std::index_sequence<Orders...> /* sep*/) {
+    static constexpr bool is_order_available(std::index_sequence<Orders...> /* sep*/) {
       return details::IsOrderAvailableHelper<
           TargetOrder, Orders...>::get_is_order_available();
     }
