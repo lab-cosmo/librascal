@@ -101,7 +101,7 @@ namespace rascal {
     // initialize manager variable
     ManagerFixtureFile()
         : ManagerFixture<ManagerImplementation>{}, cutoff{3.5},
-          filename{"reference_data/simple_cubic_9.json"}
+          filename{"reference_data/inputs/simple_cubic_9.json"}
     // initialize current fixture
     {
       this->manager->update(filename);
@@ -430,7 +430,7 @@ namespace rascal {
     std::vector<AtomicStructure<3>> structures{};
     std::vector<std::shared_ptr<Manager_t>> managers{};
     std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
     std::vector<int> n_is_not_centers{0, 3, 5};
     double cutoff;
   };
