@@ -11,7 +11,7 @@ import json
 
 rascal_reference_path = 'reference_data/'
 inputs_path = os.path.join(rascal_reference_path, "inputs")
-dump_path = os.path.join(rascal_reference_path, "tests_only")
+dump_path = os.path.join('reference_data/', "tests_only")
 
 mp.dps = 20
 mp.prec = 100
@@ -61,8 +61,7 @@ def dump_reference_json():
                     dict(alpha=alpha, rij=rij, xs=xns.tolist(),
                         max_order=max_order, vals=vals.tolist()))
 
-    with open(os.path.join(
-            path, "tests", "reference_data",
+    with open(os.path.join(path, dump_path,
             "modified_bessel_first_kind_reference.ubjson"), 'wb') as f:
         ubjson.dump(data, f)
 

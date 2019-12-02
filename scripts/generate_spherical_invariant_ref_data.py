@@ -3,7 +3,7 @@ import numpy as np
 import argparse
 import ase
 import json
-import sys
+import sys, os
 sys.path.insert(0, '../build/')
 
 import rascal
@@ -11,9 +11,10 @@ from rascal.utils import ostream_redirect
 from rascal.representations import SphericalInvariants
 import rascal.lib as lrl
 
-rascal_reference_path = 'reference_data/'
+path = os.path.abspath('../')
+rascal_reference_path = os.path.join(path, 'reference_data/')
 inputs_path = os.path.join(rascal_reference_path, "inputs")
-dump_path = os.path.join(rascal_reference_path, "tests_only")
+dump_path = os.path.join('reference_data/', "tests_only")
 
 ############################################################################
 
@@ -32,11 +33,9 @@ def get_feature_vector(hypers, frames):
 
 def dump_reference_json():
     import ubjson
-    import os
     from copy import copy
     from itertools import product
 
-    path = '../'
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
 
@@ -49,9 +48,9 @@ def dump_reference_json():
     radial_basis = ["GTO"]
 
     fns = [
-        os.path.join(path, inputs_path, /
+        os.path.join(inputs_path, /
 		     "CaCrP2O7_mvc-11955_symmetrized.json"),
-        os.path.join(path, inputs_path, "small_molecule.json")
+        os.path.join(inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
         os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
@@ -101,7 +100,7 @@ def dump_reference_json():
                     dict(feature_matrix=x.tolist(),
                          hypers=copy(soap.hypers)))
 
-    with open(os.path.join(path,dump_path,
+    with open(os.path.join(path, dump_path,
 			"spherical_invariants_reference.ubjson"),
                         'wb') as f:
                 ubjson.dump(data, f)

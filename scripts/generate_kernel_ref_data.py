@@ -8,13 +8,13 @@ import numpy as np
 import argparse
 import ase
 import json
-import sys
+import sys, os
 sys.path.insert(0, '../build/')
 
-
-rascal_reference_path = 'reference_data/'
+path = '../'
+rascal_reference_path = os.path.join(path, 'reference_data/')
 inputs_path = os.path.join(rascal_reference_path, "inputs")
-dump_path = os.path.join(rascal_reference_path, "tests_only")
+dump_path = os.path.join('reference_data/', "tests_only")
 
 # dump radial and power spectra for methane
 
@@ -22,7 +22,6 @@ def dump_reference_json():
     import ubjson
     import os
     from copy import copy
-    path = '../'
     sys.path.insert(0, os.path.join(path, 'build/'))
     sys.path.insert(0, os.path.join(path, 'tests/'))
 
@@ -96,7 +95,8 @@ def dump_reference_json():
                                                                                                   soap.nl_options),
                                                                                               hypers_kernel=copy(hypers_kernel)))
 
-    with open(os.path.join(dump_path,"kernel_reference.ubjson"), 'wb') as f:
+    with open(os.path.join(path, dump_path,
+                    "kernel_reference.ubjson"), 'wb') as f:
         ubjson.dump(data, f)
 
 ##########################################################################################
