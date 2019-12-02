@@ -1,29 +1,35 @@
-from copy import copy
-from ase import Atoms
-from ase.io import read
-import json
-import ubjson
 """Script used to generate the sorted_coulomb_reference.ubjson reference file
 """
+
+rascal_reference_path = 'reference_data/'
+inputs_path = os.path.join(rascal_reference_path,"inputs")
+dump_path = os.path.join(rascal_reference_path,"tests_only")
 
 import os
 import sys
 path = os.path.abspath('../')
 sys.path.insert(0, os.path.join(path, 'build/'))
 sys.path.insert(0, os.path.join(path, 'tests/'))
-from rascal.representations import SortedCoulombMatrix
 
+from rascal.representations import SortedCoulombMatrix
+from copy import copy
+from ase import Atoms
+from ase.io import read
+import json
+import ubjson
 
 cutoffs = [2, 3, 4, 5]
 sorts = ['row_norm', 'distance']
 
 fns = [
     os.path.join(
-        path, "tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
-    os.path.join(path, "tests/reference_data/small_molecule.json")]
+        path, inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+    os.path.join(path, inputs_path, "small_molecule.json")]
 fns_to_write = [
-    "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-    "reference_data/small_molecule.json"
+    os.path.join(dump_path,
+		 "CaCrP2O7_mvc-11955_symmetrized.json"),
+    os.path.join(dump_path ,
+		 "small_molecule.json)"
 ]
 
 data = dict(filenames=fns_to_write, cutoffs=cutoffs, rep_info=[])
@@ -38,7 +44,7 @@ for fn in fns:
             rep = SortedCoulombMatrix(cutoff, sorting_algorithm=sort)
             frame = read(fn)
             features = rep.transform(frame)
-            test = features.get_dense_feature_matrix(rep)
+            test = features.get_features(rep)
             hypers['size'] = rep.size
             hypers['central_cutoff'] = cutoff
             print(rep.size)
@@ -47,7 +53,6 @@ for fn in fns:
                                              hypers=copy(hypers)))
 
 with open(os.path.join(path,
-                       "tests",
-                       "reference_data",
+                       dump_path,
                        "sorted_coulomb_reference.ubjson"), 'wb') as f:
     ubjson.dump(data, f)

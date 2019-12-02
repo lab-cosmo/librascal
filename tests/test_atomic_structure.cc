@@ -1,5 +1,5 @@
 /**
- * file   test_atomic_structure.cc
+ * @file   test_atomic_structure.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
@@ -25,8 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
-#include "atomic_structure.hh"
+#include "rascal/atomic_structure.hh"
+
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 
@@ -38,8 +39,8 @@ namespace rascal {
     ~AtomicStructureFixture() = default;
 
     std::string ref_filename1 =
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json";
-    std::string ref_filename2 = "reference_data/small_molecule.json";
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json";
+    std::string ref_filename2 = "reference_data/inputs/small_molecule.json";
 
     bool verbose{false};
   };
@@ -59,30 +60,71 @@ namespace rascal {
 
     // check if identical with itself
     double skin2{0.};
-    BOOST_CHECK(structure1.is_identical(structure1, skin2));
-    BOOST_CHECK(structure2.is_identical(structure2, skin2));
-    BOOST_CHECK(not structure1.is_identical(structure2, skin2));
+    BOOST_CHECK(structure1.is_similar(structure1, skin2));
+    BOOST_CHECK(structure2.is_similar(structure2, skin2));
+    BOOST_CHECK(not structure1.is_similar(structure2, skin2));
 
     skin2 = 0.1 * 0.1;
     structure3.set_structure(structure1);
     structure3.pbc(0) = false;
-    BOOST_CHECK(not structure1.is_identical(structure3, skin2));
+    BOOST_CHECK(not structure1.is_similar(structure3, skin2));
 
     structure3.set_structure(structure1);
     structure3.cell(0, 0) = 20;
-    BOOST_CHECK(not structure1.is_identical(structure3, skin2));
+    BOOST_CHECK(not structure1.is_similar(structure3, skin2));
 
     structure3.set_structure(structure1);
     structure3.positions(0, 0) += 0.05;
-    BOOST_CHECK(structure1.is_identical(structure3, skin2));
+    BOOST_CHECK(structure1.is_similar(structure3, skin2));
 
     structure3.set_structure(structure1);
     structure3.positions(0, 0) += 0.15;
-    BOOST_CHECK(not structure1.is_identical(structure3, skin2));
+    BOOST_CHECK(not structure1.is_similar(structure3, skin2));
 
     structure3.set_structure(structure1);
     structure3.positions(0, 0) += 0.1;
-    BOOST_CHECK(not structure1.is_identical(structure3, skin2));
+    BOOST_CHECK(not structure1.is_similar(structure3, skin2));
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test the wrapping of the atoms in a structure
+   */
+  BOOST_FIXTURE_TEST_CASE(wrap_positions_test, AtomicStructureFixture) {
+    AtomicStructure<3> structure1{};
+    AtomicStructure<3> structure2{};
+    bool verbose{false};
+
+    // load structure from a json formated file
+    structure1.set_structure(
+        std::string("./reference_data/inputs/dummy_structure.json"));
+    structure1.wrap();
+    structure2.set_structure(
+        std::string("./reference_data/inputs/dummy_structure_wrapped.json"));
+
+    // check if identical with itself
+    double skin2{1e-15};
+    BOOST_CHECK(structure1.is_similar(structure2, skin2));
+    if (verbose) {
+      std::cout << (structure2.positions - structure1.positions).transpose()
+                << std::endl;
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test that unit cell filled with zeros is properly caught
+   */
+  BOOST_FIXTURE_TEST_CASE(empty_unit_cell_test, AtomicStructureFixture) {
+    AtomicStructure<3> structure{};
+
+    // load structure from a json formated file
+    BOOST_CHECK_THROW(
+        structure.set_structure(
+            std::string("./reference_data/inputs/small_molecule_no_cell.json")),
+        std::runtime_error);
+    BOOST_REQUIRE_NO_THROW(structure.set_structure(
+        std::string("./reference_data/inputs/small_molecule.json")));
   }
 
   /* ---------------------------------------------------------------------- */

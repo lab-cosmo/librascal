@@ -1,5 +1,5 @@
 /**
- * file test_kernels.hh
+ * @file test_kernels.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -30,11 +30,11 @@
 #ifndef TESTS_TEST_KERNELS_HH_
 #define TESTS_TEST_KERNELS_HH_
 
-#include "tests.hh"
 #include "test_adaptor.hh"
-#include "test_manager_collection.hh"
 #include "test_calculator.hh"
-#include "models/kernels.hh"
+#include "test_manager_collection.hh"
+
+#include "rascal/models/kernels.hh"
 
 namespace rascal {
 
@@ -56,26 +56,26 @@ namespace rascal {
           }
         }
       }
-    };
+    }
     ~StrictNLKernelFixture() = default;
 
     std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
-        {{"type", "Cosine"},
-         {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
+        {{"type", "ShiftedCosine"},
+         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 6},
+    std::vector<json> rep_hypers{{{"max_radial", 3},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 6},
-                                  {"max_angular", 6},
+                                 {{"max_radial", 2},
+                                  {"max_angular", 2},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}}};
 
@@ -87,29 +87,31 @@ namespace rascal {
   struct DataSphericalInvariantsKernelFixture {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
     using Representation_t = CalculatorSphericalInvariants;
 
     DataSphericalInvariantsKernelFixture() {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(ref_filename, ref_data_ubjson);
-      auto datas = json::from_ubjson(ref_data_ubjson);
+      auto datas =
+          json::from_ubjson(internal::read_binary_file(this->ref_filename));
       this->ref_data = datas["rep_info"]["spherical_invariants"];
       this->filename = datas["filename"];
       this->start = datas["start"];
-      this->lenght = datas["length"];
+      this->length = datas["length"];
 
       for (auto & cutoff : datas["cutoffs"]) {
         json parameters;
         json structure{};
         json adaptors;
         json ad1{{"name", "AdaptorNeighbourList"},
-                 {"initialization_arguments",
-                  {{"cutoff", cutoff},
-                   {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+                 {"initialization_arguments", {{"cutoff", cutoff}}}};
+        json ad1b{{"name", "AdaptorCenterContribution"},
+                  {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
                  {"initialization_arguments", {{"cutoff", cutoff}}}};
         adaptors.emplace_back(ad1);
+        // ad1b is dummy name
+        adaptors.emplace_back(ad1b);
         adaptors.emplace_back(ad2);
 
         parameters["structure"] = structure;
@@ -131,11 +133,11 @@ namespace rascal {
     std::vector<json> representation_hypers{};
     std::vector<json> kernel_hypers{};
 
-    const bool consider_ghost_neighbours{false};
-    std::string ref_filename{"reference_data/kernel_reference.ubjson"};
+    std::string ref_filename{
+        "reference_data/tests_only/kernel_reference.ubjson"};
     std::string filename{""};
     int start{0};
-    int lenght{0};
+    int length{0};
   };
 
   /**
@@ -156,7 +158,7 @@ namespace rascal {
     KernelFixture() : ParentA{}, ParentB{} {
       for (auto & collection : this->collections) {
         collection.add_structures(this->ParentA::filename, this->ParentA::start,
-                                  this->ParentA::lenght);
+                                  this->ParentA::length);
         for (auto & hyper : this->ParentB::representation_hypers) {
           this->representations.emplace_back(hyper);
           this->representations.back().compute(collection);

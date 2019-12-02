@@ -1,5 +1,5 @@
 /**
- * file   test_calculator.hh
+ * @file   test_calculator.hh
  *
  * @author Musil Felix <musil.felix@epfl.ch>
  * @author Max Veit <max.veit@epfl.ch>
@@ -29,55 +29,53 @@
 #ifndef TESTS_TEST_CALCULATOR_HH_
 #define TESTS_TEST_CALCULATOR_HH_
 
-#include "tests.hh"
 #include "test_adaptor.hh"
 #include "test_math.hh"
 #include "test_structure.hh"
-#include "atomic_structure.hh"
-#include "structure_managers/structure_manager_collection.hh"
-#include "representations/calculator_base.hh"
-#include "representations/calculator_sorted_coulomb.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "representations/calculator_spherical_covariants.hh"
-#include "representations/calculator_behler_parinello.hh"
 
-#include "json_io.hh"
-#include "rascal_utility.hh"
+#include "rascal/atomic_structure.hh"
+#include "rascal/json_io.hh"
+#include "rascal/representations/calculator_base.hh"
+#include "rascal/representations/calculator_sorted_coulomb.hh"
+#include "rascal/representations/calculator_spherical_covariants.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/structure_managers/cluster_ref_key.hh"
+#include "rascal/structure_managers/structure_manager_collection.hh"
+#include "rascal/utils.hh"
 
-#include <tuple>
 #include <memory>
+#include <tuple>
 
 namespace rascal {
 
   struct TestData {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
     TestData() = default;
 
     void get_ref(const std::string & ref_filename) {
-      std::vector<std::uint8_t> ref_data_ubjson;
-      internal::read_binary_file(ref_filename, ref_data_ubjson);
-      this->ref_data = json::from_ubjson(ref_data_ubjson);
+      this->ref_data =
+          json::from_ubjson(internal::read_binary_file(ref_filename));
       auto filenames =
           this->ref_data.at("filenames").get<std::vector<std::string>>();
       auto cutoffs = this->ref_data.at("cutoffs").get<std::vector<double>>();
 
       for (auto && filename : filenames) {
         for (auto && cutoff : cutoffs) {
-          // std::cout << filename << " " << cutoff << std::endl;
           json parameters;
           json structure{{"filename", filename}};
           json adaptors;
-          json ad1{
-              {"name", "AdaptorNeighbourList"},
-              {"initialization_arguments",
-               {{"cutoff", cutoff},
-                {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+          json ad1{{"name", "AdaptorNeighbourList"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
+          json ad1b{{"name", "AdaptorCenterContribution"},
+                    {"initialization_arguments", {}}};
           json ad2{{"name", "AdaptorStrict"},
                    {"initialization_arguments", {{"cutoff", cutoff}}}};
           adaptors.emplace_back(ad1);
+          adaptors.emplace_back(ad1b);
           adaptors.emplace_back(ad2);
 
           parameters["structure"] = structure;
@@ -90,14 +88,13 @@ namespace rascal {
 
     ~TestData() = default;
 
-    const bool consider_ghost_neighbours{false};
     json ref_data{};
     json factory_args{};
   };
 
-  struct MultipleStructureSphericalInvariants
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+  template <typename MultipleStructureFixture>
+  struct MultipleStructureSphericalInvariants : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;
 
@@ -130,16 +127,14 @@ namespace rascal {
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
 
     std::vector<json> rep_hypers{{{"max_radial", 6},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 10},
+                                 {{"max_radial", 6},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
                                   {"normalize", true}},
@@ -147,25 +142,25 @@ namespace rascal {
                                   {"max_angular", 3},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 8},
-                                  {"max_angular", 6},
+                                 {{"max_radial", 6},
+                                  {"max_angular", 4},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 4},
+                                 {{"max_radial", 3},
                                   {"max_angular", 1},
                                   {"soap_type", "BiSpectrum"},
                                   {"inversion_symmetry", true},
                                   {"normalize", true}},
-                                 {{"max_radial", 4},
+                                 {{"max_radial", 3},
                                   {"max_angular", 1},
                                   {"soap_type", "BiSpectrum"},
                                   {"inversion_symmetry", false},
                                   {"normalize", true}}};
   };
 
-  struct MultipleStructureSphericalCovariants
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+  template <typename MultipleStructureFixture>
+  struct MultipleStructureSphericalCovariants : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalCovariants;
 
@@ -209,7 +204,7 @@ namespace rascal {
                                   {"inversion_symmetry", true},
                                   {"normalize", true}},
                                  {{"max_radial", 2},
-                                  {"max_angular", 3},
+                                  {"max_angular", 2},
                                   {"soap_type", "LambdaSpectrum"},
                                   {"lam", 2},
                                   {"inversion_symmetry", false},
@@ -224,9 +219,9 @@ namespace rascal {
       this->get_ref(this->ref_filename);
     }
     ~SphericalInvariantsTestData() = default;
-    bool verbose{true};
+    bool verbose{false};
     std::string ref_filename{
-        "reference_data/spherical_invariants_reference.ubjson"};
+        "reference_data/tests_only/spherical_invariants_reference.ubjson"};
   };
 
   struct SphericalCovariantsTestData : TestData {
@@ -237,14 +232,14 @@ namespace rascal {
       this->get_ref(this->ref_filename);
     }
     ~SphericalCovariantsTestData() = default;
-    bool verbose{true};
+    bool verbose{false};
     std::string ref_filename{
-        "reference_data/spherical_covariants_reference.ubjson"};
+        "reference_data/tests_only/spherical_covariants_reference.ubjson"};
   };
 
-  struct MultipleStructureSphericalExpansion
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+  template <class MultipleStructureFixture>
+  struct MultipleStructureSphericalExpansion : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
 
@@ -272,41 +267,57 @@ namespace rascal {
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
         {{"type", "CosineShifted"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}},
+        {{"type", "RadialScaling"},
+         {"cutoff", {{"value", 4.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}},
+         {"rate", {{"value", .0}, {"unit", "AA"}}},
+         {"exponent", {{"value", 4}, {"unit", ""}}},
+         {"scale", {{"value", 2.5}, {"unit", "AA"}}}},
+        {{"type", "RadialScaling"},
+         {"cutoff", {{"value", 4.0}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}},
+         {"rate", {{"value", 1.}, {"unit", "AA"}}},
+         {"exponent", {{"value", 3}, {"unit", ""}}},
+         {"scale", {{"value", 2.}, {"unit", "AA"}}}}};
 
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}},
+                                                 {{"type", "DVR"}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.5}, {"unit", "AA"}}}}};
 
-    std::vector<json> rep_hypers{{{"max_radial", 10}, {"max_angular", 8}}};
+    std::vector<json> rep_hypers{{{"max_radial", 6}, {"max_angular", 4}}};
   };
 
-  /** Simplified version of MultipleStructureManagerNLStrictFixture
+  /**
+   * Simplified version of MultipleStructureManagerNLStrictFixture
    *  that uses only one structure, cutoff, and adaptor set
    *
    *  Useful if we just need a StructureManager to test relatively isolated
    *  functionality on a single structure, but using the rest of the testing
    *  machinery
    */
-  struct SimpleStructureManagerNLStrictFixture {
+  struct SimpleStructureManagerNLCCStrictFixture {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
 
-    SimpleStructureManagerNLStrictFixture() {
+    SimpleStructureManagerNLCCStrictFixture() {
       json parameters;
       json structure{{"filename", filename}};
       json adaptors;
       json ad1{{"name", "AdaptorNeighbourList"},
                {"initialization_arguments",
-                {{"cutoff", cutoff},
-                 {"skin", cutoff_skin},
-                 {"consider_ghost_neighbours", false}}}};
+                {{"cutoff", cutoff}, {"skin", cutoff_skin}}}};
+      json ad1b{{"name", "AdaptorCenterContribution"},
+                {"initialization_arguments", {}}};
       json ad2{{"name", "AdaptorStrict"},
                {"initialization_arguments", {{"cutoff", cutoff}}}};
       adaptors.emplace_back(ad1);
+      adaptors.push_back(ad1b);
       adaptors.emplace_back(ad2);
 
       parameters["structure"] = structure;
@@ -315,19 +326,19 @@ namespace rascal {
       this->factory_args.emplace_back(parameters);
     }
 
-    ~SimpleStructureManagerNLStrictFixture() = default;
+    ~SimpleStructureManagerNLCCStrictFixture() = default;
 
     const std::string filename{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
     const double cutoff{3.};
-    const double cutoff_skin{0.5};
+    const double cutoff_skin{0.};
 
     json factory_args{};
   };
 
   struct MultipleHypersSphericalExpansion
-      : SimpleStructureManagerNLStrictFixture {
-    using Parent = SimpleStructureManagerNLStrictFixture;
+      : SimpleStructureManagerNLCCStrictFixture {
+    using Parent = SimpleStructureManagerNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
 
@@ -362,7 +373,19 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> radial_contribution_hypers{
+        {{"type", "GTO"}, {"optimization", {{"type", "None"}}}},
+        {{"type", "DVR"}, {"optimization", {{"type", "None"}}}},
+        {{"type", "GTO"},
+         {"optimization",
+          {{"type", "Spline"},
+           {"accuracy", 1e-12},
+           {"range", {{"begin", 0.}, {"end", 3.}}}}}},
+        {{"type", "DVR"},
+         {"optimization",
+          {{"type", "Spline"},
+           {"accuracy", 1e-5},
+           {"range", {{"begin", 0.000001}, {"end", 3.}}}}}}};
     std::vector<json> rep_hypers{
         {{"max_radial", 4}, {"max_angular", 2}, {"compute_gradients", true}},
         {{"max_radial", 6}, {"max_angular", 4}, {"compute_gradients", true}}};
@@ -371,25 +394,27 @@ namespace rascal {
   /** Contains some simple periodic structures for testing complicated things
    *  like gradients
    */
-  struct SimplePeriodicNLStrictFixture {
+  struct SimplePeriodicNLCCStrictFixture {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>;
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
     using Structure_t = AtomicStructure<3>;
 
-    SimplePeriodicNLStrictFixture() {
+    SimplePeriodicNLCCStrictFixture() {
       for (auto && filename : filenames) {
         json parameters;
         json structure{{"filename", filename}};
         json adaptors;
         json ad1{{"name", "AdaptorNeighbourList"},
                  {"initialization_arguments",
-                  {{"cutoff", cutoff},
-                   {"skin", cutoff_skin},
-                   {"consider_ghost_neighbours", false}}}};
+                  {{"cutoff", cutoff}, {"skin", cutoff_skin}}}};
+        json ad1b{{"name", "AdaptorCenterContribution"},
+                  {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
                  {"initialization_arguments", {{"cutoff", cutoff}}}};
         adaptors.emplace_back(ad1);
+        adaptors.push_back(ad1b);
         adaptors.emplace_back(ad2);
 
         parameters["structure"] = structure;
@@ -399,24 +424,71 @@ namespace rascal {
       }
     }
 
-    ~SimplePeriodicNLStrictFixture() = default;
+    ~SimplePeriodicNLCCStrictFixture() = default;
 
     const std::vector<std::string> filenames{
-        "reference_data/diamond_2atom.json",
-        "reference_data/diamond_2atom_distorted.json",
-        "reference_data/diamond_cubic_distorted.json",
-        "reference_data/SiC_moissanite.json",
-        "reference_data/SiCGe_wurtzite_like.json",
-        "reference_data/SiC_moissanite_supercell.json"};
+        "reference_data/inputs/diamond_2atom.json",
+        "reference_data/inputs/diamond_2atom_distorted.json",
+        "reference_data/inputs/diamond_cubic_distorted.json",
+        "reference_data/inputs/SiC_moissanite.json",
+        "reference_data/inputs/SiCGe_wurtzite_like.json",
+        "reference_data/inputs/SiC_moissanite_supercell.json",
+        "reference_data/inputs/small_molecule.json",
+        "reference_data/inputs/methane.json"};
     const double cutoff{2.5};
-    const double cutoff_skin{0.5};
+    const double cutoff_skin{0.};
 
     json factory_args{};
     std::vector<Structure_t> structures{};
   };
 
-  struct SingleHypersSphericalExpansion : SimplePeriodicNLStrictFixture {
-    using Parent = SimplePeriodicNLStrictFixture;
+  /** Contains a multi species periodic structure to test the sparsity of the
+   * gradient keys
+   */
+  struct ComplexPeriodicNLCCStrictFixture {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
+    using Structure_t = AtomicStructure<3>;
+
+    ComplexPeriodicNLCCStrictFixture() {
+      for (auto && filename : filenames) {
+        json parameters;
+        json structure{{"filename", filename}};
+        json adaptors;
+        json ad1{{"name", "AdaptorNeighbourList"},
+                 {"initialization_arguments",
+                  {{"cutoff", cutoff}, {"skin", cutoff_skin}}}};
+        json ad1b{{"name", "AdaptorCenterContribution"},
+                  {"initialization_arguments", {}}};
+        json ad2{{"name", "AdaptorStrict"},
+                 {"initialization_arguments", {{"cutoff", cutoff}}}};
+        adaptors.emplace_back(ad1);
+        adaptors.push_back(ad1b);
+        adaptors.emplace_back(ad2);
+
+        parameters["structure"] = structure;
+        parameters["adaptors"] = adaptors;
+
+        this->factory_args.emplace_back(parameters);
+      }
+    }
+
+    ~ComplexPeriodicNLCCStrictFixture() = default;
+
+    const std::vector<std::string> filenames{
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
+
+    const double cutoff{3.5};
+    const double cutoff_skin{0.};
+
+    json factory_args{};
+    std::vector<Structure_t> structures{};
+  };
+
+  struct SingleHypersSphericalExpansion : SimplePeriodicNLCCStrictFixture {
+    using Parent = SimplePeriodicNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
 
@@ -449,11 +521,11 @@ namespace rascal {
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     std::vector<json> rep_hypers{
         {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}},
-        {{"max_radial", 4}, {"max_angular", 0}, {"compute_gradients", true}}};
+        {{"max_radial", 3}, {"max_angular", 0}, {"compute_gradients", true}}};
   };
 
-  struct SingleHypersSphericalInvariants : SimplePeriodicNLStrictFixture {
-    using Parent = SimplePeriodicNLStrictFixture;
+  struct SingleHypersSphericalInvariants : SimplePeriodicNLCCStrictFixture {
+    using Parent = SimplePeriodicNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;
 
@@ -489,10 +561,49 @@ namespace rascal {
                                   {"normalize", true},
                                   {"soap_type", "PowerSpectrum"},
                                   {"compute_gradients", true}},
-                                 {{"max_radial", 4},
+                                 {{"max_radial", 3},
                                   {"max_angular", 0},
                                   {"normalize", true},
                                   {"soap_type", "RadialSpectrum"},
+                                  {"compute_gradients", true}}};
+  };
+
+  struct ComplexHypersSphericalInvariants : ComplexPeriodicNLCCStrictFixture {
+    using Parent = ComplexPeriodicNLCCStrictFixture;
+    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+    using Representation_t = CalculatorSphericalInvariants;
+
+    ComplexHypersSphericalInvariants() : Parent{} {
+      for (auto & ri_hyp : this->radial_contribution_hypers) {
+        for (auto & fc_hyp : this->fc_hypers) {
+          for (auto & sig_hyp : this->density_hypers) {
+            for (auto & rep_hyp : this->rep_hypers) {
+              rep_hyp["cutoff_function"] = fc_hyp;
+              rep_hyp["gaussian_density"] = sig_hyp;
+              rep_hyp["radial_contribution"] = ri_hyp;
+              this->representation_hypers.push_back(rep_hyp);
+            }
+          }
+        }
+      }
+    };
+
+    ~ComplexHypersSphericalInvariants() = default;
+
+    std::vector<json> representation_hypers{};
+    std::vector<json> fc_hypers{
+        {{"type", "ShiftedCosine"},
+         {"cutoff", {{"value", 3.5}, {"unit", "AA"}}},
+         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+
+    std::vector<json> density_hypers{
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> rep_hypers{{{"max_radial", 2},
+                                  {"max_angular", 2},
+                                  {"normalize", true},
+                                  {"soap_type", "PowerSpectrum"},
                                   {"compute_gradients", true}}};
   };
 
@@ -505,9 +616,9 @@ namespace rascal {
       this->get_ref(this->ref_filename);
     }
     ~SphericalExpansionTestData() = default;
-    bool verbose{true};
+    bool verbose{false};
     std::string ref_filename{
-        "reference_data/spherical_expansion_reference.ubjson"};
+        "reference_data/tests_only/spherical_expansion_reference.ubjson"};
   };
 
   /**
@@ -526,12 +637,8 @@ namespace rascal {
     Eigen::Array<double, 1, Eigen::Dynamic>
     f(const Eigen::Matrix<double, 1, 1> & input_v) {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
-      result = this->radial_integral->template compute_neighbour_contribution<
-          internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
-      // result.matrix().transpose() *=
-      //     this->radial_integral->radial_norm_factors.asDiagonal();
-      // result.matrix().transpose() *=
-      //     this->radial_integral->radial_ortho_matrix;
+      result = this->radial_integral->template compute_neighbour_contribution(
+          input_v(0), this->pair);
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;
@@ -540,8 +647,8 @@ namespace rascal {
     Eigen::Array<double, 1, Eigen::Dynamic>
     grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
-      result = this->radial_integral->template compute_neighbour_derivative<
-          internal::AtomicSmearingType::Constant>(input_v(0), this->pair);
+      result = this->radial_integral->template compute_neighbour_derivative(
+          input_v(0), this->pair);
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;
@@ -553,63 +660,163 @@ namespace rascal {
     size_t max_angular{4};
   };
 
+  template <class BaseFixture, internal::RadialBasisType RadialType,
+            internal::AtomicSmearingType SmearingType,
+            internal::OptimizationType OptType>
+  struct RadialIntegralHandlerFixture : MultipleStructureFixture<BaseFixture> {
+    using Parent = MultipleStructureFixture<BaseFixture>;
+    using Manager_t = typename Parent::Manager_t;
+    using RadialIntegral_t =
+        internal::RadialContributionHandler<RadialType, SmearingType, OptType>;
+
+    RadialIntegralHandlerFixture() : Parent{} {
+      // filter out the hypers that don't correspond to the current RadialType,
+      // SmearingType or OptType
+      std::vector<json> hypers_temp;
+
+      for (const auto & hyper : this->representation_hypers) {
+        // This block is to ignore hypers which do not agree with the type of
+        // the fixture. This way we do not have to create a fixture for each
+        // type while not using the wrong templated RadialIntegralHandler
+        // constructor
+        auto radial_contribution_hypers =
+            hyper.at("radial_contribution").template get<json>();
+        auto radial_contribution_type_name =
+            radial_contribution_hypers.at("type").template get<std::string>();
+        auto density_hypers = hyper.at("gaussian_density").template get<json>();
+        auto smearing_type_name =
+            density_hypers.at("type").template get<std::string>();
+        auto optimization_hypers =
+            radial_contribution_hypers.at("optimization").template get<json>();
+        auto optimization_type_name =
+            optimization_hypers.at("type").template get<std::string>();
+
+        internal::RadialBasisType radial_contribution_type{};
+        internal::AtomicSmearingType smearing_type{};
+        internal::OptimizationType optimization_type{};
+        if (radial_contribution_type_name == "GTO") {
+          radial_contribution_type = internal::RadialBasisType::GTO;
+        } else if (radial_contribution_type_name == "DVR") {
+          radial_contribution_type = internal::RadialBasisType::DVR;
+        } else {
+          throw std::runtime_error(
+              "Wrong radial basis type for RadialIntegralHandler tests");
+        }
+
+        if (smearing_type_name == "Constant") {
+          smearing_type = internal::AtomicSmearingType::Constant;
+        } else {
+          throw std::runtime_error(
+              "Wrong smearing type for RadialIntegralHandler tests");
+        }
+
+        if (optimization_type_name == "None") {
+          optimization_type = internal::OptimizationType::None;
+        } else if (optimization_type_name == "Spline") {
+          optimization_type = internal::OptimizationType::Interpolator;
+        } else {
+          throw std::runtime_error(
+              "Wrong optimization type for RadialIntegralHandler tests");
+        }
+        auto hypers_radial_contribution_handler_type{
+            internal::combine_to_radial_contribution_type(
+                radial_contribution_type, smearing_type, optimization_type)};
+
+        auto radial_contribution_handler_type{
+            internal::combine_to_radial_contribution_type(
+                RadialType, SmearingType, OptType)};
+
+        if (hypers_radial_contribution_handler_type ==
+            radial_contribution_handler_type) {
+          hypers_temp.push_back(hyper);
+        }
+      }
+      this->representation_hypers.clear();
+      this->representation_hypers = std::move(hypers_temp);
+    }
+    ~RadialIntegralHandlerFixture() = default;
+  };
+
   /**
-   * Calculator specialized to testing the gradient of a RepresentationManager
+   * Gradient provider specialized to testing the gradient of a Calculator
    *
    * The gradient is tested center-by-center, by iterating over each center and
    * doing finite displacements on its position.  This iteration should normally
-   * be done by the RepresentationManagerGradientFixture class.
+   * be done by the RepresentationCalculatorGradientFixture class.
    *
-   * Initialize with a RepresentationManager, a StructureManager, and an
+   * In the case of periodic structures, the gradient is accumulated only onto
+   * _real_ atoms, but the motion of all _images_ of the "moving" atom (the one
+   * with respect to which the gradient is being taken) is taken into account.
+   *
+   * Initialize with a Calculator, a StructureManager, and an
    * AtomicStructure representing the original structure (before modifying with
-   * finite-difference displacments).  The gradient of the representation with
+   * finite-difference displacements).  The gradient of the representation with
    * respect to the center position can then be tested, as usual, with
    * test_gradients() (defined in test_math.hh).
    */
-  template <typename RepManager, class StructureManager>
-  class RepresentationManagerGradientCalculator {
+  template <typename Calculator, class StructureManager>
+  class RepresentationCalculatorGradientProvider {
    public:
     using Structure_t = AtomicStructure<3>;
-    using Key_t = typename RepManager::Key_t;
+    using Key_t = typename Calculator::Key_t;
     static const size_t n_arguments = 3;
 
     using PairRef_t =
-        typename RepManager::template ClusterRef_t<StructureManager, 2>;
+        typename Calculator::template ClusterRef_t<StructureManager, 2>;
+
+    using PairRefKey_t = typename PairRef_t::ThisParentClass;
 
     // type of the data structure holding the representation and its gradients
-    using Prop_t = typename RepManager::template Property_t<StructureManager>;
+    using Prop_t = typename Calculator::template Property_t<StructureManager>;
     using PropGrad_t =
-        typename RepManager::template PropertyGradient_t<StructureManager>;
+        typename Calculator::template PropertyGradient_t<StructureManager>;
 
     template <typename T, class V>
-    friend class RepresentationManagerGradientFixture;
+    friend class RepresentationCalculatorGradientFixture;
 
-    RepresentationManagerGradientCalculator(
-        RepManager & representation,
+    RepresentationCalculatorGradientProvider(
+        Calculator & representation,
         std::shared_ptr<StructureManager> structure_manager,
         Structure_t atomic_structure)
         : representation{representation}, structure_manager{structure_manager},
           atomic_structure{atomic_structure}, center_it{
-                                                  structure_manager->begin()} {}
+                                                  structure_manager->begin()} {
+      for (auto center : this->structure_manager) {
+        this->n_neighbors.push_back(center.size());
+      }
+    }
 
-    ~RepresentationManagerGradientCalculator() = default;
+    ~RepresentationCalculatorGradientProvider() = default;
 
     Eigen::Array<double, 1, Eigen::Dynamic>
     f(const Eigen::Ref<const Eigen::Vector3d> & center_position) {
       auto center = *center_it;
       Structure_t modified_structure{this->atomic_structure};
       modified_structure.positions.col(center.get_index()) = center_position;
+      modified_structure.wrap();
       this->structure_manager->update(modified_structure);
+      int i_center{0};
+      for (auto center : this->structure_manager) {
+        if (this->n_neighbors[i_center] != center.size()) {
+          throw std::runtime_error(
+              R"(The number of neighbors has changed when making finite
+              displacements. This happens because a neighbor is almost at the
+              cutoff boundary so please change the structure or the cutoff to
+              avoid this.)");
+        }
+        ++i_center;
+      }
+
       this->representation.compute(this->structure_manager);
 
-      auto && data_sparse{structure_manager->template get_property_ref<Prop_t>(
+      auto && data_sparse{*structure_manager->template get_property_ptr<Prop_t>(
           representation.get_name())};
       auto && gradients_sparse{
-          structure_manager->template get_property_ref<PropGrad_t>(
+          *structure_manager->template get_property_ptr<PropGrad_t>(
               representation.get_gradient_name())};
-
-      auto & data_center{data_sparse[center]};
-      auto keys_center = gradients_sparse.get_keys(center);
+      auto ii_pair = center.get_atom_ii();
+      auto & data_center{data_sparse[ii_pair]};
+      auto keys_center = gradients_sparse.get_keys(ii_pair);
       Key_t center_key{center.get_atom_type()};
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
@@ -617,8 +824,13 @@ namespace rascal {
       // Count all the keys in the sparse gradient structure where the gradient
       // is nonzero (i.e. where the key has an entry in the structure)
       for (auto neigh : center) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
+        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
         n_entries_neighbours +=
-            (gradients_sparse[swap_pair_ref(neigh)].get_keys().size() *
+            (gradients_sparse[swapped_ref].get_keys().size() *
              n_entries_per_key);
       }
       // Packed array containing: The center coefficients (all species) and
@@ -633,6 +845,10 @@ namespace rascal {
         result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
         auto & data_neigh{data_sparse[neigh]};
         // The neighbour gradient (i =/= j) only contributes to certain species
         // channels (keys), in the case of SOAP and SphExpn those keys
@@ -640,7 +856,8 @@ namespace rascal {
         // being taken)
         // The nonzero gradient keys are already indicated in the sparse
         // gradient structure
-        auto keys_neigh{gradients_sparse[swap_pair_ref(neigh)].get_keys()};
+        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
+        auto keys_neigh{gradients_sparse[swapped_ref].get_keys()};
         for (auto & key : keys_neigh) {
           Eigen::Map<Eigen::ArrayXd> data_flat(data_neigh[key].data(),
                                                n_entries_per_key);
@@ -663,24 +880,30 @@ namespace rascal {
       // representation.compute();
       auto center = *center_it;
 
-      auto && data_sparse{structure_manager->template get_property_ref<Prop_t>(
+      auto && data_sparse{*structure_manager->template get_property_ptr<Prop_t>(
           representation.get_name())};
       auto && gradients_sparse{
-          structure_manager->template get_property_ref<PropGrad_t>(
+          *structure_manager->template get_property_ptr<PropGrad_t>(
               representation.get_gradient_name())};
-
-      auto & gradients_center{gradients_sparse[center]};
+      auto ii_pair = center.get_atom_ii();
+      auto & gradients_center{gradients_sparse[ii_pair]};
       auto keys_center = gradients_center.get_keys();
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
       size_t n_entries_neighbours{0};
       for (auto neigh : center) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
+        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
         n_entries_neighbours +=
-            (gradients_sparse[swap_pair_ref(neigh)].get_keys().size() *
+            (gradients_sparse[swapped_ref].get_keys().size() *
              n_entries_per_key);
       }
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
           grad_coeffs_pairs(3, n_entries_center + n_entries_neighbours);
+      grad_coeffs_pairs.setZero();
 
       // Use the exact same iteration pattern as in f()  to guarantee that the
       // gradients appear in the same place as their corresponding data
@@ -695,16 +918,27 @@ namespace rascal {
         result_idx += n_entries_per_key;
       }
       for (auto neigh : center) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
         // We need grad_i c^{ji} -- using just 'neigh' would give us
         // grad_j c^{ij}, hence the swap
-        auto neigh_swap{swap_pair_ref(neigh)};
-        auto & gradients_neigh{gradients_sparse[neigh_swap]};
-        auto keys_neigh{gradients_neigh.get_keys()};
-        for (auto key : keys_neigh) {
-          Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-              gradients_neigh[key].data(), 3, n_entries_per_key);
-          grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
-              grad_coeffs_flat;
+        auto neigh_swap_images{swap_pair_ref(neigh)};
+        auto & gradients_neigh_first{
+            gradients_sparse[neigh_swap_images.front()]};
+        // The set of species keys should be the same for all images of i
+        auto keys_neigh{gradients_neigh_first.get_keys()};
+        for (auto & key : keys_neigh) {
+          // For each key, accumulate gradients over periodic images of the atom
+          // that moves in the finite-difference step
+          for (auto & neigh_swap : neigh_swap_images) {
+            auto & gradients_neigh{gradients_sparse[neigh_swap]};
+            Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
+                gradients_neigh[key].data(), 3, n_entries_per_key);
+            grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) +=
+                grad_coeffs_flat;
+          }
           result_idx += n_entries_per_key;
         }
       }
@@ -712,59 +946,89 @@ namespace rascal {
     }
 
    private:
-    RepManager & representation;
+    Calculator & representation;
     std::shared_ptr<StructureManager> structure_manager;
     Structure_t atomic_structure;
     typename StructureManager::iterator center_it;
+    //! count the number of neighbours of each centers
+    std::vector<size_t> n_neighbors{};
 
-    inline void advance_center() { ++this->center_it; }
+    void advance_center() { ++this->center_it; }
 
     /**
-     * Swap a ClusterRef (i, j) so it refers to (j, i) instead
+     * Swap a ClusterRef<order=2> (i, j) so it refers to (j, i) instead
      *
-     * @todo wouldn't this be better as a member of StructureManager
-     *       (viz. AdaptorNeighbourList<whatever>)?
+     * @return std::vector of ClusterRefKeys or order 2 (pair keys) of all pairs
+     *         (j, i') where i' is either i or any of its periodic images within
+     *         the cutoff of j. The atom j, on the other hand, must be a real
+     *         atom (not a ghost or periodic image).
      */
-    PairRef_t swap_pair_ref(const PairRef_t & pair_ref) {
+    std::vector<PairRefKey_t> swap_pair_ref(const PairRef_t & pair_ref) {
+      auto center_manager{extract_underlying_manager<0>(structure_manager)};
+      auto atomic_structure{center_manager->get_atomic_structure()};
       // Get the atom index to the corresponding atom tag
-      size_t access_index = structure_manager->get_atom_index(pair_ref.back());
+      size_t access_index{structure_manager->get_atom_index(pair_ref.back())};
       auto new_center_it{structure_manager->get_iterator_at(access_index)};
       // Return cluster ref at which the iterator is currently pointing
       auto && new_center{*new_center_it};
-      // Iterate until (j,i) is found
+      size_t i_index{structure_manager->get_atom_index(pair_ref.front())};
+
+      // Find all (j, i') pairs
+      std::vector<PairRefKey_t> new_pairs;
       for (auto new_pair : new_center) {
-        if (new_pair.back() == pair_ref.front()) {
-          return new_pair;
+        size_t i_trial_index{
+            structure_manager->get_atom_index(new_pair.back())};
+        // Is this the i (old center) atom or any of its images?
+        if (i_trial_index == i_index) {
+          new_pairs.emplace_back(std::move(new_pair));
         }
       }
-      std::stringstream err_str{};
-      err_str << "Didn't find symmetric pair for pair (i=" << pair_ref.front()
-              << ", j=" << pair_ref.back() << ").";
-      throw std::range_error(err_str.str());
+      if (new_pairs.size() == 0) {
+        std::stringstream err_str{};
+        err_str << "Didn't find any pairs for pair (i=" << pair_ref.front()
+                << ", j=" << pair_ref.back()
+                << "); access index for j = " << access_index;
+        throw std::range_error(err_str.str());
+      }
+      return new_pairs;
     }
   };
 
   /**
    * Test fixture holding the gradient calculator and structure manager
    *
-   * Holds data (i.e. function values, gradient directions) and iterates through
-   * the list of centers
+   * Holds data (function values, gradient directions, verbosity) and iterates
+   * through the list of centers
    */
-  template <typename RepManager_t, class StructureManager_t>
-  class RepresentationManagerGradientFixture : public GradientTestFixture {
+  template <typename Calculator, class StructureManager>
+  class RepresentationCalculatorGradientFixture : public GradientTestFixture {
    public:
     using StdVector2Dim_t = std::vector<std::vector<double>>;
-    using Calculator_t =
-        RepresentationManagerGradientCalculator<RepManager_t,
-                                                StructureManager_t>;
+    using Provider_t =
+        RepresentationCalculatorGradientProvider<Calculator, StructureManager>;
 
     static const size_t n_arguments = 3;
+    /**
+     * Increased error tolerance because some representations have quite large
+     * finite-difference truncation errors (and possibly numerical issues for
+     * very small displacements)
+     */
+    double fd_error_tol{1E-4};
 
-    RepresentationManagerGradientFixture(
-        std::string filename, std::shared_ptr<StructureManager_t> structure,
-        Calculator_t & calc)
-        : structure{structure}, center_it{structure->begin()}, calculator{
-                                                                   calc} {
+    /**
+     * Initialize a gradient test fixture
+     *
+     * @param filename JSON file holding gradient test parameters, format
+     *                 documented in GradientTestFixture
+     *
+     * @param structure StructureManager on which to test
+     *
+     * @param calc RepresentationCalculator whose gradient is being tested
+     */
+    RepresentationCalculatorGradientFixture(
+        std::string filename, std::shared_ptr<StructureManager> structure,
+        Provider_t & calc)
+        : structure{structure}, center_it{structure->begin()}, provider{calc} {
       json input_data = json_io::load(filename);
 
       this->function_inputs = this->get_function_inputs();
@@ -776,24 +1040,24 @@ namespace rascal {
       }
     }
 
-    ~RepresentationManagerGradientFixture() = default;
+    ~RepresentationCalculatorGradientFixture() = default;
 
-    const Calculator_t & get_calculator() { return calculator; }
+    const Provider_t & get_provider() { return provider; }
 
     /**
      * Go to the next center in the structure
      *
      * Not (yet) implemented as iterator because that overcomplicates things
      */
-    inline void advance_center() {
+    void advance_center() {
       ++this->center_it;
-      this->calculator.advance_center();
+      this->provider.advance_center();
       if (this->has_next()) {
         this->function_inputs = get_function_inputs();
       }
     }
 
-    inline bool has_next() { return (this->center_it != structure->end()); }
+    bool has_next() { return (this->center_it != structure->end()); }
 
    private:
     StdVector2Dim_t get_function_inputs() {
@@ -804,14 +1068,14 @@ namespace rascal {
       return inputs_new;
     }
 
-    std::shared_ptr<StructureManager_t> structure;
-    typename StructureManager_t::iterator center_it;
-    Calculator_t & calculator;
+    std::shared_ptr<StructureManager> structure;
+    typename StructureManager::iterator center_it;
+    Provider_t & provider;
   };
 
-  struct MultipleStructureSortedCoulomb
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+  template <class MultipleStructureFixture>
+  struct MultipleStructureSortedCoulomb : MultipleStructureFixture {
+    using Parent = MultipleStructureFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSortedCoulomb;
     MultipleStructureSortedCoulomb() : Parent{} {};
@@ -848,16 +1112,43 @@ namespace rascal {
     using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSortedCoulomb;
-    SortedCoulombTestData() : Parent{} { this->get_ref(this->ref_filename); }
+    SortedCoulombTestData() { this->get_ref(this->ref_filename); }
     ~SortedCoulombTestData() = default;
 
-    // name of the file containing the reference data. it has been generated
-    // with the following python code:
-    // script/generate_sorted_coulomb_ref_data.py
+    void get_ref(const std::string & ref_filename) {
+      this->ref_data =
+          json::from_ubjson(internal::read_binary_file(ref_filename));
+      auto filenames =
+          this->ref_data.at("filenames").get<std::vector<std::string>>();
+      auto cutoffs = this->ref_data.at("cutoffs").get<std::vector<double>>();
 
-    const bool consider_ghost_neighbours{false};
-    std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
-    bool verbose{true};
+      for (auto && filename : filenames) {
+        for (auto && cutoff : cutoffs) {
+          // std::cout << filename << " " << cutoff << std::endl;
+          json parameters;
+          json structure{{"filename", filename}};
+          json adaptors;
+          json ad1{{"name", "AdaptorNeighbourList"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
+          json ad2{{"name", "AdaptorStrict"},
+                   {"initialization_arguments", {{"cutoff", cutoff}}}};
+          adaptors.emplace_back(ad1);
+          adaptors.emplace_back(ad2);
+
+          parameters["structure"] = structure;
+          parameters["adaptors"] = adaptors;
+
+          this->factory_args.emplace_back(parameters);
+        }
+      }
+    }
+
+    json ref_data{};
+    json factory_args{};
+
+    std::string ref_filename{
+        "reference_data/tests_only/sorted_coulomb_reference.ubjson"};
+    bool verbose{false};
   };
 
   template <class BaseFixture>

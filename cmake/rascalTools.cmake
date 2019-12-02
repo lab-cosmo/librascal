@@ -221,8 +221,6 @@ function(add_external_package package)
     endif()
   endif()
 
-
-
   if(EXISTS ${_cmake_includes}/${package}.cmake)
     include(${_cmake_includes}/${package}.cmake)
   endif()

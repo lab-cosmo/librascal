@@ -1,6 +1,29 @@
+/**
+ * @file   test_math_spherical_harmonics.cc
+ *
+ * @section LICENSE
+ *
+ * Copyright  2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
+ *
+ * Rascal is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3, or (at
+ * your option) any later version.
+ *
+ * Rascal is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software; see the file LICENSE. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
-#include "tests.hh"
 #include "test_math.hh"
+
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 
@@ -70,7 +93,7 @@ namespace rascal {
       }
       double rel_error{
           (harmonics_calculator.get_harmonics() - harmonics_ref).norm()};
-      BOOST_CHECK_LE(rel_error, 2 * math::dbl_ftol);
+      BOOST_CHECK_LE(rel_error, 2 * math::DBL_FTOL);
       // TODO(alex) check with main_test_suite -l success and remove
       if (verbose) {
         std::cout << ">> Boost check perfomed." << std::endl;
@@ -150,7 +173,7 @@ namespace rascal {
       double rel_error{
           (harmonics_calculator.get_assoc_legendre_polynom() - alps_ref)
               .norm()};
-      BOOST_CHECK_LE(rel_error, 10 * math::dbl_ftol);
+      BOOST_CHECK_LE(rel_error, 10 * math::DBL_FTOL);
       // Checks if the additional last column of the associated legendre
       // polynomial matrix contains only zero entries
       BOOST_CHECK_EQUAL(harmonics_calculator.get_assoc_legendre_polynom_raw()
@@ -186,8 +209,8 @@ namespace rascal {
                                 std::cos(m_idx * phi_test(phi_idx)))};
         auto sin_error{std::abs(cos_sin_m_phi(m_idx, 1) -
                                 std::sin(m_idx * phi_test(phi_idx)))};
-        BOOST_CHECK_LE(cos_error, math::dbl_ftol);
-        BOOST_CHECK_LE(sin_error, math::dbl_ftol);
+        BOOST_CHECK_LE(cos_error, math::DBL_FTOL);
+        BOOST_CHECK_LE(sin_error, math::DBL_FTOL);
       }
     }
   }
@@ -201,7 +224,7 @@ namespace rascal {
         harmonics_grad_calc{};
     harmonics_grad_calc.precompute();
     GradientTestFixture fix{
-        "reference_data/spherical_harmonics_gradient_test.json"};
+        "reference_data/tests_only/spherical_harmonics_gradient_test.json"};
     test_gradients(harmonics_grad_calc, fix);
   }
 

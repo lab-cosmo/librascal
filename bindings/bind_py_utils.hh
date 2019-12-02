@@ -28,8 +28,6 @@
 #ifndef BINDINGS_BIND_PY_UTILS_HH_
 #define BINDINGS_BIND_PY_UTILS_HH_
 
-#include "utils/sparsify_utilities.hh"
-
 #include "bind_include.hh"
 
 namespace rascal {

@@ -1,11 +1,12 @@
 /**
- * file test_manager_collection.hh
+ * @file test_manager_collection.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   14 June 2019
  *
- * @brief
+ * @brief contains the fixtures with data for the tests of the structure
+ *        manager collection
  *
  * @section LICENSE
  *
@@ -30,23 +31,23 @@
 #ifndef TESTS_TEST_MANAGER_COLLECTION_HH_
 #define TESTS_TEST_MANAGER_COLLECTION_HH_
 
-#include "tests.hh"
 #include "test_adaptor.hh"
-#include "structure_managers/structure_manager_collection.hh"
+
+#include "rascal/structure_managers/structure_manager_collection.hh"
 
 namespace rascal {
 
-  struct StrictNLCollectionFixture : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
+  struct StrictNLCollectionFixture : MultipleStructureManagerNLCCStrictFixture {
+    using Parent = MultipleStructureManagerNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
     StrictNLCollectionFixture() : Parent{} {};
 
     ~StrictNLCollectionFixture() = default;
 
-    std::string filename{"reference_data/dft-smiles_500.ubjson"};
-    int start{0};
-    int lenght{10};
+    std::string filename{"reference_data/tests_only/dft-smiles_500.ubjson"};
+    int start{5};
+    int length{3};
   };
 
   /**

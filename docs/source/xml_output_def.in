@@ -1,1 +1,0 @@
-XML_OUTPUT = @CMAKE_CURRENT_BINARY_DIR@/doxygenxml

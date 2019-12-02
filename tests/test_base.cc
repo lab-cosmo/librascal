@@ -1,5 +1,5 @@
 /**
- * file   test_base.cc
+ * @file   test_base.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -27,9 +27,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
-
 #include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 

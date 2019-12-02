@@ -29,10 +29,9 @@
 #define BINDINGS_BIND_PY_MODULE_HH_
 
 #include "bind_include.hh"
-#include "bind_py_math.hh"
+#include "bind_py_models.hh"
 #include "bind_py_representation_calculator.hh"
 #include "bind_py_structure_manager.hh"
 #include "bind_py_utils.hh"
-#include "bind_py_models.hh"
 
 #endif  // BINDINGS_BIND_PY_MODULE_HH_

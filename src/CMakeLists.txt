@@ -30,23 +30,29 @@
 # Boston, MA 02111-1307, USA.
 # =============================================================================
 
+set(RASCAL_SOURCES
+    rascal/json_io.cc
+    rascal/units.cc
+    rascal/utils.cc
+    rascal/utils/sparsify_fps.cc
 
+    rascal/math/bessel.cc
+    rascal/math/hyp1f1.cc
+    rascal/math/interpolator.cc
+    rascal/math/gauss_legendre.cc
+    rascal/math/spherical_harmonics.cc
 
-add_library("${LIBRASCAL_NAME}" "")
+    rascal/structure_managers/structure_manager_lammps.cc
+    rascal/structure_managers/structure_manager_centers.cc
+    rascal/representations/calculator_base.cc
+)
 
-set(rascal_SRC
-  ${CMAKE_CURRENT_SOURCE_DIR}/json_io.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/units.cc
-  )
-target_sources("${LIBRASCAL_NAME}" PRIVATE ${rascal_SRC})
+add_library(${LIBRASCAL_NAME} ${RASCAL_SOURCES})
 
+target_include_directories(${LIBRASCAL_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_options(${LIBRASCAL_NAME} PRIVATE -Werror)
 
-target_link_libraries("${LIBRASCAL_NAME}" PUBLIC Eigen3::Eigen)
-target_link_libraries("${LIBRASCAL_NAME}" PUBLIC "${WIGXJPF_NAME}")
+target_link_libraries(${LIBRASCAL_NAME} PUBLIC Eigen3::Eigen)
+target_link_libraries(${LIBRASCAL_NAME} PUBLIC ${WIGXJPF_NAME})
 
-add_subdirectory(structure_managers)
-add_subdirectory(representations)
-add_subdirectory(utils)
-add_subdirectory(math)
-
-install(TARGETS "${LIBRASCAL_NAME}" DESTINATION lib)
+install(TARGETS ${LIBRASCAL_NAME} DESTINATION lib)

@@ -1,5 +1,5 @@
 /**
- * file   alanine_chain.cc
+ * @file   examples/alanine_chain.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -25,12 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <structure_managers/structure_manager_centers.hh>
-#include <structure_managers/make_structure_manager.hh>
-#include <structure_managers/adaptor_neighbour_list.hh>
-#include <structure_managers/property.hh>
-
-#include "json.hpp"
+#include "rascal/external/json.hpp"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/property.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
 
 #include <iostream>
 #include <vector>
@@ -62,11 +61,11 @@ int main() {
    */
 
   // read atomic structure from the JSON file
-  // manager.read_structure_from_json("alanine-X.json");
-  // manager.update("alanine-X.json");
+  // manager.read_structure_from_json("../reference_data/inputs/alanine-X-examples.json");
+  // manager.update("../reference_data/inputs/alanine-X-examples.json");
   auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(
       manager, cutoff)};
-  std::string filename{"alanine-X.json"};
+  std::string filename{"../reference_data/inputs/alanine-X.json"};
   pair_manager->update(filename);
 
   // Loop over the defined quadruplets and calculate the respective

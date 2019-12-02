@@ -1,5 +1,5 @@
 /**
- * file test_structure.hh
+ * @file test_structure.hh
  *
  * @author Till Junge <till.junge@altermail.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>
@@ -33,16 +33,17 @@
 #ifndef TESTS_TEST_STRUCTURE_HH_
 #define TESTS_TEST_STRUCTURE_HH_
 
-#include "structure_managers/structure_manager_base.hh"
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/structure_manager_lammps.hh"
-#include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/adaptor_increase_maxorder.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_half_neighbour_list.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "rascal_utility.hh"
+#include "rascal/structure_managers/adaptor_center_contribution.hh"
+#include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_increase_maxorder.hh"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/structure_manager.hh"
+#include "rascal/structure_managers/structure_manager_base.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
+#include "rascal/structure_managers/structure_manager_lammps.hh"
+#include "rascal/utils.hh"
 
 namespace rascal {
 
@@ -99,8 +100,9 @@ namespace rascal {
   struct ManagerFixtureFile : public ManagerFixture<ManagerImplementation> {
     // initialize manager variable
     ManagerFixtureFile()
-        : ManagerFixture<ManagerImplementation>{}, cutoff{1.},
-          filename{"simple_cubic_9.json"}  // initialize current fixture
+        : ManagerFixture<ManagerImplementation>{}, cutoff{3.5},
+          filename{"reference_data/inputs/simple_cubic_9.json"}
+    // initialize current fixture
     {
       this->manager->update(filename);
     }
@@ -125,8 +127,8 @@ namespace rascal {
     ManagerFixtureTwoHcp()
         : ManagerFixtureTwo<StructureManagerCenters>{}, pbc{{true, true, true}},
           cell_1(3, 3), cell_2(3, 3), positions_1(3, 2), positions_2(3, 2),
-          atom_types(2), cutoff{0.7} {
-      /*
+          atom_types(2), cutoff{1.01} {
+      /**
        * hcp crystal with lattice parameter a = 1, c = sqrt(8/3), defined in two
        * unit cells: basal and prismatic 1. The neighbourlist is built with the
        * same cutoff. The test checks, if all atoms have the same number of
@@ -135,21 +137,25 @@ namespace rascal {
       auto a{1.};
       auto c{std::sqrt(8. / 3.)};
       // clang-format off
+      // basal cell
       cell_1 << a,                -0.5 * a, 0.,
                 0., std::sqrt(3.) / 2. * a, 0.,
                 0., 0.,                      c;
 
+
+      // prism cell
       cell_2 << a,  0.,                0.5 * a,
-                0.,  c,                     0.,
+                0., c ,                     0.,
                 0., 0., std::sqrt(3.) / 2. * a;
       // clang-format on
-      auto p_1 = 2. / 3. * cell_1.col(0) + 1. / 3. * cell_1.col(1) +
-                 1. / 2. * cell_1.col(2);
+      auto h{std::sqrt(3.) / 2. * a};
+      auto r{std::sqrt(3.) / 6. * a};
+
+      Eigen::Vector3d p_1(0, h - r, c / 2.);
 
       positions_1 << 0.0, p_1[0], 0.0, p_1[1], 0.0, p_1[2];
 
-      auto p_2 = -1. / 3. * cell_2.col(0) + 1. / 2. * cell_2.col(1) +
-                 2. / 3. * cell_2.col(2);
+      Eigen::Vector3d p_2(a / 2., c / 2., r);
 
       positions_2 << 0.0, p_2[0], 0.0, p_2[1], 0.0, p_2[2];
 
@@ -160,7 +166,7 @@ namespace rascal {
       manager_1->update(positions_1, atom_types, cell_1, PBC_t{pbc.data()});
 
       manager_2->update(positions_2, atom_types, cell_2, PBC_t{pbc.data()});
-    }
+    }  // namespace rascal
 
     ~ManagerFixtureTwoHcp() {}
 
@@ -175,7 +181,7 @@ namespace rascal {
     double cutoff;
 
     const int natoms{2};
-  };
+  };  // namespace rascal
 
   /* ---------------------------------------------------------------------- */
   /**
@@ -342,7 +348,7 @@ namespace rascal {
 
     PairFixtureFile()
         : pair_manager{make_adapted_manager<AdaptorNeighbourList>(
-              this->fixture.manager, this->fixture.cutoff, true)} {
+              this->fixture.manager, this->fixture.cutoff)} {
       this->pair_manager->update();
     }
 
@@ -388,54 +394,44 @@ namespace rascal {
   template <>
   struct ManagerFixture<StructureManagerCenters> {
     using Manager_t = StructureManagerCenters;
+    using ArrayB_t = AtomicStructure<3>::ArrayB_t;
 
     ManagerFixture()
-        : manager{make_structure_manager<Manager_t>()}, positions(22, 3),
-          atom_types(22), cell(3, 3), pbc{{true, true, true}}, cutoff{2.} {
-      // clang-format off
-      cell << 6.19, 2.41, 0.21,
-              0.00, 6.15, 1.02,
-              0.00, 0.00, 7.31;
+        : manager{make_structure_manager<Manager_t>()}, cutoff{2.} {
+      Eigen::ArrayXi to_change_id(50);
+      ArrayB_t center_atoms_mask(50);
+      for (auto & filename : this->filenames) {
+        for (auto & n_is_not_center : this->n_is_not_centers) {
+          structures.emplace_back();
+          structures.back().set_structure(filename);
 
-      positions << 3.689540159937393, 5.123016813620886, 1.994119731169116,
-          6.818437242389163, 2.630056617829216, 6.182500355729062,
-          2.114977334498767, 6.697579639059512, 1.392155450018263,
-          7.420401523540017, 2.432242071439904, 6.380314902118375,
-          1.112656394115962, 7.699900579442317, 3.569715877854675,
-          5.242841095703604, 3.122826344932127, 5.689730628626151,
-          3.248684682453303, 5.563872291104976, 2.608353462112637,
-          6.204203511445642, 5.035681855581504, 2.134827911489532,
-          0.946910011088814, 6.223599755982222, 4.168634519120968,
-          3.001875247950068, 1.980327734683430, 5.190182032387606,
-          2.943861424421339, 4.226648342649697, 5.457161501166098,
-          1.713348265904937, 1.501663178733906, 5.668846588337130,
-          5.208365510425203, 1.962144256645833, 2.728127406527150,
-          4.442382360543885, 2.839975217222644, 4.330534549848392,
-          0.744216089807768, 6.426293677263268, 4.643695520786083,
-          2.662204050783991, 1.250682335857938, 6.055217235712136,
-          0.860905287815103, 6.444994283754972, 4.536108843695142,
-          2.769790727874932, 5.609177455068640, 1.696722116501434,
-          6.703053268421970, 0.602846303148105, 3.487609972580834,
-          3.818289598989240, 1.436734374347541, 5.869165197222533,
-          1.054504320562138, 6.251395251007936, 3.998423858825871,
-          3.307475712744203, 5.323662899811682, 1.982236671758393;
-      // clang-format on
-      positions.transposeInPlace();
-      atom_types << 20, 20, 24, 24, 15, 15, 15, 15, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-          8, 8, 8, 8, 8;
+          // don't center on all atoms
+          center_atoms_mask =
+              ArrayB_t::Ones(structures.back().get_number_of_atoms());
+          to_change_id = ((Eigen::ArrayXd::Random(n_is_not_center) +
+                           Eigen::ArrayXd::Ones(n_is_not_center)) *
+                          ((center_atoms_mask.size() - 1) * 0.5))
+                             .cast<int>();
+          for (int i_id{0}; i_id < n_is_not_center; ++i_id) {
+            center_atoms_mask(to_change_id(i_id)) = false;
+          }
 
-      using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
-      manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
-      structure.set_structure(positions, atom_types, cell, PBC_t{pbc.data()});
+          structures.back().center_atoms_mask = center_atoms_mask;
+          managers.push_back(make_structure_manager<Manager_t>());
+          managers.back()->update(structures.back());
+        }
+      }
+      manager->update(structures[0]);
     }
 
     ~ManagerFixture() {}
-    AtomicStructure<3> structure{};
+
     std::shared_ptr<Manager_t> manager;
-    Eigen::MatrixXd positions;
-    Eigen::VectorXi atom_types;
-    Eigen::MatrixXd cell;
-    std::array<int, 3> pbc;
+    std::vector<AtomicStructure<3>> structures{};
+    std::vector<std::shared_ptr<Manager_t>> managers{};
+    std::vector<std::string> filenames{
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
+    std::vector<int> n_is_not_centers{0, 3, 5};
     double cutoff;
   };
 
@@ -449,7 +445,7 @@ namespace rascal {
     ManagerFixtureSimple()
         : ManagerFixture<StructureManagerCenters>{}, pbc{{true, false, false}},
           cell(3, 3), positions(3, 8), atom_types(8), cutoff{2.1}, natoms{8} {
-      cell << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.5;
+      cell << 2.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 2.0;
       // clang-format off
       positions << 0.4, 1.4, 0.4,
                    1.4, 0.4, 1.4,
@@ -467,6 +463,55 @@ namespace rascal {
     }
 
     ~ManagerFixtureSimple() {}
+
+    std::array<int, 3> pbc;
+    Eigen::MatrixXd cell;
+    Eigen::MatrixXd positions;
+    Eigen::VectorXi atom_types;
+
+    double cutoff;
+
+    const int natoms;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * A manager using ManagerCenters to check the neighbourlist algorithm
+   * with a very skewed cell and positions right at the edge of the periodicity
+   */
+  struct ManagerFixtureSkewDeltaRcut
+      : public ManagerFixture<StructureManagerCenters> {
+    ManagerFixtureSkewDeltaRcut()
+        : ManagerFixture<StructureManagerCenters>{}, pbc{{true, true, true}},
+          cell(3, 3), positions(12, 3),
+          atom_types(12), cutoff{0.997}, natoms{12} {
+      cell << 10.0, 0.0, 0.0, 9.396926207859085, 3.420201433256687, 0.0,
+          9.396926207859085, 1.6569316261720377, 2.992048701181514;
+
+      cell.transposeInPlace();
+      // clang-format off
+      positions <<  0.00100000, 0.00000000, 0.00000000,
+                    9.99900000, 0.00000000, 0.00000000,
+                   10.00000000, 0.00100000, 0.00000000,
+                    9.39692621, 3.41920143, 0.00000000,
+                   19.39692621, 3.42020143, 0.00100000,
+                    9.39692621, 1.65693163, 2.99104870,
+                    0.49800000, 0.00000000, 0.00000000,
+                    9.50200000, 0.00000000, 0.00000000,
+                   10.00000000, 0.49800000, 0.00000000,
+                    9.39692621, 2.92220143, 0.00000000,
+                   19.39692621, 3.42020143, 0.49800000,
+                    9.39692621, 1.65693163, 2.49404870;
+      // clang-format on
+      positions.transposeInPlace();
+
+      atom_types << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
+
+      using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
+      this->manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
+    }
+
+    ~ManagerFixtureSkewDeltaRcut() {}
 
     std::array<int, 3> pbc;
     Eigen::MatrixXd cell;

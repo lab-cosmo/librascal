@@ -2,6 +2,26 @@ import json
 import numpy as np
 
 
+def intersection(X, Y=None):
+    if Y is None:
+        return list(X.keys())
+    else:
+        return list(set(X.keys()).intersection(Y.keys()))
+
+
+def dot(X, Y=None):
+    key_intersection = intersection(X, Y)
+
+    if Y is None:
+        Y = X
+    N = X[key_intersection[0]].shape[0]
+    M = Y[key_intersection[0]].shape[0]
+    K = np.zeros((N, M))
+    for key in key_intersection:
+        K += np.dot(X[key], Y[key].T)
+    return K
+
+
 def adapt_structure(cell, positions, numbers, pbc):
     cell = np.array(cell.T, order='F')
     positions = np.array(positions.T, order='F')
@@ -31,8 +51,9 @@ def load_json_frame(fn):
     with open(fn, 'r') as f:
         data = json.load(f)
     ids = data['ids']
-    structure = {key: np.array(val)
-                 for idx in ids for key, val in data[str(idx)].items()}
+    keys = ['cell', 'positions', 'numbers', 'pbc']
+    structure = {key: np.array(data[str(idx)][key])
+                 for idx in ids for key in keys}
 
     return adapt_structure(**structure)
 
@@ -81,7 +102,7 @@ class BoxList(object):
 
     def cell2lin(self, ids):
         return int(ids[0] + self.nbins_c[0] * (ids[1] + self.nbins_c[1]
-                    * ids[2]))
+                                               * ids[2]))
 
     def iter_box(self):
         for bin_id in range(self.nbins):
@@ -107,15 +128,15 @@ class Box(object):
             if 0 == self.mult_pos[ii] and p is False:
                 self.search_idx.append(
                     [self.mult_pos[ii]+jj for jj in range(
-                                                    self.neigh_search[ii]+1)])
+                        self.neigh_search[ii]+1)])
             elif self.nbins_c[ii]-1 == self.mult_pos[ii] and p is False:
                 self.search_idx.append(
                     [self.mult_pos[ii]+jj for jj in range(
-                                                -self.neigh_search[ii], 0+1)])
+                        -self.neigh_search[ii], 0+1)])
             else:
                 self.search_idx.append([self.mult_pos[ii]+jj for jj in
                                         range(-self.neigh_search[ii],
-                                        self.neigh_search[ii]+1)])
+                                              self.neigh_search[ii]+1)])
 
         self.neighbour_bin_index, self.neighbour_bin_shift = [], []
         for ii in self.search_idx[0]:
@@ -128,7 +149,7 @@ class Box(object):
 
     def cell2lin(self, ids):
         return int(ids[0] + self.nbins_c[0] * (ids[1] + self.nbins_c[1]
-                    * ids[2]))
+                                               * ids[2]))
 
     def lin2cell(self, lin_ids):
         fac = 1

@@ -28,22 +28,28 @@
 #ifndef BINDINGS_BIND_INCLUDE_HH_
 #define BINDINGS_BIND_INCLUDE_HH_
 
-#include "atomic_structure.hh"
-#include "rascal_utility.hh"
+#include "rascal/atomic_structure.hh"
+#include "rascal/utils.hh"
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl_bind.h>
 #include <pybind11/eigen.h>
-#include <pybind11/stl.h>
 #include <pybind11/iostream.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 // for the hasattr function to test the module namespace
 #include <pybind11/pytypes.h>
 
 #include <Eigen/Dense>
-#include <vector>
+
 #include <map>
 #include <memory>
+#include <vector>
 
+/*
+ * Prevent vector of atomic structures from being copied into a Python list,
+ * since we already have the AtomsList object.  See also
+ * https://pybind11.readthedocs.io/en/stable/advanced/cast/stl.html
+ */
 PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 
 namespace py = pybind11;
@@ -51,38 +57,25 @@ namespace py = pybind11;
 namespace rascal {
 
   namespace internal {
-
     /**
-     * Mapping to search and replace in type names
-     * when giving binding name
-     */
-    struct SubstitutionMap {
-      using Map = std::map<std::string, std::string>;
-      Map mapping = {{"StructureManager", ""},
-                     {"Adaptor", ""},
-                     {"Calculator", ""},
-                     {"Calculator", ""}};
-    };
-
-    /**
-     * Transforms the template type to a string for the pyhton bindings.
+     * Transforms the template type to a string for the python bindings.
      * There are submodules in the python bindings with the class
-     * tittle so to avoid redundancy they are removed from the
+     * title so to avoid redundancy they are removed from the
      * typename.
-     * @template T type that should be stringifyied
+     * @tparam T type that should be stringified
      * @returns std::string name of the type
      */
     template <typename T>
     std::string GetBindingTypeName() {
-      std::string typeName = GetTypeName<T>();
-      SubstitutionMap ojb{};
-      std::vector<std::string> names{typeName};
-      for (const auto & map : ojb.mapping) {
-        names.push_back(std::regex_replace(
-            names.back(), std::regex(map.first.c_str()), map.second.c_str()));
+      static std::map<std::string, std::string> replacement_map = {
+          {"StructureManager", ""}, {"Adaptor", ""}, {"Calculator", ""}};
+
+      std::string name = type_name<T>();
+      for (const auto & map : replacement_map) {
+        replace(name, map.first, map.second);
       }
 
-      return names.back();
+      return name;
     }
   }  // namespace internal
 }  // namespace rascal

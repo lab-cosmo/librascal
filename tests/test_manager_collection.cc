@@ -1,5 +1,5 @@
 /**
- * file test_manager_collection.cc
+ * @file test_manager_collection.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -29,6 +29,9 @@
 
 #include "test_manager_collection.hh"
 
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
+
 namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(manager_collection_test);
@@ -44,11 +47,11 @@ namespace rascal {
     auto & collections = Fix::collections;
     auto & filename = Fix::filename;
     auto & start = Fix::start;
-    auto & lenght = Fix::lenght;
+    auto & length = Fix::length;
 
     for (auto & collection : collections) {
-      collection.add_structures(filename, start, lenght);
-      BOOST_CHECK_EQUAL(collection.size(), lenght);
+      collection.add_structures(filename, start, length);
+      BOOST_CHECK_EQUAL(collection.size(), length);
     }
   }
 
@@ -60,10 +63,11 @@ namespace rascal {
     auto & collections = Fix::collections;
     auto & filename = Fix::filename;
     auto & start = Fix::start;
-    auto & lenght = Fix::lenght;
+    auto & length = Fix::length;
 
     for (auto & collection : collections) {
-      collection.add_structures(filename, start + 30, lenght + 5);
+      // add some integer constant to not start at position zero
+      collection.add_structures(filename, start + 30, length + 5);
 
       for (auto & manager : collection) {
         for (auto atom : manager) {

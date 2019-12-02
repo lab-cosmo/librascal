@@ -1,5 +1,5 @@
 /**
- * file   structure_manager_iteration.cc
+ * @file   examples/structure_manager_iteration.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -26,13 +26,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <structure_managers/adaptor_half_neighbour_list.hh>
-#include <structure_managers/adaptor_increase_maxorder.hh>
-#include <structure_managers/adaptor_neighbour_list.hh>
-#include <structure_managers/adaptor_strict.hh>
-#include <structure_managers/make_structure_manager.hh>
-#include <structure_managers/property.hh>
-#include <structure_managers/structure_manager_centers.hh>
+#include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_increase_maxorder.hh"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/property.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
 
 /**
  * This small example highlight the possibilities of adapting a structure
@@ -43,57 +43,63 @@
  * on the stacking.
  */
 
-// Shorthands for templated types for readability.
-using Manager_t = rascal::StructureManagerCenters;
-using PairManager_t = rascal::AdaptorNeighbourList<Manager_t>;
+using namespace rascal;  // NOLINT
 
-using StrictPairManager_t = rascal::AdaptorStrict<PairManager_t>;
-using TripletManager_t = rascal::AdaptorMaxOrder<StrictPairManager_t>;
+// Shorthands for templated types for readability.
+using Manager_t = StructureManagerCenters;
+using PairManager_t = AdaptorNeighbourList<Manager_t>;
+
+using StrictPairManager_t = AdaptorStrict<PairManager_t>;
+using TripletManager_t = AdaptorMaxOrder<StrictPairManager_t>;
 
 int main() {
-  auto manager{rascal::make_structure_manager<Manager_t>()};
-  double cutoff{1.};
+  auto manager{make_structure_manager<Manager_t>()};
+  double cutoff{3.};
   /**
    * These structures here are sample structures and can be used to iterate
    * over.
    *
    * `crystal_structure.json` is a fully periodic metallic hcp structure.
    *
-   * `alanine-X.json` is a unit cell of a polyalanine chain.
+   * `alanine-X-examples.json` is a unit cell of a polyalanine
+   * chain.
+   *
+   * `alanine-center-select.json` is the same with only the heavy (non-H)
+   * atoms selected for iteration.
    *
    * `simple_cubic_9.json` is an artificial 9-atom test structure.
    */
 
-  std::string filename{"crystal_structure.json"};
-  // std::string filename{"alanine-X.json"};
-  // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+  std::string filename{"reference_data/inputs/small_molecule.json"};
+  // std::string filename{"reference_data/inputs/alanine-X-examples.json"};
+  // std::string
+  // filename{"reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
 
   std::cout << "Reading structure " << filename << std::endl;
 
   // `manager` is the data object which reads, stores and gives access to atom
   // positions, types. It also provides iteration over all atom.
-  //  manager.update(filename);
+  manager->update(filename);
+
+  // std::cout << "Atoms mask: " << manager->get_center_atoms_mask()
+  //          << std::endl;
 
   // `pair_manager` is constructed with the `manager` and a `cutoff`.
-  auto pair_manager{rascal::make_adapted_manager<rascal::AdaptorNeighbourList>(
-      manager, cutoff, true)};
+  auto pair_manager{
+      make_adapted_manager<AdaptorNeighbourList>(manager, cutoff)};
   // By invoking the `.update()` method, a neighbour list is built.
-  //  pair_manager->update();
+  pair_manager->update();
 
   // `strict_manager` is constructed with a `pair_manager`.
-  auto strict_manager{rascal::make_adapted_manager<rascal::AdaptorStrict>(
-      pair_manager, cutoff)};
-  // calling the `.update()` method triggers the build of a strict neighbourlist
-  // (all pairs are within the specified cutoff)
-  //  strict_manager.update();
+  auto strict_manager{
+      make_adapted_manager<AdaptorStrict>(pair_manager, cutoff)};
 
   // `triplet_manager` is constructed with a pair list (strict or not, here
   // strict)
-  auto triplet_manager{
-      rascal::make_adapted_manager<rascal::AdaptorMaxOrder>(strict_manager)};
+  auto triplet_manager{make_adapted_manager<AdaptorMaxOrder>(strict_manager)};
   // `.update()` triggers the extension of the pair list to triplets
   // triplet_manager->update(positions, atom_types, cell, PBC_t{pbc.data()});
-  triplet_manager->update(filename);
+  triplet_manager->update();
 
   // Iteration over `manager`
   std::cout << "manager iteration over atoms" << std::endl;
@@ -120,6 +126,7 @@ int main() {
     }
   }
 
+  // `strict_manager` provides iteration over atoms and strict pairs
   // `triplet_manager` provides iteration over atoms, strict pairs and strict
   // triplets
   for (auto atom : triplet_manager) {

@@ -1,5 +1,5 @@
 /**
- * file   test_math_math.cc
+ * @file   test_math_math.cc
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
@@ -25,8 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
 #include "test_math.hh"
+
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 
@@ -52,37 +53,34 @@ namespace rascal {
       // check if hyp1f1 is consistent with the
       // mpmath reference
       double rel_error{std::abs((hyp1f1_ref - val) / hyp1f1_ref)};
-      if (rel_error > 15 * math::dbl_ftol and this->verbose) {
+      if (rel_error > 15 * math::DBL_FTOL and this->verbose) {
         std::cout << " a=" << a << " b=" << b << " z=" << z
-                  << " ref=" << hyp1f1_ref << " impl=" << val << " z_switch=";
-        std::cout << func.get_z_switch() << std::endl;
+                  << " ref=" << hyp1f1_ref << " impl=" << val << std::endl;
       }
-      BOOST_CHECK_LE(rel_error, 15 * math::dbl_ftol);
+      BOOST_CHECK_LE(rel_error, 15 * math::DBL_FTOL);
 
       // check if the analytical derivatives are consistent with the
       // mpmath reference
       double rel_der_error{std::abs((hyp1f1_der_ref - der) / hyp1f1_der_ref)};
-      if (rel_der_error > 15 * math::dbl_ftol and this->verbose) {
+      if (rel_der_error > 15 * math::DBL_FTOL and this->verbose) {
         std::cout << "Derivative a=" << a << " b=" << b << " z=" << z
                   << " ref=" << hyp1f1_der_ref << " impl=" << der
-                  << " rel_err=" << rel_der_error << " z_switch=";
-        std::cout << func.get_z_switch() << std::endl;
+                  << " rel_err=" << rel_der_error << std::endl;
       }
-      BOOST_CHECK_LE(rel_der_error, 15 * math::dbl_ftol);
+      BOOST_CHECK_LE(rel_der_error, 15 * math::DBL_FTOL);
 
       // check if the numerical derivatives are consistent with the
       // analytical ones
       double der_consistency_rel_error{
           std::abs((hyp1f1_num_der - der) / hyp1f1_num_der)};
-      if (der_consistency_rel_error > 1e5 * math::dbl_ftol and this->verbose) {
+      if (der_consistency_rel_error > 1e5 * math::DBL_FTOL and this->verbose) {
         std::cout << "Derivative consistency a=" << a << " b=" << b
                   << " z=" << z << " num_der=" << hyp1f1_num_der
                   << " impl=" << der
-                  << " rel_diff=" << der_consistency_rel_error << " z_switch=";
-        std::cout << func.get_z_switch() << std::endl;
+                  << " rel_diff=" << der_consistency_rel_error << std::endl;
       }
 
-      BOOST_CHECK_LE(der_consistency_rel_error, 1e5 * math::dbl_ftol);
+      BOOST_CHECK_LE(der_consistency_rel_error, 2e6 * math::DBL_FTOL);
     }
   }
 
@@ -111,8 +109,8 @@ namespace rascal {
             auto hyp1f1_recursion_der{hyp1f1_recursion[ii].get_derivatives()};
             auto diff_der{(hyp1f1_der - hyp1f1_recursion_der).array().abs() /
                           hyp1f1_der.array()};
-            BOOST_CHECK_LE(diff_val.mean(), 3 * math::dbl_ftol);
-            BOOST_CHECK_LE(diff_der.mean(), 3 * math::dbl_ftol);
+            BOOST_CHECK_LE(diff_val.mean(), 3 * math::DBL_FTOL);
+            BOOST_CHECK_LE(diff_der.mean(), 3 * math::DBL_FTOL);
             if (verbose) {
               std::cout << "diff_val= " << diff_val.mean()
                         << " diff_der=" << diff_der.mean() << std::endl;
@@ -137,7 +135,8 @@ namespace rascal {
     const double fac_a{0.5 * std::pow(0.2, -2)};
     Hyp1f1GradientProvider hyp1f1_calculator{max_radial, max_angular, fac_a,
                                              fac_b};
-    GradientTestFixture fix{"reference_data/radial_derivative_test.json"};
+    GradientTestFixture fix{
+        "reference_data/tests_only/radial_derivative_test.json"};
     test_gradients(hyp1f1_calculator, fix);
   }
 

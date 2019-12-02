@@ -1,5 +1,5 @@
 /**
- * file   sparsify_utilities.hh
+ * @file   sparsify_utilities.hh
  *
  * @author  Michele Ceriotti <michele.ceriotti@gmail.com>
  *
@@ -25,9 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
-#include "utils/sparsify_utilities.hh"
-#include <iostream>
+#include "rascal/utils/sparsify_fps.hh"
+
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 

@@ -1,5 +1,5 @@
 /**
- * file   test_adaptor_filter.cc
+ * @file   test_adaptor_filter.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -25,13 +25,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "structure_managers/adaptor_filter.hh"
-// TODO(markus): replace the following line after the branch feat/better_tests
-// is merged into master
 #include "test_structure.hh"
-#include "tests.hh"
+
+#include "rascal/structure_managers/adaptor_filter.hh"
 
 #include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <random>
 

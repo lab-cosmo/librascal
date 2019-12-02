@@ -1,5 +1,5 @@
 /**
- * file   test_adaptor_increase_maxlevel.cc
+ * @file   test_adaptor_increase_maxlevel.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -26,9 +26,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
 #include "test_structure.hh"
-#include "structure_managers/adaptor_half_neighbour_list.hh"
+
+#include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
+
+#include <boost/test/unit_test.hpp>
+
+constexpr double TOLERANCE = 1e-12;
 
 namespace rascal {
 
@@ -68,7 +72,7 @@ namespace rascal {
       std::cout << ">> underlying manager " << std::endl;
     }
     size_t npairs1{0};
-    for (auto atom : pair_manager->with_ghosts()) {
+    for (auto atom : pair_manager) {
       if (verbose) {
         std::cout << "atom " << atom.back() << std::endl;
       }
@@ -164,8 +168,8 @@ namespace rascal {
     BOOST_CHECK_EQUAL(SM3->get_nb_clusters(3), 1);
 
     for (auto atom : SM3) {
-      auto atom_tag = atom.get_atom_tag();
-      auto atom_type = atom.get_atom_type();
+      auto && atom_tag = atom.get_atom_tag();
+      auto && atom_type = atom.get_atom_type();
       BOOST_CHECK_EQUAL(atom_type, SM3->get_atom_type(atom_tag));
 
       auto atom_position = atom.get_position();
@@ -177,7 +181,7 @@ namespace rascal {
 
         auto neighbour_position = pair.get_position();
         auto diff_pos_pair = (neighbour_position - atom_position).norm();
-        BOOST_CHECK_CLOSE(diff_pos_pair, 1., tol);
+        BOOST_CHECK_CLOSE(diff_pos_pair, 1., TOLERANCE);
 
         for (auto triplet : pair) {
           if (verbose) {
@@ -193,7 +197,7 @@ namespace rascal {
 
           auto triplet_position = triplet.get_position();
           auto diff_pos_triplet = (triplet_position - atom_position).norm();
-          BOOST_CHECK_CLOSE(diff_pos_triplet, 1., tol);
+          BOOST_CHECK_CLOSE(diff_pos_triplet, 1., TOLERANCE);
         }
       }
     }

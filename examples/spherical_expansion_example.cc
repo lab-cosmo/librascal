@@ -1,5 +1,5 @@
 /**
- * file   spherical_expansion_example.cc
+ * @file   examples/spherical_expansion_example.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
@@ -25,33 +25,33 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "rascal_utility.hh"
-#include "representations/calculator_sorted_coulomb.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "basic_types.hh"
-#include "atomic_structure.hh"
+#include "rascal/atomic_structure.hh"
+#include "rascal/basic_types.hh"
+#include "rascal/representations/calculator_sorted_coulomb.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/structure_managers/adaptor_center_contribution.hh"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
+#include "rascal/utils.hh"
 
-#include <iostream>
-#include <basic_types.hh>
-#include <cmath>
-#include <list>
-#include <functional>
-#include <string>
-#include <initializer_list>
 #include <chrono>
+#include <cmath>
+#include <functional>
+#include <initializer_list>
+#include <iostream>
+#include <list>
+#include <string>
 
-// using namespace std;
 using namespace rascal;  // NOLINT
 
 using Representation_t = CalculatorSphericalExpansion;
-using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+using Manager_t = AdaptorStrict<
+    AdaptorCenterContribution<AdaptorNeighbourList<StructureManagerCenters>>>;
 using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
-using PropDer_t =
+using PropGrad_t =
     typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
 
 int main(int argc, char * argv[]) {
@@ -66,10 +66,10 @@ int main(int argc, char * argv[]) {
   double cutoff{4.};
   json hypers{
       {"max_radial", 3}, {"max_angular", 2}, {"compute_gradients", true}};
-  //{"soap_type", "PowerSpectrum"},
-  //{"normalize", true}};
+  // {"soap_type", "PowerSpectrum"},
+  // {"normalize", true}};
 
-  json fc_hypers{{"type", "Cosine"},
+  json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
                  {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
   json sigma_hypers{{"type", "Constant"},
@@ -82,15 +82,18 @@ int main(int argc, char * argv[]) {
   json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+           {"initialization_arguments", {{"cutoff", cutoff}}}};
+  json ad1b{{"name", "AdaptorCenterContribution"},
+            {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);
+  adaptors.emplace_back(ad1b);
   adaptors.emplace_back(ad2);
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorStrict>(
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>(
           structure, adaptors);
 
   Representation_t representation{hypers};
@@ -99,11 +102,6 @@ int main(int argc, char * argv[]) {
   constexpr size_t n_centers_print{4};
   constexpr size_t n_neigh_print{1};
 
-  // auto soap = representation.get_representation_full();
-  // std::cout << "Sample SOAP elements \n"
-  //<< soap(0, 0) << " " << soap(0, 1) << " " << soap(0, 2) << "\n"
-  //<< soap(1, 0) << " " << soap(1, 1) << " " << soap(1, 2) << "\n"
-  //<< soap(2, 0) << " " << soap(2, 1) << " " << soap(2, 2) << "\n";
   // Print the first few elements and gradients, so we know we're getting
   // something
   std::cout << "Expansion of first " << n_centers_print << " centers:";
@@ -116,9 +114,9 @@ int main(int argc, char * argv[]) {
   std::cout << std::endl;
 
   auto && expansions_coefficients{
-      manager->template get_property_ref<Prop_t>(representation.get_name())};
+      *manager->template get_property_ptr<Prop_t>(representation.get_name())};
   auto && expansions_coefficients_gradient{
-      manager->template get_property_ref<PropDer_t>(
+      *manager->template get_property_ptr<PropGrad_t>(
           representation.get_gradient_name())};
 
   size_t center_count{0};
@@ -126,6 +124,7 @@ int main(int argc, char * argv[]) {
     if (center_count >= n_centers_print) {
       break;
     }
+    auto ii_pair = center.get_atom_ii();
     size_t n_species_center{expansions_coefficients.get_keys(center).size()};
     std::cout << "============================" << std::endl;
     std::cout << "Center " << center.get_index();
@@ -134,7 +133,7 @@ int main(int argc, char * argv[]) {
     std::cout << std::endl;
     std::cout << "Gradient of this expansion wrt center pos: " << std::endl;
     std::cout << Eigen::Map<Eigen::MatrixXd>(
-        expansions_coefficients_gradient.get_dense_row(center).data(),
+        expansions_coefficients_gradient.get_dense_row(ii_pair).data(),
         3 * n_species_center, expansions_coefficients_gradient.get_nb_comp());
     std::cout << std::endl;
     size_t neigh_count{0};

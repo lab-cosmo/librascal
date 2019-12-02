@@ -1,5 +1,5 @@
 /**
- * @file   models.hh
+ * @file   bind_py_models.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -29,10 +29,10 @@
 #define BINDINGS_BIND_PY_MODELS_HH_
 
 #include "bind_include.hh"
-#include "bind_py_structure_manager.hh"
 #include "bind_py_representation_calculator.hh"
+#include "bind_py_structure_manager.hh"
 
-#include "models/kernels.hh"
+#include "rascal/models/kernels.hh"
 
 namespace rascal {
   void add_kernels(py::module &, py::module &);
