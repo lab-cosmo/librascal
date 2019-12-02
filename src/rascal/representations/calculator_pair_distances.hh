@@ -248,6 +248,8 @@ namespace rascal {
       }        // for neigh : center
     }          // for center : manager
   }            // compute_impl()
+  
+  
 
 }  // namespace rascal
 

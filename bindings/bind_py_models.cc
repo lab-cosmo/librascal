@@ -72,11 +72,14 @@ namespace rascal {
     // Defines the representation manager type for the particular structure
     // manager
     using Calc1_t = CalculatorSphericalInvariants;
+    using Calc2_t = CalculatorPairDistances;
     // Bind the interface of this representation manager
     auto kernel = add_kernel(mod, m_internal);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
                                  ManagerCollection_1_t>(kernel);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
                                  ManagerCollection_2_t>(kernel);
+    bind_kernel_compute_function<internal::KernelType::Gaussian, Calc2_t,
+                                 ManagerCollection_1_t>(kernel);
   }
 }  // namespace rascal

@@ -972,7 +972,7 @@ namespace rascal {
     std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
     bool verbose{false};
   };
-  
+
   template <class MultipleStructureFixture>
   struct MultipleStructurePairDistances : MultipleStructureFixture {
     using Parent = MultipleStructureFixture;
@@ -995,7 +995,7 @@ namespace rascal {
             {"cutoff", {{"value", 4.0}, {"unit", "AA"}}},
             {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
     std::vector<json> representation_hypers{};
-  };  
+  };
 
   struct PairDistancesTestData {
     using ManagerTypeHolder_t =

@@ -35,7 +35,7 @@
 namespace rascal {
 
   namespace internal {
-    enum class KernelType { Cosine };
+    enum class KernelType { Cosine, Gaussian };
 
     enum class TargetType { Structure, Atom };
 
@@ -171,6 +171,147 @@ namespace rascal {
         return std::move(kernel);
       }
     };
+    
+    template <>
+    struct KernelImpl<internal::KernelType::Gaussian> : KernelImplBase {
+      using Hypers_t = typename KernelImplBase::Hypers_t;
+
+      //! exponent of the cosine kernel
+      double theta{}; // Change later to vector for pair types
+
+      KernelImpl() = default;
+
+      explicit KernelImpl(const Hypers_t & hypers) : KernelImplBase{} {
+        this->set_hyperparameters(hypers);
+      }
+
+      void set_hyperparameters(const Hypers_t & hypers) {
+        if (hypers.count("theta") == 1) {
+          theta = hypers["theta"].get<double>();
+        } else {
+          throw std::runtime_error(
+              R"(theta should be specified for the Gaussian kernel)");
+        }
+      }
+
+      /**
+       * Compute the kernel between 2 set of structure(s)
+       *
+       * @tparam StructureManagers should be an iterable over shared pointer
+       *          of structure managers like ManagerCollection
+       */
+      template <
+          class Property_t, internal::TargetType Type,
+          std::enable_if_t<Type == internal::TargetType::Structure, int> = 0,
+          class StructureManagers>
+      math::Matrix_t compute(StructureManagers & managers_a,
+                             StructureManagers & managers_b,
+                             const std::string & representation_name) {
+        math::Matrix_t kernel(managers_a.size(), managers_b.size());
+        size_t ii_A{0};
+        for (auto & manager_a : managers_a) {
+          size_t ii_B{0};
+          auto && propA{
+              manager_a->template get_validated_property_ref<Property_t>(
+                  representation_name)};
+
+              for (auto & manager_b : managers_b) {
+                auto && propB{
+                    manager_b->template get_validated_property_ref<Property_t>(
+                        representation_name)};
+            
+            kernel(ii_A, ii_B) = this->structure_squared_exponential(manager_a,
+                                                                     manager_b,
+                                                                     propA,
+                                                                     propB);
+            ++ii_B;
+          }
+          ++ii_A;
+        }
+        return kernel;
+      }
+      
+      template <
+          class Property_t, 
+          class StructureManager>
+      double structure_squared_exponential(StructureManager & manager_a,
+                                           StructureManager & manager_b,
+                                           const Property_t & prop_a,
+                                           const Property_t & prop_b) {
+        double squared_exponential_sum {0};
+        for (auto center_a : manager_a){
+          for (auto neigh_a : center_a) {
+            for (auto center_b : manager_b){
+              for (auto neigh_b : center_b) {
+                const auto & pair_a{prop_a[neigh_a]};
+                const auto & pair_b{prop_b[neigh_b]};
+                for (const auto & key_val_a : pair_a) {
+                  for (const auto & key_val_b : pair_b) {
+                    // Only compute kernel for same pair types
+                    if (key_val_a[0] == key_val_b[0]) {
+                      squared_exponential_sum += exp(pow(key_val_a[1] - key_val_b[1], 2)/(2*pow(theta, 2)));
+                    }
+                  } 
+                }
+              }
+            }
+          }
+        }
+        return squared_exponential_sum;      
+      }
+                                          
+      
+      /**
+       * Compute the kernel between 2 set of structures for a given
+       * representation specified by the name.
+       *
+       * @param managers_a a ManagerCollection or similar collection of
+       * structure managers
+       * @param managers_b a ManagerCollection or similar collection of
+       * structure managers
+       * @param representation_name name under which the representation data
+       * has been registered in the elements of managers_a and managers_b
+       *
+       * @return kernel matrix
+       */
+      /*template <class Property_t, internal::TargetType Type,
+                std::enable_if_t<Type == internal::TargetType::Atom, int> = 0,
+                class StructureManagers>
+      math::Matrix_t compute(const StructureManagers & managers_a,
+                             const StructureManagers & managers_b,
+                             const std::string & representation_name) {
+        size_t n_centersA{0};
+        for (const auto & manager_a : managers_a) {
+          n_centersA += manager_a->size();
+        }
+        size_t n_centersB{0};
+        for (const auto & manager_b : managers_b) {
+          n_centersB += manager_b->size();
+        }
+
+        math::Matrix_t kernel(n_centersA, n_centersB);
+        size_t ii_A{0};
+        for (auto & manager_a : managers_a) {
+          size_t ii_B{0};
+          auto a_size = manager_a->size();
+          auto && propA{
+              manager_a->template get_validated_property_ref<Property_t>(
+                  representation_name)};
+          for (auto & manager_b : managers_b) {
+            auto b_size = manager_b->size();
+            auto && propB{
+                manager_b->template get_validated_property_ref<Property_t>(
+                    representation_name)};
+
+            kernel.block(ii_A, ii_B, a_size, b_size) =
+                this->pow_zeta(propA.dot(propB));
+            ii_B += b_size;
+          }
+          ii_A += a_size;
+        }
+        return kernel;
+      }*/
+    };
   }  // namespace internal
 
   template <internal::KernelType Type, class Hypers>
@@ -216,7 +357,12 @@ namespace rascal {
       if (kernel_type_str == "Cosine") {
         this->kernel_type = KernelType::Cosine;
         this->kernel_impl = make_kernel_impl<KernelType::Cosine>(hypers);
-      } else {
+      }
+      else if (kernel_type_str == "Gaussian") {
+        this->kernel_type = KernelType::Gaussian;
+        this->kernel_impl = make_kernel_impl<KernelType::Gaussian>(hypers);
+      }
+      else {
         throw std::logic_error("Requested Kernel \'" + kernel_type_str +
                                "\' has not been implemented.  Must be one of" +
                                ": \'Cosine\'.");
