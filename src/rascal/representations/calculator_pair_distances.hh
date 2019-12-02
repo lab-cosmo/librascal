@@ -213,11 +213,11 @@ namespace rascal {
       return;
     }
 
-    Key_t pair_type{0,0};
+    //Key_t pair_type{0,0};
     // use special container to tell that there is not need to sort when
     // using operator[] of soap_vector
-    internal::SortedKey<Key_t> spair_type{pair_type};
-    std::vector<internal::SortedKey<Key_t>> pair_list{spair_type};
+    //internal::SortedKey<Key_t> spair_type{pair_type};
+    //std::vector<internal::SortedKey<Key_t>> pair_list{spair_type};
 
 
     pair_distances.clear();
@@ -226,7 +226,17 @@ namespace rascal {
 
     for (auto center : manager) {
 	  for (auto neigh : center) {
-          Key_t pair_type{center.get_atom_type(), neigh.get_atom_type()};
+          Key_t pair_type{0,0};
+          if (center.get_atom_type() <= neigh.get_atom_type()){
+              pair_type[0]=center.get_atom_type();
+              pair_type[1]= neigh.get_atom_type();
+          }
+          else {
+              pair_type[1]=center.get_atom_type();
+              pair_type[0]= neigh.get_atom_type();
+          }
+          internal::SortedKey<Key_t> spair_type{pair_type};
+          std::vector<internal::SortedKey<Key_t>> pair_list{spair_type};
           pair_distances[neigh].resize(pair_list, 1, 1);
           // std::cout << manager->get_distance(neigh);
 		  pair_distances[neigh][spair_type](0) = manager->get_distance(neigh);
