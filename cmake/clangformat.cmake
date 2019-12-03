@@ -61,7 +61,7 @@ mark_as_advanced(CLANG_FORMAT_PROJECT_ROOT)
 mark_as_advanced(CLANG_FORMAT)
 
 # find clang-format executable
-find_file(CLANG_FORMAT name clang-format HINTS $ENV/usr/bin)
+find_program(CLANG_FORMAT name clang-format HINTS $ENV/usr/bin)
 if(CLANG_FORMAT)
     message(STATUS "clang-format executable: ${CLANG_FORMAT}")
     # common target to concatenate all cpplint.py targets
@@ -72,6 +72,16 @@ else()
     " found. For more information see"
     " https://clang.llvm.org/docs/ClangFormat.html")
     set(CLANG_FORMAT_FOUND FALSE)
+    return()
+endif()
+
+execute_process(
+    COMMAND ${CLANG_FORMAT} --version
+    OUTPUT_VARIABLE CLANG_FORMAT_VERSION
+)
+string(REGEX REPLACE "clang-format version ([0-9.]+).*" "\\1" CLANG_FORMAT_VERSION "${CLANG_FORMAT_VERSION}")
+if("${CLANG_FORMAT_VERSION}" VERSION_LESS "8.0")
+    message(FATAL_ERROR "Unsupported clang-format (version ${CLANG_FORMAT_VERSION}): a newer version (at least 8.0) is required")
 endif()
 
 # use clang-format to autoformat source code files DIR
