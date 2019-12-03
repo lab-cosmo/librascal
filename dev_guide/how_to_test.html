@@ -111,7 +111,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#testing-gradients">Testing gradients</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#how-to-run-the-tests">How to run the tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-tests">Running the tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-valgrind-to-check-for-memory-errors">Using Valgrind to check for memory errors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="coding-convention.html">Coding Convention</a></li>
 <li class="toctree-l2"><a class="reference internal" href="review_process.html">Review process</a></li>
 <li class="toctree-l2"><a class="reference internal" href="benchmark_tutorial.html">How to run benchmark for different parameters</a></li>
@@ -224,7 +225,8 @@
 <li><p><a class="reference internal" href="#testing-gradients" id="id7">Testing gradients</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#how-to-run-the-tests" id="id8">How to run the tests</a></p></li>
+<li><p><a class="reference internal" href="#running-the-tests" id="id8">Running the tests</a></p></li>
+<li><p><a class="reference internal" href="#using-valgrind-to-check-for-memory-errors" id="id9">Using Valgrind to check for memory errors</a></p></li>
 </ul>
 </div>
 <div class="section" id="how-to-write-a-test">
@@ -540,9 +542,23 @@ provided:</p>
 
 </div>
 </div>
-<div class="section" id="how-to-run-the-tests">
-<h1><a class="toc-backref" href="#id8">How to run the tests</a><a class="headerlink" href="#how-to-run-the-tests" title="Permalink to this headline">¶</a></h1>
-<p>All tests are added as targets during  compilation by default. You can run all tests by executing <code class="docutils literal notranslate"><span class="pre">ctest</span></code> in the build folder. If the tests fail, you can re-run them verbosely using <code class="docutils literal notranslate"><span class="pre">ctest</span> <span class="pre">-V</span></code> to get a detailed account of which tests have failed.</p>
+<div class="section" id="running-the-tests">
+<h1><a class="toc-backref" href="#id8">Running the tests</a><a class="headerlink" href="#running-the-tests" title="Permalink to this headline">¶</a></h1>
+<p>All tests are automatically compiled if <code class="docutils literal notranslate"><span class="pre">BUILD_TESTS</span></code> is set to <code class="docutils literal notranslate"><span class="pre">ON</span></code> with
+CMake. After building librascal, you can execute all tests by running <code class="docutils literal notranslate"><span class="pre">ctest</span>
+<span class="pre">--output-on-failure</span></code> in the build folder.</p>
+</div>
+<div class="section" id="using-valgrind-to-check-for-memory-errors">
+<h1><a class="toc-backref" href="#id9">Using Valgrind to check for memory errors</a><a class="headerlink" href="#using-valgrind-to-check-for-memory-errors" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="http://valgrind.org/">Valgrind</a> is a collection of tools to instrument and
+analyse the execution of pre-compiled binaries. Here, we are interested in the
+<code class="docutils literal notranslate"><span class="pre">memcheck</span></code> tool, that performs memory-related checks on the code: memory
+leaks, and invalid read and writes (i.e. buffer overrun). Valgrind works by
+intercepting calls to <code class="docutils literal notranslate"><span class="pre">malloc</span></code>/<code class="docutils literal notranslate"><span class="pre">free</span></code> (and thus <code class="docutils literal notranslate"><span class="pre">new</span></code>/<code class="docutils literal notranslate"><span class="pre">delete</span></code>) to check
+that every <code class="docutils literal notranslate"><span class="pre">malloc</span></code> is followed by a <code class="docutils literal notranslate"><span class="pre">free</span></code>.</p>
+<p>You can run librascal tests using Valgrind to check for memory errors by
+configuring cmake with <code class="docutils literal notranslate"><span class="pre">RASCAL_TESTS_USE_VALGRIND=ON</span></code>. Then, running <code class="docutils literal notranslate"><span class="pre">ctest</span></code>
+will execute all C++ tests with Valgrind.</p>
 </div>
 
 

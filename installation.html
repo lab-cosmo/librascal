@@ -330,7 +330,7 @@ helpful to customize the build options.</p>
 <div class="section" id="tests">
 <h4>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h4>
 <p>Librascal source code is extensively tested (both c++ and python).
-The BOOST unit_test_framework is requiered to build the tests (see
+The BOOST unit_test_framework is required to build the tests (see
 BOOST.md for further details on how to install the boost library). To
 build and run the tests:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> build
@@ -339,9 +339,11 @@ make
 ctest -V
 </pre></div>
 </div>
+<p>You can also run the tests with Valgrind (a memory-error checker) by passing
+<code class="docutils literal notranslate"><span class="pre">-DRASCAL_TESTS_USE_VALGRIND=ON</span></code> to <code class="docutils literal notranslate"><span class="pre">cmake</span></code>.</p>
 <p>In addition to testing the behaviour of the code, the test suite also check
 for formatting compliance with the clang-format and autopep8 packages (these
-dependencies are optional). To install these dependencies on ubuntu:</p>
+dependencies are optional). To install these dependencies on Ubuntu:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo apt-get install clang-format
 pip3 install autopep8
 </pre></div>
