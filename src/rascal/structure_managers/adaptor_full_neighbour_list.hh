@@ -244,27 +244,14 @@ namespace rascal {
       return this->offsets[counters.front()];
     }
 
-    //! Returns the number of neighbours of a given cluster
-    template <size_t Order, size_t Layer>
-    typename std::enable_if_t<(Order < (traits::MaxOrder - 1)), size_t>
+    //! Returns the number of neighbours of a given atom at a given TargetOrder
+    //! Returns the number of pairs of a given center
+    template <size_t TargetOrder, size_t Order, size_t Layer>
+    typename std::enable_if_t<TargetOrder == 2, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      return this->manager->get_cluster_size(cluster);
-    }
-
-    template <size_t Order, size_t Layer>
-    typename std::enable_if_t<not(Order < traits::MaxOrder - 1), size_t>
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order < traits::MaxOrder,
-                    "this implementation only handles atoms and pairs");
-      /*
-       * The static assert with <= is necessary, because the template parameter
-       * ``Order`` is one Order higher than the MaxOrder at the current
-       * level. The return type of this function is used to build the next Order
-       * iteration.
-       */
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation handles only the respective MaxOrder");
-      auto access_index = cluster.get_cluster_index(Layer);
+      constexpr auto nb_neigh_layer{
+          compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};
+      auto access_index = cluster.get_cluster_index(nb_neigh_layer);
       return nb_neigh[access_index];
     }
 
@@ -344,7 +331,7 @@ namespace rascal {
     for (auto atom : *this->manager) {
       auto atom_tag{atom.get_atom_tag()};
 
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         auto neighbour_atom_index{
             this->get_atom_index(pair.get_internal_neighbour_atom_tag())};
 
@@ -376,7 +363,7 @@ namespace rascal {
       atom_cluster_indices.push_back(indices);
 
       int nneigh{0};
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         // add existing pairs
         auto neighbour_atom_tag = pair.get_internal_neighbour_atom_tag();
         this->neighbours_atom_tag.push_back(neighbour_atom_tag);
