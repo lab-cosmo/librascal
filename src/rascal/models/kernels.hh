@@ -248,8 +248,12 @@ namespace rascal {
                 for (const auto & key_val_a : pair_a) {
                   for (const auto & key_val_b : pair_b) {
                     // Only compute kernel for same pair types
-                    if (key_val_a[0] == key_val_b[0]) {
-                      squared_exponential_sum += exp(pow(key_val_a[1] - key_val_b[1], 2)/(2*pow(theta, 2)));
+                    auto key_a = std::get<0>(key_val_a);
+                    auto key_b = std::get<0>(key_val_b);
+                    auto val_a = std::get<1>(key_val_a);
+                    auto val_b = std::get<1>(key_val_b);
+                    if (key_a == key_b) {
+                      squared_exponential_sum += exp((val_a - val_b).squaredNorm()/(2*pow(theta, 2)));
                     }
                   } 
                 }
@@ -265,9 +269,9 @@ namespace rascal {
           class Property_t, internal::TargetType Type,
           std::enable_if_t<Type == internal::TargetType::Atom, int> = 0,
           class StructureManagers>
-      math::Matrix_t compute(StructureManagers & managers_a,
-                             StructureManagers & managers_b,
-                             const std::string & representation_name) {
+      math::Matrix_t compute(StructureManagers & /*managers_a*/,
+                             StructureManagers & /*managers_b*/,
+                             const std::string & /*representation_name*/) {
         throw std::logic_error("Atom-wise Gaussian kernel not implemented");
       }
 
