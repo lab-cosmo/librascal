@@ -252,7 +252,7 @@ concise notation to iterate over atoms, pairs, triplets, …</p>
   <span class="c1">// iterates over order-1 clusters (atoms)</span>
   <span class="n">ri</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="n">atom</span><span class="p">]</span> <span class="c1">//accesses the position of an iterated atom</span>
 
-  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">pair</span><span class="p">:</span> <span class="n">atom</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">pair</span><span class="p">:</span> <span class="n">atom</span><span class="p">.</span><span class="n">pairs</span><span class="p">())</span> <span class="p">{</span>
     <span class="c1">// iterates over order-2 clusters (pairs)</span>
     <span class="n">dij</span> <span class="o">=</span> <span class="n">dist</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span>  <span class="c1">// accesses the distance between the two atoms</span>
 

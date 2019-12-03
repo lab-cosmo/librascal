@@ -1950,12 +1950,17 @@ template&lt;size_t <code class="sig-name descname">Order</code>, typename <code 
 
 <dl class="function">
 <dt>
-template&lt;typename <code class="sig-name descname">StructureManagerImplementation</code>, size_t <code class="sig-name descname">Order</code>&gt;<br />auto <code class="sig-name descname">add_iterator</code><span class="sig-paren">(</span>py::module &amp;<em>m</em>, <a class="reference internal" href="#_CPPv4N6rascal12PyClusterRefE" title="rascal::PyClusterRef">PyClusterRef</a>&lt;<a class="reference internal" href="#_CPPv4I0_6size_tEN6rascal12add_iteratorEDaRN2py6moduleER12PyClusterRefI30StructureManagerImplementationXmi5OrderL1EEE" title="rascal::add_iterator::StructureManagerImplementation">StructureManagerImplementation</a>, <a class="reference internal" href="#_CPPv4I0_6size_tEN6rascal12add_iteratorEDaRN2py6moduleER12PyClusterRefI30StructureManagerImplementationXmi5OrderL1EEE" title="rascal::add_iterator::Order">Order</a> - 1&gt; &amp;<em>py_cluster</em><span class="sig-paren">)</span><br /></dt>
+template&lt;class <code class="sig-name descname">StructureManagerImplementation</code>, class <code class="sig-name descname">PyCluterRef_t</code>, size_t <code class="sig-name descname">Order</code>, size_t... <code class="sig-name descname">Orders</code>&gt;<br />void <code class="sig-name descname">add_iterators_helpers</code><span class="sig-paren">(</span>py::module &amp;<em>m</em>, <a class="reference internal" href="#_CPPv4I00_6size_t_Dp6size_tEN6rascal21add_iterators_helpersEvRN2py6moduleER13PyCluterRef_tNSt14index_sequenceI5OrderDp6OrdersEE" title="rascal::add_iterators_helpers::PyCluterRef_t">PyCluterRef_t</a> &amp;<em>py_cluster</em>, std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I00_6size_t_Dp6size_tEN6rascal21add_iterators_helpersEvRN2py6moduleER13PyCluterRef_tNSt14index_sequenceI5OrderDp6OrdersEE" title="rascal::add_iterators_helpers::Order">Order</a>, <a class="reference internal" href="#_CPPv4I00_6size_t_Dp6size_tEN6rascal21add_iterators_helpersEvRN2py6moduleER13PyCluterRef_tNSt14index_sequenceI5OrderDp6OrdersEE" title="rascal::add_iterators_helpers::Orders">Orders</a>...&gt;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;typename <code class="sig-name descname">StructureManagerImplementation</code>, size_t <code class="sig-name descname">Order</code>&gt;<br />auto <code class="sig-name descname">add_iterator</code><span class="sig-paren">(</span>py::module &amp;<em>m</em>, <a class="reference internal" href="#_CPPv4N6rascal9PyManagerE" title="rascal::PyManager">PyManager</a>&lt;<a class="reference internal" href="#_CPPv4I0_6size_tEN6rascal12add_iteratorEDaRN2py6moduleER12PyClusterRefI30StructureManagerImplementationXmi5OrderL1EEE" title="rascal::add_iterator::StructureManagerImplementation">StructureManagerImplementation</a>&gt; &amp;<em>manager</em><span class="sig-paren">)</span><br /></dt>
+template&lt;class <code class="sig-name descname">StructureManagerImplementation</code>, class <code class="sig-name descname">PyCluterRef_t</code>&gt;<br />void <code class="sig-name descname">add_iterators_helpers</code><span class="sig-paren">(</span>py::module&amp;, <a class="reference internal" href="#_CPPv4I00EN6rascal21add_iterators_helpersEvRN2py6moduleER13PyCluterRef_tNSt14index_sequenceIEE" title="rascal::add_iterators_helpers::PyCluterRef_t">PyCluterRef_t</a>&amp;, std::index_sequence&lt;&gt;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">StructureManagerImplementation</code>, class <code class="sig-name descname">PyCluterRef_t</code>&gt;<br />void <code class="sig-name descname">add_iterators</code><span class="sig-paren">(</span>py::module &amp;<em>m</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal13add_iteratorsEvRN2py6moduleER13PyCluterRef_t" title="rascal::add_iterators::PyCluterRef_t">PyCluterRef_t</a> &amp;<em>py_cluster</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2134,7 +2139,7 @@ template&lt;size_t <code class="sig-name descname">Order</code>&gt;<br />size_t 
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />size_t <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal25AdaptorCenterContribution21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorCenterContribution::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal25AdaptorCenterContribution21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorCenterContribution::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />size_t <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal25AdaptorCenterContribution21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorCenterContribution::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal25AdaptorCenterContribution21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorCenterContribution::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2278,7 +2283,7 @@ template&lt;size_t <code class="sig-name descname">Order</code>&gt;<br />size_t 
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />size_t <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal13AdaptorFilter21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal13AdaptorFilter21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />size_t <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal13AdaptorFilter21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal13AdaptorFilter21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2406,7 +2411,7 @@ template&lt;size_t <code class="sig-name descname">Order</code>&gt;<br />size_t 
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />std::enable_if_t&lt;(<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal15AdaptorFullList21get_cluster_size_implENSt11enable_if_tIXlt5OrdermiN6traits8MaxOrderEL1EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFullList::get_cluster_size_impl::Order">Order</a> &lt; (traits::MaxOrder - 1)), size_t&gt; <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal15AdaptorFullList21get_cluster_size_implENSt11enable_if_tIXlt5OrdermiN6traits8MaxOrderEL1EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFullList::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal15AdaptorFullList21get_cluster_size_implENSt11enable_if_tIXlt5OrdermiN6traits8MaxOrderEL1EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFullList::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal15AdaptorFullList21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFullList::get_cluster_size_impl::TargetOrder">TargetOrder</a> == 2, size_t&gt; <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal15AdaptorFullList21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFullList::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal15AdaptorFullList21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFullList::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2534,7 +2539,7 @@ template&lt;size_t <code class="sig-name descname">Order</code>&gt;<br />size_t 
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />size_t <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal15AdaptorHalfList21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorHalfList::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal15AdaptorHalfList21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorHalfList::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal15AdaptorHalfList21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorHalfList::get_cluster_size_impl::TargetOrder">TargetOrder</a> == 2, size_t&gt; <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal15AdaptorHalfList21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorHalfList::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal15AdaptorHalfList21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorHalfList::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2597,7 +2602,7 @@ template&lt;class ...<code class="sig-name descname">Args</code>&gt;<br />void <
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>&gt;<br />size_t <code class="sig-name descname">get_offset_impl</code><span class="sig-paren">(</span><em class="property">const</em> std::array&lt;size_t, <a class="reference internal" href="#_CPPv4I_6size_tENK6rascal15AdaptorMaxOrder15get_offset_implE6size_tRKNSt5arrayI6size_t5OrderEE" title="rascal::AdaptorMaxOrder::get_offset_impl::Order">Order</a>&gt; &amp;<em>counters</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;size_t <code class="sig-name descname">Order</code>, bool <code class="sig-name descname">C</code> = (<a class="reference internal" href="#_CPPv4I_6size_t_b_NSt11enable_if_tI1CiEEENK6rascal15AdaptorMaxOrder15get_offset_implE6size_tRKNSt5arrayI6size_t5OrderEE" title="rascal::AdaptorMaxOrder::get_offset_impl::Order">Order</a> &lt; 2), std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_6size_t_b_NSt11enable_if_tI1CiEEENK6rascal15AdaptorMaxOrder15get_offset_implE6size_tRKNSt5arrayI6size_t5OrderEE" title="rascal::AdaptorMaxOrder::get_offset_impl::C">C</a>, int&gt; = 0&gt;<br />size_t <code class="sig-name descname">get_offset_impl</code><span class="sig-paren">(</span><em class="property">const</em> std::array&lt;size_t, <a class="reference internal" href="#_CPPv4I_6size_t_b_NSt11enable_if_tI1CiEEENK6rascal15AdaptorMaxOrder15get_offset_implE6size_tRKNSt5arrayI6size_t5OrderEE" title="rascal::AdaptorMaxOrder::get_offset_impl::Order">Order</a>&gt; &amp;<em>counters</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2637,12 +2642,22 @@ int <code class="sig-name descname">get_neighbour_atom_tag</code><span class="si
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />int <code class="sig-name descname">get_neighbour_atom_tag</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal15AdaptorMaxOrder22get_neighbour_atom_tagEiRK13ClusterRefKeyI5Order5LayerE6size_t" title="rascal::AdaptorMaxOrder::get_neighbour_atom_tag::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal15AdaptorMaxOrder22get_neighbour_atom_tagEiRK13ClusterRefKeyI5Order5LayerE6size_t" title="rascal::AdaptorMaxOrder::get_neighbour_atom_tag::Layer">Layer</a>&gt; &amp;<em>cluster</em>, size_t <em>index</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;size_t <code class="sig-name descname">Layer</code>&gt;<br />int <code class="sig-name descname">get_neighbour_atom_tag</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;1, <a class="reference internal" href="#_CPPv4I_6size_tENK6rascal15AdaptorMaxOrder22get_neighbour_atom_tagEiRK13ClusterRefKeyIXL1EE5LayerE6size_t" title="rascal::AdaptorMaxOrder::get_neighbour_atom_tag::Layer">Layer</a>&gt; &amp;<em>cluster</em>, size_t <em>index</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />size_t <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal15AdaptorMaxOrder21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorMaxOrder::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal15AdaptorMaxOrder21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorMaxOrder::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;size_t <code class="sig-name descname">Layer</code>&gt;<br />std::array&lt;int, <a class="reference internal" href="#_CPPv4N6rascal15AdaptorMaxOrder15AdditionalOrderE" title="rascal::AdaptorMaxOrder::AdditionalOrder">AdditionalOrder</a> - 1&gt; <code class="sig-name descname">get_neighbour_atom_tag_current</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;1, <a class="reference internal" href="#_CPPv4I_6size_tENK6rascal15AdaptorMaxOrder30get_neighbour_atom_tag_currentENSt5arrayIiXmi15AdditionalOrderL1EEEERK13ClusterRefKeyIXL1EE5LayerE6size_t" title="rascal::AdaptorMaxOrder::get_neighbour_atom_tag_current::Layer">Layer</a>&gt; &amp;<em>cluster</em>, size_t <em>index</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">template&lt;size_t TargetOrder, size_t Order, size_t Layer&gt;std::enable_if_t&lt; TargetOrder&lt;traits::MaxOrder, size_t&gt; get_cluster_size_impl( const ClusterRefKey&lt;Order, Layer&gt; &amp; cluster) const { return this-&gt; manager template rascal::AdaptorMaxOrder::get_cluster_size(cluster)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal15AdaptorMaxOrder21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderN6traits8MaxOrderEE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorMaxOrder::get_cluster_size_impl::TargetOrder">TargetOrder</a> == traits::MaxOrder, size_t&gt; <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal15AdaptorMaxOrder21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderN6traits8MaxOrderEE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorMaxOrder::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal15AdaptorMaxOrder21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderN6traits8MaxOrderEE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorMaxOrder::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2651,14 +2666,22 @@ ImplementationPtr_t <code class="sig-name descname">get_previous_manager</code><
 <dd></dd></dl>
 
 </div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Attributes</p>
+<dl class="member">
+<dt>
+<em class="property">constexpr</em> size_t <code class="sig-name descname">AdditionalOrder</code> = {traits::MaxOrder}<br /></dt>
+<dd></dd></dl>
+
+</div>
 <dl class="class">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, <a class="reference internal" href="#_CPPv4N6rascal13AdaptorTraitsE" title="rascal::AdaptorTraits">AdaptorTraits</a>::<a class="reference internal" href="#_CPPv4N6rascal13AdaptorTraits17NeighbourListTypeE" title="rascal::AdaptorTraits::NeighbourListType">NeighbourListType</a> <code class="sig-name descname">NeighbourListType</code>, bool <code class="sig-name descname">IsCompactCluster</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">AddOrderLoop</code>&lt;<a class="reference internal" href="#_CPPv4I_6size_t_N13AdaptorTraits17NeighbourListTypeE_bEN6rascal15AdaptorMaxOrder12AddOrderLoopI5Order17NeighbourListType16IsCompactClusterXL1EEEE" title="rascal::AdaptorMaxOrder::AddOrderLoop&lt;Order, NeighbourListType, IsCompactCluster, true&gt;::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_N13AdaptorTraits17NeighbourListTypeE_bEN6rascal15AdaptorMaxOrder12AddOrderLoopI5Order17NeighbourListType16IsCompactClusterXL1EEEE" title="rascal::AdaptorMaxOrder::AddOrderLoop&lt;Order, NeighbourListType, IsCompactCluster, true&gt;::NeighbourListType">NeighbourListType</a>, <a class="reference internal" href="#_CPPv4I_6size_t_N13AdaptorTraits17NeighbourListTypeE_bEN6rascal15AdaptorMaxOrder12AddOrderLoopI5Order17NeighbourListType16IsCompactClusterXL1EEEE" title="rascal::AdaptorMaxOrder::AddOrderLoop&lt;Order, NeighbourListType, IsCompactCluster, true&gt;::IsCompactCluster">IsCompactCluster</a>, true&gt;<br /></dt>
+template&lt;size_t <code class="sig-name descname">Order</code>, <a class="reference internal" href="#_CPPv4N6rascal13AdaptorTraitsE" title="rascal::AdaptorTraits">AdaptorTraits</a>::<a class="reference internal" href="#_CPPv4N6rascal13AdaptorTraits17NeighbourListTypeE" title="rascal::AdaptorTraits::NeighbourListType">NeighbourListType</a> <code class="sig-name descname">NeighbourListType</code>, bool <code class="sig-name descname">IsCompactCluster</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">ForwardClusterIndices</code>&lt;<a class="reference internal" href="#_CPPv4I_6size_t_N13AdaptorTraits17NeighbourListTypeE_bEN6rascal15AdaptorMaxOrder21ForwardClusterIndicesI5Order17NeighbourListType16IsCompactClusterXL0EEEE" title="rascal::AdaptorMaxOrder::ForwardClusterIndices&lt;Order, NeighbourListType, IsCompactCluster, false&gt;::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_N13AdaptorTraits17NeighbourListTypeE_bEN6rascal15AdaptorMaxOrder21ForwardClusterIndicesI5Order17NeighbourListType16IsCompactClusterXL0EEEE" title="rascal::AdaptorMaxOrder::ForwardClusterIndices&lt;Order, NeighbourListType, IsCompactCluster, false&gt;::NeighbourListType">NeighbourListType</a>, <a class="reference internal" href="#_CPPv4I_6size_t_N13AdaptorTraits17NeighbourListTypeE_bEN6rascal15AdaptorMaxOrder21ForwardClusterIndicesI5Order17NeighbourListType16IsCompactClusterXL0EEEE" title="rascal::AdaptorMaxOrder::ForwardClusterIndices&lt;Order, NeighbourListType, IsCompactCluster, false&gt;::IsCompactCluster">IsCompactCluster</a>, false&gt;<br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Static Functions</p>
 <dl class="function">
 <dt>
-template&lt;&gt;<br /><em class="property">static</em> void <code class="sig-name descname">loop</code><span class="sig-paren">(</span>AtomClusterRef_t &amp;<em>atom</em>, <a class="reference internal" href="#_CPPv4N6rascal12ClusterRef_tE" title="rascal::ClusterRef_t">ClusterRef_t</a> &amp;<em>cluster</em>, size_t <em>start_index</em>, AdaptorMaxOrder&lt;ManagerImplementation&gt; &amp;<em>manager</em><span class="sig-paren">)</span><br /></dt>
+template&lt;&gt;<br /><em class="property">static</em> void <code class="sig-name descname">loop</code><span class="sig-paren">(</span>AtomClusterRef_t&amp;, AdaptorMaxOrder&lt;ManagerImplementation&gt;&amp;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -2803,7 +2826,7 @@ int <code class="sig-name descname">get_atom_type</code><span class="sig-paren">
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />size_t <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal20AdaptorNeighbourList21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorNeighbourList::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal20AdaptorNeighbourList21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorNeighbourList::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal20AdaptorNeighbourList21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorNeighbourList::get_cluster_size_impl::TargetOrder">TargetOrder</a> == 2, size_t&gt; <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal20AdaptorNeighbourList21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorNeighbourList::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal20AdaptorNeighbourList21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorNeighbourList::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2901,7 +2924,7 @@ template&lt;size_t <code class="sig-name descname">Order</code>&gt;<br />size_t 
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />size_t <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal13AdaptorStrict21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorStrict::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal13AdaptorStrict21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorStrict::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal13AdaptorStrict21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorStrict::get_cluster_size_impl::TargetOrder">TargetOrder</a> == 2, size_t&gt; <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal13AdaptorStrict21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorStrict::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal13AdaptorStrict21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorStrict::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2930,24 +2953,6 @@ template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code cl
 <dl class="function">
 <dt>
 <em class="property">static</em> void <code class="sig-name descname">static_for</code><span class="sig-paren">(</span>py::module &amp;<em>m</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-</div>
-</dd></dl>
-
-<dl class="class">
-<dt>
-template&lt;typename <code class="sig-name descname">StructureManagerImplementation</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">MaxOrder</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">add_iterators</code><br /></dt>
-<dd><div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Public Static Functions</p>
-<dl class="function">
-<dt>
-<em class="property">static</em> void <code class="sig-name descname">static_for</code><span class="sig-paren">(</span>py::module &amp;<em>m</em>, <a class="reference internal" href="#_CPPv4N6rascal9PyManagerE" title="rascal::PyManager">PyManager</a>&lt;StructureManagerImplementation&gt; &amp;<em>manager</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<em class="property">static</em> void <code class="sig-name descname">static_for</code><span class="sig-paren">(</span>py::module &amp;<em>m</em>, <a class="reference internal" href="#_CPPv4N6rascal12PyClusterRefE" title="rascal::PyClusterRef">PyClusterRef</a>&lt;StructureManagerImplementation, Order - 1&gt; &amp;<em>py_cluster</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -3027,6 +3032,32 @@ template&lt;class <code class="sig-name descname">StackFixture</code>&gt;<br /><
 
 <dl class="class">
 <dt>
+template&lt;class <code class="sig-name descname">StructureManagerImplementation</code>, size_t <code class="sig-name descname">Order</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">BindIterator</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Functions</p>
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">PyClusterRef_t</code>&gt;<br /><em class="property">static</em> auto <code class="sig-name descname">add_iterator</code><span class="sig-paren">(</span>py::module &amp;<em>m</em>, <a class="reference internal" href="#_CPPv4I0EN6rascal12BindIterator12add_iteratorEDaRN2py6moduleER14PyClusterRef_t" title="rascal::BindIterator::add_iterator::PyClusterRef_t">PyClusterRef_t</a> &amp;<em>py_cluster</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+template&lt;class <code class="sig-name descname">StructureManagerImplementation</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">BindIterator</code>&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal12BindIteratorI30StructureManagerImplementationXL1EEEE" title="rascal::BindIterator&lt;StructureManagerImplementation, 1&gt;::StructureManagerImplementation">StructureManagerImplementation</a>, 1&gt;<br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Functions</p>
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">PyManager_t</code>&gt;<br /><em class="property">static</em> auto <code class="sig-name descname">add_iterator</code><span class="sig-paren">(</span>py::module &amp;<em>m</em>, <a class="reference internal" href="#_CPPv4I0EN6rascal12BindIterator12add_iteratorEDaRN2py6moduleER11PyManager_t" title="rascal::BindIterator::add_iterator::PyManager_t">PyManager_t</a> &amp;<em>manager</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
 template&lt;typename <code class="sig-name descname">Precision_t</code>, size_t <code class="sig-name descname">Order_</code>, size_t <code class="sig-name descname">PropertyLayer</code>, class <code class="sig-name descname">Manager</code>, typename <code class="sig-name descname">Key</code>&gt;<br /><em class="property">class </em><code class="sig-name descname">BlockSparseProperty</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal12PropertyBaseE" title="rascal::PropertyBase">PropertyBase</a><br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
@@ -3097,7 +3128,7 @@ template&lt;size_t <code class="sig-name descname">CallerLayer</code>&gt;<br />I
 
 <dl class="function">
 <dt>
-<code class="sig-name descname">template&lt;size_t CallerOrder, size_t CallerLayer, bool T = (IsOrderOne and (CallerOrder == 2)), std::enable_if_t&lt; T, int &gt; = 0&gt;InputData_t&amp; rascal::BlockSparseProperty::operator[](const  ClusterRefKey &lt; CallerOrder, CallerLayer &gt; &amp; id)</code></dt>
+<code class="sig-name descname">template&lt;size_t CallerOrder, size_t CallerLayer, bool C = (IsOrderOne and (CallerOrder == 2)), std::enable_if_t&lt; C, int &gt; = 0&gt;InputData_t&amp; rascal::BlockSparseProperty::operator[](const  ClusterRefKey &lt; CallerOrder, CallerLayer &gt; &amp; id)</code></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4557,6 +4588,11 @@ std::weak_ptr&lt;ManagerImplementation&gt; <code class="sig-name descname">get_w
 
 <dl class="function">
 <dt>
+template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />size_t <code class="sig-name descname">get_cluster_size</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal16StructureManager16get_cluster_sizeE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::StructureManager::get_cluster_size::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal16StructureManager16get_cluster_sizeE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::StructureManager::get_cluster_size::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 template&lt;size_t <code class="sig-name descname">Order</code>&gt;<br />bool <code class="sig-name descname">is_ghost_atom</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I_6size_tEN6rascal16StructureManager10ClusterRefE" title="rascal::StructureManager::ClusterRef">ClusterRef</a>&lt;<a class="reference internal" href="#_CPPv4I_6size_tEN6rascal16StructureManager13is_ghost_atomEbRK10ClusterRefI5OrderE" title="rascal::StructureManager::is_ghost_atom::Order">Order</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -4588,6 +4624,11 @@ void <code class="sig-name descname">send_changed_structure_signal</code><span c
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Static Functions</p>
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">TargetOrder</code>&gt;<br /><em class="property">static</em> <em class="property">constexpr</em> bool <code class="sig-name descname">has_order</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
 <dl class="function">
 <dt>
 <em class="property">static</em> std::string <code class="sig-name descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
@@ -4704,12 +4745,12 @@ template&lt;size_t <code class="sig-name descname">Order_</code> = Order, std::e
 
 <dl class="function">
 <dt>
-template&lt;bool <code class="sig-name descname">T</code> = HasCenterPairOrderOne, std::enable_if_t&lt;T, int&gt; = 0&gt;<br />auto <code class="sig-name descname">get_atom_ii</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+template&lt;bool <code class="sig-name descname">C</code> = HasCenterPairAndIsOrderOne, std::enable_if_t&lt;C, int&gt; = 0&gt;<br />auto <code class="sig-name descname">get_atom_ii</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;bool <code class="sig-name descname">T</code> = HasCenterPairOrderTwo, std::enable_if_t&lt;T, int&gt; = 0&gt;<br />auto <code class="sig-name descname">get_atom_jj</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+template&lt;bool <code class="sig-name descname">C</code> = HasCenterPairAndIsOrderTwo, std::enable_if_t&lt;C, int&gt; = 0&gt;<br />auto <code class="sig-name descname">get_atom_jj</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4744,36 +4785,6 @@ template&lt;&gt;<br /><em class="property">const</em> Manager_t &amp;<code class
 
 <dl class="function">
 <dt>
-template&lt;bool <code class="sig-name descname">T</code> = HasCenterPairOrderOne, std::enable_if_t&lt;not(T), int&gt; = 0&gt;<br />iterator <code class="sig-name descname">begin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;bool <code class="sig-name descname">T</code> = HasCenterPairOrderOne, std::enable_if_t&lt;T, int&gt; = 0&gt;<br />iterator <code class="sig-name descname">begin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;&gt;<br />iterator <code class="sig-name descname">end</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;&gt;<br />iterator <code class="sig-name descname">get_iterator_at</code><span class="sig-paren">(</span><em class="property">const</em> size_t &amp;<em>start</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;&gt;<br />iterator <code class="sig-name descname">get_iterator_at</code><span class="sig-paren">(</span><em class="property">const</em> size_t &amp;<em>start</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;&gt;<br />size_t <code class="sig-name descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
 template&lt;&gt;<br />size_t <code class="sig-name descname">get_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
@@ -4789,12 +4800,40 @@ template&lt;&gt;<br /><em class="property">const</em> std::array&lt;int, Order&g
 
 <dl class="function">
 <dt>
-template&lt;&gt;<br />void <code class="sig-name descname">set_atom_tag</code><span class="sig-paren">(</span><em class="property">const</em> size_t <em>index</em>, <em class="property">const</em> int <em>tag</em><span class="sig-paren">)</span><br /></dt>
+template&lt;size_t <code class="sig-name descname">Order_</code>, bool <code class="sig-name descname">C</code> = IsOrderOne, std::enable_if_t&lt;C, int&gt; = 0&gt;<br />CustomProxy&lt;Order_&gt; <code class="sig-name descname">get_clusters_of_order</code><span class="sig-paren">(</span>size_t <em>start</em> = 0<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;&gt;<br />CustomProxy&lt;ManagerImplementation, Order&gt; <code class="sig-name descname">with_self_pair</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+template&lt;bool <code class="sig-name descname">C</code> = IsOrderOneAndHasOrder&lt;2&gt;, std::enable_if_t&lt;C, int&gt; = 0&gt;<br />CustomProxy&lt;2&gt; <code class="sig-name descname">pairs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;bool <code class="sig-name descname">C</code> = IsOrderOneAndHasOrder&lt;2&gt;, std::enable_if_t&lt;C, int&gt; = 0&gt;<br />CustomProxy&lt;2&gt; <code class="sig-name descname">pairs_with_self_pair</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;bool <code class="sig-name descname">C</code> = IsOrderOneAndHasOrder&lt;3&gt;, std::enable_if_t&lt;C, int&gt; = 0&gt;<br />CustomProxy&lt;3&gt; <code class="sig-name descname">triplets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;bool <code class="sig-name descname">C</code> = IsOrderOneAndHasOrder&lt;4&gt;, std::enable_if_t&lt;C, int&gt; = 0&gt;<br />CustomProxy&lt;4&gt; <code class="sig-name descname">quadruplets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Attributes</p>
+<dl class="member">
+<dt>
+<code class="sig-name descname">constexpr bool rascal::StructureManager&lt; ManagerImplementation &gt;::ClusterRef::HasCenterPairAndIsOrderOne{traits::HasCenterPair and                                                     IsOrderOne}</code></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+<code class="sig-name descname">constexpr bool rascal::StructureManager&lt; ManagerImplementation &gt;::ClusterRef::HasCenterPairAndIsOrderTwo{traits::HasCenterPair and                                                     Order == 2}</code></dt>
 <dd></dd></dl>
 
 </div>
@@ -5097,11 +5136,6 @@ size_t <code class="sig-name descname">get_size_with_ghosts</code><span class="s
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />size_t <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal23StructureManagerCenters21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::StructureManagerCenters::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal23StructureManagerCenters21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::StructureManagerCenters::get_cluster_size_impl::Layer">Layer</a>&gt;&amp;<span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
 int <code class="sig-name descname">get_neighbour_atom_tag</code><span class="sig-paren">(</span><em class="property">const</em> Parent&amp;, size_t <em>index</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
@@ -5208,7 +5242,7 @@ size_t <code class="sig-name descname">get_size_with_ghosts</code><span class="s
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />size_t <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal22StructureManagerLammps21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::StructureManagerLammps::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal22StructureManagerLammps21get_cluster_size_implE6size_tRK13ClusterRefKeyI5Order5LayerE" title="rascal::StructureManagerLammps::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal22StructureManagerLammps21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::StructureManagerLammps::get_cluster_size_impl::TargetOrder">TargetOrder</a> == 2, size_t&gt; <code class="sig-name descname">get_cluster_size_impl</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal22StructureManagerLammps21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::StructureManagerLammps::get_cluster_size_impl::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_6size_tENK6rascal22StructureManagerLammps21get_cluster_size_implENSt11enable_if_tIXeq11TargetOrderL2EE6size_tEERK13ClusterRefKeyI5Order5LayerE" title="rascal::StructureManagerLammps::get_cluster_size_impl::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -5485,7 +5519,7 @@ bool <code class="sig-name descname">get_update_status</code><span class="sig-pa
 
 <dl class="type">
 <dt>
-<em class="property">using </em><code class="sig-name descname">make_index_range</code> = decltype(add_to_sequence&lt;Min&gt;(std::make_index_sequence&lt;Max - Min&gt;()))<br /></dt>
+<em class="property">using </em><code class="sig-name descname">make_index_range</code> = decltype(add_to_sequence&lt;Min&gt;(std::make_index_sequence&lt;Max - Min + 1&gt;()))<br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -5745,12 +5779,32 @@ template&lt;typename <code class="sig-name descname">T</code>, size_t <code clas
 
 <dl class="function">
 <dt>
+template&lt;typename <code class="sig-name descname">T</code>, size_t <code class="sig-name descname">Size1</code>, int... <code class="sig-name descname">Indices1</code>, size_t <code class="sig-name descname">Size2</code>, int... <code class="sig-name descname">Indices2</code>&gt;<br />std::array&lt;<a class="reference internal" href="#_CPPv4I0_6size_t_Dpi_6size_t_DpiEN6rascal8internal19concat_array_helperENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EENSt16integer_sequenceIiDp8Indices1EENSt16integer_sequenceIiDp8Indices2EE" title="rascal::internal::concat_array_helper::T">T</a>, <a class="reference internal" href="#_CPPv4I0_6size_t_Dpi_6size_t_DpiEN6rascal8internal19concat_array_helperENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EENSt16integer_sequenceIiDp8Indices1EENSt16integer_sequenceIiDp8Indices2EE" title="rascal::internal::concat_array_helper::Size1">Size1</a> + <a class="reference internal" href="#_CPPv4I0_6size_t_Dpi_6size_t_DpiEN6rascal8internal19concat_array_helperENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EENSt16integer_sequenceIiDp8Indices1EENSt16integer_sequenceIiDp8Indices2EE" title="rascal::internal::concat_array_helper::Size2">Size2</a>&gt; <code class="sig-name descname">concat_array_helper</code><span class="sig-paren">(</span><em class="property">const</em> std::array&lt;<a class="reference internal" href="#_CPPv4I0_6size_t_Dpi_6size_t_DpiEN6rascal8internal19concat_array_helperENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EENSt16integer_sequenceIiDp8Indices1EENSt16integer_sequenceIiDp8Indices2EE" title="rascal::internal::concat_array_helper::T">T</a>, <a class="reference internal" href="#_CPPv4I0_6size_t_Dpi_6size_t_DpiEN6rascal8internal19concat_array_helperENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EENSt16integer_sequenceIiDp8Indices1EENSt16integer_sequenceIiDp8Indices2EE" title="rascal::internal::concat_array_helper::Size1">Size1</a>&gt; &amp;<em>arr1</em>, <em class="property">const</em> std::array&lt;<a class="reference internal" href="#_CPPv4I0_6size_t_Dpi_6size_t_DpiEN6rascal8internal19concat_array_helperENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EENSt16integer_sequenceIiDp8Indices1EENSt16integer_sequenceIiDp8Indices2EE" title="rascal::internal::concat_array_helper::T">T</a>, <a class="reference internal" href="#_CPPv4I0_6size_t_Dpi_6size_t_DpiEN6rascal8internal19concat_array_helperENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EENSt16integer_sequenceIiDp8Indices1EENSt16integer_sequenceIiDp8Indices2EE" title="rascal::internal::concat_array_helper::Size2">Size2</a>&gt; &amp;<em>arr2</em>, std::integer_sequence&lt;int, <a class="reference internal" href="#_CPPv4I0_6size_t_Dpi_6size_t_DpiEN6rascal8internal19concat_array_helperENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EENSt16integer_sequenceIiDp8Indices1EENSt16integer_sequenceIiDp8Indices2EE" title="rascal::internal::concat_array_helper::Indices1">Indices1</a>...&gt;, std::integer_sequence&lt;int, <a class="reference internal" href="#_CPPv4I0_6size_t_Dpi_6size_t_DpiEN6rascal8internal19concat_array_helperENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EENSt16integer_sequenceIiDp8Indices1EENSt16integer_sequenceIiDp8Indices2EE" title="rascal::internal::concat_array_helper::Indices2">Indices2</a>...&gt;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">T</code>, size_t <code class="sig-name descname">Size1</code>, size_t <code class="sig-name descname">Size2</code>&gt;<br />std::array&lt;<a class="reference internal" href="#_CPPv4I0_6size_t_6size_tEN6rascal8internal12concat_arrayENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EE" title="rascal::internal::concat_array::T">T</a>, <a class="reference internal" href="#_CPPv4I0_6size_t_6size_tEN6rascal8internal12concat_arrayENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EE" title="rascal::internal::concat_array::Size1">Size1</a> + <a class="reference internal" href="#_CPPv4I0_6size_t_6size_tEN6rascal8internal12concat_arrayENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EE" title="rascal::internal::concat_array::Size2">Size2</a>&gt; <code class="sig-name descname">concat_array</code><span class="sig-paren">(</span><em class="property">const</em> std::array&lt;<a class="reference internal" href="#_CPPv4I0_6size_t_6size_tEN6rascal8internal12concat_arrayENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EE" title="rascal::internal::concat_array::T">T</a>, <a class="reference internal" href="#_CPPv4I0_6size_t_6size_tEN6rascal8internal12concat_arrayENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EE" title="rascal::internal::concat_array::Size1">Size1</a>&gt; &amp;<em>arr1</em>, <em class="property">const</em> std::array&lt;<a class="reference internal" href="#_CPPv4I0_6size_t_6size_tEN6rascal8internal12concat_arrayENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EE" title="rascal::internal::concat_array::T">T</a>, <a class="reference internal" href="#_CPPv4I0_6size_t_6size_tEN6rascal8internal12concat_arrayENSt5arrayI1TXpl5Size15Size2EEERKNSt5arrayI1T5Size1EERKNSt5arrayI1T5Size2EE" title="rascal::internal::concat_array::Size2">Size2</a>&gt; &amp;<em>arr2</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 template&lt;class <code class="sig-name descname">Manager</code>, size_t <code class="sig-name descname">Order</code>, size_t... <code class="sig-name descname">Indices</code>&gt;<br />std::array&lt;int, <a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal25species_aggregator_helperENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7ManagerNSt14index_sequenceIDp7IndicesEE" title="rascal::internal::species_aggregator_helper::Order">Order</a>&gt; <code class="sig-name descname">species_aggregator_helper</code><span class="sig-paren">(</span><em class="property">const</em> std::array&lt;int, <a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal25species_aggregator_helperENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7ManagerNSt14index_sequenceIDp7IndicesEE" title="rascal::internal::species_aggregator_helper::Order">Order</a>&gt; &amp;<em>array</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal25species_aggregator_helperENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7ManagerNSt14index_sequenceIDp7IndicesEE" title="rascal::internal::species_aggregator_helper::Manager">Manager</a> &amp;<em>manager</em>, std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal25species_aggregator_helperENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7ManagerNSt14index_sequenceIDp7IndicesEE" title="rascal::internal::species_aggregator_helper::Indices">Indices</a>...&gt;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
 template&lt;class <code class="sig-name descname">Manager</code>, size_t <code class="sig-name descname">Order</code>, size_t... <code class="sig-name descname">Indices</code>&gt;<br />std::array&lt;int, <a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal18species_aggregatorENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7Manager" title="rascal::internal::species_aggregator::Order">Order</a>&gt; <code class="sig-name descname">species_aggregator</code><span class="sig-paren">(</span><em class="property">const</em> std::array&lt;int, <a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal18species_aggregatorENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7Manager" title="rascal::internal::species_aggregator::Order">Order</a>&gt; &amp;<em>index_array</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0_6size_t_Dp6size_tEN6rascal8internal18species_aggregatorENSt5arrayIi5OrderEERKNSt5arrayIi5OrderEERK7Manager" title="rascal::internal::species_aggregator::Manager">Manager</a> &amp;<em>manager</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t... <code class="sig-name descname">Orders</code>&gt;<br /><em class="property">static</em> <em class="property">constexpr</em> bool <code class="sig-name descname">is_order_available</code><span class="sig-paren">(</span>std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal8internal18is_order_availableEbNSt14index_sequenceIDp6OrdersEE" title="rascal::internal::is_order_available::Orders">Orders</a>...&gt;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t... <code class="sig-name descname">Orders</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">get_last_element_in_sequence</code><span class="sig-paren">(</span>std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_Dp6size_tEN6rascal8internal28get_last_element_in_sequenceE6size_tNSt14index_sequenceIDp6OrdersEE" title="rascal::internal::get_last_element_in_sequence::Orders">Orders</a>...&gt;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
