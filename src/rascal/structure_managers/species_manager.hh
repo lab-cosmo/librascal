@@ -98,6 +98,9 @@ namespace rascal {
 
     using FilterContainer_t = typename internal::detail::Map_t<MaxOrder>;
 
+    static_assert(MaxOrder > 0,
+                  "MaxOrder > 0, otherwise there is nothing to filter.");
+
     static_assert(traits::MaxOrder <= MaxOrder,
                   "MaxOrder of underlying manager is insufficient.");
 
@@ -300,7 +303,7 @@ namespace rascal {
     // then it is a no-op
     using FilterSpeciesLoop =
         internal::FilterSpeciesLoop < ManagerImplementation,
-          MaxOrder, 2, MaxOrder<2>;
+          MaxOrder, 2, MaxOrder == 1>;
 
     for (auto atom : this->structure_manager) {
       auto && species_indices{atom.get_atom_types()};
