@@ -11,8 +11,8 @@ from rascal.utils import ostream_redirect
 from rascal.representations import SphericalInvariants
 import rascal.lib as lrl
 
-path = os.path.abspath('../')
-rascal_reference_path = os.path.join(path, 'reference_data/')
+root = os.path.abspath('../')
+rascal_reference_path = os.path.join(root, 'reference_data/')
 inputs_path = os.path.join(rascal_reference_path, "inputs")
 dump_path = os.path.join('reference_data/', "tests_only")
 
@@ -36,8 +36,8 @@ def dump_reference_json():
     from copy import copy
     from itertools import product
 
-    sys.path.insert(0, os.path.join(path, 'build/'))
-    sys.path.insert(0, os.path.join(path, 'tests/'))
+    sys.path.insert(0, os.path.join(root, 'build/'))
+    sys.path.insert(0, os.path.join(root, 'tests/'))
 
     cutoffs = [2, 3]
     gaussian_sigmas = [0.2, 0.5]
@@ -48,8 +48,7 @@ def dump_reference_json():
     radial_basis = ["GTO"]
 
     fns = [
-        os.path.join(inputs_path, /
-		     "CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
         os.path.join(inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
@@ -100,10 +99,9 @@ def dump_reference_json():
                     dict(feature_matrix=x.tolist(),
                          hypers=copy(soap.hypers)))
 
-    with open(os.path.join(path, dump_path,
-			"spherical_invariants_reference.ubjson"),
-                        'wb') as f:
-                ubjson.dump(data, f)
+    with open(os.path.join(root, dump_path,
+                "spherical_invariants_reference.ubjson"), 'wb') as f:
+        ubjson.dump(data, f)
 
 #############################################################################
 

@@ -12,8 +12,8 @@ from functools import reduce
 
 # shape (nb_unit_vectors,3)
 
-path = os.path.abspath('../')
-rascal_reference_path = os.path.join(path, 'reference_data/')
+root = os.path.abspath('../')
+rascal_reference_path = os.path.join(root, 'reference_data/')
 inputs_path = os.path.join(rascal_reference_path,"inputs")
 dump_path = os.path.join('reference_data/', "tests_only")
 
@@ -50,8 +50,8 @@ def dump_reference_json():
     # to produces more readable tests use l_max 2 or 3
     verbose = False
     l_max = 30
-    sys.path.insert(0, os.path.join(path, 'build/'))
-    sys.path.insert(0, os.path.join(path, 'tests/'))
+    sys.path.insert(0, os.path.join(root, 'build/'))
+    sys.path.insert(0, os.path.join(root, 'tests/'))
     data = []
     mp.dps = 200
 
@@ -129,7 +129,7 @@ def dump_reference_json():
                          harmonics=harmonics, alps=alps))
     if verbose:
         print(len(data))
-    with open(os.path.join(path, dump_path,
+    with open(os.path.join(root, dump_path,
 			   "spherical_harmonics_reference.ubjson"),
               'wb') as f:
         ubjson.dump(data, f)

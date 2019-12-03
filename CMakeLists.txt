@@ -74,7 +74,6 @@ option(BUILD_TESTS "Build the unit tests" OFF)
 option(BUILD_DOC "Build documentation" OFF)
 option(BUILD_SANDBOX "If on, builds the sandbox" OFF)
 option(USER "Switch installation folder" OFF)
-option(BUILD_SANDBOX "If on, builds the sandbox" OFF)
 
 set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
 
