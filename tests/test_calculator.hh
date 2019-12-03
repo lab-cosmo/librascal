@@ -920,7 +920,7 @@ namespace rascal {
         ++i_center;
       }
 
-      auto n_center{static_cast<int>(manager->size())};
+      auto n_center{static_cast<int>(this->structure_manager->size())};
 
       this->representation.compute(this->structure_manager);
 
@@ -943,6 +943,7 @@ namespace rascal {
           // Don't compute gradient contributions onto ghost atoms
           continue;
         }
+        size_t n_keys{0};
         if (IsHalfNl and neigh.get_atom_tag() < n_center) {
           auto center_type = center.get_atom_type();
           std::vector<Key_t> swapped_keys{};
@@ -951,19 +952,16 @@ namespace rascal {
               // if the center type is in key then the entry will exist in the
               // swapped pair that does not exist in the half NL
               if (val == center_type) {
-                n_entries_neighbours += n_entries_per_key;
+                ++n_keys;
+                break;
               }
             }
           }
-          n_entries_neighbours +=
-            (gradients_sparse[swapped_ref].get_keys().size() *
-             n_entries_per_key);
         } else {
           auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
-          n_entries_neighbours +=
-            (gradients_sparse[swapped_ref].get_keys().size() *
-             n_entries_per_key);
+          n_keys = gradients_sparse[swapped_ref].get_keys().size();
         }
+        n_entries_neighbours += n_keys * n_entries_per_key);
       }
       // Packed array containing: The center coefficients (all species) and
       // the neighbour coefficients (only same species as center)
@@ -988,11 +986,26 @@ namespace rascal {
         // being taken)
         // The nonzero gradient keys are already indicated in the sparse
         // gradient structure
-        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
-        auto keys_neigh{gradients_sparse[swapped_ref].get_keys()};
+        std::set<Key_t> keys_neigh{};
+        if (IsHalfNl and neigh.get_atom_tag() < n_center) {
+          auto center_type = center.get_atom_type();
+          for (const auto & key : keys_center) {
+            for (const auto & val : key) {
+              // if the center type is in key then the entry will exist in the
+              // swapped pair that does not exist in the half NL
+              if (val == center_type) {
+                keys_neigh.insert(key);
+              }
+            }
+          }
+        } else {
+          auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
+          keys_neigh = gradients_sparse[swapped_ref].get_keys();
+        }
+
         for (auto & key : keys_neigh) {
           Eigen::Map<Eigen::ArrayXd> data_flat(data_neigh[key].data(),
-                                               n_entries_per_key);
+                                              n_entries_per_key);
           data_pairs.segment(result_idx, n_entries_per_key) = data_flat;
           result_idx += n_entries_per_key;
         }
@@ -1028,10 +1041,25 @@ namespace rascal {
           // Don't compute gradient contributions onto ghost atoms
           continue;
         }
-        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
-        n_entries_neighbours +=
-            (gradients_sparse[swapped_ref].get_keys().size() *
-             n_entries_per_key);
+        size_t n_keys{0};
+        if (IsHalfNl and neigh.get_atom_tag() < n_center) {
+          auto center_type = center.get_atom_type();
+          std::vector<Key_t> swapped_keys{};
+          for (const auto & key : keys_center) {
+            for (const auto & val : key) {
+              // if the center type is in key then the entry will exist in the
+              // swapped pair that does not exist in the half NL
+              if (val == center_type) {
+                ++n_keys;
+                break;
+              }
+            }
+          }
+        } else {
+          auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
+          n_keys = gradients_sparse[swapped_ref].get_keys().size();
+        }
+        n_entries_neighbours += n_keys * n_entries_per_key);
       }
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
           grad_coeffs_pairs(3, n_entries_center + n_entries_neighbours);
