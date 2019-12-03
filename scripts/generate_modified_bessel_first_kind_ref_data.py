@@ -9,9 +9,10 @@ import numpy as np
 import ubjson
 import json
 
-rascal_reference_path = 'reference_data/'
+root = os.path.abspath('../')
+rascal_reference_path = os.path.join(root, 'reference_data/')
 inputs_path = os.path.join(rascal_reference_path, "inputs")
-dump_path = os.path.join(rascal_reference_path, "tests_only")
+dump_path = os.path.join('reference_data/', "tests_only")
 
 mp.dps = 20
 mp.prec = 100
@@ -29,9 +30,8 @@ def sbesseli_complete_square(n, a, r, x):
 
 
 def dump_reference_json():
-    path = '../'
-    sys.path.insert(0, os.path.join(path, 'build/'))
-    sys.path.insert(0, os.path.join(path, 'tests/'))
+    sys.path.insert(0, os.path.join(root, 'build/'))
+    sys.path.insert(0, os.path.join(root, 'tests/'))
     data = dict(i_complete_square=[])
     # 1 test the special case in the bessel function and 20 test that we
     # can ramp up l_max safely
@@ -61,8 +61,7 @@ def dump_reference_json():
                     dict(alpha=alpha, rij=rij, xs=xns.tolist(),
                         max_order=max_order, vals=vals.tolist()))
 
-    with open(os.path.join(
-            path, "tests", "reference_data",
+    with open(os.path.join(root, dump_path,
             "modified_bessel_first_kind_reference.ubjson"), 'wb') as f:
         ubjson.dump(data, f)
 

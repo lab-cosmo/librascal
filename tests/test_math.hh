@@ -112,7 +112,7 @@ namespace rascal {
     ~ModifiedBesselFirstKindRefFixture() = default;
 
     std::string ref_filename =
-        "reference_data/tests_only/modified_bessel_first_kind_reference.json";
+        "reference_data/tests_only/modified_bessel_first_kind_reference.ubjson";
 
     json ref_data{};
     bool verbose{false};

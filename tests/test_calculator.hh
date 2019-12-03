@@ -782,7 +782,7 @@ namespace rascal {
           atomic_structure{atomic_structure}, center_it{
                                                   structure_manager->begin()} {
       for (auto center : this->structure_manager) {
-        this->n_neighbors.push_back(center.size());
+        this->n_neighbors.push_back(center.pairs().size());
       }
     }
 
@@ -797,7 +797,7 @@ namespace rascal {
       this->structure_manager->update(modified_structure);
       int i_center{0};
       for (auto center : this->structure_manager) {
-        if (this->n_neighbors[i_center] != center.size()) {
+        if (this->n_neighbors[i_center] != center.pairs().size()) {
           throw std::runtime_error(
               R"(The number of neighbors has changed when making finite
               displacements. This happens because a neighbor is almost at the
@@ -823,7 +823,7 @@ namespace rascal {
       size_t n_entries_neighbours{0};
       // Count all the keys in the sparse gradient structure where the gradient
       // is nonzero (i.e. where the key has an entry in the structure)
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
@@ -844,7 +844,7 @@ namespace rascal {
         data_pairs.segment(result_idx, n_entries_per_key) = data_flat;
         result_idx += n_entries_per_key;
       }
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
@@ -891,7 +891,7 @@ namespace rascal {
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
       size_t n_entries_neighbours{0};
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
@@ -917,7 +917,7 @@ namespace rascal {
             grad_coeffs_flat;
         result_idx += n_entries_per_key;
       }
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
@@ -975,7 +975,7 @@ namespace rascal {
 
       // Find all (j, i') pairs
       std::vector<PairRefKey_t> new_pairs;
-      for (auto new_pair : new_center) {
+      for (auto new_pair : new_center.pairs()) {
         size_t i_trial_index{
             structure_manager->get_atom_index(new_pair.back())};
         // Is this the i (old center) atom or any of its images?

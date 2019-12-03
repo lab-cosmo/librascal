@@ -203,6 +203,9 @@ namespace rascal {
     using IndexConstArray =
         Eigen::Map<const Eigen::Matrix<size_t, Layer + 1, 1>>;
     using IndexArray = Eigen::Map<Eigen::Matrix<size_t, Layer + 1, 1>>;
+
+    static constexpr bool IsOrderOne{Order == 1};
+
     using AtomIndex_t = std::array<int, Order>;
 
     //! Default constructor

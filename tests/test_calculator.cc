@@ -401,7 +401,7 @@ namespace rascal {
               }
             }
             int i_neigh{0};
-            for (auto neigh : center) {
+            for (auto neigh : center.pairs()) {
               auto neigh_type = neigh.get_atom_type();
               auto keys_neigh = prop_grad[neigh].get_keys();
               if (verbose) {
@@ -531,7 +531,7 @@ namespace rascal {
                                   "radial_derivative_test.json"};
     auto && it_manager{managers.front()->begin()};  // Need only one manager
     auto && atom{*it_manager};
-    auto && it_atom{atom.begin()};
+    auto && it_atom{atom.pairs().begin()};
     auto && pair{*it_atom};  // Need only one (arbitrary) pair
     auto manager = managers.front();
     for (auto & hyper : hypers) {

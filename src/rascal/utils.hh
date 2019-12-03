@@ -38,6 +38,62 @@
 namespace rascal {
   namespace internal {
 
+    namespace details {
+      /**
+       * Recursivelly go through a list of Orders and check if at least one
+       * matches TargetOrder at compile time.
+       */
+      template <size_t TargetOrder, size_t Order, size_t... Orders>
+      struct IsOrderAvailableHelper {
+        static constexpr bool IsOrderAvailable = (TargetOrder == Order);
+
+        template <bool C = IsOrderAvailable, std::enable_if_t<C, int> = 0>
+        static constexpr bool get_is_order_available() {
+          return true;
+        }
+
+        template <bool C = IsOrderAvailable, std::enable_if_t<not(C), int> = 0>
+        static constexpr bool get_is_order_available() {
+          return IsOrderAvailableHelper<TargetOrder,
+                                        Orders...>::get_is_order_available();
+        }
+      };
+      //! end of recursion
+      template <size_t TargetOrder, size_t Order>
+      struct IsOrderAvailableHelper<TargetOrder, Order> {
+        static constexpr bool IsOrderAvailable = (TargetOrder == Order);
+
+        template <bool C = IsOrderAvailable, std::enable_if_t<C, int> = 0>
+        static constexpr bool get_is_order_available() {
+          return true;
+        }
+
+        template <bool C = IsOrderAvailable, std::enable_if_t<not(C), int> = 0>
+        static constexpr bool get_is_order_available() {
+          return false;
+        }
+      };
+    }  // namespace details
+
+    /**
+     * Find if TargetOrder is in the list of indices Orders.
+     */
+    template <size_t TargetOrder, size_t... Orders>
+    static constexpr bool
+    is_order_available(std::index_sequence<Orders...> /* sep*/) {
+      return details::IsOrderAvailableHelper<
+          TargetOrder, Orders...>::get_is_order_available();
+    }
+
+    /**
+     * extract the last element of an index_sequence
+     */
+    template <size_t... Orders>
+    constexpr size_t
+    get_last_element_in_sequence(std::index_sequence<Orders...> /* sep*/) {
+      constexpr std::array<size_t, sizeof...(Orders)> arr = {{Orders...}};
+      return arr.back();
+    }
     /**
      * Utility to check if a template parameter is iterable
      */
@@ -176,16 +232,15 @@ namespace rascal {
     /**
      * Implementation of the generation of an index sequence from Min to Max
      */
-
     template <size_t N, size_t... Seq>
     constexpr std::index_sequence<N + Seq...>
     add_to_sequence(std::index_sequence<Seq...>) {
       return {};
     }
-
+    //! this goes from Min to Max
     template <size_t Min, size_t Max>
-    using make_index_range =
-        decltype(add_to_sequence<Min>(std::make_index_sequence<Max - Min>()));
+    using make_index_range = decltype(
+        add_to_sequence<Min>(std::make_index_sequence<Max - Min + 1>()));
 
     /* ---------------------------------------------------------------------- */
     //! Implementation of index_apply
@@ -200,7 +255,7 @@ namespace rascal {
      */
     template <size_t Min, size_t Max, class F>
     constexpr auto index_apply(F func) {
-      return index_apply_impl(func, make_index_range<Min, Max>{});
+      return index_apply_impl(func, make_index_range<Min, Max - 1>{});
     }
 
     /**

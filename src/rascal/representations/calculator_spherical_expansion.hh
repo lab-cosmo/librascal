@@ -555,7 +555,7 @@ namespace rascal {
       template <int n_spatial_dimensions, typename Coeffs, typename Center>
       void finalize_coefficients_der(Coeffs & coefficients_gradient,
                                      Center & center) const {
-        for (auto neigh : center.with_self_pair()) {
+        for (auto neigh : center.pairs_with_self_pair()) {
           auto & coefficients_neigh_gradient = coefficients_gradient[neigh];
           coefficients_neigh_gradient
               .template lhs_dot_der<n_spatial_dimensions>(
@@ -1583,7 +1583,7 @@ namespace rascal {
       // TODO(felix) think about an option to have "global" species,
       // "structure" species(or not), or automatic at the level of environment
       std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         keys.insert({neigh.get_atom_type()});
       }
       keys.insert({center_type});
@@ -1601,7 +1601,7 @@ namespace rascal {
 
       auto atom_i_tag = center.get_atom_tag();
 
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         auto dist{manager->get_distance(neigh)};
         auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};

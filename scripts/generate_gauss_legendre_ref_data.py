@@ -7,9 +7,10 @@ from numpy.polynomial.legendre import leggauss
 import numpy as np
 import ubjson
 
-rascal_reference_path = 'reference_data/'
+root = os.path.abspath('../')
+rascal_reference_path = os.path.join(root, 'reference_data/')
 inputs_path = os.path.join(rascal_reference_path, "inputs")
-dump_path = os.path.join(rascal_reference_path, "tests_only")
+dump_path = os.path.join('reference_data/', "tests_only")
 
 
 # Computes the sample points and weights for Gauss-Legendre quadrature and rescales them.
@@ -22,9 +23,8 @@ def get_leggauss(order, a, b):
 
 
 def dump_reference_json():
-    path = '../'
-    sys.path.insert(0, os.path.join(path, 'build/'))
-    sys.path.insert(0, os.path.join(path, 'tests/'))
+    sys.path.insert(0, os.path.join(root, 'build/'))
+    sys.path.insert(0, os.path.join(root, 'tests/'))
     data = []
     a = 0
     for order in range(2, 20):
@@ -33,7 +33,7 @@ def dump_reference_json():
             data.append(dict(a=a, b=b, order=order,
                              points=x.tolist(), weights=w.tolist()))
     print(len(data))
-    with open(os.path.join(path,dump_path,
+    with open(os.path.join(root, dump_path,
 			   "gauss_legendre_reference.ubjson"),'wb') as f:
         ubjson.dump(data,f)
 

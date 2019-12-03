@@ -3,6 +3,7 @@ import ase
 from ase.io import read
 import json
 import sys
+import os
 import numpy as np
 
 sys.path.insert(0, '../build/')
@@ -11,9 +12,10 @@ import rascal
 from rascal.utils import ostream_redirect
 from rascal.representations import SphericalCovariants
 
-rascal_reference_path = 'reference_data/'
+root = os.path.abspath('../')
+rascal_reference_path = os.path.join(root, 'reference_data/')
 inputs_path = os.path.join(rascal_reference_path, "inputs")
-dump_path = os.path.join(rascal_reference_path, "tests_only")
+dump_path = os.path.join('reference_data/', "tests_only")
 
 #############################################################################
 
@@ -32,12 +34,10 @@ def get_feature_vector(hypers, frames):
 
 def dump_reference_json():
     import ubjson
-    import os
     from copy import copy
     from itertools import product
-    path = '../'
-    sys.path.insert(0, os.path.join(path, 'build/'))
-    sys.path.insert(0, os.path.join(path, 'tests/'))
+    sys.path.insert(0, os.path.join(root, 'build/'))
+    sys.path.insert(0, os.path.join(root, 'tests/'))
 
     cutoffs = [3]
     gaussian_sigmas = [0.4]
@@ -48,9 +48,8 @@ def dump_reference_json():
 
     Lambdas = [1]
     fns = [
-        os.path.join(
-            path, inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
-        os.path.join(path, inputs_path, "small_molecule.json")
+        os.path.join(root, inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(root, inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
         os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
@@ -92,7 +91,7 @@ def dump_reference_json():
                 data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
                                                  hypers=copy(soap.hypers)))
 
-    with open(os.path.join(dump_path, "spherical_covariants_reference.ubjson"),
+    with open(os.path.join(root, dump_path, "spherical_covariants_reference.ubjson"),
               'wb') as f:
         ubjson.dump(data, f)
 

@@ -247,15 +247,6 @@ namespace rascal {
       return this->n_centers + this->n_ghosts;
     }
 
-    //! returns the number of neighbours of a given i atom
-    template <size_t Order, size_t Layer>
-    size_t get_cluster_size_impl(
-        const ClusterRefKey<Order, Layer> & /*cluster*/) const {
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation only handles atoms.");
-      return 1;
-    }
-
     template <size_t Order, size_t Layer>
     size_t get_atom_index(const ClusterRefKey<Order, Layer> & cluster) const {
       return this->get_atom_index(cluster.get_atom_tag());
