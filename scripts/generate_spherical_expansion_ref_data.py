@@ -1,5 +1,6 @@
 """Generate reference data for the librascal spherical expansion"""
-import sys, os
+import sys
+import os
 sys.path.insert(0, '../build/')
 from ase.io import read
 import numpy as np

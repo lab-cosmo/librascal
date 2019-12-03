@@ -152,13 +152,13 @@ namespace rascal {
      * (i.e. specifying pairs), for each pair of indices i,j it returns the
      * number entries in the list of pairs before i,j appears.
      */
-    template <size_t Order, bool T = (Order < 2), std::enable_if_t<T, int> = 0>
+    template <size_t Order, bool C = (Order < 2), std::enable_if_t<C, int> = 0>
     size_t get_offset_impl(const std::array<size_t, Order> & counters) const {
       return this->manager->get_offset(counters);
     }
 
-    template <size_t Order, bool T = (Order < 2),
-              std::enable_if_t<not(T), int> = 0>
+    template <size_t Order, bool C = (Order < 2),
+              std::enable_if_t<not(C), int> = 0>
     size_t get_offset_impl(const std::array<size_t, Order> & counters) const {
       auto j{counters.back()};
       auto main_offset{this->offsets[j]};

@@ -3,7 +3,8 @@ import numpy as np
 import argparse
 import ase
 import json
-import sys, os
+import sys
+import os
 sys.path.insert(0, '../build/')
 
 import rascal

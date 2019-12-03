@@ -927,7 +927,7 @@ namespace rascal {
      *
      * @return ClusterRefKey of order 2 and proper layer
      */
-    template <bool T = HasCenterPairAndIsOrderOne, std::enable_if_t<T, int> = 0>
+    template <bool C = HasCenterPairAndIsOrderOne, std::enable_if_t<C, int> = 0>
     auto get_atom_ii() {
       static_assert(traits::MaxOrder > 1, "Need neighbors to get one");
 
@@ -948,7 +948,7 @@ namespace rascal {
      *
      * @return ClusterRefKey of order 2 and proper layer
      */
-    template <bool T = HasCenterPairAndIsOrderTwo, std::enable_if_t<T, int> = 0>
+    template <bool C = HasCenterPairAndIsOrderTwo, std::enable_if_t<C, int> = 0>
     auto get_atom_jj() {
       auto && manager = it.get_manager();
       auto && atom_j_tag = this->get_atom_tag();
@@ -1058,7 +1058,7 @@ namespace rascal {
      * associated with the current central atom.
      * @param start starting index for the iteration from offset
      */
-    template <size_t Order_, bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
+    template <size_t Order_, bool C = IsOrderOne, std::enable_if_t<C, int> = 0>
     CustomProxy<Order_> get_clusters_of_order(size_t start = 0) {
       static_assert(Order_ > 1,
                     "You should ask at least for pairs, i.e. Order_ >= 2.");
@@ -1072,7 +1072,7 @@ namespace rascal {
      * Return an iterable for Order == 2 that includes the neighbors (or pairs)
      * associated with the current central atom.
      */
-    template <bool T = IsOrderOneAndHasOrder<2>, std::enable_if_t<T, int> = 0>
+    template <bool C = IsOrderOneAndHasOrder<2>, std::enable_if_t<C, int> = 0>
     CustomProxy<2> pairs() {
       // avoid if statement or sfinae by casting the bool to
       // size_t which turns out to give 0 if false and 1
@@ -1088,7 +1088,7 @@ namespace rascal {
      * HasCenterPair == true.
      * If HasCenterPair == false then its the regular iteration.
      */
-    template <bool T = IsOrderOneAndHasOrder<2>, std::enable_if_t<T, int> = 0>
+    template <bool C = IsOrderOneAndHasOrder<2>, std::enable_if_t<C, int> = 0>
     CustomProxy<2> pairs_with_self_pair() {
       return this->get_clusters_of_order<2>();
     }
@@ -1097,7 +1097,7 @@ namespace rascal {
      * Return an iterable for Order == 3 that includes the triplets associated
      * with the current central atom.
      */
-    template <bool T = IsOrderOneAndHasOrder<3>, std::enable_if_t<T, int> = 0>
+    template <bool C = IsOrderOneAndHasOrder<3>, std::enable_if_t<C, int> = 0>
     CustomProxy<3> triplets() {
       return this->get_clusters_of_order<3>();
     }
@@ -1106,7 +1106,7 @@ namespace rascal {
      * Return an iterable for Order == 4 that includes the quadruplets
      * associated with the current central atom.
      */
-    template <bool T = IsOrderOneAndHasOrder<4>, std::enable_if_t<T, int> = 0>
+    template <bool C = IsOrderOneAndHasOrder<4>, std::enable_if_t<C, int> = 0>
     CustomProxy<4> quadruplets() {
       return this->get_clusters_of_order<4>();
     }
@@ -1273,28 +1273,28 @@ namespace rascal {
         : container{cont}, index{start}, offset{offset} {}
 
     //! add atomic indices in current iteration
-    template <bool T = IsOrderOneOrTwo, std::enable_if_t<T, int> = 0>
+    template <bool C = IsOrderOneOrTwo, std::enable_if_t<C, int> = 0>
     AtomIndex_t get_atom_tag_list() {
       return internal::append_array(
           container.get_atom_tag_list(),
           this->get_manager().get_neighbour_atom_tag(container, this->index));
     }
     //! add atomic indices in current iteration
-    template <bool T = IsOrderOneOrTwo, std::enable_if_t<T, int> = 0>
+    template <bool C = IsOrderOneOrTwo, std::enable_if_t<C, int> = 0>
     AtomIndex_t get_atom_tag_list() const {
       return internal::append_array(
           container.get_atom_tag_list(),
           this->get_manager().get_neighbour_atom_tag(container, this->index));
     }
 
-    template <bool T = IsOrderOneOrTwo, std::enable_if_t<not(T), int> = 0>
+    template <bool C = IsOrderOneOrTwo, std::enable_if_t<not(C), int> = 0>
     AtomIndex_t get_atom_tag_list() {
       return internal::concat_array(
           container.get_atom_tag_list(),
           this->get_manager().implementation().get_neighbour_atom_tag_current(
               container, this->index));
     }
-    template <bool T = IsOrderOneOrTwo, std::enable_if_t<not(T), int> = 0>
+    template <bool C = IsOrderOneOrTwo, std::enable_if_t<not(C), int> = 0>
     AtomIndex_t get_atom_tag_list() const {
       return internal::concat_array(
           container.get_atom_tag_list(),
@@ -1314,7 +1314,7 @@ namespace rascal {
 
     //! returns the counters - which is the position in a list at each
     //! Order.
-    template <bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
+    template <bool C = IsOrderOne, std::enable_if_t<C, int> = 0>
     std::array<size_t, 1> get_counters() {
       std::array<size_t, 1> counters{this->index};
       return counters;
@@ -1322,7 +1322,7 @@ namespace rascal {
 
     //! returns the counters - which is the position in a list at each
     //! Order.
-    template <bool T = IsOrderOne, std::enable_if_t<not(T), int> = 0>
+    template <bool C = IsOrderOne, std::enable_if_t<not(C), int> = 0>
     std::array<size_t, 2> get_counters() {
       auto && parental_counters = this->container.get_counters();
       std::array<size_t, 2> counters{parental_counters[0], this->index};
@@ -1331,7 +1331,7 @@ namespace rascal {
 
     //! get offsets at which the current clusters at several orders should
     //! start
-    template <bool T = IsOrderOne, std::enable_if_t<T, int> = 0>
+    template <bool C = IsOrderOne, std::enable_if_t<C, int> = 0>
     std::array<size_t, 1> get_offsets() {
       std::array<size_t, 1> offsets{this->offset};
       return offsets;
@@ -1339,7 +1339,7 @@ namespace rascal {
 
     //! get offsets at which the current clusters at several orders should
     //! start
-    template <bool T = IsOrderOne, std::enable_if_t<not(T), int> = 0>
+    template <bool C = IsOrderOne, std::enable_if_t<not(C), int> = 0>
     std::array<size_t, 2> get_offsets() {
       auto && parental_offsets = this->container.get_offsets();
       std::array<size_t, 2> offsets{parental_offsets[0], this->offset};

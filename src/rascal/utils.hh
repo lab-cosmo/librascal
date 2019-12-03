@@ -47,12 +47,12 @@ namespace rascal {
       struct IsOrderAvailableHelper {
         static constexpr bool IsOrderAvailable = (TargetOrder == Order);
 
-        template <bool T = IsOrderAvailable, std::enable_if_t<T, int> = 0>
+        template <bool C = IsOrderAvailable, std::enable_if_t<C, int> = 0>
         static constexpr bool get_is_order_available() {
           return true;
         }
 
-        template <bool T = IsOrderAvailable, std::enable_if_t<not(T), int> = 0>
+        template <bool C = IsOrderAvailable, std::enable_if_t<not(C), int> = 0>
         static constexpr bool get_is_order_available() {
           return IsOrderAvailableHelper<TargetOrder,
                                         Orders...>::get_is_order_available();
@@ -63,12 +63,12 @@ namespace rascal {
       struct IsOrderAvailableHelper<TargetOrder, Order> {
         static constexpr bool IsOrderAvailable = (TargetOrder == Order);
 
-        template <bool T = IsOrderAvailable, std::enable_if_t<T, int> = 0>
+        template <bool C = IsOrderAvailable, std::enable_if_t<C, int> = 0>
         static constexpr bool get_is_order_available() {
           return true;
         }
 
-        template <bool T = IsOrderAvailable, std::enable_if_t<not(T), int> = 0>
+        template <bool C = IsOrderAvailable, std::enable_if_t<not(C), int> = 0>
         static constexpr bool get_is_order_available() {
           return false;
         }

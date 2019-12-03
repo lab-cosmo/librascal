@@ -2,7 +2,8 @@ import argparse
 import ase
 from ase.io import read
 import json
-import sys, os
+import sys
+import os
 import numpy as np
 
 sys.path.insert(0, '../build/')
