@@ -872,6 +872,7 @@ namespace rascal {
     using Structure_t = AtomicStructure<3>;
     using Key_t = typename Calculator::Key_t;
     static const size_t n_arguments = 3;
+    static constexpr bool IsHalfNl{StructureManager::traits::NeighbourListType == AdaptorTraits::NeighbourListType::half};
 
     using PairRef_t =
         typename Calculator::template ClusterRef_t<StructureManager, 2>;
@@ -919,6 +920,8 @@ namespace rascal {
         ++i_center;
       }
 
+      auto n_center{static_cast<int>(manager->size())};
+
       this->representation.compute(this->structure_manager);
 
       auto && data_sparse{*structure_manager->template get_property_ptr<Prop_t>(
@@ -940,10 +943,27 @@ namespace rascal {
           // Don't compute gradient contributions onto ghost atoms
           continue;
         }
-        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
-        n_entries_neighbours +=
+        if (IsHalfNl and neigh.get_atom_tag() < n_center) {
+          auto center_type = center.get_atom_type();
+          std::vector<Key_t> swapped_keys{};
+          for (const auto & key : keys_center) {
+            for (const auto & val : key) {
+              // if the center type is in key then the entry will exist in the
+              // swapped pair that does not exist in the half NL
+              if (val == center_type) {
+                n_entries_neighbours += n_entries_per_key;
+              }
+            }
+          }
+          n_entries_neighbours +=
             (gradients_sparse[swapped_ref].get_keys().size() *
              n_entries_per_key);
+        } else {
+          auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
+          n_entries_neighbours +=
+            (gradients_sparse[swapped_ref].get_keys().size() *
+             n_entries_per_key);
+        }
       }
       // Packed array containing: The center coefficients (all species) and
       // the neighbour coefficients (only same species as center)
