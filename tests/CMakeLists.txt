@@ -1,5 +1,34 @@
 find_package(Boost REQUIRED COMPONENTS unit_test_framework )
 
+option(RASCAL_TESTS_USE_VALGRIND "run all C++ tests within valgrind" OFF)
+
+if (${RASCAL_TESTS_USE_VALGRIND})
+    find_program(VALGRIND_EXECUTABLE "valgrind")
+    if ("${VALGRIND_EXECUTABLE}" STREQUAL "VALGRIND_EXECUTABLE-NOTFOUND")
+        message(FATAL_ERROR "Could not find valgrind")
+    endif()
+    set(TEST_RUNNER "${VALGRIND_EXECUTABLE}"
+        # fail the test if valgrind fails
+        "--error-exitcode=100"
+        # check for all kinds of leaks
+        "--leak-check=full"
+        "--show-leak-kinds=all"
+        "--errors-for-leak-kinds=all"
+        # track leaks origin to improve error messages
+        "--track-origins=yes"
+        # use dsymutil to extract debug symbols on macOS
+        "--dsymutil=yes"
+        # remove errors from the OS/external libraries
+        "--suppressions=${CMAKE_CURRENT_SOURCE_DIR}/valgrind.suppressions"
+        # uncomment the line below if you wan to generate suppressions for new
+        # errors
+        # "--gen-suppressions=all"
+    )
+
+else()
+    set(TEST_RUNNER "")
+endif()
+
 add_library(rascal_tests_main STATIC helpers/tests_main.cc)
 target_compile_definitions(rascal_tests_main PUBLIC -DBOOST_TEST_DYN_LINK)
 target_link_libraries(rascal_tests_main ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
@@ -14,7 +43,7 @@ foreach(_file_ ${tests})
 
     add_test(
         NAME ${_name_}
-        COMMAND ${_name_} --report_level=detailed --build_info=TRUE
+        COMMAND ${TEST_RUNNER} $<TARGET_FILE:${_name_}> -- --report_level=detailed --build_info=TRUE
         # Run the tests in the root directory to give them access to the
         # reference data
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
