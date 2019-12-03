@@ -1084,23 +1084,28 @@ namespace rascal {
         }
         // We need grad_i c^{ji} -- using just 'neigh' would give us
         // grad_j c^{ij}, hence the swap
-        auto neigh_swap_images{swap_pair_ref(neigh)};
-        auto & gradients_neigh_first{
-            gradients_sparse[neigh_swap_images.front()]};
-        // The set of species keys should be the same for all images of i
-        auto keys_neigh{gradients_neigh_first.get_keys()};
-        for (auto & key : keys_neigh) {
-          // For each key, accumulate gradients over periodic images of the atom
-          // that moves in the finite-difference step
-          for (auto & neigh_swap : neigh_swap_images) {
-            auto & gradients_neigh{gradients_sparse[neigh_swap]};
-            Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-                gradients_neigh[key].data(), 3, n_entries_per_key);
-            grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) +=
-                grad_coeffs_flat;
+        if (IsHalfNl and neigh.get_atom_tag() < n_center) {
+          
+        } else {
+          auto neigh_swap_images{swap_pair_ref(neigh)};
+          auto & gradients_neigh_first{
+              gradients_sparse[neigh_swap_images.front()]};
+          // The set of species keys should be the same for all images of i
+          auto keys_neigh{gradients_neigh_first.get_keys()};
+          for (auto & key : keys_neigh) {
+            // For each key, accumulate gradients over periodic images of the atom
+            // that moves in the finite-difference step
+            for (auto & neigh_swap : neigh_swap_images) {
+              auto & gradients_neigh{gradients_sparse[neigh_swap]};
+              Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
+                  gradients_neigh[key].data(), 3, n_entries_per_key);
+              grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) +=
+                  grad_coeffs_flat;
+            }
+            result_idx += n_entries_per_key;
           }
-          result_idx += n_entries_per_key;
         }
+
       }
       return grad_coeffs_pairs;
     }
