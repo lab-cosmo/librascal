@@ -1300,10 +1300,10 @@ namespace rascal {
       auto fc_type = fc_hypers.at("type").get<std::string>();
       this->interaction_cutoff = fc_hypers.at("cutoff").at("value");
       this->cutoff_smooth_width = fc_hypers.at("smooth_width").at("value");
-      if (fc_type == "ShiftedCosine") {
-        this->cutoff_function_type = CutoffFunctionType::ShiftedCosine;
+      if (fc_type == "CosineShifted") {
+        this->cutoff_function_type = CutoffFunctionType::CosineShifted;
         this->cutoff_function =
-            make_cutoff_function<CutoffFunctionType::ShiftedCosine>(fc_hypers);
+            make_cutoff_function<CutoffFunctionType::CosineShifted>(fc_hypers);
       } else if (fc_type == "RadialScaling") {
         this->cutoff_function_type = CutoffFunctionType::RadialScaling;
         this->cutoff_function =
@@ -1311,7 +1311,7 @@ namespace rascal {
       } else {
         throw std::logic_error("Requested cutoff function type \'" + fc_type +
                                "\' has not been implemented.  Must be one of" +
-                               ": \'ShiftedCosine\' or 'RadialScaling'.");
+                               ": \'CosineShifted\' or 'RadialScaling'.");
       }
 
       this->set_name(hypers);
@@ -1436,8 +1436,8 @@ namespace rascal {
     using internal::CutoffFunctionType;
 
     switch (this->cutoff_function_type) {
-    case CutoffFunctionType::ShiftedCosine:
-      this->compute_by_radial_contribution<CutoffFunctionType::ShiftedCosine>(
+    case CutoffFunctionType::CosineShifted:
+      this->compute_by_radial_contribution<CutoffFunctionType::CosineShifted>(
           managers);
       break;
     case CutoffFunctionType::RadialScaling:
