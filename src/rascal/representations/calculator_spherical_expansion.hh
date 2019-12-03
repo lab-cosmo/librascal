@@ -1580,8 +1580,6 @@ namespace rascal {
     // init the spherical expension coeffs
     for (auto center : manager) {
       auto & coefficients_center = expansions_coefficients[center];
-      auto & coefficients_center_gradient =
-          expansions_coefficients_gradient[center.get_atom_ii()];
       Key_t center_type{center.get_atom_type()};
       auto center_tag{center.get_atom_tag()};
 
@@ -1597,13 +1595,25 @@ namespace rascal {
       keys[center_tag].insert({center_type});
       // initialize the expansion coefficients to 0
       coefficients_center.resize(keys[center_tag], n_row, n_col, 0.);
-
-      if (this->compute_gradients) {
+    }
+    // init the spherical expension gradients coeff
+    if (this->compute_gradients) {
+      for (auto center : manager) {
+        auto center_tag{center.get_atom_tag()};
+        auto & coefficients_center_gradient =
+          expansions_coefficients_gradient[center.get_atom_ii()];
         coefficients_center_gradient.resize(keys[center_tag], n_spatial_dimensions * n_row,
                                             n_col, 0.);
+        for (auto neigh : center) {
+          auto & coefficients_neigh_gradient =
+            expansions_coefficients_gradient[neigh];
+          Key_t neigh_type{neigh.get_atom_type()};
+          std::vector<Key_t> neigh_types{{neigh_type}};
+          coefficients_neigh_gradient.resize(
+              neigh_types, n_spatial_dimensions * n_row, n_col, 0.);
+        }
       }
     }
-
     /* @TODO(felix,max) use the parity of the spherical harmonics to use half
      * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
      */
@@ -1659,7 +1669,7 @@ namespace rascal {
         }
         coefficients_center_by_type += c_ij_nlm;
 
-
+        // half list branch
         if (neigh_tag < static_cast<int>(manager->size()) and StructureManager::traits::NeighbourListType == AdaptorTraits::NeighbourListType::half) {
           l_block_idx = 0;
           double parity{1};
@@ -1680,10 +1690,6 @@ namespace rascal {
         // (the periodic images move with the center, so their contribution to
         // the center gradient is zero)
         if (this->compute_gradients and (atom_j_tag != atom_i_tag)) {  // NOLINT
-          std::vector<Key_t> neigh_types{neigh_type};
-          coefficients_neigh_gradient.resize(
-              neigh_types, n_spatial_dimensions * n_row, n_col, 0.);
-
           auto && neighbour_derivative =
               radial_integral->compute_neighbour_derivative(dist, neigh);
           double df_c{cutoff_function->df_c(dist)};
@@ -1710,7 +1716,7 @@ namespace rascal {
                  ++cartesian_idx) {
             size_t l_block_idx{0};
             // account for (-1)^{l+1}
-            double parity{-1.};
+            double parity{1.};
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                 ++angular_l) {
               size_t l_block_size{2 * angular_l + 1};
@@ -1733,11 +1739,11 @@ namespace rascal {
               gradient_neigh_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
                   max_radial, l_block_size) += pair_gradient_contribution;
-              if (neigh_tag < static_cast<int>(manager->size())) {
+              if (neigh_tag < static_cast<int>(manager->size()) and StructureManager::traits::NeighbourListType == AdaptorTraits::NeighbourListType::half) {
                 gradient_neigh_center_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
                   max_radial, l_block_size) += parity* pair_gradient_contribution;
-                  parity *= -1.;
+                parity *= -1.;
               }
               l_block_idx += l_block_size;
               // clang-format on
