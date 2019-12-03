@@ -261,6 +261,16 @@ namespace rascal {
       }
                                           
       
+      template <
+          class Property_t, internal::TargetType Type,
+          std::enable_if_t<Type == internal::TargetType::Atom, int> = 0,
+          class StructureManagers>
+      math::Matrix_t compute(StructureManagers & managers_a,
+                             StructureManagers & managers_b,
+                             const std::string & representation_name) {
+        throw std::logic_error("Atom-wise Gaussian kernel not implemented");
+      }
+
       /**
        * Compute the kernel between 2 set of structures for a given
        * representation specified by the name.
@@ -412,6 +422,10 @@ namespace rascal {
 
       if (this->kernel_type == KernelType::Cosine) {
         auto kernel = downcast_kernel_impl<KernelType::Cosine>(kernel_impl);
+        return kernel->template compute<Property_t, Type>(
+            managers_a, managers_b, representation_name);
+      } else if (this->kernel_type == KernelType::Gaussian) {
+        auto kernel = downcast_kernel_impl<KernelType::Gaussian>(kernel_impl);
         return kernel->template compute<Property_t, Type>(
             managers_a, managers_b, representation_name);
       } else {
