@@ -157,43 +157,45 @@ int main(int argc, char * argv[]) {
     std::cout << "============================" << std::endl;
     std::cout << "Center " << center.get_index();
     std::cout << " of type " << center.get_atom_type() << std::endl;
-    // if (std::abs((soap_vectors.get_dense_row(center)-soap_vectors_half.get_dense_row(center)).mean()) > 1e-12) {
-    //   std::cout << "Ref: " << std::endl<< soap_vectors.get_dense_row(center);
-    //   std::cout << std::endl;
-    //   std::cout << "Test: " << std::endl<< soap_vectors_half.get_dense_row(center);
-    //   std::cout << std::endl;
-    // }
-    // auto keys_center = soap_vectors[center].get_keys();
-    // std::cout << "Center data keys: ";
-    // for (auto key : keys_center) {
-    //   std::cout << "(";
-    //   for (auto key_sp : key) {
-    //     std::cout << key_sp << ", ";
-    //   }
-    //   std::cout << "\b\b) ";
-    // }
-    // std::cout << std::endl;
-    // auto ii_pair = center.get_atom_ii();
+    double diff_rep{math::max_relative_error(soap_vectors.get_dense_row(center), soap_vectors_half.get_dense_row(center))};
+    if (diff_rep > 1e-12) {
+      std::cout << "Ref: " << std::endl<< soap_vectors.get_dense_row(center);
+      std::cout << std::endl;
+      std::cout << "Test: " << std::endl<< soap_vectors_half.get_dense_row(center);
+      std::cout << std::endl;
+    }
+    auto keys_center = soap_vectors[center].get_keys();
+    std::cout << "Center data keys: ";
+    for (auto key : keys_center) {
+      std::cout << "(";
+      for (auto key_sp : key) {
+        std::cout << key_sp << ", ";
+      }
+      std::cout << "\b\b) ";
+    }
+    std::cout << std::endl;
+    auto ii_pair = center.get_atom_ii();
 
     auto half_it = manager_half->get_iterator_at(center_count, 0);
     auto half_center = *(half_it);
-    // std::cout << "Tags:  (";
-    // for (auto neigh : half_center) {
-    //   auto neigh_type = neigh.get_atom_tag();
-    //   std::cout << neigh_type << ", ";
-    // }
-    // std::cout << "\b\b) ";
-    // std::cout << std::endl;
+    std::cout << "Tags:  (";
+    for (auto neigh : half_center) {
+      auto neigh_type = neigh.get_atom_tag();
+      std::cout << neigh_type << ", ";
+    }
+    std::cout << "\b\b) ";
+    std::cout << std::endl;
 
-    // std::cout << "Types: (";
-    // for (auto neigh : half_center) {
-    //   auto neigh_type = neigh.get_atom_type();
-    //   std::cout << neigh_type << ", ";
-    // }
-    // std::cout << "\b\b) ";
-    // std::cout << std::endl;
-    auto ii_pair = center.get_atom_ii();
-    if (std::abs((soap_vector_gradients.get_dense_row(ii_pair)-soap_vector_gradients_half.get_dense_row(half_center.get_atom_ii())).mean()) > 1e-12) {
+    std::cout << "Types: (";
+    for (auto neigh : half_center) {
+      auto neigh_type = neigh.get_atom_type();
+      std::cout << neigh_type << ", ";
+    }
+    std::cout << "\b\b) ";
+    std::cout << std::endl;
+    
+    double diff_ii{math::max_relative_error(soap_vector_gradients.get_dense_row(ii_pair), soap_vector_gradients_half.get_dense_row(half_center.get_atom_ii()))};
+    if (diff_ii > 1e-12) {
       std::cout << "Ref: " << std::endl<< soap_vector_gradients.get_dense_row(ii_pair).transpose();
       std::cout << std::endl;
       std::cout << "Test: " << std::endl<< soap_vector_gradients_half.get_dense_row(half_center.get_atom_ii()).transpose();
@@ -252,8 +254,8 @@ int main(int argc, char * argv[]) {
       //   std::cout << "\b\b) ";
       // }
       // std::cout << std::endl;
-
-      if (std::abs((soap_vector_gradients.get_dense_row(neigh)-soap_vector_gradients_half.get_dense_row(half_neigh)).mean()) > 1e-12) {
+      double diff_ij{math::max_relative_error(soap_vector_gradients.get_dense_row(neigh), soap_vector_gradients_half.get_dense_row(half_neigh))};
+      if (diff_ij > 1e-12) {
         std::cout << "Ref: " << std::endl<< soap_vector_gradients.get_dense_row(neigh).transpose();
         std::cout << std::endl;
         std::cout << "Test: " << std::endl<< soap_vector_gradients_half.get_dense_row(half_neigh).transpose();

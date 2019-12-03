@@ -484,8 +484,9 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
-    /** Contains some simple periodic structures for testing complicated things
+  /** Contains some simple periodic structures for testing complicated things
    *  like gradients
+   *  Should match the 
    */
   struct SimplePeriodicNLHalfCCStrictFixture {
     using ManagerTypeHolder_t =
@@ -500,17 +501,17 @@ namespace rascal {
         json structure{{"filename", filename}};
         json adaptors;
         json ad1a{{"name", "AdaptorNeighbourList"},
-                 {"initialization_arguments",
-                  {{"cutoff", cutoff}, {"skin", cutoff_skin}}}};
+                {"initialization_arguments", {{"cutoff", cutoff}}}};
         json ad1b{{"name", "AdaptorHalfList"},
                   {"initialization_arguments", {}}};
         json ad1c{{"name", "AdaptorCenterContribution"},
                   {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
-                 {"initialization_arguments", {{"cutoff", cutoff}}}};
+                {"initialization_arguments", {{"cutoff", cutoff}}}};
+
         adaptors.emplace_back(ad1a);
-        adaptors.push_back(ad1b);
-         adaptors.push_back(ad1c);
+        adaptors.emplace_back(ad1b);
+        adaptors.emplace_back(ad1c);
         adaptors.emplace_back(ad2);
 
         parameters["structure"] = structure;
@@ -539,6 +540,7 @@ namespace rascal {
     json factory_args{};
     std::vector<Structure_t> structures{};
   };
+
 
   /** Contains a multi species periodic structure to test the sparsity of the
    * gradient keys
@@ -585,8 +587,9 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
-  struct SingleHypersSphericalExpansion : SimplePeriodicNLHalfCCStrictFixture {
-    using Parent = SimplePeriodicNLHalfCCStrictFixture;
+  template <typename DataFixture>
+  struct SingleHypersSphericalExpansion : DataFixture {
+    using Parent = DataFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
 

@@ -134,6 +134,35 @@ namespace rascal {
 
     //! general power
     inline double pow(double x, double n) { return std::pow(x, n); }
+
+    /**
+     * Routines to compute the max relative difference between Eigen Matrices
+     */
+    template <typename Derived1, typename Derived2>
+    double max_relative_error(const Eigen::MatrixBase<Derived1>& reference, const Eigen::MatrixBase<Derived2>& test) {
+      if (reference.rows() != test.rows()) {
+        std::stringstream err_str{};
+        err_str << "reference.rows() != test.rows(): '"
+                << reference.rows() << "' != '" << test.rows() << "'.";
+        throw std::runtime_error(err_str.str());
+      }
+      if (reference.cols() != test.cols()) {
+        std::stringstream err_str{};
+        err_str << "reference.cols() != test.cols(): '"
+                << reference.cols() << "' != '" << test.cols() << "'.";
+        throw std::runtime_error(err_str.str());
+      }
+      auto rel_diff = (reference - test).array().abs().eval();
+      auto is_zero = (reference.array() == 0.).eval();
+      for (int i_row{0}; i_row < reference.rows(); ++i_row) {
+        for (int i_col{0}; i_col < reference.cols(); ++i_col) {
+          if (not is_zero(i_row, i_col)) {
+            rel_diff(i_row, i_col) /= reference(i_row, i_col);
+          }
+        }
+      }
+      return rel_diff.maxCoeff();
+    }
   }  // namespace math
 }  // namespace rascal
 
