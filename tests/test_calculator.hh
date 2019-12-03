@@ -872,7 +872,6 @@ namespace rascal {
     using Structure_t = AtomicStructure<3>;
     using Key_t = typename Calculator::Key_t;
     static const size_t n_arguments = 3;
-    static constexpr bool IsHalfNl{StructureManager::traits::NeighbourListType == AdaptorTraits::NeighbourListType::half};
 
     using PairRef_t =
         typename Calculator::template ClusterRef_t<StructureManager, 2>;
@@ -920,8 +919,6 @@ namespace rascal {
         ++i_center;
       }
 
-      auto n_center{static_cast<int>(this->structure_manager->size())};
-
       this->representation.compute(this->structure_manager);
 
       auto && data_sparse{*structure_manager->template get_property_ptr<Prop_t>(
@@ -943,25 +940,10 @@ namespace rascal {
           // Don't compute gradient contributions onto ghost atoms
           continue;
         }
-        size_t n_keys{0};
-        if (IsHalfNl and neigh.get_atom_tag() < n_center) {
-          auto center_type = center.get_atom_type();
-          std::vector<Key_t> swapped_keys{};
-          for (const auto & key : keys_center) {
-            for (const auto & val : key) {
-              // if the center type is in key then the entry will exist in the
-              // swapped pair that does not exist in the half NL
-              if (val == center_type) {
-                ++n_keys;
-                break;
-              }
-            }
-          }
-        } else {
-          auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
-          n_keys = gradients_sparse[swapped_ref].get_keys().size();
-        }
-        n_entries_neighbours += n_keys * n_entries_per_key);
+        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
+        n_entries_neighbours +=
+            (gradients_sparse[swapped_ref].get_keys().size() *
+             n_entries_per_key);
       }
       // Packed array containing: The center coefficients (all species) and
       // the neighbour coefficients (only same species as center)
@@ -986,26 +968,11 @@ namespace rascal {
         // being taken)
         // The nonzero gradient keys are already indicated in the sparse
         // gradient structure
-        std::set<Key_t> keys_neigh{};
-        if (IsHalfNl and neigh.get_atom_tag() < n_center) {
-          auto center_type = center.get_atom_type();
-          for (const auto & key : keys_center) {
-            for (const auto & val : key) {
-              // if the center type is in key then the entry will exist in the
-              // swapped pair that does not exist in the half NL
-              if (val == center_type) {
-                keys_neigh.insert(key);
-              }
-            }
-          }
-        } else {
-          auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
-          keys_neigh = gradients_sparse[swapped_ref].get_keys();
-        }
-
+        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
+        auto keys_neigh{gradients_sparse[swapped_ref].get_keys()};
         for (auto & key : keys_neigh) {
           Eigen::Map<Eigen::ArrayXd> data_flat(data_neigh[key].data(),
-                                              n_entries_per_key);
+                                               n_entries_per_key);
           data_pairs.segment(result_idx, n_entries_per_key) = data_flat;
           result_idx += n_entries_per_key;
         }
@@ -1041,25 +1008,10 @@ namespace rascal {
           // Don't compute gradient contributions onto ghost atoms
           continue;
         }
-        size_t n_keys{0};
-        if (IsHalfNl and neigh.get_atom_tag() < n_center) {
-          auto center_type = center.get_atom_type();
-          std::vector<Key_t> swapped_keys{};
-          for (const auto & key : keys_center) {
-            for (const auto & val : key) {
-              // if the center type is in key then the entry will exist in the
-              // swapped pair that does not exist in the half NL
-              if (val == center_type) {
-                ++n_keys;
-                break;
-              }
-            }
-          }
-        } else {
-          auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
-          n_keys = gradients_sparse[swapped_ref].get_keys().size();
-        }
-        n_entries_neighbours += n_keys * n_entries_per_key);
+        auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
+        n_entries_neighbours +=
+            (gradients_sparse[swapped_ref].get_keys().size() *
+             n_entries_per_key);
       }
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
           grad_coeffs_pairs(3, n_entries_center + n_entries_neighbours);
@@ -1084,28 +1036,23 @@ namespace rascal {
         }
         // We need grad_i c^{ji} -- using just 'neigh' would give us
         // grad_j c^{ij}, hence the swap
-        if (IsHalfNl and neigh.get_atom_tag() < n_center) {
-          
-        } else {
-          auto neigh_swap_images{swap_pair_ref(neigh)};
-          auto & gradients_neigh_first{
-              gradients_sparse[neigh_swap_images.front()]};
-          // The set of species keys should be the same for all images of i
-          auto keys_neigh{gradients_neigh_first.get_keys()};
-          for (auto & key : keys_neigh) {
-            // For each key, accumulate gradients over periodic images of the atom
-            // that moves in the finite-difference step
-            for (auto & neigh_swap : neigh_swap_images) {
-              auto & gradients_neigh{gradients_sparse[neigh_swap]};
-              Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-                  gradients_neigh[key].data(), 3, n_entries_per_key);
-              grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) +=
-                  grad_coeffs_flat;
-            }
-            result_idx += n_entries_per_key;
+        auto neigh_swap_images{swap_pair_ref(neigh)};
+        auto & gradients_neigh_first{
+            gradients_sparse[neigh_swap_images.front()]};
+        // The set of species keys should be the same for all images of i
+        auto keys_neigh{gradients_neigh_first.get_keys()};
+        for (auto & key : keys_neigh) {
+          // For each key, accumulate gradients over periodic images of the atom
+          // that moves in the finite-difference step
+          for (auto & neigh_swap : neigh_swap_images) {
+            auto & gradients_neigh{gradients_sparse[neigh_swap]};
+            Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
+                gradients_neigh[key].data(), 3, n_entries_per_key);
+            grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) +=
+                grad_coeffs_flat;
           }
+          result_idx += n_entries_per_key;
         }
-
       }
       return grad_coeffs_pairs;
     }
