@@ -193,10 +193,10 @@ int main(int argc, char * argv[]) {
     // std::cout << "\b\b) ";
     // std::cout << std::endl;
     auto ii_pair = center.get_atom_ii();
-    if (std::abs((soap_vector_gradients.get_dense_row(ii_pair)-soap_vector_gradients_half.get_dense_row(ii_pair)).mean()) > 1e-12) {
+    if (std::abs((soap_vector_gradients.get_dense_row(ii_pair)-soap_vector_gradients_half.get_dense_row(half_center.get_atom_ii())).mean()) > 1e-12) {
       std::cout << "Ref: " << std::endl<< soap_vector_gradients.get_dense_row(ii_pair).transpose();
       std::cout << std::endl;
-      std::cout << "Test: " << std::endl<< soap_vector_gradients_half.get_dense_row(ii_pair).transpose();
+      std::cout << "Test: " << std::endl<< soap_vector_gradients_half.get_dense_row(half_center.get_atom_ii()).transpose();
       std::cout << std::endl;
     }
     auto keys_grad_center = soap_vector_gradients[ii_pair].get_keys();
@@ -218,6 +218,11 @@ int main(int argc, char * argv[]) {
       auto neigh_type = neigh.get_atom_type();
       auto tags = neigh.get_atom_tag_list();
       if (tags[1] <= tags[0]) {continue;}
+      auto half_neigh_it = half_center.begin();
+      for (size_t ii{0}; ii < neigh_count; ii++) {
+        ++half_neigh_it;
+      }
+      auto half_neigh = *(half_neigh_it);
       std::cout << "Neighbour "<< neigh_type <<" tags: ";
 
       std::cout << "(";
@@ -225,8 +230,8 @@ int main(int argc, char * argv[]) {
         std::cout << tag << ", ";
       }
       std::cout << "\b\b) ";
-
       std::cout << std::endl;
+
       auto keys_neigh = soap_vector_gradients[neigh].get_keys();
       std::cout << "Neighbour "<< neigh_type <<" keys: ";
       for (auto key : keys_neigh) {
@@ -237,11 +242,21 @@ int main(int argc, char * argv[]) {
         std::cout << "\b\b) ";
       }
       std::cout << std::endl;
+      // auto keys_neigh_half = soap_vector_gradients_half[half_neigh].get_keys();
+      // std::cout << " /// ";
+      // for (auto key : keys_neigh_half) {
+      //   std::cout << "(";
+      //   for (auto key_sp : key) {
+      //     std::cout << key_sp << ", ";
+      //   }
+      //   std::cout << "\b\b) ";
+      // }
+      // std::cout << std::endl;
 
-      if (std::abs((soap_vector_gradients.get_dense_row(neigh)-soap_vector_gradients_half.get_dense_row(neigh)).mean()) > 1e-12) {
+      if (std::abs((soap_vector_gradients.get_dense_row(neigh)-soap_vector_gradients_half.get_dense_row(half_neigh)).mean()) > 1e-12) {
         std::cout << "Ref: " << std::endl<< soap_vector_gradients.get_dense_row(neigh).transpose();
         std::cout << std::endl;
-        std::cout << "Test: " << std::endl<< soap_vector_gradients_half.get_dense_row(neigh).transpose();
+        std::cout << "Test: " << std::endl<< soap_vector_gradients_half.get_dense_row(half_neigh).transpose();
         std::cout << std::endl;
       }
 
