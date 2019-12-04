@@ -34,7 +34,8 @@ def dump_reference_json():
     soap_types = ["RadialSpectrum", "PowerSpectrum"]
 
     fn = os.path.join(inputs_path, "small_molecules-20.json")
-    fn_to_write = os.path.join('reference_data', "inputs", "small_molecules-20.json")
+    fn_to_write = os.path.join(
+        'reference_data', "inputs", "small_molecules-20.json")
     start = 0
     length = 5
     representations = ['spherical_invariants']
