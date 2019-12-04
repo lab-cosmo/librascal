@@ -114,9 +114,9 @@ namespace rascal {
           json ad1{{"name", "AdaptorNeighbourList"},
                    {"initialization_arguments", {{"cutoff", cutoff}}}};
           json ad1b{{"name", "AdaptorHalfList"},
-            {"initialization_arguments", {}}};
+                    {"initialization_arguments", {}}};
           json ad1c{{"name", "AdaptorCenterContribution"},
-            {"initialization_arguments", {}}};
+                    {"initialization_arguments", {}}};
           json ad2{{"name", "AdaptorStrict"},
                    {"initialization_arguments", {{"cutoff", cutoff}}}};
           adaptors.emplace_back(ad1);
@@ -486,7 +486,7 @@ namespace rascal {
 
   /** Contains some simple periodic structures for testing complicated things
    *  like gradients
-   *  Should match the 
+   *  Should match the
    */
   struct SimplePeriodicNLHalfCCStrictFixture {
     using ManagerTypeHolder_t =
@@ -501,13 +501,13 @@ namespace rascal {
         json structure{{"filename", filename}};
         json adaptors;
         json ad1a{{"name", "AdaptorNeighbourList"},
-                {"initialization_arguments", {{"cutoff", cutoff}}}};
+                  {"initialization_arguments", {{"cutoff", cutoff}}}};
         json ad1b{{"name", "AdaptorHalfList"},
                   {"initialization_arguments", {}}};
         json ad1c{{"name", "AdaptorCenterContribution"},
                   {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
-                {"initialization_arguments", {{"cutoff", cutoff}}}};
+                 {"initialization_arguments", {{"cutoff", cutoff}}}};
 
         adaptors.emplace_back(ad1a);
         adaptors.emplace_back(ad1b);
@@ -540,7 +540,6 @@ namespace rascal {
     json factory_args{};
     std::vector<Structure_t> structures{};
   };
-
 
   /** Contains a multi species periodic structure to test the sparsity of the
    * gradient keys

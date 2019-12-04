@@ -33,8 +33,8 @@
 
 #include <cmath>
 #include <cstdint>
-#include <limits>
 #include <iostream>
+#include <limits>
 
 namespace rascal {
   /**
@@ -149,17 +149,20 @@ namespace rascal {
      * @param delta maximum relative error tolarated
      */
     template <typename Derived>
-    Derived relative_error(const Eigen::MatrixBase<Derived>& reference, const Eigen::MatrixBase<Derived>& test, const double& delta = 1e-10, const double& epsilon = DBL_FTOL) {
+    Derived relative_error(const Eigen::MatrixBase<Derived> & reference,
+                           const Eigen::MatrixBase<Derived> & test,
+                           const double & delta = 1e-10,
+                           const double & epsilon = DBL_FTOL) {
       if (reference.rows() != test.rows()) {
         std::stringstream err_str{};
-        err_str << "reference.rows() != test.rows(): '"
-                << reference.rows() << "' != '" << test.rows() << "'.";
+        err_str << "reference.rows() != test.rows(): '" << reference.rows()
+                << "' != '" << test.rows() << "'.";
         throw std::runtime_error(err_str.str());
       }
       if (reference.cols() != test.cols()) {
         std::stringstream err_str{};
-        err_str << "reference.cols() != test.cols(): '"
-                << reference.cols() << "' != '" << test.cols() << "'.";
+        err_str << "reference.cols() != test.cols(): '" << reference.cols()
+                << "' != '" << test.cols() << "'.";
         throw std::runtime_error(err_str.str());
       }
       auto rel_diff = (reference - test).array().abs().matrix().eval();
@@ -177,12 +180,11 @@ namespace rascal {
       int maxRow{0}, maxCol{0};
       double max_diff = rel_diff.maxCoeff(&maxRow, &maxCol);
       if (max_diff > delta) {
-        std::cout << "Max diff in relative_error at ("
-                  << maxRow << ", " <<  maxCol << ") "
+        std::cout << "Max diff in relative_error at (" << maxRow << ", "
+                  << maxCol << ") "
                   << "diff: " << rel_diff(maxRow, maxCol)
                   << " ref: " << reference(maxRow, maxCol)
-                  << " test: " << test(maxRow, maxCol)
-                  << std::endl;
+                  << " test: " << test(maxRow, maxCol) << std::endl;
       }
 
       return rel_diff;

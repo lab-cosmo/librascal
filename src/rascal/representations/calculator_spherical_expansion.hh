@@ -1532,7 +1532,9 @@ namespace rascal {
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
     constexpr static int n_spatial_dimensions = StructureManager::dim();
-    constexpr static bool IsHalfNL{StructureManager::traits::NeighbourListType == AdaptorTraits::NeighbourListType::half};
+    constexpr static bool IsHalfNL{
+        StructureManager::traits::NeighbourListType ==
+        AdaptorTraits::NeighbourListType::half};
     using math::PI;
     using math::pow;
 
@@ -1600,12 +1602,12 @@ namespace rascal {
       for (auto center : manager) {
         auto center_tag{center.get_atom_tag()};
         auto & coefficients_center_gradient =
-          expansions_coefficients_gradient[center.get_atom_ii()];
-        coefficients_center_gradient.resize(keys[center_tag], n_spatial_dimensions * n_row,
-                                            n_col, 0.);
+            expansions_coefficients_gradient[center.get_atom_ii()];
+        coefficients_center_gradient.resize(
+            keys[center_tag], n_spatial_dimensions * n_row, n_col, 0.);
         for (auto neigh : center) {
           auto & coefficients_neigh_gradient =
-            expansions_coefficients_gradient[neigh];
+              expansions_coefficients_gradient[neigh];
           Key_t neigh_type{neigh.get_atom_type()};
           std::vector<Key_t> neigh_types{{neigh_type}};
           coefficients_neigh_gradient.resize(
@@ -1660,10 +1662,9 @@ namespace rascal {
         for (size_t angular_l{0}; angular_l < this->max_angular + 1;
              ++angular_l) {
           size_t l_block_size{2 * angular_l + 1};
-          c_ij_nlm.block(0, l_block_idx, max_radial,
-                                            l_block_size) =
+          c_ij_nlm.block(0, l_block_idx, max_radial, l_block_size) =
               neighbour_contribution.col(angular_l) *
-               harmonics.segment(l_block_idx, l_block_size);
+              harmonics.segment(l_block_idx, l_block_size);
           l_block_idx += l_block_size;
         }
         c_ij_nlm *= f_c;
@@ -1675,11 +1676,12 @@ namespace rascal {
             l_block_idx = 0;
             double parity{1.};
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-                ++angular_l) {
+                 ++angular_l) {
               size_t l_block_size{2 * angular_l + 1};
               coefficients_neigh_by_type.block(0, l_block_idx, max_radial,
-                              l_block_size) += parity * c_ij_nlm.block(0, l_block_idx, max_radial,
-                                              l_block_size);
+                                               l_block_size) +=
+                  parity *
+                  c_ij_nlm.block(0, l_block_idx, max_radial, l_block_size);
               l_block_idx += l_block_size;
               parity *= -1.;
             }
