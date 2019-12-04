@@ -48,8 +48,8 @@ def dump_reference_json():
 
     Lambdas = [1]
     fns = [
-        os.path.join(root, inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
-        os.path.join(root, inputs_path, "small_molecule.json")
+        os.path.join(inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
         os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"),

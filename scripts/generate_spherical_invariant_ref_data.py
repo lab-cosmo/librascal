@@ -125,7 +125,7 @@ def main(json_dump, save_kernel):
     nstr = '2'  # number of structures
 
     frames = read(os.path.join(
-        inputs_path, 'dft-smiles_500.xyz'), ':' + str(nstr))
+        inputs_path, 'small_molecules-20.json'), ':' + str(nstr))
     species = set(
         [atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
