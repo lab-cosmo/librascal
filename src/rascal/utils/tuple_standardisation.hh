@@ -83,6 +83,8 @@ namespace rascal {
       return ret_val;
     }
 
+    T & at(size_t index) { return this->key.at(index); }
+    const T & at(size_t index) const { return this->key.at(index); }
     const size_t & get_order() const { return this->order; }
 
    protected:

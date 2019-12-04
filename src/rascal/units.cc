@@ -152,6 +152,21 @@ namespace rascal {
         "u", "rBohr", "fs",      "Ha", "(rBohr/atu)", "(Ha/rBohr)", undefined,
         "K", "Pa",    undefined, "e",  "D",           "(V/cm)",     undefined};
 
+    /* ---------------------------------------------------------------------- */
+    namespace internal {
+
+      std::map<std::string, int> make_species() {
+        std::map<std::string, int> ret_val{};
+        retval["Mg"] = 12;
+        retval["Si"] = 14;
+        return retval;
+      }
+    }  // internal
+
+    /* ---------------------------------------------------------------------- */
+    const static std::map<std::string, int> species_numbers{
+        internal::make_species()};
+
   }  // namespace units
 
 }  // namespace rascal

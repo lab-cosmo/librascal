@@ -39,6 +39,7 @@ namespace rascal {
     this->check_hyperparameters(this->reference_hypers, parameters);
     // true parameter checks
   }
+
   /* ---------------------------------------------------------------------- */
   template <class StructureManager>
   void CalculatorBehlerParinelloDense::compute(StructureManager & manager) {

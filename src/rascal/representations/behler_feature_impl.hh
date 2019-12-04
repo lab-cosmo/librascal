@@ -34,56 +34,116 @@ namespace rascal {
   using internal::CutoffFunction;
   using internal::CutoffFunctionType;
 
-  template <SymmetryFunType SymFunType, class StructureManager>
-  void BehlerFeatureBase::compute_helper(StructureManager & manager) const {
-    switch (this->cut_fun_type) {
-    case CutoffFunctionType::Cosine: {
-      auto & feature{static_cast<
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunType... SymFunTypes>
+  class BehlerFeatureBase::SymFunctionsVTable {};
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunType Head, SymmetryFunType... Tail>
+  class BehlerFeatureBase::SymFunctionsVTable<Head, Tail...> {
+    template <class StructureManager, class... PropertyPtr>
+    static void compute(BehlerFeatureBase & behler_feature,
+                        StructureManager & manager, PropertyPtr... outputs) {
+      if (behler_feature.sym_fun_type == Head) {
+        behler_feature.compute_helper<Head>(manager, outputs...);
+      } else {
+        SymFunctionsVTable<Tail...>::compute(behler_feature, manager,
+                                             outputs...);
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunType Head>
+  class BehlerFeatureBase::SymFunctionsVTable<Head> {
+    template <class StructureManager, class... PropertyPtr>
+    static void compute(BehlerFeatureBase & behler_feature,
+                        StructureManager & manager, PropertyPtr... outputs) {
+      if (behler_feature.sym_fun_type == Head) {
+        behler_feature.compute_helper<Head>(manager, outputs...);
+      } else {
+        std::stringstream err{};
+        err << "Symmetry function type " << behler_feature.sym_fun_type
+            << " is not known.";
+        throw std::runtime_error(err.str());
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunType SymFunType, CutoffFunctionType... CutoffFunTypes>
+  class BehlerFeatureBase::CutoffFunctionsVTable {};
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunType SymFunType, CutoffFunctionType Head,
+            CutoffFunctionType... Tail>
+  class BehlerFeatureBase::CutoffFunctionsVTable<SymFunType, Head, Tail...> {
+    template <class StructureManager, class... PropertyPtr>
+    static void compute(BehlerFeatureBase & behler_feature,
+                        StructureManager & manager, PropertyPtr... outputs) {
+      if (behler_feature.cut_fun_type == Head) {
+        auto & feature{dynamic_cast<
+            const BehlerFeature<SymFunType, CutoffFunctionType::Cosine> &>(
+            *behler_feature)};
+        feature.compute(manager, outputs...);
+      } else {
+        CutoffFunctionsVTable<SymFunType, Tail...>::compute(
+            behler_feature, manager, outputs...);
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunType SymFunType, CutoffFunctionType Head>
+  class BehlerFeatureBase::CutoffFunctionsVTable<SymFunType, Head> {
+    if (behler_feature.cut_fun_type == Head) {
+      auto & feature{dynamic_cast<
           const BehlerFeature<SymFunType, CutoffFunctionType::Cosine> &>(
-          *this)};
-      feature.compute(manager);
-      break;
+          *behler_feature)};
+      feature.compute(manager, outputs...);
+    } else {
+      std::stringstream err{};
+      err << "Cutoff function type " << behler_feature.cut_fun_type
+          << " is not known.";
+      throw std::runtime_error(err.str());
     }
-    case CutoffFunctionType::RadialScaling: {
-      auto & feature{static_cast<
-          const BehlerFeature<SymFunType, CutoffFunctionType::RadialScaling> &>(
-          *this)};
-      feature.compute(manager);
-      break;
-    }
-    default:
-      throw std::runtime_error("Unknown cutoff function type");
-      break;
-    }
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <class StructureManager>
+  void BehlerFeatureBase::compute(StructureManager & manager,
+                                  std::shared_ptr<PropertyBase> prop) const {
+    SymFunctionsVTable<SymmetryFunType::One, SymmetryFunType::Gaussian,
+                       SymmetryFunType::Cosine, SymmetryFunType::Angular1,
+                       SymmetryFunType::Angular2>::compute(*this, manager,
+                                                           prop);
   }
 
   /* ---------------------------------------------------------------------- */
   template <class StructureManager>
-  void BehlerFeatureBase::compute(StructureManager & manager) const {
-    switch (this->sym_fun_type) {
-    case SymmetryFunType::One: {
-      this->compute_helper<SymmetryFunType::One>(manager);
-      break;
-    }
-    case SymmetryFunType::Gaussian: {
-      this->compute_helper<SymmetryFunType::Gaussian>(manager);
-      break;
-    }
-    case SymmetryFunType::Cosine: {
-      this->compute_helper<SymmetryFunType::Cosine>(manager);
-      break;
-    }
-    case SymmetryFunType::Angular1: {
-      this->compute_helper<SymmetryFunType::Angular1>(manager);
-      break;
-    }
-    case SymmetryFunType::Angular2: {
-      this->compute_helper<SymmetryFunType::Angular2>(manager);
-      break;
-    }
-    default:
-      throw std::runtime_error("Unknown symmetry function type");
-      break;
+  void
+  BehlerFeatureBase::compute(StructureManager & manager,
+                             std::shared_ptr<PropertyBase> prop,
+                             std::shared_ptr<PropertyBase> prop_der) const {
+    SymFunctionsVTable<SymmetryFunType::One, SymmetryFunType::Gaussian,
+                       SymmetryFunType::Cosine, SymmetryFunType::Angular1,
+                       SymmetryFunType::Angular2>::compute(*this, manager, prop,
+                                                           prop_der);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType>
+  template <class StructureManager>
+  void BehlerFeature<SymFunType, CutFunType>::compute(
+      StructureManager & manager, std::shared_ptr<PropertyBase> output) const {
+    using Output_t = Property<double, AtomOrder, PropertyLayer,
+                              StructureManager>;
+    Output_t & fun_vals{dynamic_cast<Output_t &>(*output)};
+    for (auto && atom : manager) {
+      for (auto && cluster :
+           atom.template get_clusters_of_order<SymmetryFunction::Order>()) {
+        this->eval_cluster(cluster, fun_vals[atom])
+      }
     }
   }
 
@@ -91,16 +151,27 @@ namespace rascal {
   template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType>
   template <class StructureManager>
   void BehlerFeature<SymFunType, CutFunType>::compute(
-      StructureManager & /*manager*/) const {
-    // utils::for_each_at_order<SymmetryFun<SymFunType>::NbParams>::loop(
-    //     eval_cluster, manager);
+      StructureManager & manager, std::shared_ptr<PropertyBase> output,
+      std::shared_ptr<PropertyBase> output) const {
+    using Output_t = Property<double, SymmetryFunction::Order, PropertyLayer,
+                              StructureManager>;
+    Output_t & fun_vals{dynamic_cast<Output_t &>(*output)};
+    if (not_equal) {
+      for (auto && atom : manager) {
+        for (auto && cluster :
+             atom.template get_clusters_of_order<SymmetryFunction::Order>()) {
+          fun_vals[atom] = this->eval_cluster(cluster)
+        }
+      }
+    }
   }
 
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType>
   void BehlerFeature<SymFunType, CutFunType>::init(const UnitStyle & units) {
-    std::map<double, size_t> nb_param_per_cutoff{};
-
+    if (this->is_initialised) {
+      throw std::runtime_error("double initialisation");
+    }
     // counting the number of parameters to store per cutoff
     for (const auto & param : this->raw_params) {
       auto && r_cut{param.at("r_cut").template get<double>()};
@@ -123,6 +194,14 @@ namespace rascal {
       this->params[r_cut].col(nb_param_counter[r_cut]++) =
           SymmetryFun<SymFunType>::read(param, units);
     }
+
+    // determine which species repetition scenario we are in
+    for ( auto && species : param.at("species").template get<std::string>()) {
+      this->species_combo
+    }
+    auto species{};
+
+    this->is_initialised = true;
   }
 
 }  // namespace rascal

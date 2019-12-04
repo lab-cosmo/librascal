@@ -76,7 +76,7 @@ namespace rascal {
      * main loop iterates over this container and applies each function to
      * all clusters of an input structure manager, storing the results to a
      * provided input property (which is not necessarily attached to the
-     * same structure manager
+     * same structure manager)
      */
     std::vector<std::unique_ptr<BehlerFeatureBase>> behler_features{};
     /**

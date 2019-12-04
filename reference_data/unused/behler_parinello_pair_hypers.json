@@ -1,6 +1,6 @@
 {
     "general_description": {
-        "elements": ["Mg", "Si"],
+        "species": ["Mg", "Si"],
         "nodes_per_hidden_layer": [20, 20],
         "activation_functions": [{
                 "type": "CosineShifted",

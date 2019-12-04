@@ -33,6 +33,7 @@
 #include "rascal/json_io.hh"
 #include "rascal/structure_managers/property_typed.hh"
 #include "rascal/units.hh"
+#include "rascal/utils/utils.hh"
 #include "rascal/utils/tuple_standardisation.hh"
 
 #include <sstream>
@@ -83,6 +84,8 @@ namespace rascal {
   struct SymmetryFun<SymmetryFunType::Gaussian> {
     static constexpr size_t Order{2};
     static constexpr size_t NbParams{2};
+
+    using Return_t = std::tuple<double, Eigen::Matrix<double, ThreeD, 1>>;
     /**
      * usually, derivatives are aligned with the distance vector, in which case
      * a scalar return type is sufficient. (important for triplet-related
@@ -102,16 +105,19 @@ namespace rascal {
     }
 
     template <class Derived1, class Derived2>
-    static auto eval_derivative(const Eigen::MatrixBase<Derived1> & params,
-                                const double & r_ij,
-                                const Eigen::MatrixBase<Derived2> & n_ij)
-        -> decltype(auto) {
+    static Return_t eval_derivative(const Eigen::MatrixBase<Derived1> & params,
+                                    const double & r_ij,
+                                    const Eigen::MatrixBase<Derived2> & n_ij) {
       static_assert(Derived1::RowsAtCompileTime == NbParams, "size mismatch");
       static_assert(Derived1::ColsAtCompileTime == 1, "Needs a column vector");
+      static_assert(Derived2::RowsAtCompileTime == ThreeD,
+                    "dimension mismatch");
+      static_assert(Derived2::ColsAtCompileTime == 1, "Needs a column vector");
       auto && eta{params(0)};
       auto && r_s{params(1)};
       auto && delta_r{r_ij - r_s};
-      return n_ij * (-2. * eta * delta_r * exp(-eta * delta_r * delta_r));
+      auto && fun_val{eval_function(params, r_ij)};
+      return Return_t(fun_val, n_ij * (-2. * eta * delta_r * fun_val));
     }
 
     static Eigen::Matrix<double, NbParams, 1> read(const json & params,

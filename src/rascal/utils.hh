@@ -356,6 +356,8 @@ namespace rascal {
     std::string get_filename_extension(const std::string & filename);
 
   }  // namespace internal
+
+  constexpr int ThreeD{3};
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_UTILS_HH_

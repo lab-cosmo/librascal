@@ -29,6 +29,7 @@
 #ifndef SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_HH_
 #define SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_HH_
 
+#include "rascal/structure_managers/property.hh"
 #include "rascal/json_io.hh"
 #include "rascal/representations/cutoff_functions.hh"
 #include "rascal/representations/symmetry_functions.hh"
@@ -38,6 +39,14 @@ namespace rascal {
   class BehlerFeatureBase {
    public:
     constexpr static int MaxBehlerOrder{3};
+    enum class RepeatedSpecies {
+      "Unknown",    // has not been evaluated yet
+      "Not",        // all species in this cluster are unique
+      "All",        // all atoms in this cluster are same species
+      "FirstTwo",   // the first two atoms of this cluster are of same species
+      "SecondTwo",  // the second two atoms of this cluster are of same species
+      "OuterTwo"
+    };  // the first and last atom in this cluster are of same species
     using StdSpecies = TupleStandardisation<int, MaxBehlerOrder>;
 
     using Hypers_t = json;
@@ -50,7 +59,7 @@ namespace rascal {
                       const internal::CutoffFunctionType & cut_fun_type,
                       const size_t & order, const Hypers_t & raw_params)
         : sym_fun_type{sym_fun_type}, cut_fun_type{cut_fun_type}, order{order},
-          raw_params{raw_params} {}
+          raw_params{raw_params}, output_property{output_property} {}
 
     //! Copy constructor
     BehlerFeatureBase(const BehlerFeatureBase & other);
@@ -72,9 +81,16 @@ namespace rascal {
     //! to the manager
     virtual void init(const UnitStyle & units) = 0;
 
-    //! Main worker (raison d'être)
+    //! Main worker (raison d'être) computes input node values
     template <class StructureManager>
-    inline void compute(StructureManager & manager) const;
+    inline void compute(StructureManager & manager,
+                        std::shared_ptr<PropertyBase> output) const;
+
+    //! Main worker (raison d'être) computes input node values and derivatives
+    template <class StructureManager>
+    inline void compute(StructureManager & manager,
+                        std::shared_ptr<PropertyBase> output_values,
+                        std::shared_ptr<PropertyBase> output_derivatives) const;
 
     //! insert a parameter (sub-)json
     void add_params(const json & params) {
@@ -90,13 +106,24 @@ namespace rascal {
     }
 
    protected:
-    template <SymmetryFunType SymFunType, class StructureManager>
-    inline void compute_helper(StructureManager & manager) const;
+    template <SymmetryFunType... FunTypes_>
+    class SymFunctionsVTable;
+
+    template <SymmetryFunType SymFunType,
+              internal::CutoffFunctionType... CutoffFunTypes_>
+    class CutoffFunctionsVTable;
+
+    enum class HelpType{"Value", "Derivatives"};
+    template <SymmetryFunType SymFunType, class StructureManager,
+              HelpType HelpTypeVal>
 
     const SymmetryFunType sym_fun_type;
     const internal::CutoffFunctionType cut_fun_type;
     const size_t order;
     std::vector<json> raw_params{};
+    RepeatedSpecies species_repetition{RepeatedSpecies::Unknown};
+    StdSpecies species_combo{};
+    bool is_initialised{false};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -134,18 +161,24 @@ namespace rascal {
     void init(const UnitStyle & units) final;
 
     template <class StructureManager>
-    void compute(StructureManager & manager) const;
+    void compute(StructureManager & manager,
+                 std::shared_ptr<PropertyBase> output) const;
 
-    StdSpecies get_species_combo() const;  // to implement
+    template <class StructureManager>
+    void compute(StructureManager & manager,
+                 std::shared_ptr<PropertyBase> output,
+                 std::shared_ptr<PropertyBase> output_derivatives) const;
+
     size_t get_index() const;              // to implement
 
    protected:
     template <class StructureManager, size_t Order>
-    inline void
+    inline double
     eval_cluster(StructureManager & manager,
                  const typename StructureManager::template ClusterRef_t<Order> &
                      cluster);
     ParamStorage params{};
+    
   };
 
 }  // namespace rascal

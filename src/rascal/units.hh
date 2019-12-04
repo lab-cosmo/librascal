@@ -111,6 +111,8 @@ namespace rascal {
     extern const UnitStyle metal;
     extern const UnitStyle electron;
 
+    const static std::map<std::string, int> species_numbers;
+
   }  // namespace units
 
 }  // namespace rascal
