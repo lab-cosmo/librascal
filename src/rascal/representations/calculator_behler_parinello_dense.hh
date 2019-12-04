@@ -29,8 +29,8 @@
 
 #include "behler_feature.hh"
 
-#ifndef SRC_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_HH_
-#define SRC_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_HH_
+#ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_HH_
+#define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_HH_
 
 namespace rascal {
 
@@ -46,7 +46,7 @@ namespace rascal {
     CalculatorBehlerParinelloDense() = delete;
 
     //! Constructor with input json
-    inline CalculatorBehlerParinelloDense(const Hypers_t & parameters);
+    explicit CalculatorBehlerParinelloDense(const Hypers_t & parameters);
 
     //! Copy constructor
     CalculatorBehlerParinelloDense(
@@ -84,12 +84,9 @@ namespace rascal {
      * for building the behler_features vector at construction
      */
     const ReferenceHypers_t reference_hypers{
-        {"scaling", {}},
-        {"cutoff_function", {}},
-        {"symmetry_functions", {}}
-    };
-
-  }  // rascal
+        {"scaling", {}}, {"cutoff_function", {}}, {"symmetry_functions", {}}};
+  }
+}  // namespace rascal
 
 #include "calculator_behler_parinello_dense_impl.hh"
-#endif  // SRC_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_HH_
+#endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_HH_

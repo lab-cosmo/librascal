@@ -26,13 +26,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_BEHLER_FEATURE_HH_
-#define SRC_REPRESENTATIONS_BEHLER_FEATURE_HH_
+#ifndef SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_HH_
+#define SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_HH_
 
-#include "representations/cutoff_functions.hh"
-#include "representations/symmetry_functions.hh"
-
-#include "json_io.hh"
+#include "rascal/json_io.hh"
+#include "rascal/representations/cutoff_functions.hh"
+#include "rascal/representations/symmetry_functions.hh"
 
 namespace rascal {
 
@@ -152,4 +151,4 @@ namespace rascal {
 }  // namespace rascal
 #include "behler_feature_impl.hh"
 
-#endif  // SRC_REPRESENTATIONS_BEHLER_FEATURE_HH_
+#endif  // SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_HH_

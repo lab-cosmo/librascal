@@ -6,7 +6,8 @@ from rascal.neighbourlist.structure_manager import (
 from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np
-import sys, os
+import sys
+import os
 import faulthandler
 
 rascal_reference_path = 'reference_data'
@@ -215,7 +216,7 @@ class CenterSelectTest(unittest.TestCase):
     def setUp(self):
         filename = 'reference_data/inputs/small_molecule.json'
         self.frame = ase.io.read(filename)
-        self.natoms = self.frame.get_number_of_atoms()
+        self.natoms = self.frame.get_global_number_of_atoms()
 
     def get_mask(self):
         return self.frame.arrays['center_atoms_mask']

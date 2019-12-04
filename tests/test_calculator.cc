@@ -106,25 +106,25 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
 
-  using multiple_fixtures =
-      boost::mpl::list<// CalculatorFixture<MultipleStructureSortedCoulomb>,
-                       // CalculatorFixture<MultipleStructureSphericalExpansion>,
-                       // CalculatorFixture<MultipleStructureSphericalInvariants>,
-                       // CalculatorFixture<MultipleStructureSphericalCovariants>,
-                       // CalculatorFixture<MultipleStructureBehlerParinello>
-    >;
-  using multiple_fixtures_BLA =
-      boost::mpl::list<// CalculatorFixture<MultipleStructureSortedCoulomb>,
-                       // CalculatorFixture<MultipleStructureSphericalExpansion>,
-                       // CalculatorFixture<MultipleStructureSphericalInvariants>,
-                       // CalculatorFixture<MultipleStructureSphericalCovariants>,
-                       CalculatorFixture<MultipleStructureBehlerParinello>>;
+  using multiple_fixtures = boost::mpl::
+      list<  // CalculatorFixture<MultipleStructureSortedCoulomb>,
+             // CalculatorFixture<MultipleStructureSphericalExpansion>,
+             // CalculatorFixture<MultipleStructureSphericalInvariants>,
+             // CalculatorFixture<MultipleStructureSphericalCovariants>,
+             // CalculatorFixture<MultipleStructureBehlerParinello>
+          >;
+  using multiple_fixtures_BLA = boost::mpl::
+      list<  // CalculatorFixture<MultipleStructureSortedCoulomb>,
+             // CalculatorFixture<MultipleStructureSphericalExpansion>,
+             // CalculatorFixture<MultipleStructureSphericalInvariants>,
+             // CalculatorFixture<MultipleStructureSphericalCovariants>,
+          CalculatorFixture<MultipleStructureBehlerParinello>>;
 
-  using fixtures_ref_test =
-                  boost::mpl::list<>;// CalculatorFixture<SortedCoulombTestData>,
-                       // CalculatorFixture<SphericalExpansionTestData>,
-                       // CalculatorFixture<SphericalInvariantsTestData>,
-                       // CalculatorFixture<SphericalCovariantsTestData>>;
+  using fixtures_ref_test = boost::mpl::list<>;
+  // CalculatorFixture<SortedCoulombTestData>,
+  // CalculatorFixture<SphericalExpansionTestData>,
+  // CalculatorFixture<SphericalInvariantsTestData>,
+  // CalculatorFixture<SphericalCovariantsTestData>>;
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_and_compilation, Fix,
                                    multiple_fixtures_BLA, Fix){};

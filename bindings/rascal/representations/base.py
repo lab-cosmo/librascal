@@ -32,7 +32,7 @@ def cutoff_function_dict_switch(cutoff_function_type, **kwargs):
     """
     return appropriate dict for the cutoff function parameters
     """
-    if cutoff_function_type == 'ShiftedCosine':
+    if cutoff_function_type == 'CosineShifted':
         cutoff_function_dict = dict(
             type=cutoff_function_type,
             cutoff=dict(

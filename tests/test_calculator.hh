@@ -36,6 +36,7 @@
 #include "rascal/atomic_structure.hh"
 #include "rascal/json_io.hh"
 #include "rascal/representations/calculator_base.hh"
+#include "rascal/representations/calculator_behler_parinello.hh"
 #include "rascal/representations/calculator_sorted_coulomb.hh"
 #include "rascal/representations/calculator_spherical_covariants.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
@@ -592,7 +593,7 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
-        {{"type", "ShiftedCosine"},
+        {{"type", "CosineShifted"},
          {"cutoff", {{"value", 3.5}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 

@@ -112,7 +112,12 @@ namespace rascal {
     /**
      * List of implemented cutoff function
      */
-    enum class CutoffFunctionType { Cosine, CosineShifted, RadialScaling, End_ };
+    enum class CutoffFunctionType {
+      Cosine,
+      CosineShifted,
+      RadialScaling,
+      End_
+    };
 
     /**
      * forward declaration for compute dispatch
@@ -164,7 +169,8 @@ namespace rascal {
       void compute(StructureManager & manager) const {
         auto & typed_this{static_cast<CutoffFunctionType &>(*this)};
         if (not manager.has_property()) {
-        };
+          // still to be filled
+        }
       }
     };
 

@@ -64,7 +64,7 @@ class SphericalInvariants(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
-                 cutoff_function_type="ShiftedCosine",
+                 cutoff_function_type="CosineShifted",
                  soap_type="PowerSpectrum", inversion_symmetry=True,
                  radial_basis="GTO", normalize=True,
                  optimization_args={},

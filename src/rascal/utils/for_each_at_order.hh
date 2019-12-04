@@ -26,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_UTILS_FOR_EACH_AT_ORDER_HH_
-#define SRC_UTILS_FOR_EACH_AT_ORDER_HH_
+#ifndef SRC_RASCAL_UTILS_FOR_EACH_AT_ORDER_HH_
+#define SRC_RASCAL_UTILS_FOR_EACH_AT_ORDER_HH_
 
 namespace rascal {
 
@@ -83,4 +83,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_UTILS_FOR_EACH_AT_ORDER_HH_
+#endif  // SRC_RASCAL_UTILS_FOR_EACH_AT_ORDER_HH_

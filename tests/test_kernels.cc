@@ -36,7 +36,8 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(kernels_test);
 
   using multiple_ref_fixtures =
-    boost::mpl::list<>;//TODO KernelFixture<DataSphericalInvariantsKernelFixture>>;
+      // TODO(felixmax?) KernelFixture<DataSphericalInvariantsKernelFixture>>;
+      boost::mpl::list<>;
 
   /**
    * Tests if the wrong target_type is catched correctly.
@@ -94,8 +95,8 @@ namespace rascal {
     }
   }
 
-  using multiple_fixtures =
-    boost::mpl::list<>;//TODO KernelFixture<StrictNLKernelFixture>>;
+  using multiple_fixtures = boost::mpl::list<>;
+  // TODO(felixmax) KernelFixture<StrictNLKernelFixture>>;
 
   /**
    * Tests if the compute functionality matches the size of atoms/structures

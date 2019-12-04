@@ -25,12 +25,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_ACTIVATION_FUNCTIONS_HH_
-#define SRC_REPRESENTATIONS_ACTIVATION_FUNCTIONS_HH_
-
-#include "Eigen/Dense"
+#ifndef SRC_RASCAL_REPRESENTATIONS_ACTIVATION_FUNCTIONS_HH_
+#define SRC_RASCAL_REPRESENTATIONS_ACTIVATION_FUNCTIONS_HH_
 
 #include <cmath>
+
+#include "Eigen/Dense"
 
 namespace rascal {
 
@@ -85,4 +85,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif // SRC_REPRESENTATIONS_ACTIVATION_FUNCTIONS_HH_
+#endif  // SRC_RASCAL_REPRESENTATIONS_ACTIVATION_FUNCTIONS_HH_

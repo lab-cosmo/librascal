@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIOS_CALCULATOR_BEHLER_PARINELLO_DENSE_IMPL_HH_
-#define SRC_REPRESENTATIOS_CALCULATOR_BEHLER_PARINELLO_DENSE_IMPL_HH_
+#ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_IMPL_HH_
+#define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_IMPL_HH_
 
 namespace rascal {
 
@@ -38,7 +38,6 @@ namespace rascal {
     // simple check (just existence of keys)
     this->check_hyperparameters(this->reference_hypers, parameters);
     // true parameter checks
-    
   }
   /* ---------------------------------------------------------------------- */
   template <class StructureManager>
@@ -50,4 +49,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif /* SRC_REPRESENTATIOS_CALCULATOR_BEHLER_PARINELLO_DENSE_IMPL_HH_ */
+#endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_IMPL_HH_

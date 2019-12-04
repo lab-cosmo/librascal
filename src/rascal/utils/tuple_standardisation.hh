@@ -26,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_UTILS_TUPLE_STANDARDISATION_HH_
-#define SRC_UTILS_TUPLE_STANDARDISATION_HH_
+#ifndef SRC_RASCAL_UTILS_TUPLE_STANDARDISATION_HH_
+#define SRC_RASCAL_UTILS_TUPLE_STANDARDISATION_HH_
 
 #include <array>
 #include <limits>
@@ -92,4 +92,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_UTILS_TUPLE_STANDARDISATION_HH_
+#endif  // SRC_RASCAL_UTILS_TUPLE_STANDARDISATION_HH_

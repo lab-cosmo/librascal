@@ -25,10 +25,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_
-#define SRC_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_
+#ifndef SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_
+#define SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_
 
-#include "utils/for_each_at_order.hh"
+#include "rascal/utils/for_each_at_order.hh"
 
 namespace rascal {
   using internal::CutoffFunction;
@@ -98,8 +98,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType>
-  void BehlerFeature<SymFunType, CutFunType>::init(
-      const UnitStyle & units) {
+  void BehlerFeature<SymFunType, CutFunType>::init(const UnitStyle & units) {
     std::map<double, size_t> nb_param_per_cutoff{};
 
     // counting the number of parameters to store per cutoff
@@ -128,4 +127,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_
+#endif  // SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_

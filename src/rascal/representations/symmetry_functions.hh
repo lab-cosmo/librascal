@@ -27,18 +27,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_
-#define SRC_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_
+#ifndef SRC_RASCAL_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_
+#define SRC_RASCAL_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_
 
-#include "structure_managers/property_typed.hh"
-
-#include "Eigen/Dense"
-#include "json_io.hh"
-#include "units.hh"
-#include "utils/tuple_standardisation.hh"
+#include "rascal/json_io.hh"
+#include "rascal/structure_managers/property_typed.hh"
+#include "rascal/units.hh"
+#include "rascal/utils/tuple_standardisation.hh"
 
 #include <sstream>
 #include <string>
+
+#include "Eigen/Dense"
 
 namespace rascal {
 
@@ -172,4 +172,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_
+#endif  // SRC_RASCAL_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_
