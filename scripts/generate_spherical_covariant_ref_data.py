@@ -78,7 +78,7 @@ def dump_reference_json():
                           "max_angular": max_angular,
                           "gaussian_sigma_type": "Constant",
                           "gaussian_sigma_constant": gaussian_sigma,
-                          "cutoff_function_type": "ShiftedCosine",
+                          "cutoff_function_type": "CosineShifted",
                           "radial_basis": "GTO",
                           "normalize": True,
                           "soap_type": soap_type,

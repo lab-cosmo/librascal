@@ -14,8 +14,9 @@ from functools import reduce
 
 root = os.path.abspath('../')
 rascal_reference_path = os.path.join(root, 'reference_data/')
-inputs_path = os.path.join(rascal_reference_path,"inputs")
+inputs_path = os.path.join(rascal_reference_path, "inputs")
 dump_path = os.path.join('reference_data/', "tests_only")
+
 
 def load_unit_vectors_from_json():
     fn = os.path.join(inputs_path, "spherical_harmonics_test.json")
@@ -130,7 +131,7 @@ def dump_reference_json():
     if verbose:
         print(len(data))
     with open(os.path.join(root, dump_path,
-			   "spherical_harmonics_reference.ubjson"),
+                           "spherical_harmonics_reference.ubjson"),
               'wb') as f:
         ubjson.dump(data, f)
 

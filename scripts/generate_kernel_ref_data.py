@@ -19,6 +19,7 @@ dump_path = os.path.join('reference_data/', "tests_only")
 
 # dump radial and power spectra for methane
 
+
 def dump_reference_json():
     import ubjson
     import os
@@ -75,7 +76,7 @@ def dump_reference_json():
                                                   "gaussian_sigma_type": "Constant",
                                                   "gaussian_sigma_constant": gaussian_sigma,
                                                   "soap_type": soap_type,
-                                                  "cutoff_function_type": "ShiftedCosine",
+                                                  "cutoff_function_type": "CosineShifted",
                                                   "normalize": True,
                                                   "radial_basis": "GTO"}
                                         soap = SphericalInvariants(**hypers)
@@ -97,7 +98,7 @@ def dump_reference_json():
                                                                                               hypers_kernel=copy(hypers_kernel)))
 
     with open(os.path.join(root, dump_path,
-                    "kernel_reference.ubjson"), 'wb') as f:
+                           "kernel_reference.ubjson"), 'wb') as f:
         ubjson.dump(data, f)
 
 ##########################################################################################
