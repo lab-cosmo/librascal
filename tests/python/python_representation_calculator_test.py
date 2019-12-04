@@ -3,7 +3,8 @@ from rascal.representations import (SortedCoulombMatrix, SphericalExpansion,
 from test_utils import load_json_frame, BoxList, Box, dot
 import unittest
 import numpy as np
-import sys, os
+import sys
+import os
 import json
 from copy import copy
 

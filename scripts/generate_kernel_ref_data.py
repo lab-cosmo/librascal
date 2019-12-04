@@ -1,8 +1,3 @@
-import rascal
-import rascal.lib as lrl
-from rascal.representations import SphericalInvariants
-from rascal.models import Kernel
-from rascal.utils import ostream_redirect
 from ase.io import read
 import numpy as np
 import argparse
@@ -11,6 +6,11 @@ import json
 import sys
 import os
 sys.path.insert(0, '../build/')
+import rascal
+import rascal.lib as lrl
+from rascal.representations import SphericalInvariants
+from rascal.models import Kernel
+from rascal.utils import ostream_redirect
 
 root = os.path.abspath('../')
 rascal_reference_path = os.path.join(root, 'reference_data/')

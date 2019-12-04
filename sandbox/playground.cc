@@ -53,7 +53,7 @@ using namespace rascal;  // NOLINT
 
 int main() {
   // Test1()();
-  // std::string filename{"reference_data/dft-smiles_500.ubjson"};
+  // std::string filename{"reference_data/inputs/small_molecules-20.json"};
   std::string filename{"../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   //  std::string filename{"reference_data/alloy-small.json"};
   // std::string filename{"reference_data/alloy-small.json"};

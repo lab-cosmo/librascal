@@ -14,6 +14,7 @@ rascal_reference_path = os.path.join(root, 'reference_data/')
 inputs_path = os.path.join(rascal_reference_path, "inputs")
 dump_path = os.path.join('reference_data/', "tests_only")
 
+
 def dump_reference_json():
     sys.path.insert(0, os.path.join(root, 'build/'))
     sys.path.insert(0, os.path.join(root, 'tests/'))
@@ -31,7 +32,7 @@ def dump_reference_json():
                 data.append(dict(a=a, b=b, z=z, val=val, der=der))
     print(len(data))
     with open(os.path.join(root, dump_path,
-			   "hyp1f1_reference.ubjson"), 'wb') as f:
+                           "hyp1f1_reference.ubjson"), 'wb') as f:
         ubjson.dump(data, f)
 
 ##########################################################################################
