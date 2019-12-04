@@ -157,8 +157,11 @@ int main(int argc, char * argv[]) {
     std::cout << "============================" << std::endl;
     std::cout << "Center " << center.get_index();
     std::cout << " of type " << center.get_atom_type() << std::endl;
-    double diff_rep{math::max_relative_error(soap_vectors.get_dense_row(center), soap_vectors_half.get_dense_row(center))};
-    if (diff_rep > 1e-12) {
+    int maxRow, maxCol;
+    auto diff_rep_m{math::relative_error(soap_vectors.get_dense_row(center), soap_vectors_half.get_dense_row(center), 1e-15)};
+    double diff_rep = diff_rep_m.maxCoeff(&maxRow, &maxCol);
+    std::cout << "max error: " << diff_rep << " ref val: " << soap_vectors.get_dense_row(center)(maxRow, maxCol) << " Nb_neigh: "<< center.size() << std::endl;
+    if (diff_rep > 1e-13) {
       std::cout << "Ref: " << std::endl<< soap_vectors.get_dense_row(center);
       std::cout << std::endl;
       std::cout << "Test: " << std::endl<< soap_vectors_half.get_dense_row(center);
@@ -193,8 +196,10 @@ int main(int argc, char * argv[]) {
     }
     std::cout << "\b\b) ";
     std::cout << std::endl;
-    
-    double diff_ii{math::max_relative_error(soap_vector_gradients.get_dense_row(ii_pair), soap_vector_gradients_half.get_dense_row(half_center.get_atom_ii()))};
+
+    auto diff_ii_m{math::relative_error(soap_vector_gradients.get_dense_row(ii_pair), soap_vector_gradients_half.get_dense_row(half_center.get_atom_ii()), 1e-15)};
+    double diff_ii = diff_ii_m.maxCoeff(&maxRow, &maxCol);
+    std::cout << "max error: " << diff_ii << " ref val: " << soap_vector_gradients.get_dense_row(ii_pair)(maxRow, maxCol) << " Nb_neigh: "<< center.size() << std::endl;
     if (diff_ii > 1e-12) {
       std::cout << "Ref: " << std::endl<< soap_vector_gradients.get_dense_row(ii_pair).transpose();
       std::cout << std::endl;
@@ -217,33 +222,33 @@ int main(int argc, char * argv[]) {
       // if (neigh_count >= n_neigh_print) {
       //   break;
       // }
-      auto neigh_type = neigh.get_atom_type();
-      auto tags = neigh.get_atom_tag_list();
-      if (tags[1] <= tags[0]) {continue;}
-      auto half_neigh_it = half_center.begin();
-      for (size_t ii{0}; ii < neigh_count; ii++) {
-        ++half_neigh_it;
-      }
-      auto half_neigh = *(half_neigh_it);
-      std::cout << "Neighbour "<< neigh_type <<" tags: ";
+      // auto neigh_type = neigh.get_atom_type();
+      // auto tags = neigh.get_atom_tag_list();
+      // if (tags[1] <= tags[0]) {continue;}
+      // auto half_neigh_it = half_center.begin();
+      // for (size_t ii{0}; ii < neigh_count; ii++) {
+      //   ++half_neigh_it;
+      // }
+      // auto half_neigh = *(half_neigh_it);
+      // std::cout << "Neighbour "<< neigh_type <<" tags: ";
 
-      std::cout << "(";
-      for (auto tag : tags) {
-        std::cout << tag << ", ";
-      }
-      std::cout << "\b\b) ";
-      std::cout << std::endl;
+      // std::cout << "(";
+      // for (auto tag : tags) {
+      //   std::cout << tag << ", ";
+      // }
+      // std::cout << "\b\b) ";
+      // std::cout << std::endl;
 
-      auto keys_neigh = soap_vector_gradients[neigh].get_keys();
-      std::cout << "Neighbour "<< neigh_type <<" keys: ";
-      for (auto key : keys_neigh) {
-        std::cout << "(";
-        for (auto key_sp : key) {
-          std::cout << key_sp << ", ";
-        }
-        std::cout << "\b\b) ";
-      }
-      std::cout << std::endl;
+      // auto keys_neigh = soap_vector_gradients[neigh].get_keys();
+      // std::cout << "Neighbour "<< neigh_type <<" keys: ";
+      // for (auto key : keys_neigh) {
+      //   std::cout << "(";
+      //   for (auto key_sp : key) {
+      //     std::cout << key_sp << ", ";
+      //   }
+      //   std::cout << "\b\b) ";
+      // }
+      // std::cout << std::endl;
       // auto keys_neigh_half = soap_vector_gradients_half[half_neigh].get_keys();
       // std::cout << " /// ";
       // for (auto key : keys_neigh_half) {
@@ -254,13 +259,13 @@ int main(int argc, char * argv[]) {
       //   std::cout << "\b\b) ";
       // }
       // std::cout << std::endl;
-      double diff_ij{math::max_relative_error(soap_vector_gradients.get_dense_row(neigh), soap_vector_gradients_half.get_dense_row(half_neigh))};
-      if (diff_ij > 1e-12) {
-        std::cout << "Ref: " << std::endl<< soap_vector_gradients.get_dense_row(neigh).transpose();
-        std::cout << std::endl;
-        std::cout << "Test: " << std::endl<< soap_vector_gradients_half.get_dense_row(half_neigh).transpose();
-        std::cout << std::endl;
-      }
+      // double diff_ij{math::relative_error(soap_vector_gradients.get_dense_row(neigh), soap_vector_gradients_half.get_dense_row(half_neigh))};
+      // if (diff_ij > 1e-12) {
+      //   std::cout << "Ref: " << std::endl<< soap_vector_gradients.get_dense_row(neigh).transpose();
+      //   std::cout << std::endl;
+      //   std::cout << "Test: " << std::endl<< soap_vector_gradients_half.get_dense_row(half_neigh).transpose();
+      //   std::cout << std::endl;
+      // }
 
       ++neigh_count;
     }

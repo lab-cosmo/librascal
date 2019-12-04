@@ -34,6 +34,7 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
+#include <iostream>
 
 namespace rascal {
   /**
@@ -136,10 +137,19 @@ namespace rascal {
     inline double pow(double x, double n) { return std::pow(x, n); }
 
     /**
-     * Routines to compute the max relative difference between Eigen Matrices
+     * Routines to compute the relative difference between the values of
+     * Eigen Matrices. The return value depend on the closeness to zero:
+     * + if ref and test are not zero, then return relative error
+     * + if ref and test are within epsilon, then return 0.
+     * + if ref is within epsilon and test not, then return absolute error
+     *
+     * @param reference the matrix with the reference values
+     * @param test the matrix with the  values to check
+     * @param epsilon the threshold defining which values are effectivelly zero
+     * @param delta maximum relative error tolarated
      */
-    template <typename Derived1, typename Derived2>
-    double max_relative_error(const Eigen::MatrixBase<Derived1>& reference, const Eigen::MatrixBase<Derived2>& test) {
+    template <typename Derived>
+    Derived relative_error(const Eigen::MatrixBase<Derived>& reference, const Eigen::MatrixBase<Derived>& test, const double& delta = 1e-10, const double& epsilon = DBL_FTOL) {
       if (reference.rows() != test.rows()) {
         std::stringstream err_str{};
         err_str << "reference.rows() != test.rows(): '"
@@ -152,16 +162,30 @@ namespace rascal {
                 << reference.cols() << "' != '" << test.cols() << "'.";
         throw std::runtime_error(err_str.str());
       }
-      auto rel_diff = (reference - test).array().abs().eval();
-      auto is_zero = (reference.array() == 0.).eval();
+      auto rel_diff = (reference - test).array().abs().matrix().eval();
+      auto is_zero_ref = (reference.array().abs() < epsilon).eval();
+      auto is_zero_test = (test.array().abs() < epsilon).eval();
       for (int i_row{0}; i_row < reference.rows(); ++i_row) {
         for (int i_col{0}; i_col < reference.cols(); ++i_col) {
-          if (not is_zero(i_row, i_col)) {
+          if (is_zero_ref(i_row, i_col) and is_zero_test(i_row, i_col)) {
+            rel_diff(i_row, i_col) = 0.;
+          } else {
             rel_diff(i_row, i_col) /= reference(i_row, i_col);
           }
         }
       }
-      return rel_diff.maxCoeff();
+      int maxRow{0}, maxCol{0};
+      double max_diff = rel_diff.maxCoeff(&maxRow, &maxCol);
+      if (max_diff > delta) {
+        std::cout << "Max diff in relative_error at ("
+                  << maxRow << ", " <<  maxCol << ") "
+                  << "diff: " << rel_diff(maxRow, maxCol)
+                  << " ref: " << reference(maxRow, maxCol)
+                  << " test: " << test(maxRow, maxCol)
+                  << std::endl;
+      }
+
+      return rel_diff;
     }
   }  // namespace math
 }  // namespace rascal

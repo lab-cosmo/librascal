@@ -1663,16 +1663,17 @@ namespace rascal {
           size_t l_block_size{2 * angular_l + 1};
           c_ij_nlm.block(0, l_block_idx, max_radial,
                                             l_block_size) =
-              (neighbour_contribution.col(angular_l) *
-               (harmonics.segment(l_block_idx, l_block_size) * f_c));
+              neighbour_contribution.col(angular_l) *
+               harmonics.segment(l_block_idx, l_block_size);
           l_block_idx += l_block_size;
         }
+        c_ij_nlm *= f_c;
         coefficients_center_by_type += c_ij_nlm;
 
         // half list branch
         if (neigh_tag < static_cast<int>(manager->size()) and StructureManager::traits::NeighbourListType == AdaptorTraits::NeighbourListType::half) {
           l_block_idx = 0;
-          double parity{1};
+          double parity{1.};
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
               ++angular_l) {
             size_t l_block_size{2 * angular_l + 1};
@@ -1743,7 +1744,7 @@ namespace rascal {
                 gradient_neigh_center_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
                   max_radial, l_block_size) += parity* pair_gradient_contribution;
-                parity *= -1.;
+                  parity *= -1.;
               }
               l_block_idx += l_block_size;
               // clang-format on

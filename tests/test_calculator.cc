@@ -48,12 +48,9 @@ namespace rascal {
 
   using fixtures_ref_test =
       boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
-                       CalculatorFixture<SphericalExpansionTestData>>;
-  // using fixtures_ref_test =
-  //     boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
-  //                      CalculatorFixture<SphericalExpansionTestData>,
-  //                      CalculatorFixture<SphericalInvariantsTestData>,
-  //                      CalculatorFixture<SphericalCovariantsTestData>>;
+                       CalculatorFixture<SphericalExpansionTestData>,
+                       CalculatorFixture<SphericalInvariantsTestData>,
+                       CalculatorFixture<SphericalCovariantsTestData>>;
 
   BOOST_AUTO_TEST_SUITE(representation_test);
 
@@ -620,6 +617,8 @@ namespace rascal {
     auto & managers_half = Fix::ParentHalf::managers;
     auto & representations = Fix::ParentFull::representations;
     const bool verbose{true};
+    // relative error threshold
+    const double delta{1e-10};
     // both manager should refer to the same structures
     BOOST_TEST(managers.size() == managers_half.size());
 
@@ -645,9 +644,10 @@ namespace rascal {
         size_t center_count{0};
         for (auto center : manager) {
           // compare the representation coefficients
-          double diff_rep{math::max_relative_error(rep_vectors.get_dense_row(center), rep_vectors_half.get_dense_row(center))};
-          BOOST_TEST(diff_rep < 1e-12);
-          if (verbose and diff_rep > 1e-12) {
+          auto diff_rep_m{math::relative_error(rep_vectors.get_dense_row(center), rep_vectors_half.get_dense_row(center), delta)};
+          double diff_rep = diff_rep_m.maxCoeff();
+          BOOST_TEST(diff_rep < delta);
+          if (verbose and diff_rep > delta) {
             std::cout << "========================= rep" << std::endl;
             std::cout << "Center " << center.get_index();
             std::cout << " of type " << center.get_atom_type()
@@ -664,10 +664,10 @@ namespace rascal {
           auto ii_half_pair = half_center.get_atom_ii();
 
           // compare the representation gradient coefficients at the ii pair
-          double diff_rep_grad_center{math::max_relative_error(rep_vector_gradients.get_dense_row(ii_pair), rep_vector_gradients_half.get_dense_row(ii_half_pair))};
-
-          BOOST_TEST(diff_rep_grad_center < 1e-12);
-          if (verbose and diff_rep_grad_center > 1e-12) {
+          auto diff_rep_grad_center_m{math::relative_error(rep_vector_gradients.get_dense_row(ii_pair), rep_vector_gradients_half.get_dense_row(ii_half_pair))};
+          double diff_rep_grad_center = diff_rep_grad_center_m.maxCoeff();
+          BOOST_TEST(diff_rep_grad_center < delta);
+          if (verbose and diff_rep_grad_center > delta) {
             std::cout << "================ rep_grad_center" << std::endl;
             std::cout << "Center " << center.get_index();
             std::cout << " of type " << center.get_atom_type()
@@ -688,10 +688,10 @@ namespace rascal {
             }
             auto half_neigh = *(half_neigh_it);
             // compare the representation gradient coefficients at ij pair
-            double diff_rep_grad_neigh{math::max_relative_error(rep_vector_gradients.get_dense_row(neigh), rep_vector_gradients_half.get_dense_row(half_neigh))};
-
-            BOOST_TEST(diff_rep_grad_neigh < 1e-12);
-            if (verbose and diff_rep_grad_neigh > 1e-12) {
+            auto diff_rep_grad_neigh_m{math::relative_error(rep_vector_gradients.get_dense_row(neigh), rep_vector_gradients_half.get_dense_row(half_neigh))};
+            double diff_rep_grad_neigh = diff_rep_grad_neigh_m.maxCoeff();
+            BOOST_TEST(diff_rep_grad_neigh < delta);
+            if (verbose and diff_rep_grad_neigh > delta) {
               std::cout << "================== rep_grad_neigh" << std::endl;
               std::cout << "Center " << center.get_index();
               std::cout << " of type " << center.get_atom_type() << std::endl;
