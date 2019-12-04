@@ -14,7 +14,7 @@ import rascal.lib as lrl
 
 root = os.path.abspath('../')
 rascal_reference_path = os.path.join(root, 'reference_data/')
-inputs_path = os.path.join(rascal_reference_path,"inputs")
+inputs_path = os.path.join(rascal_reference_path, "inputs")
 dump_path = os.path.join('reference_data/', "tests_only")
 
 ###############################################################################
@@ -76,7 +76,7 @@ def dump_reference_json():
                 if cutoff_function_type == 'RadialScaling':
                     cutoff_function_parameters = dict(
                         rate=1,
-                        scale=cutoff*0.5,
+                        scale=cutoff * 0.5,
                         exponent=3)
                 else:
                     cutoff_function_parameters = dict()
@@ -102,7 +102,7 @@ def dump_reference_json():
                          hypers=copy(sph_expn.hypers)))
 
     with open(os.path.join(root, dump_path,
-			   "spherical_expansion_reference.ubjson"),
+                           "spherical_expansion_reference.ubjson"),
               'wb') as f:
         ubjson.dump(data, f)
 
@@ -123,7 +123,8 @@ def main(json_dump, save_kernel):
     lmax = test_hypers["max_angular"]
     nstr = '5'  # number of structures
 
-    frames = read(os.path.join(inputs_path, 'dft-smiles_500.xyz'), ':'+str(nstr))
+    frames = read(os.path.join(
+        inputs_path, 'dft-smiles_500.xyz'), ':' + str(nstr))
     species = set(
         [atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)

@@ -20,13 +20,13 @@ mp.prec = 100
 
 def sbesseli(n, z):
     """e^{-x}*i_n(x)"""
-    return sqrt(pi/(2*z))*besseli(n+0.5, z)*exp(-z)
+    return sqrt(pi / (2 * z)) * besseli(n + 0.5, z) * exp(-z)
 
 
 def sbesseli_complete_square(n, a, r, x):
     """i_n(2arx)*\exp{-ar^2}*\exp{-ax^2}"""
-    z = 2*a*r*x
-    return float(sqrt(pi/(2*z))*besseli(n+0.5, z)*exp(-a*r**2)*exp(-a*x**2))
+    z = 2 * a * r * x
+    return float(sqrt(pi / (2 * z)) * besseli(n + 0.5, z) * exp(-a * r**2) * exp(-a * x**2))
 
 
 def dump_reference_json():

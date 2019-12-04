@@ -86,8 +86,8 @@ class SphericalInvariants(object):
             interaction_cutoff=interaction_cutoff,
             cutoff_smooth_width=cutoff_smooth_width
         )
-        cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
-                                                      **cutoff_function_parameters)
+        cutoff_function = cutoff_function_dict_switch(
+            cutoff_function_type, **cutoff_function_parameters)
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
@@ -111,8 +111,9 @@ class SphericalInvariants(object):
                     # RadialContribution
                     print("Warning: default parameter for spline range is used.")
                     spline_range = (0, interaction_cutoff)
-                optimization_args = {'type': 'Spline', 'accuracy': accuracy, 'range': {
-                    'begin': spline_range[0], 'end': spline_range[1]}}
+                optimization_args = {
+                    'type': 'Spline', 'accuracy': accuracy, 'range': {
+                        'begin': spline_range[0], 'end': spline_range[1]}}
             elif optimization_args['type'] == 'None':
                 optimization_args = dict({'type': 'None'})
             else:
@@ -190,23 +191,27 @@ class SphericalInvariants(object):
 
         """
         if self.hypers['soap_type'] == 'RadialSpectrum':
-            return (self.hypers['n_species']*self.hypers['max_radial'])
+            return (self.hypers['n_species'] * self.hypers['max_radial'])
         if self.hypers['soap_type'] == 'PowerSpectrum':
-            return (int((self.hypers['n_species']*(self.hypers['n_species']
-                                                   + 1))/2) * self.hypers['max_radial']**2
-                    * (self.hypers['max_angular'] + 1))
+            return (int((self.hypers['n_species'] *
+                         (self.hypers['n_species'] +
+                          1)) /
+                        2) *
+                    self.hypers['max_radial']**2 *
+                    (self.hypers['max_angular'] +
+                     1))
         if self.hypers['soap_type'] == 'BiSpectrum':
-            if self.hypers['inversion_symmetry'] == False:
+            if not self.hypers['inversion_symmetry']:
                 return (self.hypers['n_species']**3
                         * self.hypers['max_radial']**3
-                        * int(1 + 2*self.hypers['max_angular']
-                              + 3*self.hypers['max_angular']**2/2
-                              + self.hypers['max_angular']**3/2))
+                        * int(1 + 2 * self.hypers['max_angular']
+                              + 3 * self.hypers['max_angular']**2 / 2
+                            + self.hypers['max_angular']**3 / 2))
             else:
                 return (self.hypers['n_species']**3
                         * self.hypers['max_radial']**3
                         * int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)
-                                       * (2*(self.hypers['max_angular'] + 1) + 3)/8.0)))
+                                     * (2 * (self.hypers['max_angular'] + 1) + 3) / 8.0)))
         else:
             raise ValueError('Only soap_type = RadialSpectrum || '
                              'PowerSpectrum || BiSpectrum '

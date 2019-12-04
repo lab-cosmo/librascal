@@ -25,7 +25,7 @@ def get_feature_vector(hypers, frames):
         soap = SphericalCovariants(**hypers)
         soap_vectors = soap.transform(frames)
         print('Feature vector size: %.3fMB' %
-              (soap.get_num_coefficients()*8.0/1.0e6))
+              (soap.get_num_coefficients() * 8.0 / 1.0e6))
         feature_vector = soap_vectors.get_features(soap)
     return feature_vector
 
@@ -115,7 +115,8 @@ def main(json_dump, save_kernel):
                    "inversion_symmetry": True}
 
     nstr = '2'  # number of structures
-    frames = read(os.path.join(inputs_path, 'water_rotations.xyz'), ':'+str(nstr))
+    frames = read(os.path.join(
+        inputs_path, 'water_rotations.xyz'), ':' + str(nstr))
     species = set(
         [atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
@@ -123,20 +124,21 @@ def main(json_dump, save_kernel):
 
     x = get_feature_vector(test_hypers, frames)
     x0 = x.shape[0]
-    x = x.reshape((x0, 3, -1, (2*lam + 1), nmax**2))
+    x = x.reshape((x0, 3, -1, (2 * lam + 1), nmax**2))
     x = x.transpose((0, 3, 1, 2, 4))
-    x = x.reshape((x0*(2*lam + 1), -1))
+    x = x.reshape((x0 * (2 * lam + 1), -1))
     kernel = np.dot(x, x.T)
-    kernel = kernel.reshape((x0, (2*lam + 1), x0, (2*lam + 1)))
+    kernel = kernel.reshape((x0, (2 * lam + 1), x0, (2 * lam + 1)))
     kernel = kernel.transpose((0, 2, 1, 3))
     sqrtnorm = np.zeros((x0))
     for i in range(x0):
         sqrtnorm[i] = np.sqrt(np.linalg.norm(kernel[i, i]))
     for i in range(x0):
         for j in range(x0):
-            kernel[i, j] /= sqrtnorm[i]*sqrtnorm[j]
+            kernel[i, j] /= sqrtnorm[i] * sqrtnorm[j]
     if save_kernel is True:
-        np.save(os.path.join(dump_path, 'kernel_soap_example_lambda', str(lam), '.npy'), kernel)
+        np.save(os.path.join(dump_path, 'kernel_soap_example_lambda',
+                             str(lam), '.npy'), kernel)
 
 #-------------------dump json reference data------------------------#
 

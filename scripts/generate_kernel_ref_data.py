@@ -19,6 +19,7 @@ dump_path = os.path.join('reference_data/', "tests_only")
 
 # dump radial and power spectra for methane
 
+
 def dump_reference_json():
     import ubjson
     import os
@@ -53,7 +54,7 @@ def dump_reference_json():
                 dependant_args=dependant_args,
                 rep_info=dict(spherical_invariants=[]))
 
-    frames = read(fn, '{}:{}'.format(start, start+length))
+    frames = read(fn, '{}:{}'.format(start, start + length))
     for representation_name in representations:
         for cutoff in cutoffs:
             print(fn, cutoff)
@@ -97,7 +98,7 @@ def dump_reference_json():
                                                                                               hypers_kernel=copy(hypers_kernel)))
 
     with open(os.path.join(root, dump_path,
-                    "kernel_reference.ubjson"), 'wb') as f:
+                           "kernel_reference.ubjson"), 'wb') as f:
         ubjson.dump(data, f)
 
 ##########################################################################################

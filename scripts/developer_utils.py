@@ -17,6 +17,6 @@ if __name__ == '__main__':
         if (sys.argv[1] == "deepclean"):
             deepclean()
         else:
-            print("Command "+sys.argv[1]+" not known.")
+            print("Command " + sys.argv[1] + " not known.")
     else:
         print("Please provide an argument which functionality you want to use.")

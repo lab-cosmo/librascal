@@ -4,7 +4,7 @@ import os
 
 root = os.path.abspath('../')
 rascal_reference_path = os.path.join(root, 'reference_data/')
-inputs_path = os.path.join(rascal_reference_path,"inputs")
+inputs_path = os.path.join(rascal_reference_path, "inputs")
 dump_path = os.path.join('reference_data/', "tests_only")
 
 
@@ -29,8 +29,8 @@ fns_to_write = [
     os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
     os.path.join(dump_path, "small_molecule.json)"]
 
-data = dict(filenames=fns_to_write, cutoffs=cutoffs, rep_info=[])
-hypers = dict(central_decay=-1, interaction_cutoff=-1,
+data=dict(filenames=fns_to_write, cutoffs=cutoffs, rep_info=[])
+hypers=dict(central_decay=-1, interaction_cutoff=-1,
               interaction_decay=-1, size=10, sorting_algorithm='')
 
 for fn in fns:
@@ -38,14 +38,14 @@ for fn in fns:
         print(fn, cutoff)
         data['rep_info'].append([])
         for sort in sorts:
-            rep = SortedCoulombMatrix(cutoff, sorting_algorithm=sort)
-            frame = read(fn)
-            features = rep.transform(frame)
-            test = features.get_features(rep)
-            hypers['size'] = rep.size
-            hypers['central_cutoff'] = cutoff
+            rep=SortedCoulombMatrix(cutoff, sorting_algorithm=sort)
+            frame=read(fn)
+            features=rep.transform(frame)
+            test=features.get_features(rep)
+            hypers['size']=rep.size
+            hypers['central_cutoff']=cutoff
             print(rep.size)
-            hypers['sorting_algorithm'] = sort
+            hypers['sorting_algorithm']=sort
             data['rep_info'][-1].append(dict(feature_matrix=test.tolist(),
                                              hypers=copy(hypers)))
 

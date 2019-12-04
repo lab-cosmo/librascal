@@ -25,7 +25,7 @@ def get_feature_vector(hypers, frames):
         soap = SphericalInvariants(**hypers)
         soap_vectors = soap.transform(frames)
         print('Feature vector size: %.3fMB' %
-              (soap.get_num_coefficients()*8.0/1.0e6))
+              (soap.get_num_coefficients() * 8.0 / 1.0e6))
         feature_vector = soap_vectors.get_features(soap)
     return feature_vector
 
@@ -101,7 +101,7 @@ def dump_reference_json():
                          hypers=copy(soap.hypers)))
 
     with open(os.path.join(root, dump_path,
-                "spherical_invariants_reference.ubjson"), 'wb') as f:
+                           "spherical_invariants_reference.ubjson"), 'wb') as f:
         ubjson.dump(data, f)
 
 #############################################################################
@@ -124,7 +124,8 @@ def main(json_dump, save_kernel):
     lmax = test_hypers["max_angular"]
     nstr = '2'  # number of structures
 
-    frames = read(os.path.join(inputs_path, 'dft-smiles_500.xyz'), ':'+str(nstr))
+    frames = read(os.path.join(
+        inputs_path, 'dft-smiles_500.xyz'), ':' + str(nstr))
     species = set(
         [atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
@@ -149,7 +150,8 @@ def main(json_dump, save_kernel):
 
 #------------------------------------------nu=3-----------------------------#
 
-    frames = read(os.path.join(inputs_path, 'water_rotations.xyz'), ':'+str(nstr))
+    frames = read(os.path.join(
+        inputs_path, 'water_rotations.xyz'), ':' + str(nstr))
     species = set(
         [atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)

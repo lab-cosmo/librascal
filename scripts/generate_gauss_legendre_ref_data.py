@@ -17,8 +17,8 @@ dump_path = os.path.join('reference_data/', "tests_only")
 def get_leggauss(order, a, b):
     x, w = leggauss(order)
     # rescaling
-    x = (b-a)*0.5 * x + 0.5*(a+b)
-    w = (b-a)*0.5 * w
+    x = (b - a) * 0.5 * x + 0.5 * (a + b)
+    w = (b - a) * 0.5 * w
     return x, w
 
 
