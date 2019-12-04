@@ -1532,7 +1532,7 @@ namespace rascal {
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
     constexpr static int n_spatial_dimensions = StructureManager::dim();
-
+    constexpr static bool IsHalfNL{StructureManager::traits::NeighbourListType == AdaptorTraits::NeighbourListType::half};
     using math::PI;
     using math::pow;
 
@@ -1585,8 +1585,7 @@ namespace rascal {
 
       for (auto neigh : center) {
         keys[center_tag].insert({neigh.get_atom_type()});
-        auto neigh_tag = neigh.get_atom_tag();
-        if (neigh_tag < static_cast<int>(manager->size()) and StructureManager::traits::NeighbourListType == AdaptorTraits::NeighbourListType::half) {
+        if (manager->is_center_atom(neigh) and IsHalfNL) {
           auto atom_j = neigh.get_atom_j();
           auto tag = atom_j.get_atom_tag();
           keys[tag].insert(center_type);
@@ -1635,7 +1634,7 @@ namespace rascal {
       for (auto neigh : center) {
         auto && atom_j = neigh.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag();
-        auto neigh_tag = neigh.get_atom_tag();
+        bool is_center_atom{manager->is_center_atom(neigh)};
         auto & coefficients_neigh{expansions_coefficients[atom_j]};
         auto dist{manager->get_distance(neigh)};
         auto direction{manager->get_direction_vector(neigh)};
@@ -1671,17 +1670,19 @@ namespace rascal {
         coefficients_center_by_type += c_ij_nlm;
 
         // half list branch
-        if (neigh_tag < static_cast<int>(manager->size()) and StructureManager::traits::NeighbourListType == AdaptorTraits::NeighbourListType::half) {
-          l_block_idx = 0;
-          double parity{1.};
-          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-              ++angular_l) {
-            size_t l_block_size{2 * angular_l + 1};
-            coefficients_neigh_by_type.block(0, l_block_idx, max_radial,
-                            l_block_size) += parity * c_ij_nlm.block(0, l_block_idx, max_radial,
-                                            l_block_size);
-            l_block_idx += l_block_size;
-            parity *= -1.;
+        if (IsHalfNL) {
+          if (is_center_atom) {
+            l_block_idx = 0;
+            double parity{1.};
+            for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+                ++angular_l) {
+              size_t l_block_size{2 * angular_l + 1};
+              coefficients_neigh_by_type.block(0, l_block_idx, max_radial,
+                              l_block_size) += parity * c_ij_nlm.block(0, l_block_idx, max_radial,
+                                              l_block_size);
+              l_block_idx += l_block_size;
+              parity *= -1.;
+            }
           }
         }
 
@@ -1716,7 +1717,7 @@ namespace rascal {
           for (int cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
                  ++cartesian_idx) {
             size_t l_block_idx{0};
-            // account for (-1)^{l+1}
+            // account for (-1)^{l}
             double parity{1.};
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                 ++angular_l) {
@@ -1740,11 +1741,14 @@ namespace rascal {
               gradient_neigh_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
                   max_radial, l_block_size) += pair_gradient_contribution;
-              if (neigh_tag < static_cast<int>(manager->size()) and StructureManager::traits::NeighbourListType == AdaptorTraits::NeighbourListType::half) {
-                gradient_neigh_center_by_type.block(
+              // half list branch
+              if (IsHalfNL) {
+                if (is_center_atom) {
+                  gradient_neigh_center_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
-                  max_radial, l_block_size) += parity* pair_gradient_contribution;
+                  max_radial, l_block_size) += parity * pair_gradient_contribution;
                   parity *= -1.;
+                }
               }
               l_block_idx += l_block_size;
               // clang-format on

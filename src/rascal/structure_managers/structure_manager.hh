@@ -286,6 +286,11 @@ namespace rascal {
     //! i.e. number of atoms
     size_t size() const { return this->implementation().get_size(); }
 
+    template <size_t Order, size_t Layer>
+    size_t is_center_atom(const ClusterRefKey<Order, Layer> & cluster) const {
+      return (cluster.back() < static_cast<int>(this->size()));
+    }
+
     //! number of atoms including ghosts
     size_t size_with_ghosts() const {
       return this->implementation().get_size_with_ghosts();
