@@ -607,8 +607,16 @@ namespace rascal {
                        RepFixHalf_t<SingleHypersSphericalExpansion>>>;
 
   /**
-   * Test the representation gradients computed with a half neighbor list again
-   * the full neighbor list implementation.
+   * Test the representation gradients computed with a half neighbor list
+   * against the full neighbor list implementation.
+   * There are some discrepancies between the descriptors, their gradients and
+   * their half NL conterparts arising from numerical errors most likely.
+   *
+   * Extensive tests on a subset of the structures showed that large relative
+   * errors arise when both the reference and the test values are small
+   * (~1e-18) so we use a threshold (epsilon ~ 1e-15) so that if the absolute
+   * value of reference and test values are within epsilon the relative error
+   * is effectively 0.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(half_full_representation_test, Fix,
                                    gradient_half_fixtures, Fix) {
