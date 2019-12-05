@@ -67,7 +67,7 @@ namespace rascal {
 
     for (auto & collection : collections) {
       // add some integer constant to not start at position zero
-      collection.add_structures(filename, start + 30, length + 5);
+      collection.add_structures(filename, start + 3, length + 5);
 
       for (auto & manager : collection) {
         for (auto atom : manager) {

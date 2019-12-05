@@ -4,7 +4,7 @@ import os
 
 root = os.path.abspath('../')
 rascal_reference_path = os.path.join(root, 'reference_data/')
-inputs_path = os.path.join(rascal_reference_path,"inputs")
+inputs_path = os.path.join(rascal_reference_path, "inputs")
 dump_path = os.path.join('reference_data/', "tests_only")
 
 
@@ -27,7 +27,7 @@ fns = [
     os.path.join(inputs_path, "small_molecule.json")]
 fns_to_write = [
     os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
-    os.path.join(dump_path, "small_molecule.json)"]
+    os.path.join(dump_path, "small_molecule.json")]
 
 data = dict(filenames=fns_to_write, cutoffs=cutoffs, rep_info=[])
 hypers = dict(central_decay=-1, interaction_cutoff=-1,

@@ -3,7 +3,8 @@ from rascal.representations import (SortedCoulombMatrix, SphericalExpansion,
 from test_utils import load_json_frame, BoxList, Box, dot
 import unittest
 import numpy as np
-import sys, os
+import sys
+import os
 import json
 from copy import copy
 
@@ -108,7 +109,7 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         kk = np.dot(X_t, X_t.T)
         self.assertTrue(np.allclose(kk, kk_ref))
 
-        X_t = features.get_features(rep, self.global_species+[70])
+        X_t = features.get_features(rep, self.global_species + [70])
         kk = np.dot(X_t, X_t.T)
         self.assertTrue(np.allclose(kk, kk_ref))
 

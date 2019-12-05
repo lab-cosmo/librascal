@@ -17,8 +17,8 @@ dump_path = os.path.join('reference_data/', "tests_only")
 def get_leggauss(order, a, b):
     x, w = leggauss(order)
     # rescaling
-    x = (b-a)*0.5 * x + 0.5*(a+b)
-    w = (b-a)*0.5 * w
+    x = (b - a) * 0.5 * x + 0.5 * (a + b)
+    w = (b - a) * 0.5 * w
     return x, w
 
 
@@ -34,8 +34,8 @@ def dump_reference_json():
                              points=x.tolist(), weights=w.tolist()))
     print(len(data))
     with open(os.path.join(root, dump_path,
-			   "gauss_legendre_reference.ubjson"),'wb') as f:
-        ubjson.dump(data,f)
+                           "gauss_legendre_reference.ubjson"), 'wb') as f:
+        ubjson.dump(data, f)
 
 ##########################################################################################
 ##########################################################################################

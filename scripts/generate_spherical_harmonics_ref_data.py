@@ -14,8 +14,9 @@ from functools import reduce
 
 root = os.path.abspath('../')
 rascal_reference_path = os.path.join(root, 'reference_data/')
-inputs_path = os.path.join(rascal_reference_path,"inputs")
+inputs_path = os.path.join(rascal_reference_path, "inputs")
 dump_path = os.path.join('reference_data/', "tests_only")
+
 
 def load_unit_vectors_from_json():
     fn = os.path.join(inputs_path, "spherical_harmonics_test.json")
@@ -31,9 +32,9 @@ def load_unit_vectors_from_json():
 def get_ascending_angular_lists(max_angular_l):
     ascending_angular_m_list = []
     ascending_angular_l_list = []
-    for angular_l in range(max_angular_l+1):
-        ascending_angular_m_list += list(range(-angular_l, angular_l+1))
-        ascending_angular_l_list += [angular_l] * (angular_l*2+1)
+    for angular_l in range(max_angular_l + 1):
+        ascending_angular_m_list += list(range(-angular_l, angular_l + 1))
+        ascending_angular_l_list += [angular_l] * (angular_l * 2 + 1)
     return ascending_angular_m_list, ascending_angular_l_list
 
 # scipy alreay includes the Condon-Shortley phase, therefore to calculate the
@@ -65,14 +66,14 @@ def dump_reference_json():
 
     # In arXiv 1410.1748 e.q. (4) the factors in front of the associated
     # polynomial
-    alp_normfacts = np.zeros((l_max+1, l_max+1))
-    for l in range(l_max+1):
-        for m in range(l+1):
+    alp_normfacts = np.zeros((l_max + 1, l_max + 1))
+    for l in range(l_max + 1):
+        for m in range(l + 1):
 
             alp_normfacts[l, m] = mpmath.sqrt(
-                (2*l + 1)/(2*mpmath.pi) /
-                reduce(lambda x, y: mpmath.fmul(x, y),
-                       mpmath.arange(l-m+1, l+m+1), 1)
+                (2 * l + 1) / (2 * mpmath.pi)
+                / reduce(lambda x, y: mpmath.fmul(x, y),
+                       mpmath.arange(l - m + 1, l + m + 1), 1)
             )
     if verbose:
         print("alp_normfacts")
@@ -91,11 +92,12 @@ def dump_reference_json():
         phi = np.arctan2(unit_vector[1], unit_vector[0])
         if verbose:
             print(unit_vector)
-        for l in range(l_max+1):
+        for l in range(l_max + 1):
 
             # calculation for negative m
             for m in range(-l, 0):
-                result = np.sqrt(2)*np.imag(sph_harm(np.abs(m), l, phi, theta))
+                result = np.sqrt(
+                    2) * np.imag(sph_harm(np.abs(m), l, phi, theta))
                 harmonics.append(float(result))
                 if verbose:
                     print(l, m, result)
@@ -105,8 +107,8 @@ def dump_reference_json():
             if verbose:
                 print(l, 0, result)
             # calculation for positive m
-            for m in range(1, l+1):
-                result = np.sqrt(2)*np.real(sph_harm(m, l, phi, theta))
+            for m in range(1, l + 1):
+                result = np.sqrt(2) * np.real(sph_harm(m, l, phi, theta))
                 harmonics.append(float(result))
                 if verbose:
                     print(l, m, result)
@@ -130,7 +132,7 @@ def dump_reference_json():
     if verbose:
         print(len(data))
     with open(os.path.join(root, dump_path,
-			   "spherical_harmonics_reference.ubjson"),
+                           "spherical_harmonics_reference.ubjson"),
               'wb') as f:
         ubjson.dump(data, f)
 

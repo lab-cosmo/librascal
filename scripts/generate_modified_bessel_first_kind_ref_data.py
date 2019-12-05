@@ -20,13 +20,13 @@ mp.prec = 100
 
 def sbesseli(n, z):
     """e^{-x}*i_n(x)"""
-    return sqrt(pi/(2*z))*besseli(n+0.5, z)*exp(-z)
+    return sqrt(pi / (2 * z)) * besseli(n + 0.5, z) * exp(-z)
 
 
 def sbesseli_complete_square(n, a, r, x):
     """i_n(2arx)*\exp{-ar^2}*\exp{-ax^2}"""
-    z = 2*a*r*x
-    return float(sqrt(pi/(2*z))*besseli(n+0.5, z)*exp(-a*r**2)*exp(-a*x**2))
+    z = 2 * a * r * x
+    return float(sqrt(pi / (2 * z)) * besseli(n + 0.5, z) * exp(-a * r**2) * exp(-a * x**2))
 
 
 def dump_reference_json():
@@ -35,7 +35,7 @@ def dump_reference_json():
     data = dict(i_complete_square=[])
     # 1 test the special case in the bessel function and 20 test that we
     # can ramp up l_max safely
-    max_orders = [1,20]
+    max_orders = [1, 20]
     for max_order in max_orders:
         orders = list(range(max_order))
         # gaussian sigma in [0.1, 0.9]
@@ -59,10 +59,10 @@ def dump_reference_json():
                 vals[vals < 1e-300] = 0.
                 data["i_complete_square"].append(
                     dict(alpha=alpha, rij=rij, xs=xns.tolist(),
-                        max_order=max_order, vals=vals.tolist()))
+                         max_order=max_order, vals=vals.tolist()))
 
     with open(os.path.join(root, dump_path,
-            "modified_bessel_first_kind_reference.ubjson"), 'wb') as f:
+                           "modified_bessel_first_kind_reference.ubjson"), 'wb') as f:
         ubjson.dump(data, f)
 
 ###############################################################################
