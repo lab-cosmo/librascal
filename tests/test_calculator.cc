@@ -522,10 +522,11 @@ namespace rascal {
     }
   }
 
-  using gradient_fixtures =
-      boost::mpl::list<CalculatorFixture<SingleHypersSphericalExpansion<
-                           SimplePeriodicNLCCStrictFixture>>,
-                       CalculatorFixture<SingleHypersSphericalInvariants>>;
+  using gradient_fixtures = boost::mpl::list<
+      CalculatorFixture<
+          SingleHypersSphericalExpansion<SimplePeriodicNLCCStrictFixture>>,
+      CalculatorFixture<
+          SingleHypersSphericalInvariants<SimplePeriodicNLCCStrictFixture>>>;
 
   /**
    * Test the gradient of the SphericalExpansion and SphericalInvariants
@@ -602,9 +603,14 @@ namespace rascal {
   using RepFixHalf_t = CalculatorFixture<
       RepresentationFixture<SimplePeriodicNLHalfCCStrictFixture>>;
 
+  // using gradient_half_fixtures = boost::mpl::list<
+  //     MergeHalfAndFull<RepFix_t<SingleHypersSphericalExpansion>,
+  //                      RepFixHalf_t<SingleHypersSphericalExpansion>>,
+  //     MergeHalfAndFull<RepFix_t<SingleHypersSphericalInvariants>,
+  //                      RepFixHalf_t<SingleHypersSphericalInvariants>>>;
   using gradient_half_fixtures = boost::mpl::list<
-      MergeHalfAndFull<RepFix_t<SingleHypersSphericalExpansion>,
-                       RepFixHalf_t<SingleHypersSphericalExpansion>>>;
+      MergeHalfAndFull<RepFix_t<SingleHypersSphericalInvariants>,
+                       RepFixHalf_t<SingleHypersSphericalInvariants>>>;
 
   /**
    * Test the representation gradients computed with a half neighbor list
@@ -629,7 +635,9 @@ namespace rascal {
     auto & representations = Fix::ParentFull::representations;
     const bool verbose{true};
     // relative error threshold
-    const double delta{1e-10};
+    const double delta{4e-7};
+    // range of zero
+    const double epsilon{1e-12};
     // both manager should refer to the same structures
     BOOST_TEST(managers.size() == managers_half.size());
 
@@ -658,7 +666,7 @@ namespace rascal {
           // compare the representation coefficients
           auto diff_rep_m{math::relative_error(
               rep_vectors.get_dense_row(center),
-              rep_vectors_half.get_dense_row(center), delta)};
+              rep_vectors_half.get_dense_row(center), delta, epsilon)};
           double diff_rep = diff_rep_m.maxCoeff();
           BOOST_TEST(diff_rep < delta);
           if (verbose and diff_rep > delta) {
@@ -682,7 +690,8 @@ namespace rascal {
           // compare the representation gradient coefficients at the ii pair
           auto diff_rep_grad_center_m{math::relative_error(
               rep_vector_gradients.get_dense_row(ii_pair),
-              rep_vector_gradients_half.get_dense_row(ii_half_pair))};
+              rep_vector_gradients_half.get_dense_row(ii_half_pair), delta,
+              epsilon)};
           double diff_rep_grad_center = diff_rep_grad_center_m.maxCoeff();
           BOOST_TEST(diff_rep_grad_center < delta);
           if (verbose and diff_rep_grad_center > delta) {
@@ -714,7 +723,8 @@ namespace rascal {
             // compare the representation gradient coefficients at ij pair
             auto diff_rep_grad_neigh_m{math::relative_error(
                 rep_vector_gradients.get_dense_row(neigh),
-                rep_vector_gradients_half.get_dense_row(half_neigh))};
+                rep_vector_gradients_half.get_dense_row(half_neigh), delta,
+                epsilon)};
             double diff_rep_grad_neigh = diff_rep_grad_neigh_m.maxCoeff();
             BOOST_TEST(diff_rep_grad_neigh < delta);
             if (verbose and diff_rep_grad_neigh > delta) {

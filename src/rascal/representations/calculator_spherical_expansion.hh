@@ -1747,8 +1747,8 @@ namespace rascal {
               if (IsHalfNL) {
                 if (is_center_atom) {
                   gradient_neigh_center_by_type.block(
-                  cartesian_idx * max_radial, l_block_idx,
-                  max_radial, l_block_size) += parity * pair_gradient_contribution;
+                    cartesian_idx * max_radial, l_block_idx, max_radial,
+                    l_block_size) += parity * pair_gradient_contribution;
                   parity *= -1.;
                 }
               }

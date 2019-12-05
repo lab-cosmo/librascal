@@ -624,8 +624,9 @@ namespace rascal {
         {{"max_radial", 3}, {"max_angular", 0}, {"compute_gradients", true}}};
   };
 
-  struct SingleHypersSphericalInvariants : SimplePeriodicNLCCStrictFixture {
-    using Parent = SimplePeriodicNLCCStrictFixture;
+  template <typename DataFixture>
+  struct SingleHypersSphericalInvariants : DataFixture {
+    using Parent = DataFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;
 
