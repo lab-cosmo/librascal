@@ -634,7 +634,6 @@ namespace rascal {
 
     //! Returns atom type given an atom tag, also works for ghost atoms
     int & get_atom_type(int atom_tag) {
-      // return this->atom_types[this->get_atom_index(atom_tag)];
       return this->atom_types[atom_tag];
     }
 
@@ -647,9 +646,6 @@ namespace rascal {
     size_t get_atom_index(const int atom_tag) const {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
-
-    //! Returns the type of a given atom, given an AtomRef
-    int get_atom_type(int atom_tag) const { return this->atom_types[atom_tag]; }
 
     //! Returns the number of neighbours of a given atom at a given TargetOrder
     //! Returns the number of pairs of a given center

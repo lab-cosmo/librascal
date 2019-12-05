@@ -1605,7 +1605,7 @@ namespace rascal {
             expansions_coefficients_gradient[center.get_atom_ii()];
         coefficients_center_gradient.resize(
             keys[center_tag], n_spatial_dimensions * n_row, n_col, 0.);
-        for (auto neigh : center) {
+        for (auto neigh : center.pairs()) {
           auto & coefficients_neigh_gradient =
               expansions_coefficients_gradient[neigh];
           Key_t neigh_type{neigh.get_atom_type()};
@@ -1615,9 +1615,7 @@ namespace rascal {
         }
       }
     }
-    /* @TODO(felix,max) use the parity of the spherical harmonics to use half
-     * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
-     */
+    // half neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
     for (auto center : manager) {
       auto & coefficients_center = expansions_coefficients[center];
       auto & coefficients_center_gradient =
@@ -1637,14 +1635,13 @@ namespace rascal {
         auto && atom_j = neigh.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag();
         bool is_center_atom{manager->is_center_atom(neigh)};
-        auto & coefficients_neigh{expansions_coefficients[atom_j]};
+
         auto dist{manager->get_distance(neigh)};
         auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
         auto & coefficients_neigh_gradient =
             expansions_coefficients_gradient[neigh];
-        auto & coefficients_neigh_center_gradient =
-            expansions_coefficients_gradient[neigh.get_atom_jj()];
+
         this->spherical_harmonics.calc(direction, this->compute_gradients);
         auto && harmonics{spherical_harmonics.get_harmonics()};
         auto && harmonics_gradients{
@@ -1655,7 +1652,6 @@ namespace rascal {
                                                                      neigh);
         double f_c{cutoff_function->f_c(dist)};
         auto coefficients_center_by_type{coefficients_center[neigh_type]};
-        auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
 
         // compute the coefficients
         size_t l_block_idx{0};
@@ -1672,6 +1668,15 @@ namespace rascal {
 
         // half list branch
         if (IsHalfNL) {
+          if (not manager->is_center_atom(atom_j)) {
+            std::stringstream err_str{};
+            err_str << "Half neighbor list should only be used when all the "
+                << "atoms inside the unit cell are centers, i.e. "
+                << "center_atoms_mask should not mask atoms.";
+            throw std::runtime_error(err_str.str());
+          }
+          auto & coefficients_neigh{expansions_coefficients[atom_j]};
+          auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
           if (is_center_atom) {
             l_block_idx = 0;
             double parity{1.};
@@ -1705,9 +1710,17 @@ namespace rascal {
           // grad_j c^{i}
           auto && gradient_neigh_by_type{
               coefficients_neigh_gradient[neigh_type]};
-          // grad_j c^{j}
-          auto && gradient_neigh_center_by_type{
-              coefficients_neigh_center_gradient[center_type]};
+
+          auto & coefficients_neigh_center_gradient =
+                    coefficients_neigh_gradient;
+          auto && gradient_neigh_center_by_type{gradient_neigh_by_type};
+          if (IsHalfNL) {
+            coefficients_neigh_center_gradient =
+                  expansions_coefficients_gradient[neigh.get_atom_jj()];
+            // grad_j c^{j}
+            gradient_neigh_center_by_type =
+                coefficients_neigh_center_gradient[center_type];
+          }
 
           // Radial component: d/dr_{ij} (c_{ij} f_c{r_{ij}}) \hat{r_{ij}}
           // clang-format off

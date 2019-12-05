@@ -711,16 +711,13 @@ namespace rascal {
             std::cout << std::endl;
           }
           size_t neigh_count{0};
-          for (auto neigh : center) {
+          for (auto neigh : center.pairs()) {
             auto neigh_type = neigh.get_atom_type();
             auto tags = neigh.get_atom_tag_list();
             if (tags[1] <= tags[0]) {
               continue;
             }
-            auto half_neigh_it = half_center.begin();
-            for (size_t ii{0}; ii < neigh_count; ii++) {
-              ++half_neigh_it;
-            }
+            auto half_neigh_it = half_center.template get_clusters_of_order<2>(neigh_count).begin();
             auto half_neigh = *(half_neigh_it);
             // compare the representation gradient coefficients at ij pair
             auto diff_rep_grad_neigh_m{math::relative_error(

@@ -273,18 +273,16 @@ int main(int argc, char * argv[]) {
     std::cout << std::endl;
 
     size_t neigh_count{0};
-    for (auto neigh : center) {
+    for (auto neigh : center.pairs()) {
       // if (neigh_count >= n_neigh_print) {
       //   break;
       // }
       // auto neigh_type = neigh.get_atom_type();
       // auto tags = neigh.get_atom_tag_list();
       // if (tags[1] <= tags[0]) {continue;}
-      // auto half_neigh_it = half_center.begin();
-      // for (size_t ii{0}; ii < neigh_count; ii++) {
-      //   ++half_neigh_it;
-      // }
+      // auto half_neigh_it = half_center.template get_clusters_of_order<2>(neigh_count).begin();
       // auto half_neigh = *(half_neigh_it);
+
       // std::cout << "Neighbour "<< neigh_type <<" tags: ";
 
       // std::cout << "(";
