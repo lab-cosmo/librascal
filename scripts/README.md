@@ -1,7 +1,7 @@
 # Rascal Scripts
 
 This folder contains some utility scripts used by active developers of the library.
-They are meant for development purposes only.
+They are meant for development and testing purposes to e.g. generate reference data.
 
 ## generate_*.py
 
