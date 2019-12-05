@@ -574,6 +574,10 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Utility fixture used to compared representations computed with full and
+   * half neighbor lists.
+   */
   template <class CaculatorFixtureFull, class CaculatorFixtureHalf>
   struct MergeHalfAndFull : CaculatorFixtureFull, CaculatorFixtureHalf {
     using ParentFull = CaculatorFixtureFull;
@@ -605,12 +609,9 @@ namespace rascal {
   using RepFixHalf_t = CalculatorFixture<
       RepresentationFixture<SimplePeriodicNLHalfCCStrictFixture>>;
 
-  // using gradient_half_fixtures = boost::mpl::list<
-  //     MergeHalfAndFull<RepFix_t<SingleHypersSphericalExpansion>,
-  //                      RepFixHalf_t<SingleHypersSphericalExpansion>>,
-  //     MergeHalfAndFull<RepFix_t<SingleHypersSphericalInvariants>,
-  //                      RepFixHalf_t<SingleHypersSphericalInvariants>>>;
   using gradient_half_fixtures = boost::mpl::list<
+      MergeHalfAndFull<RepFix_t<SingleHypersSphericalExpansion>,
+                       RepFixHalf_t<SingleHypersSphericalExpansion>>,
       MergeHalfAndFull<RepFix_t<SingleHypersSphericalInvariants>,
                        RepFixHalf_t<SingleHypersSphericalInvariants>>>;
 

@@ -1636,11 +1636,16 @@ namespace rascal {
         auto atom_j_tag = atom_j.get_atom_tag();
         bool is_center_atom{manager->is_center_atom(neigh)};
 
+
         auto dist{manager->get_distance(neigh)};
         auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
         auto & coefficients_neigh_gradient =
             expansions_coefficients_gradient[neigh];
+
+        auto & coefficients_neigh{expansions_coefficients[atom_j]};
+        auto & coefficients_neigh_center_gradient =
+            expansions_coefficients_gradient[neigh.get_atom_jj()];
 
         this->spherical_harmonics.calc(direction, this->compute_gradients);
         auto && harmonics{spherical_harmonics.get_harmonics()};
@@ -1675,7 +1680,7 @@ namespace rascal {
                 << "center_atoms_mask should not mask atoms.";
             throw std::runtime_error(err_str.str());
           }
-          auto & coefficients_neigh{expansions_coefficients[atom_j]};
+          // auto & coefficients_neigh{expansions_coefficients[atom_j]};
           auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
           if (is_center_atom) {
             l_block_idx = 0;
@@ -1710,17 +1715,19 @@ namespace rascal {
           // grad_j c^{i}
           auto && gradient_neigh_by_type{
               coefficients_neigh_gradient[neigh_type]};
-
-          auto & coefficients_neigh_center_gradient =
-                    coefficients_neigh_gradient;
-          auto && gradient_neigh_center_by_type{gradient_neigh_by_type};
-          if (IsHalfNL) {
-            coefficients_neigh_center_gradient =
-                  expansions_coefficients_gradient[neigh.get_atom_jj()];
-            // grad_j c^{j}
-            gradient_neigh_center_by_type =
+          // grad_j c^{j}
+          auto && gradient_neigh_center_by_type =
                 coefficients_neigh_center_gradient[center_type];
-          }
+          // auto & coefficients_neigh_center_gradient =
+          //           coefficients_neigh_gradient;
+          // auto && gradient_neigh_center_by_type{gradient_neigh_by_type};
+          // if (IsHalfNL) {
+            // coefficients_neigh_center_gradient =
+            //       expansions_coefficients_gradient[neigh.get_atom_jj()];
+            // // grad_j c^{j}
+            // gradient_neigh_center_by_type =
+            //     coefficients_neigh_center_gradient[center_type];
+          // }
 
           // Radial component: d/dr_{ij} (c_{ij} f_c{r_{ij}}) \hat{r_{ij}}
           // clang-format off
@@ -1758,6 +1765,11 @@ namespace rascal {
                   max_radial, l_block_size) += pair_gradient_contribution;
               // half list branch
               if (IsHalfNL) {
+                // auto & coefficients_neigh_center_gradient =
+                //   expansions_coefficients_gradient[neigh.get_atom_jj()];
+                // // grad_j c^{j}
+                // auto gradient_neigh_center_by_type =
+                //     coefficients_neigh_center_gradient[center_type];
                 if (is_center_atom) {
                   gradient_neigh_center_by_type.block(
                     cartesian_idx * max_radial, l_block_idx, max_radial,
