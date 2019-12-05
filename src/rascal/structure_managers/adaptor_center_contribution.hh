@@ -217,15 +217,16 @@ namespace rascal {
       return this->manager->get_neighbour_atom_tag(neighbour_index);
     }
 
-    //! return the number of neighbours of a given atom
-    template <size_t Order, size_t Layer>
+    //! return the number of neighbours of a given atom at a given TargetOrder
+    template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order <= traits::MaxOrder,
+      static_assert(TargetOrder <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       constexpr auto nb_neigh_layer{
-          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
-      return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
+          compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};
+      return this->nb_neigh[TargetOrder - 1]
+                           [cluster.get_cluster_index(nb_neigh_layer)];
     }
 
     //! Get the manager used to build the instance
@@ -370,7 +371,7 @@ namespace rascal {
       this->add_atom(self_pair);
       pair_counter++;
 
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         this->add_atom(pair);
 
         Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;

@@ -181,6 +181,13 @@ namespace rascal {
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
                                                    StructureManager_t>;
 
+    //! helper to identify if Manager_t has TargetOrder,
+    //! i.e. if  0 <= TargetOrder <= traits::MaxOrder
+    template <size_t TargetOrder>
+    static constexpr bool has_order() {
+      return internal::is_order_available<TargetOrder>(
+          std::make_index_sequence<traits::MaxOrder + 1>{});
+    }
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     using Property_t =
@@ -497,9 +504,11 @@ namespace rascal {
       return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());
     }
 
-    template <size_t Order, size_t Layer>
+    //! return the number of neighbours of a given atom at a given TargetOrder
+    template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t get_cluster_size(const ClusterRefKey<Order, Layer> & cluster) const {
-      return this->implementation().get_cluster_size_impl(cluster);
+      return this->implementation().template get_cluster_size_impl<TargetOrder>(
+          cluster);
     }
 
     //! return if the atom (Order == 1) or neighboring atom (Order == 2)
@@ -672,6 +681,27 @@ namespace rascal {
                                  std::make_integer_sequence<int, Size>{});
     }
 
+    template <typename T, size_t Size1, int... Indices1, size_t Size2,
+              int... Indices2>
+    std::array<T, Size1 + Size2>
+    concat_array_helper(const std::array<T, Size1> & arr1,
+                        const std::array<T, Size2> & arr2,
+                        std::integer_sequence<int, Indices1...>,
+                        std::integer_sequence<int, Indices2...>) {
+      return std::array<T, Size1 + Size2>{
+          {arr1[Indices1]..., arr2[Indices2]...}};
+    }
+
+    //! concatenate 2 array
+    template <typename T, size_t Size1, size_t Size2>
+    std::array<T, Size1 + Size2>
+    concat_array(const std::array<T, Size1> & arr1,
+                 const std::array<T, Size2> & arr2) {
+      return concat_array_helper(arr1, arr2,
+                                 std::make_integer_sequence<int, Size1>{},
+                                 std::make_integer_sequence<int, Size2>{});
+    }
+
     // #BUG8486@(till) changed name Counters to Container, because we handle an
     // object which can be as manager or clusterref, and this is is name
     // container in the iterator, counters is used for the the list of all
@@ -682,21 +712,10 @@ namespace rascal {
      * static branching to redirect to the correct function to get sizes,
      * offsets and neighbours. Used later by adaptors which modify or extend
      * the neighbourlist to access the correct offset.
+     *
      */
     template <bool AtMaxOrder>
     struct IncreaseHelper {
-      template <class Manager_t, class Cluster_t>
-      static size_t get_cluster_size(const Manager_t & /*manager*/,
-                                     const Cluster_t & /*cluster*/) {
-        throw std::runtime_error("This branch should never exist"
-                                 " (cluster size).");
-      }
-      template <class Manager_t, class Container_t>
-      static size_t get_offset(const Manager_t & /*manager*/,
-                               const Container_t & /*container*/) {
-        throw std::runtime_error("This branch should never exist"
-                                 " (offset implementation).");
-      }
       template <class Manager_t, class Container_t>
       static int get_neighbour_atom_tag(const Manager_t & /*manager*/,
                                         const Container_t & /*container*/,
@@ -710,18 +729,6 @@ namespace rascal {
     //! manager
     template <>
     struct IncreaseHelper<false> {
-      template <class Manager_t, class Cluster_t>
-      static size_t get_cluster_size(const Manager_t & manager,
-                                     const Cluster_t & cluster) {
-        return manager.get_cluster_size_impl(cluster);
-      }
-
-      template <class Manager_t, class Container_t>
-      static size_t get_offset(const Manager_t & manager,
-                               const Container_t & container) {
-        return manager.get_offset_impl(container);
-      }
-
       template <class Manager_t, class Container_t>
       static int get_neighbour_atom_tag(const Manager_t & manager,
                                         const Container_t & container,
@@ -837,16 +844,25 @@ namespace rascal {
     using IndexConstArray_t = typename ThisParentClass::IndexConstArray;
     using IndexArray_t = typename ThisParentClass::IndexArray;
 
-    static constexpr bool HasCenterPairOrderOne{traits::HasCenterPair and
-                                                Order == 1};
+    using AtomIndex_t = typename ThisParentClass::AtomIndex_t;
 
-    static constexpr bool HasCenterPairOrderTwo{traits::HasCenterPair and
-                                                Order == 2};
+    static constexpr bool IsOrderOne{Order == 1};
+
+    template <size_t TargetOrder>
+    static constexpr bool IsOrderOneAndHasOrder{
+        Manager_t::template has_order<TargetOrder>() and IsOrderOne};
+
+    //! true if ClusterRef of Order 1 and the manager has self pairs
+    static constexpr bool HasCenterPairAndIsOrderOne{traits::HasCenterPair and
+                                                     IsOrderOne};
+    //! true if ClusterRef of Order 2 and the manager has self pairs
+    static constexpr bool HasCenterPairAndIsOrderTwo{traits::HasCenterPair and
+                                                     Order == 2};
     //! Default constructor
     ClusterRef() = delete;
 
     template <typename ClusterIndicesType>
-    ClusterRef(Iterator_t & it, const std::array<int, Order> & atom_tag_list,
+    ClusterRef(Iterator_t & it, const AtomIndex_t & atom_tag_list,
                ClusterIndicesType & cluster_indices)
         : ThisParentClass{atom_tag_list,
                           internal::ClusterIndicesConstCaster<
@@ -857,7 +873,7 @@ namespace rascal {
     /**
      * This is a ClusterRef of Order=1, constructed from a higher Order.
      * This function here is self referencing right now. A ClusterRefKey
-     * with Order=1 is noeeded to construct it ?!
+     * with Order=1 is needed to construct it ?!
      */
     ClusterRef(ClusterRefKey<1, 0> & cluster, Manager_t & manager)
         : ClusterRefKey<1, 0>(cluster.get_atom_tag_list(),
@@ -916,11 +932,11 @@ namespace rascal {
      *
      * @return ClusterRefKey of order 2 and proper layer
      */
-    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
+    template <bool C = HasCenterPairAndIsOrderOne, std::enable_if_t<C, int> = 0>
     auto get_atom_ii() {
       static_assert(traits::MaxOrder > 1, "Need neighbors to get one");
 
-      auto && atom_ii_it = this->with_self_pair().begin();
+      auto && atom_ii_it = this->pairs_with_self_pair().begin();
       constexpr static size_t ClusterLayer_{
           ManagerImplementation::template cluster_layer_from_order<2>()};
       auto atom_ii = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_ii_it);
@@ -937,14 +953,14 @@ namespace rascal {
      *
      * @return ClusterRefKey of order 2 and proper layer
      */
-    template <bool T = HasCenterPairOrderTwo, std::enable_if_t<T, int> = 0>
+    template <bool C = HasCenterPairAndIsOrderTwo, std::enable_if_t<C, int> = 0>
     auto get_atom_jj() {
       auto && manager = it.get_manager();
       auto && atom_j_tag = this->get_atom_tag();
       auto && atom_j_index = manager.get_atom_index(atom_j_tag);
       auto && atom_j_it = manager.get_iterator_at(atom_j_index, 0);
       auto && atom_j = *atom_j_it;
-      auto && atom_jj_it = atom_j.with_self_pair().begin();
+      auto && atom_jj_it = atom_j.pairs_with_self_pair().begin();
       constexpr static size_t ClusterLayer_{
           ManagerImplementation::template cluster_layer_from_order<2>()};
       auto atom_jj = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_jj_it);
@@ -979,76 +995,17 @@ namespace rascal {
 
     //! return a const reference to the manager with maximum layer
     const Manager_t & get_manager() const { return this->it.get_manager(); }
-    //! start of the iteration over the cluster itself
-    template <bool T = HasCenterPairOrderOne, std::enable_if_t<not(T), int> = 0>
-    iterator begin() {
-      std::array<size_t, Order> counters{this->it.get_counters()};
-      auto offset = this->get_manager().get_offset(counters);
-      return iterator(*this, 0, offset);
-    }
 
-    /**
-     * start of the iteration over the cluster itself.
-     *
-     * Special case when HasCenterPair == true and Order == 1. The default
-     * iteration in this case does not include the ii-pair by starting at 1
-     * since the ii-pair is the first element.
-     * To include the ii-pair to the iteration use .with_self_pair()
-     */
-    template <bool T = HasCenterPairOrderOne, std::enable_if_t<T, int> = 0>
-    iterator begin() {
-      std::array<size_t, Order> counters{this->it.get_counters()};
-      auto offset = this->get_manager().get_offset(counters);
-      return iterator(*this, static_cast<int>(HasCenterPairOrderOne), offset);
-    }
-
-    //! end of the iterations over the cluster itself
-    iterator end() {
-      return iterator(*this,
-                      std::max(this->size(), size_t(HasCenterPairOrderOne)),
-                      std::numeric_limits<size_t>::max());
-    }
-
-    /**
-     * Directly obtain the iterator to the n-th iterate
-     */
-    iterator get_iterator_at(const size_t & start) {
-      auto && offset{this->get_manager().get_offset(this->it.get_counters())};
-      return iterator(*this, start, offset);
-    }
-
-    /**
-     * Directly obtain the iterator to the n-th iterate
-     */
-    iterator get_iterator_at(const size_t & start) const {
-      auto && offset{this->get_manager().get_offset(this->it.get_counters())};
-      return iterator(*this, start, offset);
-    }
-
-    //! returns its own size
-    size_t size() { return this->get_manager().get_cluster_size(*this); }
     //! return iterator index - this is used in cluster_indices_container as
     //! well as accessing properties
     size_t get_index() const { return this->it.index; }
-    //! returns the clusters index (e.g. the 4-th pair of all pairs in this
-    //! iteration)
-    // TODO(alex) should be equal cluster_indices.back()
-    // improve documentation
-    size_t get_global_index() const {
-      return this->get_manager().get_offset(*this);
-    }
+
+    //! returns the clusters index refering to the whole list of current
+    //! clusters
+    size_t get_global_index() const { return this->it.get_cluster_index(); }
     //! returns the atom tags, which constitute the cluster
     const std::array<int, Order> & get_atom_tag_list() const {
       return this->atom_tag_list;
-    }
-
-    /**
-     * Allows to set the atom tag at the atom index (cluster of Order 1 index)
-     *
-     * @param index atom index (cluster of Order 1 index)
-     */
-    void set_atom_tag(const size_t index, const int tag) {
-      this->atom_tag_list[index] = tag;
     }
 
     Iterator_t & get_iterator() { return this->it; }
@@ -1064,48 +1021,99 @@ namespace rascal {
     Iterator_t & it;
 
     /**
-     * Helper struct to only iterate in a customised range.
+     * Helper struct to iterate in a customised range. Useful to return an
+     * iterator over the pairs (TargetOrder == 2),
+     * triplets (TargetOrder == 3)...
      */
-    template <class ManagerImplementation_ = ManagerImplementation,
-              size_t Order_ = Order>
+    template <size_t TargetOrder>
     struct CustomProxy {
-      using ClusterRef_t = typename StructureManager<
-          ManagerImplementation_>::template ClusterRef<Order_>;
-      using iterator = typename ClusterRef_t::iterator;
-      friend iterator;
+      using ClusterRef_t = typename Manager_t::template ClusterRef<1>;
+      using iterator = typename Manager_t::template Iterator<TargetOrder>;
 
-      CustomProxy(ClusterRef_t & cluster_ref, size_t & start, size_t & offset,
-                  size_t & finish)
-          : cluster_ref{cluster_ref}, start{start}, offset{offset},
-            finish{finish} {}
+      CustomProxy(ClusterRef_t & cluster_ref, const size_t & start,
+                  const size_t & offset)
+          : cluster_ref{cluster_ref}, start{start}, offset{offset} {}
 
+      //! end of the iterations over the clusters of order TargetOrder
       iterator begin() {
         return iterator(cluster_ref, this->start, this->offset);
       }
-      //! end of the iterations over the cluster itself
+      //! end of the iterations over the clusters
       iterator end() {
-        return iterator(cluster_ref, this->finish,
+        return iterator(cluster_ref, this->size(),
                         std::numeric_limits<size_t>::max());
       }
+      //! get the number of neighbors of the center at Order == TargetOrder
+      size_t size() {
+        return cluster_ref.get_manager().template get_cluster_size<TargetOrder>(
+            cluster_ref);
+      }
+
       ClusterRef_t & cluster_ref;
+      //! starting index of the iteration
       size_t start;
+      //! offset with which to start the iteration in the list of all clusters
+      //! of Order == TargetOrder
       size_t offset;
-      size_t finish;
     };
 
    public:
     /**
-     * Return an iterable for Order == 2 that includes the self pair if
-     * HasCenterPair == true. If HasCenterPair == false then its the
-     * regular iteration.
+     * Return an iterable over the clusters of order == Order
+     * associated with the current central atom.
+     * @param start starting index for the iteration from offset
      */
-    CustomProxy<ManagerImplementation, Order> with_self_pair() {
-      std::array<size_t, Order> counters{this->it.get_counters()};
+    template <size_t Order_, bool C = IsOrderOne, std::enable_if_t<C, int> = 0>
+    CustomProxy<Order_> get_clusters_of_order(size_t start = 0) {
+      static_assert(Order_ > 1,
+                    "You should ask at least for pairs, i.e. Order_ >= 2.");
+      std::array<size_t, Order_ - 1> counters{};
+      counters.back() = this->get_index();
       size_t offset{this->get_manager().get_offset(counters)};
-      size_t finish{this->size()};
-      size_t start{0};
-      return CustomProxy<ManagerImplementation, Order>(*this, start, offset,
-                                                       finish);
+      return CustomProxy<Order_>(*this, start, offset);
+    }
+
+    /**
+     * Return an iterable for Order == 2 that includes the neighbors (or pairs)
+     * associated with the current central atom.
+     */
+    template <bool C = IsOrderOneAndHasOrder<2>, std::enable_if_t<C, int> = 0>
+    CustomProxy<2> pairs() {
+      // avoid if statement or sfinae by casting the bool to
+      // size_t which turns out to give 0 if false and 1
+      // if true, the expected behavior.
+      size_t start{static_cast<size_t>(HasCenterPairAndIsOrderOne)};
+      return this->get_clusters_of_order<2>(start);
+    }
+
+    /**
+     * Return an iterable for Order == 2 that includes the neighbors (or
+     * pairs) associated with the current central atom and the self pair,
+     * i.e. a ClusterRef<2> refering to the central atom if
+     * HasCenterPair == true.
+     * If HasCenterPair == false then its the regular iteration.
+     */
+    template <bool C = IsOrderOneAndHasOrder<2>, std::enable_if_t<C, int> = 0>
+    CustomProxy<2> pairs_with_self_pair() {
+      return this->get_clusters_of_order<2>();
+    }
+
+    /**
+     * Return an iterable for Order == 3 that includes the triplets associated
+     * with the current central atom.
+     */
+    template <bool C = IsOrderOneAndHasOrder<3>, std::enable_if_t<C, int> = 0>
+    CustomProxy<3> triplets() {
+      return this->get_clusters_of_order<3>();
+    }
+
+    /**
+     * Return an iterable for Order == 4 that includes the quadruplets
+     * associated with the current central atom.
+     */
+    template <bool C = IsOrderOneAndHasOrder<4>, std::enable_if_t<C, int> = 0>
+    CustomProxy<4> quadruplets() {
+      return this->get_clusters_of_order<4>();
     }
   };
 
@@ -1169,10 +1177,19 @@ namespace rascal {
     using ClusterRef_t = typename Manager_t::template ClusterRef<Order>;
 
     friend ClusterRef_t;
+
+    static constexpr bool IsOrderOne{Order == 1};
+
+    static constexpr bool IsOrderOneOrTwo{IsOrderOne or
+                                          (Order == 2)};  // NOLINT
+
     // determine the container type
     using Container_t =
-        std::conditional_t<Order == 1, Manager_t,
-                           typename Manager_t::template ClusterRef<Order - 1>>;
+        std::conditional_t<IsOrderOne, Manager_t,
+                           typename Manager_t::template ClusterRef<1>>;
+
+    using AtomIndex_t = typename ClusterRef_t::AtomIndex_t;
+
     static_assert(Order > 0, "Order has to be positive");
 
     static_assert(Order <= traits::MaxOrder,
@@ -1222,8 +1239,8 @@ namespace rascal {
           this->get_manager().get_cluster_indices_container());
       using Ref_t = typename std::remove_reference_t<decltype(
           cluster_indices_properties)>::reference;
-      Ref_t cluster_indices =
-          cluster_indices_properties[this->get_cluster_index()];
+      Ref_t cluster_indices{
+          cluster_indices_properties[this->get_cluster_index()]};
       return ClusterRef_t(*this, this->get_atom_tag_list(), cluster_indices);
     }
 
@@ -1261,17 +1278,33 @@ namespace rascal {
         : container{cont}, index{start}, offset{offset} {}
 
     //! add atomic indices in current iteration
-    std::array<int, Order> get_atom_tag_list() {
+    template <bool C = IsOrderOneOrTwo, std::enable_if_t<C, int> = 0>
+    AtomIndex_t get_atom_tag_list() {
+      return internal::append_array(
+          container.get_atom_tag_list(),
+          this->get_manager().get_neighbour_atom_tag(container, this->index));
+    }
+    //! add atomic indices in current iteration
+    template <bool C = IsOrderOneOrTwo, std::enable_if_t<C, int> = 0>
+    AtomIndex_t get_atom_tag_list() const {
       return internal::append_array(
           container.get_atom_tag_list(),
           this->get_manager().get_neighbour_atom_tag(container, this->index));
     }
 
-    //! add atomic indices in current iteration
-    std::array<int, Order> get_atom_tag_list() const {
-      return internal::append_array(
+    template <bool C = IsOrderOneOrTwo, std::enable_if_t<not(C), int> = 0>
+    AtomIndex_t get_atom_tag_list() {
+      return internal::concat_array(
           container.get_atom_tag_list(),
-          this->get_manager().get_neighbour_atom_tag(container, this->index));
+          this->get_manager().implementation().get_neighbour_atom_tag_current(
+              container, this->index));
+    }
+    template <bool C = IsOrderOneOrTwo, std::enable_if_t<not(C), int> = 0>
+    AtomIndex_t get_atom_tag_list() const {
+      return internal::concat_array(
+          container.get_atom_tag_list(),
+          this->get_manager().implementation().get_neighbour_atom_tag_current(
+              container, this->index));
     }
 
     //! returns the current index of the cluster in iteration
@@ -1286,32 +1319,38 @@ namespace rascal {
 
     //! returns the counters - which is the position in a list at each
     //! Order.
-    std::array<size_t, Order> get_counters() {
-      std::array<size_t, Order> counters;
-      counters[Order - 1] = this->index;
-      if (Order == 1) {
-        return counters;
-      } else {
-        auto parental_counters = this->container.get_counters();
-        for (size_t i{0}; i < Order - 1; i++) {
-          counters[i] = parental_counters[i];
-        }
-        return counters;
-      }
+    template <bool C = IsOrderOne, std::enable_if_t<C, int> = 0>
+    std::array<size_t, 1> get_counters() {
+      std::array<size_t, 1> counters{this->index};
+      return counters;
     }
-    std::array<size_t, Order> get_offsets() {
-      std::array<size_t, Order> offsets;
-      offsets[Order - 1] = this->offset;
-      if (Order == 1) {
-        return offsets;
-      } else {
-        auto parental_offsets = this->container.get_offsets();
-        for (size_t i{0}; i < Order - 1; i++) {
-          offsets[i] = parental_offsets[i];
-        }
-        return offsets;
-      }
+
+    //! returns the counters - which is the position in a list at each
+    //! Order.
+    template <bool C = IsOrderOne, std::enable_if_t<not(C), int> = 0>
+    std::array<size_t, 2> get_counters() {
+      auto && parental_counters = this->container.get_counters();
+      std::array<size_t, 2> counters{parental_counters[0], this->index};
+      return counters;
     }
+
+    //! get offsets at which the current clusters at several orders should
+    //! start
+    template <bool C = IsOrderOne, std::enable_if_t<C, int> = 0>
+    std::array<size_t, 1> get_offsets() {
+      std::array<size_t, 1> offsets{this->offset};
+      return offsets;
+    }
+
+    //! get offsets at which the current clusters at several orders should
+    //! start
+    template <bool C = IsOrderOne, std::enable_if_t<not(C), int> = 0>
+    std::array<size_t, 2> get_offsets() {
+      auto && parental_offsets = this->container.get_offsets();
+      std::array<size_t, 2> offsets{parental_offsets[0], this->offset};
+      return offsets;
+    }
+
     //! in ascending order, this is: manager, atom, pair, triplet (i.e.
     //! cluster of Order 0, 1, 2, 3, ...
     Container_t & container;

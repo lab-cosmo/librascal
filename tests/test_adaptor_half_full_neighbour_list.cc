@@ -65,7 +65,7 @@ namespace rascal {
 
     int npairs_full{0};
     for (auto atom : manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         double dist = {(atom.get_position() - pair.get_position()).norm()};
         distance_sum_full += dist;
         npairs_full++;
@@ -86,7 +86,7 @@ namespace rascal {
       if (verbose) {
         std::cout << "type " << atom.get_atom_type() << std::endl;
       }
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         double dist = {(atom.get_position() - pair.get_position()).norm()};
         distance_sum_half += dist;
 
@@ -138,7 +138,7 @@ namespace rascal {
     }
     int npairs{0};
     for (auto atom : manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         double dist = {(atom.get_position() - pair.get_position()).norm()};
         distance_sum_full += dist;
         npairs++;
@@ -156,7 +156,7 @@ namespace rascal {
       std::cout << "---full/half---" << std::endl;
     }
     for (auto atom : adaptor_half) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         if (verbose) {
           auto pair_offset{pair.get_global_index()};
           std::cout << "pair (" << atom.back() << ", " << pair.back() << "), "
@@ -171,7 +171,7 @@ namespace rascal {
     }
     int npairs_adapted{0};
     for (auto atom : adaptor_full) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         double dist = {(atom.get_position() - pair.get_position()).norm()};
         distance_sum_full_half_full += dist;
         npairs_adapted++;

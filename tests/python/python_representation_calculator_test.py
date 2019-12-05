@@ -4,8 +4,13 @@ from test_utils import load_json_frame, BoxList, Box, dot
 import unittest
 import numpy as np
 import sys
+import os
 import json
 from copy import copy
+
+rascal_reference_path = 'reference_data'
+inputs_path = os.path.join(rascal_reference_path, "inputs")
+dump_path = os.path.join(rascal_reference_path, "tests_only")
 
 
 class TestSortedCoulombRepresentation(unittest.TestCase):
@@ -15,7 +20,7 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json')
         self.frame = load_json_frame(fn)
 
         self.hypers = dict(cutoff=3., sorting_algorithm='row_norm',
@@ -38,12 +43,12 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
-        self.frames = [load_json_frame(fn)]
-        fn = 'reference_data/SiC_moissanite_supercell.json'
-        self.frames += [load_json_frame(fn)]
-        fn = 'reference_data/methane.json'
-        self.frames += [load_json_frame(fn)]
+        fns = [
+            os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json'),
+            os.path.join(inputs_path, 'SiC_moissanite_supercell.json'),
+            os.path.join(inputs_path, 'methane.json'),
+        ]
+        self.frames = [load_json_frame(fn) for fn in fns]
 
         self.hypers = {"interaction_cutoff": 6.0,
                        "cutoff_smooth_width": 1.0,
@@ -68,9 +73,11 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fns = ['reference_data/CaCrP2O7_mvc-11955_symmetrized.json',
-               'reference_data/SiC_moissanite_supercell.json',
-               'reference_data/methane.json']
+        fns = [
+            os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json'),
+            os.path.join(inputs_path, 'SiC_moissanite_supercell.json'),
+            os.path.join(inputs_path, 'methane.json'),
+        ]
         self.frames = [load_json_frame(fn) for fn in fns]
 
         global_species = []
@@ -102,7 +109,7 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         kk = np.dot(X_t, X_t.T)
         self.assertTrue(np.allclose(kk, kk_ref))
 
-        X_t = features.get_features(rep, self.global_species+[70])
+        X_t = features.get_features(rep, self.global_species + [70])
         kk = np.dot(X_t, X_t.T)
         self.assertTrue(np.allclose(kk, kk_ref))
 

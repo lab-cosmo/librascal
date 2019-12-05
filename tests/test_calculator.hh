@@ -261,7 +261,7 @@ namespace rascal {
     ~SphericalInvariantsTestData() = default;
     bool verbose{false};
     std::string ref_filename{
-        "reference_data/spherical_invariants_reference.ubjson"};
+        "reference_data/tests_only/spherical_invariants_reference.ubjson"};
   };
 
   struct SphericalCovariantsTestData : TestData {
@@ -274,7 +274,7 @@ namespace rascal {
     ~SphericalCovariantsTestData() = default;
     bool verbose{false};
     std::string ref_filename{
-        "reference_data/spherical_covariants_reference.ubjson"};
+        "reference_data/tests_only/spherical_covariants_reference.ubjson"};
   };
 
   template <class MultipleStructureFixture>
@@ -369,7 +369,7 @@ namespace rascal {
     ~SimpleStructureManagerNLCCStrictFixture() = default;
 
     const std::string filename{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
     const double cutoff{3.};
     const double cutoff_skin{0.};
 
@@ -467,16 +467,14 @@ namespace rascal {
     ~SimplePeriodicNLCCStrictFixture() = default;
 
     const std::vector<std::string> filenames{
-        "reference_data/simple_cubic_8.json",
-        "reference_data/diamond_2atom_distorted.json",
-        "reference_data/diamond_cubic_distorted.json",
-        "reference_data/SiCGe_wurtzite_like.json",
-        "reference_data/SiC_moissanite_supercell.json",
-        "reference_data/small_molecule.json",
-        "reference_data/methane.json"};
-    // Simpler structures for debugging:
-    // "reference_data/diamond_2atom.json",
-    // "reference_data/SiC_moissanite.json",
+        "reference_data/inputs/diamond_2atom.json",
+        "reference_data/inputs/diamond_2atom_distorted.json",
+        "reference_data/inputs/diamond_cubic_distorted.json",
+        "reference_data/inputs/SiC_moissanite.json",
+        "reference_data/inputs/SiCGe_wurtzite_like.json",
+        "reference_data/inputs/SiC_moissanite_supercell.json",
+        "reference_data/inputs/small_molecule.json",
+        "reference_data/inputs/methane.json"};
     const double cutoff{2.5};
     const double cutoff_skin{0.};
 
@@ -577,7 +575,7 @@ namespace rascal {
     ~ComplexPeriodicNLCCStrictFixture() = default;
 
     const std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
 
     const double cutoff{3.5};
     const double cutoff_skin{0.};
@@ -719,7 +717,7 @@ namespace rascal {
     ~SphericalExpansionTestData() = default;
     bool verbose{false};
     std::string ref_filename{
-        "reference_data/spherical_expansion_reference.ubjson"};
+        "reference_data/tests_only/spherical_expansion_reference.ubjson"};
   };
 
   // struct SphericalExpansionTestData : TestDataHalfNL {
@@ -897,7 +895,7 @@ namespace rascal {
           atomic_structure{atomic_structure}, center_it{
                                                   structure_manager->begin()} {
       for (auto center : this->structure_manager) {
-        this->n_neighbors.push_back(center.size());
+        this->n_neighbors.push_back(center.pairs().size());
       }
     }
 
@@ -912,7 +910,7 @@ namespace rascal {
       this->structure_manager->update(modified_structure);
       int i_center{0};
       for (auto center : this->structure_manager) {
-        if (this->n_neighbors[i_center] != center.size()) {
+        if (this->n_neighbors[i_center] != center.pairs().size()) {
           throw std::runtime_error(
               R"(The number of neighbors has changed when making finite
               displacements. This happens because a neighbor is almost at the
@@ -938,7 +936,7 @@ namespace rascal {
       size_t n_entries_neighbours{0};
       // Count all the keys in the sparse gradient structure where the gradient
       // is nonzero (i.e. where the key has an entry in the structure)
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
@@ -959,7 +957,7 @@ namespace rascal {
         data_pairs.segment(result_idx, n_entries_per_key) = data_flat;
         result_idx += n_entries_per_key;
       }
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
@@ -1006,7 +1004,7 @@ namespace rascal {
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
       size_t n_entries_neighbours{0};
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
@@ -1032,7 +1030,7 @@ namespace rascal {
             grad_coeffs_flat;
         result_idx += n_entries_per_key;
       }
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         if (this->structure_manager->is_ghost_atom(neigh)) {
           // Don't compute gradient contributions onto ghost atoms
           continue;
@@ -1090,7 +1088,7 @@ namespace rascal {
 
       // Find all (j, i') pairs
       std::vector<PairRefKey_t> new_pairs;
-      for (auto new_pair : new_center) {
+      for (auto new_pair : new_center.pairs()) {
         size_t i_trial_index{
             structure_manager->get_atom_index(new_pair.back())};
         // Is this the i (old center) atom or any of its images?
@@ -1250,7 +1248,8 @@ namespace rascal {
     json ref_data{};
     json factory_args{};
 
-    std::string ref_filename{"reference_data/sorted_coulomb_reference.ubjson"};
+    std::string ref_filename{
+        "reference_data/tests_only/sorted_coulomb_reference.ubjson"};
     bool verbose{false};
   };
 

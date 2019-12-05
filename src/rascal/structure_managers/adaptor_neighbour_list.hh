@@ -648,14 +648,17 @@ namespace rascal {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
 
-    //! Returns the number of neighbors of a given cluster
-    template <size_t Order, size_t Layer>
-    size_t
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation handles only the respective MaxOrder");
+    //! Returns the type of a given atom, given an AtomRef
+    int get_atom_type(int atom_tag) const { return this->atom_types[atom_tag]; }
 
-      auto && access_index = cluster.get_cluster_index(Layer);
+    //! Returns the number of neighbours of a given atom at a given TargetOrder
+    //! Returns the number of pairs of a given center
+    template <size_t TargetOrder, size_t Order, size_t Layer>
+    typename std::enable_if_t<TargetOrder == 2, size_t>
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
+      constexpr auto nb_neigh_layer{
+          compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};
+      auto && access_index = cluster.get_cluster_index(nb_neigh_layer);
       return nb_neigh[access_index];
     }
 

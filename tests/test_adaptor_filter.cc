@@ -139,7 +139,7 @@ namespace rascal {
         std::cout << atom.get_atom_tag();
         std::cout << std::endl;
       }
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         if (verbose) {
           std::cout << ">> Pair with cluster index ";
           std::cout << pair.get_cluster_indices()[0];
@@ -170,7 +170,7 @@ namespace rascal {
         std::cout << atom.get_atom_tag();
         std::cout << std::endl;
       }
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         if (verbose) {
           std::cout << ">> Pair with cluster index ";
           std::cout << pair.get_cluster_indices()[0];

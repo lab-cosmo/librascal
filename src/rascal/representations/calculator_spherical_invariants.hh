@@ -528,7 +528,7 @@ namespace rascal {
 
             // Sum the gradients wrt the neighbour atom position
             // compute the \grad_j p^{i} coeffs
-            for (auto neigh : center) {
+            for (auto neigh : center.pairs()) {
               auto && atom_j = neigh.get_atom_j();
               auto atom_j_tag = atom_j.get_atom_tag();
               // compute grad contribution only if the neighbour is _not_ an
@@ -635,7 +635,7 @@ namespace rascal {
 
         // soap_center_gradient.multiply_off_diagonal_elements_by(
         //         math::SQRT_TWO);
-        // for (auto neigh : center) {
+        // for (auto neigh : center.pairs()) {
         //   auto & soap_neigh_gradient{this->soap_vector_gradients[neigh]};
         //   soap_neigh_gradient.multiply_off_diagonal_elements_by(
         //           math::SQRT_TWO);
@@ -689,7 +689,7 @@ namespace rascal {
           }
 
           // Aaand do the same thing for the gradients wrt neighbouring atoms
-          for (auto neigh : center) {
+          for (auto neigh : center.pairs()) {
             auto && atom_j = neigh.get_atom_j();
             auto atom_j_tag = atom_j.get_atom_tag();
             // compute grad contribution only if the neighbour is _not_ an
@@ -808,7 +808,7 @@ namespace rascal {
           soap_center_gradient[element_type] += coef_grad_center;
         }
 
-        for (auto neigh : center) {
+        for (auto neigh : center.pairs()) {
           auto && grad_neigh_coefficients{
               expansions_coefficients_gradient[neigh]};
           auto && soap_neigh_gradient{soap_vector_gradients[neigh]};
@@ -817,7 +817,7 @@ namespace rascal {
             auto && coef_grad_neigh{el.second};
             soap_neigh_gradient[element_type] += coef_grad_neigh;
           }
-        }  // for (auto neigh : center)
+        }  // for (auto neigh : center.pairs())
 
         if (this->normalize) {
           double coefficients_norm_inv{1. / coefficients.norm()};
@@ -856,7 +856,7 @@ namespace rascal {
             }
           }
 
-          for (auto neigh : center) {
+          for (auto neigh : center.pairs()) {
             auto && grad_neigh_coefficients{
                 expansions_coefficients_gradient[neigh]};
             auto && soap_neigh_gradient{soap_vector_gradients[neigh]};
@@ -894,7 +894,7 @@ namespace rascal {
                     coef * norm_grad_neigh[cartesian_idx];
               }
             }
-          }  // for (auto neigh : center)
+          }  // for (auto neigh : center.pairs())
         }    // if (this->normalize)
       }      // if (this->compute_gradients)
     }        // for (auto center : manager)
@@ -1203,7 +1203,7 @@ namespace rascal {
         // Neighbour gradients need a separate pair list because if the species
         // of j is not the same as either of the species for that SOAP entry,
         // the gradient is zero.
-        for (auto neigh : center) {
+        for (auto neigh : center.pairs()) {
           auto neigh_type = neigh.get_atom_type();
           std::vector<internal::SortedKey<Key_t>> grad_pair_list{};
           for (const auto & el1 : coefficients) {
@@ -1222,7 +1222,7 @@ namespace rascal {
           }
           soap_vector_gradients[neigh].resize(
               grad_pair_list, n_spatial_dimensions * n_row, n_col, 0.);
-        }  // auto neigh : center
+        }  // auto neigh : center.pairs()
       }    // if compute gradients
     }      // for center : manager
   }
@@ -1267,7 +1267,7 @@ namespace rascal {
         // The gradient wrt center is nonzero for all species pairs
         soap_vector_gradients[ii_pair].resize(
             keys, n_spatial_dimensions * n_row, n_col, 0);
-        for (auto neigh : center) {
+        for (auto neigh : center.pairs()) {
           soap_vector_gradients[neigh].resize(
               keys, n_spatial_dimensions * n_row, n_col, 0);
         }

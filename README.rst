@@ -140,7 +140,7 @@ Tests
 ^^^^^
 
 Librascal source code is extensively tested (both c++ and python).
-The BOOST unit_test_framework is requiered to build the tests (see
+The BOOST unit_test_framework is required to build the tests (see
 BOOST.md for further details on how to install the boost library). To
 build and run the tests:
 
@@ -151,9 +151,12 @@ build and run the tests:
    make
    ctest -V
 
+You can also run the tests with Valgrind (a memory-error checker) by passing
+``-DRASCAL_TESTS_USE_VALGRIND=ON`` to ``cmake``.
+
 In addition to testing the behaviour of the code, the test suite also check
 for formatting compliance with the clang-format and autopep8 packages (these
-dependencies are optional). To install these dependencies on ubuntu:
+dependencies are optional). To install these dependencies on Ubuntu:
 
 .. code:: shell
 

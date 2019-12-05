@@ -1,13 +1,13 @@
 /**
- * @file   examples/spherical_invariants_example.cc
+ * @file   sandbox/playground.cc
  *
- * @author Max Veit <max.veit@epfl.ch>
+ * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   26 June 2019
  *
- * @brief  Example for computing the spherical invariants (SOAP)
+ * @brief an executable to test ideas
  *
- * Copyright © 2018 Max Veit, Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright © 2019 Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * librascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -25,26 +25,30 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rascal/atomic_structure.hh"
 #include "rascal/basic_types.hh"
+#include "rascal/models/kernels.hh"
+#include "rascal/utils.hh"
 #include "rascal/representations/calculator_sorted_coulomb.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/structure_managers/adaptor_increase_maxorder.hh"
 #include "rascal/structure_managers/adaptor_center_contribution.hh"
 #include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_strict.hh"
 #include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/structure_managers/structure_manager_centers.hh"
-#include "rascal/utils.hh"
+#include "rascal/structure_managers/structure_manager_collection.hh"
 
-#include <chrono>
 #include <cmath>
 #include <functional>
 #include <initializer_list>
 #include <iostream>
 #include <list>
+#include <random>
 #include <string>
+#include <algorithm>
+#include <iterator>
 
 using namespace rascal;  // NOLINT
 
@@ -78,15 +82,7 @@ int main(int argc, char * argv[]) {
               {"soap_type", "PowerSpectrum"},
               {"normalize", true}};
 
-  json fc_hypers{{"type", "ShiftedCosine"},
-                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
-                 {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
-  json sigma_hypers{{"type", "Constant"},
-                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
-
-  hypers["cutoff_function"] = fc_hypers;
-  hypers["gaussian_density"] = sigma_hypers;
-  hypers["radial_contribution"] = {{"type", "GTO"}};
+  double cutoff{3.};
 
   json structure{{"filename", filename}};
   json adaptors;
@@ -118,9 +114,69 @@ int main(int argc, char * argv[]) {
                                    AdaptorCenterContribution, AdaptorStrict>(
           structure, adaptors_half);
 
-  Representation_t representation{hypers};
+   auto manager =
+       make_structure_manager_stack<StructureManagerCenters,
+                                    AdaptorNeighbourList,
+                                    AdaptorCenterContribution, AdaptorStrict>(
+           structure, adaptors);
+//  auto manager =
+//      make_structure_manager_stack<StructureManagerCenters,
+//                                   AdaptorNeighbourList, AdaptorStrict>(
+//          structure, adaptors);
 
-  representation.compute(manager);
+
+
+   std::cout << "n_centers: " << manager->size() << std::endl;
+   for (auto center : manager) {
+     auto ctag = center.get_atom_tag();
+     std::cout << "Center: " << ctag << " n. neighbors " << center.pairs().size()
+               << std::endl;
+
+     for (auto neigh : center.pairs()) {
+       auto tag_list = neigh.get_atom_tag_list();
+
+       auto atom_j = neigh.get_atom_j();
+       auto atom_j_tag = atom_j.get_atom_tag_list();
+       auto atom_j_ids = atom_j.get_cluster_indices();
+       std::cout << "neigh: " << tag_list[0] << ", " << tag_list[1] << ", "
+                 << " tag_j: " << atom_j_tag[0] << ", " << atom_j_ids[0]
+                 << " -- global index " << neigh.get_global_index()
+                 <<std::endl;
+     }
+     // for (auto triplet : center.triplets()) {
+     //   std::cout << "triplet: " << std::endl;
+     // }
+   }
+
+
+  auto triplet_manager{make_adapted_manager<AdaptorMaxOrder>(manager)};
+  triplet_manager->update();
+
+//  for (auto center : triplet_manager) {
+//    auto proxy = center.pairs();
+//    auto it = proxy.begin();
+//    auto neigh = *it;
+//    auto pos = neigh.get_position();
+//  }
+
+  for (auto center : triplet_manager) {
+    auto ctag = center.get_atom_tag();
+    auto it = center.triplets();
+    auto size{it.size()};
+    std::cout << "Center: " << ctag << " n. neighbors " << size
+              << std::endl;
+//     std::cout << "Center: " << ctag << " n. neighbors "
+//               << std::endl;
+
+    for (auto triplet : center.triplets()) {
+      auto tags = triplet.get_atom_tag_list();
+      std::cout << center.get_atom_tag() << " triplet ("
+                << tags[0] << ", " << tags[1] << ", " << tags[2]
+                << ") global index " << triplet.get_global_index()
+              << ") index " << triplet.get_index()
+                << std::endl;
+    }
+  }
 
   representation.compute(manager_half);
 
@@ -128,12 +184,11 @@ int main(int argc, char * argv[]) {
   constexpr size_t n_neigh_print{1000};
   size_t center_count{0};
 
-  // Print the first few elements and gradients, so we know we're getting
-  // something
-  std::cout << "Expansion of first " << n_centers_print << " centers:";
-  std::cout << std::endl;
-  std::cout << "Note that the coefficients are printed with species pairs along"
-               " the columns and n-n'-l along the rows."
+  std::vector<int> new_tag_list_s{{1,6,7,8}};
+  std::sort(new_tag_list_s.begin(), new_tag_list_s.end());
+  auto any_equal = std::adjacent_find(new_tag_list_s.begin(), new_tag_list_s.end());
+  std::cout << std::boolalpha
+            << (any_equal == new_tag_list_s.end())
             << std::endl;
   std::cout << "Gradients are printed with: First Cartesian component, "
                "then species pairs, along the columns; n-n'-l along the rows.";

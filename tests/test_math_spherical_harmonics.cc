@@ -224,7 +224,7 @@ namespace rascal {
         harmonics_grad_calc{};
     harmonics_grad_calc.precompute();
     GradientTestFixture fix{
-        "reference_data/spherical_harmonics_gradient_test.json"};
+        "reference_data/tests_only/spherical_harmonics_gradient_test.json"};
     test_gradients(harmonics_grad_calc, fix);
   }
 

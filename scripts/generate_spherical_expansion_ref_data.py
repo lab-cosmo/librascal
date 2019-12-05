@@ -1,5 +1,6 @@
 """Generate reference data for the librascal spherical expansion"""
 import sys
+import os
 sys.path.insert(0, '../build/')
 from ase.io import read
 import numpy as np
@@ -10,6 +11,12 @@ from rascal.representations import SphericalExpansion
 from rascal.utils import ostream_redirect
 import rascal
 import rascal.lib as lrl
+
+root = os.path.abspath('../')
+rascal_reference_path = os.path.join(root, 'reference_data/')
+inputs_path = os.path.join(rascal_reference_path, "inputs")
+dump_path = os.path.join('reference_data/', "tests_only")
+
 ###############################################################################
 ###############################################################################
 
@@ -28,13 +35,11 @@ def get_soap_vectors(hypers, frames):
 
 def dump_reference_json():
     import ubjson
-    import os
     from copy import copy
     from itertools import product
 
-    path = '../'
-    sys.path.insert(0, os.path.join(path, 'build/'))
-    sys.path.insert(0, os.path.join(path, 'tests/'))
+    sys.path.insert(0, os.path.join(root, 'build/'))
+    sys.path.insert(0, os.path.join(root, 'tests/'))
 
     cutoffs = [2, 3]
     gaussian_sigmas = [0.2, 0.5]
@@ -45,12 +50,12 @@ def dump_reference_json():
     cutoff_function_types = ['ShiftedCosine', 'RadialScaling']
     fns = [
         os.path.join(
-            path, "tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
-        os.path.join(path, "tests/reference_data/small_molecule.json")
+            inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-        "reference_data/small_molecule.json",
+        os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(dump_path, "small_molecule.json"),
     ]
 
     data = dict(filenames=fns_to_write,
@@ -71,7 +76,7 @@ def dump_reference_json():
                 if cutoff_function_type == 'RadialScaling':
                     cutoff_function_parameters = dict(
                         rate=1,
-                        scale=cutoff*0.5,
+                        scale=cutoff * 0.5,
                         exponent=3)
                 else:
                     cutoff_function_parameters = dict()
@@ -96,7 +101,8 @@ def dump_reference_json():
                     dict(feature_matrix=x.tolist(),
                          hypers=copy(sph_expn.hypers)))
 
-    with open(path+"tests/reference_data/spherical_expansion_reference.ubjson",
+    with open(os.path.join(root, dump_path,
+                           "spherical_expansion_reference.ubjson"),
               'wb') as f:
         ubjson.dump(data, f)
 
@@ -117,7 +123,8 @@ def main(json_dump, save_kernel):
     lmax = test_hypers["max_angular"]
     nstr = '5'  # number of structures
 
-    frames = read('../tests/reference_data/dft-smiles_500.xyz', ':'+str(nstr))
+    frames = read(os.path.join(
+        inputs_path, 'small_molecules-20.json'), ':' + str(nstr))
     species = set(
         [atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
@@ -125,7 +132,7 @@ def main(json_dump, save_kernel):
 
     x = get_soap_vectors(test_hypers, frames)
     if save_kernel is True:
-        np.save('spherical_expansion_example.npy', x)
+        np.save(os.path.join(dump_path, 'spherical_expansion_example.npy'), x)
 
 #--------------------------dump json reference data--------------------------#
 

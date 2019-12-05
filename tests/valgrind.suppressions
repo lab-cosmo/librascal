@@ -1,0 +1,60 @@
+{
+   Remove this when https://github.com/cosmo-epfl/librascal/issues/229 is fixed
+   Memcheck:Addr8
+   fun:_ZN6rascal13AdaptorFilterINS_22StructureManagerLammpsELm2EE11add_clusterILm2EEEvRKNS_16StructureManagerIS1_E10ClusterRefIXT_EEE
+   fun:_ZN6rascal19test_adaptor_filter13filter_2_testINS_13FilterFixtureINS_22StructureManagerLammpsELm2EEEE11test_methodEv
+   fun:_ZN6rascal19test_adaptor_filter21filter_2_test_invoker3runINS_13FilterFixtureINS_22StructureManagerLammpsELm2EEEEEvPN5boost4typeIT_EE
+}
+
+
+{
+   boost unit test logger
+   Memcheck:Leak
+   ...
+   fun:fwrite
+   ...
+   fun:_ZN5boost9unit_test15unit_test_log_t10test_startEm
+   ...
+}
+
+{
+   json lexer allocate through strtod_l
+   Memcheck:Leak
+   ...
+   fun:strtod_l
+   fun:_ZN8nlohmann6detail5lexerINS_10basic_jsonINSt3__13mapENS3_6vectorENS3_12basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEbxydS9_NS_14adl_serializerEEEE11scan_numberEv
+   ...
+}
+
+{
+   Objc runtime
+   Memcheck:Leak
+   ...
+   fun:_objc_flush_caches
+   ...
+}
+
+{
+   Objc runtime
+   Memcheck:Leak
+   ...
+   fun:__objc_personality_v0
+   ...
+}
+
+{
+   macOS stuff
+   Memcheck:Leak
+   ...
+   fun:libSystem_initializer
+   ...
+}
+
+{
+   macOS stuff
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN11ImageLoader19processInitializersERKNS_11LinkContextEjRNS_21InitializerTimingListERNS_15UninitedUpwardsE
+   ...
+}

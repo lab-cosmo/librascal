@@ -555,7 +555,7 @@ namespace rascal {
       template <int n_spatial_dimensions, typename Coeffs, typename Center>
       void finalize_coefficients_der(Coeffs & coefficients_gradient,
                                      Center & center) const {
-        for (auto neigh : center.with_self_pair()) {
+        for (auto neigh : center.pairs_with_self_pair()) {
           auto & coefficients_neigh_gradient = coefficients_gradient[neigh];
           coefficients_neigh_gradient
               .template lhs_dot_der<n_spatial_dimensions>(
@@ -1585,7 +1585,7 @@ namespace rascal {
       Key_t center_type{center.get_atom_type()};
       auto center_tag{center.get_atom_tag()};
 
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         keys[center_tag].insert({neigh.get_atom_type()});
         if (manager->is_center_atom(neigh) and IsHalfNL) {
           auto atom_j = neigh.get_atom_j();
@@ -1633,7 +1633,7 @@ namespace rascal {
       // coeff C^{ij}_{nlm}
       auto c_ij_nlm = math::Matrix_t(n_row, n_col);
 
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         auto && atom_j = neigh.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag();
         bool is_center_atom{manager->is_center_atom(neigh)};

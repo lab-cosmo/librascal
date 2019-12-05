@@ -250,27 +250,15 @@ namespace rascal {
       return this->offsets[counters.front()];
     }
 
-    //! Returns the number of neighbours of a given cluster
-    template <size_t Order, size_t Layer>
-    size_t
+    //! Returns the number of neighbours of a given atom at a given TargetOrder
+    //! Returns the number of pairs of a given center
+    template <size_t TargetOrder, size_t Order, size_t Layer>
+    typename std::enable_if_t<TargetOrder == 2, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order < traits::MaxOrder,
-                    "this implementation only handles atoms and pairs");
-      /*
-       * The static assert with <= is necessary, because the template parameter
-       * ``Order`` is one Order higher than the MaxOrder at the current
-       * level. The return type of this function is used to build the next Order
-       * iteration.
-       */
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation handles only the respective MaxOrder");
-
-      if (Order < (traits::MaxOrder - 1)) {
-        return this->manager->get_cluster_size_impl(cluster);
-      } else {
-        auto access_index = cluster.get_cluster_index(Layer);
-        return nb_neigh[access_index];
-      }
+      constexpr auto nb_neigh_layer{
+          compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};
+      auto access_index = cluster.get_cluster_index(nb_neigh_layer);
+      return nb_neigh[access_index];
     }
 
     //! Get the manager used to build the instance
@@ -355,7 +343,7 @@ namespace rascal {
       // neighbours per atom counter to correct for offsets
       int nneigh{0};
 
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         auto index_j{pair.get_atom_tag()};
 
         // This is the actual check for the half neighbour list: only pairs with
