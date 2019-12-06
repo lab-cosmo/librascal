@@ -55,6 +55,7 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_constructor_tests, Fix,
                                    atom_vector_property_fixtures, Fix) {
     bool verbose{false};
@@ -88,6 +89,18 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Checks for the throw of the runtime error in member .back() of
+   * `PropertyTyped`.
+   */
+  BOOST_FIXTURE_TEST_CASE(
+      property_typed_runtime_error,
+      AtomPropertyFixture<StructureManagerCentersStackFixture>) {
+    BOOST_CHECK_THROW(atom_dynamic_vector_property.back(), std::runtime_error);
+  }
+
+  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(
       fill_atom_vector_property_order_one_test,
       AtomPropertyFixture<StructureManagerCentersStackFixture>) {
@@ -103,6 +116,7 @@ namespace rascal {
 
     atom_vector_property.resize();
     atom_dynamic_vector_property.resize();
+
     if (verbose) {
       std::cout << ">> atom_vector_property size ";
       std::cout << atom_vector_property.size();

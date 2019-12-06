@@ -320,10 +320,10 @@ namespace rascal {
      */
     reference back() {
       // -1 is correction for 0-start indexing
-      auto && index{this->values.size() / this->get_nb_comp() - 1};
-      if (index < 0) {
+      if (this->values.size() == 0) {
         throw std::runtime_error("Property is empty, .back() is undefined.");
       }
+      auto && index{this->values.size() / this->get_nb_comp() - 1};
       return Value_t::get_ref(this->values[index * this->get_nb_comp()],
                               this->get_nb_row(), this->get_nb_col());
     }
