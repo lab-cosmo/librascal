@@ -295,9 +295,9 @@ namespace rascal {
 
     //! Tells if the cluster is a center
     template <size_t Layer>
-    bool is_center_atom(const ClusterRefKey<1, Layer> & /*cluster*/) const {
-      // always the case if order == 1
-      return true;
+    bool is_center_atom(const ClusterRefKey<1, Layer> & cluster) const {
+      // check if cluster is not a masked atom
+      return cluster.get_cluster_index(Layer) < this->size();
     }
 
     //! Tells if the cluster is a center
