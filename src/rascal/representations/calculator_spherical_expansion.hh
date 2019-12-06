@@ -1579,7 +1579,7 @@ namespace rascal {
     for (auto center : manager) {
       keys.emplace_back();
     }
-    // init the spherical expension coeffs
+    // initialize the spherical expension coeffs
     for (auto center : manager) {
       auto & coefficients_center = expansions_coefficients[center];
       Key_t center_type{center.get_atom_type()};
@@ -1597,7 +1597,7 @@ namespace rascal {
       // initialize the expansion coefficients to 0
       coefficients_center.resize(keys[center_tag], n_row, n_col, 0.);
     }
-    // init the spherical expension gradients coeff
+    // initialize the spherical expension gradients coeff
     if (this->compute_gradients) {
       for (auto center : manager) {
         auto center_tag{center.get_atom_tag()};
@@ -1615,7 +1615,7 @@ namespace rascal {
         }
       }
     }
-    // half neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
+
     for (auto center : manager) {
       auto & coefficients_center = expansions_coefficients[center];
       auto & coefficients_center_gradient =
@@ -1666,7 +1666,8 @@ namespace rascal {
         c_ij_nlm *= f_c;
         coefficients_center_by_type += c_ij_nlm;
 
-        // half list branch for c^{ji} terms
+        // half list branch for c^{ji} terms using
+        // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
         if (IsHalfNL) {
           if (not manager->is_center_atom(atom_j)) {
             std::stringstream err_str{};
@@ -1748,7 +1749,8 @@ namespace rascal {
             }  // for (angular_l)
           }    // for cartesian_idx
 
-          // half list branch for grad_j c^{j}
+          // half list branch for computing grad_j c^{j} using
+          // grad_j c^{ji} = (-1)^{l} grad_j c^{ij}
           if (IsHalfNL) {
             if (is_center_atom) {
               auto & coefficients_neigh_center_gradient =

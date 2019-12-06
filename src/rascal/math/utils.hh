@@ -137,7 +137,7 @@ namespace rascal {
     inline double pow(double x, double n) { return std::pow(x, n); }
 
     /**
-     * Routines to compute the relative difference between the values of
+     * Routine to compute the relative difference between the values of
      * Eigen Matrices. The return value depend on the closeness to zero:
      * + if ref and test are not zero, then return relative error
      * + if ref and test are within epsilon, then return 0.
@@ -146,7 +146,7 @@ namespace rascal {
      * @param reference the matrix with the reference values
      * @param test the matrix with the  values to check
      * @param epsilon the threshold defining which values are effectivelly zero
-     * @param delta maximum relative error tolarated
+     * @param delta maximum relative error threshold
      */
     template <typename Derived>
     Derived relative_error(const Eigen::MatrixBase<Derived> & reference,

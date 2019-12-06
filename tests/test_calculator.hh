@@ -704,8 +704,8 @@ namespace rascal {
                                   {"compute_gradients", true}}};
   };
 
-  struct SphericalExpansionTestData : TestDataHalfNL {
-    using Parent = TestDataHalfNL;
+  struct SphericalExpansionTestData : TestData {
+    using Parent = TestData;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalExpansion;
 
@@ -717,20 +717,6 @@ namespace rascal {
     std::string ref_filename{
         "reference_data/tests_only/spherical_expansion_reference.ubjson"};
   };
-
-  // struct SphericalExpansionTestData : TestDataHalfNL {
-  //   using Parent = TestDataHalfNL;
-  //   using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-  //   using Representation_t = CalculatorSphericalExpansion;
-
-  //   SphericalExpansionTestData() : Parent{} {
-  //     this->get_ref(this->ref_filename);
-  //   }
-  //   ~SphericalExpansionTestData() = default;
-  //   bool verbose{false};
-  //   std::string ref_filename{
-  //       "reference_data/spherical_expansion_reference.ubjson"};
-  // };
 
   /**
    * Calculator specialized to testing the derivative of the RadialIntegral

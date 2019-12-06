@@ -417,7 +417,6 @@ namespace rascal {
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
-    // auto & verbose = Fix::verbose;
     auto verbose = true;
     using Property_t = typename Fix::Property_t;
 
@@ -464,7 +463,6 @@ namespace rascal {
         }
       }
       manager_i += 1;
-      break;
     }
   }
 
@@ -575,7 +573,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Utility fixture used to compared representations computed with full and
+   * Utility fixture used to compare representations computed with full and
    * half neighbor lists.
    */
   template <class CaculatorFixtureFull, class CaculatorFixtureHalf>
@@ -614,9 +612,6 @@ namespace rascal {
                        RepFixHalf_t<SingleHypersSphericalExpansion>>,
       MergeHalfAndFull<RepFix_t<SingleHypersSphericalInvariants>,
                        RepFixHalf_t<SingleHypersSphericalInvariants>>>;
-  // using gradient_half_fixtures = boost::mpl::list<
-  //     MergeHalfAndFull<RepFix_t<SingleHypersSphericalExpansion>,
-  //                      RepFixHalf_t<SingleHypersSphericalExpansion>>>;
 
   /**
    * Test the representation gradients computed with a half neighbor list
@@ -625,14 +620,15 @@ namespace rascal {
    * their half NL conterparts arising from numerical errors most likely.
    *
    * Extensive tests on a subset of the structures showed that large relative
-   * errors arise when both the reference and the test values are small
+   * errors can arise when both the reference and the test values are small
    * (~1e-18) so we use a threshold (epsilon ~ 1e-15) so that if the absolute
    * value of reference and test values are within epsilon the relative error
-   * is effectively 0.
+   * is effectively 0. This is justified because these coefficient will be
+   * either taken as is or multiplied together (-> power 2, 3, 4...) which
+   * will squash these values even more.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(half_full_representation_test, Fix,
                                    gradient_half_fixtures, Fix) {
-    // using Manager_t = typename Fix::Manager_t;
     using Prop_t = typename Fix::Prop_t;
     using PropHalf_t = typename Fix::PropHalf_t;
     using PropGrad_t = typename Fix::PropGrad_t;
@@ -640,13 +636,12 @@ namespace rascal {
     auto & managers = Fix::ParentFull::managers;
     auto & managers_half = Fix::ParentHalf::managers;
     auto & representations = Fix::ParentFull::representations;
-    const bool verbose{true};
+    const bool verbose{false};
     // relative error threshold
     const double delta{4e-7};
     // range of zero
-    const double epsilon{1e-12};
+    const double epsilon{1e-15};
 
-    // size_t start{static_cast<size_t>(Manager_t::traits::HasCenterPair)};
     // both manager should refer to the same structures
     BOOST_TEST(managers.size() == managers_half.size());
     if (managers.size() != managers_half.size()) {
@@ -726,8 +721,6 @@ namespace rascal {
             if (tags[1] <= tags[0]) {
               continue;
             }
-            // auto half_neigh_it = half_center.template
-            // get_clusters_of_order<2>(start+neigh_count).begin();
 
             auto half_neigh_it = half_center.pairs().begin();
             for (size_t ii{0}; ii < neigh_count; ii++) {
