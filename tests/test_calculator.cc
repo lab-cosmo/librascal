@@ -726,7 +726,8 @@ namespace rascal {
             if (tags[1] <= tags[0]) {
               continue;
             }
-            // auto half_neigh_it = half_center.template get_clusters_of_order<2>(start+neigh_count).begin();
+            // auto half_neigh_it = half_center.template
+            // get_clusters_of_order<2>(start+neigh_count).begin();
 
             auto half_neigh_it = half_center.pairs().begin();
             for (size_t ii{0}; ii < neigh_count; ii++) {

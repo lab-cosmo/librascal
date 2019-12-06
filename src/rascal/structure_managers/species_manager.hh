@@ -302,8 +302,8 @@ namespace rascal {
     // if the filtering only happens on the centers (MaxOrder < 2 == true)
     // then it is a no-op
     using FilterSpeciesLoop =
-        internal::FilterSpeciesLoop < ManagerImplementation,
-          MaxOrder, 2, MaxOrder == 1>;
+        internal::FilterSpeciesLoop<ManagerImplementation, MaxOrder, 2,
+                                    MaxOrder == 1>;
 
     for (auto atom : this->structure_manager) {
       auto && species_indices{atom.get_atom_types()};
