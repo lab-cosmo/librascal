@@ -1717,17 +1717,13 @@ namespace rascal {
           auto && gradient_neigh_by_type{
               coefficients_neigh_gradient[neigh_type]};
           // // grad_j c^{j}
-          // auto && gradient_neigh_center_by_type =
-          //       coefficients_neigh_center_gradient[center_type];
-          // auto & coefficients_neigh_center_gradient =
-          //           coefficients_neigh_gradient;
-          // auto && gradient_neigh_center_by_type{gradient_neigh_by_type};
+          // auto gradient_neigh_center_by_type{gradient_neigh_by_type};
           // if (IsHalfNL) {
-            // coefficients_neigh_center_gradient =
-            //       expansions_coefficients_gradient[neigh.get_atom_jj()];
-            // // grad_j c^{j}
-            // gradient_neigh_center_by_type =
-            //     coefficients_neigh_center_gradient[center_type];
+          //   // coefficients_neigh_center_gradient =
+          //   //       expansions_coefficients_gradient[neigh.get_atom_jj()];
+          //   // grad_j c^{j}
+          //   gradient_neigh_center_by_type =
+          //       expansions_coefficients_gradient[neigh.get_atom_jj()][center_type];
           // }
 
           // Radial component: d/dr_{ij} (c_{ij} f_c{r_{ij}}) \hat{r_{ij}}
@@ -1740,8 +1736,6 @@ namespace rascal {
           for (int cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
                  ++cartesian_idx) {
             size_t l_block_idx{0};
-            // account for (-1)^{l}
-            double parity{1.};
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                 ++angular_l) {
               size_t l_block_size{2 * angular_l + 1};
@@ -1764,24 +1758,39 @@ namespace rascal {
               gradient_neigh_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
                   max_radial, l_block_size) += pair_gradient_contribution;
-              // half list branch
-              if (IsHalfNL) {
-                auto & coefficients_neigh_center_gradient =
-                  expansions_coefficients_gradient[neigh.get_atom_jj()];
-                // grad_j c^{j}
-                auto gradient_neigh_center_by_type =
-                    coefficients_neigh_center_gradient[center_type];
-                if (is_center_atom) {
-                  gradient_neigh_center_by_type.block(
-                    cartesian_idx * max_radial, l_block_idx, max_radial,
-                    l_block_size) += parity * pair_gradient_contribution;
-                  parity *= -1.;
-                }
-              }
               l_block_idx += l_block_size;
               // clang-format on
             }  // for (angular_l)
           }    // for cartesian_idx
+
+          // half list branch
+          if (IsHalfNL) {
+            if (is_center_atom) {
+              auto & coefficients_neigh_center_gradient =
+                expansions_coefficients_gradient[neigh.get_atom_jj()];
+              // grad_j c^{j}
+              auto gradient_neigh_center_by_type =
+                  coefficients_neigh_center_gradient[center_type];
+
+              for (int cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
+                    ++cartesian_idx) {
+                size_t l_block_idx{0};
+                double parity{1.};  // account for (-1)^{l}
+                for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+                    ++angular_l) {
+                  size_t l_block_size{2 * angular_l + 1};
+                  gradient_neigh_center_by_type.block(
+                    cartesian_idx * max_radial, l_block_idx, max_radial,
+                    l_block_size) += parity *
+                    gradient_neigh_by_type.block(cartesian_idx * max_radial,
+                      l_block_idx, max_radial, l_block_size);
+                  parity *= -1.;
+                  l_block_idx += l_block_size;
+                }  // for (angular_l)
+              }    // for cartesian_idx
+            }
+          }  // IsHalfNL
+
         }      // if (this->compute_gradients)
       }        // for (neigh : center)
 
