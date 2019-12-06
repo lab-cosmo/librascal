@@ -128,6 +128,8 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
     std::random_device rd{};
+    // use the following generator comment in for predictabe randomness
+    // std::mt19937 rd{};
     std::uniform_int_distribution<int> dist(0, 1);
     std::vector<std::array<int, 2>> atom_tag_list{};
 

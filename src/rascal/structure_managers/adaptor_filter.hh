@@ -406,6 +406,7 @@ namespace rascal {
     if (indices_container.size() == 0) {
       return false;
     }
+
     auto && last_cluster_index{indices_container.back()(Layer)};
 
     return last_cluster_index == cluster.get_cluster_index(Layer);
