@@ -83,7 +83,6 @@ namespace rascal {
 
     for (auto atom : Fix::fixture.manager) {
       const bool include(dist(rd));
-      std::cout << "f1 include? = " << include << std::endl;
       if (include) {
         Fix::manager.add_cluster(atom);
         atom_tag_list.push_back(atom.get_atom_tag());
@@ -128,9 +127,9 @@ namespace rascal {
                 << Fix::fixture.manager->get_nb_clusters(2);
       std::cout << " starts now." << std::endl;
     }
-    //    std::random_device rd{};
-    // predictably random
-    std::mt19937 rd{};
+    std::random_device rd{};
+    // use the following generator comment in for predictabe randomness
+    // std::mt19937 rd{};
     std::uniform_int_distribution<int> dist(0, 1);
     std::vector<std::array<int, 2>> atom_tag_list{};
 
@@ -153,7 +152,6 @@ namespace rascal {
           std::cout << std::endl;
         }
         const bool include(dist(rd));
-        std::cout << "f2 include? = " << include << std::endl;
         if (include) {
           Fix::manager.add_cluster(pair);
           atom_tag_list.push_back(pair.get_atom_tag_list());

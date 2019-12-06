@@ -406,15 +406,10 @@ namespace rascal {
     if (indices_container.size() == 0) {
       return false;
     }
+
     auto && last_cluster_index{indices_container.back()(Layer)};
 
-    std::cout << "size of container " << indices_container.size() << std::endl;
-
-    std::cout << "AdFi: last_cluster_index " << last_cluster_index << std::endl;
-    std::cout << "AdFi: cluster index " << cluster.get_cluster_index(Layer)
-              << std::endl;
-    bool has_cl{last_cluster_index == cluster.get_cluster_index(Layer)};
-    return has_cl;
+    return last_cluster_index == cluster.get_cluster_index(Layer);
   }
 
   /* ---------------------------------------------------------------------- */
