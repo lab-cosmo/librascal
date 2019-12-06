@@ -614,6 +614,9 @@ namespace rascal {
                        RepFixHalf_t<SingleHypersSphericalExpansion>>,
       MergeHalfAndFull<RepFix_t<SingleHypersSphericalInvariants>,
                        RepFixHalf_t<SingleHypersSphericalInvariants>>>;
+  // using gradient_half_fixtures = boost::mpl::list<
+  //     MergeHalfAndFull<RepFix_t<SingleHypersSphericalExpansion>,
+  //                      RepFixHalf_t<SingleHypersSphericalExpansion>>>;
 
   /**
    * Test the representation gradients computed with a half neighbor list
@@ -629,6 +632,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(half_full_representation_test, Fix,
                                    gradient_half_fixtures, Fix) {
+    // using Manager_t = typename Fix::Manager_t;
     using Prop_t = typename Fix::Prop_t;
     using PropHalf_t = typename Fix::PropHalf_t;
     using PropGrad_t = typename Fix::PropGrad_t;
@@ -641,9 +645,13 @@ namespace rascal {
     const double delta{4e-7};
     // range of zero
     const double epsilon{1e-12};
+
+    // size_t start{static_cast<size_t>(Manager_t::traits::HasCenterPair)};
     // both manager should refer to the same structures
     BOOST_TEST(managers.size() == managers_half.size());
-
+    if (managers.size() != managers_half.size()) {
+      throw std::runtime_error("managers.size() != managers_half.size()");
+    }
     for (size_t i_manager{0}; i_manager < managers.size(); ++i_manager) {
       for (auto & representation : representations) {
         auto & manager = managers[i_manager];
@@ -718,7 +726,12 @@ namespace rascal {
             if (tags[1] <= tags[0]) {
               continue;
             }
-            auto half_neigh_it = half_center.template get_clusters_of_order<2>(neigh_count).begin();
+            // auto half_neigh_it = half_center.template get_clusters_of_order<2>(start+neigh_count).begin();
+
+            auto half_neigh_it = half_center.pairs().begin();
+            for (size_t ii{0}; ii < neigh_count; ii++) {
+              ++half_neigh_it;
+            }
             auto half_neigh = *(half_neigh_it);
             // compare the representation gradient coefficients at ij pair
             auto diff_rep_grad_neigh_m{math::relative_error(
