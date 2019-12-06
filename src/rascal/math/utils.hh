@@ -172,7 +172,7 @@ namespace rascal {
         for (int i_col{0}; i_col < reference.cols(); ++i_col) {
           if (is_zero_ref(i_row, i_col) and is_zero_test(i_row, i_col)) {
             rel_diff(i_row, i_col) = 0.;
-          } else {
+          } else if (not is_zero_ref(i_row, i_col)) {
             rel_diff(i_row, i_col) /= reference(i_row, i_col);
           }
         }

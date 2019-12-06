@@ -56,15 +56,16 @@ using Representation_t = CalculatorSphericalExpansion;
 using Manager_t = AdaptorStrict<
     AdaptorCenterContribution<
                 AdaptorNeighbourList<StructureManagerCenters>>>;
-using Prop_t = typename CalculatorSphericalExpansion::Property_t<Manager_t>;
-using PropGrad_t =
-    typename CalculatorSphericalExpansion::PropertyGradient_t<Manager_t>;
 using ManagerHalf_t = AdaptorStrict<
     AdaptorCenterContribution<AdaptorHalfList<
                 AdaptorNeighbourList<StructureManagerCenters>>>>;
-using PropHalf_t = typename CalculatorSphericalExpansion::Property_t<ManagerHalf_t>;
+
+using Prop_t = typename Representation_t::Property_t<Manager_t>;
+using PropGrad_t =
+    typename Representation_t::PropertyGradient_t<Manager_t>;
+using PropHalf_t = typename Representation_t::Property_t<ManagerHalf_t>;
 using PropGradHalf_t =
-    typename CalculatorSphericalExpansion::PropertyGradient_t<ManagerHalf_t>;
+    typename Representation_t::PropertyGradient_t<ManagerHalf_t>;
 
 int main(int argc, char * argv[]) {
   if (argc < 2) {
@@ -75,14 +76,22 @@ int main(int argc, char * argv[]) {
 
   std::string filename{argv[1]};
 
-  double cutoff{4.};
+  double cutoff{2.};
   json hypers{{"max_radial", 1},
               {"max_angular", 1},
               {"compute_gradients", true},
               {"soap_type", "PowerSpectrum"},
               {"normalize", true}};
 
-  double cutoff{3.};
+  json fc_hypers{{"type", "ShiftedCosine"},
+                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
+                 {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
+  json sigma_hypers{{"type", "Constant"},
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+
+  hypers["cutoff_function"] = fc_hypers;
+  hypers["gaussian_density"] = sigma_hypers;
+  hypers["radial_contribution"] = {{"type", "GTO"}};
 
   json structure{{"filename", filename}};
   json adaptors;
@@ -114,70 +123,9 @@ int main(int argc, char * argv[]) {
                                    AdaptorCenterContribution, AdaptorStrict>(
           structure, adaptors_half);
 
-   auto manager =
-       make_structure_manager_stack<StructureManagerCenters,
-                                    AdaptorNeighbourList,
-                                    AdaptorCenterContribution, AdaptorStrict>(
-           structure, adaptors);
-//  auto manager =
-//      make_structure_manager_stack<StructureManagerCenters,
-//                                   AdaptorNeighbourList, AdaptorStrict>(
-//          structure, adaptors);
+  Representation_t representation{hypers};
 
-
-
-   std::cout << "n_centers: " << manager->size() << std::endl;
-   for (auto center : manager) {
-     auto ctag = center.get_atom_tag();
-     std::cout << "Center: " << ctag << " n. neighbors " << center.pairs().size()
-               << std::endl;
-
-     for (auto neigh : center.pairs()) {
-       auto tag_list = neigh.get_atom_tag_list();
-
-       auto atom_j = neigh.get_atom_j();
-       auto atom_j_tag = atom_j.get_atom_tag_list();
-       auto atom_j_ids = atom_j.get_cluster_indices();
-       std::cout << "neigh: " << tag_list[0] << ", " << tag_list[1] << ", "
-                 << " tag_j: " << atom_j_tag[0] << ", " << atom_j_ids[0]
-                 << " -- global index " << neigh.get_global_index()
-                 <<std::endl;
-     }
-     // for (auto triplet : center.triplets()) {
-     //   std::cout << "triplet: " << std::endl;
-     // }
-   }
-
-
-  auto triplet_manager{make_adapted_manager<AdaptorMaxOrder>(manager)};
-  triplet_manager->update();
-
-//  for (auto center : triplet_manager) {
-//    auto proxy = center.pairs();
-//    auto it = proxy.begin();
-//    auto neigh = *it;
-//    auto pos = neigh.get_position();
-//  }
-
-  for (auto center : triplet_manager) {
-    auto ctag = center.get_atom_tag();
-    auto it = center.triplets();
-    auto size{it.size()};
-    std::cout << "Center: " << ctag << " n. neighbors " << size
-              << std::endl;
-//     std::cout << "Center: " << ctag << " n. neighbors "
-//               << std::endl;
-
-    for (auto triplet : center.triplets()) {
-      auto tags = triplet.get_atom_tag_list();
-      std::cout << center.get_atom_tag() << " triplet ("
-                << tags[0] << ", " << tags[1] << ", " << tags[2]
-                << ") global index " << triplet.get_global_index()
-              << ") index " << triplet.get_index()
-                << std::endl;
-    }
-  }
-
+  representation.compute(manager);
   representation.compute(manager_half);
 
   constexpr size_t n_centers_print{5};
@@ -215,7 +163,7 @@ int main(int argc, char * argv[]) {
     int maxRow, maxCol;
     auto diff_rep_m{math::relative_error(soap_vectors.get_dense_row(center), soap_vectors_half.get_dense_row(center), 1e-15)};
     double diff_rep = diff_rep_m.maxCoeff(&maxRow, &maxCol);
-    std::cout << "max error: " << diff_rep << " ref val: " << soap_vectors.get_dense_row(center)(maxRow, maxCol) << " Nb_neigh: "<< center.size() << std::endl;
+    std::cout << "max error: " << diff_rep << " ref val: " << soap_vectors.get_dense_row(center)(maxRow, maxCol) << " Nb_neigh: "<< center.pairs().size() << std::endl;
     if (diff_rep > 1e-13) {
       std::cout << "Ref: " << std::endl<< soap_vectors.get_dense_row(center);
       std::cout << std::endl;
@@ -237,7 +185,7 @@ int main(int argc, char * argv[]) {
     auto half_it = manager_half->get_iterator_at(center_count, 0);
     auto half_center = *(half_it);
     std::cout << "Tags:  (";
-    for (auto neigh : half_center) {
+    for (auto neigh : half_center.pairs()) {
       auto neigh_type = neigh.get_atom_tag();
       std::cout << neigh_type << ", ";
     }
@@ -245,7 +193,7 @@ int main(int argc, char * argv[]) {
     std::cout << std::endl;
 
     std::cout << "Types: (";
-    for (auto neigh : half_center) {
+    for (auto neigh : half_center.pairs()) {
       auto neigh_type = neigh.get_atom_type();
       std::cout << neigh_type << ", ";
     }
@@ -254,7 +202,7 @@ int main(int argc, char * argv[]) {
 
     auto diff_ii_m{math::relative_error(soap_vector_gradients.get_dense_row(ii_pair), soap_vector_gradients_half.get_dense_row(half_center.get_atom_ii()), 1e-15)};
     double diff_ii = diff_ii_m.maxCoeff(&maxRow, &maxCol);
-    std::cout << "max error: " << diff_ii << " ref val: " << soap_vector_gradients.get_dense_row(ii_pair)(maxRow, maxCol) << " Nb_neigh: "<< center.size() << std::endl;
+    std::cout << "max error: " << diff_ii << " ref val: " << soap_vector_gradients.get_dense_row(ii_pair)(maxRow, maxCol) << " Nb_neigh: "<< center.pairs().size() << std::endl;
     if (diff_ii > 1e-12) {
       std::cout << "Ref: " << std::endl<< soap_vector_gradients.get_dense_row(ii_pair).transpose();
       std::cout << std::endl;
@@ -277,48 +225,54 @@ int main(int argc, char * argv[]) {
       // if (neigh_count >= n_neigh_print) {
       //   break;
       // }
-      // auto neigh_type = neigh.get_atom_type();
-      // auto tags = neigh.get_atom_tag_list();
-      // if (tags[1] <= tags[0]) {continue;}
-      // auto half_neigh_it = half_center.template get_clusters_of_order<2>(neigh_count).begin();
-      // auto half_neigh = *(half_neigh_it);
+      auto neigh_type = neigh.get_atom_type();
+      auto tags = neigh.get_atom_tag_list();
+      if (tags[1] <= tags[0]) {continue;}
+      auto half_neigh_it = half_center.template get_clusters_of_order<2>(1+neigh_count).begin();
+      // auto half_neigh_it = half_center.pairs().begin();
+      // for (size_t ii{0}; ii < neigh_count; ii++) {
+      //   ++half_neigh_it;
+      // }
+      auto half_neigh = *(half_neigh_it);
 
-      // std::cout << "Neighbour "<< neigh_type <<" tags: ";
+      std::cout << "Neighbour "<< neigh_type <<" tags: ";
 
-      // std::cout << "(";
-      // for (auto tag : tags) {
-      //   std::cout << tag << ", ";
-      // }
-      // std::cout << "\b\b) ";
-      // std::cout << std::endl;
+      std::cout << "(";
+      for (auto tag : tags) {
+        std::cout << tag << ", ";
+      }
+      std::cout << "\b\b) ";
+      std::cout << std::endl;
 
-      // auto keys_neigh = soap_vector_gradients[neigh].get_keys();
-      // std::cout << "Neighbour "<< neigh_type <<" keys: ";
-      // for (auto key : keys_neigh) {
-      //   std::cout << "(";
-      //   for (auto key_sp : key) {
-      //     std::cout << key_sp << ", ";
-      //   }
-      //   std::cout << "\b\b) ";
-      // }
-      // std::cout << std::endl;
-      // auto keys_neigh_half = soap_vector_gradients_half[half_neigh].get_keys();
-      // std::cout << " /// ";
-      // for (auto key : keys_neigh_half) {
-      //   std::cout << "(";
-      //   for (auto key_sp : key) {
-      //     std::cout << key_sp << ", ";
-      //   }
-      //   std::cout << "\b\b) ";
-      // }
-      // std::cout << std::endl;
-      // double diff_ij{math::relative_error(soap_vector_gradients.get_dense_row(neigh), soap_vector_gradients_half.get_dense_row(half_neigh))};
-      // if (diff_ij > 1e-12) {
-      //   std::cout << "Ref: " << std::endl<< soap_vector_gradients.get_dense_row(neigh).transpose();
-      //   std::cout << std::endl;
-      //   std::cout << "Test: " << std::endl<< soap_vector_gradients_half.get_dense_row(half_neigh).transpose();
-      //   std::cout << std::endl;
-      // }
+      auto keys_neigh = soap_vector_gradients[neigh].get_keys();
+      std::cout << "Neighbour "<< neigh_type <<" keys: ";
+      for (auto key : keys_neigh) {
+        std::cout << "(";
+        for (auto key_sp : key) {
+          std::cout << key_sp << ", ";
+        }
+        std::cout << "\b\b) ";
+      }
+      std::cout << std::endl;
+      auto keys_neigh_half = soap_vector_gradients_half[half_neigh].get_keys();
+      std::cout << " /// ";
+      for (auto key : keys_neigh_half) {
+        std::cout << "(";
+        for (auto key_sp : key) {
+          std::cout << key_sp << ", ";
+        }
+        std::cout << "\b\b) ";
+      }
+      std::cout << std::endl;
+      auto diff_ij_m{math::relative_error(soap_vector_gradients.get_dense_row(neigh), soap_vector_gradients_half.get_dense_row(half_neigh), 1e-10)};
+    double diff_ij = diff_ij_m.maxCoeff(&maxRow, &maxCol);
+    std::cout << "max error: " << diff_ij << " ref val: " << soap_vector_gradients.get_dense_row(neigh)(maxRow, maxCol) << " Nb_neigh: "<< center.pairs().size() << std::endl;
+      if (diff_ij > 1e-12) {
+        std::cout << "Ref: " << std::endl<< soap_vector_gradients.get_dense_row(neigh).transpose();
+        std::cout << std::endl;
+        std::cout << "Test: " << std::endl<< soap_vector_gradients_half.get_dense_row(half_neigh).transpose();
+        std::cout << std::endl;
+      }
 
       ++neigh_count;
     }

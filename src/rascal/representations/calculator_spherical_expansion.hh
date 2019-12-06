@@ -1657,6 +1657,7 @@ namespace rascal {
                                                                      neigh);
         double f_c{cutoff_function->f_c(dist)};
         auto coefficients_center_by_type{coefficients_center[neigh_type]};
+        auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
 
         // compute the coefficients
         size_t l_block_idx{0};
@@ -1681,7 +1682,7 @@ namespace rascal {
             throw std::runtime_error(err_str.str());
           }
           // auto & coefficients_neigh{expansions_coefficients[atom_j]};
-          auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
+          // auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
           if (is_center_atom) {
             l_block_idx = 0;
             double parity{1.};
