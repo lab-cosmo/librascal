@@ -293,9 +293,27 @@ namespace rascal {
     //! i.e. number of atoms
     size_t size() const { return this->implementation().get_size(); }
 
-    template <size_t Order, size_t Layer>
-    bool is_center_atom(const ClusterRefKey<Order, Layer> & cluster) const {
-      return (cluster.get_atom_tag() < static_cast<int>(this->size()));
+    //! Tells if the cluster is a center
+    template <size_t Layer>
+    bool is_center_atom(const ClusterRefKey<1, Layer> & /*cluster*/) const {
+      // always the case if order == 1
+      return true;
+    }
+
+    //! Tells if the cluster is a center
+    template <size_t Layer>
+    bool is_center_atom(const ClusterRefKey<2, Layer> & cluster) {
+      // get the corresponding atom_j from pair_ij and check if the tag of j is
+      // the same in atom_j and pair_ij. In pair_ij the atom_tag could
+      // correspond to a ghost atom while the tag of atom_j always correspond to
+      // an atom in the unit cell.
+      // the additional check is to make sure atom_j is not a masked atom.
+      auto atom_j_tag = cluster.get_atom_tag();
+      auto atom_j_index = this->get_atom_index(atom_j_tag);
+      auto atom_j_it = this->get_iterator_at(atom_j_index, 0);
+      auto atom_j = *(atom_j_it);
+      return (atom_j_tag == atom_j.get_atom_tag() and
+              atom_j.get_cluster_index(Layer) < this->size());
     }
 
     //! number of atoms including ghosts

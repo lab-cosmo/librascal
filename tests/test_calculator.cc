@@ -143,8 +143,6 @@ namespace rascal {
                                     typename Fix::ManagerTypeList_t>::type;
     using Property_t = typename Fix::Property_t;
 
-    bool verbose = false;
-
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & representation_hypers = Fix::representation_hypers;
@@ -163,22 +161,9 @@ namespace rascal {
 
         BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
         BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
-        double diff{0.};
-        int size{0};
-        for (int row_i{0}; row_i < feat_prop.rows(); row_i++) {
-          for (int col_i{0}; col_i < feat_prop.cols(); ++col_i) {
-            diff += std::abs(feat_prop(row_i, col_i) - feat_col(row_i, col_i));
-            size += 1;
 
-            if (verbose and diff / size > 6e-12) {
-              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", "
-                        << col_i << " \t " << feat_prop(row_i, col_i)
-                        << "\t != " << feat_col(row_i, col_i) << std::endl;
-            }
-          }
-        }
-        diff /= size;
-        BOOST_CHECK_LE(diff, 6e-12);
+        auto diff_rep{math::relative_error(feat_prop, feat_col)};
+        BOOST_CHECK_LE(diff_rep.maxCoeff(), 6e-12);
       }
       manager_i++;
     }
@@ -417,11 +402,9 @@ namespace rascal {
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
-    auto verbose = true;
+    const double delta{2e-6};
+    const double epsilon{1e-14};
     using Property_t = typename Fix::Property_t;
-
-    // Choose the data depending on the current options
-    using Std2DArray_t = std::vector<std::vector<double>>;
 
     const auto & rep_infos{ref_data.at("rep_info").template get<json>()};
 
@@ -431,7 +414,7 @@ namespace rascal {
         const auto & representation_hypers =
             rep_info.at("hypers").template get<json>();
         const auto & ref_representation =
-            rep_info.at("feature_matrix").template get<Std2DArray_t>();
+            rep_info.at("feature_matrix").template get<math::Matrix_t>();
 
         representations.emplace_back(representation_hypers);
         representations.back().compute(manager);
@@ -441,26 +424,9 @@ namespace rascal {
                 property_name)};
         auto test_representation = property.get_features();
 
-        BOOST_CHECK_EQUAL(ref_representation.size(),
-                          test_representation.rows());
-        double avg_diff{0.};
-        for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
-          BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
-                            test_representation.cols());
-          for (size_t col_i{0}; col_i < ref_representation[row_i].size();
-               ++col_i) {
-            auto diff{std::abs(ref_representation[row_i][col_i] -
-                               test_representation(row_i, col_i))};
-            avg_diff += diff;
-            if (verbose and diff > 6e-12) {
-              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", "
-                        << col_i << " \t " << ref_representation[row_i][col_i]
-                        << "\t != " << test_representation(row_i, col_i)
-                        << std::endl;
-            }
-          }
-          BOOST_CHECK_LE(avg_diff / test_representation.size(), 6e-12);
-        }
+        auto diff_rep{math::relative_error(
+            ref_representation, test_representation, delta, epsilon)};
+        BOOST_CHECK_LE(diff_rep.maxCoeff(), delta);
       }
       manager_i += 1;
     }

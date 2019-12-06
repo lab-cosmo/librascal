@@ -1778,8 +1778,8 @@ namespace rascal {
               }    // for cartesian_idx
             }
           }  // if (IsHalfNL)
-        }  // if (this->compute_gradients)
-      }    // for (neigh : center)
+        }    // if (this->compute_gradients)
+      }      // for (neigh : center)
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
