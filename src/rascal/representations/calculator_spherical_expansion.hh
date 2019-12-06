@@ -1578,6 +1578,7 @@ namespace rascal {
     std::vector<std::unordered_set<Key_t, internal::Hash<Key_t>>> keys{};
     for (auto center : manager) {
       keys.emplace_back();
+      center.get_atom_tag();
     }
     // initialize the spherical expension coeffs
     for (auto center : manager) {

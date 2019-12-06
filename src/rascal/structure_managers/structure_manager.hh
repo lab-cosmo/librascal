@@ -294,7 +294,7 @@ namespace rascal {
     size_t size() const { return this->implementation().get_size(); }
 
     template <size_t Order, size_t Layer>
-    size_t is_center_atom(const ClusterRefKey<Order, Layer> & cluster) const {
+    bool is_center_atom(const ClusterRefKey<Order, Layer> & cluster) const {
       return (cluster.get_atom_tag() < static_cast<int>(this->size()));
     }
 
