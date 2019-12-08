@@ -1,5 +1,5 @@
 /**
- * file    test_species_manager.cc
+ * @file    test_species_manager.cc
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Till Junge <till.junge@epfl.ch>
@@ -26,11 +26,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
 #include "test_structure.hh"
-#include "structure_managers/species_manager.hh"
 
-#include <map>
+#include "rascal/structure_managers/species_manager.hh"
+
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 
@@ -76,7 +77,7 @@ namespace rascal {
       auto species{tup.first};
       auto nb_atoms{tup.second};
       auto nb_filtered{
-          Fix::species_manager[std::array<int, 1>{species}].size()};
+          Fix::species_manager[std::array<int, 1>{{species}}].size()};
       BOOST_CHECK_EQUAL(nb_atoms, nb_filtered);
     }
   }
@@ -85,7 +86,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(pair_species_test, Fix, FixturesMax2, Fix) {
     std::map<std::array<int, 2>, int> species_counter{};
     for (auto && atom : Fix::fixture.manager) {
-      for (auto && pair : atom) {
+      for (auto && pair : atom.pairs()) {
         species_counter[pair.get_atom_types()]++;
       }
     }

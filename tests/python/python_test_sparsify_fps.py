@@ -5,8 +5,8 @@ import unittest
 
 
 def is_sorted(a):
-    for i in range(a.size-1):
-        if a[i+1] > a[i]:
+    for i in range(a.size - 1):
+        if a[i + 1] > a[i]:
             return False
     return True
 
@@ -99,5 +99,5 @@ class TestFPS(unittest.TestCase):
                     restart={"fps_indices": np.asarray(range(50))})
         self. assertTrue(np.array_equal(r_fps["fps_indices"][:50],
                                         np.asarray(range(50))))
-        self. assertTrue(np.array_equal(r_fps["fps_indices"][50:]-50,
+        self. assertTrue(np.array_equal(r_fps["fps_indices"][50:] - 50,
                                         ref["fps_indices"][50:]))

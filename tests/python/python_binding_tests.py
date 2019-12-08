@@ -4,11 +4,15 @@ import unittest
 import faulthandler
 
 from python_structure_manager_test import (
-    TestStructureManagerCenters, TestNL, TestNLStrict
+    TestStructureManagerCenters, TestNL, TestNLStrict, CenterSelectTest
 )
 from python_representation_calculator_test import (
     TestSortedCoulombRepresentation, TestSphericalExpansionRepresentation,
     TestSphericalInvariantsRepresentation
+)
+
+from python_models_test import (
+    TestCosineKernel
 )
 
 from python_math_test import TestMath

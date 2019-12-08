@@ -100,12 +100,12 @@ class SortedCoulombMatrix(object):
         return frames
 
     def get_feature_size(self):
-        return int(self.size*(self.size+1)/2)
+        return int(self.size * (self.size + 1) / 2)
 
     def get_size(self, managers):
         Nneigh = []
         for manager in managers:
             for center in manager:
-                Nneigh.append(center.size+1)
+                Nneigh.append(center.nb_pairs + 1)
         size = int(np.max(Nneigh))
         return size

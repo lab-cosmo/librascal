@@ -27,9 +27,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
-#include "test_structure.hh"
 #include "test_adaptor.hh"
+#include "test_structure.hh"
+
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <vector>
 
@@ -101,7 +103,7 @@ namespace rascal {
         BOOST_CHECK_EQUAL(type, atom_types[index]);
         ++atom_counter;
 
-        for (auto pair : atom.with_self_pair()) {
+        for (auto pair : atom.pairs_with_self_pair()) {
           auto pair_offset{pair.get_global_index()};
           auto pair_type{pair.get_atom_type()};
           if (verbose) {
@@ -134,8 +136,13 @@ namespace rascal {
       auto adaptor_strict{make_adapted_manager<AdaptorStrict>(manager, cutoff)};
       adaptor_strict->update();
 
+      if (verbose) {
+        std::cout << "adaptor size : " << adaptor_strict->size() << std::endl;
+        std::cout << "adaptor size_wg : "
+                  << adaptor_strict->get_size_with_ghosts() << std::endl;
+      }
       for (auto atom : adaptor_strict) {
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           auto atom_j_index = adaptor_strict->get_atom_index(pair.back());
           auto atom_j = pair.get_atom_j();
           auto atom_j_tag = atom_j.get_atom_tag_list();
@@ -193,7 +200,7 @@ namespace rascal {
           std::cout << " " << center.get_atom_type() << std::endl;
         }
 
-        for (auto neigh : center) {
+        for (auto neigh : center.pairs()) {
           double distance{
               (center.get_position() - neigh.get_position()).norm()};
           if (distance <= cutoff) {
@@ -242,7 +249,7 @@ namespace rascal {
           std::cout << " " << center.get_atom_type() << std::endl;
         }
 
-        for (auto neigh : center) {
+        for (auto neigh : center.pairs()) {
           double distance{
               (center.get_position() - neigh.get_position()).norm()};
 
@@ -276,19 +283,24 @@ namespace rascal {
 
       BOOST_CHECK_EQUAL(neigh_ids.size(), neigh_ids_strict.size());
 
-      for (size_t ii{0}; ii < neigh_ids.size(); ++ii) {
-        BOOST_CHECK_EQUAL(neigh_ids[ii].size(), neigh_ids_strict[ii].size());
+      for (size_t atom_id{0}; atom_id < neigh_ids.size(); ++atom_id) {
+        BOOST_CHECK_EQUAL(neigh_ids[atom_id].size(),
+                          neigh_ids_strict[atom_id].size());
 
-        for (size_t jj{0}; jj < neigh_ids[ii].size(); ++jj) {
-          int a0{neigh_ids[ii][jj]};
-          int a1{neigh_ids_strict[ii][jj]};
-          double d0{neigh_dist[ii][jj]};
-          double d1{neigh_dist_strict[ii][jj]};
+        for (size_t neigh_id{0};
+             neigh_id < std::min(neigh_ids[atom_id].size(),
+                                 neigh_ids_strict[atom_id].size());
+             ++neigh_id) {
+          int a0{neigh_ids[atom_id][neigh_id]};
+          int a1{neigh_ids_strict[atom_id][neigh_id]};
+          double d0{neigh_dist[atom_id][neigh_id]};
+          double d1{neigh_dist_strict[atom_id][neigh_id]};
           BOOST_CHECK_EQUAL(a0, a1);
           BOOST_CHECK_EQUAL(d0, d1);
-          for (size_t kk{0}; kk < neigh_dir_vec[ii][jj].size(); ++kk) {
-            double dv0{neigh_dir_vec[ii][jj][kk]};
-            double dv1{neigh_dir_vec_strict[ii][jj][kk]};
+          for (size_t kk{0}; kk < neigh_dir_vec[atom_id][neigh_id].size();
+               ++kk) {
+            double dv0{neigh_dir_vec[atom_id][neigh_id][kk]};
+            double dv1{neigh_dir_vec_strict[atom_id][neigh_id][kk]};
             BOOST_CHECK_EQUAL(dv0, dv1);
           }
         }
@@ -322,20 +334,10 @@ namespace rascal {
       auto center_atoms_mask = extract_underlying_manager<0>(manager_no_center)
                                    ->get_center_atoms_mask();
 
-      if (not manager->get_consider_ghost_neighbours()) {
-        auto natoms = manager->get_size();
-        auto natoms2 = manager->get_nb_clusters(1);
-        BOOST_CHECK_EQUAL(natoms, natoms2);
+      auto n_center_atom = center_atoms_mask.count();
+      auto natoms = manager_no_center->get_size();
 
-        auto n_center_atom = center_atoms_mask.count();
-        natoms = manager_no_center->get_size();
-        natoms2 = manager_no_center->get_nb_clusters(1);
-        BOOST_CHECK_EQUAL(n_center_atom, natoms);
-      } else {
-        auto natoms = manager->get_size_with_ghosts();
-        auto natoms2 = manager->get_nb_clusters(1);
-        BOOST_CHECK_EQUAL(natoms, natoms2);
-      }
+      BOOST_CHECK_EQUAL(n_center_atom, natoms);
 
       if (verbose) {
         std::cout << "center_atoms_mask: " << center_atoms_mask.transpose()
@@ -356,7 +358,7 @@ namespace rascal {
                              center)
                       << ", ";
           }
-          for (auto neigh : center) {
+          for (auto neigh : center.pairs()) {
             auto dist{(neigh.get_position() - center.get_position()).norm()};
             distances_ref.back().push_back(dist);
           }
@@ -374,7 +376,7 @@ namespace rascal {
                            ->get_atom_index(center)
                     << ", ";
         }
-        for (auto neigh : center) {
+        for (auto neigh : center.pairs()) {
           auto dist{(neigh.get_position() - center.get_position()).norm()};
           distances.back().push_back(dist);
         }
@@ -461,7 +463,7 @@ namespace rascal {
 
       for (auto atom : adaptor_strict1) {
         neighbours_per_atom1.push_back(0);
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           if (verbose) {
             std::cout << "1 pair " << atom.back() << " " << pair.back()
                       << std::endl;
@@ -473,7 +475,7 @@ namespace rascal {
 
       for (auto atom : adaptor_strict2) {
         neighbours_per_atom2.push_back(0);
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           if (verbose) {
             std::cout << "2 pair " << atom.back() << " " << pair.back()
                       << std::endl;
@@ -543,7 +545,7 @@ namespace rascal {
 
       for (auto atom : adaptor_strict1) {
         neighbours_per_atom1.push_back(0);
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           if (verbose) {
             std::cout << "1 pair " << atom.back() << " " << pair.back()
                       << std::endl;
@@ -557,7 +559,7 @@ namespace rascal {
 
       for (auto atom : adaptor_strict2) {
         neighbours_per_atom2.push_back(0);
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           if (verbose) {
             std::cout << "2 pair " << atom.back() << " " << pair.back()
                       << std::endl;

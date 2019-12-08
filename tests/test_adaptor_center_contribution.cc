@@ -1,5 +1,5 @@
 /**
- * file   test_adaptor_center_contribution.cc
+ * @file   test_adaptor_center_contribution.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -25,9 +25,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
-#include "test_structure.hh"
 #include "test_adaptor.hh"
+#include "test_structure.hh"
+
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <vector>
 
@@ -89,7 +91,7 @@ namespace rascal {
         BOOST_CHECK_EQUAL(type, atom_types[index]);
         ++atom_counter;
 
-        for (auto pair : atom.with_self_pair()) {
+        for (auto pair : atom.pairs_with_self_pair()) {
           auto pair_offset{pair.get_global_index()};
           auto pair_type{pair.get_atom_type()};
           if (verbose) {
@@ -122,13 +124,22 @@ namespace rascal {
       auto adaptor_strict{
           make_adapted_manager<AdaptorCenterContribution>(manager)};
       adaptor_strict->update();
-
+      if (verbose) {
+        std::cout << "adaptor size : " << adaptor_strict->size() << std::endl;
+        std::cout << "adaptor size_wg : "
+                  << adaptor_strict->get_size_with_ghosts() << std::endl;
+      }
       for (auto atom : adaptor_strict) {
-        for (auto pair : atom) {
+        if (verbose) {
+          std::cout << "atom " << atom.back() << ", of size "
+                    << atom.pairs().size() << " position:" << std::endl
+                    << atom.get_position() << std::endl;
+        }
+        for (auto pair : atom.pairs()) {
           auto atom_j_index =
               adaptor_strict->get_atom_index(pair.get_atom_tag());
-          auto atom_j = pair.get_atom_j();
-          auto atom_j_tags = atom_j.get_atom_tag_list();
+          auto && atom_j = pair.get_atom_j();
+          auto && atom_j_tags = atom_j.get_atom_tag_list();
           if (verbose) {
             std::cout << "neigh: " << atom_j_index
                       << " tag_j: " << atom_j_tags[0] << std::endl;
@@ -175,7 +186,7 @@ namespace rascal {
       adaptor->update();
 
       for (auto atom : adaptor) {
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           auto atom_j = pair.get_atom_j();
           auto atom_j_tag = atom_j.get_atom_tag();
           auto atom_jj = pair.get_atom_jj();
@@ -216,7 +227,7 @@ namespace rascal {
       for (auto atom : adaptor) {
         int counter{0};
         ref.emplace_back();
-        for (auto pair : atom.with_self_pair()) {
+        for (auto pair : atom.pairs_with_self_pair()) {
           prop[pair] = counter;
           ref.back().push_back(counter);
           ++counter;
@@ -225,7 +236,7 @@ namespace rascal {
       int i_center{0};
       for (auto atom : adaptor) {
         int counter{0};
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           BOOST_CHECK_EQUAL(ref[i_center][counter + 1], prop[pair]);
           ++counter;
         }
@@ -235,7 +246,7 @@ namespace rascal {
       i_center = 0;
       for (auto atom : adaptor) {
         int counter{0};
-        for (auto pair : atom.with_self_pair()) {
+        for (auto pair : atom.pairs_with_self_pair()) {
           BOOST_CHECK_EQUAL(ref[i_center][counter], prop[pair]);
           ++counter;
         }
@@ -247,7 +258,7 @@ namespace rascal {
       i_center = 0;
       for (auto atom : adaptor) {
         ref_1.push_back(i_center);
-        for (auto pair : atom.with_self_pair()) {
+        for (auto pair : atom.pairs_with_self_pair()) {
           prop[pair] = i_center;
         }
         ++i_center;
@@ -257,7 +268,7 @@ namespace rascal {
       for (auto atom : adaptor) {
         auto ii_pair = atom.get_atom_ii();
         BOOST_CHECK_EQUAL(ref_1[i_center], prop[ii_pair]);
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           BOOST_CHECK_EQUAL(ref_1[i_center], prop[ii_pair]);
 
           auto && atom_j_tag = pair.get_atom_tag();

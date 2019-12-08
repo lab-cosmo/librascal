@@ -171,8 +171,85 @@ The basic unit test tool in Python's ``unittest`` module is the ``unittest.TestC
            tol = 1e-10
            self.assertLessEqual(error, tol)
 
-How to run the tests
---------------------
+.. _testing_gradients:
 
-All tests are added as targets during  compilation by default. You can run all tests by executing ``ctest`` in the build folder. If the tests fail, you can re-run them verbosely using ``ctest -V`` to get a detailed account of which tests have failed.
+Testing gradients
+^^^^^^^^^^^^^^^^^
 
+.. cpp:namespace:: rascal
+
+All representations in libRascal should plan to implement gradients (derivatives
+w.r.t. the Cartesian positions of all the atoms) so that they can be used to run
+dynamics.  This is often a complex and error-prone task, so a finite-difference
+gradient checker is provided to check the gradients of any representation
+calculator -- or any mathematical function in general -- and ensure that the
+analytical and finite-difference gradients match up.
+
+To check the gradient of a new representation calculator, it should suffice to
+use the classes RepresentationCalculatorGradientProvider (to provide the function
+and its gradient) and RepresentationCalculatorGradientFixture (to assist in
+iterating over the atoms of the structure).  An example of its usage is shown
+below, excerpted from :file:`tests/test_calculator.cc`:
+
+.. literalinclude:: ../../../tests/test_calculator.cc
+   :language: cpp
+   :start-after: grad-test-example-start1
+   :end-before: grad-test-example-end1
+   :dedent: 8
+
+.. literalinclude:: ../../../tests/test_calculator.cc
+   :language: cpp
+   :start-after: grad-test-example-start2
+   :end-before: grad-test-example-end2
+   :dedent: 8
+
+where :cpp:var:`representations.back()` is a
+:cpp:class:`RepresentationCalculator`,
+:cpp:var:`manager` is a :cpp:class:`StructureManager`, and
+:cpp:var:`structures.back()` is the :cpp:class:`AtomicStructure` associated with
+that manager.
+
+A more detailed documentation of these two classes follows:
+
+.. doxygenclass:: rascal::RepresentationCalculatorGradientProvider
+   :project: rascal
+   :members:
+
+.. doxygenclass:: rascal::RepresentationCalculatorGradientFixture
+   :project: rascal
+   :members:
+
+For testing the gradient of arbitrary functions :math:`f: \mathbb{R}^m
+\rightarrow \mathbb{R}^n`, the function :cpp:func:`test_gradients` is
+provided:
+
+.. doxygenfunction:: test_gradients
+   :project: rascal
+
+An example generalized gradient test fixture is provided by
+:cpp:class:`GradientTestFixture`:
+
+.. doxygenclass:: rascal::GradientTestFixture
+   :project: rascal
+   :members:
+
+Running the tests
+-----------------
+
+All tests are automatically compiled if ``BUILD_TESTS`` is set to ``ON`` with
+CMake. After building librascal, you can execute all tests by running ``ctest
+--output-on-failure`` in the build folder.
+
+Using Valgrind to check for memory errors
+-----------------------------------------
+
+`Valgrind <http://valgrind.org/>`_ is a collection of tools to instrument and
+analyse the execution of pre-compiled binaries. Here, we are interested in the
+``memcheck`` tool, that performs memory-related checks on the code: memory
+leaks, and invalid read and writes (i.e. buffer overrun). Valgrind works by
+intercepting calls to ``malloc``/``free`` (and thus ``new``/``delete``) to check
+that every ``malloc`` is followed by a ``free``.
+
+You can run librascal tests using Valgrind to check for memory errors by
+configuring cmake with ``RASCAL_TESTS_USE_VALGRIND=ON``. Then, running ``ctest``
+will execute all C++ tests with Valgrind.

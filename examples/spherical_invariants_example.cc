@@ -1,5 +1,5 @@
 /**
- * file   spherical_invariants_example.cc
+ * @file   examples/spherical_invariants_example.cc
  *
  * @author Max Veit <max.veit@epfl.ch>
  *
@@ -25,26 +25,25 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_center_contribution.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "rascal_utility.hh"
-#include "representations/calculator_sorted_coulomb.hh"
-#include "representations/calculator_spherical_expansion.hh"
-#include "representations/calculator_spherical_invariants.hh"
-#include "basic_types.hh"
-#include "atomic_structure.hh"
+#include "rascal/atomic_structure.hh"
+#include "rascal/basic_types.hh"
+#include "rascal/representations/calculator_sorted_coulomb.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/structure_managers/adaptor_center_contribution.hh"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
+#include "rascal/utils.hh"
 
-#include <iostream>
-#include <basic_types.hh>
-#include <cmath>
-#include <list>
-#include <functional>
-#include <string>
-#include <initializer_list>
 #include <chrono>
+#include <cmath>
+#include <functional>
+#include <initializer_list>
+#include <iostream>
+#include <list>
+#include <string>
 
 using namespace rascal;  // NOLINT
 
@@ -84,8 +83,7 @@ int main(int argc, char * argv[]) {
   json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments",
-            {{"cutoff", cutoff}, {"consider_ghost_neighbours", false}}}};
+           {"initialization_arguments", {{"cutoff", cutoff}}}};
   json ad1b{{"name", "AdaptorCenterContribution"},
             {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
@@ -119,8 +117,8 @@ int main(int argc, char * argv[]) {
   size_t center_count{0};
 
   auto && soap_vectors{
-      manager->template get_property_ref<Prop_t>(representation.get_name())};
-  auto && soap_vector_gradients{manager->template get_property_ref<PropGrad_t>(
+      *manager->template get_property<Prop_t>(representation.get_name())};
+  auto && soap_vector_gradients{*manager->template get_property<PropGrad_t>(
       representation.get_gradient_name())};
 
   for (auto center : manager) {
@@ -165,7 +163,7 @@ int main(int argc, char * argv[]) {
     // clang-format on
     std::cout << std::endl;
     size_t neigh_count{0};
-    for (auto neigh : center) {
+    for (auto neigh : center.pairs()) {
       if (neigh_count >= n_neigh_print) {
         break;
       }

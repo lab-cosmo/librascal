@@ -1,9 +1,29 @@
+# Default style
+BasedOnStyle: LLVM
+# Customization
 AccessModifierOffset: -1
-SpacesBeforeTrailingComments: 2
-NamespaceIndentation: All
-SortIncludes: false
-PointerAlignment: Middle
 AlwaysBreakTemplateDeclarations: true
 ColumnLimit: 80
-KeepEmptyLinesAtTheStartOfBlocks: false
+IncludeBlocks: Regroup
+IncludeCategories:
+  # rascal headers in "" with extension
+  - Regex:           '"rascal/[[:alnum:]/_]+\.h+p*"'
+    Priority:        2
+  # Headers in "" with extension, i.e. local headers
+  - Regex:           '"[[:alnum:]/_]+\.h+p*"'
+    Priority:        1
+  # Headers in <> with extension, i.e. external libraries headers
+  - Regex:           '<[[:alnum:]/_]+\.h+p*>'
+    Priority:        3
+  # Eigen headers look like standard library headers
+  - Regex:           '<Eigen/[[:alnum:]]+>'
+    Priority:        4
+  # Headers in <> without extension, i.e. usually c/c++ standard library headers
+  - Regex:           '<[[:alnum:]_]+>'
+    Priority:        5
 IndentWidth: 2
+KeepEmptyLinesAtTheStartOfBlocks: false
+NamespaceIndentation: All
+PointerAlignment: Middle
+SortIncludes: true
+SpacesBeforeTrailingComments: 2

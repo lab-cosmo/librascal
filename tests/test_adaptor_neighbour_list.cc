@@ -27,10 +27,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "tests.hh"
-#include "test_structure.hh"
 #include "test_adaptor.hh"
-#include "atomic_structure.hh"
+#include "test_structure.hh"
+
+#include "rascal/atomic_structure.hh"
+
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 
@@ -93,7 +96,7 @@ namespace rascal {
     }
     int np{0};
     for (auto atom : pair_manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         np++;
       }
     }
@@ -131,13 +134,11 @@ namespace rascal {
     }
 
     auto n_pairs{0};
-    // iteration here is .with_ghosts(), because the get_nb_clusters(2) includes
-    // ghost atom pairs, too
-    for (auto atom : pair_manager->with_ghosts()) {
+    for (auto atom : pair_manager) {
       if (verbose) {
         std::cout << "pair manager atom " << atom.back() << std::endl;
       }
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         n_pairs++;
         if (verbose) {
           std::cout << "   complete pair " << atom.back() << " " << pair.back()
@@ -165,7 +166,7 @@ namespace rascal {
     constexpr bool verbose{false};
 
     for (auto atom : pair_manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         auto atom_j_index = pair_manager->get_atom_index(pair.back());
         auto atom_j = pair.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag_list();
@@ -200,7 +201,7 @@ namespace rascal {
         if (verbose) {
           std::cout << "atom " << atom.back() << std::endl;
         }
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           n_pairs++;
           if (verbose) {
             std::cout << "   complete pair " << atom.back() << " "
@@ -272,7 +273,7 @@ namespace rascal {
       }
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           double dist = {(atom.get_position() - pair.get_position()).norm()};
           if (dist < cutoff_tmp) {
             neighbours_per_atom1.back()++;
@@ -290,7 +291,7 @@ namespace rascal {
       }
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           double dist = {(atom.get_position() - pair.get_position()).norm()};
           if (dist < cutoff_tmp) {
             neighbours_per_atom2.back()++;
@@ -370,7 +371,7 @@ namespace rascal {
 
       for (auto atom : pair_manager1) {
         neighbours_per_atom1.push_back(0);
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           double dist = {(atom.get_position() - pair.get_position()).norm()};
           bool is_in{dist < cutoff_tmp};
           if (verbose) {
@@ -386,7 +387,7 @@ namespace rascal {
 
       for (auto atom : pair_manager2) {
         neighbours_per_atom2.push_back(0);
-        for (auto pair : atom) {
+        for (auto pair : atom.pairs()) {
           double dist = {(atom.get_position() - pair.get_position()).norm()};
           bool is_in{dist < cutoff_tmp};
           if (verbose) {
@@ -437,11 +438,11 @@ namespace rascal {
     // helper for increasing skewedness of unit cell in loop entry (0,1) gives
     // the skewing factor in the x/y plane in the loop building the cells
     Eigen::MatrixXd unity{Eigen::MatrixXd::Identity(3, 3)};
-    std::array<double, ncells> shears{0., 1., 5.};
+    std::array<double, ncells> shears{{0., 1., 5.}};
 
     // multipliers for different cutoffs: original cutoff is barely below
     // minimum atom distance, leading to zero neighbours
-    std::array<int, 3> n_cutoff{1, 2, 10};
+    std::array<int, 3> n_cutoff{{1, 2, 10}};
 
     // loop over 3 different cutoffs
     for (int k{0}; k < 3; ++k) {
@@ -509,8 +510,8 @@ namespace rascal {
         using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
 
         // build neighbourlist
-        auto pair_manager{make_adapted_manager<AdaptorNeighbourList>(
-            manager, cutoff_tmp, true)};
+        auto pair_manager{
+            make_adapted_manager<AdaptorNeighbourList>(manager, cutoff_tmp)};
 
         // make strict for counting neighbours
         auto adaptor_strict{
@@ -521,7 +522,7 @@ namespace rascal {
         // count strict neighbours
         for (auto atom : adaptor_strict) {
           neighbours[i].push_back(0);
-          for (auto pair : atom) {
+          for (auto pair : atom.pairs()) {
             neighbours[i].back()++;
           }
         }
@@ -574,7 +575,7 @@ namespace rascal {
         std::cout << "atom? " << atom.back() << std::endl;
       }
       auto n_pairs{0};
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         n_pairs++;
         if (verbose) {
           std::cout << "   complete pair " << atom.back() << " " << pair.back()

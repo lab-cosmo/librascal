@@ -28,21 +28,22 @@
 #ifndef BINDINGS_BIND_INCLUDE_HH_
 #define BINDINGS_BIND_INCLUDE_HH_
 
-#include "atomic_structure.hh"
-#include "rascal_utility.hh"
+#include "rascal/atomic_structure.hh"
+#include "rascal/utils.hh"
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl_bind.h>
 #include <pybind11/eigen.h>
-#include <pybind11/stl.h>
 #include <pybind11/iostream.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 // for the hasattr function to test the module namespace
 #include <pybind11/pytypes.h>
 
 #include <Eigen/Dense>
-#include <vector>
+
 #include <map>
 #include <memory>
+#include <vector>
 
 /*
  * Prevent vector of atomic structures from being copied into a Python list,
@@ -66,13 +67,12 @@ namespace rascal {
      */
     template <typename T>
     std::string GetBindingTypeName() {
-        static std::map<std::string, std::string> replacement_map = {
-            {"StructureManager", ""}, {"Adaptor", ""}, {"Calculator", ""}
-        };
+      static std::map<std::string, std::string> replacement_map = {
+          {"StructureManager", ""}, {"Adaptor", ""}, {"Calculator", ""}};
 
-        std::string name = type_name<T>();
-        for (const auto & map : replacement_map) {
-            replace(name, map.first, map.second);
+      std::string name = type_name<T>();
+      for (const auto & map : replacement_map) {
+        replace(name, map.first, map.second);
       }
 
       return name;

@@ -47,12 +47,12 @@ add_custom_target(doxygen_doc
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/doxygenxml/index.xml
 )
 
-add_custom_target(doc
+add_custom_target(doc ALL
   COMMAND ${SPHINX_EXECUTABLE} -q -b html
             -c "${CMAKE_CURRENT_BINARY_DIR}"
             -d "${SPHINX_CACHE_DIR}"
             "${CMAKE_CURRENT_SOURCE_DIR}/source"
             "${SPHINX_HTML_DIR}"
-  DEPENDS doxygen_doc librascal
+  DEPENDS doxygen_doc copy_python_bindings
   COMMENT "Building HTML documentation with Sphinx"
 )
