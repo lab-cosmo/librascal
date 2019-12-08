@@ -51,7 +51,7 @@ namespace rascal {
                         manager->get_atom_type(atom.get_atom_tag()));
       ++atom_counter;
 
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         auto pair_offset{pair.get_global_index()};
         if (verbose) {
           std::cout << "pair (" << atom.get_atom_tag() << ", "

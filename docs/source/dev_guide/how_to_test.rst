@@ -233,8 +233,23 @@ An example generalized gradient test fixture is provided by
    :project: rascal
    :members:
 
-How to run the tests
---------------------
+Running the tests
+-----------------
 
-All tests are added as targets during  compilation by default. You can run all tests by executing ``ctest`` in the build folder. If the tests fail, you can re-run them verbosely using ``ctest -V`` to get a detailed account of which tests have failed.
+All tests are automatically compiled if ``BUILD_TESTS`` is set to ``ON`` with
+CMake. After building librascal, you can execute all tests by running ``ctest
+--output-on-failure`` in the build folder.
 
+Using Valgrind to check for memory errors
+-----------------------------------------
+
+`Valgrind <http://valgrind.org/>`_ is a collection of tools to instrument and
+analyse the execution of pre-compiled binaries. Here, we are interested in the
+``memcheck`` tool, that performs memory-related checks on the code: memory
+leaks, and invalid read and writes (i.e. buffer overrun). Valgrind works by
+intercepting calls to ``malloc``/``free`` (and thus ``new``/``delete``) to check
+that every ``malloc`` is followed by a ``free``.
+
+You can run librascal tests using Valgrind to check for memory errors by
+configuring cmake with ``RASCAL_TESTS_USE_VALGRIND=ON``. Then, running ``ctest``
+will execute all C++ tests with Valgrind.

@@ -1,7 +1,8 @@
 # =============================================================================
 # file   CMakeLists.txt
 #
-# @author Till Junge <till.junge@epfl.ch
+# @author Alexander Goscinski <alexander.goscinski@epfl.ch>
+# @author Till Junge <till.junge@epfl.ch>
 # @author Felix Musil <felix.musil@epfl.ch>
 # @author Markus Stricker <markus.stricker@epfl.ch>
 #
@@ -67,8 +68,11 @@ include(rascalTools)
 ########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ########
 option(BUILD_BINDINGS "Build the python bindings" ON)
 option(BUILD_EXAMPLES "Build the examples" ON)
+option(BUILD_BENCHMARKS "Build the benchmarks" OFF)
+option(BUILD_PROFILING "Build the files for profiling" OFF)
 option(BUILD_TESTS "Build the unit tests" OFF)
 option(BUILD_DOC "Build documentation" OFF)
+option(BUILD_SANDBOX "If on, builds the sandbox" OFF)
 option(USER "Switch installation folder" OFF)
 
 set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
@@ -114,6 +118,11 @@ endif()
 
 add_external_package(wigxjpf VERSION 1.9 CONFIG)
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
+
+if(BUILD_BENCHMARKS)
+  find_package(Threads REQUIRED)
+  add_external_package(benchmark VERSION 1.5.0 CONFIG)
+endif()
 
 # set up bindings
 if(BUILD_BINDINGS)
@@ -189,9 +198,21 @@ if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
+if(BUILD_BENCHMARKS)
+    add_subdirectory(performance/benchmarks)
+endif()
+
+if(BUILD_PROFILING)
+    add_subdirectory(performance/profiles)
+endif()
+
 if(BUILD_BINDINGS)
     add_subdirectory(bindings)
 endif()
+
+if (${BUILD_SANDBOX})
+    add_subdirectory(sandbox)
+endif (${BUILD_SANDBOX})
 
 if(BUILD_DOC)
     add_subdirectory(docs)
@@ -202,10 +223,13 @@ include(cpplint)
 # Checking hh/cc files for compliance with coding conventions
 if(CPPLINT_FOUND)
   # register the folders to check for cpp code conventions compliance
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
+    "--filter=-build/namespaces")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/benchmarks" "")
+  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/profiles" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
   cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples" "")
 endif()
 
 # Check for clang-format
@@ -214,10 +238,12 @@ include(clangformat)
 if(CLANG_FORMAT_FOUND)
   # register the folders to apply clang-format with given configuration
   # .clang-format in project root folder
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
   clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/benchmarks" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/profiles" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
+  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
 endif()
 
 # Check for autopep8
@@ -226,9 +252,9 @@ include(autopep8)
 if(AUTOPEP8_FOUND)
   # register the folders to apply autopep8 with given configuration
   # .pycodestyle in project root folder
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings")
   autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts")
+  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
 endif()
 
 # Removes every file in the build folder except the external libraries to

@@ -25,9 +25,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "structure_managers/adaptor_full_neighbour_list.hh"
-#include "structure_managers/adaptor_half_neighbour_list.hh"
 #include "test_structure.hh"
+
+#include "rascal/structure_managers/adaptor_full_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
 
 #include <boost/test/unit_test.hpp>
 
@@ -64,7 +65,7 @@ namespace rascal {
 
     int npairs_full{0};
     for (auto atom : manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         double dist = {(atom.get_position() - pair.get_position()).norm()};
         distance_sum_full += dist;
         npairs_full++;
@@ -85,7 +86,7 @@ namespace rascal {
       if (verbose) {
         std::cout << "type " << atom.get_atom_type() << std::endl;
       }
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         double dist = {(atom.get_position() - pair.get_position()).norm()};
         distance_sum_half += dist;
 
@@ -137,7 +138,7 @@ namespace rascal {
     }
     int npairs{0};
     for (auto atom : manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         double dist = {(atom.get_position() - pair.get_position()).norm()};
         distance_sum_full += dist;
         npairs++;
@@ -155,7 +156,7 @@ namespace rascal {
       std::cout << "---full/half---" << std::endl;
     }
     for (auto atom : adaptor_half) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         if (verbose) {
           auto pair_offset{pair.get_global_index()};
           std::cout << "pair (" << atom.back() << ", " << pair.back() << "), "
@@ -170,7 +171,7 @@ namespace rascal {
     }
     int npairs_adapted{0};
     for (auto atom : adaptor_full) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         double dist = {(atom.get_position() - pair.get_position()).norm()};
         distance_sum_full_half_full += dist;
         npairs_adapted++;
@@ -191,9 +192,6 @@ namespace rascal {
     BOOST_CHECK_EQUAL(npairs, npairs_adapted);
     // check for same number of atoms
     BOOST_CHECK_EQUAL(manager->size(), adaptor_full->size());
-    // check for number of atoms
-    BOOST_CHECK_EQUAL(manager->get_nb_clusters(1),
-                      adaptor_full->get_nb_clusters(1));
     // check for number of pairs
     BOOST_CHECK_EQUAL(manager->get_nb_clusters(2),
                       adaptor_full->get_nb_clusters(2));

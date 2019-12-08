@@ -1,1 +1,1 @@
-__all__ = ['lib', 'representations', 'utils']
+__all__ = ['lib', 'representations', 'utils', 'neighbourlist']

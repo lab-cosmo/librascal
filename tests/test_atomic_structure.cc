@@ -25,7 +25,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "atomic_structure.hh"
+#include "rascal/atomic_structure.hh"
 
 #include <boost/test/unit_test.hpp>
 
@@ -39,8 +39,8 @@ namespace rascal {
     ~AtomicStructureFixture() = default;
 
     std::string ref_filename1 =
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json";
-    std::string ref_filename2 = "reference_data/small_molecule.json";
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json";
+    std::string ref_filename2 = "reference_data/inputs/small_molecule.json";
 
     bool verbose{false};
   };
@@ -97,10 +97,10 @@ namespace rascal {
 
     // load structure from a json formated file
     structure1.set_structure(
-        std::string("./reference_data/dummy_structure.json"));
+        std::string("./reference_data/inputs/dummy_structure.json"));
     structure1.wrap();
     structure2.set_structure(
-        std::string("./reference_data/dummy_structure_wrapped.json"));
+        std::string("./reference_data/inputs/dummy_structure_wrapped.json"));
 
     // check if identical with itself
     double skin2{1e-15};
@@ -109,6 +109,22 @@ namespace rascal {
       std::cout << (structure2.positions - structure1.positions).transpose()
                 << std::endl;
     }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test that unit cell filled with zeros is properly caught
+   */
+  BOOST_FIXTURE_TEST_CASE(empty_unit_cell_test, AtomicStructureFixture) {
+    AtomicStructure<3> structure{};
+
+    // load structure from a json formated file
+    BOOST_CHECK_THROW(
+        structure.set_structure(
+            std::string("./reference_data/inputs/small_molecule_no_cell.json")),
+        std::runtime_error);
+    BOOST_REQUIRE_NO_THROW(structure.set_structure(
+        std::string("./reference_data/inputs/small_molecule.json")));
   }
 
   /* ---------------------------------------------------------------------- */

@@ -25,13 +25,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef TESTS_TEST_CLUSTER_REF_KEY_HH_
 #define TESTS_TEST_CLUSTER_REF_KEY_HH_
 
+#include "rascal/structure_managers/cluster_ref_key.hh"
+
 #include <tuple>
 #include <vector>
-#include "structure_managers/cluster_ref_key.hh"
 
 namespace rascal {
   struct LayerFixture {
@@ -50,14 +50,14 @@ namespace rascal {
    *
    * @param sequence sequence to be printed
    */
-  template<size_t... Ints>
+  template <size_t... Ints>
   void print_index_sequence(std::index_sequence<Ints...> /*sequence*/) {
-      std::vector<size_t> vec = {Ints...};
-      std::cout << "( ";
-      for (size_t ele : vec) {
-        std::cout << ele << " ";
-      }
-      std::cout << ")" << std::endl;
+    std::vector<size_t> vec = {Ints...};
+    std::cout << "( ";
+    for (size_t ele : vec) {
+      std::cout << ele << " ";
+    }
+    std::cout << ")" << std::endl;
   }
 
   /**
@@ -73,4 +73,4 @@ namespace rascal {
     std::cout << std::array<size_t, Length>{Ints...} << std::endl;
   }
 }  // namespace rascal
-#endif // TESTS_TEST_CLUSTER_REF_KEY_HH_
+#endif  // TESTS_TEST_CLUSTER_REF_KEY_HH_

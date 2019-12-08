@@ -24,6 +24,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+#define BOOST_TEST_MODULE boost_test_sequence
 
 #include "test_calculator.hh"
 
@@ -33,6 +34,24 @@
 #include <boost/test/unit_test.hpp>
 
 namespace rascal {
+  /* ---------------------------------------------------------------------- */
+
+  using multiple_fixtures =
+      boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb<
+                           MultipleStructureManagerNLStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalExpansion<
+                           MultipleStructureManagerNLCCStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalInvariants<
+                           MultipleStructureManagerNLCCStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalCovariants<
+                           MultipleStructureManagerNLCCStrictFixture>>>;
+
+  using fixtures_ref_test =
+      boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
+                       CalculatorFixture<SphericalExpansionTestData>,
+                       CalculatorFixture<SphericalInvariantsTestData>,
+                       CalculatorFixture<SphericalCovariantsTestData>>;
+
   BOOST_AUTO_TEST_SUITE(representation_test);
 
   /* ---------------------------------------------------------------------- */
@@ -86,24 +105,6 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-
-  using multiple_fixtures =
-      boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb<
-                           MultipleStructureManagerNLStrictFixture>>,
-                       CalculatorFixture<MultipleStructureSphericalExpansion<
-                           MultipleStructureManagerNLCCStrictFixture>>,
-                       CalculatorFixture<MultipleStructureSphericalInvariants<
-                           MultipleStructureManagerNLCCStrictFixture>>,
-                       CalculatorFixture<MultipleStructureSphericalCovariants<
-                           MultipleStructureManagerNLCCStrictFixture>>>;
-
-  using fixtures_ref_test =
-      boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
-                       CalculatorFixture<SphericalExpansionTestData>,
-                       CalculatorFixture<SphericalInvariantsTestData>,
-                       CalculatorFixture<SphericalCovariantsTestData>>;
-
-  /* ---------------------------------------------------------------------- */
   /**
    * Test if the constructor runs and that the name is properly set
    */
@@ -132,7 +133,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Test that the function get_dense_feature_matrix from managerCollection and
+   * Test that the function get_features from managerCollection and
    * Property return the same dense matrix
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_dense_feature_comparison, Fix,
@@ -155,10 +156,10 @@ namespace rascal {
         ManagerCollection_t collection{};
         auto & prop = manager->template get_validated_property_ref<Property_t>(
             representations.back().get_name());
-        math::Matrix_t feat_prop = prop.get_dense_feature_matrix();
+        math::Matrix_t feat_prop = prop.get_features();
         collection.add_structure(manager);
         math::Matrix_t feat_col =
-            collection.get_dense_feature_matrix(representations.back());
+            collection.get_features(representations.back());
 
         BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
         BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
@@ -221,10 +222,11 @@ namespace rascal {
       manager->update(atomic_structure);
       for (auto & hyper : hypers) {
         representations.emplace_back(hyper);
+        std::string property_name{representations.back().get_name()};
         representations.back().compute(manager);
-        auto & prop = manager->template get_validated_property_ref<Property_t>(
-            representations.back().get_name());
-        BOOST_CHECK_EQUAL(prop.get_nb_item(), 1);
+        auto prop{manager->template get_validated_property<Property_t>(
+            property_name)};
+        BOOST_CHECK_EQUAL(prop->get_nb_item(), 1);
       }
     }
   }
@@ -276,13 +278,12 @@ namespace rascal {
 
         auto & prop = manager->template get_validated_property_ref<Property_t>(
             representation.get_name());
-        math::Matrix_t rep_full = prop.get_dense_feature_matrix();
+        math::Matrix_t rep_full = prop.get_features();
 
         auto & prop_no_center =
             manager_no_center->template get_validated_property_ref<Property_t>(
                 representation.get_name());
-        math::Matrix_t rep_no_center =
-            prop_no_center.get_dense_feature_matrix();
+        math::Matrix_t rep_no_center = prop_no_center.get_features();
 
         BOOST_CHECK_EQUAL(rep_full.cols(), rep_no_center.cols());
         BOOST_CHECK_EQUAL(center_atoms_mask.count(), rep_no_center.rows());
@@ -305,6 +306,102 @@ namespace rascal {
                         << std::endl;
             }
             i_no_center++;
+          }
+        }
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+
+  using grad_sparse_fixtures =
+      boost::mpl::list<CalculatorFixture<ComplexHypersSphericalInvariants>>;
+
+  /**
+   * Test if the keys for the PowerSpectrum's gradient are properly sparse on
+   * the 1st center of CaCrP2O7_mvc-11955_symmetrized.json
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(sparse_grad_test, Fix, grad_sparse_fixtures,
+                                   Fix) {
+    auto & managers = Fix::managers;
+    auto & representations = Fix::representations;
+    using Representation_t = typename Fix::Representation_t;
+    using PropGrad_t = typename Representation_t::template PropertyGradient_t<
+        typename Fix::Manager_t>;
+    auto & hypers = Fix::representation_hypers;
+    const bool verbose{false};
+    // assumes the structure is CaCrP2O7_mvc-11955_symmetrized.json
+    // the keys of the center contribution (1st center)
+    std::vector<std::vector<int>> all_keys{{8, 8},   {8, 15},  {8, 20},
+                                           {15, 15}, {15, 20}, {20, 20}};
+    // the list of keys for each neighbor (1st center)
+    std::vector<std::vector<std::vector<int>>> neigh_keys{
+        {{8, 15}, {15, 15}, {15, 20}}, {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 15}, {15, 15}, {15, 20}}};
+
+    for (auto & manager : managers) {
+      for (auto & hyper : hypers) {
+        if (hyper["soap_type"] == "PowerSpectrum") {
+          representations.emplace_back(hyper);
+          std::string property_name{representations.back().get_gradient_name()};
+          representations.back().compute(manager);
+          auto && prop_grad{
+              *manager->template get_validated_property<PropGrad_t>(
+                  property_name)};
+          for (auto center : manager) {
+            auto ii_pair = center.get_atom_ii();
+            auto keys_grad_center = prop_grad.get_keys(ii_pair);
+            if (verbose) {
+              std::cout << "Center gradient keys: ";
+              for (auto key : keys_grad_center) {
+                std::cout << "{";
+                for (auto key_sp : key) {
+                  std::cout << key_sp << ", ";
+                }
+                std::cout << "\b\b}, ";
+              }
+              std::cout << std::endl;
+            }
+
+            BOOST_TEST(keys_grad_center.size() == all_keys.size());
+            for (size_t ii{0}; ii < keys_grad_center.size(); ii++) {
+              BOOST_TEST(keys_grad_center[ii].size() == all_keys[ii].size());
+              for (size_t jj{0}; jj < keys_grad_center[ii].size(); jj++) {
+                BOOST_TEST(keys_grad_center[ii] == all_keys[ii],
+                           boost::test_tools::per_element());
+              }
+            }
+            int i_neigh{0};
+            for (auto neigh : center.pairs()) {
+              auto neigh_type = neigh.get_atom_type();
+              auto keys_neigh = prop_grad[neigh].get_keys();
+              if (verbose) {
+                std::cout << "Neighbour " << neigh_type << " keys: ";
+                for (auto key : keys_neigh) {
+                  std::cout << "{";
+                  for (auto key_sp : key) {
+                    std::cout << key_sp << ", ";
+                  }
+                  std::cout << "\b\b}, ";
+                }
+                std::cout << std::endl;
+              }
+
+              BOOST_TEST(keys_neigh.size() == neigh_keys[i_neigh].size());
+              for (size_t ii{0}; ii < keys_neigh.size(); ii++) {
+                BOOST_TEST(keys_neigh[ii].size() == all_keys[ii].size());
+                for (size_t jj{0}; jj < keys_neigh[ii].size(); jj++) {
+                  BOOST_TEST(keys_neigh[ii] == neigh_keys[i_neigh][ii],
+                             boost::test_tools::per_element());
+                }
+              }
+              ++i_neigh;
+            }
+            break;  // only the first center
           }
         }
       }
@@ -342,7 +439,7 @@ namespace rascal {
         auto && property{
             manager->template get_validated_property_ref<Property_t>(
                 property_name)};
-        auto test_representation = property.get_dense_feature_matrix();
+        auto test_representation = property.get_features();
 
         BOOST_CHECK_EQUAL(ref_representation.size(),
                           test_representation.rows());
@@ -369,8 +466,23 @@ namespace rascal {
     }
   }
 
-  using fixtures_with_gradients =
-      boost::mpl::list<CalculatorFixture<MultipleHypersSphericalExpansion>>;
+  using fixtures_with_gradients = boost::mpl::list<
+      RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
+                                   internal::RadialBasisType::GTO,
+                                   internal::AtomicSmearingType::Constant,
+                                   internal::OptimizationType::None>,
+      RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
+                                   internal::RadialBasisType::GTO,
+                                   internal::AtomicSmearingType::Constant,
+                                   internal::OptimizationType::Interpolator>,
+      RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
+                                   internal::RadialBasisType::DVR,
+                                   internal::AtomicSmearingType::Constant,
+                                   internal::OptimizationType::None>,
+      RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
+                                   internal::RadialBasisType::DVR,
+                                   internal::AtomicSmearingType::Constant,
+                                   internal::OptimizationType::Interpolator>>;
 
   /**
    * Test the derivative of the GTO radial integral in the SphericalExpansion
@@ -388,12 +500,13 @@ namespace rascal {
     // We need to explicitly specify a cluster ref type below - in this case,
     // it's for an atom pair (hence the 2)
     using ClusterRef_t = typename Fix::Manager_t::template ClusterRef<2>;
-    using RadialIntegral_t =
-        internal::RadialContribution<internal::RadialBasisType::GTO>;
-    GradientTestFixture test_data{"reference_data/radial_derivative_test.json"};
+    using RadialIntegral_t = typename Fix::RadialIntegral_t;
+
+    GradientTestFixture test_data{"reference_data/tests_only/"
+                                  "radial_derivative_test.json"};
     auto && it_manager{managers.front()->begin()};  // Need only one manager
     auto && atom{*it_manager};
-    auto && it_atom{atom.begin()};
+    auto && it_atom{atom.pairs().begin()};
     auto && pair{*it_atom};  // Need only one (arbitrary) pair
     auto manager = managers.front();
     for (auto & hyper : hypers) {
@@ -401,6 +514,7 @@ namespace rascal {
           std::make_shared<RadialIntegral_t>(hyper);
       // in C++17 the compiler would be able to deduce the template
       // arguments for itself >:/
+
       SphericalExpansionRadialDerivative<RadialIntegral_t, ClusterRef_t>
           calculator(radial_integral, pair);
       test_gradients(calculator, test_data);
@@ -436,7 +550,8 @@ namespace rascal {
             provider(representations.back(), manager, structures.back());
         RepresentationCalculatorGradientFixture<typename Fix::Representation_t,
                                                 typename Fix::Manager_t>
-            grad_fix("reference_data/spherical_expansion_gradient_test.json",
+            grad_fix("reference_data/tests_only/"
+                     "spherical_expansion_gradient_test.json",
                      manager, provider);
         /* ---- grad-test-example-end1 ---- */
         if (grad_fix.verbosity >= GradientTestFixture::VerbosityValue::INFO) {

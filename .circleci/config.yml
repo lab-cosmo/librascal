@@ -5,7 +5,7 @@ version: 2
 # indicated by the CC/CXX environment variables.
 default_job: &default_job
   docker:
-    - image: cosmoepfl/rascal-ci:1
+    - image: cosmoepfl/rascal-ci:2
   steps:
     - checkout
     - run:
@@ -17,6 +17,8 @@ default_job: &default_job
           mkdir build
           cd build
           cmake ${CMAKE_EXTRA} -DBUILD_BINDINGS=ON -DBUILD_TESTS=ON \
+                -DBUILD_EXAMPLES=ON -DBUILD_PROFILES=ON \
+                -DBUILD_BENCHMARKS=ON -DRUN_BENCHMARKS_FLAGS=--benchmark_min_time=0.0000001 \
                 -DCPPLINT=CPPLINT-NOTFOUND \
                 -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..
     - run:
@@ -25,6 +27,12 @@ default_job: &default_job
     - run:
         name: Run tests
         command: cd build && ctest --output-on-failure
+        # valgrind tests can take more than 10min
+        no_output_timeout: 20m
+    - run:
+        name: Run benchmarks
+        command: cd build && make benchmarks
+
 
 jobs:
   gcc-5:
@@ -41,7 +49,7 @@ jobs:
     environment:
       CC: gcc-9
       CXX: g++-9
-      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug
+      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=
     <<: *default_job
   clang-4:
     environment:
@@ -57,13 +65,18 @@ jobs:
     environment:
       CC: clang-9
       CXX: clang++-9
-      APT_EXTRA_INSTALL: apt install -y clang-9
-      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug
+      CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=
+    <<: *default_job
+  valgrind:
+    environment:
+      CC: gcc-9
+      CXX: g++-9
+      CMAKE_EXTRA: -DRASCAL_TESTS_USE_VALGRIND=ON -DTYPE_ARCHITECTURE=core2
     <<: *default_job
   # Special job only building the documentation
   docs:
     docker:
-    - image: cosmoepfl/rascal-ci:1
+    - image: cosmoepfl/rascal-ci:2
     steps:
       - checkout
       - run:
@@ -90,7 +103,7 @@ jobs:
   # Special job only linting the code
   lint:
     docker:
-    - image: cosmoepfl/rascal-ci:1
+    - image: cosmoepfl/rascal-ci:2
     steps:
       - checkout
       - run:
@@ -112,6 +125,7 @@ workflows:
     jobs:
       - lint
       - docs
+      - valgrind
       - gcc-5
       - gcc-9
       - gcc-9-debug

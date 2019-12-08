@@ -25,8 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "structure_managers/adaptor_filter.hh"
 #include "test_structure.hh"
+
+#include "rascal/structure_managers/adaptor_filter.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
@@ -127,6 +128,8 @@ namespace rascal {
       std::cout << " starts now." << std::endl;
     }
     std::random_device rd{};
+    // use the following generator comment in for predictabe randomness
+    // std::mt19937 rd{};
     std::uniform_int_distribution<int> dist(0, 1);
     std::vector<std::array<int, 2>> atom_tag_list{};
 
@@ -138,7 +141,7 @@ namespace rascal {
         std::cout << atom.get_atom_tag();
         std::cout << std::endl;
       }
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         if (verbose) {
           std::cout << ">> Pair with cluster index ";
           std::cout << pair.get_cluster_indices()[0];
@@ -169,7 +172,7 @@ namespace rascal {
         std::cout << atom.get_atom_tag();
         std::cout << std::endl;
       }
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         if (verbose) {
           std::cout << ">> Pair with cluster index ";
           std::cout << pair.get_cluster_indices()[0];

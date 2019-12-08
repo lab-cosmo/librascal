@@ -28,6 +28,32 @@ request" instead (or waiting to request reviewers).
 .. [*] You'd think this would be obvious, but far too many people ignore
        ``README``\ s in practice
 
+Summary of the review process
+===============================
+
+A detailed description can be found in a separate document about the `review
+process <https://cosmo-epfl.github.io/librascal/dev_guide/review_process.html>`_
+
+For developers
+ * We want a clean and tested master branch, which is why we review code and use
+   continuous integration tools.
+ * Contact us if you have any questions.
+ * Start the discussion about your contribution early by using the
+   Draft-Pull-Request feature of Github.
+ * Use our Pull-Request template in preparing your PR.
+ * Provide tests for the new/changed functionalities in the test suite of the library.
+ * Make sure your proposed changes pass the all existing tests, change (not
+   deactivate) them if necessary.
+ * Document your contribution.
+
+For reviewers
+ * The first person to make a full review is responsible for seeing it through.
+ * Single line comments are ok, but consider a proper review.
+ * If you started a review, you are responsible for seeing it through.
+ * Finish the PR fast by reviewing the requested changes.
+ * If you start changing code on a PR as a reviewer, ask another person to
+   review you code.
+
 Jupyter Notebooks
 =================
 

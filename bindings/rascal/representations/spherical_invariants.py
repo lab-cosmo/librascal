@@ -67,6 +67,7 @@ class SphericalInvariants(object):
                  cutoff_function_type="ShiftedCosine",
                  soap_type="PowerSpectrum", inversion_symmetry=True,
                  radial_basis="GTO", normalize=True,
+                 optimization_args={},
                  cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
@@ -85,8 +86,8 @@ class SphericalInvariants(object):
             interaction_cutoff=interaction_cutoff,
             cutoff_smooth_width=cutoff_smooth_width
         )
-        cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
-                                **cutoff_function_parameters)
+        cutoff_function = cutoff_function_dict_switch(
+            cutoff_function_type, **cutoff_function_parameters)
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
@@ -95,8 +96,36 @@ class SphericalInvariants(object):
                 unit='AA'
             ),
         )
+
+        if 'type' in optimization_args:
+            if optimization_args['type'] == 'Spline':
+                if 'accuracy' in optimization_args:
+                    accuracy = optimization_args['accuracy']
+                else:
+                    accuracy = 1e-8
+                if 'range' in optimization_args:
+                    spline_range = optimization_args['range']
+                else:
+                    # TODO(felix) remove this when there is a check for the
+                    # distance for the usage of the interpolator in the
+                    # RadialContribution
+                    print("Warning: default parameter for spline range is used.")
+                    spline_range = (0, interaction_cutoff)
+                optimization_args = {
+                    'type': 'Spline', 'accuracy': accuracy, 'range': {
+                        'begin': spline_range[0], 'end': spline_range[1]}}
+            elif optimization_args['type'] == 'None':
+                optimization_args = dict({'type': 'None'})
+            else:
+                print('Optimization type is not known. Switching to no'
+                      ' optimization.')
+                optimization_args = dict({'type': 'None'})
+        else:
+            optimization_args = dict({'type': 'None'})
+
         radial_contribution = dict(
             type=radial_basis,
+            optimization=optimization_args
         )
 
         self.update_hyperparameters(cutoff_function=cutoff_function,
@@ -162,24 +191,57 @@ class SphericalInvariants(object):
 
         """
         if self.hypers['soap_type'] == 'RadialSpectrum':
-            return (self.hypers['n_species']*self.hypers['max_radial'])
+            return (self.hypers['n_species'] * self.hypers['max_radial'])
         if self.hypers['soap_type'] == 'PowerSpectrum':
-            return (int((self.hypers['n_species']*(self.hypers['n_species']
-                                                   + 1))/2) * self.hypers['max_radial']**2
-                    * (self.hypers['max_angular'] + 1))
+            return (int((self.hypers['n_species'] *
+                         (self.hypers['n_species'] +
+                          1)) /
+                        2) *
+                    self.hypers['max_radial']**2 *
+                    (self.hypers['max_angular'] +
+                     1))
         if self.hypers['soap_type'] == 'BiSpectrum':
-            if self.hypers['inversion_symmetry'] == False:
+            if not self.hypers['inversion_symmetry']:
                 return (self.hypers['n_species']**3
                         * self.hypers['max_radial']**3
-                        * int(1 + 2*self.hypers['max_angular']
-                              + 3*self.hypers['max_angular']**2/2
-                              + self.hypers['max_angular']**3/2))
+                        * int(1 + 2 * self.hypers['max_angular']
+                              + 3 * self.hypers['max_angular']**2 / 2
+                            + self.hypers['max_angular']**3 / 2))
             else:
                 return (self.hypers['n_species']**3
                         * self.hypers['max_radial']**3
                         * int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)
-                                       * (2*(self.hypers['max_angular'] + 1) + 3)/8.0)))
+                                     * (2 * (self.hypers['max_angular'] + 1) + 3) / 8.0)))
         else:
             raise ValueError('Only soap_type = RadialSpectrum || '
                              'PowerSpectrum || BiSpectrum '
                              'implemented for now')
+
+    def get_keys(self, species):
+        """
+        return the proper list of keys used to build the representation
+        """
+        keys = []
+        if self.hypers['soap_type'] == 'RadialSpectrum':
+            for sp in species:
+                keys.append([sp])
+        elif self.hypers['soap_type'] == 'PowerSpectrum':
+            for sp1 in species:
+                for sp2 in species:
+                    if sp1 > sp2:
+                        continue
+                    keys.append([sp1, sp2])
+        elif self.hypers['soap_type'] == 'BiSpectrum':
+            for sp1 in species:
+                for sp2 in species:
+                    if sp1 > sp2:
+                        continue
+                    for sp3 in species:
+                        if sp2 > sp3:
+                            continue
+                        keys.append([sp1, sp2, sp3])
+        else:
+            raise ValueError('Only soap_type = RadialSpectrum || '
+                             'PowerSpectrum || BiSpectrum '
+                             'implemented for now')
+        return keys

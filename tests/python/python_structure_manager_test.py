@@ -2,12 +2,17 @@ import ase.io
 
 from rascal.neighbourlist import get_neighbourlist
 from rascal.neighbourlist.structure_manager import (
-        mask_center_atoms_by_species, mask_center_atoms_by_id)
+    mask_center_atoms_by_species, mask_center_atoms_by_id)
 from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np
 import sys
+import os
 import faulthandler
+
+rascal_reference_path = 'reference_data'
+inputs_path = os.path.join(rascal_reference_path, "inputs")
+dump_path = os.path.join(rascal_reference_path, "tests_only")
 
 
 def get_NL_reference(cutoff, cell, pbc, positions, atom_types):
@@ -72,7 +77,7 @@ class TestStructureManagerCenters(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json')
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.nl_options = [
@@ -98,7 +103,7 @@ class TestNL(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json')
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.cutoff = 3.
@@ -133,8 +138,8 @@ class TestNL(unittest.TestCase):
             neighpos, neighlist, neightype, neighdist = get_NL_reference(
                 self.cutoff, **structure)
 
-            for ii, center in enumerate(manager):
-                for jj, neigh in enumerate(center):
+            for center in manager:
+                for neigh in center.pairs():
                     dist = np.linalg.norm(neigh.position - center.position)
 
 
@@ -145,7 +150,7 @@ class TestNLStrict(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json')
         self.frame = load_json_frame(fn)
         self.structure = self.frame
         self.cutoff = 3.
@@ -188,7 +193,7 @@ class TestNLStrict(unittest.TestCase):
                 self.cutoff, **structure)
             for ii, center in enumerate(manager):
                 dists, dirVecs = [], []
-                for jj, neigh in enumerate(center):
+                for neigh in center.pairs():
                     dist = np.linalg.norm(neigh.position - center.position)
                     dists.append(dist)
                     dirVecs.append((neigh.position - center.position) / dist)
@@ -200,6 +205,7 @@ class TestNLStrict(unittest.TestCase):
                 ref_sort_ids, sort_ids = np.argsort(
                     ref_dists), np.argsort(dists)
 
+
 class CenterSelectTest(unittest.TestCase):
 
     """Test the center-select Python interface
@@ -208,7 +214,7 @@ class CenterSelectTest(unittest.TestCase):
     """
 
     def setUp(self):
-        filename = 'reference_data/small_molecule.json'
+        filename = 'reference_data/inputs/small_molecule.json'
         self.frame = ase.io.read(filename)
         self.natoms = self.frame.get_number_of_atoms()
 
@@ -227,7 +233,7 @@ class CenterSelectTest(unittest.TestCase):
         mask_center_atoms_by_id(self.frame, np.arange(3, 7))
         test_mask[:7] = True
         self.check_mask(test_mask)
-        mask_center_atoms_by_id(self.frame, id_blacklist=[0,])
+        mask_center_atoms_by_id(self.frame, id_blacklist=[0])
         test_mask[0] = False
         self.check_mask(test_mask)
 
@@ -239,7 +245,7 @@ class CenterSelectTest(unittest.TestCase):
         mask_center_atoms_by_id(self.frame, id_blacklist=np.arange(3, 7))
         test_mask[:7] = False
         self.check_mask(test_mask)
-        mask_center_atoms_by_id(self.frame, id_select=[0,])
+        mask_center_atoms_by_id(self.frame, id_select=[0])
         test_mask[0] = True
         self.check_mask(test_mask)
 
@@ -254,10 +260,10 @@ class CenterSelectTest(unittest.TestCase):
         mask_center_atoms_by_species(self.frame, ['C', 'H'])
         test_mask = np.array([0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1], dtype='bool')
         self.check_mask(test_mask)
-        mask_center_atoms_by_species(self.frame, ['N',])
+        mask_center_atoms_by_species(self.frame, ['N'])
         test_mask[[0, 2, 4, 6]] = True
         self.check_mask(test_mask)
-        mask_center_atoms_by_species(self.frame, species_blacklist=['H',])
+        mask_center_atoms_by_species(self.frame, species_blacklist=['H'])
         test_mask[[9, 10]] = False
         self.check_mask(test_mask)
 
@@ -265,10 +271,10 @@ class CenterSelectTest(unittest.TestCase):
         mask_center_atoms_by_species(self.frame, species_blacklist=['C', 'H'])
         test_mask = np.array([1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0], dtype='bool')
         self.check_mask(test_mask)
-        mask_center_atoms_by_species(self.frame, species_blacklist=['N',])
+        mask_center_atoms_by_species(self.frame, species_blacklist=['N'])
         test_mask[[0, 2, 4, 6]] = False
         self.check_mask(test_mask)
-        mask_center_atoms_by_species(self.frame, species_select=['H',])
+        mask_center_atoms_by_species(self.frame, species_select=['H'])
         test_mask[[9, 10]] = True
         self.check_mask(test_mask)
 
@@ -297,7 +303,7 @@ class CenterSelectTest(unittest.TestCase):
                                          species_blacklist=['C', 1])
 
     def test_mask_species_and_id(self):
-        mask_center_atoms_by_species(self.frame, species_select=['C',])
+        mask_center_atoms_by_species(self.frame, species_select=['C'])
         mask_center_atoms_by_id(self.frame, id_blacklist=np.arange(3))
         test_mask = np.zeros((self.natoms,), dtype='bool')
         test_mask[3] = True

@@ -29,19 +29,20 @@
 #ifndef TESTS_TEST_MATH_HH_
 #define TESTS_TEST_MATH_HH_
 
-#include "json_io.hh"
-#include "math/bessel.hh"
-#include "math/gauss_legendre.hh"
-#include "math/hyp1f1.hh"
-#include "math/math_utils.hh"
-#include "math/spherical_harmonics.hh"
-#include "rascal_utility.hh"
+#include "rascal/json_io.hh"
+#include "rascal/math/bessel.hh"
+#include "rascal/math/gauss_legendre.hh"
+#include "rascal/math/hyp1f1.hh"
+#include "rascal/math/spherical_harmonics.hh"
+#include "rascal/math/utils.hh"
+#include "rascal/utils.hh"
 
 #include <boost/test/unit_test.hpp>
 
 #include <Eigen/Dense>
 
 #include <fstream>
+#include <iostream>
 #include <string>
 
 namespace rascal {
@@ -59,7 +60,8 @@ namespace rascal {
 
     ~SphericalHarmonicsRefFixture() = default;
 
-    std::string ref_filename = "reference_data/spherical_harmonics_test.json";
+    std::string ref_filename =
+        "reference_data/tests_only/spherical_harmonics_test.json";
 
     using StdVector2Dim_t = std::vector<std::vector<double>>;
     using StdVector3Dim_t = std::vector<std::vector<std::vector<double>>>;
@@ -78,7 +80,7 @@ namespace rascal {
     ~SphericalHarmonicsClassRefFixture() = default;
 
     std::string ref_filename =
-        "reference_data/spherical_harmonics_reference.ubjson";
+        "reference_data/tests_only/spherical_harmonics_reference.ubjson";
     json ref_data{};
     // TODO(alex) replace this with one variable VerbosityValues verbosity
     // for general test information
@@ -95,7 +97,8 @@ namespace rascal {
 
     ~GaussLegendreRefFixture() = default;
 
-    std::string ref_filename = "reference_data/gauss_legendre_reference.ubjson";
+    std::string ref_filename =
+        "reference_data/tests_only/gauss_legendre_reference.ubjson";
 
     json ref_data{};
     bool verbose{false};
@@ -103,17 +106,57 @@ namespace rascal {
 
   struct ModifiedBesselFirstKindRefFixture {
     ModifiedBesselFirstKindRefFixture() {
-      this->ref_data = json_io::load_txt(this->ref_filename);
+      this->ref_data = json_io::load(this->ref_filename);
     }
 
     ~ModifiedBesselFirstKindRefFixture() = default;
 
     std::string ref_filename =
-        "reference_data/modified_bessel_first_kind_reference.json";
+        "reference_data/tests_only/modified_bessel_first_kind_reference.ubjson";
 
     json ref_data{};
+    bool verbose{false};
+  };
+
+  /**
+   * Wrapper of the SphericalHarmonics class to interface with the gradient
+   * tester
+   *
+   * See the documentation for test_gradients() below; the calculator object
+   * passed to it must provide the functions f() and grad_f() as below.
+   */
+  struct ModifiedBesselFirstKindGradientsProvider {
+    ModifiedBesselFirstKindGradientsProvider(const Eigen::ArrayXd & xs,
+                                             const double & alpha,
+                                             const size_t & max_angular) {
+      this->alpha = alpha;
+      this->xs = xs;
+      this->max_angular = max_angular;
+      this->j_v_complete_square.precompute(max_angular, this->xs, true);
+    }
+
+    static const size_t n_arguments = 1;
+    using Map_t = Eigen::Map<Eigen::ArrayXd>;
+    using Input_t = const Eigen::Matrix<double, 1, 1> &;
+
+    Eigen::ArrayXd f(Input_t inputs_v) {
+      double distance{inputs_v[0]};
+      this->j_v_complete_square.calc(distance, this->alpha);
+      Eigen::ArrayXXd result = this->j_v_complete_square.get_values();
+      Map_t result_flat(result.data(), result.size());
+      return result_flat;
+    }
+    Eigen::ArrayXd grad_f(Input_t inputs_v) {
+      double distance{inputs_v[0]};
+      this->j_v_complete_square.calc(distance, this->alpha);
+      Eigen::ArrayXXd result = this->j_v_complete_square.get_gradients();
+      Map_t result_flat(result.data(), result.size());
+      return result_flat;
+    }
+    double alpha{};
+    Eigen::ArrayXd xs{};
+    size_t max_angular{};
     math::ModifiedSphericalBessel j_v_complete_square{};
-    bool verbose{true};
   };
 
   /**
@@ -423,7 +466,8 @@ namespace rascal {
 
     ~Hyp1F1RefFixture() = default;
 
-    std::string ref_filename = "reference_data/hyp1f1_reference.ubjson";
+    std::string ref_filename =
+        "reference_data/tests_only/hyp1f1_reference.ubjson";
 
     json ref_data{};
     bool verbose{false};
@@ -471,6 +515,8 @@ namespace rascal {
   };
 
   struct Hyp1f1GradientProvider {
+    static const size_t n_arguments = 1;
+
     Hyp1f1GradientProvider(size_t max_radial, size_t max_angular, double fac_a,
                            Eigen::Ref<Eigen::VectorXd> fac_b)
         : max_radial{max_radial}, max_angular{max_angular}, fac_a{fac_a} {
@@ -481,7 +527,7 @@ namespace rascal {
 
     ~Hyp1f1GradientProvider() = default;
 
-    Eigen::Ref<Eigen::Array<double, 1, Eigen::Dynamic>>
+    Eigen::Array<double, 1, Eigen::Dynamic>
     f(const Eigen::Matrix<double, 1, 1> & input_v) {
       this->hyp1f1_calculator.calc(input_v(0), this->fac_a, this->fac_b);
       Eigen::MatrixXd result(this->max_radial, this->max_angular + 1);
@@ -491,7 +537,7 @@ namespace rascal {
       return result_flat;
     }
 
-    Eigen::Ref<Eigen::Array<double, 1, Eigen::Dynamic>>
+    Eigen::Array<double, 1, Eigen::Dynamic>
     grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
       this->hyp1f1_calculator.calc(input_v(0), this->fac_a, this->fac_b, true);
       Eigen::MatrixXd result(this->max_radial, this->max_angular + 1);
