@@ -96,7 +96,7 @@ namespace rascal {
    * @tparam Index
    * @param index_sequence
    *
-   * @return returns the `Index` elment in the index sequence.
+   * @return returns the `Index` element in the index sequence.
    */
   template <size_t Index, size_t... Ints>
   constexpr size_t get_index_from_sequence(
