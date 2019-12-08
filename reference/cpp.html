@@ -817,12 +817,12 @@ StructureManager is compatible with the representation <dl class="simple">
 
 <dl class="type">
 <dt>
-<em class="property">using </em><code class="sig-name descname">LayerIncreaser_t</code> = <em class="property">typename</em> LayerIncreaser&lt;MaxOrder, std::index_sequence&lt;Ints...&gt;&gt;::type<br /></dt>
+<em class="property">using </em><code class="sig-name descname">LayerIncreaser_t</code> = <em class="property">typename</em> LayerIncreaser&lt;std::index_sequence&lt;LayersByOrder...&gt;&gt;::type<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
 <dt>
-<em class="property">using </em><code class="sig-name descname">LayerExtender_t</code> = <em class="property">typename</em> LayerExtender&lt;MaxOrder, std::index_sequence&lt;Ints...&gt;&gt;::type<br /></dt>
+<em class="property">using </em><code class="sig-name descname">LayerExtender_t</code> = <em class="property">typename</em> LayerExtender&lt;std::index_sequence&lt;LayersByOrder...&gt;&gt;::type<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
@@ -1080,27 +1080,22 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">MaxLevel</code>, size_t... <code class="sig-name descname">Ints</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">get_depth</code><span class="sig-paren">(</span>size_t <em>index</em>, std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal9get_depthE6size_t6size_tNSt14index_sequenceIDp4IntsEE" title="rascal::get_depth::Ints">Ints</a>...&gt;<span class="sig-paren">)</span><br /></dt>
+template&lt;size_t <code class="sig-name descname">Index</code>, size_t... <code class="sig-name descname">Ints</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">get_index_from_sequence</code><span class="sig-paren">(</span><em class="property">const</em> std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal23get_index_from_sequenceE6size_tRKNSt14index_sequenceIDp4IntsEE" title="rascal::get_index_from_sequence::Ints">Ints</a>...&gt;&amp;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">MaxOrder</code>, size_t... <code class="sig-name descname">Ints</code>&gt;<br /><em class="property">constexpr</em> std::array&lt;size_t, <a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal10get_layersENSt5arrayI6size_t8MaxOrderEENSt14index_sequenceIDp4IntsEE" title="rascal::get_layers::MaxOrder">MaxOrder</a>&gt; <code class="sig-name descname">get_layers</code><span class="sig-paren">(</span>std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal10get_layersENSt5arrayI6size_t8MaxOrderEENSt14index_sequenceIDp4IntsEE" title="rascal::get_layers::Ints">Ints</a>...&gt;<span class="sig-paren">)</span><br /></dt>
+template&lt;size_t <code class="sig-name descname">Order</code>, size_t... <code class="sig-name descname">Ints</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">get_layer</code><span class="sig-paren">(</span><em class="property">const</em> std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal9get_layerE6size_tRKNSt14index_sequenceIDp4IntsEE" title="rascal::get_layer::Ints">Ints</a>...&gt; &amp;<em>layers_by_order</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t... <code class="sig-name descname">Ints</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">compute_cluster_layer</code><span class="sig-paren">(</span><em class="property">const</em> std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal21compute_cluster_layerE6size_tRKNSt14index_sequenceIDp4IntsEE" title="rascal::compute_cluster_layer::Ints">Ints</a>...&gt;&amp;<span class="sig-paren">)</span><br /></dt>
+template&lt;size_t... <code class="sig-name descname">Ints</code>&gt;<br /><em class="property">constexpr</em> std::array&lt;size_t, sizeof...(<a class="reference internal" href="#_CPPv4I_Dp6size_tEN6rascal23index_sequence_to_arrayENSt5arrayI6size_tXsZ4IntsEEERKNSt14index_sequenceIDp4IntsEE" title="rascal::index_sequence_to_array::Ints">Ints</a>)&gt; <code class="sig-name descname">index_sequence_to_array</code><span class="sig-paren">(</span><em class="property">const</em> std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_Dp6size_tEN6rascal23index_sequence_to_arrayENSt5arrayI6size_tXsZ4IntsEEERKNSt14index_sequenceIDp4IntsEE" title="rascal::index_sequence_to_array::Ints">Ints</a>...&gt;&amp;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;size_t... <code class="sig-name descname">Ints</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">get_layer</code><span class="sig-paren">(</span><em class="property">const</em> size_t <em>order</em>, <em class="property">const</em> std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_Dp6size_tEN6rascal9get_layerE6size_tK6size_tKNSt14index_sequenceIDp4IntsEE" title="rascal::get_layer::Ints">Ints</a>...&gt;<span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;size_t <code class="sig-name descname">index</code>, size_t... <code class="sig-name descname">Ints</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">get</code><span class="sig-paren">(</span>std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal3getE6size_tNSt14index_sequenceIDp4IntsEE" title="rascal::get::Ints">Ints</a>...&gt;<span class="sig-paren">)</span><br /></dt>
+template&lt;size_t <code class="sig-name descname">ActiveMaxOrder</code>, size_t... <code class="sig-name descname">LayersByOrder</code>&gt;<br /><em class="property">constexpr</em> size_t <code class="sig-name descname">get_min_layer</code><span class="sig-paren">(</span><em class="property">const</em> std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal13get_min_layerE6size_tRKNSt14index_sequenceIDp13LayersByOrderEE" title="rascal::get_min_layer::LayersByOrder">LayersByOrder</a>...&gt;&amp;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -1416,6 +1411,46 @@ template&lt;typename <code class="sig-name descname">T</code>&gt;<br />auto <cod
 <dl class="function">
 <dt>
 <code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>spherical_representation_gradients, Fix, <a class="reference internal" href="#_CPPv4N6rascal17gradient_fixturesE" title="rascal::gradient_fixtures">gradient_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_AUTO_TEST_SUITE</code><span class="sig-paren">(</span>test_cluster_ref_key<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_AUTO_TEST_CASE</code><span class="sig-paren">(</span>test_get_min_layer<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE</code><span class="sig-paren">(</span>test_get_layer, LayerFixture<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE</code><span class="sig-paren">(</span>test_index_sequence_to_array, LayerFixture<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_AUTO_TEST_CASE</code><span class="sig-paren">(</span>test_layer_extender<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_AUTO_TEST_CASE</code><span class="sig-paren">(</span>test_layer_increaser<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t... <code class="sig-name descname">Ints</code>&gt;<br />void <code class="sig-name descname">print_index_sequence</code><span class="sig-paren">(</span>std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_Dp6size_tEN6rascal20print_index_sequenceEvNSt14index_sequenceIDp4IntsEE" title="rascal::print_index_sequence::Ints">Ints</a>...&gt;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">Length</code>, size_t... <code class="sig-name descname">Ints</code>&gt;<br /><em class="property">static</em> void <code class="sig-name descname">print_index_sequence</code><span class="sig-paren">(</span>std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal20print_index_sequenceEvNSt14index_sequenceIDp4IntsEE" title="rascal::print_index_sequence::Ints">Ints</a>...&gt;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4440,12 +4475,12 @@ template&lt;&gt;<br /><em class="property">using </em><code class="sig-name desc
 
 <dl class="type">
 <dt>
-template&lt;&gt;<br /><em class="property">using </em><code class="sig-name descname">Property_t</code> = Property&lt;T, Order, <a class="reference internal" href="#_CPPv4I_Dp6size_tEN6rascal9get_layerE6size_tK6size_tKNSt14index_sequenceIDp4IntsEE" title="rascal::get_layer">get_layer</a>(Order, ), StructureManager_t, NbRow, NbCol&gt;<br /></dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="sig-name descname">Property_t</code> = Property&lt;T, Order, <a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal9get_layerE6size_tRKNSt14index_sequenceIDp4IntsEE" title="rascal::get_layer">get_layer</a>&lt;Order&gt;(<em class="property">typename</em> traits::LayerByOrder{}), StructureManager_t, NbRow, NbCol&gt;<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
 <dt>
-template&lt;&gt;<br /><em class="property">using </em><code class="sig-name descname">TypedProperty_t</code> = TypedProperty&lt;T, Order, <a class="reference internal" href="#_CPPv4I_Dp6size_tEN6rascal9get_layerE6size_tK6size_tKNSt14index_sequenceIDp4IntsEE" title="rascal::get_layer">get_layer</a>(Order, ), StructureManager_t&gt;<br /></dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="sig-name descname">TypedProperty_t</code> = TypedProperty&lt;T, Order, <a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal9get_layerE6size_tRKNSt14index_sequenceIDp4IntsEE" title="rascal::get_layer">get_layer</a>&lt;Order&gt;(<em class="property">typename</em> traits::LayerByOrder{}), StructureManager_t&gt;<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
@@ -5013,7 +5048,7 @@ template&lt;class <code class="sig-name descname">ManagerImplementation</code>, 
 <p class="breathe-sectiondef-title rubric">Public Types</p>
 <dl class="type">
 <dt>
-template&lt;&gt;<br /><em class="property">using </em><code class="sig-name descname">LayerByOrder</code> = <em class="property">typename</em> LayerIncreaser&lt;MaxOrder_, <em class="property">typename</em> parent_traits::LayerByOrder&gt;::type<br /></dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="sig-name descname">LayerByOrder</code> = <em class="property">typename</em> LayerIncreaser&lt;<em class="property">typename</em> parent_traits::LayerByOrder&gt;::type<br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -5764,16 +5799,6 @@ template&lt;class <code class="sig-name descname">ManagerImplementation</code>&g
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Layer</code>, size_t <code class="sig-name descname">HiLayer</code>, typename <code class="sig-name descname">T</code>, size_t... <code class="sig-name descname">Ints</code>&gt;<br />std::array&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t0_Dp6size_tEN6rascal8internal11head_helperENSt5arrayI1T5LayerEERKNSt5arrayI1T7HiLayerEENSt14index_sequenceIDp4IntsEE" title="rascal::internal::head_helper::T">T</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t0_Dp6size_tEN6rascal8internal11head_helperENSt5arrayI1T5LayerEERKNSt5arrayI1T7HiLayerEENSt14index_sequenceIDp4IntsEE" title="rascal::internal::head_helper::Layer">Layer</a>&gt; <code class="sig-name descname">head_helper</code><span class="sig-paren">(</span><em class="property">const</em> std::array&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t0_Dp6size_tEN6rascal8internal11head_helperENSt5arrayI1T5LayerEERKNSt5arrayI1T7HiLayerEENSt14index_sequenceIDp4IntsEE" title="rascal::internal::head_helper::T">T</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t0_Dp6size_tEN6rascal8internal11head_helperENSt5arrayI1T5LayerEERKNSt5arrayI1T7HiLayerEENSt14index_sequenceIDp4IntsEE" title="rascal::internal::head_helper::HiLayer">HiLayer</a>&gt; &amp;<em>arr</em>, std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t0_Dp6size_tEN6rascal8internal11head_helperENSt5arrayI1T5LayerEERKNSt5arrayI1T7HiLayerEENSt14index_sequenceIDp4IntsEE" title="rascal::internal::head_helper::Ints">Ints</a>...&gt;<span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;size_t <code class="sig-name descname">Layer</code>, size_t <code class="sig-name descname">HiLayer</code>, typename <code class="sig-name descname">T</code>&gt;<br />std::array&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t0EN6rascal8internal4headENSt5arrayI1T5LayerEERKNSt5arrayI1T7HiLayerEE" title="rascal::internal::head::T">T</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t0EN6rascal8internal4headENSt5arrayI1T5LayerEERKNSt5arrayI1T7HiLayerEE" title="rascal::internal::head::Layer">Layer</a>&gt; <code class="sig-name descname">head</code><span class="sig-paren">(</span><em class="property">const</em> std::array&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t0EN6rascal8internal4headENSt5arrayI1T5LayerEERKNSt5arrayI1T7HiLayerEE" title="rascal::internal::head::T">T</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t0EN6rascal8internal4headENSt5arrayI1T5LayerEERKNSt5arrayI1T7HiLayerEE" title="rascal::internal::head::HiLayer">HiLayer</a>&gt; &amp;<em>arr</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
 template&lt;typename <code class="sig-name descname">T</code>, size_t <code class="sig-name descname">Size</code>, int... <code class="sig-name descname">Indices</code>&gt;<br />std::array&lt;<a class="reference internal" href="#_CPPv4I0_6size_t_DpiEN6rascal8internal19append_array_helperENSt5arrayI1TXpl4SizeL1EEEERKNSt5arrayI1T4SizeEERR1TNSt16integer_sequenceIiDp7IndicesEE" title="rascal::internal::append_array_helper::T">T</a>, <a class="reference internal" href="#_CPPv4I0_6size_t_DpiEN6rascal8internal19append_array_helperENSt5arrayI1TXpl4SizeL1EEEERKNSt5arrayI1T4SizeEERR1TNSt16integer_sequenceIiDp7IndicesEE" title="rascal::internal::append_array_helper::Size">Size</a> + 1&gt; <code class="sig-name descname">append_array_helper</code><span class="sig-paren">(</span><em class="property">const</em> std::array&lt;<a class="reference internal" href="#_CPPv4I0_6size_t_DpiEN6rascal8internal19append_array_helperENSt5arrayI1TXpl4SizeL1EEEERKNSt5arrayI1T4SizeEERR1TNSt16integer_sequenceIiDp7IndicesEE" title="rascal::internal::append_array_helper::T">T</a>, <a class="reference internal" href="#_CPPv4I0_6size_t_DpiEN6rascal8internal19append_array_helperENSt5arrayI1TXpl4SizeL1EEEERKNSt5arrayI1T4SizeEERR1TNSt16integer_sequenceIiDp7IndicesEE" title="rascal::internal::append_array_helper::Size">Size</a>&gt; &amp;<em>arr</em>, <a class="reference internal" href="#_CPPv4I0_6size_t_DpiEN6rascal8internal19append_array_helperENSt5arrayI1TXpl4SizeL1EEEERKNSt5arrayI1T4SizeEERR1TNSt16integer_sequenceIiDp7IndicesEE" title="rascal::internal::append_array_helper::T">T</a> &amp;&amp;<em>t</em>, std::integer_sequence&lt;int, <a class="reference internal" href="#_CPPv4I0_6size_t_DpiEN6rascal8internal19append_array_helperENSt5arrayI1TXpl4SizeL1EEEERKNSt5arrayI1T4SizeEERR1TNSt16integer_sequenceIiDp7IndicesEE" title="rascal::internal::append_array_helper::Indices">Indices</a>...&gt;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -5905,14 +5930,6 @@ std::string <code class="sig-name descname">get_filename_extension</code><span c
 <dl class="function">
 <dt>
 template&lt;typename <code class="sig-name descname">T</code>&gt;<br />std::string <code class="sig-name descname">GetBindingTypeName</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-</div>
-<div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Variables</p>
-<dl class="member">
-<dt>
-<em class="property">constexpr</em> int <code class="sig-name descname">InvalidLayer</code> = -1<br /></dt>
 <dd></dd></dl>
 
 </div>
