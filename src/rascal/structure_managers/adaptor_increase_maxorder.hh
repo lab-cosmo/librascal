@@ -64,8 +64,7 @@ namespace rascal {
     constexpr static size_t MaxOrder{parent_traits::MaxOrder + 1};
     // Extend the layer by one with the new MaxOrder
     using LayerByOrder =
-        typename LayerExtender<MaxOrder,
-                               typename parent_traits::LayerByOrder>::type;
+        typename LayerExtender<typename parent_traits::LayerByOrder>::type;
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         parent_traits::NeighbourListType};
   };
@@ -262,7 +261,7 @@ namespace rascal {
     typename std::enable_if_t<TargetOrder == traits::MaxOrder, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       constexpr auto current_layer{
-          compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};
+          get_layer<TargetOrder>(typename traits::LayerByOrder{})};
       auto access_index = cluster.get_cluster_index(current_layer);
       return this->nb_neigh[access_index];
     }

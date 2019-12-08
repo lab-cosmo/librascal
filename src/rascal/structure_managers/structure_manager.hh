@@ -101,7 +101,7 @@ namespace rascal {
         std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
       constexpr static auto ActiveLayer{
-          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+          get_layer<Order>(typename traits::LayerByOrder{})};
 
       using Property_t =
           Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;
@@ -121,7 +121,7 @@ namespace rascal {
                                                std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
       constexpr static auto ActiveLayer{
-          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+          get_layer<Order>(typename traits::LayerByOrder{})};
 
       using Property_t =
           Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;
@@ -191,21 +191,21 @@ namespace rascal {
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     using Property_t =
-        Property<T, Order, get_layer(Order, typename traits::LayerByOrder{}),
+        Property<T, Order, get_layer<Order>(typename traits::LayerByOrder{}),
                  StructureManager_t, NbRow, NbCol>;
 
     //! helper type for Property creation
     template <typename T, size_t Order>
     using TypedProperty_t =
         TypedProperty<T, Order,
-                      get_layer(Order, typename traits::LayerByOrder{}),
+                      get_layer<Order>(typename traits::LayerByOrder{}),
                       StructureManager_t>;
 
     using Key_t = std::vector<int>;
     template <typename T, size_t Order>
     using BlockSparseProperty_t =
         BlockSparseProperty<T, Order,
-                            get_layer(Order, typename traits::LayerByOrder{}),
+                            get_layer<Order>(typename traits::LayerByOrder{}),
                             StructureManager_t, Key_t>;
 
     //! type for the hyper parameter class
@@ -558,8 +558,7 @@ namespace rascal {
 
     template <size_t Order>
     constexpr static size_t cluster_layer_from_order() {
-      static_assert(Order > 0, "Order is <1 this should not be");
-      return get_layer(Order, typename traits::LayerByOrder{});
+      return get_layer<Order>(typename traits::LayerByOrder{});
     }
 
     /**
@@ -597,7 +596,7 @@ namespace rascal {
     //! returns the current layer
     template <size_t Order>
     constexpr static size_t cluster_layer() {
-      return compute_cluster_layer<Order>(typename traits::LayerByOrder{});
+      return get_layer<Order>(typename traits::LayerByOrder{});
     }
 
     //! recursion end, not for use
