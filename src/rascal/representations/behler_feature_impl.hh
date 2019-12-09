@@ -132,12 +132,38 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  template <SymmetryFunType SymFunType, class StructureManager>
+  void BehlerFeatureBase::compute_helper(StructureManager & manager,
+                                         std::shared_ptr<PropertyBase> output) {
+    CutoffFunctionsVTable<SymFunType, SymmetryFunType::One,
+                          SymmetryFunType::Gaussian, SymmetryFunType::Cosine,
+                          SymmetryFunType::Angular1,
+                          SymmetryFunType::Angular2>::compute(*this, manager,
+                                                              output);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunType SymFunType, class StructureManager>
+  void BehlerFeatureBase::compute_helper(
+      StructureManager & manager, std::shared_ptr<PropertyBase> output,
+      std::shared_ptr<PropertyBase> output_derivatives) {
+    CutoffFunctionsVTable<
+        SymFunType, SymmetryFunType::One, SymmetryFunType::Gaussian,
+        SymmetryFunType::Cosine, SymmetryFunType::Angular1,
+        SymmetryFunType::Angular2>::compute(*this, manager, output,
+                                            output_derivatives);
+  }
+
+  /* ---------------------------------------------------------------------- */
   template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType>
   template <class StructureManager>
   void BehlerFeature<SymFunType, CutFunType>::compute(
       StructureManager & manager, std::shared_ptr<PropertyBase> output) const {
-    using Output_t = Property<double, AtomOrder, PropertyLayer,
-                              StructureManager>;
+    const std::string && cut_off_vals_id {this->cut_off_fun.get_identifier()};
+    auto & cutoffs{dynamic_cast<Property<>&>(*manager.get_property(cut_off_vals_id))};
+    if (not manager.get_property
+    using Output_t =
+        Property<double, AtomOrder, PropertyLayer, StructureManager>;
     Output_t & fun_vals{dynamic_cast<Output_t &>(*output)};
     for (auto && atom : manager) {
       for (auto && cluster :
@@ -196,7 +222,7 @@ namespace rascal {
     }
 
     // determine which species repetition scenario we are in
-    for ( auto && species : param.at("species").template get<std::string>()) {
+    for (auto && species : param.at("species").template get<std::string>()) {
       this->species_combo
     }
     auto species{};

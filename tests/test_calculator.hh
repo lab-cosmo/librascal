@@ -36,7 +36,7 @@
 #include "rascal/atomic_structure.hh"
 #include "rascal/json_io.hh"
 #include "rascal/representations/calculator_base.hh"
-#include "rascal/representations/calculator_behler_parinello.hh"
+//#include "rascal/representations/calculator_behler_parinello.hh"
 #include "rascal/representations/calculator_sorted_coulomb.hh"
 #include "rascal/representations/calculator_spherical_covariants.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
@@ -1097,17 +1097,17 @@ namespace rascal {
          {"sorting_algorithm", "row_norm"}}};
   };
 
-  struct MultipleStructureBehlerParinello
-      : MultipleStructureManagerNLStrictFixture {
-    using Parent = MultipleStructureManagerNLStrictFixture;
-    using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-    using Representation_t = CalculatorBehlerParinello;
-    MultipleStructureBehlerParinello() : Parent{} {};
-    ~MultipleStructureBehlerParinello() = default;
+  // struct MultipleStructureBehlerParinello
+  //     : MultipleStructureManagerNLStrictFixture {
+  //   using Parent = MultipleStructureManagerNLStrictFixture;
+  //   using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
+  //   using Representation_t = CalculatorBehlerParinello;
+  //   MultipleStructureBehlerParinello() : Parent{} {};
+  //   ~MultipleStructureBehlerParinello() = default;
 
-    std::vector<json> representation_hypers{
-        {{"bla", 3.}, {"bla list", "em"}, {"identifier", "name"}}};
-  };
+  //   std::vector<json> representation_hypers{
+  //       {{"bla", 3.}, {"bla list", "em"}, {"identifier", "name"}}};
+  // };
 
   struct SortedCoulombTestData : TestData {
     using Parent = TestData;

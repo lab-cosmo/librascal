@@ -36,16 +36,17 @@
 
 namespace rascal {
 
+  template<SymmetryFunType... SymFunTypes, CutoffFunctionType... CutFunTypes>
   class BehlerFeatureBase {
    public:
     constexpr static int MaxBehlerOrder{3};
     enum class RepeatedSpecies {
-      "Unknown",    // has not been evaluated yet
-      "Not",        // all species in this cluster are unique
-      "All",        // all atoms in this cluster are same species
-      "FirstTwo",   // the first two atoms of this cluster are of same species
-      "SecondTwo",  // the second two atoms of this cluster are of same species
-      "OuterTwo"
+      Unknown,    // has not been evaluated yet
+      Not,        // all species in this cluster are unique
+      All,        // all atoms in this cluster are same species
+      FirstTwo,   // the first two atoms of this cluster are of same species
+      SecondTwo,  // the second two atoms of this cluster are of same species
+      OuterTwo
     };  // the first and last atom in this cluster are of same species
     using StdSpecies = TupleStandardisation<int, MaxBehlerOrder>;
 
@@ -84,7 +85,7 @@ namespace rascal {
     //! Main worker (raison d'être) computes input node values
     template <class StructureManager>
     inline void compute(StructureManager & manager,
-                        std::shared_ptr<PropertyBase> output) const;
+                        std::shared_ptr<PropertyBase> output_values) const;
 
     //! Main worker (raison d'être) computes input node values and derivatives
     template <class StructureManager>
@@ -113,9 +114,14 @@ namespace rascal {
               internal::CutoffFunctionType... CutoffFunTypes_>
     class CutoffFunctionsVTable;
 
-    enum class HelpType{"Value", "Derivatives"};
-    template <SymmetryFunType SymFunType, class StructureManager,
-              HelpType HelpTypeVal>
+    template <SymmetryFunType SymFunType, class StructureManager>
+    void compute_helper(StructureManager & manager,
+                        std::shared_ptr<PropertyBase> output_values) const;
+
+    template <SymmetryFunType SymFunType, class StructureManager>
+    void compute_helper(StructureManager & manager,
+                        std::shared_ptr<PropertyBase> output_values,
+                        std::shared_ptr<PropertyBase> output_derivatives) const;
 
     const SymmetryFunType sym_fun_type;
     const internal::CutoffFunctionType cut_fun_type;
@@ -178,7 +184,7 @@ namespace rascal {
                  const typename StructureManager::template ClusterRef_t<Order> &
                      cluster);
     ParamStorage params{};
-    
+    CutoffFunction cuf_off_fun;
   };
 
 }  // namespace rascal

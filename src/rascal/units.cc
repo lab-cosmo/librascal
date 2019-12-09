@@ -145,7 +145,7 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
 
     static const std::string undefined{"undefined"};
-    const UnitStyle metal{"(g/mol)", "Å",     "ps",    "eV",          "(Å/ps)",
+    const  UnitStyle metal{"(g/mol)", "Å",     "ps",    "eV",          "(Å/ps)",
                           "(eV/Å)",  "eV",    "K",     "bar",         "P",
                           "e",       "(e*Å)", "(V/Å)", "((g/cm)^(3))"};
     const UnitStyle electron{
@@ -163,8 +163,7 @@ namespace rascal {
     }  // internal
 
     /* ---------------------------------------------------------------------- */
-    const static std::map<std::string, int> species_numbers{
-        internal::make_species()};
+    const std::map<std::string, int> species_numbers{internal::make_species()};
 
   }  // namespace units
 

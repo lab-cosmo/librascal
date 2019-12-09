@@ -113,12 +113,12 @@ namespace rascal {
              // CalculatorFixture<MultipleStructureSphericalCovariants>,
              // CalculatorFixture<MultipleStructureBehlerParinello>
           >;
-  using multiple_fixtures_BLA = boost::mpl::
-      list<  // CalculatorFixture<MultipleStructureSortedCoulomb>,
-             // CalculatorFixture<MultipleStructureSphericalExpansion>,
-             // CalculatorFixture<MultipleStructureSphericalInvariants>,
-             // CalculatorFixture<MultipleStructureSphericalCovariants>,
-          CalculatorFixture<MultipleStructureBehlerParinello>>;
+  using multiple_fixtures_BLA = boost::mpl::list<>;
+    //   list<  // CalculatorFixture<MultipleStructureSortedCoulomb>,
+    //          // CalculatorFixture<MultipleStructureSphericalExpansion>,
+    //          // CalculatorFixture<MultipleStructureSphericalInvariants>,
+    //          // CalculatorFixture<MultipleStructureSphericalCovariants>,
+    // // CalculatorFixture<MultipleStructureBehlerParinello>>;
 
   using fixtures_ref_test = boost::mpl::list<>;
   // CalculatorFixture<SortedCoulombTestData>,

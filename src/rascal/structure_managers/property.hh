@@ -154,11 +154,10 @@ namespace rascal {
      */
     template <size_t CallerLayer>
     reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that "
-                    "does not exist at this depth in the "
-                    "adaptor stack.");
-      return this->operator[](id.get_cluster_index(CallerLayer));
+      // You are trying to access a property that does not exist at this depth
+      // in the adaptor stack.
+      assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
+      return this->operator[](id.get_cluster_index(this->get_property_layer()));
     }
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>
