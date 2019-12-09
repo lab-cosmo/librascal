@@ -14,7 +14,7 @@ from rascal.neighbourlist.structure_manager import (
         mask_center_atoms_by_species, mask_center_atoms_by_id)
 
 
-molecules = ase.io.read('data/small_molecules-1000.xyz', ':100')
+molecules = ase.io.read('../reference_data/inputs/small_molecules-1000.xyz', ':100')
 n_centers = sum(mol.get_number_of_atoms() for mol in molecules)
 n_carbon_centers = sum(np.sum(mol.get_atomic_numbers() == 6)
                        for mol in molecules)

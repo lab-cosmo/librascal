@@ -45,7 +45,7 @@ namespace rascal {
 
     ~StrictNLCollectionFixture() = default;
 
-    std::string filename{"reference_data/tests_only/dft-smiles_500.ubjson"};
+    std::string filename{"reference_data/inputs/small_molecules-20.json"};
     int start{5};
     int length{3};
   };

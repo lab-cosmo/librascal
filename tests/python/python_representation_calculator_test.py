@@ -109,7 +109,7 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         kk = np.dot(X_t, X_t.T)
         self.assertTrue(np.allclose(kk, kk_ref))
 
-        X_t = features.get_features(rep, self.global_species+[70])
+        X_t = features.get_features(rep, self.global_species + [70])
         kk = np.dot(X_t, X_t.T)
         self.assertTrue(np.allclose(kk, kk_ref))
 

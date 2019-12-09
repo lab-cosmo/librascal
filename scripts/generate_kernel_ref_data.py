@@ -1,8 +1,3 @@
-import rascal
-import rascal.lib as lrl
-from rascal.representations import SphericalInvariants
-from rascal.models import Kernel
-from rascal.utils import ostream_redirect
 from ase.io import read
 import numpy as np
 import argparse
@@ -11,6 +6,11 @@ import json
 import sys
 import os
 sys.path.insert(0, '../build/')
+import rascal
+import rascal.lib as lrl
+from rascal.representations import SphericalInvariants
+from rascal.models import Kernel
+from rascal.utils import ostream_redirect
 
 root = os.path.abspath('../')
 rascal_reference_path = os.path.join(root, 'reference_data/')
@@ -33,8 +33,9 @@ def dump_reference_json():
     max_angulars = [6]
     soap_types = ["RadialSpectrum", "PowerSpectrum"]
 
-    fn = os.path.join(root, inputs_path, "dft-smiles_500.xyz")
-    fn_to_write = os.path.join(dump_path, "dft-smiles_500.ubjson")
+    fn = os.path.join(inputs_path, "small_molecules-20.json")
+    fn_to_write = os.path.join(
+        'reference_data', "inputs", "small_molecules-20.json")
     start = 0
     length = 5
     representations = ['spherical_invariants']
@@ -54,7 +55,7 @@ def dump_reference_json():
                 dependant_args=dependant_args,
                 rep_info=dict(spherical_invariants=[]))
 
-    frames = read(fn, '{}:{}'.format(start, start+length))
+    frames = read(fn, '{}:{}'.format(start, start + length))
     for representation_name in representations:
         for cutoff in cutoffs:
             print(fn, cutoff)

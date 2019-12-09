@@ -38,8 +38,7 @@ namespace rascal {
 
   template <typename SMI, size_t Order>
   struct HelperLayer {
-    static constexpr size_t layer{
-        compute_cluster_layer<Order>(LayerByOrder<SMI>{})};
+    static constexpr size_t layer{get_layer<Order>(LayerByOrder<SMI>{})};
   };
 
   template <typename SMI, size_t Order>

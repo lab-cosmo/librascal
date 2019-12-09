@@ -74,8 +74,8 @@ class SphericalExpansion(object):
             interaction_cutoff=interaction_cutoff,
             cutoff_smooth_width=cutoff_smooth_width
         )
-        cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
-                                                      **cutoff_function_parameters)
+        cutoff_function = cutoff_function_dict_switch(
+            cutoff_function_type, **cutoff_function_parameters)
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
@@ -99,8 +99,9 @@ class SphericalExpansion(object):
                     # RadialContribution
                     print("Warning: default parameter for spline range is used.")
                     spline_range = (0, interaction_cutoff)
-                optimization_args = {'type': 'Spline', 'accuracy': accuracy, 'range': {
-                    'begin': spline_range[0], 'end': spline_range[1]}}
+                optimization_args = {
+                    'type': 'Spline', 'accuracy': accuracy, 'range': {
+                        'begin': spline_range[0], 'end': spline_range[1]}}
             elif optimization_args['type'] == 'None':
                 optimization_args = dict({'type': 'None'})
             else:
@@ -143,10 +144,18 @@ class SphericalExpansion(object):
         Also updates the internal json-like _representation
 
         """
-        allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
-                        'max_radial', 'max_angular', 'gaussian_sigma_type',
-                        'gaussian_sigma_constant', 'n_species', 'gaussian_density', 'cutoff_function',
-                        'radial_contribution', 'cutoff_function_parameters'}
+        allowed_keys = {
+            'interaction_cutoff',
+            'cutoff_smooth_width',
+            'max_radial',
+            'max_angular',
+            'gaussian_sigma_type',
+            'gaussian_sigma_constant',
+            'n_species',
+            'gaussian_density',
+            'cutoff_function',
+            'radial_contribution',
+            'cutoff_function_parameters'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
