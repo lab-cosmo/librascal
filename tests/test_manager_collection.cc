@@ -1,5 +1,5 @@
 /**
- * file test_manager_collection.cc
+ * @file test_manager_collection.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -28,6 +28,9 @@
  */
 
 #include "test_manager_collection.hh"
+
+#include <boost/mpl/list.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace rascal {
 
@@ -64,7 +67,7 @@ namespace rascal {
 
     for (auto & collection : collections) {
       // add some integer constant to not start at position zero
-      collection.add_structures(filename, start + 30, length + 5);
+      collection.add_structures(filename, start + 3, length + 5);
 
       for (auto & manager : collection) {
         for (auto atom : manager) {

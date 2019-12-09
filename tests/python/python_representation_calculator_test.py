@@ -1,10 +1,16 @@
 from rascal.representations import (SortedCoulombMatrix, SphericalExpansion,
                                     SphericalInvariants)
-from test_utils import load_json_frame, BoxList, Box
+from test_utils import load_json_frame, BoxList, Box, dot
 import unittest
 import numpy as np
 import sys
+import os
 import json
+from copy import copy
+
+rascal_reference_path = 'reference_data'
+inputs_path = os.path.join(rascal_reference_path, "inputs")
+dump_path = os.path.join(rascal_reference_path, "tests_only")
 
 
 class TestSortedCoulombRepresentation(unittest.TestCase):
@@ -14,7 +20,7 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
+        fn = os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json')
         self.frame = load_json_frame(fn)
 
         self.hypers = dict(cutoff=3., sorting_algorithm='row_norm',
@@ -27,7 +33,7 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
 
         features = rep.transform([self.frame])
 
-        test = features.get_dense_feature_matrix(rep)
+        test = features.get_features(rep)
 
 
 class TestSphericalExpansionRepresentation(unittest.TestCase):
@@ -37,8 +43,12 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
-        self.frame = load_json_frame(fn)
+        fns = [
+            os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json'),
+            os.path.join(inputs_path, 'SiC_moissanite_supercell.json'),
+            os.path.join(inputs_path, 'methane.json'),
+        ]
+        self.frames = [load_json_frame(fn) for fn in fns]
 
         self.hypers = {"interaction_cutoff": 6.0,
                        "cutoff_smooth_width": 1.0,
@@ -51,9 +61,9 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
 
         rep = SphericalExpansion(**self.hypers)
 
-        features = rep.transform([self.frame])
+        features = rep.transform(self.frames)
 
-        test = features.get_dense_feature_matrix(rep)
+        test = features.get_features(rep)
 
 
 class TestSphericalInvariantsRepresentation(unittest.TestCase):
@@ -63,8 +73,17 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = 'reference_data/CaCrP2O7_mvc-11955_symmetrized.json'
-        self.frame = load_json_frame(fn)
+        fns = [
+            os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json'),
+            os.path.join(inputs_path, 'SiC_moissanite_supercell.json'),
+            os.path.join(inputs_path, 'methane.json'),
+        ]
+        self.frames = [load_json_frame(fn) for fn in fns]
+
+        global_species = []
+        for frame in self.frames:
+            global_species.extend(frame['atom_types'])
+        self.global_species = list(np.unique(global_species))
 
         self.hypers = dict(soap_type="PowerSpectrum",
                            interaction_cutoff=3.5,
@@ -79,6 +98,27 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
 
         rep = SphericalInvariants(**self.hypers)
 
-        features = rep.transform([self.frame])
+        features = rep.transform(self.frames)
 
-        test = features.get_dense_feature_matrix(rep)
+        test = features.get_features(rep)
+        kk_ref = np.dot(test, test.T)
+
+        # test that the feature matrix exported to python in various ways
+        # are equivalent
+        X_t = features.get_features(rep, self.global_species)
+        kk = np.dot(X_t, X_t.T)
+        self.assertTrue(np.allclose(kk, kk_ref))
+
+        X_t = features.get_features(rep, self.global_species + [70])
+        kk = np.dot(X_t, X_t.T)
+        self.assertTrue(np.allclose(kk, kk_ref))
+
+        species = copy(self.global_species)
+        species.pop()
+        X_t = features.get_features(rep, species)
+        kk = np.dot(X_t, X_t.T)
+        self.assertFalse(np.allclose(kk, kk_ref))
+
+        X_t = features.get_features_by_species(rep)
+        kk = dot(X_t, X_t)
+        self.assertTrue(np.allclose(kk, kk_ref))

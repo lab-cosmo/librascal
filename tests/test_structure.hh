@@ -33,17 +33,17 @@
 #ifndef TESTS_TEST_STRUCTURE_HH_
 #define TESTS_TEST_STRUCTURE_HH_
 
-#include "structure_managers/structure_manager_base.hh"
-#include "structure_managers/structure_manager.hh"
-#include "structure_managers/structure_manager_lammps.hh"
-#include "structure_managers/structure_manager_centers.hh"
-#include "structure_managers/adaptor_strict.hh"
-#include "structure_managers/adaptor_increase_maxorder.hh"
-#include "structure_managers/adaptor_neighbour_list.hh"
-#include "structure_managers/adaptor_half_neighbour_list.hh"
-#include "structure_managers/adaptor_center_contribution.hh"
-#include "structure_managers/make_structure_manager.hh"
-#include "rascal_utility.hh"
+#include "rascal/structure_managers/adaptor_center_contribution.hh"
+#include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_increase_maxorder.hh"
+#include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
+#include "rascal/structure_managers/structure_manager.hh"
+#include "rascal/structure_managers/structure_manager_base.hh"
+#include "rascal/structure_managers/structure_manager_centers.hh"
+#include "rascal/structure_managers/structure_manager_lammps.hh"
+#include "rascal/utils.hh"
 
 namespace rascal {
 
@@ -101,7 +101,8 @@ namespace rascal {
     // initialize manager variable
     ManagerFixtureFile()
         : ManagerFixture<ManagerImplementation>{}, cutoff{3.5},
-          filename{"simple_cubic_9.json"}  // initialize current fixture
+          filename{"reference_data/inputs/simple_cubic_9.json"}
+    // initialize current fixture
     {
       this->manager->update(filename);
     }
@@ -347,7 +348,7 @@ namespace rascal {
 
     PairFixtureFile()
         : pair_manager{make_adapted_manager<AdaptorNeighbourList>(
-              this->fixture.manager, this->fixture.cutoff, true)} {
+              this->fixture.manager, this->fixture.cutoff)} {
       this->pair_manager->update();
     }
 
@@ -429,7 +430,7 @@ namespace rascal {
     std::vector<AtomicStructure<3>> structures{};
     std::vector<std::shared_ptr<Manager_t>> managers{};
     std::vector<std::string> filenames{
-        "reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
     std::vector<int> n_is_not_centers{0, 3, 5};
     double cutoff;
   };

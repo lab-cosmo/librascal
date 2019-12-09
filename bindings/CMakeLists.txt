@@ -28,55 +28,43 @@
 # Boston, MA 02111-1307, USA.
 # =============================================================================
 
-set (PY_BINDING_SRCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_module.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_structure_manager.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_utils.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_math.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_representation_calculator.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/bind_py_models.cc
-  )
-
+set(BINDING_SRCS
+    bind_py_module.cc
+    bind_py_structure_manager.cc
+    bind_py_utils.cc
+    bind_py_representation_calculator.cc
+    bind_py_models.cc
+)
 
 # copy rascal folder in the python distribution
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal" DESTINATION "${PYTHON_SITE_PACKAGES}"
-          PATTERN "*__pycache__" EXCLUDE
-          PATTERN "*.pyc" EXCLUDE
-          PATTERN "*.so" EXCLUDE
-          PATTERN "*.dylib" EXCLUDE)
-
+    PATTERN "*__pycache__" EXCLUDE
+    PATTERN "*.pyc" EXCLUDE
+    PATTERN "*.so" EXCLUDE
+    PATTERN "*.dylib" EXCLUDE
+)
 
 # builds the python bindings (must be after setting up the rpath)
-pybind11_add_module(pyRascal ${PY_BINDING_SRCS})
-target_link_libraries(pyRascal PRIVATE "${LIBRASCAL_NAME}")
-# Want to rename the output, so that the python module is called _rascal
-set_target_properties(pyRascal PROPERTIES OUTPUT_NAME _rascal)
+# SYSTEM: use include_directory(SYSTEM)
+# NO_EXTRAS: do not setup LTO (link time optimization) and striping of the
+#            shared library 
+pybind11_add_module(_rascal ${BINDING_SRCS} SYSTEM NO_EXTRAS)
+target_compile_options(_rascal PRIVATE -Werror)
+
+target_link_libraries(_rascal PRIVATE "${LIBRASCAL_NAME}")
+# Remove the 'lib' prefix, so that the python module is called _rascal
+set_target_properties(_rascal PROPERTIES PREFIX "")
 # Sets rule to install the bindings library in the rascal folder
-install(TARGETS pyRascal DESTINATION "${PYTHON_SITE_PACKAGES}/rascal/lib")
-
-# force cmake to run these commands at every make
-# https://stackoverflow.com/questions/13920072/how-to-always-run-command-when-building-regardless-of-any-dependency
-add_custom_target(librascal ALL
-    DEPENDS
-        copy_py
-    )
-
-add_dependencies(librascal pyRascal)
+install(TARGETS _rascal DESTINATION "${PYTHON_SITE_PACKAGES}/rascal/lib")
 
 # Copy the python wrappers in the build folder
 # Copy the resulting bindings lib in the python wrapper lib folder
-add_custom_command(OUTPUT copy_py
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-  ${CMAKE_CURRENT_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}/rascal
-  COMMAND ${CMAKE_COMMAND} -E copy
-  ${CMAKE_BINARY_DIR}/bindings/_rascal.* ${CMAKE_BINARY_DIR}/rascal/lib/
-  DEPENDS
-      always_rebuild
-  )
-
-
-add_custom_command(
-    OUTPUT always_rebuild
-    COMMAND ${CMAKE_COMMAND} -E echo
+add_custom_target(copy_python_bindings ALL
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/rascal
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}/rascal
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_BINARY_DIR}/_rascal.* ${CMAKE_BINARY_DIR}/rascal/lib/
+    DEPENDS _rascal
+    COMMENT "Copying python bindings and libraries"
 )
-

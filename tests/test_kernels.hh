@@ -1,5 +1,5 @@
 /**
- * file test_kernels.hh
+ * @file test_kernels.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -30,11 +30,11 @@
 #ifndef TESTS_TEST_KERNELS_HH_
 #define TESTS_TEST_KERNELS_HH_
 
-#include "tests.hh"
 #include "test_adaptor.hh"
-#include "test_manager_collection.hh"
 #include "test_calculator.hh"
-#include "models/kernels.hh"
+#include "test_manager_collection.hh"
+
+#include "rascal/models/kernels.hh"
 
 namespace rascal {
 
@@ -104,9 +104,7 @@ namespace rascal {
         json structure{};
         json adaptors;
         json ad1{{"name", "AdaptorNeighbourList"},
-                 {"initialization_arguments",
-                  {{"cutoff", cutoff},
-                   {"consider_ghost_neighbours", consider_ghost_neighbours}}}};
+                 {"initialization_arguments", {{"cutoff", cutoff}}}};
         json ad1b{{"name", "AdaptorCenterContribution"},
                   {"initialization_arguments", {}}};
         json ad2{{"name", "AdaptorStrict"},
@@ -135,8 +133,8 @@ namespace rascal {
     std::vector<json> representation_hypers{};
     std::vector<json> kernel_hypers{};
 
-    const bool consider_ghost_neighbours{false};
-    std::string ref_filename{"reference_data/kernel_reference.ubjson"};
+    std::string ref_filename{
+        "reference_data/tests_only/kernel_reference.ubjson"};
     std::string filename{""};
     int start{0};
     int length{0};
