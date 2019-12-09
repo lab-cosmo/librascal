@@ -1059,7 +1059,7 @@ namespace rascal {
      */
     template <size_t Order_, bool C = IsOrderOne, std::enable_if_t<C, int> = 0>
     CustomProxy<Order_> get_clusters_of_order(size_t start = 0) {
-      static_assert(Order_ >1 1,
+      static_assert(Order_ > 1,
                     "You should ask at least for pairs, i.e. Order_ >= 2.");
       std::array<size_t, Order_ - 1> counters{};
       counters.back() = this->get_index();

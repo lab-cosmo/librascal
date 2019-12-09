@@ -28,6 +28,7 @@
 #ifndef SRC_RASCAL_UNITS_HH_
 #define SRC_RASCAL_UNITS_HH_
 
+#include <map>
 #include <string>
 
 namespace rascal {

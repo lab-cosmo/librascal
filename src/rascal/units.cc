@@ -154,12 +154,11 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     namespace internal {
-
       std::map<std::string, int> make_species() {
         std::map<std::string, int> ret_val{};
-        retval["Mg"] = 12;
-        retval["Si"] = 14;
-        return retval;
+        ret_val["Mg"] = 12;
+        ret_val["Si"] = 14;
+        return ret_val;
       }
     }  // internal
 

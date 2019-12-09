@@ -33,7 +33,7 @@
 #include "rascal/json_io.hh"
 #include "rascal/structure_managers/property_typed.hh"
 #include "rascal/units.hh"
-#include "rascal/utils/utils.hh"
+#include "rascal/utils.hh"
 #include "rascal/utils/tuple_standardisation.hh"
 
 #include <sstream>
