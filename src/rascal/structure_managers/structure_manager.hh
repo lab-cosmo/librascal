@@ -346,13 +346,15 @@ namespace rascal {
     }
 
     template <typename Property_t>
-    void create_property(const std::string & name) {
+    Property_t & create_property(const std::string & name) {
       auto property{std::make_shared<Property_t>(this->implementation())};
       this->attach_property(name, property);
+      return *property;
     }
 
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
-    void create_property(const std::string & name) {
+    Property_t<T, Order, NbRow, NbCol> &
+    create_property(const std::string & name) {
       return create_property<Property_t<T, Order, NbRow, NbCol>>(name);
     }
 

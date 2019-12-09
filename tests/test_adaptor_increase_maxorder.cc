@@ -175,6 +175,8 @@ namespace rascal {
       BOOST_CHECK_EQUAL(atom_type, SM3->get_atom_type(atom_tag));
 
       auto atom_position = atom.get_position();
+      int counter{0};
+      std::array<double, 4> distances{std::sqrt(2), 1, std::sqrt(2), 1};
       for (auto pair : atom.pairs()) {
         auto neighbour_atom_tag = pair.get_internal_neighbour_atom_tag();
         auto neighbour_type = pair.get_atom_type();
@@ -183,7 +185,7 @@ namespace rascal {
 
         auto neighbour_position = pair.get_position();
         auto diff_pos_pair = (neighbour_position - atom_position).norm();
-        BOOST_CHECK_CLOSE(diff_pos_pair, 1., TOLERANCE);
+        BOOST_CHECK_CLOSE(diff_pos_pair, distances[counter++], TOLERANCE);
       }
 
       for (auto triplet : atom.triplets()) {

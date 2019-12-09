@@ -307,7 +307,7 @@ namespace rascal {
       delete[] x;
       delete[] f;
     }
-    double tx[nb][nb] = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
+    double tx[nb][nb] = {{0, 0, 0}, {1, 1, 0}, {1, 0, 0}};
     double tf[nb][nb] = {{1, 1, 0}, {-1, 0, 0}, {0, -1, 0}};
 
     int inum{nb};
