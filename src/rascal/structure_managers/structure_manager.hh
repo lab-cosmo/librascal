@@ -527,7 +527,7 @@ namespace rascal {
       throw std::runtime_error(error.str());
     }
 
-    /*
+    /**
      * Forwards property requersts to lower layers. Usually to get a property
      * the `get_propertp_ptr` or `get_property_ref` function should be used.
      * This function is however still public because of each structure manager
