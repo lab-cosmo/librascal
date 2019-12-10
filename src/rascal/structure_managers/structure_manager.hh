@@ -502,7 +502,7 @@ namespace rascal {
     }
 
     /**
-     * For MD when properties needs to be updated
+     * to keep track if the property is up to date with the structure
      */
     template <bool IsRoot = IsRootImplementation,
               std::enable_if_t<IsRoot, int> = 0>
