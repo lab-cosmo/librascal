@@ -1111,7 +1111,7 @@ namespace rascal {
     // identify the species in each environment and initialize soap_vectors
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
-      auto & soap_vector{soap_vectors[center]};
+      // auto & soap_vector{soap_vectors[center]};
       internal::Sorted<false> is_not_sorted{};
 
       std::vector<internal::SortedKey<Key_t>> triplet_list{};
@@ -1251,7 +1251,6 @@ namespace rascal {
     std::vector<std::set<Key_t>> keys_list_grad{};
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
-      auto & soap_vector{soap_vectors[center]};
       Key_t element_type{0};
 
       std::set<Key_t> keys{};

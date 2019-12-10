@@ -341,13 +341,12 @@ namespace rascal {
     // identify the species in each environment and initialize soap_vectors
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
-      auto & soap_vector{soap_vectors[center]};
       internal::Sorted<false> is_not_sorted{};
 
       std::vector<internal::SortedKey<Key_t>> pair_list{};
       auto center_type{center.get_atom_type()};
       Key_t pair_type{center_type, center_type};
-      
+
       // the species are not sorted by construction so there are sorted
       // explicitly and many redundant combinations are present in pair_list
       for (const auto & el1 : coefficients) {

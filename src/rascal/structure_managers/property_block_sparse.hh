@@ -110,10 +110,12 @@ namespace rascal {
       using Array_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
       using Vector_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, 1>;
       using VectorMap_Ref_t = typename Eigen::Map<Vector_t>;
+      using VectorMapConst_Ref_t = typename Eigen::Map<const Vector_t>;
       using ArrayMap_Ref_t = typename Eigen::Map<Array_t>;
+      using Array_Ref_t = typename Eigen::Ref<Array_t>;
       using Self_t = InternallySortedKeyMap<K, V>;
       //! the data holder.
-      Array_t & data;
+      Array_Ref_t data;
       Map_t map{};
       size_t global_offset;
       size_t total_length{0};
@@ -144,7 +146,7 @@ namespace rascal {
                                                typename Map_t::iterator>::type;
 
         using MyData_t = typename std::conditional<std::is_const<Value>::value,
-                                                   const ArrayMap_Ref_t, ArrayMap_Ref_t>::type;
+                                                   const Array_Ref_t, Array_Ref_t>::type;
         // Map<const Matrix> is already write-only so remove the const
         // which is used to determine the cv of the iterator
         using Value_t = typename std::remove_const<Value>::type;
@@ -205,24 +207,22 @@ namespace rascal {
       }
 
       //! Default constructor
-      InternallySortedKeyMap(Array_t& data, const size_t & global_offset = 0) :data{data}, global_offset{global_offset} {};
+      InternallySortedKeyMap(Array_Ref_t data, const size_t & global_offset = 0) :data{data}, global_offset{global_offset} {};
 
       //! Copy constructor
-      InternallySortedKeyMap(const InternallySortedKeyMap & other) = default;
+      InternallySortedKeyMap(const Self_t & other) = default;
 
       //! Move constructor
-      InternallySortedKeyMap(InternallySortedKeyMap && other) = default;
+      InternallySortedKeyMap(Self_t && other) = default;
 
       //! Destructor
       ~InternallySortedKeyMap() = default;
 
       //! Copy assignment operator
-      InternallySortedKeyMap &
-      operator=(const InternallySortedKeyMap & other) = default;
+      Self_t & operator=(const Self_t & other) = default;
 
       //! Move assignment operator
-      InternallySortedKeyMap &
-      operator=(InternallySortedKeyMap && other) = default;
+      Self_t & operator=(Self_t && other) = default;
 
       /**
        * Returns a reference to the mapped value of the element with key
@@ -278,10 +278,21 @@ namespace rascal {
       }
 
       /**
-       * resize the view of the data to the proper size
+       * Resize the view of the data to the proper size using the keys, and
+       * internal array size n_row and n_col to set up this->map.
+       * The view looks at one entry of the property/structure so global_offset
+       * tells where this entry starts in the structure wise array of the
+       * property.
+       *
+       * Keys_List is a stl container and it is expected that Keys_List is
+       * iterable.
+       *
+       * Args template parameters is there to accomodate with the
+       * fact that most stl container have several optional template parameters
+       * that need to be deduced.
        */
-      template <typename Key_List>
-      void resize_view(const Key_List & keys, int n_row, int n_col, const size_t& global_offset) {
+      template <template <typename...> class Key_List, typename... Args>
+      void resize_view(const Key_List<key_type, Args...> & keys, int n_row, int n_col, const size_t& global_offset) {
         std::vector<SortedKey_t> skeys{};
         for (auto && key : keys) {
           SortedKey_t skey{key};
@@ -290,7 +301,8 @@ namespace rascal {
         this->resize_view(skeys, n_row, n_col, global_offset);
       }
 
-      void resize_view(const std::vector<SortedKey_t> & skeys, int n_row,
+      template <template <typename...> class Key_List, typename... Args>
+      void resize_view(const Key_List<SortedKey_t, Args...> & skeys, int n_row,
                   int n_col, const size_t& global_offset) {
         this->global_offset = global_offset;
         size_t current_position{global_offset};
@@ -325,8 +337,12 @@ namespace rascal {
         this->map.clear();
       }
 
-      ArrayMap_Ref_t get_full_vector() {
-        return ArrayMap_Ref_t(&this->data[this->global_offset], this->total_length);
+      VectorMap_Ref_t get_full_vector() {
+        return VectorMap_Ref_t(&this->data[this->global_offset], this->total_length);
+      }
+
+      VectorMapConst_Ref_t get_full_vector() const {
+        return VectorMapConst_Ref_t(&this->data[this->global_offset], this->total_length);
       }
 
       /**
@@ -561,13 +577,13 @@ namespace rascal {
     template <size_t Order__ = Order, std::enable_if_t<(Order__ > 1), int> = 0>
     void resize() {
       size_t new_size{this->base_manager.nb_clusters(Order)};
-      this->maps.resize(new_size, InputData_t(this->values));
+      this->maps.resize(new_size, std::move(InputData_t(this->values)));
     }
 
     //! Adjust size of maps to match the number of entries of the manager
     template <size_t Order__ = Order, std::enable_if_t<(Order__ == 0), int> = 0>
     void resize() {
-      this->maps.resize(1, InputData_t(this->values));
+      this->maps.resize(1, std::move(InputData_t(this->values)));
     }
 
     //! Adjust size of maps to match the number of entries of the manager
@@ -576,16 +592,25 @@ namespace rascal {
       size_t new_size{this->exclude_ghosts
                           ? this->get_manager().size()
                           : this->get_manager().size_with_ghosts()};
-      this->maps.resize(new_size, InputData_t(this->values));
+      this->maps.resize(new_size, std::move(InputData_t(this->values)));
     }
 
     /**
      * Adjust size of values (only increases, never frees) and maps with a
      * different set of keys for each entries (order == 1 -> centers,
      * order == 2 -> neighbors ...).
+     * Keys_List and Keys are stl container and it is expected that Keys_List
+     * allows for random access with index from 0 to size-1 and Keys is
+     * iterable.
+     *
+     * Args1 and Args2 template parameters are there to accomodate with the
+     * fact that most stl container that can be indexed have several optional
+     * template parameters that need to be deduced.
+     * The first template argument of Args2 is expected to be of type Key_t or
+     * SortedKey<Key_t>.
      */
-    template <template<class> class Keys_List, template<class> class Keys>
-    void resize(const Keys_List<Keys<Key_t>>& keys_list) {
+    template <template <typename...> class Keys_List, template <typename...> class Keys, typename... Args1, typename... Args2>
+    void resize(const Keys_List<Keys<Args2...>, Args1...>& keys_list) {
       this->resize();
       if (keys_list.size() != this->size()) {
         std::stringstream err_str{};
@@ -608,9 +633,17 @@ namespace rascal {
      * Adjust size of values (only increases, never frees) and maps with the
      * same keys for each entries (order == 1 -> centers,
      * order == 2 -> neighbors ...).
+     * Keys is a stl container and iterable.
+     *
+     * Args template parameters are there to accomodate with the
+     * fact that most stl container that can be indexed have several optional
+     * template parameters that need to be deduced.
+     * The first template argument of Args is expected to be of type Key_t or
+     * SortedKey<Key_t>.
+     *
      */
-    template <template<class> class Keys>
-    void resize(const Keys<Key_t>& keys) {
+    template <template<typename...> class Keys, typename... Args>
+    void resize(const Keys<Args...>& keys) {
       this->resize();
       int n_row{this->get_nb_row()};
       int n_col{this->get_nb_col()};
@@ -630,7 +663,7 @@ namespace rascal {
 
     //! clear all the content of the property
     void clear() {
-      this->values.clear();
+      this->values.resize(0);
       this->maps.clear();
     }
 
