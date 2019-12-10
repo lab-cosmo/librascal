@@ -738,7 +738,7 @@ namespace rascal {
       auto key_dist{std::uniform_int_distribution<int>(1, 100)};
       // size_t i_manager{0};
       for (auto & manager : managers) {
-        sparse_features.emplace_back(*manager, sparse_features_desc);
+        sparse_features.emplace_back(*manager, sparse_features_desc, exclude_ghosts);
         this->keys_list.emplace_back();
         TestData_t test_data{};
         for (size_t ii{0}; ii < manager->get_size(); ++ii) {
@@ -757,8 +757,9 @@ namespace rascal {
       }
     }
 
-    int n_row{21};
-    int n_col{8};
+    bool exclude_ghosts{true};
+    int n_row{2};
+    int n_col{3};
 
     std::vector<std::vector<std::set<Key_t>>> keys_list{};
     std::vector<TestData_t> test_datas{};

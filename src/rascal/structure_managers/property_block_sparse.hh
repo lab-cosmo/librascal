@@ -115,7 +115,7 @@ namespace rascal {
       using Array_Ref_t = typename Eigen::Ref<Array_t>;
       using Self_t = InternallySortedKeyMap<K, V>;
       //! the data holder.
-      Array_Ref_t data;
+      Array_t & data;
       Map_t map{};
       size_t global_offset;
       size_t total_length{0};
@@ -146,7 +146,7 @@ namespace rascal {
                                                typename Map_t::iterator>::type;
 
         using MyData_t = typename std::conditional<std::is_const<Value>::value,
-                                                   const Array_Ref_t, Array_Ref_t>::type;
+                                                   const Array_t, Array_t>::type;
         // Map<const Matrix> is already write-only so remove the const
         // which is used to determine the cv of the iterator
         using Value_t = typename std::remove_const<Value>::type;
@@ -207,7 +207,7 @@ namespace rascal {
       }
 
       //! Default constructor
-      InternallySortedKeyMap(Array_Ref_t data, const size_t & global_offset = 0) :data{data}, global_offset{global_offset} {};
+      InternallySortedKeyMap(Array_t & data, const size_t & global_offset = 0) :data{data}, global_offset{global_offset} {};
 
       //! Copy constructor
       InternallySortedKeyMap(const Self_t & other) = default;
@@ -219,10 +219,24 @@ namespace rascal {
       ~InternallySortedKeyMap() = default;
 
       //! Copy assignment operator
-      Self_t & operator=(const Self_t & other) = default;
+      Self_t & operator=(const Self_t & other) {
+        this->data = other.data;
+        this->map = other.map;
+        this->global_offset = other.global_offset;
+        this->total_length = other.total_length;
+        this->normalized = other.normalized;
+        return *this;
+      }
 
       //! Move assignment operator
-      Self_t & operator=(Self_t && other) = default;
+      Self_t & operator=(Self_t && other) {
+        this->data = std::move(other.data);
+        this->map = std::move(other.map);
+        this->global_offset = std::move(other.global_offset);
+        this->total_length = std::move(other.total_length);
+        this->normalized = std::move(other.normalized);
+        return *this;
+      }
 
       /**
        * Returns a reference to the mapped value of the element with key
@@ -306,14 +320,15 @@ namespace rascal {
                   int n_col, const size_t& global_offset) {
         this->global_offset = global_offset;
         size_t current_position{global_offset};
+        size_t block_size{static_cast<size_t>(n_row * n_col)};
         for (auto && skey : skeys) {
           if (this->count(skey) == 0) {
             auto && key{skey.get_key()};
             this->map[key] = std::make_tuple(current_position, n_row, n_col);
-            current_position += static_cast<size_t>(n_row * n_col);
+            current_position += block_size;
           }
         }
-        this->total_length = current_position;
+        this->total_length = current_position - global_offset;
       }
 
       size_t size() const {
