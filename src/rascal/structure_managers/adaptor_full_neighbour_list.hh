@@ -59,10 +59,9 @@ namespace rascal {
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     // New pairs are added at this layer, which did not exist before. Therefore
     // the layering has to be reset.
-    constexpr static size_t AtomLayer{get<0>(
-        typename LayerIncreaser<MaxOrder,
-                                typename parent_traits::LayerByOrder>::type{})};
     using PreviousManager_t = ManagerImplementation;
+    constexpr static size_t AtomLayer{
+        get_layer<1>(typename parent_traits::LayerByOrder{}) + 1};
     using LayerByOrder = std::index_sequence<AtomLayer, 0>;
   };
 
@@ -252,7 +251,7 @@ namespace rascal {
     typename std::enable_if_t<TargetOrder == 2, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       constexpr auto nb_neigh_layer{
-          compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};
+          get_layer<TargetOrder>(typename traits::LayerByOrder{})};
       auto access_index = cluster.get_cluster_index(nb_neigh_layer);
       return nb_neigh[access_index];
     }
@@ -357,7 +356,7 @@ namespace rascal {
 
       // Add new depth layer for atoms
       constexpr auto AtomLayer{
-          compute_cluster_layer<atom.order()>(typename traits::LayerByOrder{})};
+          get_layer<atom.order()>(typename traits::LayerByOrder{})};
 
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
@@ -386,7 +385,7 @@ namespace rascal {
       // statically compute stacking height of pairs, which is to be increased
       // through extending the neighbour list
       constexpr static auto ActiveLayer{
-          compute_cluster_layer<PairOrder>(typename traits::LayerByOrder{})};
+          get_layer<PairOrder>(typename traits::LayerByOrder{})};
 
       for (auto neighbour_atom_tag : new_neighbours[atom_index]) {
         this->neighbours_atom_tag.push_back(neighbour_atom_tag);

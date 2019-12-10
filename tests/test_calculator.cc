@@ -143,8 +143,6 @@ namespace rascal {
                                     typename Fix::ManagerTypeList_t>::type;
     using Property_t = typename Fix::Property_t;
 
-    bool verbose = false;
-
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & representation_hypers = Fix::representation_hypers;
@@ -163,22 +161,9 @@ namespace rascal {
 
         BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
         BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
-        double diff{0.};
-        int size{0};
-        for (int row_i{0}; row_i < feat_prop.rows(); row_i++) {
-          for (int col_i{0}; col_i < feat_prop.cols(); ++col_i) {
-            diff += std::abs(feat_prop(row_i, col_i) - feat_col(row_i, col_i));
-            size += 1;
 
-            if (verbose and diff / size > 6e-12) {
-              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", "
-                        << col_i << " \t " << feat_prop(row_i, col_i)
-                        << "\t != " << feat_col(row_i, col_i) << std::endl;
-            }
-          }
-        }
-        diff /= size;
-        BOOST_CHECK_LE(diff, 6e-12);
+        auto diff_rep{math::relative_error(feat_prop, feat_col)};
+        BOOST_CHECK_LE(diff_rep.maxCoeff(), 6e-12);
       }
       manager_i++;
     }
@@ -416,11 +401,9 @@ namespace rascal {
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
-    auto & verbose = Fix::verbose;
+    const double delta{2e-6};
+    const double epsilon{1e-14};
     using Property_t = typename Fix::Property_t;
-
-    // Choose the data depending on the current options
-    using Std2DArray_t = std::vector<std::vector<double>>;
 
     const auto & rep_infos{ref_data.at("rep_info").template get<json>()};
 
@@ -430,7 +413,7 @@ namespace rascal {
         const auto & representation_hypers =
             rep_info.at("hypers").template get<json>();
         const auto & ref_representation =
-            rep_info.at("feature_matrix").template get<Std2DArray_t>();
+            rep_info.at("feature_matrix").template get<math::Matrix_t>();
 
         representations.emplace_back(representation_hypers);
         representations.back().compute(manager);
@@ -439,26 +422,9 @@ namespace rascal {
             *manager->template get_property<Property_t>(property_name, true)};
         auto test_representation = property.get_features();
 
-        BOOST_CHECK_EQUAL(ref_representation.size(),
-                          test_representation.rows());
-        double avg_diff{0.};
-        for (size_t row_i{0}; row_i < ref_representation.size(); row_i++) {
-          BOOST_CHECK_EQUAL(ref_representation[row_i].size(),
-                            test_representation.cols());
-          for (size_t col_i{0}; col_i < ref_representation[row_i].size();
-               ++col_i) {
-            auto diff{std::abs(ref_representation[row_i][col_i] -
-                               test_representation(row_i, col_i))};
-            avg_diff += diff;
-            if (verbose and diff > 6e-12) {
-              std::cout << "manager_i=" << manager_i << " pos=" << row_i << ", "
-                        << col_i << " \t " << ref_representation[row_i][col_i]
-                        << "\t != " << test_representation(row_i, col_i)
-                        << std::endl;
-            }
-          }
-          BOOST_CHECK_LE(avg_diff / test_representation.size(), 6e-12);
-        }
+        auto diff_rep{math::relative_error(
+            ref_representation, test_representation, delta, epsilon)};
+        BOOST_CHECK_LE(diff_rep.maxCoeff(), delta);
       }
       manager_i += 1;
     }
@@ -519,9 +485,11 @@ namespace rascal {
     }
   }
 
-  using gradient_fixtures =
-      boost::mpl::list<CalculatorFixture<SingleHypersSphericalExpansion>,
-                       CalculatorFixture<SingleHypersSphericalInvariants>>;
+  using gradient_fixtures = boost::mpl::list<
+      CalculatorFixture<
+          SingleHypersSphericalExpansion<SimplePeriodicNLCCStrictFixture>>,
+      CalculatorFixture<
+          SingleHypersSphericalInvariants<SimplePeriodicNLCCStrictFixture>>>;
 
   /**
    * Test the gradient of the SphericalExpansion and SphericalInvariants
@@ -564,6 +532,197 @@ namespace rascal {
         /* ---- grad-test-example-end2 ---- */
       }
       ++filename_it;
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Utility fixture used to compare representations computed with full and
+   * half neighbor lists.
+   */
+  template <class CalculatorFixtureFull, class CalculatorFixtureHalf>
+  struct MergeHalfAndFull : CalculatorFixtureFull, CalculatorFixtureHalf {
+    using ParentFull = CalculatorFixtureFull;
+    using ParentHalf = CalculatorFixtureHalf;
+    using Representation_t = typename ParentFull::Representation_t;
+    using Manager_t = typename ParentFull::Manager_t;
+    using ManagerHalf_t = typename ParentHalf::Manager_t;
+    using Prop_t = typename Representation_t::template Property_t<Manager_t>;
+    using PropGrad_t =
+        typename Representation_t::template PropertyGradient_t<Manager_t>;
+    using PropHalf_t =
+        typename Representation_t::template Property_t<ManagerHalf_t>;
+    using PropGradHalf_t =
+        typename Representation_t::template PropertyGradient_t<ManagerHalf_t>;
+
+    MergeHalfAndFull() {
+      for (auto hyper : ParentFull::representation_hypers) {
+        hyper["compute_gradients"] = true;
+        ParentFull::representations.emplace_back(hyper);
+      }
+    }
+
+    ~MergeHalfAndFull() = default;
+  };
+  template <template <class> class RepresentationFixture>
+  using RepFix_t =
+      CalculatorFixture<RepresentationFixture<SimplePeriodicNLCCStrictFixture>>;
+  template <template <class> class RepresentationFixture>
+  using RepFixHalf_t = CalculatorFixture<
+      RepresentationFixture<SimplePeriodicNLHalfCCStrictFixture>>;
+
+  using gradient_half_fixtures = boost::mpl::list<
+      MergeHalfAndFull<RepFix_t<SingleHypersSphericalExpansion>,
+                       RepFixHalf_t<SingleHypersSphericalExpansion>>,
+      MergeHalfAndFull<RepFix_t<SingleHypersSphericalInvariants>,
+                       RepFixHalf_t<SingleHypersSphericalInvariants>>>;
+
+  /**
+   * Test the representation gradients computed with a half neighbor list
+   * against the full neighbor list implementation.
+   * There are some discrepancies between the descriptors, their gradients and
+   * their half NL conterparts arising from numerical errors most likely.
+   *
+   * Extensive tests on a subset of the structures showed that large relative
+   * errors can arise when both the reference and the test values are small
+   * (~1e-18) so we use a threshold (epsilon ~ 1e-15) so that if the absolute
+   * value of reference and test values are within epsilon the relative error
+   * is effectively 0. This is justified because these coefficient will be
+   * either taken as is or multiplied together (-> power 2, 3, 4...) which
+   * will squash these values even more.
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(half_full_representation_test, Fix,
+                                   gradient_half_fixtures, Fix) {
+    using Prop_t = typename Fix::Prop_t;
+    using PropHalf_t = typename Fix::PropHalf_t;
+    using PropGrad_t = typename Fix::PropGrad_t;
+    using PropGradHalf_t = typename Fix::PropGradHalf_t;
+    auto & managers = Fix::ParentFull::managers;
+    auto & managers_half = Fix::ParentHalf::managers;
+    auto & representations = Fix::ParentFull::representations;
+    const bool verbose{false};
+    // relative error threshold
+    const double delta{4e-7};
+    // range of zero
+    const double epsilon{1e-15};
+
+    // both manager should refer to the same structures
+    BOOST_TEST(managers.size() == managers_half.size());
+    if (managers.size() != managers_half.size()) {
+      throw std::runtime_error("managers.size() != managers_half.size()");
+    }
+    for (size_t i_manager{0}; i_manager < managers.size(); ++i_manager) {
+      for (auto & representation : representations) {
+        auto & manager = managers[i_manager];
+        auto & manager_half = managers_half[i_manager];
+        representation.compute(manager);
+        representation.compute(manager_half);
+
+        auto && rep_vectors{*manager->template get_property<Prop_t>(
+            representation.get_name())};
+        auto && rep_vectors_half{
+            *manager_half->template get_property<PropHalf_t>(
+                representation.get_name())};
+
+        auto && rep_vector_gradients{
+            *manager->template get_property<PropGrad_t>(
+                representation.get_gradient_name())};
+        auto && rep_vector_gradients_half{
+            *manager_half->template get_property<PropGradHalf_t>(
+                representation.get_gradient_name())};
+
+        size_t center_count{0};
+        for (auto center : manager) {
+          // compare the representation coefficients
+          auto diff_rep_m{math::relative_error(
+              rep_vectors.get_dense_row(center),
+              rep_vectors_half.get_dense_row(center), delta, epsilon)};
+          double diff_rep = diff_rep_m.maxCoeff();
+          BOOST_TEST(diff_rep < delta);
+          if (verbose and diff_rep > delta) {
+            std::cout << "========================= rep" << std::endl;
+            std::cout << "Center " << center.get_index();
+            std::cout << " of type " << center.get_atom_type()
+                      << " max rel diff: " << diff_rep << std::endl;
+            std::cout << "Full: " << std::endl
+                      << rep_vectors.get_dense_row(center).transpose();
+            std::cout << std::endl;
+            std::cout << "Half: " << std::endl
+                      << rep_vectors_half.get_dense_row(center).transpose();
+            std::cout << std::endl;
+          }
+
+          auto half_it = manager_half->get_iterator_at(center_count, 0);
+          auto half_center = *(half_it);
+          auto ii_pair = center.get_atom_ii();
+          auto ii_half_pair = half_center.get_atom_ii();
+
+          // compare the representation gradient coefficients at the ii pair
+          auto diff_rep_grad_center_m{math::relative_error(
+              rep_vector_gradients.get_dense_row(ii_pair),
+              rep_vector_gradients_half.get_dense_row(ii_half_pair), delta,
+              epsilon)};
+          double diff_rep_grad_center = diff_rep_grad_center_m.maxCoeff();
+          BOOST_TEST(diff_rep_grad_center < delta);
+          if (verbose and diff_rep_grad_center > delta) {
+            std::cout << "================ rep_grad_center" << std::endl;
+            std::cout << "Center " << center.get_index();
+            std::cout << " of type " << center.get_atom_type()
+                      << " max rel diff: " << diff_rep_grad_center << std::endl;
+            std::cout
+                << "Full: " << std::endl
+                << rep_vector_gradients.get_dense_row(ii_pair).transpose();
+            std::cout << std::endl;
+            std::cout << "Half: " << std::endl
+                      << rep_vector_gradients_half.get_dense_row(ii_half_pair)
+                             .transpose();
+            std::cout << std::endl;
+          }
+          size_t neigh_count{0};
+          for (auto neigh : center.pairs()) {
+            auto neigh_type = neigh.get_atom_type();
+            auto tags = neigh.get_atom_tag_list();
+            if (tags[1] <= tags[0]) {
+              continue;
+            }
+
+            auto half_neigh_it = half_center.pairs().begin();
+            for (size_t ii{0}; ii < neigh_count; ii++) {
+              ++half_neigh_it;
+            }
+            auto half_neigh = *(half_neigh_it);
+            // compare the representation gradient coefficients at ij pair
+            auto diff_rep_grad_neigh_m{math::relative_error(
+                rep_vector_gradients.get_dense_row(neigh),
+                rep_vector_gradients_half.get_dense_row(half_neigh), delta,
+                epsilon)};
+            double diff_rep_grad_neigh = diff_rep_grad_neigh_m.maxCoeff();
+            BOOST_TEST(diff_rep_grad_neigh < delta);
+            if (verbose and diff_rep_grad_neigh > delta) {
+              std::cout << "================== rep_grad_neigh" << std::endl;
+              std::cout << "Center " << center.get_index();
+              std::cout << " of type " << center.get_atom_type() << std::endl;
+              std::cout << "Neighbour " << neigh_type << " tags: ";
+              std::cout << "(";
+              for (auto tag : tags) {
+                std::cout << tag << ", ";
+              }
+              std::cout << "\b\b) "
+                        << "max rel diff: " << diff_rep_grad_neigh << std::endl;
+              std::cout
+                  << "Full: " << std::endl
+                  << rep_vector_gradients.get_dense_row(neigh).transpose();
+              std::cout << std::endl;
+              std::cout << "Half: " << std::endl
+                        << rep_vector_gradients_half.get_dense_row(half_neigh)
+                               .transpose();
+              std::cout << std::endl;
+            }
+            neigh_count++;
+          }  // neigh
+          center_count++;
+        }  // center
+      }
     }
   }
 

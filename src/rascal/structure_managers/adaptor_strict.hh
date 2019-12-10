@@ -57,8 +57,7 @@ namespace rascal {
     constexpr static size_t MaxOrder{parent_traits::MaxOrder};
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     using LayerByOrder =
-        typename LayerIncreaser<MaxOrder,
-                                typename parent_traits::LayerByOrder>::type;
+        typename LayerIncreaser<typename parent_traits::LayerByOrder>::type;
     using PreviousManager_t = ManagerImplementation;
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         parent_traits::NeighbourListType};
@@ -216,7 +215,7 @@ namespace rascal {
     typename std::enable_if_t<TargetOrder == 2, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       constexpr auto nb_neigh_layer{
-          compute_cluster_layer<TargetOrder>(typename traits::LayerByOrder{})};
+          get_layer<TargetOrder>(typename traits::LayerByOrder{})};
       auto && access_index = cluster.get_cluster_index(nb_neigh_layer);
       return std::get<TargetOrder - 1>(nb_neigh)[access_index];
     }

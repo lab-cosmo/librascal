@@ -101,7 +101,7 @@ namespace rascal {
         std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
       constexpr static auto ActiveLayer{
-          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+          get_layer<Order>(typename traits::LayerByOrder{})};
 
       using Property_t =
           Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;
@@ -121,7 +121,7 @@ namespace rascal {
                                                std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
       constexpr static auto ActiveLayer{
-          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+          get_layer<Order>(typename traits::LayerByOrder{})};
 
       using Property_t =
           Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;
@@ -202,21 +202,21 @@ namespace rascal {
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     using Property_t =
-        Property<T, Order, get_layer(Order, typename traits::LayerByOrder{}),
+        Property<T, Order, get_layer<Order>(typename traits::LayerByOrder{}),
                  StructureManager_t, NbRow, NbCol>;
 
     //! helper type for Property creation
     template <typename T, size_t Order>
     using TypedProperty_t =
         TypedProperty<T, Order,
-                      get_layer(Order, typename traits::LayerByOrder{}),
+                      get_layer<Order>(typename traits::LayerByOrder{}),
                       StructureManager_t>;
 
     using Key_t = std::vector<int>;
     template <typename T, size_t Order>
     using BlockSparseProperty_t =
         BlockSparseProperty<T, Order,
-                            get_layer(Order, typename traits::LayerByOrder{}),
+                            get_layer<Order>(typename traits::LayerByOrder{}),
                             StructureManager_t, Key_t>;
 
     //! type for the hyper parameter class
@@ -303,6 +303,29 @@ namespace rascal {
 
     //! i.e. number of atoms
     size_t size() const { return this->implementation().get_size(); }
+
+    //! Tells if the cluster is a center
+    template <size_t Layer>
+    bool is_center_atom(const ClusterRefKey<1, Layer> & cluster) const {
+      // check if cluster is not a masked atom
+      return cluster.get_cluster_index(Layer) < this->size();
+    }
+
+    //! Tells if the cluster is a center
+    template <size_t Layer>
+    bool is_center_atom(const ClusterRefKey<2, Layer> & cluster) {
+      // get the corresponding atom_j from pair_ij and check if the tag of j is
+      // the same in atom_j and pair_ij. In pair_ij the atom_tag could
+      // correspond to a ghost atom while the tag of atom_j always correspond to
+      // an atom in the unit cell.
+      // the additional check is to make sure atom_j is not a masked atom.
+      auto atom_j_tag = cluster.get_atom_tag();
+      auto atom_j_index = this->get_atom_index(atom_j_tag);
+      auto atom_j_it = this->get_iterator_at(atom_j_index, 0);
+      auto atom_j = *(atom_j_it);
+      return (atom_j_tag == atom_j.get_atom_tag() and
+              atom_j.get_cluster_index(Layer) < this->size());
+    }
 
     //! number of atoms including ghosts
     size_t size_with_ghosts() const {
@@ -690,8 +713,7 @@ namespace rascal {
 
     template <size_t Order>
     constexpr static size_t cluster_layer_from_order() {
-      static_assert(Order > 0, "Order is <1 this should not be");
-      return get_layer(Order, typename traits::LayerByOrder{});
+      return get_layer<Order>(typename traits::LayerByOrder{});
     }
 
     /**
@@ -733,7 +755,7 @@ namespace rascal {
     //! returns the current layer
     template <size_t Order>
     constexpr static size_t cluster_layer() {
-      return compute_cluster_layer<Order>(typename traits::LayerByOrder{});
+      return get_layer<Order>(typename traits::LayerByOrder{});
     }
 
     //! recursion end, not for use
