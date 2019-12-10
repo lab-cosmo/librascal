@@ -92,52 +92,6 @@ namespace rascal {
     json factory_args{};
   };
 
-  struct TestDataHalfNL {
-    using ManagerTypeHolder_t =
-        StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList, AdaptorHalfList,
-                                   AdaptorCenterContribution, AdaptorStrict>;
-    TestDataHalfNL() = default;
-
-    void get_ref(const std::string & ref_filename) {
-      this->ref_data =
-          json::from_ubjson(internal::read_binary_file(ref_filename));
-      auto filenames =
-          this->ref_data.at("filenames").get<std::vector<std::string>>();
-      auto cutoffs = this->ref_data.at("cutoffs").get<std::vector<double>>();
-
-      for (auto && filename : filenames) {
-        for (auto && cutoff : cutoffs) {
-          json parameters;
-          json structure{{"filename", filename}};
-          json adaptors;
-          json ad1{{"name", "AdaptorNeighbourList"},
-                   {"initialization_arguments", {{"cutoff", cutoff}}}};
-          json ad1b{{"name", "AdaptorHalfList"},
-                    {"initialization_arguments", {}}};
-          json ad1c{{"name", "AdaptorCenterContribution"},
-                    {"initialization_arguments", {}}};
-          json ad2{{"name", "AdaptorStrict"},
-                   {"initialization_arguments", {{"cutoff", cutoff}}}};
-          adaptors.emplace_back(ad1);
-          adaptors.emplace_back(ad1b);
-          adaptors.emplace_back(ad1c);
-          adaptors.emplace_back(ad2);
-
-          parameters["structure"] = structure;
-          parameters["adaptors"] = adaptors;
-
-          this->factory_args.emplace_back(parameters);
-        }
-      }
-    }
-
-    ~TestDataHalfNL() = default;
-
-    json ref_data{};
-    json factory_args{};
-  };
-
   template <typename MultipleStructureFixture>
   struct MultipleStructureSphericalInvariants : MultipleStructureFixture {
     using Parent = MultipleStructureFixture;
