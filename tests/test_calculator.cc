@@ -542,10 +542,10 @@ namespace rascal {
    * Utility fixture used to compare representations computed with full and
    * half neighbor lists.
    */
-  template <class CalculatorFixtureFull, class CaculatorFixtureHalf>
-  struct MergeHalfAndFull : CalculatorFixtureFull, CaculatorFixtureHalf {
+  template <class CalculatorFixtureFull, class CalculatorFixtureHalf>
+  struct MergeHalfAndFull : CalculatorFixtureFull, CalculatorFixtureHalf {
     using ParentFull = CalculatorFixtureFull;
-    using ParentHalf = CaculatorFixtureHalf;
+    using ParentHalf = CalculatorFixtureHalf;
     using Representation_t = typename ParentFull::Representation_t;
     using Manager_t = typename ParentFull::Manager_t;
     using ManagerHalf_t = typename ParentHalf::Manager_t;
