@@ -882,7 +882,22 @@ StructureManager is compatible with the representation <dl class="simple">
 
 <dl class="type">
 <dt>
-<em class="property">using </em><code class="sig-name descname">gradient_fixtures</code> = boost::mpl::list&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;SingleHypersSphericalExpansion&gt;, <a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;SingleHypersSphericalInvariants&gt;&gt;<br /></dt>
+<em class="property">using </em><code class="sig-name descname">gradient_fixtures</code> = boost::mpl::list&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;SingleHypersSphericalExpansion&lt;SimplePeriodicNLCCStrictFixture&gt;&gt;, <a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;SingleHypersSphericalInvariants&lt;SimplePeriodicNLCCStrictFixture&gt;&gt;&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">RepFix_t</code> = <a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;RepresentationFixture&lt;SimplePeriodicNLCCStrictFixture&gt;&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">RepFixHalf_t</code> = <a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;RepresentationFixture&lt;SimplePeriodicNLHalfCCStrictFixture&gt;&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">gradient_half_fixtures</code> = boost::mpl::list&lt;MergeHalfAndFull&lt;<a class="reference internal" href="#_CPPv4N6rascal8RepFix_tE" title="rascal::RepFix_t">RepFix_t</a>&lt;SingleHypersSphericalExpansion&gt;, <a class="reference internal" href="#_CPPv4N6rascal12RepFixHalf_tE" title="rascal::RepFixHalf_t">RepFixHalf_t</a>&lt;SingleHypersSphericalExpansion&gt;&gt;, MergeHalfAndFull&lt;<a class="reference internal" href="#_CPPv4N6rascal8RepFix_tE" title="rascal::RepFix_t">RepFix_t</a>&lt;SingleHypersSphericalInvariants&gt;, <a class="reference internal" href="#_CPPv4N6rascal12RepFixHalf_tE" title="rascal::RepFixHalf_t">RepFixHalf_t</a>&lt;SingleHypersSphericalInvariants&gt;&gt;&gt;<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
@@ -1411,6 +1426,11 @@ template&lt;typename <code class="sig-name descname">T</code>&gt;<br />auto <cod
 <dl class="function">
 <dt>
 <code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>spherical_representation_gradients, Fix, <a class="reference internal" href="#_CPPv4N6rascal17gradient_fixturesE" title="rascal::gradient_fixtures">gradient_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>half_full_representation_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal22gradient_half_fixturesE" title="rascal::gradient_half_fixtures">gradient_half_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2851,17 +2871,12 @@ template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code cl
 
 <dl class="function">
 <dt>
-int &amp;<code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span>int <em>atom_tag</em><span class="sig-paren">)</span><br /></dt>
+int <code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span>int <em>atom_tag</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
 size_t <code class="sig-name descname">get_atom_index</code><span class="sig-paren">(</span><em class="property">const</em> int <em>atom_tag</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-int <code class="sig-name descname">get_atom_type</code><span class="sig-paren">(</span>int <em>atom_tag</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4346,12 +4361,6 @@ double <code class="sig-name descname">fd_error_tol</code> = {1E-4}<br /></dt>
 
 <dl class="class">
 <dt>
-<em class="property">struct </em><code class="sig-name descname">SimplePeriodicNLCCStrictFixture</code><br /></dt>
-<dd><p>Subclassed by rascal::SingleHypersSphericalExpansion, rascal::SingleHypersSphericalInvariants</p>
-</dd></dl>
-
-<dl class="class">
-<dt>
 <em class="property">struct </em><code class="sig-name descname">SimpleStructureManagerNLCCStrictFixture</code><br /></dt>
 <dd><p>Subclassed by rascal::MultipleHypersSphericalExpansion</p>
 </dd></dl>
@@ -4554,6 +4563,16 @@ Iterator_t <code class="sig-name descname">end</code><span class="sig-paren">(</
 <dl class="function">
 <dt>
 size_t <code class="sig-name descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">Layer</code>&gt;<br />bool <code class="sig-name descname">is_center_atom</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;1, <a class="reference internal" href="#_CPPv4I_6size_tENK6rascal16StructureManager14is_center_atomEbRK13ClusterRefKeyIXL1EE5LayerE" title="rascal::StructureManager::is_center_atom::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">Layer</code>&gt;<br />bool <code class="sig-name descname">is_center_atom</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;2, <a class="reference internal" href="#_CPPv4I_6size_tENK6rascal16StructureManager14is_center_atomEbRK13ClusterRefKeyIXL1EE5LayerE" title="rascal::StructureManager::is_center_atom::Layer">Layer</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -7063,6 +7082,11 @@ size_t <code class="sig-name descname">pow</code><span class="sig-paren">(</span
 <dl class="function">
 <dt>
 double <code class="sig-name descname">pow</code><span class="sig-paren">(</span>double <em>x</em>, double <em>n</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">Derived</code>&gt;<br /><a class="reference internal" href="#_CPPv4I0EN6rascal4math14relative_errorE7DerivedRKN5Eigen10MatrixBaseI7DerivedEERKN5Eigen10MatrixBaseI7DerivedEERKdRKd" title="rascal::math::relative_error::Derived">Derived</a> <code class="sig-name descname">relative_error</code><span class="sig-paren">(</span><em class="property">const</em> Eigen::MatrixBase&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal4math14relative_errorE7DerivedRKN5Eigen10MatrixBaseI7DerivedEERKN5Eigen10MatrixBaseI7DerivedEERKdRKd" title="rascal::math::relative_error::Derived">Derived</a>&gt; &amp;<em>reference</em>, <em class="property">const</em> Eigen::MatrixBase&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal4math14relative_errorE7DerivedRKN5Eigen10MatrixBaseI7DerivedEERKN5Eigen10MatrixBaseI7DerivedEERKdRKd" title="rascal::math::relative_error::Derived">Derived</a>&gt; &amp;<em>test</em>, <em class="property">const</em> double &amp;<em>delta</em> = 1e-10, <em class="property">const</em> double &amp;<em>epsilon</em> = <a class="reference internal" href="#_CPPv4N6rascal4math8DBL_FTOLE" title="rascal::math::DBL_FTOL">DBL_FTOL</a><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
