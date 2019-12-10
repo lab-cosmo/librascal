@@ -453,6 +453,7 @@ namespace rascal {
         auto atom_i_tag = center.get_atom_tag();
         auto & grad_center_coefficients{
             expansions_coefficients_gradient[ii_pair]};
+        // compute the \grad_i p^{i} coeffs
         auto & soap_center_gradient{soap_vector_gradients[ii_pair]};
         for (const auto & grad_species_1 : grad_center_coefficients) {
           spair_type[0] = grad_species_1.first[0];
@@ -526,6 +527,7 @@ namespace rascal {
             }
 
             // Sum the gradients wrt the neighbour atom position
+            // compute the \grad_j p^{i} coeffs
             for (auto neigh : center.pairs()) {
               auto && atom_j = neigh.get_atom_j();
               auto atom_j_tag = atom_j.get_atom_tag();
@@ -542,8 +544,6 @@ namespace rascal {
               if ((neigh_type != spair_type[0]) and
                   (neigh_type != spair_type[1])) {
                 // Save the cost of iteration
-                // TODO(max) eliminate the zeroing once we figure out how to
-                // avoid storing these empty species blocks
                 continue;
               }
 
