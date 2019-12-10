@@ -590,7 +590,7 @@ namespace rascal {
               typename std::enable_if_t<HasDistances, int> = 0>
     inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
       static_assert(HasDistances == traits::HasDistances,
-                    "HasDistances is used for SFINAE, please don't specify it");
+                    "The manager does not have distances.");
       return this->get_previous_manager()->get_distance(pair);
     }
 
