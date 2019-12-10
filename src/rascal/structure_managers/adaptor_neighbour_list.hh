@@ -633,9 +633,6 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom tag, also works for ghost atoms
-    int & get_atom_type(int atom_tag) { return this->atom_types[atom_tag]; }
-
-    //! Returns the type of a given atom, given an AtomRef
     int get_atom_type(int atom_tag) const { return this->atom_types[atom_tag]; }
 
     /** The atom tag corresponds to an ghost atom, then it returns it cluster

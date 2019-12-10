@@ -1573,8 +1573,6 @@ namespace rascal {
       expansions_coefficients_gradient.resize();
     }
 
-    // TODO(felix) think about an option to have "global" species,
-    // "structure" species(or not), or automatic at the level of environment
     std::vector<std::unordered_set<Key_t, internal::Hash<Key_t>>> keys{};
     for (auto center : manager) {
       keys.emplace_back();
@@ -1652,7 +1650,6 @@ namespace rascal {
                                                                      neigh);
         double f_c{cutoff_function->f_c(dist)};
         auto coefficients_center_by_type{coefficients_center[neigh_type]};
-        // auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
 
         // compute the coefficients
         size_t l_block_idx{0};
