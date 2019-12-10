@@ -926,11 +926,9 @@ namespace rascal {
     // strict is supposed to contain pairs 1 and 3
     auto & low_prop_typed{dynamic_cast<TypedProperty<
         int, PairOrder,
-        std::remove_reference_t<decltype(low_prop)>::PropertyLayer,
         StructureManager<StructureManagerLammps>> &>(low_prop)};
     auto & high_prop_typed{dynamic_cast<TypedProperty<
         int, PairOrder,
-        std::remove_reference_t<decltype(high_prop)>::PropertyLayer,
         StructureManager<std::remove_reference_t<decltype(*strict)>>> &>(
         high_prop)};
     counter = 0;

@@ -100,11 +100,8 @@ namespace rascal {
         Manager, Order, std::index_sequence<LayersHead, LayersTail...>,
         std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
-      constexpr static auto ActiveLayer{
-          get_layer<Order>(typename traits::LayerByOrder{})};
-
       using Property_t =
-          Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;
+          Property<size_t, Order, Manager, LayersHead + 1, 1>;
       using type = typename ClusterIndexPropertyComputer_Helper<
           Manager, Order + 1, std::index_sequence<LayersTail...>,
           std::tuple<TupComp..., Property_t>>::type;
@@ -120,11 +117,8 @@ namespace rascal {
                                                std::index_sequence<LayersHead>,
                                                std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
-      constexpr static auto ActiveLayer{
-          get_layer<Order>(typename traits::LayerByOrder{})};
-
       using Property_t =
-          Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;
+          Property<size_t, Order, Manager, LayersHead + 1, 1>;
       using type = std::tuple<TupComp..., Property_t>;
     };
 
@@ -143,12 +137,16 @@ namespace rascal {
     template <typename Tup, typename Manager>
     struct ClusterIndexConstructor {};
 
+    template <typename PropertyType, typename Manager>
+    PropertyType make_individual_property(Manager & manager) {
+      return PropertyType{manager, PropertyType::Order};
+    }
     //! Overload to build the tuple
     template <typename... PropertyTypes, typename Manager>
     struct ClusterIndexConstructor<std::tuple<PropertyTypes...>, Manager> {
       static std::tuple<PropertyTypes...> make(Manager & manager) {
         return std::tuple<PropertyTypes...>(
-            std::move(PropertyTypes(manager))...);
+            std::move(make_individual_property<PropertyTypes>(manager))...);
       }
     };
   }  // namespace internal
@@ -190,16 +188,11 @@ namespace rascal {
     }
     //! helper type for Property creation
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
-    using Property_t =
-        Property<T, Order, get_layer<Order>(typename traits::LayerByOrder{}),
-                 StructureManager_t, NbRow, NbCol>;
+    using Property_t = Property<T, Order, StructureManager_t, NbRow, NbCol>;
 
     //! helper type for Property creation
     template <typename T, size_t Order>
-    using TypedProperty_t =
-        TypedProperty<T, Order,
-                      get_layer<Order>(typename traits::LayerByOrder{}),
-                      StructureManager_t>;
+    using TypedProperty_t = TypedProperty<T, Order, StructureManager_t>;
 
     using Key_t = std::vector<int>;
     template <typename T, size_t Order>
@@ -576,6 +569,11 @@ namespace rascal {
           child.lock()->send_changed_structure_signal();
         }
       }
+    }
+
+    size_t get_property_layer(const size_t & order) const {
+      return get_dyn_layer<traits::MaxOrder>(order,
+                                             typename traits::LayerByOrder{});
     }
 
    protected:

@@ -219,7 +219,7 @@ namespace rascal {
       auto adaptor{make_adapted_manager<AdaptorCenterContribution>(manager)};
       adaptor->update();
       auto prop =
-          Property<int, 2, 0, AdaptorCenterContribution<Manager_t>, 1, 1>(
+          Property<int, 2, AdaptorCenterContribution<Manager_t>, 1, 1>(
               *adaptor);
       prop.resize();
       std::vector<std::vector<int>> ref{};

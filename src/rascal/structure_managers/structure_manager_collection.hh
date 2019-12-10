@@ -348,11 +348,11 @@ namespace rascal {
     template <typename T>
     struct FeatureMatrixHelper {};
 
-    template <typename T, size_t Order, size_t PropertyLayer, int NbRow,
+    template <typename T, size_t Order, int NbRow,
               int NbCol>
     struct FeatureMatrixHelper<
-        Property<T, Order, PropertyLayer, Manager_t, NbRow, NbCol>> {
-      using Prop_t = Property<T, Order, PropertyLayer, Manager_t, NbRow, NbCol>;
+        Property<T, Order, Manager_t, NbRow, NbCol>> {
+      using Prop_t = Property<T, Order, Manager_t, NbRow, NbCol>;
       template <class StructureManagers, class Matrix>
       static void apply(StructureManagers & managers,
                         const std::string & property_name, Matrix & features,

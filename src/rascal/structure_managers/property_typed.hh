@@ -153,13 +153,13 @@ namespace rascal {
    * `cluster_indices` the size needs to include space for the number of atoms
    * plus ghosts.
    */
-  template <typename T, size_t Order_, size_t PropertyLayer_, class Manager>
+  template <typename T, size_t Order_, class Manager>
   class TypedProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using Value_t = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = Manager;
-    using Self_t = TypedProperty<T, Order_, PropertyLayer_, Manager>;
+    using Self_t = TypedProperty<T, Order_, Manager>;
     using traits = typename Manager::traits;
     using Matrix_t = math::Matrix_t;
 
@@ -167,18 +167,17 @@ namespace rascal {
     using reference = typename Value_t::reference;
     using const_reference = typename Value_t::const_reference;
 
-    constexpr static size_t PropertyLayer{PropertyLayer_};
     constexpr static size_t Order{Order_};
     constexpr static bool IsOrderOne{Order == 1};
 
-    TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
-                  std::string metadata = "no metadata",
+    TypedProperty(Manager_t & manager, size_t property_layer, Dim_t nb_row,
+                  Dim_t nb_col = 1, std::string metadata = "no metadata",
                   bool exclude_ghosts = false)
         : Parent{static_cast<StructureManagerBase &>(manager),
                  nb_row,
                  nb_col,
                  Order,
-                 PropertyLayer,
+                 property_layer,
                  metadata},
           type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
 
