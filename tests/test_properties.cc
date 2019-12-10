@@ -724,17 +724,39 @@ namespace rascal {
   }
 
   /**
-   * Tests if property forwarding works
+   * Tests if property forwarding works for a stack with two layers
    *
    * ANL -> has not "prop"
    *  | forwards request to lower stack
    *  v
    * SMC has "prop"
    */
-  BOOST_FIXTURE_TEST_CASE(property_forwarding, ANLWithGhosts_SMC_StackFixture) {
+  BOOST_FIXTURE_TEST_CASE(property_forwarding_two_layers,
+                          ANLWithGhosts_SMC_StackFixture) {
     using Parent_Property_t = Parent::Property_t;
     this->manager->get_previous_manager()
         ->template create_property<Parent_Property_t>("prop");
+    BOOST_CHECK_NO_THROW(
+        this->manager->template get_property<Property_t>("prop", false););
+  }
+  /**
+   * Tests if property forwarding works for a stack with three layers
+   *
+   * AS -> has not "prop"
+   *  | forwards request to lower stack
+   * ANL -> has not "prop"
+   *  | forwards request to lower stack
+   *  v
+   * SMC has "prop"
+   */
+  BOOST_FIXTURE_TEST_CASE(
+      property_forwarding_three_layers,
+      AdaptorStrictStackFixture<ANLWithGhosts_SMC_StackFixture>) {
+    using Parent_Parent_Property_t = Parent::Parent::Property_t;
+    // using Parent_Parent_Property_t = Parent_Parent_t::Property_t;
+    this->manager->get_previous_manager()
+        ->get_previous_manager()
+        ->template create_property<Parent_Parent_Property_t>("prop");
     BOOST_CHECK_NO_THROW(
         this->manager->template get_property<Property_t>("prop", false););
   }

@@ -65,7 +65,7 @@ namespace rascal {
     using LayerByOrder =
         typename LayerIncreaser<MaxOrder_,
                                 typename parent_traits::LayerByOrder>::type;
-    typedef ManagerImplementation PreviousManager_t;
+    using PreviousManager_t = ManagerImplementation;
   };
 
   namespace internal {

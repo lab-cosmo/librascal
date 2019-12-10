@@ -183,6 +183,12 @@ namespace rascal {
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
                                                    StructureManager_t>;
 
+    /**
+     * Checks if the current layer is the root of the stack e.g. the root of
+     * the stack AdaptorNeighbourList<StructureManagerCenters> is
+     * StructureManagerCenters. This boolean used for stopping recursive
+     * functions iterating through the whole stack.
+     */
     constexpr static bool IsRootImplementation =
         std::is_same<PreviousManager_t, ManagerImplementation>::value;
 
@@ -369,7 +375,7 @@ namespace rascal {
       if (this->has_layer_property(name)) {
         return true;
       }
-      return this->get_previous_manager()->has_layer_property(name);
+      return this->get_previous_manager()->has_stack_property(name);
     }
 
     /**
@@ -394,10 +400,11 @@ namespace rascal {
               << "' has already been registered"
               << " in manager '" << this->get_name() << "'";
         throw std::runtime_error(error.str());
+      } else {
+        auto property{std::make_shared<UserProperty_t>(
+            this->implementation(), metadata, exclude_ghosts)};
+        this->properties[name] = property;
       }
-      auto property{std::make_shared<UserProperty_t>(this->implementation(),
-                                                     metadata, exclude_ghosts)};
-      this->properties[name] = property;
     }
 
     /**
@@ -415,14 +422,15 @@ namespace rascal {
         error << "A property of name '" << name << "' does not exist"
               << " in manager '" << this->get_name() << "'";
         throw std::runtime_error(error.str());
+      } else {
+        auto && property = this->forward_get_property_request(name, false);
+        try {
+          UserProperty_t::check_compatibility(*property);
+        } catch (const std::runtime_error & error) {
+          return false;
+        }
+        return true;
       }
-      auto && property = this->forward_get_property_request(name, false);
-      try {
-        UserProperty_t::check_compatibility(*property);
-      } catch (const std::runtime_error & error) {
-        return false;
-      }
-      return true;
     }
 
     /**
@@ -447,8 +455,7 @@ namespace rascal {
 
     template <typename UserProperty_t>
     void validate_property_t(const std::string & name) const {
-      auto property =
-          this->template get_property<UserProperty_t>(name, false);
+      auto property = this->template get_property<UserProperty_t>(name, false);
       this->template validate_property_t<UserProperty_t>(property);
     }
 
@@ -473,23 +480,25 @@ namespace rascal {
      * found in manager stack.
      */
     template <typename UserProperty_t>
-    std::shared_ptr<UserProperty_t> get_property(
-        const std::string & name, const bool validate_property = true,
-        const bool force_creation = false, const bool exclude_ghosts = false,
-        const std::string & metadata = "no metadata") {
-      if (this->has_stack_property(name)) {
+    std::shared_ptr<UserProperty_t>
+    get_property(const std::string & name, const bool validate_property = true,
+                 const bool force_creation = false,
+                 const bool exclude_ghosts = false,
+                 const std::string & metadata = "no metadata") {
+      bool is_property_in_stack{this->has_stack_property(name)};
+      if (is_property_in_stack) {
         return this->template forward_get_property_request<UserProperty_t>(
             name, validate_property);
-      }
-      if (force_creation) {
+      } else if (not(is_property_in_stack) && force_creation) {
         auto property{std::make_shared<UserProperty_t>(
             this->implementation(), metadata, exclude_ghosts)};
         this->properties[name] = property;
         return property;
+      } else {
+        std::stringstream error{};
+        error << "No property of name '" << name << "' has been registered";
+        throw std::runtime_error(error.str());
       }
-      std::stringstream error{};
-      error << "No property of name '" << name << "' has been registered";
-      throw std::runtime_error(error.str());
     }
 
     /**
@@ -520,15 +529,16 @@ namespace rascal {
       if (this->has_layer_property(name)) {
         this->properties[name]->set_updated_status(is_updated);
         return;
+      } else {
+        std::stringstream error{};
+        error << "A property of name '" << name << "' does not exist"
+              << " in manager '" << this->get_name() << "' on top layer";
+        throw std::runtime_error(error.str());
       }
-      std::stringstream error{};
-      error << "A property of name '" << name << "' does not exist"
-            << " in manager '" << this->get_name() << "' on top layer";
-      throw std::runtime_error(error.str());
     }
 
     /**
-     * Forwards property requersts to lower layers. Usually to get a property
+     * Forwards property requests to lower layers. Usually to get a property
      * the `get_propertp_ptr` or `get_property_ref` function should be used.
      * This function is however still public because of each structure manager
      * needs to be able to access it from the previous manager.
@@ -544,11 +554,12 @@ namespace rascal {
           this->template validate_property_t<UserProperty_t>(property);
         }
         return std::static_pointer_cast<UserProperty_t>(property);
+      } else {
+        std::stringstream error{};
+        error << "A property of name '" << name << "' does not exist"
+              << " in manager '" << this->get_name() << "'";
+        throw std::runtime_error(error.str());
       }
-      std::stringstream error{};
-      error << "A property of name '" << name << "' does not exist"
-            << " in manager '" << this->get_name() << "'";
-      throw std::runtime_error(error.str());
     }
 
     /**
@@ -579,10 +590,11 @@ namespace rascal {
           this->template validate_property_t<UserProperty_t>(property);
         }
         return std::static_pointer_cast<UserProperty_t>(property);
+      } else {
+        return this->get_previous_manager()
+            ->template forward_get_property_request<UserProperty_t>(
+                name, validate_property);
       }
-      return this->get_previous_manager()
-          ->template forward_get_property_request<UserProperty_t>(
-              name, validate_property);
     }
 
     template <size_t Order, size_t Layer,
@@ -599,9 +611,8 @@ namespace rascal {
               typename std::enable_if_t<HasDirectionVectors, int> = 0>
     inline const Vector_ref
     get_direction_vector(const ClusterRefKey<Order, Layer> & pair) {
-      static_assert(
-          HasDirectionVectors == traits::HasDirectionVectors,
-          "The manager does not have direction vectors.");
+      static_assert(HasDirectionVectors == traits::HasDirectionVectors,
+                    "The manager does not have direction vectors.");
       return this->get_previous_manager()->get_direction_vector(pair);
     }
 

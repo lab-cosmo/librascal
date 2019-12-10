@@ -1541,8 +1541,8 @@ namespace rascal {
         this->get_name(), true, true, ExcludeGhosts)};
 
     auto && expansions_coefficients_gradient{
-        *manager->template get_property<PropGrad_t>(
-            this->get_gradient_name(), true, true)};
+        *manager->template get_property<PropGrad_t>(this->get_gradient_name(),
+                                                    true, true)};
 
     // if the representation has already been computed for the current
     // structure then do nothing

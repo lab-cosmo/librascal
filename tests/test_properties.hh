@@ -101,6 +101,7 @@ namespace rascal {
     using Parent = StackFixture;
     using Manager_t = AdaptorStrict<typename Parent::Manager_t>;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
+    using Property_t = typename Manager_t::template Property_t<double, 1>;
 
     const double cutoff{2.};
     AdaptorStrictStackFixture()

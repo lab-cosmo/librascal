@@ -349,8 +349,8 @@ namespace rascal {
           representations.emplace_back(hyper);
           std::string property_name{representations.back().get_gradient_name()};
           representations.back().compute(manager);
-          auto && prop_grad{*manager->template get_property<PropGrad_t>(
-              property_name, true)};
+          auto && prop_grad{
+              *manager->template get_property<PropGrad_t>(property_name, true)};
           for (auto center : manager) {
             auto ii_pair = center.get_atom_ii();
             auto keys_grad_center = prop_grad.get_keys(ii_pair);
@@ -435,8 +435,8 @@ namespace rascal {
         representations.emplace_back(representation_hypers);
         representations.back().compute(manager);
         auto property_name{representations.back().get_name()};
-        auto && property{*manager->template get_property<Property_t>(
-            property_name, true)};
+        auto && property{
+            *manager->template get_property<Property_t>(property_name, true)};
         auto test_representation = property.get_features();
 
         BOOST_CHECK_EQUAL(ref_representation.size(),

@@ -59,7 +59,7 @@ namespace rascal {
     using LayerByOrder =
         typename LayerIncreaser<MaxOrder,
                                 typename parent_traits::LayerByOrder>::type;
-    typedef ManagerImplementation PreviousManager_t;
+    using PreviousManager_t = ManagerImplementation;
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         parent_traits::NeighbourListType};
   };
@@ -385,8 +385,8 @@ namespace rascal {
     //! initialise the distance storage
     this->distance =
         this->template get_property<Distance_t>("distance", false, true);
-    this->dir_vec = this->template get_property<DirectionVector_t>(
-        "dir_vec", false, true);
+    this->dir_vec =
+        this->template get_property<DirectionVector_t>("dir_vec", false, true);
 
     this->distance->clear();
     this->dir_vec->clear();

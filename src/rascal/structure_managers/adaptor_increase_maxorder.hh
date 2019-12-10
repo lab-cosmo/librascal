@@ -66,7 +66,7 @@ namespace rascal {
     using LayerByOrder =
         typename LayerExtender<MaxOrder,
                                typename parent_traits::LayerByOrder>::type;
-    typedef ManagerImplementation PreviousManager_t;
+    using PreviousManager_t = ManagerImplementation;
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         parent_traits::NeighbourListType};
   };

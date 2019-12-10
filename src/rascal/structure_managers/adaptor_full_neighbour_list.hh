@@ -62,8 +62,8 @@ namespace rascal {
     constexpr static size_t AtomLayer{get<0>(
         typename LayerIncreaser<MaxOrder,
                                 typename parent_traits::LayerByOrder>::type{})};
+    using PreviousManager_t = ManagerImplementation;
     using LayerByOrder = std::index_sequence<AtomLayer, 0>;
-    typedef ManagerImplementation PreviousManager_t;
   };
 
   /**

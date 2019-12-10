@@ -53,7 +53,7 @@ namespace rascal {
     constexpr static bool HasCenterPair{false};
     constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0, 0>;
-    typedef StructureManagerLammps PreviousManager_t;
+    using PreviousManager_t = StructureManagerLammps;
   };
 
   /* ---------------------------------------------------------------------- */
