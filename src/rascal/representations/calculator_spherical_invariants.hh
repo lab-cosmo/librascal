@@ -1217,7 +1217,7 @@ namespace rascal {
         }
         keys_list_grad.emplace_back(grad_pair_list);
       }  // auto neigh : center.pairs()
-    }      // for center : manager
+    }    // for center : manager
 
     soap_vectors.resize(keys_list);
     soap_vectors.setZero();

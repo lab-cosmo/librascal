@@ -1433,7 +1433,11 @@ namespace rascal {
      * the environment are present and initialize coeffs to zero.
      */
     template <class StructureManager>
-    void initialize_expansion_atom_wise(std::shared_ptr<StructureManager> & managers, Property_t<StructureManager>& expansions_coefficients, PropertyGradient_t<StructureManager>& expansions_coefficients_gradient);
+    void initialize_expansion_atom_wise(
+        std::shared_ptr<StructureManager> & managers,
+        Property_t<StructureManager> & expansions_coefficients,
+        PropertyGradient_t<StructureManager> &
+            expansions_coefficients_gradient);
   };
 
   // compute classes template construction
@@ -1527,7 +1531,6 @@ namespace rascal {
     }
   }  // namespace rascal
 
-
   /**
    * Compute the spherical expansion
    */
@@ -1570,7 +1573,6 @@ namespace rascal {
     expansions_coefficients.clear();
     expansions_coefficients.set_shape(n_row, n_col);
 
-
     if (this->compute_gradients) {
       expansions_coefficients_gradient.clear();
       // Row-major ordering, so the Cartesian (spatial) index varies slowest
@@ -1578,7 +1580,8 @@ namespace rascal {
                                                  n_col);
     }
 
-    this->initialize_expansion_atom_wise(manager, expansions_coefficients, expansions_coefficients_gradient);
+    this->initialize_expansion_atom_wise(manager, expansions_coefficients,
+                                         expansions_coefficients_gradient);
 
     /* @TODO(felix,max) use the parity of the spherical harmonics to use half
      * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
@@ -1697,13 +1700,15 @@ namespace rascal {
     }  // for (center : manager)
   }    // compute()
 
-
   /**
    * set up chemical keys of the expension so that only species appearing in
    * the environment are present and initialize coeffs to zero.
    */
   template <class StructureManager>
-  void CalculatorSphericalExpansion::initialize_expansion_atom_wise(std::shared_ptr<StructureManager> & manager, Property_t<StructureManager>& expansions_coefficients, PropertyGradient_t<StructureManager>& expansions_coefficients_gradient) {
+  void CalculatorSphericalExpansion::initialize_expansion_atom_wise(
+      std::shared_ptr<StructureManager> & manager,
+      Property_t<StructureManager> & expansions_coefficients,
+      PropertyGradient_t<StructureManager> & expansions_coefficients_gradient) {
     std::vector<std::set<Key_t>> keys_list{};
     std::vector<std::set<Key_t>> keys_list_grad{};
 
@@ -1738,7 +1743,6 @@ namespace rascal {
       expansions_coefficients_gradient.setZero();
     }
   }
-
 
 }  // namespace rascal
 

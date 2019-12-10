@@ -145,8 +145,9 @@ namespace rascal {
                                                typename Map_t::const_iterator,
                                                typename Map_t::iterator>::type;
 
-        using MyData_t = typename std::conditional<std::is_const<Value>::value,
-                                                   const Array_t, Array_t>::type;
+        using MyData_t =
+            typename std::conditional<std::is_const<Value>::value,
+                                      const Array_t, Array_t>::type;
         // Map<const Matrix> is already write-only so remove the const
         // which is used to determine the cv of the iterator
         using Value_t = typename std::remove_const<Value>::type;
@@ -207,13 +208,15 @@ namespace rascal {
       }
 
       //! Default constructor
-      InternallySortedKeyMap(Array_t & data, const size_t & global_offset = 0) :data{data}, global_offset{global_offset} {};
+      explicit InternallySortedKeyMap(Array_t & data,
+                                      const size_t & global_offset = 0)
+          : data{data}, global_offset{global_offset} {};
 
       //! Copy constructor
-      InternallySortedKeyMap(const Self_t & other) = default;
+      InternallySortedKeyMap(const InternallySortedKeyMap & other) = default;
 
       //! Move constructor
-      InternallySortedKeyMap(Self_t && other) = default;
+      InternallySortedKeyMap(InternallySortedKeyMap && other) = default;
 
       //! Destructor
       ~InternallySortedKeyMap() = default;
@@ -306,7 +309,8 @@ namespace rascal {
        * that need to be deduced.
        */
       template <template <typename...> class Key_List, typename... Args>
-      void resize_view(const Key_List<key_type, Args...> & keys, int n_row, int n_col, const size_t& global_offset) {
+      void resize_view(const Key_List<key_type, Args...> & keys, int n_row,
+                       int n_col, const size_t & global_offset) {
         std::vector<SortedKey_t> skeys{};
         for (auto && key : keys) {
           SortedKey_t skey{key};
@@ -317,7 +321,7 @@ namespace rascal {
 
       template <template <typename...> class Key_List, typename... Args>
       void resize_view(const Key_List<SortedKey_t, Args...> & skeys, int n_row,
-                  int n_col, const size_t& global_offset) {
+                       int n_col, const size_t & global_offset) {
         this->global_offset = global_offset;
         size_t current_position{global_offset};
         size_t block_size{static_cast<size_t>(n_row * n_col)};
@@ -331,9 +335,7 @@ namespace rascal {
         this->total_length = current_position - global_offset;
       }
 
-      size_t size() const {
-        return this->total_length;
-      }
+      size_t size() const { return this->total_length; }
 
       //! Returns the number of elements with key that compares equivalent to
       //! the specified argument, which is either 1 or 0 since this container
@@ -348,16 +350,16 @@ namespace rascal {
       }
 
       //! clear the map but does not change the underlying data
-      void clear() noexcept {
-        this->map.clear();
-      }
+      void clear() noexcept { this->map.clear(); }
 
       VectorMap_Ref_t get_full_vector() {
-        return VectorMap_Ref_t(&this->data[this->global_offset], this->total_length);
+        return VectorMap_Ref_t(&this->data[this->global_offset],
+                               this->total_length);
       }
 
       VectorMapConst_Ref_t get_full_vector() const {
-        return VectorMapConst_Ref_t(&this->data[this->global_offset], this->total_length);
+        return VectorMapConst_Ref_t(&this->data[this->global_offset],
+                                    this->total_length);
       }
 
       /**
@@ -428,10 +430,10 @@ namespace rascal {
         for (auto & key : unique_keys) {
           auto && posA{this->map[key]};
           auto vecA{VectorMap_Ref_t(&this->data[std::get<0>(posA)],
-                                  std::get<1>(posA) * std::get<2>(posA))};
+                                    std::get<1>(posA) * std::get<2>(posA))};
           auto && posB{B.map[key]};
           auto vecB{VectorMap_Ref_t(&B.data[std::get<0>(posB)],
-                                  std::get<1>(posB) * std::get<2>(posB))};
+                                    std::get<1>(posB) * std::get<2>(posB))};
           val += vecA.dot(vecB);
         }
         return val;
@@ -624,21 +626,24 @@ namespace rascal {
      * The first template argument of Args2 is expected to be of type Key_t or
      * SortedKey<Key_t>.
      */
-    template <template <typename...> class Keys_List, template <typename...> class Keys, typename... Args1, typename... Args2>
-    void resize(const Keys_List<Keys<Args2...>, Args1...>& keys_list) {
+    template <template <typename...> class Keys_List,
+              template <typename...> class Keys, typename... Args1,
+              typename... Args2>
+    void resize(const Keys_List<Keys<Args2...>, Args1...> & keys_list) {
       this->resize();
       if (keys_list.size() != this->size()) {
         std::stringstream err_str{};
         err_str << "The number of keys in the list does not match the number"
-                << " of entries in the property: '"
-                << keys_list.size() << "' != '" << this->size() << "'.";
+                << " of entries in the property: '" << keys_list.size()
+                << "' != '" << this->size() << "'.";
         throw std::runtime_error(err_str.str());
       }
       int n_row{this->get_nb_row()};
       int n_col{this->get_nb_col()};
       size_t global_offset{0};
       for (size_t i_map{0}; i_map < this->size(); i_map++) {
-        this->maps[i_map].resize_view(keys_list[i_map], n_row, n_col, global_offset);
+        this->maps[i_map].resize_view(keys_list[i_map], n_row, n_col,
+                                      global_offset);
         global_offset += this->maps[i_map].size();
       }
       this->values.resize(global_offset);
@@ -657,8 +662,8 @@ namespace rascal {
      * SortedKey<Key_t>.
      *
      */
-    template <template<typename...> class Keys, typename... Args>
-    void resize(const Keys<Args...>& keys) {
+    template <template <typename...> class Keys, typename... Args>
+    void resize(const Keys<Args...> & keys) {
       this->resize();
       int n_row{this->get_nb_row()};
       int n_col{this->get_nb_col()};
@@ -670,9 +675,7 @@ namespace rascal {
       this->values.resize(global_offset);
     }
 
-    void setZero() {
-      this->values = 0.;
-    }
+    void setZero() { this->values = 0.; }
 
     size_t size() const { return this->maps.size(); }
 
