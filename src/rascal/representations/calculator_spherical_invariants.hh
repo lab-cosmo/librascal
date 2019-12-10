@@ -1106,8 +1106,8 @@ namespace rascal {
     // clear the data container and resize it
     soap_vectors.clear();
     soap_vectors.set_shape(n_row, n_col);
-    soap_vectors.resize();
 
+    std::vector<std::vector<internal::SortedKey<Key_t>>> keys_list{};
     // identify the species in each environment and initialize soap_vectors
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
@@ -1117,7 +1117,6 @@ namespace rascal {
       std::vector<internal::SortedKey<Key_t>> triplet_list{};
       auto center_type{center.get_atom_type()};
       Key_t triplet_type{center_type, center_type, center_type};
-      // TODO(felix) optimize this loop
       for (const auto & el1 : coefficients) {
         triplet_type[0] = el1.first[0];
         for (const auto & el2 : coefficients) {
@@ -1129,8 +1128,10 @@ namespace rascal {
         }
       }
       // initialize the power spectrum with the proper dimension
-      soap_vector.resize(triplet_list, n_row, n_col, 0);
+      keys_list.emplace_back(triplet_list);
     }
+    soap_vectors.resize(keys_list);
+    soap_vectors.setZero();
   }
 
   template <class StructureManager, class Invariants,
@@ -1148,18 +1149,18 @@ namespace rascal {
     // clear the data container and resize it
     soap_vectors.clear();
     soap_vectors.set_shape(n_row, n_col);
-    soap_vectors.resize();
 
     if (this->compute_gradients) {
       soap_vector_gradients.clear();
       soap_vector_gradients.set_shape(n_spatial_dimensions * n_row, n_col);
-      soap_vector_gradients.resize();
     }
+
+    std::vector<std::vector<internal::SortedKey<Key_t>>> keys_list{};
+    std::vector<std::vector<internal::SortedKey<Key_t>>> keys_list_grad{};
 
     // identify the species in each environment and initialize soap_vectors
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
-      auto & soap_vector{soap_vectors[center]};
       internal::Sorted<true> is_sorted{};
 
       std::vector<internal::SortedKey<Key_t>> pair_list{};
@@ -1191,40 +1192,39 @@ namespace rascal {
           }
         }
       }
-      // initialize the power spectrum with the proper dimension
-      soap_vector.resize(pair_list, n_row, n_col);
+      keys_list.emplace_back(pair_list);
+      keys_list_grad.emplace_back(pair_list);
 
-      if (this->compute_gradients) {
-        auto ii_pair = center.get_atom_ii();
-        // The gradient wrt center is nonzero for all species pairs
-        soap_vector_gradients[ii_pair].resize(
-            pair_list, n_spatial_dimensions * n_row, n_col, 0.);
-
-        // Neighbour gradients need a separate pair list because if the species
-        // of j is not the same as either of the species for that SOAP entry,
-        // the gradient is zero.
-        for (auto neigh : center.pairs()) {
-          auto neigh_type = neigh.get_atom_type();
-          std::vector<internal::SortedKey<Key_t>> grad_pair_list{};
-          for (const auto & el1 : coefficients) {
-            auto && neigh_1_type{el1.first[0]};
-            for (const auto & el2 : coefficients) {
-              auto && neigh_2_type{el2.first[0]};
-              if (neigh_1_type <= neigh_2_type) {
-                pair_type[0] = neigh_1_type;
-                pair_type[1] = neigh_2_type;
-                if ((neigh_type == pair_type[0]) or
-                    (neigh_type == pair_type[1])) {
-                  grad_pair_list.emplace_back(is_sorted, pair_type);
-                }
+      // Neighbour gradients need a separate pair list because if the species
+      // of j is not the same as either of the species for that SOAP entry,
+      // the gradient is zero.
+      for (auto neigh : center.pairs()) {
+        auto neigh_type = neigh.get_atom_type();
+        std::vector<internal::SortedKey<Key_t>> grad_pair_list{};
+        for (const auto & el1 : coefficients) {
+          auto && neigh_1_type{el1.first[0]};
+          for (const auto & el2 : coefficients) {
+            auto && neigh_2_type{el2.first[0]};
+            if (neigh_1_type <= neigh_2_type) {
+              pair_type[0] = neigh_1_type;
+              pair_type[1] = neigh_2_type;
+              if ((neigh_type == pair_type[0]) or
+                  (neigh_type == pair_type[1])) {
+                grad_pair_list.emplace_back(is_sorted, pair_type);
               }
             }
           }
-          soap_vector_gradients[neigh].resize(
-              grad_pair_list, n_spatial_dimensions * n_row, n_col, 0.);
-        }  // auto neigh : center.pairs()
-      }    // if compute gradients
+        }
+        keys_list_grad.emplace_back(grad_pair_list);
+      }  // auto neigh : center.pairs()
     }      // for center : manager
+
+    soap_vectors.resize(keys_list);
+    soap_vectors.setZero();
+    if (this->compute_gradients) {
+      soap_vector_gradients.resize(keys_list_grad);
+      soap_vector_gradients.setZero();
+    }
   }
 
   template <class StructureManager, class Invariants,
@@ -1241,37 +1241,38 @@ namespace rascal {
 
     soap_vectors.clear();
     soap_vectors.set_shape(n_row, n_col);
-    soap_vectors.resize();
 
     if (this->compute_gradients) {
       soap_vector_gradients.clear();
       soap_vector_gradients.set_shape(n_spatial_dimensions * n_row, n_col);
-      soap_vector_gradients.resize();
     }
 
+    std::vector<std::set<Key_t>> keys_list{};
+    std::vector<std::set<Key_t>> keys_list_grad{};
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
       auto & soap_vector{soap_vectors[center]};
       Key_t element_type{0};
 
-      std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
+      std::set<Key_t> keys{};
       for (const auto & el1 : coefficients) {
         keys.insert({el1.first[0]});
       }
       keys.insert({center.get_atom_type()});
       // initialize the radial spectrum to 0 and the proper size
-      soap_vector.resize(keys, n_row, n_col, 0);
+      keys_list.emplace_back(keys);
+      keys_list_grad.emplace_back(keys);
 
-      if (this->compute_gradients) {
-        auto ii_pair = center.get_atom_ii();
-        // The gradient wrt center is nonzero for all species pairs
-        soap_vector_gradients[ii_pair].resize(
-            keys, n_spatial_dimensions * n_row, n_col, 0);
-        for (auto neigh : center.pairs()) {
-          soap_vector_gradients[neigh].resize(
-              keys, n_spatial_dimensions * n_row, n_col, 0);
-        }
-      }  // if compute gradients
+      for (auto neigh : center.pairs()) {
+        keys_list_grad.emplace_back(keys);
+      }
+    }
+
+    soap_vectors.resize(keys_list);
+    soap_vectors.setZero();
+    if (this->compute_gradients) {
+      soap_vector_gradients.resize(keys_list_grad);
+      soap_vector_gradients.setZero();
     }
   }
 

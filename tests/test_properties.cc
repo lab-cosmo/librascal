@@ -800,10 +800,10 @@ namespace rascal {
       auto & keys{keys_list[i_manager]};
       auto i_center{0};
       sparse_features[i_manager].set_shape(this->n_row, this->n_col);
-      sparse_features[i_manager].resize();
+      sparse_features[i_manager].resize(keys);
+      sparse_features[i_manager].setZero();
       for (auto center : manager) {
         auto && sparse_features_center{sparse_features[i_manager][center]};
-        sparse_features_center.resize(keys[i_center], n_row, n_col, 0);
         for (auto & key : keys[i_center]) {
           sparse_features_center[key] = test_datas[i_manager][i_center][key];
         }

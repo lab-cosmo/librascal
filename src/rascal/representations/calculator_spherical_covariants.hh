@@ -336,8 +336,8 @@ namespace rascal {
     // clear the data container and resize it
     soap_vectors.clear();
     soap_vectors.set_shape(n_row, n_col);
-    soap_vectors.resize();
 
+    std::vector<std::vector<internal::SortedKey<Key_t>>> keys_list{};
     // identify the species in each environment and initialize soap_vectors
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
@@ -347,7 +347,7 @@ namespace rascal {
       std::vector<internal::SortedKey<Key_t>> pair_list{};
       auto center_type{center.get_atom_type()};
       Key_t pair_type{center_type, center_type};
-      // TODO(felix) optimize this loop
+      
       // the species are not sorted by construction so there are sorted
       // explicitly and many redundant combinations are present in pair_list
       for (const auto & el1 : coefficients) {
@@ -357,9 +357,10 @@ namespace rascal {
           pair_list.emplace_back(is_not_sorted, pair_type);
         }
       }
-      // initialize the power spectrum with the proper dimension
-      soap_vector.resize(pair_list, n_row, n_col, 0);
+      keys_list.emplace_back(pair_list);
     }
+    soap_vectors.resize(keys_list);
+    soap_vectors.setZero();
   }
 
   template <internal::SphericalCovariantsType Type,

@@ -107,12 +107,13 @@ namespace rascal {
       // using Map_t = std::unordered_map<K, std::array<int, 3>, Hash<K>>;
       using Map_t = std::map<K, std::tuple<int, int, int>>;
       using Precision_t = typename V::value_type;
-      using Data_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
+      using Array_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
       using Vector_t = Eigen::Matrix<Precision_t, Eigen::Dynamic, 1>;
-      using VectorMap_Ref = typename Eigen::Map<Vector_t>;
+      using VectorMap_Ref_t = typename Eigen::Map<Vector_t>;
+      using ArrayMap_Ref_t = typename Eigen::Map<Array_t>;
       using Self_t = InternallySortedKeyMap<K, V>;
       //! the data holder.
-      Data_t & data;
+      Array_t & data;
       Map_t map{};
       size_t global_offset;
       size_t total_length{0};
@@ -143,7 +144,7 @@ namespace rascal {
                                                typename Map_t::iterator>::type;
 
         using MyData_t = typename std::conditional<std::is_const<Value>::value,
-                                                   const Data_t, Data_t>::type;
+                                                   const ArrayMap_Ref_t, ArrayMap_Ref_t>::type;
         // Map<const Matrix> is already write-only so remove the const
         // which is used to determine the cv of the iterator
         using Value_t = typename std::remove_const<Value>::type;
@@ -171,7 +172,6 @@ namespace rascal {
         }
         Self_t & operator--() {
           map_iterator--;
-          // this->update_current_data();
           return *this;
         }
         Self_t operator--(int) {
@@ -205,7 +205,7 @@ namespace rascal {
       }
 
       //! Default constructor
-      InternallySortedKeyMap(Data_t& data, const size_t & global_offset) :data{data}, global_offset{global_offset} {};
+      InternallySortedKeyMap(Array_t& data, const size_t & global_offset = 0) :data{data}, global_offset{global_offset} {};
 
       //! Copy constructor
       InternallySortedKeyMap(const InternallySortedKeyMap & other) = default;
@@ -278,32 +278,33 @@ namespace rascal {
       }
 
       /**
-       * resize the underlying data to the proper size
+       * resize the view of the data to the proper size
        */
       template <typename Key_List>
-      void set_map(const Key_List & keys, int n_row, int n_col) {
+      void resize_view(const Key_List & keys, int n_row, int n_col, const size_t& global_offset) {
         std::vector<SortedKey_t> skeys{};
         for (auto && key : keys) {
           SortedKey_t skey{key};
           skeys.push_back(skey);
         }
-        this->set_map(skeys, n_row, n_col);
+        this->resize_view(skeys, n_row, n_col, global_offset);
       }
 
-      void set_map(const std::vector<SortedKey_t> & skeys, int n_row,
-                  int n_col) {
-        int current_position{this->global_offset};
+      void resize_view(const std::vector<SortedKey_t> & skeys, int n_row,
+                  int n_col, const size_t& global_offset) {
+        this->global_offset = global_offset;
+        size_t current_position{global_offset};
         for (auto && skey : skeys) {
           if (this->count(skey) == 0) {
             auto && key{skey.get_key()};
             this->map[key] = std::make_tuple(current_position, n_row, n_col);
-            current_position += static_cast<int>(n_row * n_col);
+            current_position += static_cast<size_t>(n_row * n_col);
           }
         }
         this->total_length = current_position;
       }
 
-      size_t get_total_length() const {
+      size_t size() const {
         return this->total_length;
       }
 
@@ -324,8 +325,8 @@ namespace rascal {
         this->map.clear();
       }
 
-      VectorMap_Ref get_full_vector() {
-        return VectorMap_Ref(&this->data[this->global_offset], this->total_length)};
+      ArrayMap_Ref_t get_full_vector() {
+        return ArrayMap_Ref_t(&this->data[this->global_offset], this->total_length);
       }
 
       /**
@@ -395,10 +396,10 @@ namespace rascal {
 
         for (auto & key : unique_keys) {
           auto && posA{this->map[key]};
-          auto vecA{VectorMap_Ref(&this->data[std::get<0>(posA)],
+          auto vecA{VectorMap_Ref_t(&this->data[std::get<0>(posA)],
                                   std::get<1>(posA) * std::get<2>(posA))};
           auto && posB{B.map[key]};
-          auto vecB{VectorMap_Ref(&B.data[std::get<0>(posB)],
+          auto vecB{VectorMap_Ref_t(&B.data[std::get<0>(posB)],
                                   std::get<1>(posB) * std::get<2>(posB))};
           val += vecA.dot(vecB);
         }
@@ -547,7 +548,7 @@ namespace rascal {
     const std::string & get_type_info() const final { return this->type_id; }
 
     /**
-     * Adjust size of values (only increases, never frees).
+     * Adjust size of maps to match the number of entries of the manager
      *
      * Uses SFINAE to differenciate behavior between values of Order.
      * Order > 1 then the size of the property is directly taken
@@ -560,28 +561,78 @@ namespace rascal {
     template <size_t Order__ = Order, std::enable_if_t<(Order__ > 1), int> = 0>
     void resize() {
       size_t new_size{this->base_manager.nb_clusters(Order)};
-      this->values.resize(new_size);
+      this->maps.resize(new_size, InputData_t(this->values));
     }
 
-    //! Adjust size of values (only increases, never frees).
+    //! Adjust size of maps to match the number of entries of the manager
     template <size_t Order__ = Order, std::enable_if_t<(Order__ == 0), int> = 0>
     void resize() {
-      this->values.resize(1);
+      this->maps.resize(1, InputData_t(this->values));
     }
 
-    //! Adjust size of values (only increases, never frees).
+    //! Adjust size of maps to match the number of entries of the manager
     template <size_t Order__ = Order, std::enable_if_t<(Order__ == 1), int> = 0>
     void resize() {
       size_t new_size{this->exclude_ghosts
                           ? this->get_manager().size()
                           : this->get_manager().size_with_ghosts()};
-      this->values.resize(new_size);
+      this->maps.resize(new_size, InputData_t(this->values));
     }
 
-    size_t size() const { return this->values.size(); }
+    /**
+     * Adjust size of values (only increases, never frees) and maps with a
+     * different set of keys for each entries (order == 1 -> centers,
+     * order == 2 -> neighbors ...).
+     */
+    template <template<class> class Keys_List, template<class> class Keys>
+    void resize(const Keys_List<Keys<Key_t>>& keys_list) {
+      this->resize();
+      if (keys_list.size() != this->size()) {
+        std::stringstream err_str{};
+        err_str << "The number of keys in the list does not match the number"
+                << " of entries in the property: '"
+                << keys_list.size() << "' != '" << this->size() << "'.";
+        throw std::runtime_error(err_str.str());
+      }
+      int n_row{this->get_nb_row()};
+      int n_col{this->get_nb_col()};
+      size_t global_offset{0};
+      for (size_t i_map{0}; i_map < this->size(); i_map++) {
+        this->maps[i_map].resize_view(keys_list[i_map], n_row, n_col, global_offset);
+        global_offset += this->maps[i_map].size();
+      }
+      this->values.resize(global_offset);
+    }
+
+    /**
+     * Adjust size of values (only increases, never frees) and maps with the
+     * same keys for each entries (order == 1 -> centers,
+     * order == 2 -> neighbors ...).
+     */
+    template <template<class> class Keys>
+    void resize(const Keys<Key_t>& keys) {
+      this->resize();
+      int n_row{this->get_nb_row()};
+      int n_col{this->get_nb_col()};
+      size_t global_offset{0};
+      for (size_t i_map{0}; i_map < this->size(); i_map++) {
+        this->maps[i_map].resize_view(keys, n_row, n_col, global_offset);
+        global_offset += this->maps[i_map].size();
+      }
+      this->values.resize(global_offset);
+    }
+
+    void setZero() {
+      this->values = 0.;
+    }
+
+    size_t size() const { return this->maps.size(); }
 
     //! clear all the content of the property
-    void clear() { this->values.clear(); }
+    void clear() {
+      this->values.clear();
+      this->maps.clear();
+    }
 
     Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);
@@ -630,10 +681,10 @@ namespace rascal {
     }
 
     //! Accessor for property by index for dynamically sized properties
-    InputData_t & operator[](size_t index) { return this->values[index]; }
+    InputData_t & operator[](size_t index) { return this->maps[index]; }
 
     const InputData_t & operator[](size_t index) const {
-      return this->values[index];
+      return this->maps[index];
     }
 
     template <size_t CallerLayer>
@@ -648,7 +699,7 @@ namespace rascal {
 
     //! Accessor for property by index for dynamically sized properties
     DenseRef_t operator()(size_t index, const Key_t & key) {
-      auto && val = this->values[index].at(key);
+      auto && val = this->maps[index].at(key);
       return DenseRef_t(&val(0, 0), val.rows(), val.cols());
     }
 
@@ -664,13 +715,13 @@ namespace rascal {
     }
 
     Matrix_t get_dense_row(size_t index) {
-      auto keys = this->values[index].get_keys();
+      auto keys = this->maps[index].get_keys();
       Matrix_t feature_row = Matrix_t::Zero(this->get_nb_comp(), keys.size());
       size_t i_col{0};
       for (const auto & key : keys) {
         size_t i_row{0};
         for (int i_pos{0}; i_pos < this->get_nb_comp(); i_pos++) {
-          feature_row(i_row, i_col) = this->values[index][key](i_pos);
+          feature_row(i_row, i_col) = this->maps[index][key](i_pos);
           i_row++;
         }
         i_col++;
@@ -695,12 +746,12 @@ namespace rascal {
                                    const Keys_t & all_keys) const {
       int inner_size{this->get_nb_comp()};
       int i_row{0};
-      size_t n_center{this->values.size()};
+      size_t n_center{this->maps.size()};
       for (size_t i_center{0}; i_center < n_center; i_center++) {
         int i_feat{0};
-        const auto & center_val = this->values[i_center];
+        const auto & center_val = this->maps[i_center];
         for (const auto & key : all_keys) {
-          if (this->values[i_center].count(key) == 1) {
+          if (this->maps[i_center].count(key) == 1) {
             const auto & center_key_val = center_val[key];
             for (int i_pos{0}; i_pos < inner_size; i_pos++) {
               features(i_row, i_feat) = center_key_val(i_pos);
@@ -733,9 +784,9 @@ namespace rascal {
      */
     Keys_t get_keys() const {
       Keys_t all_keys{};
-      size_t n_center{this->values.size()};
+      size_t n_center{this->maps.size()};
       for (size_t i_center{0}; i_center < n_center; i_center++) {
-        auto keys = this->values[i_center].get_keys();
+        auto keys = this->maps[i_center].get_keys();
         for (auto & key : keys) {
           all_keys.insert(key);
         }
@@ -754,7 +805,7 @@ namespace rascal {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");
-      return this->values[id.get_cluster_index(CallerLayer)].get_keys();
+      return this->maps[id.get_cluster_index(CallerLayer)].get_keys();
     }
 
     /**

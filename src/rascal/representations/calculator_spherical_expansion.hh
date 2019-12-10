@@ -1427,6 +1427,13 @@ namespace rascal {
     Hypers_t hypers{};
 
     math::SphericalHarmonics spherical_harmonics{};
+
+    /**
+     * set up chemical keys of the expension so that only species appearing in
+     * the environment are present and initialize coeffs to zero.
+     */
+    template <class StructureManager>
+    void initialize_expansion_atom_wise(std::shared_ptr<StructureManager> & managers, Property_t<StructureManager>& expansions_coefficients, PropertyGradient_t<StructureManager>& expansions_coefficients_gradient);
   };
 
   // compute classes template construction
@@ -1520,6 +1527,7 @@ namespace rascal {
     }
   }  // namespace rascal
 
+
   /**
    * Compute the spherical expansion
    */
@@ -1561,15 +1569,16 @@ namespace rascal {
     auto n_col{(this->max_angular + 1) * (this->max_angular + 1)};
     expansions_coefficients.clear();
     expansions_coefficients.set_shape(n_row, n_col);
-    expansions_coefficients.resize();
+
 
     if (this->compute_gradients) {
       expansions_coefficients_gradient.clear();
       // Row-major ordering, so the Cartesian (spatial) index varies slowest
       expansions_coefficients_gradient.set_shape(n_spatial_dimensions * n_row,
                                                  n_col);
-      expansions_coefficients_gradient.resize();
     }
+
+    this->initialize_expansion_atom_wise(manager, expansions_coefficients, expansions_coefficients_gradient);
 
     /* @TODO(felix,max) use the parity of the spherical harmonics to use half
      * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
@@ -1579,20 +1588,6 @@ namespace rascal {
       auto & coefficients_center_gradient =
           expansions_coefficients_gradient[center.get_atom_ii()];
       Key_t center_type{center.get_atom_type()};
-
-      // TODO(felix) think about an option to have "global" species,
-      // "structure" species(or not), or automatic at the level of environment
-      std::unordered_set<Key_t, internal::Hash<Key_t>> keys{};
-      for (auto neigh : center.pairs()) {
-        keys.insert({neigh.get_atom_type()});
-      }
-      keys.insert({center_type});
-      // initialize the expansion coefficients to 0
-      coefficients_center.resize(keys, n_row, n_col, 0.);
-      if (this->compute_gradients) {
-        coefficients_center_gradient.resize(keys, n_spatial_dimensions * n_row,
-                                            n_col, 0.);
-      }
 
       // Start the accumulator with the central atom
       coefficients_center[center_type].col(0) +=
@@ -1605,8 +1600,6 @@ namespace rascal {
         auto dist{manager->get_distance(neigh)};
         auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
-        auto & coefficients_neigh_gradient =
-            expansions_coefficients_gradient[neigh];
 
         this->spherical_harmonics.calc(direction, this->compute_gradients);
         auto && harmonics{spherical_harmonics.get_harmonics()};
@@ -1640,9 +1633,8 @@ namespace rascal {
         // (the periodic images move with the center, so their contribution to
         // the center gradient is zero)
         if (this->compute_gradients and (atom_j_tag != atom_i_tag)) {  // NOLINT
-          std::vector<Key_t> neigh_types{neigh_type};
-          coefficients_neigh_gradient.resize(
-              neigh_types, n_spatial_dimensions * n_row, n_col, 0.);
+          auto & coefficients_neigh_gradient =
+              expansions_coefficients_gradient[neigh];
 
           auto && neighbour_derivative =
               radial_integral->compute_neighbour_derivative(dist, neigh);
@@ -1704,6 +1696,49 @@ namespace rascal {
       }
     }  // for (center : manager)
   }    // compute()
+
+
+  /**
+   * set up chemical keys of the expension so that only species appearing in
+   * the environment are present and initialize coeffs to zero.
+   */
+  template <class StructureManager>
+  void CalculatorSphericalExpansion::initialize_expansion_atom_wise(std::shared_ptr<StructureManager> & manager, Property_t<StructureManager>& expansions_coefficients, PropertyGradient_t<StructureManager>& expansions_coefficients_gradient) {
+    std::vector<std::set<Key_t>> keys_list{};
+    std::vector<std::set<Key_t>> keys_list_grad{};
+
+    for (auto center : manager) {
+      Key_t center_type{center.get_atom_type()};
+      auto atom_i_tag = center.get_atom_tag();
+      std::set<Key_t> keys{};
+      for (auto neigh : center.pairs()) {
+        keys.insert({neigh.get_atom_type()});
+      }
+      keys.insert({center_type});
+      keys_list.emplace_back(keys);
+      keys_list_grad.emplace_back(keys);
+
+      for (auto neigh : center.pairs()) {
+        auto && atom_j = neigh.get_atom_j();
+        auto atom_j_tag = atom_j.get_atom_tag();
+        Key_t neigh_type{neigh.get_atom_type()};
+        std::set<Key_t> neigh_types{};
+        if (atom_j_tag != atom_i_tag) {
+          neigh_types.insert(neigh_type);
+        }
+        keys_list_grad.emplace_back(neigh_types);
+      }
+    }
+
+    expansions_coefficients.resize(keys_list);
+    expansions_coefficients.setZero();
+
+    if (this->compute_gradients) {
+      expansions_coefficients_gradient.resize(keys_list_grad);
+      expansions_coefficients_gradient.setZero();
+    }
+  }
+
 
 }  // namespace rascal
 
