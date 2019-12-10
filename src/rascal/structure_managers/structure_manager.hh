@@ -601,7 +601,7 @@ namespace rascal {
     get_direction_vector(const ClusterRefKey<Order, Layer> & pair) {
       static_assert(
           HasDirectionVectors == traits::HasDirectionVectors,
-          "HasDirectionVectors is used for SFINAE, please don't specify it");
+          "The manager does not have direction vectors.");
       return this->get_previous_manager()->get_direction_vector(pair);
     }
 
