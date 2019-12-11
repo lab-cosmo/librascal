@@ -9,7 +9,7 @@
 # To use this hook, execute:
 # 	git config core.hooksPath shared_hooks
 
-NBS=$(echo $(git diff --full-index --cached $against --name-only) | sort | grep "ipynb")
+NBS=$(echo $(git diff --full-index --cached $against --name-only) | sort | grep "ipynb" | grep "docs\/source\/tutorials" -v)
 
 if [ ! -z "$NBS" ] ; then
     command -v nbstripout --is-installed >/dev/null 2>&1 || { echo >&2 "I require nbstripout but it's not installed. Aborting commit."; exit 1; }
