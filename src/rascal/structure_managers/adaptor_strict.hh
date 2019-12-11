@@ -343,10 +343,9 @@ namespace rascal {
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
       std::shared_ptr<ManagerImplementation> manager, double cutoff)
       : manager{std::move(manager)}, distance{std::make_shared<Distance_t>(
-                                         *this, PairOrder)},
-        dir_vec{std::make_shared<DirectionVector_t>(*this, PairOrder)},
-        cutoff{cutoff}, atom_tag_list{},
-        neighbours_cluster_index{}, nb_neigh{}, offsets{}
+                                         *this)},
+        dir_vec{std::make_shared<DirectionVector_t>(*this)}, cutoff{cutoff},
+        atom_tag_list{}, neighbours_cluster_index{}, nb_neigh{}, offsets{}
 
   {
     if (not internal::check_cutoff(this->manager, cutoff)) {

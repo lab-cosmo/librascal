@@ -100,8 +100,7 @@ namespace rascal {
         Manager, Order, std::index_sequence<LayersHead, LayersTail...>,
         std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
-      using Property_t =
-          Property<size_t, Order, Manager, LayersHead + 1, 1>;
+      using Property_t = Property<size_t, Order, Manager, LayersHead + 1, 1>;
       using type = typename ClusterIndexPropertyComputer_Helper<
           Manager, Order + 1, std::index_sequence<LayersTail...>,
           std::tuple<TupComp..., Property_t>>::type;
@@ -117,8 +116,7 @@ namespace rascal {
                                                std::index_sequence<LayersHead>,
                                                std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
-      using Property_t =
-          Property<size_t, Order, Manager, LayersHead + 1, 1>;
+      using Property_t = Property<size_t, Order, Manager, LayersHead + 1, 1>;
       using type = std::tuple<TupComp..., Property_t>;
     };
 
@@ -139,7 +137,7 @@ namespace rascal {
 
     template <typename PropertyType, typename Manager>
     PropertyType make_individual_property(Manager & manager) {
-      return PropertyType{manager, PropertyType::Order};
+      return PropertyType{manager};
     }
     //! Overload to build the tuple
     template <typename... PropertyTypes, typename Manager>
@@ -186,14 +184,15 @@ namespace rascal {
       return internal::is_order_available<TargetOrder>(
           std::make_index_sequence<traits::MaxOrder + 1>{});
     }
-    //! helper type for Property creation
+    //! helper type for Property creation: typed and sized
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
     using Property_t = Property<T, Order, StructureManager_t, NbRow, NbCol>;
 
-    //! helper type for Property creation
+    //! helper type for Property creation: only typed
     template <typename T, size_t Order>
     using TypedProperty_t = TypedProperty<T, Order, StructureManager_t>;
 
+    //! helper type for BlockSparseProperty creation: typed
     using Key_t = std::vector<int>;
     template <typename T, size_t Order>
     using BlockSparseProperty_t =

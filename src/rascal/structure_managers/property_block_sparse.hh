@@ -497,7 +497,7 @@ namespace rascal {
                  0,
                  0,
                  Order,
-                 PropertyLayer,
+                 manager.template cluster_layer_from_order<Order>(),
                  metadata},
           type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
 

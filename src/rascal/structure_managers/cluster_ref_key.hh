@@ -148,7 +148,7 @@ namespace rascal {
   template <size_t MaxOrder, size_t... Ints>
   constexpr size_t
   get_dyn_layer(size_t order,
-            const std::index_sequence<Ints...> & layers_by_order) {
+                const std::index_sequence<Ints...> & layers_by_order) {
     return LayerHelper<MaxOrder, 1, MaxOrder == 1, Ints...>::help(
         order, layers_by_order);
   }

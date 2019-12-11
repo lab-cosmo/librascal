@@ -170,14 +170,14 @@ namespace rascal {
     constexpr static size_t Order{Order_};
     constexpr static bool IsOrderOne{Order == 1};
 
-    TypedProperty(Manager_t & manager, size_t property_layer, Dim_t nb_row,
-                  Dim_t nb_col = 1, std::string metadata = "no metadata",
+    TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
+                  std::string metadata = "no metadata",
                   bool exclude_ghosts = false)
         : Parent{static_cast<StructureManagerBase &>(manager),
                  nb_row,
                  nb_col,
                  Order,
-                 property_layer,
+                 manager.template cluster_layer_from_order<Order>(),
                  metadata},
           type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
 

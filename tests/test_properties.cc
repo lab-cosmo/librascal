@@ -860,34 +860,39 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE_END();
 
+  /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE(tests_without_reference_data);
 
-    BOOST_FIXTURE_TEST_CASE(caller_layer_test,
+  BOOST_FIXTURE_TEST_CASE(caller_layer_test,
                           ManagerFixture<StructureManagerLammps>) {
-      double cutoff{1.1};  // one pair dist is sqrt{2}, the others are 1
-      auto strict{make_adapted_manager<AdaptorStrict>(this->manager, cutoff)};
-      strict->update();
+    bool verbose{false};
 
-      constexpr int PairOrder{2};
-      auto & low_prop{
-          this->manager->template create_property<int, PairOrder>("low layer")};
-      low_prop.resize();
+    double cutoff{1.1};  // one pair dist is sqrt{2}, the others are 1
+    auto strict{make_adapted_manager<AdaptorStrict>(this->manager, cutoff)};
+    strict->update();
 
-      auto & high_prop{
-          strict->template create_property<int, PairOrder>("high layer")};
-      high_prop.resize();
+    constexpr int PairOrder{2};
+    auto & low_prop{
+        this->manager->template create_property<int, PairOrder>("low layer")};
+    low_prop.resize();
 
-      int counter{0};
-      for (auto && atom : this->manager) {
-        auto x{atom.get_position().transpose()};
-        for (auto && pair : atom.pairs()) {
-          auto y{pair.get_position().transpose()};
-          auto dist = (x - y).norm();
-          low_prop[pair] = counter;
-          counter++;
+    auto & high_prop{
+        strict->template create_property<int, PairOrder>("high layer")};
+    high_prop.resize();
+
+    int counter{0};
+    for (auto && atom : this->manager) {
+      auto x{atom.get_position().transpose()};
+      for (auto && pair : atom.pairs()) {
+        auto y{pair.get_position().transpose()};
+        auto dist = (x - y).norm();
+        low_prop[pair] = counter;
+        counter++;
+        if (verbose) {
           std::cout << "low: " << low_prop[pair] << ", dist = " << dist
                     << ", pos a: " << x << ", pos b: " << y << std::endl;
         }
+      }
     }
 
     counter = 0;
@@ -895,11 +900,13 @@ namespace rascal {
       for (auto && pair : atom.pairs()) {
         high_prop[pair] = counter;
         counter++;
-        std::cout << "high: " << high_prop[pair]
-                  << ", dist = " << strict->get_distance(pair)
-                  << ", pos a: " << atom.get_position().transpose()
-                  << ", pos b: " << pair.get_position().transpose()
-                  << std::endl;
+        if (verbose) {
+          std::cout << "high: " << high_prop[pair]
+                    << ", dist = " << strict->get_distance(pair)
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+        }
       }
     }
 
@@ -912,21 +919,22 @@ namespace rascal {
         BOOST_CHECK_EQUAL(low_prop[pair], low_pairs[counter]);
         BOOST_CHECK_EQUAL(high_prop[pair], high_pairs[counter]);
         counter++;
-        std::cout << "low: " << low_prop[pair]
-                  << ", pos a: " << atom.get_position().transpose()
-                  << ", pos b: " << pair.get_position().transpose()
-                  << std::endl;
-        std::cout << "high: " << high_prop[pair]
-                  << ", pos a: " << atom.get_position().transpose()
-                  << ", pos b: " << pair.get_position().transpose()
-                  << std::endl;
+        if (verbose) {
+          std::cout << "low: " << low_prop[pair]
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+          std::cout << "high: " << high_prop[pair]
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+        }
       }
     }
 
     // strict is supposed to contain pairs 1 and 3
     auto & low_prop_typed{dynamic_cast<TypedProperty<
-        int, PairOrder,
-        StructureManager<StructureManagerLammps>> &>(low_prop)};
+        int, PairOrder, StructureManager<StructureManagerLammps>> &>(low_prop)};
     auto & high_prop_typed{dynamic_cast<TypedProperty<
         int, PairOrder,
         StructureManager<std::remove_reference_t<decltype(*strict)>>> &>(
@@ -937,14 +945,16 @@ namespace rascal {
         BOOST_CHECK_EQUAL(low_prop_typed[pair](0), low_pairs[counter]);
         BOOST_CHECK_EQUAL(high_prop_typed[pair](0), high_pairs[counter]);
         counter++;
-        std::cout << "low: " << low_prop_typed[pair]
-                  << ", pos a: " << atom.get_position().transpose()
-                  << ", pos b: " << pair.get_position().transpose()
-                  << std::endl;
-        std::cout << "high: " << high_prop_typed[pair]
-                  << ", pos a: " << atom.get_position().transpose()
-                  << ", pos b: " << pair.get_position().transpose()
-                  << std::endl;
+        if (verbose) {
+          std::cout << "low: " << low_prop_typed[pair]
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+          std::cout << "high: " << high_prop_typed[pair]
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+        }
       }
     }
   }

@@ -83,11 +83,9 @@ namespace rascal {
     Property() = delete;
 
     //! Constructor with Manager with optional ghost exclusion
-    explicit Property(Manager_t & manager, size_t property_layer,
-                      std::string metadata = "no metadata",
+    explicit Property(Manager_t & manager, std::string metadata = "no metadata",
                       const bool & exclude_ghosts = false)
-        : Parent{manager, property_layer, NbRow,
-                 NbCol,   metadata,       exclude_ghosts},
+        : Parent{manager, NbRow, NbCol, metadata, exclude_ghosts},
           type_id{typeid(Self_t).name()} {}
 
     //! Copy constructor
