@@ -21,20 +21,15 @@ Introductory Tutorials
     Benefits_Performance.ipynb
     Advanced_SOAP.ipynb
 
-Coming from QUIP?
+Converting Your Workflow to Rascal
 ~~~~~~~~~~~~~~~~~
 
 .. toctree::
     :maxdepth: 1
 
-    Benefits_Performance.ipynb
     Converting_Quip.ipynb
-    Hyperparameters.ipynb
-    Property_Prediction_Tutorial.ipynb
-    Kernels.ipynb
-    Advanced_SOAP.ipynb
 
-Intro for developers
+Rascal Cookbook
 ~~~~~~~~~~~~~~~~~~~~
 
 .. toctree::
