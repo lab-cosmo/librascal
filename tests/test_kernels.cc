@@ -66,8 +66,6 @@ namespace rascal {
     auto & collections = Fix::collections;
     auto & ref_data = Fix::ParentA::ref_data;
 
-    using Std2DArray_t = std::vector<std::vector<double>>;
-
     BOOST_CHECK_EQUAL(collections.size(), ref_data.size());
     for (size_t i_collection{0}; i_collection < ref_data.size();
          ++i_collection) {
@@ -79,11 +77,13 @@ namespace rascal {
         rep.compute(collection);
         auto mat = kernel.compute(rep, collection, collection);
         auto ref_mat = ref_data[i_collection][i_rep]["kernel_matrix"]
-                           .template get<Std2DArray_t>();
+                           .template get<math::Matrix_t>();
         double error{0.};
+        BOOST_TEST(mat.rows() == ref_mat.rows());
+        BOOST_TEST(mat.cols() == ref_mat.cols());
         for (int i_row{0}; i_row < mat.rows(); ++i_row) {
           for (int i_col{0}; i_col < mat.cols(); ++i_col) {
-            auto error_ = std::abs(mat(i_row, i_col) - ref_mat[i_row][i_col]);
+            auto error_ = std::abs(mat(i_row, i_col) - ref_mat(i_row, i_col));
             if (error < error_) {
               error = error_;
             }

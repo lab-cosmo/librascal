@@ -104,7 +104,6 @@ namespace rascal {
     class InternallySortedKeyMap {
      public:
       using MyMap_t = std::map<K, V>;
-      // using Map_t = std::unordered_map<K, std::array<int, 3>, Hash<K>>;
       using Map_t = std::map<K, std::tuple<int, int, int>>;
       using Precision_t = typename V::value_type;
       using Array_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
@@ -114,12 +113,18 @@ namespace rascal {
       using ArrayMap_Ref_t = typename Eigen::Map<Array_t>;
       using Array_Ref_t = typename Eigen::Ref<Array_t>;
       using Self_t = InternallySortedKeyMap<K, V>;
-      //! the data holder.
+      //! ref to the main data.
       Array_t & data;
+      //! map the keys to positions in data
       Map_t map{};
+      //! start of the chunck in data relevant to the object
       size_t global_offset;
+      //! size of the chunck in data relevant to the object
       size_t total_length{0};
+      //! keep track if the block of data has been normalized
       bool normalized{false};
+      //! store the hash of the combined key
+      size_t key_hash{0};
 
       // some member types
       using key_type = typename MyMap_t::key_type;
@@ -333,6 +338,15 @@ namespace rascal {
           }
         }
         this->total_length = current_position - global_offset;
+        // compute a hash of the keys
+        Hash<key_type> hasher{};
+        key_type flat_keys{};
+        for (const auto & key : this->get_keys()) {
+          for (const auto & el : key) {
+            flat_keys.emplace_back(el);
+          }
+        }
+        this->key_hash = hasher(flat_keys);
       }
 
       size_t size() const { return this->total_length; }
@@ -362,7 +376,12 @@ namespace rascal {
                                     this->total_length);
       }
 
-      /**
+      //! key_hash member getter
+      size_t get_key_hash() const {
+        return this->key_hash;
+      }
+
+       /**
        * returns a vector of the valid keys of the map
        */
       std::vector<key_type> get_keys() const {
@@ -424,17 +443,24 @@ namespace rascal {
        */
       Precision_t dot(Self_t & B) {
         Precision_t val{0.};
-        auto keys_b{B.get_keys()};
-        auto unique_keys{this->intersection(keys_b)};
+        // avoid breaking down product if this and B have the same layout
+        if (this->get_key_hash() == B.get_key_hash()) {
+          const auto vecA = this->get_full_vector();
+          const auto vecB = B.get_full_vector();
+          val = vecA.dot(vecB);
+        } else {
+          auto keys_b{B.get_keys()};
+          auto unique_keys{this->intersection(keys_b)};
 
-        for (auto & key : unique_keys) {
-          auto && posA{this->map[key]};
-          auto vecA{VectorMap_Ref_t(&this->data[std::get<0>(posA)],
-                                    std::get<1>(posA) * std::get<2>(posA))};
-          auto && posB{B.map[key]};
-          auto vecB{VectorMap_Ref_t(&B.data[std::get<0>(posB)],
-                                    std::get<1>(posB) * std::get<2>(posB))};
-          val += vecA.dot(vecB);
+          for (auto & key : unique_keys) {
+            auto && posA{this->map[key]};
+            auto vecA{VectorMap_Ref_t(&this->data[std::get<0>(posA)],
+                                      std::get<1>(posA) * std::get<2>(posA))};
+            auto && posB{B.map[key]};
+            auto vecB{VectorMap_Ref_t(&B.data[std::get<0>(posB)],
+                                      std::get<1>(posB) * std::get<2>(posB))};
+            val += vecA.dot(vecB);
+          }
         }
         return val;
       }
@@ -512,7 +538,8 @@ namespace rascal {
     using traits = typename Manager::traits;
 
     using Matrix_t = math::Matrix_t;
-    using DenseRef_t = Eigen::Map<Matrix_t>;
+    using MatrixMap_Ref_t = Eigen::Map<Matrix_t>;
+    using MatrixMapConst_Ref_t = const Eigen::Map<const Matrix_t>;
     using Key_t = Key;
     using Keys_t = std::set<Key_t>;
     using InputData_t = internal::InternallySortedKeyMap<Key_t, Matrix_t>;
@@ -532,6 +559,11 @@ namespace rascal {
      * property when Order == 1
      */
     const bool exclude_ghosts;
+
+    //! keep track if the keys are the same for each entries
+    bool has_uniform_keys{false};
+    //! record the global key_hash if has_uniform_keys == true
+    size_t global_key_hash{0};
 
    public:
     //! constructor
@@ -673,17 +705,43 @@ namespace rascal {
         global_offset += this->maps[i_map].size();
       }
       this->values.resize(global_offset);
+
+      // check if the keys are the same across cluster entries
+      if (this->maps.size() > 0) {
+        this->has_uniform_keys = true;
+        this->global_key_hash = this->maps[0].key_hash;
+        for (const auto & map : this->maps) {
+          if (this->global_key_hash != map.key_hash) {
+            this->has_uniform_keys = false;
+          }
+        }
+      } else {
+        this->has_uniform_keys = false;
+      }
+
     }
 
     void setZero() { this->values = 0.; }
 
     size_t size() const { return this->maps.size(); }
 
+    bool are_keys_uniform() const {
+      return this->has_uniform_keys;
+    }
+
+    size_t get_global_key_hash() const {
+      // should not be called if the keys are not uniform
+      assert(this->are_keys_uniform() == true);
+      return this->global_key_hash;
+    }
+
     //! clear all the content of the property
     void clear() {
-      this->values.resize(0);
+      // this->values.resize(0);
       this->maps.clear();
     }
+
+
 
     Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);
@@ -739,7 +797,7 @@ namespace rascal {
     }
 
     template <size_t CallerLayer>
-    DenseRef_t operator()(const ClusterRefKey<Order, CallerLayer> & id,
+    MatrixMap_Ref_t operator()(const ClusterRefKey<Order, CallerLayer> & id,
                           const Key_t & key) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
@@ -749,9 +807,9 @@ namespace rascal {
     }
 
     //! Accessor for property by index for dynamically sized properties
-    DenseRef_t operator()(size_t index, const Key_t & key) {
+    MatrixMap_Ref_t operator()(size_t index, const Key_t & key) {
       auto && val = this->maps[index].at(key);
-      return DenseRef_t(&val(0, 0), val.rows(), val.cols());
+      return MatrixMap_Ref_t(&val(0, 0), val.rows(), val.cols());
     }
 
     //! Accessor for property by cluster index and return a dense
@@ -831,6 +889,20 @@ namespace rascal {
     }
 
     /**
+     * Get a dense feature matrix Ncenter x Nfeatures only if
+     * `this->are_keys_uniform == true`. It only reinterprets the flat data
+     * storage object since all cluster entries have the same number of keys,
+     * i.e. each rows has the same size and has the same key ordering.
+     */
+    MatrixMapConst_Ref_t get_raw_data_view() const {
+      // should not be called if the keys are not uniform
+      assert(this->are_keys_uniform() == true);
+      auto && n_row = this->size();
+      auto && n_col = this->values.size() / this->size();
+      return MatrixMapConst_Ref_t(this->values.data(), n_row, n_col);
+    }
+
+    /**
      * @return set of unique keys at the level of the structure
      */
     Keys_t get_keys() const {
@@ -866,18 +938,27 @@ namespace rascal {
      */
     Matrix_t dot(Self_t & B) {
       Matrix_t mat(this->size(), B.size());
-      auto && manager_a{this->get_manager()};
-      auto && manager_b{B.get_manager()};
-      int i_row{0};
-      for (auto centerA : manager_a) {
-        auto && rowA{this->operator[](centerA)};
-        int i_col{0};
-        for (auto centerB : manager_b) {
-          auto && rowB{B[centerB]};
-          mat(i_row, i_col) = rowA.dot(rowB);
-          ++i_col;
+      // avoid breaking down product if this and B have the same layout
+      if (this->are_keys_uniform() and B.are_keys_uniform()) {
+        if (this->get_global_key_hash() == B.get_global_key_hash()) {
+          const auto blockA = this->get_raw_data_view();
+          const auto blockB = B.get_raw_data_view();
+          mat.noalias() = blockA * blockB;
         }
-        ++i_row;
+      } else {
+        auto && manager_a{this->get_manager()};
+        auto && manager_b{B.get_manager()};
+        int i_row{0};
+        for (auto centerA : manager_a) {
+          auto && rowA{this->operator[](centerA)};
+          int i_col{0};
+          for (auto centerB : manager_b) {
+            auto && rowB{B[centerB]};
+            mat(i_row, i_col) = rowA.dot(rowB);
+            ++i_col;
+          }
+          ++i_row;
+        }
       }
       return mat;
     }
