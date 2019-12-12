@@ -100,6 +100,16 @@ namespace rascal {
       const Key_t & get_key() const { return data; }
     };
 
+    struct CompareSortedKeyLess {
+      template <class Key_t>
+      bool operator()(const SortedKey<Key_t>& A, const SortedKey<Key_t>& B) const {
+        auto && keyA = A.get_key();
+        auto && keyB = B.get_key();
+        return std::lexicographical_compare(keyA.begin(), keyA.end(),
+                            keyB.begin(), keyB.end());
+      }
+    };
+
     template <class K, class V>
     class InternallySortedKeyMap {
      public:
@@ -316,16 +326,16 @@ namespace rascal {
       template <template <typename...> class Key_List, typename... Args>
       void resize_view(const Key_List<key_type, Args...> & keys, int n_row,
                        int n_col, const size_t & global_offset) {
-        std::vector<SortedKey_t> skeys{};
+        std::set<SortedKey_t, CompareSortedKeyLess> skeys{};
         for (auto && key : keys) {
           SortedKey_t skey{key};
-          skeys.push_back(skey);
+          skeys.insert(skey);
         }
         this->resize_view(skeys, n_row, n_col, global_offset);
       }
 
-      template <template <typename...> class Key_List, typename... Args>
-      void resize_view(const Key_List<SortedKey_t, Args...> & skeys, int n_row,
+      template <typename... Args>
+      void resize_view(const std::set<SortedKey_t, Args...> & skeys, int n_row,
                        int n_col, const size_t & global_offset) {
         this->global_offset = global_offset;
         size_t current_position{global_offset};
@@ -443,25 +453,25 @@ namespace rascal {
        */
       Precision_t dot(Self_t & B) {
         Precision_t val{0.};
-        // avoid breaking down product if this and B have the same layout
-        if (this->get_key_hash() == B.get_key_hash()) {
-          const auto vecA = this->get_full_vector();
-          const auto vecB = B.get_full_vector();
-          val = vecA.dot(vecB);
-        } else {
-          auto keys_b{B.get_keys()};
-          auto unique_keys{this->intersection(keys_b)};
+         // avoid breaking down product if this and B have the same layout
+         if (this->get_key_hash() == B.get_key_hash()) {
+           const auto vecA = this->get_full_vector();
+           const auto vecB = B.get_full_vector();
+           val = vecA.dot(vecB);
+         } else {
+           auto keys_b{B.get_keys()};
+           auto unique_keys{this->intersection(keys_b)};
 
-          for (auto & key : unique_keys) {
-            auto && posA{this->map[key]};
-            auto vecA{VectorMap_Ref_t(&this->data[std::get<0>(posA)],
-                                      std::get<1>(posA) * std::get<2>(posA))};
-            auto && posB{B.map[key]};
-            auto vecB{VectorMap_Ref_t(&B.data[std::get<0>(posB)],
-                                      std::get<1>(posB) * std::get<2>(posB))};
-            val += vecA.dot(vecB);
-          }
-        }
+           for (auto & key : unique_keys) {
+             auto && posA{this->map[key]};
+             auto vecA{VectorMap_Ref_t(&this->data[std::get<0>(posA)],
+                                       std::get<1>(posA) * std::get<2>(posA))};
+             auto && posB{B.map[key]};
+             auto vecB{VectorMap_Ref_t(&B.data[std::get<0>(posB)],
+                                       std::get<1>(posB) * std::get<2>(posB))};
+             val += vecA.dot(vecB);
+           }
+         }
         return val;
       }
 
@@ -659,9 +669,9 @@ namespace rascal {
      * SortedKey<Key_t>.
      */
     template <template <typename...> class Keys_List,
-              template <typename...> class Keys, typename... Args1,
+              typename... Args1,
               typename... Args2>
-    void resize(const Keys_List<Keys<Args2...>, Args1...> & keys_list) {
+    void resize(const Keys_List<std::set<Args2...>, Args1...> & keys_list) {
       this->resize();
       if (keys_list.size() != this->size()) {
         std::stringstream err_str{};
@@ -692,10 +702,9 @@ namespace rascal {
      * template parameters that need to be deduced.
      * The first template argument of Args is expected to be of type Key_t or
      * SortedKey<Key_t>.
-     *
      */
-    template <template <typename...> class Keys, typename... Args>
-    void resize(const Keys<Args...> & keys) {
+    template <typename... Args>
+    void resize(const std::set<Args...> & keys) {
       this->resize();
       int n_row{this->get_nb_row()};
       int n_col{this->get_nb_col()};
@@ -740,8 +749,6 @@ namespace rascal {
       // this->values.resize(0);
       this->maps.clear();
     }
-
-
 
     Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);
@@ -943,7 +950,7 @@ namespace rascal {
         if (this->get_global_key_hash() == B.get_global_key_hash()) {
           const auto blockA = this->get_raw_data_view();
           const auto blockB = B.get_raw_data_view();
-          mat.noalias() = blockA * blockB;
+          mat.noalias() = blockA * blockB.transpose();
         }
       } else {
         auto && manager_a{this->get_manager()};
@@ -960,6 +967,19 @@ namespace rascal {
           ++i_row;
         }
       }
+      // auto && manager_a{this->get_manager()};
+      // auto && manager_b{B.get_manager()};
+      // int i_row{0};
+      // for (auto centerA : manager_a) {
+      //   auto && rowA{this->operator[](centerA)};
+      //   int i_col{0};
+      //   for (auto centerB : manager_b) {
+      //     auto && rowB{B[centerB]};
+      //     mat(i_row, i_col) = rowA.dot(rowB);
+      //     ++i_col;
+      //   }
+      //   ++i_row;
+      // }
       return mat;
     }
   };

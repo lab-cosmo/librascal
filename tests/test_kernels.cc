@@ -78,18 +78,24 @@ namespace rascal {
         auto mat = kernel.compute(rep, collection, collection);
         auto ref_mat = ref_data[i_collection][i_rep]["kernel_matrix"]
                            .template get<math::Matrix_t>();
-        double error{0.};
+        double max_error{0.};
         BOOST_TEST(mat.rows() == ref_mat.rows());
         BOOST_TEST(mat.cols() == ref_mat.cols());
         for (int i_row{0}; i_row < mat.rows(); ++i_row) {
           for (int i_col{0}; i_col < mat.cols(); ++i_col) {
             auto error_ = std::abs(mat(i_row, i_col) - ref_mat(i_row, i_col));
-            if (error < error_) {
-              error = error_;
+            if (max_error < error_) {
+              max_error = error_;
             }
           }
         }
-        BOOST_CHECK_LE(error, 6e-13);
+        BOOST_CHECK_LE(max_error, 6e-13);
+        if (max_error > 6e-13) {
+          std::cout << ref_data[i_collection][i_rep]["hypers_kernel"].dump() << std::endl;
+          std::cout << ref_data[i_collection][i_rep]["hypers_rep"].dump() << std::endl;
+          std::cout << mat.row(0) << std::endl;
+          std::cout << ref_mat.row(0) << std::endl;
+        }
       }
     }
   }

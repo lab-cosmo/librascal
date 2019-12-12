@@ -51,16 +51,45 @@
 
 using namespace rascal;  // NOLINT
 
+using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
+                                    AdaptorNeighbourList,
+                                    AdaptorCenterContribution, AdaptorStrict>;
+using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
+using Manager_t = typename ManagerTypeHolder_t::type;
+using ManagerCollection_t =
+    typename TypeHolderInjector<ManagerCollection, ManagerTypeList_t>::type;
+using Representation_t = CalculatorSphericalInvariants;
+
 int main() {
   // Test1()();
-  // std::string filename{"reference_data/inputs/small_molecules-20.json"};
-  std::string filename{"../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
+  std::string filename{"../reference_data/inputs/small_molecules-20.json"};
+  // std::string filename{"../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
   //  std::string filename{"reference_data/alloy-small.json"};
   // std::string filename{"reference_data/alloy-small.json"};
   // std::string filename{"reference_data/diamond_cubic.json"};
   std::string rep_id{"pp"};
 
   double cutoff{3.};
+
+  json hypers{{"max_radial", 3},
+              {"max_angular", 2},
+              {"compute_gradients", false},
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", true},
+              {"expansion_by_species_method", "environment wise"}};
+
+  json fc_hypers{{"type", "ShiftedCosine"},
+                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
+                 {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
+  json sigma_hypers{{"type", "Constant"},
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+
+  hypers["cutoff_function"] = fc_hypers;
+  hypers["gaussian_density"] = sigma_hypers;
+  hypers["radial_contribution"] = {{"type", "GTO"}};
+
+  json kernel_hypers{
+        {"zeta", 1}, {"target_type", "Atom"}, {"name", "Cosine"}};
 
   json structure{{"filename", filename}};
   json adaptors;
@@ -77,81 +106,19 @@ int main() {
   adaptors.emplace_back(ad1b);
   adaptors.emplace_back(ad2);
 
-   auto manager =
-       make_structure_manager_stack<StructureManagerCenters,
-                                    AdaptorNeighbourList,
-                                    AdaptorCenterContribution, AdaptorStrict>(
-           structure, adaptors);
-//  auto manager =
-//      make_structure_manager_stack<StructureManagerCenters,
-//                                   AdaptorNeighbourList, AdaptorStrict>(
-//          structure, adaptors);
+  ManagerCollection_t collection{adaptors};
+  collection.add_structures(filename, 0, 1);
 
+  Representation_t soap{hypers};
 
+  soap.compute(collection);
 
-   std::cout << "n_centers: " << manager->size() << std::endl;
-   for (auto center : manager) {
-     auto ctag = center.get_atom_tag();
-     std::cout << "Center: " << ctag << " n. neighbors " << center.pairs().size()
-               << std::endl;
+  Kernel kernel{kernel_hypers};
 
-     for (auto neigh : center.pairs()) {
-       auto tag_list = neigh.get_atom_tag_list();
+  auto kk = kernel.compute(soap, collection, collection);
 
-       auto atom_j = neigh.get_atom_j();
-       auto atom_j_tag = atom_j.get_atom_tag_list();
-       auto atom_j_ids = atom_j.get_cluster_indices();
-       std::cout << "neigh: " << tag_list[0] << ", " << tag_list[1] << ", "
-                 << " tag_j: " << atom_j_tag[0] << ", " << atom_j_ids[0]
-                 << " -- global index " << neigh.get_global_index()
-                 <<std::endl;
-     }
-     // for (auto triplet : center.triplets()) {
-     //   std::cout << "triplet: " << std::endl;
-     // }
-   }
+  std::cout << kk << std::endl;
 
-
-  auto triplet_manager{make_adapted_manager<AdaptorMaxOrder>(manager)};
-  triplet_manager->update();
-
-//  for (auto center : triplet_manager) {
-//    auto proxy = center.pairs();
-//    auto it = proxy.begin();
-//    auto neigh = *it;
-//    auto pos = neigh.get_position();
-//  }
-
-  for (auto center : triplet_manager) {
-    auto ctag = center.get_atom_tag();
-    auto it = center.triplets();
-    auto size{it.size()};
-    std::cout << "Center: " << ctag << " n. neighbors " << size
-              << std::endl;
-//     std::cout << "Center: " << ctag << " n. neighbors "
-//               << std::endl;
-
-    for (auto triplet : center.triplets()) {
-      auto tags = triplet.get_atom_tag_list();
-      std::cout << center.get_atom_tag() << " triplet ("
-                << tags[0] << ", " << tags[1] << ", " << tags[2]
-                << ") global index " << triplet.get_global_index()
-              << ") index " << triplet.get_index()
-                << std::endl;
-    }
-  }
-
-  std::vector<int> new_tag_list{{1,6,7,8}};
-  std::cout << std::boolalpha
-            << std::is_sorted(new_tag_list.begin(), new_tag_list.end(), std::less_equal<int>())
-            << std::endl;
-
-  std::vector<int> new_tag_list_s{{1,6,7,8}};
-  std::sort(new_tag_list_s.begin(), new_tag_list_s.end());
-  auto any_equal = std::adjacent_find(new_tag_list_s.begin(), new_tag_list_s.end());
-  std::cout << std::boolalpha
-            << (any_equal == new_tag_list_s.end())
-            << std::endl;
 
   return (0);
 }

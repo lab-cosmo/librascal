@@ -1107,14 +1107,14 @@ namespace rascal {
     soap_vectors.clear();
     soap_vectors.set_shape(n_row, n_col);
 
-    std::vector<std::vector<internal::SortedKey<Key_t>>> keys_list{};
+    std::vector<std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>> keys_list{};
     // identify the species in each environment and initialize soap_vectors
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
       // auto & soap_vector{soap_vectors[center]};
       internal::Sorted<false> is_not_sorted{};
 
-      std::vector<internal::SortedKey<Key_t>> triplet_list{};
+      std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess> triplet_list{};
       auto center_type{center.get_atom_type()};
       Key_t triplet_type{center_type, center_type, center_type};
       for (const auto & el1 : coefficients) {
@@ -1123,7 +1123,7 @@ namespace rascal {
           triplet_type[1] = el2.first[0];
           for (const auto & el3 : coefficients) {
             triplet_type[2] = el3.first[0];
-            triplet_list.emplace_back(is_not_sorted, triplet_type);
+            triplet_list.insert({is_not_sorted, triplet_type});
           }
         }
       }
@@ -1155,22 +1155,22 @@ namespace rascal {
       soap_vector_gradients.set_shape(n_spatial_dimensions * n_row, n_col);
     }
 
-    std::vector<std::vector<internal::SortedKey<Key_t>>> keys_list{};
-    std::vector<std::vector<internal::SortedKey<Key_t>>> keys_list_grad{};
+    std::vector<std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>> keys_list{};
+    std::vector<std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>> keys_list_grad{};
 
     // identify the species in each environment and initialize soap_vectors
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
       internal::Sorted<true> is_sorted{};
 
-      std::vector<internal::SortedKey<Key_t>> pair_list{};
+      std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess> pair_list{};
       auto center_type{center.get_atom_type()};
       Key_t pair_type{center_type, center_type};
       // avoid checking the order in pair_type by ensuring it has already been
       // done
       internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
 
-      pair_list.emplace_back(is_sorted, pair_type);
+      pair_list.insert({is_sorted, pair_type});
       for (const auto & el1 : coefficients) {
         auto && neigh1_type{el1.first[0]};
         if (center_type <= neigh1_type) {
@@ -1181,14 +1181,14 @@ namespace rascal {
           pair_type[0] = neigh1_type;
         }
 
-        pair_list.emplace_back(is_sorted, pair_type);
+        pair_list.insert({is_sorted, pair_type});
 
         for (const auto & el2 : coefficients) {
           auto && neigh2_type{el2.first[0]};
           if (neigh1_type <= neigh2_type) {
             pair_type[0] = neigh1_type;
             pair_type[1] = neigh2_type;
-            pair_list.emplace_back(is_sorted, pair_type);
+            pair_list.insert({is_sorted, pair_type});
           }
         }
       }
@@ -1200,7 +1200,7 @@ namespace rascal {
       // the gradient is zero.
       for (auto neigh : center.pairs()) {
         auto neigh_type = neigh.get_atom_type();
-        std::vector<internal::SortedKey<Key_t>> grad_pair_list{};
+        std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess> grad_pair_list{};
         for (const auto & el1 : coefficients) {
           auto && neigh_1_type{el1.first[0]};
           for (const auto & el2 : coefficients) {
@@ -1210,7 +1210,7 @@ namespace rascal {
               pair_type[1] = neigh_2_type;
               if ((neigh_type == pair_type[0]) or
                   (neigh_type == pair_type[1])) {
-                grad_pair_list.emplace_back(is_sorted, pair_type);
+                grad_pair_list.insert({is_sorted, pair_type});
               }
             }
           }

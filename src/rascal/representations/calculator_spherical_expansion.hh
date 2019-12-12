@@ -1174,7 +1174,7 @@ namespace rascal {
 
       if (hypers.count("expansion_by_species_method")) {
         std::vector<std::string> possible_expansion_by_species{{"environment wise", "user defined", "structure wise"}};
-        auto expansion_by_species_tmp = hypers.at("expansion_by_species").get<std::string>();
+        auto expansion_by_species_tmp = hypers.at("expansion_by_species_method").get<std::string>();
         if (internal::is_element_in(expansion_by_species_tmp, possible_expansion_by_species)) {
           this->expansion_by_species = expansion_by_species_tmp;
         } else {
@@ -1674,7 +1674,8 @@ namespace rascal {
       this->initialize_expansion_with_global_species(manager, expansions_coefficients,
                                          expansions_coefficients_gradient);
     } else if (this->expansion_by_species == "structure wise") {
-
+      this->initialize_expansion_structure_wise(manager, expansions_coefficients,
+                                                     expansions_coefficients_gradient);
     } else {
       throw std::runtime_error("should not arrive here");
     }
@@ -1869,7 +1870,7 @@ namespace rascal {
     }
 
     int i_grad{0};
-    for (int i_center{0}; i_center < manager->size(); i_center++) {
+    for (size_t i_center{0}; i_center < manager->size(); i_center++) {
       keys_list[i_center] = keys;
       keys_list_grad[i_grad] = keys;
       auto center_it = manager->get_iterator_at(i_center);
