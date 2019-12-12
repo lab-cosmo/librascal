@@ -176,7 +176,7 @@ namespace rascal {
 
       auto atom_position = atom.get_position();
       int counter{0};
-      std::array<double, 4> distances{std::sqrt(2), 1, std::sqrt(2), 1};
+      std::array<double, 4> distances{{std::sqrt(2), 1, std::sqrt(2), 1}};
       for (auto pair : atom.pairs()) {
         auto neighbour_atom_tag = pair.get_internal_neighbour_atom_tag();
         auto neighbour_type = pair.get_atom_type();
