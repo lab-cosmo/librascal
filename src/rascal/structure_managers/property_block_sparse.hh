@@ -102,11 +102,12 @@ namespace rascal {
 
     struct CompareSortedKeyLess {
       template <class Key_t>
-      bool operator()(const SortedKey<Key_t>& A, const SortedKey<Key_t>& B) const {
+      bool operator()(const SortedKey<Key_t> & A,
+                      const SortedKey<Key_t> & B) const {
         auto && keyA = A.get_key();
         auto && keyB = B.get_key();
         return std::lexicographical_compare(keyA.begin(), keyA.end(),
-                            keyB.begin(), keyB.end());
+                                            keyB.begin(), keyB.end());
       }
     };
 
@@ -319,6 +320,8 @@ namespace rascal {
        * Keys_List is a stl container and it is expected that Keys_List is
        * iterable.
        *
+       * The use of std::set is to garrantee the order of the keys.
+       *
        * Args template parameters is there to accomodate with the
        * fact that most stl container have several optional template parameters
        * that need to be deduced.
@@ -387,11 +390,9 @@ namespace rascal {
       }
 
       //! key_hash member getter
-      size_t get_key_hash() const {
-        return this->key_hash;
-      }
+      size_t get_key_hash() const { return this->key_hash; }
 
-       /**
+      /**
        * returns a vector of the valid keys of the map
        */
       std::vector<key_type> get_keys() const {
@@ -453,25 +454,25 @@ namespace rascal {
        */
       Precision_t dot(Self_t & B) {
         Precision_t val{0.};
-         // avoid breaking down product if this and B have the same layout
-         if (this->get_key_hash() == B.get_key_hash()) {
-           const auto vecA = this->get_full_vector();
-           const auto vecB = B.get_full_vector();
-           val = vecA.dot(vecB);
-         } else {
-           auto keys_b{B.get_keys()};
-           auto unique_keys{this->intersection(keys_b)};
+        // avoid breaking down product if this and B have the same layout
+        if (this->get_key_hash() == B.get_key_hash()) {
+          const auto vecA = this->get_full_vector();
+          const auto vecB = B.get_full_vector();
+          val = vecA.dot(vecB);
+        } else {
+          auto keys_b{B.get_keys()};
+          auto unique_keys{this->intersection(keys_b)};
 
-           for (auto & key : unique_keys) {
-             auto && posA{this->map[key]};
-             auto vecA{VectorMap_Ref_t(&this->data[std::get<0>(posA)],
-                                       std::get<1>(posA) * std::get<2>(posA))};
-             auto && posB{B.map[key]};
-             auto vecB{VectorMap_Ref_t(&B.data[std::get<0>(posB)],
-                                       std::get<1>(posB) * std::get<2>(posB))};
-             val += vecA.dot(vecB);
-           }
-         }
+          for (auto & key : unique_keys) {
+            auto && posA{this->map[key]};
+            auto vecA{VectorMap_Ref_t(&this->data[std::get<0>(posA)],
+                                      std::get<1>(posA) * std::get<2>(posA))};
+            auto && posB{B.map[key]};
+            auto vecB{VectorMap_Ref_t(&B.data[std::get<0>(posB)],
+                                      std::get<1>(posB) * std::get<2>(posB))};
+            val += vecA.dot(vecB);
+          }
+        }
         return val;
       }
 
@@ -658,9 +659,9 @@ namespace rascal {
      * Adjust size of values (only increases, never frees) and maps with a
      * different set of keys for each entries (order == 1 -> centers,
      * order == 2 -> neighbors ...).
-     * Keys_List and Keys are stl container and it is expected that Keys_List
-     * allows for random access with index from 0 to size-1 and Keys is
-     * iterable.
+     * Keys_List is a stl container and it is expected that Keys_List
+     * allows for random access with index from 0 to size-1.
+     * The use of std::set is to garrantee the order of the keys.
      *
      * Args1 and Args2 template parameters are there to accomodate with the
      * fact that most stl container that can be indexed have several optional
@@ -668,8 +669,7 @@ namespace rascal {
      * The first template argument of Args2 is expected to be of type Key_t or
      * SortedKey<Key_t>.
      */
-    template <template <typename...> class Keys_List,
-              typename... Args1,
+    template <template <typename...> class Keys_List, typename... Args1,
               typename... Args2>
     void resize(const Keys_List<std::set<Args2...>, Args1...> & keys_list) {
       this->resize();
@@ -695,7 +695,7 @@ namespace rascal {
      * Adjust size of values (only increases, never frees) and maps with the
      * same keys for each entries (order == 1 -> centers,
      * order == 2 -> neighbors ...).
-     * Keys is a stl container and iterable.
+     * The use of std::set is to garrantee the order of the keys.
      *
      * Args template parameters are there to accomodate with the
      * fact that most stl container that can be indexed have several optional
@@ -727,16 +727,13 @@ namespace rascal {
       } else {
         this->has_uniform_keys = false;
       }
-
     }
 
     void setZero() { this->values = 0.; }
 
     size_t size() const { return this->maps.size(); }
 
-    bool are_keys_uniform() const {
-      return this->has_uniform_keys;
-    }
+    bool are_keys_uniform() const { return this->has_uniform_keys; }
 
     size_t get_global_key_hash() const {
       // should not be called if the keys are not uniform
@@ -805,7 +802,7 @@ namespace rascal {
 
     template <size_t CallerLayer>
     MatrixMap_Ref_t operator()(const ClusterRefKey<Order, CallerLayer> & id,
-                          const Key_t & key) {
+                               const Key_t & key) {
       static_assert(CallerLayer >= PropertyLayer,
                     "You are trying to access a property that does not exist at"
                     "this depth in the adaptor stack.");

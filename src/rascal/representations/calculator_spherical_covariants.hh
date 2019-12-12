@@ -337,13 +337,16 @@ namespace rascal {
     soap_vectors.clear();
     soap_vectors.set_shape(n_row, n_col);
 
-    std::vector<std::vector<internal::SortedKey<Key_t>>> keys_list{};
+    std::vector<
+        std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>>
+        keys_list{};
     // identify the species in each environment and initialize soap_vectors
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
       internal::Sorted<false> is_not_sorted{};
 
-      std::vector<internal::SortedKey<Key_t>> pair_list{};
+      std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
+          pair_list{};
       auto center_type{center.get_atom_type()};
       Key_t pair_type{center_type, center_type};
 
@@ -353,7 +356,7 @@ namespace rascal {
         pair_type[0] = el1.first[0];
         for (const auto & el2 : coefficients) {
           pair_type[1] = el2.first[0];
-          pair_list.emplace_back(is_not_sorted, pair_type);
+          pair_list.insert({is_not_sorted, pair_type});
         }
       }
       keys_list.emplace_back(pair_list);

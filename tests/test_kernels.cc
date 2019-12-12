@@ -91,8 +91,10 @@ namespace rascal {
         }
         BOOST_CHECK_LE(max_error, 6e-13);
         if (max_error > 6e-13) {
-          std::cout << ref_data[i_collection][i_rep]["hypers_kernel"].dump() << std::endl;
-          std::cout << ref_data[i_collection][i_rep]["hypers_rep"].dump() << std::endl;
+          std::cout << ref_data[i_collection][i_rep]["hypers_kernel"].dump()
+                    << std::endl;
+          std::cout << ref_data[i_collection][i_rep]["hypers_rep"].dump()
+                    << std::endl;
           std::cout << mat.row(0) << std::endl;
           std::cout << ref_mat.row(0) << std::endl;
         }

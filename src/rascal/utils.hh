@@ -28,23 +28,23 @@
 #ifndef SRC_RASCAL_UTILS_HH_
 #define SRC_RASCAL_UTILS_HH_
 
+#include <algorithm>
 #include <string>
 #include <tuple>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
 #include <vector>
-#include <algorithm>
 
 namespace rascal {
   namespace internal {
 
     //! find if element appears in vector.
     template <class T, class Vec>
-    bool is_element_in(const T& element, const Vec& vector) {
+    bool is_element_in(const T & element, const Vec & vector) {
       Vec s_element{{element}};
-      return not(std::search(vector.begin(), vector.end(),
-                  s_element.begin(), s_element.end()) == vector.end());
+      return not(std::search(vector.begin(), vector.end(), s_element.begin(),
+                             s_element.end()) == vector.end());
     }
 
     namespace details {

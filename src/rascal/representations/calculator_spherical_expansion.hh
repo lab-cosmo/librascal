@@ -1173,16 +1173,19 @@ namespace rascal {
       }
 
       if (hypers.count("expansion_by_species_method")) {
-        std::vector<std::string> possible_expansion_by_species{{"environment wise", "user defined", "structure wise"}};
-        auto expansion_by_species_tmp = hypers.at("expansion_by_species_method").get<std::string>();
-        if (internal::is_element_in(expansion_by_species_tmp, possible_expansion_by_species)) {
+        std::vector<std::string> possible_expansion_by_species{
+            {"environment wise", "user defined", "structure wise"}};
+        auto expansion_by_species_tmp =
+            hypers.at("expansion_by_species_method").get<std::string>();
+        if (internal::is_element_in(expansion_by_species_tmp,
+                                    possible_expansion_by_species)) {
           this->expansion_by_species = expansion_by_species_tmp;
         } else {
           std::stringstream err_str{};
           err_str << "expansion_by_species_method provided:'"
                   << expansion_by_species_tmp
                   << "' is not part of the implemented methods: '";
-          for (const auto& val : possible_expansion_by_species) {
+          for (const auto & val : possible_expansion_by_species) {
             err_str << val << "', ";
           }
           throw std::logic_error(err_str.str());
@@ -1194,7 +1197,7 @@ namespace rascal {
 
       if (hypers.count("global_species")) {
         auto species = hypers.at("global_species").get<Key_t>();
-        for (const auto& sp : species) {
+        for (const auto & sp : species) {
           this->global_species.insert({sp});
         }
       } else {
@@ -1668,18 +1671,17 @@ namespace rascal {
     }
 
     if (this->expansion_by_species == "environment wise") {
-      this->initialize_expansion_environment_wise(manager, expansions_coefficients,
-                                         expansions_coefficients_gradient);
+      this->initialize_expansion_environment_wise(
+          manager, expansions_coefficients, expansions_coefficients_gradient);
     } else if (this->expansion_by_species == "user defined") {
-      this->initialize_expansion_with_global_species(manager, expansions_coefficients,
-                                         expansions_coefficients_gradient);
+      this->initialize_expansion_with_global_species(
+          manager, expansions_coefficients, expansions_coefficients_gradient);
     } else if (this->expansion_by_species == "structure wise") {
-      this->initialize_expansion_structure_wise(manager, expansions_coefficients,
-                                                     expansions_coefficients_gradient);
+      this->initialize_expansion_structure_wise(
+          manager, expansions_coefficients, expansions_coefficients_gradient);
     } else {
       throw std::runtime_error("should not arrive here");
     }
-
 
     /* @TODO(felix,max) use the parity of the spherical harmonics to use half
      * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
@@ -1901,11 +1903,10 @@ namespace rascal {
       keys.push_back(center_type);
     }
     // check that all species in the structure are present in global_species
-    for (const auto& key : keys) {
+    for (const auto & key : keys) {
       if (not internal::is_element_in(key, this->global_species)) {
         std::stringstream err_str{};
-        err_str << "global_species is missing this species: '"
-                << key << "'.";
+        err_str << "global_species is missing this species: '" << key << "'.";
         throw std::runtime_error(err_str.str());
       }
     }
