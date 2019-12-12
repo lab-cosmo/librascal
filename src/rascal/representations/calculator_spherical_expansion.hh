@@ -1166,15 +1166,45 @@ namespace rascal {
 
       this->max_radial = hypers.at("max_radial");
       this->max_angular = hypers.at("max_angular");
-      if (hypers.find("n_species") != hypers.end()) {
-        this->n_species = hypers.at("n_species");
-      } else {
-        this->n_species = 1;  // default: no species distinction
-      }
-      if (hypers.find("compute_gradients") != hypers.end()) {
+      if (hypers.count("compute_gradients")) {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();
       } else {  // Default false (don't compute gradients)
         this->compute_gradients = false;
+      }
+
+      if (hypers.count("expansion_by_species_method")) {
+        std::vector<std::string> possible_expansion_by_species{{"environment wise", "user defined", "structure wise"}};
+        auto expansion_by_species_tmp = hypers.at("expansion_by_species").get<std::string>();
+        if (internal::is_element_in(expansion_by_species_tmp, possible_expansion_by_species)) {
+          this->expansion_by_species = expansion_by_species_tmp;
+        } else {
+          std::stringstream err_str{};
+          err_str << "expansion_by_species_method provided:'"
+                  << expansion_by_species_tmp
+                  << "' is not part of the implemented methods: '";
+          for (const auto& val : possible_expansion_by_species) {
+            err_str << val << "', ";
+          }
+          throw std::logic_error(err_str.str());
+        }
+      } else {
+        // default value for backward compatibility
+        this->expansion_by_species = "environment wise";
+      }
+
+      if (hypers.count("global_species")) {
+        auto species = hypers.at("global_species").get<Key_t>();
+        for (const auto& sp : species) {
+          this->global_species.insert({sp});
+        }
+      } else {
+        if (this->expansion_by_species == "user defined") {
+          std::stringstream err_str{};
+          err_str << "expansion_by_species_method is 'user defined'"
+                  << " but global_species is not defined.";
+          throw std::logic_error(err_str.str());
+        }
+        this->global_species.clear();
       }
 
       this->spherical_harmonics.precompute(this->max_angular,
@@ -1183,7 +1213,6 @@ namespace rascal {
       // create the class that will compute the radial terms of the
       // expansion. the atomic smearing is an integral part of the
       // radial contribution
-      //
       auto smearing_hypers = hypers.at("gaussian_density").get<json>();
       auto smearing_type = smearing_hypers.at("type").get<std::string>();
 
@@ -1406,13 +1435,32 @@ namespace rascal {
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
    protected:
+    //! cutoff radius r_c defining the size of the atom centered environement
     double interaction_cutoff{};
+    //! size of the transition region r_t spanning [r_c-r_t, r_c] in which the
+    //! contributions to the environment expansion go to zero smoothly
     double cutoff_smooth_width{};
+    //! defines the maximal mean error allowed to the interpolator when fitting
+    //! the reference
     double interpolator_accuracy{};
+    //! number of radial basis function to use in the expansion
     size_t max_radial{};
+    /**
+     * number of angular channels used in the expansion, i.e. all Y_l^m with
+     * l < max_angular + 1 are used (the +1 is to follow GAP's convention).
+     */
     size_t max_angular{};
-    size_t n_species{};
+    //! controls the computation of the gradients of the expansion wrt. atomic
+    //! positions
     bool compute_gradients{};
+    /**
+     * defines the method to determine the set of species to use in the
+     * expansion
+     */
+    std::string expansion_by_species{};
+
+    //! user defined species appearing in the expansion indexing
+    std::set<Key_t> global_species{};
 
     internal::AtomicSmearingType atomic_smearing_type{};
 
@@ -1431,9 +1479,48 @@ namespace rascal {
     /**
      * set up chemical keys of the expension so that only species appearing in
      * the environment are present and initialize coeffs to zero.
+     *
+     * For gradients associated with pair_ii the keys will be the ones in the
+     * environment but the ones associated with pair_ij will only contain the
+     * non zero keys.
      */
     template <class StructureManager>
-    void initialize_expansion_atom_wise(
+    void initialize_expansion_environment_wise(
+        std::shared_ptr<StructureManager> & managers,
+        Property_t<StructureManager> & expansions_coefficients,
+        PropertyGradient_t<StructureManager> &
+            expansions_coefficients_gradient);
+
+    /**
+     * set up chemical keys of the expension so that all species in the
+     * structure will be used in the as keys for the expansion and initialize
+     * coeffs to zero.
+     * For gradients associated with pair_ii the keys will be the one of the
+     * structure but the ones associated with pair_ij will only contain the
+     * non zero keys.
+     *
+     * @throw runtime_error when all the species of the structure are not
+     * present in global_species
+     */
+    template <class StructureManager>
+    void initialize_expansion_structure_wise(
+        std::shared_ptr<StructureManager> & managers,
+        Property_t<StructureManager> & expansions_coefficients,
+        PropertyGradient_t<StructureManager> &
+            expansions_coefficients_gradient);
+
+    /**
+     * Set up chemical keys of the expension using global_species for the keys
+     * appearing in the expansion and initialize coeffs to zero.
+     * For gradients associated with pair_ii the keys will be the one of
+     * global_species but the ones associated with pair_ij will only contain the
+     * non zero keys.
+     *
+     * @throw runtime_error when all the species of the structure are not
+     * present in global_species
+     */
+    template <class StructureManager>
+    void initialize_expansion_with_global_species(
         std::shared_ptr<StructureManager> & managers,
         Property_t<StructureManager> & expansions_coefficients,
         PropertyGradient_t<StructureManager> &
@@ -1580,8 +1667,18 @@ namespace rascal {
                                                  n_col);
     }
 
-    this->initialize_expansion_atom_wise(manager, expansions_coefficients,
+    if (this->expansion_by_species == "environment wise") {
+      this->initialize_expansion_environment_wise(manager, expansions_coefficients,
                                          expansions_coefficients_gradient);
+    } else if (this->expansion_by_species == "user defined") {
+      this->initialize_expansion_with_global_species(manager, expansions_coefficients,
+                                         expansions_coefficients_gradient);
+    } else if (this->expansion_by_species == "structure wise") {
+
+    } else {
+      throw std::runtime_error("should not arrive here");
+    }
+
 
     /* @TODO(felix,max) use the parity of the spherical harmonics to use half
      * neighbourlist, i.e. C^{ij}_{nlm} = (-1)^l C^{ji}_{nlm}.
@@ -1700,12 +1797,8 @@ namespace rascal {
     }  // for (center : manager)
   }    // compute()
 
-  /**
-   * set up chemical keys of the expension so that only species appearing in
-   * the environment are present and initialize coeffs to zero.
-   */
   template <class StructureManager>
-  void CalculatorSphericalExpansion::initialize_expansion_atom_wise(
+  void CalculatorSphericalExpansion::initialize_expansion_environment_wise(
       std::shared_ptr<StructureManager> & manager,
       Property_t<StructureManager> & expansions_coefficients,
       PropertyGradient_t<StructureManager> & expansions_coefficients_gradient) {
@@ -1723,6 +1816,103 @@ namespace rascal {
       keys_list.emplace_back(keys);
       keys_list_grad.emplace_back(keys);
 
+      for (auto neigh : center.pairs()) {
+        auto && atom_j = neigh.get_atom_j();
+        auto atom_j_tag = atom_j.get_atom_tag();
+        Key_t neigh_type{neigh.get_atom_type()};
+        std::set<Key_t> neigh_types{};
+        if (atom_j_tag != atom_i_tag) {
+          neigh_types.insert(neigh_type);
+        }
+        keys_list_grad.emplace_back(neigh_types);
+      }
+    }
+
+    expansions_coefficients.resize(keys_list);
+    expansions_coefficients.setZero();
+
+    if (this->compute_gradients) {
+      expansions_coefficients_gradient.resize(keys_list_grad);
+      expansions_coefficients_gradient.setZero();
+    }
+  }
+
+  template <class StructureManager>
+  void CalculatorSphericalExpansion::initialize_expansion_structure_wise(
+      std::shared_ptr<StructureManager> & manager,
+      Property_t<StructureManager> & expansions_coefficients,
+      PropertyGradient_t<StructureManager> & expansions_coefficients_gradient) {
+    std::vector<std::set<Key_t>> keys_list{};
+    std::vector<std::set<Key_t>> keys_list_grad{};
+    std::set<Key_t> keys{};
+    for (auto center : manager) {
+      Key_t center_type{center.get_atom_type()};
+      auto atom_i_tag = center.get_atom_tag();
+
+      for (auto neigh : center.pairs()) {
+        keys.insert({neigh.get_atom_type()});
+      }
+      keys.insert({center_type});
+      keys_list.emplace_back();
+      keys_list_grad.emplace_back();
+
+      for (auto neigh : center.pairs()) {
+        auto && atom_j = neigh.get_atom_j();
+        auto atom_j_tag = atom_j.get_atom_tag();
+        Key_t neigh_type{neigh.get_atom_type()};
+        std::set<Key_t> neigh_types{};
+        if (atom_j_tag != atom_i_tag) {
+          neigh_types.insert(neigh_type);
+        }
+        keys_list_grad.emplace_back(neigh_types);
+      }
+    }
+
+    int i_grad{0};
+    for (int i_center{0}; i_center < manager->size(); i_center++) {
+      keys_list[i_center] = keys;
+      keys_list_grad[i_grad] = keys;
+      auto center_it = manager->get_iterator_at(i_center);
+      auto center = *center_it;
+      i_grad += center.pairs_with_self_pair().size();
+    }
+
+    expansions_coefficients.resize(keys_list);
+    expansions_coefficients.setZero();
+
+    if (this->compute_gradients) {
+      expansions_coefficients_gradient.resize(keys_list_grad);
+      expansions_coefficients_gradient.setZero();
+    }
+  }
+
+  template <class StructureManager>
+  void CalculatorSphericalExpansion::initialize_expansion_with_global_species(
+      std::shared_ptr<StructureManager> & manager,
+      Property_t<StructureManager> & expansions_coefficients,
+      PropertyGradient_t<StructureManager> & expansions_coefficients_gradient) {
+    std::vector<std::set<Key_t>> keys_list{};
+    std::vector<std::set<Key_t>> keys_list_grad{};
+
+    Key_t keys{};
+    for (auto center : manager) {
+      typename Key_t::value_type center_type{center.get_atom_type()};
+      keys.push_back(center_type);
+    }
+    // check that all species in the structure are present in global_species
+    for (const auto& key : keys) {
+      if (not internal::is_element_in(key, this->global_species)) {
+        std::stringstream err_str{};
+        err_str << "global_species is missing this species: '"
+                << key << "'.";
+        throw std::runtime_error(err_str.str());
+      }
+    }
+
+    for (auto center : manager) {
+      keys_list.emplace_back(this->global_species);
+      keys_list_grad.emplace_back(this->global_species);
+      auto atom_i_tag = center.get_atom_tag();
       for (auto neigh : center.pairs()) {
         auto && atom_j = neigh.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag();
