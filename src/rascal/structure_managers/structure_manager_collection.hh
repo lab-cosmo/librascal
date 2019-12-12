@@ -66,6 +66,7 @@ namespace rascal {
         StructureManagerTypeHolder<Manager, AdaptorImplementationPack...>;
     using Manager_t = typename TypeHolder_t::type;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
+    using ManagerConstPtr_t = std::shared_ptr<const Manager_t>;
     using ManagerList_t = typename TypeHolder_t::type_list;
     using Hypers_t = typename Manager_t::Hypers_t;
     using traits = typename Manager_t::traits;
@@ -240,6 +241,11 @@ namespace rascal {
      */
     template <typename T>
     ManagerPtr_t operator[](T index) {
+      return this->managers[index]->get_shared_ptr();
+    }
+
+    template <typename T>
+    ManagerConstPtr_t operator[](T index) const {
       return this->managers[index]->get_shared_ptr();
     }
 
