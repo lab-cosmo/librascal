@@ -344,11 +344,9 @@ namespace rascal {
         size_t current_position{global_offset};
         size_t block_size{static_cast<size_t>(n_row * n_col)};
         for (auto && skey : skeys) {
-          if (this->count(skey) == 0) {
-            auto && key{skey.get_key()};
-            this->map[key] = std::make_tuple(current_position, n_row, n_col);
-            current_position += block_size;
-          }
+          auto && key{skey.get_key()};
+          this->map[key] = std::make_tuple(current_position, n_row, n_col);
+          current_position += block_size;
         }
         this->total_length = current_position - global_offset;
         // compute a hash of the keys
@@ -689,6 +687,9 @@ namespace rascal {
         global_offset += this->maps[i_map].size();
       }
       this->values.resize(global_offset);
+
+      // check if the keys are the same across cluster entries
+      this->check_for_uniform_keys();
     }
 
     /**
@@ -716,11 +717,17 @@ namespace rascal {
       this->values.resize(global_offset);
 
       // check if the keys are the same across cluster entries
+      this->check_for_uniform_keys();
+    }
+    /**
+     * check that all element in maps have the same set of keys
+     */
+    void check_for_uniform_keys() {
       if (this->maps.size() > 0) {
         this->has_uniform_keys = true;
-        this->global_key_hash = this->maps[0].key_hash;
+        this->global_key_hash = this->maps[0].get_key_hash();
         for (const auto & map : this->maps) {
-          if (this->global_key_hash != map.key_hash) {
+          if (this->global_key_hash != map.get_key_hash()) {
             this->has_uniform_keys = false;
           }
         }
@@ -942,13 +949,17 @@ namespace rascal {
      */
     Matrix_t dot(Self_t & B) {
       Matrix_t mat(this->size(), B.size());
-      // avoid breaking down product if this and B have the same layout
+      bool do_direct_dot{false};
       if (this->are_keys_uniform() and B.are_keys_uniform()) {
         if (this->get_global_key_hash() == B.get_global_key_hash()) {
-          const auto blockA = this->get_raw_data_view();
-          const auto blockB = B.get_raw_data_view();
-          mat.noalias() = blockA * blockB.transpose();
+          do_direct_dot = true;
         }
+      }
+      // avoid breaking down product if this and B have the same layout
+      if (do_direct_dot) {
+        const auto blockA = this->get_raw_data_view();
+        const auto blockB = B.get_raw_data_view();
+        mat.noalias() = blockA * blockB.transpose();
       } else {
         auto && manager_a{this->get_manager()};
         auto && manager_b{B.get_manager()};
@@ -964,19 +975,6 @@ namespace rascal {
           ++i_row;
         }
       }
-      // auto && manager_a{this->get_manager()};
-      // auto && manager_b{B.get_manager()};
-      // int i_row{0};
-      // for (auto centerA : manager_a) {
-      //   auto && rowA{this->operator[](centerA)};
-      //   int i_col{0};
-      //   for (auto centerB : manager_b) {
-      //     auto && rowB{B[centerB]};
-      //     mat(i_row, i_col) = rowA.dot(rowB);
-      //     ++i_col;
-      //   }
-      //   ++i_row;
-      // }
       return mat;
     }
   };
