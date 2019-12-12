@@ -911,8 +911,8 @@ namespace rascal {
     }
 
     // strict is supposed to contain pairs 1 and 3
-    std::array<int, 2> low_pairs{1, 3};
-    std::array<int, 2> high_pairs{0, 1};
+    std::array<int, 2> low_pairs{{1, 3}};
+    std::array<int, 2> high_pairs{{0, 1}};
     counter = 0;
     for (auto && atom : *strict) {
       for (auto && pair : atom.pairs()) {
