@@ -109,16 +109,14 @@ namespace rascal {
         auto manager_a_it = managers_a.begin();
         for (size_t ii_A{0}; ii_A < managers_a.size(); ii_A++) {
           const auto & manager_a = *manager_a_it;
-          auto && propA{
-              *manager_a->template get_property<Property_t>(
-                  representation_name)};
+          auto && propA{*manager_a->template get_property<Property_t>(
+              representation_name)};
           kernel(ii_A, ii_A) = this->pow_zeta(propA.dot()).mean();
           auto manager_b_it = managers_a.begin() + ii_A + 1;
           for (size_t ii_B{ii_A + 1}; ii_B < managers_a.size(); ii_B++) {
             const auto & manager_b = *manager_b_it;
-            auto && propB{
-                *manager_b->template get_property<Property_t>(
-                    representation_name)};
+            auto && propB{*manager_b->template get_property<Property_t>(
+                representation_name)};
             kernel(ii_A, ii_B) = this->pow_zeta(propA.dot(propB)).mean();
             kernel(ii_B, ii_A) = kernel(ii_A, ii_B);
             ++manager_b_it;
@@ -194,18 +192,16 @@ namespace rascal {
           const auto & manager_a = *manager_a_it;
           auto a_size = manager_a->size();
           size_t iii_B{iii_A + a_size};
-          auto && propA{
-              *manager_a->template get_property<Property_t>(
-                  representation_name)};
+          auto && propA{*manager_a->template get_property<Property_t>(
+              representation_name)};
           kernel.block(iii_A, iii_A, a_size, a_size) =
               this->pow_zeta(propA.dot());
           auto manager_b_it = managers_a.begin() + ii_A + 1;
           for (size_t ii_B{ii_A + 1}; ii_B < managers_a.size(); ii_B++) {
             const auto & manager_b = *manager_b_it;
             auto b_size = manager_b->size();
-            auto && propB{
-                *manager_b->template get_property<Property_t>(
-                    representation_name)};
+            auto && propB{*manager_b->template get_property<Property_t>(
+                representation_name)};
             kernel.block(iii_A, iii_B, a_size, b_size) =
                 this->pow_zeta(propA.dot(propB));
             kernel.block(iii_B, iii_A, b_size, a_size) =

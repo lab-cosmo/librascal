@@ -817,7 +817,7 @@ namespace rascal {
 
     template <size_t CallerLayer>
     MatrixMap_Ref_t operator()(const ClusterRefKey<Order, CallerLayer> & id,
-                          const Key_t & key) {
+                               const Key_t & key) {
       // You are trying to access a property that does not exist at this depth
       // in the adaptor stack.
       assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
