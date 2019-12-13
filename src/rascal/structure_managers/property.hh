@@ -52,17 +52,17 @@ namespace rascal {
    * which can be access with clusters directly, without the need for dealing
    * with indices.
    */
-  template <typename T, size_t Order, size_t PropertyLayer, class Manager,
-            Dim_t NbRow = 1, Dim_t NbCol = 1>
-  class Property : public TypedProperty<T, Order, PropertyLayer, Manager> {
+  template <typename T, size_t Order, class Manager, Dim_t NbRow = 1,
+            Dim_t NbCol = 1>
+  class Property : public TypedProperty<T, Order, Manager> {
     static_assert((std::is_arithmetic<T>::value ||
                    std::is_same<T, std::complex<double>>::value),
                   "can currently only handle arithmetic types");
 
    public:
-    using Parent = TypedProperty<T, Order, PropertyLayer, Manager>;
+    using Parent = TypedProperty<T, Order, Manager>;
     using Manager_t = Manager;
-    using Self_t = Property<T, Order, PropertyLayer, Manager, NbRow, NbCol>;
+    using Self_t = Property<T, Order, Manager, NbRow, NbCol>;
     using Value = internal::Value<T, NbRow, NbCol>;
     static_assert(std::is_same<Value, internal::Value<T, NbRow, NbCol>>::value,
                   "type alias failed");
@@ -154,11 +154,10 @@ namespace rascal {
      */
     template <size_t CallerLayer>
     reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that "
-                    "does not exist at this depth in the "
-                    "adaptor stack.");
-      return this->operator[](id.get_cluster_index(CallerLayer));
+      // You are trying to access a property that does not exist at this depth
+      // in the adaptor stack.
+      assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
+      return this->operator[](id.get_cluster_index(this->get_property_layer()));
     }
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>

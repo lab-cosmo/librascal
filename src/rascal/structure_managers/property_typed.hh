@@ -153,13 +153,13 @@ namespace rascal {
    * `cluster_indices` the size needs to include space for the number of atoms
    * plus ghosts.
    */
-  template <typename T, size_t Order_, size_t PropertyLayer, class Manager>
+  template <typename T, size_t Order_, class Manager>
   class TypedProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using Value_t = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = Manager;
-    using Self_t = TypedProperty<T, Order_, PropertyLayer, Manager>;
+    using Self_t = TypedProperty<T, Order_, Manager>;
     using traits = typename Manager::traits;
     using Matrix_t = math::Matrix_t;
 
@@ -177,7 +177,7 @@ namespace rascal {
                  nb_row,
                  nb_col,
                  Order,
-                 PropertyLayer,
+                 manager.template cluster_layer_from_order<Order>(),
                  metadata},
           type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
 
@@ -278,10 +278,10 @@ namespace rascal {
     //! Property accessor by cluster ref
     template <size_t CallerLayer>
     reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-      return this->operator[](id.get_cluster_index(CallerLayer));
+      // You are trying to access a property that does not exist at this depth
+      // in the adaptor stack.
+      assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
+      return this->operator[](id.get_cluster_index(this->get_property_layer()));
     }
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order__ = Order>

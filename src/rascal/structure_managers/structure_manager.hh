@@ -100,11 +100,7 @@ namespace rascal {
         Manager, Order, std::index_sequence<LayersHead, LayersTail...>,
         std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
-      constexpr static auto ActiveLayer{
-          get_layer<Order>(typename traits::LayerByOrder{})};
-
-      using Property_t =
-          Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;
+      using Property_t = Property<size_t, Order, Manager, LayersHead + 1, 1>;
       using type = typename ClusterIndexPropertyComputer_Helper<
           Manager, Order + 1, std::index_sequence<LayersTail...>,
           std::tuple<TupComp..., Property_t>>::type;
@@ -120,11 +116,7 @@ namespace rascal {
                                                std::index_sequence<LayersHead>,
                                                std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
-      constexpr static auto ActiveLayer{
-          get_layer<Order>(typename traits::LayerByOrder{})};
-
-      using Property_t =
-          Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;
+      using Property_t = Property<size_t, Order, Manager, LayersHead + 1, 1>;
       using type = std::tuple<TupComp..., Property_t>;
     };
 
@@ -143,12 +135,16 @@ namespace rascal {
     template <typename Tup, typename Manager>
     struct ClusterIndexConstructor {};
 
+    template <typename PropertyType, typename Manager>
+    PropertyType make_individual_property(Manager & manager) {
+      return PropertyType{manager};
+    }
     //! Overload to build the tuple
     template <typename... PropertyTypes, typename Manager>
     struct ClusterIndexConstructor<std::tuple<PropertyTypes...>, Manager> {
       static std::tuple<PropertyTypes...> make(Manager & manager) {
         return std::tuple<PropertyTypes...>(
-            std::move(PropertyTypes(manager))...);
+            std::move(make_individual_property<PropertyTypes>(manager))...);
       }
     };
   }  // namespace internal
@@ -172,6 +168,8 @@ namespace rascal {
    public:
     using StructureManager_t = StructureManager<ManagerImplementation>;
     using traits = StructureManager_traits<ManagerImplementation>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
+    using ImplementationPtr_t = std::shared_ptr<PreviousManager_t>;
     //! type used to represent spatial coordinates, etc
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
@@ -181,6 +179,15 @@ namespace rascal {
         typename internal::ClusterIndexConstructor<ClusterIndex_t,
                                                    StructureManager_t>;
 
+    /**
+     * Checks if the current layer is the root of the stack e.g. the root of
+     * the stack AdaptorNeighbourList<StructureManagerCenters> is
+     * StructureManagerCenters. This boolean used for stopping recursive
+     * functions iterating through the whole stack.
+     */
+    constexpr static bool IsRootImplementation =
+        std::is_same<PreviousManager_t, ManagerImplementation>::value;
+
     //! helper to identify if Manager_t has TargetOrder,
     //! i.e. if  0 <= TargetOrder <= traits::MaxOrder
     template <size_t TargetOrder>
@@ -188,25 +195,19 @@ namespace rascal {
       return internal::is_order_available<TargetOrder>(
           std::make_index_sequence<traits::MaxOrder + 1>{});
     }
-    //! helper type for Property creation
+    //! helper type for Property creation: typed and sized
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
-    using Property_t =
-        Property<T, Order, get_layer<Order>(typename traits::LayerByOrder{}),
-                 StructureManager_t, NbRow, NbCol>;
+    using Property_t = Property<T, Order, StructureManager_t, NbRow, NbCol>;
 
-    //! helper type for Property creation
+    //! helper type for Property creation: only typed
     template <typename T, size_t Order>
-    using TypedProperty_t =
-        TypedProperty<T, Order,
-                      get_layer<Order>(typename traits::LayerByOrder{}),
-                      StructureManager_t>;
+    using TypedProperty_t = TypedProperty<T, Order, StructureManager_t>;
 
+    //! helper type for BlockSparseProperty creation: typed
     using Key_t = std::vector<int>;
     template <typename T, size_t Order>
     using BlockSparseProperty_t =
-        BlockSparseProperty<T, Order,
-                            get_layer<Order>(typename traits::LayerByOrder{}),
-                            StructureManager_t, Key_t>;
+        BlockSparseProperty<T, Order, StructureManager_t, Key_t>;
 
     //! type for the hyper parameter class
     using Hypers_t = json;
@@ -343,72 +344,118 @@ namespace rascal {
     }
 
     /**
-     * Attach a property to a StructureManager. A given calculated property is
-     * only reasonable if connected with a structure. It is also connected with
-     * a sanity check so that the naming of attached properties is unique. If a
-     * property with the desired `name` already exists, a runtime error is
-     * thrown.
+     * Helper function to check if a property with the specifier `name` has
+     * already been attached in the manager layer which invoked this function.
      */
-    void attach_property(const std::string & name,
-                         std::shared_ptr<PropertyBase> property) {
-      if (this->has_property(name)) {
-        std::stringstream error{};
-        error << "A property of name '" << name
-              << "' has already been registered";
-        throw std::runtime_error(error.str());
-      }
-      this->properties[name] = property;
+    inline bool is_property_in_current_level(const std::string & name) const {
+      return not(this->properties.find(name) == this->properties.end());
     }
 
     /**
      * Helper function to check if a property with the specifier `name` has
-     * already been attached.
+     * already been attached somewhere in the manager stack. Here an example how
+     * it works
+     *
+     * Property request forwarding in the case property exists
+     * AdaptorImpl2 -> has not prop1
+     *       | forwards request to lower stack
+     *       v
+     * AdaptorImpl1 has prop1 -> return true
+     * RootImpl
+     *
+     *
+     * Property request forwarding in the case property does not exist
+     * AdaptorImpl2
+     *       | forwards request to lower stack
+     *       v
+     * AdaptorImpl1
+     *       | forwards request to lower stack
+     *       v
+     * RootImpl -> return false
      */
-    bool has_property(const std::string & name) const {
-      return not(this->properties.find(name) == this->properties.end());
-    }
-
-    template <typename Property_t>
-    void create_property(const std::string & name) {
-      auto property{std::make_shared<Property_t>(this->implementation())};
-      this->attach_property(name, property);
-    }
-
-    template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
-    void create_property(const std::string & name) {
-      return create_property<Property_t<T, Order, NbRow, NbCol>>(name);
-    }
-
-    //! Accessor for an attached property with a specifier as a string
-    std::shared_ptr<PropertyBase> get_property(const std::string & name) const {
-      if (not this->has_property(name)) {
-        std::stringstream error{};
-        error << "No property of name '" << name << "' has been registered";
-        throw std::runtime_error(error.str());
+    template <bool IsRoot = IsRootImplementation,
+              std::enable_if_t<IsRoot, int> = 0>
+    inline bool is_property_in_stack(const std::string & name) {
+      if (this->is_property_in_current_level(name)) {
+        return true;
       }
-      return this->properties.at(name);
+      return false;
+    }
+
+    template <bool IsRoot = IsRootImplementation,
+              std::enable_if_t<not(IsRoot), int> = 0>
+    inline bool is_property_in_stack(const std::string & name) {
+      if (this->is_property_in_current_level(name)) {
+        return true;
+      }
+      return this->get_previous_manager()->is_property_in_stack(name);
     }
 
     /**
-     *  Checks if the property type of user matches the actual stored
-     *  property.
+     * Attach a property to a StructureManager. It is also connected with
+     * a sanity check so that the naming of attached properties is unique. If a
+     * property with the desired `name` already exists, a runtime error is
+     * thrown.
+     *
+     * @tparam UserProperty_t the user property type
+     * @param name the name of the property to create.
+     *
+     * @throw runtime_error if property with name does already exist
+     * @return reference of to `UserProperty`
+     *
+     */
+    template <typename UserProperty_t>
+    UserProperty_t &
+    create_property(const std::string & name, const bool exclude_ghosts = false,
+                    const std::string & metadata = "no metadata") {
+      if (this->is_property_in_stack(name)) {
+        std::stringstream error{};
+        error << "A property of name '" << name
+              << "' has already been registered"
+              << " in manager '" << this->get_name() << "'";
+        throw std::runtime_error(error.str());
+      } else {
+        auto property{std::make_shared<UserProperty_t>(
+            this->implementation(), metadata, exclude_ghosts)};
+        this->properties[name] = property;
+        return *property;
+      }
+    }
+
+    /**
+     * Checks if the user property type matches the  type of the stored
+     * propertys
+     *
+     * @tparam UserProperty_t the user property type
+     * @throw runtime_error if property with name does not exist
+     * @return true if the type matches otherwise false
      */
     template <typename UserProperty_t>
     bool check_property_t(const std::string & name) const {
-      auto property = get_property(name);
-      try {
-        UserProperty_t::check_compatibility(*property);
-      } catch (const std::runtime_error &) {
-        return false;
+      if (not(this->is_property_in_stack(name))) {
+        std::stringstream error{};
+        error << "A property of name '" << name << "' does not exist"
+              << " in manager '" << this->get_name() << "'";
+        throw std::runtime_error(error.str());
+      } else {
+        auto && property = this->forward_get_property_request(name, false);
+        try {
+          UserProperty_t::check_compatibility(*property);
+        } catch (const std::runtime_error & error) {
+          return false;
+        }
+        return true;
       }
-      return true;
     }
 
     /**
-     * Throws an error if property type given from user does not match actual
-     * property type.
-     * TO(all) Is the try and catch need here ? it will throw in the respective
-     * check_compatibility and we get the full stack with the debugger.
+     * Throws an error if property type given from user does not match the type
+     * of the property in the argument. It is comparede if template parameter
+     * within the UserProperty is in agreement with the stored property of the
+     * given name.
+     *
+     * @throw runtime_error if property with name does not exists
+     * @return void
      */
     template <typename UserProperty_t>
     void validate_property_t(std::shared_ptr<PropertyBase> property) const {
@@ -423,88 +470,165 @@ namespace rascal {
 
     template <typename UserProperty_t>
     void validate_property_t(const std::string & name) const {
-      auto property = this->get_property(name);
+      auto property = this->template get_property<UserProperty_t>(name, false);
       this->template validate_property_t<UserProperty_t>(property);
     }
 
-    // #BUG8486@(till) I made the function but I don't use it, because if you
-    // keep a reference of an object as member variable, you have to initialize
-    // it in the initialization list of the constructor. The property is not
-    // created until the adaptor's update function is invoked. So I would need
-    // to give the adaptor a dummy property object for initialization. I dont
-    // think this is a nice solution.
-    template <typename UserProperty_t>
-    UserProperty_t &
-    get_validated_property_ref(const std::string & name) const {
-      return *this->get_validated_property<UserProperty_t>(name);
-    }
-
     /**
-     *  Returns the typed property. Throws an error if property type given from
-     *  user does not match actual property type.
-     */
-    template <typename UserProperty_t>
-    std::shared_ptr<UserProperty_t>
-    get_validated_property(const std::string & name) const {
-      auto property = this->get_property(name);
-      this->template validate_property_t<UserProperty_t>(property);
-      return std::static_pointer_cast<UserProperty_t>(property);
-    }
-
-    void register_property(std::shared_ptr<PropertyBase> property,
-                           const std::string & name) {
-      this->properties[name] = property;
-    }
-
-    /**
-     * Get a atom property of a given name, possibly excluding ghosts. Create it
-     * if it does not exist.
+     * Returns a typed property of the given name.
      *
-     * @tparam UserProperty_t full type of the property to return
+     * @tparam UserProperty_t full type of the property to return.
      *
-     * @param name name of the property to get
-     *
+     * @param name the name of the property to get.
+     * @param validate_property property is validated if this parameter is true,
+     * see validate_property_t
+     * @param force_creation if the property does not exist in the manager stack
+     * the property is created and returned. The validation step is skipped in
+     * this case.
      * @param exclude_ghosts change property sizing behavior when Order == 1
      * and when the property does not already exist.
+
      *
-     * @throw runtime_error if UserProperty_t is not compatible with property
-     * of the given name
+     * @throw runtime_error If validate_property is true and UserProperty_t is
+     * not compatible with the property with the given name.
+     * @throw runtime_error If force_creation is false and property has not been
+     * found in manager stack.
      */
     template <typename UserProperty_t>
     std::shared_ptr<UserProperty_t>
-    get_property_ptr(const std::string & name,
-                     const bool & exclude_ghosts = false,
-                     const std::string & metadata = "no metadata") {
-      if (this->has_property(name)) {
-        auto property{this->get_property(name)};
-        UserProperty_t::check_compatibility(*property);
-        return std::static_pointer_cast<UserProperty_t>(property);
-      } else {
+    get_property(const std::string & name, const bool validate_property = true,
+                 const bool force_creation = false,
+                 const bool exclude_ghosts = false,
+                 const std::string & metadata = "no metadata") {
+      bool is_property_in_stack{this->is_property_in_stack(name)};
+      if (is_property_in_stack) {
+        return this->template forward_get_property_request<UserProperty_t>(
+            name, validate_property);
+      } else if (not(is_property_in_stack) && force_creation) {
         auto property{std::make_shared<UserProperty_t>(
             this->implementation(), metadata, exclude_ghosts)};
-        this->register_property(property, name);
+        this->properties[name] = property;
         return property;
+      } else {
+        std::stringstream error{};
+        error << "No property of name '" << name << "' has been registered";
+        throw std::runtime_error(error.str());
       }
     }
 
-    template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
-    std::shared_ptr<Property_t<T, Order, NbRow, NbCol>>
-    get_property(const std::string & name) const {
-      return this
-          ->template get_validated_property<Property_t<T, Order, NbRow, NbCol>>(
-              name);
-    }
-
-    void set_updated_property_status(bool is_updated) {
+    /**
+     * to keep track if the property is up to date with the structure
+     */
+    template <bool IsRoot = IsRootImplementation,
+              std::enable_if_t<IsRoot, int> = 0>
+    inline void set_updated_property_status(const bool is_updated) {
       for (auto & element : this->properties) {
         auto & property{element.second};
         property->set_updated_status(is_updated);
       }
     }
 
+    template <bool IsRoot = IsRootImplementation,
+              std::enable_if_t<not(IsRoot), int> = 0>
+    inline void set_updated_property_status(const bool is_updated) {
+      for (auto & element : this->properties) {
+        auto & property{element.second};
+        property->set_updated_status(is_updated);
+      }
+      return this->get_previous_manager()->set_updated_property_status(
+          is_updated);
+    }
+
     void set_updated_property_status(const std::string & name,
                                      bool is_updated) {
-      this->properties[name]->set_updated_status(is_updated);
+      if (this->is_property_in_current_level(name)) {
+        this->properties[name]->set_updated_status(is_updated);
+        return;
+      } else {
+        std::stringstream error{};
+        error << "A property of name '" << name << "' does not exist"
+              << " in manager '" << this->get_name() << "' on top layer";
+        throw std::runtime_error(error.str());
+      }
+    }
+
+    /**
+     * Forwards property requests to lower layers. Usually to get a property
+     * the `get_propertp_ptr` or `get_property_ref` function should be used.
+     * This function is however still public because of each structure manager
+     * needs to be able to access it from the previous manager.
+     */
+    template <typename UserProperty_t, bool IsRoot = IsRootImplementation,
+              std::enable_if_t<IsRoot, int> = 0>
+    std::shared_ptr<UserProperty_t>
+    forward_get_property_request(const std::string & name,
+                                 const bool validate_property) {
+      if (this->is_property_in_current_level(name)) {
+        auto property = this->properties.at(name);
+        if (validate_property) {
+          this->template validate_property_t<UserProperty_t>(property);
+        }
+        return std::static_pointer_cast<UserProperty_t>(property);
+      } else {
+        std::stringstream error{};
+        error << "A property of name '" << name << "' does not exist"
+              << " in manager '" << this->get_name() << "'";
+        throw std::runtime_error(error.str());
+      }
+    }
+
+    /**
+     * Returns the property of the given name. Assumes that the property exists
+     * somewhere in the stack, therefore applies no checks.
+     *
+     * @tparam UserProperty_t full type of the property to return.
+     *
+     * @param name the name of the property.
+     * @param validate_property the property is validated if flag is true.
+     *
+     * It is
+     * compared if each template parameter within the UserProperty is in
+     * agreement with the stored property of the given name.
+     *
+     * @throw  runtime error if property name does not exist.
+     * @throw  runtime error if property with name does not comply with given
+     *         user property type
+     */
+    template <typename UserProperty_t, bool IsRoot = IsRootImplementation,
+              std::enable_if_t<not(IsRoot), int> = 0>
+    std::shared_ptr<UserProperty_t>
+    forward_get_property_request(const std::string & name,
+                                 bool validate_property) {
+      if (this->is_property_in_current_level(name)) {
+        auto property = this->properties.at(name);
+        if (validate_property) {
+          this->template validate_property_t<UserProperty_t>(property);
+        }
+        return std::static_pointer_cast<UserProperty_t>(property);
+      } else {
+        return this->get_previous_manager()
+            ->template forward_get_property_request<UserProperty_t>(
+                name, validate_property);
+      }
+    }
+
+    template <size_t Order, size_t Layer,
+              bool HasDistances = traits::HasDistances,
+              typename std::enable_if_t<HasDistances, int> = 0>
+    inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
+      static_assert(HasDistances == traits::HasDistances,
+                    "The manager does not have distances.");
+      return this->get_previous_manager()->get_distance(pair);
+    }
+
+    template <size_t Order, size_t Layer,
+              bool HasDirectionVectors = traits::HasDirectionVectors,
+              typename std::enable_if_t<HasDirectionVectors, int> = 0>
+    inline const Vector_ref
+    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) {
+      static_assert(HasDirectionVectors == traits::HasDirectionVectors,
+                    "The manager does not have direction vectors.");
+      return this->get_previous_manager()->get_direction_vector(pair);
     }
 
     //! Get the full type of the structure manager
@@ -603,6 +727,14 @@ namespace rascal {
       }
     }
 
+    size_t get_property_layer(const size_t & order) const {
+      return get_dyn_layer<traits::MaxOrder>(order,
+                                             typename traits::LayerByOrder{});
+    }
+    ImplementationPtr_t get_previous_manager() {
+      return this->implementation().get_previous_manager_impl();
+    }
+
    protected:
     /**
      * Update itself and send update signal to children nodes
@@ -631,9 +763,9 @@ namespace rascal {
       return std::array<int, 0>{};
     }
 
-    /* Returns the cluster size in given order and layer. Because this function
-     * is invoked with with ClusterRefKey<1, Layer> the ParentLayer and
-     * NeighbourLayer have to be optional for the case Order = 1.
+    /* Returns the cluster size in given order and layer. Because this
+     * function is invoked with with ClusterRefKey<1, Layer> the ParentLayer
+     * and NeighbourLayer have to be optional for the case Order = 1.
      */
 
     //! returns a reference to itself
@@ -682,8 +814,7 @@ namespace rascal {
     std::map<std::string, std::shared_ptr<PropertyBase>> properties{};
   };
 
-  /* ----------------------------------------------------------------------
-   */
+  /* ---------------------------------------------------------------------- */
   namespace internal {
     //! helper function that allows to append extra elements to an array It
     //! returns the given array, plus one element
@@ -723,17 +854,11 @@ namespace rascal {
                                  std::make_integer_sequence<int, Size2>{});
     }
 
-    // #BUG8486@(till) changed name Counters to Container, because we handle an
-    // object which can be as manager or clusterref, and this is is name
-    // container in the iterator, counters is used for the the list of all
-    // iterator indices
-    /* ----------------------------------------------------------------------
-     */
+    /* ---------------------------------------------------------------------- */
     /**
      * static branching to redirect to the correct function to get sizes,
      * offsets and neighbours. Used later by adaptors which modify or extend
      * the neighbourlist to access the correct offset.
-     *
      */
     template <bool AtMaxOrder>
     struct IncreaseHelper {
@@ -746,8 +871,9 @@ namespace rascal {
       }
     };
 
-    //! specialization for not at MaxOrder, these refer to the underlying
-    //! manager
+    /**
+     * specialization for not at MaxOrder, these refer to the underlying manager
+     */
     template <>
     struct IncreaseHelper<false> {
       template <class Manager_t, class Container_t>
@@ -1095,8 +1221,8 @@ namespace rascal {
     }
 
     /**
-     * Return an iterable for Order == 2 that includes the neighbors (or pairs)
-     * associated with the current central atom.
+     * Return an iterable for Order == 2 that includes the neighbors (or
+     * pairs) associated with the current central atom.
      */
     template <bool C = IsOrderOneAndHasOrder<2>, std::enable_if_t<C, int> = 0>
     CustomProxy<2> pairs() {

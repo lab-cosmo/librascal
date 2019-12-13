@@ -1127,11 +1127,10 @@ namespace rascal {
     using Key_t = typename Parent::Key_t;
 
     template <class StructureManager>
-    using Property_t =
-        BlockSparseProperty<double, 1, 0, StructureManager, Key_t>;
+    using Property_t = BlockSparseProperty<double, 1, StructureManager, Key_t>;
     template <class StructureManager>
     using PropertyGradient_t =
-        BlockSparseProperty<double, 2, 0, StructureManager, Key_t>;
+        BlockSparseProperty<double, 2, StructureManager, Key_t>;
 
     template <class StructureManager>
     using Dense_t = typename Property_t<StructureManager>::Dense_t;
@@ -1640,12 +1639,12 @@ namespace rascal {
     using math::pow;
 
     constexpr bool ExcludeGhosts{true};
-    auto && expansions_coefficients{*manager->template get_property_ptr<Prop_t>(
-        this->get_name(), ExcludeGhosts)};
+    auto && expansions_coefficients{*manager->template get_property<Prop_t>(
+        this->get_name(), true, true, ExcludeGhosts)};
 
     auto && expansions_coefficients_gradient{
-        *manager->template get_property_ptr<PropGrad_t>(
-            this->get_gradient_name())};
+        *manager->template get_property<PropGrad_t>(this->get_gradient_name(),
+                                                    true, true)};
 
     // if the representation has already been computed for the current
     // structure then do nothing

@@ -53,6 +53,9 @@ namespace rascal {
     constexpr static bool HasCenterPair{false};
     constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0, 0>;
+    constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
+        AdaptorTraits::NeighbourListType::half};
+    using PreviousManager_t = StructureManagerLammps;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -62,6 +65,7 @@ namespace rascal {
         public std::enable_shared_from_this<StructureManagerLammps> {
    public:
     using traits = StructureManager_traits<StructureManagerLammps>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
@@ -212,6 +216,15 @@ namespace rascal {
                      double * eatom, double ** vatom);
 
    protected:
+    /**
+     * Get a ptr of the previous manager, required for forwarding requests
+     * downwards a stack. Since there is no last manager, the manager returns
+     * itself.
+     */
+    ImplementationPtr_t get_previous_manager_impl() {
+      return shared_from_this();
+    }
+
     int inum{};           //!< total numer of atoms
     int tot_num{};        //!< total number, includes ghosts
     int * ilist{};        //!< atomic indices

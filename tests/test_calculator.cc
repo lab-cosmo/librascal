@@ -152,8 +152,8 @@ namespace rascal {
         representations.emplace_back(hyper);
         representations.back().compute(manager);
         ManagerCollection_t collection{};
-        auto & prop = manager->template get_validated_property_ref<Property_t>(
-            representations.back().get_name());
+        auto & prop = *manager->template get_property<Property_t>(
+            representations.back().get_name(), true);
         math::Matrix_t feat_prop = prop.get_features();
         collection.add_structure(manager);
         math::Matrix_t feat_col =
@@ -209,8 +209,8 @@ namespace rascal {
         representations.emplace_back(hyper);
         std::string property_name{representations.back().get_name()};
         representations.back().compute(manager);
-        auto prop{manager->template get_validated_property<Property_t>(
-            property_name)};
+        auto prop{manager->template get_property<Property_t>(
+            representations.back().get_name(), true)};
         BOOST_CHECK_EQUAL(prop->get_nb_item(), 1);
       }
     }
@@ -261,13 +261,13 @@ namespace rascal {
         representation.compute(manager);
         representation.compute(manager_no_center);
 
-        auto & prop = manager->template get_validated_property_ref<Property_t>(
-            representation.get_name());
+        auto & prop = *manager->template get_property<Property_t>(
+            representation.get_name(), true);
         math::Matrix_t rep_full = prop.get_features();
 
         auto & prop_no_center =
-            manager_no_center->template get_validated_property_ref<Property_t>(
-                representation.get_name());
+            *manager_no_center->template get_property<Property_t>(
+                representation.get_name(), true);
         math::Matrix_t rep_no_center = prop_no_center.get_features();
 
         BOOST_CHECK_EQUAL(rep_full.cols(), rep_no_center.cols());
@@ -335,8 +335,7 @@ namespace rascal {
           std::string property_name{representations.back().get_gradient_name()};
           representations.back().compute(manager);
           auto && prop_grad{
-              *manager->template get_validated_property<PropGrad_t>(
-                  property_name)};
+              *manager->template get_property<PropGrad_t>(property_name, true)};
           for (auto center : manager) {
             auto ii_pair = center.get_atom_ii();
             auto keys_grad_center = prop_grad.get_keys(ii_pair);
@@ -420,8 +419,7 @@ namespace rascal {
         representations.back().compute(manager);
         auto property_name{representations.back().get_name()};
         auto && property{
-            manager->template get_validated_property_ref<Property_t>(
-                property_name)};
+            *manager->template get_property<Property_t>(property_name, true)};
         auto test_representation = property.get_features();
 
         auto diff_rep{math::relative_error(
@@ -620,25 +618,35 @@ namespace rascal {
         representation.compute(manager);
         representation.compute(manager_half);
 
-        auto && rep_vectors{*manager->template get_property_ptr<Prop_t>(
-            representation.get_name())};
+        auto && rep_vectors{
+            *manager->template get_property<Prop_t>(representation.get_name())};
         auto && rep_vectors_half{
-            *manager_half->template get_property_ptr<PropHalf_t>(
+            *manager_half->template get_property<PropHalf_t>(
                 representation.get_name())};
 
         auto && rep_vector_gradients{
-            *manager->template get_property_ptr<PropGrad_t>(
+            *manager->template get_property<PropGrad_t>(
                 representation.get_gradient_name())};
         auto && rep_vector_gradients_half{
-            *manager_half->template get_property_ptr<PropGradHalf_t>(
+            *manager_half->template get_property<PropGradHalf_t>(
                 representation.get_gradient_name())};
 
         size_t center_count{0};
         for (auto center : manager) {
+          /**
+           * To be able to compare the computed values of the full neighbour
+           * minimal neighbour list with the values in the full list, a second
+           * iterator over the manager with the minimal neighbour list is
+           * needed. `center_half` refers to the same `center` atom structure
+           * wise, but its values have been computed making using of a minimal
+           * neighbourlist.
+           */
+          auto it_half = manager_half->get_iterator_at(center_count, 0);
+          auto center_half = *(it_half);
           // compare the representation coefficients
           auto diff_rep_m{math::relative_error(
               rep_vectors.get_dense_row(center),
-              rep_vectors_half.get_dense_row(center), delta, epsilon)};
+              rep_vectors_half.get_dense_row(center_half), delta, epsilon)};
           double diff_rep = diff_rep_m.maxCoeff();
           BOOST_TEST(diff_rep < delta);
           if (verbose and diff_rep > delta) {
@@ -654,10 +662,8 @@ namespace rascal {
             std::cout << std::endl;
           }
 
-          auto half_it = manager_half->get_iterator_at(center_count, 0);
-          auto half_center = *(half_it);
           auto ii_pair = center.get_atom_ii();
-          auto ii_half_pair = half_center.get_atom_ii();
+          auto ii_half_pair = center_half.get_atom_ii();
 
           // compare the representation gradient coefficients at the ii pair
           auto diff_rep_grad_center_m{math::relative_error(
@@ -688,7 +694,7 @@ namespace rascal {
               continue;
             }
 
-            auto half_neigh_it = half_center.pairs().begin();
+            auto half_neigh_it = center_half.pairs().begin();
             for (size_t ii{0}; ii < neigh_count; ii++) {
               ++half_neigh_it;
             }

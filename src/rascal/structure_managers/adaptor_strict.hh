@@ -58,6 +58,7 @@ namespace rascal {
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     using LayerByOrder =
         typename LayerIncreaser<typename parent_traits::LayerByOrder>::type;
+    using PreviousManager_t = ManagerImplementation;
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         parent_traits::NeighbourListType};
   };
@@ -84,6 +85,7 @@ namespace rascal {
     using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorStrict>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
@@ -219,7 +221,7 @@ namespace rascal {
     }
 
     //! Get the manager used to build the instance
-    ImplementationPtr_t get_previous_manager() {
+    ImplementationPtr_t get_previous_manager_impl() {
       return this->manager->get_shared_ptr();
     }
 
@@ -380,9 +382,10 @@ namespace rascal {
     }
 
     //! initialise the distance storage
-    this->distance = this->template get_property_ptr<Distance_t>("distance");
+    this->distance =
+        this->template get_property<Distance_t>("distance", false, true);
     this->dir_vec =
-        this->template get_property_ptr<DirectionVector_t>("dir_vec");
+        this->template get_property<DirectionVector_t>("dir_vec", false, true);
 
     this->distance->clear();
     this->dir_vec->clear();

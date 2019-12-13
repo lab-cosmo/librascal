@@ -85,13 +85,11 @@ namespace rascal {
         size_t ii_A{0};
         for (auto & manager_a : managers_a) {
           size_t ii_B{0};
-          auto && propA{
-              manager_a->template get_validated_property_ref<Property_t>(
-                  representation_name)};
+          auto && propA{*manager_a->template get_property<Property_t>(
+              representation_name, true)};
           for (auto & manager_b : managers_b) {
-            auto && propB{
-                manager_b->template get_validated_property_ref<Property_t>(
-                    representation_name)};
+            auto && propB{*manager_b->template get_property<Property_t>(
+                representation_name, true)};
 
             kernel(ii_A, ii_B) = this->pow_zeta(propA.dot(propB)).mean();
             ++ii_B;
@@ -108,21 +106,24 @@ namespace rascal {
       math::Matrix_t compute(StructureManagers & managers_a,
                              const std::string & representation_name) {
         math::Matrix_t kernel(managers_a.size(), managers_a.size());
-
+        auto manager_a_it = managers_a.begin();
         for (size_t ii_A{0}; ii_A < managers_a.size(); ii_A++) {
-          const auto manager_a = managers_a[ii_A];
+          const auto & manager_a = *manager_a_it;
           auto && propA{
-              manager_a->template get_validated_property_ref<Property_t>(
+              *manager_a->template get_property<Property_t>(
                   representation_name)};
           kernel(ii_A, ii_A) = this->pow_zeta(propA.dot()).mean();
+          auto manager_b_it = managers_a.begin() + ii_A + 1;
           for (size_t ii_B{ii_A + 1}; ii_B < managers_a.size(); ii_B++) {
-            const auto manager_b = managers_a[ii_B];
+            const auto & manager_b = *manager_b_it;
             auto && propB{
-                manager_b->template get_validated_property_ref<Property_t>(
+                *manager_b->template get_property<Property_t>(
                     representation_name)};
             kernel(ii_A, ii_B) = this->pow_zeta(propA.dot(propB)).mean();
             kernel(ii_B, ii_A) = kernel(ii_A, ii_B);
+            ++manager_b_it;
           }
+          ++manager_a_it;
         }
         return kernel;
       }
@@ -160,14 +161,12 @@ namespace rascal {
         for (auto & manager_a : managers_a) {
           size_t ii_B{0};
           auto a_size = manager_a->size();
-          auto && propA{
-              manager_a->template get_validated_property_ref<Property_t>(
-                  representation_name)};
+          auto && propA{*manager_a->template get_property<Property_t>(
+              representation_name, true)};
           for (auto & manager_b : managers_b) {
             auto b_size = manager_b->size();
-            auto && propB{
-                manager_b->template get_validated_property_ref<Property_t>(
-                    representation_name)};
+            auto && propB{*manager_b->template get_property<Property_t>(
+                representation_name, true)};
 
             kernel.block(ii_A, ii_B, a_size, b_size) =
                 this->pow_zeta(propA.dot(propB));
@@ -190,28 +189,32 @@ namespace rascal {
 
         math::Matrix_t kernel(n_centersA, n_centersA);
         size_t iii_A{0};
+        auto manager_a_it = managers_a.begin();
         for (size_t ii_A{0}; ii_A < managers_a.size(); ii_A++) {
-          const auto manager_a = managers_a[ii_A];
+          const auto & manager_a = *manager_a_it;
           auto a_size = manager_a->size();
           size_t iii_B{iii_A + a_size};
           auto && propA{
-              manager_a->template get_validated_property_ref<Property_t>(
+              *manager_a->template get_property<Property_t>(
                   representation_name)};
           kernel.block(iii_A, iii_A, a_size, a_size) =
               this->pow_zeta(propA.dot());
+          auto manager_b_it = managers_a.begin() + ii_A + 1;
           for (size_t ii_B{ii_A + 1}; ii_B < managers_a.size(); ii_B++) {
-            const auto manager_b = managers_a[ii_B];
+            const auto & manager_b = *manager_b_it;
             auto b_size = manager_b->size();
             auto && propB{
-                manager_b->template get_validated_property_ref<Property_t>(
+                *manager_b->template get_property<Property_t>(
                     representation_name)};
             kernel.block(iii_A, iii_B, a_size, b_size) =
                 this->pow_zeta(propA.dot(propB));
             kernel.block(iii_B, iii_A, b_size, a_size) =
                 kernel.block(iii_A, iii_B, a_size, b_size).transpose();
             iii_B += b_size;
+            ++manager_b_it;
           }
           iii_A += a_size;
+          ++manager_a_it;
         }
         return kernel;
       }
