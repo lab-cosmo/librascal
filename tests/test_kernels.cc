@@ -65,32 +65,23 @@ namespace rascal {
     auto & representations = Fix::representations;
     auto & collections = Fix::collections;
     auto & ref_data = Fix::ParentA::ref_data;
-
+    const double delta{1e-10};
     BOOST_CHECK_EQUAL(collections.size(), ref_data.size());
     for (size_t i_collection{0}; i_collection < ref_data.size();
          ++i_collection) {
       auto & collection = collections[i_collection];
       BOOST_CHECK_EQUAL(kernels.size(), ref_data[i_collection].size());
       for (size_t i_rep{0}; i_rep < ref_data[i_collection].size(); ++i_rep) {
+        auto ref_mat = ref_data[i_collection][i_rep]["kernel_matrix"]
+                           .template get<math::Matrix_t>();
         auto & rep = representations[i_rep];
         auto & kernel = kernels[i_rep];
         rep.compute(collection);
         auto mat = kernel.compute(rep, collection, collection);
-        auto ref_mat = ref_data[i_collection][i_rep]["kernel_matrix"]
-                           .template get<math::Matrix_t>();
-        double max_error{0.};
-        BOOST_TEST(mat.rows() == ref_mat.rows());
-        BOOST_TEST(mat.cols() == ref_mat.cols());
-        for (int i_row{0}; i_row < mat.rows(); ++i_row) {
-          for (int i_col{0}; i_col < mat.cols(); ++i_col) {
-            auto error_ = std::abs(mat(i_row, i_col) - ref_mat(i_row, i_col));
-            if (max_error < error_) {
-              max_error = error_;
-            }
-          }
-        }
-        BOOST_CHECK_LE(max_error, 6e-13);
-        if (max_error > 6e-13) {
+        auto diff_m{math::relative_error(ref_mat, mat, delta)};
+        double diff = diff_m.maxCoeff();
+        BOOST_TEST(diff < delta);
+        if (diff > delta) {
           std::cout << ref_data[i_collection][i_rep]["hypers_kernel"].dump()
                     << std::endl;
           std::cout << ref_data[i_collection][i_rep]["hypers_rep"].dump()
@@ -98,6 +89,63 @@ namespace rascal {
           std::cout << mat.row(0) << std::endl;
           std::cout << ref_mat.row(0) << std::endl;
         }
+
+        auto mat_sym = kernel.compute(rep, collection);
+        diff_m = math::relative_error(ref_mat, mat_sym, delta);
+        diff = diff_m.maxCoeff();
+        BOOST_TEST(diff < delta);
+      }
+    }
+  }
+
+  /**
+   * Tests that the Spherical invariant give the same kernel with different
+   * expansion_by_species_method
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(species_method_test, Fix,
+                                   multiple_ref_fixtures, Fix) {
+    using Calculator_t = typename Fix::Calculator_t;
+    auto & kernels = Fix::kernels;
+    auto & representation_hypers = Fix::ParentB::representation_hypers;
+    auto & collections = Fix::collections;
+    auto & ref_data = Fix::ParentA::ref_data;
+    const double delta{1e-10};
+    BOOST_CHECK_EQUAL(collections.size(), ref_data.size());
+    for (size_t i_collection{0}; i_collection < ref_data.size();
+         ++i_collection) {
+      auto & collection = collections[i_collection];
+      BOOST_CHECK_EQUAL(kernels.size(), ref_data[i_collection].size());
+      for (size_t i_rep{0}; i_rep < ref_data[i_collection].size(); ++i_rep) {
+        auto ref_mat = ref_data[i_collection][i_rep]["kernel_matrix"]
+                           .template get<math::Matrix_t>();
+
+        auto & rep_hypers = representation_hypers[i_rep];
+        auto & kernel = kernels[i_rep];
+        rep_hypers["expansion_by_species_method"] = "environment wise";
+        Calculator_t rep_env_wise{rep_hypers};
+        rep_env_wise.compute(collection);
+        auto mat = kernel.compute(rep_env_wise, collection);
+        auto diff_m{math::relative_error(ref_mat, mat, delta)};
+        double diff = diff_m.maxCoeff();
+        BOOST_TEST(diff < delta);
+
+        rep_hypers["expansion_by_species_method"] = "environment wise";
+        Calculator_t rep_structure_wise{rep_hypers};
+        rep_structure_wise.compute(collection);
+        mat = kernel.compute(rep_structure_wise, collection);
+        diff_m = math::relative_error(ref_mat, mat, delta);
+        diff = diff_m.maxCoeff();
+        BOOST_TEST(diff < delta);
+
+        rep_hypers["expansion_by_species_method"] = "user defined";
+        std::vector<int> global_species{1, 6, 7, 8};
+        rep_hypers["global_species"] = global_species;
+        Calculator_t rep_user_defined{rep_hypers};
+        rep_user_defined.compute(collection);
+        mat = kernel.compute(rep_user_defined, collection);
+        diff_m = math::relative_error(ref_mat, mat, delta);
+        diff = diff_m.maxCoeff();
+        BOOST_TEST(diff < delta);
       }
     }
   }
