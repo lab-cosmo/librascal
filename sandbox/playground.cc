@@ -71,8 +71,8 @@ int main() {
 
   double cutoff{3.};
 
-  json hypers{{"max_radial", 3},
-              {"max_angular", 2},
+  json hypers{{"max_radial", 6},
+              {"max_angular", 6},
               {"compute_gradients", false},
               {"soap_type", "PowerSpectrum"},
               {"normalize", true},
