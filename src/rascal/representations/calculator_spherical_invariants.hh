@@ -1272,6 +1272,7 @@ namespace rascal {
       keys_list_grad.emplace_back(keys);
 
       for (auto neigh : center.pairs()) {
+        (void)neigh; // to avoid compiler warning
         keys_list_grad.emplace_back(keys);
       }
     }

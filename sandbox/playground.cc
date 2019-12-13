@@ -66,21 +66,6 @@ int main() {
   std::string filename{"../../../reference_data/inputs/small_molecules-20.json"};
 
   double cutoff{3.};
-  json hypers{{"max_radial", 6},
-              {"max_angular", 6},
-              {"compute_gradients", true},
-              {"soap_type", "PowerSpectrum"},
-              {"normalize", true}};
-
-  json fc_hypers{{"type", "ShiftedCosine"},
-                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
-                 {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
-  json sigma_hypers{{"type", "Constant"},
-                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
-
-  hypers["cutoff_function"] = fc_hypers;
-  hypers["gaussian_density"] = sigma_hypers;
-  hypers["radial_contribution"] = {{"type", "GTO"}};
 
   json hypers{{"max_radial", 6},
               {"max_angular", 6},
