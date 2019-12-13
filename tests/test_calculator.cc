@@ -618,8 +618,8 @@ namespace rascal {
         representation.compute(manager);
         representation.compute(manager_half);
 
-        auto && rep_vectors{*manager->template get_property<Prop_t>(
-            representation.get_name())};
+        auto && rep_vectors{
+            *manager->template get_property<Prop_t>(representation.get_name())};
         auto && rep_vectors_half{
             *manager_half->template get_property<PropHalf_t>(
                 representation.get_name())};

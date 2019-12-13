@@ -87,7 +87,6 @@ struct traits<RootImplementation> {
 class RootImplementation
     : public Interface<RootImplementation>,
       public std::enable_shared_from_this<RootImplementation> {
-
  public:
   using this_traits = traits<RootImplementation>;
   typedef typename this_traits::underlying_manager_t underlying_manager_t;
