@@ -357,7 +357,7 @@ namespace rascal {
      * Helper function to check if a property with the specifier `name` has
      * already been attached in the manager layer which invoked this function.
      */
-    inline bool has_layer_property(const std::string & name) const {
+    inline bool is_property_in_current_layer(const std::string & name) const {
       return not(this->properties.find(name) == this->properties.end());
     }
 
@@ -385,8 +385,8 @@ namespace rascal {
      */
     template <bool IsRoot = IsRootImplementation,
               std::enable_if_t<IsRoot, int> = 0>
-    inline bool has_stack_property(const std::string & name) {
-      if (this->has_layer_property(name)) {
+    inline bool is_property_in_stack(const std::string & name) {
+      if (this->is_property_in_current_layer(name)) {
         return true;
       }
       return false;
@@ -394,11 +394,11 @@ namespace rascal {
 
     template <bool IsRoot = IsRootImplementation,
               std::enable_if_t<not(IsRoot), int> = 0>
-    inline bool has_stack_property(const std::string & name) {
-      if (this->has_layer_property(name)) {
+    inline bool is_property_in_stack(const std::string & name) {
+      if (this->is_property_in_current_layer(name)) {
         return true;
       }
-      return this->get_previous_manager()->has_stack_property(name);
+      return this->get_previous_manager()->is_property_in_stack(name);
     }
 
     /**
@@ -417,7 +417,7 @@ namespace rascal {
     void create_property(const std::string & name,
                          const bool exclude_ghosts = false,
                          const std::string & metadata = "no metadata") {
-      if (this->has_stack_property(name)) {
+      if (this->is_property_in_stack(name)) {
         std::stringstream error{};
         error << "A property of name '" << name
               << "' has already been registered"
@@ -440,7 +440,7 @@ namespace rascal {
      */
     template <typename UserProperty_t>
     bool check_property_t(const std::string & name) const {
-      if (not(this->has_stack_property(name))) {
+      if (not(this->is_property_in_stack(name))) {
         std::stringstream error{};
         error << "A property of name '" << name << "' does not exist"
               << " in manager '" << this->get_name() << "'";
@@ -508,7 +508,7 @@ namespace rascal {
                  const bool force_creation = false,
                  const bool exclude_ghosts = false,
                  const std::string & metadata = "no metadata") {
-      bool is_property_in_stack{this->has_stack_property(name)};
+      bool is_property_in_stack{this->is_property_in_stack(name)};
       if (is_property_in_stack) {
         return this->template forward_get_property_request<UserProperty_t>(
             name, validate_property);
@@ -549,7 +549,7 @@ namespace rascal {
 
     void set_updated_property_status(const std::string & name,
                                      bool is_updated) {
-      if (this->has_layer_property(name)) {
+      if (this->is_property_in_current_layer(name)) {
         this->properties[name]->set_updated_status(is_updated);
         return;
       } else {
@@ -571,7 +571,7 @@ namespace rascal {
     std::shared_ptr<UserProperty_t>
     forward_get_property_request(const std::string & name,
                                  const bool validate_property) {
-      if (this->has_layer_property(name)) {
+      if (this->is_property_in_current_layer(name)) {
         auto property = this->properties.at(name);
         if (validate_property) {
           this->template validate_property_t<UserProperty_t>(property);
@@ -607,7 +607,7 @@ namespace rascal {
     std::shared_ptr<UserProperty_t>
     forward_get_property_request(const std::string & name,
                                  bool validate_property) {
-      if (this->has_layer_property(name)) {
+      if (this->is_property_in_current_layer(name)) {
         auto property = this->properties.at(name);
         if (validate_property) {
           this->template validate_property_t<UserProperty_t>(property);
