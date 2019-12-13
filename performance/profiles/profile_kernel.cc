@@ -62,8 +62,7 @@ using ManagerCollection_t =
 using Representation_t = CalculatorSphericalInvariants;
 
 int main() {
-  std::string filename{
-      "../reference_data/inputs/small_molecules-20.json"};
+  std::string filename{"../reference_data/inputs/small_molecules-20.json"};
 
   double cutoff{3.5};
 
@@ -116,7 +115,7 @@ int main() {
   math::Matrix_t aa{20, 20};
   auto start = std::chrono::high_resolution_clock::now();
   // This is the part that should get profiled
-  for (size_t looper{0}; looper < N_ITERATIONS+600; looper++) {
+  for (size_t looper{0}; looper < N_ITERATIONS + 600; looper++) {
     auto kk = kernel.compute(soap, collection, collection);
     aa += kk;
   }
@@ -124,9 +123,8 @@ int main() {
 
   elapsed = finish - start;
   std::cout << "Kernel with user defined species"
-            << " elapsed: " << elapsed.count() / (N_ITERATIONS+600)
-            << " seconds"
-            << std::endl;
+            << " elapsed: " << elapsed.count() / (N_ITERATIONS + 600)
+            << " seconds" << std::endl;
 
   hypers["expansion_by_species_method"] = "structure wise";
   Representation_t soap_sw{hypers};
