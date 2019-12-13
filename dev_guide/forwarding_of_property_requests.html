@@ -1,0 +1,436 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Forwarding of property requests &mdash; Rascal 0.0.1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/rascal.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Coding Convention" href="coding-convention.html" />
+    <link rel="prev" title="How to write a test" href="how_to_test.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Rascal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../whitepaper.html">Goals &amp; Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SOAP.html">SOAP Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../representation/representations.html">Representations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../models/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../neighbour_list/neighbour-list-manager.html">Neighbour List Manager</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="developer.html">Developer’s guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="how_to_contribute.html">How to contribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how_to_misc.html">How to edit the documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how_to_misc.html#how-to-edit-a-readme">How to edit a Readme</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how_to_add_representation.html">How to add a new representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how_to_test.html">How to write a test</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how_to_test.html#running-the-tests">Running the tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how_to_test.html#using-valgrind-to-check-for-memory-errors">Using Valgrind to check for memory errors</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Forwarding of property requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coding-convention.html">Coding Convention</a></li>
+<li class="toctree-l2"><a class="reference internal" href="review_process.html">Review process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="benchmark_tutorial.html">How to run benchmark for different parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="benchmark_tutorial.html#how-to-add-a-new-benchmark">How to add a new benchmark</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rascal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="developer.html">Developer’s guide</a> &raquo;</li>
+        
+      <li>Forwarding of property requests</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/dev_guide/forwarding_of_property_requests.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="contents local topic" id="contents">
+<span id="forwarding-of-property-request"></span><ul class="simple">
+<li><p><a class="reference internal" href="#forwarding-of-property-requests" id="id1">Forwarding of property requests</a></p></li>
+</ul>
+</div>
+<div class="section" id="forwarding-of-property-requests">
+<h1><a class="toc-backref" href="#id1">Forwarding of property requests</a><a class="headerlink" href="#forwarding-of-property-requests" title="Permalink to this headline">¶</a></h1>
+<p>This c++ file is a simplification of our CRTP structure to show how the forwarding of requests through the manager stack works. The forwarding mechanism is used when getting a property with the <cite>get_property</cite> function and for the <cite>get_distance</cite> and <cite>get_direction_vector</cite> function.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * @file  forwarding_of_property_requests.cc</span>
+<span class="cm"> *</span>
+<span class="cm"> * @author Alexander Goscinski &lt;alexander.goscinski@epfl.ch&gt;</span>
+<span class="cm"> *</span>
+<span class="cm"> * @date   Oct 17 2019</span>
+<span class="cm"> *</span>
+<span class="cm"> * @brief example file to introduce default implementations dependent on traits.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Copyright  2019 Alexander Goscinski, COSMO (EPFL), LAMMM (EPFL)</span>
+<span class="cm"> *</span>
+<span class="cm"> * Rascal is free software; you can redistribute it and/or</span>
+<span class="cm"> * modify it under the terms of the GNU Lesser General Public License as</span>
+<span class="cm"> * published by the Free Software Foundation, either version 3, or (at</span>
+<span class="cm"> * your option) any later version.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Rascal is distributed in the hope that it will be useful, but</span>
+<span class="cm"> * WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="cm"> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU</span>
+<span class="cm"> * Lesser General Public License for more details.</span>
+<span class="cm"> *</span>
+<span class="cm"> * You should have received a copy of the GNU Lesser General Public License</span>
+<span class="cm"> * along with this software; see the file LICENSE. If not, write to the</span>
+<span class="cm"> * Free Software Foundation, Inc., 59 Temple Place - Suite 330,</span>
+<span class="cm"> * Boston, MA 02111-1307, USA.</span>
+<span class="cm"> */</span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp"></span>
+
+<span class="cm">/**</span>
+<span class="cm"> * This class simulates the framework of the structure manager to explain the</span>
+<span class="cm"> * functionality of default implementations transparantly without the noise of</span>
+<span class="cm"> * all the other functionalities of the structure manager classes.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Framework translation to structure manager classes</span>
+<span class="cm"> * Interface = StructureManager</span>
+<span class="cm"> * RootImplementation = A root structure manager as StructureManagerCenters</span>
+<span class="cm"> * AdaptorImplementation = An adaptor as AdaptorNeighbourList</span>
+<span class="cm"> */</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Impl</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">traits</span><span class="p">;</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Impl</span><span class="o">&gt;</span>
+<span class="k">class</span> <span class="nc">Interface</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="k">typedef</span> <span class="k">typename</span> <span class="n">traits</span><span class="o">&lt;</span><span class="n">Impl</span><span class="o">&gt;::</span><span class="n">underlying_manager_t</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
+  <span class="n">Interface</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+
+  <span class="kt">int</span> <span class="nf">get_id</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">implementation</span><span class="p">().</span><span class="n">get_id</span><span class="p">();</span> <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="nf">get_has_property</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">has_property</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;ID &quot;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; has no property&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">typeid</span><span class="p">(</span><span class="n">underlying_manager_t</span><span class="p">)</span> <span class="o">!=</span> <span class="k">typeid</span><span class="p">(</span><span class="n">Impl</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;ID &quot;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">get_id</span><span class="p">()</span>
+                  <span class="o">&lt;&lt;</span> <span class="s">&quot; looks in underlying level for property&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">get_underlying_manager</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">get_has_property</span><span class="p">();</span>
+      <span class="p">}</span>
+      <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;ID &quot;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">get_id</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; has property&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">underlying_manager_t</span><span class="o">&gt;</span> <span class="n">get_underlying_manager</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">implementation</span><span class="p">().</span><span class="n">get_underlying_manager_impl</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="kt">void</span> <span class="n">set_has_property</span><span class="p">(</span><span class="kt">bool</span> <span class="n">has_property</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="o">-&gt;</span><span class="n">has_property</span> <span class="o">=</span> <span class="n">has_property</span><span class="p">;</span>
+  <span class="p">}</span>
+
+ <span class="k">protected</span><span class="o">:</span>
+  <span class="n">Impl</span> <span class="o">&amp;</span> <span class="n">implementation</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">Impl</span> <span class="o">&amp;&gt;</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">);</span> <span class="p">}</span>
+
+  <span class="kt">int</span> <span class="n">id</span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+  <span class="kt">bool</span> <span class="n">has_property</span><span class="p">{</span><span class="nb">false</span><span class="p">};</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">RootImplementation</span><span class="p">;</span>
+
+<span class="k">template</span> <span class="o">&lt;&gt;</span>
+<span class="k">struct</span> <span class="n">traits</span><span class="o">&lt;</span><span class="n">RootImplementation</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="k">typedef</span> <span class="n">RootImplementation</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="c1">// using Interface&#39;s id with constructor</span>
+<span class="k">class</span> <span class="nc">RootImplementation</span>
+    <span class="o">:</span> <span class="k">public</span> <span class="n">Interface</span><span class="o">&lt;</span><span class="n">RootImplementation</span><span class="o">&gt;</span><span class="p">,</span>
+      <span class="k">public</span> <span class="n">std</span><span class="o">::</span><span class="n">enable_shared_from_this</span><span class="o">&lt;</span><span class="n">RootImplementation</span><span class="o">&gt;</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="k">using</span> <span class="n">this_traits</span> <span class="o">=</span> <span class="n">traits</span><span class="o">&lt;</span><span class="n">RootImplementation</span><span class="o">&gt;</span><span class="p">;</span>
+  <span class="k">typedef</span> <span class="k">typename</span> <span class="n">this_traits</span><span class="o">::</span><span class="n">underlying_manager_t</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
+  <span class="n">RootImplementation</span><span class="p">(</span><span class="kt">int</span> <span class="n">id</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">has_property</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">=</span> <span class="n">id</span><span class="p">;</span>
+    <span class="k">this</span><span class="o">-&gt;</span><span class="n">has_property</span> <span class="o">=</span> <span class="n">has_property</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="kt">int</span> <span class="n">get_id</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">;</span>  <span class="c1">// this gets Interface&#39;s id</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">underlying_manager_t</span><span class="o">&gt;</span> <span class="n">get_underlying_manager_impl</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// this line wrongly first created a new instance and then wrapped it in a</span>
+    <span class="c1">// shared ptr instead of only wrapping this in a shared ptr return</span>
+    <span class="c1">// std::make_shared&lt;underlying_manager_t&gt;(*this);</span>
+    <span class="k">return</span> <span class="n">shared_from_this</span><span class="p">();</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Impl</span><span class="o">&gt;</span>
+<span class="k">class</span> <span class="nc">AdaptorImplementation</span><span class="p">;</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Impl</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">traits</span><span class="o">&lt;</span><span class="n">AdaptorImplementation</span><span class="o">&lt;</span><span class="n">Impl</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+  <span class="k">typedef</span> <span class="n">Impl</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Impl</span><span class="o">&gt;</span>
+<span class="k">class</span> <span class="nc">AdaptorImplementation</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Interface</span><span class="o">&lt;</span><span class="n">AdaptorImplementation</span><span class="o">&lt;</span><span class="n">Impl</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="k">using</span> <span class="n">this_traits</span> <span class="o">=</span> <span class="n">traits</span><span class="o">&lt;</span><span class="n">AdaptorImplementation</span><span class="o">&gt;</span><span class="p">;</span>
+  <span class="k">typedef</span> <span class="k">typename</span> <span class="n">this_traits</span><span class="o">::</span><span class="n">underlying_manager_t</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
+  <span class="n">AdaptorImplementation</span><span class="p">(</span><span class="kt">int</span> <span class="n">id</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Impl</span><span class="o">&gt;</span> <span class="n">underlying_manager</span><span class="p">,</span>
+                        <span class="kt">bool</span> <span class="n">has_property</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">=</span> <span class="n">id</span><span class="p">;</span>
+    <span class="k">this</span><span class="o">-&gt;</span><span class="n">has_property</span> <span class="o">=</span> <span class="n">has_property</span><span class="p">;</span>
+    <span class="k">this</span><span class="o">-&gt;</span><span class="n">underlying_manager</span> <span class="o">=</span> <span class="n">underlying_manager</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="kt">int</span> <span class="n">get_id</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">id</span><span class="p">;</span>  <span class="c1">// this gets Interface&#39;s id</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">underlying_manager_t</span><span class="o">&gt;</span> <span class="n">get_underlying_manager_impl</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">underlying_manager</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">underlying_manager_t</span><span class="o">&gt;</span> <span class="n">underlying_manager</span><span class="p">{};</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;=====================&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;CASE: No one has property&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;=====================&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="k">auto</span> <span class="n">impl</span><span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">RootImplementation</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">false</span><span class="p">)};</span>
+  <span class="k">auto</span> <span class="n">adaptor</span><span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">AdaptorImplementation</span><span class="o">&lt;</span><span class="n">RootImplementation</span><span class="o">&gt;&gt;</span><span class="p">(</span>
+      <span class="mi">1</span><span class="p">,</span> <span class="n">impl</span><span class="p">,</span> <span class="nb">false</span><span class="p">)};</span>
+  <span class="k">auto</span> <span class="n">adaptor2</span><span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span>
+      <span class="n">AdaptorImplementation</span><span class="o">&lt;</span><span class="n">AdaptorImplementation</span><span class="o">&lt;</span><span class="n">RootImplementation</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span>
+      <span class="mi">2</span><span class="p">,</span> <span class="n">adaptor</span><span class="p">,</span> <span class="nb">false</span><span class="p">)};</span>
+  <span class="n">adaptor2</span><span class="o">-&gt;</span><span class="n">get_has_property</span><span class="p">();</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;=====================&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;CASE: Lowest has property&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;=====================&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">impl</span><span class="o">-&gt;</span><span class="n">set_has_property</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+  <span class="n">adaptor2</span><span class="o">-&gt;</span><span class="n">get_has_property</span><span class="p">();</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;=====================&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;CASE: First adaptor has property&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;=====================&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">adaptor</span><span class="o">-&gt;</span><span class="n">set_has_property</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+  <span class="n">adaptor2</span><span class="o">-&gt;</span><span class="n">get_has_property</span><span class="p">();</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;=====================&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;CASE: Second adaptor has property&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;=====================&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="n">adaptor2</span><span class="o">-&gt;</span><span class="n">set_has_property</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+  <span class="n">adaptor2</span><span class="o">-&gt;</span><span class="n">get_has_property</span><span class="p">();</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="coding-convention.html" class="btn btn-neutral float-right" title="Coding Convention" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="how_to_test.html" class="btn btn-neutral float-left" title="How to write a test" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti,
+Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

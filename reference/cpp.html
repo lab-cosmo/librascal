@@ -1825,6 +1825,26 @@ template&lt;class <code class="sig-name descname">ErrorMethod</code>&gt;<br /><e
 
 <dl class="function">
 <dt>
+<code class="sig-name descname">BOOST_AUTO_TEST_SUITE</code><span class="sig-paren">(</span>Property_structure_manager_property_tests<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE</code><span class="sig-paren">(</span>create_property, StructureManagerCentersStackFixture<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE</code><span class="sig-paren">(</span>property_forwarding_two_layers, <a class="reference internal" href="#_CPPv4N6rascal30ANLWithGhosts_SMC_StackFixtureE" title="rascal::ANLWithGhosts_SMC_StackFixture">ANLWithGhosts_SMC_StackFixture</a><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE</code><span class="sig-paren">(</span>property_forwarding_three_layers, AdaptorStrictStackFixture&lt;<a class="reference internal" href="#_CPPv4N6rascal30ANLWithGhosts_SMC_StackFixtureE" title="rascal::ANLWithGhosts_SMC_StackFixture">ANLWithGhosts_SMC_StackFixture</a>&gt;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 <code class="sig-name descname">BOOST_AUTO_TEST_SUITE</code><span class="sig-paren">(</span>Property_partially_sparse_tests<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -2204,7 +2224,7 @@ template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <c
 
 <dl class="function">
 <dt>
-ImplementationPtr_t <code class="sig-name descname">get_previous_manager</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2298,16 +2318,6 @@ size_t <code class="sig-name descname">get_size_with_ghosts</code><span class="s
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>, bool <code class="sig-name descname">HasDistances</code> = traits::HasDistances&gt;<br />std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_bENK6rascal13AdaptorFilter12get_distanceENSt11enable_if_tI12HasDistancesRdEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_distance::HasDistances">HasDistances</a>, double&amp;&gt; <code class="sig-name descname">get_distance</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_bENK6rascal13AdaptorFilter12get_distanceENSt11enable_if_tI12HasDistancesRdEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_distance::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_bENK6rascal13AdaptorFilter12get_distanceENSt11enable_if_tI12HasDistancesRdEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_distance::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>, bool <code class="sig-name descname">HasDistances</code> = traits::HasDistances&gt;<br />std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_bENK6rascal13AdaptorFilter20get_direction_vectorENSt11enable_if_tI12HasDistances10Vector_refEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_direction_vector::HasDistances">HasDistances</a>, Vector_ref&gt; <code class="sig-name descname">get_direction_vector</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_t_bENK6rascal13AdaptorFilter20get_direction_vectorENSt11enable_if_tI12HasDistances10Vector_refEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_direction_vector::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_t_bENK6rascal13AdaptorFilter20get_direction_vectorENSt11enable_if_tI12HasDistances10Vector_refEERK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorFilter::get_direction_vector::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
 template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />int <code class="sig-name descname">get_neighbour_atom_tag</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal13AdaptorFilter22get_neighbour_atom_tagEiRK13ClusterRefKeyI5Order5LayerEi" title="rascal::AdaptorFilter::get_neighbour_atom_tag::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal13AdaptorFilter22get_neighbour_atom_tagEiRK13ClusterRefKeyI5Order5LayerEi" title="rascal::AdaptorFilter::get_neighbour_atom_tag::Layer">Layer</a>&gt; &amp;<em>cluster</em>, int <em>index</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
@@ -2349,6 +2359,11 @@ template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <c
 <dl class="function">
 <dt>
 template&lt;size_t <code class="sig-name descname">Order</code>&gt;<br />void <code class="sig-name descname">add_cluster</code><span class="sig-paren">(</span><em class="property">const</em> InputClusterRef_t&lt;<a class="reference internal" href="#_CPPv4I_6size_tEN6rascal13AdaptorFilter11add_clusterEvRK17InputClusterRef_tI5OrderE" title="rascal::AdaptorFilter::add_cluster::Order">Order</a>&gt; &amp;<em>cluster</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -2476,7 +2491,7 @@ template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <c
 
 <dl class="function">
 <dt>
-ImplementationPtr_t <code class="sig-name descname">get_previous_manager</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -2604,7 +2619,7 @@ template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <c
 
 <dl class="function">
 <dt>
-ImplementationPtr_t <code class="sig-name descname">get_previous_manager</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -2722,7 +2737,7 @@ template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <c
 
 <dl class="function">
 <dt>
-ImplementationPtr_t <code class="sig-name descname">get_previous_manager</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -2886,7 +2901,7 @@ template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <c
 
 <dl class="function">
 <dt>
-ImplementationPtr_t <code class="sig-name descname">get_previous_manager</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -2984,7 +2999,7 @@ template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <c
 
 <dl class="function">
 <dt>
-ImplementationPtr_t <code class="sig-name descname">get_previous_manager</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4602,17 +4617,17 @@ int <code class="sig-name descname">atom_type</code><span class="sig-paren">(</s
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">attach_property</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal12PropertyBaseE" title="rascal::PropertyBase">PropertyBase</a>&gt; <em>property</em><span class="sig-paren">)</span><br /></dt>
+bool <code class="sig-name descname">is_property_in_current_level</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-bool <code class="sig-name descname">has_property</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;bool <code class="sig-name descname">IsRoot</code> = <a class="reference internal" href="#_CPPv4N6rascal16StructureManager20IsRootImplementationE" title="rascal::StructureManager::IsRootImplementation">IsRootImplementation</a>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_b_NSt11enable_if_tI6IsRootiEEEN6rascal16StructureManager20is_property_in_stackEbRKNSt6stringE" title="rascal::StructureManager::is_property_in_stack::IsRoot">IsRoot</a>, int&gt; = 0&gt;<br />bool <code class="sig-name descname">is_property_in_stack</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal12PropertyBaseE" title="rascal::PropertyBase">PropertyBase</a>&gt; <code class="sig-name descname">get_property</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;typename <code class="sig-name descname">UserProperty_t</code>&gt;<br />void <code class="sig-name descname">create_property</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, <em class="property">const</em> bool <em>exclude_ghosts</em> = false, <em class="property">const</em> std::string &amp;<em>metadata</em> = &quot;no metadata&quot;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4627,12 +4642,22 @@ template&lt;typename <code class="sig-name descname">UserProperty_t</code>&gt;<b
 
 <dl class="function">
 <dt>
-template&lt;typename <code class="sig-name descname">UserProperty_t</code>&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I0ENK6rascal16StructureManager22get_validated_propertyENSt10shared_ptrI14UserProperty_tEERKNSt6stringE" title="rascal::StructureManager::get_validated_property::UserProperty_t">UserProperty_t</a>&gt; <code class="sig-name descname">get_validated_property</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;typename <code class="sig-name descname">UserProperty_t</code>&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal16StructureManager12get_propertyENSt10shared_ptrI14UserProperty_tEERKNSt6stringEKbKbKbRKNSt6stringE" title="rascal::StructureManager::get_property::UserProperty_t">UserProperty_t</a>&gt; <code class="sig-name descname">get_property</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, <em class="property">const</em> bool <em>validate_property</em> = true, <em class="property">const</em> bool <em>force_creation</em> = false, <em class="property">const</em> bool <em>exclude_ghosts</em> = false, <em class="property">const</em> std::string &amp;<em>metadata</em> = &quot;no metadata&quot;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-template&lt;typename <code class="sig-name descname">UserProperty_t</code>&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal16StructureManager16get_property_ptrENSt10shared_ptrI14UserProperty_tEERKNSt6stringERKbRKNSt6stringE" title="rascal::StructureManager::get_property_ptr::UserProperty_t">UserProperty_t</a>&gt; <code class="sig-name descname">get_property_ptr</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, <em class="property">const</em> bool &amp;<em>exclude_ghosts</em> = false, <em class="property">const</em> std::string &amp;<em>metadata</em> = &quot;no metadata&quot;<span class="sig-paren">)</span><br /></dt>
+template&lt;bool <code class="sig-name descname">IsRoot</code> = <a class="reference internal" href="#_CPPv4N6rascal16StructureManager20IsRootImplementationE" title="rascal::StructureManager::IsRootImplementation">IsRootImplementation</a>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I_b_NSt11enable_if_tI6IsRootiEEEN6rascal16StructureManager27set_updated_property_statusEvKb" title="rascal::StructureManager::set_updated_property_status::IsRoot">IsRoot</a>, int&gt; = 0&gt;<br />void <code class="sig-name descname">set_updated_property_status</code><span class="sig-paren">(</span><em class="property">const</em> bool <em>is_updated</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">UserProperty_t</code>, bool <code class="sig-name descname">IsRoot</code> = <a class="reference internal" href="#_CPPv4N6rascal16StructureManager20IsRootImplementationE" title="rascal::StructureManager::IsRootImplementation">IsRootImplementation</a>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I0_b_NSt11enable_if_tI6IsRootiEEEN6rascal16StructureManager28forward_get_property_requestENSt10shared_ptrI14UserProperty_tEERKNSt6stringEKb" title="rascal::StructureManager::forward_get_property_request::IsRoot">IsRoot</a>, int&gt; = 0&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I0_b_NSt11enable_if_tI6IsRootiEEEN6rascal16StructureManager28forward_get_property_requestENSt10shared_ptrI14UserProperty_tEERKNSt6stringEKb" title="rascal::StructureManager::forward_get_property_request::UserProperty_t">UserProperty_t</a>&gt; <code class="sig-name descname">forward_get_property_request</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, <em class="property">const</em> bool <em>validate_property</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">UserProperty_t</code>, bool <code class="sig-name descname">IsRoot</code> = <a class="reference internal" href="#_CPPv4N6rascal16StructureManager20IsRootImplementationE" title="rascal::StructureManager::IsRootImplementation">IsRootImplementation</a>, std::enable_if_t&lt;not(IsRoot), int&gt; = 0&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I0_b_NSt11enable_if_tIXnot(IsRoot)EiEEEN6rascal16StructureManager28forward_get_property_requestENSt10shared_ptrI14UserProperty_tEERKNSt6stringEb" title="rascal::StructureManager::forward_get_property_request::UserProperty_t">UserProperty_t</a>&gt; <code class="sig-name descname">forward_get_property_request</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, bool <em>validate_property</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4691,6 +4716,14 @@ template&lt;size_t <code class="sig-name descname">TargetOrder</code>&gt;<br /><
 <dl class="function">
 <dt>
 <em class="property">static</em> std::string <code class="sig-name descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Attributes</p>
+<dl class="member">
+<dt>
+<em class="property">constexpr</em> bool <code class="sig-name descname">IsRootImplementation</code> = std::is_same&lt;PreviousManager_t, ManagerImplementation&gt;::value<br /></dt>
 <dd></dd></dl>
 
 </div>
