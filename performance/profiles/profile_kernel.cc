@@ -124,7 +124,8 @@ int main() {
 
   elapsed = finish - start;
   std::cout << "Kernel with user defined species"
-            << " elapsed: " << elapsed.count() / (N_ITERATIONS+600) << " seconds"
+            << " elapsed: " << elapsed.count() / (N_ITERATIONS+600)
+            << " seconds"
             << std::endl;
 
   hypers["expansion_by_species_method"] = "structure wise";
