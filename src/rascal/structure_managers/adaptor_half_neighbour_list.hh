@@ -59,6 +59,7 @@ namespace rascal {
         AdaptorTraits::NeighbourListType::half};
     using LayerByOrder =
         typename LayerIncreaser<typename parent_traits::LayerByOrder>::type;
+    using PreviousManager_t = ManagerImplementation;
   };
 
   /**
@@ -79,6 +80,7 @@ namespace rascal {
     using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorHalfList>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
@@ -261,7 +263,7 @@ namespace rascal {
     }
 
     //! Get the manager used to build the instance
-    ImplementationPtr_t get_previous_manager() {
+    ImplementationPtr_t get_previous_manager_impl() {
       return this->manager->get_shared_ptr();
     }
 
