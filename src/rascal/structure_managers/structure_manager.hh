@@ -357,7 +357,7 @@ namespace rascal {
      * Helper function to check if a property with the specifier `name` has
      * already been attached in the manager layer which invoked this function.
      */
-    inline bool is_property_in_current_layer(const std::string & name) const {
+    inline bool is_property_in_current_level(const std::string & name) const {
       return not(this->properties.find(name) == this->properties.end());
     }
 
@@ -386,7 +386,7 @@ namespace rascal {
     template <bool IsRoot = IsRootImplementation,
               std::enable_if_t<IsRoot, int> = 0>
     inline bool is_property_in_stack(const std::string & name) {
-      if (this->is_property_in_current_layer(name)) {
+      if (this->is_property_in_current_level(name)) {
         return true;
       }
       return false;
@@ -395,7 +395,7 @@ namespace rascal {
     template <bool IsRoot = IsRootImplementation,
               std::enable_if_t<not(IsRoot), int> = 0>
     inline bool is_property_in_stack(const std::string & name) {
-      if (this->is_property_in_current_layer(name)) {
+      if (this->is_property_in_current_level(name)) {
         return true;
       }
       return this->get_previous_manager()->is_property_in_stack(name);
@@ -549,7 +549,7 @@ namespace rascal {
 
     void set_updated_property_status(const std::string & name,
                                      bool is_updated) {
-      if (this->is_property_in_current_layer(name)) {
+      if (this->is_property_in_current_level(name)) {
         this->properties[name]->set_updated_status(is_updated);
         return;
       } else {
@@ -571,7 +571,7 @@ namespace rascal {
     std::shared_ptr<UserProperty_t>
     forward_get_property_request(const std::string & name,
                                  const bool validate_property) {
-      if (this->is_property_in_current_layer(name)) {
+      if (this->is_property_in_current_level(name)) {
         auto property = this->properties.at(name);
         if (validate_property) {
           this->template validate_property_t<UserProperty_t>(property);
@@ -607,7 +607,7 @@ namespace rascal {
     std::shared_ptr<UserProperty_t>
     forward_get_property_request(const std::string & name,
                                  bool validate_property) {
-      if (this->is_property_in_current_layer(name)) {
+      if (this->is_property_in_current_level(name)) {
         auto property = this->properties.at(name);
         if (validate_property) {
           this->template validate_property_t<UserProperty_t>(property);
