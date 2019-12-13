@@ -459,14 +459,12 @@ namespace rascal {
   /**
    * Typed ``property`` class definition, inherits from the base property class
    */
-  template <typename Precision_t, size_t Order_, size_t PropertyLayer,
-            class Manager, typename Key>
+  template <typename Precision_t, size_t Order_, class Manager, typename Key>
   class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using Manager_t = Manager;
-    using Self_t =
-        BlockSparseProperty<Precision_t, Order_, PropertyLayer, Manager, Key>;
+    using Self_t = BlockSparseProperty<Precision_t, Order_, Manager, Key>;
     using traits = typename Manager::traits;
 
     using Matrix_t = math::Matrix_t;

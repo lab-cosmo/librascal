@@ -369,11 +369,9 @@ namespace rascal {
       }
     };
 
-    template <typename T, size_t Order, size_t PropertyLayer, typename Key>
-    struct FeatureMatrixHelper<
-        BlockSparseProperty<T, Order, PropertyLayer, Manager_t, Key>> {
-      using Prop_t =
-          BlockSparseProperty<T, Order, PropertyLayer, Manager_t, Key>;
+    template <typename T, size_t Order, typename Key>
+    struct FeatureMatrixHelper<BlockSparseProperty<T, Order, Manager_t, Key>> {
+      using Prop_t = BlockSparseProperty<T, Order, Manager_t, Key>;
       using Keys_t = typename Prop_t::Keys_t;
 
       /**

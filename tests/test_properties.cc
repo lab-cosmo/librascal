@@ -35,7 +35,7 @@ constexpr double TOLERANCE = 1e-10;
 
 namespace rascal {
   // TODO(felix) TODO(alex) test dynamic sized Property completely
-  BOOST_AUTO_TEST_SUITE(Property_tests);
+  BOOST_AUTO_TEST_SUITE(property_tests);
 
   using atom_vector_property_fixtures = OrderOnePropertyBoostList::type;
   using pair_property_fixtures = OrderTwoPropertyBoostList::type;
@@ -722,7 +722,7 @@ namespace rascal {
     using Manager_t = typename Parent::ManagerTypeHolder_t::type;
     using Key_t = std::vector<int>;
     using BlockSparseProperty_t =
-        BlockSparseProperty<double, Order, 0, Manager_t, Key_t>;
+        BlockSparseProperty<double, Order, Manager_t, Key_t>;
     using Matrix_t = typename BlockSparseProperty_t::Matrix_t;
     using InputData_t = typename BlockSparseProperty_t::InputData_t;
     using TestData_t = std::vector<InputData_t>;
