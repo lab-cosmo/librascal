@@ -1864,17 +1864,24 @@ namespace rascal {
       std::shared_ptr<StructureManager> & manager,
       Property_t<StructureManager> & expansions_coefficients,
       PropertyGradient_t<StructureManager> & expansions_coefficients_gradient) {
+    constexpr static bool IsHalfNL{
+        StructureManager::traits::NeighbourListType ==
+        AdaptorTraits::NeighbourListType::half};
     std::vector<std::set<Key_t>> keys_list{};
     std::vector<std::set<Key_t>> keys_list_grad{};
-
+    std::map<int, int> center_tag2idx{};
+    int i_center{0};
     for (auto center : manager) {
+      center_tag2idx[center.get_atom_tag()] = i_center;
+      i_center++;
       keys_list.emplace_back();
       for (auto neigh : center.pairs_with_self_pair()) {
         keys_list_grad.emplace_back();
         center.get_atom_tag();
       }
     }
-    int i_center{0}, i_grad{0};
+    int i_grad{0};
+    i_center = 0;
     for (auto center : manager) {
       Key_t center_type{center.get_atom_type()};
       auto atom_i_tag = center.get_atom_tag();
@@ -1883,19 +1890,19 @@ namespace rascal {
         keys_list[i_center].insert({neigh.get_atom_type()});
         if (manager->is_center_atom(neigh) and IsHalfNL) {
           auto atom_j = neigh.get_atom_j();
-          auto j_center = manager->get_atom_index(atom_j);
+          auto j_center = center_tag2idx[atom_j.get_atom_tag()];
           keys_list[j_center].insert(center_type);
         }
       }
       keys_list[i_center].insert({center_type});
-      keys_list_grad[i_grad].emplace_back(keys_list[i_center]);
+      keys_list_grad[i_grad].insert(keys_list[i_center].begin(), keys_list[i_center].end());
       i_grad++;
       for (auto neigh : center.pairs()) {
         auto && atom_j = neigh.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag();
         Key_t neigh_type{neigh.get_atom_type()};
         if (atom_j_tag != atom_i_tag) {
-          keys_list_grad[i_grad].insert(neigh_types);
+          keys_list_grad[i_grad].insert(neigh_type);
         }
         i_grad++;
       }
@@ -1979,7 +1986,7 @@ namespace rascal {
       std::stringstream err_str{};
       err_str << "global_species is missing at least these species: '";
       for (const auto& key : missing_keys) {
-        err_str << key << ', ';
+        err_str << key << ", ";
       }
       err_str << "'.";
       throw std::runtime_error(err_str.str());
