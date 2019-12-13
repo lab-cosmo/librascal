@@ -33,6 +33,7 @@
 #include "rascal/representations/calculator_spherical_invariants.hh"
 #include "rascal/structure_managers/adaptor_increase_maxorder.hh"
 #include "rascal/structure_managers/adaptor_center_contribution.hh"
+#include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_strict.hh"
 #include "rascal/structure_managers/make_structure_manager.hh"
@@ -61,15 +62,25 @@ using ManagerCollection_t =
 using Representation_t = CalculatorSphericalInvariants;
 
 int main() {
-  // Test1()();
-  std::string filename{"../reference_data/inputs/small_molecules-20.json"};
-  // std::string filename{"../tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-  //  std::string filename{"reference_data/alloy-small.json"};
-  // std::string filename{"reference_data/alloy-small.json"};
-  // std::string filename{"reference_data/diamond_cubic.json"};
-  std::string rep_id{"pp"};
+
+  std::string filename{"../../../reference_data/inputs/small_molecules-20.json"};
 
   double cutoff{3.};
+  json hypers{{"max_radial", 6},
+              {"max_angular", 6},
+              {"compute_gradients", true},
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", true}};
+
+  json fc_hypers{{"type", "ShiftedCosine"},
+                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
+                 {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
+  json sigma_hypers{{"type", "Constant"},
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+
+  hypers["cutoff_function"] = fc_hypers;
+  hypers["gaussian_density"] = sigma_hypers;
+  hypers["radial_contribution"] = {{"type", "GTO"}};
 
   json hypers{{"max_radial", 6},
               {"max_angular", 6},
@@ -93,17 +104,17 @@ int main() {
 
   json structure{{"filename", filename}};
   json adaptors;
-  json ad1{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments",
-            {{"cutoff", cutoff},
-             {"consider_ghost_neighbours", false},
-             {"skin", 0.}}}};
-  json ad1b{{"name", "AdaptorCenterContribution"},
-           {"initialization_arguments", {}}};
+  json adaptors_half;
+  json ad1a{{"name", "AdaptorNeighbourList"},
+           {"initialization_arguments", {{"cutoff", cutoff}}}};
+  json ad1b{{"name", "AdaptorHalfList"},
+            {"initialization_arguments", {}}};
+  json ad1c{{"name", "AdaptorCenterContribution"},
+            {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
-  adaptors.emplace_back(ad1);
-  adaptors.emplace_back(ad1b);
+  adaptors.emplace_back(ad1a);
+  adaptors.emplace_back(ad1c);
   adaptors.emplace_back(ad2);
 
   ManagerCollection_t collection{adaptors};
@@ -118,7 +129,4 @@ int main() {
   auto kk = kernel.compute(soap, collection, collection);
 
   std::cout << kk << std::endl;
-
-
-  return (0);
 }
