@@ -709,6 +709,61 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE_END();
 
   /* ---------------------------------------------------------------------- */
+  /** Tests the utility functions in structure manager file including
+   * get_property and create property.
+   */
+  BOOST_AUTO_TEST_SUITE(property_structure_manager_property_tests);
+
+  BOOST_FIXTURE_TEST_CASE(create_property,
+                          StructureManagerCentersStackFixture) {
+    BOOST_CHECK_NO_THROW(
+        this->manager->template create_property<Property_t>("prop"));
+    BOOST_CHECK_THROW(
+        this->manager->template create_property<Property_t>("prop"),
+        std::runtime_error);
+  }
+
+  /**
+   * Tests if property forwarding works for a stack with two layers
+   *
+   * ANL -> has not "prop"
+   *  | forwards request to lower stack
+   *  v
+   * SMC has "prop"
+   */
+  BOOST_FIXTURE_TEST_CASE(property_forwarding_two_layers,
+                          ANLWithGhosts_SMC_StackFixture) {
+    using Parent_Property_t = Parent::Property_t;
+    this->manager->get_previous_manager()
+        ->template create_property<Parent_Property_t>("prop");
+    BOOST_CHECK_NO_THROW(
+        this->manager->template get_property<Property_t>("prop", false););
+  }
+  /**
+   * Tests if property forwarding works for a stack with three layers
+   *
+   * AS -> has not "prop"
+   *  | forwards request to lower stack
+   * ANL -> has not "prop"
+   *  | forwards request to lower stack
+   *  v
+   * SMC has "prop"
+   */
+  BOOST_FIXTURE_TEST_CASE(
+      property_forwarding_three_layers,
+      AdaptorStrictStackFixture<ANLWithGhosts_SMC_StackFixture>) {
+    using Parent_Parent_Property_t = Parent::Parent::Property_t;
+    // using Parent_Parent_Property_t = Parent_Parent_t::Property_t;
+    this->manager->get_previous_manager()
+        ->get_previous_manager()
+        ->template create_property<Parent_Parent_Property_t>("prop");
+    BOOST_CHECK_NO_THROW(
+        this->manager->template get_property<Property_t>("prop", false););
+  }
+
+  BOOST_AUTO_TEST_SUITE_END();
+
+  /* ---------------------------------------------------------------------- */
 
   /*
    * A fixture for testing partially sparse properties.
@@ -871,13 +926,19 @@ namespace rascal {
     auto strict{make_adapted_manager<AdaptorStrict>(this->manager, cutoff)};
     strict->update();
 
-    constexpr int PairOrder{2};
+    constexpr static int PairOrder{2};
+    using PropertyLow_t =
+        typename Manager_t::template Property_t<int, PairOrder>;
+
     auto & low_prop{
-        this->manager->template create_property<int, PairOrder>("low layer")};
+        this->manager->template create_property<PropertyLow_t>("low layer")};
     low_prop.resize();
 
+    using PropertyHigh_t =
+        typename AdaptorStrict<Manager_t>::template Property_t<int, PairOrder>;
+
     auto & high_prop{
-        strict->template create_property<int, PairOrder>("high layer")};
+        strict->template create_property<PropertyHigh_t>("high layer")};
     high_prop.resize();
 
     int counter{0};

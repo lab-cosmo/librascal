@@ -367,21 +367,19 @@ namespace rascal {
     rep_expansion.compute(manager);
 
     constexpr bool ExcludeGhosts{true};
-    auto && expansions_coefficients{
-        *manager->template get_property_ptr<PropExp_t>(rep_expansion.get_name(),
-                                                       ExcludeGhosts)};
+    auto && expansions_coefficients{*manager->template get_property<PropExp_t>(
+        rep_expansion.get_name(), true, true, ExcludeGhosts)};
 
     // No error if gradients not computed; just an empty array in that case
     auto && expansions_coefficients_gradient{
-        *manager->template get_property_ptr<PropGradExp_t>(
-            rep_expansion.get_gradient_name())};
+        *manager->template get_property<PropGradExp_t>(
+            rep_expansion.get_gradient_name(), true, true)};
 
-    auto && soap_vectors{*manager->template get_property_ptr<Prop_t>(
-        this->get_name(), ExcludeGhosts)};
+    auto && soap_vectors{*manager->template get_property<Prop_t>(
+        this->get_name(), true, true, ExcludeGhosts)};
 
-    auto && soap_vector_gradients{
-        *manager->template get_property_ptr<PropGrad_t>(
-            this->get_gradient_name())};
+    auto && soap_vector_gradients{*manager->template get_property<PropGrad_t>(
+        this->get_gradient_name(), true, true)};
 
     // if the representation has already been computed for the current
     // structure then do nothing
@@ -756,20 +754,18 @@ namespace rascal {
     rep_expansion.compute(manager);
 
     constexpr bool ExcludeGhosts{true};
-    auto && expansions_coefficients{
-        *manager->template get_property_ptr<PropExp_t>(rep_expansion.get_name(),
-                                                       ExcludeGhosts)};
+    auto && expansions_coefficients{*manager->template get_property<PropExp_t>(
+        rep_expansion.get_name(), true, true, ExcludeGhosts)};
 
     auto & expansions_coefficients_gradient{
-        *manager->template get_property_ptr<PropGradExp_t>(
-            rep_expansion.get_gradient_name())};
+        *manager->template get_property<PropGradExp_t>(
+            rep_expansion.get_gradient_name(), true, true)};
 
-    auto && soap_vectors{*manager->template get_property_ptr<Prop_t>(
-        this->get_name(), ExcludeGhosts)};
+    auto && soap_vectors{*manager->template get_property<Prop_t>(
+        this->get_name(), true, true, ExcludeGhosts)};
 
-    auto && soap_vector_gradients{
-        *manager->template get_property_ptr<PropGrad_t>(
-            this->get_gradient_name())};
+    auto && soap_vector_gradients{*manager->template get_property<PropGrad_t>(
+        this->get_gradient_name(), true, true)};
     // if the representation has already been computed for the current
     // structure then do nothing
     if (soap_vectors.is_updated()) {
@@ -915,12 +911,11 @@ namespace rascal {
     rep_expansion.compute(manager);
 
     constexpr bool ExcludeGhosts{true};
-    auto && expansions_coefficients{
-        *manager->template get_property_ptr<PropExp_t>(rep_expansion.get_name(),
-                                                       ExcludeGhosts)};
+    auto && expansions_coefficients{*manager->template get_property<PropExp_t>(
+        rep_expansion.get_name(), true, true, ExcludeGhosts)};
 
-    auto && soap_vectors{*manager->template get_property_ptr<Prop_t>(
-        this->get_name(), ExcludeGhosts)};
+    auto && soap_vectors{*manager->template get_property<Prop_t>(
+        this->get_name(), true, true, ExcludeGhosts)};
 
     // if the representation has already been computed for the current
     // structure then do nothing

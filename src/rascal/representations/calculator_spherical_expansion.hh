@@ -1538,12 +1538,12 @@ namespace rascal {
     using math::pow;
 
     constexpr bool ExcludeGhosts{true};
-    auto && expansions_coefficients{*manager->template get_property_ptr<Prop_t>(
-        this->get_name(), ExcludeGhosts)};
+    auto && expansions_coefficients{*manager->template get_property<Prop_t>(
+        this->get_name(), true, true, ExcludeGhosts)};
 
     auto && expansions_coefficients_gradient{
-        *manager->template get_property_ptr<PropGrad_t>(
-            this->get_gradient_name())};
+        *manager->template get_property<PropGrad_t>(this->get_gradient_name(),
+                                                    true, true)};
 
     // if the representation has already been computed for the current
     // structure then do nothing

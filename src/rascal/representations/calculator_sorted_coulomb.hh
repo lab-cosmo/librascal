@@ -429,8 +429,8 @@ namespace rascal {
     // Get a reference to the data container where the computed representation
     // is stored in the corresponding structure manager
     constexpr bool ExcludeGhosts{true};
-    auto coulomb_matrices{manager->template get_property_ptr<Prop_t>(
-        this->get_name(), ExcludeGhosts)};
+    auto coulomb_matrices{manager->template get_property<Prop_t>(
+        this->get_name(), true, true, ExcludeGhosts)};
 
     // if the representation has already been computed for the current
     // structure then do nothing

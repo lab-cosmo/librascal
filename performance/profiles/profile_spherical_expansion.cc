@@ -136,7 +136,7 @@ int main(int argc, char * argv[]) {
 
   if (VERBOSE) {
     auto expn = manager
-                    ->template get_property_ptr<PropGrad_t>(
+                    ->template get_property<PropGrad_t>(
                         representation.get_gradient_name())
                     ->get_features();
     std::cout << "Sample SphericalExpansion elements " << std::endl
@@ -164,7 +164,7 @@ int main(int argc, char * argv[]) {
 
   if (VERBOSE) {
     auto expn2 = manager
-                     ->template get_property_ptr<PropGrad_t>(
+                     ->template get_property<PropGrad_t>(
                          representation_gradients.get_gradient_name())
                      ->get_features();
     std::cout << "Sample SphericalExpansion elements (should be identical) "
