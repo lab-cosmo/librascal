@@ -50,7 +50,7 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 1000;
+const int N_ITERATIONS = 100;
 
 using ManagerTypeHolder_t =
     StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
@@ -63,11 +63,11 @@ using Representation_t = CalculatorSphericalInvariants;
 
 int main() {
   std::string filename{
-      "../../../reference_data/inputs/small_molecules-20.json"};
+      "../reference_data/inputs/small_molecules-20.json"};
 
-  double cutoff{3.};
+  double cutoff{3.5};
 
-  json hypers{{"max_radial", 6},
+  json hypers{{"max_radial", 8},
               {"max_angular", 6},
               {"compute_gradients", false},
               {"soap_type", "PowerSpectrum"},
@@ -113,17 +113,51 @@ int main() {
 
   std::chrono::duration<double> elapsed{};
 
+  math::Matrix_t aa{20, 20};
   auto start = std::chrono::high_resolution_clock::now();
   // This is the part that should get profiled
-  math::Matrix_t aa{20, 20};
-  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
+  for (size_t looper{0}; looper < N_ITERATIONS+600; looper++) {
     auto kk = kernel.compute(soap, collection, collection);
     aa += kk;
   }
   auto finish = std::chrono::high_resolution_clock::now();
 
   elapsed = finish - start;
-  std::cout << "Kernel"
+  std::cout << "Kernel with user defined species"
+            << " elapsed: " << elapsed.count() / (N_ITERATIONS+600) << " seconds"
+            << std::endl;
+
+  hypers["expansion_by_species_method"] = "structure wise";
+  Representation_t soap_sw{hypers};
+
+  soap_sw.compute(collection);
+
+  start = std::chrono::high_resolution_clock::now();
+  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
+    auto kk = kernel.compute(soap_sw, collection, collection);
+    aa += kk;
+  }
+  finish = std::chrono::high_resolution_clock::now();
+
+  elapsed = finish - start;
+  std::cout << "Kernel with structure wise species"
+            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
+            << std::endl;
+
+  hypers["expansion_by_species_method"] = "environment wise";
+  Representation_t soap_ew{hypers};
+
+  soap_ew.compute(collection);
+
+  start = std::chrono::high_resolution_clock::now();
+  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
+    auto kk = kernel.compute(soap_ew, collection, collection);
+    aa += kk;
+  }
+  finish = std::chrono::high_resolution_clock::now();
+
+  elapsed = finish - start;
+  std::cout << "Kernel with environment wise species"
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
 }

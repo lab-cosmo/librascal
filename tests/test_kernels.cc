@@ -129,7 +129,7 @@ namespace rascal {
         double diff = diff_m.maxCoeff();
         BOOST_TEST(diff < delta);
 
-        rep_hypers["expansion_by_species_method"] = "environment wise";
+        rep_hypers["expansion_by_species_method"] = "structure wise";
         Calculator_t rep_structure_wise{rep_hypers};
         rep_structure_wise.compute(collection);
         mat = kernel.compute(rep_structure_wise, collection);
