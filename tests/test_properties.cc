@@ -35,7 +35,7 @@ constexpr double TOLERANCE = 1e-10;
 
 namespace rascal {
   // TODO(felix) TODO(alex) test dynamic sized Property completely
-  BOOST_AUTO_TEST_SUITE(Property_tests);
+  BOOST_AUTO_TEST_SUITE(property_tests);
 
   using atom_vector_property_fixtures = OrderOnePropertyBoostList::type;
   using pair_property_fixtures = OrderTwoPropertyBoostList::type;
@@ -712,7 +712,7 @@ namespace rascal {
   /** Tests the utility functions in structure manager file including
    * get_property and create property.
    */
-  BOOST_AUTO_TEST_SUITE(Property_structure_manager_property_tests);
+  BOOST_AUTO_TEST_SUITE(property_structure_manager_property_tests);
 
   BOOST_FIXTURE_TEST_CASE(create_property,
                           StructureManagerCentersStackFixture) {
@@ -777,7 +777,7 @@ namespace rascal {
     using Manager_t = typename Parent::ManagerTypeHolder_t::type;
     using Key_t = std::vector<int>;
     using BlockSparseProperty_t =
-        BlockSparseProperty<double, Order, 0, Manager_t, Key_t>;
+        BlockSparseProperty<double, Order, Manager_t, Key_t>;
     using Matrix_t = typename BlockSparseProperty_t::Matrix_t;
     using InputData_t = typename BlockSparseProperty_t::InputData_t;
     using TestData_t = std::vector<InputData_t>;
@@ -910,6 +910,113 @@ namespace rascal {
     for (auto & sparse_feature : sparse_features) {
       auto sparse_feature_metadata = sparse_feature.get_metadata();
       BOOST_CHECK_EQUAL(sparse_feature_metadata, sparse_features_desc);
+    }
+  }
+
+  BOOST_AUTO_TEST_SUITE_END();
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_AUTO_TEST_SUITE(tests_without_reference_data);
+
+  BOOST_FIXTURE_TEST_CASE(caller_layer_test,
+                          ManagerFixture<StructureManagerLammps>) {
+    bool verbose{false};
+
+    double cutoff{1.1};  // one pair dist is sqrt{2}, the others are 1
+    auto strict{make_adapted_manager<AdaptorStrict>(this->manager, cutoff)};
+    strict->update();
+
+    constexpr static int PairOrder{2};
+    using PropertyLow_t =
+        typename Manager_t::template Property_t<int, PairOrder>;
+
+    auto & low_prop{
+        this->manager->template create_property<PropertyLow_t>("low layer")};
+    low_prop.resize();
+
+    using PropertyHigh_t =
+        typename AdaptorStrict<Manager_t>::template Property_t<int, PairOrder>;
+
+    auto & high_prop{
+        strict->template create_property<PropertyHigh_t>("high layer")};
+    high_prop.resize();
+
+    int counter{0};
+    for (auto && atom : this->manager) {
+      auto x{atom.get_position().transpose()};
+      for (auto && pair : atom.pairs()) {
+        auto y{pair.get_position().transpose()};
+        auto dist = (x - y).norm();
+        low_prop[pair] = counter;
+        counter++;
+        if (verbose) {
+          std::cout << "low: " << low_prop[pair] << ", dist = " << dist
+                    << ", pos a: " << x << ", pos b: " << y << std::endl;
+        }
+      }
+    }
+
+    counter = 0;
+    for (auto && atom : *strict) {
+      for (auto && pair : atom.pairs()) {
+        high_prop[pair] = counter;
+        counter++;
+        if (verbose) {
+          std::cout << "high: " << high_prop[pair]
+                    << ", dist = " << strict->get_distance(pair)
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+        }
+      }
+    }
+
+    // strict is supposed to contain pairs 1 and 3
+    std::array<int, 2> low_pairs{{1, 3}};
+    std::array<int, 2> high_pairs{{0, 1}};
+    counter = 0;
+    for (auto && atom : *strict) {
+      for (auto && pair : atom.pairs()) {
+        BOOST_CHECK_EQUAL(low_prop[pair], low_pairs[counter]);
+        BOOST_CHECK_EQUAL(high_prop[pair], high_pairs[counter]);
+        counter++;
+        if (verbose) {
+          std::cout << "low: " << low_prop[pair]
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+          std::cout << "high: " << high_prop[pair]
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+        }
+      }
+    }
+
+    // strict is supposed to contain pairs 1 and 3
+    auto & low_prop_typed{dynamic_cast<TypedProperty<
+        int, PairOrder, StructureManager<StructureManagerLammps>> &>(low_prop)};
+    auto & high_prop_typed{dynamic_cast<TypedProperty<
+        int, PairOrder,
+        StructureManager<std::remove_reference_t<decltype(*strict)>>> &>(
+        high_prop)};
+    counter = 0;
+    for (auto && atom : *strict) {
+      for (auto && pair : atom.pairs()) {
+        BOOST_CHECK_EQUAL(low_prop_typed[pair](0), low_pairs[counter]);
+        BOOST_CHECK_EQUAL(high_prop_typed[pair](0), high_pairs[counter]);
+        counter++;
+        if (verbose) {
+          std::cout << "low: " << low_prop_typed[pair]
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+          std::cout << "high: " << high_prop_typed[pair]
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+        }
+      }
     }
   }
 

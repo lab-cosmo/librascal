@@ -348,11 +348,9 @@ namespace rascal {
     template <typename T>
     struct FeatureMatrixHelper {};
 
-    template <typename T, size_t Order, size_t PropertyLayer, int NbRow,
-              int NbCol>
-    struct FeatureMatrixHelper<
-        Property<T, Order, PropertyLayer, Manager_t, NbRow, NbCol>> {
-      using Prop_t = Property<T, Order, PropertyLayer, Manager_t, NbRow, NbCol>;
+    template <typename T, size_t Order, int NbRow, int NbCol>
+    struct FeatureMatrixHelper<Property<T, Order, Manager_t, NbRow, NbCol>> {
+      using Prop_t = Property<T, Order, Manager_t, NbRow, NbCol>;
       template <class StructureManagers, class Matrix>
       static void apply(StructureManagers & managers,
                         const std::string & property_name, Matrix & features,
@@ -371,11 +369,9 @@ namespace rascal {
       }
     };
 
-    template <typename T, size_t Order, size_t PropertyLayer, typename Key>
-    struct FeatureMatrixHelper<
-        BlockSparseProperty<T, Order, PropertyLayer, Manager_t, Key>> {
-      using Prop_t =
-          BlockSparseProperty<T, Order, PropertyLayer, Manager_t, Key>;
+    template <typename T, size_t Order, typename Key>
+    struct FeatureMatrixHelper<BlockSparseProperty<T, Order, Manager_t, Key>> {
+      using Prop_t = BlockSparseProperty<T, Order, Manager_t, Key>;
       using Keys_t = typename Prop_t::Keys_t;
 
       /**

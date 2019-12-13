@@ -100,11 +100,7 @@ namespace rascal {
         Manager, Order, std::index_sequence<LayersHead, LayersTail...>,
         std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
-      constexpr static auto ActiveLayer{
-          get_layer<Order>(typename traits::LayerByOrder{})};
-
-      using Property_t =
-          Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;
+      using Property_t = Property<size_t, Order, Manager, LayersHead + 1, 1>;
       using type = typename ClusterIndexPropertyComputer_Helper<
           Manager, Order + 1, std::index_sequence<LayersTail...>,
           std::tuple<TupComp..., Property_t>>::type;
@@ -120,11 +116,7 @@ namespace rascal {
                                                std::index_sequence<LayersHead>,
                                                std::tuple<TupComp...>> {
       using traits = typename Manager::traits;
-      constexpr static auto ActiveLayer{
-          get_layer<Order>(typename traits::LayerByOrder{})};
-
-      using Property_t =
-          Property<size_t, Order, ActiveLayer, Manager, LayersHead + 1, 1>;
+      using Property_t = Property<size_t, Order, Manager, LayersHead + 1, 1>;
       using type = std::tuple<TupComp..., Property_t>;
     };
 
@@ -143,12 +135,16 @@ namespace rascal {
     template <typename Tup, typename Manager>
     struct ClusterIndexConstructor {};
 
+    template <typename PropertyType, typename Manager>
+    PropertyType make_individual_property(Manager & manager) {
+      return PropertyType{manager};
+    }
     //! Overload to build the tuple
     template <typename... PropertyTypes, typename Manager>
     struct ClusterIndexConstructor<std::tuple<PropertyTypes...>, Manager> {
       static std::tuple<PropertyTypes...> make(Manager & manager) {
         return std::tuple<PropertyTypes...>(
-            std::move(PropertyTypes(manager))...);
+            std::move(make_individual_property<PropertyTypes>(manager))...);
       }
     };
   }  // namespace internal
@@ -199,25 +195,19 @@ namespace rascal {
       return internal::is_order_available<TargetOrder>(
           std::make_index_sequence<traits::MaxOrder + 1>{});
     }
-    //! helper type for Property creation
+    //! helper type for Property creation: typed and sized
     template <typename T, size_t Order, Dim_t NbRow = 1, Dim_t NbCol = 1>
-    using Property_t =
-        Property<T, Order, get_layer<Order>(typename traits::LayerByOrder{}),
-                 StructureManager_t, NbRow, NbCol>;
+    using Property_t = Property<T, Order, StructureManager_t, NbRow, NbCol>;
 
-    //! helper type for Property creation
+    //! helper type for Property creation: only typed
     template <typename T, size_t Order>
-    using TypedProperty_t =
-        TypedProperty<T, Order,
-                      get_layer<Order>(typename traits::LayerByOrder{}),
-                      StructureManager_t>;
+    using TypedProperty_t = TypedProperty<T, Order, StructureManager_t>;
 
+    //! helper type for BlockSparseProperty creation: typed
     using Key_t = std::vector<int>;
     template <typename T, size_t Order>
     using BlockSparseProperty_t =
-        BlockSparseProperty<T, Order,
-                            get_layer<Order>(typename traits::LayerByOrder{}),
-                            StructureManager_t, Key_t>;
+        BlockSparseProperty<T, Order, StructureManager_t, Key_t>;
 
     //! type for the hyper parameter class
     using Hypers_t = json;
@@ -411,12 +401,13 @@ namespace rascal {
      * @param name the name of the property to create.
      *
      * @throw runtime_error if property with name does already exist
+     * @return reference of to `UserProperty`
      *
      */
     template <typename UserProperty_t>
-    void create_property(const std::string & name,
-                         const bool exclude_ghosts = false,
-                         const std::string & metadata = "no metadata") {
+    UserProperty_t &
+    create_property(const std::string & name, const bool exclude_ghosts = false,
+                    const std::string & metadata = "no metadata") {
       if (this->is_property_in_stack(name)) {
         std::stringstream error{};
         error << "A property of name '" << name
@@ -427,6 +418,7 @@ namespace rascal {
         auto property{std::make_shared<UserProperty_t>(
             this->implementation(), metadata, exclude_ghosts)};
         this->properties[name] = property;
+        return *property;
       }
     }
 
@@ -731,6 +723,10 @@ namespace rascal {
       }
     }
 
+    size_t get_property_layer(const size_t & order) const {
+      return get_dyn_layer<traits::MaxOrder>(order,
+                                             typename traits::LayerByOrder{});
+    }
     ImplementationPtr_t get_previous_manager() {
       return this->implementation().get_previous_manager_impl();
     }
@@ -763,9 +759,9 @@ namespace rascal {
       return std::array<int, 0>{};
     }
 
-    /* Returns the cluster size in given order and layer. Because this function
-     * is invoked with with ClusterRefKey<1, Layer> the ParentLayer and
-     * NeighbourLayer have to be optional for the case Order = 1.
+    /* Returns the cluster size in given order and layer. Because this
+     * function is invoked with with ClusterRefKey<1, Layer> the ParentLayer
+     * and NeighbourLayer have to be optional for the case Order = 1.
      */
 
     //! returns a reference to itself
@@ -814,8 +810,7 @@ namespace rascal {
     std::map<std::string, std::shared_ptr<PropertyBase>> properties{};
   };
 
-  /* ----------------------------------------------------------------------
-   */
+  /* ---------------------------------------------------------------------- */
   namespace internal {
     //! helper function that allows to append extra elements to an array It
     //! returns the given array, plus one element
@@ -855,17 +850,11 @@ namespace rascal {
                                  std::make_integer_sequence<int, Size2>{});
     }
 
-    // #BUG8486@(till) changed name Counters to Container, because we handle an
-    // object which can be as manager or clusterref, and this is is name
-    // container in the iterator, counters is used for the the list of all
-    // iterator indices
-    /* ----------------------------------------------------------------------
-     */
+    /* ---------------------------------------------------------------------- */
     /**
      * static branching to redirect to the correct function to get sizes,
      * offsets and neighbours. Used later by adaptors which modify or extend
      * the neighbourlist to access the correct offset.
-     *
      */
     template <bool AtMaxOrder>
     struct IncreaseHelper {
@@ -878,8 +867,9 @@ namespace rascal {
       }
     };
 
-    //! specialization for not at MaxOrder, these refer to the underlying
-    //! manager
+    /**
+     * specialization for not at MaxOrder, these refer to the underlying manager
+     */
     template <>
     struct IncreaseHelper<false> {
       template <class Manager_t, class Container_t>
@@ -1227,8 +1217,8 @@ namespace rascal {
     }
 
     /**
-     * Return an iterable for Order == 2 that includes the neighbors (or pairs)
-     * associated with the current central atom.
+     * Return an iterable for Order == 2 that includes the neighbors (or
+     * pairs) associated with the current central atom.
      */
     template <bool C = IsOrderOneAndHasOrder<2>, std::enable_if_t<C, int> = 0>
     CustomProxy<2> pairs() {

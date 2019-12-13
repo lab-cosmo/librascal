@@ -170,7 +170,7 @@ namespace rascal {
     // type of the data structure for the representation feaures
     template <class StructureManager>
     using Property_t =
-        Property<Precision_t, 1, 1, StructureManager, Eigen::Dynamic, 1>;
+        Property<Precision_t, 1, StructureManager, Eigen::Dynamic, 1>;
     // short hand type to help the iteration over the structure manager
     template <class StructureManager, size_t Order>
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;

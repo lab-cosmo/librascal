@@ -633,10 +633,20 @@ namespace rascal {
 
         size_t center_count{0};
         for (auto center : manager) {
+          /**
+           * To be able to compare the computed values of the full neighbour
+           * minimal neighbour list with the values in the full list, a second
+           * iterator over the manager with the minimal neighbour list is
+           * needed. `center_half` refers to the same `center` atom structure
+           * wise, but its values have been computed making using of a minimal
+           * neighbourlist.
+           */
+          auto it_half = manager_half->get_iterator_at(center_count, 0);
+          auto center_half = *(it_half);
           // compare the representation coefficients
           auto diff_rep_m{math::relative_error(
               rep_vectors.get_dense_row(center),
-              rep_vectors_half.get_dense_row(center), delta, epsilon)};
+              rep_vectors_half.get_dense_row(center_half), delta, epsilon)};
           double diff_rep = diff_rep_m.maxCoeff();
           BOOST_TEST(diff_rep < delta);
           if (verbose and diff_rep > delta) {
@@ -652,10 +662,8 @@ namespace rascal {
             std::cout << std::endl;
           }
 
-          auto half_it = manager_half->get_iterator_at(center_count, 0);
-          auto half_center = *(half_it);
           auto ii_pair = center.get_atom_ii();
-          auto ii_half_pair = half_center.get_atom_ii();
+          auto ii_half_pair = center_half.get_atom_ii();
 
           // compare the representation gradient coefficients at the ii pair
           auto diff_rep_grad_center_m{math::relative_error(
@@ -686,7 +694,7 @@ namespace rascal {
               continue;
             }
 
-            auto half_neigh_it = half_center.pairs().begin();
+            auto half_neigh_it = center_half.pairs().begin();
             for (size_t ii{0}; ii < neigh_count; ii++) {
               ++half_neigh_it;
             }

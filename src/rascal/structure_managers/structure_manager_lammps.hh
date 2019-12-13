@@ -53,6 +53,8 @@ namespace rascal {
     constexpr static bool HasCenterPair{false};
     constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0, 0>;
+    constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
+        AdaptorTraits::NeighbourListType::half};
     using PreviousManager_t = StructureManagerLammps;
   };
 
