@@ -27,10 +27,10 @@
 
 #include "rascal/atomic_structure.hh"
 #include "rascal/basic_types.hh"
+#include "rascal/models/kernels.hh"
 #include "rascal/representations/calculator_sorted_coulomb.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/representations/calculator_spherical_invariants.hh"
-#include "rascal/models/kernels.hh"
 #include "rascal/structure_managers/adaptor_center_contribution.hh"
 #include "rascal/structure_managers/adaptor_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_strict.hh"
@@ -52,9 +52,9 @@ using namespace rascal;  // NOLINT
 
 const int N_ITERATIONS = 1000;
 
-using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
-                                    AdaptorNeighbourList,
-                                    AdaptorCenterContribution, AdaptorStrict>;
+using ManagerTypeHolder_t =
+    StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+                               AdaptorCenterContribution, AdaptorStrict>;
 using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
 using Manager_t = typename ManagerTypeHolder_t::type;
 using ManagerCollection_t =
@@ -62,8 +62,8 @@ using ManagerCollection_t =
 using Representation_t = CalculatorSphericalInvariants;
 
 int main() {
-
-  std::string filename{"../../../reference_data/inputs/small_molecules-20.json"};
+  std::string filename{
+      "../../../reference_data/inputs/small_molecules-20.json"};
 
   double cutoff{3.};
 
@@ -86,16 +86,14 @@ int main() {
   hypers["radial_contribution"] = {{"type", "GTO"}};
 
   json kernel_hypers{
-        {"zeta", 2}, {"target_type", "Structure"}, {"name", "Cosine"}};
+      {"zeta", 2}, {"target_type", "Structure"}, {"name", "Cosine"}};
 
   json structure{{"filename", filename}};
   json adaptors;
   json ad1{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments",
-            {{"cutoff", cutoff},
-             {"skin", 0.}}}};
+           {"initialization_arguments", {{"cutoff", cutoff}, {"skin", 0.}}}};
   json ad1b{{"name", "AdaptorCenterContribution"},
-           {"initialization_arguments", {}}};
+            {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
   adaptors.emplace_back(ad1);

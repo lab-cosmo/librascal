@@ -1895,7 +1895,8 @@ namespace rascal {
         }
       }
       keys_list[i_center].insert({center_type});
-      keys_list_grad[i_grad].insert(keys_list[i_center].begin(), keys_list[i_center].end());
+      keys_list_grad[i_grad].insert(keys_list[i_center].begin(),
+                                    keys_list[i_center].end());
       i_grad++;
       for (auto neigh : center.pairs()) {
         auto && atom_j = neigh.get_atom_j();
@@ -1985,7 +1986,7 @@ namespace rascal {
     if (missing_keys.size() > 0) {
       std::stringstream err_str{};
       err_str << "global_species is missing at least these species: '";
-      for (const auto& key : missing_keys) {
+      for (const auto & key : missing_keys) {
         err_str << key << ", ";
       }
       err_str << "'.";

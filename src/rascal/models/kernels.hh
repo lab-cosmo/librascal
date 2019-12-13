@@ -115,7 +115,7 @@ namespace rascal {
               manager_a->template get_validated_property_ref<Property_t>(
                   representation_name)};
           kernel(ii_A, ii_A) = this->pow_zeta(propA.dot(propA)).mean();
-          for (size_t ii_B{ii_A+1}; ii_B < managers_a.size(); ii_B++) {
+          for (size_t ii_B{ii_A + 1}; ii_B < managers_a.size(); ii_B++) {
             const auto manager_b = managers_a[ii_B];
             auto && propB{
                 manager_b->template get_validated_property_ref<Property_t>(
@@ -193,12 +193,12 @@ namespace rascal {
         for (size_t ii_A{0}; ii_A < managers_a.size(); ii_A++) {
           const auto manager_a = managers_a[ii_A];
           auto a_size = manager_a->size();
-          size_t iii_B{iii_A+a_size};
+          size_t iii_B{iii_A + a_size};
           auto && propA{
               manager_a->template get_validated_property_ref<Property_t>(
                   representation_name)};
           kernel.block(iii_A, iii_A, a_size, a_size) =
-                this->pow_zeta(propA.dot(propA));
+              this->pow_zeta(propA.dot(propA));
           for (size_t ii_B{ii_A + 1}; ii_B < managers_a.size(); ii_B++) {
             const auto manager_b = managers_a[ii_B];
             auto b_size = manager_b->size();
@@ -358,7 +358,6 @@ namespace rascal {
       }
     }
 
-
     template <class Property_t, internal::TargetType Type,
               class StructureManagers>
     math::Matrix_t compute_helper(const std::string & representation_name,
@@ -367,8 +366,8 @@ namespace rascal {
 
       if (this->kernel_type == KernelType::Cosine) {
         auto kernel = downcast_kernel_impl<KernelType::Cosine>(kernel_impl);
-        return kernel->template compute<Property_t, Type>(
-            managers_a, representation_name);
+        return kernel->template compute<Property_t, Type>(managers_a,
+                                                          representation_name);
       } else {
         throw std::logic_error("The combination of parameter is not handled.");
       }

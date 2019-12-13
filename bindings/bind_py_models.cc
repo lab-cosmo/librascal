@@ -47,9 +47,14 @@ namespace rascal {
   template <internal::KernelType Type, class Calculator,
             class StructureManagers, class CalculatorBind>
   void bind_kernel_compute_function(CalculatorBind & kernel) {
-    kernel.def("compute", py::overload_cast<const Calculator &, const StructureManagers &, const StructureManagers &>(&Kernel::template compute<Calculator, StructureManagers>),
+    kernel.def("compute",
+               py::overload_cast<const Calculator &, const StructureManagers &,
+                                 const StructureManagers &>(
+                   &Kernel::template compute<Calculator, StructureManagers>),
                py::call_guard<py::gil_scoped_release>());
-    kernel.def("compute", py::overload_cast<const Calculator &, const StructureManagers &>(&Kernel::template compute<Calculator, StructureManagers>),
+    kernel.def("compute",
+               py::overload_cast<const Calculator &, const StructureManagers &>(
+                   &Kernel::template compute<Calculator, StructureManagers>),
                py::call_guard<py::gil_scoped_release>());
   }
 

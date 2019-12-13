@@ -516,7 +516,7 @@ namespace rascal {
     std::shared_ptr<ManagerImplementation> get_shared_ptr() {
       return this->implementation().shared_from_this();
     }
-    
+
     std::shared_ptr<const ManagerImplementation> get_shared_ptr() const {
       return this->implementation().shared_from_this();
     }
