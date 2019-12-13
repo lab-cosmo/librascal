@@ -635,10 +635,12 @@ namespace rascal {
 
         size_t center_count{0};
         for (auto center : manager) {
+          auto half_it = manager_half->get_iterator_at(center_count, 0);
+          auto half_center = *(half_it);
           // compare the representation coefficients
           auto diff_rep_m{math::relative_error(
               rep_vectors.get_dense_row(center),
-              rep_vectors_half.get_dense_row(center), delta, epsilon)};
+              rep_vectors_half.get_dense_row(half_center), delta, epsilon)};
           double diff_rep = diff_rep_m.maxCoeff();
           BOOST_TEST(diff_rep < delta);
           if (verbose and diff_rep > delta) {
@@ -654,8 +656,6 @@ namespace rascal {
             std::cout << std::endl;
           }
 
-          auto half_it = manager_half->get_iterator_at(center_count, 0);
-          auto half_center = *(half_it);
           auto ii_pair = center.get_atom_ii();
           auto ii_half_pair = half_center.get_atom_ii();
 
