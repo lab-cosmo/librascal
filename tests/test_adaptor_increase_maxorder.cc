@@ -185,7 +185,8 @@ namespace rascal {
 
         auto neighbour_position = pair.get_position();
         auto diff_pos_pair = (neighbour_position - atom_position).norm();
-        BOOST_CHECK_CLOSE(diff_pos_pair, distances[counter++], TOLERANCE);
+        BOOST_CHECK_CLOSE(diff_pos_pair, distances[counter], TOLERANCE);
+        counter++;
       }
 
       for (auto triplet : atom.triplets()) {

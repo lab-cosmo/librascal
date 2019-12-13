@@ -850,17 +850,11 @@ namespace rascal {
                                  std::make_integer_sequence<int, Size2>{});
     }
 
-    // #BUG8486@(till) changed name Counters to Container, because we handle
-    // an object which can be as manager or clusterref, and this is is name
-    // container in the iterator, counters is used for the the list of all
-    // iterator indices
-    /* ----------------------------------------------------------------------
-     */
+    /* ---------------------------------------------------------------------- */
     /**
      * static branching to redirect to the correct function to get sizes,
      * offsets and neighbours. Used later by adaptors which modify or extend
      * the neighbourlist to access the correct offset.
-     *
      */
     template <bool AtMaxOrder>
     struct IncreaseHelper {
@@ -873,8 +867,9 @@ namespace rascal {
       }
     };
 
-    //! specialization for not at MaxOrder, these refer to the underlying
-    //! manager
+    /**
+     * specialization for not at MaxOrder, these refer to the underlying manager
+     */
     template <>
     struct IncreaseHelper<false> {
       template <class Manager_t, class Container_t>

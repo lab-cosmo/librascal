@@ -122,6 +122,10 @@ namespace rascal {
     return get_index_from_sequence<Order - 1>(layers_by_order);
   }
 
+  /**
+   * Called recursively to get to get the corresponing `Layer` at a desired
+   * `Order`. Recursion end below.
+   */
   template <size_t MaxOrder, size_t Order, bool End, size_t... Ints>
   struct LayerHelper {
     constexpr size_t
@@ -135,6 +139,9 @@ namespace rascal {
     }
   };
 
+  /**
+   * Recursion end to the above
+   */
   template <size_t MaxOrder, size_t Order, size_t... Ints>
   struct LayerHelper<MaxOrder, Order, true, Ints...> {
     constexpr size_t
@@ -145,6 +152,10 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Returns the layer of a property of a given `Order` where it was
+   * constructed. `layer_by_order` comes from the manager it was created with.
+   */
   template <size_t MaxOrder, size_t... Ints>
   constexpr size_t
   get_dyn_layer(size_t order,
