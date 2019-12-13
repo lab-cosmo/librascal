@@ -310,6 +310,15 @@ namespace rascal {
                                std::get<2>(pos));
       }
 
+      int get_location_by_key(const key_type & key) const {
+        SortedKey_t skey{key};
+        return this->get_location_by_key(skey);
+      }
+
+      int get_location_by_key(const SortedKey_t & skey) const {
+        const auto & pos{this->map.at(skey.get_key())};
+        return std::get<0>(pos);
+      }
       /**
        * Resize the view of the data to the proper size using the keys, and
        * internal array size n_row and n_col to set up this->map.
@@ -503,23 +512,24 @@ namespace rascal {
         }
       }
 
-     private:
-      std::vector<key_type> intersection(std::vector<key_type> & keys) {
+      std::vector<key_type>
+      intersection(const std::vector<key_type> & keys) const {
         if (keys.empty()) {
           return std::vector<key_type>();
         }
         std::set<key_type> set{keys.cbegin(), keys.cend()};
         std::vector<key_type> intersections;
-        for (auto el : this->map) {
-          if (set.erase(el.first) >
-              0) {  // if n exists in set, then 1 is returned and n is erased;
-                    // otherwise, 0.
+        for (const auto & el : this->map) {
+          if (set.erase(el.first) > 0) {
+            // if n exists in set, then 1 is returned and n is erased;
+            // otherwise, 0.
             intersections.push_back(el.first);
           }
         }
         return intersections;
       }
 
+     private:
       /**
        * Functor to get a key from a map
        */
@@ -549,8 +559,10 @@ namespace rascal {
     using Matrix_t = math::Matrix_t;
     using MatrixMap_Ref_t = Eigen::Map<Matrix_t>;
     using MatrixMapConst_Ref_t = const Eigen::Map<const Matrix_t>;
+    using MatrixRefConst_t = const Eigen::Ref<const Matrix_t>;
     using Key_t = Key;
     using Keys_t = std::set<Key_t>;
+    using SortedKey_t = internal::SortedKey<Key_t>;
     using InputData_t = internal::InternallySortedKeyMap<Key_t, Matrix_t>;
     using Data_t = Eigen::Array<Precision_t, Eigen::Dynamic, 1>;
     using Maps_t = std::vector<InputData_t>;
@@ -900,20 +912,6 @@ namespace rascal {
     }
 
     /**
-     * Get a dense feature matrix Ncenter x Nfeatures only if
-     * `this->are_keys_uniform == true`. It only reinterprets the flat data
-     * storage object since all cluster entries have the same number of keys,
-     * i.e. each rows has the same size and has the same key ordering.
-     */
-    MatrixMapConst_Ref_t get_raw_data_view() const {
-      // should not be called if the keys are not uniform
-      assert(this->are_keys_uniform() == true);
-      auto && n_row = this->size();
-      auto && n_col = this->values.size() / this->size();
-      return MatrixMapConst_Ref_t(this->values.data(), n_row, n_col);
-    }
-
-    /**
      * @return set of unique keys at the level of the structure
      */
     Keys_t get_keys() const {
@@ -943,14 +941,48 @@ namespace rascal {
     }
 
     /**
+     * Get a dense feature matrix Ncenter x Nfeatures only if
+     * `this->are_keys_uniform == true`. It only reinterprets the flat data
+     * storage object since all cluster entries have the same number of keys,
+     * i.e. each rows has the same size and has the same key ordering.
+     */
+    MatrixMapConst_Ref_t get_raw_data_view() const {
+      // should not be called if the keys are not uniform
+      assert(this->are_keys_uniform() == true);
+      auto && n_row = this->size();
+      auto && n_col = this->values.size() / this->size();
+      return MatrixMapConst_Ref_t(this->values.data(), n_row, n_col);
+    }
+
+    std::array<int, 4> get_block_info_by_key(const Key_t & key) const {
+      SortedKey_t skey{key};
+      return this->get_block_info_by_key(skey);
+    }
+
+    std::array<int, 4> get_block_info_by_key(const SortedKey_t & skey) const {
+      // should not be called if the keys are not uniform
+      assert(this->are_keys_uniform() == true);
+      auto && n_row = static_cast<int>(this->size());
+      auto && n_col = this->get_nb_comp();
+      // since the keys are uniform we can use the first element of the map
+      auto && view_start = this->maps[0].get_location_by_key(skey);
+      // the block does all rows and the columns corresponding to skey
+      std::array<int, 4> arr = {{0, view_start, n_row, n_col}};
+      return arr;
+    }
+
+    /**
      * dot product between property block sparse A and B
      * assumes order == 1 for the moment should use SFINAE to take care of
      * the case order == 2
      */
     Matrix_t dot(Self_t & B) {
+      static_assert(IsOrderOne,
+                    "This function should only be used for Order == 1.");
       Matrix_t mat(this->size(), B.size());
-      bool do_direct_dot{false};
+      bool do_direct_dot{false}, do_block_by_key_dot{false};
       if (this->are_keys_uniform() and B.are_keys_uniform()) {
+        do_block_by_key_dot = true;
         if (this->get_global_key_hash() == B.get_global_key_hash()) {
           do_direct_dot = true;
         }
@@ -960,6 +992,23 @@ namespace rascal {
         const auto blockA = this->get_raw_data_view();
         const auto blockB = B.get_raw_data_view();
         mat.noalias() = blockA * blockB.transpose();
+      } else if (do_block_by_key_dot) {
+        mat.setZero();
+        auto center_it = B.get_manager().get_iterator_at(0);
+        auto center = *center_it;
+        // since the keys are uniform we can use the first element of the maps
+        auto B_keys = B.get_keys(center);
+        auto unique_keys = this->maps[0].intersection(B_keys);
+        const auto matA = this->get_raw_data_view();
+        const auto matB = B.get_raw_data_view();
+        for (const auto & key : unique_keys) {
+          SortedKey_t skey{key};
+          auto mA_info = this->get_block_info_by_key(skey);
+          auto mB_info = B.get_block_info_by_key(skey);
+          mat += matA.block(mA_info[0], mA_info[1], mA_info[2], mA_info[3]) *
+                 matB.block(mB_info[0], mB_info[1], mB_info[2], mB_info[3])
+                     .transpose();
+        }
       } else {
         auto && manager_a{this->get_manager()};
         auto && manager_b{B.get_manager()};
@@ -971,6 +1020,39 @@ namespace rascal {
             auto && rowB{B[centerB]};
             mat(i_row, i_col) = rowA.dot(rowB);
             ++i_col;
+          }
+          ++i_row;
+        }
+      }
+      return mat;
+    }
+
+    /**
+     * dot product between property block sparse
+     */
+    Matrix_t dot() {
+      static_assert(IsOrderOne,
+                    "This function should only be used for Order == 1.");
+      Matrix_t mat(this->size(), this->size());
+      // avoid breaking down product this its the matrix with itself
+      if (this->are_keys_uniform()) {
+        const auto blockA = this->get_raw_data_view();
+        // forces Eigen to use syrk instead of gemm
+        // see for reference https://stackoverflow.com/a/41107780
+        // equivalent to mat.noalias() = blockA * blockA.transpose();
+        mat = mat.setZero().selfadjointView<Eigen::Upper>().rankUpdate(blockA);
+      } else {
+        auto && manager_a{this->get_manager()};
+        int i_row{0};
+        for (auto centerA : manager_a) {
+          auto && rowA{this->operator[](centerA)};
+          mat(i_row, i_row) = rowA.norm();
+          auto centerB_it = manager_a.get_iterator_at(i_row + 1);
+          for (int i_col{i_row + 1}; i_col < mat.cols(); i_col++) {
+            auto && rowB{this->operator[](*centerB_it)};
+            mat(i_row, i_col) = rowA.dot(rowB);
+            mat(i_col, i_row) = mat(i_row, i_col);
+            ++centerB_it;
           }
           ++i_row;
         }

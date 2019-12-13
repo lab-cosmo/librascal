@@ -108,7 +108,7 @@ class SphericalInvariants(object):
             global_species = []
         elif not isinstance(global_species, list):
             global_species = list(global_species)
-            
+
         self.update_hyperparameters(
             max_radial=max_radial, max_angular=max_angular,
             n_species=n_species,

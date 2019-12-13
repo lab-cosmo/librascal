@@ -114,7 +114,7 @@ namespace rascal {
           auto && propA{
               manager_a->template get_validated_property_ref<Property_t>(
                   representation_name)};
-          kernel(ii_A, ii_A) = this->pow_zeta(propA.dot(propA)).mean();
+          kernel(ii_A, ii_A) = this->pow_zeta(propA.dot()).mean();
           for (size_t ii_B{ii_A + 1}; ii_B < managers_a.size(); ii_B++) {
             const auto manager_b = managers_a[ii_B];
             auto && propB{
@@ -198,7 +198,7 @@ namespace rascal {
               manager_a->template get_validated_property_ref<Property_t>(
                   representation_name)};
           kernel.block(iii_A, iii_A, a_size, a_size) =
-              this->pow_zeta(propA.dot(propA));
+              this->pow_zeta(propA.dot());
           for (size_t ii_B{ii_A + 1}; ii_B < managers_a.size(); ii_B++) {
             const auto manager_b = managers_a[ii_B];
             auto b_size = manager_b->size();

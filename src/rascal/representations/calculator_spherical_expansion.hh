@@ -1876,7 +1876,7 @@ namespace rascal {
       i_center++;
       keys_list.emplace_back();
       for (auto neigh : center.pairs_with_self_pair()) {
-        (void)neigh; // to avoid compiler warning
+        (void)neigh;  // to avoid compiler warning
         keys_list_grad.emplace_back();
       }
     }
