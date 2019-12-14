@@ -459,14 +459,12 @@ namespace rascal {
   /**
    * Typed ``property`` class definition, inherits from the base property class
    */
-  template <typename Precision_t, size_t Order_, size_t PropertyLayer,
-            class Manager, typename Key>
+  template <typename Precision_t, size_t Order_, class Manager, typename Key>
   class BlockSparseProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using Manager_t = Manager;
-    using Self_t =
-        BlockSparseProperty<Precision_t, Order_, PropertyLayer, Manager, Key>;
+    using Self_t = BlockSparseProperty<Precision_t, Order_, Manager, Key>;
     using traits = typename Manager::traits;
 
     using Matrix_t = math::Matrix_t;
@@ -497,7 +495,7 @@ namespace rascal {
                  0,
                  0,
                  Order,
-                 PropertyLayer,
+                 manager.template cluster_layer_from_order<Order>(),
                  metadata},
           type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
 
@@ -580,21 +578,19 @@ namespace rascal {
     //! Property accessor by cluster ref
     template <size_t CallerLayer>
     InputData_t & operator[](const ClusterRefKey<Order, CallerLayer> & id) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-
-      return this->operator[](id.get_cluster_index(CallerLayer));
+      // You are trying to access a property that does not exist at this depth
+      // in the adaptor stack.
+      assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
+      return this->operator[](id.get_cluster_index(this->get_property_layer()));
     }
 
     template <size_t CallerLayer>
     const InputData_t &
     operator[](const ClusterRefKey<Order, CallerLayer> & id) const {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-
-      return this->operator[](id.get_cluster_index(CallerLayer));
+      // You are trying to access a property that does not exist at this depth
+      // in the adaptor stack.
+      assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
+      return this->operator[](id.get_cluster_index(this->get_property_layer()));
     }
 
     /**
@@ -628,11 +624,11 @@ namespace rascal {
     template <size_t CallerLayer>
     DenseRef_t operator()(const ClusterRefKey<Order, CallerLayer> & id,
                           const Key_t & key) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-
-      return this->operator()(id.get_cluster_index(CallerLayer), key);
+      // You are trying to access a property that does not exist at this depth
+      // in the adaptor stack.
+      assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
+      return this->operator()(id.get_cluster_index(this->get_property_layer()),
+                              key);
     }
 
     //! Accessor for property by index for dynamically sized properties
@@ -645,11 +641,11 @@ namespace rascal {
     //! representation of the property associated to this cluster
     template <size_t CallerLayer>
     Matrix_t get_dense_row(const ClusterRefKey<Order, CallerLayer> & id) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-
-      return this->get_dense_row(id.get_cluster_index(CallerLayer));
+      // You are trying to access a property that does not exist at this depth
+      // in the adaptor stack.
+      assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
+      return this->get_dense_row(
+          id.get_cluster_index(this->get_property_layer()));
     }
 
     Matrix_t get_dense_row(size_t index) {
@@ -739,11 +735,11 @@ namespace rascal {
     template <size_t CallerLayer>
     std::vector<Key_t>
     get_keys(const ClusterRefKey<Order, CallerLayer> & id) const {
-      // static_assert(CallerOrder <= Order, "should be CallerOrder <= Order");
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-      return this->values[id.get_cluster_index(CallerLayer)].get_keys();
+      // You are trying to access a property that does not exist at this depth
+      // in the adaptor stack.
+      assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
+      return this->values[id.get_cluster_index(this->get_property_layer())]
+          .get_keys();
     }
 
     /**

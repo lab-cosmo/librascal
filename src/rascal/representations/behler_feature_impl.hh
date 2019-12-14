@@ -159,8 +159,9 @@ namespace rascal {
   template <class StructureManager>
   void BehlerFeature<SymFunType, CutFunType>::compute(
       StructureManager & manager, std::shared_ptr<PropertyBase> output) const {
-    const std::string && cut_off_vals_id {this->cut_off_fun.get_identifier()};
-    auto & cutoffs{dynamic_cast<Property<>&>(*manager.get_property(cut_off_vals_id))};
+    const std::string && cut_off_vals_id{this->cut_off_fun.get_identifier()};
+    auto & cutoffs{
+        dynamic_cast<Property<> &>(*manager.get_property(cut_off_vals_id))};
     if (not manager.get_property
     using Output_t =
         Property<double, AtomOrder, PropertyLayer, StructureManager>;

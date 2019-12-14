@@ -157,11 +157,10 @@ namespace rascal {
     using Key_t = typename CalculatorBase::Key_t;
 
     template <class StructureManager>
-    using Property_t =
-        BlockSparseProperty<double, 1, 0, StructureManager, Key_t>;
+    using Property_t = BlockSparseProperty<double, 1, StructureManager, Key_t>;
     template <class StructureManager>
     using PropertyGradient_t =
-        BlockSparseProperty<double, 2, 0, StructureManager, Key_t>;
+        BlockSparseProperty<double, 2, StructureManager, Key_t>;
 
     template <class StructureManager>
     using Dense_t = typename Property_t<StructureManager>::Dense_t;
@@ -378,12 +377,11 @@ namespace rascal {
     // Compute the spherical expansions of the current structure
     rep_expansion.compute(manager);
     constexpr bool ExcludeGhosts{true};
-    auto && expansions_coefficients{
-        *manager->template get_property_ptr<PropExp_t>(rep_expansion.get_name(),
-                                                       ExcludeGhosts)};
+    auto && expansions_coefficients{*manager->template get_property<PropExp_t>(
+        rep_expansion.get_name(), true, true, ExcludeGhosts)};
 
-    auto && soap_vectors{*manager->template get_property_ptr<Prop_t>(
-        this->get_name(), ExcludeGhosts)};
+    auto && soap_vectors{*manager->template get_property<Prop_t>(
+        this->get_name(), true, true, ExcludeGhosts)};
 
     // if the representation has already been computed for the current
     // structure then do nothing

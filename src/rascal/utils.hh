@@ -358,6 +358,11 @@ namespace rascal {
   }  // namespace internal
 
   constexpr int ThreeD{3};
+  constexpr int AtomOrder{1};
+  constexpr int PairOrder{2};
+  constexpr int TripletOrder{3};
+  constexpr int QuadrupletOrder{4};
+
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_UTILS_HH_

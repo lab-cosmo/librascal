@@ -52,17 +52,17 @@ namespace rascal {
    * which can be access with clusters directly, without the need for dealing
    * with indices.
    */
-  template <typename T, size_t Order, size_t PropertyLayer, class Manager,
-            Dim_t NbRow = 1, Dim_t NbCol = 1>
-  class Property : public TypedProperty<T, Order, PropertyLayer, Manager> {
+  template <typename T, size_t Order, class Manager, Dim_t NbRow = 1,
+            Dim_t NbCol = 1>
+  class Property : public TypedProperty<T, Order, Manager> {
     static_assert((std::is_arithmetic<T>::value ||
                    std::is_same<T, std::complex<double>>::value),
                   "can currently only handle arithmetic types");
 
    public:
-    using Parent = TypedProperty<T, Order, PropertyLayer, Manager>;
+    using Parent = TypedProperty<T, Order, Manager>;
     using Manager_t = Manager;
-    using Self_t = Property<T, Order, PropertyLayer, Manager, NbRow, NbCol>;
+    using Self_t = Property<T, Order, Manager, NbRow, NbCol>;
     using Value = internal::Value<T, NbRow, NbCol>;
     static_assert(std::is_same<Value, internal::Value<T, NbRow, NbCol>>::value,
                   "type alias failed");

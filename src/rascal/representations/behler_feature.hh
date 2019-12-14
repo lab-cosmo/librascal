@@ -29,14 +29,14 @@
 #ifndef SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_HH_
 #define SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_HH_
 
-#include "rascal/structure_managers/property.hh"
 #include "rascal/json_io.hh"
 #include "rascal/representations/cutoff_functions.hh"
 #include "rascal/representations/symmetry_functions.hh"
+#include "rascal/structure_managers/property.hh"
 
 namespace rascal {
 
-  template<SymmetryFunType... SymFunTypes, CutoffFunctionType... CutFunTypes>
+  template <SymmetryFunType... SymFunTypes, CutoffFunctionType... CutFunTypes>
   class BehlerFeatureBase {
    public:
     constexpr static int MaxBehlerOrder{3};
@@ -175,7 +175,7 @@ namespace rascal {
                  std::shared_ptr<PropertyBase> output,
                  std::shared_ptr<PropertyBase> output_derivatives) const;
 
-    size_t get_index() const;              // to implement
+    size_t get_index() const;  // to implement
 
    protected:
     template <class StructureManager, size_t Order>

@@ -123,6 +123,48 @@ namespace rascal {
   }
 
   /**
+   * Called recursively to get to get the corresponing `Layer` at a desired
+   * `Order`. Recursion end below.
+   */
+  template <size_t MaxOrder, size_t Order, bool End, size_t... Ints>
+  struct LayerHelper {
+    constexpr size_t
+    help(size_t order, const std::index_sequence<Ints...> & layers_by_order) {
+      if (order == Order) {
+        return get_layer<Order>(layers_by_order);
+      } else {
+        return LayerHelper<MaxOrder, Order + 1, MaxOrder == Order + 1,
+                           Ints...>::help(order, layers_by_order);
+      }
+    }
+  };
+
+  /**
+   * Recursion end to the above
+   */
+  template <size_t MaxOrder, size_t Order, size_t... Ints>
+  struct LayerHelper<MaxOrder, Order, true, Ints...> {
+    constexpr size_t
+    help(size_t /*order*/,
+         const std::index_sequence<Ints...> & layers_by_order) {
+      return get_layer<Order>(layers_by_order);
+    }
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Returns the layer of a property of a given `Order` where it was
+   * constructed. `layer_by_order` comes from the manager it was created with.
+   */
+  template <size_t MaxOrder, size_t... Ints>
+  constexpr size_t
+  get_dyn_layer(size_t order,
+                const std::index_sequence<Ints...> & layers_by_order) {
+    return LayerHelper<MaxOrder, 1, MaxOrder == 1, Ints...>::help(
+        order, layers_by_order);
+  }
+
+  /**
    * Returns the index sequence given by the `Ints` as array.
    *
    * @param layers_by_order the type captures the layers of each order in an
@@ -137,16 +179,17 @@ namespace rascal {
   }
 
   /**
-   * Returns the smallest number of layers up to the order `ActiveMaxOrder` in
-   * the `LayersByOrder` index sequence. It is needed to access properties at a
-   * specific layer in a manager stack.
+   * Returns the smallest number of layers up to the order `ActiveMaxOrder`
+   * in the `LayersByOrder` index sequence. It is needed to access
+   * properties at a specific layer in a manager stack.
    *
-   * @tparam ActiveMaxOrder the maximum order to check the `LayersByOrders` for
-   *         the minimum value.
+   * @tparam ActiveMaxOrder the maximum order to check the `LayersByOrders`
+   * for the minimum value.
    * @param layers_by_order the type captures the layers of each order in an
    *        index sequence.
    *
-   * @return the smallest value in the given index sequence up to Order elements
+   * @return the smallest value in the given index sequence up to Order
+   * elements
    */
   template <size_t ActiveMaxOrder, size_t... LayersByOrder>
   constexpr size_t get_min_layer(
@@ -162,29 +205,30 @@ namespace rascal {
     return *std::min_element(std::begin(arr), std::begin(arr) + ActiveMaxOrder);
   }
 
-  /* ---------------------------------------------------------------------- */
+  /* ----------------------------------------------------------------------
+   */
   /**
-   * Accessor class for a reference to a cluster, i.e. a tuple of atoms (atoms,
-   * pairs, triples, ...). The reference does not store data about the actual
-   * tuple, just contains all the information needed to locate the infor in the
-   * appropriate arrays that are stored in a Manager class.
+   * Accessor class for a reference to a cluster, i.e. a tuple of atoms
+   * (atoms, pairs, triples, ...). The reference does not store data about
+   * the actual tuple, just contains all the information needed to locate
+   * the infor in the appropriate arrays that are stored in a Manager class.
    *
-   * Given that Manager classes can be 'stacked', e.g. using a strict cutoff on
-   * top of a loose neighbor list, the reference must know in which order of the
-   * hierarchy the data.
+   * Given that Manager classes can be 'stacked', e.g. using a strict cutoff
+   * on top of a loose neighbor list, the reference must know in which order
+   * of the hierarchy the data.
    *
-   * For these reasons ClusterRefKey is templated by two arguments: Order that
-   * specifies the number of atoms in the cluster, and Layer that specifies how
-   * many layers of managers/adaptors are stacked at the point at which the
-   * cluster reference is introduced.
+   * For these reasons ClusterRefKey is templated by two arguments: Order
+   * that specifies the number of atoms in the cluster, and Layer that
+   * specifies how many layers of managers/adaptors are stacked at the point
+   * at which the cluster reference is introduced.
    */
   template <size_t Order, size_t Layer>
   class ClusterRefKey : public ClusterRefBase {
    public:
     /**
-     * Index array types need both a constant and a non-constant version. The
-     * non-const version can and needs to be cast into a const version in
-     * argument.
+     * Index array types need both a constant and a non-constant version.
+     * The non-const version can and needs to be cast into a const version
+     * in argument.
      */
     using Parent = ClusterRefBase;
     using IndexConstArray =
@@ -259,13 +303,13 @@ namespace rascal {
    protected:
     /**
      *  Array with unique atom tags. These can be user defined to refer to
-     *  the exact same atom, e.g. in a Monte-Carlo simulation, where atoms are
-     *  swapped.
+     *  the exact same atom, e.g. in a Monte-Carlo simulation, where atoms
+     * are swapped.
      */
     AtomIndex_t atom_tag_list;
     /**
-     * Cluster indices by layer order, highest layer, means last adaptor, and
-     * means last entry (.back())
+     * Cluster indices by layer order, highest layer, means last adaptor,
+     * and means last entry (.back())
      */
     IndexConstArray cluster_indices;
   };

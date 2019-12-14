@@ -60,6 +60,7 @@ namespace rascal {
     // increased in size so all the data belongs to the adaptor
     using LayerByOrder = std::index_sequence<
         ManagerImplementation::template cluster_layer_from_order<1>() + 1, 0>;
+    using PreviousManager_t = ManagerImplementation;
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         parent_traits::NeighbourListType};
   };
@@ -92,6 +93,7 @@ namespace rascal {
     using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<Manager_t>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
@@ -230,7 +232,7 @@ namespace rascal {
     }
 
     //! Get the manager used to build the instance
-    ImplementationPtr_t get_previous_manager() {
+    ImplementationPtr_t get_previous_manager_impl() {
       return this->manager->get_shared_ptr();
     }
 

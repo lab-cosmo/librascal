@@ -64,6 +64,7 @@ namespace rascal {
     //! New Layer
     using LayerByOrder =
         typename LayerIncreaser<typename parent_traits::LayerByOrder>::type;
+    using PreviousManager_t = ManagerImplementation;
   };
 
   namespace internal {
@@ -126,6 +127,7 @@ namespace rascal {
     using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorFilter>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     template <size_t Order>
@@ -305,6 +307,11 @@ namespace rascal {
      */
     template <size_t Order>
     void add_cluster(const InputClusterRef_t<Order> & cluster);
+
+    //! Get the manager used to build the instance
+    ImplementationPtr_t get_previous_manager_impl() {
+      return this->manager->get_shared_ptr();
+    }
 
    protected:
     /**
