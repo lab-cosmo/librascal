@@ -31,8 +31,8 @@
 #define SRC_RASCAL_ATOMIC_STRUCTURE_HH_
 
 #include "rascal/basic_types.hh"
-#include "rascal/json_io.hh"
 #include "rascal/math/utils.hh"
+#include "rascal/utils/json_io.hh"
 
 #include <Eigen/Dense>
 

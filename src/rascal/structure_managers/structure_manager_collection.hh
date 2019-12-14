@@ -29,12 +29,12 @@
 #define SRC_RASCAL_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_COLLECTION_HH_
 
 #include "rascal/atomic_structure.hh"
-#include "rascal/json_io.hh"
 #include "rascal/math/utils.hh"
 #include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/structure_manager.hh"
 #include "rascal/structure_managers/updateable_base.hh"
+#include "rascal/utils/json_io.hh"
 #include "rascal/utils/utils.hh"
 
 namespace rascal {

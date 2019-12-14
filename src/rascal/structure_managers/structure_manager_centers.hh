@@ -36,9 +36,9 @@
 // given in `structure_manager.hh`
 #include "rascal/atomic_structure.hh"
 #include "rascal/basic_types.hh"
-#include "rascal/json_io.hh"
 #include "rascal/lattice.hh"
 #include "rascal/structure_managers/structure_manager.hh"
+#include "rascal/utils/json_io.hh"
 
 // data types and operations are based on the Eigen library
 #include <Eigen/Dense>

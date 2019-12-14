@@ -29,12 +29,12 @@
 #ifndef TESTS_TEST_MATH_HH_
 #define TESTS_TEST_MATH_HH_
 
-#include "rascal/json_io.hh"
 #include "rascal/math/bessel.hh"
 #include "rascal/math/gauss_legendre.hh"
 #include "rascal/math/hyp1f1.hh"
 #include "rascal/math/spherical_harmonics.hh"
 #include "rascal/math/utils.hh"
+#include "rascal/utils/json_io.hh"
 #include "rascal/utils/utils.hh"
 
 #include <boost/test/unit_test.hpp>

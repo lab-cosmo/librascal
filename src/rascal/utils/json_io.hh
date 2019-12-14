@@ -1,5 +1,5 @@
 /**
- * @file   rascal/json_io.hh
+ * @file   rascal/utils/json_io.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_JSON_IO_HH_
-#define SRC_RASCAL_JSON_IO_HH_
+#ifndef SRC_RASCAL_UTILS_JSON_IO_HH_
+#define SRC_RASCAL_UTILS_JSON_IO_HH_
 
 /*
  * interface to external header-library/header-class, which makes it easy to use
@@ -350,4 +350,4 @@ namespace rascal {
   }  // namespace json_io
 }  // namespace rascal
 
-#endif  // SRC_RASCAL_JSON_IO_HH_
+#endif  // SRC_RASCAL_UTILS_JSON_IO_HH_
