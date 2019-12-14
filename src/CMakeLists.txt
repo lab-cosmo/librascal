@@ -32,7 +32,7 @@
 
 set(RASCAL_SOURCES
     rascal/json_io.cc
-    rascal/units.cc
+    rascal/utils/units.cc
     rascal/utils/utils.cc
     rascal/utils/sparsify_fps.cc
 
