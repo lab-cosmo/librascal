@@ -32,9 +32,9 @@
 #ifndef SRC_RASCAL_STRUCTURE_MANAGERS_PROPERTY_HH_
 #define SRC_RASCAL_STRUCTURE_MANAGERS_PROPERTY_HH_
 
-#include "rascal/basic_types.hh"
 #include "rascal/structure_managers/property_typed.hh"
 #include "rascal/utils/utils.hh"
+#include "rascal/utils/basic_types.hh"
 
 #include <Eigen/Dense>
 

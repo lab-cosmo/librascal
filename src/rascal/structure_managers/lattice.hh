@@ -1,5 +1,5 @@
 /**
- * @file   rascal/lattice.hh
+ * @file   rascal/structure_managers/lattice.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  *
@@ -26,10 +26,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_LATTICE_HH_
-#define SRC_RASCAL_LATTICE_HH_
+#ifndef SRC_RASCAL_STRUCTURE_MANAGERS_LATTICE_HH_
+#define SRC_RASCAL_STRUCTURE_MANAGERS_LATTICE_HH_
 
-#include "rascal/atomic_structure.hh"
+#include "rascal/structure_managers/atomic_structure.hh"
 
 #include <Eigen/Dense>
 
@@ -250,4 +250,4 @@ namespace rascal {
   };
 }  // namespace rascal
 
-#endif  // SRC_RASCAL_LATTICE_HH_
+#endif  // SRC_RASCAL_STRUCTURE_MANAGERS_LATTICE_HH_

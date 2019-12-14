@@ -28,8 +28,8 @@
 #ifndef SRC_RASCAL_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_COLLECTION_HH_
 #define SRC_RASCAL_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_COLLECTION_HH_
 
-#include "rascal/atomic_structure.hh"
 #include "rascal/math/utils.hh"
+#include "rascal/structure_managers/atomic_structure.hh"
 #include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/structure_manager.hh"
@@ -41,7 +41,7 @@ namespace rascal {
 
   /**
    * A container to hold the multiple managers associated with one stack of
-   * managers and allows iterations over them. Each manager stack needs to
+   * managers and allows iterations over them. Each manager stack needs to be
    * initialized stack by stack. This class provides functions to do this job.
    *
    * ManagerCollection<StructureManagerCenter, AdaptorNeighbourList,

@@ -28,7 +28,7 @@
 #ifndef BINDINGS_BIND_INCLUDE_HH_
 #define BINDINGS_BIND_INCLUDE_HH_
 
-#include "rascal/atomic_structure.hh"
+#include "rascal/structure_managers/atomic_structure.hh"
 #include "rascal/utils/utils.hh"
 
 #include <pybind11/eigen.h>

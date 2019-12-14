@@ -33,12 +33,12 @@
 #include "test_math.hh"
 #include "test_structure.hh"
 
-#include "rascal/atomic_structure.hh"
 #include "rascal/representations/calculator_base.hh"
 #include "rascal/representations/calculator_sorted_coulomb.hh"
 #include "rascal/representations/calculator_spherical_covariants.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/structure_managers/atomic_structure.hh"
 #include "rascal/structure_managers/cluster_ref_key.hh"
 #include "rascal/structure_managers/structure_manager_collection.hh"
 #include "rascal/utils/json_io.hh"

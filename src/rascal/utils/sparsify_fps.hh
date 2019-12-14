@@ -28,7 +28,7 @@
 #ifndef SRC_RASCAL_UTILS_SPARSIFY_FPS_HH_
 #define SRC_RASCAL_UTILS_SPARSIFY_FPS_HH_
 
-#include "rascal/basic_types.hh"
+#include "rascal/utils/basic_types.hh"
 
 #include <Eigen/Dense>
 
