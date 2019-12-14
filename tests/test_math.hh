@@ -35,7 +35,7 @@
 #include "rascal/math/hyp1f1.hh"
 #include "rascal/math/spherical_harmonics.hh"
 #include "rascal/math/utils.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <boost/test/unit_test.hpp>
 

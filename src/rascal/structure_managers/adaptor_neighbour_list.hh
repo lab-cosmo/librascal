@@ -37,7 +37,7 @@
 #include "rascal/lattice.hh"
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/structure_manager.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <set>
 #include <vector>

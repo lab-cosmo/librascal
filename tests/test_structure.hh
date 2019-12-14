@@ -43,7 +43,7 @@
 #include "rascal/structure_managers/structure_manager_base.hh"
 #include "rascal/structure_managers/structure_manager_centers.hh"
 #include "rascal/structure_managers/structure_manager_lammps.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 namespace rascal {
 

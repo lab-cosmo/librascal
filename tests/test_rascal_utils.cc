@@ -26,7 +26,7 @@
  */
 
 #include "rascal/representations/calculator_spherical_expansion.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>

@@ -34,7 +34,7 @@
 
 #include "rascal/basic_types.hh"
 #include "rascal/structure_managers/property_typed.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <Eigen/Dense>
 

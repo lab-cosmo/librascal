@@ -42,7 +42,7 @@
 #include "rascal/representations/calculator_spherical_invariants.hh"
 #include "rascal/structure_managers/cluster_ref_key.hh"
 #include "rascal/structure_managers/structure_manager_collection.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <memory>
 #include <tuple>

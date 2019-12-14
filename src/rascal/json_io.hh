@@ -34,7 +34,7 @@
  * documentation.
  */
 #include "rascal/external/json.hpp"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <Eigen/Dense>
 

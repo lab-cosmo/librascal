@@ -35,7 +35,7 @@
 #include "rascal/structure_managers/adaptor_strict.hh"
 #include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/structure_managers/structure_manager_centers.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <chrono>
 #include <cmath>
