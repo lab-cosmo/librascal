@@ -25,5 +25,6 @@ IndentWidth: 2
 KeepEmptyLinesAtTheStartOfBlocks: false
 NamespaceIndentation: All
 PointerAlignment: Middle
+ReflowComments: true
 SortIncludes: true
 SpacesBeforeTrailingComments: 2
