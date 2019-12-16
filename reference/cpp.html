@@ -812,17 +812,17 @@ StructureManager is compatible with the representation <dl class="simple">
 <p class="breathe-sectiondef-title rubric">Typedefs</p>
 <dl class="type">
 <dt>
-<em class="property">using </em><code class="sig-name descname">Dim_t</code> = int<br /></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt>
 <em class="property">using </em><code class="sig-name descname">LayerIncreaser_t</code> = <em class="property">typename</em> LayerIncreaser&lt;std::index_sequence&lt;LayersByOrder...&gt;&gt;::type<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
 <dt>
 <em class="property">using </em><code class="sig-name descname">LayerExtender_t</code> = <em class="property">typename</em> LayerExtender&lt;std::index_sequence&lt;LayersByOrder...&gt;&gt;::type<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">Dim_t</code> = int<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
@@ -1040,16 +1040,6 @@ StructureManager is compatible with the representation <dl class="simple">
 <p class="breathe-sectiondef-title rubric">Functions</p>
 <dl class="function">
 <dt>
-template&lt;int <code class="sig-name descname">Dim</code>&gt;<br />void <code class="sig-name descname">to_json</code><span class="sig-paren">(</span>json &amp;<em>j</em>, <em class="property">const</em> AtomicStructure&lt;<a class="reference internal" href="#_CPPv4I_iEN6rascal7to_jsonEvR4jsonRK15AtomicStructureI3DimE" title="rascal::to_json::Dim">Dim</a>&gt; &amp;<em>s</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-template&lt;int <code class="sig-name descname">Dim</code>&gt;<br />void <code class="sig-name descname">from_json</code><span class="sig-paren">(</span><em class="property">const</em> json &amp;<em>j</em>, AtomicStructure&lt;<a class="reference internal" href="#_CPPv4I_iEN6rascal9from_jsonEvRK4jsonR15AtomicStructureI3DimE" title="rascal::from_json::Dim">Dim</a>&gt; &amp;<em>s</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
 <em class="property">constexpr</em> std::size_t <code class="sig-name descname">operator&quot;&quot;_size_t</code><span class="sig-paren">(</span>unsigned long long int <em>n</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -1091,6 +1081,16 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title
 <dl class="function">
 <dt>
 template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionTypeE" title="rascal::internal::CutoffFunctionType">CutoffFunctionType</a> <code class="sig-name descname">Type</code>&gt;<br />auto <code class="sig-name descname">downcast_cutoff_function</code><span class="sig-paren">(</span>std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal18CutoffFunctionBaseE" title="rascal::internal::CutoffFunctionBase">CutoffFunctionBase</a>&gt; &amp;<em>cutoff_function</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;int <code class="sig-name descname">Dim</code>&gt;<br />void <code class="sig-name descname">to_json</code><span class="sig-paren">(</span>json &amp;<em>j</em>, <em class="property">const</em> AtomicStructure&lt;<a class="reference internal" href="#_CPPv4I_iEN6rascal7to_jsonEvR4jsonRK15AtomicStructureI3DimE" title="rascal::to_json::Dim">Dim</a>&gt; &amp;<em>s</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;int <code class="sig-name descname">Dim</code>&gt;<br />void <code class="sig-name descname">from_json</code><span class="sig-paren">(</span><em class="property">const</em> json &amp;<em>j</em>, AtomicStructure&lt;<a class="reference internal" href="#_CPPv4I_iEN6rascal9from_jsonEvRK4jsonR15AtomicStructureI3DimE" title="rascal::from_json::Dim">Dim</a>&gt; &amp;<em>s</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
