@@ -1,5 +1,5 @@
 /**
- * @file   rascal/units.hh
+ * @file   rascal/utils/units.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_UNITS_HH_
-#define SRC_RASCAL_UNITS_HH_
+#ifndef SRC_RASCAL_UTILS_UNITS_HH_
+#define SRC_RASCAL_UTILS_UNITS_HH_
 
 #include <map>
 #include <string>
@@ -118,4 +118,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_RASCAL_UNITS_HH_
+#endif  // SRC_RASCAL_UTILS_UNITS_HH_

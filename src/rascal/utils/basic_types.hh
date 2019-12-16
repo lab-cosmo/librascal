@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_BASIC_TYPES_HH_
-#define SRC_RASCAL_BASIC_TYPES_HH_
+#ifndef SRC_RASCAL_UTILS_BASIC_TYPES_HH_
+#define SRC_RASCAL_UTILS_BASIC_TYPES_HH_
 
 namespace rascal {
   /**
@@ -37,4 +37,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_RASCAL_BASIC_TYPES_HH_
+#endif  // SRC_RASCAL_UTILS_BASIC_TYPES_HH_

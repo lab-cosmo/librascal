@@ -36,7 +36,7 @@
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/structure_managers/property_block_sparse.hh"
 #include "rascal/structure_managers/structure_manager.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <wigxjpf.h>
 

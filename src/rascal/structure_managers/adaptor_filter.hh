@@ -33,7 +33,7 @@
 #include "rascal/structure_managers/cluster_ref_key.hh"
 #include "rascal/structure_managers/filter_base.hh"
 #include "rascal/structure_managers/structure_manager.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <type_traits>
 

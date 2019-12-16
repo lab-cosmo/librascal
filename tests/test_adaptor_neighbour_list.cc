@@ -30,7 +30,7 @@
 #include "test_adaptor.hh"
 #include "test_structure.hh"
 
-#include "rascal/atomic_structure.hh"
+#include "rascal/structure_managers/atomic_structure.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>

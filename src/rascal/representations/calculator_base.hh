@@ -28,9 +28,9 @@
 #ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BASE_HH_
 #define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BASE_HH_
 
-#include "rascal/json_io.hh"
 #include "rascal/structure_managers/property_block_sparse.hh"
 #include "rascal/structure_managers/structure_manager_base.hh"
+#include "rascal/utils/json_io.hh"
 
 #include <Eigen/Dense>
 
