@@ -31,7 +31,7 @@
 
 #include "rascal/math/utils.hh"
 #include "rascal/representations/calculator_base.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <Eigen/Dense>
 

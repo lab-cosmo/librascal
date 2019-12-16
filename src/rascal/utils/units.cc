@@ -1,5 +1,5 @@
 /**
- * @file   rascal/units.cc
+ * @file   rascal/utils/units.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -25,7 +25,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rascal/units.hh"
+#include "rascal/utils/units.hh"
 
 #include <sstream>
 

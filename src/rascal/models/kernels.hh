@@ -28,9 +28,9 @@
 #ifndef SRC_RASCAL_MODELS_KERNELS_HH_
 #define SRC_RASCAL_MODELS_KERNELS_HH_
 
-#include "rascal/json_io.hh"
 #include "rascal/math/utils.hh"
 #include "rascal/structure_managers/structure_manager_collection.hh"
+#include "rascal/utils/json_io.hh"
 
 namespace rascal {
 

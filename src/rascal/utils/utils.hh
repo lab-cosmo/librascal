@@ -1,5 +1,5 @@
 /**
- * @file   rascal/utils.hh
+ * @file   rascal/utils/utils.hh
  *
  * @author Markus Stricker <markus.stricker@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_UTILS_HH_
-#define SRC_RASCAL_UTILS_HH_
+#ifndef SRC_RASCAL_UTILS_UTILS_HH_
+#define SRC_RASCAL_UTILS_UTILS_HH_
 
 #include <string>
 #include <tuple>
@@ -364,4 +364,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_RASCAL_UTILS_HH_
+#endif  // SRC_RASCAL_UTILS_UTILS_HH_

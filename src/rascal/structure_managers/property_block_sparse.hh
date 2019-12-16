@@ -33,7 +33,7 @@
 #include "rascal/math/utils.hh"
 #include "rascal/structure_managers/cluster_ref_key.hh"
 #include "rascal/structure_managers/property_base.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <algorithm>
 #include <iterator>

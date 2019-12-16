@@ -30,8 +30,8 @@
 #ifndef SRC_RASCAL_STRUCTURE_MANAGERS_PROPERTY_BASE_HH_
 #define SRC_RASCAL_STRUCTURE_MANAGERS_PROPERTY_BASE_HH_
 
-#include "rascal/basic_types.hh"
 #include "rascal/structure_managers/structure_manager_base.hh"
+#include "rascal/utils/basic_types.hh"
 
 #include <array>
 #include <string>

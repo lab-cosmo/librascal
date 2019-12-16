@@ -30,9 +30,9 @@
 
 #include "utils.hh"
 
-#include "rascal/json_io.hh"
 #include "rascal/math/hyp1f1.hh"
 #include "rascal/math/interpolator.hh"
+#include "rascal/utils/json_io.hh"
 
 #include <chrono>
 #include <iostream>
