@@ -52,7 +52,7 @@ namespace rascal {
   class CutoffFunctionBase {
    public:
     //! Constructor
-    CutoffFunctionBase(const InlCutoffFunctionType & cut_fun_type)
+    explicit CutoffFunctionBase(const InlCutoffFunctionType & cut_fun_type)
         : cut_fun_type{cut_fun_type} {}
     //! Destructor
     virtual ~CutoffFunctionBase() = default;

@@ -27,6 +27,7 @@
  */
 
 #include "rascal/representations/symmetry_functions.hh"
+#include "behler_fixtures.hh"
 #include "rascal/utils/json_io.hh"
 #include "test_structure.hh"
 
@@ -39,25 +40,6 @@
 #include "Eigen/Dense"
 
 namespace rascal {
-
-  template <SymmetryFunctionType FunType>
-  struct SymmetryFunFixture {};
-
-  template <>
-  struct SymmetryFunFixture<SymmetryFunctionType::Gaussian> {
-    using SymFun = SymmetryFunction<SymmetryFunctionType::Gaussian>;
-    SymmetryFunFixture() : sym_fun{unit_style, correct_input} {}
-    const units::UnitStyle unit_style{units::metal};
-
-    const double r_ij{1.1};
-    json correct_input{{"eta", {{"value", .1}, {"unit", "(Å)^(-1)"}}},
-                       {"r_s", {{"value", 5.6}, {"unit", "Å"}}}};
-
-    json incorrect_put{{"eta", {{"value", .1}, {"unit", "(Å)^(-2)"}}},
-                       {"r_s", {{"value", 5.6}, {"unit", "Å"}}}};
-    SymFun sym_fun;
-  };
-
   using SymmetryFunctions_t =
       boost::mpl::list<SymmetryFunFixture<SymmetryFunctionType::Gaussian>>;
 

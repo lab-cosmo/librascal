@@ -29,14 +29,18 @@
 #ifndef SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_HH_
 #define SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_HH_
 
-#include "rascal/json_io.hh"
-#include "rascal/representations/cutoff_functions.hh"
+#include "rascal/representations/cutoff_functions_inlineable.hh"
 #include "rascal/representations/symmetry_functions.hh"
 #include "rascal/structure_managers/property.hh"
+#include "rascal/utils/json_io.hh"
 
 namespace rascal {
 
-  template <SymmetryFunType... SymFunTypes, CutoffFunctionType... CutFunTypes>
+  /**
+   * A BehlerFeature is a single G function with a single set of parameters
+   */
+  template <SymmetryFunctionType... SymFunTypes,
+            InlCutoffFunctionType... CutFunTypes>
   class BehlerFeatureBase {
    public:
     constexpr static int MaxBehlerOrder{3};
@@ -56,8 +60,8 @@ namespace rascal {
     BehlerFeatureBase() = delete;
 
     //! Constructor with symmetry function type
-    BehlerFeatureBase(const SymmetryFunType & sym_fun_type,
-                      const internal::CutoffFunctionType & cut_fun_type,
+    BehlerFeatureBase(const SymmetryFunctionType & sym_fun_type,
+                      const internal::InlCutoffFunctionType & cut_fun_type,
                       const size_t & order, const Hypers_t & raw_params)
         : sym_fun_type{sym_fun_type}, cut_fun_type{cut_fun_type}, order{order},
           raw_params{raw_params}, output_property{output_property} {}
@@ -107,24 +111,24 @@ namespace rascal {
     }
 
    protected:
-    template <SymmetryFunType... FunTypes_>
+    template <SymmetryFunctionType... FunTypes_>
     class SymFunctionsVTable;
 
-    template <SymmetryFunType SymFunType,
-              internal::CutoffFunctionType... CutoffFunTypes_>
+    template <SymmetryFunctionType SymFunType,
+              internal::InlCutoffFunctionType... CutoffFunTypes_>
     class CutoffFunctionsVTable;
 
-    template <SymmetryFunType SymFunType, class StructureManager>
+    template <SymmetryFunctionType SymFunType, class StructureManager>
     void compute_helper(StructureManager & manager,
                         std::shared_ptr<PropertyBase> output_values) const;
 
-    template <SymmetryFunType SymFunType, class StructureManager>
+    template <SymmetryFunctionType SymFunType, class StructureManager>
     void compute_helper(StructureManager & manager,
                         std::shared_ptr<PropertyBase> output_values,
                         std::shared_ptr<PropertyBase> output_derivatives) const;
 
-    const SymmetryFunType sym_fun_type;
-    const internal::CutoffFunctionType cut_fun_type;
+    const SymmetryFunctionType sym_fun_type;
+    const internal::InlCutoffFunctionType cut_fun_type;
     const size_t order;
     std::vector<json> raw_params{};
     RepeatedSpecies species_repetition{RepeatedSpecies::Unknown};
@@ -133,7 +137,8 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunType SymFunType, internal::CutoffFunctionType CutFunType>
+  template <SymmetryFunctionType SymFunType,
+            internal::InlCutoffFunctionType CutFunType>
   class BehlerFeature final : public BehlerFeatureBase {
    public:
     using Parent = BehlerFeatureBase;

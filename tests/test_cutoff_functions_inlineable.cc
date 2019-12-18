@@ -26,9 +26,11 @@
  *
  */
 
+#include "behler_fixtures.hh"
+#include "test_structure.hh"
+
 #include "rascal/representations/cutoff_functions_inlineable.hh"
 #include "rascal/utils/units.hh"
-#include "test_structure.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
@@ -37,25 +39,6 @@
 #include <limits>
 
 namespace rascal {
-
-  template <InlCutoffFunctionType FunType>
-  struct InlCutoffFunFixture {};
-
-  template <>
-  struct InlCutoffFunFixture<InlCutoffFunctionType::Cosine> {
-    using CutoffFun = CutoffFunction<InlCutoffFunctionType::Cosine>;
-    InlCutoffFunFixture() : cut_fun{unit_style, correct_input} {}
-    const units::UnitStyle unit_style{units::metal};
-
-    const double r_cut{1.1};
-    CutoffFunctionBase::Hypers_t correct_input{
-        {"params", {}}, {"r_cut", {{"value", r_cut}, {"unit", "Å"}}}};
-
-    CutoffFunctionBase::Hypers_t incorrect_put{
-        {"params", {}}, {"r_cut", {{"value", r_cut}, {"unit", "J"}}}};
-    CutoffFun cut_fun;
-  };
-
   using CutoffFunctions_t =
       boost::mpl::list<InlCutoffFunFixture<InlCutoffFunctionType::Cosine>>;
 
@@ -92,16 +75,20 @@ namespace rascal {
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(compute_test, Fix, CutoffFunctions_t, Fix) {
     ManagerFixture<StructureManagerLammps> fixture{};
-    auto strict{make_adapted_manager<AdaptorStrict>(fixture.manager, this->r_cut)};
+    auto strict{
+        make_adapted_manager<AdaptorStrict>(fixture.manager, this->r_cut)};
     strict->update();
     constexpr bool ComputeDerivative{false};
     this->cut_fun.compute(*strict, ComputeDerivative);
   }
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(compute_test_wrong_level, Fix, CutoffFunctions_t, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(compute_test_wrong_level, Fix,
+                                   CutoffFunctions_t, Fix) {
     ManagerFixture<StructureManagerLammps> fixture{};
-    auto strict{make_adapted_manager<AdaptorStrict>(fixture.manager, this->r_cut)};
-    auto strict2{make_adapted_manager<AdaptorStrict>(strict, this->r_cut*.99)};
+    auto strict{
+        make_adapted_manager<AdaptorStrict>(fixture.manager, this->r_cut)};
+    auto strict2{
+        make_adapted_manager<AdaptorStrict>(strict, this->r_cut * .99)};
     strict2->update();
     constexpr bool ComputeDerivative{false};
     this->cut_fun.compute(*strict, ComputeDerivative);
@@ -114,7 +101,8 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(compute_derivative_test, Fix,
                                    CutoffFunctions_t, Fix) {
     ManagerFixture<StructureManagerLammps> fixture{};
-    auto strict{make_adapted_manager<AdaptorStrict>(fixture.manager, this->r_cut)};
+    auto strict{
+        make_adapted_manager<AdaptorStrict>(fixture.manager, this->r_cut)};
     strict->update();
     constexpr bool ComputeDerivative{true};
     this->cut_fun.compute(*strict, ComputeDerivative);
