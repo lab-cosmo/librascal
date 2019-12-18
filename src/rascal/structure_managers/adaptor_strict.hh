@@ -351,8 +351,8 @@ namespace rascal {
 
   {
     if (not internal::check_cutoff(this->manager, cutoff)) {
-      throw std::runtime_error("underlying manager already has a smaller "
-                               "cut off");
+      throw std::runtime_error("underlying manager already has a smaller or "
+                               "equal cut off");
     }
   }
 

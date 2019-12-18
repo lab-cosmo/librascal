@@ -482,7 +482,7 @@ namespace rascal {
      * @param name the name of the property to get.
      * @param validate_property property is validated if this parameter is true,
      * see validate_property_t
-     * @param force_creation if the property does not exist in the manager stack
+     * @param allow_creation if the property does not exist in the manager stack
      * the property is created and returned. The validation step is skipped in
      * this case.
      * @param exclude_ghosts change property sizing behavior when Order == 1
@@ -491,20 +491,20 @@ namespace rascal {
      *
      * @throw runtime_error If validate_property is true and UserProperty_t is
      * not compatible with the property with the given name.
-     * @throw runtime_error If force_creation is false and property has not been
+     * @throw runtime_error If allow_creation is false and property has not been
      * found in manager stack.
      */
     template <typename UserProperty_t>
     std::shared_ptr<UserProperty_t>
     get_property(const std::string & name, const bool validate_property = true,
-                 const bool force_creation = false,
+                 const bool allow_creation = false,
                  const bool exclude_ghosts = false,
                  const std::string & metadata = "no metadata") {
       bool is_property_in_stack{this->is_property_in_stack(name)};
       if (is_property_in_stack) {
         return this->template forward_get_property_request<UserProperty_t>(
             name, validate_property);
-      } else if (not(is_property_in_stack) && force_creation) {
+      } else if (not(is_property_in_stack) && allow_creation) {
         auto property{std::make_shared<UserProperty_t>(
             this->implementation(), metadata, exclude_ghosts)};
         this->properties[name] = property;
