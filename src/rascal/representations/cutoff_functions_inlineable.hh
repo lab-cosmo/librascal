@@ -101,11 +101,10 @@ namespace rascal {
     using Hypers_t = typename CutoffFunctionBase::Hypers_t;
     explicit CutoffFunction(const units::UnitStyle & unit_style,
                             const Hypers_t & hypers)
-        : Parent{InlCutoffFunctionType::Cosine}, hypers{hypers} {
-      // make sure the hypers contain a parameter r_cut
-      cutoff = json_io::check_units(unit_style.distance(), hypers.at("r_cut"));
-      identifier = this->make_identifier(unit_style);
-    }
+        : Parent{InlCutoffFunctionType::Cosine}, hypers{hypers},
+          cutoff{
+              json_io::check_units(unit_style.distance(), hypers.at("r_cut"))},
+          identifier{this->make_identifier(unit_style)} {}
 
     inline double f_c(const double & distance) const {
       assert(distance <= this->cutoff);
@@ -129,10 +128,10 @@ namespace rascal {
       return id.str();
     }
     //! keep the hypers
-    Hypers_t hypers;
+    const Hypers_t hypers;
     //! cutoff radii
-    double cutoff{};
-    std::string identifier{};
+    const double cutoff;
+    const std::string identifier;
   };
 
   template <class StructureManager>
@@ -157,7 +156,7 @@ namespace rascal {
     auto & typed_this{static_cast<const CutoffFunction<CutFunType> &>(*this)};
 
     // check whether the property already exists (assuming everyone computes
-    // either values or both values and derivatives
+    // either values or both values and derivatives)
     const std::string value_identifier{this->get_identifier() + "_value"};
     const std::string derivative_identifier{this->get_identifier() +
                                             "_derivative"};

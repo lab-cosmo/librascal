@@ -5,7 +5,7 @@
  *
  * @date   18 Dec 2019
  *
- * @brief  Tests for the cutoff functions used in Behler-Parinello destriptors
+ * @brief  Tests for the cutoff functions used in Behler-Parinello descriptors
  *
  * Copyright © 2019 Till Junge, Markus Stricker, LAMMM (EPFL), COSMO (EPFL)
  *
