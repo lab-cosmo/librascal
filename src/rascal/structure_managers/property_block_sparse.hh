@@ -275,6 +275,17 @@ namespace rascal {
                                std::get<2>(pos));
       }
 
+      Eigen::Map<const math::Vector_t> flattened(const key_type & key) {
+        SortedKey_t skey{key};
+        return this->flattened(skey);
+      }
+
+      Eigen::Map<const math::Vector_t> flattened(const SortedKey_t & skey) {
+        auto & pos{this->map[skey.get_key()]};
+        assert(std::get<1>(pos) * std::get<2>(pos) > 0);
+        return Eigen::Map<const math::Vector_t>(&this->data[std::get<0>(pos)], std::get<1>(pos) * std::get<2>(pos));
+      }
+
       /**
        * resize the underlying data to the proper size and can initialize
        * the elements

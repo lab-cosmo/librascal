@@ -243,6 +243,11 @@ namespace rascal {
       return this->managers[index]->get_shared_ptr();
     }
 
+    template <typename T>
+    ManagerPtr_t operator[](T index) const {
+      return this->managers[index]->get_shared_ptr();
+    }
+
     /**
      * get the dense feature matrix associated with the property built
      * with calculator in the elements of the manager collection.
