@@ -69,10 +69,17 @@ namespace rascal {
       }
 
       /**
-       * Compute the kernel between 2 set of structure(s)
+       * Compute the kernel between 2 set of structure(s), structure wise.
        *
        * @tparam StructureManagers should be an iterable over shared pointer
        *          of structure managers like ManagerCollection
+       * @param managers_a a ManagerCollection or similar collection of
+       * structure managers
+       * @param managers_b a ManagerCollection or similar collection of
+       * structure managers
+       * @param representation_name name under which the representation data
+       * has been registered in the elements of managers_a and managers_b
+       * @return kernel matrix
        */
       template <
           class Property_t, internal::TargetType Type,
@@ -99,6 +106,18 @@ namespace rascal {
         return kernel;
       }
 
+       /**
+       * Compute the kernel between 1 set of structure(s) with itself,
+       * structure wise.
+       *
+       * @tparam StructureManagers should be an iterable over shared pointer
+       *          of structure managers like ManagerCollection
+       * @param managers_a a ManagerCollection or similar collection of
+       * structure managers
+       * @param representation_name name under which the representation data
+       * has been registered in the elements of managers_a and managers_b
+       * @return kernel matrix
+       */
       template <
           class Property_t, internal::TargetType Type,
           std::enable_if_t<Type == internal::TargetType::Structure, int> = 0,
@@ -128,7 +147,7 @@ namespace rascal {
 
       /**
        * Compute the kernel between 2 set of structures for a given
-       * representation specified by the name.
+       * representation specified by the name, atom wise.
        *
        * @param managers_a a ManagerCollection or similar collection of
        * structure managers
@@ -175,6 +194,17 @@ namespace rascal {
         return kernel;
       }
 
+      /**
+       * Compute the kernel between 1 set of structure(s) with itself for a
+       * given representation specified by the name, atom wise.
+       *
+       * @param managers_a a ManagerCollection or similar collection of
+       * structure managers
+       * @param representation_name name under which the representation data
+       * has been registered in the elements of managers_a and managers_b
+       *
+       * @return kernel matrix
+       */
       template <class Property_t, internal::TargetType Type,
                 std::enable_if_t<Type == internal::TargetType::Atom, int> = 0,
                 class StructureManagers>
