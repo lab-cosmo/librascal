@@ -1107,7 +1107,6 @@ namespace rascal {
     // identify the species in each environment and initialize soap_vectors
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
-      // auto & soap_vector{soap_vectors[center]};
       internal::Sorted<false> is_not_sorted{};
 
       std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>

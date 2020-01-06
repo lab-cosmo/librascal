@@ -1172,12 +1172,11 @@ namespace rascal {
       }
 
       if (hypers.count("expansion_by_species_method")) {
-        std::vector<std::string> possible_expansion_by_species{
+        std::set<std::string> possible_expansion_by_species{
             {"environment wise", "user defined", "structure wise"}};
         auto expansion_by_species_tmp =
             hypers.at("expansion_by_species_method").get<std::string>();
-        if (internal::is_element_in(expansion_by_species_tmp,
-                                    possible_expansion_by_species)) {
+        if (possible_expansion_by_species.count(expansion_by_species_tmp)) {
           this->expansion_by_species = expansion_by_species_tmp;
         } else {
           std::stringstream err_str{};
