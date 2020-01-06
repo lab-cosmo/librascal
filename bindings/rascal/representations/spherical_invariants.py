@@ -8,7 +8,7 @@ import numpy as np
 class SphericalInvariants(object):
 
     """
-    Computes a SphericalInvariants representation, i.e. the SOAP power spectrum
+    Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.
 
     Hyperparameters
     ----------
@@ -52,19 +52,24 @@ class SphericalInvariants(object):
     expansion_by_species_method : string
         Specifies the how the species key of the invariant are set-up.
         Possible values: 'environment wise', 'user defined', 'structure wise'.
-        'environment wise' means that each environement will only contain the
-        species key associated with atoms within the environement.
-        'structure wise' means that within a structure the keys species key
+        The descriptor is computed for each atomic enviroment and it is indexed
+        using tuples of atomic species that are present within the environment.
+        This index is by definition sparse since a species tuple will be non
+        zero only if the atomic species are present inside the environment.
+        'environment wise' means that each environemental representation
+        will only contain the minimal set of species tuples needed by each
+        atomic environement.
+        'structure wise' means that within a structure the species tuples
         will be the same for each environement coefficients.
-        'user defined' uses global_species to set-up the species key.
+        'user defined' uses global_species to set-up the species tuples.
 
         These different settings correspond to different trade-off between
         the memory efficiency of the invariants and the computational
         efficiency of the kernel computation.
         When computing a kernel using 'environment wise' setting does not allow
         for efficent matrix matrix multiplications which is ensured when
-        'user defined' is used. 'structure wise' allows for a less efficient
-        but lighter (interms of memory footprint) use of matrix matrix products.
+        'user defined' is used. 'structure wise' is a balance between the
+        memory footprint and the use of matrix matrix products.
 
         Note that the sparsity of the gradient coefficients and their use to
         build kernels does not allow for clear efficiency gains so their

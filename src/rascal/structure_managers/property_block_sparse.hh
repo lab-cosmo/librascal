@@ -943,8 +943,9 @@ namespace rascal {
      * i.e. each rows has the same size and has the same key ordering.
      */
     MatrixMapConst_Ref_t get_raw_data_view() const {
-      // should not be called if the keys are not uniform
-      assert(this->are_keys_uniform() == true);
+      if (not this->are_keys_uniform()) {
+        throw std::runtime_error("The raw data is not a dense matrix.");
+      }
       auto && n_row = this->size();
       auto && n_col = this->values.size() / this->size();
       return MatrixMapConst_Ref_t(this->values.data(), n_row, n_col);
@@ -956,8 +957,9 @@ namespace rascal {
     }
 
     std::array<int, 4> get_block_info_by_key(const SortedKey_t & skey) const {
-      // should not be called if the keys are not uniform
-      assert(this->are_keys_uniform() == true);
+      if (not this->are_keys_uniform()) {
+        throw std::runtime_error("The raw data is not a dense matrix.");
+      }
       auto && n_row = static_cast<int>(this->size());
       auto && n_col = this->get_nb_comp();
       // since the keys are uniform we can use the first element of the map
