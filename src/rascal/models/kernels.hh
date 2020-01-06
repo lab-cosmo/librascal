@@ -106,7 +106,7 @@ namespace rascal {
         return kernel;
       }
 
-       /**
+      /**
        * Compute the kernel between 1 set of structure(s) with itself,
        * structure wise.
        *
