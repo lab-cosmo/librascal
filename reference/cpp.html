@@ -1510,6 +1510,11 @@ template&lt;size_t <code class="sig-name descname">Length</code>, size_t... <cod
 
 <dl class="function">
 <dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>species_method_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal21multiple_ref_fixturesE" title="rascal::multiple_ref_fixtures">multiple_ref_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 <code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>multiple_kernel_compute_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal17multiple_fixturesE" title="rascal::multiple_fixtures">multiple_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -3228,6 +3233,21 @@ template&lt;size_t <code class="sig-name descname">Order__</code> = Order, std::
 
 <dl class="function">
 <dt>
+template&lt;template&lt;typename...&gt; class <code class="sig-name descname">Keys_List</code>, typename ...<code class="sig-name descname">Args1</code>, typename ...<code class="sig-name descname">Args2</code>&gt;<br />void <code class="sig-name descname">resize</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4IIDpE0DpDpEN6rascal19BlockSparseProperty6resizeEvRK9Keys_ListINSt3setIDp5Args2EEDp5Args1E" title="rascal::BlockSparseProperty::resize::Keys_List">Keys_List</a>&lt;std::set&lt;<a class="reference internal" href="#_CPPv4IIDpE0DpDpEN6rascal19BlockSparseProperty6resizeEvRK9Keys_ListINSt3setIDp5Args2EEDp5Args1E" title="rascal::BlockSparseProperty::resize::Args2">Args2</a>...&gt;, <a class="reference internal" href="#_CPPv4IIDpE0DpDpEN6rascal19BlockSparseProperty6resizeEvRK9Keys_ListINSt3setIDp5Args2EEDp5Args1E" title="rascal::BlockSparseProperty::resize::Args1">Args1</a>...&gt; &amp;<em>keys_list</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename ...<code class="sig-name descname">Args</code>&gt;<br />void <code class="sig-name descname">resize</code><span class="sig-paren">(</span><em class="property">const</em> std::set&lt;<a class="reference internal" href="#_CPPv4IDpEN6rascal19BlockSparseProperty6resizeEvRKNSt3setIDp4ArgsEE" title="rascal::BlockSparseProperty::resize::Args">Args</a>...&gt; &amp;<em>keys</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+void <code class="sig-name descname">check_for_uniform_keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 void <code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -3248,7 +3268,7 @@ InputData_t &amp;<code class="sig-name descname">operator[]</code><span class="s
 
 <dl class="function">
 <dt>
-DenseRef_t <code class="sig-name descname">operator()</code><span class="sig-paren">(</span>size_t <em>index</em>, <em class="property">const</em> Key_t &amp;<em>key</em><span class="sig-paren">)</span><br /></dt>
+MatrixMap_Ref_t <code class="sig-name descname">operator()</code><span class="sig-paren">(</span>size_t <em>index</em>, <em class="property">const</em> Key_t &amp;<em>key</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3278,7 +3298,17 @@ size_t <code class="sig-name descname">get_nb_item</code><span class="sig-paren"
 
 <dl class="function">
 <dt>
+MatrixMapConst_Ref_t <code class="sig-name descname">get_raw_data_view</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 <a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a> <code class="sig-name descname">dot</code><span class="sig-paren">(</span>Self_t &amp;<em>B</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a> <code class="sig-name descname">dot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -5931,6 +5961,11 @@ template&lt;class <code class="sig-name descname">Manager</code>, size_t <code c
 
 <dl class="function">
 <dt>
+template&lt;class <code class="sig-name descname">T</code>, class <code class="sig-name descname">Vec</code>&gt;<br />bool <code class="sig-name descname">is_element_in</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I00EN6rascal8internal13is_element_inEbRK1TRK3Vec" title="rascal::internal::is_element_in::T">T</a> &amp;<em>element</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I00EN6rascal8internal13is_element_inEbRK1TRK3Vec" title="rascal::internal::is_element_in::Vec">Vec</a> &amp;<em>vector</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t... <code class="sig-name descname">Orders</code>&gt;<br /><em class="property">static</em> <em class="property">constexpr</em> bool <code class="sig-name descname">is_order_available</code><span class="sig-paren">(</span>std::index_sequence&lt;<a class="reference internal" href="#_CPPv4I_6size_t_Dp6size_tEN6rascal8internal18is_order_availableEbNSt14index_sequenceIDp6OrdersEE" title="rascal::internal::is_order_available::Orders">Orders</a>...&gt;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -6263,17 +6298,17 @@ template&lt;class <code class="sig-name descname">K</code>, class <code class="s
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt>
-<code class="sig-name descname">InternallySortedKeyMap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">InternallySortedKeyMap</code><span class="sig-paren">(</span>Array_t &amp;<em>data</em>, <em class="property">const</em> size_t &amp;<em>global_offset</em> = 0<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-<code class="sig-name descname">InternallySortedKeyMap</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal8internal22InternallySortedKeyMap22InternallySortedKeyMapEv" title="rascal::internal::InternallySortedKeyMap::InternallySortedKeyMap">InternallySortedKeyMap</a> &amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">InternallySortedKeyMap</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal8internal22InternallySortedKeyMap22InternallySortedKeyMapER7Array_tRK6size_t" title="rascal::internal::InternallySortedKeyMap::InternallySortedKeyMap">InternallySortedKeyMap</a> &amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-<code class="sig-name descname">InternallySortedKeyMap</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal8internal22InternallySortedKeyMap22InternallySortedKeyMapEv" title="rascal::internal::InternallySortedKeyMap::InternallySortedKeyMap">InternallySortedKeyMap</a> &amp;&amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+<code class="sig-name descname">InternallySortedKeyMap</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal8internal22InternallySortedKeyMap22InternallySortedKeyMapER7Array_tRK6size_t" title="rascal::internal::InternallySortedKeyMap::InternallySortedKeyMap">InternallySortedKeyMap</a> &amp;&amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -6283,12 +6318,12 @@ template&lt;class <code class="sig-name descname">K</code>, class <code class="s
 
 <dl class="function">
 <dt>
-InternallySortedKeyMap &amp;<code class="sig-name descname">operator=</code><span class="sig-paren">(</span><em class="property">const</em> InternallySortedKeyMap &amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+Self_t &amp;<code class="sig-name descname">operator=</code><span class="sig-paren">(</span><em class="property">const</em> Self_t &amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
-InternallySortedKeyMap &amp;<code class="sig-name descname">operator=</code><span class="sig-paren">(</span>InternallySortedKeyMap &amp;&amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+Self_t &amp;<code class="sig-name descname">operator=</code><span class="sig-paren">(</span>Self_t &amp;&amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -6313,7 +6348,7 @@ reference <code class="sig-name descname">operator[]</code><span class="sig-pare
 
 <dl class="function">
 <dt>
-template&lt;typename <code class="sig-name descname">Key_List</code>&gt;<br />void <code class="sig-name descname">resize</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal8internal22InternallySortedKeyMap6resizeEvRK8Key_ListiiRK11Precision_t" title="rascal::internal::InternallySortedKeyMap::resize::Key_List">Key_List</a> &amp;<em>keys</em>, int <em>n_row</em>, int <em>n_col</em>, <em class="property">const</em> Precision_t &amp;<em>val</em><span class="sig-paren">)</span><br /></dt>
+template&lt;template&lt;typename...&gt; class <code class="sig-name descname">Key_List</code>, typename ...<code class="sig-name descname">Args</code>&gt;<br />void <code class="sig-name descname">resize_view</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4IIDpE0DpEN6rascal8internal22InternallySortedKeyMap11resize_viewEvRK8Key_ListI8key_typeDp4ArgsEiiRK6size_t" title="rascal::internal::InternallySortedKeyMap::resize_view::Key_List">Key_List</a>&lt;key_type, <a class="reference internal" href="#_CPPv4IIDpE0DpEN6rascal8internal22InternallySortedKeyMap11resize_viewEvRK8Key_ListI8key_typeDp4ArgsEiiRK6size_t" title="rascal::internal::InternallySortedKeyMap::resize_view::Args">Args</a>...&gt; &amp;<em>keys</em>, int <em>n_row</em>, int <em>n_col</em>, <em class="property">const</em> size_t &amp;<em>global_offset</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -6324,6 +6359,11 @@ size_t <code class="sig-name descname">count</code><span class="sig-paren">(</sp
 <dl class="function">
 <dt>
 void <code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+size_t <code class="sig-name descname">get_key_hash</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -6361,7 +6401,32 @@ template&lt;typename <code class="sig-name descname">Derived</code>&gt;<br />voi
 <p class="breathe-sectiondef-title rubric">Public Members</p>
 <dl class="member">
 <dt>
-Data_t <code class="sig-name descname">data</code> = {}<br /></dt>
+Array_t &amp;<code class="sig-name descname">data</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+Map_t <code class="sig-name descname">map</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+size_t <code class="sig-name descname">global_offset</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+size_t <code class="sig-name descname">total_length</code> = {0}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+bool <code class="sig-name descname">normalized</code> = {false}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+size_t <code class="sig-name descname">key_hash</code> = {0}<br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -6379,7 +6444,17 @@ template&lt;class <code class="sig-name descname">Property_t</code>, <a class="r
 
 <dl class="function">
 <dt>
+template&lt;class <code class="sig-name descname">Property_t</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a> <code class="sig-name descname">Type</code>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType9StructureEEiEE0EN6rascal8internal10KernelImpl7computeEN4math8Matrix_tER17StructureManagersR17StructureManagersRKNSt6stringE" title="rascal::internal::KernelImpl::compute::Type">Type</a> == <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a>::Structure, int&gt; = 0, class <code class="sig-name descname">StructureManagers</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType9StructureEEiEE0EN6rascal8internal10KernelImpl7computeEN4math8Matrix_tER17StructureManagersR17StructureManagersRKNSt6stringE" title="rascal::internal::KernelImpl::compute::StructureManagers">StructureManagers</a> &amp;<em>managers_a</em>, <em class="property">const</em> std::string &amp;<em>representation_name</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 template&lt;class <code class="sig-name descname">Property_t</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a> <code class="sig-name descname">Type</code>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE0EN6rascal8internal10KernelImpl7computeEN4math8Matrix_tERK17StructureManagersRK17StructureManagersRKNSt6stringE" title="rascal::internal::KernelImpl::compute::Type">Type</a> == <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a>::Atom, int&gt; = 0, class <code class="sig-name descname">StructureManagers</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE0EN6rascal8internal10KernelImpl7computeEN4math8Matrix_tERK17StructureManagersRK17StructureManagersRKNSt6stringE" title="rascal::internal::KernelImpl::compute::StructureManagers">StructureManagers</a> &amp;<em>managers_a</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE0EN6rascal8internal10KernelImpl7computeEN4math8Matrix_tERK17StructureManagersRK17StructureManagersRKNSt6stringE" title="rascal::internal::KernelImpl::compute::StructureManagers">StructureManagers</a> &amp;<em>managers_b</em>, <em class="property">const</em> std::string &amp;<em>representation_name</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Property_t</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a> <code class="sig-name descname">Type</code>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE0EN6rascal8internal10KernelImpl7computeEN4math8Matrix_tERK17StructureManagersRK17StructureManagersRKNSt6stringE" title="rascal::internal::KernelImpl::compute::Type">Type</a> == <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a>::Atom, int&gt; = 0, class <code class="sig-name descname">StructureManagers</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE0EN6rascal8internal10KernelImpl7computeEN4math8Matrix_tERK17StructureManagersRK17StructureManagersRKNSt6stringE" title="rascal::internal::KernelImpl::compute::StructureManagers">StructureManagers</a> &amp;<em>managers_a</em>, <em class="property">const</em> std::string &amp;<em>representation_name</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>

@@ -170,7 +170,7 @@
 <div class="viewcode-block" id="SphericalInvariants"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SphericalInvariants">[docs]</a><span class="k">class</span> <span class="nc">SphericalInvariants</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes a SphericalInvariants representation, i.e. the SOAP power spectrum</span>
+<span class="sd">    Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.</span>
 
 <span class="sd">    Hyperparameters</span>
 <span class="sd">    ----------</span>
@@ -211,6 +211,37 @@
 <span class="sd">        Whether to normalize so that the kernel between identical environments</span>
 <span class="sd">        is 1.  Default and highly recommended: True.</span>
 
+<span class="sd">    expansion_by_species_method : string</span>
+<span class="sd">        Specifies the how the species key of the invariant are set-up.</span>
+<span class="sd">        Possible values: &#39;environment wise&#39;, &#39;user defined&#39;, &#39;structure wise&#39;.</span>
+<span class="sd">        The descriptor is computed for each atomic enviroment and it is indexed</span>
+<span class="sd">        using tuples of atomic species that are present within the environment.</span>
+<span class="sd">        This index is by definition sparse since a species tuple will be non</span>
+<span class="sd">        zero only if the atomic species are present inside the environment.</span>
+<span class="sd">        &#39;environment wise&#39; means that each environemental representation</span>
+<span class="sd">        will only contain the minimal set of species tuples needed by each</span>
+<span class="sd">        atomic environement.</span>
+<span class="sd">        &#39;structure wise&#39; means that within a structure the species tuples</span>
+<span class="sd">        will be the same for each environement coefficients.</span>
+<span class="sd">        &#39;user defined&#39; uses global_species to set-up the species tuples.</span>
+
+<span class="sd">        These different settings correspond to different trade-off between</span>
+<span class="sd">        the memory efficiency of the invariants and the computational</span>
+<span class="sd">        efficiency of the kernel computation.</span>
+<span class="sd">        When computing a kernel using &#39;environment wise&#39; setting does not allow</span>
+<span class="sd">        for efficent matrix matrix multiplications which is ensured when</span>
+<span class="sd">        &#39;user defined&#39; is used. &#39;structure wise&#39; is a balance between the</span>
+<span class="sd">        memory footprint and the use of matrix matrix products.</span>
+
+<span class="sd">        Note that the sparsity of the gradient coefficients and their use to</span>
+<span class="sd">        build kernels does not allow for clear efficiency gains so their</span>
+<span class="sd">        sparsity is kept irrespective of expansion_by_species_method.</span>
+
+<span class="sd">    global_species : list</span>
+<span class="sd">        list of species to use to set-up the species key of the invariant. It</span>
+<span class="sd">        should contain all the species present in the structure for which</span>
+<span class="sd">        invariants will be computed</span>
+
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
 <span class="sd">    transform(frames)</span>
@@ -230,6 +261,8 @@
                  <span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;PowerSpectrum&quot;</span><span class="p">,</span> <span class="n">inversion_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">radial_basis</span><span class="o">=</span><span class="s2">&quot;GTO&quot;</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">optimization_args</span><span class="o">=</span><span class="p">{},</span>
+                 <span class="n">expansion_by_species_method</span><span class="o">=</span><span class="s2">&quot;environment wise&quot;</span><span class="p">,</span>
+                 <span class="n">global_species</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">cutoff_function_parameters</span><span class="o">=</span><span class="nb">dict</span><span class="p">()):</span>
         <span class="sd">&quot;&quot;&quot;Construct a SphericalExpansion representation</span>
 
@@ -238,11 +271,18 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;sphericalinvariants&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">global_species</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">global_species</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">global_species</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">global_species</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">global_species</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">update_hyperparameters</span><span class="p">(</span>
             <span class="n">max_radial</span><span class="o">=</span><span class="n">max_radial</span><span class="p">,</span> <span class="n">max_angular</span><span class="o">=</span><span class="n">max_angular</span><span class="p">,</span>
             <span class="n">n_species</span><span class="o">=</span><span class="n">n_species</span><span class="p">,</span>
             <span class="n">soap_type</span><span class="o">=</span><span class="n">soap_type</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
-            <span class="n">inversion_symmetry</span><span class="o">=</span><span class="n">inversion_symmetry</span><span class="p">)</span>
+            <span class="n">inversion_symmetry</span><span class="o">=</span><span class="n">inversion_symmetry</span><span class="p">,</span>
+            <span class="n">expansion_by_species_method</span><span class="o">=</span><span class="n">expansion_by_species_method</span><span class="p">,</span>
+            <span class="n">global_species</span><span class="o">=</span><span class="n">global_species</span><span class="p">)</span>
 
         <span class="n">cutoff_function_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="n">interaction_cutoff</span><span class="o">=</span><span class="n">interaction_cutoff</span><span class="p">,</span>
@@ -320,7 +360,7 @@
                         <span class="s1">&#39;gaussian_sigma_constant&#39;</span><span class="p">,</span> <span class="s1">&#39;n_species&#39;</span><span class="p">,</span> <span class="s1">&#39;soap_type&#39;</span><span class="p">,</span>
                         <span class="s1">&#39;inversion_symmetry&#39;</span><span class="p">,</span> <span class="s1">&#39;cutoff_function&#39;</span><span class="p">,</span> <span class="s1">&#39;normalize&#39;</span><span class="p">,</span>
                         <span class="s1">&#39;gaussian_density&#39;</span><span class="p">,</span> <span class="s1">&#39;radial_contribution&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;cutoff_function_parameters&#39;</span><span class="p">}</span>
+                        <span class="s1">&#39;cutoff_function_parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;expansion_by_species_method&#39;</span><span class="p">,</span> <span class="s1">&#39;global_species&#39;</span><span class="p">}</span>
         <span class="n">hypers_clean</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">hypers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hypers</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">allowed_keys</span><span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">hypers_clean</span><span class="p">)</span>

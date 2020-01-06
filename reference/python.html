@@ -374,9 +374,9 @@ Physical Review Letters, 108(5), 58301. <a class="reference external" href="http
 
 <dl class="class">
 <dt id="rascal.representations.SphericalInvariants">
-<em class="property">class </em><code class="sig-prename descclassname">rascal.representations.</code><code class="sig-name descname">SphericalInvariants</code><span class="sig-paren">(</span><em class="sig-param">interaction_cutoff</em>, <em class="sig-param">cutoff_smooth_width</em>, <em class="sig-param">max_radial</em>, <em class="sig-param">max_angular</em>, <em class="sig-param">gaussian_sigma_type</em>, <em class="sig-param">gaussian_sigma_constant=0.0</em>, <em class="sig-param">n_species=1</em>, <em class="sig-param">cutoff_function_type='ShiftedCosine'</em>, <em class="sig-param">soap_type='PowerSpectrum'</em>, <em class="sig-param">inversion_symmetry=True</em>, <em class="sig-param">radial_basis='GTO'</em>, <em class="sig-param">normalize=True</em>, <em class="sig-param">optimization_args={}</em>, <em class="sig-param">cutoff_function_parameters={}</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_invariants.html#SphericalInvariants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalInvariants" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes a SphericalInvariants representation, i.e. the SOAP power spectrum</p>
-<dl class="simple">
+<em class="property">class </em><code class="sig-prename descclassname">rascal.representations.</code><code class="sig-name descname">SphericalInvariants</code><span class="sig-paren">(</span><em class="sig-param">interaction_cutoff</em>, <em class="sig-param">cutoff_smooth_width</em>, <em class="sig-param">max_radial</em>, <em class="sig-param">max_angular</em>, <em class="sig-param">gaussian_sigma_type</em>, <em class="sig-param">gaussian_sigma_constant=0.0</em>, <em class="sig-param">n_species=1</em>, <em class="sig-param">cutoff_function_type='ShiftedCosine'</em>, <em class="sig-param">soap_type='PowerSpectrum'</em>, <em class="sig-param">inversion_symmetry=True</em>, <em class="sig-param">radial_basis='GTO'</em>, <em class="sig-param">normalize=True</em>, <em class="sig-param">optimization_args={}</em>, <em class="sig-param">expansion_by_species_method='environment wise'</em>, <em class="sig-param">global_species=None</em>, <em class="sig-param">cutoff_function_parameters={}</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_invariants.html#SphericalInvariants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalInvariants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.</p>
+<dl>
 <dt>interaction_cutoff<span class="classifier">float</span></dt><dd><p>Maximum pairwise distance for atoms to be considered in
 expansion</p>
 </dd>
@@ -403,6 +403,33 @@ fixed.</p>
 </dd>
 <dt>normalize<span class="classifier">boolean</span></dt><dd><p>Whether to normalize so that the kernel between identical environments
 is 1.  Default and highly recommended: True.</p>
+</dd>
+<dt>expansion_by_species_method<span class="classifier">string</span></dt><dd><p>Specifies the how the species key of the invariant are set-up.
+Possible values: ‘environment wise’, ‘user defined’, ‘structure wise’.
+The descriptor is computed for each atomic enviroment and it is indexed
+using tuples of atomic species that are present within the environment.
+This index is by definition sparse since a species tuple will be non
+zero only if the atomic species are present inside the environment.
+‘environment wise’ means that each environemental representation
+will only contain the minimal set of species tuples needed by each
+atomic environement.
+‘structure wise’ means that within a structure the species tuples
+will be the same for each environement coefficients.
+‘user defined’ uses global_species to set-up the species tuples.</p>
+<p>These different settings correspond to different trade-off between
+the memory efficiency of the invariants and the computational
+efficiency of the kernel computation.
+When computing a kernel using ‘environment wise’ setting does not allow
+for efficent matrix matrix multiplications which is ensured when
+‘user defined’ is used. ‘structure wise’ is a balance between the
+memory footprint and the use of matrix matrix products.</p>
+<p>Note that the sparsity of the gradient coefficients and their use to
+build kernels does not allow for clear efficiency gains so their
+sparsity is kept irrespective of expansion_by_species_method.</p>
+</dd>
+<dt>global_species<span class="classifier">list</span></dt><dd><p>list of species to use to set-up the species key of the invariant. It
+should contain all the species present in the structure for which
+invariants will be computed</p>
 </dd>
 </dl>
 <dl class="method">
