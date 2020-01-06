@@ -29,7 +29,7 @@
 #ifndef PERFORMANCE_BENCHMARKS_BENCHMARKS_HH_
 #define PERFORMANCE_BENCHMARKS_BENCHMARKS_HH_
 
-#include "rascal/json_io.hh"
+#include "rascal/utils/json_io.hh"
 
 #include <benchmark/benchmark.h>
 #include <sys/stat.h>

@@ -31,9 +31,9 @@
 # =============================================================================
 
 set(RASCAL_SOURCES
-    rascal/json_io.cc
-    rascal/units.cc
-    rascal/utils.cc
+    rascal/utils/json_io.cc
+    rascal/utils/units.cc
+    rascal/utils/utils.cc
     rascal/utils/sparsify_fps.cc
 
     rascal/math/bessel.cc

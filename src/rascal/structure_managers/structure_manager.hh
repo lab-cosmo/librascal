@@ -34,12 +34,12 @@
  * Each actual implementation of a StructureManager is based on the given
  * interface
  */
-#include "rascal/json_io.hh"
 #include "rascal/structure_managers/cluster_ref_key.hh"
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/property_block_sparse.hh"
 #include "rascal/structure_managers/structure_manager_base.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/json_io.hh"
+#include "rascal/utils/utils.hh"
 
 // Some data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -903,8 +903,7 @@ namespace rascal {
     };
   }  // namespace internal
 
-  /* ----------------------------------------------------------------------
-   */
+  /* ---------------------------------------------------------------------- */
   /**
    * Definition of the ``AtomRef`` class. It is the return type when
    * iterating over the first order of a manager.
@@ -960,8 +959,7 @@ namespace rascal {
     int index;
   };
 
-  /* ----------------------------------------------------------------------
-   */
+  /* ---------------------------------------------------------------------- */
   /**
    * Class definitionobject when iterating over the manager, then atoms,
    * then pairs, etc. in deeper Orders. This object itself is iterable again
@@ -1291,8 +1289,7 @@ namespace rascal {
                                                           this->get_manager());
   }
 
-  /* ----------------------------------------------------------------------
-   */
+  /* ---------------------------------------------------------------- */
   /**
    * Helper functions to avoid needing dereferencing a manager in a
    * shared_ptr to loop over the centers.
@@ -1307,8 +1304,7 @@ namespace rascal {
     return ptr->end();
   }
 
-  /* ----------------------------------------------------------------------
-   */
+  /* ---------------------------------------------------------------- */
   /**
    * Class definition of the iterator. This is used by all clusters. It is
    * specialized for the case Order=1, when iterating over a manager and the
@@ -1508,8 +1504,7 @@ namespace rascal {
     const size_t offset;
   };
 
-  /* ----------------------------------------------------------------------
-   */
+  /* --------------------------------------------------------------------- */
   /**
    * A class which provides the iteration range from start to the end of the
    * atoms including additional ghost atoms.
@@ -1556,8 +1551,6 @@ namespace rascal {
    private:
   };
 
-  /* ----------------------------------------------------------------------
-   */
   /**
    * A class which provides the iteration range from for all ghost atoms in
    * the structure. If no ghost atoms exist, the iterator is of size zero.

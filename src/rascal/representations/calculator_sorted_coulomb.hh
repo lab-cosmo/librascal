@@ -31,7 +31,7 @@
 #include "rascal/representations/calculator_base.hh"
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/structure_manager.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <math.h>
 

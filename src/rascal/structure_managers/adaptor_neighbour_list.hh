@@ -32,12 +32,12 @@
 #ifndef SRC_RASCAL_STRUCTURE_MANAGERS_ADAPTOR_NEIGHBOUR_LIST_HH_
 #define SRC_RASCAL_STRUCTURE_MANAGERS_ADAPTOR_NEIGHBOUR_LIST_HH_
 
-#include "rascal/atomic_structure.hh"
-#include "rascal/basic_types.hh"
-#include "rascal/lattice.hh"
+#include "rascal/structure_managers/atomic_structure.hh"
+#include "rascal/structure_managers/lattice.hh"
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/structure_manager.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/basic_types.hh"
+#include "rascal/utils/utils.hh"
 
 #include <set>
 #include <vector>

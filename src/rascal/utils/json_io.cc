@@ -1,5 +1,5 @@
 /**
- * @file   rascal/json_io.cc
+ * @file   rascal/utils/json_io.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
@@ -25,7 +25,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rascal/json_io.hh"
+#include "rascal/utils/json_io.hh"
 
 namespace rascal {
   namespace json_io {

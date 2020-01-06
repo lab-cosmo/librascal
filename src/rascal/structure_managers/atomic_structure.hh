@@ -1,5 +1,5 @@
 /**
- * @file   rascal/atomic_structure.hh
+ * @file   rascal/structure_managers/atomic_structure.hh
  *
  * @author  Felix Musil <felix.musil@epfl.ch>
  * @author  Markus Stricker <markus.stricker@epfl.ch>
@@ -27,12 +27,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_ATOMIC_STRUCTURE_HH_
-#define SRC_RASCAL_ATOMIC_STRUCTURE_HH_
+#ifndef SRC_RASCAL_STRUCTURE_MANAGERS_ATOMIC_STRUCTURE_HH_
+#define SRC_RASCAL_STRUCTURE_MANAGERS_ATOMIC_STRUCTURE_HH_
 
-#include "rascal/basic_types.hh"
-#include "rascal/json_io.hh"
 #include "rascal/math/utils.hh"
+#include "rascal/utils/basic_types.hh"
+#include "rascal/utils/json_io.hh"
 
 #include <Eigen/Dense>
 
@@ -389,4 +389,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_RASCAL_ATOMIC_STRUCTURE_HH_
+#endif  // SRC_RASCAL_STRUCTURE_MANAGERS_ATOMIC_STRUCTURE_HH_

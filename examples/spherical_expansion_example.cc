@@ -25,17 +25,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rascal/atomic_structure.hh"
-#include "rascal/basic_types.hh"
 #include "rascal/representations/calculator_sorted_coulomb.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/representations/calculator_spherical_invariants.hh"
 #include "rascal/structure_managers/adaptor_center_contribution.hh"
 #include "rascal/structure_managers/adaptor_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_strict.hh"
+#include "rascal/structure_managers/atomic_structure.hh"
 #include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/structure_managers/structure_manager_centers.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/basic_types.hh"
+#include "rascal/utils/utils.hh"
 
 #include <chrono>
 #include <cmath>
