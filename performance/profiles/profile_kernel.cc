@@ -1,11 +1,11 @@
 /**
- * @file   sandbox/playground.cc
+ * @file   performance/profiles/profile_kernel.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
- * @date   26 June 2019
+ * @date   12 December 2019
  *
- * @brief an executable to test ideas
+ * @brief  Example for profiling the spherical invariants (SOAP)
  *
  * Copyright © 2019 Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -25,36 +25,36 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "rascal/atomic_structure.hh"
 #include "rascal/basic_types.hh"
 #include "rascal/models/kernels.hh"
-#include "rascal/utils.hh"
 #include "rascal/representations/calculator_sorted_coulomb.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/representations/calculator_spherical_invariants.hh"
-#include "rascal/structure_managers/adaptor_increase_maxorder.hh"
 #include "rascal/structure_managers/adaptor_center_contribution.hh"
-#include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_strict.hh"
 #include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/structure_managers/structure_manager_centers.hh"
 #include "rascal/structure_managers/structure_manager_collection.hh"
+#include "rascal/utils.hh"
 
+#include <chrono>
 #include <cmath>
 #include <functional>
 #include <initializer_list>
 #include <iostream>
 #include <list>
-#include <random>
 #include <string>
-#include <algorithm>
-#include <iterator>
 
+// using namespace std;
 using namespace rascal;  // NOLINT
 
-using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
-                                    AdaptorNeighbourList,
-                                    AdaptorCenterContribution, AdaptorStrict>;
+const int N_ITERATIONS = 100;
+
+using ManagerTypeHolder_t =
+    StructureManagerTypeHolder<StructureManagerCenters, AdaptorNeighbourList,
+                               AdaptorCenterContribution, AdaptorStrict>;
 using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
 using Manager_t = typename ManagerTypeHolder_t::type;
 using ManagerCollection_t =
@@ -62,17 +62,17 @@ using ManagerCollection_t =
 using Representation_t = CalculatorSphericalInvariants;
 
 int main() {
+  std::string filename{"../reference_data/inputs/small_molecules-20.json"};
 
-  std::string filename{"../../../reference_data/inputs/small_molecules-20.json"};
+  double cutoff{3.5};
 
-  double cutoff{3.};
-
-  json hypers{{"max_radial", 6},
+  json hypers{{"max_radial", 8},
               {"max_angular", 6},
               {"compute_gradients", false},
               {"soap_type", "PowerSpectrum"},
               {"normalize", true},
-              {"expansion_by_species_method", "environment wise"}};
+              {"expansion_by_species_method", "user defined"},
+              {"global_species", {1, 6, 7, 8}}};
 
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
@@ -85,25 +85,22 @@ int main() {
   hypers["radial_contribution"] = {{"type", "GTO"}};
 
   json kernel_hypers{
-        {"zeta", 1}, {"target_type", "Atom"}, {"name", "Cosine"}};
+      {"zeta", 2}, {"target_type", "Structure"}, {"name", "Cosine"}};
 
   json structure{{"filename", filename}};
   json adaptors;
-  json adaptors_half;
-  json ad1a{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments", {{"cutoff", cutoff}}}};
-  json ad1b{{"name", "AdaptorHalfList"},
-            {"initialization_arguments", {}}};
-  json ad1c{{"name", "AdaptorCenterContribution"},
+  json ad1{{"name", "AdaptorNeighbourList"},
+           {"initialization_arguments", {{"cutoff", cutoff}, {"skin", 0.}}}};
+  json ad1b{{"name", "AdaptorCenterContribution"},
             {"initialization_arguments", {}}};
   json ad2{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
-  adaptors.emplace_back(ad1a);
-  adaptors.emplace_back(ad1c);
+  adaptors.emplace_back(ad1);
+  adaptors.emplace_back(ad1b);
   adaptors.emplace_back(ad2);
 
   ManagerCollection_t collection{adaptors};
-  collection.add_structures(filename, 0, 1);
+  collection.add_structures(filename, 0, 20);
 
   Representation_t soap{hypers};
 
@@ -111,7 +108,55 @@ int main() {
 
   Kernel kernel{kernel_hypers};
 
-  auto kk = kernel.compute(soap, collection, collection);
+  std::cout << "structure filename: " << filename << std::endl;
 
-  std::cout << kk << std::endl;
+  std::chrono::duration<double> elapsed{};
+
+  math::Matrix_t aa{20, 20};
+  auto start = std::chrono::high_resolution_clock::now();
+  // This is the part that should get profiled
+  for (size_t looper{0}; looper < N_ITERATIONS + 600; looper++) {
+    auto kk = kernel.compute(soap, collection, collection);
+    aa += kk;
+  }
+  auto finish = std::chrono::high_resolution_clock::now();
+
+  elapsed = finish - start;
+  std::cout << "Kernel with user defined species"
+            << " elapsed: " << elapsed.count() / (N_ITERATIONS + 600)
+            << " seconds" << std::endl;
+
+  hypers["expansion_by_species_method"] = "structure wise";
+  Representation_t soap_sw{hypers};
+
+  soap_sw.compute(collection);
+
+  start = std::chrono::high_resolution_clock::now();
+  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
+    auto kk = kernel.compute(soap_sw, collection, collection);
+    aa += kk;
+  }
+  finish = std::chrono::high_resolution_clock::now();
+
+  elapsed = finish - start;
+  std::cout << "Kernel with structure wise species"
+            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
+            << std::endl;
+
+  hypers["expansion_by_species_method"] = "environment wise";
+  Representation_t soap_ew{hypers};
+
+  soap_ew.compute(collection);
+
+  start = std::chrono::high_resolution_clock::now();
+  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
+    auto kk = kernel.compute(soap_ew, collection, collection);
+    aa += kk;
+  }
+  finish = std::chrono::high_resolution_clock::now();
+
+  elapsed = finish - start;
+  std::cout << "Kernel with environment wise species"
+            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
+            << std::endl;
 }

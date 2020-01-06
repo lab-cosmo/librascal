@@ -60,10 +60,11 @@ class Kernel(object):
         self._kernel = Kernelcpp(hypers_str)
 
     def __call__(self, X, Y=None):
-        if Y is None:
-            Y = X
         if isinstance(X, AtomsList):
             X = X.managers
-        if isinstance(Y, AtomsList):
-            Y = Y.managers
-        return self._kernel.compute(self._representation, X, Y)
+        if Y is None:
+            return self._kernel.compute(self._representation, X)
+        else:
+            if isinstance(Y, AtomsList):
+                Y = Y.managers
+            return self._kernel.compute(self._representation, X, Y)

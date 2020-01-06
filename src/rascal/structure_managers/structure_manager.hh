@@ -641,6 +641,10 @@ namespace rascal {
       return this->implementation().shared_from_this();
     }
 
+    std::shared_ptr<const ManagerImplementation> get_shared_ptr() const {
+      return this->implementation().shared_from_this();
+    }
+
     //! Create a new weak pointer to the object
     std::weak_ptr<ManagerImplementation> get_weak_ptr() {
       return std::weak_ptr<ManagerImplementation>(this->get_shared_ptr());

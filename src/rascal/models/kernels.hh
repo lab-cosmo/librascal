@@ -69,10 +69,17 @@ namespace rascal {
       }
 
       /**
-       * Compute the kernel between 2 set of structure(s)
+       * Compute the kernel between 2 set of structure(s), structure wise.
        *
        * @tparam StructureManagers should be an iterable over shared pointer
        *          of structure managers like ManagerCollection
+       * @param managers_a a ManagerCollection or similar collection of
+       * structure managers
+       * @param managers_b a ManagerCollection or similar collection of
+       * structure managers
+       * @param representation_name name under which the representation data
+       * has been registered in the elements of managers_a and managers_b
+       * @return kernel matrix
        */
       template <
           class Property_t, internal::TargetType Type,
@@ -100,8 +107,47 @@ namespace rascal {
       }
 
       /**
+       * Compute the kernel between 1 set of structure(s) with itself,
+       * structure wise.
+       *
+       * @tparam StructureManagers should be an iterable over shared pointer
+       *          of structure managers like ManagerCollection
+       * @param managers_a a ManagerCollection or similar collection of
+       * structure managers
+       * @param representation_name name under which the representation data
+       * has been registered in the elements of managers_a and managers_b
+       * @return kernel matrix
+       */
+      template <
+          class Property_t, internal::TargetType Type,
+          std::enable_if_t<Type == internal::TargetType::Structure, int> = 0,
+          class StructureManagers>
+      math::Matrix_t compute(StructureManagers & managers_a,
+                             const std::string & representation_name) {
+        math::Matrix_t kernel(managers_a.size(), managers_a.size());
+        auto manager_a_it = managers_a.begin();
+        for (size_t ii_A{0}; ii_A < managers_a.size(); ii_A++) {
+          const auto & manager_a = *manager_a_it;
+          auto && propA{*manager_a->template get_property<Property_t>(
+              representation_name)};
+          kernel(ii_A, ii_A) = this->pow_zeta(propA.dot()).mean();
+          auto manager_b_it = managers_a.begin() + ii_A + 1;
+          for (size_t ii_B{ii_A + 1}; ii_B < managers_a.size(); ii_B++) {
+            const auto & manager_b = *manager_b_it;
+            auto && propB{*manager_b->template get_property<Property_t>(
+                representation_name)};
+            kernel(ii_A, ii_B) = this->pow_zeta(propA.dot(propB)).mean();
+            kernel(ii_B, ii_A) = kernel(ii_A, ii_B);
+            ++manager_b_it;
+          }
+          ++manager_a_it;
+        }
+        return kernel;
+      }
+
+      /**
        * Compute the kernel between 2 set of structures for a given
-       * representation specified by the name.
+       * representation specified by the name, atom wise.
        *
        * @param managers_a a ManagerCollection or similar collection of
        * structure managers
@@ -144,6 +190,57 @@ namespace rascal {
             ii_B += b_size;
           }
           ii_A += a_size;
+        }
+        return kernel;
+      }
+
+      /**
+       * Compute the kernel between 1 set of structure(s) with itself for a
+       * given representation specified by the name, atom wise.
+       *
+       * @param managers_a a ManagerCollection or similar collection of
+       * structure managers
+       * @param representation_name name under which the representation data
+       * has been registered in the elements of managers_a and managers_b
+       *
+       * @return kernel matrix
+       */
+      template <class Property_t, internal::TargetType Type,
+                std::enable_if_t<Type == internal::TargetType::Atom, int> = 0,
+                class StructureManagers>
+      math::Matrix_t compute(const StructureManagers & managers_a,
+                             const std::string & representation_name) {
+        size_t n_centersA{0};
+        for (const auto & manager_a : managers_a) {
+          n_centersA += manager_a->size();
+        }
+
+        math::Matrix_t kernel(n_centersA, n_centersA);
+        size_t iii_A{0};
+        auto manager_a_it = managers_a.begin();
+        for (size_t ii_A{0}; ii_A < managers_a.size(); ii_A++) {
+          const auto & manager_a = *manager_a_it;
+          auto a_size = manager_a->size();
+          size_t iii_B{iii_A + a_size};
+          auto && propA{*manager_a->template get_property<Property_t>(
+              representation_name)};
+          kernel.block(iii_A, iii_A, a_size, a_size) =
+              this->pow_zeta(propA.dot());
+          auto manager_b_it = managers_a.begin() + ii_A + 1;
+          for (size_t ii_B{ii_A + 1}; ii_B < managers_a.size(); ii_B++) {
+            const auto & manager_b = *manager_b_it;
+            auto b_size = manager_b->size();
+            auto && propB{*manager_b->template get_property<Property_t>(
+                representation_name)};
+            kernel.block(iii_A, iii_B, a_size, b_size) =
+                this->pow_zeta(propA.dot(propB));
+            kernel.block(iii_B, iii_A, b_size, a_size) =
+                kernel.block(iii_A, iii_B, a_size, b_size).transpose();
+            iii_B += b_size;
+            ++manager_b_it;
+          }
+          iii_A += a_size;
+          ++manager_a_it;
         }
         return kernel;
       }
@@ -264,6 +361,42 @@ namespace rascal {
         auto kernel = downcast_kernel_impl<KernelType::Cosine>(kernel_impl);
         return kernel->template compute<Property_t, Type>(
             managers_a, managers_b, representation_name);
+      } else {
+        throw std::logic_error("The combination of parameter is not handled.");
+      }
+    }
+
+    template <class Calculator, class StructureManagers>
+    math::Matrix_t compute(const Calculator & calculator,
+                           const StructureManagers & managers_a) {
+      using ManagerPtr_t = typename StructureManagers::value_type;
+      using Manager_t = typename ManagerPtr_t::element_type;
+      using Property_t = typename Calculator::template Property_t<Manager_t>;
+      auto && representation_name{calculator.get_name()};
+      using internal::TargetType;
+
+      switch (this->target_type) {
+      case TargetType::Structure:
+        return this->compute_helper<Property_t, TargetType::Structure>(
+            representation_name, managers_a);
+      case TargetType::Atom:
+        return this->compute_helper<Property_t, TargetType::Atom>(
+            representation_name, managers_a);
+      default:
+        throw std::logic_error("The combination of parameter is not handled.");
+      }
+    }
+
+    template <class Property_t, internal::TargetType Type,
+              class StructureManagers>
+    math::Matrix_t compute_helper(const std::string & representation_name,
+                                  const StructureManagers & managers_a) {
+      using internal::KernelType;
+
+      if (this->kernel_type == KernelType::Cosine) {
+        auto kernel = downcast_kernel_impl<KernelType::Cosine>(kernel_impl);
+        return kernel->template compute<Property_t, Type>(managers_a,
+                                                          representation_name);
       } else {
         throw std::logic_error("The combination of parameter is not handled.");
       }
