@@ -124,11 +124,14 @@ namespace rascal {
       size_t i_row{0};
       for (const auto& sp : this->center_species) {
         auto & values_by_sp = this->values[sp];
+        auto &  indicies_by_sp = this->indicies[sp];
         size_t i_col{0};
         for (const auto& key : this->keys) {
           if (values_by_sp.count(key)) {
-            Eigen::Map<math::Matrix_t> block{values_by_sp[key].data(), static_cast<Eigen::Index>(this->counters[sp]), static_cast<Eigen::Index>(this->inner_size)};
-            mat.block(i_row, i_col, this->counters[sp], this->inner_size) = block;
+            Eigen::Map<math::Matrix_t> block{values_by_sp[key].data(), static_cast<Eigen::Index>(indicies_by_sp[key].size()), static_cast<Eigen::Index>(this->inner_size)};
+            for (size_t ii{0}; ii < indicies_by_sp[key].size(); ii++) {
+              mat.block(i_row + indicies_by_sp[key][ii], i_col, 1, this->inner_size) = block.row(ii);
+            }
           }
           i_col += this->inner_size;
         }
@@ -136,6 +139,8 @@ namespace rascal {
       }
       return mat;
     }
+
+    math::Matrix_t 
   };
 
 

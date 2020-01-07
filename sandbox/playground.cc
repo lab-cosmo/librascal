@@ -147,7 +147,10 @@ int main() {
 
   auto feat_test = sparse_points.get_features();
 
-  math::relative_error(feat_ref, feat_test);
+  for (int i_row{0}; i_row < feat_ref.rows(); i_row++) {
+    auto diff = (feat_ref.rowwise() - feat_test.row(i_row)).rowwise().lpNorm<1>();
+    std::cout << "Number of matching row "<< i_row << " :" << (diff.array() < 1e-16).count() << std::endl;
+  }
 
   std::cout << feat_ref<< std::endl;
   std::cout << "============================" << std::endl;
