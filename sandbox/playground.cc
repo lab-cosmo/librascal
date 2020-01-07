@@ -61,15 +61,7 @@ using ManagerHalf_t = AdaptorStrict<
     AdaptorCenterContribution<AdaptorHalfList<
                 AdaptorNeighbourList<StructureManagerCenters>>>>;
 
-using Prop_t = typename Representation_t::Property_t<Manager_t>;
-using PropGrad_t =
-    typename Representation_t::PropertyGradient_t<Manager_t>;
-using PropHalf_t = typename Representation_t::Property_t<ManagerHalf_t>;
-using PropGradHalf_t =
-    typename Representation_t::PropertyGradient_t<ManagerHalf_t>;
-
 int main() {
-
 
   std::string filename{"../reference_data/inputs/small_molecules-20.json"};
 
@@ -78,7 +70,8 @@ int main() {
               {"max_angular", 1},
               {"compute_gradients", true},
               {"soap_type", "PowerSpectrum"},
-              {"normalize", true}};
+              {"normalize", true},
+              {"expansion_by_species_method", "environment wise"}};
 
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
@@ -89,6 +82,9 @@ int main() {
   hypers["cutoff_function"] = fc_hypers;
   hypers["gaussian_density"] = sigma_hypers;
   hypers["radial_contribution"] = {{"type", "GTO"}};
+
+  json kernel_hypers{
+        {"zeta", 1}, {"target_type", "Atom"}, {"name", "Cosine"}};
 
   json structure{{"filename", filename}};
   json adaptors;

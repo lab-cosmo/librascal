@@ -28,30 +28,30 @@
 #ifndef SRC_RASCAL_MODELS_PSEUDO_POINTS_HH_
 #define SRC_RASCAL_MODELS_PSEUDO_POINTS_HH_
 
-#include "rascal/utils/json_io.hh"
 #include "rascal/math/utils.hh"
 #include "rascal/representations/calculator_base.hh"
-#include "rascal/structure_managers/structure_manager_collection.hh"
 #include "rascal/structure_managers/property_block_sparse.hh"
+#include "rascal/structure_managers/structure_manager_collection.hh"
+#include "rascal/utils/json_io.hh"
 
 namespace rascal {
 
-  namespace internal {
-
-  }  // namespace internal
+  namespace internal {}  // namespace internal
 
   template <class Calculator>
   class PseudoPointsBlockSparse {
    public:
     using Key_t = typename CalculatorBase::Key_t;
-    using Data_t = std::map<int, std::map<Key_t, std::vector<double> >>;
-    using Indices_t = std::map<int, std::map<Key_t, std::vector<size_t> >>;
+    using Data_t = std::map<int, std::map<Key_t, std::vector<double>>>;
+    using Indices_t = std::map<int, std::map<Key_t, std::vector<size_t>>>;
     using Counters_t = std::map<int, size_t>;
 
     template <class StructureManager>
-    using Property_t = typename Calculator::template Property_t<StructureManager>;
+    using Property_t =
+        typename Calculator::template Property_t<StructureManager>;
     template <class StructureManager>
-    using PropertyGradient_t = typename Calculator::template PropertyGradient_t<StructureManager>;
+    using PropertyGradient_t =
+        typename Calculator::template PropertyGradient_t<StructureManager>;
 
     Data_t values{};
     Indices_t indicies{};
@@ -67,18 +67,26 @@ namespace rascal {
       }
     }
 
-    template<class ManagerCollection>
-    void push_back(const Calculator& calculator, const ManagerCollection& collection, const std::vector<std::vector<int>>& selected_center_indices) {
+    template <class ManagerCollection>
+    void
+    push_back(const Calculator & calculator,
+              const ManagerCollection & collection,
+              const std::vector<std::vector<int>> & selected_center_indices) {
       for (size_t i_manager{0}; i_manager < collection.size(); ++i_manager) {
-        this->push_back(calculator, collection[i_manager], selected_center_indices[i_manager]);
+        this->push_back(calculator, collection[i_manager],
+                        selected_center_indices[i_manager]);
       }
     }
 
-    template<class StructureManager>
-    void push_back(const Calculator& calculator, std::shared_ptr<StructureManager> manager, const std::vector<int>& selected_center_indices) {
+    template <class StructureManager>
+    void push_back(const Calculator & calculator,
+                   std::shared_ptr<StructureManager> manager,
+                   const std::vector<int> & selected_center_indices) {
       std::string prop_name{calculator.get_name()};
-      auto property = manager->template get_property<Property_t<StructureManager>>(prop_name);
-      for (const auto& center_index : selected_center_indices) {
+      auto property =
+          manager->template get_property<Property_t<StructureManager>>(
+              prop_name);
+      for (const auto & center_index : selected_center_indices) {
         auto center_it = manager->get_iterator_at(center_index);
         auto center = *center_it;
         auto && map2row = property->operator[](center);
@@ -87,16 +95,18 @@ namespace rascal {
     }
 
     template <class V>
-    void push_back(internal::InternallySortedKeyMap<Key_t, V>& pseudo_point, const int& center_type) {
+    void push_back(internal::InternallySortedKeyMap<Key_t, V> & pseudo_point,
+                   const int & center_type) {
       auto & values_by_sp = this->values[center_type];
       auto & counters_by_sp = this->counters[center_type];
       auto & indicies_by_sp = this->indicies[center_type];
       this->center_species.insert(center_type);
-      for (const auto& key : pseudo_point.get_keys()) {
+      for (const auto & key : pseudo_point.get_keys()) {
         this->keys.insert(key);
         auto & values_by_sp_key = values_by_sp[key];
         // Eigen::Map<const V> vals{pseudo_point[key]};
-        // auto pseudo_point_by_key = Eigen::Map<math::Vector_t>(&vals(0, 0), vals.size());
+        // auto pseudo_point_by_key = Eigen::Map<math::Vector_t>(&vals(0, 0),
+        // vals.size());
         auto pseudo_point_by_key = pseudo_point.flattened(key);
         for (int ii{0}; ii < pseudo_point_by_key.size(); ++ii) {
           values_by_sp_key.push_back(pseudo_point_by_key[ii]);
@@ -104,10 +114,13 @@ namespace rascal {
         indicies_by_sp[key].push_back(counters_by_sp);
         if (this->inner_size == 0) {
           this->inner_size = pseudo_point_by_key.size();
-        } else if (static_cast<Eigen::Index>(this->inner_size) != pseudo_point_by_key.size()) {
+        } else if (static_cast<Eigen::Index>(this->inner_size) !=
+                   pseudo_point_by_key.size()) {
           std::stringstream err_str{};
-          err_str << "The representation changed size during the set-up of PseudoPointsBlockSparse:"
-                  << "'" << this->inner_size << "!=" << pseudo_point_by_key.size() << "'.";
+          err_str << "The representation changed size during the set-up of "
+                     "PseudoPointsBlockSparse:"
+                  << "'" << this->inner_size
+                  << "!=" << pseudo_point_by_key.size() << "'.";
           throw std::logic_error(err_str.str());
         }
       }
@@ -116,21 +129,25 @@ namespace rascal {
 
     math::Matrix_t get_features() {
       size_t n_pseudo_points{0};
-      for (const auto& sp : this->center_species) {
+      for (const auto & sp : this->center_species) {
         n_pseudo_points += counters[sp];
       }
       math::Matrix_t mat{n_pseudo_points, this->inner_size * this->keys.size()};
       mat.setZero();
       size_t i_row{0};
-      for (const auto& sp : this->center_species) {
+      for (const auto & sp : this->center_species) {
         auto & values_by_sp = this->values[sp];
-        auto &  indicies_by_sp = this->indicies[sp];
+        auto & indicies_by_sp = this->indicies[sp];
         size_t i_col{0};
-        for (const auto& key : this->keys) {
+        for (const auto & key : this->keys) {
           if (values_by_sp.count(key)) {
-            Eigen::Map<math::Matrix_t> block{values_by_sp[key].data(), static_cast<Eigen::Index>(indicies_by_sp[key].size()), static_cast<Eigen::Index>(this->inner_size)};
+            Eigen::Map<math::Matrix_t> block{
+                values_by_sp[key].data(),
+                static_cast<Eigen::Index>(indicies_by_sp[key].size()),
+                static_cast<Eigen::Index>(this->inner_size)};
             for (size_t ii{0}; ii < indicies_by_sp[key].size(); ii++) {
-              mat.block(i_row + indicies_by_sp[key][ii], i_col, 1, this->inner_size) = block.row(ii);
+              mat.block(i_row + indicies_by_sp[key][ii], i_col, 1,
+                        this->inner_size) = block.row(ii);
             }
           }
           i_col += this->inner_size;
@@ -140,9 +157,8 @@ namespace rascal {
       return mat;
     }
 
-    math::Matrix_t 
+    // math::Matrix_t
   };
-
 
 }  // namespace rascal
 

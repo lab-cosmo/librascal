@@ -779,8 +779,8 @@ namespace rascal {
     using BlockSparseProperty_t =
         BlockSparseProperty<double, Order, Manager_t, Key_t>;
     using Matrix_t = typename BlockSparseProperty_t::Matrix_t;
-    using InputData_t = typename BlockSparseProperty_t::InputData_t;
-    using TestData_t = std::vector<InputData_t>;
+    using InputData_t = Matrix_t;
+    using TestData_t = std::vector<std::map<Key_t, InputData_t>>;
 
     constexpr static Dim_t DynSize() { return 3; }
 
@@ -793,34 +793,29 @@ namespace rascal {
       auto key_dist{std::uniform_int_distribution<int>(1, 100)};
       // size_t i_manager{0};
       for (auto & manager : managers) {
-        sparse_features.emplace_back(*manager, sparse_features_desc);
+        sparse_features.emplace_back(*manager, sparse_features_desc,
+                                     exclude_ghosts);
         this->keys_list.emplace_back();
         TestData_t test_data{};
-        for (size_t i{0}; i < manager->get_size(); ++i) {
+        for (size_t ii{0}; ii < manager->get_size(); ++ii) {
           // set up random unique keys
           auto set_max_size{size_dist(gen)};
           std::set<Key_t> keys{};
-          for (size_t ii{0}; ii < set_max_size; ii++) {
-            keys.emplace(key_dist(gen));
-          }
-
-          // set up the data to fill the property later
-          InputData_t datas{};
-          // resize and set to 0
-          datas.resize(keys, n_row, n_col, 0);
-          for (auto & key : keys) {
-            auto data = Matrix_t::Random(n_row, n_col);
-            datas[key] += data;
+          test_data.emplace_back();
+          for (size_t iii{0}; iii < set_max_size; iii++) {
+            Key_t key{key_dist(gen)};
+            keys.emplace(key);
+            test_data.back()[key] = InputData_t::Random(n_row, n_col);
           }
           this->keys_list.back().push_back(keys);
-          test_data.push_back(datas);
         }
         this->test_datas.push_back(test_data);
       }
     }
 
-    int n_row{21};
-    int n_col{8};
+    bool exclude_ghosts{true};
+    int n_row{2};
+    int n_col{3};
 
     std::vector<std::vector<std::set<Key_t>>> keys_list{};
     std::vector<TestData_t> test_datas{};
@@ -854,11 +849,11 @@ namespace rascal {
     for (auto & manager : managers) {
       auto & keys{keys_list[i_manager]};
       auto i_center{0};
-      sparse_features[i_manager].set_shape(this->n_row, this->n_col);
-      sparse_features[i_manager].resize();
+      sparse_features[i_manager].set_shape(n_row, n_col);
+      sparse_features[i_manager].resize(keys);
+      sparse_features[i_manager].setZero();
       for (auto center : manager) {
         auto && sparse_features_center{sparse_features[i_manager][center]};
-        sparse_features_center.resize(keys[i_center], n_row, n_col, 0);
         for (auto & key : keys[i_center]) {
           sparse_features_center[key] = test_datas[i_manager][i_center][key];
         }

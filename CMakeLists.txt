@@ -103,9 +103,6 @@ endif()
 
 ########## START CONFIGURATION ##########
 
-# Find correct python version
-find_package(PythonLibsNew 3 MODULE REQUIRED)
-
 # set the name of the c++ libraries
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
