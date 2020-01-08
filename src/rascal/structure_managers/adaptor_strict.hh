@@ -231,14 +231,14 @@ namespace rascal {
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer>
     double get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-      return this->distance->operator[](pair);
+      return this->distance[pair];
     }
 
     //! returns the direction vector between atoms in a given pair
     template <size_t Order, size_t Layer>
     const Vector_ref
     get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
-      return this->dir_vec->operator[](pair);
+      return this->dir_vec[pair];
     }
 
     const std::vector<int> get_manager_atom_tag_list() {
@@ -283,8 +283,8 @@ namespace rascal {
     }
 
     ImplementationPtr_t manager;
-    std::shared_ptr<Distance_t> distance;
-    std::shared_ptr<DirectionVector_t> dir_vec;
+    Distance_t & distance;
+    DirectionVector_t & dir_vec;
     const double cutoff;
 
     /**
@@ -344,10 +344,11 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
       std::shared_ptr<ManagerImplementation> manager, double cutoff)
-      : manager{std::move(manager)}, distance{std::make_shared<Distance_t>(
-                                         *this)},
-        dir_vec{std::make_shared<DirectionVector_t>(*this)}, cutoff{cutoff},
-        atom_tag_list{}, neighbours_cluster_index{}, nb_neigh{}, offsets{}
+      : manager{std::move(manager)},
+        distance{this->template create_property<Distance_t>("distance")},
+        dir_vec{this->template create_property<DirectionVector_t>("dir_vec")},
+        cutoff{cutoff}, atom_tag_list{},
+        neighbours_cluster_index{}, nb_neigh{}, offsets{}
 
   {
     if (not internal::check_cutoff(this->manager, cutoff)) {
@@ -387,8 +388,8 @@ namespace rascal {
     this->dir_vec =
         this->template get_property<DirectionVector_t>("dir_vec", false, true);
 
-    this->distance->clear();
-    this->dir_vec->clear();
+    this->distance.clear();
+    this->dir_vec.clear();
 
     // fill the list, at least pairs are mandatory for this to work
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
@@ -415,12 +416,12 @@ namespace rascal {
           this->add_atom(pair);
           double distance{std::sqrt(distance2)};
           if (distance2 > 0.) {
-            this->dir_vec->push_back((vec_ij.array() / distance).matrix());
+            this->dir_vec.push_back((vec_ij.array() / distance).matrix());
           } else {
-            this->dir_vec->push_back((vec_ij.array()).matrix());
+            this->dir_vec.push_back((vec_ij.array()).matrix());
           }
 
-          this->distance->push_back(distance);
+          this->distance.push_back(distance);
 
           Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;
           indices_pair.template head<PairLayer>() = pair.get_cluster_indices();
@@ -444,8 +445,8 @@ namespace rascal {
       atom_cluster_indices.push_back(indices);
     }
 
-    this->distance->set_updated_status(true);
-    this->dir_vec->set_updated_status(true);
+    this->distance.set_updated_status(true);
+    this->dir_vec.set_updated_status(true);
   }
 }  // namespace rascal
 
