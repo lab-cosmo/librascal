@@ -30,6 +30,7 @@
 #include "behler_fixtures.hh"
 #include "test_structure.hh"
 
+#include "rascal/representations/behler_feature.hh"
 #include "rascal/utils/json_io.hh"
 
 #include <boost/mpl/list.hpp>
@@ -37,11 +38,20 @@
 
 namespace rascal {
 
-  template <SymmetryFunctionType SymFunType, InlCutoffFunctionType CutFunType>
-  struct BehlerFeatureFixture {};
+  template <SymmetryFunctionType MySymFunType,
+            SymmetryFunctionType... SymFunTypes>
+  struct BehlerFeatureFixture {
+    BehlerFeatureFixture() {}
+    BehlerFeature<MySymFunType, SymFunTypes...> bf{};
+  };
+
+  using Features =
+      boost::mpl::list<BehlerFeature<SymmetryFunctionType::Gaussian,
+                                     SymmetryFunctionType::Gaussian>>;
 
   BOOST_AUTO_TEST_SUITE(behler_parinello_feature_tests);
-  BOOST_AUTO_TEST_CASE(dummy) {}
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Features, Fix) {
+  }
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal

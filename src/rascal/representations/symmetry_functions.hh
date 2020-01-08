@@ -36,6 +36,7 @@
 #include "rascal/utils/units.hh"
 #include "rascal/utils/utils.hh"
 
+#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -80,10 +81,26 @@ namespace rascal {
   template <SymmetryFunctionType FunType>
   class SymmetryFunction {};
 
+  /* ---------------------------------------------------------------------- */
+  std::ostream & operator<<(std::ostream & os,
+                            const SymmetryFunctionType & fun_type) {
+    os << get_name(fun_type);
+    return os;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunctionType FunType>
+  std::ostream & operator<<(std::ostream & os,
+                            const SymmetryFunction<FunType> & /*sym_fun*/) {
+    os << FunType;
+    return os;
+  }
+
+  /* ---------------------------------------------------------------------- */
   template <>
   class SymmetryFunction<SymmetryFunctionType::Gaussian> {
    public:
-       static constexpr size_t Order{2};
+    static constexpr size_t Order{2};
 
     using Return_t = std::tuple<double, Eigen::Matrix<double, ThreeD, 1>>;
     /**

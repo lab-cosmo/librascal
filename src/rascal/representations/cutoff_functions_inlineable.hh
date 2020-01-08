@@ -51,9 +51,14 @@ namespace rascal {
 
   class CutoffFunctionBase {
    public:
+    enum class Evaluation { Value, Derivative };
+    template <typename StructureManager>
+    using Property_t = Property<double, PairOrder, StructureManager>;
+
     //! Constructor
-    explicit CutoffFunctionBase(const InlCutoffFunctionType & cut_fun_type)
-        : cut_fun_type{cut_fun_type} {}
+    explicit CutoffFunctionBase(const InlCutoffFunctionType & cut_fun_type,
+                                const double & cutoff)
+        : cut_fun_type{cut_fun_type}, cutoff{cutoff} {}
     //! Destructor
     virtual ~CutoffFunctionBase() = default;
     //! Copy constructor
@@ -70,7 +75,7 @@ namespace rascal {
     //! Main worker (raison d'être)
     template <class StructureManager>
     inline void compute(StructureManager & manager,
-                        const bool & compute_derivatives) const;
+                        const Evaluation & evaluation) const;
 
     /**
      * The identifier string must provide a unique name for a property to
@@ -81,12 +86,38 @@ namespace rascal {
      */
     virtual const std::string & get_identifier() const = 0;
 
+    /**
+     * returns the property with cutoff functions value, guaranteed to be fresh
+     */
+    template <typename StructureManager>
+    inline Property_t<StructureManager> &
+    get_value(StructureManager & manager) const;
+
+    /**
+     * returns the property with cutoff functions values and derivatives,
+     * guaranteed to be fresh
+     */
+    template <typename StructureManager>
+    std::tuple<
+        Property_t<StructureManager> &,
+        Property_t<StructureManager> &> inline get_derivative(StructureManager &
+                                                                  manager)
+        const;
+
+    const double & get_cutoff() const { return this->cutoff; }
+
    protected:
+    template <typename StructureManager>
+    Property_t<StructureManager> &
+    get_property(StructureManager & manager,
+                 const Evaluation & evaluation) const;
     InlCutoffFunctionType cut_fun_type;
     //! Main worker (raison d'être)
     template <InlCutoffFunctionType CutFunType, class StructureManager>
     inline void compute_helper(StructureManager & manager,
-                               const bool & compute_derivatives) const;
+                               const Evaluation & evaluation) const;
+    //! cutoff radii
+    const double cutoff;
   };
 
   /**
@@ -101,10 +132,10 @@ namespace rascal {
     using Hypers_t = typename CutoffFunctionBase::Hypers_t;
     explicit CutoffFunction(const units::UnitStyle & unit_style,
                             const Hypers_t & hypers)
-        : Parent{InlCutoffFunctionType::Cosine}, hypers{hypers},
-          cutoff{
-              json_io::check_units(unit_style.distance(), hypers.at("r_cut"))},
-          identifier{this->make_identifier(unit_style)} {}
+        : Parent{InlCutoffFunctionType::Cosine,
+                 json_io::check_units(unit_style.distance(),
+                                      hypers.at("r_cut"))},
+          hypers{hypers}, identifier{this->make_identifier(unit_style)} {}
 
     inline double f_c(const double & distance) const {
       assert(distance <= this->cutoff);
@@ -129,18 +160,16 @@ namespace rascal {
     }
     //! keep the hypers
     const Hypers_t hypers;
-    //! cutoff radii
-    const double cutoff;
     const std::string identifier;
   };
 
   template <class StructureManager>
   void CutoffFunctionBase::compute(StructureManager & manager,
-                                   const bool & compute_derivatives) const {
+                                   const Evaluation & evaluation) const {
     switch (this->cut_fun_type) {
     case InlCutoffFunctionType::Cosine: {
-      this->template compute_helper<InlCutoffFunctionType::Cosine>(
-          manager, compute_derivatives);
+      this->template compute_helper<InlCutoffFunctionType::Cosine>(manager,
+                                                                   evaluation);
       break;
     }
     default:
@@ -149,19 +178,38 @@ namespace rascal {
     }
   }
 
-  template <InlCutoffFunctionType CutFunType, class StructureManager>
-  inline void
-  CutoffFunctionBase::compute_helper(StructureManager & manager,
-                                     const bool & compute_derivatives) const {
-    auto & typed_this{static_cast<const CutoffFunction<CutFunType> &>(*this)};
+  /* ---------------------------------------------------------------------- */
+  template <typename StructureManager>
+  auto CutoffFunctionBase::get_value(StructureManager & manager) const
+      -> Property_t<StructureManager> & {
+    constexpr Evaluation EvalKind{Evaluation::Value};
+    this->compute(manager, EvalKind);
+    return this->get_property(manager, EvalKind);
+  };
 
+  /* ---------------------------------------------------------------------- */
+  template <typename StructureManager>
+  auto CutoffFunctionBase::get_derivative(StructureManager & manager) const
+      -> std::tuple<Property_t<StructureManager> &,
+                    Property_t<StructureManager> &> {
+    this->compute(manager, Evaluation::Derivative);
+    return std::make_tuple(this->get_property(manager, Evaluation::Value),
+                           this->get_property(manager, Evaluation::Derivative));
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <typename StructureManager>
+  auto CutoffFunctionBase::get_property(StructureManager & manager,
+                                        const Evaluation & evaluation) const
+      -> Property_t<StructureManager> & {
     // check whether the property already exists (assuming everyone computes
     // either values or both values and derivatives)
     const std::string value_identifier{this->get_identifier() + "_value"};
     const std::string derivative_identifier{this->get_identifier() +
                                             "_derivative"};
-    auto & identifier{compute_derivatives ? derivative_identifier
-                                          : value_identifier};
+    auto & identifier{evaluation == Evaluation::Derivative
+                          ? derivative_identifier
+                          : value_identifier};
 
     bool property_at_wrong_level{
         manager.is_property_in_stack(identifier) and
@@ -173,36 +221,52 @@ namespace rascal {
           "at the same stack level as this cutoff function");
     }
 
-    using Property_t = Property<double, PairOrder, StructureManager>;
     constexpr bool Validate{false}, AllowCreation{true};
 
-    auto & property{*manager.template get_property<Property_t>(
-        identifier, Validate, AllowCreation)};
+    auto & property{
+        *manager.template get_property<Property_t<StructureManager>>(
+            identifier, Validate, AllowCreation)};
 
+    return property;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template <InlCutoffFunctionType CutFunType, class StructureManager>
+  inline void
+  CutoffFunctionBase::compute_helper(StructureManager & manager,
+                                     const Evaluation & evaluation) const {
+    auto & typed_this{static_cast<const CutoffFunction<CutFunType> &>(*this)};
+    auto & property{this->get_property(manager, evaluation)};
     if (property.is_updated()) {
       return;
     }
 
     property.resize();
 
-    // compute cutoff functions
-    if (not compute_derivatives) {
+    switch (evaluation) {
+    case Evaluation::Value: {
       for (auto && atom : manager) {
         for (auto && pair : atom.pairs()) {
           property[pair] = typed_this.f_c(manager.get_distance(pair));
         }
       }
-    } else {
-      auto & value_property{*manager.template get_property<Property_t>(
-          value_identifier, Validate, AllowCreation)};
+      break;
+    }
+    case Evaluation::Derivative: {
+      auto & value_property{this->get_value(manager)};
       value_property.resize();
 
       for (auto && atom : manager) {
         for (auto && pair : atom.pairs()) {
           std::tie(value_property[pair], property[pair]) =
-            std::tuple_cat(typed_this.df_c(manager.get_distance(pair)));
+              std::tuple_cat(typed_this.df_c(manager.get_distance(pair)));
         }
       }
+      break;
+    }
+    default:
+      throw std::runtime_error("Unknown evaluation type");
+      break;
     }
   }
 

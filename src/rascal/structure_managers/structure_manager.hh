@@ -612,6 +612,15 @@ namespace rascal {
       }
     }
 
+    // gets a fully typed ref to the highest distance property in the stack
+    template <bool HasDistances = traits::HasDistances,
+              typename std::enable_if_t<HasDistances, int> = 0>
+    decltype(auto) get_distance() {
+      static_assert(HasDistances == traits::HasDistances,
+                    "The manager does not have distances.");
+      return this->get_previous_manager()->get_distance();
+    }
+
     template <size_t Order, size_t Layer,
               bool HasDistances = traits::HasDistances,
               typename std::enable_if_t<HasDistances, int> = 0>
@@ -957,8 +966,8 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Class definitionobject when iterating over the manager, then atoms,
-   * then pairs, etc. in deeper Orders. This object itself is iterable again
+   * Class iterating over the manager, then atoms,
+   * then pairs, etc. in higher Orders. This object itself is iterable again
    * up to the corresponding MaxOrder of the manager. I.e. iterating over a
    * manager provides atoms; iterating over atoms gives its pairs, etc.
    */
@@ -1161,17 +1170,15 @@ namespace rascal {
     //! `atom_cluster_indices` is an initially contiguous numbering of atoms
     Iterator_t & it;
 
-    /**
-     * Helper struct to iterate in a customised range. Useful to return an
-     * iterator over the pairs (TargetOrder == 2),
-     * triplets (TargetOrder == 3)...
-     */
+    template <size_t OriginOrder, size_t TargetOrder>
+    class CustomProxy_t {};
+
     template <size_t TargetOrder>
-    struct CustomProxy {
+    class CustomProxy_t<AtomOrder, TargetOrder> {
       using ClusterRef_t = typename Manager_t::template ClusterRef<1>;
       using iterator = typename Manager_t::template Iterator<TargetOrder>;
 
-      CustomProxy(ClusterRef_t & cluster_ref, const size_t & start,
+      CustomProxy_t(ClusterRef_t & cluster_ref, const size_t & start,
                   const size_t & offset)
           : cluster_ref{cluster_ref}, start{start}, offset{offset} {}
 
@@ -1195,8 +1202,14 @@ namespace rascal {
       size_t start;
       //! offset with which to start the iteration in the list of all clusters
       //! of Order == TargetOrder
-      size_t offset;
-    };
+      size_t offset;};
+    /**
+     * Helper struct to iterate in a customised range. Useful to return an
+     * iterator over the pairs (TargetOrder == 2),
+     * triplets (TargetOrder == 3)...
+     */
+    template <size_t TargetOrder>
+    using CustomProxy = CustomProxy_t<Order, TargetOrder>;
 
    public:
     /**
