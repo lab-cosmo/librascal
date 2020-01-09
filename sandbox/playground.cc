@@ -163,7 +163,7 @@ int main() {
   }
 
   json kernel_hypers{
-        {"zeta", 1}, {"target_type", "Structure"}, {"name", "SparseGAP"}};
+        {"zeta", 1}, {"target_type", "Structure"}, {"name", "GAP"}};
   SparseKernel kernel{kernel_hypers};
 
   auto KNM_test{kernel.compute(representation, managers, sparse_points)};
@@ -196,7 +196,7 @@ int main() {
 
 
   // json kernel_hypers{
-  //       {"zeta", 1}, {"target_type", "Atom"}, {"name", "SparseGAP"}};
+  //       {"zeta", 1}, {"target_type", "Atom"}, {"name", "GAP"}};
   // SparseKernel kernel{kernel_hypers};
 
   // auto KNM_test{kernel.compute(representation, managers, sparse_points)};

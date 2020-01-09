@@ -29,15 +29,14 @@
 #define SRC_RASCAL_MODELS_SPARSE_KERNELS_HH_
 
 #include "rascal/math/utils.hh"
+#include "rascal/models/kernels.hh"
 #include "rascal/structure_managers/structure_manager_collection.hh"
 #include "rascal/utils/json_io.hh"
-#include "rascal/models/kernels.hh"
-
 
 namespace rascal {
 
   namespace internal {
-    enum class SparseKernelType {SparseGAP};
+    enum class SparseKernelType { GAP };
 
     template <internal::SparseKernelType Type>
     struct SparseKernelImpl {};
@@ -63,7 +62,7 @@ namespace rascal {
      * with $\Lambda$ the regularization matrix.
      */
     template <>
-    struct SparseKernelImpl<internal::SparseKernelType::SparseGAP> : KernelImplBase {
+    struct SparseKernelImpl<internal::SparseKernelType::GAP> : KernelImplBase {
       using Hypers_t = typename KernelImplBase::Hypers_t;
 
       //! exponent of the cosine kernel
@@ -81,7 +80,7 @@ namespace rascal {
           zeta = hypers["zeta"].get<size_t>();
         } else {
           throw std::runtime_error(
-              R"(zeta should be specified for the SparseGAP kernel)");
+              R"(zeta should be specified for the GAP kernel)");
         }
       }
 
@@ -114,7 +113,8 @@ namespace rascal {
           for (auto center : manager) {
             int sp = center.get_atom_type();
             // only the pseudo points of species sp contribute
-            KNM.row(ii_A) += pow_zeta(pseudo_points.dot(sp, propA[center]), this->zeta);
+            KNM.row(ii_A) +=
+                pow_zeta(pseudo_points.dot(sp, propA[center]), this->zeta);
           }
           ++ii_A;
         }
@@ -134,11 +134,11 @@ namespace rascal {
         KMM.setZero();
         int start{0};
         // loop over the species
-        for (const int& sp : pseudo_points.species()) {
+        for (const int & sp : pseudo_points.species()) {
           // only the pseudo points of the same species contribute
-          auto KMM_by_sp = pseudo_points.self_dot(sp);
-          auto block_size = KMM_by_sp.rows();
-          KMM.block(start, start, block_size, block_size) = pow_zeta(KMM_by_sp, this->zeta);
+          auto block_size = pseudo_points.size_by_species(sp);
+          KMM.block(start, start, block_size, block_size) =
+              pow_zeta(pseudo_points.self_dot(sp), this->zeta);
           start += block_size;
         }
         return KMM;
@@ -175,17 +175,42 @@ namespace rascal {
               representation_name, true)};
           for (auto center : manager) {
             int sp = center.get_atom_type();
-            KNM.row(ii_A) = pow_zeta(pseudo_points.dot(sp, propA[center]), this->zeta);
+            KNM.row(ii_A) =
+                pow_zeta(pseudo_points.dot(sp, propA[center]), this->zeta);
             ii_A++;
           }
         }
         return KNM;
       }
 
-
       /**
        * Compute the kernel between the representation gradients of structure(s)
        * and a set of pseudo points.
+       * The derivative of the kernel of environment $X_j^c$ with respect to
+       * the position of $r_i$ atom $i$ of type $c$ and the pseudo point T_m^b
+       * is:
+       *
+       * $$dk(X_j^c, T_m^b)/dr_i =
+       *              \sum_{p} dk(X_j^c, T_m^b)/dX_{jp}^c dX_j^c/dr_i$$,
+       *
+       * where $p$ is an index running over all the representation elements.
+       * This object has the dimension of the number of neighbors (so quite
+       * large) but to compute forces we only need the contraction over all
+       * neighbors of a particular center so this routine return the already
+       * contracted kernel derivative for center $X_i^a$:
+       *
+       * $$dk(X_i^a, T_m^b)/dr_i =
+       *            \sum_{(c,j) \in X_i^a} dk(X_j^c, T_m^b)/dr_i$$,
+       *
+       * so the resulting matrix has the dimension of the number of centers
+       * times 3 (the three cartesian dimensions) and the number of sparse
+       * points.
+       *
+       * For the GAP kernel we have:
+       *
+       * $$dk(X_j^c, T_m^b)/dX_{jp}^c =
+       *   \delta_{cb} \zeta (\sum_n X_{jn}^c T_{mn}^b)^{\zeta-1}  T_{mp}^b$$
+       *
        *
        * @tparam StructureManagers should be an iterable over shared pointer
        *          of structure managers like ManagerCollection
@@ -196,14 +221,15 @@ namespace rascal {
        * gradient data has been registered in the elements of managers
        * @return kernel matrix
        */
-      template <
-          class Property_t, class PropertyGradient_t, internal::TargetType Type,
-          std::enable_if_t<Type == internal::TargetType::Atom, int> = 0,
-          class StructureManagers, class PseudoPoints>
-      math::Matrix_t compute_derivative(StructureManagers & managers,
-                             PseudoPoints & pseudo_points,
-                             const std::string & representation_name,
-                             const std::string & representation_grad_name) {
+      template <class Property_t, class PropertyGradient_t,
+                internal::TargetType Type,
+                std::enable_if_t<Type == internal::TargetType::Atom, int> = 0,
+                class StructureManagers, class PseudoPoints>
+      math::Matrix_t
+      compute_derivative(StructureManagers & managers,
+                         PseudoPoints & pseudo_points,
+                         const std::string & representation_name,
+                         const std::string & representation_grad_name) {
         size_t n_centers{0};
         for (const auto & manager : managers) {
           n_centers += manager->size() * n_spatial_dimensions;
@@ -211,21 +237,53 @@ namespace rascal {
         size_t n_pseudo_points{pseudo_points.size()};
         math::Matrix_t KNM(n_centers, n_pseudo_points);
         KNM.setZero();
-        size_t ii_A{0};
+        size_t i_center{0};
         for (auto & manager : managers) {
-          auto && prop{*manager->template get_property<Property_t>(
-              representation_name, true)};
           auto && prop_grad{*manager->template get_property<PropertyGradient_t>(
               representation_grad_name, true)};
-          for (auto center : manager) {
-            for (auto neigh : center.pairs_with_self_pair()) {
-              int sp = neigh.get_atom_type();
-              auto atom_j = neigh.get_atom_j();
-              auto row = this->zeta * pow_zeta(pseudo_points.dot(sp, prop[atom_j]), this->zeta - 1).transpose();
 
-              KNM.block(ii_A, 0, n_spatial_dimensions, n_pseudo_points) += row.array() * pseudo_points.dot_grad(sp, prop_grad[neigh]).transpose().array().rowwise();
+          if (this->zeta == 1) {
+            // simpler version
+            for (auto center : manager) {
+              for (auto neigh : center.pairs_with_self_pair()) {
+                int sp{neigh.get_atom_type()};
+                KNM.block(i_center, 0, n_spatial_dimensions, n_pseudo_points) +=
+                    pseudo_points.dot_derivative(sp, prop_grad[neigh])
+                        .transpose();
+              }
+              i_center += n_spatial_dimensions;
             }
-            ii_A += n_spatial_dimensions;
+          } else {
+            auto && prop{*manager->template get_property<Property_t>(
+                representation_name, true)};
+            std::map<int, int> tag2index{};
+            int i_row{0};
+            // compute the gradient of the kernel w.r.t the representation dk/dX
+            // without the pseudo point factor
+            math::Matrix_t rep(manager->size(), n_pseudo_points);
+            for (auto center : manager) {
+              int sp{center.get_atom_type()};
+              int tag{center.get_atom_tag()};
+              tag2index[tag] = i_row;
+              rep.row(i_row) =
+                  this->zeta *
+                  pow_zeta(pseudo_points.dot(sp, prop[center]), this->zeta - 1)
+                      .transpose();
+              i_row++;
+            }
+            // put together dk/dX, the pseudo points and dX/dr
+            for (auto center : manager) {
+              for (auto neigh : center.pairs_with_self_pair()) {
+                int sp{neigh.get_atom_type()};
+                auto atom_j = neigh.get_atom_j();
+                int tag{atom_j.get_atom_tag()};
+                KNM.block(i_center, 0, n_spatial_dimensions, n_pseudo_points) +=
+                    pseudo_points.dot_derivative(sp, prop_grad[neigh])
+                        .transpose() *
+                    rep.row(tag2index[tag]).asDiagonal();
+              }
+              i_center += n_spatial_dimensions;
+            }
           }
         }
         return KNM;
@@ -243,7 +301,8 @@ namespace rascal {
   template <internal::SparseKernelType Type>
   std::shared_ptr<internal::SparseKernelImpl<Type>> downcast_sparse_kernel_impl(
       std::shared_ptr<internal::KernelImplBase> & kernel_impl) {
-    return std::static_pointer_cast<internal::SparseKernelImpl<Type>>(kernel_impl);
+    return std::static_pointer_cast<internal::SparseKernelImpl<Type>>(
+        kernel_impl);
   }
 
   class SparseKernel {
@@ -273,13 +332,14 @@ namespace rascal {
       }
 
       auto kernel_type_str = hypers.at("name").get<std::string>();
-      if (kernel_type_str == "SparseGAP") {
-        this->kernel_type = SparseKernelType::SparseGAP;
-        this->kernel_impl = make_sparse_kernel_impl<SparseKernelType::SparseGAP>(hypers);
+      if (kernel_type_str == "GAP") {
+        this->kernel_type = SparseKernelType::GAP;
+        this->kernel_impl =
+            make_sparse_kernel_impl<SparseKernelType::GAP>(hypers);
       } else {
         throw std::logic_error("Requested SparseKernel \'" + kernel_type_str +
                                "\' has not been implemented.  Must be one of" +
-                               ": \'SparseGAP\'.");
+                               ": \'GAP\'.");
       }
     }
 
@@ -324,8 +384,9 @@ namespace rascal {
                                   const SparsePoints & sparse_points) {
       using internal::SparseKernelType;
 
-      if (this->kernel_type == SparseKernelType::SparseGAP) {
-        auto kernel = downcast_sparse_kernel_impl<SparseKernelType::SparseGAP>(kernel_impl);
+      if (this->kernel_type == SparseKernelType::GAP) {
+        auto kernel =
+            downcast_sparse_kernel_impl<SparseKernelType::GAP>(kernel_impl);
         return kernel->template compute<Property_t, Type>(
             managers, sparse_points, representation_name);
       } else {
@@ -333,28 +394,14 @@ namespace rascal {
       }
     }
 
-    template <class Calculator, class SparsePoints>
-    math::Matrix_t compute(const Calculator & calculator,
-                           const SparsePoints & sparse_points) {
-
-      using internal::TargetType;
-
-      switch (this->target_type) {
-      case TargetType::Atom:
-        return this->compute_helper<TargetType::Atom>(sparse_points);
-      default:
-        throw std::logic_error("The combination of parameter is not handled.");
-      }
-    }
-
-    template <internal::TargetType Type,
-              class SparsePoints>
-    math::Matrix_t compute_helper(const SparsePoints & sparse_points) {
+    template <class SparsePoints>
+    math::Matrix_t compute(const SparsePoints & sparse_points) {
       using internal::SparseKernelType;
 
-      if (this->kernel_type == SparseKernelType::SparseGAP) {
-        auto kernel = downcast_sparse_kernel_impl<SparseKernelType::SparseGAP>(kernel_impl);
-        return kernel->template compute<Type>(sparse_points);
+      if (this->kernel_type == SparseKernelType::GAP) {
+        auto kernel =
+            downcast_sparse_kernel_impl<SparseKernelType::GAP>(kernel_impl);
+        return kernel->compute(sparse_points);
       } else {
         throw std::logic_error("The combination of parameter is not handled.");
       }
@@ -372,28 +419,31 @@ namespace rascal {
      * @param managers_b a ManagerCollection or similar collection of
      * structure managers
      */
-    template <class Calculator, class PseudoPoints, class StructureManagers>
+    template <class Calculator, class StructureManagers, class PseudoPoints>
     math::Matrix_t compute_derivative(const Calculator & calculator,
-                           const StructureManagers & managers,
-                           const PseudoPoints & pseudo_points) {
+                                      const StructureManagers & managers,
+                                      const PseudoPoints & pseudo_points) {
       using ManagerPtr_t = typename StructureManagers::value_type;
       using Manager_t = typename ManagerPtr_t::element_type;
       using Property_t = typename Calculator::template Property_t<Manager_t>;
-      using PropertyGradient_t = typename Calculator::template PropertyGradient_t<Manager_t>;
-      auto && representation_name{calculator.get_name()};
-      auto && representation_grad_name{calculator.get_gradient_name()};
-      using internal::TargetType;
+      using PropertyGradient_t =
+          typename Calculator::template PropertyGradient_t<Manager_t>;
+      const auto & representation_name{calculator.get_name()};
+      const auto representation_grad_name{calculator.get_gradient_name()};
       using internal::SparseKernelType;
+      using internal::TargetType;
 
-      if (this->kernel_type == SparseKernelType::SparseGAP) {
-        auto kernel = downcast_sparse_kernel_impl<SparseKernelType::SparseGAP>(kernel_impl);
-        return kernel->template compute<Property_t, PropertyGradient_t, TargetType::Atom>(
-            managers, pseudo_points, representation_name, representation_grad_name);
+      if (this->kernel_type == SparseKernelType::GAP) {
+        auto kernel =
+            downcast_sparse_kernel_impl<SparseKernelType::GAP>(kernel_impl);
+        return kernel->template compute_derivative<
+            Property_t, PropertyGradient_t, TargetType::Atom>(
+            managers, pseudo_points, representation_name,
+            representation_grad_name);
       } else {
         throw std::logic_error("The combination of parameter is not handled.");
       }
     }
-
 
     //! list of names identifying the properties that should be used
     //! to compute the kernels

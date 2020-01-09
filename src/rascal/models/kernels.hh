@@ -45,9 +45,10 @@ namespace rascal {
      * be faster that std::pow, while introducing a few more numerical
      * errors.
      */
-    math::Matrix_t pow_zeta(math::Matrix_t && kernel, const size_t& zeta) {
+    inline math::Matrix_t pow_zeta(math::Matrix_t && kernel,
+                                   const size_t & zeta) {
       if (zeta == 1) {
-        return std::move(kernel);
+        return kernel;
       } else if (zeta == 2) {
         kernel = kernel.array().square();
       } else if (zeta == 3) {
@@ -56,8 +57,20 @@ namespace rascal {
         kernel = kernel.unaryExpr(
             [zeta = zeta](double v) { return math::pow(v, zeta); });
       }
-      return std::move(kernel);
+      return kernel;
     }
+
+    // void pow_zeta_in_place(math::Matrix_t && kernel, const size_t & zeta) {
+    //   if (zeta == 2) {
+    //     kernel = kernel.array().square();
+    //   } else if (zeta == 3) {
+    //     kernel = kernel.array().cube();
+    //   } else {
+    //     kernel = kernel.unaryExpr(
+    //         [zeta = zeta](double v) { return math::pow(v, zeta); });
+    //   }
+    //   return std::move(kernel);
+    // }
 
     struct KernelImplBase {
       using Hypers_t = json;

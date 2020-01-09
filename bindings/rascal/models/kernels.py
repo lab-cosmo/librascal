@@ -1,4 +1,5 @@
 from ..lib._rascal.models.kernels import Kernel as Kernelcpp
+from ..lib._rascal.models.kernels import SparseKernel as SparseKernelcpp
 from ..neighbourlist import AtomsList
 import json
 
@@ -40,7 +41,7 @@ class Kernel(object):
 
     """
 
-    def __init__(self, representation, name='Cosine', target_type='Structure',
+    def __init__(self, representation, name='Cosine', kernel_type='Full', target_type='Structure',
                  **kwargs):
 
         # This case cannot handled by the c++ side because c++ cannot deduce the
@@ -52,18 +53,33 @@ class Kernel(object):
             if not(zeta > 0 and zeta % 1 == 0):
                 raise ValueError(
                     "The given zeta has to be a positive integer.")
+        elif (name == 'GAP' and 'zeta' in kwargs):
+            # should be positive integer
+            zeta = kwargs['zeta']
+            if not(zeta > 0 and zeta % 1 == 0):
+                raise ValueError(
+                    "The given zeta has to be a positive integer.")
+        else:
+            raise ValueError("Kernel name must be one of: Cosine, GAP.")
         hypers = dict(name=name, target_type=target_type)
         hypers.update(**kwargs)
         hypers_str = json.dumps(hypers)
         self._representation = representation._representation
 
-        self._kernel = Kernelcpp(hypers_str)
+        if 'Sparse' in kernel_type:
+            self._kernel = SparseKernelcpp(hypers_str)
+        else:
+            self._kernel = Kernelcpp(hypers_str)
 
-    def __call__(self, X, Y=None):
+    def __call__(self, X, Y=None, grad=False):
         if isinstance(X, AtomsList):
             X = X.managers
         if Y is None:
             return self._kernel.compute(self._representation, X)
+        elif grad is True:
+            if isinstance(Y, AtomsList):
+                Y = Y.managers
+            return self._kernel.compute(self._representation, X, Y)
         else:
             if isinstance(Y, AtomsList):
                 Y = Y.managers

@@ -27,11 +27,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rascal/models/pseudo_points.hh"
-
 #include "test_adaptor.hh"
 #include "test_calculator.hh"
 #include "test_manager_collection.hh"
+
+#include "rascal/models/pseudo_points.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
@@ -40,11 +40,11 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(pseudo_points_test);
 
   using ManagerCollection_t =
-          ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
-                            AdaptorCenterContribution, AdaptorStrict>;
+      ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
+                        AdaptorCenterContribution, AdaptorStrict>;
 
-
-  template <class Representation, class ManagerCollection,template<class> class  PseudoPoints>
+  template <class Representation, class ManagerCollection,
+            template <class> class PseudoPoints>
   struct PseudoPointsFixture {
     using Representation_t = Representation;
     using ManagerCollection_t = ManagerCollection;
@@ -56,11 +56,11 @@ namespace rascal {
       hypers["radial_contribution"] = {{"type", "GTO"}};
 
       json ad1a{{"name", "AdaptorNeighbourList"},
-              {"initialization_arguments", {{"cutoff", cutoff}}}};
+                {"initialization_arguments", {{"cutoff", cutoff}}}};
       json ad1b{{"name", "AdaptorCenterContribution"},
                 {"initialization_arguments", {}}};
       json ad2{{"name", "AdaptorStrict"},
-              {"initialization_arguments", {{"cutoff", cutoff}}}};
+               {"initialization_arguments", {{"cutoff", cutoff}}}};
       adaptors.emplace_back(ad1a);
       adaptors.emplace_back(ad1b);
       adaptors.emplace_back(ad2);
@@ -81,20 +81,20 @@ namespace rascal {
                 {"expansion_by_species_method", "environment wise"}};
 
     json fc_hypers{{"type", "ShiftedCosine"},
-                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
-                  {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
+                   {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
+                   {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
     json sigma_hypers{{"type", "Constant"},
                       {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
   };
 
-  using multiple_fixtures =
-      boost::mpl::list<
-      PseudoPointsFixture<CalculatorSphericalInvariants, ManagerCollection_t, PseudoPointsBlockSparse>>;
+  using multiple_fixtures = boost::mpl::list<
+      PseudoPointsFixture<CalculatorSphericalInvariants, ManagerCollection_t,
+                          PseudoPointsBlockSparse>>;
   /**
    * Tests if the wrong target_type is catched correctly.
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(data_matching_test, Fix,
-                          multiple_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(data_matching_test, Fix, multiple_fixtures,
+                                   Fix) {
     const bool verbose{true};
     auto & sparse_points = Fix::sparse_points;
 
@@ -116,7 +116,8 @@ namespace rascal {
         if (roll < 0.85) {
           selected_ids.back().push_back(ii);
         } else if (verbose) {
-          std::cout << "Center " << ii << " will not be considered." << std::endl;
+          std::cout << "Center " << ii << " will not be considered."
+                    << std::endl;
         }
         ++ii;
       }
@@ -129,22 +130,22 @@ namespace rascal {
     auto feat_test = sparse_points.get_features();
 
     for (int i_row{0}; i_row < feat_test.rows(); i_row++) {
-      auto diffs = (feat_ref.rowwise() - feat_test.row(i_row)).rowwise().template lpNorm<1>();
+      auto diffs = (feat_ref.rowwise() - feat_test.row(i_row))
+                       .rowwise()
+                       .template lpNorm<1>();
       // check that one row of feat_ref matches the current row of feat_test
       BOOST_TEST((diffs.array() < 1e-16).count() == 1);
 
       if (verbose and (diffs.array() < 1e-16).count() != 1) {
-        std::cout << "Number of matching row "<< i_row << " :"
+        std::cout << "Number of matching row " << i_row << " :"
                   << (diffs.array() < 1e-16).count() << std::endl;
-        std::cout << feat_ref<< std::endl;
+        std::cout << feat_ref << std::endl;
         std::cout << "============================" << std::endl;
-        std::cout << feat_test.row(i_row)<< std::endl;
+        std::cout << feat_test.row(i_row) << std::endl;
         std::cout << "####################################" << std::endl;
       }
     }
   }
-
-
 
   BOOST_AUTO_TEST_SUITE_END();
 
