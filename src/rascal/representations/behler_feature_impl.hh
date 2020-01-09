@@ -107,33 +107,41 @@ namespace rascal {
             typename Permutation>
   void BehlerFeature<MySymFunType, SymFunTypes...>::compute_helper(
       StructureManager & manager, std::shared_ptr<PropertyBase> output) const {
-    const std::string && cut_off_vals_id{this->cut_off_fun.get_identifier()};
     auto & cutoffs{this->cut_fun.get_value(manager)};
     // eval
     using Output_t = Property<double, AtomOrder, StructureManager>;
     Output_t & fun_vals{dynamic_cast<Output_t &>(*output)};
     auto & distances{manager->get_distance()};
 
+    auto & neigh_to_i_atom{
+        manager
+            .template get_neighbours_to_i_atoms<SymmetryFunction_t::Order>()};
+
     switch (SymmetryFunction_t::Order) {
     case PairOrder: {
       for (auto && atom : manager) {
         for (auto && pair : atom.pairs()) {
-          auto && leading_cluster_id{Permutation::leading(manager, pair)};
+          // compute the increment to the G function value
           auto && G_incr{this->sym_fun.f_sym(distances[pair]) * cutoffs[pair]};
-          if (Permutation::no) {
-            fun_vals[leading_cluster_id] += G_incr;
-          } else {
-            fun_vals[pair] += G_incr;
-          }
+
+
+          auto && atom_cluster_indices{neigh_to_i_atom[pair]};
+          auto && i_atom{manager[atom_cluster_indices(Permutation::leading())]};
+
           switch (RepSpecies) {
           case RepeatedSpecies::Not: {
+            fun_vals[i_atom] += G_incr;
             break;
           }
+
           case RepeatedSpecies::All: {
-            auto && second_cluster_id{Permutation::second(manager, pair)};
-            fun_vals[second_cluster_id] += G_incr;
+            auto && j_atom{
+                manager[atom_cluster_indices(Permutation::second())]};
+            fun_vals[i_atom] += G_incr;
+            fun_vals[j_atom] += G_incr;
             break;
           }
+
           default:
             throw std::runtime_error("Unknown species repetition pattern");
             break;

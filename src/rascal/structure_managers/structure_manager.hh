@@ -260,7 +260,6 @@ namespace rascal {
     template <size_t Order>
     class ClusterRef;
 
-
     //! random access operator
     ClusterRef<AtomOrder> operator[](const size_t & cluster_index) const {
       return *(this->get_iterator_at(cluster_index));
@@ -747,6 +746,15 @@ namespace rascal {
       return this->implementation().get_previous_manager_impl();
     }
 
+    /**
+     * creates or fetches and refreshes a property relating to clusters of order
+     * Order containing atom cluster indices for each atom in the clusters. This
+     * can be used to store atom data for any atom other then the center. I.e.,
+     * allows to transit from j atom to i atom.
+     */
+    template <size_t Order>
+    Property_t<size_t, Order> & get_neighbours_to_i_atoms();
+
    protected:
     /**
      * Update itself and send update signal to children nodes
@@ -824,7 +832,57 @@ namespace rascal {
     ClusterIndex_t cluster_indices_container;
 
     std::map<std::string, std::shared_ptr<PropertyBase>> properties{};
-  };  // namespace rascal
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <class ManagerImplementation>
+  template <size_t Order>
+  auto StructureManager<ManagerImplementation>::get_neighbours_to_i_atoms()
+      -> Property_t<size_t, Order> & {
+    // does the property exist at this level?
+    constexpr auto Layer{this->template cluster_layer_from_order<Order>()};
+    std::stringstream identifier{};
+    identifier << "neighbours_to_i_atoms_Order=" << Order << "_Layer=" << Layer;
+    bool property_at_wrong_layer{
+        this->is_property_in_stack(identifier.str()) and
+        not this->is_property_in_current_layer(identifier.str())};
+    if (property_at_wrong_layer) {
+      // complain and die
+      throw std::runtime_error(
+          "cannot handle the situation where the property isn't registered "
+          "at the same stack layer as this cutoff function");
+    }
+
+    constexpr bool Validate{false}, AllowCreation{true};
+
+    auto & property{this->template get_property<Property_t<size_t, Order>>(
+        identifier, Validate, AllowCreation)};
+
+    // is it fresh?
+    if (property.is_updated()) {
+      return property;
+    }
+
+    // fill it
+    // map from atom tags to cluster indices
+    std::map<int, size_t> tag_to_id{};
+
+    size_t counter{0};
+    for (auto && atom : this->with_ghosts()) {
+      tag_to_id[atom.get_atom_tag] = counter;
+      counter++;
+    }
+    for (auto && atom : this->with_ghosts()) {
+      for (auto && cluster : atom.template get_clusters_of_order<Order>()) {
+        auto && atom_tags{cluster.get_atom_tag_list()};
+        for (size_t i{0}; i < Order; ++i) {
+          property[cluster](i) = tag_to_id[atom_tags[i]];
+        }
+      }
+    }
+    property.set_updated_status();
+    return property;
+  }
 
   /* ---------------------------------------------------------------------- */
   namespace internal {
@@ -866,7 +924,8 @@ namespace rascal {
                                  std::make_integer_sequence<int, Size2>{});
     }
 
-    /* ---------------------------------------------------------------------- */
+    /* ----------------------------------------------------------------------
+     */
     /**
      * static branching to redirect to the correct function to get sizes,
      * offsets and neighbours. Used later by adaptors which modify or extend
@@ -884,7 +943,8 @@ namespace rascal {
     };
 
     /**
-     * specialization for not at MaxOrder, these refer to the underlying manager
+     * specialization for not at MaxOrder, these refer to the underlying
+     * manager
      */
     template <>
     struct IncreaseHelper<false> {

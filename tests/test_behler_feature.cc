@@ -45,7 +45,7 @@ namespace rascal {
   struct BehlerFeatureFixture {
     BehlerFeatureFixture() {}
     using CutFun_t = CutoffFunction<InlCutoffFunctionType::Cosine>;
-    const double r_cut{8.0};
+    const double r_cut{1.1};
     const UnitStyle unit_style{units::metal};
     std::shared_ptr<CutFun_t> cut_fun{std::make_shared<CutFun_t>(
         unit_style,
@@ -55,9 +55,9 @@ namespace rascal {
                     {"unit", "eV"},
                     {"params",
                      {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
-                      {"r_s", {{"value", 5.6}, {"unit", "Å"}}}}},
+                      {"r_s", {{"value", 0.6}, {"unit", "Å"}}}}},
                     {"species", {"Mg", "Si"}},
-                    {"r_cut", {{"value", 8.0}, {"unit", "Å"}}}};
+                    {"r_cut", {{"value", 1.1}, {"unit", "Å"}}}};
     BehlerFeature<MySymFunType, SymFunTypes...> bf{cut_fun, unit_style,
                                                    raw_params};
   };
@@ -68,6 +68,16 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(behler_parinello_feature_tests);
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Features, Fix) {}
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test, Fix, Features, Fix) {
+    ManagerFixture<StructureManagerLammps> manager_fix{};
+    auto & manager{*manager_fix.manager};
+
+    using GVals_t = Property<double, AtomOrder, StructureManagerLammps>;
+    auto G_vals{std::make_shared<GVals_t>(manager)};
+
+    // Fix::bf.compute(manager, G_vals);
+  }
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal

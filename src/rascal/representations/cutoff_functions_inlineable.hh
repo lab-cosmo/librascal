@@ -212,14 +212,14 @@ namespace rascal {
                           ? derivative_identifier
                           : value_identifier};
 
-    bool property_at_wrong_level{
+    bool property_at_wrong_layer{
         manager.is_property_in_stack(identifier) and
         not manager.is_property_in_current_level(identifier)};
-    if (property_at_wrong_level) {
+    if (property_at_wrong_layer) {
       // complain and die
       throw std::runtime_error(
           "cannot handle the situation where the property isn't registered "
-          "at the same stack level as this cutoff function");
+          "at the same stack layer as this cutoff function");
     }
 
     constexpr bool Validate{false}, AllowCreation{true};
@@ -251,6 +251,7 @@ namespace rascal {
           property[pair] = typed_this.f_c(manager.get_distance(pair));
         }
       }
+      property.set_updated_status(true);
       break;
     }
     case Evaluation::Derivative: {
@@ -263,12 +264,15 @@ namespace rascal {
               std::tuple_cat(typed_this.df_c(manager.get_distance(pair)));
         }
       }
+      property.set_updated_status(true);
+      value_property.set_updated_status(true);
       break;
     }
     default:
       throw std::runtime_error("Unknown evaluation type");
       break;
     }
+
   }
 
 }  // namespace rascal
