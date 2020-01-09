@@ -25,7 +25,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rascal/models/kernels.hh"
+#include "rascal/models/sparse_kernels.hh"
 #include "rascal/models/pseudo_points.hh"
 #include "rascal/utils/utils.hh"
 #include "rascal/representations/calculator_sorted_coulomb.hh"
@@ -83,9 +83,6 @@ int main() {
   hypers["gaussian_density"] = sigma_hypers;
   hypers["radial_contribution"] = {{"type", "GTO"}};
 
-  json kernel_hypers{
-        {"zeta", 1}, {"target_type", "Atom"}, {"name", "Cosine"}};
-
   json structure{{"filename", filename}};
   json adaptors;
   json adaptors_half;
@@ -107,14 +104,14 @@ int main() {
   //                                  AdaptorCenterContribution, AdaptorStrict>(
   //         structure, adaptors);
   ManagerCollection_t managers{adaptors};
-  managers.add_structures(filename, 0, 1);
+  managers.add_structures(filename, 0, 10);
   Representation_t representation{hypers};
 
   representation.compute(managers);
 
-  constexpr size_t n_centers_print{5};
-  constexpr size_t n_neigh_print{1000};
-  size_t center_count{0};
+  // constexpr size_t n_centers_print{5};
+  // constexpr size_t n_neigh_print{1000};
+  // size_t center_count{0};
 
   std::cout << "Gradients are printed with: First Cartesian component, "
                "then species pairs, along the columns; n-n'-l along the rows.";
@@ -128,12 +125,14 @@ int main() {
   PseudoPointsBlockSparse<Representation_t> sparse_points{};
 
   std::vector<std::vector<int>> selected_ids;
+  int n_centers{0};
   for (auto & manager : managers) {
     selected_ids.emplace_back();
     int ii{0};
     for (auto center : manager) {
       selected_ids.back().push_back(ii);
       ++ii;
+      ++n_centers;
     }
   }
 
@@ -142,15 +141,86 @@ int main() {
   auto feat_ref = managers.get_features(representation);
 
   auto feat_test = sparse_points.get_features();
-
-  for (int i_row{0}; i_row < feat_ref.rows(); i_row++) {
-    auto diff = (feat_ref.rowwise() - feat_test.row(i_row)).rowwise().lpNorm<1>();
-    std::cout << "Number of matching row "<< i_row << " :" << (diff.array() < 1e-16).count() << std::endl;
+  math::Matrix_t KNM_ref(n_centers, sparse_points.size());
+  KNM_ref = feat_ref * feat_test.transpose();
+  math::Matrix_t KNM(managers.size(), sparse_points.size());
+  KNM.setZero();
+  auto Msps = sparse_points.species_by_points();
+  int i_row{0};
+  int i_manager{0};
+  for (auto manager : managers) {
+    for (auto center : manager) {
+      int i_col{0};
+      for (auto sp : Msps) {
+        if (sp == center.get_atom_type()) {
+          KNM(i_manager, i_col) += KNM_ref(i_row, i_col);
+        }
+        ++i_col;
+      }
+      ++i_row;
+    }
+    ++i_manager;
   }
 
-  std::cout << feat_ref<< std::endl;
+  json kernel_hypers{
+        {"zeta", 1}, {"target_type", "Structure"}, {"name", "SparseGAP"}};
+  SparseKernel kernel{kernel_hypers};
+
+  auto KNM_test{kernel.compute(representation, managers, sparse_points)};
+
+  auto diff = math::relative_error(KNM, KNM_test);
+
+  std::cout << diff << std::endl;
   std::cout << "============================" << std::endl;
-  std::cout << feat_test<< std::endl;
+  std::cout << KNM<< std::endl;
+  std::cout << "============================" << std::endl;
+  std::cout << KNM_test<< std::endl;
+
+  // math::Matrix_t KNM_ref(n_centers, sparse_points.size());
+  // KNM_ref = feat_ref * feat_test.transpose();
+  // math::Matrix_t KNM(managers.size(), sparse_points.size());
+  // auto Msps = sparse_points.species_by_points();
+  // int i_row{0};
+  // for (auto manager : managers) {
+  //   for (auto center : manager) {
+  //     int i_col{0};
+  //     for (auto sp : Msps) {
+  //       if (sp != center.get_atom_type()) {
+  //         KNM_ref(i_row, i_col) = 0;
+  //       }
+  //       ++i_col;
+  //     }
+  //     ++i_row;
+  //   }
+  // }
+
+
+  // json kernel_hypers{
+  //       {"zeta", 1}, {"target_type", "Atom"}, {"name", "SparseGAP"}};
+  // SparseKernel kernel{kernel_hypers};
+
+  // auto KNM_test{kernel.compute(representation, managers, sparse_points)};
+
+  // auto diff = math::relative_error(KNM_ref, KNM_test);
+
+  // std::cout << diff << std::endl;
+  // std::cout << "============================" << std::endl;
+  // std::cout << KNM_ref<< std::endl;
+  // std::cout << "============================" << std::endl;
+  // std::cout << KNM_test<< std::endl;
+  // sparse_points.push_back(representation, managers, selected_ids);
+
+  // auto feat_ref = managers.get_features(representation);
+
+  // auto feat_test = sparse_points.get_features();
+  // for (int i_row{0}; i_row < feat_ref.rows(); i_row++) {
+  //   auto diff = (feat_ref.rowwise() - feat_test.row(i_row)).rowwise().lpNorm<1>();
+  //   std::cout << "Number of matching row "<< i_row << " :" << (diff.array() < 1e-16).count() << std::endl;
+  // }
+
+  // std::cout << feat_ref<< std::endl;
+  // std::cout << "============================" << std::endl;
+  // std::cout << feat_test<< std::endl;
   // for (auto center : manager) {
   //   // if (center_count >= n_centers_print) {
   //   //   break;

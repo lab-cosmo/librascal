@@ -38,6 +38,12 @@ namespace rascal {
 
   namespace internal {}  // namespace internal
 
+  /**
+   * Set of pseudo points associated with a representation stored in BlockSparse
+   * format, e.g. SphericalInvariants. The number of pseudo points is often
+   * refered as $M$ and note that they might be the representation of actual
+   * atomic environments or completely artificial.
+   */
   template <class Calculator>
   class PseudoPointsBlockSparse {
    public:
@@ -45,6 +51,8 @@ namespace rascal {
     using Data_t = std::map<int, std::map<Key_t, std::vector<double>>>;
     using Indices_t = std::map<int, std::map<Key_t, std::vector<size_t>>>;
     using Counters_t = std::map<int, size_t>;
+    using ColVector_t = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+    using ColVectorDer_t = Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::ColMajor>;
 
     template <class StructureManager>
     using Property_t =
@@ -60,11 +68,137 @@ namespace rascal {
     std::set<int> center_species{};
     std::set<Key_t> keys{};
 
+    constexpr static int n_spatial_dimensions{3};
+
     PseudoPointsBlockSparse() {
       // there is less than 130 elemtents
       for (int sp{1}; sp < 130; ++sp) {
         counters[sp] = 0;
       }
+    }
+
+    size_t size() const {
+      size_t n_points{0};
+      for (const auto& count: this->counters) {
+        n_points += count.second;
+      }
+      return n_points;
+    }
+
+    const std::set<int> & species() const {
+      return center_species;
+    }
+
+    std::vector<int> species_by_points() const {
+      std::vector<int> species{};
+      for (const auto & sp : this->center_species) {
+        for (size_t ii{0}; ii < counters.at(sp); ++ii) {
+          species.push_back(sp);
+        }
+      }
+      return species;
+    }
+
+    math::Matrix_t self_dot(const int& sp) const {
+      math::Matrix_t KMM_by_sp(this->counters.at(sp), this->counters.at(sp));
+      KMM_by_sp.setZero();
+      const auto & values_by_sp = values.at(sp);
+      const auto & indicies_by_sp = indicies.at(sp);
+      for (const Key_t& key : keys) {
+        const auto & indicies_by_sp_key = indicies_by_sp.at(key);
+        auto mat = Eigen::Map<const math::Matrix_t>(values_by_sp.at(key).data(),          static_cast<Eigen::Index>(indicies_by_sp_key.size()),
+              static_cast<Eigen::Index>(this->inner_size));
+        // auto KMM_by_key = (mat * mat.transpose()).eval();
+        math::Matrix_t KMM_by_key(indicies_by_sp_key.size(), indicies_by_sp_key.size());
+        KMM_by_key = KMM_by_key.setZero().selfadjointView<Eigen::Upper>().rankUpdate(mat);
+        for (int i_row{0}; i_row < KMM_by_key.rows(); i_row++) {
+          for (int i_col{0}; i_col < KMM_by_key.cols(); i_col++) {
+            KMM_by_sp(indicies_by_sp_key[i_row], indicies_by_sp_key[i_col]) +=
+                                                  KMM_by_key(i_row, i_col);
+          }
+        }
+      } // key
+      return KMM_by_sp;
+    }
+
+    /**
+     * Compute the dot product between the pseudo points associated with type
+     * sp with the representation associated with a center.
+     * @return column vector Mx1
+     */
+    template <class V>
+    ColVector_t dot(const int& sp, internal::InternallySortedKeyMap<Key_t, V> & representation) const {
+      const auto & values_by_sp = this->values.at(sp);
+      const auto & indicies_by_sp = this->indicies.at(sp);
+      ColVector_t KNM_row(this->size());
+      KNM_row.setZero();
+      if (this->center_species.count(sp) == 0) {
+        // the type of the central atom is not in the pseudo points
+        return KNM_row;
+      }
+      int offset{0};
+      for (const int& csp : this->center_species) {
+        if (csp == sp) {
+          break;
+        } else {
+          offset += this->counters.at(csp);
+        }
+      }
+
+      for (const Key_t& key : this->keys) {
+        if (representation.count(key)) {
+          auto rep_flat_by_key{representation.flattened(key)};
+          const auto & indicies_by_sp_key = indicies_by_sp.at(key);
+          auto mat = Eigen::Map<const math::Matrix_t>(values_by_sp.at(key).data(),          static_cast<Eigen::Index>(indicies_by_sp_key.size()),
+                static_cast<Eigen::Index>(this->inner_size));
+          auto KNM_row_key = (mat * rep_flat_by_key.transpose()).eval();
+          for (int i_row{0}; i_row < KNM_row_key.size(); i_row++) {
+            KNM_row(offset+indicies_by_sp_key[i_row]) += KNM_row_key(i_row);
+          }
+        }
+      }
+      return KNM_row;
+    }
+
+    /**
+     * Compute the dot product between the pseudo points associated with type
+     * sp with the gradient of the representation associated with a center.
+     * @return column vector Mx3
+     */
+    template <class V>
+    ColVectorDer_t dot_derivative(const int& sp, internal::InternallySortedKeyMap<Key_t, V> & representation_grad) const {
+      const auto & values_by_sp = this->values.at(sp);
+      const auto & indicies_by_sp = this->indicies.at(sp);
+      ColVectorDer_t KNM_row(this->size(), n_spatial_dimensions);
+      KNM_row.setZero();
+      if (this->center_species.count(sp) == 0) {
+        // the type of the central atom is not in the pseudo points
+        return KNM_row;
+      }
+      int offset{0};
+      for (const int& csp : this->center_species) {
+        if (csp == sp) {
+          break;
+        } else {
+          offset += this->counters.at(csp);
+        }
+      }
+
+      for (const Key_t& key : this->keys) {
+        if (representation_grad.count(key)) {
+          auto rep_grad_flat_by_key{representation_grad.flattened(key)};
+          Eigen::Map<Eigen::Matrix<double, n_spatial_dimensions,
+            Eigen::Dynamic, Eigen::RowMajor>> rep_grad_by_key(rep_grad_flat_by_key.data(), n_spatial_dimensions, this->inner_size);
+          const auto & indicies_by_sp_key = indicies_by_sp.at(key);
+          auto mat = Eigen::Map<const math::Matrix_t>(values_by_sp.at(key).data(),          static_cast<Eigen::Index>(indicies_by_sp_key.size()),
+                static_cast<Eigen::Index>(this->inner_size));
+          auto KNM_row_key = (mat * rep_grad_flat_by_key.transpose()).eval();
+          for (int i_row{0}; i_row < KNM_row_key.rows(); i_row++) {
+            KNM_row.row(offset+indicies_by_sp_key[i_row]) += KNM_row_key.row(i_row);
+          }
+        }
+      }
+      return KNM_row;
     }
 
     template <class ManagerCollection>
