@@ -42,19 +42,19 @@ namespace rascal {
   /**
    * Tests if the wrong target_type is catched correctly.
    */
-  BOOST_FIXTURE_TEST_CASE(kernel_target_type_test,
-                          KernelFixture<DataSphericalInvariantsKernelFixture>) {
-    auto kernel_hyper = this->ParentA::kernel_hypers.at(0);
-    kernel_hyper["target_type"] = "this_target_type_does_not_exist";
-    BOOST_CHECK_THROW(auto kernel_wrong_target_type = Kernel(kernel_hyper),
-                      std::runtime_error);
-    kernel_hyper["target_type"] = "structure";
-    BOOST_CHECK_THROW(auto kernel_wrong_target_type = Kernel(kernel_hyper),
-                      std::runtime_error);
-    kernel_hyper.erase("target_type");
-    BOOST_CHECK_THROW(auto kernel_no_target_type = Kernel(kernel_hyper),
-                      std::runtime_error);
-  }
+  // BOOST_FIXTURE_TEST_CASE(kernel_target_type_test,
+  //                         KernelFixture<DataSphericalInvariantsKernelFixture>) {
+  //   auto kernel_hyper = this->ParentA::kernel_hypers.at(0);
+  //   kernel_hyper["target_type"] = "this_target_type_does_not_exist";
+  //   BOOST_CHECK_THROW(auto kernel_wrong_target_type = Kernel(kernel_hyper),
+  //                     std::runtime_error);
+  //   kernel_hyper["target_type"] = "structure";
+  //   BOOST_CHECK_THROW(auto kernel_wrong_target_type = Kernel(kernel_hyper),
+  //                     std::runtime_error);
+  //   kernel_hyper.erase("target_type");
+  //   BOOST_CHECK_THROW(auto kernel_no_target_type = Kernel(kernel_hyper),
+  //                     std::runtime_error);
+  // }
 
   /**
    * Tests if the compute functionality agrees with the results of the reference

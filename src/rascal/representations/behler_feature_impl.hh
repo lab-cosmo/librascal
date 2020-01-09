@@ -169,7 +169,8 @@ namespace rascal {
     for (auto && atom : manager) {
       for (auto && cluster :
            atom.template get_clusters_of_order<SymmetryFunction_t::Order>()) {
-        std::tie(fun_values[atom], fun_derivatives[cluster])  = this->eval_cluster(cluster);
+        std::tie(fun_values[atom], fun_derivatives[cluster]) =
+            this->eval_cluster(cluster);
       }
     }
   }
@@ -177,8 +178,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
-  void
-  BehlerFeature<MySymFunType, SymFunTypes...>::init(const UnitStyle & /*units*/) {
+  void BehlerFeature<MySymFunType, SymFunTypes...>::init(
+      const UnitStyle & /*units*/) {
     // if (this->is_initialised) {
     //   throw std::runtime_error("double initialisation");
     // }

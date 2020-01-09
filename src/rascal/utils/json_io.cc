@@ -27,6 +27,8 @@
 
 #include "rascal/utils/json_io.hh"
 
+#include <iostream>
+
 namespace rascal {
   namespace json_io {
 

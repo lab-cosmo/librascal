@@ -112,7 +112,7 @@ namespace rascal {
 
     // constructor
     SymmetryFunction(const UnitStyle & unit_style, const json & params)
-        : params{params}, eta{json_io::check_units(unit_style.distance(-1),
+        : params{params}, eta{json_io::check_units(unit_style.distance(-2),
                                                    params.at("eta"))},
           r_s{json_io::check_units(unit_style.distance(), params.at("r_s"))} {}
 
@@ -134,6 +134,8 @@ namespace rascal {
     double eta;
     double r_s;
   };
+
+  constexpr size_t SymmetryFunction<SymmetryFunctionType::Gaussian>::Order;
 
   // template <>
   // class SymmetryFunction<SymmetryFunctionType::Angular1> {

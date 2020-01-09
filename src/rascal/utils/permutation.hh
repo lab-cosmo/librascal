@@ -27,6 +27,9 @@
  *
  */
 #include <type_traits>
+#ifndef SRC_RASCAL_UTILS_PERMUTATION_HH_
+#define SRC_RASCAL_UTILS_PERMUTATION_HH_
+
 namespace rascal {
 
   template <size_t Size, size_t First, size_t Second, size_t Third>
@@ -60,5 +63,6 @@ namespace rascal {
 
 }  // namespace rascal
 
-Permutation<3,0,1,2>;
-Permutation<3,1,0,2>;Permutation<3,1,2,0>;Permutation<3,2,1,0>;Permutation<3,2,0,1>;
+#endif  // SRC_RASCAL_UTILS_PERMUTATION_HH_
+
+

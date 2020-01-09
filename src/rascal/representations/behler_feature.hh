@@ -153,7 +153,7 @@ namespace rascal {
         err << "Mismatch: the provided cutoff function has a cuttoff radius of "
             << cut_fun->get_cutoff()
             << " but the parameters prescribe a cutoff radius of "
-            << raw_params.at("r_cut").at("value").get<std::string>();
+            << raw_params.at("r_cut").at("value").get<double>();
         throw std::runtime_error(err.str());
       }
     }

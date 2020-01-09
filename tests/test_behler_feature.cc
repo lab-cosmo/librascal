@@ -45,20 +45,19 @@ namespace rascal {
   struct BehlerFeatureFixture {
     BehlerFeatureFixture() {}
     using CutFun_t = CutoffFunction<InlCutoffFunctionType::Cosine>;
-    const double r_cut{1.1};
+    const double r_cut{8.0};
     const UnitStyle unit_style{units::metal};
-    std::shared_ptr<CutFun_t> cut_fun{std::make_shared<CutFun_t>(unit_style,
+    std::shared_ptr<CutFun_t> cut_fun{std::make_shared<CutFun_t>(
+        unit_style,
         json{{"params", {}}, {"r_cut", {{"value", r_cut}, {"unit", "Å"}}}})};
-    json raw_params{{{"type", "Gaussian"},
-                     {"index", 0},
-                     {"unit", "eV"},
-                     {"params",
-                      {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
-                       {"r_s", {{"value", 5.6}, {"unit", "Å"}}}}},
-                     {"species", {"Mg", "Si"}},
-                     {"r_cut", {{"value", 8.0}, {"unit", "Å"}}}
-
-    }};
+    json raw_params{{"type", "Gaussian"},
+                    {"index", 0},
+                    {"unit", "eV"},
+                    {"params",
+                     {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
+                      {"r_s", {{"value", 5.6}, {"unit", "Å"}}}}},
+                    {"species", {"Mg", "Si"}},
+                    {"r_cut", {{"value", 8.0}, {"unit", "Å"}}}};
     BehlerFeature<MySymFunType, SymFunTypes...> bf{cut_fun, unit_style,
                                                    raw_params};
   };

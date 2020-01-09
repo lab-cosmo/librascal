@@ -119,7 +119,7 @@ namespace rascal {
                                const Evaluation & evaluation) const;
     //! cutoff radii
     const double cutoff;
-    };
+  };
 
   /**
    * Cosine cutoff function as in Behler, can only be used with strict
