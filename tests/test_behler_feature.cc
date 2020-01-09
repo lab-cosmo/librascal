@@ -36,22 +36,39 @@
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <memory>
+
 namespace rascal {
 
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
   struct BehlerFeatureFixture {
     BehlerFeatureFixture() {}
-    BehlerFeature<MySymFunType, SymFunTypes...> bf{};
+    using CutFun_t = CutoffFunction<InlCutoffFunctionType::Cosine>;
+    const double r_cut{1.1};
+    const UnitStyle unit_style{units::metal};
+    std::shared_ptr<CutFun_t> cut_fun{std::make_shared<CutFun_t>(unit_style,
+        json{{"params", {}}, {"r_cut", {{"value", r_cut}, {"unit", "Å"}}}})};
+    json raw_params{{{"type", "Gaussian"},
+                     {"index", 0},
+                     {"unit", "eV"},
+                     {"params",
+                      {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
+                       {"r_s", {{"value", 5.6}, {"unit", "Å"}}}}},
+                     {"species", {"Mg", "Si"}},
+                     {"r_cut", {{"value", 8.0}, {"unit", "Å"}}}
+
+    }};
+    BehlerFeature<MySymFunType, SymFunTypes...> bf{cut_fun, unit_style,
+                                                   raw_params};
   };
 
   using Features =
-      boost::mpl::list<BehlerFeature<SymmetryFunctionType::Gaussian,
-                                     SymmetryFunctionType::Gaussian>>;
+      boost::mpl::list<BehlerFeatureFixture<SymmetryFunctionType::Gaussian,
+                                            SymmetryFunctionType::Gaussian>>;
 
   BOOST_AUTO_TEST_SUITE(behler_parinello_feature_tests);
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Features, Fix) {
-  }
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Features, Fix) {}
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal

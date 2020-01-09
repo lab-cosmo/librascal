@@ -385,13 +385,9 @@ namespace rascal {
       vector.push_back(0);
     }
 
-    //! initialise the distance storage
-    this->distance =
-        this->template get_property<Distance_t>("distance", false, true);
-    this->dir_vec =
-        this->template get_property<DirectionVector_t>("dir_vec", false, true);
-
+    this->distance.resize();
     this->distance.clear();
+    this->dir_vec.resize();
     this->dir_vec.clear();
 
     // fill the list, at least pairs are mandatory for this to work

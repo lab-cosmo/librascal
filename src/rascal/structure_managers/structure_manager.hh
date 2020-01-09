@@ -260,7 +260,14 @@ namespace rascal {
     template <size_t Order>
     class ClusterRef;
 
-    //! A proxy class which provides iteration access to atoms and ghost atoms
+
+    //! random access operator
+    ClusterRef<AtomOrder> operator[](const size_t & cluster_index) const {
+      return *(this->get_iterator_at(cluster_index));
+    }
+
+    //! A proxy class which provides iteration access to atoms and ghost
+    //! atoms
     class ProxyWithGhosts;
 
     //! A proxy class which provides iteration acces to only ghost atoms
@@ -1025,10 +1032,11 @@ namespace rascal {
      * This function here is self referencing right now. A ClusterRefKey
      * with Order=1 is needed to construct it ?!
      */
-    ClusterRef(ClusterRefKey<1, 0> & cluster, Manager_t & manager)
-        : ClusterRefKey<1, 0>(cluster.get_atom_tag_list(),
-                              cluster.get_cluster_indices()),
-          it(manager) {}
+    // template <size_t Layer>
+    // ClusterRef(ClusterRefKey<1, Layer> & cluster, Manager_t & manager)
+    //     : ClusterRefKey<1, Layer>(cluster.get_atom_tag_list(),
+    //                               cluster.get_cluster_indices()),
+    //       it(manager) {}
 
     //! Copy constructor
     ClusterRef(const ClusterRef & other) = delete;
@@ -1175,11 +1183,12 @@ namespace rascal {
 
     template <size_t TargetOrder>
     class CustomProxy_t<AtomOrder, TargetOrder> {
+     public:
       using ClusterRef_t = typename Manager_t::template ClusterRef<1>;
       using iterator = typename Manager_t::template Iterator<TargetOrder>;
 
       CustomProxy_t(ClusterRef_t & cluster_ref, const size_t & start,
-                  const size_t & offset)
+                    const size_t & offset)
           : cluster_ref{cluster_ref}, start{start}, offset{offset} {}
 
       //! end of the iterations over the clusters of order TargetOrder
@@ -1197,12 +1206,14 @@ namespace rascal {
             cluster_ref);
       }
 
+     protected:
       ClusterRef_t & cluster_ref;
       //! starting index of the iteration
       size_t start;
       //! offset with which to start the iteration in the list of all clusters
       //! of Order == TargetOrder
-      size_t offset;};
+      size_t offset;
+    };
     /**
      * Helper struct to iterate in a customised range. Useful to return an
      * iterator over the pairs (TargetOrder == 2),

@@ -121,7 +121,7 @@ namespace rascal {
           auto && leading_cluster_id{Permutation::leading(manager, pair)};
           auto && G_incr{this->sym_fun.f_sym(distances[pair]) * cutoffs[pair]};
           if (Permutation::no) {
-            fun_vals[leading_cluster] += G_incr;
+            fun_vals[leading_cluster_id] += G_incr;
           } else {
             fun_vals[pair] += G_incr;
           }
@@ -131,7 +131,7 @@ namespace rascal {
           }
           case RepeatedSpecies::All: {
             auto && second_cluster_id{Permutation::second(manager, pair)};
-            fun_vals[second_cluster] += G_incr;
+            fun_vals[second_cluster_id] += G_incr;
             break;
           }
           default:
@@ -140,79 +140,79 @@ namespace rascal {
           }
         }
       }
-    } break;
+      break;
     }
-  case TripletOrder: {
-    break;
-  }
-  default:
-    std::stringstream err{};
-    err << "unknown symmetry function order " << SymmetryFunction_t::Order;
-    throw std::runtime_error(err.str());
-    break;
-  }
-}  // namespace rascal
-/* ---------------------------------------------------------------------- */
-template <SymmetryFunctionType MySymFunType,
-          SymmetryFunctionType... SymFunTypes>
-template <class StructureManager, RepeatedSpecies RepSpecies>
-void BehlerFeature<MySymFunType, SymFunTypes...>::compute(
-    StructureManager & manager, std::shared_ptr<PropertyBase> output_value,
-    std::shared_ptr<PropertyBase> output_derivative) const {
-  using Output_t =
-      Property<double, SymmetryFunction_t::Order, StructureManager>;
-  auto & cutoff_values{this->cut_fun.get_value(manager)};
-  auto & cutoff_derivatives{this->cut_fun.get_derivative(manager)};
+    case TripletOrder: {
+      break;
+    }
+    default:
+      std::stringstream err{};
+      err << "unknown symmetry function order " << SymmetryFunction_t::Order;
+      throw std::runtime_error(err.str());
+      break;
+    }
+  }  // namespace rascal
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunctionType MySymFunType,
+            SymmetryFunctionType... SymFunTypes>
+  template <RepeatedSpecies RepSpecies, class StructureManager>
+  void BehlerFeature<MySymFunType, SymFunTypes...>::compute(
+      StructureManager & manager, std::shared_ptr<PropertyBase> output_value,
+      std::shared_ptr<PropertyBase> output_derivative) const {
+    using Output_t =
+        Property<double, SymmetryFunction_t::Order, StructureManager>;
+    auto & cutoff_values{this->cut_fun.get_value(manager)};
+    auto & cutoff_derivatives{this->cut_fun.get_derivative(manager)};
 
-  Output_t & fun_values{dynamic_cast<Output_t &>(*output_value)};
-  Output_t & fun_derivatives{dynamic_cast<Output_t &>(*output_derivative)};
-  for (auto && atom : manager) {
-    for (auto && cluster :
-         atom.template get_clusters_of_order<SymmetryFunction_t::Order>()) {
-        std::tie(fun_values[atom], fun_derivatives[cluster]  = this->eval_cluster(cluster)
+    Output_t & fun_values{dynamic_cast<Output_t &>(*output_value)};
+    Output_t & fun_derivatives{dynamic_cast<Output_t &>(*output_derivative)};
+    for (auto && atom : manager) {
+      for (auto && cluster :
+           atom.template get_clusters_of_order<SymmetryFunction_t::Order>()) {
+        std::tie(fun_values[atom], fun_derivatives[cluster])  = this->eval_cluster(cluster);
+      }
     }
   }
-}
 
-/* ---------------------------------------------------------------------- */
-template <SymmetryFunctionType MySymFunType,
-          SymmetryFunctionType... SymFunTypes>
-void BehlerFeature<MySymFunType, SymFunTypes...>::init(
-    const UnitStyle & units) {
-  if (this->is_initialised) {
-    throw std::runtime_error("double initialisation");
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunctionType MySymFunType,
+            SymmetryFunctionType... SymFunTypes>
+  void
+  BehlerFeature<MySymFunType, SymFunTypes...>::init(const UnitStyle & /*units*/) {
+    // if (this->is_initialised) {
+    //   throw std::runtime_error("double initialisation");
+    // }
+    // // counting the number of parameters to store per cutoff
+    // for (const auto & param : this->raw_params) {
+    //   auto && r_cut{param.at("r_cut").template get<double>()};
+    //   nb_param_per_cutoff[r_cut]++;
+    // }
+
+    // // allocate storage
+    // for (const auto & key_val : nb_param_per_cutoff) {
+    //   auto && r_cut{key_val.first};
+    //   this->params[r_cut].resize(SymmetryFun<SymFunType>::NbParams,
+    //                              nb_param_per_cutoff[r_cut]);
+    //   this->params[r_cut].setZero();
+    // }
+
+    // // store params in storage
+    // std::map<double, size_t> nb_param_counter{};
+    // for (auto && param : this->raw_params) {
+    //   auto && r_cut{param.at("r_cut").template get<double>()};
+
+    //   this->params[r_cut].col(nb_param_counter[r_cut]++) =
+    //       SymmetryFun<SymFunType>::read(param, units);
+    // }
+
+    // // determine which species repetition scenario we are in
+    // for (auto && species : param.at("species").template get<std::string>()) {
+    //   this->species_combo
+    // }
+    // auto species{};
+
+    // this->is_initialised = true;
   }
-  // counting the number of parameters to store per cutoff
-  for (const auto & param : this->raw_params) {
-    auto && r_cut{param.at("r_cut").template get<double>()};
-    nb_param_per_cutoff[r_cut]++;
-  }
-
-  // allocate storage
-  for (const auto & key_val : nb_param_per_cutoff) {
-    auto && r_cut{key_val.first};
-    this->params[r_cut].resize(SymmetryFun<SymFunType>::NbParams,
-                               nb_param_per_cutoff[r_cut]);
-    this->params[r_cut].setZero();
-  }
-
-  // store params in storage
-  std::map<double, size_t> nb_param_counter{};
-  for (auto && param : this->raw_params) {
-    auto && r_cut{param.at("r_cut").template get<double>()};
-
-    this->params[r_cut].col(nb_param_counter[r_cut]++) =
-        SymmetryFun<SymFunType>::read(param, units);
-  }
-
-  // determine which species repetition scenario we are in
-  for (auto && species : param.at("species").template get<std::string>()) {
-    this->species_combo
-  }
-  auto species{};
-
-  this->is_initialised = true;
-}
 
 }  // namespace rascal
 

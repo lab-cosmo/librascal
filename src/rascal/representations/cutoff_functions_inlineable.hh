@@ -49,9 +49,9 @@ namespace rascal {
   template <InlCutoffFunctionType Type>
   class CutoffFunction;
 
+  enum class Evaluation { Value, Derivative };
   class CutoffFunctionBase {
    public:
-    enum class Evaluation { Value, Derivative };
     template <typename StructureManager>
     using Property_t = Property<double, PairOrder, StructureManager>;
 
@@ -87,7 +87,8 @@ namespace rascal {
     virtual const std::string & get_identifier() const = 0;
 
     /**
-     * returns the property with cutoff functions value, guaranteed to be fresh
+     * returns the property with cutoff functions value, guaranteed to be
+     * fresh
      */
     template <typename StructureManager>
     inline Property_t<StructureManager> &
@@ -118,7 +119,7 @@ namespace rascal {
                                const Evaluation & evaluation) const;
     //! cutoff radii
     const double cutoff;
-  };
+    };
 
   /**
    * Cosine cutoff function as in Behler, can only be used with strict

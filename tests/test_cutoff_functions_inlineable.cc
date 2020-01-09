@@ -78,8 +78,7 @@ namespace rascal {
     auto strict{
         make_adapted_manager<AdaptorStrict>(fixture.manager, this->r_cut)};
     strict->update();
-    constexpr bool ComputeDerivative{false};
-    this->cut_fun.compute(*strict, ComputeDerivative);
+    this->cut_fun.compute(*strict, Evaluation::Derivative);
   }
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(compute_test_wrong_level, Fix,
@@ -90,11 +89,10 @@ namespace rascal {
     auto strict2{
         make_adapted_manager<AdaptorStrict>(strict, this->r_cut * .99)};
     strict2->update();
-    constexpr bool ComputeDerivative{false};
-    this->cut_fun.compute(*strict, ComputeDerivative);
+    this->cut_fun.compute(*strict, Evaluation::Value);
 
     using Exception_t = std::runtime_error;
-    BOOST_CHECK_THROW(this->cut_fun.compute(*strict2, ComputeDerivative),
+    BOOST_CHECK_THROW(this->cut_fun.compute(*strict2, Evaluation::Value),
                       Exception_t);
   }
 
@@ -104,8 +102,7 @@ namespace rascal {
     auto strict{
         make_adapted_manager<AdaptorStrict>(fixture.manager, this->r_cut)};
     strict->update();
-    constexpr bool ComputeDerivative{true};
-    this->cut_fun.compute(*strict, ComputeDerivative);
+    this->cut_fun.compute(*strict, Evaluation::Derivative);
   }
 
   BOOST_AUTO_TEST_SUITE_END();

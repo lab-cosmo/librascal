@@ -74,7 +74,7 @@ namespace rascal {
     BehlerFeatureBase(BehlerFeatureBase && other) noexcept;
 
     //! Destructor
-    virtual ~BehlerFeatureBase() noexcept;
+    virtual ~BehlerFeatureBase() = default;
 
     //! Copy assignment operator
     BehlerFeatureBase & operator=(const BehlerFeatureBase & other);
@@ -119,7 +119,7 @@ namespace rascal {
     const size_t order;
     std::vector<json> raw_params{};
     RepeatedSpecies species_repetition{RepeatedSpecies::Unknown};
-    StdSpecies species_combo{};
+    // StdSpecies species_combo{};
     bool is_initialised{false};
     std::shared_ptr<CutoffFunctionBase> cut_fun;
   };
@@ -175,11 +175,11 @@ namespace rascal {
 
     void init(const UnitStyle & units) final;
 
-    template <class StructureManager>
+    template <RepeatedSpecies RepSpecies, class StructureManager>
     void compute(StructureManager & manager,
                  std::shared_ptr<PropertyBase> output) const;
 
-    template <class StructureManager>
+    template <RepeatedSpecies RepSpecies, class StructureManager>
     void compute(StructureManager & manager,
                  std::shared_ptr<PropertyBase> output,
                  std::shared_ptr<PropertyBase> output_derivatives) const;
