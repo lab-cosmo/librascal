@@ -167,7 +167,7 @@ int main() {
   SparseKernel kernel{kernel_hypers};
 
   auto KNM_test{kernel.compute(representation, managers, sparse_points)};
-
+  auto KNM_der{kernel.compute_derivative(representation, managers, sparse_points)};
   auto diff = math::relative_error(KNM, KNM_test);
 
   std::cout << diff << std::endl;
@@ -175,7 +175,8 @@ int main() {
   std::cout << KNM<< std::endl;
   std::cout << "============================" << std::endl;
   std::cout << KNM_test<< std::endl;
-
+  std::cout << "============================" << std::endl;
+  std::cout << KNM_der<< std::endl;
   // math::Matrix_t KNM_ref(n_centers, sparse_points.size());
   // KNM_ref = feat_ref * feat_test.transpose();
   // math::Matrix_t KNM(managers.size(), sparse_points.size());

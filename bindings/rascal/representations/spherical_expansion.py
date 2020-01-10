@@ -88,7 +88,7 @@ class SphericalExpansion(object):
                  method='thread', n_workers=1, disable_pbar=False,
                  optimization_args={},
                  expansion_by_species_method="environment wise",
-                 global_species=None,
+                 global_species=None, compute_gradients=False,
                  cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
@@ -98,7 +98,7 @@ class SphericalExpansion(object):
 
         self.name = 'sphericalexpansion'
         self.hypers = dict()
-        
+
         if global_species is None:
             global_species = []
         elif not isinstance(global_species, list):
@@ -108,7 +108,8 @@ class SphericalExpansion(object):
             max_radial=max_radial, max_angular=max_angular,
             n_species=n_species,
             expansion_by_species_method=expansion_by_species_method,
-            global_species=global_species
+            global_species=global_species,
+            compute_gradients=compute_gradients
         )
 
         cutoff_function_parameters.update(
@@ -196,6 +197,7 @@ class SphericalExpansion(object):
             'gaussian_density',
             'cutoff_function',
             'radial_contribution',
+            'compute_gradients',
             'cutoff_function_parameters', 'expansion_by_species_method', 'global_species'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}

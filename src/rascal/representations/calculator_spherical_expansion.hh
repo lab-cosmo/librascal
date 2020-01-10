@@ -1348,6 +1348,14 @@ namespace rascal {
     }
 
     /**
+     * Does the calculator compute gradients of the representation w.r.t atomic
+     * positions ?
+     */
+    bool has_gradients() const override {
+      return this->compute_gradients;
+    }
+
+    /**
      * Construct a new Calculator using a hyperparameters container
      *
      * See set_hyperparameters() for a description of the hypers

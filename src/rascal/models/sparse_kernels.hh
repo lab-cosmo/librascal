@@ -67,7 +67,7 @@ namespace rascal {
 
       //! exponent of the cosine kernel
       size_t zeta{1};
-      constexpr static int n_spatial_dimensions{3};
+      constexpr static const int SpatialDims{3};
 
       SparseKernelImpl() = default;
 
@@ -114,7 +114,7 @@ namespace rascal {
             int sp = center.get_atom_type();
             // only the pseudo points of species sp contribute
             KNM.row(ii_A) +=
-                pow_zeta(pseudo_points.dot(sp, propA[center]), this->zeta);
+                pow_zeta(pseudo_points.dot(sp, propA[center]), this->zeta).transpose();
           }
           ++ii_A;
         }
@@ -176,7 +176,7 @@ namespace rascal {
           for (auto center : manager) {
             int sp = center.get_atom_type();
             KNM.row(ii_A) =
-                pow_zeta(pseudo_points.dot(sp, propA[center]), this->zeta);
+                pow_zeta(pseudo_points.dot(sp, propA[center]), this->zeta).transpose();
             ii_A++;
           }
         }
@@ -232,7 +232,7 @@ namespace rascal {
                          const std::string & representation_grad_name) {
         size_t n_centers{0};
         for (const auto & manager : managers) {
-          n_centers += manager->size() * n_spatial_dimensions;
+          n_centers += manager->size() * SpatialDims;
         }
         size_t n_pseudo_points{pseudo_points.size()};
         math::Matrix_t KNM(n_centers, n_pseudo_points);
@@ -247,11 +247,11 @@ namespace rascal {
             for (auto center : manager) {
               for (auto neigh : center.pairs_with_self_pair()) {
                 int sp{neigh.get_atom_type()};
-                KNM.block(i_center, 0, n_spatial_dimensions, n_pseudo_points) +=
+                KNM.block(i_center, 0, SpatialDims, n_pseudo_points) +=
                     pseudo_points.dot_derivative(sp, prop_grad[neigh])
                         .transpose();
               }
-              i_center += n_spatial_dimensions;
+              i_center += SpatialDims;
             }
           } else {
             auto && prop{*manager->template get_property<Property_t>(
@@ -277,12 +277,12 @@ namespace rascal {
                 int sp{neigh.get_atom_type()};
                 auto atom_j = neigh.get_atom_j();
                 int tag{atom_j.get_atom_tag()};
-                KNM.block(i_center, 0, n_spatial_dimensions, n_pseudo_points) +=
+                KNM.block(i_center, 0, SpatialDims, n_pseudo_points) +=
                     pseudo_points.dot_derivative(sp, prop_grad[neigh])
                         .transpose() *
                     rep.row(tag2index[tag]).asDiagonal();
               }
-              i_center += n_spatial_dimensions;
+              i_center += SpatialDims;
             }
           }
         }
@@ -428,6 +428,10 @@ namespace rascal {
       using Property_t = typename Calculator::template Property_t<Manager_t>;
       using PropertyGradient_t =
           typename Calculator::template PropertyGradient_t<Manager_t>;
+      if (not calculator.has_gradients()) {
+        throw std::runtime_error(
+            "This representation does not compute gradients.");
+      }
       const auto & representation_name{calculator.get_name()};
       const auto representation_grad_name{calculator.get_gradient_name()};
       using internal::SparseKernelType;

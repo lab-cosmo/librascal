@@ -66,7 +66,9 @@ namespace rascal {
     std::set<int> center_species{};
     std::set<Key_t> keys{};
 
-    constexpr static int n_spatial_dimensions{3};
+    static constexpr int spatial_dims() {
+      return 3;
+    }
 
     PseudoPointsBlockSparse() {
       // there is less than 130 elemtents
@@ -172,7 +174,7 @@ namespace rascal {
     }
 
     using ColVectorDer_t =
-        Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::ColMajor>;
+        Eigen::Matrix<double, Eigen::Dynamic, spatial_dims(), Eigen::ColMajor>;
     /**
      * Compute the dot product between the pseudo points associated with type
      * sp with the gradient of the representation associated with a center.
@@ -184,7 +186,7 @@ namespace rascal {
                                       representation_grad) const {
       const auto & values_by_sp = this->values.at(sp);
       const auto & indicies_by_sp = this->indicies.at(sp);
-      ColVectorDer_t KNM_row(this->size(), n_spatial_dimensions);
+      ColVectorDer_t KNM_row(this->size(), spatial_dims());
       KNM_row.setZero();
       if (this->center_species.count(sp) == 0) {
         // the type of the central atom is not in the pseudo points
@@ -202,9 +204,9 @@ namespace rascal {
       for (const Key_t & key : this->keys) {
         if (representation_grad.count(key)) {
           auto rep_grad_flat_by_key{representation_grad.flattened(key)};
-          Eigen::Map<const Eigen::Matrix<double, n_spatial_dimensions,
+          Eigen::Map<const Eigen::Matrix<double, spatial_dims(),
                                          Eigen::Dynamic, Eigen::RowMajor>>
-              rep_grad_by_key(rep_grad_flat_by_key.data(), n_spatial_dimensions,
+              rep_grad_by_key(rep_grad_flat_by_key.data(), spatial_dims(),
                               this->inner_size);
           const auto & indicies_by_sp_key = indicies_by_sp.at(key);
           auto mat = Eigen::Map<const math::Matrix_t>(
