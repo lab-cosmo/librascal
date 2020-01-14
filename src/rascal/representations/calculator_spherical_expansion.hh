@@ -1907,9 +1907,10 @@ namespace rascal {
       for (auto neigh : center.pairs()) {
         auto && atom_j = neigh.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag();
-        Key_t neigh_type{neigh.get_atom_type()};
+        // Key_t neigh_type{neigh.get_atom_type()};
         if (atom_j_tag != atom_i_tag) {
-          keys_list_grad[i_grad].insert(neigh_type);
+          // keys_list_grad[i_grad].insert(neigh_type);
+          keys_list_grad[i_grad].insert(center_type);
         }
         i_grad++;
       }
