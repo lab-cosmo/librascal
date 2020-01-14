@@ -231,6 +231,7 @@ namespace rascal {
                          const std::string & representation_name,
                          const std::string & representation_grad_name) {
         size_t n_centers{0};
+        // find the total number of rows the matrix block should have
         for (const auto & manager : managers) {
           n_centers += manager->size() * SpatialDims;
         }
@@ -238,12 +239,13 @@ namespace rascal {
         math::Matrix_t KNM(n_centers, n_pseudo_points);
         KNM.setZero();
         size_t i_center{0};
+        // loop over the structures
         for (auto & manager : managers) {
           auto && prop_grad{*manager->template get_property<PropertyGradient_t>(
               representation_grad_name, true)};
 
           if (this->zeta == 1) {
-            // simpler version
+            // simpler version where the kernel derivative is one
             for (auto center : manager) {
               for (auto neigh : center.pairs_with_self_pair()) {
                 int sp{neigh.get_atom_type()};
@@ -253,6 +255,36 @@ namespace rascal {
               }
               i_center += SpatialDims;
             }
+            // const math::Matrix_t dX_dr_flat = prop_grad.get_features();
+            // Eigen::Map<const math::Matrix_t> dX_dr(dX_dr_flat.data(), prop_grad.size() * SpatialDims,
+            //         dX_dr_flat.cols() / SpatialDims);
+            // math::Matrix_t T = pseudo_points.get_features();
+            // math::Matrix_t prod = (dX_dr * T.transpose()).eval();
+            // int i_manager{0};
+            // auto Msps = pseudo_points.species_by_points();
+            // for (auto center : manager) {
+            //   for (auto neigh : center.pairs_with_self_pair()) {
+            //     int i_col{0};
+            //     for (auto sp : Msps) {
+            //       if (sp != neigh.get_atom_type()) {
+            //         prod(i_manager, i_col) = 0.;
+            //       }
+            //       ++i_col;
+            //     }
+            //     i_manager++;
+            //   }
+            // }
+            // int i_row{0};
+            // for (auto center : manager) {
+            //   // auto atom_ii = center.get_atom_ii();
+            //   // std::cout << atom_ii.get_atom_tag() << std::endl;
+            //   for (auto neigh : center.pairs_with_self_pair()) {
+            //       KNM.block(i_center, 0, SpatialDims, n_pseudo_points) += prod.block(i_row, 0, SpatialDims, n_pseudo_points);
+            //     i_row += SpatialDims;
+            //   }
+            //   i_center += SpatialDims;
+            // }
+
           } else {
             auto && prop{*manager->template get_property<Property_t>(
                 representation_name, true)};

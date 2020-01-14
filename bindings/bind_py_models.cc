@@ -142,10 +142,10 @@ namespace rascal {
         add_pseudo_points<PseudoPoints_1_t>(mod, m_internal);
 
     auto sparse_kernel = add_kernel<SparseKernel>(mod, m_internal);
-    bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
-                                        Calc1_t, ManagerCollection_1_t,
-                                        PseudoPoints_1_t>(sparse_kernel);
-    bind_pseudo_points_push_back<ManagerCollection_1_t, Calc1_t>(pseudo_points);
+    // bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
+    //                                     Calc1_t, ManagerCollection_1_t,
+    //                                     PseudoPoints_1_t>(sparse_kernel);
+    // bind_pseudo_points_push_back<ManagerCollection_1_t, Calc1_t>(pseudo_points);
     bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
                                         Calc1_t, ManagerCollection_2_t,
                                         PseudoPoints_1_t>(sparse_kernel);

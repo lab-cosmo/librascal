@@ -71,7 +71,8 @@ int main() {
               {"compute_gradients", true},
               {"soap_type", "PowerSpectrum"},
               {"normalize", true},
-              {"expansion_by_species_method", "environment wise"}};
+              {"expansion_by_species_method", "user defined"},
+              {"global_species", {1,6,7,8}} };
 
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},

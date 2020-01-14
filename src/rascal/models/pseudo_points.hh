@@ -203,23 +203,35 @@ namespace rascal {
 
       for (const Key_t & key : this->keys) {
         if (representation_grad.count(key)) {
+          // get the representation gradient features and shape it
+          // assumes the gradient directions are the outermost index
           auto rep_grad_flat_by_key{representation_grad.flattened(key)};
           Eigen::Map<const Eigen::Matrix<double, spatial_dims(),
                                          Eigen::Dynamic, Eigen::RowMajor>>
               rep_grad_by_key(rep_grad_flat_by_key.data(), spatial_dims(),
                               this->inner_size);
+          assert(rep_grad_flat_by_key.size() == static_cast<int>(spatial_dims() * this->inner_size));
           const auto & indicies_by_sp_key = indicies_by_sp.at(key);
+          // get the block of pseudo points features
           auto mat = Eigen::Map<const math::Matrix_t>(
               values_by_sp.at(key).data(),
               static_cast<Eigen::Index>(indicies_by_sp_key.size()),
               static_cast<Eigen::Index>(this->inner_size));
-          auto KNM_row_key = (mat * rep_grad_by_key.transpose()).eval();
-          for (int i_row{0}; i_row < KNM_row_key.rows(); i_row++) {
-            KNM_row.row(offset + indicies_by_sp_key[i_row]) +=
-                KNM_row_key.row(i_row);
-          }
-        }
-      }
+          assert(indicies_by_sp_key.size()*this->inner_size == values_by_sp.at(key).size());
+          // compute the product between pseudo points and representation
+          // gradient block
+          ColVectorDer_t KNM_row_key(indicies_by_sp_key.size(), spatial_dims());
+          KNM_row_key = (mat * rep_grad_by_key.transpose());
+          // dispatach kernel partial elements to the proper pseudo points
+          // indicies
+          for (int i_dim{0}; i_dim < spatial_dims(); i_dim++) {
+            for (int i_row{0}; i_row < KNM_row_key.rows(); i_row++) {
+              KNM_row(offset + indicies_by_sp_key[i_row], i_dim) +=
+                  KNM_row_key(i_row, i_dim);
+            } // M
+          } // dim
+        } // if
+      } // key
       return KNM_row;
     }
 
@@ -283,32 +295,32 @@ namespace rascal {
       ++counters_by_sp;
     }
 
-    math::Matrix_t get_features() {
+    math::Matrix_t get_features() const {
       size_t n_pseudo_points{0};
       for (const auto & sp : this->center_species) {
-        n_pseudo_points += counters[sp];
+        n_pseudo_points += counters.at(sp);
       }
       math::Matrix_t mat{n_pseudo_points, this->inner_size * this->keys.size()};
       mat.setZero();
       size_t i_row{0};
       for (const auto & sp : this->center_species) {
-        auto & values_by_sp = this->values[sp];
-        auto & indicies_by_sp = this->indicies[sp];
+        auto & values_by_sp = this->values.at(sp);
+        auto & indicies_by_sp = this->indicies.at(sp);
         size_t i_col{0};
         for (const auto & key : this->keys) {
           if (values_by_sp.count(key)) {
-            Eigen::Map<math::Matrix_t> block{
-                values_by_sp[key].data(),
-                static_cast<Eigen::Index>(indicies_by_sp[key].size()),
+            Eigen::Map<const math::Matrix_t> block{
+                values_by_sp.at(key).data(),
+                static_cast<Eigen::Index>(indicies_by_sp.at(key).size()),
                 static_cast<Eigen::Index>(this->inner_size)};
-            for (size_t ii{0}; ii < indicies_by_sp[key].size(); ii++) {
-              mat.block(i_row + indicies_by_sp[key][ii], i_col, 1,
+            for (size_t ii{0}; ii < indicies_by_sp.at(key).size(); ii++) {
+              mat.block(i_row + indicies_by_sp.at(key)[ii], i_col, 1,
                         this->inner_size) = block.row(ii);
             }
           }
           i_col += this->inner_size;
         }
-        i_row += this->counters[sp];
+        i_row += this->counters.at(sp);
       }
       return mat;
     }
