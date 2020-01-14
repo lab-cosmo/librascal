@@ -448,23 +448,26 @@ namespace rascal {
       if (this->compute_gradients) {
         auto ii_pair = center.get_atom_ii();
         auto atom_i_tag = center.get_atom_tag();
+        // \grad_i c^{i}
         auto & grad_center_coefficients{
             expansions_coefficients_gradient[ii_pair]};
         // compute the \grad_i p^{i} coeffs
         auto & soap_center_gradient{soap_vector_gradients[ii_pair]};
         for (const auto & grad_species_1 : grad_center_coefficients) {
-          spair_type[0] = grad_species_1.first[0];
+          const Key_t & coef_key_1{grad_species_1.first};
+          spair_type[0] = coef_key_1[0];
           const auto & expansion_coefficients_1{
-              coefficients[grad_species_1.first]};
+              coefficients[coef_key_1]};
           const auto & grad_center_coefficients_1{grad_species_1.second};
           for (const auto & grad_species_2 : grad_center_coefficients) {
-            spair_type[1] = grad_species_2.first[0];
+            const Key_t & coef_key_2{grad_species_2.first};
+            spair_type[1] = coef_key_2[0];
             // Half-iteration over species, but not over radial basis index 'n'
             if (spair_type[0] > spair_type[1]) {
               continue;
             }
             const auto & expansion_coefficients_2{
-                coefficients[grad_species_2.first]};
+                coefficients[coef_key_2]};
             const auto & grad_center_coefficients_2{grad_species_2.second};
             auto soap_center_gradient_by_species_pair{
                 soap_center_gradient[spair_type]};
@@ -524,7 +527,7 @@ namespace rascal {
             }
 
             // Sum the gradients wrt the neighbour atom position
-            // compute the \grad_j p^{i} coeffs
+            // compute the \grad_i p^{j} coeffs
             for (auto neigh : center.pairs()) {
               auto && atom_j = neigh.get_atom_j();
               auto atom_j_tag = atom_j.get_atom_tag();
@@ -533,24 +536,35 @@ namespace rascal {
               if (atom_j_tag == atom_i_tag) {
                 continue;
               }
+              // c^{j}
+              auto & coefficients_j{expansions_coefficients[atom_j]};
+              // \grad_i c^{j}
               auto & grad_neigh_coefficients{
                   expansions_coefficients_gradient[neigh]};
+              // \grad_i p^{j}
               auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
 
-              auto neigh_type = neigh.get_atom_type();
-              if ((neigh_type != spair_type[0]) and
-                  (neigh_type != spair_type[1])) {
-                // Save the cost of iteration
-                continue;
-              }
+              // auto neigh_type = neigh.get_atom_type();
+              // if ((neigh_type != spair_type[0]) and
+              //     (neigh_type != spair_type[1])) {
+              //   // Save the cost of iteration
+              //   continue;
+              // }
 
-              auto soap_neigh_gradient_by_species_pair{
-                  soap_neigh_gradient[spair_type]};
+//              auto soap_neigh_gradient_by_species_pair{
+//                  soap_neigh_gradient[spair_type]};
 
               // TODO(max) is there a symmetry here we can exploit?
-              if (neigh_type == spair_type[0]) {
+              // if (neigh_type == spair_type[0]) {
+              if (grad_neigh_coefficients.count(coef_key_1)) {
+                // \grad_i p^{j ab}
+                auto soap_neigh_gradient_by_species_pair{
+                        soap_neigh_gradient[spair_type]};
+                // \grad_i c^{j a}
                 const auto & grad_neigh_coefficients_1{
-                    grad_neigh_coefficients[grad_species_1.first]};
+                    grad_neigh_coefficients[coef_key_1]};
+                // c^{j b}
+                const auto & expansion_coefficients_j_2{coefficients_j[coef_key_2]};
                 for (size_t cartesian_idx{0}; cartesian_idx < 3;
                      ++cartesian_idx) {
                   size_t cartesian_offset_n{cartesian_idx * this->max_radial};
@@ -568,7 +582,7 @@ namespace rascal {
                           (grad_neigh_coefficients_1.block(
                                 n1 + cartesian_offset_n, l_block_idx,
                                 1,                       l_block_size).array() *
-                           expansion_coefficients_2.block(
+                           expansion_coefficients_j_2.block(
                                 n2, l_block_idx,
                                 1,  l_block_size).array()).sum();
                         // clang-format on
@@ -585,9 +599,16 @@ namespace rascal {
               // species pairs
               // TODO(max) consider changing to full iteration and just one of
               // these if-nested-horrible-for-loop blocks
-              if (neigh_type == spair_type[1]) {
+              // if (neigh_type == spair_type[1]) {
+              if (grad_neigh_coefficients.count(coef_key_2)) {
+                // \grad_i p^{j ab}
+                auto soap_neigh_gradient_by_species_pair{
+                        soap_neigh_gradient[spair_type]};
+                // \grad_i p^{j b}
                 const auto & grad_neigh_coefficients_2{
-                    grad_neigh_coefficients[grad_species_2.first]};
+                    grad_neigh_coefficients[coef_key_2]};
+                // c^{j a}
+                const auto & expansion_coefficients_j_1{coefficients_j[coef_key_1]};
                 for (size_t cartesian_idx{0}; cartesian_idx < 3;
                      ++cartesian_idx) {
                   size_t cartesian_offset_n{cartesian_idx * this->max_radial};
@@ -602,7 +623,7 @@ namespace rascal {
                         // clang-format off
                         soap_neigh_gradient_by_species_pair(
                                 n1n2 + cartesian_offset_n1n2, l) +=
-                          (expansion_coefficients_1.block(
+                          (expansion_coefficients_j_1.block(
                                 n1, l_block_idx,
                                 1,  l_block_size).array() *
                            grad_neigh_coefficients_2.block(
@@ -617,11 +638,15 @@ namespace rascal {
                 }      // for cartesian_idx
               }        // if (neigh_type == spair_type[1])
 
-              // Same factors as for the gradient wrt center
-              soap_neigh_gradient_by_species_pair *=
-                  this->l_factors.asDiagonal();
-              if (spair_type[0] != spair_type[1]) {
-                soap_neigh_gradient_by_species_pair *= math::SQRT_TWO;
+              if (soap_neigh_gradient.count(spair_type)) {
+                auto soap_neigh_gradient_by_species_pair{
+                        soap_neigh_gradient[spair_type]};
+                // Same factors as for the gradient wrt center
+                soap_neigh_gradient_by_species_pair *=
+                        this->l_factors.asDiagonal();
+                if (spair_type[0] != spair_type[1]) {
+                  soap_neigh_gradient_by_species_pair *= math::SQRT_TWO;
+                }
               }
             }  // for neigh : center
           }    // for grad_species_2 : grad_coefficients
@@ -1200,7 +1225,7 @@ namespace rascal {
       // of j is not the same as either of the species for that SOAP entry,
       // the gradient is zero.
       for (auto neigh : center.pairs()) {
-        auto neigh_type = neigh.get_atom_type();
+        // auto neigh_type = neigh.get_atom_type();
         std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
             grad_pair_list{};
         for (const auto & el1 : coefficients) {
@@ -1210,10 +1235,10 @@ namespace rascal {
             if (neigh_1_type <= neigh_2_type) {
               pair_type[0] = neigh_1_type;
               pair_type[1] = neigh_2_type;
-              if ((neigh_type == pair_type[0]) or
-                  (neigh_type == pair_type[1])) {
+              // if ((center_type == pair_type[0]) or
+              //     (center_type == pair_type[1])) {
                 grad_pair_list.insert({is_sorted, pair_type});
-              }
+              // }
             }
           }
         }

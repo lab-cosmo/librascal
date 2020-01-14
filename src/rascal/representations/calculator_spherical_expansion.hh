@@ -1775,24 +1775,32 @@ namespace rascal {
           // grad_i c^{i}
           auto && gradient_center_by_type{
               coefficients_center_gradient[neigh_type]};
-          // grad_j c^{i}
+          // grad_i c^{j}
           auto && gradient_neigh_by_type{
-              coefficients_neigh_gradient[neigh_type]};
+              coefficients_neigh_gradient[center_type]};
 
-          // Radial component: d/dr_{ij} (c_{ij} f_c{r_{ij}}) \hat{r_{ij}}
+
           // clang-format off
+          // d/dr_{ij} (c_{ij} f_c{r_{ij}})
           Matrix_t pair_gradient_contribution_p1 =
                 ((neighbour_derivative * f_c)
                  + (neighbour_contribution * df_c));
+          // grad_j c^{ij}
           Matrix_t pair_gradient_contribution{this->max_radial,
                                               this->max_angular + 1};
           for (int cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
                  ++cartesian_idx) {
             l_block_idx = 0;
+            double parity{-1.};
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                 ++angular_l) {
               size_t l_block_size{2 * angular_l + 1};
               pair_gradient_contribution.resize(this->max_radial, l_block_size);
+              /*
+               pair_gradient_contribution_p1.col(angular_l)
+                * harmonics.segment(l_block_idx, l_block_size)
+               should be precomputed like pair_gradient_contribution_p1
+               */
               pair_gradient_contribution =
                 pair_gradient_contribution_p1.col(angular_l)
                 * harmonics.segment(l_block_idx, l_block_size)
@@ -1805,13 +1813,16 @@ namespace rascal {
 
               // Each Cartesian gradient component occupies a contiguous block
               // (row-major storage)
+              // grad_i c^{i} = - \sum_j grad_j c^{ij}
               gradient_center_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
                   max_radial, l_block_size) -= pair_gradient_contribution;
+              // grad_i c^{j} = (-1)^{l+1} grad_j c^{ij}
               gradient_neigh_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
-                  max_radial, l_block_size) += pair_gradient_contribution;
+                  max_radial, l_block_size) += parity * pair_gradient_contribution;
               l_block_idx += l_block_size;
+              parity *= -1.;
               // clang-format on
             }  // for (angular_l)
           }    // for cartesian_idx
@@ -1943,10 +1954,11 @@ namespace rascal {
       for (auto neigh : center.pairs()) {
         auto && atom_j = neigh.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag();
-        Key_t neigh_type{neigh.get_atom_type()};
+        // Key_t neigh_type{neigh.get_atom_type()};
         std::set<Key_t> neigh_types{};
         if (atom_j_tag != atom_i_tag) {
-          neigh_types.insert(neigh_type);
+          // neigh_types.insert(neigh_type);
+          neigh_types.insert(center_type);
         }
         keys_list_grad.emplace_back(neigh_types);
       }
@@ -1993,16 +2005,18 @@ namespace rascal {
 
     // build the species list
     for (auto center : manager) {
+      Key_t center_type{center.get_atom_type()};
       keys_list.emplace_back(this->global_species);
       keys_list_grad.emplace_back(this->global_species);
       auto atom_i_tag = center.get_atom_tag();
       for (auto neigh : center.pairs()) {
         auto && atom_j = neigh.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag();
-        Key_t neigh_type{neigh.get_atom_type()};
+        // Key_t neigh_type{neigh.get_atom_type()};
         std::set<Key_t> neigh_types{};
         if (atom_j_tag != atom_i_tag) {
-          neigh_types.insert(neigh_type);
+          // neigh_types.insert(neigh_type);
+          neigh_types.insert(center_type);
         }
         keys_list_grad.emplace_back(neigh_types);
       }
