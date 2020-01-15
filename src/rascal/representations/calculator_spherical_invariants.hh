@@ -556,7 +556,8 @@ namespace rascal {
 
               // TODO(max) is there a symmetry here we can exploit?
               // if (neigh_type == spair_type[0]) {
-              if (grad_neigh_coefficients.count(coef_key_1)) {
+              if (grad_neigh_coefficients.count(coef_key_1) == 1 and
+                      coefficients_j.count(coef_key_2) == 1) {
                 // \grad_i p^{j ab}
                 auto soap_neigh_gradient_by_species_pair{
                         soap_neigh_gradient[spair_type]};
@@ -600,7 +601,8 @@ namespace rascal {
               // TODO(max) consider changing to full iteration and just one of
               // these if-nested-horrible-for-loop blocks
               // if (neigh_type == spair_type[1]) {
-              if (grad_neigh_coefficients.count(coef_key_2)) {
+              if (grad_neigh_coefficients.count(coef_key_2) == 1 and
+                   coefficients_j.count(coef_key_1) == 1) {
                 // \grad_i p^{j ab}
                 auto soap_neigh_gradient_by_species_pair{
                         soap_neigh_gradient[spair_type]};
@@ -1190,7 +1192,7 @@ namespace rascal {
 
       std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
           pair_list{};
-      auto center_type{center.get_atom_type()};
+      int center_type{center.get_atom_type()};
       Key_t pair_type{center_type, center_type};
       // avoid checking the order in pair_type by ensuring it has already been
       // done
@@ -1233,12 +1235,12 @@ namespace rascal {
           for (const auto & el2 : coefficients) {
             auto && neigh_2_type{el2.first[0]};
             if (neigh_1_type <= neigh_2_type) {
-              pair_type[0] = neigh_1_type;
-              pair_type[1] = neigh_2_type;
-              // if ((center_type == pair_type[0]) or
-              //     (center_type == pair_type[1])) {
+              if ((center_type == neigh_1_type) or
+                  (center_type == neigh_2_type)) {
+                pair_type[0] = neigh_1_type;
+                pair_type[1] = neigh_2_type;
                 grad_pair_list.insert({is_sorted, pair_type});
-              // }
+              }
             }
           }
         }

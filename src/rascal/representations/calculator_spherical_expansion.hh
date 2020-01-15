@@ -1776,6 +1776,8 @@ namespace rascal {
           auto && gradient_center_by_type{
               coefficients_center_gradient[neigh_type]};
           // grad_i c^{j}
+          // auto && gradient_neigh_by_type{
+          //     coefficients_neigh_gradient[neigh_type]};
           auto && gradient_neigh_by_type{
               coefficients_neigh_gradient[center_type]};
 
@@ -1813,7 +1815,7 @@ namespace rascal {
 
               // Each Cartesian gradient component occupies a contiguous block
               // (row-major storage)
-              // grad_i c^{i} = - \sum_j grad_j c^{ij}
+              // grad_i c^{i} = - \sum_{j} grad_j c^{ij}
               gradient_center_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
                   max_radial, l_block_size) -= pair_gradient_contribution;
@@ -1910,9 +1912,10 @@ namespace rascal {
       for (auto neigh : center.pairs()) {
         auto && atom_j = neigh.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag();
-        Key_t neigh_type{neigh.get_atom_type()};
+        // Key_t neigh_type{neigh.get_atom_type()};
         if (atom_j_tag != atom_i_tag) {
-          keys_list_grad[i_grad].insert(neigh_type);
+          // keys_list_grad[i_grad].insert(neigh_type);
+          keys_list_grad[i_grad].insert(center_type);
         }
         i_grad++;
       }

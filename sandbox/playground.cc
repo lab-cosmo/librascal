@@ -25,9 +25,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rascal/basic_types.hh"
+#include "rascal/utils/basic_types.hh"
 #include "rascal/models/kernels.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 #include "rascal/representations/calculator_sorted_coulomb.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/representations/calculator_spherical_invariants.hh"
@@ -60,19 +60,27 @@ using Manager_t = typename ManagerTypeHolder_t::type;
 using ManagerCollection_t =
     typename TypeHolderInjector<ManagerCollection, ManagerTypeList_t>::type;
 using Representation_t = CalculatorSphericalInvariants;
+using PropGrad_t = typename Representation_t::template PropertyGradient_t<Manager_t>;
 
 int main() {
 
-  std::string filename{"../../../reference_data/inputs/small_molecules-20.json"};
+  std::string filename{"../reference_data/inputs/small_molecules-20.json"};
 
   double cutoff{3.};
 
-  json hypers{{"max_radial", 6},
-              {"max_angular", 6},
-              {"compute_gradients", false},
+  json hypers{{"max_radial", 2},
+              {"max_angular", 2},
+              {"compute_gradients", true},
               {"soap_type", "PowerSpectrum"},
-              {"normalize", true},
+              {"normalize", false},
               {"expansion_by_species_method", "environment wise"}};
+  // json hypers{{"max_radial", 2},
+  //             {"max_angular", 2},
+  //             {"compute_gradients", true},
+  //             {"soap_type", "PowerSpectrum"},
+  //             {"normalize", false},
+  //             {"expansion_by_species_method", "user defined"},
+  //             {"global_species", {1,6,7,8}}};
 
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
@@ -82,7 +90,7 @@ int main() {
 
   hypers["cutoff_function"] = fc_hypers;
   hypers["gaussian_density"] = sigma_hypers;
-  hypers["radial_contribution"] = {{"type", "GTO"}};
+  hypers["radial_contribution"] = {{"type", "DVR"}};
 
   json kernel_hypers{
         {"zeta", 1}, {"target_type", "Atom"}, {"name", "Cosine"}};
@@ -109,9 +117,26 @@ int main() {
 
   soap.compute(collection);
 
-  Kernel kernel{kernel_hypers};
+  for (const auto & manager : collection) {
+    auto & grad{*manager->template get_property<PropGrad_t>(soap.get_gradient_name())};
+    // math::Vector_t sum(grad.get_keys().size() * grad.get_nb_comp());
+    // sum.setZero();
+    // auto data = grad.get_raw_data_view();
+    std::cout << grad.sum() << std::endl;
+    std::cout << grad.l1_norm() << std::endl;
+    // for (auto center : manager) {
+    //   sum += grad.get_dense_row(center.get_atom_ii());
+    //   for (auto neigh : center.pairs_with_self_pair()) {
+    //     sum += grad.get_dense_row(neigh);
+    //   }
+    //   std::cout << sum << std::endl;
+    //   std::cout << "##############################" << std::endl;
+    // }
+  }
 
-  auto kk = kernel.compute(soap, collection, collection);
+  // Kernel kernel{kernel_hypers};
 
-  std::cout << kk << std::endl;
+  // auto kk = kernel.compute(soap, collection, collection);
+
+  // std::cout << kk << std::endl;
 }

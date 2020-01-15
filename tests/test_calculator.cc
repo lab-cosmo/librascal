@@ -319,14 +319,14 @@ namespace rascal {
     // the keys of the center contribution (1st center)
     std::vector<std::vector<int>> all_keys{{8, 8},   {8, 15},  {8, 20},
                                            {15, 15}, {15, 20}, {20, 20}};
-    // the list of keys for each neighbor (1st center)
+
     std::vector<std::vector<std::vector<int>>> neigh_keys{
-        {{8, 15}, {15, 15}, {15, 20}}, {{8, 8}, {8, 15}, {8, 20}},
-        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
-        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
-        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
-        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
-        {{8, 15}, {15, 15}, {15, 20}}};
+        {{8, 20}, {15, 20}, {20, 20}}, {{8, 20}, {15, 20}, {20, 20}},
+        {{8, 20}, {15, 20}, {20, 20}}, {{8, 20}, {15, 20}, {20, 20}},
+        {{8, 20}, {15, 20}, {20, 20}}, {{8, 20}, {15, 20}, {20, 20}},
+        {{8, 20}, {15, 20}, {20, 20}}, {{8, 20}, {15, 20}, {20, 20}},
+        {{8, 20}, {15, 20}, {20, 20}}, {{8, 20}, {15, 20}, {20, 20}},
+        {{8, 20}, {15, 20}, {20, 20}}};
 
     for (auto & manager : managers) {
       for (auto & hyper : hypers) {
@@ -340,7 +340,7 @@ namespace rascal {
             auto ii_pair = center.get_atom_ii();
             auto keys_grad_center = prop_grad.get_keys(ii_pair);
             if (verbose) {
-              std::cout << "Center gradient keys: ";
+              std::cout << "Center " << center.get_atom_type() << " gradient keys: ";
               for (auto key : keys_grad_center) {
                 std::cout << "{";
                 for (auto key_sp : key) {
@@ -485,11 +485,15 @@ namespace rascal {
     }
   }
 
+  // using gradient_fixtures = boost::mpl::list<
+  //     CalculatorFixture<
+  //         SingleHypersSphericalExpansion<SimplePeriodicNLCCStrictFixture>>,
+  //     CalculatorFixture<
+  //         SingleHypersSphericalInvariants<SimplePeriodicNLCCStrictFixture>>>;
+
   using gradient_fixtures = boost::mpl::list<
       CalculatorFixture<
-          SingleHypersSphericalExpansion<SimplePeriodicNLCCStrictFixture>>,
-      CalculatorFixture<
-          SingleHypersSphericalInvariants<SimplePeriodicNLCCStrictFixture>>>;
+          SingleHypersSphericalExpansion<SimplePeriodicNLCCStrictFixture>>>;
 
   /**
    * Test the gradient of the SphericalExpansion and SphericalInvariants
@@ -530,6 +534,7 @@ namespace rascal {
           grad_fix.advance_center();
         } while (grad_fix.has_next());
         /* ---- grad-test-example-end2 ---- */
+        break;
       }
       ++filename_it;
     }

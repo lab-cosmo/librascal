@@ -409,7 +409,7 @@ namespace rascal {
         // TODO(max) this inner loop is a good candidate to move to its own
         // function... if we can pass along those argument typedefs as well
         double min_error{HUGE_VAL};
-        for (double dx = 1E-3; dx > 1E-10; dx *= 0.1) {
+        for (double dx{1E-5}; dx >= 1E-5; dx *= 0.1) {
           if (params.verbosity >= VerbosityValue::INFO) {
             std::cout << "dx = " << dx << "\t";
           }

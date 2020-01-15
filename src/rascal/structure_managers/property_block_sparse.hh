@@ -969,6 +969,14 @@ namespace rascal {
       return arr;
     }
 
+    double sum() const {
+      return this->values.sum();
+    }
+
+    double l1_norm() const {
+      return this->values.matrix().template lpNorm<1>();
+    }
+
     /**
      * dot product between property block sparse A and B
      * assumes order == 1 for the moment should use SFINAE to take care of
