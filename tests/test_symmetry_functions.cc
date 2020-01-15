@@ -54,17 +54,12 @@ namespace rascal {
   }
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test, Fix, SymmetryFunctions_t, Fix) {
-    using Vec_t = Eigen::Matrix<double, ThreeD, 1>;
-    const Vec_t n_ij{[]() {
-      Vec_t vec{Vec_t::Random()};
-      return vec / vec.norm();
-    }()};
 
     BOOST_CHECK_NO_THROW(this->sym_fun.f_sym(this->r_ij));
-    BOOST_CHECK_NO_THROW(this->sym_fun.df_sym(this->r_ij, n_ij));
+    BOOST_CHECK_NO_THROW(this->sym_fun.df_sym(this->r_ij));
 
     double f1{this->sym_fun.f_sym(this->r_ij)};
-    double f2{std::get<0>(this->sym_fun.df_sym(this->r_ij, n_ij))};
+    double f2{std::get<0>(this->sym_fun.df_sym(this->r_ij))};
 
     BOOST_CHECK_EQUAL(f1, f2);
   }

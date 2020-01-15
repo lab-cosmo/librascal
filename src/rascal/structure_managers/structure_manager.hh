@@ -261,7 +261,7 @@ namespace rascal {
     class ClusterRef;
 
     //! random access operator
-    ClusterRef<AtomOrder> operator[](const size_t & cluster_index) const {
+    ClusterRef<AtomOrder> operator[](const size_t & cluster_index) {
       return *(this->get_iterator_at(cluster_index));
     }
 
@@ -755,7 +755,7 @@ namespace rascal {
      * allows to transit from j atom to i atom.
      */
     template <size_t Order>
-    Property_t<size_t, Order> & get_neighbours_to_i_atoms();
+    Property_t<size_t, Order, Order> & get_neighbours_to_i_atoms();
 
     //! get reference to ancestor of given type
     template <
@@ -860,14 +860,14 @@ namespace rascal {
   template <class ManagerImplementation>
   template <size_t Order>
   auto StructureManager<ManagerImplementation>::get_neighbours_to_i_atoms()
-      -> Property_t<size_t, Order> & {
+      -> Property_t<size_t, Order, Order> & {
     // does the property exist at this level?
     constexpr auto Layer{this->template cluster_layer_from_order<Order>()};
     std::stringstream identifier{};
     identifier << "neighbours_to_i_atoms_Order=" << Order << "_Layer=" << Layer;
     bool property_at_wrong_layer{
         this->is_property_in_stack(identifier.str()) and
-        not this->is_property_in_current_layer(identifier.str())};
+        not this->is_property_in_current_level(identifier.str())};
     if (property_at_wrong_layer) {
       // complain and die
       throw std::runtime_error(
@@ -877,8 +877,9 @@ namespace rascal {
 
     constexpr bool Validate{false}, AllowCreation{true};
 
-    auto & property{this->template get_property<Property_t<size_t, Order>>(
-        identifier, Validate, AllowCreation)};
+    auto & property{
+        *this->template get_property<Property_t<size_t, Order, Order>>(
+            identifier.str(), Validate, AllowCreation)};
 
     // is it fresh?
     if (property.is_updated()) {
@@ -891,7 +892,7 @@ namespace rascal {
 
     size_t counter{0};
     for (auto && atom : this->with_ghosts()) {
-      tag_to_id[atom.get_atom_tag] = counter;
+      tag_to_id[atom.get_atom_tag()] = counter;
       counter++;
     }
     for (auto && atom : this->with_ghosts()) {
@@ -902,7 +903,7 @@ namespace rascal {
         }
       }
     }
-    property.set_updated_status();
+    property.set_updated_status(true);
     return property;
   }
 

@@ -215,7 +215,6 @@ namespace rascal {
                      int ** firstneigh, double ** x, double ** f, int * type,
                      double * eatom, double ** vatom);
 
-   protected:
     /**
      * Get a ptr of the previous manager, required for forwarding requests
      * downwards a stack. Since there is no last manager, the manager returns
@@ -225,6 +224,7 @@ namespace rascal {
       return shared_from_this();
     }
 
+   protected:
     int inum{};           //!< total numer of atoms
     int tot_num{};        //!< total number, includes ghosts
     int * ilist{};        //!< atomic indices

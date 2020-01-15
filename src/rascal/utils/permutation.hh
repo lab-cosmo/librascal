@@ -32,37 +32,35 @@
 
 namespace rascal {
 
-  template <size_t Size, size_t First, size_t Second, size_t Third>
+  template <size_t Size, size_t First, size_t Second, size_t Third = Size-1>
   struct Permutation {
-    static_assert((First != Second) && (First != Third) && (Second != Third) &&
-                      (Size > First) && (Size > Second) && (Size > Third) &&
-                      ((Size == 2) || (Size == 3)),
+    static_assert((First != Second) && (First != Third) && (Size > First) &&
+                      (Size > Second) && (Size > Third) &&
+                      ((Size == 2) || ((Size == 3) && (Second != Third))),
                   "Not a valid  pair or triplet permutation");
     static constexpr int leading() { return First; }
     static constexpr int second() { return Second; }
-    template <bool IsTriplet = (size == 3)>
+    template <bool IsTriplet = (Size == 3)>
     static constexpr std::enable_if_t<IsTriplet, int> third() {
       return Third;
     }
 
     template <typename StructureManager, typename Cluster>
     static int leading(StructureManager & manager, const Cluster & cluster) {
-      return manager.get_atom_index(pair.get_atom_tag_list(leading()));
+      return manager.get_atom_index(cluster.get_atom_tag_list(leading()));
     }
     template <typename StructureManager, typename Cluster>
     static int second(StructureManager & manager, const Cluster & cluster) {
-      return manager.get_atom_index(pair.get_atom_tag_list(second()));
+      return manager.get_atom_index(cluster.get_atom_tag_list(second()));
     }
-    template <typename StructureManager, typename Cluster>
-    template <bool IsTriplet = (size == 3)>
-    static std::enable_if_t<IsTriplet, int>
-    third(StructureManager & manager, const Cluster & cluster) {
-      return manager.get_atom_index(pair.get_atom_tag_list(third()));
+    template <typename StructureManager, typename Cluster,
+              bool IsTriplet = (Size == 3)>
+    static std::enable_if_t<IsTriplet, int> third(StructureManager & manager,
+                                                  const Cluster & cluster) {
+      return manager.get_atom_index(cluster.get_atom_tag_list(third()));
     }
   };
 
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_UTILS_PERMUTATION_HH_
-
-

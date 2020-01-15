@@ -88,12 +88,14 @@ namespace rascal {
     virtual void init(const UnitStyle & units) = 0;
 
     //! Main worker (raison d'être) computes input node values
-    template <class StructureManager>
+    template <RepeatedSpecies RepSpecies, typename Permutation,
+              class StructureManager>
     inline void compute(StructureManager & manager,
                         std::shared_ptr<PropertyBase> output_values) const;
 
     //! Main worker (raison d'être) computes input node values and derivatives
-    template <class StructureManager>
+    template <RepeatedSpecies RepSpecies, typename Permutation,
+              class StructureManager>
     inline void compute(StructureManager & manager,
                         std::shared_ptr<PropertyBase> output_values,
                         std::shared_ptr<PropertyBase> output_derivatives) const;
@@ -113,7 +115,7 @@ namespace rascal {
 
    protected:
     template <SymmetryFunctionType... FunTypes_>
-    class SymFunctionsVTable;
+    struct SymFunctionsVTable;
 
     const SymmetryFunctionType sym_fun_type;
     const size_t order;
@@ -129,9 +131,8 @@ namespace rascal {
             SymmetryFunctionType... SymFunTypes>
   class BehlerFeature final : public BehlerFeatureBase<SymFunTypes...> {
    public:
-    using Parent = BehlerFeatureBase<SymFunTypes...>;
     using SymmetryFunction_t = SymmetryFunction<MySymFunType>;
-    using StdSpecies = typename Parent::StdSpecies;
+    using Parent = BehlerFeatureBase<SymFunTypes...>;
 
     //! Default constructor
     BehlerFeature(std::shared_ptr<CutoffFunctionBase> cut_fun,
@@ -175,28 +176,29 @@ namespace rascal {
 
     void init(const UnitStyle & units) final;
 
-    template <RepeatedSpecies RepSpecies, class StructureManager>
-    void compute(StructureManager & manager,
-                 std::shared_ptr<PropertyBase> output) const;
+    // template <RepeatedSpecies RepSpecies, class StructureManager>
+    // void compute(StructureManager & manager,
+    //              std::shared_ptr<PropertyBase> output) const;
 
-    template <RepeatedSpecies RepSpecies, class StructureManager>
-    void compute(StructureManager & manager,
-                 std::shared_ptr<PropertyBase> output,
-                 std::shared_ptr<PropertyBase> output_derivatives) const;
+    // template <RepeatedSpecies RepSpecies, class StructureManager>
+    // void compute(StructureManager & manager,
+    //              std::shared_ptr<PropertyBase> output,
+    //              std::shared_ptr<PropertyBase> output_derivatives) const;
 
     size_t get_index() const;  // to implement
 
-   protected:
-    template <class StructureManager, RepeatedSpecies RepSpecies,
-              typename Permutation>
+    template <RepeatedSpecies RepSpecies, typename Permutation,
+              class StructureManager>
     void compute_helper(StructureManager & manager,
                         std::shared_ptr<PropertyBase> output) const;
 
-    template <class StructureManager, RepeatedSpecies RepSpecies,
-              typename Permutation>
+    template <RepeatedSpecies RepSpecies, typename Permutation,
+              class StructureManager>
     void compute_helper(StructureManager & manager,
                         std::shared_ptr<PropertyBase> output,
                         std::shared_ptr<PropertyBase> output_derivatives) const;
+
+   protected:
     SymmetryFunction<MySymFunType> sym_fun;
   };
 

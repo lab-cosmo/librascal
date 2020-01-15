@@ -34,39 +34,45 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType... SymFunTypes>
   template <SymmetryFunctionType... SymFunTypes_>
-  class BehlerFeatureBase<SymFunTypes...>::SymFunctionsVTable {};
+  struct BehlerFeatureBase<SymFunTypes...>::SymFunctionsVTable {};
 
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType... SymFunTypes>
   template <SymmetryFunctionType Head, SymmetryFunctionType... Tail>
-  class BehlerFeatureBase<SymFunTypes...>::SymFunctionsVTable<Head, Tail...> {
-    template <class StructureManager, class... PropertyPtr>
-    static void compute(BehlerFeatureBase & behler_feature,
+  struct BehlerFeatureBase<SymFunTypes...>::SymFunctionsVTable<Head, Tail...> {
+    template <RepeatedSpecies RepSpecies, typename Permutation,
+              class StructureManager, class... PropertyPtr>
+    static void compute(const BehlerFeatureBase & behler_feature,
                         StructureManager & manager, PropertyPtr... outputs) {
       if (behler_feature.sym_fun_type == Head) {
         auto & feature{
             dynamic_cast<const BehlerFeature<Head, SymFunTypes...> &>(
                 behler_feature)};
-        feature.compute(manager, outputs...);
+        feature.compute_helper(manager, outputs...);
       } else {
-        SymFunctionsVTable<Tail...>::compute(behler_feature, manager,
-                                             outputs...);
+        SymFunctionsVTable<Tail...>::template compute<RepSpecies, Permutation>(
+            behler_feature, manager, outputs...);
       }
     }
   };
 
-  /* ---------------------------------------------------------------------- */
+  /**
+   * Recursion end: return the last remaining function call or throw a
+   * runtime_error
+   */
   template <SymmetryFunctionType... SymFunTypes>
   template <SymmetryFunctionType Head>
-  class BehlerFeatureBase<SymFunTypes...>::SymFunctionsVTable<Head> {
-    template <class StructureManager, class... PropertyPtr>
-    static void compute(BehlerFeatureBase & behler_feature,
+  struct BehlerFeatureBase<SymFunTypes...>::SymFunctionsVTable<Head> {
+    template <RepeatedSpecies RepSpecies, typename Permutation,
+              class StructureManager, class... PropertyPtr>
+    static void compute(const BehlerFeatureBase & behler_feature,
                         StructureManager & manager, PropertyPtr... outputs) {
       if (behler_feature.sym_fun_type == Head) {
         auto & feature{
             dynamic_cast<const BehlerFeature<Head, SymFunTypes...> &>(
                 behler_feature)};
-        feature.compute(manager, outputs...);
+        feature.template compute_helper<RepSpecies, Permutation>(manager,
+                                                                 outputs...);
       } else {
         std::stringstream err{};
         err << "Symmetry function type " << behler_feature.sym_fun_type
@@ -78,40 +84,39 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType... SymFunTypes>
-  template <class StructureManager>
+  template <RepeatedSpecies RepSpecies, typename Permutation,
+            class StructureManager>
   void BehlerFeatureBase<SymFunTypes...>::compute(
       StructureManager & manager, std::shared_ptr<PropertyBase> prop) const {
-    SymFunctionsVTable<
-        SymmetryFunctionType::One, SymmetryFunctionType::Gaussian,
-        SymmetryFunctionType::Cosine, SymmetryFunctionType::Angular1,
-        SymmetryFunctionType::Angular2>::compute(*this, manager, prop);
+    SymFunctionsVTable<SymFunTypes...>::template compute<RepSpecies,
+                                                         Permutation>(
+        *this, manager, prop);
   }
 
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType... SymFunTypes>
-  template <class StructureManager>
+  template <RepeatedSpecies RepSpecies, typename Permutation,
+            class StructureManager>
   void BehlerFeatureBase<SymFunTypes...>::compute(
       StructureManager & manager, std::shared_ptr<PropertyBase> prop,
       std::shared_ptr<PropertyBase> prop_der) const {
-    SymFunctionsVTable<
-        SymmetryFunctionType::One, SymmetryFunctionType::Gaussian,
-        SymmetryFunctionType::Cosine, SymmetryFunctionType::Angular1,
-        SymmetryFunctionType::Angular2>::compute(*this, manager, prop,
-                                                 prop_der);
+    SymFunctionsVTable<SymFunTypes...>::template compute<RepSpecies,
+                                                         Permutation>(
+        *this, manager, prop, prop_der);
   }
 
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
-  template <class StructureManager, RepeatedSpecies RepSpecies,
-            typename Permutation>
+  template <RepeatedSpecies RepSpecies, typename Permutation,
+            class StructureManager>
   void BehlerFeature<MySymFunType, SymFunTypes...>::compute_helper(
       StructureManager & manager, std::shared_ptr<PropertyBase> output) const {
-    auto & cutoffs{this->cut_fun.get_value(manager)};
+    auto & cutoffs{this->cut_fun->get_value(manager)};
     // eval
     using Output_t = Property<double, AtomOrder, StructureManager>;
     Output_t & fun_vals{dynamic_cast<Output_t &>(*output)};
-    auto & distances{manager->get_distance()};
+    auto & distances{manager.get_distance()};
 
     auto & neigh_to_i_atom{
         manager
@@ -123,7 +128,6 @@ namespace rascal {
         for (auto && pair : atom.pairs()) {
           // compute the increment to the G function value
           auto && G_incr{this->sym_fun.f_sym(distances[pair]) * cutoffs[pair]};
-
 
           auto && atom_cluster_indices{neigh_to_i_atom[pair]};
           auto && i_atom{manager[atom_cluster_indices(Permutation::leading())]};
@@ -158,28 +162,6 @@ namespace rascal {
       err << "unknown symmetry function order " << SymmetryFunction_t::Order;
       throw std::runtime_error(err.str());
       break;
-    }
-  }  // namespace rascal
-  /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType MySymFunType,
-            SymmetryFunctionType... SymFunTypes>
-  template <RepeatedSpecies RepSpecies, class StructureManager>
-  void BehlerFeature<MySymFunType, SymFunTypes...>::compute(
-      StructureManager & manager, std::shared_ptr<PropertyBase> output_value,
-      std::shared_ptr<PropertyBase> output_derivative) const {
-    using Output_t =
-        Property<double, SymmetryFunction_t::Order, StructureManager>;
-    auto & cutoff_values{this->cut_fun.get_value(manager)};
-    auto & cutoff_derivatives{this->cut_fun.get_derivative(manager)};
-
-    Output_t & fun_values{dynamic_cast<Output_t &>(*output_value)};
-    Output_t & fun_derivatives{dynamic_cast<Output_t &>(*output_derivative)};
-    for (auto && atom : manager) {
-      for (auto && cluster :
-           atom.template get_clusters_of_order<SymmetryFunction_t::Order>()) {
-        std::tie(fun_values[atom], fun_derivatives[cluster]) =
-            this->eval_cluster(cluster);
-      }
     }
   }
 

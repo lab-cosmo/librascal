@@ -102,7 +102,7 @@ namespace rascal {
    public:
     static constexpr size_t Order{2};
 
-    using Return_t = std::tuple<double, Eigen::Matrix<double, ThreeD, 1>>;
+    using Return_t = std::tuple<double, double>;
     /**
      * usually, derivatives are aligned with the distance vector, in which case
      * a scalar return type is sufficient. (important for triplet-related
@@ -121,12 +121,10 @@ namespace rascal {
       return exp(-this->eta * delta_r * delta_r);
     }
 
-    template <class Derived>
-    Return_t df_sym(const double & r_ij,
-                    const Eigen::MatrixBase<Derived> & n_ij) const {
+    Return_t df_sym(const double & r_ij) const {
       auto && delta_r{r_ij - this->r_s};
       auto && fun_val{exp(-this->eta * delta_r * delta_r)};
-      return Return_t(fun_val, n_ij * (-2. * this->eta * delta_r * fun_val));
+      return Return_t(fun_val, -2. * this->eta * delta_r * fun_val);
     }
 
    protected:

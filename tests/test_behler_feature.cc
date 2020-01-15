@@ -32,6 +32,7 @@
 
 #include "rascal/representations/behler_feature.hh"
 #include "rascal/utils/json_io.hh"
+#include "rascal/utils/permutation.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
@@ -71,12 +72,26 @@ namespace rascal {
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test, Fix, Features, Fix) {
     ManagerFixture<StructureManagerLammps> manager_fix{};
-    auto & manager{*manager_fix.manager};
+    auto & manager{
+        *make_adapted_manager<AdaptorStrict>(manager_fix.manager, Fix::r_cut)};
+    manager.update();
 
-    using GVals_t = Property<double, AtomOrder, StructureManagerLammps>;
+    using GVals_t =
+        Property<double, AtomOrder, AdaptorStrict<StructureManagerLammps>>;
     auto G_vals{std::make_shared<GVals_t>(manager)};
 
-    // Fix::bf.compute(manager, G_vals);
+    // Yes, the pairs in this manager do not have the correct species, but this
+    // doesn't interfere with testing the compute algo
+    Fix::bf.template compute<RepeatedSpecies::All, Permutation<2, 0, 1>>(
+        manager, G_vals);
+    Fix::bf.template compute<RepeatedSpecies::Not, Permutation<2, 0, 1>>(
+        manager, G_vals);
+    Fix::bf.template compute<RepeatedSpecies::FirstTwo, Permutation<2, 0, 1>>(
+        manager, G_vals);
+    Fix::bf.template compute<RepeatedSpecies::SecondTwo, Permutation<2, 0, 1>>(
+        manager, G_vals);
+    Fix::bf.template compute<RepeatedSpecies::OuterTwo, Permutation<2, 0, 1>>(
+        manager, G_vals);
   }
   BOOST_AUTO_TEST_SUITE_END();
 

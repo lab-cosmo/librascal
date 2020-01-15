@@ -160,6 +160,14 @@ namespace rascal {
       return this->operator[](id.get_cluster_index(this->get_property_layer()));
     }
 
+    template <size_t CallerLayer>
+    const_reference operator[](const ClusterRefKey<Order, CallerLayer> & id) const {
+      // You are trying to access a property that does not exist at this depth
+      // in the adaptor stack.
+      assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
+      return this->operator[](id.get_cluster_index(this->get_property_layer()));
+    }
+
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>
     std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
                      reference>                            // NOLINT
@@ -170,10 +178,31 @@ namespace rascal {
           id.get_internal_neighbour_atom_tag()));
     }
 
+    template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>
+    std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
+                     const_reference>                            // NOLINT
+    operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) const {
+      // #BUG8486@(all) we can just use the managers function to get the
+      // corresponding cluster index, no need to save this in the cluster
+      return this->operator[](this->get_manager().get_atom_index(
+          id.get_internal_neighbour_atom_tag()));
+    }
+
     /**
      * Accessor for property by index for properties
      */
     reference operator[](size_t index) {
+      // use tag dispatch to use the proper definition
+      // of the get function
+      return this->get(
+          index,
+          std::conditional_t<(IsStaticallySized), StaticSize, DynamicSize>{});
+    }
+
+    /**
+     * Accessor for property by index for properties
+     */
+    const_reference operator[](size_t index) const {
       // use tag dispatch to use the proper definition
       // of the get function
       return this->get(
@@ -210,6 +239,14 @@ namespace rascal {
     }
 
     reference get(size_t index, DynamicSize) {
+      return get_ref(this->values[index * this->get_nb_comp()]);
+    }
+
+    const_reference get(size_t index, StaticSize) const {
+      return Value::get_ref(this->values[index * NbRow * NbCol]);
+    }
+
+    const_reference get(size_t index, DynamicSize) const {
       return get_ref(this->values[index * this->get_nb_comp()]);
     }
 
