@@ -511,10 +511,12 @@ namespace rascal {
         return this->template forward_get_property_request<UserProperty_t>(
             name, validate_property);
       } else if (not(is_property_in_stack) && allow_creation) {
-        auto property{std::make_shared<UserProperty_t>(
-            this->implementation(), metadata, exclude_ghosts)};
-        this->properties[name] = property;
-        return property;
+        auto & ancestor{this->template get_ancestor_implementation<
+            typename UserProperty_t::Manager_t>()};
+        ancestor.template create_property<UserProperty_t>(name, exclude_ghosts,
+                                                          metadata);
+        return std::dynamic_pointer_cast<UserProperty_t>(
+            ancestor.template get_property<UserProperty_t>(name));
       } else {
         std::stringstream error{};
         error << "No property of name '" << name << "' has been registered";
@@ -754,6 +756,26 @@ namespace rascal {
      */
     template <size_t Order>
     Property_t<size_t, Order> & get_neighbours_to_i_atoms();
+
+    //! get reference to ancestor of given type
+    template <
+        typename Ancestor,
+        std::enable_if_t<std::is_same<Ancestor, ManagerImplementation>::value,
+                         int> = 0>
+    Ancestor & get_ancestor_implementation() {
+      return this->implementation();
+    }
+
+    //! get reference to ancestor of given type
+    template <
+        typename Ancestor,
+        std::enable_if_t<
+            not std::is_same<Ancestor, ManagerImplementation>::value, int> = 0>
+    Ancestor & get_ancestor_implementation() {
+      auto previous_manager_ptr{this->get_previous_manager()};
+      return previous_manager_ptr
+          ->template get_ancestor_implementation<Ancestor>();
+    }
 
    protected:
     /**

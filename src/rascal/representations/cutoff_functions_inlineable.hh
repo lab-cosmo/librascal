@@ -272,7 +272,6 @@ namespace rascal {
       throw std::runtime_error("Unknown evaluation type");
       break;
     }
-
   }
 
 }  // namespace rascal

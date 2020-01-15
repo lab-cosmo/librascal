@@ -62,10 +62,10 @@ namespace rascal {
     const units::UnitStyle unit_style{units::metal};
 
     const double r_ij{1.1};
-    json correct_input{{"eta", {{"value", .1}, {"unit", "(Å)^(-1)"}}},
+    json correct_input{{"eta", {{"value", .1}, {"unit", "(Å)^(-2)"}}},
                        {"r_s", {{"value", 5.6}, {"unit", "Å"}}}};
 
-    json incorrect_put{{"eta", {{"value", .1}, {"unit", "(Å)^(-2)"}}},
+    json incorrect_put{{"eta", {{"value", .1}, {"unit", "(Å)^(-1)"}}},
                        {"r_s", {{"value", 5.6}, {"unit", "Å"}}}};
     SymFun sym_fun;
   };

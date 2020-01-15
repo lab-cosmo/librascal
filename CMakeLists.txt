@@ -179,6 +179,7 @@ elseif(BUILD_BINDINGS AND USER)
   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local")
 endif()
 
+add_compile_options(-ftemplate-backtrace-limit=0)
 message(STATUS "Installation ROOT: ${CMAKE_INSTALL_PREFIX}")
 
 # Always use full RPATH

@@ -109,7 +109,7 @@ namespace rascal {
     using Children_t = typename Parent::Children_t;
     using ManagerImplementation_t = StructureManagerCenters;
     using ImplementationPtr_t = std::shared_ptr<StructureManagerCenters>;
-
+    friend StructureManager<StructureManagerCenters>;
     /**
      * Eigen::Map is a convenient way to access data in the 'Eigen-way', if it
      * is already stored in a contiguous array.  The positions of the JSON file

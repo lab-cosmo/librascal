@@ -86,6 +86,7 @@ namespace rascal {
     ManagerFixture<StructureManagerLammps> fixture{};
     auto strict{
         make_adapted_manager<AdaptorStrict>(fixture.manager, this->r_cut)};
+    BOOST_CHECK(true);
     auto strict2{
         make_adapted_manager<AdaptorStrict>(strict, this->r_cut * .99)};
     strict2->update();

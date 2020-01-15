@@ -63,6 +63,30 @@ namespace rascal {
         parent_traits::NeighbourListType};
   };
 
+  namespace internal {
+    template <typename Adaptor, bool ParentHasDistance>
+    struct DistanceTProvider {
+      using type = typename StructureManager_traits<
+          Adaptor>::PreviousManager_t::Distance_t;
+    };
+
+    template <typename Adaptor>
+    struct DistanceTProvider<Adaptor, false> {
+      using type = Property<double, 2, Adaptor, 1>;
+    };
+
+    template <typename Adaptor, bool ParentHasDirectionVector>
+    struct DirectionVectorTProvider {
+      using type = typename StructureManager_traits<
+          Adaptor>::PreviousManager_t::DirectionVector_t;
+    };
+
+    template <typename Adaptor>
+    struct DirectionVectorTProvider<Adaptor, false> {
+      using type = Property<double, 2, Adaptor, 3>;
+    };
+  }  // namespace internal
+
   /**
    * Adaptor that guarantees that only neighbours within the cutoff are
    * present. A neighbor manager could include some wiggle room and list
@@ -81,17 +105,18 @@ namespace rascal {
             AdaptorStrict<ManagerImplementation>> {
    public:
     using Manager_t = AdaptorStrict<ManagerImplementation>;
-    using ManagerImplementation_t = ManagerImplementation;
     using Parent = StructureManager<Manager_t>;
+    using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorStrict>;
     using PreviousManager_t = typename traits::PreviousManager_t;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
-    using This = AdaptorStrict;
-    using Distance_t = typename This::template Property_t<double, 2, 1>;
-    using DirectionVector_t = typename This::template Property_t<double, 2, 3>;
+    using Distance_t = typename internal::DistanceTProvider<
+        AdaptorStrict, PreviousManager_t::traits::HasDistances>::type;
+    using DirectionVector_t = typename internal::DirectionVectorTProvider<
+        AdaptorStrict, PreviousManager_t::traits::HasDirectionVectors>::type;
 
     static_assert(traits::MaxOrder == 2,
                   "ManagerImlementation needs to handle pairs");
@@ -348,8 +373,10 @@ namespace rascal {
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
       std::shared_ptr<ManagerImplementation> manager, double cutoff)
       : manager{std::move(manager)},
-        distance{this->template create_property<Distance_t>("distance")},
-        dir_vec{this->template create_property<DirectionVector_t>("dir_vec")},
+        distance{
+            *this->template get_property<Distance_t>("distance", true, true)},
+        dir_vec{*this->template get_property<DirectionVector_t>("dir_vec", true,
+                                                                true)},
         cutoff{cutoff}, atom_tag_list{},
         neighbours_cluster_index{}, nb_neigh{}, offsets{}
 
