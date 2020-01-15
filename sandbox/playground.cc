@@ -68,19 +68,18 @@ int main() {
 
   double cutoff{3.};
 
-  json hypers{{"max_radial", 2},
-              {"max_angular", 2},
-              {"compute_gradients", true},
-              {"soap_type", "PowerSpectrum"},
-              {"normalize", false},
-              {"expansion_by_species_method", "environment wise"}};
   // json hypers{{"max_radial", 2},
   //             {"max_angular", 2},
   //             {"compute_gradients", true},
   //             {"soap_type", "PowerSpectrum"},
   //             {"normalize", false},
-  //             {"expansion_by_species_method", "user defined"},
-  //             {"global_species", {1,6,7,8}}};
+  //             {"expansion_by_species_method", "environment wise"}};
+  json hypers{{"max_radial", 2},
+              {"max_angular", 2},
+              {"compute_gradients", true},
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", false},
+              {"expansion_by_species_method", "structure wise"}};
 
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
