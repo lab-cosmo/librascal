@@ -122,6 +122,7 @@ namespace rascal {
         manager
             .template get_neighbours_to_i_atoms<SymmetryFunction_t::Order>()};
 
+    fun_vals.resize();
     switch (SymmetryFunction_t::Order) {
     case PairOrder: {
       for (auto && atom : manager) {

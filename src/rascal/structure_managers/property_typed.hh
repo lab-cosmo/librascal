@@ -219,29 +219,20 @@ namespace rascal {
      * exclude_ghosts. By default it is set to false so that property size is
      * always larger than what could be needed.
      */
-    template <size_t Order__ = Order, std::enable_if_t<(Order__ > 1), int> = 0>
-    void resize() {
-      auto n_components = this->get_nb_comp();
-      size_t new_size = this->base_manager.nb_clusters(Order) * n_components;
-      this->values.resize(new_size);
-    }
 
     //! Adjust size of values (only increases, never frees).
-    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 0), int> = 0>
     void resize() {
-      auto n_components = this->get_nb_comp();
-      this->values.resize(n_components);
-    }
-
-    //! Adjust size of values (only increases, never frees).
-    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 1), int> = 0>
-    void resize() {
-      const auto n_components{this->get_nb_comp()};
-      const size_t new_size{(this->exclude_ghosts
-                                 ? this->get_manager().size()
-                                 : this->get_manager().size_with_ghosts()) *
-                            n_components};
-      this->values.resize(new_size);
+      size_t new_size;
+      if (Order > 1) {
+        new_size = this->base_manager.nb_clusters(Order);
+      } else if (Order == 0) {
+        new_size = 1;
+      } else if (Order == 1) {
+        new_size =
+            (this->exclude_ghosts ? this->get_manager().size()
+                                  : this->get_manager().size_with_ghosts());
+      }
+      this->values.resize(new_size * this->get_nb_comp());
     }
 
     /**
@@ -344,7 +335,7 @@ namespace rascal {
      * property when Order == 1
      */
     const bool exclude_ghosts;
-  };
+  };  // namespace rascal
 
 }  // namespace rascal
 

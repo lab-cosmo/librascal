@@ -72,10 +72,10 @@ namespace rascal {
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test, Fix, Features, Fix) {
     ManagerFixture<StructureManagerLammps> manager_fix{};
-    auto & manager{
-        *make_adapted_manager<AdaptorStrict>(manager_fix.manager, Fix::r_cut)};
+    auto manager_ptr{
+        make_adapted_manager<AdaptorStrict>(manager_fix.manager, Fix::r_cut)};
+    auto & manager{*manager_ptr};
     manager.update();
-
     using GVals_t =
         Property<double, AtomOrder, AdaptorStrict<StructureManagerLammps>>;
     auto G_vals{std::make_shared<GVals_t>(manager)};
@@ -86,12 +86,12 @@ namespace rascal {
         manager, G_vals);
     Fix::bf.template compute<RepeatedSpecies::Not, Permutation<2, 0, 1>>(
         manager, G_vals);
-    Fix::bf.template compute<RepeatedSpecies::FirstTwo, Permutation<2, 0, 1>>(
-        manager, G_vals);
-    Fix::bf.template compute<RepeatedSpecies::SecondTwo, Permutation<2, 0, 1>>(
-        manager, G_vals);
-    Fix::bf.template compute<RepeatedSpecies::OuterTwo, Permutation<2, 0, 1>>(
-        manager, G_vals);
+
+    auto throw_unknown_species_rep{[&manager, &G_vals, this]() {
+      this->bf
+          .template compute<RepeatedSpecies::FirstTwo, Permutation<2, 0, 1>>(
+              manager, G_vals);
+    }};
   }
   BOOST_AUTO_TEST_SUITE_END();
 

@@ -423,7 +423,7 @@ namespace rascal {
       } else {
         auto property{std::make_shared<UserProperty_t>(
             this->implementation(), metadata, exclude_ghosts)};
-        this->properties[name] = property;
+        this->properties.insert(std::make_pair(name, property));
         return *property;
       }
     }
@@ -755,7 +755,8 @@ namespace rascal {
      * allows to transit from j atom to i atom.
      */
     template <size_t Order>
-    Property_t<size_t, Order, Order> & get_neighbours_to_i_atoms();
+    Property<size_t, Order, ManagerImplementation, Order> &
+    get_neighbours_to_i_atoms();
 
     //! get reference to ancestor of given type
     template <
@@ -860,7 +861,7 @@ namespace rascal {
   template <class ManagerImplementation>
   template <size_t Order>
   auto StructureManager<ManagerImplementation>::get_neighbours_to_i_atoms()
-      -> Property_t<size_t, Order, Order> & {
+    -> Property<size_t, Order, ManagerImplementation, Order> & {
     // does the property exist at this level?
     constexpr auto Layer{this->template cluster_layer_from_order<Order>()};
     std::stringstream identifier{};
@@ -877,9 +878,9 @@ namespace rascal {
 
     constexpr bool Validate{false}, AllowCreation{true};
 
-    auto & property{
-        *this->template get_property<Property_t<size_t, Order, Order>>(
-            identifier.str(), Validate, AllowCreation)};
+    auto & property{*this->template get_property<
+        Property<size_t, Order, ManagerImplementation, Order>>(
+        identifier.str(), Validate, AllowCreation)};
 
     // is it fresh?
     if (property.is_updated()) {
@@ -895,6 +896,7 @@ namespace rascal {
       tag_to_id[atom.get_atom_tag()] = counter;
       counter++;
     }
+    property.resize();
     for (auto && atom : this->with_ghosts()) {
       for (auto && cluster : atom.template get_clusters_of_order<Order>()) {
         auto && atom_tags{cluster.get_atom_tag_list()};
