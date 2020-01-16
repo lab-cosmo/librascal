@@ -58,12 +58,18 @@ namespace rascal {
                      {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
                       {"r_s", {{"value", 0.6}, {"unit", "Å"}}}}},
                     {"species", {"Mg", "Si"}},
-                    {"r_cut", {{"value", 1.1}, {"unit", "Å"}}}};
+                    {"r_cut", {{"value", r_cut}, {"unit", "Å"}}}};
     BehlerFeature<MySymFunType, SymFunTypes...> bf{cut_fun, unit_style,
                                                    raw_params};
   };
 
+  // list of all tested BehlerFeatures
   using Features =
+      boost::mpl::list<BehlerFeatureFixture<SymmetryFunctionType::Gaussian,
+                                            SymmetryFunctionType::Gaussian>>;
+
+  // list of all tested BehlerFeatures defined on pairs
+  using PairFeatures =
       boost::mpl::list<BehlerFeatureFixture<SymmetryFunctionType::Gaussian,
                                             SymmetryFunctionType::Gaussian>>;
 
@@ -92,7 +98,82 @@ namespace rascal {
           .template compute<RepeatedSpecies::FirstTwo, Permutation<2, 0, 1>>(
               manager, G_vals);
     }};
+
+    BOOST_CHECK_THROW(throw_unknown_species_rep(), std::runtime_error);
   }
+
+  using GaussianSymFun = BehlerFeatureFixture<SymmetryFunctionType::Gaussian,
+                                              SymmetryFunctionType::Gaussian>;
+  BOOST_FIXTURE_TEST_CASE(
+      pair_permutation_test,
+      GaussianSymFun) {
+    ManagerFixture<StructureManagerLammps> manager_fix{};
+    auto manager_ptr{
+        make_adapted_manager<AdaptorStrict>(manager_fix.manager, this->r_cut)};
+    auto & manager{*manager_ptr};
+    manager.update();
+    using GVals_t =
+        Property<double, AtomOrder, AdaptorStrict<StructureManagerLammps>>;
+    // results without permutation
+    auto G01_vals{std::make_shared<GVals_t>(manager)};
+    // results with permutation
+    auto G10_vals{std::make_shared<GVals_t>(manager)};
+    // results with equal species
+    auto G11_vals{std::make_shared<GVals_t>(manager)};
+
+    // manual without permutation
+    auto G01_ref{std::make_shared<GVals_t>(manager)};
+    // manual with permutation
+    auto G10_ref{std::make_shared<GVals_t>(manager)};
+    // manual with equal species
+    auto G11_ref{std::make_shared<GVals_t>(manager)};
+
+    this->bf.template compute<RepeatedSpecies::Not, Permutation<2, 0, 1>>(
+        manager, G01_vals);
+    this->bf.template compute<RepeatedSpecies::Not, Permutation<2, 1, 0>>(
+        manager, G10_vals);
+    this->bf.template compute<RepeatedSpecies::All, Permutation<2, 1, 0>>(
+        manager, G11_vals);
+
+
+
+    const double eta{this->raw_params.at("params")
+                         .at("eta")
+                         .at("value")
+                         .template get<double>()};
+    const double r_s{this->raw_params.at("params")
+                         .at("r_s")
+                         .at("value")
+                         .template get<double>()};
+
+    G01_ref->resize();
+    G10_ref->resize();
+    G11_ref->resize();
+    for (auto && atom : manager) {
+      for (auto && pair : atom.pairs()) {
+        double r_ij{manager.get_distance(pair)};
+        double f_c{.5 * (std::cos(math::PI * r_ij / this->r_cut) + 1)};
+        double G_incr{std::exp(-eta * (r_ij - r_s) * (r_ij - r_s)) * f_c};
+        G01_ref->operator[](atom) += G_incr;
+        G10_ref->operator[](pair) += G_incr;
+        G11_ref->operator[](atom) += G_incr;
+        G11_ref->operator[](pair) += G_incr;
+      }
+    }
+
+    double rel_error{(G01_vals->eigen() - G01_ref->eigen()).norm() /
+                     G01_ref->eigen().norm()};
+    BOOST_CHECK_EQUAL(rel_error, 0);
+
+    rel_error =
+        (G10_vals->eigen() - G10_ref->eigen()).norm() / G10_ref->eigen().norm();
+    BOOST_CHECK_EQUAL(rel_error, 0);
+
+    rel_error =
+        (G11_vals->eigen() - G11_ref->eigen()).norm() / G11_ref->eigen().norm();
+    BOOST_CHECK_EQUAL(rel_error, 0);
+  }
+
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal

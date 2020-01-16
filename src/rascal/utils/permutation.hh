@@ -34,9 +34,10 @@ namespace rascal {
 
   template <size_t Size, size_t First, size_t Second, size_t Third = Size-1>
   struct Permutation {
-    static_assert((First != Second) && (First != Third) && (Size > First) &&
-                      (Size > Second) && (Size > Third) &&
-                      ((Size == 2) || ((Size == 3) && (Second != Third))),
+    static_assert((First != Second) && (Size > First) && (Size > Second) &&
+                      (Size > Third) &&
+                      ((Size == 2) ||
+                       ((Size == 3) && (Second != Third) && (First != Third))),
                   "Not a valid  pair or triplet permutation");
     static constexpr int leading() { return First; }
     static constexpr int second() { return Second; }

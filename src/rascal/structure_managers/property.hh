@@ -74,6 +74,9 @@ namespace rascal {
     static constexpr bool IsStaticallySized{(NbCol != Eigen::Dynamic) and
                                             (NbRow != Eigen::Dynamic)};
 
+    static constexpr Dim_t NbComponents{
+        std::max(Eigen::Dynamic, NbRow * NbCol)};
+
     //! Empty type for tag dispatching to differenciate between
     //! the Dynamic and Static size case
     struct DynamicSize {};
@@ -210,6 +213,12 @@ namespace rascal {
           std::conditional_t<(IsStaticallySized), StaticSize, DynamicSize>{});
     }
 
+    Eigen::Map<Eigen::Matrix<T, NbComponents, Eigen::Dynamic>> eigen() {
+      return Eigen::Map<Eigen::Matrix<T, NbComponents, Eigen::Dynamic>>{
+          this->values.data(), this->get_nb_comp(),
+          static_cast<Dim_t>(this->size())};
+    }
+ 
    protected:
     void push_back(reference ref, StaticSize) {
       Value::push_in_vector(this->values, ref);

@@ -156,6 +156,7 @@ namespace rascal {
       break;
     }
     case TripletOrder: {
+      throw std::runtime_error("Not yet implemented");
       break;
     }
     default:
