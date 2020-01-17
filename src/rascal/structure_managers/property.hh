@@ -164,7 +164,8 @@ namespace rascal {
     }
 
     template <size_t CallerLayer>
-    const_reference operator[](const ClusterRefKey<Order, CallerLayer> & id) const {
+    const_reference
+    operator[](const ClusterRefKey<Order, CallerLayer> & id) const {
       // You are trying to access a property that does not exist at this depth
       // in the adaptor stack.
       assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
@@ -183,7 +184,7 @@ namespace rascal {
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order_ = Order>
     std::enable_if_t<(Order_ == 1) and (CallerOrder > 1),  // NOLINT
-                     const_reference>                            // NOLINT
+                     const_reference>                      // NOLINT
     operator[](const ClusterRefKey<CallerOrder, CallerLayer> & id) const {
       // #BUG8486@(all) we can just use the managers function to get the
       // corresponding cluster index, no need to save this in the cluster
@@ -218,7 +219,7 @@ namespace rascal {
           this->values.data(), this->get_nb_comp(),
           static_cast<Dim_t>(this->size())};
     }
- 
+
    protected:
     void push_back(reference ref, StaticSize) {
       Value::push_in_vector(this->values, ref);

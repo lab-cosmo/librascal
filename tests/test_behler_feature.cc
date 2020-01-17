@@ -245,16 +245,19 @@ namespace rascal {
     BOOST_CHECK_EQUAL(rel_error, 0);
 
     // Test eval of derivatives
-    rel_error = (dG01_derivatives->eigen() - dG01_ref_derivatives->eigen()).norm() /
-                dG01_ref_derivatives->eigen().norm();
+    rel_error =
+        (dG01_derivatives->eigen() - dG01_ref_derivatives->eigen()).norm() /
+        dG01_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
 
-    rel_error = (dG10_derivatives->eigen() - dG10_ref_derivatives->eigen()).norm() /
-                dG10_ref_derivatives->eigen().norm();
+    rel_error =
+        (dG10_derivatives->eigen() - dG10_ref_derivatives->eigen()).norm() /
+        dG10_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
 
-    rel_error = (dG11_derivatives->eigen() - dG11_ref_derivatives->eigen()).norm() /
-                dG11_ref_derivatives->eigen().norm();
+    rel_error =
+        (dG11_derivatives->eigen() - dG11_ref_derivatives->eigen()).norm() /
+        dG11_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
   }
 

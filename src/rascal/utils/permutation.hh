@@ -66,7 +66,7 @@ namespace rascal {
         return -1 * direction_vector;
       } else {
         return 1 * direction_vector;
-      };
+      }
     }
 
     template <typename StructureManager, typename Cluster,

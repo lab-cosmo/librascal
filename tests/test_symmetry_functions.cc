@@ -26,10 +26,11 @@
  *
  */
 
-#include "rascal/representations/symmetry_functions.hh"
 #include "behler_fixtures.hh"
-#include "rascal/utils/json_io.hh"
 #include "test_structure.hh"
+
+#include "rascal/representations/symmetry_functions.hh"
+#include "rascal/utils/json_io.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
@@ -54,7 +55,6 @@ namespace rascal {
   }
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test, Fix, SymmetryFunctions_t, Fix) {
-
     BOOST_CHECK_NO_THROW(this->sym_fun.f_sym(this->r_ij));
     BOOST_CHECK_NO_THROW(this->sym_fun.df_sym(this->r_ij));
 
