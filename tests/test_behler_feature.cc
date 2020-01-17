@@ -151,6 +151,13 @@ namespace rascal {
     // manual with equal species
     auto G11_ref{std::make_shared<GVals_t>(manager)};
 
+    // results with derivative without permutation
+    auto dG01_ref_derivatives{std::make_shared<dGVals_t>(manager)};
+    // results with permutation
+    auto dG10_ref_derivatives{std::make_shared<dGVals_t>(manager)};
+    // results with equal species
+    auto dG11_ref_derivatives{std::make_shared<dGVals_t>(manager)};
+
     this->bf.template compute<RepeatedSpecies::Not, Permutation<2, 0, 1>>(
         manager, G01_vals);
     this->bf.template compute<RepeatedSpecies::Not, Permutation<2, 1, 0>>(
@@ -177,18 +184,41 @@ namespace rascal {
     G01_ref->resize();
     G10_ref->resize();
     G11_ref->resize();
+
+    dG01_ref_derivatives->resize();
+    dG10_ref_derivatives->resize();
+    dG11_ref_derivatives->resize();
     for (auto && atom : manager) {
       for (auto && pair : atom.pairs()) {
         double r_ij{manager.get_distance(pair)};
         double f_c{.5 * (std::cos(math::PI * r_ij / this->r_cut) + 1)};
-        double G_incr{std::exp(-eta * (r_ij - r_s) * (r_ij - r_s)) * f_c};
+        double f_s{
+            std::exp(-eta * (r_ij - r_s) * (r_ij - r_s))};  // 's' for sym
+        double G_incr{f_s * f_c};
         G01_ref->operator[](atom) += G_incr;
         G10_ref->operator[](pair) += G_incr;
         G11_ref->operator[](atom) += G_incr;
         G11_ref->operator[](pair) += G_incr;
+
+        double df_c{-.5 * (math::PI * r_ij / this->r_cut) *
+                    std::sin(math::PI * r_ij / this->r_cut)};
+
+        double df_s{-2 * eta * (r_ij - r_s) * f_s};
+
+        auto && dG_incr{manager.get_direction_vector(pair) *
+                        (df_s * f_c + f_s * df_c)};
+
+        int flip_direction{-1};
+        dG01_ref_derivatives->operator[](atom) += dG_incr;
+        dG01_ref_derivatives->operator[](pair) -= dG_incr;
+        dG10_ref_derivatives->operator[](pair) += flip_direction * dG_incr;
+        dG10_ref_derivatives->operator[](atom) -= flip_direction * dG_incr;
+        dG11_ref_derivatives->operator[](atom) += 2 * dG_incr;
+        dG11_ref_derivatives->operator[](pair) -= 2 * dG_incr;
       }
     }
 
+    // Test eval of just the values
     double rel_error{(G01_vals->eigen() - G01_ref->eigen()).norm() /
                      G01_ref->eigen().norm()};
     BOOST_CHECK_EQUAL(rel_error, 0);
@@ -199,6 +229,32 @@ namespace rascal {
 
     rel_error =
         (G11_vals->eigen() - G11_ref->eigen()).norm() / G11_ref->eigen().norm();
+    BOOST_CHECK_EQUAL(rel_error, 0);
+
+    // Test eval of values when both values and derivatives are computed
+    rel_error = (G01_vals2->eigen() - G01_ref->eigen()).norm() /
+                G01_ref->eigen().norm();
+    BOOST_CHECK_EQUAL(rel_error, 0);
+
+    rel_error = (G10_vals2->eigen() - G10_ref->eigen()).norm() /
+                G10_ref->eigen().norm();
+    BOOST_CHECK_EQUAL(rel_error, 0);
+
+    rel_error = (G11_vals2->eigen() - G11_ref->eigen()).norm() /
+                G11_ref->eigen().norm();
+    BOOST_CHECK_EQUAL(rel_error, 0);
+
+    // Test eval of derivatives
+    rel_error = (dG01_derivatives->eigen() - dG01_ref_derivatives->eigen()).norm() /
+                dG01_ref_derivatives->eigen().norm();
+    BOOST_CHECK_EQUAL(rel_error, 0);
+
+    rel_error = (dG10_derivatives->eigen() - dG10_ref_derivatives->eigen()).norm() /
+                dG10_ref_derivatives->eigen().norm();
+    BOOST_CHECK_EQUAL(rel_error, 0);
+
+    rel_error = (dG11_derivatives->eigen() - dG11_ref_derivatives->eigen()).norm() /
+                dG11_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
   }
 

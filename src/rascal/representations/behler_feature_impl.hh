@@ -211,7 +211,8 @@ namespace rascal {
 
           auto && dG_incr_r{(sym_fun_value * cut_fun_derivative +
                              sym_fun_derivative * cut_fun_value)};
-          auto && dG_incr{dG_incr_r * directions[pair]};
+          auto && dG_incr{dG_incr_r *
+                          Permutation::flip_direction(directions[pair])};
 
           auto && atom_cluster_indices{neigh_to_i_atom[pair]};
           auto && i_atom{manager[atom_cluster_indices(Permutation::leading())]};

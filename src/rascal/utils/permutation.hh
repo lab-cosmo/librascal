@@ -32,7 +32,7 @@
 
 namespace rascal {
 
-  template <size_t Size, size_t First, size_t Second, size_t Third = Size-1>
+  template <size_t Size, size_t First, size_t Second, size_t Third = Size - 1>
   struct Permutation {
     static_assert((First != Second) && (Size > First) && (Size > Second) &&
                       (Size > Third) &&
@@ -50,10 +50,25 @@ namespace rascal {
     static int leading(StructureManager & manager, const Cluster & cluster) {
       return manager.get_atom_index(cluster.get_atom_tag_list(leading()));
     }
+
     template <typename StructureManager, typename Cluster>
     static int second(StructureManager & manager, const Cluster & cluster) {
       return manager.get_atom_index(cluster.get_atom_tag_list(second()));
     }
+
+    template <class Derived, bool IsPair = (Size == PairOrder),
+              std::enable_if_t<IsPair, int> = 0>
+    static auto
+    flip_direction(const Eigen::MatrixBase<Derived> & direction_vector)
+        -> decltype(1 * direction_vector) {
+      static_assert(Size == PairOrder, "IsPair is a SFINAE, don't touch");
+      if (First > Second) {
+        return -1 * direction_vector;
+      } else {
+        return 1 * direction_vector;
+      };
+    }
+
     template <typename StructureManager, typename Cluster,
               bool IsTriplet = (Size == 3)>
     static std::enable_if_t<IsTriplet, int> third(StructureManager & manager,
