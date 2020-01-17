@@ -194,8 +194,10 @@ namespace rascal {
       -> std::tuple<Property_t<StructureManager> &,
                     Property_t<StructureManager> &> {
     this->compute(manager, Evaluation::Derivative);
-    return std::make_tuple(this->get_property(manager, Evaluation::Value),
-                           this->get_property(manager, Evaluation::Derivative));
+    return std::tuple<Property_t<StructureManager> &,
+                      Property_t<StructureManager> &>{
+        this->get_property(manager, Evaluation::Value),
+        this->get_property(manager, Evaluation::Derivative)};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -260,8 +262,9 @@ namespace rascal {
 
       for (auto && atom : manager) {
         for (auto && pair : atom.pairs()) {
-          std::tie(value_property[pair], property[pair]) =
-              std::tuple_cat(typed_this.df_c(manager.get_distance(pair)));
+          auto && tup {typed_this.df_c(manager.get_distance(pair))};
+          value_property[pair] = std::get<0>(tup);
+          property[pair] = std::get<1>(tup);
         }
       }
       property.set_updated_status(true);

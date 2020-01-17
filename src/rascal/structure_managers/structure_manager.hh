@@ -629,6 +629,15 @@ namespace rascal {
       return this->get_previous_manager()->get_distance();
     }
 
+    // gets a fully typed ref to the highest distance property in the stack
+    template <bool HasDirectionVectors = traits::HasDirectionVectors,
+              typename std::enable_if_t<HasDirectionVectors, int> = 0>
+    decltype(auto) get_direction_vector() {
+      static_assert(HasDirectionVectors == traits::HasDirectionVectors,
+                    "The manager does not have direction vectors.");
+      return this->get_previous_manager()->get_direction_vector();
+    }
+
     template <size_t Order, size_t Layer,
               bool HasDistances = traits::HasDistances,
               typename std::enable_if_t<HasDistances, int> = 0>

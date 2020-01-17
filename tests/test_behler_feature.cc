@@ -102,24 +102,47 @@ namespace rascal {
     BOOST_CHECK_THROW(throw_unknown_species_rep(), std::runtime_error);
   }
 
+  /**
+   * Tests evaluation of a pair behler feature including permutation, and
+   * compares results to independently computed reference values on a half
+   * neighbour list
+   */
   using GaussianSymFun = BehlerFeatureFixture<SymmetryFunctionType::Gaussian,
                                               SymmetryFunctionType::Gaussian>;
-  BOOST_FIXTURE_TEST_CASE(
-      pair_permutation_test,
-      GaussianSymFun) {
+  BOOST_FIXTURE_TEST_CASE(pair_permutation_test, GaussianSymFun) {
     ManagerFixture<StructureManagerLammps> manager_fix{};
+    auto half_list_ptr{
+        make_adapted_manager<AdaptorHalfList>(manager_fix.manager)};
     auto manager_ptr{
-        make_adapted_manager<AdaptorStrict>(manager_fix.manager, this->r_cut)};
+        make_adapted_manager<AdaptorStrict>(half_list_ptr, this->r_cut)};
     auto & manager{*manager_ptr};
     manager.update();
     using GVals_t =
-        Property<double, AtomOrder, AdaptorStrict<StructureManagerLammps>>;
+        Property<double, AtomOrder,
+                 AdaptorStrict<AdaptorHalfList<StructureManagerLammps>>>;
+    using dGVals_t =
+        Property<double, AtomOrder,
+                 AdaptorStrict<AdaptorHalfList<StructureManagerLammps>>, 3>;
     // results without permutation
     auto G01_vals{std::make_shared<GVals_t>(manager)};
     // results with permutation
     auto G10_vals{std::make_shared<GVals_t>(manager)};
     // results with equal species
     auto G11_vals{std::make_shared<GVals_t>(manager)};
+
+    // results with derivative without permutation
+    auto G01_vals2{std::make_shared<GVals_t>(manager)};
+    // results with permutation
+    auto G10_vals2{std::make_shared<GVals_t>(manager)};
+    // results with equal species
+    auto G11_vals2{std::make_shared<GVals_t>(manager)};
+
+    // results with derivative without permutation
+    auto dG01_derivatives{std::make_shared<dGVals_t>(manager)};
+    // results with permutation
+    auto dG10_derivatives{std::make_shared<dGVals_t>(manager)};
+    // results with equal species
+    auto dG11_derivatives{std::make_shared<dGVals_t>(manager)};
 
     // manual without permutation
     auto G01_ref{std::make_shared<GVals_t>(manager)};
@@ -135,7 +158,12 @@ namespace rascal {
     this->bf.template compute<RepeatedSpecies::All, Permutation<2, 1, 0>>(
         manager, G11_vals);
 
-
+    this->bf.template compute<RepeatedSpecies::Not, Permutation<2, 0, 1>>(
+        manager, G01_vals2, dG01_derivatives);
+    this->bf.template compute<RepeatedSpecies::Not, Permutation<2, 1, 0>>(
+        manager, G10_vals2, dG10_derivatives);
+    this->bf.template compute<RepeatedSpecies::All, Permutation<2, 1, 0>>(
+        manager, G11_vals2, dG11_derivatives);
 
     const double eta{this->raw_params.at("params")
                          .at("eta")

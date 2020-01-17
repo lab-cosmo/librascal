@@ -58,8 +58,17 @@ namespace rascal {
         return reference(&value, nb_row, nb_col);
       }
 
+      //! get a reference to specific value at row and colum
+      static const_reference get_ref(const T & value, int nb_row, int nb_col) {
+        return const_reference(&value, nb_row, nb_col);
+      }
+
       //! get a reference
       static reference get_ref(T & value) { return reference(&value); }
+      //! get a reference
+      static const_reference get_ref(const T & value) {
+        return const_reference(&value);
+      }
 
       //! push back data into ``property``
       static void push_in_vector(std::vector<T> & vec, reference ref) {

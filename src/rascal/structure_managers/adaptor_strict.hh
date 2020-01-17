@@ -262,6 +262,11 @@ namespace rascal {
     // gets a fully typed ref to the complete distance property
     const Distance_t & get_distance() const { return this->distance; }
 
+    // gets a fully typed ref to the complete direction vector property
+    const DirectionVector_t & get_direction_vector() const {
+      return this->dir_vec;
+    }
+
     //! returns the direction vector between atoms in a given pair
     template <size_t Order, size_t Layer>
     const Vector_ref
