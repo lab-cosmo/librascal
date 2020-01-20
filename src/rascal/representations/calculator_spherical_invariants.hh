@@ -535,8 +535,8 @@ namespace rascal {
 
         // Sum the gradients wrt the neighbour atom position
         // compute the \grad_i p^{j} coeffs
-        std::cout << ">>>>>Center " << center.get_atom_tag()<<" key: "
-                  << spair_type[0] << " "<< spair_type[1] << std::endl;
+        // std::cout << ">>>>>Center " << center.get_atom_tag()<<" key: "
+        //           << spair_type[0] << " "<< spair_type[1] << std::endl;
         for (auto neigh : center.pairs()) {
           auto && atom_j = neigh.get_atom_j();
           auto atom_j_tag = atom_j.get_atom_tag();
@@ -554,25 +554,25 @@ namespace rascal {
           std::vector<Key_t> keys_coef_grad_neigh{grad_neigh_coefficients.get_keys()};
           // \grad_i p^{j}
           auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
-          std::cout << "Center j "<<atom_j_tag<<" keys: ";
-          for (auto key : keys_coef_j) {
-            std::cout << "(";
-            for (auto key_sp : key) {
-              std::cout << key_sp << ", ";
-            }
-            std::cout << "\b\b), ";
-          }
-          std::cout << std::endl;
+          // std::cout << "Center j "<<atom_j_tag<<" keys: ";
+          // for (auto key : keys_coef_j) {
+          //   std::cout << "(";
+          //   for (auto key_sp : key) {
+          //     std::cout << key_sp << ", ";
+          //   }
+          //   std::cout << "\b\b), ";
+          // }
+          // std::cout << std::endl;
 
-          std::cout << "Grad ij keys: ";
-          for (auto key : keys_coef_grad_neigh) {
-            std::cout << "(";
-            for (auto key_sp : key) {
-              std::cout << key_sp << ", ";
-            }
-            std::cout << "\b\b), ";
-          }
-          std::cout << std::endl;
+          // std::cout << "Grad ij keys: ";
+          // for (auto key : keys_coef_grad_neigh) {
+          //   std::cout << "(";
+          //   for (auto key_sp : key) {
+          //     std::cout << key_sp << ", ";
+          //   }
+          //   std::cout << "\b\b), ";
+          // }
+          // std::cout << std::endl;
 
           // \grad_i p^{jab} = \grad_i c^{j a} c^{j b} + c^{j a} \grad_i c^{j b}
           // by definition \grad_i c^{j a} is non zero for one key 'a' so
@@ -655,8 +655,8 @@ namespace rascal {
             }
           }
         }  // for neigh : center
-        std::cout <<std::endl;
-        std::cout << "-----------------------------------" <<std::endl;
+        // std::cout <<std::endl;
+        // std::cout << "-----------------------------------" <<std::endl;
         // NOTE(max) the multiplications below have already been done within the
         // species pair loop above -- not sure which way is more efficient
 

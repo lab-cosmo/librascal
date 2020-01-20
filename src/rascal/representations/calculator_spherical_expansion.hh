@@ -1822,7 +1822,7 @@ namespace rascal {
               // grad_i c^{j} = (-1)^{l+1} grad_j c^{ij}
               gradient_neigh_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
-                  max_radial, l_block_size) += parity * pair_gradient_contribution;
+                  max_radial, l_block_size) = parity * pair_gradient_contribution;
               l_block_idx += l_block_size;
               parity *= -1.;
               // clang-format on

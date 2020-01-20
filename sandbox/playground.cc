@@ -60,26 +60,29 @@ using Manager_t = typename ManagerTypeHolder_t::type;
 using ManagerCollection_t =
     typename TypeHolderInjector<ManagerCollection, ManagerTypeList_t>::type;
 using Representation_t = CalculatorSphericalInvariants;
+using Prop_t = typename Representation_t::template Property_t<Manager_t>;
 using PropGrad_t = typename Representation_t::template PropertyGradient_t<Manager_t>;
 
 int main() {
 
-  std::string filename{"../reference_data/inputs/small_molecules-20.json"};
+  std::string filename{"../reference_data/inputs/diamond_2atom.json"};
+  std::string filenamep{"../reference_data/inputs/diamond_2atom_p.json"};
+  std::string filenamem{"../reference_data/inputs/diamond_2atom_m.json"};
 
-  double cutoff{3.};
+  double cutoff{2.5};
 
-  // json hypers{{"max_radial", 2},
-  //             {"max_angular", 2},
-  //             {"compute_gradients", true},
-  //             {"soap_type", "PowerSpectrum"},
-  //             {"normalize", false},
-  //             {"expansion_by_species_method", "environment wise"}};
   json hypers{{"max_radial", 2},
               {"max_angular", 2},
               {"compute_gradients", true},
               {"soap_type", "PowerSpectrum"},
               {"normalize", false},
-              {"expansion_by_species_method", "structure wise"}};
+              {"expansion_by_species_method", "environment wise"}};
+  // json hypers{{"max_radial", 2},
+  //             {"max_angular", 2},
+  //             {"compute_gradients", true},
+  //             {"soap_type", "PowerSpectrum"},
+  //             {"normalize", false},
+  //             {"expansion_by_species_method", "structure wise"}};
 
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
@@ -89,7 +92,7 @@ int main() {
 
   hypers["cutoff_function"] = fc_hypers;
   hypers["gaussian_density"] = sigma_hypers;
-  hypers["radial_contribution"] = {{"type", "DVR"}};
+  hypers["radial_contribution"] = {{"type", "GTO"}};
 
   json kernel_hypers{
         {"zeta", 1}, {"target_type", "Atom"}, {"name", "Cosine"}};
@@ -111,18 +114,30 @@ int main() {
 
   ManagerCollection_t collection{adaptors};
   collection.add_structures(filename, 0, 1);
+  collection.add_structures(filenamep, 0, 1);
+  collection.add_structures(filenamem, 0, 1);
 
   Representation_t soap{hypers};
 
   soap.compute(collection);
-
+  std::cout.precision(10);
+  std::cout.setf(std::ios::scientific);
   for (const auto & manager : collection) {
-    auto & grad{*manager->template get_property<PropGrad_t>(soap.get_gradient_name())};
+    auto & desc{*manager->template get_property<Prop_t>(soap.get_name())};
+    int ii{0};
+    for (auto center : manager) {
+      if (ii == 1) {
+        std::cout << desc[center].get_full_vector().transpose() << std::endl;
+      }
+      ++ii;
+    }
+
+    // auto & grad{*manager->template get_property<PropGrad_t>(soap.get_gradient_name())};
     // math::Vector_t sum(grad.get_keys().size() * grad.get_nb_comp());
     // sum.setZero();
     // auto data = grad.get_raw_data_view();
-    std::cout << grad.sum() << std::endl;
-    std::cout << grad.l1_norm() << std::endl;
+    // std::cout << grad.sum() << std::endl;
+    // std::cout << grad.l1_norm() << std::endl;
     // for (auto center : manager) {
     //   sum += grad.get_dense_row(center.get_atom_ii());
     //   for (auto neigh : center.pairs_with_self_pair()) {

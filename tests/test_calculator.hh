@@ -430,7 +430,7 @@ namespace rascal {
     //     "reference_data/inputs/small_molecule.json",
     //     "reference_data/inputs/methane.json"};
     const std::vector<std::string> filenames{
-        "reference_data/inputs/diamond_2atom.json"};
+        "reference_data/inputs/diamond_2atom_distorted.json"};
     const double cutoff{2.5};
     const double cutoff_skin{0.};
 
@@ -571,9 +571,11 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    // std::vector<json> rep_hypers{
+    //     {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}},
+    //     {{"max_radial", 3}, {"max_angular", 0}, {"compute_gradients", true}}};
     std::vector<json> rep_hypers{
-        {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}},
-        {{"max_radial", 3}, {"max_angular", 0}, {"compute_gradients", true}}};
+        {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}}};
   };
 
   template <typename DataFixture>
@@ -609,15 +611,20 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    // std::vector<json> rep_hypers{{{"max_radial", 2},
+    //                               {"max_angular", 2},
+    //                               {"normalize", true},
+    //                               {"soap_type", "PowerSpectrum"},
+    //                               {"compute_gradients", true}},
+    //                              {{"max_radial", 3},
+    //                               {"max_angular", 0},
+    //                               {"normalize", true},
+    //                               {"soap_type", "RadialSpectrum"},
+    //                               {"compute_gradients", true}}};
     std::vector<json> rep_hypers{{{"max_radial", 2},
                                   {"max_angular", 2},
-                                  {"normalize", true},
+                                  {"normalize", false},
                                   {"soap_type", "PowerSpectrum"},
-                                  {"compute_gradients", true}},
-                                 {{"max_radial", 3},
-                                  {"max_angular", 0},
-                                  {"normalize", true},
-                                  {"soap_type", "RadialSpectrum"},
                                   {"compute_gradients", true}}};
   };
 
@@ -878,14 +885,13 @@ namespace rascal {
       // is nonzero (i.e. where the key has an entry in the structure)
       for (auto neigh : center.pairs()) {
         auto atom_j = neigh.get_atom_j();
-        if (atom_j.get_atom_tag() == center.get_atom_tag()) {
-          continue;
-        }
-        // if (this->structure_manager->is_ghost_atom(neigh)) {
-        //   // Don't compute gradient contributions onto ghost atoms
+        // if (atom_j.get_atom_tag() == center.get_atom_tag()) {
         //   continue;
         // }
-        // auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
         n_entries_neighbours +=
             (gradients_sparse[neigh].get_keys().size() *
              n_entries_per_key);
@@ -902,12 +908,12 @@ namespace rascal {
         result_idx += n_entries_per_key;
       }
       for (auto neigh : center.pairs()) {
-        // if (this->structure_manager->is_ghost_atom(neigh)) {
-        //   // Don't compute gradient contributions onto ghost atoms
+        auto atom_j = neigh.get_atom_j();
+        // if (atom_j.get_atom_tag() == center.get_atom_tag()) {
         //   continue;
         // }
-        auto atom_j = neigh.get_atom_j();
-        if (atom_j.get_atom_tag() == center.get_atom_tag()) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
           continue;
         }
         auto & data_neigh{data_sparse[atom_j]};
@@ -917,7 +923,6 @@ namespace rascal {
         // being taken)
         // The nonzero gradient keys are already indicated in the sparse
         // gradient structure
-        // auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
         auto keys_neigh{gradients_sparse[neigh].get_keys()};
         for (auto & key : keys_neigh) {
           Eigen::Map<Eigen::ArrayXd> data_flat(data_neigh[key].data(),
@@ -953,15 +958,14 @@ namespace rascal {
       size_t n_entries_center{n_entries_per_key * keys_center.size()};
       size_t n_entries_neighbours{0};
       for (auto neigh : center.pairs()) {
-        auto atom_j = neigh.get_atom_j();
-        if (atom_j.get_atom_tag() == center.get_atom_tag()) {
-          continue;
-        }
-        // if (this->structure_manager->is_ghost_atom(neigh)) {
-        //   // Don't compute gradient contributions onto ghost atoms
+        // auto atom_j = neigh.get_atom_j();
+        // if (atom_j.get_atom_tag() == center.get_atom_tag()) {
         //   continue;
         // }
-        // auto swapped_ref{std::move(swap_pair_ref(neigh).front())};
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
         n_entries_neighbours +=
             (gradients_sparse[neigh].get_keys().size() *
              n_entries_per_key);
@@ -984,13 +988,13 @@ namespace rascal {
       }
       for (auto neigh : center.pairs()) {
         auto atom_j = neigh.get_atom_j();
-        if (atom_j.get_atom_tag() == center.get_atom_tag()) {
-          continue;
-        }
-        // if (this->structure_manager->is_ghost_atom(neigh)) {
-        //   // Don't compute gradient contributions onto ghost atoms
+        // if (atom_j.get_atom_tag() == center.get_atom_tag()) {
         //   continue;
         // }
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
         // // We need grad_i c^{ji} -- using just 'neigh' would give us
         // // grad_j c^{ij}, hence the swap
         // auto neigh_swap_images{swap_pair_ref(neigh)};
@@ -1004,10 +1008,10 @@ namespace rascal {
           // // that moves in the finite-difference step
           // for (auto & neigh_swap : neigh_swap_images) {
 
-            Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
-                gradients_neigh[key].data(), 3, n_entries_per_key);
-            grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) +=
-                grad_coeffs_flat;
+          Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
+              gradients_neigh[key].data(), 3, n_entries_per_key);
+          grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
+              grad_coeffs_flat;
           // }
           result_idx += n_entries_per_key;
         }
