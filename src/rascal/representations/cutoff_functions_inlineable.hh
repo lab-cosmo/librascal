@@ -262,7 +262,7 @@ namespace rascal {
 
       for (auto && atom : manager) {
         for (auto && pair : atom.pairs()) {
-          auto && tup {typed_this.df_c(manager.get_distance(pair))};
+          auto && tup{typed_this.df_c(manager.get_distance(pair))};
           value_property[pair] = std::get<0>(tup);
           property[pair] = std::get<1>(tup);
         }

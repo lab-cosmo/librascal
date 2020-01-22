@@ -870,7 +870,7 @@ namespace rascal {
   template <class ManagerImplementation>
   template <size_t Order>
   auto StructureManager<ManagerImplementation>::get_neighbours_to_i_atoms()
-    -> Property<size_t, Order, ManagerImplementation, Order> & {
+      -> Property<size_t, Order, ManagerImplementation, Order> & {
     // does the property exist at this level?
     constexpr auto Layer{
         StructureManager::template cluster_layer_from_order<Order>()};

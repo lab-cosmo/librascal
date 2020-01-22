@@ -116,7 +116,7 @@ namespace rascal {
     // eval
     using Output_t = Property<double, AtomOrder, StructureManager>;
     Output_t & fun_vals{dynamic_cast<Output_t &>(*output)};
-    auto & distances{manager.get_distance()};
+    auto & pair_distances{manager.get_distance()};
 
     auto & neigh_to_i_atom{
         manager
@@ -128,7 +128,8 @@ namespace rascal {
       for (auto && atom : manager) {
         for (auto && pair : atom.pairs()) {
           // compute the increment to the G function value
-          auto && G_incr{this->sym_fun.f_sym(distances[pair]) * cutoffs[pair]};
+          auto && G_incr{this->sym_fun.f_sym(pair_distances[pair]) *
+                         cutoffs[pair]};
 
           auto && atom_cluster_indices{neigh_to_i_atom[pair]};
           auto && i_atom{manager[atom_cluster_indices(Permutation::leading())]};
@@ -187,8 +188,8 @@ namespace rascal {
     OutputDerivative_t & fun_derivatives{
         dynamic_cast<OutputDerivative_t &>(*output_derivatives)};
 
-    auto & distances{manager.get_distance()};
-    auto & directions{manager.get_direction_vector()};
+    auto & pair_distances{manager.get_distance()};
+    auto & pair_directions{manager.get_direction_vector()};
 
     auto & neigh_to_i_atom{
         manager
@@ -201,7 +202,7 @@ namespace rascal {
       for (auto && atom : manager) {
         for (auto && pair : atom.pairs()) {
           // compute the increment to the G function value
-          auto && sym_fun_tup{this->sym_fun.df_sym(distances[pair])};
+          auto && sym_fun_tup{this->sym_fun.df_sym(pair_distances[pair])};
           double & sym_fun_value{std::get<0>(sym_fun_tup)};
           double & sym_fun_derivative{std::get<1>(sym_fun_tup)};
           double & cut_fun_value{cutoff_values[pair]};
@@ -212,7 +213,7 @@ namespace rascal {
           auto && dG_incr_r{(sym_fun_value * cut_fun_derivative +
                              sym_fun_derivative * cut_fun_value)};
           auto && dG_incr{dG_incr_r *
-                          Permutation::flip_direction(directions[pair])};
+                          Permutation::flip_direction(pair_directions[pair])};
 
           auto && atom_cluster_indices{neigh_to_i_atom[pair]};
           auto && i_atom{manager[atom_cluster_indices(Permutation::leading())]};

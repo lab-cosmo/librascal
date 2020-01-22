@@ -378,10 +378,10 @@ namespace rascal {
   AdaptorStrict<ManagerImplementation>::AdaptorStrict(
       std::shared_ptr<ManagerImplementation> manager, double cutoff)
       : manager{std::move(manager)},
-        distance{
-            *this->template get_property<Distance_t>("distance", true, true)},
-        dir_vec{*this->template get_property<DirectionVector_t>("dir_vec", true,
-                                                                true)},
+        distance{*this->template get_property<Distance_t>("pair_distance", true,
+                                                          true)},
+        dir_vec{*this->template get_property<DirectionVector_t>("pair_dir_vec",
+                                                                true, true)},
         cutoff{cutoff}, atom_tag_list{},
         neighbours_cluster_index{}, nb_neigh{}, offsets{}
 
