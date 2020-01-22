@@ -344,7 +344,7 @@ namespace rascal {
      * property when Order == 1
      */
     const bool exclude_ghosts;
-  };  // namespace rascal
+  };
 
 }  // namespace rascal
 

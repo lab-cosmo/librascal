@@ -333,8 +333,49 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * fixture for providing a neighbour list from a simple manager, which is read
-   * from a JSON file. This fixture provides iteration over the variable
+   * simplest possible manager with more than 1 triplet
+   */
+  struct ManagerFixtureSimple4 {
+    using Manager_t = StructureManagerCenters;
+    ManagerFixtureSimple4()
+        : pbc{{false, false, false}}, cell(3, 3), positions(3, 4),
+          atom_types(4), cutoff{1.25}, natoms{4},
+          manager{make_structure_manager<Manager_t>()} {
+      // clang-format off
+      this->cell << 5.0, 0.0, 0.0,
+                    0.0, 5.0, 0.0,
+                    0.0, 0.0, 5.0;
+
+      this->positions << 0.00, 0.00, 0.00,
+                         0.50, 1.00, 0.00,
+                         1.00, 0.00, 0.00,
+                         1.50, 1.00, 0.00;
+      // clang-format on
+
+      this->atom_types << 1, 1, 1, 1;
+      using PBC_t = Eigen::Map<Eigen::Matrix<int, 3, 1>>;
+
+      this->manager->update(this->positions, this->atom_types, this->cell,
+                            PBC_t{this->pbc.data()});
+    }
+
+    ~ManagerFixtureSimple4() {}
+
+    std::array<int, 3> pbc;
+    Eigen::MatrixXd cell;
+    Eigen::MatrixXd positions;
+    Eigen::VectorXi atom_types;
+
+    double cutoff;
+
+    const int natoms;
+    std::shared_ptr<Manager_t> manager;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * fixture for providing a neighbour list from a simple manager, which is
+   * read from a JSON file. This fixture provides iteration over the variable
    * ``pair_manager``
    */
   template <class ManagerImplementation>
@@ -361,7 +402,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * fixture for providing a neighbour list from a manager which is built with
-   * positions in its fixture. this fixture provides iteration over the variable
+   * positions in its fixture. this fixture provides iteration over the
+   * variable
    * ``pair_manager``.
    */
   template <class ManagerImplementation>
@@ -437,9 +479,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * A simple manager using ManagerCenters to check the neighbourlist algorithm
-   * with simple positions and a periodicity only in x-direction. This manager
-   * is also used to check the species filter.
+   * A simple manager using ManagerCenters to check the neighbourlist
+   * algorithm with simple positions and a periodicity only in x-direction.
+   * This manager is also used to check the species filter.
    */
   struct ManagerFixtureSimple : public ManagerFixture<StructureManagerCenters> {
     ManagerFixtureSimple()
@@ -477,7 +519,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * A manager using ManagerCenters to check the neighbourlist algorithm
-   * with a very skewed cell and positions right at the edge of the periodicity
+   * with a very skewed cell and positions right at the edge of the
+   * periodicity
    */
   struct ManagerFixtureSkewDeltaRcut
       : public ManagerFixture<StructureManagerCenters> {
@@ -528,8 +571,8 @@ namespace rascal {
    * A fixture to check the neighbourlist algorithm with increasing skewedness
    * of the cell as well as a shift of the positions. The manager is built and
    * constructed inside the loop in the test: it skews the cells, therefore it
-   * is not templated. The initial cutoff here is chosen to be smaller than the
-   * atomic distance in this case to ensure to start with zero neighbours.
+   * is not templated. The initial cutoff here is chosen to be smaller than
+   * the atomic distance in this case to ensure to start with zero neighbours.
    */
   struct ManagerFixtureSkew {
     ManagerFixtureSkew()

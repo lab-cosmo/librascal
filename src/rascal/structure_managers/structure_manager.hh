@@ -872,7 +872,8 @@ namespace rascal {
   auto StructureManager<ManagerImplementation>::get_neighbours_to_i_atoms()
     -> Property<size_t, Order, ManagerImplementation, Order> & {
     // does the property exist at this level?
-    constexpr auto Layer{this->template cluster_layer_from_order<Order>()};
+    constexpr auto Layer{
+        StructureManager::template cluster_layer_from_order<Order>()};
     std::stringstream identifier{};
     identifier << "neighbours_to_i_atoms_Order=" << Order << "_Layer=" << Layer;
     bool property_at_wrong_layer{

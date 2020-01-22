@@ -29,6 +29,8 @@
 
 #include "test_properties.hh"
 
+#include "rascal/structure_managers/property_lookup_keys.hh"
+
 #include <boost/test/unit_test.hpp>
 
 constexpr double TOLERANCE = 1e-10;
@@ -1018,6 +1020,106 @@ namespace rascal {
         }
       }
     }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_FIXTURE_TEST_CASE(storing_cluster_ref_keys_for_lookup_test,
+                          ManagerFixtureSimple4) {
+    auto double_pair_manager{make_adapted_manager<AdaptorNeighbourList>(
+        this->manager, this->cutoff)};
+    auto loose_pair_manager{
+        make_adapted_manager<AdaptorHalfList>(double_pair_manager)};
+    auto pair_manager{
+        make_adapted_manager<AdaptorStrict>(loose_pair_manager, this->cutoff)};
+    using PairManager_t = typename decltype(pair_manager)::element_type;
+    auto triplet_manager{
+        make_adapted_manager<AdaptorMaxOrder>(pair_manager)};
+
+    triplet_manager->update();
+    auto & pair_to_i_atom{
+        triplet_manager->template get_neighbours_to_i_atoms<PairOrder>()};
+    auto & trip_to_i_atom{
+        triplet_manager->template get_neighbours_to_i_atoms<TripletOrder>()};
+
+    constexpr auto AtomLayer{
+        decltype(triplet_manager)::element_type::
+            template cluster_layer_from_order<AtomOrder>()};
+    using AtomClusterRef_t = ClusterRefKey<AtomOrder, AtomLayer>;
+    constexpr auto PairLayer{
+        decltype(triplet_manager)::element_type::
+            template cluster_layer_from_order<PairOrder>()};
+    using StoredRefKey_t = ClusterRefKey<PairOrder, PairLayer>;
+
+    using Key_t = std::array<AtomClusterRef_t, PairOrder>;
+    std::map<Key_t, StoredRefKey_t> reverse_map{};
+
+
+    for (auto && atom : pair_manager) {
+      for (auto && pair : atom.pairs()) {
+        auto && atom_cluster_indices{pair_to_i_atom[pair]};
+        auto && i_atom_id{atom_cluster_indices(0)};
+        auto && j_atom_id{atom_cluster_indices(1)};
+
+        Key_t key{*triplet_manager->get_iterator_at(i_atom_id),
+                  *triplet_manager->get_iterator_at(j_atom_id)};
+        std::pair<Key_t, StoredRefKey_t> key_val(
+            key, dynamic_cast<StoredRefKey_t &>(pair));
+
+        reverse_map.insert(key_val);
+      }
+    }
+
+    using Clusters =
+        PropertyLookupKeys<StoredRefKey_t, TripletOrder,
+                           decltype(triplet_manager)::element_type, 2>;
+
+    auto & clusters{triplet_manager->template create_property<Clusters>(
+        "pair_cluster_indices")};
+
+    clusters.resize();
+
+    auto & r_ij_r_ik_r_jk{triplet_manager->template create_property<Property<
+        double, TripletOrder, decltype(triplet_manager)::element_type, 3>>(
+        "r_ij_r_ik_r_jk")};
+    r_ij_r_ik_r_jk.resize();
+    auto & distances = triplet_manager.get_distance();
+    for (auto && atom : triplet_manager) {
+      for (auto && trip : atom.triplets()) {
+        auto && atom_cluster_indices{trip_to_i_atom[trip]};
+        auto && i_atom_id{atom_cluster_indices(0)};
+        auto && j_atom_id{atom_cluster_indices(1)};
+        auto && k_atom_id{atom_cluster_indices(2)};
+        std::cout << trip.get_atom_tag_list()[0] << ", "
+                  << trip.get_atom_tag_list()[1] << ", "
+                  << trip.get_atom_tag_list()[2] << std::endl;
+
+        AtomClusterRef_t i_atom{triplet_manager->operator[](i_atom_id)};
+        AtomClusterRef_t j_atom{triplet_manager->operator[](j_atom_id)};
+        AtomClusterRef_t k_atom{triplet_manager->operator[](k_atom_id)};
+
+        auto & p_ij{reverse_map[{i_atom, j_atom}]};
+        auto & p_ik{reverse_map[{i_atom, k_atom}]};
+
+        auto && pairs{clusters[trip]};
+        pairs[0] = p_ij;
+        pairs[1] = p_ik;
+
+        auto && dists{r_ij_r_ik_r_jk[trip]};
+        dists(0) = distances[p_ij];
+        dists(1) = distances[p_ik];
+        dists(2) = (triplet_manager->position(trip.get_atom_tag_list()[2]) -
+                    triplet_manager->position(trip.get_atom_tag_list()[1]))
+                       .norm();
+      }
+    }
+
+    auto & r_ij_r_ik_r_jk_ref{
+        triplet_manager->template create_property<Property<
+            double, TripletOrder, decltype(triplet_manager)::element_type, 3>>(
+            "r_ij_r_ik_r_jk_ref")};
+
+    using Dists_t = Eigen::Matrix<double, 3, 1>;
+    r_ij_r_ik_r_jk_ref.push_back(Dists_t::Zero());
   }
 
   BOOST_AUTO_TEST_SUITE_END();

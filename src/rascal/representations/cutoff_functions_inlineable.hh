@@ -118,7 +118,7 @@ namespace rascal {
     inline void compute_helper(StructureManager & manager,
                                const Evaluation & evaluation) const;
     //! cutoff radii
-    const double cutoff;
+    double cutoff;
   };
 
   /**

@@ -239,8 +239,9 @@ namespace rascal {
 
     using AtomIndex_t = std::array<int, Order>;
 
-    //! Default constructor
-    ClusterRefKey() = delete;
+    //! Default constructor for resizing containers of ClusterRefKey
+    ClusterRefKey()
+        : Parent{Order, Layer}, atom_tag_list{}, cluster_indices{nullptr} {}
 
     /**
      * direct constructor. Initialized with an array of atoms indices,
@@ -251,7 +252,9 @@ namespace rascal {
           cluster_indices{cluster_indices.data()} {}
 
     //! Copy constructor
-    ClusterRefKey(const ClusterRefKey & other) = default;
+    ClusterRefKey(const ClusterRefKey & other)
+        : Parent{other}, atom_tag_list{other.atom_tag_list},
+          cluster_indices{other.cluster_indices.data()} {}
 
     //! Move constructor
     ClusterRefKey(ClusterRefKey && other) = default;
@@ -260,10 +263,19 @@ namespace rascal {
     virtual ~ClusterRefKey() = default;
 
     //! Copy assignment operator
-    ClusterRefKey & operator=(const ClusterRefKey & other) = delete;
+    ClusterRefKey & operator=(const ClusterRefKey & other) {
+      Parent::operator=(other);
+      this->atom_tag_list = other.atom_tag_list;
+      new (&this->cluster_indices)
+          IndexConstArray{other.cluster_indices.data()};
+      return *this;
+    }
 
     //! Move assignment operator
-    ClusterRefKey & operator=(ClusterRefKey && other) = default;
+    ClusterRefKey & operator=(ClusterRefKey && other) {
+      this->operator=(other);
+      return *this;
+    }
 
     //! returns the atom tags of the current cluster
     const AtomIndex_t & get_atom_tag_list() const {
@@ -299,6 +311,11 @@ namespace rascal {
 
     //! returns the layer of the current cluster
     constexpr static size_t cluster_layer() { return Layer; }
+
+    //! comparison required by use as map key
+    bool operator<(const ClusterRefKey & other) const {
+      return this->cluster_indices(0) < other.cluster_indices(0);
+    }
 
    protected:
     /**

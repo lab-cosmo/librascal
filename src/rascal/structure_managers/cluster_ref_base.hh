@@ -38,7 +38,7 @@ namespace rascal {
     ClusterRefBase() = delete;
 
     //! Copy constructor
-    ClusterRefBase(const ClusterRefBase & other) = delete;
+    ClusterRefBase(const ClusterRefBase & other) = default;
 
     //! Move constructor
     ClusterRefBase(ClusterRefBase && other) = default;
@@ -47,20 +47,20 @@ namespace rascal {
     virtual ~ClusterRefBase() = default;
 
     //! Copy assignment operator
-    ClusterRefBase & operator=(const ClusterRefBase & other) = delete;
+    ClusterRefBase & operator=(const ClusterRefBase & other) = default;
 
     //! Move assignment operator
-    ClusterRefBase & operator=(ClusterRefBase && other) = delete;
+    ClusterRefBase & operator=(ClusterRefBase && other) = default;
 
     //! returns the order of the cluster
-    size_t get_order() const { return this->order; }
+    const size_t & get_order() const { return this->order; }
 
     //! returns the layer of the cluster
-    size_t get_cluster_layer() const { return this->layer; }
+    const size_t & get_cluster_layer() const { return this->layer; }
 
    protected:
-    const size_t order;  //!< cluster order: atom, pair, ...
-    const size_t layer;  //!< cluster layer
+    size_t order;  //!< cluster order: atom, pair, ...
+    size_t layer;  //!< cluster layer
 
     //! constructor
     ClusterRefBase(size_t order, size_t layer) : order{order}, layer{layer} {}
