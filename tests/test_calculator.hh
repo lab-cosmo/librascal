@@ -570,7 +570,7 @@ namespace rascal {
     std::vector<json> density_hypers{
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "DVR"}}};
     // std::vector<json> rep_hypers{
     //     {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}},
     //     {{"max_radial", 3}, {"max_angular", 0}, {"compute_gradients", true}}};
@@ -916,6 +916,11 @@ namespace rascal {
           // Don't compute gradient contributions onto ghost atoms
           continue;
         }
+        // std::cout << "center " << center.get_atom_tag() << ", "
+        //           << center.get_cluster_index()
+        //           << " neigh " << atom_j.get_atom_tag() << ", "
+        //           << atom_j.get_cluster_index()
+        //           << std::endl;
         auto & data_neigh{data_sparse[atom_j]};
         // The neighbour gradient (i =/= j) only contributes to certain species
         // channels (keys), in the case of SOAP and SphExpn those keys

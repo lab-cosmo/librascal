@@ -1822,12 +1822,19 @@ namespace rascal {
               // grad_i c^{j} = (-1)^{l+1} grad_j c^{ij}
               gradient_neigh_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
-                  max_radial, l_block_size) = parity * pair_gradient_contribution;
+                  max_radial, l_block_size) += parity * pair_gradient_contribution;
               l_block_idx += l_block_size;
               parity *= -1.;
               // clang-format on
             }  // for (angular_l)
           }    // for cartesian_idx
+
+          // if (not manager->is_ghost_atom(neigh)) {
+          //   std::cout << "Center: " << atom_i_tag << " Neigh: " << atom_j_tag
+          //             << " dir: " << direction.transpose() << std::endl
+          //             << gradient_neigh_by_type << std::endl
+          //             << "----------------" << std::endl;
+          // }
 
           // half list branch for computing grad_j c^{j} using
           // grad_j c^{ji} = (-1)^{l} grad_j c^{ij}
@@ -1867,6 +1874,22 @@ namespace rascal {
             ->template finalize_coefficients_der<n_spatial_dimensions>(
                 expansions_coefficients_gradient, center);
       }
+
+
+      // for (auto neigh : center.pairs()) {
+
+      //   Key_t key{6};
+      //   math::Matrix_t direction = manager->get_direction_vector(neigh);
+      //   if (not manager->is_ghost_atom(neigh)) {
+      //     math::Matrix_t gradient_neigh_by_type = expansions_coefficients_gradient[neigh][key];
+      //     std::cout << "Center: " << center.get_atom_tag()
+      //               << " Neigh: " << neigh.get_atom_tag()
+      //               << " dir: " << direction.transpose() << std::endl
+      //               << gradient_neigh_by_type << std::endl
+      //               << "----------------" << std::endl;
+      //   }
+      // }
+
     }  // for (center : manager)
   }    // compute()
 

@@ -288,6 +288,10 @@ namespace rascal {
     size_t get_cluster_index(const size_t layer) const {
       return this->cluster_indices(layer);
     }
+    //! returns the cluster's index at the current cluster layer
+    size_t get_cluster_index() const {
+      return this->cluster_indices(this->cluster_layer());
+    }
 
     //! returns the complete cluster indices (stacking history)
     IndexConstArray get_cluster_indices() const {
