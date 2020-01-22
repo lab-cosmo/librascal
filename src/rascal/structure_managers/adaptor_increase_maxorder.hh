@@ -54,7 +54,7 @@ namespace rascal {
   struct StructureManager_traits<AdaptorMaxOrder<ManagerImplementation>> {
     using parent_traits = StructureManager_traits<ManagerImplementation>;
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
-    constexpr static bool HasDistances{false};
+    constexpr static bool HasDistances{parent_traits::HasDistances};
     constexpr static bool HasDirectionVectors{
         parent_traits::HasDirectionVectors};
     constexpr static int Dim{parent_traits::Dim};
@@ -425,6 +425,7 @@ namespace rascal {
   void AdaptorMaxOrder<ManagerImplementation>::update_self_helper() {
     static_assert(traits::MaxOrder > 2,
                   "No neighbourlist present; extension not possible.");
+
     using ForwardClusterIndices =
         ForwardClusterIndices<2, traits::NeighbourListType, IsCompactCluster,
                               true>;
@@ -432,7 +433,7 @@ namespace rascal {
                                                      traits::MaxOrder - 1 == 2};
     // size_t turns out to give 0 if false and 1 if true. When adding Order==3
     // to the manager the input manager could have center pairs and
-    // ClusterStart avoid iterating over those
+    // ClusterStart avoids iterating over those
     static constexpr size_t ClusterStart{
         static_cast<size_t>(HasCenterPairAndIsOrderTwo)};
 

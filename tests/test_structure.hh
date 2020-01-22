@@ -339,17 +339,16 @@ namespace rascal {
     using Manager_t = StructureManagerCenters;
     ManagerFixtureSimple4()
         : pbc{{false, false, false}}, cell(3, 3), positions(3, 4),
-          atom_types(4), cutoff{1.25}, natoms{4},
+          atom_types(4), cutoff{1.2}, natoms{4},
           manager{make_structure_manager<Manager_t>()} {
       // clang-format off
       this->cell << 5.0, 0.0, 0.0,
                     0.0, 5.0, 0.0,
                     0.0, 0.0, 5.0;
 
-      this->positions << 0.00, 0.00, 0.00,
-                         0.50, 1.00, 0.00,
-                         1.00, 0.00, 0.00,
-                         1.50, 1.00, 0.00;
+      this->positions << 0.0, 0.5, 1.0, 1.5,  // x
+                         0.0, 1.0, 0.0, 1.0,  // y
+                         0.0, 0.0, 0.0, 0.0;  // z
       // clang-format on
 
       this->atom_types << 1, 1, 1, 1;

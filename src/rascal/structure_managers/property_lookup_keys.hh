@@ -55,7 +55,7 @@ namespace rascal {
     //! constructor
     PropertyLookupKeys(Manager & manager,
                        const std::string & metadata = "no metadata",
-                       const bool  /*dummy_exclude_ghosts*/ = false)
+                       const bool /*dummy_exclude_ghosts*/ = false)
         : Parent{manager,
                  NbKeys,
                  1,
@@ -78,9 +78,7 @@ namespace rascal {
     //! Move assignment operator
     PropertyLookupKeys & operator=(PropertyLookupKeys && other) = default;
 
-    const std::string & get_type_info() const {
-      return this->type_name;
-    }
+    const std::string & get_type_info() const { return this->type_name; }
 
     Manager_t & get_manager() {
       return static_cast<Manager_t &>(this->base_manager);
@@ -113,7 +111,7 @@ namespace rascal {
      */
     void clear() { this->values.clear(); }
 
-    template<class StoredClusterRefKeyArray>
+    template <class StoredClusterRefKeyArray>
     void push_back(StoredClusterRefKeyArray && val) {
       this->values.push_back(std::forward<StoredClusterRefKeyArray>(val));
     }
@@ -141,7 +139,7 @@ namespace rascal {
     }
 
     //! Accessor for property by index for dynamically sized properties
-    const_reference operator[](const size_t & index) const  {
+    const_reference operator[](const size_t & index) const {
       return this->values[index];
     }
 
@@ -151,4 +149,4 @@ namespace rascal {
   };
 }  // namespace rascal
 
-#endif /* SRC_RASCAL_STRUCTURE_MANAGERS_PROPERTY_LOOKUP_KEYS_HH_ */
+#endif  // SRC_RASCAL_STRUCTURE_MANAGERS_PROPERTY_LOOKUP_KEYS_HH_

@@ -1023,6 +1023,11 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+   * Tests the lookup of clusters in a cluster_property with the example of a
+   * reverse map for pairs. This is needed e.g. for calculating the distances of
+   * all the atoms in a triplet.
+   */
   BOOST_FIXTURE_TEST_CASE(storing_cluster_ref_keys_for_lookup_test,
                           ManagerFixtureSimple4) {
     auto double_pair_manager{make_adapted_manager<AdaptorNeighbourList>(
@@ -1031,11 +1036,10 @@ namespace rascal {
         make_adapted_manager<AdaptorHalfList>(double_pair_manager)};
     auto pair_manager{
         make_adapted_manager<AdaptorStrict>(loose_pair_manager, this->cutoff)};
-    using PairManager_t = typename decltype(pair_manager)::element_type;
-    auto triplet_manager{
-        make_adapted_manager<AdaptorMaxOrder>(pair_manager)};
+    auto triplet_manager{make_adapted_manager<AdaptorMaxOrder>(pair_manager)};
 
     triplet_manager->update();
+
     auto & pair_to_i_atom{
         triplet_manager->template get_neighbours_to_i_atoms<PairOrder>()};
     auto & trip_to_i_atom{
@@ -1052,7 +1056,6 @@ namespace rascal {
 
     using Key_t = std::array<AtomClusterRef_t, PairOrder>;
     std::map<Key_t, StoredRefKey_t> reverse_map{};
-
 
     for (auto && atom : pair_manager) {
       for (auto && pair : atom.pairs()) {
@@ -1082,16 +1085,14 @@ namespace rascal {
         double, TripletOrder, decltype(triplet_manager)::element_type, 3>>(
         "r_ij_r_ik_r_jk")};
     r_ij_r_ik_r_jk.resize();
-    auto & distances = triplet_manager.get_distance();
+
+    auto & distances = triplet_manager->get_distance();
     for (auto && atom : triplet_manager) {
       for (auto && trip : atom.triplets()) {
         auto && atom_cluster_indices{trip_to_i_atom[trip]};
         auto && i_atom_id{atom_cluster_indices(0)};
         auto && j_atom_id{atom_cluster_indices(1)};
         auto && k_atom_id{atom_cluster_indices(2)};
-        std::cout << trip.get_atom_tag_list()[0] << ", "
-                  << trip.get_atom_tag_list()[1] << ", "
-                  << trip.get_atom_tag_list()[2] << std::endl;
 
         AtomClusterRef_t i_atom{triplet_manager->operator[](i_atom_id)};
         AtomClusterRef_t j_atom{triplet_manager->operator[](j_atom_id)};
@@ -1113,13 +1114,25 @@ namespace rascal {
       }
     }
 
+    // constructing the reference distances
     auto & r_ij_r_ik_r_jk_ref{
         triplet_manager->template create_property<Property<
             double, TripletOrder, decltype(triplet_manager)::element_type, 3>>(
             "r_ij_r_ik_r_jk_ref")};
-
     using Dists_t = Eigen::Matrix<double, 3, 1>;
-    r_ij_r_ik_r_jk_ref.push_back(Dists_t::Zero());
+    Dists_t dists_ref{1.118033988749895, 1., 1.118033988749895};
+    r_ij_r_ik_r_jk_ref.push_back(dists_ref);
+    r_ij_r_ik_r_jk_ref.push_back(dists_ref);
+
+    for (auto && atom : triplet_manager) {
+      for (auto && trip : atom.triplets()) {
+        auto && dist_ref = r_ij_r_ik_r_jk_ref[trip];
+        auto && dist = r_ij_r_ik_r_jk[trip];
+        for (auto i{0}; i < 3; ++i) {
+          BOOST_CHECK_EQUAL(dist_ref[i], dist[i]);
+        }
+      }
+    }
   }
 
   BOOST_AUTO_TEST_SUITE_END();
