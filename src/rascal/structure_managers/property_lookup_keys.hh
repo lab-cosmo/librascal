@@ -36,6 +36,13 @@
 
 namespace rascal {
 
+  /**
+   * A ``Property`` specifically for storing ClusterRefs as a means to retrieve
+   * e.g. pair cluster references from a triplet to access precomputed
+   * pair-related ``Properties`` like distances and directions between atoms
+   * which need a pair as a key.
+   */
+
   template <class StoredClusterRefKey, size_t Order, class Manager,
             size_t NbKeys>
   class PropertyLookupKeys : public PropertyBase {
