@@ -37,6 +37,7 @@
 #include "rascal/structure_managers/cluster_ref_key.hh"
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/property_block_sparse.hh"
+#include "rascal/structure_managers/property_lookup_keys.hh"
 #include "rascal/structure_managers/structure_manager_base.hh"
 #include "rascal/utils/json_io.hh"
 #include "rascal/utils/utils.hh"
@@ -767,6 +768,21 @@ namespace rascal {
     Property<size_t, Order, ManagerImplementation, Order> &
     get_neighbours_to_i_atoms();
 
+    /**
+     * creates or fetches and possibly refreshes a property storing clusters of
+     * order StoredOrder constituting the higher-order cluster. Example 1:
+     * sub_clusters<AtomOrder> yields a property containing the atom clusters
+     * for each atom in the cluster. Example 2: sub_clusters<PairOrder> yields a
+     * property containing all pairs with the centre as their i-atom (for
+     * triplets -> pair_ij, pair_ik, but *not* pair_jk, as this pair does not
+     * exist in general. Currently only implemented for StoredOrder ∈ {1,2}
+     */
+    template <size_t StoredOrder, size_t PropertyOrder>
+    PropertyLookupKeys<StoredOrder, PropertyOrder, ManagerImplementation,
+                       (StoredOrder == AtomOrder) ? PropertyOrder
+                                                  : PropertyOrder - 1> &
+    get_sub_clusters();
+
     //! get reference to ancestor of given type
     template <
         typename Ancestor,
@@ -883,7 +899,7 @@ namespace rascal {
       // complain and die
       throw std::runtime_error(
           "cannot handle the situation where the property isn't registered "
-          "at the same stack layer as this cutoff function");
+          "at the stack layer of this manager");
     }
 
     constexpr bool Validate{false}, AllowCreation{true};
@@ -919,7 +935,155 @@ namespace rascal {
     return property;
   }
 
+  namespace internal {
+    template <class Manager, class Derived>
+    struct FillHelper {
+      constexpr static size_t atom_layer() {
+        return Manager::template cluster_layer_from_order<AtomOrder>();
+      }
+      using type = ClusterRefKey<AtomOrder, atom_layer()>;
+
+      constexpr static size_t order() { return Derived::SizeAtCompileTime; }
+      using Return_t = std::array<type, order()>;
+    };
+
+    template <class Manager, class Derived, size_t... Ids>
+    typename FillHelper<Manager, Derived>::Return_t
+    fill_cluster_array_helper(Manager & manager,
+                              const Eigen::MatrixBase<Derived> & indices,
+                              std::index_sequence<Ids...>) {
+      using Return_t = typename FillHelper<Manager, Derived>::Return_t;
+      return Return_t{manager[indices(Ids)]...};
+    }
+
+    template <class Manager, class Derived>
+    typename FillHelper<Manager, Derived>::Return_t
+    fill_cluster_array(Manager & manager,
+                       const Eigen::MatrixBase<Derived> & indices) {
+      constexpr auto Order{FillHelper<Manager, Derived>::order()};
+      return fill_cluster_array_helper(manager, indices,
+                                       std::make_index_sequence<Order>{});
+    }
+
+  }  // namespace internal
+
   /* ---------------------------------------------------------------------- */
+  template <class ManagerImplementation>
+  template <size_t StoredOrder, size_t PropertyOrder>
+  PropertyLookupKeys<StoredOrder, PropertyOrder, ManagerImplementation,
+                     (StoredOrder == AtomOrder) ? PropertyOrder
+                                                : PropertyOrder - 1> &
+  StructureManager<ManagerImplementation>::get_sub_clusters() {
+    constexpr auto NbKeys{(StoredOrder == AtomOrder) ? PropertyOrder
+                                                     : PropertyOrder - 1};
+    using PropertyLookup_t = PropertyLookupKeys<StoredOrder, PropertyOrder,
+                                                ManagerImplementation, NbKeys>;
+    // does the property exist at this level?
+    constexpr auto StoredLayer{
+        StructureManager::template cluster_layer_from_order<PropertyOrder>()};
+    std::stringstream identifier{};
+    identifier << "subclusters_of_order=" << StoredOrder
+               << "_for_access_with_clusters_of_order=" << PropertyOrder
+               << "_stored_layer=" << StoredLayer;
+    bool property_at_wrong_layer{
+        this->is_property_in_stack(identifier.str()) and
+        not this->is_property_in_current_level(identifier.str())};
+    if (property_at_wrong_layer) {
+      // complain and die
+      throw std::runtime_error(
+          "cannot handle the situation where the property isn't registered "
+          "at the stack layer of this manager");
+    }
+
+    constexpr bool Validate{false}, AllowCreation{true};
+
+    auto & property{*this->template get_property<PropertyLookup_t>(
+        identifier.str(), Validate, AllowCreation)};
+
+    // is it fresh?
+    if (property.is_updated()) {
+      return property;
+    }
+
+    // fill it
+    // map from atom tags to cluster indices
+    constexpr auto AtomLayer{
+        ManagerImplementation::template cluster_layer_from_order<AtomOrder>()};
+    using AtomClusterRef_t = ClusterRefKey<AtomOrder, AtomLayer>;
+    using Key_t = std::array<AtomClusterRef_t, StoredOrder>;
+    using Value_t = typename PropertyLookup_t::StoredElement;
+
+    switch (StoredOrder) {  // we're switching at this level, because the case
+                            // of Atom clusters is especially simple
+    case AtomOrder: {
+      property.clear();
+      auto & cluster_to_i_atom{
+          this->template get_neighbours_to_i_atoms<PropertyOrder>()};
+
+      for (auto && atom : *this) {
+        for (auto && cluster :
+             atom.template get_clusters_of_order<PropertyOrder>()) {
+          auto && atom_cluster_indices{cluster_to_i_atom[cluster]};
+          auto && atom_clusters{
+              internal::fill_cluster_array(*this, atom_cluster_indices)};
+          property.push_back(atom_clusters);
+        }
+      }
+      break;
+    }
+    case PairOrder: {
+      property.resize();
+      std::map<Key_t, Value_t> reverse_map{};
+      {
+        auto & cluster_to_i_atom{
+            this->template get_neighbours_to_i_atoms<PairOrder>()};
+
+        for (auto && atom : *this) {
+          for (auto && cluster :
+               atom.template get_clusters_of_order<PairOrder>()) {
+            auto && atom_cluster_indices{cluster_to_i_atom[cluster]};
+
+            auto && key{
+                internal::fill_cluster_array(*this, atom_cluster_indices)};
+
+            std::pair<Key_t, Value_t> key_val(key, cluster);
+
+            reverse_map.insert(key_val);
+          }
+        }
+      }
+
+      {
+        auto & cluster_to_i_atom{
+            this->template get_neighbours_to_i_atoms<PropertyOrder>()};
+        for (auto && atom : *this) {
+          for (auto && cluster :
+               atom.template get_clusters_of_order<PropertyOrder>()) {
+            auto && atom_cluster_indices{cluster_to_i_atom[cluster]};
+            auto && atom_clusters{
+                internal::fill_cluster_array(*this, atom_cluster_indices)};
+            auto & entry{property[cluster]};
+
+            for (size_t i{0}; i < NbKeys; ++i) {
+              entry[i] = reverse_map[{atom_clusters[0], atom_clusters[i + 1]}];
+            }
+          }
+        }
+      }
+      break;
+    }
+    default: {
+      throw std::runtime_error{"Not implemented for this storage order"};
+      break;
+    }
+    }
+
+    property.set_updated_status(true);
+    return property;
+  }
+
+  /* ----------------------------------------------------------------------
+   */
   namespace internal {
     //! helper function that allows to append extra elements to an array It
     //! returns the given array, plus one element
@@ -1010,7 +1174,8 @@ namespace rascal {
     };
   }  // namespace internal
 
-  /* ---------------------------------------------------------------------- */
+  /* ----------------------------------------------------------------------
+   */
   /**
    * Definition of the ``AtomRef`` class. It is the return type when
    * iterating over the first order of a manager.
@@ -1066,7 +1231,8 @@ namespace rascal {
     int index;
   };
 
-  /* ---------------------------------------------------------------------- */
+  /* ----------------------------------------------------------------------
+   */
   /**
    * Class iterating over the manager, then atoms,
    * then pairs, etc. in higher Orders. This object itself is iterable again
@@ -1305,8 +1471,8 @@ namespace rascal {
       ClusterRef_t & cluster_ref;
       //! starting index of the iteration
       size_t start;
-      //! offset with which to start the iteration in the list of all clusters
-      //! of Order == TargetOrder
+      //! offset with which to start the iteration in the list of all
+      //! clusters of Order == TargetOrder
       size_t offset;
     };
     /**
@@ -1359,8 +1525,8 @@ namespace rascal {
     }
 
     /**
-     * Return an iterable for Order == 3 that includes the triplets associated
-     * with the current central atom.
+     * Return an iterable for Order == 3 that includes the triplets
+     * associated with the current central atom.
      */
     template <bool C = IsOrderOneAndHasOrder<3>, std::enable_if_t<C, int> = 0>
     CustomProxy<3> triplets() {
@@ -1619,7 +1785,8 @@ namespace rascal {
     const size_t offset;
   };
 
-  /* --------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------
+   */
   /**
    * A class which provides the iteration range from start to the end of the
    * atoms including additional ghost atoms.

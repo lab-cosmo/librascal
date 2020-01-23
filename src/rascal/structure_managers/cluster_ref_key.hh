@@ -277,6 +277,17 @@ namespace rascal {
       return *this;
     }
 
+    //! equality operator (required only for testing)
+    bool operator==(const ClusterRefKey & other) {
+      bool atom_tags_equal{true};
+      for (size_t i{0}; i < Order; ++i) {
+        atom_tags_equal &= (this->atom_tag_list[i] == other.atom_tag_list[i]);
+      }
+
+      return atom_tags_equal and
+             ((this->cluster_indices - other.cluster_indices).norm() == 0);
+    }
+
     //! returns the atom tags of the current cluster
     const AtomIndex_t & get_atom_tag_list() const {
       return this->atom_tag_list;

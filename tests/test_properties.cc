@@ -1133,6 +1133,19 @@ namespace rascal {
         }
       }
     }
+
+    auto & clusters_from_manager{
+        triplet_manager->template get_sub_clusters<PairOrder, TripletOrder>()};
+
+    for (auto && atom : triplet_manager) {
+      for (auto && trip : atom.triplets()) {
+        constexpr int PairsPerTriplet{2};
+        for (int i{0}; i < PairsPerTriplet; ++i) {
+          bool equal = (clusters[trip][i] == clusters_from_manager[trip][i]);
+          BOOST_CHECK(equal);
+        }
+      }
+    }
   }
 
   BOOST_AUTO_TEST_SUITE_END();

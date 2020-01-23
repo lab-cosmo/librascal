@@ -56,7 +56,8 @@ namespace rascal {
         Manager::template cluster_layer_from_order<PropertyOrder>()};
     constexpr static auto StoredLayer{
         Manager::template cluster_layer_from_order<StoredOrder>()};
-    using value = std::array<ClusterRefKey<StoredOrder, StoredLayer>, NbKeys>;
+    using StoredElement = ClusterRefKey<StoredOrder, StoredLayer>;
+    using value = std::array<StoredElement, NbKeys>;
     using reference = value &;
     using const_reference = const reference;
     //    constexpr static size_t StoredOrder{value::order()};
@@ -106,9 +107,15 @@ namespace rascal {
      */
     void clear() { this->values.clear(); }
 
-    template <class StoredClusterRefKeyArray>
-    void push_back(StoredClusterRefKeyArray && val) {
-      this->values.push_back(std::forward<StoredClusterRefKeyArray>(val));
+    void push_back(value && entry) { this->values.push_back(std::move(entry)); }
+
+    /**
+     * this inelegance saves template specialisation in the `StructureManager`'s
+     * `get_sub_clusters` member function
+     */
+    template <class WrongType>
+    void push_back(WrongType &&) {
+      throw std::runtime_error("Can't push WrongType");
     }
 
     //! Property accessor by cluster ref
@@ -136,6 +143,16 @@ namespace rascal {
     //! Accessor for property by index for dynamically sized properties
     const_reference operator[](const size_t & index) const {
       return this->values[index];
+    }
+
+    static void check_compatibility(PropertyBase & other) {
+      auto type_id{typeid(PropertyLookupKeys).name()};
+      if (other.get_type_info() != type_id) {
+        std::stringstream err_str{};
+        err_str << "Incompatible types: '" << other.get_type_info() << "' != '"
+                << type_id << "'.";
+        throw std::runtime_error(err_str.str());
+      }
     }
 
    protected:
