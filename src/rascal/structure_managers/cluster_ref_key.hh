@@ -251,10 +251,12 @@ namespace rascal {
           cluster_indices{cluster_indices.data()} {}
 
     //! Copy constructor
-    ClusterRefKey(const ClusterRefKey & other) = default;
+    ClusterRefKey(const ClusterRefKey & other) : Parent{Order, Layer}, atom_tag_list{other.atom_tag_list},
+          cluster_indices{other.cluster_indices.data()} {}
 
     //! Move constructor
-    ClusterRefKey(ClusterRefKey && other) = default;
+    ClusterRefKey(ClusterRefKey && other) : Parent{Order, Layer}, atom_tag_list{std::move(other.atom_tag_list)},
+          cluster_indices{std::move(other.cluster_indices.data())} {}
 
     //! Destructor
     virtual ~ClusterRefKey() = default;
@@ -263,7 +265,10 @@ namespace rascal {
     ClusterRefKey & operator=(const ClusterRefKey & other) = delete;
 
     //! Move assignment operator
-    ClusterRefKey & operator=(ClusterRefKey && other) = default;
+    ClusterRefKey & operator=(ClusterRefKey && other) {
+      this->atom_tag_list = std::move(other.atom_tag_list);
+      this->cluster_indices = std::move(other.cluster_indices);
+    }
 
     //! returns the atom tags of the current cluster
     const AtomIndex_t & get_atom_tag_list() const {
