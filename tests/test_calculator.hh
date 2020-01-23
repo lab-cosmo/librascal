@@ -430,7 +430,7 @@ namespace rascal {
     //     "reference_data/inputs/small_molecule.json",
     //     "reference_data/inputs/methane.json"};
     const std::vector<std::string> filenames{
-        "reference_data/inputs/diamond_2atom_distorted.json"};
+        "reference_data/inputs/diamond_2atom.json"};
     const double cutoff{2.5};
     const double cutoff_skin{0.};
 

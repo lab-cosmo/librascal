@@ -493,7 +493,7 @@ namespace rascal {
 
   using gradient_fixtures = boost::mpl::list<
       CalculatorFixture<
-          SingleHypersSphericalExpansion<SimplePeriodicNLCCStrictFixture>>>;
+          SingleHypersSphericalInvariants<SimplePeriodicNLCCStrictFixture>>>;
 
   /**
    * Test the gradient of the SphericalExpansion and SphericalInvariants

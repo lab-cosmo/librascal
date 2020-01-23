@@ -60,7 +60,7 @@ using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
 using Manager_t = typename ManagerTypeHolder_t::type;
 using ManagerCollection_t =
     typename TypeHolderInjector<ManagerCollection, ManagerTypeList_t>::type;
-using Representation_t = CalculatorSphericalInvariants;
+using Representation_t = CalculatorSphericalExpansion;
 using Prop_t = typename Representation_t::template Property_t<Manager_t>;
 using PropGrad_t = typename Representation_t::template PropertyGradient_t<Manager_t>;
 
@@ -73,22 +73,22 @@ int main() {
 
   double cutoff{2.5};
 
-  // json hypers{{"max_radial", 6},
-  //             {"max_angular", 6},
-  //             {"compute_gradients", false},
-  //             {"soap_type", "PowerSpectrum"},
-  //             {"normalize", true},
-  //             {"expansion_by_species_method", "environment wise"}};
+  json hypers{{"max_radial", 2},
+              {"max_angular", 2},
+              {"compute_gradients", true},
+              {"soap_type", "PowerSpectrum"},
+              {"normalize", false},
+              {"expansion_by_species_method", "environment wise"}};
 
-  // json fc_hypers{{"type", "ShiftedCosine"},
-  //                {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
-  //                {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
-  // json sigma_hypers{{"type", "Constant"},
-  //                   {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+  json fc_hypers{{"type", "ShiftedCosine"},
+                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
+                 {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
+  json sigma_hypers{{"type", "Constant"},
+                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
 
-  // hypers["cutoff_function"] = fc_hypers;
-  // hypers["gaussian_density"] = sigma_hypers;
-  // hypers["radial_contribution"] = {{"type", "GTO"}};
+  hypers["cutoff_function"] = fc_hypers;
+  hypers["gaussian_density"] = sigma_hypers;
+  hypers["radial_contribution"] = {{"type", "GTO"}};
 
   // json kernel_hypers{
   //       {"zeta", 1}, {"target_type", "Atom"}, {"name", "Cosine"}};
@@ -111,13 +111,21 @@ int main() {
   ManagerCollection_t collection{adaptors};
   collection.add_structures(filename, 0, 1);
 
+  Representation_t coeff_calc{hypers};
 
+  coeff_calc.compute(collection);
+  std::cout.setf(std::ios::scientific);
+  std::cout.precision(5);
   for (const auto & manager : collection) {
+    auto & grad{*manager->template get_property<PropGrad_t>(coeff_calc.get_gradient_name())};
+    int n_row{grad.get_nb_row()};
+    int n_col{grad.get_nb_col()};
+
     for (auto center : manager) {
-    // current atom is atom_i or i
-    // [atom_j.get_atom_tag()] -> list of pairs  ij, ij', ij'' ... where
-    // j primes are periodic images of j
-    std::map<int, std::vector<
+      // current atom is atom_i or i
+      // [atom_j.get_atom_tag()] -> list of pairs  ij, ij', ij'' ... where
+      // j primes are periodic images of j
+      std::map<int, std::vector<
           ClusterRefKey<2, ClusterLayer_> >> periodic_images_of_center{};
       for (auto pair : center.pairs()) {
         auto atom_j = pair.get_atom_j();
@@ -125,8 +133,9 @@ int main() {
         // int pair_tag_j = pair.get_atom_tag();
         // if (atom_tag_j )
         if (not manager->is_ghost_atom(pair)) {
-          std::vector< ClusterRefKey<2, ClusterLayer_>> periodic_images{ static_cast<ClusterRefKey<2, ClusterLayer_>>(pair)};
-          periodic_images_of_center[atom_tag_j] = std::move(periodic_images);
+          // std::vector< ClusterRefKey<2, ClusterLayer_>> periodic_images{ static_cast<ClusterRefKey<2, ClusterLayer_>>(pair)};
+          // periodic_images_of_center[atom_tag_j] = std::move(periodic_images);
+          periodic_images_of_center[atom_tag_j].emplace_back(static_cast<ClusterRefKey<2, ClusterLayer_>>(pair));
         }
       }
 
@@ -137,13 +146,32 @@ int main() {
           periodic_images_of_center[atom_tag_j].emplace_back(std::move(static_cast<ClusterRefKey<2, ClusterLayer_>>(pair)));
         }
       }
+
+      for (const auto& el : periodic_images_of_center) {
+        int atom_tag_j{el.first};
+        auto p_images = el.second;
+        std::vector<int> key{grad[p_images.at(0)].get_keys().at(0)};
+        math::Matrix_t sum{n_row, n_col};
+        sum.setZero();
+        for (const auto& p_image : el.second) {
+          sum += grad[p_image][key];
+        }
+        for (const auto& p_image : el.second) {
+          grad[p_image][key] = sum;
+        }
+      }
+      auto atom_ii = center.get_atom_ii();
+
       std::cout << "Center " << center.get_atom_tag() << std::endl;
+      std::cout << "grad ii: "<< std::endl << grad[atom_ii].get_full_vector().transpose() << std::endl;
       for (const auto & el : periodic_images_of_center) {
         std::cout << " atom_j " << el.first << " Images tags:";
         for (const auto & p_im : el.second) {
           int tag = p_im.get_atom_tag();
-          auto pos = manager->position(tag);
-          std::cout << tag << ", " << pos.transpose() << std::endl;
+          // auto pos = manager->position(tag);
+          std::cout << tag << " | "<< std::endl;
+          std::cout << grad[p_im].get_full_vector().transpose()  << std::endl;
+          break;
         }
         std::cout << std::endl;
       }
