@@ -32,6 +32,7 @@
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/representations/calculator_spherical_invariants.hh"
 #include "rascal/structure_managers/adaptor_increase_maxorder.hh"
+#include "rascal/structure_managers/cluster_ref_key.hh"
 #include "rascal/structure_managers/adaptor_center_contribution.hh"
 #include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_neighbour_list.hh"
@@ -63,39 +64,34 @@ using Representation_t = CalculatorSphericalInvariants;
 using Prop_t = typename Representation_t::template Property_t<Manager_t>;
 using PropGrad_t = typename Representation_t::template PropertyGradient_t<Manager_t>;
 
+constexpr static size_t ClusterLayer_{
+          Manager_t::template cluster_layer_from_order<2>()};
+
 int main() {
 
-  std::string filename{"../reference_data/inputs/diamond_2atom.json"};
-  std::string filenamep{"../reference_data/inputs/diamond_2atom_p.json"};
-  std::string filenamem{"../reference_data/inputs/diamond_2atom_m.json"};
+  std::string filename{"../reference_data/inputs/diamond_2atom_distorted.json"};
 
   double cutoff{2.5};
 
-  json hypers{{"max_radial", 2},
-              {"max_angular", 2},
-              {"compute_gradients", true},
-              {"soap_type", "PowerSpectrum"},
-              {"normalize", false},
-              {"expansion_by_species_method", "environment wise"}};
-  // json hypers{{"max_radial", 2},
-  //             {"max_angular", 2},
-  //             {"compute_gradients", true},
+  // json hypers{{"max_radial", 6},
+  //             {"max_angular", 6},
+  //             {"compute_gradients", false},
   //             {"soap_type", "PowerSpectrum"},
-  //             {"normalize", false},
-  //             {"expansion_by_species_method", "structure wise"}};
+  //             {"normalize", true},
+  //             {"expansion_by_species_method", "environment wise"}};
 
-  json fc_hypers{{"type", "ShiftedCosine"},
-                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
-                 {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
-  json sigma_hypers{{"type", "Constant"},
-                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+  // json fc_hypers{{"type", "ShiftedCosine"},
+  //                {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
+  //                {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
+  // json sigma_hypers{{"type", "Constant"},
+  //                   {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
 
-  hypers["cutoff_function"] = fc_hypers;
-  hypers["gaussian_density"] = sigma_hypers;
-  hypers["radial_contribution"] = {{"type", "GTO"}};
+  // hypers["cutoff_function"] = fc_hypers;
+  // hypers["gaussian_density"] = sigma_hypers;
+  // hypers["radial_contribution"] = {{"type", "GTO"}};
 
-  json kernel_hypers{
-        {"zeta", 1}, {"target_type", "Atom"}, {"name", "Cosine"}};
+  // json kernel_hypers{
+  //       {"zeta", 1}, {"target_type", "Atom"}, {"name", "Cosine"}};
 
   json structure{{"filename", filename}};
   json adaptors;
@@ -114,43 +110,83 @@ int main() {
 
   ManagerCollection_t collection{adaptors};
   collection.add_structures(filename, 0, 1);
-  collection.add_structures(filenamep, 0, 1);
-  collection.add_structures(filenamem, 0, 1);
 
-  Representation_t soap{hypers};
 
-  soap.compute(collection);
-  std::cout.precision(10);
-  std::cout.setf(std::ios::scientific);
   for (const auto & manager : collection) {
-    auto & desc{*manager->template get_property<Prop_t>(soap.get_name())};
-    int ii{0};
     for (auto center : manager) {
-      if (ii == 1) {
-        std::cout << desc[center].get_full_vector().transpose() << std::endl;
+    // current atom is atom_i or i
+    // [atom_j.get_atom_tag()] -> list of pairs  ij, ij', ij'' ... where
+    // j primes are periodic images of j
+    std::map<int, std::vector<
+          ClusterRefKey<2, ClusterLayer_> >> periodic_images_of_center{};
+      for (auto pair : center.pairs()) {
+        auto atom_j = pair.get_atom_j();
+        int atom_tag_j = atom_j.get_atom_tag();
+        // int pair_tag_j = pair.get_atom_tag();
+        // if (atom_tag_j )
+        if (not manager->is_ghost_atom(pair)) {
+          std::vector< ClusterRefKey<2, ClusterLayer_>> periodic_images{ static_cast<ClusterRefKey<2, ClusterLayer_>>(pair)};
+          periodic_images_of_center[atom_tag_j] = std::move(periodic_images);
+        }
       }
-      ++ii;
-    }
 
-    // auto & grad{*manager->template get_property<PropGrad_t>(soap.get_gradient_name())};
-    // math::Vector_t sum(grad.get_keys().size() * grad.get_nb_comp());
-    // sum.setZero();
-    // auto data = grad.get_raw_data_view();
-    // std::cout << grad.sum() << std::endl;
-    // std::cout << grad.l1_norm() << std::endl;
-    // for (auto center : manager) {
-    //   sum += grad.get_dense_row(center.get_atom_ii());
-    //   for (auto neigh : center.pairs_with_self_pair()) {
-    //     sum += grad.get_dense_row(neigh);
-    //   }
-    //   std::cout << sum << std::endl;
-    //   std::cout << "##############################" << std::endl;
-    // }
+      for (auto pair : center.pairs()) {
+        auto atom_j = pair.get_atom_j();
+        int atom_tag_j = atom_j.get_atom_tag();
+        if (periodic_images_of_center.count(atom_tag_j) and manager->is_ghost_atom(pair)) {
+          periodic_images_of_center[atom_tag_j].emplace_back(std::move(static_cast<ClusterRefKey<2, ClusterLayer_>>(pair)));
+        }
+      }
+      std::cout << "Center " << center.get_atom_tag() << std::endl;
+      for (const auto & el : periodic_images_of_center) {
+        std::cout << " atom_j " << el.first << " Images tags:";
+        for (const auto & p_im : el.second) {
+          int tag = p_im.get_atom_tag();
+          auto pos = manager->position(tag);
+          std::cout << tag << ", " << pos.transpose() << std::endl;
+        }
+        std::cout << std::endl;
+      }
+    }
   }
+  // Representation_t soap{hypers};
+
+  // soap.compute(collection);
 
   // Kernel kernel{kernel_hypers};
 
   // auto kk = kernel.compute(soap, collection, collection);
 
   // std::cout << kk << std::endl;
+
+
+  // Representation_t soap{hypers};
+  // soap.compute(collection);
+  // std::cout.precision(10);
+  // std::cout.setf(std::ios::scientific);
+  // for (const auto & manager : collection) {
+  //   auto & desc{*manager->template get_property<Prop_t>(soap.get_name())};
+  //   int ii{0};
+  //   for (auto center : manager) {
+  //     if (ii == 1) {
+  //       std::cout << desc[center].get_full_vector().transpose() << std::endl;
+  //     }
+  //     ++ii;
+  //   }
+
+  //   // auto & grad{*manager->template get_property<PropGrad_t>(soap.get_gradient_name())};
+  //   // math::Vector_t sum(grad.get_keys().size() * grad.get_nb_comp());
+  //   // sum.setZero();
+  //   // auto data = grad.get_raw_data_view();
+  //   // std::cout << grad.sum() << std::endl;
+  //   // std::cout << grad.l1_norm() << std::endl;
+  //   // for (auto center : manager) {
+  //   //   sum += grad.get_dense_row(center.get_atom_ii());
+  //   //   for (auto neigh : center.pairs_with_self_pair()) {
+  //   //     sum += grad.get_dense_row(neigh);
+  //   //   }
+  //   //   std::cout << sum << std::endl;
+  //   //   std::cout << "##############################" << std::endl;
+  //   // }
+  // }
 }

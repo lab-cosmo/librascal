@@ -1001,10 +1001,10 @@ namespace rascal {
     // beginning of the list.
     for (size_t atom_tag{0}; atom_tag < this->manager->get_size(); ++atom_tag) {
       auto atom_type = this->manager->get_atom_type(atom_tag);
-      auto cluster_index = this->manager->get_atom_index(atom_tag);
+      auto atom_index = this->manager->get_atom_index(atom_tag);
       this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);
-      this->atom_index_from_atom_tag_list.push_back(cluster_index);
+      this->atom_index_from_atom_tag_list.push_back(atom_index);
     }
 
     // And before generating periodic replicas (termed ghost atoms), previous
@@ -1016,8 +1016,8 @@ namespace rascal {
       auto atom_type = this->manager->get_atom_type(atom_tag);
       auto new_atom_tag{this->n_centers + this->n_ghosts};
       this->add_ghost_atom(new_atom_tag, pos, atom_type);
-      size_t cluster_index = this->manager->get_atom_index(atom_tag);
-      this->atom_index_from_atom_tag_list.push_back(cluster_index);
+      size_t atom_index = this->manager->get_atom_index(atom_tag);
+      this->atom_index_from_atom_tag_list.push_back(atom_index);
     }
 
     // generate ghost atom tags and positions
@@ -1041,8 +1041,8 @@ namespace rascal {
             this->add_ghost_atom(new_atom_tag, pos_ghost, atom_type);
             // adds origin atom cluster_index if true
             // adds ghost atom cluster index if false
-            size_t cluster_index = this->manager->get_atom_index(atom_tag);
-            this->atom_index_from_atom_tag_list.push_back(cluster_index);
+            size_t atom_index = this->manager->get_atom_index(atom_tag);
+            this->atom_index_from_atom_tag_list.push_back(atom_index);
           }
         }
       }
