@@ -1073,7 +1073,7 @@ namespace rascal {
     }
 
     using Clusters =
-        PropertyLookupKeys<StoredRefKey_t, TripletOrder,
+        PropertyLookupKeys<PairOrder, TripletOrder,
                            decltype(triplet_manager)::element_type, 2>;
 
     auto & clusters{triplet_manager->template create_property<Clusters>(

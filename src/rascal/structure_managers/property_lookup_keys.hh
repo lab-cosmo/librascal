@@ -43,18 +43,23 @@ namespace rascal {
    * which need a pair as a key.
    */
 
-  template <class StoredClusterRefKey, size_t Order, class Manager,
+  template <size_t StoredOrder, size_t PropertyOrder, class Manager,
             size_t NbKeys>
   class PropertyLookupKeys : public PropertyBase {
    public:
-    static_assert(Order > 1, "Current implementation does not handle atom "
-                             "properties in any sensible way");
+    static_assert(PropertyOrder > 1,
+                  "Current implementation does not handle atom "
+                  "properties in any sensible way");
     using Parent = PropertyBase;
     using Manager_t = Manager;
-    using value = std::array<StoredClusterRefKey, NbKeys>;
+    constexpr static auto PropertyLayer{
+        Manager::template cluster_layer_from_order<PropertyOrder>()};
+    constexpr static auto StoredLayer{
+        Manager::template cluster_layer_from_order<StoredOrder>()};
+    using value = std::array<ClusterRefKey<StoredOrder, StoredLayer>, NbKeys>;
     using reference = value &;
     using const_reference = const reference;
-    constexpr static size_t StoredOrder{value::order()};
+    //    constexpr static size_t StoredOrder{value::order()};
 
     //! Default constructor
     PropertyLookupKeys() = delete;
@@ -63,12 +68,7 @@ namespace rascal {
     PropertyLookupKeys(Manager & manager,
                        const std::string & metadata = "no metadata",
                        const bool /*dummy_exclude_ghosts*/ = false)
-        : Parent{manager,
-                 NbKeys,
-                 1,
-                 Order,
-                 manager.template cluster_layer_from_order<Order>(),
-                 metadata} {}
+        : Parent{manager, NbKeys, 1, PropertyOrder, PropertyLayer, metadata} {}
 
     //! Copy constructor
     PropertyLookupKeys(const PropertyLookupKeys & other) = delete;
@@ -91,21 +91,9 @@ namespace rascal {
       return static_cast<Manager_t &>(this->base_manager);
     }
 
-    /**
-     * Adjust size of values (only increases, never frees).
-     *
-     * Uses SFINAE to differenciate behavior between values of Order.
-     * Order > 1 then the size of the property is directly taken
-     * from the manager.
-     * Order == 0 then the size of the property is 1.
-     * Order == 1 then the size of the property depends on the bolean
-     * exclude_ghosts. By default it is set to false so that property size is
-     * always larger than what could be needed.
-     */
-
     //! Adjust size of values (only increases, never frees).
     void resize() {
-      auto && new_size{this->base_manager.nb_clusters(Order)};
+      auto && new_size{this->base_manager.nb_clusters(PropertyOrder)};
       this->values.resize(new_size * this->get_nb_comp());
     }
 
@@ -125,7 +113,7 @@ namespace rascal {
 
     //! Property accessor by cluster ref
     template <size_t CallerLayer>
-    reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
+    reference operator[](const ClusterRefKey<PropertyOrder, CallerLayer> & id) {
       // You are trying to access a property that does not exist at this depth
       // in the adaptor stack.
       assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
@@ -138,7 +126,7 @@ namespace rascal {
     //! Property accessor by cluster ref
     template <size_t CallerLayer>
     const_reference
-    operator[](const ClusterRefKey<Order, CallerLayer> & id) const {
+    operator[](const ClusterRefKey<PropertyOrder, CallerLayer> & id) const {
       // You are trying to access a property that does not exist at this depth
       // in the adaptor stack.
       assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
@@ -151,7 +139,8 @@ namespace rascal {
     }
 
    protected:
-    std::vector<std::array<StoredClusterRefKey, NbKeys>> values{};
+    std::vector<std::array<ClusterRefKey<StoredOrder, StoredLayer>, NbKeys>>
+        values{};
     std::string type_name{typeid(PropertyLookupKeys).name()};
   };
 }  // namespace rascal
