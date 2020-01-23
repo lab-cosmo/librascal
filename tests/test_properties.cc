@@ -1128,7 +1128,7 @@ namespace rascal {
       for (auto && trip : atom.triplets()) {
         auto && dist_ref = r_ij_r_ik_r_jk_ref[trip];
         auto && dist = r_ij_r_ik_r_jk[trip];
-        for (auto i{0}; i < 3; ++i) {
+        for (auto && i{0}; i < TripletOrder; ++i) {
           BOOST_CHECK_EQUAL(dist_ref[i], dist[i]);
         }
       }
