@@ -819,7 +819,7 @@ namespace rascal {
             auto && coef_grad_neigh{el.second};
             soap_neigh_gradient[element_type] += coef_grad_neigh;
           }
-        }  // for (auto neigh : center.pairs())
+        }  // for (auto neigh : center.pairs_with_self_pair())
 
         if (this->normalize) {
           double coefficients_norm_inv{1. / coefficients.norm()};

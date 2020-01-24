@@ -420,17 +420,18 @@ namespace rascal {
 
     ~SimplePeriodicNLCCStrictFixture() = default;
 
-    // const std::vector<std::string> filenames{
-    //     "reference_data/inputs/diamond_2atom.json",
-    //     "reference_data/inputs/diamond_2atom_distorted.json",
-    //     "reference_data/inputs/diamond_cubic_distorted.json",
-    //     "reference_data/inputs/SiC_moissanite.json",
-    //     "reference_data/inputs/SiCGe_wurtzite_like.json",
-    //     "reference_data/inputs/SiC_moissanite_supercell.json",
-    //     "reference_data/inputs/small_molecule.json",
-    //     "reference_data/inputs/methane.json"};
     const std::vector<std::string> filenames{
-        "reference_data/inputs/diamond_2atom.json"};
+        "reference_data/inputs/diamond_2atom.json",
+        "reference_data/inputs/diamond_2atom_distorted.json",
+        "reference_data/inputs/diamond_cubic_distorted.json",
+        "reference_data/inputs/SiC_moissanite.json",
+        "reference_data/inputs/SiCGe_wurtzite_like.json",
+        "reference_data/inputs/SiC_moissanite_supercell.json",
+        "reference_data/inputs/small_molecule.json",
+        "reference_data/inputs/methane.json"};
+    // const std::vector<std::string> filenames{
+    //     "reference_data/inputs/methane.json"};
+
     const double cutoff{2.5};
     const double cutoff_skin{0.};
 
@@ -570,7 +571,7 @@ namespace rascal {
     std::vector<json> density_hypers{
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "DVR"}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     // std::vector<json> rep_hypers{
     //     {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}},
     //     {{"max_radial", 3}, {"max_angular", 0}, {"compute_gradients", true}}};
@@ -611,20 +612,15 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    // std::vector<json> rep_hypers{{{"max_radial", 2},
-    //                               {"max_angular", 2},
-    //                               {"normalize", true},
-    //                               {"soap_type", "PowerSpectrum"},
-    //                               {"compute_gradients", true}},
-    //                              {{"max_radial", 3},
-    //                               {"max_angular", 0},
-    //                               {"normalize", true},
-    //                               {"soap_type", "RadialSpectrum"},
-    //                               {"compute_gradients", true}}};
     std::vector<json> rep_hypers{{{"max_radial", 2},
                                   {"max_angular", 2},
-                                  {"normalize", false},
+                                  {"normalize", true},
                                   {"soap_type", "PowerSpectrum"},
+                                  {"compute_gradients", true}},
+                                 {{"max_radial", 3},
+                                  {"max_angular", 0},
+                                  {"normalize", true},
+                                  {"soap_type", "RadialSpectrum"},
                                   {"compute_gradients", true}}};
   };
 
@@ -1013,8 +1009,10 @@ namespace rascal {
           // // that moves in the finite-difference step
           // for (auto & neigh_swap : neigh_swap_images) {
 
-          Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
+          Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat_(
               gradients_neigh[key].data(), 3, n_entries_per_key);
+          Matrix3Xd_RowMaj_t grad_coeffs_flat(3, n_entries_per_key);
+          grad_coeffs_flat = grad_coeffs_flat_;
           grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
               grad_coeffs_flat;
           // }
