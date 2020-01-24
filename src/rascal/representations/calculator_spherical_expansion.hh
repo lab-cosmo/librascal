@@ -1636,10 +1636,15 @@ namespace rascal {
         AdaptorTraits::NeighbourListType::half};
     using math::PI;
     using math::pow;
-
     constexpr bool ExcludeGhosts{true};
     constexpr static size_t ClusterLayer{
           StructureManager::template cluster_layer_from_order<2>()};
+
+    if (manager->are_some_centers_masked() and this->compute_gradients) {
+      throw std::logic_error(
+        "Can't compute spherical expansion gradients with masked center atoms");
+    }
+
     auto && expansions_coefficients{*manager->template get_property<Prop_t>(
         this->get_name(), true, true, ExcludeGhosts)};
 

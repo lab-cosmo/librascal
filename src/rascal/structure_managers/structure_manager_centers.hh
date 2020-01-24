@@ -133,7 +133,7 @@ namespace rascal {
     using Positions_ref = AtomicStructure<traits::Dim>::Positions_ref;
 
     using ArrayB_t = AtomicStructure<traits::Dim>::ArrayB_t;
-    using ArrayB_ref = AtomicStructure<traits::Dim>::ArrayB_ref;
+    using ConstArrayB_ref = AtomicStructure<traits::Dim>::ConstArrayB_ref;
 
     /**
      * Here, the types for internal data structures are defined, based on
@@ -217,8 +217,8 @@ namespace rascal {
       return PBC_ref(this->atoms_object.pbc);
     }
 
-    ArrayB_ref get_center_atoms_mask() {
-      return ArrayB_ref(this->atoms_object.center_atoms_mask);
+    ConstArrayB_ref get_center_atoms_mask() const {
+      return ConstArrayB_ref(this->atoms_object.center_atoms_mask);
     }
 
     //! Returns the position of an atom, given an AtomRef
@@ -302,6 +302,11 @@ namespace rascal {
 
     const AtomicStructure<traits::Dim> & get_atomic_structure() const {
       return this->atoms_object;
+    }
+
+    bool are_some_centers_masked() const {
+      // center_atoms_mask is true is no center are masked
+      return (not this->get_center_atoms_mask().all());
     }
 
    protected:
