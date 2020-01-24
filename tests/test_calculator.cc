@@ -321,12 +321,12 @@ namespace rascal {
                                            {15, 15}, {15, 20}, {20, 20}};
 
     std::vector<std::vector<std::vector<int>>> neigh_keys{
-        {{8, 20}, {15, 20}, {20, 20}}, {{8, 20}, {15, 20}, {20, 20}},
-        {{8, 20}, {15, 20}, {20, 20}}, {{8, 20}, {15, 20}, {20, 20}},
-        {{8, 20}, {15, 20}, {20, 20}}, {{8, 20}, {15, 20}, {20, 20}},
-        {{8, 20}, {15, 20}, {20, 20}}, {{8, 20}, {15, 20}, {20, 20}},
-        {{8, 20}, {15, 20}, {20, 20}}, {{8, 20}, {15, 20}, {20, 20}},
-        {{8, 20}, {15, 20}, {20, 20}}};
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}}, {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}}, {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}}, {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}}, {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}}, {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}}};
 
     for (auto & manager : managers) {
       for (auto & hyper : hypers) {
@@ -485,15 +485,15 @@ namespace rascal {
     }
   }
 
-  // using gradient_fixtures = boost::mpl::list<
-  //     CalculatorFixture<
-  //         SingleHypersSphericalExpansion<SimplePeriodicNLCCStrictFixture>>,
-  //     CalculatorFixture<
-  //         SingleHypersSphericalInvariants<SimplePeriodicNLCCStrictFixture>>>;
-
   using gradient_fixtures = boost::mpl::list<
       CalculatorFixture<
+          SingleHypersSphericalExpansion<SimplePeriodicNLCCStrictFixture>>,
+      CalculatorFixture<
           SingleHypersSphericalInvariants<SimplePeriodicNLCCStrictFixture>>>;
+
+  // using gradient_fixtures = boost::mpl::list<
+  //     CalculatorFixture<
+  //         SingleHypersSphericalInvariants<SimplePeriodicNLCCStrictFixture>>>;
 
   /**
    * Test the gradient of the SphericalExpansion and SphericalInvariants
