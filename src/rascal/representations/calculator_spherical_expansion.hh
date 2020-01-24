@@ -1948,9 +1948,11 @@ namespace rascal {
       center_tag2idx[center.get_atom_tag()] = i_center;
       i_center++;
       keys_list.emplace_back();
-      for (auto neigh : center.pairs_with_self_pair()) {
-        (void)neigh;  // to avoid compiler warning
-        keys_list_grad.emplace_back();
+      if (this->compute_gradients) {
+        for (auto neigh : center.pairs_with_self_pair()) {
+          (void)neigh;  // to avoid compiler warning
+          keys_list_grad.emplace_back();
+        }
       }
     }
     int i_grad{0};
@@ -1968,19 +1970,21 @@ namespace rascal {
         }
       }
       keys_list[i_center].insert({center_type});
-      keys_list_grad[i_grad].insert(keys_list[i_center].begin(),
-                                    keys_list[i_center].end());
-      i_grad++;
-      for (auto neigh : center.pairs()) {
-        auto && atom_j = neigh.get_atom_j();
-        auto atom_j_tag = atom_j.get_atom_tag();
-        // Key_t neigh_type{neigh.get_atom_type()};
-        if (atom_j_tag != atom_i_tag) {
-          // keys_list_grad[i_grad].insert(neigh_type);
-          keys_list_grad[i_grad].insert(center_type);
-        }
+      if (this->compute_gradients) {
+        keys_list_grad[i_grad].insert(keys_list[i_center].begin(),
+                                      keys_list[i_center].end());
         i_grad++;
-      }
+        for (auto neigh : center.pairs()) {
+          auto && atom_j = neigh.get_atom_j();
+          auto atom_j_tag = atom_j.get_atom_tag();
+          // Key_t neigh_type{neigh.get_atom_type()};
+          if (atom_j_tag != atom_i_tag) {
+            // keys_list_grad[i_grad].insert(neigh_type);
+            keys_list_grad[i_grad].insert(center_type);
+          }
+          i_grad++;
+        }
+      } // if (this->compute_gradients)
       i_center++;
     }
 
@@ -2015,17 +2019,19 @@ namespace rascal {
       Key_t center_type{center.get_atom_type()};
       auto atom_i_tag = center.get_atom_tag();
       keys_list.emplace_back(keys);
-      keys_list_grad.emplace_back(keys);
-      for (auto neigh : center.pairs()) {
-        auto && atom_j = neigh.get_atom_j();
-        auto atom_j_tag = atom_j.get_atom_tag();
-        // Key_t neigh_type{neigh.get_atom_type()};
-        std::set<Key_t> neigh_types{};
-        if (atom_j_tag != atom_i_tag) {
-          // neigh_types.insert(neigh_type);
-          neigh_types.insert(center_type);
+      if (this->compute_gradients) {
+        keys_list_grad.emplace_back(keys);
+        for (auto neigh : center.pairs()) {
+          auto && atom_j = neigh.get_atom_j();
+          auto atom_j_tag = atom_j.get_atom_tag();
+          // Key_t neigh_type{neigh.get_atom_type()};
+          std::set<Key_t> neigh_types{};
+          if (atom_j_tag != atom_i_tag) {
+            // neigh_types.insert(neigh_type);
+            neigh_types.insert(center_type);
+          }
+          keys_list_grad.emplace_back(neigh_types);
         }
-        keys_list_grad.emplace_back(neigh_types);
       }
     }
 
@@ -2072,18 +2078,18 @@ namespace rascal {
     for (auto center : manager) {
       Key_t center_type{center.get_atom_type()};
       keys_list.emplace_back(this->global_species);
-      keys_list_grad.emplace_back(this->global_species);
-      auto atom_i_tag = center.get_atom_tag();
-      for (auto neigh : center.pairs()) {
-        auto && atom_j = neigh.get_atom_j();
-        auto atom_j_tag = atom_j.get_atom_tag();
-        // Key_t neigh_type{neigh.get_atom_type()};
-        std::set<Key_t> neigh_types{};
-        if (atom_j_tag != atom_i_tag) {
-          // neigh_types.insert(neigh_type);
-          neigh_types.insert(center_type);
+      if (this->compute_gradients) {
+        keys_list_grad.emplace_back(this->global_species);
+        auto atom_i_tag = center.get_atom_tag();
+        for (auto neigh : center.pairs()) {
+          auto && atom_j = neigh.get_atom_j();
+          auto atom_j_tag = atom_j.get_atom_tag();
+          std::set<Key_t> neigh_types{};
+          if (atom_j_tag != atom_i_tag) {
+            neigh_types.insert(center_type);
+          }
+          keys_list_grad.emplace_back(neigh_types);
         }
-        keys_list_grad.emplace_back(neigh_types);
       }
     }
 

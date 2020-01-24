@@ -1202,41 +1202,43 @@ namespace rascal {
         }
       }
       keys_list.emplace_back(pair_list);
-      keys_list_grad.emplace_back(pair_list);
+      if (this->compute_gradients) {
+        keys_list_grad.emplace_back(pair_list);
 
-      // Neighbour gradients need a separate pair list because if the species
-      // of j are not the same as either of the species for that SOAP entry,
-      // the gradient is zero.
-      // since we compute \grad_i p{j ab} we need the species present in
-      // the environement of c^{j}
-      for (auto neigh : center.pairs()) {
-        auto atom_j = neigh.get_atom_j();
-        auto & coef_j = expansions_coefficients[atom_j];
-        auto atom_j_tag = atom_j.get_atom_tag();
-        std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
-                grad_pair_list{};
-        // grad contribution is not zero if the neighbour is _not_ an
-        // image of the center
-        if (atom_j_tag != atom_i_tag) {
-          // list of keys present in the neighbor environement (contains
-          // center_type by definition)
-          std::vector<Key_t> keys_j{coef_j.get_keys()};
+        // Neighbour gradients need a separate pair list because if the species
+        // of j are not the same as either of the species for that SOAP entry,
+        // the gradient is zero.
+        // since we compute \grad_i p{j ab} we need the species present in
+        // the environement of c^{j}
+        for (auto neigh : center.pairs()) {
+          auto atom_j = neigh.get_atom_j();
+          auto & coef_j = expansions_coefficients[atom_j];
+          auto atom_j_tag = atom_j.get_atom_tag();
+          std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
+                  grad_pair_list{};
+          // grad contribution is not zero if the neighbour is _not_ an
+          // image of the center
+          if (atom_j_tag != atom_i_tag) {
+            // list of keys present in the neighbor environement (contains
+            // center_type by definition)
+            std::vector<Key_t> keys_j{coef_j.get_keys()};
 
-          for (const auto & neigh_1_type : keys_j) {
-            for (const auto & neigh_2_type : keys_j) {
-              if (neigh_1_type[0] <= neigh_2_type[0]) {
-                if ((center_type == neigh_1_type[0]) or
-                    (center_type == neigh_2_type[0])) {
-                  pair_type[0] = neigh_1_type[0];
-                  pair_type[1] = neigh_2_type[0];
-                  grad_pair_list.insert({is_sorted, pair_type});
+            for (const auto & neigh_1_type : keys_j) {
+              for (const auto & neigh_2_type : keys_j) {
+                if (neigh_1_type[0] <= neigh_2_type[0]) {
+                  if ((center_type == neigh_1_type[0]) or
+                      (center_type == neigh_2_type[0])) {
+                    pair_type[0] = neigh_1_type[0];
+                    pair_type[1] = neigh_2_type[0];
+                    grad_pair_list.insert({is_sorted, pair_type});
+                  }
                 }
               }
             }
           }
-        }
-        keys_list_grad.emplace_back(grad_pair_list);
-      }  // auto neigh : center.pairs()
+          keys_list_grad.emplace_back(grad_pair_list);
+        }  // auto neigh : center.pairs()
+      } // if compute_gradients
     }    // for center : manager
 
     soap_vectors.resize(keys_list);
