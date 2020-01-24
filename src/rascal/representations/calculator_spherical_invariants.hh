@@ -359,7 +359,12 @@ namespace rascal {
             StructureManager>;
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
+    using PS_norm_t = Property<double, 1, StructureManager, 1, 1>;
+
     constexpr static int n_spatial_dimensions = StructureManager::dim();
+    using MapSoapGradFlat_t = Eigen::Map<Eigen::Matrix<double, n_spatial_dimensions,
+                                    Eigen::Dynamic, Eigen::RowMajor>>;
+    using ConstMapSoapFlat_t = const Eigen::Map<const Eigen::VectorXd>;
     using internal::SphericalInvariantsType;
     using math::pow;
 
@@ -397,6 +402,9 @@ namespace rascal {
 
     std::set<Key_t> all_coeff_keys{expansions_coefficients_gradient.get_keys()};
     const size_t n_n1n2{math::pow(this->max_radial, 2_size_t)};
+    // to store the norm of the soap vectors
+    PS_norm_t soap_vector_norm_inv{*manager, "soap vector inverse norms", true};
+    soap_vector_norm_inv.resize();
 
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
@@ -443,11 +451,11 @@ namespace rascal {
       soap_vector.multiply_off_diagonal_elements_by(math::SQRT_TWO);
 
       // normalize the soap vector
-      double soap_vector_norm{1.0};
       if (this->normalize) {
-        soap_vector_norm = soap_vector.norm();
-        soap_vector.normalize();
+        double norm_inv{1. / soap_vector.normalize()};
+        soap_vector_norm_inv[center] = norm_inv;
       }
+
       if (this->compute_gradients) {
         auto ii_pair = center.get_atom_ii();
         auto atom_i_tag = center.get_atom_tag();
@@ -534,8 +542,6 @@ namespace rascal {
 
         // Sum the gradients wrt the neighbour atom position
         // compute the \grad_i p^{j} coeffs
-        // std::cout << ">>>>>Center " << center.get_atom_tag()<<" key: "
-        //           << spair_type[0] << " "<< spair_type[1] << std::endl;
         for (auto neigh : center.pairs()) {
           auto && atom_j = neigh.get_atom_j();
           auto atom_j_tag = atom_j.get_atom_tag();
@@ -650,6 +656,8 @@ namespace rascal {
             } // keys_coef_j
           } // keys_coef_grad_neigh
 
+          // multiply with the constant 1 / \sqrt(2l+1) and
+          // the \sqrt(2) factor to account for the missing (b,a) components
           auto keys = soap_neigh_gradient.get_keys();
           for (const auto& key : keys) {
             auto soap_neigh_gradient_by_species_pair{soap_neigh_gradient[key]};
@@ -660,118 +668,79 @@ namespace rascal {
             }
           }
         }  // for neigh : center
-        // std::cout <<std::endl;
-        // std::cout << "-----------------------------------" <<std::endl;
-        // NOTE(max) the multiplications below have already been done within the
-        // species pair loop above -- not sure which way is more efficient
-
-        // for (auto neigh : center.pairs()) {
-        //   auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
-        //   auto keys = soap_neigh_gradient.get_keys();
-        //   for (const auto& key : keys) {
-        //     soap_neigh_gradient[key] *=
-        //             this->l_factors.asDiagonal();
-        //   }
-        //   soap_neigh_gradient.multiply_off_diagonal_elements_by(
-        //           math::SQRT_TWO);
-        // }
-
-        // Update the gradients to include SOAP vector normalization
-        // Note that this expects the soap vectors to be normalized already, and
-        // the norm stored separately
-        if (this->normalize) {
-          // Note that the normalization _must_ be done in a separate loop to
-          // the loop over species pairs above, because it includes a sum over
-          // all species pairs of the already-computed gradient vectors
-          //
-          // First, perform a dot product of each gradient _component_ with the
-          // corresponding normalized soap vector
-          Eigen::Vector3d soap_vector_dot_center_gradient{};
-          soap_vector_dot_center_gradient.setZero();
-          // (n1, n2) * l
-          size_t grad_component_size{
-              static_cast<size_t>(math::pow(this->max_radial, 2)) *
-              (this->max_angular + 1)};
-          for (auto soap_grad_spair : soap_center_gradient) {
-            auto & soap_gradient_by_species_pair{soap_grad_spair.second};
-            const auto & soap_vector_by_species_pair{
-                soap_vector[soap_grad_spair.first]};
-            Eigen::Map<Eigen::Matrix<double, n_spatial_dimensions,
-                                     Eigen::Dynamic, Eigen::RowMajor>>
-                soap_gradient_dim_N(soap_gradient_by_species_pair.data(),
-                                    n_spatial_dimensions, grad_component_size);
-            const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
-                soap_vector_by_species_pair.data(), grad_component_size);
-            soap_vector_dot_center_gradient +=
-                (soap_gradient_dim_N * soap_vector_N);
-          }
-          // Now update each species-pair-block using the dot-product just
-          // computed
-          for (auto soap_grad_spair : soap_center_gradient) {
-            auto & soap_gradient_by_species_pair{soap_grad_spair.second};
-            const auto & soap_vector_by_species_pair{
-                soap_vector[soap_grad_spair.first]};
-            Eigen::Map<Eigen::Matrix<double, n_spatial_dimensions,
-                                     Eigen::Dynamic, Eigen::RowMajor>>
-                soap_gradient_dim_N(soap_gradient_by_species_pair.data(),
-                                    n_spatial_dimensions, grad_component_size);
-            const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
-                soap_vector_by_species_pair.data(), grad_component_size);
-            soap_gradient_dim_N =
-                ((soap_gradient_dim_N -
-                  soap_vector_dot_center_gradient * soap_vector_N.transpose()) /
-                 soap_vector_norm);
-          }
-
-          // Aaand do the same thing for the gradients wrt neighbouring atoms
-          for (auto neigh : center.pairs()) {
-            auto && atom_j = neigh.get_atom_j();
-            auto atom_j_tag = atom_j.get_atom_tag();
-            // compute grad contribution only if the neighbour is _not_ an
-            // image of the center
-            if (atom_j_tag == atom_i_tag) {
-              continue;
-            }
-            auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
-            Eigen::Vector3d soap_vector_dot_neigh_gradient{};
-            soap_vector_dot_neigh_gradient.setZero();
-            // First, dot product between soap vector and _neighbour_ gradient
-            for (auto soap_grad_spair : soap_neigh_gradient) {
-              auto & soap_gradient_by_species_pair{soap_grad_spair.second};
-              const auto & soap_vector_by_species_pair{
-                  soap_vector[soap_grad_spair.first]};
-              Eigen::Map<Eigen::Matrix<double, n_spatial_dimensions,
-                                       Eigen::Dynamic, Eigen::RowMajor>>
-                  soap_gradient_dim_N(soap_gradient_by_species_pair.data(),
-                                      n_spatial_dimensions,
-                                      grad_component_size);
-              const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
-                  soap_vector_by_species_pair.data(), grad_component_size);
-              soap_vector_dot_neigh_gradient +=
-                  (soap_gradient_dim_N * soap_vector_N);
-            }
-            // Then, update each species-pair-block
-            for (auto soap_grad_spair : soap_neigh_gradient) {
-              auto & soap_gradient_by_species_pair{soap_grad_spair.second};
-              const auto & soap_vector_by_species_pair{
-                  soap_vector[soap_grad_spair.first]};
-              Eigen::Map<Eigen::Matrix<double, n_spatial_dimensions,
-                                       Eigen::Dynamic, Eigen::RowMajor>>
-                  soap_gradient_dim_N(soap_gradient_by_species_pair.data(),
-                                      n_spatial_dimensions,
-                                      grad_component_size);
-              const Eigen::Map<const Eigen::VectorXd> soap_vector_N(
-                  soap_vector_by_species_pair.data(), grad_component_size);
-              soap_gradient_dim_N =
-                  ((soap_gradient_dim_N - soap_vector_dot_neigh_gradient *
-                                              soap_vector_N.transpose()) /
-                   soap_vector_norm);
-            }  // for soap_grad_spair : soap_center_gradient
-          }    // for neigh : center
-        }      // if normalize
       }        // if compute gradients
     }          // for center : manager
-  }            // compute_powerspectrum()
+
+    // Update the gradients \grad_i p^{k} to include SOAP vector
+    // normalization, N_i, resulting in \grad_i \tilde{p}^{k}.
+    // We have:
+    // \grad_i \tilde{p}^{i} = \grad_i p^{i} / N_i
+    //          - \tilde{p}^{i} [\tilde{p}^{i} \cdot \grad_i p^{i} / N_i],
+    // \grad_i \tilde{p}^{j} = \grad_i p^{j} / N_j
+    //          - \tilde{p}^{j} [\tilde{p}^{j} \cdot \grad_i p^{j} / N_j],
+    // where $\cdot$ is a dot product between vectors.
+    // Note that this expects the soap vectors to be normalized already, and
+    // the norm stored separately
+    if (this->normalize and this->compute_gradients) {
+      // divide all gradients with the normalization factor N_i
+      for (auto center : manager) {
+        for (auto neigh : center.pairs_with_self_pair()) {
+          auto atom_j = neigh.get_atom_j();
+          soap_vector_gradients[neigh].multiply_elements_by(soap_vector_norm_inv[atom_j]);
+        }
+      }
+      // \tilde{p}^{k} \cdot \grad_i p^{k} / N_k
+      Eigen::Vector3d soap_vector_dot_gradient{};
+      const size_t grad_component_size{n_n1n2 * (this->max_angular + 1)};
+
+      // compute the dot product and update the gradients to be normalized
+      for (auto center : manager) {
+        for (auto neigh : center.pairs_with_self_pair()) {
+          auto atom_j = neigh.get_atom_j();
+          const auto & soap_vector = soap_vectors[atom_j];
+          auto & soap_vector_gradients_by_neigh = soap_vector_gradients[neigh];
+          soap_vector_dot_gradient.setZero();
+          // make sure to iterate over keys that are present in both soap_vector
+          // and soap_vector_gradients_by_neigh
+          const auto keys_grad = soap_vector_gradients_by_neigh.get_keys();
+          const auto keys_intersect = soap_vector.intersection(keys_grad);
+          // compute \tilde{p}^{k} \cdot \grad_i p^{k} / N_k
+          for (const auto& key : keys_intersect) {
+            auto soap_gradient_by_species_pair = soap_vector_gradients_by_neigh[key];
+            const auto & soap_vector_by_species_pair = soap_vector[key];
+            // reshape for easy dot prod
+            MapSoapGradFlat_t
+              soap_gradient_dim_N(soap_gradient_by_species_pair.data(),
+                                  n_spatial_dimensions, grad_component_size);
+            ConstMapSoapFlat_t soap_vector_N(
+              soap_vector_by_species_pair.data(), grad_component_size);
+            // dot
+            soap_vector_dot_gradient +=
+              (soap_gradient_dim_N * soap_vector_N);
+          } // for (const auto& key : keys_intersect)
+
+          // Now update each species-pair-block using the dot-product just
+          // computed
+          for (const auto& key : keys_intersect) {
+            auto soap_gradient_by_species_pair = soap_vector_gradients_by_neigh[key];
+            const auto & soap_vector_by_species_pair = soap_vector[key];
+            // reshape for easy dot prod
+            MapSoapGradFlat_t
+                soap_gradient_dim_N(soap_gradient_by_species_pair.data(),
+                                    n_spatial_dimensions, grad_component_size);
+            ConstMapSoapFlat_t soap_vector_N(
+                soap_vector_by_species_pair.data(), grad_component_size);
+            // compute \tilde{p}^{k} [\tilde{p}^{k} \cdot \grad_i p^{k} / N_k]
+            // as an outer product
+            soap_gradient_dim_N -=
+                    soap_vector_dot_gradient * soap_vector_N.transpose();
+          } // for (const auto& key : keys_intersect)
+
+        } // (auto neigh : center.pairs_with_self_pair())
+      } // (auto center : manager)
+
+    } // if normalize and compute_gradients
+  } // compute_powerspectrum()
 
   template <
       internal::SphericalInvariantsType BodyOrder,

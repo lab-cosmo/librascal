@@ -430,12 +430,13 @@ namespace rascal {
       /**
        * squared l^2 norm of the entire vector (sum of squared elements)
        */
-      void normalize() {
+      double normalize() {
         double norm{this->norm()};
         auto block{this->get_full_vector()};
         if (std::abs(norm) > 0.) {
           block /= norm;
         }
+        return norm;
       }
 
       /**
