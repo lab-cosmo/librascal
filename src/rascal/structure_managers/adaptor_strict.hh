@@ -84,6 +84,7 @@ namespace rascal {
     using ManagerImplementation_t = ManagerImplementation;
     using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+    using ConstImplementationPtr_t = const std::shared_ptr<const ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorStrict>;
     using PreviousManager_t = typename traits::PreviousManager_t;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -222,6 +223,11 @@ namespace rascal {
 
     //! Get the manager used to build the instance
     ImplementationPtr_t get_previous_manager_impl() {
+      return this->manager->get_shared_ptr();
+    }
+
+    //! Get the manager used to build the instance
+    ConstImplementationPtr_t get_previous_manager_impl() const {
       return this->manager->get_shared_ptr();
     }
 
