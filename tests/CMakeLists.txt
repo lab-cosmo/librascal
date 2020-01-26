@@ -29,6 +29,7 @@ else()
     set(TEST_RUNNER "")
 endif()
 
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 add_library(rascal_tests_main STATIC helpers/tests_main.cc)
 target_compile_definitions(rascal_tests_main PUBLIC -DBOOST_TEST_DYN_LINK)
 target_link_libraries(rascal_tests_main ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
