@@ -1745,8 +1745,8 @@ namespace rascal {
           }
           c_ij_nlm *= f_c;
           coefficients_center_by_type += c_ij_nlm;
-          if (not are_some_centers_masked
-                  and (atom_j_tag != atom_i_tag)) { // NOLINT
+          if (not are_some_centers_masked and
+              (atom_j_tag != atom_i_tag)) {  // NOLINT
             // half list branch for c^{ji} terms using
             // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
             auto & coefficients_neigh{expansions_coefficients[atom_j]};
@@ -1861,10 +1861,10 @@ namespace rascal {
                   l_block_idx += l_block_size;
                 }  // for (angular_l)
               }    // for cartesian_idx
-            }  // if (is_center_atom)
-          }  // if (IsHalfNL)
-        }  // if (this->compute_gradients)
-      }    // for (neigh : center)
+            }      // if (is_center_atom)
+          }        // if (IsHalfNL)
+        }          // if (this->compute_gradients)
+      }            // for (neigh : center)
 
       if (this->compute_gradients) {
         // In the case of having several periodic images of other centers in
