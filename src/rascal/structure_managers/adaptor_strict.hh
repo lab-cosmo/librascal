@@ -234,7 +234,8 @@ namespace rascal {
 
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer>
-    double get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+    const double &
+    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       return this->distance->operator[](pair);
     }
 

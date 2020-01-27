@@ -312,8 +312,8 @@ namespace rascal {
         std::shared_ptr<StructureManager> manager);
 
     /**
-     * Update the gradients \grad_i p^{k} to include invariants
-     * normalization, N_i, resulting in \grad_i \tilde{p}^{k}.
+     * Update the gradients \grad_i p^{k} to include normalization, N_i,
+     * resulting in \grad_i \tilde{p}^{k}.
      * We have:
      * \grad_i \tilde{p}^{k} = \grad_i p^{k} / N_k
              - \tilde{p}^{k} [\tilde{p}^{k} \cdot \grad_i p^{k} / N_k],
@@ -321,13 +321,12 @@ namespace rascal {
      * Note that this expects the soap vectors to be normalized already, and
      * the norm stored separately
      */
-    template <class StructureManager, class Invariants, class InvariantsGrads,
-              class SpectrumNorm>
-    void normalize_gradients(Invariants & soap_vectors,
-                             InvariantsGrads & soap_vector_gradients,
-                             std::shared_ptr<StructureManager> manager,
-                             SpectrumNorm & inv_norms,
-                             const size_t & grad_component_size) {
+    template <class StructureManager, class SpectrumNorm>
+    void normalize_gradients(
+        Property_t<StructureManager> & soap_vectors,
+        PropertyGradient_t<StructureManager> & soap_vector_gradients,
+        std::shared_ptr<StructureManager> manager, SpectrumNorm & inv_norms,
+        const size_t & grad_component_size) {
       constexpr static int n_spatial_dimensions = StructureManager::dim();
       using MapSoapGradFlat_t =
           Eigen::Map<Eigen::Matrix<double, n_spatial_dimensions, Eigen::Dynamic,
@@ -477,11 +476,10 @@ namespace rascal {
     // using operator[] of soap_vector
     internal::SortedKey<Key_t> spair_type{pair_type};
 
-    std::set<Key_t> all_coeff_keys{expansions_coefficients_gradient.get_keys()};
     const size_t n_n1n2{math::pow(this->max_radial, 2_size_t)};
     // to store the norm of the soap vectors
     SpectrumNorm_t<StructureManager> soap_vector_norm_inv{
-        *manager, "soap vector inverse norms", true};
+        *manager, "power spectrums inverse norms", true};
     soap_vector_norm_inv.resize();
 
     for (auto center : manager) {

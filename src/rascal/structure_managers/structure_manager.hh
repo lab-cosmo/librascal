@@ -617,7 +617,8 @@ namespace rascal {
     template <size_t Order, size_t Layer,
               bool HasDistances = traits::HasDistances,
               typename std::enable_if_t<HasDistances, int> = 0>
-    inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
+    const double &
+    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       static_assert(HasDistances == traits::HasDistances,
                     "The manager does not have distances.");
       return this->get_previous_manager()->get_distance(pair);
@@ -626,8 +627,8 @@ namespace rascal {
     template <size_t Order, size_t Layer,
               bool HasDirectionVectors = traits::HasDirectionVectors,
               typename std::enable_if_t<HasDirectionVectors, int> = 0>
-    inline const Vector_ref
-    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) {
+    const Vector_ref
+    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
       static_assert(HasDirectionVectors == traits::HasDirectionVectors,
                     "The manager does not have direction vectors.");
       return this->get_previous_manager()->get_direction_vector(pair);
