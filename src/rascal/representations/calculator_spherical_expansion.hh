@@ -1712,7 +1712,7 @@ namespace rascal {
         auto && atom_j = neigh.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag();
         const bool is_center_atom{manager->is_center_atom(neigh)};
-        
+
         auto dist{manager->get_distance(neigh)};
         auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
@@ -1728,8 +1728,11 @@ namespace rascal {
         auto coefficients_center_by_type{coefficients_center[neigh_type]};
         size_t l_block_idx{0};
         // compute the coefficients
-        if (not are_some_centers_masked and
-              is_center_atom and atom_i_tag > atom_j_tag) {
+        // complications here because the infrastructure for swaping ij is not
+        // here yet.
+        // TODO(felix) make swaping ij possible and implement the
+        // proper half for gradients.
+        if (not are_some_centers_masked and atom_i_tag > atom_j_tag) {
           // continue;
         } else {
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
@@ -1742,8 +1745,7 @@ namespace rascal {
           }
           c_ij_nlm *= f_c;
           coefficients_center_by_type += c_ij_nlm;
-          if (not are_some_centers_masked and
-                is_center_atom) {
+          if (not are_some_centers_masked and (atom_j_tag != atom_i_tag)) {
             // half list branch for c^{ji} terms using
             // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
             auto & coefficients_neigh{expansions_coefficients[atom_j]};
