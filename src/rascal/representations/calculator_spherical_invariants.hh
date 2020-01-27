@@ -622,7 +622,7 @@ namespace rascal {
                     }  // for n2
                   }    // for n1
                 }      // for cartesian_idx
-              }  // if (sorted or equal)
+              }        // if (sorted or equal)
 
               // computes c^{k a}_{n_1} \grad_i c^{k b}_{n_2}
               if (not sorted or equal) {

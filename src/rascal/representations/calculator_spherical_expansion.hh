@@ -1745,7 +1745,8 @@ namespace rascal {
           }
           c_ij_nlm *= f_c;
           coefficients_center_by_type += c_ij_nlm;
-          if (not are_some_centers_masked and (atom_j_tag != atom_i_tag)) {
+          if (not are_some_centers_masked
+                  and (atom_j_tag != atom_i_tag)) { // NOLINT
             // half list branch for c^{ji} terms using
             // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
             auto & coefficients_neigh{expansions_coefficients[atom_j]};
@@ -1797,7 +1798,7 @@ namespace rascal {
           for (int cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
                  ++cartesian_idx) {
             l_block_idx = 0;
-            double parity{-1.}; // account for (-1)^{l+1}
+            double parity{-1.};  // account for (-1)^{l+1}
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                 ++angular_l) {
               size_t l_block_size{2 * angular_l + 1};
@@ -1826,7 +1827,8 @@ namespace rascal {
               // grad_i c^{j} = (-1)^{l+1} grad_j c^{ij}
               gradient_neigh_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
-                  max_radial, l_block_size) = parity * pair_gradient_contribution;
+                  max_radial, l_block_size) = parity *
+                    pair_gradient_contribution;
               l_block_idx += l_block_size;
               parity *= -1.;
               // clang-format on
@@ -1859,9 +1861,8 @@ namespace rascal {
                   l_block_idx += l_block_size;
                 }  // for (angular_l)
               }    // for cartesian_idx
-            }
+            }  // if (is_center_atom)
           }  // if (IsHalfNL)
-
         }  // if (this->compute_gradients)
       }    // for (neigh : center)
 
