@@ -1639,8 +1639,8 @@ namespace rascal {
     constexpr bool ExcludeGhosts{true};
     constexpr static size_t ClusterLayer{
           StructureManager::template cluster_layer_from_order<2>()};
-
-    if (manager->are_some_centers_masked() and this->compute_gradients) {
+    const bool are_some_centers_masked{manager->are_some_centers_masked()};
+    if (are_some_centers_masked and this->compute_gradients) {
       throw std::logic_error(
         "Can't compute spherical expansion gradients with masked center atoms");
     }
@@ -1711,7 +1711,12 @@ namespace rascal {
       for (auto neigh : center.pairs()) {
         auto && atom_j = neigh.get_atom_j();
         auto atom_j_tag = atom_j.get_atom_tag();
-        bool is_center_atom{manager->is_center_atom(neigh)};
+        const bool is_center_atom{manager->is_center_atom(neigh)};
+        // conditions to avoid computing c_ij_nlm and c_ji_nlm
+        if (not are_some_centers_masked and
+              is_center_atom and atom_i_tag > atom_j_tag) {
+          continue;
+        }
 
         auto dist{manager->get_distance(neigh)};
         auto direction{manager->get_direction_vector(neigh)};
@@ -1742,29 +1747,20 @@ namespace rascal {
 
         // half list branch for c^{ji} terms using
         // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
-        if (IsHalfNL) {
-          if (not manager->is_center_atom(atom_j)) {
-            std::stringstream err_str{};
-            err_str << "Half neighbor list should only be used when all the "
-                    << "atoms inside the unit cell are centers, i.e. "
-                    << "center_atoms_mask should not mask atoms.";
-            throw std::runtime_error(err_str.str());
-          }
-          if (is_center_atom) {
-            auto & coefficients_neigh{expansions_coefficients[atom_j]};
-            auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
-            l_block_idx = 0;
-            double parity{1.};
-            for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-                 ++angular_l) {
-              size_t l_block_size{2 * angular_l + 1};
-              coefficients_neigh_by_type.block(0, l_block_idx, max_radial,
-                                               l_block_size) +=
-                  parity *
-                  c_ij_nlm.block(0, l_block_idx, max_radial, l_block_size);
-              l_block_idx += l_block_size;
-              parity *= -1.;
-            }
+        if (not are_some_centers_masked and is_center_atom) {
+          auto & coefficients_neigh{expansions_coefficients[atom_j]};
+          auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
+          l_block_idx = 0;
+          double parity{1.}; // account for (-1)^l
+          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+                ++angular_l) {
+            size_t l_block_size{2 * angular_l + 1};
+            coefficients_neigh_by_type.block(0, l_block_idx, max_radial,
+                                              l_block_size) +=
+                parity *
+                c_ij_nlm.block(0, l_block_idx, max_radial, l_block_size);
+            l_block_idx += l_block_size;
+            parity *= -1.;
           }
         }
 
