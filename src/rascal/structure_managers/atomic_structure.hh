@@ -76,7 +76,7 @@ namespace rascal {
     using CellInput_t = Eigen::Ref<const Eigen::MatrixXd>;
 
     using ArrayB_t = Eigen::Array<bool, Eigen::Dynamic, 1>;
-    using ArrayB_ref = Eigen::Ref<const ArrayB_t>;
+    using ConstArrayB_ref = const Eigen::Ref<const ArrayB_t>;
 
     template <typename T>
     using ArrayConstRef_t =
@@ -319,7 +319,7 @@ namespace rascal {
     bool is_similar(const PositionsInput_t & positions,
                     const AtomTypesInput_t & atom_types, const CellInput_t cell,
                     const PBCInput_t & pbc,
-                    const ArrayB_ref & center_atoms_mask,
+                    const ConstArrayB_ref & center_atoms_mask,
                     double threshold2) const {
       bool is_similar_{true};
       if (this->positions.cols() == positions.cols()) {

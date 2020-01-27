@@ -170,6 +170,8 @@ namespace rascal {
     using traits = StructureManager_traits<ManagerImplementation>;
     using PreviousManager_t = typename traits::PreviousManager_t;
     using ImplementationPtr_t = std::shared_ptr<PreviousManager_t>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const PreviousManager_t>;
     //! type used to represent spatial coordinates, etc
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
@@ -631,6 +633,10 @@ namespace rascal {
       return this->get_previous_manager()->get_direction_vector(pair);
     }
 
+    bool are_some_centers_masked() const {
+      return this->get_previous_manager()->are_some_centers_masked();
+    }
+
     //! Get the full type of the structure manager
     static std::string get_name() {
       return internal::type_name<ManagerImplementation>();
@@ -641,7 +647,7 @@ namespace rascal {
       return this->implementation().shared_from_this();
     }
 
-    std::shared_ptr<const ManagerImplementation> get_shared_ptr() const {
+    const std::shared_ptr<const ManagerImplementation> get_shared_ptr() const {
       return this->implementation().shared_from_this();
     }
 
@@ -731,7 +737,12 @@ namespace rascal {
       return get_dyn_layer<traits::MaxOrder>(order,
                                              typename traits::LayerByOrder{});
     }
+
     ImplementationPtr_t get_previous_manager() {
+      return this->implementation().get_previous_manager_impl();
+    }
+
+    ConstImplementationPtr_t get_previous_manager() const {
       return this->implementation().get_previous_manager_impl();
     }
 
