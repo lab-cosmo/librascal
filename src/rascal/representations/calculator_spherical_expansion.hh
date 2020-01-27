@@ -1915,7 +1915,7 @@ namespace rascal {
           }
         }
         // has to be done in 2 steps because erase invalidates the iterator
-        for (const int& tag : tags_to_erase) {
+        for (const int & tag : tags_to_erase) {
           periodic_images_of_center.erase(tag);
         }
 
