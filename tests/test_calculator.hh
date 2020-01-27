@@ -823,10 +823,6 @@ namespace rascal {
       // Count all the keys in the sparse gradient structure where the gradient
       // is nonzero (i.e. where the key has an entry in the structure)
       for (auto neigh : center.pairs_with_self_pair()) {
-        if (this->structure_manager->is_ghost_atom(neigh)) {
-          // Don't compute gradient contributions onto ghost atoms
-          continue;
-        }
         n_entries_neighbours +=
             (gradients_sparse[neigh].get_keys().size() * n_entries_per_key);
       }
@@ -837,17 +833,7 @@ namespace rascal {
       size_t result_idx{0};
       for (auto neigh : center.pairs_with_self_pair()) {
         auto atom_j = neigh.get_atom_j();
-        if (this->structure_manager->is_ghost_atom(neigh)) {
-          // Don't compute gradient contributions onto ghost atoms
-          continue;
-        }
         auto & data_neigh{data_sparse[atom_j]};
-        // The neighbour gradient (i =/= j) only contributes to certain species
-        // channels (keys), in the case of SOAP and SphExpn those keys
-        // containing the species of the center (the atom wrt the derivative is
-        // being taken)
-        // The nonzero gradient keys are already indicated in the sparse
-        // gradient structure
         auto keys_neigh{gradients_sparse[neigh].get_keys()};
         for (auto & key : keys_neigh) {
           Eigen::Map<Eigen::ArrayXd> data_flat(data_neigh[key].data(),
@@ -880,10 +866,6 @@ namespace rascal {
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
       size_t n_entries_neighbours{0};
       for (auto neigh : center.pairs_with_self_pair()) {
-        if (this->structure_manager->is_ghost_atom(neigh)) {
-          // Don't compute gradient contributions onto ghost atoms
-          continue;
-        }
         n_entries_neighbours +=
             (gradients_sparse[neigh].get_keys().size() * n_entries_per_key);
       }
@@ -896,10 +878,6 @@ namespace rascal {
       size_t result_idx{0};
       for (auto neigh : center.pairs_with_self_pair()) {
         auto atom_j = neigh.get_atom_j();
-        if (this->structure_manager->is_ghost_atom(neigh)) {
-          // Don't compute gradient contributions onto ghost atoms
-          continue;
-        }
         // The set of species keys should be the same for all images of i
         auto & gradients_neigh{gradients_sparse[neigh]};
         auto keys_neigh{gradients_neigh.get_keys()};
