@@ -1906,13 +1906,19 @@ namespace rascal {
         }
 
         // remove centers that don't have periodic images in the environement
+        std::vector<int> tags_to_erase{};
         for (const auto & el : periodic_images_of_center) {
-          int atom_tag_j{el.first};
-          auto p_images = el.second;
+          const int atom_tag_j{el.first};
+          const auto & p_images = el.second;
           if (p_images.size() < 2) {
-            periodic_images_of_center.erase(atom_tag_j);
+            tags_to_erase.emplace_back(atom_tag_j);
           }
         }
+        // has to be done in 2 steps because erase invalidates the iterator
+        for (const int& tag : tags_to_erase) {
+          periodic_images_of_center.erase(tag);
+        }
+
         // for each center atoms with periodic images, sum up the contributions
         // and assign the sum back to the terms
         for (const auto & el : periodic_images_of_center) {
