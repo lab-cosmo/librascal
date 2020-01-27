@@ -251,11 +251,13 @@ namespace rascal {
           cluster_indices{cluster_indices.data()} {}
 
     //! Copy constructor
-    ClusterRefKey(const ClusterRefKey & other) : Parent{Order, Layer}, atom_tag_list{other.atom_tag_list},
+    ClusterRefKey(const ClusterRefKey & other)
+        : Parent{Order, Layer}, atom_tag_list{other.atom_tag_list},
           cluster_indices{other.cluster_indices.data()} {}
 
     //! Move constructor
-    ClusterRefKey(ClusterRefKey && other) : Parent{Order, Layer}, atom_tag_list{std::move(other.atom_tag_list)},
+    ClusterRefKey(ClusterRefKey && other)
+        : Parent{Order, Layer}, atom_tag_list{std::move(other.atom_tag_list)},
           cluster_indices{std::move(other.cluster_indices.data())} {}
 
     //! Destructor

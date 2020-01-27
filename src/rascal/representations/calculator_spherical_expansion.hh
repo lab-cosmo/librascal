@@ -1638,11 +1638,11 @@ namespace rascal {
     using math::pow;
     constexpr bool ExcludeGhosts{true};
     constexpr static size_t ClusterLayer{
-          StructureManager::template cluster_layer_from_order<2>()};
+        StructureManager::template cluster_layer_from_order<2>()};
     const bool are_some_centers_masked{manager->are_some_centers_masked()};
     if (are_some_centers_masked and this->compute_gradients) {
-      throw std::logic_error(
-        "Can't compute spherical expansion gradients with masked center atoms");
+      throw std::logic_error("Can't compute spherical expansion gradients with "
+                             "masked center atoms");
     }
 
     auto && expansions_coefficients{*manager->template get_property<Prop_t>(
@@ -1736,7 +1736,7 @@ namespace rascal {
           // continue;
         } else {
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-              ++angular_l) {
+               ++angular_l) {
             size_t l_block_size{2 * angular_l + 1};
             c_ij_nlm.block(0, l_block_idx, max_radial, l_block_size) =
                 neighbour_contribution.col(angular_l) *
@@ -1751,12 +1751,12 @@ namespace rascal {
             auto & coefficients_neigh{expansions_coefficients[atom_j]};
             auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
             l_block_idx = 0;
-            double parity{1.}; // account for (-1)^l
+            double parity{1.};  // account for (-1)^l
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-                  ++angular_l) {
+                 ++angular_l) {
               size_t l_block_size{2 * angular_l + 1};
               coefficients_neigh_by_type.block(0, l_block_idx, max_radial,
-                                                l_block_size) +=
+                                               l_block_size) +=
                   parity *
                   c_ij_nlm.block(0, l_block_idx, max_radial, l_block_size);
               l_block_idx += l_block_size;
@@ -1862,8 +1862,8 @@ namespace rascal {
             }
           }  // if (IsHalfNL)
 
-        }    // if (this->compute_gradients)
-      }      // for (neigh : center)
+        }  // if (this->compute_gradients)
+      }    // for (neigh : center)
 
       if (this->compute_gradients) {
         // In the case of having several periodic images of other centers in
@@ -1875,28 +1875,31 @@ namespace rascal {
         // convinience object to associate every center j within the
         // environement of center i to its corresponding pair ij and its
         // periodic images.
-        std::map<int, std::vector<
-        ClusterRefKey<2, ClusterLayer> >> periodic_images_of_center{};
+        std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
+            periodic_images_of_center{};
 
         // find all center atoms within the environment of i
         for (auto pair : center.pairs()) {
           auto atom_j = pair.get_atom_j();
           int atom_tag_j = atom_j.get_atom_tag();
           if (not manager->is_ghost_atom(pair)) {
-            periodic_images_of_center[atom_tag_j].emplace_back(static_cast<ClusterRefKey<2, ClusterLayer>>(pair));
+            periodic_images_of_center[atom_tag_j].emplace_back(
+                static_cast<ClusterRefKey<2, ClusterLayer>>(pair));
           }
         }
         // find the periodic images of the found center atoms
         for (auto pair : center.pairs()) {
           auto atom_j = pair.get_atom_j();
           int atom_tag_j = atom_j.get_atom_tag();
-          if (periodic_images_of_center.count(atom_tag_j) and manager->is_ghost_atom(pair)) {
-            periodic_images_of_center[atom_tag_j].emplace_back(std::move(static_cast<ClusterRefKey<2, ClusterLayer>>(pair)));
+          if (periodic_images_of_center.count(atom_tag_j) and
+              manager->is_ghost_atom(pair)) {
+            periodic_images_of_center[atom_tag_j].emplace_back(
+                std::move(static_cast<ClusterRefKey<2, ClusterLayer>>(pair)));
           }
         }
 
         // remove centers that don't have periodic images in the environement
-        for (const auto& el : periodic_images_of_center) {
+        for (const auto & el : periodic_images_of_center) {
           int atom_tag_j{el.first};
           auto p_images = el.second;
           if (p_images.size() < 2) {
@@ -1905,19 +1908,22 @@ namespace rascal {
         }
         // for each center atoms with periodic images, sum up the contributions
         // and assign the sum back to the terms
-        for (const auto& el : periodic_images_of_center) {
-          const auto& p_images = el.second;
+        for (const auto & el : periodic_images_of_center) {
+          const auto & p_images = el.second;
           // these terms have only one species key that is non zero
-          Key_t key{expansions_coefficients_gradient[p_images.at(0)].get_keys().at(0)};
+          Key_t key{
+              expansions_coefficients_gradient[p_images.at(0)].get_keys().at(
+                  0)};
           di_c_ji_sum = expansions_coefficients_gradient[p_images[0]][key];
-          for (auto image_it = p_images.begin()+1, im_e = p_images.end(); image_it!= im_e; ++image_it) {
+          for (auto image_it = p_images.begin() + 1, im_e = p_images.end();
+               image_it != im_e; ++image_it) {
             di_c_ji_sum += expansions_coefficients_gradient[*image_it][key];
           }
-          for (const auto& p_image : el.second) {
+          for (const auto & p_image : el.second) {
             expansions_coefficients_gradient[p_image][key] = di_c_ji_sum;
           }
-        } // end of periodic images business
-      } // if (this->compute_gradients)
+        }  // end of periodic images business
+      }    // if (this->compute_gradients)
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
@@ -1981,7 +1987,7 @@ namespace rascal {
           }
           i_grad++;
         }
-      } // if (this->compute_gradients)
+      }  // if (this->compute_gradients)
       i_center++;
     }
 

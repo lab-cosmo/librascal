@@ -79,7 +79,8 @@ namespace rascal {
     using Parent = StructureManager<Manager_t>;
     using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
-    using ConstImplementationPtr_t = const std::shared_ptr<const ManagerImplementation>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorHalfList>;
     using PreviousManager_t = typename traits::PreviousManager_t;
     using parent_traits = typename ManagerImplementation::traits;

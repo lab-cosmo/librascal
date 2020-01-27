@@ -71,7 +71,8 @@ namespace rascal {
     using AtomRef_t = typename Parent::AtomRef;
     using ManagerImplementation_t = StructureManagerLammps;
     using ImplementationPtr_t = std::shared_ptr<StructureManagerLammps>;
-    using ConstImplementationPtr_t = const std::shared_ptr<const StructureManagerLammps>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const StructureManagerLammps>;
 
     //! Default constructor
     StructureManagerLammps() = default;
@@ -181,9 +182,7 @@ namespace rascal {
      */
     size_t get_nb_clusters(int order) const;
 
-    bool are_some_centers_masked() const {
-      return false;
-    }
+    bool are_some_centers_masked() const { return false; }
 
     //! //! overload of update that does not change the underlying structure
     void update_self() {}

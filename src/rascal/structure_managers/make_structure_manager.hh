@@ -114,7 +114,8 @@ namespace rascal {
     struct AdaptorFactory_hypers {
       using Manager_t = AdaptorImplementation<ManagerImplementation>;
       using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
-      using ConstImplementationPtr_t = const std::shared_ptr<const ManagerImplementation>;
+      using ConstImplementationPtr_t =
+          const std::shared_ptr<const ManagerImplementation>;
       using ManagerPtr_t = std::shared_ptr<Manager_t>;
       constexpr static size_t NextPosition{CurrentPosition + 1};
 

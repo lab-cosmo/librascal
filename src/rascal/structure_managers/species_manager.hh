@@ -88,7 +88,8 @@ namespace rascal {
     using traits = StructureManager_traits<ManagerImplementation>;
     using Manager_t = SpeciesManager<ManagerImplementation, MaxOrder>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
-    using ConstImplementationPtr_t = const std::shared_ptr<const ManagerImplementation>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const ManagerImplementation>;
     using Key_t = internal::detail::Key_t<MaxOrder>;
 
     /**

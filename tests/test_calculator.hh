@@ -519,7 +519,8 @@ namespace rascal {
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     // std::vector<json> rep_hypers{
     //     {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}},
-    //     {{"max_radial", 3}, {"max_angular", 0}, {"compute_gradients", true}}};
+    //     {{"max_radial", 3}, {"max_angular", 0}, {"compute_gradients",
+    //     true}}};
     std::vector<json> rep_hypers{
         {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}}};
   };
@@ -834,8 +835,7 @@ namespace rascal {
           continue;
         }
         n_entries_neighbours +=
-            (gradients_sparse[neigh].get_keys().size() *
-             n_entries_per_key);
+            (gradients_sparse[neigh].get_keys().size() * n_entries_per_key);
       }
       // Packed array containing: The center coefficients (all species) and
       // the neighbour coefficients (only same species as center)
@@ -913,8 +913,7 @@ namespace rascal {
           continue;
         }
         n_entries_neighbours +=
-            (gradients_sparse[neigh].get_keys().size() *
-             n_entries_per_key);
+            (gradients_sparse[neigh].get_keys().size() * n_entries_per_key);
       }
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
           grad_coeffs_pairs(3, n_entries_center + n_entries_neighbours);
@@ -950,7 +949,8 @@ namespace rascal {
         auto & gradients_neigh{gradients_sparse[neigh]};
         auto keys_neigh{gradients_neigh.get_keys()};
         for (auto & key : keys_neigh) {
-          // // For each key, accumulate gradients over periodic images of the atom
+          // // For each key, accumulate gradients over periodic images of the
+          // atom
           // // that moves in the finite-difference step
           // for (auto & neigh_swap : neigh_swap_images) {
 
@@ -980,8 +980,10 @@ namespace rascal {
     // /**
     //  * Swap a ClusterRef<order=2> (i, j) so it refers to (j, i) instead
     //  *
-    //  * @return std::vector of ClusterRefKeys or order 2 (pair keys) of all pairs
-    //  *         (j, i') where i' is either i or any of its periodic images within
+    //  * @return std::vector of ClusterRefKeys or order 2 (pair keys) of all
+    //  pairs
+    //  *         (j, i') where i' is either i or any of its periodic images
+    //  within
     //  *         the cutoff of j. The atom j, on the other hand, must be a real
     //  *         atom (not a ghost or periodic image).
     //  */
@@ -989,8 +991,9 @@ namespace rascal {
     //   auto center_manager{extract_underlying_manager<0>(structure_manager)};
     //   auto atomic_structure{center_manager->get_atomic_structure()};
     //   // Get the atom index to the corresponding atom tag
-    //   size_t access_index{structure_manager->get_atom_index(pair_ref.back())};
-    //   auto new_center_it{structure_manager->get_iterator_at(access_index)};
+    //   size_t
+    //   access_index{structure_manager->get_atom_index(pair_ref.back())}; auto
+    //   new_center_it{structure_manager->get_iterator_at(access_index)};
     //   // Return cluster ref at which the iterator is currently pointing
     //   auto && new_center{*new_center_it};
     //   size_t i_index{structure_manager->get_atom_index(pair_ref.front())};

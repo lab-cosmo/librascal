@@ -170,7 +170,8 @@ namespace rascal {
     using traits = StructureManager_traits<ManagerImplementation>;
     using PreviousManager_t = typename traits::PreviousManager_t;
     using ImplementationPtr_t = std::shared_ptr<PreviousManager_t>;
-    using ConstImplementationPtr_t = const std::shared_ptr<const PreviousManager_t>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const PreviousManager_t>;
     //! type used to represent spatial coordinates, etc
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
