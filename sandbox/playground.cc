@@ -130,11 +130,7 @@ int main() {
       for (auto pair : center.pairs()) {
         auto atom_j = pair.get_atom_j();
         int atom_tag_j = atom_j.get_atom_tag();
-        // int pair_tag_j = pair.get_atom_tag();
-        // if (atom_tag_j )
         if (not manager->is_ghost_atom(pair)) {
-          // std::vector< ClusterRefKey<2, ClusterLayer_>> periodic_images{ static_cast<ClusterRefKey<2, ClusterLayer_>>(pair)};
-          // periodic_images_of_center[atom_tag_j] = std::move(periodic_images);
           periodic_images_of_center[atom_tag_j].emplace_back(static_cast<ClusterRefKey<2, ClusterLayer_>>(pair));
         }
       }
