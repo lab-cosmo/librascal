@@ -1698,7 +1698,7 @@ namespace rascal {
     using math::pow;
     constexpr bool ExcludeGhosts{true};
     constexpr static size_t ClusterLayer{
-          StructureManager::template cluster_layer_from_order<2>()};
+        StructureManager::template cluster_layer_from_order<2>()};
     const bool are_any_centers_masked{manager->are_any_centers_masked()};
     if (are_any_centers_masked and this->compute_gradients) {
       throw std::logic_error("Can't compute spherical expansion gradients with "
@@ -1942,9 +1942,10 @@ namespace rascal {
       // j primes are periodic images of j. And assign this sum back to all
       // of these terms.
       if (this->compute_gradients) {
-        std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>> periodic_images_of_center =
-            internal::find_periodic_images_pairs_in_environment(manager,
-                                                                 center);
+        std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
+            periodic_images_of_center =
+                internal::find_periodic_images_pairs_in_environment(manager,
+                                                                    center);
         // for each center atoms with periodic images, sum up the contributions
         // and assign the sum back to the terms
         for (const auto & el : periodic_images_of_center) {
