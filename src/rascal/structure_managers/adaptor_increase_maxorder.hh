@@ -58,6 +58,7 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{
         parent_traits::HasDirectionVectors};
     constexpr static int Dim{parent_traits::Dim};
+    constexpr static bool HasSwapIJ{parent_traits::HasSwapIJ};
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     // New MaxOrder upon construction

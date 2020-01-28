@@ -73,6 +73,7 @@ namespace rascal {
     constexpr static bool HasDirectionVectors{false};
     constexpr static bool HasDistances{false};
     constexpr static bool HasCenterPair{false};
+    constexpr static bool HasSwapIJ{false};
     constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0>;
     typedef StructureManagerCenters PreviousManager_t;

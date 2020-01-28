@@ -52,6 +52,7 @@ namespace rascal {
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::yes};
     constexpr static bool HasDistances{true};
     constexpr static bool HasDirectionVectors{true};
+    constexpr static bool HasSwapIJ{parent_traits::HasSwapIJ};
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     constexpr static int Dim{parent_traits::Dim};
     constexpr static size_t MaxOrder{parent_traits::MaxOrder};

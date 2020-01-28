@@ -34,6 +34,7 @@
 #include "rascal/structure_managers/adaptor_increase_maxorder.hh"
 #include "rascal/structure_managers/cluster_ref_key.hh"
 #include "rascal/structure_managers/adaptor_center_contribution.hh"
+#include "rascal/structure_managers/adaptor_link_pairs.hh"
 #include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_strict.hh"
@@ -55,7 +56,8 @@ using namespace rascal;  // NOLINT
 
 using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
                                     AdaptorNeighbourList,
-                                    AdaptorCenterContribution, AdaptorStrict>;
+                                    AdaptorCenterContribution, AdaptorStrict,
+                                    LinkPairs>;
 using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
 using Manager_t = typename ManagerTypeHolder_t::type;
 using ManagerCollection_t =
@@ -69,7 +71,7 @@ int main() {
 
   std::string filename{"../reference_data/inputs/diamond_2atom_distorted.json"};
 
-  double cutoff{3.};
+  double cutoff{2.5};
 
   // json hypers{{"max_radial", 6},
   //             {"max_angular", 6},
@@ -100,52 +102,31 @@ int main() {
             {"initialization_arguments", {}}};
   json ad1c{{"name", "AdaptorCenterContribution"},
             {"initialization_arguments", {}}};
-  json ad2{{"name", "AdaptorStrict"},
+  json ad2a{{"name", "AdaptorStrict"},
            {"initialization_arguments", {{"cutoff", cutoff}}}};
+  json ad2b{{"name", "AdaptorLinkPairs"},
+           {"initialization_arguments", {}}};
   adaptors.emplace_back(ad1a);
   adaptors.emplace_back(ad1c);
-  adaptors.emplace_back(ad2);
+  adaptors.emplace_back(ad2a);
+  adaptors.emplace_back(ad2b);
 
   ManagerCollection_t collection{adaptors};
   collection.add_structures(filename, 0, 1);
 
   for (const auto & manager : collection) {
     for (auto center : manager) {
-    // current atom is atom_i or i
-    // [atom_j.get_atom_tag()] -> list of pairs  ij, ij', ij'' ... where
-    // j primes are periodic images of j
-    std::map<int, std::vector<
-          ClusterRefKey<2, ClusterLayer_> >> periodic_images_of_center{};
+      std::cout << "Center: " << center.get_atom_tag() << std::endl;
       for (auto pair : center.pairs()) {
-        auto atom_j = pair.get_atom_j();
-        int atom_tag_j = atom_j.get_atom_tag();
-        // int pair_tag_j = pair.get_atom_tag();
-        // if (atom_tag_j )
-        if (not manager->is_ghost_atom(pair)) {
-          std::vector< ClusterRefKey<2, ClusterLayer_>> periodic_images{ static_cast<ClusterRefKey<2, ClusterLayer_>>(pair)};
-          periodic_images_of_center[atom_tag_j] = std::move(periodic_images);
-        }
-      }
-
-      for (auto pair : center.pairs()) {
-        auto atom_j = pair.get_atom_j();
-        int atom_tag_j = atom_j.get_atom_tag();
-        if (periodic_images_of_center.count(atom_tag_j) and manager->is_ghost_atom(pair)) {
-          periodic_images_of_center[atom_tag_j].emplace_back(std::move(static_cast<ClusterRefKey<2, ClusterLayer_>>(pair)));
-        }
-      }
-      std::cout << "Center " << center.get_atom_tag() << std::endl;
-      for (const auto & el : periodic_images_of_center) {
-        std::cout << " atom_j " << el.first << " Images tags:";
-        for (const auto & p_im : el.second) {
-          int tag = p_im.get_atom_tag();
-          auto pos = manager->position(tag);
-          std::cout << tag << ", " << pos.transpose() << std::endl;
-        }
-        std::cout << std::endl;
+        std::cout << "Neigh ij: " << pair.get_cluster_index()
+                  << " (" << pair.front() << ", " << pair.back() << ") ";
+        auto && pair_ji = pair.get_pair_ji();
+        std::cout << "Neigh ji: " << pair_ji.get_cluster_index()
+                  << " (" << pair_ji.front() << ", " << pair_ji.back() << ") "<< std::endl;
       }
     }
   }
+
   // Representation_t soap{hypers};
 
   // soap.compute(collection);

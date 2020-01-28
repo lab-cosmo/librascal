@@ -631,6 +631,16 @@ namespace rascal {
       return this->get_previous_manager()->get_direction_vector(pair);
     }
 
+    template <size_t Order, size_t Layer,
+              bool HasSwapIJ_ = traits::HasSwapIJ,
+              typename std::enable_if_t<HasSwapIJ_, int> = 0>
+    size_t
+    get_pair_ji_offset(const ClusterRefKey<Order, Layer> & pair) {
+      static_assert(HasSwapIJ_ == true,
+                    "The manager can't swap ij pairs.");
+      return this->get_previous_manager()->get_pair_ji_offset(pair);
+    }
+
     //! Get the full type of the structure manager
     static std::string get_name() {
       return internal::type_name<ManagerImplementation>();
@@ -1003,6 +1013,9 @@ namespace rascal {
     //! true if ClusterRef of Order 2 and the manager has self pairs
     static constexpr bool HasCenterPairAndIsOrderTwo{traits::HasCenterPair and
                                                      Order == 2};
+    static constexpr bool HasHasSwapIJAndIsOrderTwo{traits::HasSwapIJ and
+                                                     Order == 2};
+
     //! Default constructor
     ClusterRef() = delete;
 
@@ -1112,6 +1125,31 @@ namespace rascal {
       return atom_jj;
     }
 
+
+    /**
+     * Getter for a ClusterRefKey refering to the current ji-pair associated
+     * to the current ij-pair.
+     *
+     * if you try to use this function and HasHasSwapIJ == false then
+     * you will get an error about not finding the function to call
+     * because of SFINAE.
+     *
+     * @return a ref to ClusterRefKey of order 2 and proper layer
+     */
+    template <bool C = HasHasSwapIJAndIsOrderTwo, std::enable_if_t<C, int> = 0>
+    auto get_pair_ji() {
+      auto && manager = it.get_manager().implementation();
+      auto && atom_j_tag = this->get_atom_tag();
+      auto && atom_j_index = manager.get_atom_index(atom_j_tag);
+      auto && atom_j_it = manager.get_iterator_at(atom_j_index, 0);
+      auto && atom_j = *atom_j_it;
+      size_t && pair_ji_offset{manager.get_pair_ji_offset(*this)};
+      auto && atom_ji_it = atom_j.template get_clusters_of_order<2>(pair_ji_offset).begin();
+      constexpr static size_t ClusterLayer_{
+          ManagerImplementation::template cluster_layer_from_order<2>()};
+      auto atom_ji = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_ji_it);
+      return atom_ji;
+    }
     /**
      * Returns the position of the last atom in the cluster, e.g. when
      * cluster order==1 it is the atom position, when cluster order==2 it is
