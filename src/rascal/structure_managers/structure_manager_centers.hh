@@ -306,7 +306,7 @@ namespace rascal {
       return this->atoms_object;
     }
 
-    bool are_some_centers_masked() const {
+    bool are_any_centers_masked() const {
       // center_atoms_mask is true is no center are masked
       return (not this->get_center_atoms_mask().all());
     }

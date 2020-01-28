@@ -60,6 +60,66 @@ namespace rascal {
   namespace internal {
 
     /**
+     * Utility to find the periodic images of the center atoms that are within
+     * the neighborhood of center i.
+     * In the case of having several periodic images of other centers in
+     * the environement of center i, we need to sum up
+     * of all these contributions, e.g. ij, ij', ij'' ... where
+     * j primes are periodic images of j. And assign this sum back to all
+     * of these terms hence this function.
+     */
+    template <class StructureManager, class ClusterRefCenter>
+    auto find_periodic_images_pairs_in_environment(
+        const std::shared_ptr<StructureManager> & manager,
+        ClusterRefCenter & center) {
+      static_assert(ClusterRefCenter::IsOrderOne,
+                    "Input cluster should be of Order == 1.");
+      constexpr static size_t ClusterLayer{
+          StructureManager::template cluster_layer_from_order<2>()};
+
+      // convinience object to associate every center j within the
+      // environement of center i to its corresponding pair ij and its
+      // periodic images.
+      std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
+          periodic_images_of_center{};
+
+      // find all center atoms within the environment of i
+      for (auto pair : center.pairs()) {
+        auto atom_j = pair.get_atom_j();
+        int atom_tag_j = atom_j.get_atom_tag();
+        if (not manager->is_ghost_atom(pair)) {
+          periodic_images_of_center[atom_tag_j].emplace_back(
+              static_cast<ClusterRefKey<2, ClusterLayer>>(pair));
+        }
+      }
+      // find the periodic images of the found center atoms
+      for (auto pair : center.pairs()) {
+        auto atom_j = pair.get_atom_j();
+        int atom_tag_j = atom_j.get_atom_tag();
+        if (periodic_images_of_center.count(atom_tag_j) and
+            manager->is_ghost_atom(pair)) {
+          periodic_images_of_center[atom_tag_j].emplace_back(
+              std::move(static_cast<ClusterRefKey<2, ClusterLayer>>(pair)));
+        }
+      }
+
+      // remove centers that don't have periodic images in the environement
+      std::vector<int> tags_to_erase{};
+      for (const auto & el : periodic_images_of_center) {
+        const int atom_tag_j{el.first};
+        const auto & p_images = el.second;
+        if (p_images.size() < 2) {
+          tags_to_erase.emplace_back(atom_tag_j);
+        }
+      }
+      // has to be done in 2 steps because erase invalidates the iterator
+      for (const int & tag : tags_to_erase) {
+        periodic_images_of_center.erase(tag);
+      }
+      return periodic_images_of_center;
+    }
+
+    /**
      * List of possible Radial basis that can be used by the spherical
      * expansion.
      */
@@ -1638,9 +1698,9 @@ namespace rascal {
     using math::pow;
     constexpr bool ExcludeGhosts{true};
     constexpr static size_t ClusterLayer{
-        StructureManager::template cluster_layer_from_order<2>()};
-    const bool are_some_centers_masked{manager->are_some_centers_masked()};
-    if (are_some_centers_masked and this->compute_gradients) {
+          StructureManager::template cluster_layer_from_order<2>()};
+    const bool are_any_centers_masked{manager->are_any_centers_masked()};
+    if (are_any_centers_masked and this->compute_gradients) {
       throw std::logic_error("Can't compute spherical expansion gradients with "
                              "masked center atoms");
     }
@@ -1666,7 +1726,8 @@ namespace rascal {
             this->radial_integral)};
 
     auto n_row{this->max_radial};
-    // to store linearly all l,m components with -l<=m<=l needs l**2 elements
+    // to store linearly all l,m components with
+    // -l-1<=m<=l+1 needs (l+1)**2 elements
     auto n_col{(this->max_angular + 1) * (this->max_angular + 1)};
     expansions_coefficients.clear();
     expansions_coefficients.set_shape(n_row, n_col);
@@ -1735,7 +1796,7 @@ namespace rascal {
         // here yet.
         // TODO(felix) make swaping ij possible and implement the
         // proper half for gradients so the whole computation can be skipped.
-        if (not are_some_centers_masked and atom_i_tag > atom_j_tag) {
+        if (not are_any_centers_masked and atom_i_tag > atom_j_tag) {
           // continue;
         } else {
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
@@ -1749,7 +1810,7 @@ namespace rascal {
           c_ij_nlm *= f_c;
           coefficients_center_by_type += c_ij_nlm;
           // when j == i there is nothing to add to ji
-          if (not are_some_centers_masked and
+          if (not are_any_centers_masked and
               (atom_j_tag != atom_i_tag)) {  // NOLINT
             // half list branch for c^{ji} terms using
             // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
@@ -1783,8 +1844,10 @@ namespace rascal {
           auto && neighbour_derivative =
               radial_integral->compute_neighbour_derivative(dist, neigh);
           double df_c{cutoff_function->df_c(dist)};
-          // The gradients only contribute to the type of the neighbour
-          // atom i is of type a and atom j is of type b
+          // The type of the contribution c^{ij} to the coefficient c^{i}
+          // depends on the type of j (and it is the same for the gradients)
+          // In the following atom i is of type a and atom j is of type b
+
           // grad_i c^{ib}
           auto && gradient_center_by_type{
               coefficients_center_gradient[neigh_type]};
@@ -1879,46 +1942,9 @@ namespace rascal {
       // j primes are periodic images of j. And assign this sum back to all
       // of these terms.
       if (this->compute_gradients) {
-        // convinience object to associate every center j within the
-        // environement of center i to its corresponding pair ij and its
-        // periodic images.
-        std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
-            periodic_images_of_center{};
-
-        // find all center atoms within the environment of i
-        for (auto pair : center.pairs()) {
-          auto atom_j = pair.get_atom_j();
-          int atom_tag_j = atom_j.get_atom_tag();
-          if (not manager->is_ghost_atom(pair)) {
-            periodic_images_of_center[atom_tag_j].emplace_back(
-                static_cast<ClusterRefKey<2, ClusterLayer>>(pair));
-          }
-        }
-        // find the periodic images of the found center atoms
-        for (auto pair : center.pairs()) {
-          auto atom_j = pair.get_atom_j();
-          int atom_tag_j = atom_j.get_atom_tag();
-          if (periodic_images_of_center.count(atom_tag_j) and
-              manager->is_ghost_atom(pair)) {
-            periodic_images_of_center[atom_tag_j].emplace_back(
-                std::move(static_cast<ClusterRefKey<2, ClusterLayer>>(pair)));
-          }
-        }
-
-        // remove centers that don't have periodic images in the environement
-        std::vector<int> tags_to_erase{};
-        for (const auto & el : periodic_images_of_center) {
-          const int atom_tag_j{el.first};
-          const auto & p_images = el.second;
-          if (p_images.size() < 2) {
-            tags_to_erase.emplace_back(atom_tag_j);
-          }
-        }
-        // has to be done in 2 steps because erase invalidates the iterator
-        for (const int & tag : tags_to_erase) {
-          periodic_images_of_center.erase(tag);
-        }
-
+        std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>> periodic_images_of_center =
+            internal::find_periodic_images_pairs_in_environment(manager,
+                                                                 center);
         // for each center atoms with periodic images, sum up the contributions
         // and assign the sum back to the terms
         for (const auto & el : periodic_images_of_center) {
