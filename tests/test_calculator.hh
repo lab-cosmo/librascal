@@ -439,6 +439,62 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
+  /** Contains some simple periodic structures for testing complicated things
+   *  like gradients
+   *  Should match the
+   */
+  struct SimplePeriodicNLHalfCCStrictFixture {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorHalfList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
+    using Structure_t = AtomicStructure<3>;
+
+    SimplePeriodicNLHalfCCStrictFixture() {
+      for (auto && filename : filenames) {
+        json parameters;
+        json structure{{"filename", filename}};
+        json adaptors;
+        json ad1a{{"name", "AdaptorNeighbourList"},
+                  {"initialization_arguments", {{"cutoff", cutoff}}}};
+        json ad1b{{"name", "AdaptorHalfList"},
+                  {"initialization_arguments", {}}};
+        json ad1c{{"name", "AdaptorCenterContribution"},
+                  {"initialization_arguments", {}}};
+        json ad2{{"name", "AdaptorStrict"},
+                 {"initialization_arguments", {{"cutoff", cutoff}}}};
+
+        adaptors.emplace_back(ad1a);
+        adaptors.emplace_back(ad1b);
+        adaptors.emplace_back(ad1c);
+        adaptors.emplace_back(ad2);
+
+        parameters["structure"] = structure;
+        parameters["adaptors"] = adaptors;
+
+        this->factory_args.emplace_back(parameters);
+      }
+    }
+
+    ~SimplePeriodicNLHalfCCStrictFixture() = default;
+
+    const std::vector<std::string> filenames{
+        "reference_data/inputs/diamond_2atom.json",
+        "reference_data/inputs/diamond_2atom_distorted.json",
+        "reference_data/inputs/diamond_cubic_distorted.json",
+        "reference_data/inputs/SiC_moissanite.json",
+        "reference_data/inputs/SiCGe_wurtzite_like.json",
+        "reference_data/inputs/SiC_moissanite_supercell.json",
+        "reference_data/inputs/small_molecule.json",
+        "reference_data/inputs/methane.json"};
+    const double cutoff{2.5};
+    const double cutoff_skin{0.};
+
+    json factory_args{};
+    std::vector<Structure_t> structures{};
+  };
+
+
   /** Contains a multi species periodic structure to test the sparsity of the
    * gradient keys
    */

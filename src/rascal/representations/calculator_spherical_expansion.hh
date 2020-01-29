@@ -1704,6 +1704,13 @@ namespace rascal {
       throw std::logic_error("Can't compute spherical expansion gradients with "
                              "masked center atoms");
     }
+    if (not is_not_masked and IsHalfNL) {
+      std::stringstream err_str{};
+      err_str << "Half neighbor list should only be used when all the "
+              << "atoms inside the unit cell are centers, i.e. "
+              << "center_atoms_mask should not mask atoms.";
+      throw std::runtime_error(err_str.str());
+    }
 
     auto && expansions_coefficients{*manager->template get_property<Prop_t>(
         this->get_name(), true, true, ExcludeGhosts)};
@@ -1754,9 +1761,6 @@ namespace rascal {
 
     // coeff C^{ij}_{nlm}
     auto c_ij_nlm = math::Matrix_t(n_row, n_col);
-    // sum of d/dr_{i} C^{ji}_{nlm} when center j has several periodic images
-    // of center i in its environment
-    auto di_c_ji_sum = math::Matrix_t(n_row, n_col);
 
     for (auto center : manager) {
       // c^{i}
@@ -1790,34 +1794,28 @@ namespace rascal {
                                                                      neigh);
         double f_c{cutoff_function->f_c(dist)};
         auto coefficients_center_by_type{coefficients_center[neigh_type]};
-        size_t l_block_idx{0};
+
         // compute the coefficients
-        // complications here because the infrastructure for swaping ij is not
-        // here yet.
-        // TODO(felix) make swaping ij possible and implement the
-        // proper half for gradients so the whole computation can be skipped.
-        if (is_not_masked and atom_i_tag > atom_j_tag) {
-          // continue;
-        } else {
-          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-               ++angular_l) {
-            size_t l_block_size{2 * angular_l + 1};
-            c_ij_nlm.block(0, l_block_idx, max_radial, l_block_size) =
-                neighbour_contribution.col(angular_l) *
-                harmonics.segment(l_block_idx, l_block_size);
-            l_block_idx += l_block_size;
-          }
-          c_ij_nlm *= f_c;
-          coefficients_center_by_type += c_ij_nlm;
-          // when j == i there is nothing to add to ji
-          if (is_not_masked and
-              (atom_j_tag != atom_i_tag)) {  // NOLINT
-            // half list branch for c^{ji} terms using
-            // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
+        size_t l_block_idx{0};
+        for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+             ++angular_l) {
+          size_t l_block_size{2 * angular_l + 1};
+          c_ij_nlm.block(0, l_block_idx, max_radial, l_block_size) =
+              neighbour_contribution.col(angular_l) *
+              harmonics.segment(l_block_idx, l_block_size);
+          l_block_idx += l_block_size;
+        }
+        c_ij_nlm *= f_c;
+        coefficients_center_by_type += c_ij_nlm;
+
+        // half list branch for c^{ji} terms using
+        // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
+        if (IsHalfNL) {
+          if (is_center_atom) {
             auto & coefficients_neigh{expansions_coefficients[atom_j]};
             auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
             l_block_idx = 0;
-            double parity{1.};  // account for (-1)^l
+            double parity{1.};
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                  ++angular_l) {
               size_t l_block_size{2 * angular_l + 1};
@@ -1903,67 +1901,55 @@ namespace rascal {
             }  // for (angular_l)
           }    // for cartesian_idx
 
-          // TODO(felix): This block should be refactored after swapping ij is
-          // possible
-          // half list branch for computing grad_j c^{j} using
-          // grad_j c^{ji} = (-1)^{l} grad_j c^{ij}
+          // half list branch for accumulating parts of grad_j c^{j} using
+          // grad_j c^{ji a} = - grad_i c^{ji a}
           if (IsHalfNL) {
             if (is_center_atom) {
+              // grad_j c^{j}
               auto & coefficients_neigh_center_gradient =
                   expansions_coefficients_gradient[neigh.get_atom_jj()];
+              // grad_j c^{j a}
               auto gradient_neigh_center_by_type =
                   coefficients_neigh_center_gradient[center_type];
 
-              for (int cartesian_idx{0}; cartesian_idx < NDims;
-                   ++cartesian_idx) {
-                l_block_idx = 0;
-                double parity{1.};  // account for (-1)^{l}
-                for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-                     ++angular_l) {
-                  size_t l_block_size{2 * angular_l + 1};
-                  gradient_neigh_center_by_type.block(
-                      cartesian_idx * max_radial, l_block_idx, max_radial,
-                      l_block_size) +=
-                      parity * gradient_neigh_by_type.block(
-                                   cartesian_idx * max_radial, l_block_idx,
-                                   max_radial, l_block_size);
-                  parity *= -1.;
-                  l_block_idx += l_block_size;
-                }  // for (angular_l)
-              }    // for cartesian_idx
+              gradient_neigh_center_by_type -= gradient_neigh_by_type;
             }      // if (is_center_atom)
           }        // if (IsHalfNL)
         }          // if (this->compute_gradients)
       }            // for (neigh : center)
 
-      // In the case of having several periodic images of other centers in
-      // the environment of center i, we need to sum up
-      // of all these contributions, e.g. ij, ij', ij'' ... where
-      // j primes are periodic images of j. And assign this sum back to all
-      // of these terms.
-      if (this->compute_gradients) {
-        std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
-            periodic_images_of_center =
-                internal::find_periodic_images_pairs_in_environment(manager,
-                                                                    center);
-        // for each center atoms with periodic images, sum up the contributions
-        // and assign the sum back to the terms
-        for (const auto & el : periodic_images_of_center) {
-          const auto & p_images = el.second;
-          // these terms have only one species key that is non zero
-          Key_t key{
-              expansions_coefficients_gradient[p_images.at(0)].get_keys().at(
-                  0)};
-          di_c_ji_sum = expansions_coefficients_gradient[p_images[0]][key];
-          for (auto image_it = p_images.begin() + 1, im_e = p_images.end();
-               image_it != im_e; ++image_it) {
-            di_c_ji_sum += expansions_coefficients_gradient[*image_it][key];
-          }
-          for (const auto & p_image : el.second) {
-            expansions_coefficients_gradient[p_image][key] = di_c_ji_sum;
-          }
-        }  // end of periodic images business
-      }    // if (this->compute_gradients)
+      // // In the case of having several periodic images of other centers in
+      // // the environment of center i, we need to sum up
+      // // of all these contributions, e.g. ij, ij', ij'' ... where
+      // // j primes are periodic images of j. And assign this sum back to all
+      // // of these terms.
+      // if (this->compute_gradients) {
+      //   // sum of d/dr_{i} C^{ji}_{nlm} when center j has several periodic
+      //   // images of center i in its environment
+      //   auto di_c_ji_sum = math::Matrix_t(n_row, n_col);
+
+      //   std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
+      //       periodic_images_of_center =
+      //           internal::find_periodic_images_pairs_in_environment(manager,
+      //                                                               center);
+      //   // for each center atoms with periodic images, sum up the contributions
+      //   // and assign the sum back to the terms
+      //   for (const auto & el : periodic_images_of_center) {
+      //     const auto & p_images = el.second;
+      //     // these terms have only one species key that is non zero
+      //     Key_t key{
+      //         expansions_coefficients_gradient[p_images.at(0)].get_keys().at(
+      //             0)};
+      //     di_c_ji_sum = expansions_coefficients_gradient[p_images[0]][key];
+      //     for (auto image_it = p_images.begin() + 1, im_e = p_images.end();
+      //          image_it != im_e; ++image_it) {
+      //       di_c_ji_sum += expansions_coefficients_gradient[*image_it][key];
+      //     }
+      //     for (const auto & p_image : el.second) {
+      //       expansions_coefficients_gradient[p_image][key] = di_c_ji_sum;
+      //     }
+      //   }  // end of periodic images business
+      // }    // if (this->compute_gradients)
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
