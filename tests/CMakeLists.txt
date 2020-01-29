@@ -29,7 +29,10 @@ else()
     set(TEST_RUNNER "")
 endif()
 
+
 add_library(rascal_tests_main STATIC helpers/tests_main.cc)
+# make sure all tests include the boost that has been found
+target_include_directories(rascal_tests_main SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
 target_compile_definitions(rascal_tests_main PUBLIC -DBOOST_TEST_DYN_LINK)
 target_link_libraries(rascal_tests_main ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
 
@@ -38,8 +41,11 @@ file(GLOB tests "${CMAKE_CURRENT_SOURCE_DIR}/test_*.cc")
 foreach(_file_ ${tests})
     get_filename_component(_name_ ${_file_} NAME_WE)
     add_executable(${_name_} ${_file_})
+    # make sure all tests include the boost that has been found
+    target_include_directories(${_name_} SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
     target_link_libraries(${_name_} rascal_tests_main)
     target_compile_options(${_name_} PRIVATE -Werror)
+
 
     add_test(
         NAME ${_name_}
