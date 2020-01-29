@@ -36,8 +36,6 @@ target_include_directories(rascal_tests_main SYSTEM PRIVATE ${Boost_INCLUDE_DIR}
 target_compile_definitions(rascal_tests_main PUBLIC -DBOOST_TEST_DYN_LINK)
 target_link_libraries(rascal_tests_main ${Boost_LIBRARIES} "${LIBRASCAL_NAME}")
 
-message(STATUS "+++++++++++ ${Boost_INCLUDE_DIR}")
-
 file(GLOB tests "${CMAKE_CURRENT_SOURCE_DIR}/test_*.cc")
 
 foreach(_file_ ${tests})
