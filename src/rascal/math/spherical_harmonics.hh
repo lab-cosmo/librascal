@@ -242,7 +242,7 @@ namespace rascal {
        *
        * Spherical harmonics are defined as described in
        * compute_spherical_harmonics().  Gradients are defined with respect
-       * to motion of the central atom, which is the opposite sign of the usual
+       * to motion of the neighbor atom, which is in accordance with the usual
        * definition with respect to the _arguments_ of the \f$Y_\ell^m\f$.  The
        * actual Cartesian gradients include an extra factor of \f$\frac{1}{r}\f$
        * that is not included here; the rest is independent of radius.
