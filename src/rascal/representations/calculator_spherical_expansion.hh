@@ -63,7 +63,7 @@ namespace rascal {
      * Utility to find the periodic images of the center atoms that are within
      * the neighborhood of center i.
      * In the case of having several periodic images of other centers in
-     * the environement of center i, we need to sum up
+     * the environment of center i, we need to sum up
      * of all these contributions, e.g. ij, ij', ij'' ... where
      * j primes are periodic images of j. And assign this sum back to all
      * of these terms hence this function.
@@ -77,8 +77,8 @@ namespace rascal {
       constexpr static size_t ClusterLayer{
           StructureManager::template cluster_layer_from_order<2>()};
 
-      // convinience object to associate every center j within the
-      // environement of center i to its corresponding pair ij and its
+      // convenience object to associate every center j within the
+      // environment of center i to its corresponding pair ij and its
       // periodic images.
       std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
           periodic_images_of_center{};
@@ -103,7 +103,7 @@ namespace rascal {
         }
       }
 
-      // remove centers that don't have periodic images in the environement
+      // remove centers that don't have periodic images in the environment
       std::vector<int> tags_to_erase{};
       for (const auto & el : periodic_images_of_center) {
         const int atom_tag_j{el.first};
@@ -612,13 +612,13 @@ namespace rascal {
         coefficients.lhs_dot(this->ortho_norm_matrix);
       }
 
-      template <int n_spatial_dimensions, typename Coeffs, typename Center>
+      template <int NDims, typename Coeffs, typename Center>
       void finalize_coefficients_der(Coeffs & coefficients_gradient,
                                      Center & center) const {
         for (auto neigh : center.pairs_with_self_pair()) {
           auto & coefficients_neigh_gradient = coefficients_gradient[neigh];
           coefficients_neigh_gradient
-              .template lhs_dot_der<n_spatial_dimensions>(
+              .template lhs_dot_der<NDims>(
                   this->ortho_norm_matrix);
         }  // for (neigh : center)
       }
@@ -905,7 +905,7 @@ namespace rascal {
       template <typename Coeffs>
       void finalize_coefficients(Coeffs & /*coefficients*/) const {}
 
-      template <int n_spatial_dimensions, typename Coeffs, typename Center>
+      template <int NDims, typename Coeffs, typename Center>
       void finalize_coefficients_der(Coeffs & /*coefficients_gradient*/,
                                      Center & /*center*/) const {}
 
@@ -1496,7 +1496,7 @@ namespace rascal {
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
    protected:
-    //! cutoff radius r_c defining the size of the atom centered environement
+    //! cutoff radius r_c defining the size of the atom centered environment
     double interaction_cutoff{};
     //! size of the transition region r_t spanning [r_c-r_t, r_c] in which the
     //! contributions to the environment expansion go to zero smoothly
@@ -1690,7 +1690,7 @@ namespace rascal {
       std::shared_ptr<StructureManager> manager) {
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
-    constexpr static int n_spatial_dimensions = StructureManager::dim();
+    constexpr static int NDims = StructureManager::dim();
     constexpr static bool IsHalfNL{
         StructureManager::traits::NeighbourListType ==
         AdaptorTraits::NeighbourListType::half};
@@ -1699,8 +1699,8 @@ namespace rascal {
     constexpr bool ExcludeGhosts{true};
     constexpr static size_t ClusterLayer{
         StructureManager::template cluster_layer_from_order<2>()};
-    const bool are_any_centers_masked{manager->are_any_centers_masked()};
-    if (are_any_centers_masked and this->compute_gradients) {
+    const bool is_not_masked{manager->is_not_masked()};
+    if (not is_not_masked and this->compute_gradients) {
       throw std::logic_error("Can't compute spherical expansion gradients with "
                              "masked center atoms");
     }
@@ -1735,7 +1735,7 @@ namespace rascal {
     if (this->compute_gradients) {
       expansions_coefficients_gradient.clear();
       // Row-major ordering, so the Cartesian (spatial) index varies slowest
-      expansions_coefficients_gradient.set_shape(n_spatial_dimensions * n_row,
+      expansions_coefficients_gradient.set_shape(NDims * n_row,
                                                  n_col);
     }
 
@@ -1755,7 +1755,7 @@ namespace rascal {
     // coeff C^{ij}_{nlm}
     auto c_ij_nlm = math::Matrix_t(n_row, n_col);
     // sum of d/dr_{i} C^{ji}_{nlm} when center j has several periodic images
-    // of center i in its environement
+    // of center i in its environment
     auto di_c_ji_sum = math::Matrix_t(n_row, n_col);
 
     for (auto center : manager) {
@@ -1796,7 +1796,7 @@ namespace rascal {
         // here yet.
         // TODO(felix) make swaping ij possible and implement the
         // proper half for gradients so the whole computation can be skipped.
-        if (not are_any_centers_masked and atom_i_tag > atom_j_tag) {
+        if (is_not_masked and atom_i_tag > atom_j_tag) {
           // continue;
         } else {
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
@@ -1810,7 +1810,7 @@ namespace rascal {
           c_ij_nlm *= f_c;
           coefficients_center_by_type += c_ij_nlm;
           // when j == i there is nothing to add to ji
-          if (not are_any_centers_masked and
+          if (is_not_masked and
               (atom_j_tag != atom_i_tag)) {  // NOLINT
             // half list branch for c^{ji} terms using
             // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
@@ -1863,7 +1863,7 @@ namespace rascal {
           // grad_j c^{ij}
           Matrix_t pair_gradient_contribution{this->max_radial,
                                               this->max_angular + 1};
-          for (int cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
+          for (int cartesian_idx{0}; cartesian_idx < NDims;
                  ++cartesian_idx) {
             l_block_idx = 0;
             double parity{-1.};  // account for (-1)^{l+1}
@@ -1914,7 +1914,7 @@ namespace rascal {
               auto gradient_neigh_center_by_type =
                   coefficients_neigh_center_gradient[center_type];
 
-              for (int cartesian_idx{0}; cartesian_idx < n_spatial_dimensions;
+              for (int cartesian_idx{0}; cartesian_idx < NDims;
                    ++cartesian_idx) {
                 l_block_idx = 0;
                 double parity{1.};  // account for (-1)^{l}
@@ -1937,7 +1937,7 @@ namespace rascal {
       }            // for (neigh : center)
 
       // In the case of having several periodic images of other centers in
-      // the environement of center i, we need to sum up
+      // the environment of center i, we need to sum up
       // of all these contributions, e.g. ij, ij', ij'' ... where
       // j primes are periodic images of j. And assign this sum back to all
       // of these terms.
@@ -1969,7 +1969,7 @@ namespace rascal {
       radial_integral->finalize_coefficients(coefficients_center);
       if (this->compute_gradients) {
         radial_integral
-            ->template finalize_coefficients_der<n_spatial_dimensions>(
+            ->template finalize_coefficients_der<NDims>(
                 expansions_coefficients_gradient, center);
       }
     }  // for (center : manager)

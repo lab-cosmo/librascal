@@ -182,7 +182,7 @@ namespace rascal {
      */
     size_t get_nb_clusters(int order) const;
 
-    bool are_any_centers_masked() const { return false; }
+    bool is_not_masked() const { return false; }
 
     //! //! overload of update that does not change the underlying structure
     void update_self() {}

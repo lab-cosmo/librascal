@@ -634,8 +634,8 @@ namespace rascal {
       return this->get_previous_manager()->get_direction_vector(pair);
     }
 
-    bool are_any_centers_masked() const {
-      return this->get_previous_manager()->are_any_centers_masked();
+    bool is_not_masked() const {
+      return this->get_previous_manager()->is_not_masked();
     }
 
     //! Get the full type of the structure manager

@@ -497,10 +497,6 @@ namespace rascal {
       CalculatorFixture<
           SingleHypersSphericalInvariants<SimplePeriodicNLCCStrictFixture>>>;
 
-  // using gradient_fixtures = boost::mpl::list<
-  //     CalculatorFixture<
-  //         SingleHypersSphericalInvariants<SimplePeriodicNLCCStrictFixture>>>;
-
   /**
    * Test the gradient of the SphericalExpansion and SphericalInvariants
    * representation on a few simple crystal structures (single- and
