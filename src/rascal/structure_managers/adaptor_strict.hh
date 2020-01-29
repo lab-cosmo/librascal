@@ -226,12 +226,10 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
-    // BUG8486@(till) I deleted the non const getters, because they are not
-    // needed
-    // if this was wrong, please explain
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer>
-    double get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+    const double &
+    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       return this->distance->operator[](pair);
     }
 

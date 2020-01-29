@@ -33,6 +33,8 @@
 
 #include "test_structure.hh"
 
+#include "rascal/structure_managers/adaptor_link_pairs.hh"
+
 #include <random>
 
 namespace rascal {

@@ -53,8 +53,8 @@ namespace rascal {
   template <class ManagerImplementation>
   struct StructureManager_traits<AdaptorMaxOrder<ManagerImplementation>> {
     using parent_traits = StructureManager_traits<ManagerImplementation>;
-    constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
-    constexpr static bool HasDistances{false};
+    constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::yes};
+    constexpr static bool HasDistances{parent_traits::HasDistances};
     constexpr static bool HasDirectionVectors{
         parent_traits::HasDirectionVectors};
     constexpr static int Dim{parent_traits::Dim};
@@ -113,9 +113,6 @@ namespace rascal {
      * which was built
      */
     explicit AdaptorMaxOrder(ImplementationPtr_t manager);
-
-    AdaptorMaxOrder(ImplementationPtr_t manager, std::tuple<>)
-        : AdaptorMaxOrder(manager) {}
 
     AdaptorMaxOrder(ImplementationPtr_t manager,
                     const Hypers_t & /*adaptor_hypers*/)

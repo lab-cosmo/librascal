@@ -615,7 +615,7 @@ namespace rascal {
     template <size_t Order, size_t Layer,
               bool HasDistances = traits::HasDistances,
               typename std::enable_if_t<HasDistances, int> = 0>
-    inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
+    const double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
       static_assert(HasDistances == traits::HasDistances,
                     "The manager does not have distances.");
       return this->get_previous_manager()->get_distance(pair);
@@ -624,20 +624,17 @@ namespace rascal {
     template <size_t Order, size_t Layer,
               bool HasDirectionVectors = traits::HasDirectionVectors,
               typename std::enable_if_t<HasDirectionVectors, int> = 0>
-    inline const Vector_ref
+    const Vector_ref
     get_direction_vector(const ClusterRefKey<Order, Layer> & pair) {
       static_assert(HasDirectionVectors == traits::HasDirectionVectors,
                     "The manager does not have direction vectors.");
       return this->get_previous_manager()->get_direction_vector(pair);
     }
 
-    template <size_t Order, size_t Layer,
-              bool HasSwapIJ_ = traits::HasSwapIJ,
+    template <size_t Order, size_t Layer, bool HasSwapIJ_ = traits::HasSwapIJ,
               typename std::enable_if_t<HasSwapIJ_, int> = 0>
-    size_t
-    get_pair_ji_offset(const ClusterRefKey<Order, Layer> & pair) {
-      static_assert(HasSwapIJ_ == true,
-                    "The manager can't swap ij pairs.");
+    size_t get_pair_ji_offset(const ClusterRefKey<Order, Layer> & pair) {
+      static_assert(HasSwapIJ_ == true, "The manager can't swap ij pairs.");
       return this->get_previous_manager()->get_pair_ji_offset(pair);
     }
 
@@ -1014,7 +1011,7 @@ namespace rascal {
     static constexpr bool HasCenterPairAndIsOrderTwo{traits::HasCenterPair and
                                                      Order == 2};
     static constexpr bool HasHasSwapIJAndIsOrderTwo{traits::HasSwapIJ and
-                                                     Order == 2};
+                                                    Order == 2};
 
     //! Default constructor
     ClusterRef() = delete;
@@ -1125,7 +1122,6 @@ namespace rascal {
       return atom_jj;
     }
 
-
     /**
      * Getter for a ClusterRefKey refering to the current ji-pair associated
      * to the current ij-pair.
@@ -1144,7 +1140,8 @@ namespace rascal {
       auto && atom_j_it = manager.get_iterator_at(atom_j_index, 0);
       auto && atom_j = *atom_j_it;
       size_t && pair_ji_offset{manager.get_pair_ji_offset(*this)};
-      auto && atom_ji_it = atom_j.template get_clusters_of_order<2>(pair_ji_offset).begin();
+      auto && atom_ji_it =
+          atom_j.template get_clusters_of_order<2>(pair_ji_offset).begin();
       constexpr static size_t ClusterLayer_{
           ManagerImplementation::template cluster_layer_from_order<2>()};
       auto atom_ji = static_cast<ClusterRefKey<2, ClusterLayer_>>(*atom_ji_it);

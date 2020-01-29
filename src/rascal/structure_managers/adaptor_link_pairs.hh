@@ -26,11 +26,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_STRUCTURE_MANAGERS_LINK_PAIRS_HH_
-#define SRC_RASCAL_STRUCTURE_MANAGERS_LINK_PAIRS_HH_
+#ifndef SRC_RASCAL_STRUCTURE_MANAGERS_ADAPTOR_LINK_PAIRS_HH_
+#define SRC_RASCAL_STRUCTURE_MANAGERS_ADAPTOR_LINK_PAIRS_HH_
 
-#include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/cluster_ref_key.hh"
+#include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/structure_manager.hh"
 #include "rascal/structure_managers/updateable_base.hh"
 #include "rascal/utils/utils.hh"
@@ -40,17 +40,18 @@ namespace rascal {
    * forward declaration for traits
    */
   template <class ManagerImplementation>
-  class LinkPairs;
+  class AdaptorLinkPairs;
 
   /*
    * specialisation of traits for strict adaptor
    */
   template <class ManagerImplementation>
-  struct StructureManager_traits<LinkPairs<ManagerImplementation>> {
+  struct StructureManager_traits<AdaptorLinkPairs<ManagerImplementation>> {
     using parent_traits = StructureManager_traits<ManagerImplementation>;
     constexpr static AdaptorTraits::Strict Strict{parent_traits::Strict};
     constexpr static bool HasDistances{parent_traits::HasDistances};
-    constexpr static bool HasDirectionVectors{parent_traits::HasDirectionVectors};
+    constexpr static bool HasDirectionVectors{
+        parent_traits::HasDirectionVectors};
     constexpr static bool HasSwapIJ{true};
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     constexpr static int Dim{parent_traits::Dim};
@@ -75,59 +76,60 @@ namespace rascal {
    * AdaptorTraits::Strict::yes
    */
   template <class ManagerImplementation>
-  class LinkPairs
-      : public StructureManager<LinkPairs<ManagerImplementation>>,
+  class AdaptorLinkPairs
+      : public StructureManager<AdaptorLinkPairs<ManagerImplementation>>,
         public std::enable_shared_from_this<
-            LinkPairs<ManagerImplementation>> {
+            AdaptorLinkPairs<ManagerImplementation>> {
    public:
-    using Manager_t = LinkPairs<ManagerImplementation>;
+    using Manager_t = AdaptorLinkPairs<ManagerImplementation>;
     using ManagerImplementation_t = ManagerImplementation;
     using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
-    using traits = StructureManager_traits<LinkPairs>;
+    using traits = StructureManager_traits<AdaptorLinkPairs>;
     using PreviousManager_t = typename traits::PreviousManager_t;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
-    using This = LinkPairs;
+    using This = AdaptorLinkPairs;
     using Distance_t = typename This::template Property_t<double, 2, 1>;
     using DirectionVector_t = typename This::template Property_t<double, 2, 3>;
 
     static_assert(traits::MaxOrder == 2,
                   "ManagerImlementation needs to handle pairs");
-    static_assert(traits::NeighbourListType == AdaptorTraits::NeighbourListType::full,
+    static_assert(traits::NeighbourListType ==
+                      AdaptorTraits::NeighbourListType::full,
                   "ManagerImlementation needs to be a full neighbor list.");
-    static_assert(traits::HasDistances and traits::HasDirectionVectors,
-          "ManagerImlementation needs to have distances and direction vectors");
+    static_assert(
+        traits::HasDistances and traits::HasDirectionVectors,
+        "ManagerImlementation needs to have distances and direction vectors");
     constexpr static auto AtomLayer{
         Manager_t::template cluster_layer_from_order<1>()};
     constexpr static auto PairLayer{
         Manager_t::template cluster_layer_from_order<2>()};
 
     //! Default constructor
-    LinkPairs() = delete;
+    AdaptorLinkPairs() = delete;
 
-    /**
-     */
-    LinkPairs(ImplementationPtr_t manager);
+    explicit AdaptorLinkPairs(ImplementationPtr_t manager);
 
-    LinkPairs(ImplementationPtr_t manager, const Hypers_t & /*adaptor_hypers*/)
-        : LinkPairs(manager) {}
+    AdaptorLinkPairs(ImplementationPtr_t manager,
+                     const Hypers_t & /*adaptor_hypers*/)
+        : AdaptorLinkPairs(manager) {}
 
     //! Copy constructor
-    LinkPairs(const LinkPairs & other) = delete;
+    AdaptorLinkPairs(const AdaptorLinkPairs & other) = delete;
 
     //! Move constructor
-    LinkPairs(LinkPairs && other) = default;
+    AdaptorLinkPairs(AdaptorLinkPairs && other) = default;
 
     //! Destructor
-    virtual ~LinkPairs() = default;
+    virtual ~AdaptorLinkPairs() = default;
 
     //! Copy assignment operator
-    LinkPairs & operator=(const LinkPairs & other) = delete;
+    AdaptorLinkPairs & operator=(const AdaptorLinkPairs & other) = delete;
 
     //! Move assignment operator
-    LinkPairs & operator=(LinkPairs && other) = default;
+    AdaptorLinkPairs & operator=(AdaptorLinkPairs && other) = default;
 
     //! update just the adaptor assuming the underlying manager was updated
     void update_self();
@@ -200,8 +202,14 @@ namespace rascal {
     //! Returns the number of neighbours of a given atom at a given TargetOrder
     //! Returns the number of pairs of a given center
     template <size_t TargetOrder, size_t Order, size_t Layer>
-    size_t get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      return this->manager->template get_cluster_size_impl<TargetOrder>(cluster);
+    size_t
+    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
+      return this->manager->template get_cluster_size_impl<TargetOrder>(
+          cluster);
+    }
+
+    size_t get_size_with_ghosts() const {
+      return this->manager->get_size_with_ghosts();
     }
 
     //! Get the manager used to build the instance
@@ -234,24 +242,24 @@ namespace rascal {
 
   /*--------------------------------------------------------------------------*/
   template <class ManagerImplementation>
-  LinkPairs<ManagerImplementation>::LinkPairs(
+  AdaptorLinkPairs<ManagerImplementation>::AdaptorLinkPairs(
       std::shared_ptr<ManagerImplementation> manager)
       : manager{std::move(manager)}, pairs_ji_offset{}, center_tag_list{} {}
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
   template <class... Args>
-  void LinkPairs<ManagerImplementation>::update(Args &&... arguments) {
+  void AdaptorLinkPairs<ManagerImplementation>::update(Args &&... arguments) {
     this->manager->update(std::forward<Args>(arguments)...);
   }
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  void LinkPairs<ManagerImplementation>::link_pairs() {
+  void AdaptorLinkPairs<ManagerImplementation>::link_pairs() {
     for (auto center : this->manager) {
       const int atom_i_tag{center.get_atom_tag()};
       for (auto pair_ij : center.pairs_with_self_pair()) {
-        const double& dist_ij{this->manager->get_distance(pair_ij)};
+        const double & dist_ij{this->manager->get_distance(pair_ij)};
         const auto dir_vec_ij = this->manager->get_direction_vector(pair_ij);
         const int atom_j_tag = pair_ij.get_internal_neighbour_atom_tag();
         const size_t atom_j_index = this->manager->get_atom_index(atom_j_tag);
@@ -265,10 +273,11 @@ namespace rascal {
           // check that atom_i_prime corresponds to either center i or one
           // of its periodic images
           if (atom_i_prime_tag == atom_i_tag) {
-            const double& dist_ji{this->manager->get_distance(pair_ji)};
+            const double & dist_ji{this->manager->get_distance(pair_ji)};
             // this should be a sufficient condition in most cases
             if (dist_ij - dist_ji < 1e-13) {
-              const auto dir_vec_ji = this->manager->get_direction_vector(pair_ji);
+              const auto dir_vec_ji =
+                  this->manager->get_direction_vector(pair_ji);
               // direction vectors should be of oposite sign
               if (((dir_vec_ij + dir_vec_ji).array() < 1e-13).all()) {
                 this->pairs_ji_offset.emplace_back(pair_offset);
@@ -284,7 +293,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class ManagerImplementation>
-  void LinkPairs<ManagerImplementation>::update_self() {
+  void AdaptorLinkPairs<ManagerImplementation>::update_self() {
+    // TODO(felix) add test on masked centers
+
     //! Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
@@ -324,4 +335,4 @@ namespace rascal {
   }
 }  // namespace rascal
 
-#endif  // SRC_RASCAL_STRUCTURE_MANAGERS_LINK_PAIRS_HH_
+#endif  // SRC_RASCAL_STRUCTURE_MANAGERS_ADAPTOR_LINK_PAIRS_HH_

@@ -57,7 +57,7 @@ using namespace rascal;  // NOLINT
 using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
                                     AdaptorNeighbourList,
                                     AdaptorCenterContribution, AdaptorStrict,
-                                    LinkPairs>;
+                                    AdaptorLinkPairs>;
 using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
 using Manager_t = typename ManagerTypeHolder_t::type;
 using ManagerCollection_t =
