@@ -184,7 +184,7 @@ namespace rascal {
 
     bool is_not_masked() const { return false; }
 
-    //! //! overload of update that does not change the underlying structure
+    //! overload of update that does not change the underlying structure
     void update_self() {}
     /**
      * resetting is required every time the list changes. Here, this

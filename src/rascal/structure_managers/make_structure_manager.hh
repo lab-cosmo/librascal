@@ -410,6 +410,11 @@ namespace rascal {
     return test.get_manager();
   }
 
+  template <typename StructureManager>
+  auto extract_manager_root(std::shared_ptr<StructureManager> manager) {
+    return extract_underlying_manager<0>(manager);
+  }
+
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_STRUCTURE_MANAGERS_MAKE_STRUCTURE_MANAGER_HH_

@@ -1700,7 +1700,8 @@ namespace rascal {
     constexpr static size_t ClusterLayer{
         StructureManager::template cluster_layer_from_order<2>()};
     const bool is_not_masked{manager->is_not_masked()};
-    if (not is_not_masked and this->compute_gradients) {
+    const bool compute_gradients{this->compute_gradients};
+    if (not is_not_masked and compute_gradients) {
       throw std::logic_error("Can't compute spherical expansion gradients with "
                              "masked center atoms");
     }
@@ -1709,6 +1710,26 @@ namespace rascal {
       err_str << "Half neighbor list should only be used when all the "
               << "atoms inside the unit cell are centers, i.e. "
               << "center_atoms_mask should not mask atoms.";
+      throw std::runtime_error(err_str.str());
+    }
+    auto manager_root = extract_manager_root(manager);
+    auto cell_length = manager_root->get_cell_length();
+    auto pbc = manager_root->get_periodic_boundary_conditions();
+    bool is_cutoff_too_large{false};
+    for (size_t i_dim{0}; i_dim < NDims; ++i_dim) {
+      if (pbc[i_dim]) {
+        if (cell_length[i_dim] < 2.*this->interaction_cutoff) {
+          is_cutoff_too_large = true;
+        }
+      }
+    }
+    if (IsHalfNL and is_cutoff_too_large) {
+      std::stringstream err_str{};
+      err_str << "Half neighbor list should only be used when the diameter of "
+              << "the spherical expansion is smaller than the unit cell "
+              << "in periodic directions: "
+              << "[" << cell_length.transpose() << "] > "
+              << 2*this->interaction_cutoff;
       throw std::runtime_error(err_str.str());
     }
 
@@ -1739,7 +1760,7 @@ namespace rascal {
     expansions_coefficients.clear();
     expansions_coefficients.set_shape(n_row, n_col);
 
-    if (this->compute_gradients) {
+    if (compute_gradients) {
       expansions_coefficients_gradient.clear();
       // Row-major ordering, so the Cartesian (spatial) index varies slowest
       expansions_coefficients_gradient.set_shape(NDims * n_row,
@@ -1784,7 +1805,7 @@ namespace rascal {
         const double & dist{manager->get_distance(neigh)};
         const auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
-        this->spherical_harmonics.calc(direction, this->compute_gradients);
+        this->spherical_harmonics.calc(direction, compute_gradients);
         auto && harmonics{spherical_harmonics.get_harmonics()};
         auto && harmonics_gradients{
             spherical_harmonics.get_harmonics_derivatives()};
@@ -1834,7 +1855,7 @@ namespace rascal {
         // but only if the neighbour is _not_ an image of the center!
         // (the periodic images move with the center, so their contribution to
         // the center gradient is zero)
-        if (this->compute_gradients and (atom_j_tag != atom_i_tag)) {  // NOLINT
+        if (compute_gradients and (atom_j_tag != atom_i_tag)) {  // NOLINT
           // \grad_i c^j
           auto & coefficients_neigh_gradient =
               expansions_coefficients_gradient[neigh];
@@ -1873,6 +1894,9 @@ namespace rascal {
                pair_gradient_contribution_p1.col(angular_l)
                 * harmonics.segment(l_block_idx, l_block_size)
                should be precomputed like pair_gradient_contribution_p1
+
+               the memory layout of pair_gradient_contribution_p1.col(angular_l)
+               is not the best one considering the access.
                */
               pair_gradient_contribution =
                 pair_gradient_contribution_p1.col(angular_l)
@@ -1915,45 +1939,47 @@ namespace rascal {
               gradient_neigh_center_by_type -= gradient_neigh_by_type;
             }      // if (is_center_atom)
           }        // if (IsHalfNL)
-        }          // if (this->compute_gradients)
+        }          // if (compute_gradients)
       }            // for (neigh : center)
 
-      // // In the case of having several periodic images of other centers in
-      // // the environment of center i, we need to sum up
-      // // of all these contributions, e.g. ij, ij', ij'' ... where
-      // // j primes are periodic images of j. And assign this sum back to all
-      // // of these terms.
-      // if (this->compute_gradients) {
-      //   // sum of d/dr_{i} C^{ji}_{nlm} when center j has several periodic
-      //   // images of center i in its environment
-      //   auto di_c_ji_sum = math::Matrix_t(n_row, n_col);
+      // In the case of having several periodic images of other centers in
+      // the environment of center i, we need to sum up
+      // of all these contributions, e.g. ij, ij', ij'' ... where
+      // j primes are periodic images of j. And assign this sum back to all
+      // of these terms.
+      if (not IsHalfNL) {
+        if (compute_gradients) {
+          // sum of d/dr_{i} C^{ji}_{nlm} when center j has several periodic
+          // images of center i in its environment
+          auto di_c_ji_sum = math::Matrix_t(n_row, n_col);
 
-      //   std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
-      //       periodic_images_of_center =
-      //           internal::find_periodic_images_pairs_in_environment(manager,
-      //                                                               center);
-      //   // for each center atoms with periodic images, sum up the contributions
-      //   // and assign the sum back to the terms
-      //   for (const auto & el : periodic_images_of_center) {
-      //     const auto & p_images = el.second;
-      //     // these terms have only one species key that is non zero
-      //     Key_t key{
-      //         expansions_coefficients_gradient[p_images.at(0)].get_keys().at(
-      //             0)};
-      //     di_c_ji_sum = expansions_coefficients_gradient[p_images[0]][key];
-      //     for (auto image_it = p_images.begin() + 1, im_e = p_images.end();
-      //          image_it != im_e; ++image_it) {
-      //       di_c_ji_sum += expansions_coefficients_gradient[*image_it][key];
-      //     }
-      //     for (const auto & p_image : el.second) {
-      //       expansions_coefficients_gradient[p_image][key] = di_c_ji_sum;
-      //     }
-      //   }  // end of periodic images business
-      // }    // if (this->compute_gradients)
+          std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
+              periodic_images_of_center =
+                  internal::find_periodic_images_pairs_in_environment(manager,
+                                                                      center);
+          // for each center atoms with periodic images, sum up the contributions
+          // and assign the sum back to the terms
+          for (const auto & el : periodic_images_of_center) {
+            const auto & p_images = el.second;
+            // these terms have only one species key that is non zero
+            Key_t key{
+                expansions_coefficients_gradient[p_images.at(0)].get_keys().at(
+                    0)};
+            di_c_ji_sum = expansions_coefficients_gradient[p_images[0]][key];
+            for (auto image_it = p_images.begin() + 1, im_e = p_images.end();
+                image_it != im_e; ++image_it) {
+              di_c_ji_sum += expansions_coefficients_gradient[*image_it][key];
+            }
+            for (const auto & p_image : el.second) {
+              expansions_coefficients_gradient[p_image][key] = di_c_ji_sum;
+            }
+          }  // end of periodic images business
+        }    // if (compute_gradients)
+      }  // if (not IsHalfNL)
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
-      if (this->compute_gradients) {
+      if (compute_gradients) {
         radial_integral
             ->template finalize_coefficients_der<NDims>(
                 expansions_coefficients_gradient, center);
@@ -1972,12 +1998,13 @@ namespace rascal {
     std::vector<std::set<Key_t>> keys_list{};
     std::vector<std::set<Key_t>> keys_list_grad{};
     std::map<int, int> center_tag2idx{};
+    const bool compute_gradients{this->compute_gradients};
     int i_center{0};
     for (auto center : manager) {
       center_tag2idx[center.get_atom_tag()] = i_center;
       i_center++;
       keys_list.emplace_back();
-      if (this->compute_gradients) {
+      if (compute_gradients) {
         for (auto neigh : center.pairs_with_self_pair()) {
           (void)neigh;  // to avoid compiler warning
           keys_list_grad.emplace_back();
@@ -1999,7 +2026,7 @@ namespace rascal {
         }
       }
       keys_list[i_center].insert({center_type});
-      if (this->compute_gradients) {
+      if (compute_gradients) {
         keys_list_grad[i_grad].insert(keys_list[i_center].begin(),
                                       keys_list[i_center].end());
         i_grad++;
@@ -2011,14 +2038,14 @@ namespace rascal {
           }
           i_grad++;
         }
-      }  // if (this->compute_gradients)
+      }  // if (compute_gradients)
       i_center++;
     }
 
     expansions_coefficients.resize(keys_list);
     expansions_coefficients.setZero();
 
-    if (this->compute_gradients) {
+    if (compute_gradients) {
       expansions_coefficients_gradient.resize(keys_list_grad);
       expansions_coefficients_gradient.setZero();
     }
