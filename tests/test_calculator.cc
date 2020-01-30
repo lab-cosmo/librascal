@@ -568,8 +568,9 @@ namespace rascal {
                   {{"cutoff", cutoffs[i_filename]}, {"skin", cutoff_skin}}}};
         json ad1b{{"name", "AdaptorCenterContribution"},
                   {"initialization_arguments", {}}};
-        json ad2{{"name", "AdaptorStrict"},
-                 {"initialization_arguments", {{"cutoff", cutoffs[i_filename]}}}};
+        json ad2{
+            {"name", "AdaptorStrict"},
+            {"initialization_arguments", {{"cutoff", cutoffs[i_filename]}}}};
         adaptors.emplace_back(ad1);
         adaptors.emplace_back(ad1b);
         adaptors.emplace_back(ad2);
@@ -580,9 +581,10 @@ namespace rascal {
         this->factory_args.emplace_back(parameters);
 
         this->representation_hypers.emplace_back();
-        auto fc_hyper = json::object({{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", cutoffs[i_filename]}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}});
+        auto fc_hyper = json::object(
+            {{"type", "ShiftedCosine"},
+             {"cutoff", {{"value", cutoffs[i_filename]}, {"unit", "AA"}}},
+             {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}});
 
         for (auto & ri_hyp : this->radial_contribution_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
@@ -646,14 +648,16 @@ namespace rascal {
         json parameters;
         json structure{{"filename", filenames[i_filename]}};
         json adaptors;
-        json ad1a{{"name", "AdaptorNeighbourList"},
-                  {"initialization_arguments", {{"cutoff", cutoffs[i_filename]}}}};
+        json ad1a{
+            {"name", "AdaptorNeighbourList"},
+            {"initialization_arguments", {{"cutoff", cutoffs[i_filename]}}}};
         json ad1b{{"name", "AdaptorHalfList"},
                   {"initialization_arguments", {}}};
         json ad1c{{"name", "AdaptorCenterContribution"},
                   {"initialization_arguments", {}}};
-        json ad2{{"name", "AdaptorStrict"},
-                 {"initialization_arguments", {{"cutoff", cutoffs[i_filename]}}}};
+        json ad2{
+            {"name", "AdaptorStrict"},
+            {"initialization_arguments", {{"cutoff", cutoffs[i_filename]}}}};
 
         adaptors.emplace_back(ad1a);
         adaptors.emplace_back(ad1b);
@@ -683,8 +687,8 @@ namespace rascal {
   };
 
   template <class FixtureFull, class FixtureHalf, class Calculator>
-  struct MergeHalfAndFull : MultipleStructureFixture<FixtureFull>, MultipleStructureFixture<FixtureHalf> {
-
+  struct MergeHalfAndFull : MultipleStructureFixture<FixtureFull>,
+                            MultipleStructureFixture<FixtureHalf> {
     using ParentFull = MultipleStructureFixture<FixtureFull>;
     using ParentHalf = MultipleStructureFixture<FixtureHalf>;
     using Representation_t = Calculator;
@@ -708,8 +712,9 @@ namespace rascal {
   //                      RepFixHalf_t<SingleHypersSphericalExpansion>>,
   //     MergeHalfAndFull<RepFix_t<SingleHypersSphericalInvariants>,
   //                      RepFixHalf_t<SingleHypersSphericalInvariants>>>;
-  using gradient_half_fixtures = boost::mpl::list<
-      MergeHalfAndFull<SimpleFullFixture, SimpleHalfFixture, CalculatorSphericalExpansion>>;
+  using gradient_half_fixtures =
+      boost::mpl::list<MergeHalfAndFull<SimpleFullFixture, SimpleHalfFixture,
+                                        CalculatorSphericalExpansion>>;
   /**
    * Test the representation gradients computed with a half neighbor list
    * against the full neighbor list implementation.

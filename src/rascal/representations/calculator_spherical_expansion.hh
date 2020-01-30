@@ -617,9 +617,8 @@ namespace rascal {
                                      Center & center) const {
         for (auto neigh : center.pairs_with_self_pair()) {
           auto & coefficients_neigh_gradient = coefficients_gradient[neigh];
-          coefficients_neigh_gradient
-              .template lhs_dot_der<NDims>(
-                  this->ortho_norm_matrix);
+          coefficients_neigh_gradient.template lhs_dot_der<NDims>(
+              this->ortho_norm_matrix);
         }  // for (neigh : center)
       }
 
@@ -1718,7 +1717,7 @@ namespace rascal {
     bool is_cutoff_too_large{false};
     for (size_t i_dim{0}; i_dim < NDims; ++i_dim) {
       if (pbc[i_dim]) {
-        if (cell_length[i_dim] < 2.*this->interaction_cutoff) {
+        if (cell_length[i_dim] < 2. * this->interaction_cutoff) {
           is_cutoff_too_large = true;
         }
       }
@@ -1729,7 +1728,7 @@ namespace rascal {
               << "the spherical expansion is smaller than the unit cell "
               << "in periodic directions: "
               << "[" << cell_length.transpose() << "] > "
-              << 2*this->interaction_cutoff;
+              << 2 * this->interaction_cutoff;
       throw std::runtime_error(err_str.str());
     }
 
@@ -1763,8 +1762,7 @@ namespace rascal {
     if (compute_gradients) {
       expansions_coefficients_gradient.clear();
       // Row-major ordering, so the Cartesian (spatial) index varies slowest
-      expansions_coefficients_gradient.set_shape(NDims * n_row,
-                                                 n_col);
+      expansions_coefficients_gradient.set_shape(NDims * n_row, n_col);
     }
 
     if (this->expansion_by_species == "environment wise") {
@@ -1937,10 +1935,10 @@ namespace rascal {
                   coefficients_neigh_center_gradient[center_type];
 
               gradient_neigh_center_by_type -= gradient_neigh_by_type;
-            }      // if (is_center_atom)
-          }        // if (IsHalfNL)
-        }          // if (compute_gradients)
-      }            // for (neigh : center)
+            }  // if (is_center_atom)
+          }    // if (IsHalfNL)
+        }      // if (compute_gradients)
+      }        // for (neigh : center)
 
       // In the case of having several periodic images of other centers in
       // the environment of center i, we need to sum up
@@ -1957,8 +1955,8 @@ namespace rascal {
               periodic_images_of_center =
                   internal::find_periodic_images_pairs_in_environment(manager,
                                                                       center);
-          // for each center atoms with periodic images, sum up the contributions
-          // and assign the sum back to the terms
+          // for each center atoms with periodic images, sum up the
+          // contributions and assign the sum back to the terms
           for (const auto & el : periodic_images_of_center) {
             const auto & p_images = el.second;
             // these terms have only one species key that is non zero
@@ -1967,7 +1965,7 @@ namespace rascal {
                     0)};
             di_c_ji_sum = expansions_coefficients_gradient[p_images[0]][key];
             for (auto image_it = p_images.begin() + 1, im_e = p_images.end();
-                image_it != im_e; ++image_it) {
+                 image_it != im_e; ++image_it) {
               di_c_ji_sum += expansions_coefficients_gradient[*image_it][key];
             }
             for (const auto & p_image : el.second) {
@@ -1975,14 +1973,13 @@ namespace rascal {
             }
           }  // end of periodic images business
         }    // if (compute_gradients)
-      }  // if (not IsHalfNL)
+      }      // if (not IsHalfNL)
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
       if (compute_gradients) {
-        radial_integral
-            ->template finalize_coefficients_der<NDims>(
-                expansions_coefficients_gradient, center);
+        radial_integral->template finalize_coefficients_der<NDims>(
+            expansions_coefficients_gradient, center);
       }
     }  // for (center : manager)
   }    // compute()

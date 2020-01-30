@@ -328,9 +328,8 @@ namespace rascal {
         std::shared_ptr<StructureManager> manager, SpectrumNorm & inv_norms,
         const size_t & grad_component_size) {
       constexpr static int NDims = StructureManager::dim();
-      using MapSoapGradFlat_t =
-          Eigen::Map<Eigen::Matrix<double, NDims, Eigen::Dynamic,
-                                   Eigen::RowMajor>>;
+      using MapSoapGradFlat_t = Eigen::Map<
+          Eigen::Matrix<double, NDims, Eigen::Dynamic, Eigen::RowMajor>>;
       using ConstMapSoapFlat_t = const Eigen::Map<const Eigen::VectorXd>;
       // divide all gradients with the normalization factor N_i
       for (auto center : manager) {

@@ -309,9 +309,7 @@ namespace rascal {
       return this->atoms_object;
     }
 
-    bool is_not_masked() const {
-      return (not this->are_any_centers_masked);
-    }
+    bool is_not_masked() const { return (not this->are_any_centers_masked); }
 
    protected:
     //! makes atom tag lists and offsets

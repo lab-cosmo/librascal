@@ -494,7 +494,6 @@ namespace rascal {
     std::vector<Structure_t> structures{};
   };
 
-
   /** Contains a multi species periodic structure to test the sparsity of the
    * gradient keys
    */
@@ -575,8 +574,7 @@ namespace rascal {
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     std::vector<json> rep_hypers{
         {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}},
-        {{"max_radial", 3}, {"max_angular", 0}, {"compute_gradients",
-        true}}};
+        {{"max_radial", 3}, {"max_angular", 0}, {"compute_gradients", true}}};
   };
 
   template <typename DataFixture>
