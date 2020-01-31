@@ -41,6 +41,7 @@
 #include "rascal/representations/cutoff_functions.hh"
 #include "rascal/structure_managers/property_block_sparse.hh"
 #include "rascal/structure_managers/structure_manager.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/utils/utils.hh"
 
 #include <Eigen/Dense>
@@ -1711,7 +1712,7 @@ namespace rascal {
               << "center_atoms_mask should not mask atoms.";
       throw std::runtime_error(err_str.str());
     }
-    auto manager_root = extract_manager_root(manager);
+    auto manager_root = extract_underlying_manager<0>(manager);
     auto cell_length = manager_root->get_cell_length();
     auto pbc = manager_root->get_periodic_boundary_conditions();
     bool is_cutoff_too_large{false};
