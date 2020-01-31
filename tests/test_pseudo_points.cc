@@ -149,7 +149,8 @@ namespace rascal {
   }
 
   /**
-   * Tests the serialization works properly
+   * Tests the serialization works properly and that trying to get a type
+   * mismatched with the serialized pseudo_points throws an error.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, Fix, multiple_fixtures,
                                    Fix) {
@@ -192,9 +193,9 @@ namespace rascal {
     auto sparse_points_b = j.template get<typename Fix::PseudoPoints_t>();
     bool test{sparse_points == sparse_points_b};
     BOOST_TEST(test);
+
+    BOOST_CHECK_THROW(j.template get<PseudoPointsBlockSparse<CalculatorSphericalExpansion>>(), std::runtime_error);
   }
-
-
 
   BOOST_AUTO_TEST_SUITE_END();
 
