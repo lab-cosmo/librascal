@@ -39,9 +39,9 @@
 #include "rascal/math/utils.hh"
 #include "rascal/representations/calculator_base.hh"
 #include "rascal/representations/cutoff_functions.hh"
+#include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/structure_managers/property_block_sparse.hh"
 #include "rascal/structure_managers/structure_manager.hh"
-#include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/utils/utils.hh"
 
 #include <Eigen/Dense>
