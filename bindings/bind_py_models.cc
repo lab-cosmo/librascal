@@ -111,6 +111,29 @@ namespace rascal {
   }
 
   /**
+   * Expose to python the serialization of PseudoPoints to a python dictionary.
+   *
+   * A copy and a json serialization are necessary to make sure that if the
+   * resulting dictionary is written in json, then it will be directly
+   * convertible to the original object.
+   */
+  template <class PseudoPoints>
+  void bind_block_sparse_pseudo_points_dict_representation(
+      py::class_<PseudoPoints> & pseudo_points) {
+    pseudo_points.def("to_dict", [](const PseudoPoints & self) {
+      json j;
+      j = self;
+      py::dict d = j;
+      return d;
+    });
+    pseudo_points.def("from_dict", [](PseudoPoints & self, const py::dict & d) {
+      json j;
+      j = d;
+      self = j;
+    });
+  }
+
+  /**
    * Function to bind the representation managers to python
    *
    * @param mod pybind11 representation of the python module the represenation
@@ -130,25 +153,22 @@ namespace rascal {
     // Defines the representation manager type for the particular structure
     // manager
     using Calc1_t = CalculatorSphericalInvariants;
+    using PseudoPoints_1_t = PseudoPointsBlockSparse<Calc1_t>;
+
     // Bind the interface of this representation manager
     auto kernel = add_kernel<Kernel>(mod, m_internal);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
                                  ManagerCollection_1_t>(kernel);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
                                  ManagerCollection_2_t>(kernel);
-    // bind the sparse kernel and pseudo points class
-    using PseudoPoints_1_t = PseudoPointsBlockSparse<Calc1_t>;
-    auto pseudo_points =
-        add_pseudo_points<PseudoPoints_1_t>(mod, m_internal);
 
+    // bind the sparse kernel and pseudo points class
     auto sparse_kernel = add_kernel<SparseKernel>(mod, m_internal);
-    // bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
-    //                                     Calc1_t, ManagerCollection_1_t,
-    //                                     PseudoPoints_1_t>(sparse_kernel);
-    // bind_pseudo_points_push_back<ManagerCollection_1_t, Calc1_t>(pseudo_points);
     bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
                                         Calc1_t, ManagerCollection_2_t,
                                         PseudoPoints_1_t>(sparse_kernel);
+    auto pseudo_points = add_pseudo_points<PseudoPoints_1_t>(mod, m_internal);
     bind_pseudo_points_push_back<ManagerCollection_2_t, Calc1_t>(pseudo_points);
+    bind_block_sparse_pseudo_points_dict_representation(pseudo_points);
   }
 }  // namespace rascal

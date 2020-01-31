@@ -114,7 +114,8 @@ namespace rascal {
             int sp = center.get_atom_type();
             // only the pseudo points of species sp contribute
             KNM.row(ii_A) +=
-                pow_zeta(pseudo_points.dot(sp, propA[center]), this->zeta).transpose();
+                pow_zeta(pseudo_points.dot(sp, propA[center]), this->zeta)
+                    .transpose();
           }
           ++ii_A;
         }
@@ -176,7 +177,8 @@ namespace rascal {
           for (auto center : manager) {
             int sp = center.get_atom_type();
             KNM.row(ii_A) =
-                pow_zeta(pseudo_points.dot(sp, propA[center]), this->zeta).transpose();
+                pow_zeta(pseudo_points.dot(sp, propA[center]), this->zeta)
+                    .transpose();
             ii_A++;
           }
         }
@@ -256,7 +258,8 @@ namespace rascal {
               i_center += SpatialDims;
             }
             // const math::Matrix_t dX_dr_flat = prop_grad.get_features();
-            // Eigen::Map<const math::Matrix_t> dX_dr(dX_dr_flat.data(), prop_grad.size() * SpatialDims,
+            // Eigen::Map<const math::Matrix_t> dX_dr(dX_dr_flat.data(),
+            // prop_grad.size() * SpatialDims,
             //         dX_dr_flat.cols() / SpatialDims);
             // math::Matrix_t T = pseudo_points.get_features();
             // math::Matrix_t prod = (dX_dr * T.transpose()).eval();
@@ -279,7 +282,8 @@ namespace rascal {
             //   // auto atom_ii = center.get_atom_ii();
             //   // std::cout << atom_ii.get_atom_tag() << std::endl;
             //   for (auto neigh : center.pairs_with_self_pair()) {
-            //       KNM.block(i_center, 0, SpatialDims, n_pseudo_points) += prod.block(i_row, 0, SpatialDims, n_pseudo_points);
+            //       KNM.block(i_center, 0, SpatialDims, n_pseudo_points) +=
+            //       prod.block(i_row, 0, SpatialDims, n_pseudo_points);
             //     i_row += SpatialDims;
             //   }
             //   i_center += SpatialDims;

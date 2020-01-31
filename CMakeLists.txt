@@ -89,8 +89,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
 
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 
     # Add -march=${TYPE_ARCHITECTURE} (-march=native by default) to the release
     # build flags
@@ -142,8 +142,8 @@ if(BUILD_BINDINGS)
 
   add_external_package(pybind11 VERSION 2.3.0 CONFIG)
 
-    # Get where python site-packages is
-    if(NOT USER)
+   # Get where python site-packages is
+  if(NOT USER)
     execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "from distutils.sysconfig import \
                       get_python_lib; print(get_python_lib())"
       OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE

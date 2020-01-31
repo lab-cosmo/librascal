@@ -3,6 +3,8 @@ import json
 from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
 import numpy as np
+from copy import deepcopy
+from ..utils import return_deepcopy
 
 
 class SphericalInvariants(object):
@@ -94,7 +96,7 @@ class SphericalInvariants(object):
 
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=0., n_species=1,
+                 gaussian_sigma_constant=0.,
                  cutoff_function_type="ShiftedCosine",
                  soap_type="PowerSpectrum", inversion_symmetry=True,
                  radial_basis="GTO", normalize=True,
@@ -117,12 +119,11 @@ class SphericalInvariants(object):
 
         self.update_hyperparameters(
             max_radial=max_radial, max_angular=max_angular,
-            n_species=n_species,
             soap_type=soap_type, normalize=normalize,
             inversion_symmetry=inversion_symmetry,
             expansion_by_species_method=expansion_by_species_method,
             global_species=global_species, compute_gradients=compute_gradients)
-
+        self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
         cutoff_function_parameters.update(
             interaction_cutoff=interaction_cutoff,
             cutoff_smooth_width=cutoff_smooth_width
@@ -137,7 +138,7 @@ class SphericalInvariants(object):
                 unit='AA'
             ),
         )
-
+        self.optimization_args = deepcopy(optimization_args)
         if 'type' in optimization_args:
             if optimization_args['type'] == 'Spline':
                 if 'accuracy' in optimization_args:
@@ -196,7 +197,7 @@ class SphericalInvariants(object):
         """
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
-                        'gaussian_sigma_constant', 'n_species', 'soap_type',
+                        'gaussian_sigma_constant', 'soap_type',
                         'inversion_symmetry', 'cutoff_function', 'normalize',
                         'gaussian_density', 'radial_contribution',
                         'cutoff_function_parameters', 'compute_gradients', 'expansion_by_species_method', 'global_species'}
@@ -231,11 +232,12 @@ class SphericalInvariants(object):
         (this is the descriptor size per atomic centre)
 
         """
+        n_species = 1
         if self.hypers['soap_type'] == 'RadialSpectrum':
-            return (self.hypers['n_species'] * self.hypers['max_radial'])
+            return (n_species*self.hypers['max_radial'])
         if self.hypers['soap_type'] == 'PowerSpectrum':
-            return (int((self.hypers['n_species'] *
-                         (self.hypers['n_species'] +
+            return (int((n_species *
+                         (n_species +
                           1)) /
                         2) *
                     self.hypers['max_radial']**2 *
@@ -243,13 +245,13 @@ class SphericalInvariants(object):
                      1))
         if self.hypers['soap_type'] == 'BiSpectrum':
             if not self.hypers['inversion_symmetry']:
-                return (self.hypers['n_species']**3
+                return (n_species**3
                         * self.hypers['max_radial']**3
                         * int(1 + 2 * self.hypers['max_angular']
                               + 3 * self.hypers['max_angular']**2 / 2
                             + self.hypers['max_angular']**3 / 2))
             else:
-                return (self.hypers['n_species']**3
+                return (n_species**3
                         * self.hypers['max_radial']**3
                         * int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)
                                      * (2 * (self.hypers['max_angular'] + 1) + 3) / 8.0)))
@@ -286,3 +288,33 @@ class SphericalInvariants(object):
                              'PowerSpectrum || BiSpectrum '
                              'implemented for now')
         return keys
+
+    @return_deepcopy
+    def get_init_params(self):
+        gaussian_density = self.hypers['gaussian_density']
+        cutoff_function = self.hypers['cutoff_function']
+        radial_contribution = self.hypers['radial_contribution']
+
+        init_params = dict(interaction_cutoff=self.hypers['interaction_cutoff'], cutoff_smooth_width=self.hypers['cutoff_smooth_width'],
+                 max_radial=self.hypers['max_radial'], max_angular=self.hypers['max_angular'],
+                 soap_type=self.hypers['soap_type'],
+                 inversion_symmetry=self.hypers['inversion_symmetry'],
+                 normalize=self.hypers['normalize'],
+                 expansion_by_species_method=self.hypers['expansion_by_species_method'],
+                 global_species=self.hypers['global_species'],
+                 compute_gradients=self.hypers['compute_gradients'],
+                 gaussian_sigma_type=gaussian_density['type'],
+                 gaussian_sigma_constant=gaussian_density['gaussian_sigma']['value'],
+                 cutoff_function_type=cutoff_function['type'],
+                 radial_basis=radial_contribution['type'],
+                  optimization_args=self.optimization_args,
+                  cutoff_function_parameters=self.cutoff_function_parameters,
+                 )
+        return init_params
+
+    def _set_data(self, data):
+        pass
+
+    def _get_data(self):
+        return dict()
+

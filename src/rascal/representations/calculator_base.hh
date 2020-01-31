@@ -111,9 +111,7 @@ namespace rascal {
      * positions. Default implementation returns false while when applicable
      * this behaviour is overriden.
      */
-    virtual bool has_gradients() const {
-      return false;
-    }
+    virtual bool has_gradients() const { return false; }
     /**
      * Computes the representation associated to the input structure
      * manager. It is templated so it can't be virtual but it is still

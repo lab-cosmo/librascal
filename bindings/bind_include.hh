@@ -29,6 +29,7 @@
 #define BINDINGS_BIND_INCLUDE_HH_
 
 #include "rascal/structure_managers/atomic_structure.hh"
+#include "rascal/utils/json_io.hh"
 #include "rascal/utils/utils.hh"
 
 #include <pybind11/eigen.h>
@@ -53,6 +54,23 @@
 PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 
 namespace py = pybind11;
+
+
+//! Simplistic but robust implicit conversion of py::dict to/from nlohmann::json
+namespace nlohmann {
+  template <>
+  struct adl_serializer<py::dict> {
+    static void to_json(json & j, const py::dict & dic) {
+      py::module py_json = py::module::import("json");
+      j = json::parse(
+          static_cast<std::string>(py::str(py_json.attr("dumps")(dic))));
+    }
+    static void from_json(const json & j, py::dict & dic) {
+      py::module py_json = py::module::import("json");
+      dic = py_json.attr("loads")(j.dump());
+    }
+  };
+}  // namespace nlohmann
 
 namespace rascal {
 

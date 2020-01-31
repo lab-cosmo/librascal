@@ -234,9 +234,7 @@ namespace rascal {
      * Does the calculator compute gradients of the representation w.r.t atomic
      * positions ?
      */
-    bool has_gradients() const override {
-      return this->compute_gradients;
-    }
+    bool has_gradients() const override { return this->compute_gradients; }
 
     /**
      * Compute representation for a given structure manager.
