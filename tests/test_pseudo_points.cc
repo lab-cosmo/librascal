@@ -32,6 +32,7 @@
 #include "test_manager_collection.hh"
 
 #include "rascal/models/pseudo_points.hh"
+#include "rascal/utils/json_io.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
@@ -66,7 +67,7 @@ namespace rascal {
       adaptors.emplace_back(ad2);
     }
 
-    std::string filename{"../reference_data/inputs/small_molecules-20.json"};
+    std::string filename{"reference_data/inputs/small_molecules-20.json"};
 
     json adaptors{};
 
@@ -95,7 +96,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(data_matching_test, Fix, multiple_fixtures,
                                    Fix) {
-    const bool verbose{true};
+    const bool verbose{false};
     auto & sparse_points = Fix::sparse_points;
 
     typename Fix::ManagerCollection_t managers{Fix::adaptors};
@@ -146,6 +147,54 @@ namespace rascal {
       }
     }
   }
+
+  /**
+   * Tests the serialization works properly
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, Fix, multiple_fixtures,
+                                   Fix) {
+    const bool verbose{false};
+    auto & sparse_points = Fix::sparse_points;
+
+    typename Fix::ManagerCollection_t managers{Fix::adaptors};
+    managers.add_structures(Fix::filename, 0, 3);
+    typename Fix::Representation_t representation{Fix::hypers};
+
+    representation.compute(managers);
+
+    std::vector<std::vector<int>> selected_ids;
+    std::random_device rd;
+    std::mt19937 gen{rd()};
+    auto dice{std::uniform_real_distribution<double>(0., 1.)};
+    for (auto & manager : managers) {
+      selected_ids.emplace_back();
+      int ii{0};
+      for (auto center : manager) {
+        double roll{dice(gen)};
+        if (roll < 0.85) {
+          selected_ids.back().push_back(ii);
+        } else if (verbose) {
+          std::cout << "Center " << ii << " will not be considered."
+                    << std::endl;
+        }
+        ++ii;
+      }
+    }
+
+    sparse_points.push_back(representation, managers, selected_ids);
+
+    json j;
+    j = sparse_points;
+    if (verbose) {
+      std::cout << j.dump()<< std::endl;
+    }
+
+    auto sparse_points_b = j.template get<typename Fix::PseudoPoints_t>();
+    bool test{sparse_points == sparse_points_b};
+    BOOST_TEST(test);
+  }
+
+
 
   BOOST_AUTO_TEST_SUITE_END();
 

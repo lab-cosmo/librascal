@@ -181,6 +181,15 @@ int main() {
   std::cout << KNM_test<< std::endl;
   std::cout << "============================" << std::endl;
   std::cout << KNM_der<< std::endl;
+
+  json j;
+  j = sparse_points;
+  std::cout << j.dump()<< std::endl;;
+  auto sparse_points_b = j.get<PseudoPointsBlockSparse<Representation_t>>();
+
+  auto KNM_test_b{kernel.compute(representation, managers, sparse_points)};
+
+  math::relative_error(KNM, KNM_test_b);
   // math::Matrix_t KNM_ref(n_centers, sparse_points.size());
   // KNM_ref = feat_ref * feat_test.transpose();
   // math::Matrix_t KNM(managers.size(), sparse_points.size());
