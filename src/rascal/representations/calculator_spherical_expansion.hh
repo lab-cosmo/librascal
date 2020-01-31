@@ -612,12 +612,12 @@ namespace rascal {
         coefficients.lhs_dot(this->ortho_norm_matrix);
       }
 
-      template <int NDims, typename Coeffs, typename Center>
+      template <int ThreeDims, typename Coeffs, typename Center>
       void finalize_coefficients_der(Coeffs & coefficients_gradient,
                                      Center & center) const {
         for (auto neigh : center.pairs_with_self_pair()) {
           auto & coefficients_neigh_gradient = coefficients_gradient[neigh];
-          coefficients_neigh_gradient.template lhs_dot_der<NDims>(
+          coefficients_neigh_gradient.template lhs_dot_der<ThreeDims>(
               this->ortho_norm_matrix);
         }  // for (neigh : center)
       }
@@ -904,7 +904,7 @@ namespace rascal {
       template <typename Coeffs>
       void finalize_coefficients(Coeffs & /*coefficients*/) const {}
 
-      template <int NDims, typename Coeffs, typename Center>
+      template <int ThreeDims, typename Coeffs, typename Center>
       void finalize_coefficients_der(Coeffs & /*coefficients_gradient*/,
                                      Center & /*center*/) const {}
 
@@ -1689,7 +1689,7 @@ namespace rascal {
       std::shared_ptr<StructureManager> manager) {
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
-    constexpr static int NDims = StructureManager::dim();
+    constexpr static int ThreeDims = StructureManager::dim();
     constexpr static bool IsHalfNL{
         StructureManager::traits::NeighbourListType ==
         AdaptorTraits::NeighbourListType::half};
@@ -1715,7 +1715,7 @@ namespace rascal {
     auto cell_length = manager_root->get_cell_length();
     auto pbc = manager_root->get_periodic_boundary_conditions();
     bool is_cutoff_too_large{false};
-    for (size_t i_dim{0}; i_dim < NDims; ++i_dim) {
+    for (size_t i_dim{0}; i_dim < ThreeDims; ++i_dim) {
       if (pbc[i_dim]) {
         if (cell_length[i_dim] < 2. * this->interaction_cutoff) {
           is_cutoff_too_large = true;
@@ -1762,7 +1762,7 @@ namespace rascal {
     if (compute_gradients) {
       expansions_coefficients_gradient.clear();
       // Row-major ordering, so the Cartesian (spatial) index varies slowest
-      expansions_coefficients_gradient.set_shape(NDims * n_row, n_col);
+      expansions_coefficients_gradient.set_shape(ThreeDims * n_row, n_col);
     }
 
     if (this->expansion_by_species == "environment wise") {
@@ -1880,7 +1880,7 @@ namespace rascal {
           // grad_j c^{ij}
           Matrix_t pair_gradient_contribution{this->max_radial,
                                               this->max_angular + 1};
-          for (int cartesian_idx{0}; cartesian_idx < NDims;
+          for (int cartesian_idx{0}; cartesian_idx < ThreeDims;
                  ++cartesian_idx) {
             l_block_idx = 0;
             double parity{-1.};  // account for (-1)^{l+1}
@@ -1978,7 +1978,7 @@ namespace rascal {
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
       if (compute_gradients) {
-        radial_integral->template finalize_coefficients_der<NDims>(
+        radial_integral->template finalize_coefficients_der<ThreeDims>(
             expansions_coefficients_gradient, center);
       }
     }  // for (center : manager)

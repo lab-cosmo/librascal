@@ -322,14 +322,14 @@ namespace rascal {
      * the norm stored separately
      */
     template <class StructureManager, class SpectrumNorm>
-    void normalize_gradients(
+    void update_gradients_for_normalization(
         Property_t<StructureManager> & soap_vectors,
         PropertyGradient_t<StructureManager> & soap_vector_gradients,
         std::shared_ptr<StructureManager> manager, SpectrumNorm & inv_norms,
         const size_t & grad_component_size) {
-      constexpr static int NDims = StructureManager::dim();
+      constexpr static int ThreeDims = StructureManager::dim();
       using MapSoapGradFlat_t = Eigen::Map<
-          Eigen::Matrix<double, NDims, Eigen::Dynamic, Eigen::RowMajor>>;
+          Eigen::Matrix<double, ThreeDims, Eigen::Dynamic, Eigen::RowMajor>>;
       using ConstMapSoapFlat_t = const Eigen::Map<const Eigen::VectorXd>;
       // divide all gradients with the normalization factor N_i
       for (auto center : manager) {
@@ -360,7 +360,7 @@ namespace rascal {
             const auto & soap_vector_by_species_pair = soap_vector[key];
             // reshape for easy dot prod
             MapSoapGradFlat_t soap_gradient_dim_N(
-                soap_gradient_by_species_pair.data(), NDims,
+                soap_gradient_by_species_pair.data(), ThreeDims,
                 grad_component_size);
             ConstMapSoapFlat_t soap_vector_N(soap_vector_by_species_pair.data(),
                                              grad_component_size);
@@ -376,7 +376,7 @@ namespace rascal {
             const auto & soap_vector_by_species_pair = soap_vector[key];
             // reshape for easy dot prod
             MapSoapGradFlat_t soap_gradient_dim_N(
-                soap_gradient_by_species_pair.data(), NDims,
+                soap_gradient_by_species_pair.data(), ThreeDims,
                 grad_component_size);
             ConstMapSoapFlat_t soap_vector_N(soap_vector_by_species_pair.data(),
                                              grad_component_size);
@@ -527,7 +527,7 @@ namespace rascal {
 
       // normalize the soap vector
       if (this->normalize) {
-        double norm_inv{1. / soap_vector.normalize()};
+        double norm_inv{1. / soap_vector.normalize_and_get_norm()};
         soap_vector_norm_inv[center] = norm_inv;
       }
 
@@ -670,8 +670,9 @@ namespace rascal {
 
     if (this->normalize and this->compute_gradients) {
       const size_t grad_component_size{n_n1n2 * (this->max_angular + 1)};
-      this->normalize_gradients(soap_vectors, soap_vector_gradients, manager,
-                                soap_vector_norm_inv, grad_component_size);
+      this->update_gradients_for_normalization(
+          soap_vectors, soap_vector_gradients, manager, soap_vector_norm_inv,
+          grad_component_size);
     }  // if normalize and compute_gradients
   }    // compute_powerspectrum()
 
@@ -731,7 +732,7 @@ namespace rascal {
 
       // normalize the soap vector
       if (this->normalize) {
-        double norm_inv{1. / soap_vector.normalize()};
+        double norm_inv{1. / soap_vector.normalize_and_get_norm()};
         soap_vector_norm_inv[center] = norm_inv;
       }
 
@@ -749,8 +750,9 @@ namespace rascal {
     }      // for (auto center : manager)
 
     if (this->normalize and this->compute_gradients) {
-      this->normalize_gradients(soap_vectors, soap_vector_gradients, manager,
-                                soap_vector_norm_inv, this->max_radial);
+      this->update_gradients_for_normalization(
+          soap_vectors, soap_vector_gradients, manager, soap_vector_norm_inv,
+          this->max_radial);
     }  // if (this->normalize and this->compute_gradients)
   }
 
@@ -932,7 +934,7 @@ namespace rascal {
 
       // normalize the soap vector
       if (this->normalize) {
-        soap_vector.normalize();
+        soap_vector.normalize_and_get_norm();
       }
     }  // center
   }    // end function
@@ -997,7 +999,7 @@ namespace rascal {
           InvariantsDerivative & soap_vector_gradients,
           ExpansionCoeff & expansions_coefficients,
           std::shared_ptr<StructureManager> manager) {
-    constexpr static int NDims = StructureManager::dim();
+    constexpr static int ThreeDims = StructureManager::dim();
     size_t n_row{math::pow(this->max_radial, 2_size_t)};
     size_t n_col{this->max_angular + 1};
 
@@ -1007,7 +1009,7 @@ namespace rascal {
 
     if (this->compute_gradients) {
       soap_vector_gradients.clear();
-      soap_vector_gradients.set_shape(NDims * n_row, n_col);
+      soap_vector_gradients.set_shape(ThreeDims * n_row, n_col);
     }
 
     std::vector<
@@ -1109,7 +1111,7 @@ namespace rascal {
           InvariantsDerivative & soap_vector_gradients,
           ExpansionCoeff & expansions_coefficients,
           std::shared_ptr<StructureManager> manager) {
-    constexpr static int NDims = StructureManager::dim();
+    constexpr static int ThreeDims = StructureManager::dim();
     size_t n_row{this->max_radial};
     size_t n_col{1};
 
@@ -1118,7 +1120,7 @@ namespace rascal {
 
     if (this->compute_gradients) {
       soap_vector_gradients.clear();
-      soap_vector_gradients.set_shape(NDims * n_row, n_col);
+      soap_vector_gradients.set_shape(ThreeDims * n_row, n_col);
     }
 
     std::vector<std::set<Key_t>> keys_list{};
