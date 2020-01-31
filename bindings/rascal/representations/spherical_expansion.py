@@ -44,11 +44,11 @@ class SphericalExpansion(object):
         using tuples of atomic species that are present within the environment.
         This index is by definition sparse since a species tuple will be non
         zero only if the atomic species are present inside the environment.
-        'environment wise' means that each environemental representation
+        'environment wise' means that each environmental representation
         will only contain the minimal set of species tuples needed by each
-        atomic environement.
+        atomic environment.
         'structure wise' means that within a structure the species tuples
-        will be the same for each environement coefficients.
+        will be the same for each environment coefficients.
         'user defined' uses global_species to set-up the species tuples.
 
         These different settings correspond to different trade-off between

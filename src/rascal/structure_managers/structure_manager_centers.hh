@@ -135,7 +135,7 @@ namespace rascal {
     using Positions_ref = AtomicStructure<traits::Dim>::Positions_ref;
 
     using ArrayB_t = AtomicStructure<traits::Dim>::ArrayB_t;
-    using ConstArrayB_ref = AtomicStructure<traits::Dim>::ConstArrayB_ref;
+    using ConstArrayBool_ref = AtomicStructure<traits::Dim>::ConstArrayBool_ref;
 
     /**
      * Here, the types for internal data structures are defined, based on
@@ -202,6 +202,9 @@ namespace rascal {
      */
     Cell_ref get_cell() { return Cell_ref(this->atoms_object.cell); }
 
+    Eigen::Array3d get_cell_length() {
+      return this->get_cell().colwise().norm().array();
+    }
     //! Returns the type of a given atom, given an AtomRef
     int get_atom_type(int atom_tag) const {
       auto && atom_index{this->get_atom_index(atom_tag)};
@@ -219,8 +222,8 @@ namespace rascal {
       return PBC_ref(this->atoms_object.pbc);
     }
 
-    ConstArrayB_ref get_center_atoms_mask() const {
-      return ConstArrayB_ref(this->atoms_object.center_atoms_mask);
+    ConstArrayBool_ref get_center_atoms_mask() const {
+      return ConstArrayBool_ref(this->atoms_object.center_atoms_mask);
     }
 
     //! Returns the position of an atom, given an AtomRef
@@ -306,10 +309,7 @@ namespace rascal {
       return this->atoms_object;
     }
 
-    bool are_some_centers_masked() const {
-      // center_atoms_mask is true is no center are masked
-      return (not this->get_center_atoms_mask().all());
-    }
+    bool is_not_masked() const { return (not this->are_any_centers_masked); }
 
    protected:
     //! makes atom tag lists and offsets
@@ -369,6 +369,9 @@ namespace rascal {
 
     //! number of time the structure has been updated
     size_t n_update{0};
+
+    //! keep track of the masking of atoms
+    bool are_any_centers_masked{false};
   };
 
   /* ---------------------------------------------------------------------- */

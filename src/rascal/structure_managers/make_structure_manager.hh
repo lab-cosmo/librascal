@@ -409,7 +409,6 @@ namespace rascal {
 
     return test.get_manager();
   }
-
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_STRUCTURE_MANAGERS_MAKE_STRUCTURE_MANAGER_HH_

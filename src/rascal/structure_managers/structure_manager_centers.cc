@@ -78,6 +78,8 @@ namespace rascal {
                            with at least tolerance of 1e-10.)"};
       throw std::runtime_error(error);
     }
+    // center_atoms_mask.all() is false is no centers are masked
+    this->are_any_centers_masked = not center_atoms_mask.all();
 
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     atom_cluster_indices.fill_sequence();
