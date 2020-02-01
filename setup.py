@@ -17,11 +17,13 @@ except ImportError:
 
 setup(
     name="rascal",
-    version="0.3",
+    version="0.3.2",
     description="""A versatile and scalable computation of representations of
 atomic structures for machine learning.""",
     author='Félix Musil',
     license="LGPL-3",
+    # packages=['rascal'],
+    # packages_dir={'rascal':'./bindings/rascal'},
     cmake_args=[
       '-DINSTALL_PATH:STRING='+join(os.getcwd(),CMAKE_INSTALL_DIR()),
       '-DBUILD_EXAMPLES:BOOL=OFF'

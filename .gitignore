@@ -10,6 +10,7 @@ docs/_build
 *.pyc
 _skbuild
 dist
+MANIFEST
 
 # Prerequisites
 *.d
