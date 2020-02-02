@@ -2160,4 +2160,21 @@ namespace rascal {
 
 }  // namespace rascal
 
+namespace nlohmann {
+  /**
+   * Special specialization of the json serialization for non default
+   * constructible type.
+   */
+  template <>
+  struct adl_serializer<rascal::CalculatorSphericalExpansion> {
+    static auto from_json(const json& j) {
+      return rascal::CalculatorSphericalExpansion{j};
+    }
+
+    static void to_json(json& j, const rascal::CalculatorSphericalExpansion& t) {
+      j = t.hypers;
+    }
+  };
+}  // namespace nlohmann
+
 #endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_

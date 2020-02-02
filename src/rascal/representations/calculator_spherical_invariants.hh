@@ -1157,7 +1157,23 @@ namespace rascal {
       soap_vector_gradients.setZero();
     }
   }
-
 }  // namespace rascal
+
+namespace nlohmann {
+  /**
+   * Special specialization of the json serialization for non default
+   * constructible type.
+   */
+  template <>
+  struct adl_serializer<rascal::CalculatorSphericalInvariants> {
+    static auto from_json(const json& j) {
+      return rascal::CalculatorSphericalInvariants{j};
+    }
+
+    static void to_json(json& j, const rascal::CalculatorSphericalInvariants& t) {
+      j = t.hypers;
+    }
+  };
+}  // namespace nlohmann
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_

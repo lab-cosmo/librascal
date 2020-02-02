@@ -113,7 +113,7 @@ namespace rascal {
   /**
    * Expose to python the serialization of PseudoPoints to a python dictionary.
    *
-   * A copy and a json serialization are necessary to make sure that if the
+   * A copy and a json (de)serialization are necessary to make sure that if the
    * resulting dictionary is written in json, then it will be directly
    * convertible to the original object.
    */
@@ -122,14 +122,13 @@ namespace rascal {
       py::class_<PseudoPoints> & pseudo_points) {
     pseudo_points.def("to_dict", [](const PseudoPoints & self) {
       json j;
-      j = self;
-      py::dict d = j;
-      return d;
+      j = self;  // implicit conversion to nlohmann::json
+      return j.template get<py::dict>();
     });
     pseudo_points.def("from_dict", [](PseudoPoints & self, const py::dict & d) {
       json j;
-      j = d;
-      self = j;
+      j = d;  // implicit conversion to nlohmann::json
+      self = std::move(j.template get<PseudoPoints>());
     });
   }
 
