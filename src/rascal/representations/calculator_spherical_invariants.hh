@@ -172,6 +172,7 @@ namespace rascal {
         : CalculatorBase{}, rep_expansion{hyper} {
       this->set_default_prefix("spherical_invariants_");
       this->set_hyperparameters(hyper);
+      this->hypers = hyper;
     }
 
     //! Copy constructor
@@ -179,9 +180,18 @@ namespace rascal {
         delete;
 
     //! Move constructor
-    CalculatorSphericalInvariants(CalculatorSphericalInvariants && other) =
-        default;
-
+    CalculatorSphericalInvariants(CalculatorSphericalInvariants && other) noexcept
+      : CalculatorBase{std::move(other)},
+        max_radial{std::move(other.max_radial)},
+        max_angular{std::move(other.max_angular)},
+        normalize{std::move(other.normalize)},
+        compute_gradients{std::move(other.compute_gradients)},
+        inversion_symmetry{std::move(other.inversion_symmetry)},
+        rep_expansion{std::move(other.rep_expansion)},
+        type{std::move(other.type)},
+        l_factors{std::move(other.l_factors)},
+        wigner_w3js{std::move(other.wigner_w3js)}
+        {}
     //! Destructor
     virtual ~CalculatorSphericalInvariants() = default;
 
@@ -228,6 +238,21 @@ namespace rascal {
       }
 
       this->set_name(hypers);
+    }
+
+    bool operator==(const CalculatorSphericalInvariants& other) const {
+      bool grad_match{this->has_gradients() == other.has_gradients()};
+      bool main_hypers_match{
+        this->max_radial == other.max_radial and
+        this->max_angular == other.max_angular and
+        this->normalize == other.normalize and
+        this->inversion_symmetry == other.inversion_symmetry and
+        this->type == other.type and
+        (this->l_factors.array() == other.l_factors.array()).all() and
+        (this->wigner_w3js.array() == other.wigner_w3js.array()).all()
+      };
+      bool rep_expansion_match{this->rep_expansion == other.rep_expansion};
+      return (grad_match and main_hypers_match and rep_expansion_match);
     }
 
     /**
@@ -1166,7 +1191,7 @@ namespace nlohmann {
    */
   template <>
   struct adl_serializer<rascal::CalculatorSphericalInvariants> {
-    static auto from_json(const json& j) {
+    static rascal::CalculatorSphericalInvariants from_json(const json& j) {
       return rascal::CalculatorSphericalInvariants{j};
     }
 

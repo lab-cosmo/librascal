@@ -1223,8 +1223,8 @@ namespace rascal {
       using internal::RadialBasisType;
       this->hypers = hypers;
 
-      this->max_radial = hypers.at("max_radial");
-      this->max_angular = hypers.at("max_angular");
+      this->max_radial = hypers.at("max_radial").get<size_t>();
+      this->max_angular = hypers.at("max_angular").get<size_t>();
       if (hypers.count("compute_gradients")) {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();
       } else {  // Default false (don't compute gradients)
@@ -1407,6 +1407,24 @@ namespace rascal {
       this->set_name(hypers);
     }
 
+    bool operator==(const CalculatorSphericalExpansion& other) const {
+      bool grad_match{this->has_gradients() == other.has_gradients()};
+      bool main_hypers_match{
+        this->interaction_cutoff == other.interaction_cutoff and
+        this->cutoff_smooth_width == other.cutoff_smooth_width and
+        this->interpolator_accuracy == other.interpolator_accuracy and
+        this->max_radial == other.max_radial and
+        this->max_angular == other.max_angular
+      };
+      bool type_match{
+        this->atomic_smearing_type == other.atomic_smearing_type and
+        this->radial_integral_type == other.radial_integral_type and
+        this->optimization_type == other.optimization_type and
+        this->cutoff_function_type == other.cutoff_function_type
+      };
+      return (grad_match and main_hypers_match and type_match);
+    }
+
     /**
      * Does the calculator compute gradients of the representation w.r.t atomic
      * positions ?
@@ -1438,8 +1456,24 @@ namespace rascal {
         delete;
 
     //! Move constructor
-    CalculatorSphericalExpansion(CalculatorSphericalExpansion && other) =
-        default;
+    CalculatorSphericalExpansion(CalculatorSphericalExpansion && other) noexcept
+      : CalculatorBase{std::move(other)},
+        interaction_cutoff{std::move(other.interaction_cutoff)},
+        cutoff_smooth_width{std::move(other.cutoff_smooth_width)},
+        interpolator_accuracy{std::move(other.interpolator_accuracy)},
+        max_radial{std::move(other.max_radial)},
+        max_angular{std::move(other.max_angular)},
+        compute_gradients{std::move(other.compute_gradients)},
+        expansion_by_species{std::move(other.expansion_by_species)},
+        global_species{std::move(other.global_species)},
+        atomic_smearing_type{std::move(other.atomic_smearing_type)},
+        radial_integral{std::move(other.radial_integral)},
+        radial_integral_type{std::move(other.radial_integral_type)},
+        optimization_type{std::move(other.optimization_type)},
+        cutoff_function{std::move(other.cutoff_function)},
+        cutoff_function_type{std::move(other.cutoff_function_type)},
+        spherical_harmonics{std::move(other.spherical_harmonics)}
+        {}
 
     //! Destructor
     virtual ~CalculatorSphericalExpansion() = default;
@@ -1538,8 +1572,6 @@ namespace rascal {
 
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
     internal::CutoffFunctionType cutoff_function_type{};
-
-    Hypers_t hypers{};
 
     math::SphericalHarmonics spherical_harmonics{};
 
@@ -2167,7 +2199,7 @@ namespace nlohmann {
    */
   template <>
   struct adl_serializer<rascal::CalculatorSphericalExpansion> {
-    static auto from_json(const json& j) {
+    static rascal::CalculatorSphericalExpansion from_json(const json& j) {
       return rascal::CalculatorSphericalExpansion{j};
     }
 

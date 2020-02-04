@@ -171,7 +171,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Test if the compute function runs
+   * Test if the compute function runs and
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(multiple_compute_test, Fix,
                                    multiple_fixtures, Fix) {
@@ -181,8 +181,29 @@ namespace rascal {
     for (auto & manager : managers) {
       for (auto & hyper : representation_hypers) {
         representations.emplace_back(hyper);
-        representations.back().compute(manager);
+        auto & representation = representations.back();
+        representation.compute(manager);
       }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Test (de)serialization using the nlohmann::json format
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, Fix,
+                                   multiple_fixtures, Fix) {
+    using Representation_t = typename Fix::Representation_t;
+    auto & representations = Fix::representations;
+    auto & representation_hypers = Fix::representation_hypers;
+
+    for (auto & hyper : representation_hypers) {
+      representations.emplace_back(hyper);
+      json j;
+      j = representations.back();
+      Representation_t rep_test{j.template get<Representation_t>()};
+      bool testing{representations.back() == rep_test};
+      BOOST_TEST(testing == true);
     }
   }
 
