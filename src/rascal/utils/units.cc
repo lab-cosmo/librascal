@@ -126,6 +126,11 @@ namespace rascal {
     }
 
     /* ---------------------------------------------------------------------- */
+    const std::string UnitStyle::none(int numerator, int denominator) const {
+      return this->format(this->_none, numerator, denominator);
+    }
+
+    /* ---------------------------------------------------------------------- */
     const std::string UnitStyle::format(const std::string & symbol,
                                         int numerator, int denominator) const {
       if ((numerator == 1) && (denominator == 1)) {

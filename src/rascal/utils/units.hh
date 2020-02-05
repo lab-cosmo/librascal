@@ -90,6 +90,8 @@ namespace rascal {
                                        int denominator = 1) const;
       const std::string density(int numerator = 1, int denominator = 1) const;
 
+      const std::string none(int numerator = 1, int denominator = 1) const;
+
      protected:
       const std::string format(const std::string & symbol, int numerator,
                                int denominator) const;
@@ -107,6 +109,7 @@ namespace rascal {
       const std::string _dipole;
       const std::string _electric_field;
       const std::string _density;
+      const std::string _none{"-"};
     };
 
     extern const UnitStyle metal;

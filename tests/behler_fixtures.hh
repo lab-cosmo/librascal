@@ -55,6 +55,10 @@ namespace rascal {
   template <SymmetryFunctionType FunType>
   struct SymmetryFunFixture {};
 
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Fixture for the Behler tyep Gaussian radial symmetry function
+   */
   template <>
   struct SymmetryFunFixture<SymmetryFunctionType::Gaussian> {
     using SymFun = SymmetryFunction<SymmetryFunctionType::Gaussian>;
@@ -67,6 +71,31 @@ namespace rascal {
 
     json incorrect_put{{"eta", {{"value", .1}, {"unit", "(Å)^(-1)"}}},
                        {"r_s", {{"value", 5.6}, {"unit", "Å"}}}};
+    SymFun sym_fun;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Fixture for the Behler type narrow (all atoms in a triplet within each
+   * others cutoff) angular symmetry function
+   */
+  template <>
+  struct SymmetryFunFixture<SymmetryFunctionType::Angular1> {
+    using SymFun = SymmetryFunction<SymmetryFunctionType::Angular1>;
+    SymmetryFunFixture() : sym_fun{unit_style, correct_input} {}
+    const units::UnitStyle unit_style{units::metal};
+
+    const double cos_theta{cos(1.0472)}; // ~60°
+    const double r_ij{1.1};
+    const double r_ik{1.2};
+    const double r_jk{1.3};
+    json correct_input{{"zeta", {{"value", .1}, {"unit", "-"}}},
+                       {"lambda", {{"value", .1}, {"unit", "-"}}},
+                       {"eta", {{"value", .1}, {"unit", "(Å)^(-2)"}}}};
+
+    json incorrect_put{{"zeta", {{"value", .1}, {"unit", "-"}}},
+                       {"lambda", {{"value", .1}, {"unit", "-"}}},
+                       {"eta", {{"value", .1}, {"unit", "(Å)^(-1)"}}}};
     SymFun sym_fun;
   };
 

@@ -41,25 +41,64 @@
 #include "Eigen/Dense"
 
 namespace rascal {
-  using SymmetryFunctions_t =
+
+  // Put all in here for the constructor tests
+  using SymmetryFunctionsAll_t =
+      boost::mpl::list<SymmetryFunFixture<SymmetryFunctionType::Gaussian>,
+                       SymmetryFunFixture<SymmetryFunctionType::Angular1>>;
+
+  // Pair-related symmetry functions which have one function argument
+  using SymmetryFunctionsRadial_t =
       boost::mpl::list<SymmetryFunFixture<SymmetryFunctionType::Gaussian>>;
+
+  // Triplet related narrow symmetry functions which have 4 arguments:
+  // cos_theta, r_ij, r_ik, r_jk
+  using SymmetryFunctionsAngular_t =
+      boost::mpl::list<SymmetryFunFixture<SymmetryFunctionType::Angular1>>;
 
   BOOST_AUTO_TEST_SUITE(symmetry_functions_behler);
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(construction_test, Fix, SymmetryFunctions_t,
-                                   Fix) {
+  /* ---------------------------------------------------------------------- */
+  // constructor tests for all
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(construction_test, Fix,
+                                   SymmetryFunctionsAll_t, Fix) {
     using SymFun = typename Fix::SymFun;
 
     BOOST_CHECK_THROW(SymFun(this->unit_style, this->incorrect_put),
                       std::runtime_error);
   }
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test, Fix, SymmetryFunctions_t, Fix) {
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Evaluation tests for f(rij) pair type symmetry functions
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test_radial, Fix,
+                                   SymmetryFunctionsRadial_t, Fix) {
     BOOST_CHECK_NO_THROW(this->sym_fun.f_sym(this->r_ij));
     BOOST_CHECK_NO_THROW(this->sym_fun.df_sym(this->r_ij));
 
     double f1{this->sym_fun.f_sym(this->r_ij)};
     double f2{std::get<0>(this->sym_fun.df_sym(this->r_ij))};
+
+    BOOST_CHECK_EQUAL(f1, f2);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Evaluation tests for f(cos_theta, r_ij, r_ik, r_jk) triplet type symmetry
+   * functions
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test_angular, Fix,
+                                   SymmetryFunctionsAngular_t, Fix) {
+    BOOST_CHECK_NO_THROW(this->sym_fun.f_sym(this->cos_theta, this->r_ij,
+                                             this->r_ik, this->r_jk));
+    BOOST_CHECK_NO_THROW(this->sym_fun.df_sym(this->cos_theta, this->r_ij,
+                                              this->r_ik, this->r_jk));
+
+    double f1{this->sym_fun.f_sym(this->cos_theta, this->r_ij, this->r_ik,
+                                  this->r_jk)};
+    double f2{std::get<0>(this->sym_fun.df_sym(this->cos_theta, this->r_ij,
+                                               this->r_ik, this->r_jk))};
 
     BOOST_CHECK_EQUAL(f1, f2);
   }

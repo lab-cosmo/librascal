@@ -158,6 +158,7 @@ namespace rascal {
     // results with equal species
     auto dG11_ref_derivatives{std::make_shared<dGVals_t>(manager)};
 
+    // calculate all behler feature values: symmetry and cutoff function
     this->bf.template compute<RepeatedSpecies::Not, Permutation<2, 0, 1>>(
         manager, G01_vals);
     this->bf.template compute<RepeatedSpecies::Not, Permutation<2, 1, 0>>(
@@ -181,6 +182,7 @@ namespace rascal {
                          .at("value")
                          .template get<double>()};
 
+    // calculate reference values, directly here
     G01_ref->resize();
     G10_ref->resize();
     G11_ref->resize();
@@ -191,9 +193,10 @@ namespace rascal {
     for (auto && atom : manager) {
       for (auto && pair : atom.pairs()) {
         double r_ij{manager.get_distance(pair)};
+        // '_c' for cutoff, '_s' for symmetryfunction
         double f_c{.5 * (std::cos(math::PI * r_ij / this->r_cut) + 1)};
         double f_s{
-            std::exp(-eta * (r_ij - r_s) * (r_ij - r_s))};  // 's' for sym
+            std::exp(-eta * (r_ij - r_s) * (r_ij - r_s))};
         double G_incr{f_s * f_c};
         G01_ref->operator[](atom) += G_incr;
         G10_ref->operator[](pair) += G_incr;
