@@ -67,7 +67,7 @@ class Kernel(BaseIO):
                 raise ValueError(
                     "The given zeta has to be a positive integer.")
         else:
-            raise ValueError("Kernel name must be one of: Cosine, GAP.")
+            raise RuntimeError("Kernel name must be one of: Cosine, GAP.")
         hypers = dict(name=name, target_type=target_type)
         hypers.update(**kwargs)
         hypers_str = json.dumps(hypers)

@@ -3,6 +3,7 @@ import importlib
 from collections import Iterable
 import numpy as np
 import json
+from copy import deepcopy
 
 BETA_VERSION = '0.1'
 
@@ -22,7 +23,7 @@ def load_obj(fn):
 
 
 def from_dict(data):
-    return BaseIO().from_dict(data)
+    return BaseIO().from_dict(deepcopy(data))
 
 
 def dump_json(fn, data):

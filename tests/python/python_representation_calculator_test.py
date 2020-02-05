@@ -1,5 +1,6 @@
 from rascal.representations import (SortedCoulombMatrix, SphericalExpansion,
                                     SphericalInvariants)
+from rascal.utils import from_dict
 from test_utils import load_json_frame, BoxList, Box, dot
 import unittest
 import numpy as np
@@ -35,6 +36,16 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
 
         test = features.get_features(rep)
 
+    def test_serialization(self):
+        rep = SortedCoulombMatrix(**self.hypers)
+
+        rep_dict = rep.to_dict()
+
+        rep_copy = from_dict(rep_dict)
+
+        rep_copy_dict = rep_copy.to_dict()
+
+        self.assertTrue(rep_dict == rep_copy_dict)
 
 class TestSphericalExpansionRepresentation(unittest.TestCase):
     def setUp(self):
@@ -64,7 +75,17 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         features = rep.transform(self.frames)
 
         test = features.get_features(rep)
+        
+    def test_serialization(self):
+        rep = SphericalExpansion(**self.hypers)
 
+        rep_dict = rep.to_dict()
+
+        rep_copy = from_dict(rep_dict)
+
+        rep_copy_dict = rep_copy.to_dict()
+
+        self.assertTrue(rep_dict == rep_copy_dict)
 
 class TestSphericalInvariantsRepresentation(unittest.TestCase):
     def setUp(self):
@@ -122,3 +143,14 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         X_t = features.get_features_by_species(rep)
         kk = dot(X_t, X_t)
         self.assertTrue(np.allclose(kk, kk_ref))
+
+    def test_serialization(self):
+        rep = SphericalInvariants(**self.hypers)
+
+        rep_dict = rep.to_dict()
+
+        rep_copy = from_dict(rep_dict)
+
+        rep_copy_dict = rep_copy.to_dict()
+
+        self.assertTrue(rep_dict == rep_copy_dict)

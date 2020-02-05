@@ -206,6 +206,7 @@ namespace rascal {
         auto diff = math::relative_error(feat_ref, feat_test);
         // are the 2 identical calculators giving the same features ?
         BOOST_TEST(diff.maxCoeff() < 1e-12);
+        break;  // a bit too long otherwise
       }
     }
   }
