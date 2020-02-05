@@ -7,6 +7,7 @@ from ..utils import FactoryPool
 from itertools import starmap
 from ..utils import return_deepcopy, BaseIO
 
+
 class SortedCoulombMatrix(BaseIO):
     """
     Computes the Sorted Coulomb matrix representation [1].
@@ -116,7 +117,7 @@ class SortedCoulombMatrix(BaseIO):
             central_decay=self.hypers['central_decay'],
             interaction_cutoff=self.hypers['interaction_cutoff'],
             interaction_decay=self.hypers['interaction_decay']
-                 )
+        )
         return init_params
 
     def _set_data(self, data):

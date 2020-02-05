@@ -84,9 +84,9 @@ class Kernel(BaseIO):
 
     def get_init_params(self):
         init_params = dict(representation=self._rep,
-            name = self.name,
-            kernel_type = self.kernel_type,
-            target_type = self.target_type)
+                           name=self.name,
+                           kernel_type=self.kernel_type,
+                           target_type=self.target_type)
         init_params.update(**self._kwargs)
         return init_params
 
@@ -123,4 +123,5 @@ class Kernel(BaseIO):
                 Y = Y._pseudo_points
             return self._kernel.compute(self._representation, X, Y)
         else:
-            raise NotImplementedError('The configuration: {} is not implemented for kernel {} in {} mode.'.format(grad, self.name, self.kernel_type))
+            raise NotImplementedError('The configuration: {} is not implemented for kernel {} in {} mode.'.format(
+                grad, self.name, self.kernel_type))

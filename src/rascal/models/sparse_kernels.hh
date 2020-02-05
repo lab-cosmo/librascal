@@ -349,13 +349,12 @@ namespace rascal {
 
     //! Move constructor
     SparseKernel(SparseKernel && other) noexcept
-      : identifiers{std::move(other.identifiers)},
-        parameters{},
-        target_type{std::move(other.target_type)},
-        kernel_type{std::move(other.kernel_type)},
-        kernel_impl{std::move(other.kernel_impl)} {
-          this->parameters = std::move(other.parameters);
-        }
+        : identifiers{std::move(other.identifiers)}, parameters{},
+          target_type{std::move(other.target_type)},
+          kernel_type{std::move(other.kernel_type)}, kernel_impl{std::move(
+                                                         other.kernel_impl)} {
+      this->parameters = std::move(other.parameters);
+    }
 
     /*
      * The root compute kernel function. It computes the kernel between 2 set of
@@ -486,11 +485,11 @@ namespace nlohmann {
    */
   template <>
   struct adl_serializer<rascal::SparseKernel> {
-    static rascal::SparseKernel from_json(const json& j) {
+    static rascal::SparseKernel from_json(const json & j) {
       return rascal::SparseKernel{j};
     }
 
-    static void to_json(json& j, const rascal::SparseKernel& t) {
+    static void to_json(json & j, const rascal::SparseKernel & t) {
       j = t.parameters;
     }
   };

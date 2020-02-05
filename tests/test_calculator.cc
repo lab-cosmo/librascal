@@ -174,8 +174,8 @@ namespace rascal {
    * Test if the compute function runs and
    * Test (de)serialization using the nlohmann::json format
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, Fix,
-                                   multiple_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, Fix, multiple_fixtures,
+                                   Fix) {
     using Representation_t = typename Fix::Representation_t;
     using Property_t = typename Fix::Property_t;
     auto & managers = Fix::managers;
@@ -194,11 +194,13 @@ namespace rascal {
       for (auto & manager : managers) {
         // does the compute function runs without errors ?
         rep.compute(manager);
-        auto prop_ref = manager->template get_property<Property_t>(rep.get_name(), true);
+        auto prop_ref =
+            manager->template get_property<Property_t>(rep.get_name(), true);
         auto feat_ref = prop_ref->get_features();
 
         rep_test.compute(manager);
-        auto prop_test = manager->template get_property<Property_t>(rep_test.get_name(), true);
+        auto prop_test = manager->template get_property<Property_t>(
+            rep_test.get_name(), true);
         auto feat_test = prop_test->get_features();
 
         auto diff = math::relative_error(feat_ref, feat_test);

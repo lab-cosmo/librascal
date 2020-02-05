@@ -194,14 +194,12 @@ namespace rascal {
 
     //! Move constructor
     CalculatorSortedCoulomb(CalculatorSortedCoulomb && other) noexcept
-      : CalculatorBase{std::move(other)},
-        central_cutoff{std::move(other.central_cutoff)},
-        central_decay{std::move(other.central_decay)},
-        interaction_cutoff{std::move(other.interaction_cutoff)},
-        interaction_decay{std::move(other.interaction_decay)},
-        size{std::move(other.size)}
-        {}
-
+        : CalculatorBase{std::move(other)}, central_cutoff{std::move(
+                                                other.central_cutoff)},
+          central_decay{std::move(other.central_decay)},
+          interaction_cutoff{std::move(other.interaction_cutoff)},
+          interaction_decay{std::move(other.interaction_decay)},
+          size{std::move(other.size)} {}
 
     //! Destructor
     virtual ~CalculatorSortedCoulomb() = default;
@@ -215,14 +213,15 @@ namespace rascal {
     operator=(CalculatorSortedCoulomb && other) = default;
     /* -------------------- rep-construc-end -------------------- */
 
-    bool operator==(const CalculatorSortedCoulomb& other) const {
-      bool algo_match{this->hypers.at("sorting_algorithm").template get<std::string>() == other.hypers.at("sorting_algorithm").template get<std::string>()};
+    bool operator==(const CalculatorSortedCoulomb & other) const {
+      bool algo_match{
+          this->hypers.at("sorting_algorithm").template get<std::string>() ==
+          other.hypers.at("sorting_algorithm").template get<std::string>()};
       return (this->central_cutoff == other.central_cutoff and
-      this->central_decay == other.central_decay and
-      this->interaction_cutoff == other.interaction_cutoff and
-      this->interaction_decay == other.interaction_decay and
-      this->size == other.size and algo_match
-      );
+              this->central_decay == other.central_decay and
+              this->interaction_cutoff == other.interaction_cutoff and
+              this->interaction_decay == other.interaction_decay and
+              this->size == other.size and algo_match);
     }
     /* -------------------- rep-interface-start -------------------- */
     /**
@@ -568,11 +567,11 @@ namespace nlohmann {
    */
   template <>
   struct adl_serializer<rascal::CalculatorSortedCoulomb> {
-    static rascal::CalculatorSortedCoulomb from_json(const json& j) {
+    static rascal::CalculatorSortedCoulomb from_json(const json & j) {
       return rascal::CalculatorSortedCoulomb{j};
     }
 
-    static void to_json(json& j, const rascal::CalculatorSortedCoulomb& t) {
+    static void to_json(json & j, const rascal::CalculatorSortedCoulomb & t) {
       j = t.hypers;
     }
   };

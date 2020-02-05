@@ -55,7 +55,6 @@ PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 
 namespace py = pybind11;
 
-
 //! Simplistic but robust implicit conversion of py::dict to/from nlohmann::json
 namespace nlohmann {
   template <>
@@ -79,13 +78,12 @@ namespace rascal {
      *
      * @tparam Object is expected to be nlohmann::json (de)serializable
      *
-     * A copy and a json (de)serialization are necessary to make sure that if the
-     * resulting dictionary is written in json, then it will be directly
+     * A copy and a json (de)serialization are necessary to make sure that if
+     * the resulting dictionary is written in json, then it will be directly
      * convertible to the original object in C++ and vice-versa.
      */
     template <class Object, class... Bases>
-    void bind_dict_representation(
-        py::class_<Object, Bases...> & obj) {
+    void bind_dict_representation(py::class_<Object, Bases...> & obj) {
       // serialization to a python dictionary
       obj.def("to_dict", [](const Object & self) {
         json j;
@@ -105,7 +103,7 @@ namespace rascal {
         std::string representation_name{internal::type_name<Object>()};
         std::string sep{" | Parameters: "};
         std::string prefix{"Class: "};
-        return prefix+representation_name+sep+str;
+        return prefix + representation_name + sep + str;
       });
     }
 

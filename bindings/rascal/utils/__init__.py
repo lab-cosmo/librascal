@@ -22,6 +22,7 @@ def is_notebook():
     except NameError:
         return False      # Probably standard Python interpreter
 
+
 def return_deepcopy(f):
     @wraps(f)
     def wrapper(*args, **kwds):
