@@ -113,10 +113,12 @@ namespace rascal {
   void BehlerFeature<MySymFunType, SymFunTypes...>::compute_helper(
       StructureManager & manager, std::shared_ptr<PropertyBase> output) const {
     auto & cutoffs{this->cut_fun->get_value(manager)};
+
     // eval
     using Output_t = Property<double, AtomOrder, StructureManager>;
     Output_t & fun_vals{dynamic_cast<Output_t &>(*output)};
     auto & pair_distances{manager.get_distance()};
+    // auto & triplet_distances{}
 
     auto & neigh_to_i_atom{
         manager
@@ -157,7 +159,14 @@ namespace rascal {
       break;
     }
     case TripletOrder: {
-      throw std::runtime_error("Not yet implemented");
+      // for (auto && atom : manager) {
+      //   for (auto && triplet : atom.triplets()) {
+      //     // auto && distances{triplet_distances[triplet]};
+      //     // auto && angles{triplet_angles[triplet]}
+
+      //     // auto && G_incr{this->sym_fun.f_sym(/* args */)}
+      //   }
+      // }
       break;
     }
     default:

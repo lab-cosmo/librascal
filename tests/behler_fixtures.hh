@@ -57,7 +57,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Fixture for the Behler tyep Gaussian radial symmetry function
+   * Fixture for the Behler type Gaussian radial symmetry function
    */
   template <>
   struct SymmetryFunFixture<SymmetryFunctionType::Gaussian> {
@@ -80,8 +80,8 @@ namespace rascal {
    * others cutoff) angular symmetry function
    */
   template <>
-  struct SymmetryFunFixture<SymmetryFunctionType::Angular1> {
-    using SymFun = SymmetryFunction<SymmetryFunctionType::Angular1>;
+  struct SymmetryFunFixture<SymmetryFunctionType::AngularNarrow> {
+    using SymFun = SymmetryFunction<SymmetryFunctionType::AngularNarrow>;
     SymmetryFunFixture() : sym_fun{unit_style, correct_input} {}
     const units::UnitStyle unit_style{units::metal};
 

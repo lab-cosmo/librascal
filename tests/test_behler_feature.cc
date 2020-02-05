@@ -64,9 +64,8 @@ namespace rascal {
   };
 
   // list of all tested BehlerFeatures
-  using Features =
-      boost::mpl::list<BehlerFeatureFixture<SymmetryFunctionType::Gaussian,
-                                            SymmetryFunctionType::Gaussian>>;
+  using Features = boost::mpl::list<BehlerFeatureFixture<
+      SymmetryFunctionType::Gaussian, SymmetryFunctionType::AngularNarrow>>;
 
   // list of all tested BehlerFeatures defined on pairs
   using PairFeatures =
@@ -76,7 +75,7 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(behler_parinello_feature_tests);
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Features, Fix) {}
 
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test, Fix, Features, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test, Fix, PairFeatures, Fix) {
     ManagerFixture<StructureManagerLammps> manager_fix{};
     auto manager_ptr{
         make_adapted_manager<AdaptorStrict>(manager_fix.manager, Fix::r_cut)};
@@ -193,10 +192,9 @@ namespace rascal {
     for (auto && atom : manager) {
       for (auto && pair : atom.pairs()) {
         double r_ij{manager.get_distance(pair)};
-        // '_c' for cutoff, '_s' for symmetryfunction
+        // '_c' for cutoff, '_s' for symmetry function
         double f_c{.5 * (std::cos(math::PI * r_ij / this->r_cut) + 1)};
-        double f_s{
-            std::exp(-eta * (r_ij - r_s) * (r_ij - r_s))};
+        double f_s{std::exp(-eta * (r_ij - r_s) * (r_ij - r_s))};
         double G_incr{f_s * f_c};
         G01_ref->operator[](atom) += G_incr;
         G10_ref->operator[](pair) += G_incr;

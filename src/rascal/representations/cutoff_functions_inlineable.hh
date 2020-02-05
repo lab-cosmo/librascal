@@ -1,3 +1,4 @@
+
 /**
  * @file   cutoff_functions_inlineable.hh
  *

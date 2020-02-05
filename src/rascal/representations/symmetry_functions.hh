@@ -48,28 +48,20 @@ namespace rascal {
 
   using units::UnitStyle;
 
-  enum class SymmetryFunctionType { One, Gaussian, Cosine, Angular1, Angular2 };
+  enum class SymmetryFunctionType { Gaussian, AngularNarrow, AngularWide };
 
   /* ---------------------------------------------------------------------- */
   inline std::string get_name(SymmetryFunctionType fun_type) {
     switch (fun_type) {
-    case SymmetryFunctionType::One: {
-      return "One";
-      break;
-    }
     case SymmetryFunctionType::Gaussian: {
       return "Gaussian";
       break;
     }
-    case SymmetryFunctionType::Cosine: {
-      return "Cosine";
-      break;
-    }
-    case SymmetryFunctionType::Angular1: {
+    case SymmetryFunctionType::AngularNarrow: {
       return "Angular1";
       break;
     }
-    case SymmetryFunctionType::Angular2: {
+    case SymmetryFunctionType::AngularWide: {
       return "Angular2";
       break;
     }
@@ -144,8 +136,6 @@ namespace rascal {
     double r_s;
   };
 
-  constexpr size_t SymmetryFunction<SymmetryFunctionType::Gaussian>::Order;
-
   /* ---------------------------------------------------------------------- */
   /**
    * Triplet related symmetry function, also called `Angular narrow`. Narrow
@@ -156,12 +146,12 @@ namespace rascal {
    * 2^(1-zeta) * (1 + lambda * cos_theta)^zeta * exp(r_ij^2 + r_ik^2 + r_jk^2)
    */
   template <>
-  class SymmetryFunction<SymmetryFunctionType::Angular1> {
+  class SymmetryFunction<SymmetryFunctionType::AngularNarrow> {
    public:
     static constexpr size_t Order{3};
 
-    // return type to be adjusted?
-    using Return_t = std::tuple<double, double>;
+    // return type for each function value and 3 derivative values
+    using Return_t = std::tuple<double, double, double, double>;
     // usage?
     static constexpr bool DerivativeIsCollinear{false};
 
@@ -182,7 +172,7 @@ namespace rascal {
     }
 
     Return_t df_sym(const double & cos_theta, const double & r_ij,
-                  const double & r_ik, const double & r_jk) const {
+                    const double & r_ik, const double & r_jk) const {
       auto && angular_contrib{
           math::pow(1. + this->lambda * cos_theta, this->zeta)};
       auto && exp_contrib{
@@ -191,7 +181,11 @@ namespace rascal {
 
       // helper for derivative
       // auto && psi_ij{-1/(r_ij * rik) * this->lambda * this->zeta / ()}
-      return Return_t(fun_val, 0.);  // placeholder '0' for later
+
+      double dval_i{0};
+      double dval_j{0};
+      double dval_k{0};
+      return Return_t(fun_val, dval_i, dval_j, dval_k);
     }
 
    protected:
@@ -199,7 +193,66 @@ namespace rascal {
     double zeta;
     double lambda;
     double eta;
-    double prefactor;  // precomputation at initialization
+    double prefactor;  // prefactor evaluation at construction
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Triplet related symmetry function, also called `Angular narrow`. Narrow
+   * means that the atom j,k of a triplet also need to be within each others
+   * cutoff.
+   *
+   * SF =
+   * 2^(1-zeta) * (1 + lambda * cos_theta)^zeta * exp(r_ij^2 + r_ik^2)
+   */
+  template <>
+  class SymmetryFunction<SymmetryFunctionType::AngularWide> {
+   public:
+    static constexpr size_t Order{3};
+
+    // return type for each function value and 3 derivative values
+    using Return_t = std::tuple<double, double, double, double>;
+    // usage?
+    static constexpr bool DerivativeIsCollinear{false};
+
+    SymmetryFunction(const UnitStyle & unit_style, const json & params)
+        : params{params}, zeta{json_io::check_units(unit_style.none(),
+                                                    params.at("zeta"))},
+          lambda{json_io::check_units(unit_style.none(), params.at("lambda"))},
+          eta{json_io::check_units(unit_style.distance(-2), params.at("eta"))},
+          prefactor{math::pow(2., 1 - zeta)} {}
+
+    double f_sym(const double & cos_theta, const double & r_ij,
+                 const double & r_ik) const {
+      auto && angular_contrib{
+          math::pow(1. + this->lambda * cos_theta, this->zeta)};
+      auto && exp_contrib{exp(-this->eta * (r_ij * r_ij + r_ik * r_ik))};
+      return this->prefactor * angular_contrib * exp_contrib;
+    }
+
+    Return_t df_sym(const double & cos_theta, const double & r_ij,
+                    const double & r_ik, const double & /*r_jk*/) const {
+      auto && angular_contrib{
+          math::pow(1. + this->lambda * cos_theta, this->zeta)};
+      auto && exp_contrib{exp(-this->eta * (r_ij * r_ij + r_ik * r_ik))};
+      auto && fun_val{this->prefactor * angular_contrib * exp_contrib};
+
+      // helper for derivative
+      auto && psi{-1. / (r_ij * r_ik) * this->lambda * this->zeta /
+                  (1. + this->lambda * cos_theta)};
+      auto && phi{-psi - 1. / (r_ij * r_ij) * this->lambda * this->zeta /
+                             (1 + this->lambda * cos_theta)};
+      double const eta2{this->eta * 2};
+
+      return Return_t(fun_val, psi, phi, eta2);
+    }
+
+   protected:
+    const json params;
+    double zeta;
+    double lambda;
+    double eta;
+    double prefactor;  // prefactor evaluation at construction
   };
 
   // template <>
