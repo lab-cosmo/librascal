@@ -4,10 +4,10 @@ from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
 import numpy as np
 from copy import deepcopy
-from ..utils import return_deepcopy
+from ..utils import return_deepcopy, BaseIO
 
 
-class SphericalInvariants(object):
+class SphericalInvariants(BaseIO):
 
     """
     Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.
@@ -26,9 +26,6 @@ class SphericalInvariants(object):
 
     max_angular : int
         Highest angular momentum number (l) in the expansion
-
-    n_species : int
-        Number of species to be considered separately
 
     gaussian_sigma_type : str
         How the Gaussian atom sigmas (smearing widths) are allowed to
@@ -226,13 +223,12 @@ class SphericalInvariants(object):
 
         return frames
 
-    def get_num_coefficients(self):
+    def get_num_coefficients(self, n_species = 1):
         """Return the number of coefficients in the representation
 
         (this is the descriptor size per atomic centre)
 
         """
-        n_species = 1
         if self.hypers['soap_type'] == 'RadialSpectrum':
             return (n_species*self.hypers['max_radial'])
         if self.hypers['soap_type'] == 'PowerSpectrum':
@@ -295,7 +291,7 @@ class SphericalInvariants(object):
         cutoff_function = self.hypers['cutoff_function']
         radial_contribution = self.hypers['radial_contribution']
 
-        init_params = dict(interaction_cutoff=self.hypers['interaction_cutoff'], cutoff_smooth_width=self.hypers['cutoff_smooth_width'],
+        init_params = dict(interaction_cutoff=cutoff_function['cutoff']['value'], cutoff_smooth_width=cutoff_function['smooth_width']['value'],
                  max_radial=self.hypers['max_radial'], max_angular=self.hypers['max_angular'],
                  soap_type=self.hypers['soap_type'],
                  inversion_symmetry=self.hypers['inversion_symmetry'],

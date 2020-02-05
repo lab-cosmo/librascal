@@ -4,6 +4,7 @@ from ..lib import utils
 from .pool_worker import FactoryPool
 from functools import wraps
 from copy import deepcopy
+from .io import BaseIO, from_dict
 
 ostream_redirect = utils.__dict__['ostream_redirect']
 

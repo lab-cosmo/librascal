@@ -17,6 +17,9 @@ def dump_obj(fn,instance,version=CURRENT_VERSION):
 def load_obj(fn):
     return BaseIO().from_file(fn)
 
+def from_dict(data):
+    return BaseIO().from_dict(data)
+
 def dump_json(fn,data):
     with open(fn,'w') as f:
         json.dump(data,f,sort_keys=True,indent=2)
@@ -83,20 +86,43 @@ def is_valid_object_dict_beta(data):
     else:
         return False
 
+# def is_a_wrapped_object(obj):
+#     """Answer the question: is obj imported from C++ binding library ?
+#     namely from 'rascal.lib._rascal'."""
+#     module_str = getattr(obj, '__module__', None)
+#     module_root_str = '.'.join(module_str.split('.')[:3])
+#     return 'rascal.lib._rascal' == module_root_str
+
 obj2dict = {BETA_VERSION:obj2dict_beta}
 dict2obj = {BETA_VERSION:dict2obj_beta}
 is_valid_object_dict = {BETA_VERSION:is_valid_object_dict_beta}
 
 class BaseIO(object):
+    """
+    Base class giving arbitrary python class the ability to serialize themselves
+    into python dictionary and being saved to files.
+    A class that inherits from BaseIO should implement the _get_data and get_init_params functions (see _get_state() for more details).
+    """
     def __init__(self):
         super(BaseIO,self).__init__()
 
     def _get_state(self):
+        """fetch the state of self using the _get_data and get_init_params functions that should be implemented in the Implementation class that inherits from BaseIO.
+
+        get_init_params is expected to return a dictionary containing all the
+        parameters used by the __init__() methods.
+
+        _get_data is expected to return a dictionary containing all the data
+        that is not set by the initialization of the class."""
         state = dict(data=self._get_data(),
                      init_params=self.get_init_params())
         return state
-        
+
     def to_dict(self,obj=None,version=CURRENT_VERSION):
+        """recursirvely convert the python object obj into a dictionary that
+        can be used to create a copy of obj.
+        obj has to inherit from BaseIO and implements a _get_data and
+        get_init_params methods"""
         if obj is None:
             obj = self
         state = obj._get_state()
@@ -106,7 +132,6 @@ class BaseIO(object):
                 for k,v in entry.items():
                     if isinstance(v, BaseIO) is True:
                         state[name][k] = self.to_dict(v,version)
-
                     elif isinstance(v, list):
                         ll = []
                         for val in v:
@@ -116,11 +141,12 @@ class BaseIO(object):
                                 ll.append(val)
                         state[name][k] = ll
 
-
         data = obj2dict[version](obj.__class__, state)
         return data
 
     def from_dict(self,data):
+        """recursirvely convert python a dictionary that
+        obj has to inherit from BaseIO."""
         version = data['version']
         for name,entry in data.items():
             if isinstance(entry, dict):

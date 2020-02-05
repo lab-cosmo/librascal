@@ -2,11 +2,11 @@ from ..lib._rascal.models.kernels import Kernel as Kernelcpp
 from ..lib._rascal.models.kernels import SparseKernel as SparseKernelcpp
 from ..neighbourlist import AtomsList
 from .pseudo_points import PseudoPoints
-from ..utils import return_deepcopy
+from ..utils import return_deepcopy, BaseIO
 import json
 
 
-class Kernel(object):
+class Kernel(BaseIO):
 
     """
     Computes the kernel from an representation
@@ -82,13 +82,12 @@ class Kernel(object):
         else:
             self._kernel = Kernelcpp(hypers_str)
 
-    @return_deepcopy
     def get_init_params(self):
         init_params = dict(representation=self._rep,
             name = self.name,
             kernel_type = self.kernel_type,
-            target_type = self.target_type,
-            kwargs = self._kwargs)
+            target_type = self.target_type)
+        init_params.update(**self._kwargs)
         return init_params
 
     def _set_data(self, data):
@@ -96,7 +95,6 @@ class Kernel(object):
 
     def _get_data(self):
         return dict()
-
 
     def __call__(self, X, Y=None, grad=(False, False)):
         if isinstance(X, AtomsList):
