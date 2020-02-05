@@ -257,38 +257,6 @@ namespace rascal {
               }
               i_center += SpatialDims;
             }
-            // const math::Matrix_t dX_dr_flat = prop_grad.get_features();
-            // Eigen::Map<const math::Matrix_t> dX_dr(dX_dr_flat.data(),
-            // prop_grad.size() * SpatialDims,
-            //         dX_dr_flat.cols() / SpatialDims);
-            // math::Matrix_t T = pseudo_points.get_features();
-            // math::Matrix_t prod = (dX_dr * T.transpose()).eval();
-            // int i_manager{0};
-            // auto Msps = pseudo_points.species_by_points();
-            // for (auto center : manager) {
-            //   for (auto neigh : center.pairs_with_self_pair()) {
-            //     int i_col{0};
-            //     for (auto sp : Msps) {
-            //       if (sp != neigh.get_atom_type()) {
-            //         prod(i_manager, i_col) = 0.;
-            //       }
-            //       ++i_col;
-            //     }
-            //     i_manager++;
-            //   }
-            // }
-            // int i_row{0};
-            // for (auto center : manager) {
-            //   // auto atom_ii = center.get_atom_ii();
-            //   // std::cout << atom_ii.get_atom_tag() << std::endl;
-            //   for (auto neigh : center.pairs_with_self_pair()) {
-            //       KNM.block(i_center, 0, SpatialDims, n_pseudo_points) +=
-            //       prod.block(i_row, 0, SpatialDims, n_pseudo_points);
-            //     i_row += SpatialDims;
-            //   }
-            //   i_center += SpatialDims;
-            // }
-
           } else {
             auto && prop{*manager->template get_property<Property_t>(
                 representation_name, true)};
@@ -378,6 +346,16 @@ namespace rascal {
                                ": \'GAP\'.");
       }
     }
+
+    //! Move constructor
+    SparseKernel(SparseKernel && other) noexcept
+      : identifiers{std::move(other.identifiers)},
+        parameters{},
+        target_type{std::move(other.target_type)},
+        kernel_type{std::move(other.kernel_type)},
+        kernel_impl{std::move(other.kernel_impl)} {
+          this->parameters = std::move(other.parameters);
+        }
 
     /*
      * The root compute kernel function. It computes the kernel between 2 set of
@@ -500,5 +478,22 @@ namespace rascal {
   };
 
 }  // namespace rascal
+
+namespace nlohmann {
+  /**
+   * Special specialization of the json serialization for non default
+   * constructible type.
+   */
+  template <>
+  struct adl_serializer<rascal::SparseKernel> {
+    static rascal::SparseKernel from_json(const json& j) {
+      return rascal::SparseKernel{j};
+    }
+
+    static void to_json(json& j, const rascal::SparseKernel& t) {
+      j = t.parameters;
+    }
+  };
+}  // namespace nlohmann
 
 #endif  // SRC_RASCAL_MODELS_SPARSE_KERNELS_HH_

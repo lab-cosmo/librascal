@@ -73,8 +73,42 @@ namespace nlohmann {
 }  // namespace nlohmann
 
 namespace rascal {
-
   namespace internal {
+    /**
+     * Expose to python the serialization of Object as a python dictionary.
+     *
+     * @tparam Object is expected to be nlohmann::json (de)serializable
+     *
+     * A copy and a json (de)serialization are necessary to make sure that if the
+     * resulting dictionary is written in json, then it will be directly
+     * convertible to the original object in C++ and vice-versa.
+     */
+    template <class Object, class... Bases>
+    void bind_dict_representation(
+        py::class_<Object, Bases...> & obj) {
+      // serialization to a python dictionary
+      obj.def("to_dict", [](const Object & self) {
+        json j;
+        j = self;  // implicit conversion to nlohmann::json
+        return j.template get<py::dict>();
+      });
+      // construction from a python dictionary
+      obj.def_static("from_dict", [](const py::dict & d) {
+        json j;
+        j = d;  // implicit conversion to nlohmann::json
+        return std::make_unique<Object>(j.template get<Object>());
+      });
+      // string representation
+      obj.def("__str__", [](const Object & self) {
+        json j = self;  // implicit conversion to nlohmann::json
+        std::string str = j.dump(2);
+        std::string representation_name{internal::type_name<Object>()};
+        std::string sep{" | Parameters: "};
+        std::string prefix{"Class: "};
+        return prefix+representation_name+sep+str;
+      });
+    }
+
     /**
      * Transforms the template type to a string for the python bindings.
      * There are submodules in the python bindings with the class

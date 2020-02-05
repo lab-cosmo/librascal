@@ -111,28 +111,6 @@ namespace rascal {
   }
 
   /**
-   * Expose to python the serialization of PseudoPoints to a python dictionary.
-   *
-   * A copy and a json (de)serialization are necessary to make sure that if the
-   * resulting dictionary is written in json, then it will be directly
-   * convertible to the original object.
-   */
-  template <class PseudoPoints>
-  void bind_block_sparse_pseudo_points_dict_representation(
-      py::class_<PseudoPoints> & pseudo_points) {
-    pseudo_points.def("to_dict", [](const PseudoPoints & self) {
-      json j;
-      j = self;  // implicit conversion to nlohmann::json
-      return j.template get<py::dict>();
-    });
-    pseudo_points.def("from_dict", [](PseudoPoints & self, const py::dict & d) {
-      json j;
-      j = d;  // implicit conversion to nlohmann::json
-      self = std::move(j.template get<PseudoPoints>());
-    });
-  }
-
-  /**
    * Function to bind the representation managers to python
    *
    * @param mod pybind11 representation of the python module the represenation
@@ -156,6 +134,7 @@ namespace rascal {
 
     // Bind the interface of this representation manager
     auto kernel = add_kernel<Kernel>(mod, m_internal);
+    internal::bind_dict_representation(kernel);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
                                  ManagerCollection_1_t>(kernel);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
@@ -163,11 +142,12 @@ namespace rascal {
 
     // bind the sparse kernel and pseudo points class
     auto sparse_kernel = add_kernel<SparseKernel>(mod, m_internal);
+    internal::bind_dict_representation(sparse_kernel);
     bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
                                         Calc1_t, ManagerCollection_2_t,
                                         PseudoPoints_1_t>(sparse_kernel);
     auto pseudo_points = add_pseudo_points<PseudoPoints_1_t>(mod, m_internal);
     bind_pseudo_points_push_back<ManagerCollection_2_t, Calc1_t>(pseudo_points);
-    bind_block_sparse_pseudo_points_dict_representation(pseudo_points);
+    internal::bind_dict_representation(pseudo_points);
   }
 }  // namespace rascal

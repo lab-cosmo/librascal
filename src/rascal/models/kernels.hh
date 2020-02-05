@@ -330,6 +330,16 @@ namespace rascal {
       }
     }
 
+    //! Move constructor
+    Kernel(Kernel && other) noexcept
+      : identifiers{std::move(other.identifiers)},
+        parameters{},
+        target_type{std::move(other.target_type)},
+        kernel_type{std::move(other.kernel_type)},
+        kernel_impl{std::move(other.kernel_impl)} {
+          this->parameters = std::move(other.parameters);
+        }
+
     /*
      * The root compute kernel function. It computes the kernel between 2 set of
      * structures for a given representation specified by the calculator.
@@ -431,5 +441,22 @@ namespace rascal {
   };
 
 }  // namespace rascal
+
+namespace nlohmann {
+  /**
+   * Special specialization of the json serialization for non default
+   * constructible type.
+   */
+  template <>
+  struct adl_serializer<rascal::Kernel> {
+    static rascal::Kernel from_json(const json& j) {
+      return rascal::Kernel{j};
+    }
+
+    static void to_json(json& j, const rascal::Kernel& t) {
+      j = t.parameters;
+    }
+  };
+}  // namespace nlohmann
 
 #endif  // SRC_RASCAL_MODELS_KERNELS_HH_

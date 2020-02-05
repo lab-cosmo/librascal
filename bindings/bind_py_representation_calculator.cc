@@ -48,7 +48,7 @@ namespace rascal {
       json hypers = json::parse(hyper_str);
       return std::make_unique<Calculator>(hypers);
     }));
-
+    internal::bind_dict_representation(representation);
     return representation;
   }
 

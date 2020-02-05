@@ -62,8 +62,10 @@ namespace rascal {
     CalculatorBase(CalculatorBase && other) noexcept :
       name{std::move(other.name)},
       default_prefix{std::move(other.default_prefix)},
-      hypers{std::move(other.hypers)},
-      options{std::move(other.options)} {}
+      hypers{},
+      options{std::move(other.options)} {
+        this->hypers = std::move(other.hypers);
+      }
 
     //! Destructor
     virtual ~CalculatorBase() = default;
