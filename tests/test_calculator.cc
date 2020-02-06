@@ -604,10 +604,9 @@ namespace rascal {
     const std::vector<std::string> filenames{
         "reference_data/inputs/diamond_2atom.json",
         "reference_data/inputs/diamond_2atom_distorted.json",
-        "reference_data/inputs/SiC_moissanite.json",
         "reference_data/inputs/SiCGe_wurtzite_like.json",
         "reference_data/inputs/methane.json"};
-    const std::vector<double> cutoffs{{1.2, 1.2, 1.5, 1.5, 4.}};
+    const std::vector<double> cutoffs{{1.2, 1.2, 1.5, 4.}};
     const double cutoff_skin{0.};
 
     json factory_args{};
@@ -676,10 +675,9 @@ namespace rascal {
     const std::vector<std::string> filenames{
         "reference_data/inputs/diamond_2atom.json",
         "reference_data/inputs/diamond_2atom_distorted.json",
-        "reference_data/inputs/SiC_moissanite.json",
         "reference_data/inputs/SiCGe_wurtzite_like.json",
         "reference_data/inputs/methane.json"};
-    const std::vector<double> cutoffs{{1.2, 1.2, 1.5, 1.5, 4.}};
+    const std::vector<double> cutoffs{{1.2, 1.2, 1.5, 4.}};
     const double cutoff_skin{0.};
 
     json factory_args{};
@@ -707,14 +705,11 @@ namespace rascal {
     ~MergeHalfAndFull() = default;
   };
 
-  // using gradient_half_fixtures = boost::mpl::list<
-  //     MergeHalfAndFull<RepFix_t<SingleHypersSphericalExpansion>,
-  //                      RepFixHalf_t<SingleHypersSphericalExpansion>>,
-  //     MergeHalfAndFull<RepFix_t<SingleHypersSphericalInvariants>,
-  //                      RepFixHalf_t<SingleHypersSphericalInvariants>>>;
   using gradient_half_fixtures =
       boost::mpl::list<MergeHalfAndFull<SimpleFullFixture, SimpleHalfFixture,
-                                        CalculatorSphericalExpansion>>;
+                                        CalculatorSphericalExpansion>,
+                       MergeHalfAndFull<SimpleFullFixture, SimpleHalfFixture,
+                                        CalculatorSphericalInvariants>>;
   /**
    * Test the representation gradients computed with a half neighbor list
    * against the full neighbor list implementation.
