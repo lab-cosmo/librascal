@@ -327,7 +327,6 @@ namespace rascal {
         PropertyGradient_t<StructureManager> & soap_vector_gradients,
         std::shared_ptr<StructureManager> manager, SpectrumNorm & inv_norms,
         const size_t & grad_component_size) {
-      constexpr static int ThreeD{ThreeD};
       using MapSoapGradFlat_t = Eigen::Map<
           Eigen::Matrix<double, ThreeD, Eigen::Dynamic, Eigen::RowMajor>>;
       using ConstMapSoapFlat_t = const Eigen::Map<const Eigen::VectorXd>;
@@ -999,7 +998,6 @@ namespace rascal {
           InvariantsDerivative & soap_vector_gradients,
           ExpansionCoeff & expansions_coefficients,
           std::shared_ptr<StructureManager> manager) {
-    constexpr static int ThreeD{ThreeD};
     size_t n_row{math::pow(this->max_radial, 2_size_t)};
     size_t n_col{this->max_angular + 1};
 
@@ -1111,7 +1109,6 @@ namespace rascal {
           InvariantsDerivative & soap_vector_gradients,
           ExpansionCoeff & expansions_coefficients,
           std::shared_ptr<StructureManager> manager) {
-    constexpr static int ThreeD{ThreeD};
     size_t n_row{this->max_radial};
     size_t n_col{1};
 

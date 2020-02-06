@@ -1690,7 +1690,6 @@ namespace rascal {
       std::shared_ptr<StructureManager> manager) {
     using Prop_t = Property_t<StructureManager>;
     using PropGrad_t = PropertyGradient_t<StructureManager>;
-    constexpr static int ThreeD{ThreeD};
     constexpr static bool IsHalfNL{
         StructureManager::traits::NeighbourListType ==
         AdaptorTraits::NeighbourListType::half};
