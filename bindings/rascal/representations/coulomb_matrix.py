@@ -89,8 +89,7 @@ class SortedCoulombMatrix(BaseIO):
 
         self.size = self.get_size(frames.managers)
         self.update_hyperparameters(size=self.size)
-        hypers_str = json.dumps(self.hypers)
-        self.rep_options = dict(name=self.name, args=[hypers_str])
+        self.rep_options = dict(name=self.name, args=[self.hypers])
         self._representation = CalculatorFactory(self.rep_options)
 
         self._representation.compute(frames.managers)

@@ -70,7 +70,6 @@ class Kernel(BaseIO):
             raise RuntimeError("Kernel name must be one of: Cosine, GAP.")
         hypers = dict(name=name, target_type=target_type)
         hypers.update(**kwargs)
-        hypers_str = json.dumps(hypers)
         self._rep = representation
         self._representation = representation._representation
         self.name = name
@@ -78,9 +77,9 @@ class Kernel(BaseIO):
         self.kernel_type = kernel_type
         self.target_type = target_type
         if 'Sparse' in kernel_type:
-            self._kernel = SparseKernelcpp(hypers_str)
+            self._kernel = SparseKernelcpp(hypers)
         else:
-            self._kernel = Kernelcpp(hypers_str)
+            self._kernel = Kernelcpp(hypers)
 
     def get_init_params(self):
         init_params = dict(representation=self._rep,

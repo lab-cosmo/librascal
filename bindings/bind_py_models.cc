@@ -34,12 +34,9 @@ namespace rascal {
                                        py::module & /*m_internal*/) {
     std::string kernel_name = internal::GetBindingTypeName<Kernel>();
     py::class_<Kernel> kernel(mod, kernel_name.c_str());
-    // use custom constructor to pass json formated string as initializer
-    // an alternative would be to convert python dict to json internally
-    // but needs some work on in the pybind machinery
-    kernel.def(py::init([](std::string & hyper_str) {
+    kernel.def(py::init([](const py::dict& hyper) {
       // convert to json
-      json hypers = json::parse(hyper_str);
+      json hypers = hyper;
       return std::make_unique<Kernel>(hypers);
     }));
 

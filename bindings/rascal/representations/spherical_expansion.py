@@ -165,12 +165,9 @@ class SphericalExpansion(BaseIO):
             dict(name='strict', args=dict(cutoff=interaction_cutoff))
         ]
 
-        hypers_str = json.dumps(self.hypers)
-        self.rep_options = dict(name=self.name, args=[hypers_str])
+        self.rep_options = dict(name=self.name, args=[self.hypers])
 
         n_features = self.get_num_coefficients()
-        self.feature_options = dict(name='blocksparse_double', args=[
-                                    n_features, hypers_str])
 
         self._representation = CalculatorFactory(self.rep_options)
 

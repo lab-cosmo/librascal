@@ -181,8 +181,7 @@ class SphericalInvariants(BaseIO):
             dict(name='strict', args=dict(cutoff=interaction_cutoff))
         ]
 
-        hypers_str = json.dumps(self.hypers)
-        self.rep_options = dict(name=self.name, args=[hypers_str])
+        self.rep_options = dict(name=self.name, args=[self.hypers])
 
         self._representation = CalculatorFactory(self.rep_options)
 
