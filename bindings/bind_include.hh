@@ -74,7 +74,8 @@ namespace nlohmann {
 namespace rascal {
   namespace internal {
     /**
-     * Expose to python the serialization of Object as a python dictionary.
+     * Expose to python the serialization of rascal objects as a python
+     * dictionary.
      *
      * @tparam Object is expected to be nlohmann::json (de)serializable
      *
