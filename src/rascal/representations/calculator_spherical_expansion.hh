@@ -351,7 +351,7 @@ namespace rascal {
        * @param hypers is expected to be the same as the the input of
        *         the spherical expansion
        */
-      void set_hyperparameters(const Hypers_t & hypers) {
+      void set_hyperparameters(const Hypers_t & hypers) override {
         this->hypers = hypers;
 
         this->max_radial = hypers.at("max_radial");
@@ -766,7 +766,7 @@ namespace rascal {
        * @param hypers is expected to be the same as the the input of
        *         the spherical expansion
        */
-      void set_hyperparameters(const Hypers_t & hypers) {
+      void set_hyperparameters(const Hypers_t & hypers) override {
         this->hypers = hypers;
 
         this->max_radial = hypers.at("max_radial");
@@ -1216,7 +1216,7 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the structure
      */
-    void set_hyperparameters(const Hypers_t & hypers) {
+    void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::AtomicSmearingType;
       using internal::CutoffFunctionType;
       using internal::OptimizationType;

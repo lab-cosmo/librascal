@@ -202,7 +202,7 @@ namespace rascal {
     CalculatorSphericalInvariants &
     operator=(CalculatorSphericalInvariants && other) = default;
 
-    void set_hyperparameters(const Hypers_t & hypers) {
+    void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::SphericalInvariantsType;
 
       this->max_radial = hypers.at("max_radial").get<size_t>();

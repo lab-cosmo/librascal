@@ -150,7 +150,7 @@ namespace rascal {
         this->set_hyperparameters(hypers);
       }
 
-      void set_hyperparameters(const Hypers_t & hypers) {
+      void set_hyperparameters(const Hypers_t & hypers) override {
         this->cutoff = hypers.at("cutoff").at("value").get<double>();
         this->smooth_width =
             hypers.at("smooth_width").at("value").get<double>();
@@ -215,7 +215,7 @@ namespace rascal {
         this->set_hyperparameters(hypers);
       }
 
-      void set_hyperparameters(const Hypers_t & hypers) {
+      void set_hyperparameters(const Hypers_t & hypers) override {
         this->cutoff = hypers.at("cutoff").at("value").get<double>();
         this->smooth_width =
             hypers.at("smooth_width").at("value").get<double>();

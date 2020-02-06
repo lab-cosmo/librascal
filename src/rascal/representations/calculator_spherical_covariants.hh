@@ -215,7 +215,7 @@ namespace rascal {
               this->normalize == other.normalize);
     }
 
-    void set_hyperparameters(const Hypers_t & hypers) {
+    void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::SphericalCovariantsType;
       this->max_radial = hypers.at("max_radial").get<size_t>();
       this->max_angular = hypers.at("max_angular").get<size_t>();
