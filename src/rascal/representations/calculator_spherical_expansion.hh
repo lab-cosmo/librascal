@@ -400,7 +400,7 @@ namespace rascal {
         }
       }
 
-      void precompute() {
+      void precompute() override {
         this->precompute_radial_sigmas();
         this->precompute_radial_overlap();
         this->ortho_norm_matrix =
@@ -814,7 +814,7 @@ namespace rascal {
         }
       }
 
-      void precompute() {
+      void precompute() override {
         auto point_weight{math::compute_gauss_legendre_points_weights(
             0., this->interaction_cutoff + 3 * this->smearing,
             this->max_radial)};
@@ -1055,7 +1055,7 @@ namespace rascal {
       }
 
      protected:
-      void precompute() {
+      void precompute() override {
         this->precompute_fac_a();
         this->precompute_center_contribution();
       }

@@ -113,6 +113,7 @@ namespace rascal {
       selected_ids.emplace_back();
       int ii{0};
       for (auto center : manager) {
+        (void)center;  // to avoid compiler warning
         double roll{dice(gen)};
         if (roll < 0.85) {
           selected_ids.back().push_back(ii);
@@ -171,6 +172,7 @@ namespace rascal {
       selected_ids.emplace_back();
       int ii{0};
       for (auto center : manager) {
+        (void)center;  // to avoid compiler warning
         double roll{dice(gen)};
         if (roll < 0.85) {
           selected_ids.back().push_back(ii);

@@ -48,7 +48,7 @@ namespace rascal {
     inline math::Matrix_t pow_zeta(math::Matrix_t && kernel,
                                    const size_t & zeta) {
       if (zeta == 1) {
-        return kernel;
+        return std::move(kernel);
       } else if (zeta == 2) {
         kernel = kernel.array().square();
       } else if (zeta == 3) {
@@ -57,7 +57,7 @@ namespace rascal {
         kernel = kernel.unaryExpr(
             [zeta = zeta](double v) { return math::pow(v, zeta); });
       }
-      return kernel;
+      return std::move(kernel);
     }
 
     struct KernelImplBase {
