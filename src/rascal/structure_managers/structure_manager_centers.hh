@@ -109,6 +109,8 @@ namespace rascal {
     using Children_t = typename Parent::Children_t;
     using ManagerImplementation_t = StructureManagerCenters;
     using ImplementationPtr_t = std::shared_ptr<StructureManagerCenters>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const StructureManagerCenters>;
 
     /**
      * Eigen::Map is a convenient way to access data in the 'Eigen-way', if it
@@ -133,7 +135,7 @@ namespace rascal {
     using Positions_ref = AtomicStructure<traits::Dim>::Positions_ref;
 
     using ArrayB_t = AtomicStructure<traits::Dim>::ArrayB_t;
-    using ArrayB_ref = AtomicStructure<traits::Dim>::ArrayB_ref;
+    using ConstArrayBool_ref = AtomicStructure<traits::Dim>::ConstArrayBool_ref;
 
     /**
      * Here, the types for internal data structures are defined, based on
@@ -200,6 +202,9 @@ namespace rascal {
      */
     Cell_ref get_cell() { return Cell_ref(this->atoms_object.cell); }
 
+    Eigen::Array3d get_cell_length() {
+      return this->get_cell().colwise().norm().array();
+    }
     //! Returns the type of a given atom, given an AtomRef
     int get_atom_type(int atom_tag) const {
       auto && atom_index{this->get_atom_index(atom_tag)};
@@ -217,8 +222,8 @@ namespace rascal {
       return PBC_ref(this->atoms_object.pbc);
     }
 
-    ArrayB_ref get_center_atoms_mask() {
-      return ArrayB_ref(this->atoms_object.center_atoms_mask);
+    ConstArrayBool_ref get_center_atoms_mask() const {
+      return ConstArrayBool_ref(this->atoms_object.center_atoms_mask);
     }
 
     //! Returns the position of an atom, given an AtomRef
@@ -304,6 +309,8 @@ namespace rascal {
       return this->atoms_object;
     }
 
+    bool is_not_masked() const { return (not this->are_any_centers_masked); }
+
    protected:
     //! makes atom tag lists and offsets
     void build();
@@ -313,6 +320,11 @@ namespace rascal {
      * itself.
      */
     ImplementationPtr_t get_previous_manager_impl() {
+      return shared_from_this();
+    }
+
+    //! Get the manager used to build the instance
+    ConstImplementationPtr_t get_previous_manager_impl() const {
       return shared_from_this();
     }
     /**
@@ -357,6 +369,9 @@ namespace rascal {
 
     //! number of time the structure has been updated
     size_t n_update{0};
+
+    //! keep track of the masking of atoms
+    bool are_any_centers_masked{false};
   };
 
   /* ---------------------------------------------------------------------- */
