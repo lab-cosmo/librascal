@@ -5,7 +5,7 @@ from ..neighbourlist import AtomsList
 from .base import CalculatorFactory
 from ..utils import FactoryPool
 from itertools import starmap
-from ..utils import return_deepcopy, BaseIO
+from ..utils import BaseIO
 
 
 class SortedCoulombMatrix(BaseIO):
@@ -107,7 +107,6 @@ class SortedCoulombMatrix(BaseIO):
         size = int(np.max(Nneigh))
         return size
 
-    @return_deepcopy
     def get_init_params(self):
         init_params = dict(
             cutoff=self.hypers['central_cutoff'],

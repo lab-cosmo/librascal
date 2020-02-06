@@ -47,6 +47,7 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
 
         self.assertTrue(rep_dict == rep_copy_dict)
 
+
 class TestSphericalExpansionRepresentation(unittest.TestCase):
     def setUp(self):
         """
@@ -75,7 +76,7 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         features = rep.transform(self.frames)
 
         test = features.get_features(rep)
-        
+
     def test_serialization(self):
         rep = SphericalExpansion(**self.hypers)
 
@@ -86,6 +87,7 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         rep_copy_dict = rep_copy.to_dict()
 
         self.assertTrue(rep_dict == rep_copy_dict)
+
 
 class TestSphericalInvariantsRepresentation(unittest.TestCase):
     def setUp(self):

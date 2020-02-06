@@ -4,7 +4,7 @@ from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
 import numpy as np
 from copy import deepcopy
-from ..utils import return_deepcopy, BaseIO
+from ..utils import BaseIO
 
 
 class SphericalInvariants(BaseIO):
@@ -284,7 +284,6 @@ class SphericalInvariants(BaseIO):
                              'implemented for now')
         return keys
 
-    @return_deepcopy
     def get_init_params(self):
         gaussian_density = self.hypers['gaussian_density']
         cutoff_function = self.hypers['cutoff_function']

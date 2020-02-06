@@ -3,7 +3,7 @@ import json
 from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
 import numpy as np
-from ..utils import return_deepcopy, BaseIO
+from ..utils import BaseIO
 from copy import deepcopy
 
 
@@ -214,7 +214,6 @@ class SphericalCovariants(BaseIO):
 
         return keys
 
-    @return_deepcopy
     def get_init_params(self):
         gaussian_density = self.hypers['gaussian_density']
         cutoff_function = self.hypers['cutoff_function']

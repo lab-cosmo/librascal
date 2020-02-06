@@ -68,5 +68,5 @@ class TestCosineKernel(unittest.TestCase):
             cosine_kernel_copy = from_dict(cosine_kernel_dict)
 
             cosine_kernel_copy_dict = cosine_kernel_copy.to_dict()
-            
+
             self.assertTrue(cosine_kernel_dict == cosine_kernel_copy_dict)

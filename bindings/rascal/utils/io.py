@@ -196,6 +196,7 @@ def is_valid_object_dict_beta(data):
     else:
         return False
 
+
 obj2dict = {BETA_VERSION: obj2dict_beta}
 dict2obj = {BETA_VERSION: dict2obj_beta}
 is_valid_object_dict = {BETA_VERSION: is_valid_object_dict_beta}
@@ -207,7 +208,6 @@ class BaseIO(object):
     themselves into python dictionary and being saved to files.
     A class that inherits from BaseIO should implement the _get_data and get_init_params functions (see _get_state() for more details).
     """
-
 
     def __init__(self):
         super(BaseIO, self).__init__()

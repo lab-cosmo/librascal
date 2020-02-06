@@ -1,6 +1,6 @@
 from ..lib._rascal.models import kernels
 from ..neighbourlist import AtomsList
-from ..utils import return_deepcopy, BaseIO
+from ..utils import BaseIO
 
 # names of existing pseudo points implementation on the pybinding side.
 _pseudo_points = {}
@@ -34,6 +34,7 @@ class PseudoPoints(BaseIO):
             Container of atomic structures that holds features compatible with
             representation.
     """
+
     def __init__(self, representation):
         self.representation = representation
         if 'SphericalInvariants' in str(representation):

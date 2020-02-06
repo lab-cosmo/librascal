@@ -2,7 +2,7 @@ from ..lib._rascal.models.kernels import Kernel as Kernelcpp
 from ..lib._rascal.models.kernels import SparseKernel as SparseKernelcpp
 from ..neighbourlist import AtomsList
 from .pseudo_points import PseudoPoints
-from ..utils import return_deepcopy, BaseIO
+from ..utils import BaseIO
 import json
 
 
