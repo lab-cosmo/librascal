@@ -127,11 +127,11 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
 
-    std::vector<json> rep_hypers{{{"max_radial", 6},
+    std::vector<json> rep_hypers{{{"max_radial", 3},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 6},
+                                 {{"max_radial", 3},
                                   {"max_angular", 0},
                                   {"soap_type", "RadialSpectrum"},
                                   {"normalize", true}},
@@ -139,8 +139,8 @@ namespace rascal {
                                   {"max_angular", 3},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}},
-                                 {{"max_radial", 6},
-                                  {"max_angular", 4},
+                                 {{"max_radial", 4},
+                                  {"max_angular", 3},
                                   {"soap_type", "PowerSpectrum"},
                                   {"normalize", true}},
                                  {{"max_radial", 3},
@@ -282,7 +282,7 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.5}, {"unit", "AA"}}}}};
 
-    std::vector<json> rep_hypers{{{"max_radial", 3}, {"max_angular", 3}}};
+    std::vector<json> rep_hypers{{{"max_radial", 2}, {"max_angular", 2}}};
   };
 
   /**
@@ -381,8 +381,8 @@ namespace rascal {
            {"accuracy", 1e-5},
            {"range", {{"begin", 0.000001}, {"end", 3.}}}}}}};
     std::vector<json> rep_hypers{
-        {{"max_radial", 4}, {"max_angular", 2}, {"compute_gradients", true}},
-        {{"max_radial", 6}, {"max_angular", 4}, {"compute_gradients", true}}};
+        {{"max_radial", 3}, {"max_angular", 2}, {"compute_gradients", true}},
+        {{"max_radial", 3}, {"max_angular", 3}, {"compute_gradients", true}}};
   };
 
   /** Contains some simple periodic structures for testing complicated things
@@ -427,10 +427,7 @@ namespace rascal {
         "reference_data/inputs/SiC_moissanite.json",
         "reference_data/inputs/SiCGe_wurtzite_like.json",
         "reference_data/inputs/SiC_moissanite_supercell.json",
-        "reference_data/inputs/small_molecule.json",
         "reference_data/inputs/methane.json"};
-    // const std::vector<std::string> filenames{
-    //     "reference_data/inputs/methane.json"};
 
     const double cutoff{2.5};
     const double cutoff_skin{0.};
@@ -485,7 +482,6 @@ namespace rascal {
         "reference_data/inputs/SiC_moissanite.json",
         "reference_data/inputs/SiCGe_wurtzite_like.json",
         "reference_data/inputs/SiC_moissanite_supercell.json",
-        "reference_data/inputs/small_molecule.json",
         "reference_data/inputs/methane.json"};
     const double cutoff{2.5};
     const double cutoff_skin{0.};
@@ -566,7 +562,7 @@ namespace rascal {
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
@@ -574,7 +570,7 @@ namespace rascal {
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     std::vector<json> rep_hypers{
         {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}},
-        {{"max_radial", 3}, {"max_angular", 0}, {"compute_gradients", true}}};
+        {{"max_radial", 2}, {"max_angular", 0}, {"compute_gradients", true}}};
   };
 
   template <typename DataFixture>
@@ -604,7 +600,7 @@ namespace rascal {
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
@@ -615,7 +611,7 @@ namespace rascal {
                                   {"normalize", true},
                                   {"soap_type", "PowerSpectrum"},
                                   {"compute_gradients", true}},
-                                 {{"max_radial", 3},
+                                 {{"max_radial", 2},
                                   {"max_angular", 0},
                                   {"normalize", true},
                                   {"soap_type", "RadialSpectrum"},
