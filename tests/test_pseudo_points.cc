@@ -137,7 +137,7 @@ namespace rascal {
       // check that one row of feat_ref matches the current row of feat_test
       BOOST_TEST((diffs.array() < 1e-16).count() == 1);
 
-      if (verbose and (diffs.array() < 1e-16).count() != 1) { // NOLINT
+      if (verbose and (diffs.array() < 1e-16).count() != 1) {  // NOLINT
         std::cout << "Number of matching row " << i_row << " :"
                   << (diffs.array() < 1e-16).count() << std::endl;
         std::cout << feat_ref << std::endl;

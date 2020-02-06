@@ -76,11 +76,11 @@ namespace rascal {
     }
 
     bool operator==(const PseudoPointsBlockSparse<Calculator> & other) const {
-      if ((values == other.values) and (indices == other.indices) and // NOLINT
-          (counters == other.counters) and // NOLINT
-          (inner_size == other.inner_size) and // NOLINT
-          (center_species == other.center_species) and // NOLINT
-          (keys == other.keys)) { // NOLINT
+      if ((values == other.values) and (indices == other.indices) and  // NOLINT
+          (counters == other.counters) and                             // NOLINT
+          (inner_size == other.inner_size) and                         // NOLINT
+          (center_species == other.center_species) and                 // NOLINT
+          (keys == other.keys)) {                                      // NOLINT
         return true;
       } else {
         return false;
