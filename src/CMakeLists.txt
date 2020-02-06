@@ -47,6 +47,9 @@ set(RASCAL_SOURCES
     rascal/representations/calculator_base.cc
 )
 
+# make sure warnings from external libraries are suppressed
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external)
+
 add_library(${LIBRASCAL_NAME} ${RASCAL_SOURCES})
 
 target_include_directories(${LIBRASCAL_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
