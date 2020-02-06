@@ -584,6 +584,15 @@ StructureManager is compatible with the representation <dl class="simple">
 <dd><p>initialize the soap vectors with only the keys needed for each center </p>
 </dd></dl>
 
+<dl class="function">
+<dt id="_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t">
+<span class="target" id="classrascal_1_1CalculatorSphericalInvariants_1aac154ad550cad16fecba0e72249c884b"></span>template&lt;class <code class="sig-name descname">StructureManager</code>, class <code class="sig-name descname">SpectrumNorm</code>&gt;<br />void <code class="sig-name descname">update_gradients_for_normalization</code><span class="sig-paren">(</span>Property_t&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::StructureManager">StructureManager</a>&gt; &amp;<em>soap_vectors</em>, PropertyGradient_t&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::StructureManager">StructureManager</a>&gt; &amp;<em>soap_vector_gradients</em>, std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::StructureManager">StructureManager</a>&gt; <em>manager</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::SpectrumNorm">SpectrumNorm</a> &amp;<em>inv_norms</em>, <em class="property">const</em> size_t &amp;<em>grad_component_size</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Update the gradients  p^{k} to include normalization, N_i, resulting in  {p}^{k}. We have:  {p}^{k} =  p^{k} / N_k<ul class="simple">
+<li><p>{p}^{k} [{p}^{k}   p^{k} / N_k], where $$ is a dot product between vectors. Note that this expects the soap vectors to be normalized already, and the norm stored separately </p></li>
+</ul>
+</p>
+</dd></dl>
+
 </div>
 </dd></dl>
 
@@ -887,17 +896,7 @@ StructureManager is compatible with the representation <dl class="simple">
 
 <dl class="type">
 <dt>
-<em class="property">using </em><code class="sig-name descname">RepFix_t</code> = <a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;RepresentationFixture&lt;SimplePeriodicNLCCStrictFixture&gt;&gt;<br /></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt>
-<em class="property">using </em><code class="sig-name descname">RepFixHalf_t</code> = <a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;RepresentationFixture&lt;SimplePeriodicNLHalfCCStrictFixture&gt;&gt;<br /></dt>
-<dd></dd></dl>
-
-<dl class="type">
-<dt>
-<em class="property">using </em><code class="sig-name descname">gradient_half_fixtures</code> = boost::mpl::list&lt;MergeHalfAndFull&lt;<a class="reference internal" href="#_CPPv4N6rascal8RepFix_tE" title="rascal::RepFix_t">RepFix_t</a>&lt;SingleHypersSphericalExpansion&gt;, <a class="reference internal" href="#_CPPv4N6rascal12RepFixHalf_tE" title="rascal::RepFixHalf_t">RepFixHalf_t</a>&lt;SingleHypersSphericalExpansion&gt;&gt;, MergeHalfAndFull&lt;<a class="reference internal" href="#_CPPv4N6rascal8RepFix_tE" title="rascal::RepFix_t">RepFix_t</a>&lt;SingleHypersSphericalInvariants&gt;, <a class="reference internal" href="#_CPPv4N6rascal12RepFixHalf_tE" title="rascal::RepFixHalf_t">RepFixHalf_t</a>&lt;SingleHypersSphericalInvariants&gt;&gt;&gt;<br /></dt>
+<em class="property">using </em><code class="sig-name descname">gradient_half_fixtures</code> = boost::mpl::list&lt;MergeHalfAndFull&lt;SimpleFullFixture, SimpleHalfFixture, <a class="reference internal" href="#_CPPv4N6rascal28CalculatorSphericalExpansionE" title="rascal::CalculatorSphericalExpansion">CalculatorSphericalExpansion</a>&gt;, MergeHalfAndFull&lt;SimpleFullFixture, SimpleHalfFixture, <a class="reference internal" href="#_CPPv4N6rascal29CalculatorSphericalInvariantsE" title="rascal::CalculatorSphericalInvariants">CalculatorSphericalInvariants</a>&gt;&gt;<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
@@ -2274,6 +2273,11 @@ ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</c
 
 <dl class="function">
 <dt>
+ConstImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 <em class="property">const</em> std::vector&lt;int&gt; <code class="sig-name descname">get_manager_atom_tag_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -2411,6 +2415,11 @@ template&lt;size_t <code class="sig-name descname">Order</code>&gt;<br />void <c
 ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
+<dl class="function">
+<dt>
+ConstImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
 </div>
 </dd></dl>
 
@@ -2537,6 +2546,11 @@ template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <c
 <dl class="function">
 <dt>
 ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+ConstImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -2667,6 +2681,11 @@ template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <c
 ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
+<dl class="function">
+<dt>
+ConstImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
 </div>
 </dd></dl>
 
@@ -2783,6 +2802,11 @@ template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <c
 <dl class="function">
 <dt>
 ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+ConstImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -2949,6 +2973,11 @@ template&lt;size_t <code class="sig-name descname">TargetOrder</code>, size_t <c
 ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
+<dl class="function">
+<dt>
+ConstImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
 </div>
 </dd></dl>
 
@@ -3049,7 +3078,12 @@ ImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</c
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br />double <code class="sig-name descname">get_distance</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal13AdaptorStrict12get_distanceEdRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorStrict::get_distance::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal13AdaptorStrict12get_distanceEdRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorStrict::get_distance::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+ConstImplementationPtr_t <code class="sig-name descname">get_previous_manager_impl</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">Order</code>, size_t <code class="sig-name descname">Layer</code>&gt;<br /><em class="property">const</em> double &amp;<code class="sig-name descname">get_distance</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;<a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal13AdaptorStrict12get_distanceERKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorStrict::get_distance::Order">Order</a>, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tENK6rascal13AdaptorStrict12get_distanceERKdRK13ClusterRefKeyI5Order5LayerE" title="rascal::AdaptorStrict::get_distance::Layer">Layer</a>&gt; &amp;<em>pair</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3727,6 +3761,11 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title
 template&lt;class <code class="sig-name descname">StructureManager</code>, class <code class="sig-name descname">Invariants</code>, class <code class="sig-name descname">InvariantsDerivative</code>, class <code class="sig-name descname">ExpansionCoeff</code>&gt;<br />void <code class="sig-name descname">initialize_per_center_powerspectrum_soap_vectors</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0000EN6rascal29CalculatorSphericalInvariants48initialize_per_center_powerspectrum_soap_vectorsEvR10InvariantsR20InvariantsDerivativeR14ExpansionCoeffNSt10shared_ptrI16StructureManagerEE" title="rascal::CalculatorSphericalInvariants::initialize_per_center_powerspectrum_soap_vectors::Invariants">Invariants</a> &amp;<em>soap_vector</em>, <a class="reference internal" href="#_CPPv4I0000EN6rascal29CalculatorSphericalInvariants48initialize_per_center_powerspectrum_soap_vectorsEvR10InvariantsR20InvariantsDerivativeR14ExpansionCoeffNSt10shared_ptrI16StructureManagerEE" title="rascal::CalculatorSphericalInvariants::initialize_per_center_powerspectrum_soap_vectors::InvariantsDerivative">InvariantsDerivative</a> &amp;<em>soap_vector_gradients</em>, <a class="reference internal" href="#_CPPv4I0000EN6rascal29CalculatorSphericalInvariants48initialize_per_center_powerspectrum_soap_vectorsEvR10InvariantsR20InvariantsDerivativeR14ExpansionCoeffNSt10shared_ptrI16StructureManagerEE" title="rascal::CalculatorSphericalInvariants::initialize_per_center_powerspectrum_soap_vectors::ExpansionCoeff">ExpansionCoeff</a> &amp;<em>expansions_coefficients</em>, std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I0000EN6rascal29CalculatorSphericalInvariants48initialize_per_center_powerspectrum_soap_vectorsEvR10InvariantsR20InvariantsDerivativeR14ExpansionCoeffNSt10shared_ptrI16StructureManagerEE" title="rascal::CalculatorSphericalInvariants::initialize_per_center_powerspectrum_soap_vectors::StructureManager">StructureManager</a>&gt; <em>manager</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">StructureManager</code>, class <code class="sig-name descname">SpectrumNorm</code>&gt;<br />void <code class="sig-name descname">update_gradients_for_normalization</code><span class="sig-paren">(</span>Property_t&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::StructureManager">StructureManager</a>&gt; &amp;<em>soap_vectors</em>, PropertyGradient_t&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::StructureManager">StructureManager</a>&gt; &amp;<em>soap_vector_gradients</em>, std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::StructureManager">StructureManager</a>&gt; <em>manager</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::SpectrumNorm">SpectrumNorm</a> &amp;<em>inv_norms</em>, <em class="property">const</em> size_t &amp;<em>grad_component_size</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
 </div>
 </dd></dl>
 
@@ -3845,6 +3884,11 @@ int <code class="sig-name descname">back</code><span class="sig-paren">(</span><
 <dl class="function">
 <dt>
 size_t <code class="sig-name descname">get_cluster_index</code><span class="sig-paren">(</span><em class="property">const</em> size_t <em>layer</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+size_t <code class="sig-name descname">get_cluster_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -5861,6 +5905,11 @@ Eigen::ArrayXd <code class="sig-name descname">precompute_wigner_3js</code><span
 
 <dl class="function">
 <dt>
+template&lt;class <code class="sig-name descname">StructureManager</code>, class <code class="sig-name descname">ClusterRefCenter</code>&gt;<br />auto <code class="sig-name descname">find_periodic_images_pairs_in_environment</code><span class="sig-paren">(</span><em class="property">const</em> std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal8internal41find_periodic_images_pairs_in_environmentEDaRKNSt10shared_ptrI16StructureManagerEER16ClusterRefCenter" title="rascal::internal::find_periodic_images_pairs_in_environment::StructureManager">StructureManager</a>&gt; &amp;<em>manager</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal8internal41find_periodic_images_pairs_in_environmentEDaRKNSt10shared_ptrI16StructureManagerEER16ClusterRefCenter" title="rascal::internal::find_periodic_images_pairs_in_environment::ClusterRefCenter">ClusterRefCenter</a> &amp;<em>center</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 <em class="property">constexpr</em> size_t <code class="sig-name descname">combine_to_radial_contribution_type</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <em>basis_type</em>, <a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <em>smearing_type</em>, <a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a> <em>opt_type</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -6378,7 +6427,7 @@ Precision_t <code class="sig-name descname">norm</code><span class="sig-paren">(
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">normalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+double <code class="sig-name descname">normalize_and_get_norm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
