@@ -29,12 +29,13 @@
 
 namespace rascal {
 
+  //! Register kernel classes
   template <class Kernel>
   static py::class_<Kernel> add_kernel(py::module & mod,
                                        py::module & /*m_internal*/) {
     std::string kernel_name = internal::GetBindingTypeName<Kernel>();
     py::class_<Kernel> kernel(mod, kernel_name.c_str());
-    kernel.def(py::init([](const py::dict& hyper) {
+    kernel.def(py::init([](const py::dict & hyper) {
       // convert to json
       json hypers = hyper;
       return std::make_unique<Kernel>(hypers);
@@ -43,6 +44,7 @@ namespace rascal {
     return kernel;
   }
 
+  //! Register compute functions of the Kernel class
   template <internal::KernelType Type, class Calculator,
             class StructureManagers, class CalculatorBind>
   void bind_kernel_compute_function(CalculatorBind & kernel) {
@@ -57,6 +59,7 @@ namespace rascal {
                py::call_guard<py::gil_scoped_release>());
   }
 
+  //! Register compute functions of the SparseKernel class
   template <internal::SparseKernelType Type, class Calculator,
             class StructureManagers, class PseudoPoints, class CalculatorBind>
   void bind_sparse_kernel_compute_function(CalculatorBind & kernel) {
@@ -77,6 +80,7 @@ namespace rascal {
                py::call_guard<py::gil_scoped_release>());
   }
 
+  //! Register a pseudo points class
   template <class PseudoPoints>
   static py::class_<PseudoPoints>
   add_pseudo_points(py::module & mod, py::module & /*m_internal*/) {
@@ -89,6 +93,7 @@ namespace rascal {
     return pseudo_points;
   }
 
+  //! register the population mechanism of the pseudo points class
   template <class ManagerCollection, class Calculator, class PseudoPoints>
   void bind_pseudo_points_push_back(py::class_<PseudoPoints> & pseudo_points) {
     using ManagerPtr_t = typename ManagerCollection::value_type;

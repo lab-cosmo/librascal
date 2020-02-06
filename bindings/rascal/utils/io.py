@@ -11,6 +11,22 @@ CURRENT_VERSION = BETA_VERSION
 
 
 def dump_obj(fn, instance, version=CURRENT_VERSION):
+    """Save a python object that inherits from the BaseIO class
+
+    Parameters
+    ----------
+    fn : string
+        path to save instance
+    instance : class
+        python object that inherits from the BaseIO class
+    version : string, optional
+        serialization version to use, by default CURRENT_VERSION
+
+    Raises
+    ------
+    RuntimeError
+        When instance does not inherit from BaseIO
+    """
     if isinstance(instance, BaseIO):
         instance.to_file(fn, version)
     else:
@@ -19,29 +35,77 @@ def dump_obj(fn, instance, version=CURRENT_VERSION):
 
 
 def load_obj(fn):
+    """Load a python object from a file
+
+    Parameters
+    ----------
+    fn : string
+        path to the file describing the saved object
+
+    Returns
+    -------
+    python class that inherits from BaseIO
+
+    """
     return BaseIO().from_file(fn)
 
 
 def from_dict(data):
+    """Convert a python dictionary created by the obj.to_dict() function
+    defined in BaseIO
+
+    Parameters
+    ----------
+    data : dictionary
+
+    Returns
+    -------
+    object
+        the full object described by data
+    """
+    # make a deepcopy to avoid problems with in place modifications of data
+    # happening in from_dict()
     return BaseIO().from_dict(deepcopy(data))
 
 
 def dump_json(fn, data):
+    """Utility to save a python object to a file.
+
+    Parameters
+    ----------
+    fn : string
+        filename to save data
+    data :
+        a json serializable python object
+    """
     with open(fn, 'w') as f:
         json.dump(data, f, sort_keys=True, indent=2)
 
 
 def load_json(fn):
+    """Utility to load a python object saved in the json format
+
+    Parameters
+    ----------
+    fn : string
+        filename
+
+    Returns
+    -------
+        loaded python object from fn
+    """
     with open(fn, 'r') as f:
         data = json.load(f)
     return data
 
 
 def is_npy(data):
+    """is data a numpy array ?"""
     return isinstance(data, np.ndarray)
 
 
 def is_large_array(data):
+    """is data a numpy array larger than 50MB ?"""
     if is_npy(data):
         if data.nbytes > 50e6:
             return True
@@ -52,6 +116,7 @@ def is_large_array(data):
 
 
 def is_npy_filename(fn):
+    """does fn string corresponds to a saved numpy array ?"""
     if isinstance(fn, str):
         filename, file_extension = os.path.splitext(fn)
         if file_extension == '.npy':
@@ -63,12 +128,30 @@ def is_npy_filename(fn):
 
 
 def get_class(module_name, class_name):
+    """Use module_name and class_name to make an instantiable class."""
     module = importlib.import_module(module_name)
     class_ = getattr(module, class_name)
     return class_
 
 
 def obj2dict_beta(cls, state):
+    """Take a python object cls with its state and return a dictionary that
+    can be used to create a copy of this object.
+
+    Parameters
+    ----------
+    cls : object
+
+    state : dictionary
+        Contains the state of cls, i.e. the parameters used to initialize cls
+        in a 'init_params' field and the rest of the data needed to recover
+        the current state in a 'data' field.
+
+    Returns
+    -------
+    dictionary
+        fully serialized version of cls to a dictionary
+    """
     VERSION = BETA_VERSION
     module_name = cls.__module__
     class_name = cls.__name__
@@ -80,6 +163,18 @@ def obj2dict_beta(cls, state):
 
 
 def dict2obj_beta(data):
+    """Take data, a dictionary created by the obj2dict function, and creates
+    a python object as described.
+
+    Parameters
+    ----------
+    data : dictionary
+        [description]
+
+    Returns
+    -------
+    deserialized python object described by data
+    """
     cls = get_class(data['module_name'], data['class_name'])
     obj = cls(**data['init_params'])
     obj._set_data(data['data'])
@@ -87,6 +182,7 @@ def dict2obj_beta(data):
 
 
 def is_valid_object_dict_beta(data):
+    """check compatibility of data to be used in dict2obj_beta"""
     valid_keys = ['version', 'class_name', 'module_name', 'init_params', 'data']
     aa = []
     if isinstance(data, dict):
@@ -100,14 +196,6 @@ def is_valid_object_dict_beta(data):
     else:
         return False
 
-# def is_a_wrapped_object(obj):
-#     """Answer the question: is obj imported from C++ binding library ?
-#     namely from 'rascal.lib._rascal'."""
-#     module_str = getattr(obj, '__module__', None)
-#     module_root_str = '.'.join(module_str.split('.')[:3])
-#     return 'rascal.lib._rascal' == module_root_str
-
-
 obj2dict = {BETA_VERSION: obj2dict_beta}
 dict2obj = {BETA_VERSION: dict2obj_beta}
 is_valid_object_dict = {BETA_VERSION: is_valid_object_dict_beta}
@@ -115,16 +203,18 @@ is_valid_object_dict = {BETA_VERSION: is_valid_object_dict_beta}
 
 class BaseIO(object):
     """
-    Base class giving arbitrary python class the ability to serialize themselves
-    into python dictionary and being saved to files.
+    Base class giving an arbitrary python class the ability to serialize
+    themselves into python dictionary and being saved to files.
     A class that inherits from BaseIO should implement the _get_data and get_init_params functions (see _get_state() for more details).
     """
+
 
     def __init__(self):
         super(BaseIO, self).__init__()
 
     def _get_state(self):
-        """fetch the state of self using the _get_data and get_init_params functions that should be implemented in the Implementation class that inherits from BaseIO.
+        """
+        fetch the state of self using the _get_data and get_init_params functions that should be implemented in the Implementation class that inherits from BaseIO.
 
         get_init_params is expected to return a dictionary containing all the
         parameters used by the __init__() methods.
@@ -184,6 +274,8 @@ class BaseIO(object):
         return obj
 
     def to_file(self, fn, version=CURRENT_VERSION):
+        """Saves the object to a file name 'fn' using the to_dict()
+         serialization procedure."""
         fn = os.path.abspath(fn)
         filename, file_extension = os.path.splitext(fn)
         data = self.to_dict(version=version)
@@ -197,6 +289,7 @@ class BaseIO(object):
                 'Unknown file extention: {}'.format(file_extension))
 
     def from_file(self, fn):
+        """Loads an object that was saved using to_file() from a file"""
         fn = os.path.abspath(fn)
         path = os.path.dirname(fn)
         filename, file_extension = os.path.splitext(fn)
@@ -215,6 +308,10 @@ class BaseIO(object):
                 'Unknown file extention: {}'.format(file_extension))
 
     def _dump_npy(self, fn, data, class_name):
+        """Saves numpy array that are large into a file different from the
+        main saved file. The main file contains a relative path to the *.npy
+        file so that it can be loaded properly.
+        Small numpy array are converted to lists and saved in the main file."""
         filename, file_extension = os.path.splitext(fn)
         for k, v in data.items():
             if isinstance(v, dict):
@@ -233,6 +330,8 @@ class BaseIO(object):
                 data[k] = ['npy', v.tolist()]
 
     def _load_npy(self, data, path):
+        """Loads a numpy array saved using _dump_npy(). The array is mmaped
+        so it is physically loaded only when needed."""
         for k, v in data.items():
             if isinstance(v, dict):
                 self._load_npy(v, path)

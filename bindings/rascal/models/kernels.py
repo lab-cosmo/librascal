@@ -27,6 +27,11 @@ class Kernel(BaseIO):
         is between atomic environments) or 'Structure' (the kernel is summed over
         atoms in a structure), which is the default
 
+    kernel_type : string
+        Type of kernel method, either 'Full' (computing exact covariance matrix)
+        or 'Sparse' (computing GAP like kernel for sparse kernel methods like
+        Subset of Regressors)
+
     Methods
     -------
     __call__(X, Y=None, grad=(False, False))

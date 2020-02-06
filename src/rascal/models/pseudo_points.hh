@@ -43,6 +43,10 @@ namespace rascal {
    * format, e.g. SphericalInvariants. The number of pseudo points is often
    * refered as $M$ and note that they might be the representation of actual
    * atomic environments or completely artificial.
+   *
+   * Pseudo points are useful to build sparse kernel models such as Subset of
+   * Regressors. This class is tailored for building property models that
+   * depend on the type of the central atom.
    */
   template <class Calculator>
   class PseudoPointsBlockSparse {
@@ -59,14 +63,31 @@ namespace rascal {
     using PropertyGradient_t =
         typename Calculator::template PropertyGradient_t<StructureManager>;
 
+    /**
+     * Container for the actual data. By construction it gathers pseudo points
+     * in a particular manner: [sp][key][feature_idx] ; where sp is the type
+     * of the central atom to which these features correspond to, key is a
+     * valid key taken from the BlockSparse original container and feature_idx
+     * is a linear index containing all the features associated to several
+     * sparse points.
+     * This storage keeps the minimal amount of data.
+     */
     Data_t values{};
+    /**
+     * Container for the sparse points indices arranged like:
+     * [sp][key][sparse_point_idx] ; where sp and key are like in values and
+     * sparse_point_idx are the indices of the sparse points in the particular
+     * [sp][key] bin.
+     */
     Indices_t indices{};
+    //! counts number of sparse points for each [sp]
     Counters_t counters{};
+    //! size of one feature block in [sp][key]
     size_t inner_size{0};
+    //! list of possible center species for accessing [sp]
     std::set<int> center_species{};
+    //! list of possible keys for accessing [key]
     std::set<Key_t> keys{};
-
-    static constexpr int spatial_dims() { return 3; }
 
     PseudoPointsBlockSparse() {
       // there is less than 130 elemtents
@@ -87,6 +108,7 @@ namespace rascal {
       }
     }
 
+    //! get number of sparse points in the container
     size_t size() const {
       size_t n_points{0};
       for (const auto & count : this->counters) {
@@ -94,13 +116,14 @@ namespace rascal {
       }
       return n_points;
     }
-
+    //! get number of sparse points for a given central atom type
     size_t size_by_species(const int & sp) const {
       return this->counters.at(sp);
     }
-
+    //! get the registered central atom species
     const std::set<int> & species() const { return center_species; }
 
+    //! get array of central atom species for each pseudo point
     std::vector<int> species_by_points() const {
       std::vector<int> species{};
       for (const auto & sp : this->center_species) {
@@ -110,7 +133,7 @@ namespace rascal {
       }
       return species;
     }
-
+    //! dot product with itself to build the K_{MM} kernel matrix
     math::Matrix_t self_dot(const int & sp) const {
       math::Matrix_t KMM_by_sp(this->counters.at(sp), this->counters.at(sp));
       KMM_by_sp.setZero();
@@ -184,7 +207,7 @@ namespace rascal {
     }
 
     using ColVectorDer_t =
-        Eigen::Matrix<double, Eigen::Dynamic, spatial_dims(), Eigen::ColMajor>;
+        Eigen::Matrix<double, Eigen::Dynamic, ThreeD, Eigen::ColMajor>;
     /**
      * Compute the dot product between the pseudo points associated with type
      * sp with the gradient of the representation associated with a center.
@@ -196,7 +219,7 @@ namespace rascal {
                                       representation_grad) const {
       const auto & values_by_sp = this->values.at(sp);
       const auto & indices_by_sp = this->indices.at(sp);
-      ColVectorDer_t KNM_row(this->size(), spatial_dims());
+      ColVectorDer_t KNM_row(this->size(), ThreeD);
       KNM_row.setZero();
       if (this->center_species.count(sp) == 0) {
         // the type of the central atom is not in the pseudo points
@@ -216,12 +239,12 @@ namespace rascal {
           // get the representation gradient features and shape it
           // assumes the gradient directions are the outermost index
           auto rep_grad_flat_by_key{representation_grad.flattened(key)};
-          Eigen::Map<const Eigen::Matrix<double, spatial_dims(), Eigen::Dynamic,
+          Eigen::Map<const Eigen::Matrix<double, ThreeD, Eigen::Dynamic,
                                          Eigen::RowMajor>>
-              rep_grad_by_key(rep_grad_flat_by_key.data(), spatial_dims(),
+              rep_grad_by_key(rep_grad_flat_by_key.data(), ThreeD,
                               this->inner_size);
           assert(rep_grad_flat_by_key.size() ==
-                 static_cast<int>(spatial_dims() * this->inner_size));
+                 static_cast<int>(ThreeD * this->inner_size));
           const auto & indices_by_sp_key = indices_by_sp.at(key);
           // get the block of pseudo points features
           auto mat = Eigen::Map<const math::Matrix_t>(
@@ -232,11 +255,11 @@ namespace rascal {
                  values_by_sp.at(key).size());
           // compute the product between pseudo points and representation
           // gradient block
-          ColVectorDer_t KNM_row_key(indices_by_sp_key.size(), spatial_dims());
+          ColVectorDer_t KNM_row_key(indices_by_sp_key.size(), ThreeD);
           KNM_row_key = (mat * rep_grad_by_key.transpose());
           // dispatach kernel partial elements to the proper pseudo points
           // indices
-          for (int i_dim{0}; i_dim < spatial_dims(); i_dim++) {
+          for (int i_dim{0}; i_dim < ThreeD; i_dim++) {
             for (int i_row{0}; i_row < KNM_row_key.rows(); i_row++) {
               KNM_row(offset + indices_by_sp_key[i_row], i_dim) +=
                   KNM_row_key(i_row, i_dim);
@@ -247,6 +270,15 @@ namespace rascal {
       return KNM_row;
     }
 
+    /**
+     * Fill the pseudo points container with feature computed with calculator
+     * on the atomic structure contained in collection using
+     * selected_center_indices to select which center to copy into the
+     * container.
+     *
+     * selected_center_indices is a list of list of center indices relative to
+     * the atomic structures.
+     */
     template <class ManagerCollection>
     void
     push_back(const Calculator & calculator,
@@ -284,9 +316,6 @@ namespace rascal {
       for (const auto & key : pseudo_point.get_keys()) {
         this->keys.insert(key);
         auto & values_by_sp_key = values_by_sp[key];
-        // Eigen::Map<const V> vals{pseudo_point[key]};
-        // auto pseudo_point_by_key = Eigen::Map<math::Vector_t>(&vals(0, 0),
-        // vals.size());
         auto pseudo_point_by_key = pseudo_point.flattened(key);
         for (int ii{0}; ii < pseudo_point_by_key.size(); ++ii) {
           values_by_sp_key.push_back(pseudo_point_by_key[ii]);
@@ -336,8 +365,6 @@ namespace rascal {
       }
       return mat;
     }
-
-    // math::Matrix_t
   };
 
   /**

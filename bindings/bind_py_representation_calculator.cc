@@ -40,7 +40,7 @@ namespace rascal {
 
     py::class_<Calculator, CalculatorBase> representation(
         mod, representation_name.c_str());
-    representation.def(py::init([](const py::dict& hyper) {
+    representation.def(py::init([](const py::dict & hyper) {
       // convert to json
       json hypers = hyper;
       return std::make_unique<Calculator>(hypers);

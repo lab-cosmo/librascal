@@ -43,7 +43,7 @@ namespace rascal {
      * optimized version of kernel.pow(this->zeta), using specialized cases
      * for  zeta==1, 2, and 3. The generic case uses a for loop, which can
      * be faster that std::pow, while introducing a few more numerical
-     * errors.
+     * errors. Rely on RVO to avoid execive copies.
      */
     inline math::Matrix_t pow_zeta(math::Matrix_t && kernel,
                                    const size_t & zeta) {
@@ -59,18 +59,6 @@ namespace rascal {
       }
       return kernel;
     }
-
-    // void pow_zeta_in_place(math::Matrix_t && kernel, const size_t & zeta) {
-    //   if (zeta == 2) {
-    //     kernel = kernel.array().square();
-    //   } else if (zeta == 3) {
-    //     kernel = kernel.array().cube();
-    //   } else {
-    //     kernel = kernel.unaryExpr(
-    //         [zeta = zeta](double v) { return math::pow(v, zeta); });
-    //   }
-    //   return std::move(kernel);
-    // }
 
     struct KernelImplBase {
       using Hypers_t = json;
