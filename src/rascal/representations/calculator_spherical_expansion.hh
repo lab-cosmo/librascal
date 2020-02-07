@@ -2079,6 +2079,8 @@ namespace rascal {
     if (compute_gradients) {
       expansions_coefficients_gradient.resize(keys_list_grad);
       expansions_coefficients_gradient.setZero();
+    } else {
+      expansions_coefficients_gradient.resize();
     }
   }
 
@@ -2124,6 +2126,8 @@ namespace rascal {
     if (this->compute_gradients) {
       expansions_coefficients_gradient.resize(keys_list_grad);
       expansions_coefficients_gradient.setZero();
+    } else {
+      expansions_coefficients_gradient.resize();
     }
   }
 
@@ -2182,6 +2186,8 @@ namespace rascal {
     if (this->compute_gradients) {
       expansions_coefficients_gradient.resize(keys_list_grad);
       expansions_coefficients_gradient.setZero();
+    } else {
+      expansions_coefficients_gradient.resize();
     }
   }
 

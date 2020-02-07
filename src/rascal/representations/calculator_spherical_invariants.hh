@@ -1127,6 +1127,8 @@ namespace rascal {
     if (this->compute_gradients) {
       soap_vector_gradients.resize(keys_list_grad);
       soap_vector_gradients.setZero();
+    } else {
+      soap_vector_gradients.resize();
     }
   }
 
@@ -1163,7 +1165,6 @@ namespace rascal {
       // initialize the radial spectrum to 0 and the proper size
       keys_list.emplace_back(keys);
       keys_list_grad.emplace_back(keys);
-
       for (auto neigh : center.pairs()) {
         (void)neigh;  // to avoid compiler warning
         keys_list_grad.emplace_back(keys);
@@ -1175,6 +1176,8 @@ namespace rascal {
     if (this->compute_gradients) {
       soap_vector_gradients.resize(keys_list_grad);
       soap_vector_gradients.setZero();
+    } else {
+      soap_vector_gradients.resize();
     }
   }
 }  // namespace rascal
