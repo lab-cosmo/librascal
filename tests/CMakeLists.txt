@@ -44,7 +44,7 @@ foreach(_file_ ${tests})
     # make sure all tests include the boost that has been found
     target_include_directories(${_name_} SYSTEM PRIVATE ${Boost_INCLUDE_DIR})
     target_link_libraries(${_name_} rascal_tests_main)
-    target_compile_options(${_name_} PRIVATE -Werror)
+    # target_compile_options(${_name_} PRIVATE -Werror)
 
 
     add_test(
