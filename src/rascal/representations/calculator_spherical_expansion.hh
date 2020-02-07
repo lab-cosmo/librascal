@@ -1408,8 +1408,9 @@ namespace rascal {
     }
 
     bool operator==(const CalculatorSphericalExpansion & other) const {
-      bool is_equal{(this->has_gradients() == other.has_gradients()) and
-      (this->interaction_cutoff == other.interaction_cutoff) and
+      bool is_equal{
+          (this->has_gradients() == other.has_gradients()) and
+          (this->interaction_cutoff == other.interaction_cutoff) and
           (this->cutoff_smooth_width == other.cutoff_smooth_width) and
           (this->interpolator_accuracy == other.interpolator_accuracy) and
           (this->max_radial == other.max_radial) and
