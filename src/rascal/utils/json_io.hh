@@ -35,7 +35,7 @@
  * Considering how our CMakeList.txt is organied it is simpler to ignore the
  * warnings from json.hpp with pragmas for gcc 9
  */
-#if defined(__GNUC__) && (__GNUC___ >= 9)
+#if defined(__GNUC__) && (__GNUC__ >= 9)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #include "rascal/external/json.hpp"
