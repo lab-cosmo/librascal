@@ -1408,19 +1408,17 @@ namespace rascal {
     }
 
     bool operator==(const CalculatorSphericalExpansion & other) const {
-      bool grad_match{this->has_gradients() == other.has_gradients()};
-      bool main_hypers_match{
-          this->interaction_cutoff == other.interaction_cutoff and
-          this->cutoff_smooth_width == other.cutoff_smooth_width and
-          this->interpolator_accuracy == other.interpolator_accuracy and
-          this->max_radial == other.max_radial and
-          this->max_angular == other.max_angular};
-      bool type_match{
-          this->atomic_smearing_type == other.atomic_smearing_type and
-          this->radial_integral_type == other.radial_integral_type and
-          this->optimization_type == other.optimization_type and
-          this->cutoff_function_type == other.cutoff_function_type};
-      return (grad_match and main_hypers_match and type_match);
+      bool is_equal{(this->has_gradients() == other.has_gradients()) and
+      (this->interaction_cutoff == other.interaction_cutoff) and
+          (this->cutoff_smooth_width == other.cutoff_smooth_width) and
+          (this->interpolator_accuracy == other.interpolator_accuracy) and
+          (this->max_radial == other.max_radial) and
+          (this->max_angular == other.max_angular) and
+          (this->atomic_smearing_type == other.atomic_smearing_type) and
+          (this->radial_integral_type == other.radial_integral_type) and
+          (this->optimization_type == other.optimization_type) and
+          (this->cutoff_function_type == other.cutoff_function_type)};
+      return is_equal;
     }
 
     /**
