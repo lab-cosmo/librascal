@@ -49,7 +49,7 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal" DESTINATION "${PYTHON_SIT
 # NO_EXTRAS: do not setup LTO (link time optimization) and striping of the
 #            shared library
 pybind11_add_module(_rascal ${BINDING_SRCS} SYSTEM NO_EXTRAS)
-# target_compile_options(_rascal PRIVATE -Werror)
+target_compile_options(_rascal PRIVATE -Werror)
 
 target_link_libraries(_rascal PRIVATE "${LIBRASCAL_NAME}")
 # Remove the 'lib' prefix, so that the python module is called _rascal
