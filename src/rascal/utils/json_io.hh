@@ -33,7 +33,10 @@
  * the JSON as a first class data type. See https://github.com/nlohmann/json for
  * documentation.
  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #include "rascal/external/json.hpp"
+#pragma GCC diagnostic pop
 #include "rascal/utils/utils.hh"
 
 #include <Eigen/Dense>
