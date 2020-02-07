@@ -47,13 +47,15 @@ set(RASCAL_SOURCES
     rascal/representations/calculator_base.cc
 )
 
-# make sure warnings from external libraries are suppressed
-target_include_directories(${LIBRASCAL_NAME} SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external)
-
 add_library(${LIBRASCAL_NAME} ${RASCAL_SOURCES})
+
+
 
 target_include_directories(${LIBRASCAL_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(${LIBRASCAL_NAME} PRIVATE -Werror)
+
+# make sure warnings from external libraries are suppressed
+include_directories(${LIBRASCAL_NAME} SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external)
 
 target_link_libraries(${LIBRASCAL_NAME} PUBLIC Eigen3::Eigen)
 target_link_libraries(${LIBRASCAL_NAME} PUBLIC ${WIGXJPF_NAME})
