@@ -32,6 +32,8 @@
  * interface to external header-library/header-class, which makes it easy to use
  * the JSON as a first class data type. See https://github.com/nlohmann/json for
  * documentation.
+ * Considering how our CMakeList.txt is organied it is simpler to ignore the
+ * warnings from json.hpp with pragmas
  */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
