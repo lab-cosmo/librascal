@@ -82,7 +82,7 @@ SET(TYPE_ARCHITECTURE "native" CACHE STRING
 )
 
 ########## COMPILATION FLAGS ##########
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++ -Wno-non-virtual-dtor")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++ -Wno-non-virtual-dtor -fsanitize=undefined")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
