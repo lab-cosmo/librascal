@@ -58,11 +58,11 @@ namespace rascal {
       break;
     }
     case SymmetryFunctionType::AngularNarrow: {
-      return "Angular1";
+      return "AngularNarrow";
       break;
     }
     case SymmetryFunctionType::AngularWide: {
-      return "Angular2";
+      return "AngularWide";
       break;
     }
     default:
@@ -139,7 +139,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * Triplet related symmetry function, also called `Angular narrow`. Narrow
-   * means that the atom j,k of a triplet also need to be within each others
+   * means that the atoms j,k of a triplet also need to be within each others
    * cutoff.
    *
    * SF =
@@ -198,8 +198,8 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Triplet related symmetry function, also called `Angular narrow`. Narrow
-   * means that the atom j,k of a triplet also need to be within each others
+   * Triplet related symmetry function, also called `Angular wide`. Wide means
+   * that the atoms j,k of a triplet do not need to be within each others
    * cutoff.
    *
    * SF =
@@ -223,7 +223,7 @@ namespace rascal {
           prefactor{math::pow(2., 1 - zeta)} {}
 
     double f_sym(const double & cos_theta, const double & r_ij,
-                 const double & r_ik) const {
+                 const double & r_ik, const double & /*r_jk*/) const {
       auto && angular_contrib{
           math::pow(1. + this->lambda * cos_theta, this->zeta)};
       auto && exp_contrib{exp(-this->eta * (r_ij * r_ij + r_ik * r_ik))};
@@ -254,53 +254,6 @@ namespace rascal {
     double eta;
     double prefactor;  // prefactor evaluation at construction
   };
-
-  // template <>
-  // class SymmetryFunction<SymmetryFunctionType::Angular1> {
-  //   static constexpr size_t Order{3};
-  //   static constexpr size_t NbParams{4};
-  //   using ParamShape = Eigen::Matrix<double, NbParams, 1>;
-  //   /**
-  //    * usually, derivatives are aligned with the distance vector, in which
-  //    case
-  //    * a scalar return type is sufficient. (important for triplet-related
-  //    * functions)
-  //    */
-  //   static constexpr bool DerivativeIsCollinear{false};
-
-  //   static double eval_function(const Eigen::Map<ParamS> & params,
-  //                               const double & r_ij, const double & r_jk,
-  //                               const double & r_ik, const double cos_theta)
-  //                               {
-  //     auto && zeta{params(0)};
-  //     auto && eta{params(1)};
-  //     auto && lambda{params(2)};
-  //     auto && r_s{params(2)};
-  //     auto && delta_r = r_ij - r_s;
-  //     return exp(-eta * delta_r * delta_r);
-  //   }
-
-  //   template <class Derived>
-  //   static auto eval_derivative(const Eigen::MatrixBase<ParamShape> & params,
-  //                               const double & r_ij,
-  //                               const Eigen::MatrixBase<Derived> & n_ij)
-  //       -> decltype(auto) {
-  //     auto && eta{params(0)};
-  //     auto && r_s{params(1)};
-  //     auto && delta_r{r_ij - r_s};
-  //     return n_ij * (-2. * eta * delta_r * exp(-eta * delta_r * delta_r));
-  //   }
-
-  //   static Eigen::Matrix<double, NbParams, 1> read(const json & params,
-  //                                                  const UnitStyle & units) {
-  //     Eigen::Matrix<double, NbParams, 1> retval{};
-  //     retval(0) = json_io::check_units(units.distance(-1, 2),
-  //     param.at("eta")); retval(1) = json_io::check_units(units.distance(),
-  //     param.at("r_s")); return retval;
-  //   }
-
-  //  protected:
-  // };
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_

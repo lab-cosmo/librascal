@@ -85,9 +85,35 @@ namespace rascal {
     SymmetryFunFixture() : sym_fun{unit_style, correct_input} {}
     const units::UnitStyle unit_style{units::metal};
 
-    const double cos_theta{cos(1.0472)}; // ~60°
+    const double cos_theta{cos(1.0472)};  // ~60°
     const double r_ij{1.1};
     const double r_ik{1.2};
+    const double r_jk{1.3};
+    json correct_input{{"zeta", {{"value", .1}, {"unit", "-"}}},
+                       {"lambda", {{"value", .1}, {"unit", "-"}}},
+                       {"eta", {{"value", .1}, {"unit", "(Å)^(-2)"}}}};
+
+    json incorrect_put{{"zeta", {{"value", .1}, {"unit", "-"}}},
+                       {"lambda", {{"value", .1}, {"unit", "-"}}},
+                       {"eta", {{"value", .1}, {"unit", "(Å)^(-1)"}}}};
+    SymFun sym_fun;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Fixture for the Behler type narrow (all atoms in a triplet within each
+   * others cutoff) angular symmetry function
+   */
+  template <>
+  struct SymmetryFunFixture<SymmetryFunctionType::AngularWide> {
+    using SymFun = SymmetryFunction<SymmetryFunctionType::AngularWide>;
+    SymmetryFunFixture() : sym_fun{unit_style, correct_input} {}
+    const units::UnitStyle unit_style{units::metal};
+
+    const double cos_theta{cos(2.96706)};  // ~170°
+    const double r_ij{1.1};
+    const double r_ik{1.2};
+    // necessary for the same interface as AngularNarrow
     const double r_jk{1.3};
     json correct_input{{"zeta", {{"value", .1}, {"unit", "-"}}},
                        {"lambda", {{"value", .1}, {"unit", "-"}}},

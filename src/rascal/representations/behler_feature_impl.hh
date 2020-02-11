@@ -159,14 +159,13 @@ namespace rascal {
       break;
     }
     case TripletOrder: {
-      // for (auto && atom : manager) {
-      //   for (auto && triplet : atom.triplets()) {
-      //     // auto && distances{triplet_distances[triplet]};
-      //     // auto && angles{triplet_angles[triplet]}
-
-      //     // auto && G_incr{this->sym_fun.f_sym(/* args */)}
-      //   }
-      // }
+      // TODO
+      // get triplet distances
+      // get precomputed cos_theta
+      // calc G_incr
+      // get i/j atoms
+      // sum up depending on species repetition (3 permutations?)
+      throw std::runtime_error("Not yet implemented");
       break;
     }
     default:

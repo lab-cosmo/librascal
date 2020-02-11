@@ -45,7 +45,8 @@ namespace rascal {
   // Put all in here for the constructor tests
   using SymmetryFunctionsAll_t =
       boost::mpl::list<SymmetryFunFixture<SymmetryFunctionType::Gaussian>,
-                       SymmetryFunFixture<SymmetryFunctionType::AngularNarrow>>;
+                       SymmetryFunFixture<SymmetryFunctionType::AngularNarrow>,
+                       SymmetryFunFixture<SymmetryFunctionType::AngularWide>>;
 
   // Pair-related symmetry functions which have one function argument
   using SymmetryFunctionsRadial_t =
@@ -54,7 +55,8 @@ namespace rascal {
   // Triplet related narrow symmetry functions which have 4 arguments:
   // cos_theta, r_ij, r_ik, r_jk
   using SymmetryFunctionsAngular_t =
-      boost::mpl::list<SymmetryFunFixture<SymmetryFunctionType::AngularNarrow>>;
+    boost::mpl::list<SymmetryFunFixture<SymmetryFunctionType::AngularNarrow>,
+                     SymmetryFunFixture<SymmetryFunctionType::AngularWide>>;
 
   BOOST_AUTO_TEST_SUITE(symmetry_functions_behler);
 
