@@ -161,7 +161,6 @@ def sanitize_non_periodic_structure(structure):
             pos = structure['positions']
             bounds = np.array([pos.min(axis=1), pos.max(axis=1)])
             bounding_box_lengths = bounds[1] - bounds[0]
-            new_cell = np.diag(bounding_box_lengths)
             CoM = pos.mean(axis=1)
             disp = 0.5 * bounding_box_lengths - CoM
             new_pos = pos + disp[:, None]

@@ -256,13 +256,10 @@ class SphericalInvariants(object):
             return (self.hypers['n_species'] * self.hypers['max_radial'])
 
         if self.hypers['soap_type'] == 'PowerSpectrum':
-            return (int((self.hypers['n_species'] *
-                         (self.hypers['n_species'] +
-                          1)) /
-                        2) *
-                    self.hypers['max_radial']**2 *
-                    (self.hypers['max_angular'] +
-                     1))
+            return (int((self.hypers['n_species']
+                         * (self.hypers['n_species'] + 1)) / 2)
+                    * self.hypers['max_radial']**2
+                    * (self.hypers['max_angular'] + 1))
 
         if self.hypers['soap_type'] == 'BiSpectrum':
             if not self.hypers['inversion_symmetry']:
@@ -276,7 +273,8 @@ class SphericalInvariants(object):
                 return (self.hypers['n_species']**3
                         * self.hypers['max_radial']**3
                         * int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)
-                                       * (2 * (self.hypers['max_angular'] + 1) + 3) / 8.0)))
+                                       * (2 * (self.hypers['max_angular']
+                                               + 1) + 3) / 8.0)))
 
         else:
             raise ValueError('Only soap_type = RadialSpectrum || '
