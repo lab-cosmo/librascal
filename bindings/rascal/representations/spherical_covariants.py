@@ -219,19 +219,21 @@ class SphericalCovariants(BaseIO):
         cutoff_function = self.hypers['cutoff_function']
         radial_contribution = self.hypers['radial_contribution']
 
-        init_params = dict(interaction_cutoff=cutoff_function['cutoff']['value'], cutoff_smooth_width=cutoff_function['smooth_width']['value'],
-                           max_radial=self.hypers['max_radial'],
-                           max_angular=self.hypers['max_angular'],
-                           soap_type=self.hypers['soap_type'],
-                           inversion_symmetry=self.hypers['inversion_symmetry'],
-                           normalize=self.hypers['normalize'],
-                           gaussian_sigma_type=gaussian_density['type'],
-                           gaussian_sigma_constant=gaussian_density['gaussian_sigma']['value'],
-                           lam=self.hypers['lam'],
-                           cutoff_function_type=cutoff_function['type'],
-                           radial_basis=radial_contribution['type'],
-                           cutoff_function_parameters=self.cutoff_function_parameters,
-                           )
+        init_params = dict(
+            interaction_cutoff=cutoff_function['cutoff']['value'],
+            cutoff_smooth_width=cutoff_function['smooth_width']['value'],
+            max_radial=self.hypers['max_radial'],
+            max_angular=self.hypers['max_angular'],
+            soap_type=self.hypers['soap_type'],
+            inversion_symmetry=self.hypers['inversion_symmetry'],
+            normalize=self.hypers['normalize'],
+            gaussian_sigma_type=gaussian_density['type'],
+            gaussian_sigma_constant=gaussian_density['gaussian_sigma']['value'],
+            lam=self.hypers['lam'],
+            cutoff_function_type=cutoff_function['type'],
+            radial_basis=radial_contribution['type'],
+            cutoff_function_parameters=self.cutoff_function_parameters,
+        )
         return init_params
 
     def _set_data(self, data):

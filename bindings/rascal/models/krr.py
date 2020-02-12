@@ -84,9 +84,6 @@ class KRR(BaseIO):
     def get_weigths(self):
         return self.weights
 
-    def set_calculator(self):
-        pass
-
     def get_init_params(self):
         init_params = dict(weights=self.weights, kernel=self.kernel,
                            X_train=self.X_train, self_contributions=self.self_contributions)
@@ -147,7 +144,7 @@ def train_gap_model(kernel, managers, KNMp, X_pseudo, y_train, self_contribution
         KNM = np.vstack([KNM, KNM_down])
         when training with derivatives.
     X_pseudo : PseudoPoints
-        reference samples to use in the model
+        basis samples to use in the model 
     y_train : np.array
         reference property
     self_contributions : dictionary

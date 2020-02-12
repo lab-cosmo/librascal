@@ -289,21 +289,23 @@ class SphericalInvariants(BaseIO):
         cutoff_function = self.hypers['cutoff_function']
         radial_contribution = self.hypers['radial_contribution']
 
-        init_params = dict(interaction_cutoff=cutoff_function['cutoff']['value'], cutoff_smooth_width=cutoff_function['smooth_width']['value'],
-                           max_radial=self.hypers['max_radial'], max_angular=self.hypers['max_angular'],
-                           soap_type=self.hypers['soap_type'],
-                           inversion_symmetry=self.hypers['inversion_symmetry'],
-                           normalize=self.hypers['normalize'],
-                           expansion_by_species_method=self.hypers['expansion_by_species_method'],
-                           global_species=self.hypers['global_species'],
-                           compute_gradients=self.hypers['compute_gradients'],
-                           gaussian_sigma_type=gaussian_density['type'],
-                           gaussian_sigma_constant=gaussian_density['gaussian_sigma']['value'],
-                           cutoff_function_type=cutoff_function['type'],
-                           radial_basis=radial_contribution['type'],
-                           optimization_args=self.optimization_args,
-                           cutoff_function_parameters=self.cutoff_function_parameters,
-                           )
+        init_params = dict(
+            interaction_cutoff=cutoff_function['cutoff']['value'],
+            cutoff_smooth_width=cutoff_function['smooth_width']['value'],
+            max_radial=self.hypers['max_radial'], max_angular=self.hypers['max_angular'],
+            soap_type=self.hypers['soap_type'],
+            inversion_symmetry=self.hypers['inversion_symmetry'],
+            normalize=self.hypers['normalize'],
+            expansion_by_species_method=self.hypers['expansion_by_species_method'],
+            global_species=self.hypers['global_species'],
+            compute_gradients=self.hypers['compute_gradients'],
+            gaussian_sigma_type=gaussian_density['type'],
+            gaussian_sigma_constant=gaussian_density['gaussian_sigma']['value'],
+            cutoff_function_type=cutoff_function['type'],
+            radial_basis=radial_contribution['type'],
+            optimization_args=self.optimization_args,
+            cutoff_function_parameters=self.cutoff_function_parameters,
+        )
         return init_params
 
     def _set_data(self, data):
