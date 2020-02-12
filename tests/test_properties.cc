@@ -1086,7 +1086,7 @@ namespace rascal {
         "r_ij_r_ik_r_jk")};
     r_ij_r_ik_r_jk.resize();
 
-    auto & distances = triplet_manager->get_distance();
+    auto & distances{triplet_manager->get_distance()};
     for (auto && atom : triplet_manager) {
       for (auto && trip : atom.triplets()) {
         auto && atom_cluster_indices{trip_to_i_atom[trip]};

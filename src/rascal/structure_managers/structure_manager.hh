@@ -626,7 +626,7 @@ namespace rascal {
               typename std::enable_if_t<HasDistances, int> = 0>
     decltype(auto) get_distance() {
       static_assert(HasDistances == traits::HasDistances,
-                    "The manager does not have distances.");
+                    "HasDistances is a SFINAE, do not touch.");
       return this->get_previous_manager()->get_distance();
     }
 
@@ -769,17 +769,38 @@ namespace rascal {
     get_neighbours_to_i_atoms();
 
     /**
-     * Creates or fetches a property @tillhook
+     * Creates or fetches a property containing triplet distances
      */
+    template <bool HasDistances = traits::HasDistances,
+              typename std::enable_if_t<
+                  HasDistances and (traits::MaxOrder >= TripletOrder), int> = 0>
+    decltype(auto) get_triplet_distance() {
+      static_assert(HasDistances == traits::HasDistances,
+                    "HasDistances is a SFINAE, do not touch.");
+      return this->get_previous_manager()->get_triplet_distance();
+    }
 
     /**
-     * creates or fetches and possibly refreshes a property storing clusters of
-     * order StoredOrder constituting the higher-order cluster. Example 1:
-     * sub_clusters<AtomOrder> yields a property containing the atom clusters
-     * for each atom in the cluster. Example 2: sub_clusters<PairOrder> yields a
-     * property containing all pairs with the centre as their i-atom (for
-     * triplets -> pair_ij, pair_ik, but *not* pair_jk, as this pair does not
-     * exist in general. Currently only implemented for StoredOrder ∈ {1,2}
+     * Creates or fetches a map from atoms to pairs
+     */
+    template <AdaptorTraits::Strict IsStrict = traits::Strict,
+              typename std::enable_if_t<IsStrict == AdaptorTraits::Strict::yes,
+                                        int> = 0>
+    decltype(auto) get_atoms_to_pair_map() {
+      static_assert(IsStrict == AdaptorTraits::Strict::yes,
+                    "IsStrict is a SFINAE, do not touch.");
+      return this->get_previous_manager()->get_atoms_to_pair_map();
+    }
+
+    /**
+     * creates or fetches and possibly refreshes a property storing clusters
+     * of order StoredOrder constituting the higher-order cluster. Example
+     * 1: sub_clusters<AtomOrder> yields a property containing the atom
+     * clusters for each atom in the cluster. Example 2:
+     * sub_clusters<PairOrder> yields a property containing all pairs with
+     * the centre as their i-atom (for triplets -> pair_ij, pair_ik, but
+     * *not* pair_jk, as this pair does not exist in general. Currently only
+     * implemented for StoredOrder ∈ {1,2}
      */
     template <size_t StoredOrder, size_t PropertyOrder>
     PropertyLookupKeys<StoredOrder, PropertyOrder, ManagerImplementation,

@@ -117,14 +117,20 @@ namespace rascal {
         AdaptorStrict, PreviousManager_t::traits::HasDistances>::type;
     using DirectionVector_t = typename internal::DirectionVectorTProvider<
         AdaptorStrict, PreviousManager_t::traits::HasDirectionVectors>::type;
+    static constexpr auto AtomLayer{
+        AdaptorStrict::template cluster_layer_from_order<AtomOrder>()};
+    using AtomClusterRef_t = ClusterRefKey<AtomOrder, AtomLayer>;
+
+    static constexpr auto PairLayer{
+        AdaptorStrict::template cluster_layer_from_order<PairOrder>()};
+    using StoredRefKey_t = ClusterRefKey<PairOrder, PairLayer>;
+
+    using RevMapKey_t = std::array<AtomClusterRef_t, PairOrder>;
+    using RevMap_t = std::unique_ptr<std::map<RevMapKey_t, StoredRefKey_t>> ;
 
     static_assert(traits::MaxOrder == 2,
                   "ManagerImlementation needs to handle pairs");
-    constexpr static auto AtomLayer{
-        Manager_t::template cluster_layer_from_order<1>()};
-    constexpr static auto PairLayer{
-        Manager_t::template cluster_layer_from_order<2>()};
-
+    
     //! Default constructor
     AdaptorStrict() = delete;
 
@@ -282,6 +288,32 @@ namespace rascal {
       return this->atom_tag_list[1];
     }
 
+    RevMap_t & get_atoms_to_pair_map() {
+      if (*this->atoms_to_pair_map != nullptr) {
+        return *this->atoms_to_pair_map;
+      } else {
+        auto & pair_to_i_atom{
+            this->template get_neighbours_to_i_atoms<PairOrder>()};
+
+        this->atoms_to_pair_map = std::move(std::make_unique<RevMap_t>());
+        for (auto && atom : *this) {
+          for (auto && pair : atom.pairs()) {
+            auto && atom_cluster_indices{pair_to_i_atom[pair]};
+            auto && i_atom_id{atom_cluster_indices(0)};
+            auto && j_atom_id{atom_cluster_indices(1)};
+
+            // TODO: avoid creating key and pair by value
+            RevMapKey_t key{*this->get_iterator_at(i_atom_id),
+                      *this->get_iterator_at(j_atom_id)};
+            std::pair<RevMapKey_t, StoredRefKey_t> key_val(
+                key, dynamic_cast<StoredRefKey_t &>(pair));
+
+            this->atoms_to_pair_map->insert(key_val);
+          }
+        }
+      }
+    }
+
    protected:
     /**
      * main function during construction of a neighbourlist.
@@ -339,7 +371,7 @@ namespace rascal {
      */
     std::array<std::vector<size_t>, traits::MaxOrder> offsets;
 
-   private:
+    RevMap_t atoms_to_pair_map{nullptr};
   };
 
   namespace internal {
@@ -405,6 +437,7 @@ namespace rascal {
     //! Reset cluster_indices for adaptor to fill with push back.
     internal::for_each(this->cluster_indices_container,
                        internal::ResizePropertyToZero());
+    this->atoms_to_pair_map.reset(nullptr);
     //! initialise the neighbourlist
     for (size_t i{0}; i < traits::MaxOrder; ++i) {
       this->atom_tag_list[i].clear();

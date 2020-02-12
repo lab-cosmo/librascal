@@ -95,6 +95,8 @@ namespace rascal {
         typename ManagerImplementation::template ClusterRef<Order>;
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
+    using TripletDistance_t =
+        Property<double, TripletOrder, AdaptorMaxOrder, 3>;
     //! Order added by the adaptor
     static constexpr size_t AdditionalOrder{traits::MaxOrder};
 
@@ -323,7 +325,46 @@ namespace rascal {
 
     bool compute_compact_clusters{false};
 
-   private:
+    /* ---------------------------------------------------------------------- */
+    TripletDistance_t & get_triplet_distance() {
+      const std::string identifier{"triplet_distances"};
+      auto & triplet_distances{*this->template get_property<TripletDistance_t>(
+          identifier, true, true)};
+      if (triplet_distances.is_updated()) {
+        return triplet_distances;
+      }
+
+      auto & direction_vectors{this->get_direction_vector()};
+      auto & distances{this->get_distance()};
+
+      auto & trip_to_i_atom{
+          this->template get_neighbours_to_i_atoms<TripletOrder>()};
+
+      auto & reverse_map{this->get_atoms_to_pair_map()};
+      for (auto && atom : *this) {
+        for (auto && trip : atom.triplets()) {
+          auto && atom_cluster_indices{trip_to_i_atom[trip]};
+          auto && i_atom_id{atom_cluster_indices(0)};
+          auto && j_atom_id{atom_cluster_indices(1)};
+          auto && k_atom_id{atom_cluster_indices(2)};
+
+          auto && i_atom{this->operator[](i_atom_id)};
+          auto && j_atom{this->operator[](j_atom_id)};
+          auto && k_atom{this->operator[](k_atom_id)};
+
+          auto & p_ij{reverse_map[{i_atom, j_atom}]};
+          auto & p_ik{reverse_map[{i_atom, k_atom}]};
+
+          auto && dists{triplet_distances[trip]};
+          dists(0) = distances[p_ij];
+          dists(1) = distances[p_ik];
+          dists(2) = (this->position(trip.get_atom_tag_list()[2]) -
+                      this->position(trip.get_atom_tag_list()[1]))
+                         .norm();
+        }
+    }
+
+    }
   };
 
   /* ---------------------------------------------------------------------- */
@@ -518,6 +559,7 @@ namespace rascal {
         std::get<traits::MaxOrder - 1>(this->cluster_indices_container)};
     max_cluster_indices.fill_sequence();
   }
+
 
 }  // namespace rascal
 
