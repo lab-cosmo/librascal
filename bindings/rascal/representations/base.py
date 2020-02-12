@@ -25,12 +25,13 @@ def CalculatorFactory(rep_options):
             ('The representations factory {} has not been registered. ' +
              'The available combinations are: {}').format(
                 name, list(_representations.keys())))
+
     return _representations[name](*rep_options['args'])
 
 
 def cutoff_function_dict_switch(cutoff_function_type, **kwargs):
-    """
-    return appropriate dict for the cutoff function parameters
+    """return appropriate dict for the cutoff function parameters
+
     """
     if cutoff_function_type == 'ShiftedCosine':
         cutoff_function_dict = dict(
@@ -44,6 +45,7 @@ def cutoff_function_dict_switch(cutoff_function_type, **kwargs):
                 unit='AA'
             ),
         )
+
     elif cutoff_function_type == 'RadialScaling':
         cutoff_function_dict = dict(
             type=cutoff_function_type,
@@ -68,6 +70,7 @@ def cutoff_function_dict_switch(cutoff_function_type, **kwargs):
                 unit='AA'
             ),
         )
+
     else:
         raise NotImplementedError('cutoff_function: ' + cutoff_function_type +
                                   ' has not been implemented.')

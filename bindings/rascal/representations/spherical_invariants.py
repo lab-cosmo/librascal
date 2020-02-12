@@ -7,75 +7,83 @@ import numpy as np
 
 class SphericalInvariants(object):
 
-    """
-    Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.
+    """Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.
 
     Hyperparameters
     ----------
     interaction_cutoff : float
-        Maximum pairwise distance for atoms to be considered in
-        expansion
+
+        Maximum pairwise distance for atoms to be considered in expansion
 
     cutoff_smooth_width : float
+
         The distance over which the the interaction is smoothed to zero
 
     max_radial : int
+
         Number of radial basis functions
 
     max_angular : int
+
         Highest angular momentum number (l) in the expansion
 
     n_species : int
+
         Number of species to be considered separately
 
     gaussian_sigma_type : str
-        How the Gaussian atom sigmas (smearing widths) are allowed to
-        vary -- fixed ('Constant'), by species ('PerSpecies'), or by
-        distance from the central atom ('Radial').
+
+        How the Gaussian atom sigmas (smearing widths) are allowed to vary --
+        fixed ('Constant'), by species ('PerSpecies'), or by distance from the
+        central atom ('Radial').
 
     gaussian_sigma_constant : float
-        Specifies the atomic Gaussian widths, in the case where they're
-        fixed.
+
+        Specifies the atomic Gaussian widths, in the case where they're fixed.
 
     soap_type : string
-        Specifies the type of representation to be computed
-        (power spectrum etc.).
+
+        Specifies the type of representation to be computed (power spectrum
+        etc.).
 
     inversion_symmetry : Boolean
-        Specifies whether inversion invariance should be enforced.
-        (Only relevant for BiSpectrum.)
+
+        Specifies whether inversion invariance should be enforced.  (Only
+        relevant for BiSpectrum.)
 
     normalize : boolean
+
         Whether to normalize so that the kernel between identical environments
         is 1.  Default and highly recommended: True.
 
     expansion_by_species_method : string
-        Specifies the how the species key of the invariant are set-up.
-        Possible values: 'environment wise', 'user defined', 'structure wise'.
-        The descriptor is computed for each atomic enviroment and it is indexed
+
+        Specifies the how the species key of the invariant are set-up.  Possible
+        values: 'environment wise', 'user defined', 'structure wise'.  The
+        descriptor is computed for each atomic enviroment and it is indexed
         using tuples of atomic species that are present within the environment.
         This index is by definition sparse since a species tuple will be non
         zero only if the atomic species are present inside the environment.
-        'environment wise' means that each environmental representation
-        will only contain the minimal set of species tuples needed by each
-        atomic environment.
-        'structure wise' means that within a structure the species tuples
-        will be the same for each environment coefficients.
-        'user defined' uses global_species to set-up the species tuples.
+        'environment wise' means that each environmental representation will
+        only contain the minimal set of species tuples needed by each atomic
+        environment.  'structure wise' means that within a structure the species
+        tuples will be the same for each environment coefficients.  'user
+        defined' uses global_species to set-up the species tuples.
 
-        These different settings correspond to different trade-off between
-        the memory efficiency of the invariants and the computational
-        efficiency of the kernel computation.
-        When computing a kernel using 'environment wise' setting does not allow
-        for efficent matrix matrix multiplications which is ensured when
-        'user defined' is used. 'structure wise' is a balance between the
-        memory footprint and the use of matrix matrix products.
+        These different settings correspond to different trade-off between the
+        memory efficiency of the invariants and the computational efficiency of
+        the kernel computation.  When computing a kernel using 'environment
+        wise' setting does not allow for efficent matrix matrix multiplications
+        which is ensured when 'user defined' is used. 'structure wise' is a
+        balance between the memory footprint and the use of matrix matrix
+        products.
 
         Note that the sparsity of the gradient coefficients and their use to
         build kernels does not allow for clear efficiency gains so their
         sparsity is kept irrespective of expansion_by_species_method.
 
     global_species : list
+
         list of species to use to set-up the species key of the invariant. It
         should contain all the species present in the structure for which
         invariants will be computed
@@ -83,6 +91,7 @@ class SphericalInvariants(object):
     Methods
     -------
     transform(frames)
+
         Compute the representation for a list of ase.Atoms object.
 
 
@@ -104,13 +113,16 @@ class SphericalInvariants(object):
                  cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
-        Required arguments are all the hyperparameters named in the
-        class documentation
+        Required arguments are all the hyperparameters named in the class
+        documentation
+
         """
         self.name = 'sphericalinvariants'
         self.hypers = dict()
+
         if global_species is None:
             global_species = []
+
         elif not isinstance(global_species, list):
             global_species = list(global_species)
 
@@ -126,6 +138,7 @@ class SphericalInvariants(object):
             interaction_cutoff=interaction_cutoff,
             cutoff_smooth_width=cutoff_smooth_width
         )
+
         cutoff_function = cutoff_function_dict_switch(
             cutoff_function_type, **cutoff_function_parameters)
 
@@ -141,32 +154,37 @@ class SphericalInvariants(object):
             if optimization_args['type'] == 'Spline':
                 if 'accuracy' in optimization_args:
                     accuracy = optimization_args['accuracy']
+
                 else:
                     accuracy = 1e-8
+
                 if 'range' in optimization_args:
                     spline_range = optimization_args['range']
+
                 else:
                     # TODO(felix) remove this when there is a check for the
                     # distance for the usage of the interpolator in the
                     # RadialContribution
                     print("Warning: default parameter for spline range is used.")
                     spline_range = (0, interaction_cutoff)
+
                 optimization_args = {
                     'type': 'Spline', 'accuracy': accuracy, 'range': {
                         'begin': spline_range[0], 'end': spline_range[1]}}
+
             elif optimization_args['type'] == 'None':
                 optimization_args = dict({'type': 'None'})
+
             else:
                 print('Optimization type is not known. Switching to no'
                       ' optimization.')
                 optimization_args = dict({'type': 'None'})
+
         else:
             optimization_args = dict({'type': 'None'})
 
-        radial_contribution = dict(
-            type=radial_basis,
-            optimization=optimization_args
-        )
+        radial_contribution = dict(type=radial_basis,
+                                   optimization=optimization_args)
 
         self.update_hyperparameters(cutoff_function=cutoff_function,
                                     gaussian_density=gaussian_density,
@@ -198,9 +216,12 @@ class SphericalInvariants(object):
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
                         'inversion_symmetry', 'cutoff_function', 'normalize',
                         'gaussian_density', 'radial_contribution',
-                        'cutoff_function_parameters', 'expansion_by_species_method', 'global_species'}
+                        'cutoff_function_parameters',
+                        'expansion_by_species_method', 'global_species'}
+
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
+
         self.hypers.update(hypers_clean)
         return
 
@@ -210,6 +231,7 @@ class SphericalInvariants(object):
         Parameters
         ----------
         frames : list(ase.Atoms)
+
             List of atomic structures.
 
         Returns
@@ -232,6 +254,7 @@ class SphericalInvariants(object):
         """
         if self.hypers['soap_type'] == 'RadialSpectrum':
             return (self.hypers['n_species'] * self.hypers['max_radial'])
+
         if self.hypers['soap_type'] == 'PowerSpectrum':
             return (int((self.hypers['n_species'] *
                          (self.hypers['n_species'] +
@@ -240,37 +263,42 @@ class SphericalInvariants(object):
                     self.hypers['max_radial']**2 *
                     (self.hypers['max_angular'] +
                      1))
+
         if self.hypers['soap_type'] == 'BiSpectrum':
             if not self.hypers['inversion_symmetry']:
                 return (self.hypers['n_species']**3
                         * self.hypers['max_radial']**3
                         * int(1 + 2 * self.hypers['max_angular']
                               + 3 * self.hypers['max_angular']**2 / 2
-                            + self.hypers['max_angular']**3 / 2))
+                              + self.hypers['max_angular']**3 / 2))
+
             else:
                 return (self.hypers['n_species']**3
                         * self.hypers['max_radial']**3
                         * int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)
-                                     * (2 * (self.hypers['max_angular'] + 1) + 3) / 8.0)))
+                                       * (2 * (self.hypers['max_angular'] + 1) + 3) / 8.0)))
+
         else:
             raise ValueError('Only soap_type = RadialSpectrum || '
                              'PowerSpectrum || BiSpectrum '
                              'implemented for now')
 
     def get_keys(self, species):
-        """
-        return the proper list of keys used to build the representation
+        """return the proper list of keys used to build the representation
+
         """
         keys = []
         if self.hypers['soap_type'] == 'RadialSpectrum':
             for sp in species:
                 keys.append([sp])
+
         elif self.hypers['soap_type'] == 'PowerSpectrum':
             for sp1 in species:
                 for sp2 in species:
                     if sp1 > sp2:
                         continue
                     keys.append([sp1, sp2])
+
         elif self.hypers['soap_type'] == 'BiSpectrum':
             for sp1 in species:
                 for sp2 in species:
@@ -280,8 +308,10 @@ class SphericalInvariants(object):
                         if sp2 > sp3:
                             continue
                         keys.append([sp1, sp2, sp3])
+
         else:
             raise ValueError('Only soap_type = RadialSpectrum || '
                              'PowerSpectrum || BiSpectrum '
                              'implemented for now')
+
         return keys

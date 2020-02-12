@@ -6,48 +6,56 @@ import numpy as np
 
 
 class SphericalCovariants(object):
-    """
-    Computes a SphericalCovariants representation, i.e. lambda spectrum.
+    """Computes a SphericalCovariants representation, i.e. lambda spectrum.
 
     Hyperparameters
     ---------------
     interaction_cutoff : float
-        Maximum pairwise distance for atoms to be considered in
-        expansion
+
+        Maximum pairwise distance for atoms to be considered in expansion
 
     cutoff_smooth_width : float
+
         The distance over which the the interaction is smoothed to zero
 
     max_radial : int
+
         Number of radial basis functions
 
     max_angular : int
+
         Highest angular momentum number (l) in the expansion
 
     n_species : int
+
         Number of species to be considered separately
 
     gaussian_sigma_type : str
-        How the Gaussian atom sigmas (smearing widths) are allowed to
-        vary -- fixed ('Constant'), by species ('PerSpecies'), or by
-        distance from the central atom ('Radial').
+
+        How the Gaussian atom sigmas (smearing widths) are allowed to vary --
+        fixed ('Constant'), by species ('PerSpecies'), or by distance from the
+        central atom ('Radial').
 
     gaussian_sigma_constant : float
-        Specifies the atomic Gaussian widths, in the case where they're
-        fixed.
+
+        Specifies the atomic Gaussian widths, in the case where they're fixed.
 
     soap_type : string
+
         Specifies the type of representation to be computed.
 
     inversion_symmetry : Boolean
+
         Specifies whether inversion invariance should be enforced.
 
     lam : int
+
         Order of the lambda spectrum.
 
     Methods
     -------
     transform(frames)
+
         Compute the representation for a list of ase.Atoms object.
 
 
@@ -58,18 +66,17 @@ class SphericalCovariants(object):
 
     """
 
-    def __init__(self, interaction_cutoff, cutoff_smooth_width,
-                 max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=0., n_species=1,
-                 cutoff_function_type="ShiftedCosine", normalize=True,
-                 radial_basis="GTO",
-                 soap_type="LambdaSpectrum", inversion_symmetry=True,
-                 lam=0,
+    def __init__(self, interaction_cutoff, cutoff_smooth_width, max_radial,
+                 max_angular, gaussian_sigma_type, gaussian_sigma_constant=0.,
+                 n_species=1, cutoff_function_type="ShiftedCosine",
+                 normalize=True, radial_basis="GTO", soap_type="LambdaSpectrum",
+                 inversion_symmetry=True, lam=0,
                  cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
-        Required arguments are all the hyperparameters named in the
-        class documentation
+        Required arguments are all the hyperparameters named in the class
+        documentation
+
         """
         self.name = 'sphericalcovariants'
         self.hypers = dict()
@@ -85,6 +92,7 @@ class SphericalCovariants(object):
             interaction_cutoff=interaction_cutoff,
             cutoff_smooth_width=cutoff_smooth_width
         )
+
         cutoff_function = cutoff_function_dict_switch(
             cutoff_function_type, **cutoff_function_parameters)
 
@@ -95,6 +103,7 @@ class SphericalCovariants(object):
                 unit='AA'
             ),
         )
+
         radial_contribution = dict(
             type=radial_basis,
         )
@@ -127,8 +136,10 @@ class SphericalCovariants(object):
                         'inversion_symmetry', 'lam', 'cutoff_function',
                         'normalize', 'gaussian_density', 'radial_contribution',
                         'cutoff_function_parameters'}
+
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
+
         self.hypers.update(hypers_clean)
         return
 
@@ -138,6 +149,7 @@ class SphericalCovariants(object):
         Parameters
         ----------
         frames : list(ase.Atoms)
+
             List of atomic structures.
 
         Returns
@@ -166,23 +178,26 @@ class SphericalCovariants(object):
                          (self.hypers['lam'] % 2) -
                          (np.ceil((self.hypers['max_angular'] + 1 -
                                    self.hypers['lam'])**2 / 2.0) -
-                            (self.hypers['max_angular'] -
+                          (self.hypers['max_angular'] -
                              self.hypers['lam'] + 1)) *
                          (1.0 - self.hypers['lam'] % 2))
+
                 if (self.hypers['lam'] % 2 == 1):
                     n_col = -n_col + 0.5 * (2.0 + self.hypers['lam']
                                             - 3 * self.hypers['lam']**2
                                             + 2 * self.hypers['max_angular']
                                             + 4 * self.hypers['lam']
                                             * self.hypers['max_angular'])
+
                 n_col *= (2 * self.hypers['lam'] + 1)
                 return int(n_col * self.hypers['n_species']**2
                            * self.hypers['max_radial']**2)
+
             else:
                 return (self.hypers['n_species']**2 *
                         self.hypers['max_radial']**2 *
                         int((2 +
-                               self.hypers['lam'] -
+                             self.hypers['lam'] -
                              3 *
                              self.hypers['lam']**2 +
                              2 *
@@ -190,17 +205,18 @@ class SphericalCovariants(object):
                              4 *
                              self.hypers['lam'] *
                              self.hypers['max_angular']) /
-                              2) *
+                            2) *
                         (2 *
                          self.hypers['lam'] +
                          1))
+
         else:
-            raise ValueError('Only soap_type = LambdaSpectrum '
-                             'implemented for now')
+            raise ValueError('Only soap_type=LambdaSpectrum implemented for'
+                             ' now')
 
     def get_keys(self, species):
-        """
-        return the proper list of keys used to build the representation
+        """return the proper list of keys used to build the representation
+
         """
         keys = []
         if self.hypers['soap_type'] == 'LambdaSpectrum':
@@ -208,7 +224,9 @@ class SphericalCovariants(object):
                 for sp2 in species:
                     if sp1 > sp2:
                         continue
+
                     keys.append([sp1, sp2])
+
         else:
             raise ValueError('Only soap_type = LambdaSpectrum '
                              'implemented for now')

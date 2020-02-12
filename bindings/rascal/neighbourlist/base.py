@@ -23,21 +23,24 @@ for k, v in neighbour_list.__dict__.items():
 
 
 def NeighbourListFactory(nl_options):
-    """
-    Iterates trough each manager specified by the nl_options checking if this
+    """Iterates trough each manager specified by the nl_options checking if this
     implementation exists within the pybindings.
 
     Attributes
     ----------
     nl_options: dict
+
        Dictory containing the hyperparameters for the neighbour list manager.
+
     Returns
     -------
         The top manager of a manager stack
+
     """
     names = []
     kargs_list = []
     full_name = []
+
     for opt in nl_options:
         full_name.insert(0, opt['name'])
         name = '_'.join(full_name)
@@ -51,6 +54,7 @@ def NeighbourListFactory(nl_options):
                     name, list(_neighbourlists.keys())))
 
     managers = [_neighbourlists[names[0]](**kargs_list[0])]
+
     for name, karg in zip(names[1:], kargs_list[1:]):
         manager = _neighbourlists[name](managers[-1], **karg)
         managers.append(manager)
@@ -63,6 +67,7 @@ def StructureCollectionFactory(nl_options):
 
     args = []
     full_name = []
+
     for opt in nl_options:
         full_name.insert(0, opt['name'])
         name = '_'.join(full_name)
@@ -74,6 +79,7 @@ def StructureCollectionFactory(nl_options):
             ('The StructureCollection factory {} has not been registered. ' +
              'The available combinations are: {}').format(
                 name, list(_structure_collections.keys())))
+
     # remove the arguments relative to stucture manager centers
     args.pop(0)
     agrs_str = json.dumps(args)
@@ -85,10 +91,12 @@ def StructureCollectionFactory(nl_options):
 def is_valid_structure(structure):
     keys = ['cell', 'positions', 'atom_types', 'pbc']
     is_valid = True
+
     if isinstance(structure, dict):
         for k in keys:
             if k not in structure:
                 is_valid = False
+
     else:
         is_valid = False
 
