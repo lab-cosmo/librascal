@@ -31,7 +31,7 @@ class KRR(BaseIO):
         self.target_type = kernel.target_type
 
     def _get_property_baseline(self, managers):
-        """build total baseline contribution for each predictions"""
+        """build total baseline contribution for each prediction"""
         if self.target_type == 'Structure':
             Y0 = np.zeros(len(managers))
             for i_manager, manager in enumerate(managers):
