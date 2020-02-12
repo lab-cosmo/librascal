@@ -56,7 +56,7 @@ class Kernel(BaseIO):
     def __init__(self, representation, name='Cosine', kernel_type='Full', target_type='Structure',
                  **kwargs):
 
-        # This case cannot handled by the c++ side because c++ cannot deduce the
+        # This case cannot be handled by the c++ side because c++ cannot deduce the
         # type from arguments inside a json, so it has to be casted in the c++
         # side. Therefore zeta has to be checked here.
         if (name == 'Cosine' and 'zeta' in kwargs):
