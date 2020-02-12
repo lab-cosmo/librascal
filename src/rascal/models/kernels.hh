@@ -264,7 +264,7 @@ namespace rascal {
         return std::move(kernel);
       }
     };
-    
+
     template <>
     struct KernelImpl<internal::KernelType::Gaussian> : KernelImplBase {
       using Hypers_t = typename KernelImplBase::Hypers_t;
@@ -288,7 +288,7 @@ namespace rascal {
       }
 
       /**
-       * Compute the kernel between 2 set of structure(s)
+       * Compute the kernel between two sets of structure(s)
        *
        * @tparam StructureManagers should be an iterable over shared pointer
        *          of structure managers like ManagerCollection
@@ -305,14 +305,13 @@ namespace rascal {
         for (auto & manager_a : managers_a) {
           size_t ii_B{0};
           auto && propA{
-              manager_a->template get_validated_property_ref<Property_t>(
-                  representation_name)};
+          manager_a->template get_validated_property_ref<Property_t>(
+              representation_name)};
 
-              for (auto & manager_b : managers_b) {
-                auto && propB{
-                    manager_b->template get_validated_property_ref<Property_t>(
-                        representation_name)};
-            
+          for (auto & manager_b : managers_b) {
+            auto && propB{
+                manager_b->template get_validated_property_ref<Property_t>(
+                    representation_name)};
             kernel(ii_A, ii_B) = this->structure_squared_exponential(manager_a,
                                                                      manager_b,
                                                                      propA,
@@ -323,18 +322,18 @@ namespace rascal {
         }
         return kernel;
       }
-      
+
       template <
-          class Property_t, 
+          class Property_t,
           class StructureManager>
       double structure_squared_exponential(StructureManager & manager_a,
                                            StructureManager & manager_b,
                                            const Property_t & prop_a,
                                            const Property_t & prop_b) {
         double squared_exponential_sum {0};
-        for (auto center_a : manager_a){
+        for (auto center_a : manager_a) {
           for (auto neigh_a : center_a) {
-            for (auto center_b : manager_b){
+            for (auto center_b : manager_b) {
               for (auto neigh_b : center_b) {
                 const auto & pair_a{prop_a[neigh_a]};
                 const auto & pair_b{prop_b[neigh_b]};
@@ -348,16 +347,15 @@ namespace rascal {
                     if (key_a == key_b) {
                       squared_exponential_sum += exp((val_a - val_b).squaredNorm()/(2*pow(theta, 2)));
                     }
-                  } 
+                  }
                 }
               }
             }
           }
         }
-        return squared_exponential_sum;      
+        return squared_exponential_sum;
       }
-                                          
-      
+
       template <
           class Property_t, internal::TargetType Type,
           std::enable_if_t<Type == internal::TargetType::Atom, int> = 0,
@@ -464,12 +462,10 @@ namespace rascal {
       if (kernel_type_str == "Cosine") {
         this->kernel_type = KernelType::Cosine;
         this->kernel_impl = make_kernel_impl<KernelType::Cosine>(hypers);
-      }
-      else if (kernel_type_str == "Gaussian") {
+      } else if (kernel_type_str == "Gaussian") {
         this->kernel_type = KernelType::Gaussian;
         this->kernel_impl = make_kernel_impl<KernelType::Gaussian>(hypers);
-      }
-      else {
+      } else {
         throw std::logic_error("Requested Kernel \'" + kernel_type_str +
                                "\' has not been implemented.  Must be one of" +
                                ": \'Cosine\'.");

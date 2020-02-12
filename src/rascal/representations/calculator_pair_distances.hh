@@ -28,8 +28,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_REPRESENTATIONS_CALCULATOR_PAIR_DISTANCES_HH_
-#define SRC_REPRESENTATIONS_CALCULATOR_PAIR_DISTANCES_HH_
+#ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_PAIR_DISTANCES_HH_
+#define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_PAIR_DISTANCES_HH_
 
 #include "rascal/math/utils.hh"
 #include "rascal/utils.hh"
@@ -100,15 +100,15 @@ namespace rascal {
     operator=(CalculatorPairDistances && other) = default;
 
     void set_hyperparameters(const Hypers_t & hypers) {
-	  using internal::CutoffFunctionType;
+      using internal::CutoffFunctionType;
 
-	  if (hypers.find("cutoff_per_pair_type") != hypers.end()) {
-		  this->cutoff_per_pair_type = hypers.at("cutoff_per_pair_type").get<bool>();
-	  }
-	  if (this->cutoff_per_pair_type) {
-		  throw std::logic_error("Cutoff per pair type is not yet supported" );
-	  }
-	  auto fc_hypers = hypers.at("cutoff_function").get<json>();
+      if (hypers.find("cutoff_per_pair_type") != hypers.end()) {
+          this->cutoff_per_pair_type = hypers.at("cutoff_per_pair_type").get<bool>();
+      }
+      if (this->cutoff_per_pair_type) {
+          throw std::logic_error("Cutoff per pair type is not yet supported" );
+      }
+      auto fc_hypers = hypers.at("cutoff_function").get<json>();
       auto fc_type = fc_hypers.at("type").get<std::string>();
       this->interaction_cutoff = fc_hypers.at("cutoff").at("value");
       this->cutoff_smooth_width = fc_hypers.at("smooth_width").at("value");
@@ -132,10 +132,14 @@ namespace rascal {
         this->compute_gradients = false;
       }
 
-
-	  // Implement scaling function for power laws here
-
-
+      // TODO(max) rethink this in the context of more general rescaling
+      //           functions
+      // Also: Round power to int if close? Or only allow integer powers?
+      if (hypers.find("distance_powers") != hypers.end()) {
+        this->distance_powers = hypers.at("distance_powers").get<
+          std::vector<double>>();
+      }
+      this->descriptor_dimension = this->distance_powers.size();
       this->set_name(hypers);
     }
 
@@ -145,8 +149,6 @@ namespace rascal {
      * @tparam StructureManager a (single or collection)
      * of structure manager(s) (in an iterator) held in shared_ptr
      *
-     * TODO(felix) add mechanism to check if the StructureManager is
-     * compatible with the representation
      */
     template <class StructureManager>
     void compute(StructureManager & managers);
@@ -182,6 +184,8 @@ namespace rascal {
     double cutoff_smooth_width{};
     bool compute_gradients{};
     bool cutoff_per_pair_type{false};
+    std::vector<double> distance_powers{{1.0}};
+    int descriptor_dimension{1};
 
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
     internal::CutoffFunctionType cutoff_function_type{};
@@ -203,54 +207,45 @@ namespace rascal {
     auto && pair_distances{
         *manager->template get_property_ptr<Prop_t>(this->get_name())};
 
-    /*auto && pair_distance_gradients{
+    /* Gradients not yet implemented
+     * auto && pair_distance_gradients{
         manager->template get_property_ptr<PropGrad_t>(
             this->get_gradient_name())};
-	*/
+    */
+
     // if the representation has already been computed for the current
     // structure then do nothing
     if (pair_distances.is_updated()) {
       return;
     }
 
-    //Key_t pair_type{0,0};
-    // use special container to tell that there is not need to sort when
-    // using operator[] of soap_vector
-    //internal::SortedKey<Key_t> spair_type{pair_type};
-    //std::vector<internal::SortedKey<Key_t>> pair_list{spair_type};
-
-
     pair_distances.clear();
-    pair_distances.set_shape(1, 1);
-	pair_distances.resize();
+    pair_distances.set_shape(this->descriptor_dimension, 1);
+    pair_distances.resize();
 
     for (auto center : manager) {
-	  for (auto neigh : center) {
-          Key_t pair_type{0,0};
-          if (center.get_atom_type() <= neigh.get_atom_type()){
-              pair_type[0]=center.get_atom_type();
-              pair_type[1]= neigh.get_atom_type();
-          }
-          else {
-              pair_type[1]=center.get_atom_type();
-              pair_type[0]= neigh.get_atom_type();
-          }
-          internal::SortedKey<Key_t> spair_type{pair_type};
-          std::vector<internal::SortedKey<Key_t>> pair_list{spair_type};
-          pair_distances[neigh].resize(pair_list, 1, 1);
-          // std::cout << manager->get_distance(neigh);
-		  pair_distances[neigh][spair_type](0) = manager->get_distance(neigh);
-
-
-      // if (this->compute_gradients) {
-		// Compute Gradients
-      //}        // if compute gradients
+      for (auto neigh : center) {
+        Key_t pair_type{0, 0};
+        if (center.get_atom_type() <= neigh.get_atom_type()) {
+            pair_type[0] = center.get_atom_type();
+            pair_type[1] =  neigh.get_atom_type();
+        } else {
+            pair_type[1] = center.get_atom_type();
+            pair_type[0] = neigh.get_atom_type();
+        }
+        internal::SortedKey<Key_t> spair_type{pair_type};
+        std::vector<internal::SortedKey<Key_t>> pair_list{spair_type};
+        pair_distances[neigh].resize(pair_list);
+        for (int pow_idx{0}; pow_idx < this->descriptor_dimension; ++pow_idx) {
+          pair_distances[neigh][spair_type](pow_idx) = std::pow(
+              manager->get_distance(neigh),
+              this->distance_powers(pow_idx));
+        }
+        // TODO(max) need to store the cutoff function values separately
       }        // for neigh : center
     }          // for center : manager
   }            // compute_impl()
-  
-  
 
 }  // namespace rascal
 
-#endif  // SRC_REPRESENTATIONS_CALCULATOR_PAIR_DISTANCES_HH_
+#endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_PAIR_DISTANCES_HH_
