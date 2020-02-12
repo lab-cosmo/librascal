@@ -76,7 +76,7 @@ namespace rascal {
     double cutoff{3.};
     json hypers{{"max_radial", 1},
                 {"max_angular", 1},
-                {"compute_gradients", true},
+                {"compute_gradients", false},
                 {"soap_type", "PowerSpectrum"},
                 {"normalize", true},
                 {"expansion_by_species_method", "environment wise"}};

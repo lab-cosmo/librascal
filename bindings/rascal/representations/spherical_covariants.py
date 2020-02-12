@@ -161,11 +161,11 @@ class SphericalCovariants(BaseIO):
                 n_col = (np.ceil((self.hypers['max_angular'] + 1)**2 / 2.0) -
                          (1.0 + np.floor((self.hypers['lam'] - 1) / 2.0))**2
                          - np.floor((self.hypers['max_angular'] + 1
-                                   - self.hypers['lam'])**2 / 2.0)
+                                     - self.hypers['lam'])**2 / 2.0)
                          * (self.hypers['lam'] % 2)
                          - (np.ceil((self.hypers['max_angular'] + 1
-                                   - self.hypers['lam'])**2 / 2.0) -
-                          (self.hypers['max_angular'] -
+                                     - self.hypers['lam'])**2 / 2.0) -
+                            (self.hypers['max_angular'] -
                              self.hypers['lam'] + 1)) *
                          (1.0 - self.hypers['lam'] % 2))
                 if (self.hypers['lam'] % 2 == 1):
@@ -182,17 +182,17 @@ class SphericalCovariants(BaseIO):
                         self.hypers['max_radial']**2
                         * int((2 +
                                self.hypers['lam']
-                             - 3
-                             * self.hypers['lam']**2
-                             + 2
-                             * self.hypers['max_angular']
-                             + 4
-                             * self.hypers['lam']
-                             * self.hypers['max_angular']) /
+                               - 3
+                               * self.hypers['lam']**2
+                               + 2
+                               * self.hypers['max_angular']
+                               + 4
+                               * self.hypers['lam']
+                               * self.hypers['max_angular']) /
                               2)
                         * (2
-                         * self.hypers['lam']
-                         + 1))
+                           * self.hypers['lam']
+                           + 1))
         else:
             raise ValueError('Only soap_type = LambdaSpectrum '
                              'implemented for now')

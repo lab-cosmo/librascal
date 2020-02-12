@@ -2,6 +2,7 @@ from ..utils import BaseIO
 
 import numpy as np
 
+
 class KRR(BaseIO):
     """Kernel Ridge Regression model. Only compatible fully with sparse GPR
     training for the moment.
@@ -21,6 +22,7 @@ class KRR(BaseIO):
         map atomic number to the property baseline, e.g. isolated atoms
         energies when the model has been trained on total energies.
     """
+
     def __init__(self, weights, kernel, X_train, self_contributions):
         super(KRR, self).__init__()
         # Weights of the krr model
@@ -51,7 +53,7 @@ class KRR(BaseIO):
 
     def _preprocess_input(self, managers, compute_gradients=False):
         """compute prediction kernel and total baseline contributions"""
-        kernel = self.kernel(managers, self.X_train, (compute_gradients,False))
+        kernel = self.kernel(managers, self.X_train, (compute_gradients, False))
         Y0 = self._get_property_baseline(managers)
         return kernel, Y0
 
@@ -75,9 +77,9 @@ class KRR(BaseIO):
         """
         KNM, Y0 = self._preprocess_input(managers, compute_gradients)
         if compute_gradients is False:
-            return Y0+np.dot(KNM, self.weights).reshape((-1))
+            return Y0 + np.dot(KNM, self.weights).reshape((-1))
         else:
-            return np.dot(KNM, self.weights).reshape((-1,3))
+            return np.dot(KNM, self.weights).reshape((-1, 3))
 
     def get_weigths(self):
         return self.weights
@@ -87,7 +89,7 @@ class KRR(BaseIO):
 
     def get_init_params(self):
         init_params = dict(weights=self.weights, kernel=self.kernel,
-                            X_train=self.X_train, self_contributions=self.self_contributions)
+                           X_train=self.X_train, self_contributions=self.self_contributions)
         return init_params
 
     def _set_data(self, data):
@@ -95,6 +97,7 @@ class KRR(BaseIO):
 
     def _get_data(self):
         return dict()
+
 
 def train_gap_model(kernel, managers, KNMp, X_pseudo, y_train, self_contributions, f_train=None, lambdas=None, jitter=1e-8):
     """
@@ -168,7 +171,7 @@ def train_gap_model(kernel, managers, KNMp, X_pseudo, y_train, self_contribution
     .. [1] Ceriotti, M., Willatt, M. J., & Csányi, G. (2018). Machine Learning of Atomic-Scale Properties Based on Physical Principles. In Handbook of Materials Modeling (pp. 1–27). Springer, Cham. https://doi.org/10.1007/978-3-319-42913-7_68-1
     """
     KMM = kernel(X_pseudo)
-    Y = y_train.reshape((-1,1)).copy()
+    Y = y_train.reshape((-1, 1)).copy()
     KNM = KNMp.copy()
     n_centers = Y.shape[0]
     Natoms = np.zeros(n_centers)
@@ -180,12 +183,12 @@ def train_gap_model(kernel, managers, KNMp, X_pseudo, y_train, self_contribution
     Y = Y - Y0
     delta = np.std(Y)
     # lambdas[0] is provided per atom
-    KNM[:n_centers] /=  lambdas[0] / delta * np.sqrt(Natoms)[:,None]
-    Y /= lambdas[0] / delta * np.sqrt(Natoms)[:,None]
+    KNM[:n_centers] /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
+    Y /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
 
     if f_train is not None:
         KNM[n_centers:] /= lambdas[1] / delta
-        F = - f_train.reshape((-1,1)).copy()
+        F = - f_train.reshape((-1, 1)).copy()
         F /= lambdas[1] / delta
         Y = np.vstack([Y, F])
 

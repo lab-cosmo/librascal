@@ -2,19 +2,20 @@ from ..models import PseudoPoints
 from ..utils import BaseIO
 
 import numpy as np
-from scipy.sparse.linalg import  svds
+from scipy.sparse.linalg import svds
 
-def do_CUR(X, Nsel, act_on='sample', is_deterministic=False,seed=10,verbose=True):
+
+def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=True):
     """ Apply CUR selection [1] of Nsel rows or columns of the
     given feature matrix X[n_samples, n_features].
 
     .. [1] Mahoney, M. W., & Drineas, P. (2009). CUR matrix decompositions for improved data analysis. Proceedings of the National Academy of Sciences,106(3), 697–702. https://doi.org/10.1073/pnas.0803205106
     """
-    U,_,VT = svds(X, Nsel)
+    U, _, VT = svds(X, Nsel)
     if 'sample' in act_on:
-        weights = np.mean(np.square(U),axis=1)
+        weights = np.mean(np.square(U), axis=1)
     elif 'feature' in act_on:
-        weights = np.mean(np.square(VT),axis=0)
+        weights = np.mean(np.square(VT), axis=0)
     if is_deterministic is True:
         # sorting is smallest to largest hence the minus
         sel = np.argsort(-weights)[:Nsel]
@@ -25,11 +26,11 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False,seed=10,verbose=True
 
     if verbose is True:
         if 'sample' in act_on:
-            C = X[sel,:]
+            C = X[sel, :]
         elif 'feature' in act_on:
-            C = X[:,sel]
+            C = X[:, sel]
         Cp = np.linalg.pinv(C)
-        err = np.sqrt(np.sum((X - np.dot(np.dot(X,Cp),C))**2))
+        err = np.sqrt(np.sum((X - np.dot(np.dot(X, Cp), C))**2))
         print('Reconstruction RMSE={:.3e}'.format(err))
 
     return sel
@@ -60,11 +61,12 @@ class CURFilter(BaseIO):
         if is_deterministic==False, seed for the random selection
 
     """
+
     def __init__(self, representation, Nselect, act_on='sample per specie', is_deterministic=True, seed=10):
         super(CURFilter, self).__init__()
         self._representation = representation
         self.Nselect = Nselect
-        if act_on in ['sample','sample per specie','feature']:
+        if act_on in ['sample', 'sample per specie', 'feature']:
             self.act_on = act_on
         else:
             raise 'Wrong input: {}'.format(act_on)
@@ -98,7 +100,7 @@ class CURFilter(BaseIO):
             # get various info from the structures about the center atom species and indexing
             sps = list(self.Nselect.keys())
             types = []
-            strides_by_sp = {sp:[0] for sp in sps}
+            strides_by_sp = {sp: [0] for sp in sps}
             global_counter = {sp: 0 for sp in sps}
             map_by_manager = [{} for ii in range(len(managers))]
             for i_man, man in enumerate(managers):
@@ -111,18 +113,18 @@ class CURFilter(BaseIO):
                         global_counter[at.atom_type] += 1
                     else:
                         raise ValueError('Atom type {} has not been specified in fselect: {}'.format(
-                                    at.atom_type, self.Nselect))
+                            at.atom_type, self.Nselect))
                 for sp in sps:
                     strides_by_sp[sp].append(counter[sp])
 
             for sp in sps:
                 strides_by_sp[sp] = np.cumsum(strides_by_sp[sp])
-            indices_by_sp = {sp:[] for sp in sps}
-            for ii,sp in enumerate(types):
+            indices_by_sp = {sp: [] for sp in sps}
+            for ii, sp in enumerate(types):
                 indices_by_sp[sp].append(ii)
 
-            print('The number of pseudo points selected by central atom species is: {}'.format(self.Nselect))
-
+            print('The number of pseudo points selected by central atom species is: {}'.format(
+                self.Nselect))
 
             X_by_sp = {}
             for sp in sps:
@@ -132,19 +134,19 @@ class CURFilter(BaseIO):
             selected_ids_by_sp = {}
             for sp in sps:
                 print('Selecting species: {}'.format(sp))
-                selected_ids_by_sp[sp] = np.sort(do_CUR(X_by_sp[sp],self.Nselect[sp], self.act_on,
-                                               self.is_deterministic, self.seed))
-
+                selected_ids_by_sp[sp] = np.sort(do_CUR(X_by_sp[sp], self.Nselect[sp], self.act_on,
+                                                        self.is_deterministic, self.seed))
 
             # convert selected center indexing into the rascal format
             self.selected_ids = [[] for ii in range(len(managers))]
-            i_manager = {sp:0 for sp in sps}
+            i_manager = {sp: 0 for sp in sps}
             for sp in sps:
                 for idx in selected_ids_by_sp[sp]:
                     carry_on = True
                     while carry_on:
-                        if idx >= strides_by_sp[sp][i_manager[sp]] and idx < strides_by_sp[sp][i_manager[sp]+1]:
-                            self.selected_ids[i_manager[sp]].append(map_by_manager[i_manager[sp]][idx])
+                        if idx >= strides_by_sp[sp][i_manager[sp]] and idx < strides_by_sp[sp][i_manager[sp] + 1]:
+                            self.selected_ids[i_manager[sp]].append(
+                                map_by_manager[i_manager[sp]][idx])
                             carry_on = False
                         else:
                             i_manager[sp] += 1

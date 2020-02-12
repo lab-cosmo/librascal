@@ -9,7 +9,13 @@ import json
 class Kernel(BaseIO):
 
     """
-    Computes the kernel from an representation
+    Computes the kernel for a given representation. In the following
+    we refer to the training samples with 'N' and, in the case of
+    sparse kernels, we refer to the pseudo points with 'M'. So a
+    kernel between the training samples and the pseudo points is
+    'KNM'. For more information on sparse kernels see
+    :meth:`rascal.models.krr.train_gap_model`.
+
     Initialize the kernel with the given parameters
 
     Parameters
@@ -45,7 +51,9 @@ class Kernel(BaseIO):
         Y : AtomList, ManagerCollection or PseudoPoints* (C++ class).
 
         grad : tuple specifying if the kernel should be computed using gradient
-               of the representation w.r.t the atomic positions.
+               of the representation w.r.t the atomic positions, e.g. (True, False)
+               corresponds to the gradient of the 1st argument of the kernel
+               w.r.t the atomic positions.
 
         Returns
         -------
