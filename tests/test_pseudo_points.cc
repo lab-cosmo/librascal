@@ -92,7 +92,7 @@ namespace rascal {
       PseudoPointsFixture<CalculatorSphericalInvariants, ManagerCollection_t,
                           PseudoPointsBlockSparse>>;
   /**
-   * Tests if the wrong target_type is catched correctly.
+   * Tests if the wrong target_type is caught correctly.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(data_matching_test, Fix, multiple_fixtures,
                                    Fix) {
