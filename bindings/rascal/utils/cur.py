@@ -51,7 +51,7 @@ class CURFilter(BaseIO):
 
     act_on: string
         Select how to apply the selection. Can be either of 'sample',
-        'sample per specie','feature'.
+        'sample per species','feature'.
         For the moment only 'sample per specie' is implemented.
 
     is_deterministic: bool
