@@ -26,8 +26,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rascal/basic_types.hh"
-#include "rascal/json_io.hh"
 #include "rascal/representations/calculator_sorted_coulomb.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/representations/calculator_spherical_invariants.hh"
@@ -35,7 +33,9 @@
 #include "rascal/structure_managers/adaptor_strict.hh"
 #include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/structure_managers/structure_manager_centers.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/basic_types.hh"
+#include "rascal/utils/json_io.hh"
+#include "rascal/utils/utils.hh"
 
 #include <cmath>
 #include <functional>
@@ -70,8 +70,9 @@ int main() {
 
   // Read in an atomic structure from a JSON file...
   AtomicStructure<3> structure{};
-  // std::string filename{"reference_data/CaCrP2O7_mvc-11955_symmetrized.json"};
-  std::string filename{"reference_data/alanine-center-select.json"};
+  // std::string
+  // filename{"reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
+  std::string filename{"../reference_data/inputs/alanine-center-select.json"};
   structure.set_structure(filename);
 
   std::cout << "Structure arrays for " << filename << ":" << std::endl;
@@ -106,7 +107,7 @@ int main() {
                             AdaptorStrict>(manager, adaptors);
   std::cout << "manager iteration over (strict) pairs" << std::endl;
   for (auto atom : man) {
-    for (auto pair : atom) {
+    for (auto pair : atom.pairs()) {
       std::cout << "strict pair (" << atom.get_atom_tag() << ", "
                 << pair.get_atom_tag() << ") global index "
                 << pair.get_global_index() << std::endl;

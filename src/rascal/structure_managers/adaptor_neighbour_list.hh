@@ -32,12 +32,12 @@
 #ifndef SRC_RASCAL_STRUCTURE_MANAGERS_ADAPTOR_NEIGHBOUR_LIST_HH_
 #define SRC_RASCAL_STRUCTURE_MANAGERS_ADAPTOR_NEIGHBOUR_LIST_HH_
 
-#include "rascal/atomic_structure.hh"
-#include "rascal/basic_types.hh"
-#include "rascal/lattice.hh"
+#include "rascal/structure_managers/atomic_structure.hh"
+#include "rascal/structure_managers/lattice.hh"
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/structure_manager.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/basic_types.hh"
+#include "rascal/utils/utils.hh"
 
 #include <set>
 #include <vector>
@@ -67,6 +67,7 @@ namespace rascal {
     // added upon construction of the neighbour list. Therefore the layering
     // sequence is reset: here is layer 0 again.
     using LayerByOrder = std::index_sequence<0, 0>;
+    using PreviousManager_t = ManagerImplementation;
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         AdaptorTraits::NeighbourListType::full};
   };
@@ -451,7 +452,10 @@ namespace rascal {
     using Parent = StructureManager<Manager_t>;
     using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorNeighbourList>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Vector_t = typename Parent::Vector_t;
@@ -633,10 +637,7 @@ namespace rascal {
     }
 
     //! Returns atom type given an atom tag, also works for ghost atoms
-    int & get_atom_type(int atom_tag) {
-      // return this->atom_types[this->get_atom_index(atom_tag)];
-      return this->atom_types[atom_tag];
-    }
+    int get_atom_type(int atom_tag) const { return this->atom_types[atom_tag]; }
 
     /** The atom tag corresponds to an ghost atom, then it returns it cluster
      * index of the atom in the original cell.
@@ -645,22 +646,24 @@ namespace rascal {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
 
-    //! Returns the type of a given atom, given an AtomRef
-    int get_atom_type(int atom_tag) const { return this->atom_types[atom_tag]; }
-
-    //! Returns the number of neighbors of a given cluster
-    template <size_t Order, size_t Layer>
-    size_t
+    //! Returns the number of neighbours of a given atom at a given TargetOrder
+    //! Returns the number of pairs of a given center
+    template <size_t TargetOrder, size_t Order, size_t Layer>
+    typename std::enable_if_t<TargetOrder == 2, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation handles only the respective MaxOrder");
-
-      auto && access_index = cluster.get_cluster_index(Layer);
+      constexpr auto nb_neigh_layer{
+          get_layer<TargetOrder>(typename traits::LayerByOrder{})};
+      auto && access_index = cluster.get_cluster_index(nb_neigh_layer);
       return nb_neigh[access_index];
     }
 
     //! Get the manager used to build the instance
-    ImplementationPtr_t get_previous_manager() {
+    ImplementationPtr_t get_previous_manager_impl() {
+      return this->manager->get_shared_ptr();
+    }
+
+    //! Get the manager used to build the instance
+    ConstImplementationPtr_t get_previous_manager_impl() const {
       return this->manager->get_shared_ptr();
     }
 
@@ -1005,10 +1008,10 @@ namespace rascal {
     // beginning of the list.
     for (size_t atom_tag{0}; atom_tag < this->manager->get_size(); ++atom_tag) {
       auto atom_type = this->manager->get_atom_type(atom_tag);
-      auto cluster_index = this->manager->get_atom_index(atom_tag);
+      auto atom_index = this->manager->get_atom_index(atom_tag);
       this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);
-      this->atom_index_from_atom_tag_list.push_back(cluster_index);
+      this->atom_index_from_atom_tag_list.push_back(atom_index);
     }
 
     // And before generating periodic replicas (termed ghost atoms), previous
@@ -1020,8 +1023,8 @@ namespace rascal {
       auto atom_type = this->manager->get_atom_type(atom_tag);
       auto new_atom_tag{this->n_centers + this->n_ghosts};
       this->add_ghost_atom(new_atom_tag, pos, atom_type);
-      size_t cluster_index = this->manager->get_atom_index(atom_tag);
-      this->atom_index_from_atom_tag_list.push_back(cluster_index);
+      size_t atom_index = this->manager->get_atom_index(atom_tag);
+      this->atom_index_from_atom_tag_list.push_back(atom_index);
     }
 
     // generate ghost atom tags and positions
@@ -1045,8 +1048,8 @@ namespace rascal {
             this->add_ghost_atom(new_atom_tag, pos_ghost, atom_type);
             // adds origin atom cluster_index if true
             // adds ghost atom cluster index if false
-            size_t cluster_index = this->manager->get_atom_index(atom_tag);
-            this->atom_index_from_atom_tag_list.push_back(cluster_index);
+            size_t atom_index = this->manager->get_atom_index(atom_tag);
+            this->atom_index_from_atom_tag_list.push_back(atom_index);
           }
         }
       }

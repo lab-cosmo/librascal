@@ -35,7 +35,7 @@
 #include "rascal/math/utils.hh"
 #include "rascal/structure_managers/cluster_ref_key.hh"
 #include "rascal/structure_managers/property_base.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 namespace rascal {
 
@@ -153,13 +153,13 @@ namespace rascal {
    * `cluster_indices` the size needs to include space for the number of atoms
    * plus ghosts.
    */
-  template <typename T, size_t Order_, size_t PropertyLayer, class Manager>
+  template <typename T, size_t Order_, class Manager>
   class TypedProperty : public PropertyBase {
    public:
     using Parent = PropertyBase;
     using Value_t = internal::Value<T, Eigen::Dynamic, Eigen::Dynamic>;
     using Manager_t = Manager;
-    using Self_t = TypedProperty<T, Order_, PropertyLayer, Manager>;
+    using Self_t = TypedProperty<T, Order_, Manager>;
     using traits = typename Manager::traits;
     using Matrix_t = math::Matrix_t;
 
@@ -177,7 +177,7 @@ namespace rascal {
                  nb_row,
                  nb_col,
                  Order,
-                 PropertyLayer,
+                 manager.template cluster_layer_from_order<Order>(),
                  metadata},
           type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
 
@@ -247,8 +247,11 @@ namespace rascal {
     /**
      * Fill sequence, used for *_cluster_indices initialization
      * if consdier_ghost_atoms is true, ghost atoms also can have
-     * their own propery value independent from its correpsonding central
-     * atom. This function is used for all Order 1 ManagerImplementations
+     * their own propery value independent from its correpsonding central atom.
+     * This function is used for all Order 1 ManagerImplementations
+     *
+     * when filling an element of cluster_indices_container this function
+     * should only be used when Layer == 0 at a particular Order.
      */
     void fill_sequence() {
       // adjust size of values (only increases, never frees)
@@ -275,10 +278,10 @@ namespace rascal {
     //! Property accessor by cluster ref
     template <size_t CallerLayer>
     reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
-      static_assert(CallerLayer >= PropertyLayer,
-                    "You are trying to access a property that does not exist at"
-                    "this depth in the adaptor stack.");
-      return this->operator[](id.get_cluster_index(CallerLayer));
+      // You are trying to access a property that does not exist at this depth
+      // in the adaptor stack.
+      assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
+      return this->operator[](id.get_cluster_index(this->get_property_layer()));
     }
 
     template <size_t CallerOrder, size_t CallerLayer, size_t Order__ = Order>
@@ -316,7 +319,11 @@ namespace rascal {
      * Accessor for last pushed entry for dynamically sized properties
      */
     reference back() {
-      auto && index{this->values.size() - this->get_nb_comp()};
+      if (this->values.size() == 0) {
+        throw std::runtime_error("Property is empty, .back() is undefined.");
+      }
+      // -1 is correction for 0-start indexing
+      auto && index{this->values.size() / this->get_nb_comp() - 1};
       return Value_t::get_ref(this->values[index * this->get_nb_comp()],
                               this->get_nb_row(), this->get_nb_col());
     }

@@ -38,7 +38,7 @@
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/property_block_sparse.hh"
 #include "rascal/structure_managers/structure_manager.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
@@ -127,9 +127,8 @@ namespace rascal {
                 } else if (m3s == 0) {
                   wigner_3js(n_elements) = w3j1;
                 }
-                //*/
                 // change to the following for agreement with SOAPFAST
-                //(different definition of the real spherical harmonics)
+                // (different definition of the real spherical harmonics)
                 /*
                 if (m3s > 0) { wigner_3js.push_back((w3j1 + pow(-1,
                 m3s)*w3j2)/sqrt(2.0)); } else if (m3s == 0) {
@@ -158,11 +157,10 @@ namespace rascal {
     using Key_t = typename CalculatorBase::Key_t;
 
     template <class StructureManager>
-    using Property_t =
-        BlockSparseProperty<double, 1, 0, StructureManager, Key_t>;
+    using Property_t = BlockSparseProperty<double, 1, StructureManager, Key_t>;
     template <class StructureManager>
     using PropertyGradient_t =
-        BlockSparseProperty<double, 2, 0, StructureManager, Key_t>;
+        BlockSparseProperty<double, 2, StructureManager, Key_t>;
 
     template <class StructureManager>
     using Dense_t = typename Property_t<StructureManager>::Dense_t;
@@ -337,30 +335,33 @@ namespace rascal {
     // clear the data container and resize it
     soap_vectors.clear();
     soap_vectors.set_shape(n_row, n_col);
-    soap_vectors.resize();
 
+    std::vector<
+        std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>>
+        keys_list{};
     // identify the species in each environment and initialize soap_vectors
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
-      auto & soap_vector{soap_vectors[center]};
       internal::Sorted<false> is_not_sorted{};
 
-      std::vector<internal::SortedKey<Key_t>> pair_list{};
+      std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
+          pair_list{};
       auto center_type{center.get_atom_type()};
       Key_t pair_type{center_type, center_type};
-      // TODO(felix) optimize this loop
+
       // the species are not sorted by construction so there are sorted
       // explicitly and many redundant combinations are present in pair_list
       for (const auto & el1 : coefficients) {
         pair_type[0] = el1.first[0];
         for (const auto & el2 : coefficients) {
           pair_type[1] = el2.first[0];
-          pair_list.emplace_back(is_not_sorted, pair_type);
+          pair_list.insert({is_not_sorted, pair_type});
         }
       }
-      // initialize the power spectrum with the proper dimension
-      soap_vector.resize(pair_list, n_row, n_col, 0);
+      keys_list.emplace_back(pair_list);
     }
+    soap_vectors.resize(keys_list);
+    soap_vectors.setZero();
   }
 
   template <internal::SphericalCovariantsType Type,
@@ -379,12 +380,11 @@ namespace rascal {
     // Compute the spherical expansions of the current structure
     rep_expansion.compute(manager);
     constexpr bool ExcludeGhosts{true};
-    auto && expansions_coefficients{
-        *manager->template get_property_ptr<PropExp_t>(rep_expansion.get_name(),
-                                                       ExcludeGhosts)};
+    auto && expansions_coefficients{*manager->template get_property<PropExp_t>(
+        rep_expansion.get_name(), true, true, ExcludeGhosts)};
 
-    auto && soap_vectors{*manager->template get_property_ptr<Prop_t>(
-        this->get_name(), ExcludeGhosts)};
+    auto && soap_vectors{*manager->template get_property<Prop_t>(
+        this->get_name(), true, true, ExcludeGhosts)};
 
     // if the representation has already been computed for the current
     // structure then do nothing
@@ -512,7 +512,7 @@ namespace rascal {
 
       // normalize the soap vector
       if (this->normalize) {
-        soap_vector.normalize();
+        soap_vector.normalize_and_get_norm();
       }
     }  // center
   }    // compute_lambdaspectrum

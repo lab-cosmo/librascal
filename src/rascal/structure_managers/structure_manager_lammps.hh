@@ -53,6 +53,9 @@ namespace rascal {
     constexpr static bool HasCenterPair{false};
     constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0, 0>;
+    constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
+        AdaptorTraits::NeighbourListType::half};
+    using PreviousManager_t = StructureManagerLammps;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -62,11 +65,14 @@ namespace rascal {
         public std::enable_shared_from_this<StructureManagerLammps> {
    public:
     using traits = StructureManager_traits<StructureManagerLammps>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
     using ManagerImplementation_t = StructureManagerLammps;
     using ImplementationPtr_t = std::shared_ptr<StructureManagerLammps>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const StructureManagerLammps>;
 
     //! Default constructor
     StructureManagerLammps() = default;
@@ -125,12 +131,11 @@ namespace rascal {
     //! return number of center and ghost atoms
     size_t get_size_with_ghosts() const { return this->tot_num; }
 
-    //! return the number of neighbours of a given atom
-    template <size_t Order, size_t Layer>
-    size_t
+    //! Returns the number of neighbours of a given atom at a given TargetOrder
+    //! Returns the number of pairs of a given center
+    template <size_t TargetOrder, size_t Order, size_t Layer>
+    typename std::enable_if_t<TargetOrder == 2, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation only handles atoms and pairs");
       return this->numneigh[this->get_atom_index(cluster.get_atom_tag())];
     }
 
@@ -177,7 +182,9 @@ namespace rascal {
      */
     size_t get_nb_clusters(int order) const;
 
-    //! //! overload of update that does not change the underlying structure
+    bool is_not_masked() const { return false; }
+
+    //! overload of update that does not change the underlying structure
     void update_self() {}
     /**
      * resetting is required every time the list changes. Here, this
@@ -213,6 +220,20 @@ namespace rascal {
                      double * eatom, double ** vatom);
 
    protected:
+    /**
+     * Get a ptr of the previous manager, required for forwarding requests
+     * downwards a stack. Since there is no last manager, the manager returns
+     * itself.
+     */
+    ImplementationPtr_t get_previous_manager_impl() {
+      return shared_from_this();
+    }
+
+    //! Get the manager used to build the instance
+    ConstImplementationPtr_t get_previous_manager_impl() const {
+      return shared_from_this();
+    }
+
     int inum{};           //!< total numer of atoms
     int tot_num{};        //!< total number, includes ghosts
     int * ilist{};        //!< atomic indices

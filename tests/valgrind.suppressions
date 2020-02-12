@@ -1,0 +1,51 @@
+{
+   boost unit test logger
+   Memcheck:Leak
+   ...
+   fun:fwrite
+   ...
+   fun:_ZN5boost9unit_test15unit_test_log_t10test_startEm
+   ...
+}
+
+{
+   json lexer allocate through strtod_l
+   Memcheck:Leak
+   ...
+   fun:strtod_l
+   fun:_ZN8nlohmann6detail5lexerINS_10basic_jsonINSt3__13mapENS3_6vectorENS3_12basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEbxydS9_NS_14adl_serializerEEEE11scan_numberEv
+   ...
+}
+
+{
+   Objc runtime
+   Memcheck:Leak
+   ...
+   fun:_objc_flush_caches
+   ...
+}
+
+{
+   Objc runtime
+   Memcheck:Leak
+   ...
+   fun:__objc_personality_v0
+   ...
+}
+
+{
+   macOS stuff
+   Memcheck:Leak
+   ...
+   fun:libSystem_initializer
+   ...
+}
+
+{
+   macOS stuff
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN11ImageLoader19processInitializersERKNS_11LinkContextEjRNS_21InitializerTimingListERNS_15UninitedUpwardsE
+   ...
+}

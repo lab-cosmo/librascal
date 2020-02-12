@@ -33,7 +33,7 @@
 #include "rascal/structure_managers/cluster_ref_key.hh"
 #include "rascal/structure_managers/filter_base.hh"
 #include "rascal/structure_managers/structure_manager.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <type_traits>
 
@@ -62,10 +62,9 @@ namespace rascal {
     //! New MaxOrder upon construction!
     constexpr static size_t MaxOrder{MaxOrder_};
     //! New Layer
-    //! TODO: Is this the correct way to initialize the increased order?
     using LayerByOrder =
-        typename LayerIncreaser<MaxOrder_,
-                                typename parent_traits::LayerByOrder>::type;
+        typename LayerIncreaser<typename parent_traits::LayerByOrder>::type;
+    using PreviousManager_t = ManagerImplementation;
   };
 
   namespace internal {
@@ -127,7 +126,10 @@ namespace rascal {
     using ParentBase = FilterBase;
     using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorFilter>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     template <size_t Order>
@@ -211,28 +213,6 @@ namespace rascal {
       return this->manager->get_size_with_ghosts();
     }
 
-    //! returns the distance between atoms in a given pair
-    template <size_t Order, size_t Layer,
-              bool HasDistances = traits::HasDistances>
-    std::enable_if_t<HasDistances, double &>
-    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
-      static_assert(HasDistances == traits::HasDistances,
-                    "HasDistances is used for SFINAE, please don't specify it");
-      return this->manager->get_distance(pair);
-    }
-
-    /**
-     * return direction vector
-     */
-    template <size_t Order, size_t Layer,
-              bool HasDistances = traits::HasDistances>
-    std::enable_if_t<HasDistances, Vector_ref>
-    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
-      static_assert(HasDistances == traits::HasDistances,
-                    "HasDistances is used for SFINAE, please don't specify it");
-      return this->manager->get_direction_vector(pair);
-    }
-
     //! get atom_tag of index-th neighbour of this cluster
     template <size_t Order, size_t Layer>
     int get_neighbour_atom_tag(const ClusterRefKey<Order, Layer> & cluster,
@@ -287,15 +267,16 @@ namespace rascal {
       return this->offsets[Order][counters.back()];
     }
 
-    //! return the number of neighbours of a given atom
-    template <size_t Order, size_t Layer>
+    //! return the number of neighbours of a given atom at a given TargetOrder
+    template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
       static_assert(Order <= traits::MaxOrder - 1,
                     "Order exceeds maxorder for this filter.");
       constexpr auto nb_neigh_layer{
-          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
-      return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
+          get_layer<TargetOrder>(typename traits::LayerByOrder{})};
+      return this->nb_neigh[TargetOrder - 1]
+                           [cluster.get_cluster_index(nb_neigh_layer)];
     }
 
     /**
@@ -306,6 +287,16 @@ namespace rascal {
      */
     template <size_t Order>
     void add_cluster(const InputClusterRef_t<Order> & cluster);
+
+    //! Get the manager used to build the instance
+    ImplementationPtr_t get_previous_manager_impl() {
+      return this->manager->get_shared_ptr();
+    }
+
+    //! Get the manager used to build the instance
+    ConstImplementationPtr_t get_previous_manager_impl() const {
+      return this->manager->get_shared_ptr();
+    }
 
    protected:
     /**
@@ -319,8 +310,8 @@ namespace rascal {
     /**
      * main function during construction of the filtered view
      * @param cluster last atom of cluster is added to the filter
-     * @param Order select whether it is an i-atom (order=1), j-atom
-     * (order=2), or ...
+     * @tparam Order select whether it is an i-atom (order=1), j-atom
+     *               (order=2), or ...
      */
     template <size_t Order>
     void add_atom(const InputClusterRef_t<Order> & cluster) {
@@ -384,7 +375,7 @@ namespace rascal {
      * Add new Layer for clusters of size Order
      */
     constexpr auto ClusterLayer{
-        compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
+        get_layer<Order>(typename traits::LayerByOrder{})};
 
     Eigen::Matrix<size_t, ClusterLayer + 1, 1> indices{};
     indices.template head<ClusterLayer>() = cluster.get_cluster_indices();
@@ -406,6 +397,7 @@ namespace rascal {
     if (indices_container.size() == 0) {
       return false;
     }
+
     auto && last_cluster_index{indices_container.back()(Layer)};
 
     return last_cluster_index == cluster.get_cluster_index(Layer);

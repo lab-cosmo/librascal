@@ -35,7 +35,7 @@ constexpr double TOLERANCE = 1e-10;
 
 namespace rascal {
   // TODO(felix) TODO(alex) test dynamic sized Property completely
-  BOOST_AUTO_TEST_SUITE(Property_tests);
+  BOOST_AUTO_TEST_SUITE(property_tests);
 
   using atom_vector_property_fixtures = OrderOnePropertyBoostList::type;
   using pair_property_fixtures = OrderTwoPropertyBoostList::type;
@@ -55,6 +55,7 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(atom_constructor_tests, Fix,
                                    atom_vector_property_fixtures, Fix) {
     bool verbose{false};
@@ -88,6 +89,18 @@ namespace rascal {
     }
   }
 
+  /* ---------------------------------------------------------------------- */
+  /**
+   * Checks for the throw of the runtime error in member .back() of
+   * `PropertyTyped`.
+   */
+  BOOST_FIXTURE_TEST_CASE(
+      property_typed_runtime_error,
+      AtomPropertyFixture<StructureManagerCentersStackFixture>) {
+    BOOST_CHECK_THROW(atom_dynamic_vector_property.back(), std::runtime_error);
+  }
+
+  /* ---------------------------------------------------------------------- */
   BOOST_FIXTURE_TEST_CASE(
       fill_atom_vector_property_order_one_test,
       AtomPropertyFixture<StructureManagerCentersStackFixture>) {
@@ -103,6 +116,7 @@ namespace rascal {
 
     atom_vector_property.resize();
     atom_dynamic_vector_property.resize();
+
     if (verbose) {
       std::cout << ">> atom_vector_property size ";
       std::cout << atom_vector_property.size();
@@ -229,7 +243,7 @@ namespace rascal {
     int pair_property_counter{};
     for (auto atom : Fix::manager) {
       Fix::atom_vector_property[atom] = atom.get_position();
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         Fix::pair_property[pair] = ++pair_property_counter;
       }
     }
@@ -239,7 +253,7 @@ namespace rascal {
       auto error =
           (Fix::atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, TOLERANCE);
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
       }
     }
@@ -276,29 +290,36 @@ namespace rascal {
       std::cout << std::endl;
     }
     int pair_property_counter{};
-    int triple_property_counter{};
     for (auto atom : Fix::manager) {
       Fix::atom_vector_property[atom] = atom.get_position();
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         Fix::pair_property[pair] = ++pair_property_counter;
-        for (auto triple : pair) {
-          Fix::triple_property[triple] = ++triple_property_counter;
-        }
       }
     }
 
     pair_property_counter = 0;
-    triple_property_counter = 0;
     for (auto atom : Fix::manager) {
       auto error =
           (Fix::atom_vector_property[atom] - atom.get_position()).norm();
       BOOST_CHECK_LE(error, TOLERANCE);
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
-        for (auto triple : pair) {
-          BOOST_CHECK_EQUAL(Fix::triple_property[triple],
-                            ++triple_property_counter);
-        }
+      }
+    }
+
+    int triple_property_counter{};
+    for (auto atom : Fix::manager) {
+      Fix::atom_vector_property[atom] = atom.get_position();
+      for (auto triple : atom.triplets()) {
+        Fix::triple_property[triple] = ++triple_property_counter;
+      }
+    }
+
+    triple_property_counter = 0;
+    for (auto atom : Fix::manager) {
+      for (auto triple : atom.triplets()) {
+        BOOST_CHECK_EQUAL(Fix::triple_property[triple],
+                          ++triple_property_counter);
       }
     }
 
@@ -390,7 +411,7 @@ namespace rascal {
     }
     // add the position to the atom and count how often this happens
     for (auto atom : Fix::manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         if (verbose) {
           std::cout << ">> Atom with tag ";
           std::cout << pair.get_internal_neighbour_atom_tag();
@@ -471,20 +492,18 @@ namespace rascal {
 
     // add the position to the atom and count how often this happens
     for (auto atom : Fix::manager) {
-      for (auto pair : atom) {
-        for (auto triple : pair) {
-          if (verbose) {
-            std::cout << ">> Atom with tag "
-                      << triple.get_internal_neighbour_atom_tag();
-            std::cout << " and cluster index "
-                      << Fix::manager->get_atom_index(
-                             triple.get_internal_neighbour_atom_tag());
-            std::cout << std::endl;
-          }
-          Fix::atom_scalar_property[triple]++;
-          counters.at(Fix::manager->get_atom_index(
-              triple.get_internal_neighbour_atom_tag()))++;
+      for (auto triplet : atom.triplets()) {
+        if (verbose) {
+          std::cout << ">> Atom with tag "
+                    << triplet.get_internal_neighbour_atom_tag();
+          std::cout << " and cluster index "
+                    << Fix::manager->get_atom_index(
+                           triplet.get_internal_neighbour_atom_tag());
+          std::cout << std::endl;
         }
+        Fix::atom_scalar_property[triplet]++;
+        counters.at(Fix::manager->get_atom_index(
+            triplet.get_internal_neighbour_atom_tag()))++;
       }
     }
     for (auto atom : Fix::manager) {
@@ -532,7 +551,7 @@ namespace rascal {
     }
 
     for (auto atom : Fix::manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         if (atom.back() == pair.back()) {
           auto error = (Fix::atom_vector_property[atom] -
                         Fix::atom_vector_property[pair])
@@ -611,7 +630,7 @@ namespace rascal {
 
       Fix::atom_dynamic_vector_unit_property[atom] << counter++, counter,
           counter;
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         Fix::pair_property[pair] = ++pair_property_counter;
       }
     }
@@ -640,7 +659,7 @@ namespace rascal {
       error =
           (Fix::atom_vector_property[atom] - FakeSizedProperty[atom]).norm();
       BOOST_CHECK_LE(error, TOLERANCE);
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         BOOST_CHECK_EQUAL(Fix::pair_property[pair], ++pair_property_counter);
       }
     }
@@ -667,14 +686,14 @@ namespace rascal {
     Fix::pair_property.resize();
 
     for (auto atom : Fix::manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         Fix::pair_property[pair] =
             (atom.get_position() - pair.get_position()).norm();
       }
     }
 
     for (auto atom : Fix::manager) {
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         auto dist{(atom.get_position() - pair.get_position()).norm()};
         auto error{Fix::pair_property[pair] - dist};
         BOOST_CHECK_LE(error, TOLERANCE);
@@ -685,6 +704,61 @@ namespace rascal {
       std::cout << Fix::manager->get_name();
       std::cout << " finished." << std::endl;
     }
+  }
+
+  BOOST_AUTO_TEST_SUITE_END();
+
+  /* ---------------------------------------------------------------------- */
+  /** Tests the utility functions in structure manager file including
+   * get_property and create property.
+   */
+  BOOST_AUTO_TEST_SUITE(property_structure_manager_property_tests);
+
+  BOOST_FIXTURE_TEST_CASE(create_property,
+                          StructureManagerCentersStackFixture) {
+    BOOST_CHECK_NO_THROW(
+        this->manager->template create_property<Property_t>("prop"));
+    BOOST_CHECK_THROW(
+        this->manager->template create_property<Property_t>("prop"),
+        std::runtime_error);
+  }
+
+  /**
+   * Tests if property forwarding works for a stack with two layers
+   *
+   * ANL -> has not "prop"
+   *  | forwards request to lower stack
+   *  v
+   * SMC has "prop"
+   */
+  BOOST_FIXTURE_TEST_CASE(property_forwarding_two_layers,
+                          ANLWithGhosts_SMC_StackFixture) {
+    using Parent_Property_t = Parent::Property_t;
+    this->manager->get_previous_manager()
+        ->template create_property<Parent_Property_t>("prop");
+    BOOST_CHECK_NO_THROW(
+        this->manager->template get_property<Property_t>("prop", false););
+  }
+  /**
+   * Tests if property forwarding works for a stack with three layers
+   *
+   * AS -> has not "prop"
+   *  | forwards request to lower stack
+   * ANL -> has not "prop"
+   *  | forwards request to lower stack
+   *  v
+   * SMC has "prop"
+   */
+  BOOST_FIXTURE_TEST_CASE(
+      property_forwarding_three_layers,
+      AdaptorStrictStackFixture<ANLWithGhosts_SMC_StackFixture>) {
+    using Parent_Parent_Property_t = Parent::Parent::Property_t;
+    // using Parent_Parent_Property_t = Parent_Parent_t::Property_t;
+    this->manager->get_previous_manager()
+        ->get_previous_manager()
+        ->template create_property<Parent_Parent_Property_t>("prop");
+    BOOST_CHECK_NO_THROW(
+        this->manager->template get_property<Property_t>("prop", false););
   }
 
   BOOST_AUTO_TEST_SUITE_END();
@@ -703,10 +777,10 @@ namespace rascal {
     using Manager_t = typename Parent::ManagerTypeHolder_t::type;
     using Key_t = std::vector<int>;
     using BlockSparseProperty_t =
-        BlockSparseProperty<double, Order, 0, Manager_t, Key_t>;
+        BlockSparseProperty<double, Order, Manager_t, Key_t>;
     using Matrix_t = typename BlockSparseProperty_t::Matrix_t;
-    using InputData_t = typename BlockSparseProperty_t::InputData_t;
-    using TestData_t = std::vector<InputData_t>;
+    using InputData_t = Matrix_t;
+    using TestData_t = std::vector<std::map<Key_t, InputData_t>>;
 
     constexpr static Dim_t DynSize() { return 3; }
 
@@ -719,34 +793,29 @@ namespace rascal {
       auto key_dist{std::uniform_int_distribution<int>(1, 100)};
       // size_t i_manager{0};
       for (auto & manager : managers) {
-        sparse_features.emplace_back(*manager, sparse_features_desc);
+        sparse_features.emplace_back(*manager, sparse_features_desc,
+                                     exclude_ghosts);
         this->keys_list.emplace_back();
         TestData_t test_data{};
-        for (size_t i{0}; i < manager->get_size(); ++i) {
+        for (size_t ii{0}; ii < manager->get_size(); ++ii) {
           // set up random unique keys
           auto set_max_size{size_dist(gen)};
           std::set<Key_t> keys{};
-          for (size_t ii{0}; ii < set_max_size; ii++) {
-            keys.emplace(key_dist(gen));
-          }
-
-          // set up the data to fill the property later
-          InputData_t datas{};
-          // resize and set to 0
-          datas.resize(keys, n_row, n_col, 0);
-          for (auto & key : keys) {
-            auto data = Matrix_t::Random(n_row, n_col);
-            datas[key] += data;
+          test_data.emplace_back();
+          for (size_t iii{0}; iii < set_max_size; iii++) {
+            Key_t key{key_dist(gen)};
+            keys.emplace(key);
+            test_data.back()[key] = InputData_t::Random(n_row, n_col);
           }
           this->keys_list.back().push_back(keys);
-          test_data.push_back(datas);
         }
         this->test_datas.push_back(test_data);
       }
     }
 
-    int n_row{21};
-    int n_col{8};
+    bool exclude_ghosts{true};
+    int n_row{2};
+    int n_col{3};
 
     std::vector<std::vector<std::set<Key_t>>> keys_list{};
     std::vector<TestData_t> test_datas{};
@@ -780,11 +849,11 @@ namespace rascal {
     for (auto & manager : managers) {
       auto & keys{keys_list[i_manager]};
       auto i_center{0};
-      sparse_features[i_manager].set_shape(this->n_row, this->n_col);
-      sparse_features[i_manager].resize();
+      sparse_features[i_manager].set_shape(n_row, n_col);
+      sparse_features[i_manager].resize(keys);
+      sparse_features[i_manager].setZero();
       for (auto center : manager) {
         auto && sparse_features_center{sparse_features[i_manager][center]};
-        sparse_features_center.resize(keys[i_center], n_row, n_col, 0);
         for (auto & key : keys[i_center]) {
           sparse_features_center[key] = test_datas[i_manager][i_center][key];
         }
@@ -836,6 +905,113 @@ namespace rascal {
     for (auto & sparse_feature : sparse_features) {
       auto sparse_feature_metadata = sparse_feature.get_metadata();
       BOOST_CHECK_EQUAL(sparse_feature_metadata, sparse_features_desc);
+    }
+  }
+
+  BOOST_AUTO_TEST_SUITE_END();
+
+  /* ---------------------------------------------------------------------- */
+  BOOST_AUTO_TEST_SUITE(tests_without_reference_data);
+
+  BOOST_FIXTURE_TEST_CASE(caller_layer_test,
+                          ManagerFixture<StructureManagerLammps>) {
+    bool verbose{false};
+
+    double cutoff{1.1};  // one pair dist is sqrt{2}, the others are 1
+    auto strict{make_adapted_manager<AdaptorStrict>(this->manager, cutoff)};
+    strict->update();
+
+    constexpr static int PairOrder{2};
+    using PropertyLow_t =
+        typename Manager_t::template Property_t<int, PairOrder>;
+
+    auto & low_prop{
+        this->manager->template create_property<PropertyLow_t>("low layer")};
+    low_prop.resize();
+
+    using PropertyHigh_t =
+        typename AdaptorStrict<Manager_t>::template Property_t<int, PairOrder>;
+
+    auto & high_prop{
+        strict->template create_property<PropertyHigh_t>("high layer")};
+    high_prop.resize();
+
+    int counter{0};
+    for (auto && atom : this->manager) {
+      auto x{atom.get_position().transpose()};
+      for (auto && pair : atom.pairs()) {
+        auto y{pair.get_position().transpose()};
+        auto dist = (x - y).norm();
+        low_prop[pair] = counter;
+        counter++;
+        if (verbose) {
+          std::cout << "low: " << low_prop[pair] << ", dist = " << dist
+                    << ", pos a: " << x << ", pos b: " << y << std::endl;
+        }
+      }
+    }
+
+    counter = 0;
+    for (auto && atom : *strict) {
+      for (auto && pair : atom.pairs()) {
+        high_prop[pair] = counter;
+        counter++;
+        if (verbose) {
+          std::cout << "high: " << high_prop[pair]
+                    << ", dist = " << strict->get_distance(pair)
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+        }
+      }
+    }
+
+    // strict is supposed to contain pairs 1 and 3
+    std::array<int, 2> low_pairs{{1, 3}};
+    std::array<int, 2> high_pairs{{0, 1}};
+    counter = 0;
+    for (auto && atom : *strict) {
+      for (auto && pair : atom.pairs()) {
+        BOOST_CHECK_EQUAL(low_prop[pair], low_pairs[counter]);
+        BOOST_CHECK_EQUAL(high_prop[pair], high_pairs[counter]);
+        counter++;
+        if (verbose) {
+          std::cout << "low: " << low_prop[pair]
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+          std::cout << "high: " << high_prop[pair]
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+        }
+      }
+    }
+
+    // strict is supposed to contain pairs 1 and 3
+    auto & low_prop_typed{dynamic_cast<TypedProperty<
+        int, PairOrder, StructureManager<StructureManagerLammps>> &>(low_prop)};
+    auto & high_prop_typed{dynamic_cast<TypedProperty<
+        int, PairOrder,
+        StructureManager<std::remove_reference_t<decltype(*strict)>>> &>(
+        high_prop)};
+    counter = 0;
+    for (auto && atom : *strict) {
+      for (auto && pair : atom.pairs()) {
+        BOOST_CHECK_EQUAL(low_prop_typed[pair](0), low_pairs[counter]);
+        BOOST_CHECK_EQUAL(high_prop_typed[pair](0), high_pairs[counter]);
+        counter++;
+        if (verbose) {
+          std::cout << "low: " << low_prop_typed[pair]
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+          std::cout << "high: " << high_prop_typed[pair]
+                    << ", pos a: " << atom.get_position().transpose()
+                    << ", pos b: " << pair.get_position().transpose()
+                    << std::endl;
+        }
+      }
     }
   }
 

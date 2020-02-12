@@ -27,6 +27,8 @@
 
 #include "bind_py_utils.hh"
 
+#include "rascal/utils/sparsify_fps.hh"
+
 namespace rascal {
   void utils_binding(py::module & mod) {
     py::module m_utils_sparse = mod.def_submodule("sparsification");

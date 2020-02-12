@@ -69,9 +69,10 @@ include(rascalTools)
 option(BUILD_BINDINGS "Build the python bindings" ON)
 option(BUILD_EXAMPLES "Build the examples" ON)
 option(BUILD_BENCHMARKS "Build the benchmarks" OFF)
-option(BUILD_PROFILES "Build the files for profiling" OFF)
+option(BUILD_PROFILING "Build the files for profiling" OFF)
 option(BUILD_TESTS "Build the unit tests" OFF)
 option(BUILD_DOC "Build documentation" OFF)
+option(BUILD_SANDBOX "If on, builds the sandbox" OFF)
 option(USER "Switch installation folder" OFF)
 
 set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
@@ -101,9 +102,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
 endif()
 
 ########## START CONFIGURATION ##########
-
-# Find correct python version
-find_package(PythonLibsNew 3 MODULE REQUIRED)
 
 # set the name of the c++ libraries
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
@@ -201,13 +199,17 @@ if(BUILD_BENCHMARKS)
     add_subdirectory(performance/benchmarks)
 endif()
 
-if(BUILD_PROFILES)
+if(BUILD_PROFILING)
     add_subdirectory(performance/profiles)
 endif()
 
 if(BUILD_BINDINGS)
     add_subdirectory(bindings)
 endif()
+
+if (${BUILD_SANDBOX})
+    add_subdirectory(sandbox)
+endif (${BUILD_SANDBOX})
 
 if(BUILD_DOC)
     add_subdirectory(docs)

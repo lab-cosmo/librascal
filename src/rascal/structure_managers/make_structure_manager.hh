@@ -28,11 +28,11 @@
 #ifndef SRC_RASCAL_STRUCTURE_MANAGERS_MAKE_STRUCTURE_MANAGER_HH_
 #define SRC_RASCAL_STRUCTURE_MANAGERS_MAKE_STRUCTURE_MANAGER_HH_
 
-#include "rascal/atomic_structure.hh"
-#include "rascal/json_io.hh"
+#include "rascal/structure_managers/atomic_structure.hh"
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/structure_manager.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/json_io.hh"
+#include "rascal/utils/utils.hh"
 
 #include <type_traits>
 
@@ -114,6 +114,8 @@ namespace rascal {
     struct AdaptorFactory_hypers {
       using Manager_t = AdaptorImplementation<ManagerImplementation>;
       using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+      using ConstImplementationPtr_t =
+          const std::shared_ptr<const ManagerImplementation>;
       using ManagerPtr_t = std::shared_ptr<Manager_t>;
       constexpr static size_t NextPosition{CurrentPosition + 1};
 
@@ -396,18 +398,17 @@ namespace rascal {
 
   template <int TargetLevel, typename StructureManager>
   auto extract_underlying_manager(std::shared_ptr<StructureManager> manager) {
-    static constexpr int n_step_below =
+    static constexpr int NStepBelow =
         StructureManager::traits::StackLevel - TargetLevel;
     static_assert(
-        n_step_below >= 0,
+        NStepBelow >= 0,
         "TargetLevel is larger than the number of manager in the stack");
     auto test{
-        internal::UnderlyingManagerExtractor<StructureManager, n_step_below>(
+        internal::UnderlyingManagerExtractor<StructureManager, NStepBelow>(
             manager)};
 
     return test.get_manager();
   }
-
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_STRUCTURE_MANAGERS_MAKE_STRUCTURE_MANAGER_HH_

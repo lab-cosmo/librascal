@@ -55,8 +55,7 @@ namespace rascal {
       double rel_error{std::abs((hyp1f1_ref - val) / hyp1f1_ref)};
       if (rel_error > 15 * math::DBL_FTOL and this->verbose) {
         std::cout << " a=" << a << " b=" << b << " z=" << z
-                  << " ref=" << hyp1f1_ref << " impl=" << val << " z_switch=";
-        std::cout << func.get_z_switch() << std::endl;
+                  << " ref=" << hyp1f1_ref << " impl=" << val << std::endl;
       }
       BOOST_CHECK_LE(rel_error, 15 * math::DBL_FTOL);
 
@@ -66,8 +65,7 @@ namespace rascal {
       if (rel_der_error > 15 * math::DBL_FTOL and this->verbose) {
         std::cout << "Derivative a=" << a << " b=" << b << " z=" << z
                   << " ref=" << hyp1f1_der_ref << " impl=" << der
-                  << " rel_err=" << rel_der_error << " z_switch=";
-        std::cout << func.get_z_switch() << std::endl;
+                  << " rel_err=" << rel_der_error << std::endl;
       }
       BOOST_CHECK_LE(rel_der_error, 15 * math::DBL_FTOL);
 
@@ -79,11 +77,10 @@ namespace rascal {
         std::cout << "Derivative consistency a=" << a << " b=" << b
                   << " z=" << z << " num_der=" << hyp1f1_num_der
                   << " impl=" << der
-                  << " rel_diff=" << der_consistency_rel_error << " z_switch=";
-        std::cout << func.get_z_switch() << std::endl;
+                  << " rel_diff=" << der_consistency_rel_error << std::endl;
       }
 
-      BOOST_CHECK_LE(der_consistency_rel_error, 3e5 * math::DBL_FTOL);
+      BOOST_CHECK_LE(der_consistency_rel_error, 2e6 * math::DBL_FTOL);
     }
   }
 
@@ -138,7 +135,8 @@ namespace rascal {
     const double fac_a{0.5 * std::pow(0.2, -2)};
     Hyp1f1GradientProvider hyp1f1_calculator{max_radial, max_angular, fac_a,
                                              fac_b};
-    GradientTestFixture fix{"reference_data/radial_derivative_test.json"};
+    GradientTestFixture fix{
+        "reference_data/tests_only/radial_derivative_test.json"};
     test_gradients(hyp1f1_calculator, fix);
   }
 

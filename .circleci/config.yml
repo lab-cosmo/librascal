@@ -5,7 +5,7 @@ version: 2
 # indicated by the CC/CXX environment variables.
 default_job: &default_job
   docker:
-    - image: cosmoepfl/rascal-ci:1
+    - image: cosmoepfl/rascal-ci:3
   steps:
     - checkout
     - run:
@@ -27,9 +27,13 @@ default_job: &default_job
     - run:
         name: Run tests
         command: cd build && ctest --output-on-failure
+        # valgrind tests can take more than 10min
+        no_output_timeout: 20m
     - run:
-         name: Run benchmarks
-         command: cd build && make benchmarks
+        name: Run benchmarks
+        command: cd build && make benchmarks
+
+
 jobs:
   gcc-5:
     environment:
@@ -61,13 +65,19 @@ jobs:
     environment:
       CC: clang-9
       CXX: clang++-9
-      APT_EXTRA_INSTALL: apt install -y clang-9
       CMAKE_EXTRA: -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=
     <<: *default_job
+  valgrind:
+    environment:
+      CC: gcc-9
+      CXX: g++-9
+      CMAKE_EXTRA: -DRASCAL_TESTS_USE_VALGRIND=ON -DTYPE_ARCHITECTURE=core2
+    <<: *default_job
+
   # Special job only building the documentation
   docs:
     docker:
-    - image: cosmoepfl/rascal-ci:1
+    - image: cosmoepfl/rascal-ci:3
     steps:
       - checkout
       - run:
@@ -94,7 +104,7 @@ jobs:
   # Special job only linting the code
   lint:
     docker:
-    - image: cosmoepfl/rascal-ci:1
+    - image: cosmoepfl/rascal-ci:3
     steps:
       - checkout
       - run:
@@ -110,12 +120,36 @@ jobs:
           name: Lint the code
           command: cd build && make lint
 
+  # Special job checking that make-pretty was run
+  pretty:
+    docker:
+    - image: cosmoepfl/rascal-ci:3
+    steps:
+      - checkout
+      - run:
+          name: Install Python dependencies
+          command: python3.6 -m pip install -r requirements.txt
+      - run:
+          name: Configure
+          command: |
+            ln -s $(which clang-format-9) /usr/local/bin/clang-format
+            mkdir build
+            cd build
+            cmake -DBUILD_BINDINGS=OFF ..
+      - run:
+          name: clang-format
+          command: |
+            cd build && make pretty-cpp && git diff --exit-code
+
+
 workflows:
   version: 2
   build_and_test:
     jobs:
       - lint
       - docs
+      - pretty
+      - valgrind
       - gcc-5
       - gcc-9
       - gcc-9-debug

@@ -10,7 +10,8 @@ RUN apt-get update && \
         vim \
         python3.6 python3-pip \
         libboost-test-dev \
-        doxygen pandoc
+        doxygen pandoc \
+        valgrind
 
 # - "ppa:ubuntu-toolchain-r/test" is used for gcc-9
 # - "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main" is the
@@ -25,4 +26,5 @@ RUN apt-get update && \
         gcc-5 g++-5 \
         gcc-9 g++-9 \
         clang-4.0 \
-        clang-9
+        clang-9 \
+        clang-format-9

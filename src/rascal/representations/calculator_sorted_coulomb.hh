@@ -31,7 +31,7 @@
 #include "rascal/representations/calculator_base.hh"
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/structure_manager.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 #include <math.h>
 
@@ -170,7 +170,7 @@ namespace rascal {
     // type of the data structure for the representation feaures
     template <class StructureManager>
     using Property_t =
-        Property<Precision_t, 1, 1, StructureManager, Eigen::Dynamic, 1>;
+        Property<Precision_t, 1, StructureManager, Eigen::Dynamic, 1>;
     // short hand type to help the iteration over the structure manager
     template <class StructureManager, size_t Order>
     using ClusterRef_t = typename StructureManager::template ClusterRef<Order>;
@@ -232,7 +232,7 @@ namespace rascal {
     template <class StructureManager>
     void check_size_compatibility(StructureManager & manager) {
       for (auto center : manager) {
-        auto n_neighbours{center.size()};
+        auto n_neighbours{center.pairs().size()};
         if (n_neighbours > this->size) {
           std::cout << "size is too small for this "
                        "structure and has been reset to: "
@@ -429,8 +429,8 @@ namespace rascal {
     // Get a reference to the data container where the computed representation
     // is stored in the corresponding structure manager
     constexpr bool ExcludeGhosts{true};
-    auto coulomb_matrices{manager->template get_property_ptr<Prop_t>(
-        this->get_name(), ExcludeGhosts)};
+    auto coulomb_matrices{manager->template get_property<Prop_t>(
+        this->get_name(), true, true, ExcludeGhosts)};
 
     // if the representation has already been computed for the current
     // structure then do nothing
@@ -457,7 +457,7 @@ namespace rascal {
           Eigen::MatrixXd::Zero(this->size * (this->size + 1) / 2, 1);
 
       // n_neighbour counts the central atom and the neighbours
-      size_t n_neighbour{center.size() + 1};
+      size_t n_neighbour{center.pairs().size() + 1};
 
       // the local distance matrix. Ones to avoid overflow in the div.
       Eigen::MatrixXd distance_mat =
@@ -500,7 +500,7 @@ namespace rascal {
     auto && central_cutoff{this->central_cutoff};
 
     type_factor_mat(0, 0) = 0.5 * std::pow(Zk, 2.4);
-    for (auto neigh_i : center) {
+    for (auto neigh_i : center.pairs()) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
       double dik{manager->get_distance(neigh_i)};
@@ -515,14 +515,14 @@ namespace rascal {
     }
 
     // compute the neighbour to neighbour part of the coulomb matrix
-    for (auto neigh_i : center) {
+    for (auto neigh_i : center.pairs()) {
       size_t idx_i{neigh_i.get_index() + 1};
       auto && Zi{neigh_i.get_atom_type()};
       double dik{manager->get_distance(neigh_i)};
       double fac_ik{
           get_cutoff_factor(dik, central_cutoff, this->central_decay)};
 
-      for (auto neigh_j : center) {
+      for (auto neigh_j : center.pairs()) {
         size_t idx_j{neigh_j.get_index() + 1};
         // work only on the lower diagonal
         if (idx_i >= idx_j)

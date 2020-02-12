@@ -93,8 +93,9 @@ function(autopep8_add_subdirectory DIR)
 
     # perform autopep8 check
     add_custom_target(${TARGET_NAME}
-        COMMAND ${AUTOPEP8} "--in-place"
-                           ${LIST_OF_FILES}
+        COMMAND ${AUTOPEP8} "--global-config"
+                            ${PROJECT_SOURCE_DIR}/.pycodestyle
+                            "--in-place" ${LIST_OF_FILES}
         DEPENDS ${LIST_OF_FILES}
         COMMENT "autopep8: Checking source code style"
     )

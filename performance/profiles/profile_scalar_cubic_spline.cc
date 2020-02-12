@@ -30,11 +30,12 @@
 
 #include "utils.hh"
 
-#include "rascal/json_io.hh"
 #include "rascal/math/hyp1f1.hh"
 #include "rascal/math/interpolator.hh"
+#include "rascal/utils/json_io.hh"
 
 #include <chrono>
+#include <iostream>
 
 static constexpr int N_REPETITIONS = 200;
 static unsigned int SEED = 1597463007;

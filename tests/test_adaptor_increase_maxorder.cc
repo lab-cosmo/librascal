@@ -76,7 +76,7 @@ namespace rascal {
       if (verbose) {
         std::cout << "atom " << atom.back() << std::endl;
       }
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         npairs1++;
         if (verbose) {
           std::cout << " pair " << pair.back() << " glob "
@@ -117,21 +117,21 @@ namespace rascal {
         std::cout << "position: " << atom.get_position() << std::endl;
       }
 
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         npairs++;
         if (verbose) {
           std::cout << "   complete pair " << atom.back() << " " << pair.back()
                     << " glob " << pair.get_global_index() << std::endl;
         }
-        for (auto triplet : pair) {
-          n_triplets++;
-          if (verbose) {
-            std::cout << "             triplet " << triplet.back() << " global "
-                      << triplet.get_global_index() << std::endl;
-            std::cout << "                         complete " << atom.back()
-                      << " " << pair.back() << " " << triplet.back()
-                      << std::endl;
-          }
+      }
+      for (auto triplet : atom.triplets()) {
+        n_triplets++;
+        if (verbose) {
+          auto tags = triplet.get_atom_tag_list();
+          std::cout << "             triplet " << triplet.back() << " global "
+                    << triplet.get_global_index() << std::endl;
+          std::cout << "                         complete " << tags[0] << " "
+                    << tags[1] << " " << tags[2] << std::endl;
         }
       }
     }
@@ -145,6 +145,8 @@ namespace rascal {
    * Test with 3 atoms, included stacking: full pair list -> half pair list ->
    * triplet list; SM is used as a shorthand for StructureManager. Checked
    * positions are specific to StructureManagerLammps and therefore hardcoded.
+   *
+   * Test for the lexical ordering of the half neighbor list.
    *
    * ``manager`` is a StructureManager with MaxOrder=2 and full neighbour list
    */
@@ -173,7 +175,9 @@ namespace rascal {
       BOOST_CHECK_EQUAL(atom_type, SM3->get_atom_type(atom_tag));
 
       auto atom_position = atom.get_position();
-      for (auto pair : atom) {
+      int counter{0};
+      std::array<double, 4> distances{{std::sqrt(2), 1, std::sqrt(2), 1}};
+      for (auto pair : atom.pairs()) {
         auto neighbour_atom_tag = pair.get_internal_neighbour_atom_tag();
         auto neighbour_type = pair.get_atom_type();
         BOOST_CHECK_EQUAL(neighbour_type,
@@ -181,24 +185,28 @@ namespace rascal {
 
         auto neighbour_position = pair.get_position();
         auto diff_pos_pair = (neighbour_position - atom_position).norm();
-        BOOST_CHECK_CLOSE(diff_pos_pair, 1., TOLERANCE);
+        BOOST_CHECK_CLOSE(diff_pos_pair, distances[counter], TOLERANCE);
+        counter++;
+      }
 
-        for (auto triplet : pair) {
-          if (verbose) {
-            std::cout << "triplet " << atom.back() << " " << pair.back() << " "
-                      << triplet.back() << std::endl;
-          }
-          auto neighbour_of_neighbour_atom_tag =
-              triplet.get_internal_neighbour_atom_tag();
-          auto neighbour_of_neighbour_type = triplet.get_atom_type();
-          BOOST_CHECK_EQUAL(
-              neighbour_of_neighbour_type,
-              SM3->get_atom_type(neighbour_of_neighbour_atom_tag));
-
-          auto triplet_position = triplet.get_position();
-          auto diff_pos_triplet = (triplet_position - atom_position).norm();
-          BOOST_CHECK_CLOSE(diff_pos_triplet, 1., TOLERANCE);
+      for (auto triplet : atom.triplets()) {
+        auto tags = triplet.get_atom_tag_list();
+        // test for the lexical ordering of the half neighbor list
+        BOOST_CHECK(
+            std::is_sorted(tags.begin(), tags.end(), std::less_equal<int>()));
+        if (verbose) {
+          std::cout << "triplet " << tags[0] << " " << tags[1] << " " << tags[2]
+                    << std::endl;
         }
+        auto neighbour_of_neighbour_atom_tag =
+            triplet.get_internal_neighbour_atom_tag();
+        auto neighbour_of_neighbour_type = triplet.get_atom_type();
+        BOOST_CHECK_EQUAL(neighbour_of_neighbour_type,
+                          SM3->get_atom_type(neighbour_of_neighbour_atom_tag));
+
+        auto triplet_position = triplet.get_position();
+        auto diff_pos_triplet = (triplet_position - atom_position).norm();
+        BOOST_CHECK_CLOSE(diff_pos_triplet, 1., TOLERANCE);
       }
     }
   }

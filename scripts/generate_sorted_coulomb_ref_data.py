@@ -1,11 +1,16 @@
 """Script used to generate the sorted_coulomb_reference.ubjson reference file
 """
-
 import os
+
+root = os.path.abspath('../')
+rascal_reference_path = os.path.join(root, 'reference_data/')
+inputs_path = os.path.join(rascal_reference_path, "inputs")
+dump_path = os.path.join('reference_data/', "tests_only")
+
+
 import sys
-path = os.path.abspath('../')
-sys.path.insert(0, os.path.join(path, 'build/'))
-sys.path.insert(0, os.path.join(path, 'tests/'))
+sys.path.insert(0, os.path.join(root, 'build/'))
+sys.path.insert(0, os.path.join(root, 'tests/'))
 
 from rascal.representations import SortedCoulombMatrix
 from copy import copy
@@ -18,13 +23,11 @@ cutoffs = [2, 3, 4, 5]
 sorts = ['row_norm', 'distance']
 
 fns = [
-    os.path.join(
-        path, "tests/reference_data/CaCrP2O7_mvc-11955_symmetrized.json"),
-    os.path.join(path, "tests/reference_data/small_molecule.json")]
+    os.path.join(inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+    os.path.join(inputs_path, "small_molecule.json")]
 fns_to_write = [
-    "reference_data/CaCrP2O7_mvc-11955_symmetrized.json",
-    "reference_data/small_molecule.json"
-]
+    os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+    os.path.join(dump_path, "small_molecule.json")]
 
 data = dict(filenames=fns_to_write, cutoffs=cutoffs, rep_info=[])
 hypers = dict(central_decay=-1, interaction_cutoff=-1,
@@ -46,8 +49,6 @@ for fn in fns:
             data['rep_info'][-1].append(dict(feature_matrix=test.tolist(),
                                              hypers=copy(hypers)))
 
-with open(os.path.join(path,
-                       "tests",
-                       "reference_data",
+with open(os.path.join(root, dump_path,
                        "sorted_coulomb_reference.ubjson"), 'wb') as f:
     ubjson.dump(data, f)

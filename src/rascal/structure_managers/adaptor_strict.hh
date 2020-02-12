@@ -34,7 +34,7 @@
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/structure_manager.hh"
 #include "rascal/structure_managers/updateable_base.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 namespace rascal {
   /*
@@ -57,8 +57,8 @@ namespace rascal {
     constexpr static size_t MaxOrder{parent_traits::MaxOrder};
     constexpr static int StackLevel{parent_traits::StackLevel + 1};
     using LayerByOrder =
-        typename LayerIncreaser<MaxOrder,
-                                typename parent_traits::LayerByOrder>::type;
+        typename LayerIncreaser<typename parent_traits::LayerByOrder>::type;
+    using PreviousManager_t = ManagerImplementation;
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         parent_traits::NeighbourListType};
   };
@@ -84,7 +84,10 @@ namespace rascal {
     using ManagerImplementation_t = ManagerImplementation;
     using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorStrict>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
@@ -208,28 +211,31 @@ namespace rascal {
       return this->manager->get_neighbour_atom_tag(neighbour_index);
     }
 
-    //! return the number of neighbours of a given atom
-    template <size_t Order, size_t Layer>
-    size_t
+    //! Returns the number of neighbours of a given atom at a given TargetOrder
+    //! Returns the number of pairs of a given center
+    template <size_t TargetOrder, size_t Order, size_t Layer>
+    typename std::enable_if_t<TargetOrder == 2, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation only handles atoms and pairs");
       constexpr auto nb_neigh_layer{
-          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
-      return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
+          get_layer<TargetOrder>(typename traits::LayerByOrder{})};
+      auto && access_index = cluster.get_cluster_index(nb_neigh_layer);
+      return std::get<TargetOrder - 1>(nb_neigh)[access_index];
     }
 
     //! Get the manager used to build the instance
-    ImplementationPtr_t get_previous_manager() {
+    ImplementationPtr_t get_previous_manager_impl() {
       return this->manager->get_shared_ptr();
     }
 
-    // BUG8486@(till) I deleted the non const getters, because they are not
-    // needed
-    // if this was wrong, please explain
+    //! Get the manager used to build the instance
+    ConstImplementationPtr_t get_previous_manager_impl() const {
+      return this->manager->get_shared_ptr();
+    }
+
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer>
-    double get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+    const double &
+    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       return this->distance->operator[](pair);
     }
 
@@ -381,9 +387,10 @@ namespace rascal {
     }
 
     //! initialise the distance storage
-    this->distance = this->template get_property_ptr<Distance_t>("distance");
+    this->distance =
+        this->template get_property<Distance_t>("distance", false, true);
     this->dir_vec =
-        this->template get_property_ptr<DirectionVector_t>("dir_vec");
+        this->template get_property<DirectionVector_t>("dir_vec", false, true);
 
     this->distance->clear();
     this->dir_vec->clear();
@@ -403,12 +410,10 @@ namespace rascal {
        * possible optimisation).
        */
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
-
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
-
-      for (auto pair : atom.with_self_pair()) {
+      for (auto pair : atom.pairs_with_self_pair()) {
         auto vec_ij{pair.get_position() - atom.get_position()};
         double distance2{(vec_ij).squaredNorm()};
         if (distance2 <= rc2) {

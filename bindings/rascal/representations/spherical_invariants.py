@@ -8,7 +8,7 @@ import numpy as np
 class SphericalInvariants(object):
 
     """
-    Computes a SphericalInvariants representation, i.e. the SOAP power spectrum
+    Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.
 
     Hyperparameters
     ----------
@@ -49,6 +49,37 @@ class SphericalInvariants(object):
         Whether to normalize so that the kernel between identical environments
         is 1.  Default and highly recommended: True.
 
+    expansion_by_species_method : string
+        Specifies the how the species key of the invariant are set-up.
+        Possible values: 'environment wise', 'user defined', 'structure wise'.
+        The descriptor is computed for each atomic enviroment and it is indexed
+        using tuples of atomic species that are present within the environment.
+        This index is by definition sparse since a species tuple will be non
+        zero only if the atomic species are present inside the environment.
+        'environment wise' means that each environmental representation
+        will only contain the minimal set of species tuples needed by each
+        atomic environment.
+        'structure wise' means that within a structure the species tuples
+        will be the same for each environment coefficients.
+        'user defined' uses global_species to set-up the species tuples.
+
+        These different settings correspond to different trade-off between
+        the memory efficiency of the invariants and the computational
+        efficiency of the kernel computation.
+        When computing a kernel using 'environment wise' setting does not allow
+        for efficent matrix matrix multiplications which is ensured when
+        'user defined' is used. 'structure wise' is a balance between the
+        memory footprint and the use of matrix matrix products.
+
+        Note that the sparsity of the gradient coefficients and their use to
+        build kernels does not allow for clear efficiency gains so their
+        sparsity is kept irrespective of expansion_by_species_method.
+
+    global_species : list
+        list of species to use to set-up the species key of the invariant. It
+        should contain all the species present in the structure for which
+        invariants will be computed
+
     Methods
     -------
     transform(frames)
@@ -68,6 +99,8 @@ class SphericalInvariants(object):
                  soap_type="PowerSpectrum", inversion_symmetry=True,
                  radial_basis="GTO", normalize=True,
                  optimization_args={},
+                 expansion_by_species_method="environment wise",
+                 global_species=None,
                  cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
@@ -76,18 +109,25 @@ class SphericalInvariants(object):
         """
         self.name = 'sphericalinvariants'
         self.hypers = dict()
+        if global_species is None:
+            global_species = []
+        elif not isinstance(global_species, list):
+            global_species = list(global_species)
+
         self.update_hyperparameters(
             max_radial=max_radial, max_angular=max_angular,
             n_species=n_species,
             soap_type=soap_type, normalize=normalize,
-            inversion_symmetry=inversion_symmetry)
+            inversion_symmetry=inversion_symmetry,
+            expansion_by_species_method=expansion_by_species_method,
+            global_species=global_species)
 
         cutoff_function_parameters.update(
             interaction_cutoff=interaction_cutoff,
             cutoff_smooth_width=cutoff_smooth_width
         )
-        cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
-                                                      **cutoff_function_parameters)
+        cutoff_function = cutoff_function_dict_switch(
+            cutoff_function_type, **cutoff_function_parameters)
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
@@ -111,8 +151,9 @@ class SphericalInvariants(object):
                     # RadialContribution
                     print("Warning: default parameter for spline range is used.")
                     spline_range = (0, interaction_cutoff)
-                optimization_args = {'type': 'Spline', 'accuracy': accuracy, 'range': {
-                    'begin': spline_range[0], 'end': spline_range[1]}}
+                optimization_args = {
+                    'type': 'Spline', 'accuracy': accuracy, 'range': {
+                        'begin': spline_range[0], 'end': spline_range[1]}}
             elif optimization_args['type'] == 'None':
                 optimization_args = dict({'type': 'None'})
             else:
@@ -157,7 +198,7 @@ class SphericalInvariants(object):
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
                         'inversion_symmetry', 'cutoff_function', 'normalize',
                         'gaussian_density', 'radial_contribution',
-                        'cutoff_function_parameters'}
+                        'cutoff_function_parameters', 'expansion_by_species_method', 'global_species'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)
@@ -190,23 +231,27 @@ class SphericalInvariants(object):
 
         """
         if self.hypers['soap_type'] == 'RadialSpectrum':
-            return (self.hypers['n_species']*self.hypers['max_radial'])
+            return (self.hypers['n_species'] * self.hypers['max_radial'])
         if self.hypers['soap_type'] == 'PowerSpectrum':
-            return (int((self.hypers['n_species']*(self.hypers['n_species']
-                                                   + 1))/2) * self.hypers['max_radial']**2
-                    * (self.hypers['max_angular'] + 1))
+            return (int((self.hypers['n_species'] *
+                         (self.hypers['n_species'] +
+                          1)) /
+                        2) *
+                    self.hypers['max_radial']**2 *
+                    (self.hypers['max_angular'] +
+                     1))
         if self.hypers['soap_type'] == 'BiSpectrum':
-            if self.hypers['inversion_symmetry'] == False:
+            if not self.hypers['inversion_symmetry']:
                 return (self.hypers['n_species']**3
                         * self.hypers['max_radial']**3
-                        * int(1 + 2*self.hypers['max_angular']
-                              + 3*self.hypers['max_angular']**2/2
-                              + self.hypers['max_angular']**3/2))
+                        * int(1 + 2 * self.hypers['max_angular']
+                              + 3 * self.hypers['max_angular']**2 / 2
+                            + self.hypers['max_angular']**3 / 2))
             else:
                 return (self.hypers['n_species']**3
                         * self.hypers['max_radial']**3
                         * int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)
-                                       * (2*(self.hypers['max_angular'] + 1) + 3)/8.0)))
+                                     * (2 * (self.hypers['max_angular'] + 1) + 3) / 8.0)))
         else:
             raise ValueError('Only soap_type = RadialSpectrum || '
                              'PowerSpectrum || BiSpectrum '

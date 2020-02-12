@@ -32,7 +32,7 @@
 
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/structure_manager.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 namespace rascal {
   /**
@@ -59,9 +59,9 @@ namespace rascal {
     constexpr static bool HasCenterPair{parent_traits::HasCenterPair};
     // New pairs are added at this layer, which did not exist before. Therefore
     // the layering has to be reset.
-    constexpr static size_t AtomLayer{get<0>(
-        typename LayerIncreaser<MaxOrder,
-                                typename parent_traits::LayerByOrder>::type{})};
+    using PreviousManager_t = ManagerImplementation;
+    constexpr static size_t AtomLayer{
+        get_layer<1>(typename parent_traits::LayerByOrder{}) + 1};
     using LayerByOrder = std::index_sequence<AtomLayer, 0>;
   };
 
@@ -80,9 +80,12 @@ namespace rascal {
    public:
     using Parent = StructureManager<AdaptorFullList<ManagerImplementation>>;
     using traits = StructureManager_traits<AdaptorFullList>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using Manager_t = AdaptorFullList<ManagerImplementation>;
     using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const ManagerImplementation>;
     using parent_traits = typename ManagerImplementation::traits;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
@@ -244,32 +247,24 @@ namespace rascal {
       return this->offsets[counters.front()];
     }
 
-    //! Returns the number of neighbours of a given cluster
-    template <size_t Order, size_t Layer>
-    typename std::enable_if_t<(Order < (traits::MaxOrder - 1)), size_t>
+    //! Returns the number of neighbours of a given atom at a given TargetOrder
+    //! Returns the number of pairs of a given center
+    template <size_t TargetOrder, size_t Order, size_t Layer>
+    typename std::enable_if_t<TargetOrder == 2, size_t>
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      return this->manager->get_cluster_size(cluster);
-    }
-
-    template <size_t Order, size_t Layer>
-    typename std::enable_if_t<not(Order < traits::MaxOrder - 1), size_t>
-    get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order < traits::MaxOrder,
-                    "this implementation only handles atoms and pairs");
-      /*
-       * The static assert with <= is necessary, because the template parameter
-       * ``Order`` is one Order higher than the MaxOrder at the current
-       * level. The return type of this function is used to build the next Order
-       * iteration.
-       */
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation handles only the respective MaxOrder");
-      auto access_index = cluster.get_cluster_index(Layer);
+      constexpr auto nb_neigh_layer{
+          get_layer<TargetOrder>(typename traits::LayerByOrder{})};
+      auto access_index = cluster.get_cluster_index(nb_neigh_layer);
       return nb_neigh[access_index];
     }
 
     //! Get the manager used to build the instance
-    ImplementationPtr_t get_previous_manager() {
+    ImplementationPtr_t get_previous_manager_impl() {
+      return this->manager->get_shared_ptr();
+    }
+
+    //! Get the manager used to build the instance
+    ConstImplementationPtr_t get_previous_manager_impl() const {
       return this->manager->get_shared_ptr();
     }
 
@@ -344,7 +339,7 @@ namespace rascal {
     for (auto atom : *this->manager) {
       auto atom_tag{atom.get_atom_tag()};
 
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         auto neighbour_atom_index{
             this->get_atom_index(pair.get_internal_neighbour_atom_tag())};
 
@@ -368,7 +363,7 @@ namespace rascal {
 
       // Add new depth layer for atoms
       constexpr auto AtomLayer{
-          compute_cluster_layer<atom.order()>(typename traits::LayerByOrder{})};
+          get_layer<atom.order()>(typename traits::LayerByOrder{})};
 
       Eigen::Matrix<size_t, AtomLayer + 1, 1> indices;
       indices.template head<AtomLayer>() = atom.get_cluster_indices();
@@ -376,7 +371,7 @@ namespace rascal {
       atom_cluster_indices.push_back(indices);
 
       int nneigh{0};
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         // add existing pairs
         auto neighbour_atom_tag = pair.get_internal_neighbour_atom_tag();
         this->neighbours_atom_tag.push_back(neighbour_atom_tag);
@@ -397,7 +392,7 @@ namespace rascal {
       // statically compute stacking height of pairs, which is to be increased
       // through extending the neighbour list
       constexpr static auto ActiveLayer{
-          compute_cluster_layer<PairOrder>(typename traits::LayerByOrder{})};
+          get_layer<PairOrder>(typename traits::LayerByOrder{})};
 
       for (auto neighbour_atom_tag : new_neighbours[atom_index]) {
         this->neighbours_atom_tag.push_back(neighbour_atom_tag);

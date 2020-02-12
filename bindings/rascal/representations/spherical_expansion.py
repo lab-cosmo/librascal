@@ -37,6 +37,37 @@ class SphericalExpansion(object):
         Specifies the atomic Gaussian widths, in the case where they're
         fixed.
 
+    expansion_by_species_method : string
+        Specifies the how the species key of the invariant are set-up.
+        Possible values: 'environment wise', 'user defined', 'structure wise'.
+        The descriptor is computed for each atomic enviroment and it is indexed
+        using tuples of atomic species that are present within the environment.
+        This index is by definition sparse since a species tuple will be non
+        zero only if the atomic species are present inside the environment.
+        'environment wise' means that each environmental representation
+        will only contain the minimal set of species tuples needed by each
+        atomic environment.
+        'structure wise' means that within a structure the species tuples
+        will be the same for each environment coefficients.
+        'user defined' uses global_species to set-up the species tuples.
+
+        These different settings correspond to different trade-off between
+        the memory efficiency of the invariants and the computational
+        efficiency of the kernel computation.
+        When computing a kernel using 'environment wise' setting does not allow
+        for efficent matrix matrix multiplications which is ensured when
+        'user defined' is used. 'structure wise' is a balance between the
+        memory footprint and the use of matrix matrix products.
+
+        Note that the sparsity of the gradient coefficients and their use to
+        build kernels does not allow for clear efficiency gains so their
+        sparsity is kept irrespective of expansion_by_species_method.
+
+    global_species : list
+        list of species to use to set-up the species key of the invariant. It
+        should contain all the species present in the structure for which
+        invariants will be computed
+
     Methods
     -------
     transform(frames)
@@ -56,6 +87,8 @@ class SphericalExpansion(object):
                  n_species=1, radial_basis="GTO",
                  method='thread', n_workers=1, disable_pbar=False,
                  optimization_args={},
+                 expansion_by_species_method="environment wise",
+                 global_species=None,
                  cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
@@ -65,17 +98,25 @@ class SphericalExpansion(object):
 
         self.name = 'sphericalexpansion'
         self.hypers = dict()
+
+        if global_species is None:
+            global_species = []
+        elif not isinstance(global_species, list):
+            global_species = list(global_species)
+
         self.update_hyperparameters(
             max_radial=max_radial, max_angular=max_angular,
-            n_species=n_species
+            n_species=n_species,
+            expansion_by_species_method=expansion_by_species_method,
+            global_species=global_species
         )
 
         cutoff_function_parameters.update(
             interaction_cutoff=interaction_cutoff,
             cutoff_smooth_width=cutoff_smooth_width
         )
-        cutoff_function = cutoff_function_dict_switch(cutoff_function_type,
-                                                      **cutoff_function_parameters)
+        cutoff_function = cutoff_function_dict_switch(
+            cutoff_function_type, **cutoff_function_parameters)
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
@@ -99,8 +140,9 @@ class SphericalExpansion(object):
                     # RadialContribution
                     print("Warning: default parameter for spline range is used.")
                     spline_range = (0, interaction_cutoff)
-                optimization_args = {'type': 'Spline', 'accuracy': accuracy, 'range': {
-                    'begin': spline_range[0], 'end': spline_range[1]}}
+                optimization_args = {
+                    'type': 'Spline', 'accuracy': accuracy, 'range': {
+                        'begin': spline_range[0], 'end': spline_range[1]}}
             elif optimization_args['type'] == 'None':
                 optimization_args = dict({'type': 'None'})
             else:
@@ -143,10 +185,18 @@ class SphericalExpansion(object):
         Also updates the internal json-like _representation
 
         """
-        allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
-                        'max_radial', 'max_angular', 'gaussian_sigma_type',
-                        'gaussian_sigma_constant', 'n_species', 'gaussian_density', 'cutoff_function',
-                        'radial_contribution', 'cutoff_function_parameters'}
+        allowed_keys = {
+            'interaction_cutoff',
+            'cutoff_smooth_width',
+            'max_radial',
+            'max_angular',
+            'gaussian_sigma_type',
+            'gaussian_sigma_constant',
+            'n_species',
+            'gaussian_density',
+            'cutoff_function',
+            'radial_contribution',
+            'cutoff_function_parameters', 'expansion_by_species_method', 'global_species'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)

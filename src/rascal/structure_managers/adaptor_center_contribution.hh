@@ -32,7 +32,7 @@
 #include "rascal/structure_managers/property.hh"
 #include "rascal/structure_managers/structure_manager.hh"
 #include "rascal/structure_managers/updateable_base.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 
 namespace rascal {
   /*
@@ -60,6 +60,7 @@ namespace rascal {
     // increased in size so all the data belongs to the adaptor
     using LayerByOrder = std::index_sequence<
         ManagerImplementation::template cluster_layer_from_order<1>() + 1, 0>;
+    using PreviousManager_t = ManagerImplementation;
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
         parent_traits::NeighbourListType};
   };
@@ -91,7 +92,10 @@ namespace rascal {
     using Parent = StructureManager<Manager_t>;
     using ManagerImplementation_t = ManagerImplementation;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const ManagerImplementation>;
     using traits = StructureManager_traits<Manager_t>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
@@ -217,19 +221,25 @@ namespace rascal {
       return this->manager->get_neighbour_atom_tag(neighbour_index);
     }
 
-    //! return the number of neighbours of a given atom
-    template <size_t Order, size_t Layer>
+    //! return the number of neighbours of a given atom at a given TargetOrder
+    template <size_t TargetOrder, size_t Order, size_t Layer>
     size_t
     get_cluster_size_impl(const ClusterRefKey<Order, Layer> & cluster) const {
-      static_assert(Order <= traits::MaxOrder,
+      static_assert(TargetOrder <= traits::MaxOrder,
                     "this implementation only handles atoms and pairs");
       constexpr auto nb_neigh_layer{
-          compute_cluster_layer<Order>(typename traits::LayerByOrder{})};
-      return this->nb_neigh[Order][cluster.get_cluster_index(nb_neigh_layer)];
+          get_layer<TargetOrder>(typename traits::LayerByOrder{})};
+      return this->nb_neigh[TargetOrder - 1]
+                           [cluster.get_cluster_index(nb_neigh_layer)];
     }
 
     //! Get the manager used to build the instance
-    ImplementationPtr_t get_previous_manager() {
+    ImplementationPtr_t get_previous_manager_impl() {
+      return this->manager->get_shared_ptr();
+    }
+
+    //! Get the manager used to build the instance
+    ConstImplementationPtr_t get_previous_manager_impl() const {
       return this->manager->get_shared_ptr();
     }
 
@@ -370,7 +380,7 @@ namespace rascal {
       this->add_atom(self_pair);
       pair_counter++;
 
-      for (auto pair : atom) {
+      for (auto pair : atom.pairs()) {
         this->add_atom(pair);
 
         Eigen::Matrix<size_t, PairLayer + 1, 1> indices_pair;

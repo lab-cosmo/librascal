@@ -89,7 +89,7 @@ class BoxList(object):
         self.part2bin = {}
         for icenter in range(len(centers)):
             bin_index_ic = np.floor(
-                scaled_positions_ic[icenter]*self.nbins_c).astype(int)
+                scaled_positions_ic[icenter] * self.nbins_c).astype(int)
             bin_id = self.cell2lin(bin_index_ic)
             self.bin2icenters[bin_id].append(icenter)
             self.part2bin[icenter] = bin_id
@@ -127,16 +127,16 @@ class Box(object):
 
             if 0 == self.mult_pos[ii] and p is False:
                 self.search_idx.append(
-                    [self.mult_pos[ii]+jj for jj in range(
-                        self.neigh_search[ii]+1)])
-            elif self.nbins_c[ii]-1 == self.mult_pos[ii] and p is False:
+                    [self.mult_pos[ii] + jj for jj in range(
+                        self.neigh_search[ii] + 1)])
+            elif self.nbins_c[ii] - 1 == self.mult_pos[ii] and p is False:
                 self.search_idx.append(
-                    [self.mult_pos[ii]+jj for jj in range(
-                        -self.neigh_search[ii], 0+1)])
+                    [self.mult_pos[ii] + jj for jj in range(
+                        -self.neigh_search[ii], 0 + 1)])
             else:
-                self.search_idx.append([self.mult_pos[ii]+jj for jj in
+                self.search_idx.append([self.mult_pos[ii] + jj for jj in
                                         range(-self.neigh_search[ii],
-                                              self.neigh_search[ii]+1)])
+                                              self.neigh_search[ii] + 1)])
 
         self.neighbour_bin_index, self.neighbour_bin_shift = [], []
         for ii in self.search_idx[0]:
@@ -155,7 +155,7 @@ class Box(object):
         fac = 1
         cell_pos = np.array([0, 0, 0])
         for ii in range(3):
-            cell_pos[ii] = lin_ids/fac % self.nbins_c[ii]
+            cell_pos[ii] = lin_ids / fac % self.nbins_c[ii]
             fac *= self.nbins_c[ii]
         return cell_pos
 

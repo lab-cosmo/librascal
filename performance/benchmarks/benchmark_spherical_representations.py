@@ -47,21 +47,21 @@ NB_ITERATIONS_PER_REPRESENTATION = 20
 INTERACTION_CUTOFF = 4
 
 input_files = [
-    'tests/reference_data/small_molecule.json',
-    'tests/reference_data/methane.json',
+    'reference_data/inputs/small_molecule.json',
+    'reference_data/inputs/methane.json',
 ]
 
 optimizations_args = [
     {'type': 'None'},
-    {'type': 'Spline', 'accuracy': 1e-8, 'range': (0, INTERACTION_CUTOFF)},
-    {'type': 'Spline', 'accuracy': 1e-10, 'range': (0, INTERACTION_CUTOFF)},
-    {'type': 'Spline', 'accuracy': 1e-12, 'range': (0, INTERACTION_CUTOFF)},
+    {'type': 'Spline', 'accuracy': 1e-8, 'range': (0.0001, INTERACTION_CUTOFF)},
+    {'type': 'Spline', 'accuracy': 1e-10, 'range': (0.0001, INTERACTION_CUTOFF)},
+    {'type': 'Spline', 'accuracy': 1e-12, 'range': (0.0001, INTERACTION_CUTOFF)},
 ]
 
 radial_bases = ['GTO', 'DVR']
 
 
-@benchmarks.timer
+@benchmarks.bench
 def transform_representation(representation, frames, **kwargs):
     representation.transform(frames)
 

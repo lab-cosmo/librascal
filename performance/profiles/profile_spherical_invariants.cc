@@ -48,13 +48,9 @@
 // using namespace std;
 using namespace rascal;  // NOLINT
 
-const int N_ITERATIONS = 1000;
-
-using Manager_t = AdaptorStrict<AdaptorNeighbourList<StructureManagerCenters>>;
+const int N_ITERATIONS = 10;
 
 using Representation_t = CalculatorSphericalInvariants;
-
-using Property_t = typename Representation_t::template Property_t<Manager_t>;
 
 int main(int argc, char * argv[]) {
   if (argc < 2) {
@@ -133,7 +129,4 @@ int main(int argc, char * argv[]) {
   std::cout << "Compute representation with gradients"
             << " elapsed: " << elapsed_grad.count() / N_ITERATIONS << " seconds"
             << std::endl;
-  // auto property_name{representation.get_name()};
-  // auto&& property{manager->template
-  // get_validated_property_ref<Property_t>(property_name)};
 }

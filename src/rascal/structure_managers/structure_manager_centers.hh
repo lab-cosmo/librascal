@@ -34,11 +34,11 @@
 
 // inclusion of librascal data structure, each manager is based on the interface
 // given in `structure_manager.hh`
-#include "rascal/atomic_structure.hh"
-#include "rascal/basic_types.hh"
-#include "rascal/json_io.hh"
-#include "rascal/lattice.hh"
+#include "rascal/structure_managers/atomic_structure.hh"
+#include "rascal/structure_managers/lattice.hh"
 #include "rascal/structure_managers/structure_manager.hh"
+#include "rascal/utils/basic_types.hh"
+#include "rascal/utils/json_io.hh"
 
 // data types and operations are based on the Eigen library
 #include <Eigen/Dense>
@@ -75,6 +75,7 @@ namespace rascal {
     constexpr static bool HasCenterPair{false};
     constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0>;
+    typedef StructureManagerCenters PreviousManager_t;
   };
 
   /**
@@ -100,6 +101,7 @@ namespace rascal {
    public:
     // for convenience, the names are shortened
     using traits = StructureManager_traits<StructureManagerCenters>;
+    using PreviousManager_t = typename traits::PreviousManager_t;
     using Parent = StructureManager<StructureManagerCenters>;
     // here you see why -- definition of used function return types
     using Vector_ref = typename Parent::Vector_ref;
@@ -107,6 +109,8 @@ namespace rascal {
     using Children_t = typename Parent::Children_t;
     using ManagerImplementation_t = StructureManagerCenters;
     using ImplementationPtr_t = std::shared_ptr<StructureManagerCenters>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const StructureManagerCenters>;
 
     /**
      * Eigen::Map is a convenient way to access data in the 'Eigen-way', if it
@@ -131,7 +135,7 @@ namespace rascal {
     using Positions_ref = AtomicStructure<traits::Dim>::Positions_ref;
 
     using ArrayB_t = AtomicStructure<traits::Dim>::ArrayB_t;
-    using ArrayB_ref = AtomicStructure<traits::Dim>::ArrayB_ref;
+    using ConstArrayBool_ref = AtomicStructure<traits::Dim>::ConstArrayBool_ref;
 
     /**
      * Here, the types for internal data structures are defined, based on
@@ -198,6 +202,9 @@ namespace rascal {
      */
     Cell_ref get_cell() { return Cell_ref(this->atoms_object.cell); }
 
+    Eigen::Array3d get_cell_length() {
+      return this->get_cell().colwise().norm().array();
+    }
     //! Returns the type of a given atom, given an AtomRef
     int get_atom_type(int atom_tag) const {
       auto && atom_index{this->get_atom_index(atom_tag)};
@@ -215,8 +222,8 @@ namespace rascal {
       return PBC_ref(this->atoms_object.pbc);
     }
 
-    ArrayB_ref get_center_atoms_mask() {
-      return ArrayB_ref(this->atoms_object.center_atoms_mask);
+    ConstArrayBool_ref get_center_atoms_mask() const {
+      return ConstArrayBool_ref(this->atoms_object.center_atoms_mask);
     }
 
     //! Returns the position of an atom, given an AtomRef
@@ -245,15 +252,6 @@ namespace rascal {
     //! and ghost atoms are not distinguishable.
     size_t get_size_with_ghosts() const {
       return this->n_centers + this->n_ghosts;
-    }
-
-    //! returns the number of neighbours of a given i atom
-    template <size_t Order, size_t Layer>
-    size_t get_cluster_size_impl(
-        const ClusterRefKey<Order, Layer> & /*cluster*/) const {
-      static_assert(Order <= traits::MaxOrder,
-                    "this implementation only handles atoms.");
-      return 1;
     }
 
     template <size_t Order, size_t Layer>
@@ -311,9 +309,24 @@ namespace rascal {
       return this->atoms_object;
     }
 
+    bool is_not_masked() const { return (not this->are_any_centers_masked); }
+
    protected:
     //! makes atom tag lists and offsets
     void build();
+    /**
+     * Get a ptr of the previous manager, required for forwarding requests
+     * downwards a stack. Since there is no last manager, the manager returns
+     * itself.
+     */
+    ImplementationPtr_t get_previous_manager_impl() {
+      return shared_from_this();
+    }
+
+    //! Get the manager used to build the instance
+    ConstImplementationPtr_t get_previous_manager_impl() const {
+      return shared_from_this();
+    }
     /**
      * Object which can interface to the json header to read and write atom
      * related data in the ASE format: positions, cell, periodicity, atom types
@@ -356,6 +369,9 @@ namespace rascal {
 
     //! number of time the structure has been updated
     size_t n_update{0};
+
+    //! keep track of the masking of atoms
+    bool are_any_centers_masked{false};
   };
 
   /* ---------------------------------------------------------------------- */
