@@ -769,6 +769,10 @@ namespace rascal {
     get_neighbours_to_i_atoms();
 
     /**
+     * Creates or fetches a property @tillhook
+     */
+
+    /**
      * creates or fetches and possibly refreshes a property storing clusters of
      * order StoredOrder constituting the higher-order cluster. Example 1:
      * sub_clusters<AtomOrder> yields a property containing the atom clusters
