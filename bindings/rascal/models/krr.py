@@ -199,7 +199,7 @@ def train_gap_model(kernel, managers, KNMp, X_pseudo, y_train, self_contribution
     weights = np.linalg.solve(K, Y)
     model = KRR(weights, kernel, X_pseudo, self_contributions)
 
-    # avoid memory cloging
+    # avoid memory clogging
     del K, KMM
     K, KMM = [], []
 
