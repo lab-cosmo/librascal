@@ -41,7 +41,7 @@ namespace rascal {
   /**
    * Set of pseudo points associated with a representation stored in BlockSparse
    * format, e.g. SphericalInvariants. The number of pseudo points is often
-   * refered as $M$ and note that they might be the representation of actual
+   * referred as $M$ and note that they might be the representation of actual
    * atomic environments or completely artificial.
    *
    * Pseudo points are useful to build sparse kernel models such as Subset of
