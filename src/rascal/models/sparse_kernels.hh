@@ -262,8 +262,8 @@ namespace rascal {
                 representation_name, true)};
             std::map<int, int> tag2index{};
             int i_row{0};
-            // compute the gradient of the kernel w.r.t. the representation dk/dX
-            // without the pseudo point factor
+            // compute the gradient of the kernel w.r.t. the representation
+            // dk/dX without the pseudo point factor
             math::Matrix_t rep(manager->size(), n_pseudo_points);
             for (auto center : manager) {
               int sp{center.get_atom_type()};
@@ -421,8 +421,8 @@ namespace rascal {
     }
 
     /*
-     * The root compute kernel function. It computes the kernel the
-     * representation gradients of a set of structures and the set of pseudo
+     * The root compute kernel function. It computes the kernel between the
+     * representation gradients of a set of structures with the set of pseudo
      * points.
      *
      * @param calculator the calculator which has been used to calculate
@@ -441,7 +441,7 @@ namespace rascal {
       using Property_t = typename Calculator::template Property_t<Manager_t>;
       using PropertyGradient_t =
           typename Calculator::template PropertyGradient_t<Manager_t>;
-      if (not calculator.has_gradients()) {
+      if (not calculator.does_gradients()) {
         throw std::runtime_error(
             "This representation does not compute gradients.");
       }
@@ -468,7 +468,8 @@ namespace rascal {
     //! parameters of the kernel
     Hypers_t parameters{};
     /**
-     * Defines if the similarity if defined structure or atom wise
+     * Defines if the similarity is defined on the level of structures or per
+     * atom
      */
     internal::TargetType target_type{};
 

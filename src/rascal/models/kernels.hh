@@ -419,7 +419,8 @@ namespace rascal {
     //! parameters of the kernel
     Hypers_t parameters{};
     /**
-     * Defines if the similarity if defined structure or atom wise
+     * Defines if the similarity is defined on the level of structures or per
+     * atom
      */
     internal::TargetType target_type{};
 

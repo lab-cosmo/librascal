@@ -1409,7 +1409,7 @@ namespace rascal {
 
     bool operator==(const CalculatorSphericalExpansion & other) const {
       bool is_equal{
-          (this->has_gradients() == other.has_gradients()) and
+          (this->does_gradients() == other.does_gradients()) and
           (this->interaction_cutoff == other.interaction_cutoff) and
           (this->cutoff_smooth_width == other.cutoff_smooth_width) and
           (this->interpolator_accuracy == other.interpolator_accuracy) and
@@ -1423,10 +1423,10 @@ namespace rascal {
     }
 
     /**
-     * Does the calculator compute gradients of the representation w.r.t. atomic
-     * positions ?
+     * Returns if the calculator is able to compute gradients of the
+     * representation w.r.t. atomic positions ?
      */
-    bool has_gradients() const override { return this->compute_gradients; }
+    bool does_gradients() const override { return this->compute_gradients; }
 
     /**
      * Construct a new Calculator using a hyperparameters container

@@ -92,7 +92,8 @@ namespace rascal {
       PseudoPointsFixture<CalculatorSphericalInvariants, ManagerCollection_t,
                           PseudoPointsBlockSparse>>;
   /**
-   * Tests if the wrong target_type is caught correctly.
+   * Tests if the features extracted from a set of structure features actually
+   * match them after extraction.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(data_matching_test, Fix, multiple_fixtures,
                                    Fix) {
@@ -150,7 +151,8 @@ namespace rascal {
   }
 
   /**
-   * Tests the serialization works properly and that trying to get a type
+   * Tests the serialization works properly, i.e. the deserialized object is
+   * effectively the same as the original one, and that trying to get a type
    * mismatched with the serialized pseudo_points throws an error.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, Fix, multiple_fixtures,

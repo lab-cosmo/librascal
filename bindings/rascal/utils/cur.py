@@ -102,7 +102,7 @@ class CURFilter(BaseIO):
 
             # get various info from the structures about the center atom species and indexing
             strides_by_sp, global_counter, map_by_manager, indices_by_sp =
-                                        self.get_index_mappings_sample_per_species(managers)
+            self.get_index_mappings_sample_per_species(managers)
 
             print('The number of pseudo points selected by central atom species is: {}'.format(
                 self.Nselect))
@@ -120,7 +120,8 @@ class CURFilter(BaseIO):
                 selected_ids_by_sp[sp] = np.sort(do_CUR(X_by_sp[sp], self.Nselect[sp], self.act_on,
                                                         self.is_deterministic, self.seed))
 
-            self.selected_ids = self.convert_selected_global_index2rascal_sample_per_species(managers, selected_ids_by_sp, strides_by_sp, map_by_manager)
+            self.selected_ids = self.convert_selected_global_index2rascal_sample_per_species(
+                managers, selected_ids_by_sp, strides_by_sp, map_by_manager)
 
             # build the pseudo points
             pseudo_points = PseudoPoints(self._representation)

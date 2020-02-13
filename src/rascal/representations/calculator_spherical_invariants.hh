@@ -168,11 +168,11 @@ namespace rascal {
     template <class StructureManager>
     using SpectrumNorm_t = Property<double, 1, StructureManager, 1>;
 
-    explicit CalculatorSphericalInvariants(const Hypers_t & hyper)
-        : CalculatorBase{}, rep_expansion{hyper} {
+    explicit CalculatorSphericalInvariants(const Hypers_t & hypers)
+        : CalculatorBase{}, rep_expansion{hypers} {
       this->set_default_prefix("spherical_invariants_");
-      this->set_hyperparameters(hyper);
-      this->hypers = hyper;
+      this->set_hyperparameters(hypers);
+      this->hypers = hypers;
     }
 
     //! Copy constructor
@@ -240,7 +240,7 @@ namespace rascal {
     }
 
     bool operator==(const CalculatorSphericalInvariants & other) const {
-      bool grad_match{this->has_gradients() == other.has_gradients()};
+      bool grad_match{this->does_gradients() == other.does_gradients()};
       bool main_hypers_match{
           this->max_radial == other.max_radial and
           this->max_angular == other.max_angular and
@@ -254,10 +254,10 @@ namespace rascal {
     }
 
     /**
-     * Does the calculator compute gradients of the representation w.r.t. atomic
-     * positions ?
+     * Returns if the calculator is able to compute gradients of the
+     * representation w.r.t. atomic positions ?
      */
-    bool has_gradients() const override { return this->compute_gradients; }
+    bool does_gradients() const override { return this->compute_gradients; }
 
     /**
      * Compute representation for a given structure manager.
