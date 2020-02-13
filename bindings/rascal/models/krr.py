@@ -96,7 +96,7 @@ class KRR(BaseIO):
         return dict()
 
 
-def train_gap_model(kernel, managers, KNMp, X_pseudo, y_train, self_contributions, f_train=None, lambdas=None, jitter=1e-8):
+def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contributions, f_train=None, lambdas=None, jitter=1e-8):
     """
     Defines the procedure to train a GAP model [1]:
     .. math::
@@ -134,22 +134,25 @@ def train_gap_model(kernel, managers, KNMp, X_pseudo, y_train, self_contribution
     ----------
     kernel : Kernel
         SparseKernel to compute KMM and initialize the model. It was used to
-        build KNMp.
+        build KNM_.
     managers : AtomsList
         Training structures with features (and gradients)
-    KNMp : np.array
+    KNM_ : np.array
         kernel matrix to use in the training, typically computed with:
         KNM = kernel(managers, X_pseudo)
         KNM_down = kernel(managers, X_pseudo, grad=(True, False))
         KNM = np.vstack([KNM, KNM_down])
         when training with derivatives.
     X_pseudo : PseudoPoints
-        basis samples to use in the model
+        basis samples to use in the model's interpolation
     y_train : np.array
         reference property
     self_contributions : dictionary
-        map atomic number to the property baseline, e.g. isolated atoms
-        energies when the model has been trained on total energies.
+        map atomic number to the property baseline, e.g. training on
+        total energies is not very recommended so one would provide
+        the corresponding isolated atom energies so that the model
+        can be trained on the corresponding formation energies and
+        still predict total energies.
     f_train : np.array, optional
         minus derivatives of y_train w.r.t. to the atomic motion, e.g.
         interatomic forces, by default None
@@ -169,7 +172,7 @@ def train_gap_model(kernel, managers, KNMp, X_pseudo, y_train, self_contribution
     """
     KMM = kernel(X_pseudo)
     Y = y_train.reshape((-1, 1)).copy()
-    KNM = KNMp.copy()
+    KNM = KNM_.copy()
     n_centers = Y.shape[0]
     Natoms = np.zeros(n_centers)
     Y0 = np.zeros((n_centers, 1))
@@ -179,7 +182,9 @@ def train_gap_model(kernel, managers, KNMp, X_pseudo, y_train, self_contribution
             Y0[iframe] += self_contributions[center.atom_type]
     Y = Y - Y0
     delta = np.std(Y)
-    # lambdas[0] is provided per atom
+    # lambdas[0] is provided per atom hence the '* np.sqrt(Natoms)'
+    # the first n_centers rows of KNM are expected to refer to the
+    # property
     KNM[:n_centers] /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
     Y /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
 

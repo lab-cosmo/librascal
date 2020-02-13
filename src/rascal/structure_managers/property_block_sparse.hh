@@ -310,12 +310,12 @@ namespace rascal {
                                std::get<2>(pos));
       }
 
-      Eigen::Map<const math::Vector_t> flattened(const key_type & key) {
+      Eigen::Map<const math::Vector_t> flat(const key_type & key) {
         SortedKey_t skey{key};
-        return this->flattened(skey);
+        return this->flat(skey);
       }
 
-      Eigen::Map<const math::Vector_t> flattened(const SortedKey_t & skey) {
+      Eigen::Map<const math::Vector_t> flat(const SortedKey_t & skey) {
         auto & pos{this->map[skey.get_key()]};
         assert(std::get<1>(pos) * std::get<2>(pos) > 0);
         return Eigen::Map<const math::Vector_t>(

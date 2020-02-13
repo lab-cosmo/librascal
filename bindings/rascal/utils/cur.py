@@ -101,8 +101,8 @@ class CURFilter(BaseIO):
             sps = list(self.Nselect.keys())
 
             # get various info from the structures about the center atom species and indexing
-            strides_by_sp, global_counter, map_by_manager, indices_by_sp =
-            self.get_index_mappings_sample_per_species(managers)
+            (strides_by_sp, global_counter, map_by_manager,
+             indices_by_sp) = self.get_index_mappings_sample_per_species(managers)
 
             print('The number of pseudo points selected by central atom species is: {}'.format(
                 self.Nselect))

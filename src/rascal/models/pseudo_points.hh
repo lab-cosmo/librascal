@@ -190,7 +190,7 @@ namespace rascal {
 
       for (const Key_t & key : this->keys) {
         if (representation.count(key)) {
-          auto rep_flat_by_key{representation.flattened(key)};
+          auto rep_flat_by_key{representation.flat(key)};
           const auto & indices_by_sp_key = indices_by_sp.at(key);
           auto mat = Eigen::Map<const math::Matrix_t>(
               values_by_sp.at(key).data(),
@@ -237,7 +237,7 @@ namespace rascal {
         if (representation_grad.count(key)) {
           // get the representation gradient features and shape it
           // assumes the gradient directions are the outermost index
-          auto rep_grad_flat_by_key{representation_grad.flattened(key)};
+          auto rep_grad_flat_by_key{representation_grad.flat(key)};
           Eigen::Map<const Eigen::Matrix<double, ThreeD, Eigen::Dynamic,
                                          Eigen::RowMajor>>
               rep_grad_by_key(rep_grad_flat_by_key.data(), ThreeD,
@@ -315,7 +315,7 @@ namespace rascal {
       for (const auto & key : pseudo_point.get_keys()) {
         this->keys.insert(key);
         auto & values_by_sp_key = values_by_sp[key];
-        auto pseudo_point_by_key = pseudo_point.flattened(key);
+        auto pseudo_point_by_key = pseudo_point.flat(key);
         for (int ii{0}; ii < pseudo_point_by_key.size(); ++ii) {
           values_by_sp_key.push_back(pseudo_point_by_key[ii]);
         }

@@ -70,13 +70,13 @@ class Kernel(BaseIO):
         if (name == 'Cosine' and 'zeta' in kwargs):
             # should be positive integer
             zeta = kwargs['zeta']
-            if not(zeta > 0 and zeta % 1 == 0):
+            if not(zeta > 0 and isinstance(zeta, int)):
                 raise ValueError(
                     "The given zeta has to be a positive integer.")
         elif (name == 'GAP' and 'zeta' in kwargs):
             # should be positive integer
             zeta = kwargs['zeta']
-            if not(zeta > 0 and zeta % 1 == 0):
+            if not(zeta > 0 and isinstance(zeta, int)):
                 raise ValueError(
                     "The given zeta has to be a positive integer.")
         else:

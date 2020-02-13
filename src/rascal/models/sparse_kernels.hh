@@ -386,7 +386,7 @@ namespace rascal {
         return this->compute_helper<Property_t, TargetType::Atom>(
             representation_name, managers, sparse_points);
       default:
-        throw std::logic_error("The combination of parameter is not handled.");
+        throw std::logic_error("The desired combination of parameters can not be handled.");
       }
     }
 
@@ -403,7 +403,7 @@ namespace rascal {
         return kernel->template compute<Property_t, Type>(
             managers, sparse_points, representation_name);
       } else {
-        throw std::logic_error("The combination of parameter is not handled.");
+        throw std::logic_error("The desired combination of parameters can not be handled.");
       }
     }
 
@@ -416,7 +416,7 @@ namespace rascal {
             downcast_sparse_kernel_impl<SparseKernelType::GAP>(kernel_impl);
         return kernel->compute(sparse_points);
       } else {
-        throw std::logic_error("The combination of parameter is not handled.");
+        throw std::logic_error("The desired combination of parameters can not be handled.");
       }
     }
 
@@ -458,7 +458,7 @@ namespace rascal {
             managers, pseudo_points, representation_name,
             representation_grad_name);
       } else {
-        throw std::logic_error("The combination of parameter is not handled.");
+        throw std::logic_error("The desired combination of parameters can not be handled.");
       }
     }
 
