@@ -304,13 +304,11 @@ namespace rascal {
         size_t ii_A{0};
         for (auto & manager_a : managers_a) {
           size_t ii_B{0};
-          auto && propA{
-          manager_a->template get_validated_property_ref<Property_t>(
+          auto && propA{*manager_a->template get_property<Property_t>(
               representation_name)};
 
           for (auto & manager_b : managers_b) {
-            auto && propB{
-                manager_b->template get_validated_property_ref<Property_t>(
+            auto && propB{*manager_b->template get_property<Property_t>(
                     representation_name)};
             kernel(ii_A, ii_B) = this->structure_squared_exponential(manager_a,
                                                                      manager_b,
@@ -332,9 +330,9 @@ namespace rascal {
                                            const Property_t & prop_b) {
         double squared_exponential_sum {0};
         for (auto center_a : manager_a) {
-          for (auto neigh_a : center_a) {
+          for (auto neigh_a : center_a.pairs()) {
             for (auto center_b : manager_b) {
-              for (auto neigh_b : center_b) {
+              for (auto neigh_b : center_b.pairs()) {
                 const auto & pair_a{prop_a[neigh_a]};
                 const auto & pair_b{prop_b[neigh_b]};
                 for (const auto & key_val_a : pair_a) {

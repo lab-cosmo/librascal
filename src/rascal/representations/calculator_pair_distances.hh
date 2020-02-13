@@ -2,11 +2,9 @@
  * @file   calculator_pair_distances.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
- * @author Felix Musil <felix.musil@epfl.ch>
- * @author Michael Willatt <michael.willatt@epfl.ch>
- * @author Andrea Grisafi <andrea.grisafi@epfl.ch>
+ * @author Sahil Shah <sahil.shah@epfl.ch>
  *
- * @date   12 March 2019
+ * @date   13 Feb 2019
  *
  * @brief  compute pair distances
  *
@@ -32,7 +30,7 @@
 #define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_PAIR_DISTANCES_HH_
 
 #include "rascal/math/utils.hh"
-#include "rascal/utils.hh"
+#include "rascal/utils/utils.hh"
 #include "rascal/representations/calculator_base.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/representations/cutoff_functions.hh"
@@ -59,11 +57,11 @@ namespace rascal {
 
     template <class StructureManager>
     using Property_t =
-        BlockSparseProperty<double, 2, 0, StructureManager, Key_t>;
+        BlockSparseProperty<double, 2, StructureManager, Key_t>;
 
     template <class StructureManager>
     using PropertyGradient_t =
-        BlockSparseProperty<double, 2, 0, StructureManager, Key_t>;
+        BlockSparseProperty<double, 2, StructureManager, Key_t>;
 
     template <class StructureManager>
     using Dense_t = typename Property_t<StructureManager>::Dense_t;
@@ -205,7 +203,7 @@ namespace rascal {
     using math::pow;
 
     auto && pair_distances{
-        *manager->template get_property_ptr<Prop_t>(this->get_name())};
+        *manager->template get_property<Prop_t>(this->get_name())};
 
     /* Gradients not yet implemented
      * auto && pair_distance_gradients{
@@ -224,7 +222,7 @@ namespace rascal {
     pair_distances.resize();
 
     for (auto center : manager) {
-      for (auto neigh : center) {
+      for (auto neigh : center.pairs()) {
         Key_t pair_type{0, 0};
         if (center.get_atom_type() <= neigh.get_atom_type()) {
             pair_type[0] = center.get_atom_type();
@@ -235,11 +233,11 @@ namespace rascal {
         }
         internal::SortedKey<Key_t> spair_type{pair_type};
         std::vector<internal::SortedKey<Key_t>> pair_list{spair_type};
-        pair_distances[neigh].resize(pair_list);
+        // pair_distances[neigh].resize(pair_list);
         for (int pow_idx{0}; pow_idx < this->descriptor_dimension; ++pow_idx) {
           pair_distances[neigh][spair_type](pow_idx) = std::pow(
               manager->get_distance(neigh),
-              this->distance_powers(pow_idx));
+              this->distance_powers[pow_idx]);
         }
         // TODO(max) need to store the cutoff function values separately
       }        // for neigh : center

@@ -765,7 +765,7 @@ namespace rascal {
       this->maps.clear();
     }
 
-    Manager_t & get_manager() {
+    Manager_t & get_manager() const {
       return static_cast<Manager_t &>(this->base_manager);
     }
 
