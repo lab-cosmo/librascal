@@ -36,8 +36,6 @@
 
 namespace rascal {
 
-  namespace internal {}  // namespace internal
-
   /**
    * Set of pseudo points associated with a representation stored in BlockSparse
    * format, e.g. SphericalInvariants. The number of pseudo points is often
@@ -145,6 +143,7 @@ namespace rascal {
             values_by_sp.at(key).data(),
             static_cast<Eigen::Index>(indices_by_sp_key.size()),
             static_cast<Eigen::Index>(this->inner_size));
+        // the following does the same as:
         // auto KMM_by_key = (mat * mat.transpose()).eval();
         math::Matrix_t KMM_by_key(indices_by_sp_key.size(),
                                   indices_by_sp_key.size());
@@ -168,10 +167,10 @@ namespace rascal {
      * sp with the representation associated with a center.
      * @return column vector Mx1
      */
-    template <class V>
+    template <class Val>
     ColVector_t
     dot(const int & sp,
-        internal::InternallySortedKeyMap<Key_t, V> & representation) const {
+        internal::InternallySortedKeyMap<Key_t, Val> & representation) const {
       const auto & values_by_sp = this->values.at(sp);
       const auto & indices_by_sp = this->indices.at(sp);
       ColVector_t KNM_row(this->size());
@@ -213,9 +212,9 @@ namespace rascal {
      * sp with the gradient of the representation associated with a center.
      * @return column vector Mx3
      */
-    template <class V>
+    template <class Val>
     ColVectorDer_t dot_derivative(const int & sp,
-                                  internal::InternallySortedKeyMap<Key_t, V> &
+                                  internal::InternallySortedKeyMap<Key_t, Val> &
                                       representation_grad) const {
       const auto & values_by_sp = this->values.at(sp);
       const auto & indices_by_sp = this->indices.at(sp);
@@ -271,7 +270,7 @@ namespace rascal {
     }
 
     /**
-     * Fill the pseudo points container with feature computed with calculator
+     * Fill the pseudo points container with features computed with calculator
      * on the atomic structure contained in collection using
      * selected_center_indices to select which center to copy into the
      * container.
@@ -306,8 +305,8 @@ namespace rascal {
       }
     }
 
-    template <class V>
-    void push_back(internal::InternallySortedKeyMap<Key_t, V> & pseudo_point,
+    template <class Val>
+    void push_back(internal::InternallySortedKeyMap<Key_t, Val> & pseudo_point,
                    const int & center_type) {
       auto & values_by_sp = this->values[center_type];
       auto & counters_by_sp = this->counters[center_type];

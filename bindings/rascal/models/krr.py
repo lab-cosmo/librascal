@@ -59,7 +59,7 @@ class KRR(BaseIO):
 
     def predict(self, managers, compute_gradients=False):
         """Predict properties associated with the atomic structures in managers
-        or their derivative w.r.t atomic positions (if compute_gradients==True).
+        or their derivative w.r.t. atomic positions (if compute_gradients==True).
 
         Parameters
         ----------
@@ -126,7 +126,7 @@ def train_gap_model(kernel, managers, KNMp, X_pseudo, y_train, self_contribution
     for the targets and
     .. math::
         \Lambda^{-1}_{nn} = \delta_{nn} * lambdas[1] / \sigma_{\bm{y}},
-    for the derivatives of the targets w.r.t the atomic positions and
+    for the derivatives of the targets w.r.t. the atomic positions and
     :math:`\sigma_{\bm{y}}` is the standard deviation of the target property
     (not derivatives).
 
@@ -144,14 +144,14 @@ def train_gap_model(kernel, managers, KNMp, X_pseudo, y_train, self_contribution
         KNM = np.vstack([KNM, KNM_down])
         when training with derivatives.
     X_pseudo : PseudoPoints
-        basis samples to use in the model 
+        basis samples to use in the model
     y_train : np.array
         reference property
     self_contributions : dictionary
         map atomic number to the property baseline, e.g. isolated atoms
         energies when the model has been trained on total energies.
     f_train : np.array, optional
-        minus derivatives of y_train w.r.t to the atomic motion, e.g.
+        minus derivatives of y_train w.r.t. to the atomic motion, e.g.
         interatomic forces, by default None
     lambdas : list/tuple, optional
         regularisation parameter for the training, i.e. lambdas[0] -> property

@@ -112,7 +112,7 @@ namespace rascal {
     }
 
     /**
-     * Does the calculator compute gradients of the representation w.r.t atomic
+     * Does the calculator compute gradients of the representation w.r.t. atomic
      * positions. Default implementation returns false while when applicable
      * this behaviour is overriden.
      */

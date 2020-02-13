@@ -51,9 +51,9 @@ class Kernel(BaseIO):
         Y : AtomList, ManagerCollection or PseudoPoints* (C++ class).
 
         grad : tuple specifying if the kernel should be computed using gradient
-               of the representation w.r.t the atomic positions, e.g. (True, False)
+               of the representation w.r.t. the atomic positions, e.g. (True, False)
                corresponds to the gradient of the 1st argument of the kernel
-               w.r.t the atomic positions.
+               w.r.t. the atomic positions.
 
         Returns
         -------

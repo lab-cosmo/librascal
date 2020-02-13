@@ -86,7 +86,7 @@ namespace rascal {
 
       /**
        * Compute the kernel between a set of structure(s) and a set of pseudo
-       * points, structure wise.
+       * points, per structure.
        *
        * @tparam StructureManagers should be an iterable over shared pointer
        *          of structure managers like ManagerCollection
@@ -262,7 +262,7 @@ namespace rascal {
                 representation_name, true)};
             std::map<int, int> tag2index{};
             int i_row{0};
-            // compute the gradient of the kernel w.r.t the representation dk/dX
+            // compute the gradient of the kernel w.r.t. the representation dk/dX
             // without the pseudo point factor
             math::Matrix_t rep(manager->size(), n_pseudo_points);
             for (auto center : manager) {
