@@ -201,6 +201,12 @@ obj2dict = {BETA_VERSION: obj2dict_beta}
 dict2obj = {BETA_VERSION: dict2obj_beta}
 is_valid_object_dict = {BETA_VERSION: is_valid_object_dict_beta}
 
+def get_current_io_version():
+    return CURRENT_VERSION
+
+def get_supported_io_versions():
+    return list(dict2obj.keys())
+
 
 class BaseIO(object):
     """

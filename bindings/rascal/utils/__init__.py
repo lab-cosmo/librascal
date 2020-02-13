@@ -3,7 +3,7 @@ from ..lib._rascal.utils import ostream_redirect
 from ..lib import utils
 from .pool_worker import FactoryPool
 from copy import deepcopy
-from .io import BaseIO, from_dict
+from .io import BaseIO, from_dict, get_current_io_version, get_supported_io_versions
 from .cur import CURFilter
 
 ostream_redirect = utils.__dict__['ostream_redirect']
