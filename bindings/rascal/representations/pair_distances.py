@@ -40,7 +40,7 @@ class PairDistances(object):
 
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  n_species=1, cutoff_function_type="ShiftedCosine",
-                 normalize=True,
+                 normalize=True, distance_powers=[],
                  cutoff_function_parameters=dict()):
         """Construct a PairDistances representation
 
@@ -51,6 +51,8 @@ class PairDistances(object):
         self.hypers = dict()
         self.update_hyperparameters(
             n_species=n_species, normalize=normalize)
+        if distance_powers:
+            self.update_hyperparameters(distance_powers)
 
         cutoff_function_parameters.update(
             interaction_cutoff=interaction_cutoff,
@@ -64,7 +66,6 @@ class PairDistances(object):
         self.nl_options = [
             dict(name='centers', args=[]),
             dict(name='neighbourlist', args=dict(cutoff=interaction_cutoff)),
-            dict(name="centercontribution", args=dict()),
             dict(name='strict', args=dict(cutoff=interaction_cutoff))
         ]
 

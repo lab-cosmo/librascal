@@ -508,7 +508,7 @@ namespace rascal {
       static void loop(Property_t& property , Manager_t& manager, const size_t& inner_size, const Key_t& key, int& current_center, Mat_t& features) {
         using ConstVecMap_t = const Eigen::Map<const math::Vector_t>;
         for (auto center : manager) {
-          for (auto pair : center) {
+          for (auto pair : center.pairs()) {
             const auto & prop_row = property[pair];
             if (prop_row.count(key) == 1) {
               // get the feature and flatten the array
