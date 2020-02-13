@@ -56,9 +56,8 @@ PYBIND11_MAKE_OPAQUE(std::vector<rascal::AtomicStructure<3>>);
 namespace py = pybind11;
 
 /**
- * Simplistic but robust implicit conversion of py::dict to/from nlohmann::json, e.g.
- * py::dict to nlohmann::json
- * json j = py::dict("one"_a=1, "b"_a="fgssdf");
+ * Simplistic but robust implicit conversion of py::dict to/from nlohmann::json,
+ * e.g. py::dict to nlohmann::json json j = py::dict("one"_a=1, "b"_a="fgssdf");
  * py::dict to/from nlohmann::json
  * py::dict d = j.get<py::dict>();
  */

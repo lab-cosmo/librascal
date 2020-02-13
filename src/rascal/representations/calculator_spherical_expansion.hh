@@ -1382,7 +1382,8 @@ namespace rascal {
         break;
       }
       default:
-        throw std::logic_error("The desired combination of parameters can not be handled.");
+        throw std::logic_error(
+            "The desired combination of parameters can not be handled.");
         break;
       }
 
