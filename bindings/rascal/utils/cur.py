@@ -97,39 +97,22 @@ class CURFilter(BaseIO):
         if self.act_on in ['sample per specie']:
             # get the dense feature matrix
             X = managers.get_features(self._representation)
-            # get various info from the structures about the center atom species and indexing
-            sps = list(self.Nselect.keys())
-            types = []
-            strides_by_sp = {sp: [0] for sp in sps}
-            global_counter = {sp: 0 for sp in sps}
-            map_by_manager = [{} for ii in range(len(managers))]
-            for i_man, man in enumerate(managers):
-                counter = {sp: 0 for sp in sps}
-                for i_at, at in enumerate(man):
-                    types.append(at.atom_type)
-                    if at.atom_type in sps:
-                        map_by_manager[i_man][global_counter[at.atom_type]] = i_at
-                        counter[at.atom_type] += 1
-                        global_counter[at.atom_type] += 1
-                    else:
-                        raise ValueError('Atom type {} has not been specified in fselect: {}'.format(
-                            at.atom_type, self.Nselect))
-                for sp in sps:
-                    strides_by_sp[sp].append(counter[sp])
 
-            for sp in sps:
-                strides_by_sp[sp] = np.cumsum(strides_by_sp[sp])
-            indices_by_sp = {sp: [] for sp in sps}
-            for ii, sp in enumerate(types):
-                indices_by_sp[sp].append(ii)
+            sps = list(self.Nselect.keys())
+
+            # get various info from the structures about the center atom species and indexing
+            strides_by_sp, global_counter, map_by_manager, indices_by_sp =
+                                        self.get_index_mappings_sample_per_species(managers)
 
             print('The number of pseudo points selected by central atom species is: {}'.format(
                 self.Nselect))
 
+            # organize features w.r.t. central atom type
             X_by_sp = {}
             for sp in sps:
                 X_by_sp[sp] = X[indices_by_sp[sp]]
-            self.XX = X_by_sp
+            self._XX = X_by_sp
+
             # split the dense feature matrix by center species and apply CUR decomposition
             selected_ids_by_sp = {}
             for sp in sps:
@@ -137,23 +120,61 @@ class CURFilter(BaseIO):
                 selected_ids_by_sp[sp] = np.sort(do_CUR(X_by_sp[sp], self.Nselect[sp], self.act_on,
                                                         self.is_deterministic, self.seed))
 
-            # convert selected center indexing into the rascal format
-            self.selected_ids = [[] for ii in range(len(managers))]
-            i_manager = {sp: 0 for sp in sps}
-            for sp in sps:
-                for idx in selected_ids_by_sp[sp]:
-                    carry_on = True
-                    while carry_on:
-                        if idx >= strides_by_sp[sp][i_manager[sp]] and idx < strides_by_sp[sp][i_manager[sp] + 1]:
-                            self.selected_ids[i_manager[sp]].append(
-                                map_by_manager[i_manager[sp]][idx])
-                            carry_on = False
-                        else:
-                            i_manager[sp] += 1
-            for ii in range(len(self.selected_ids)):
-                self.selected_ids[ii] = list(np.sort(self.selected_ids[ii]))
+            self.selected_ids = self.convert_selected_global_index2rascal_sample_per_species(managers, selected_ids_by_sp, strides_by_sp, map_by_manager)
+
+            # build the pseudo points
             pseudo_points = PseudoPoints(self._representation)
             pseudo_points.extend(managers, self.selected_ids)
+
             return pseudo_points
         else:
             raise NotImplementedError("method: {}".format(self.act_on))
+
+    def get_index_mappings_sample_per_species(self, managers):
+        # get various info from the structures about the center atom species and indexing
+        sps = list(self.Nselect.keys())
+        types = []
+        strides_by_sp = {sp: [0] for sp in sps}
+        global_counter = {sp: 0 for sp in sps}
+        indices_by_sp = {sp: [] for sp in sps}
+        map_by_manager = [{} for ii in range(len(managers))]
+        for i_man, man in enumerate(managers):
+            counter = {sp: 0 for sp in sps}
+            for i_at, at in enumerate(man):
+                types.append(at.atom_type)
+                if at.atom_type in sps:
+                    map_by_manager[i_man][global_counter[at.atom_type]] = i_at
+                    counter[at.atom_type] += 1
+                    global_counter[at.atom_type] += 1
+                else:
+                    raise ValueError('Atom type {} has not been specified in fselect: {}'.format(
+                        at.atom_type, self.Nselect))
+            for sp in sps:
+                strides_by_sp[sp].append(counter[sp])
+
+        for sp in sps:
+            strides_by_sp[sp] = np.cumsum(strides_by_sp[sp])
+
+        for ii, sp in enumerate(types):
+            indices_by_sp[sp].append(ii)
+
+        return strides_by_sp, global_counter, map_by_manager, indices_by_sp
+
+    def convert_selected_global_index2rascal_sample_per_species(self, managers, selected_ids_by_sp, strides_by_sp, map_by_manager):
+        # convert selected center indexing into the rascal format
+        selected_ids = [[] for ii in range(len(managers))]
+        sps = list(self.Nselect.keys())
+        i_manager = {sp: 0 for sp in sps}
+        for sp in sps:
+            for idx in selected_ids_by_sp[sp]:
+                carry_on = True
+                while carry_on:
+                    if idx >= strides_by_sp[sp][i_manager[sp]] and idx < strides_by_sp[sp][i_manager[sp] + 1]:
+                        selected_ids[i_manager[sp]].append(
+                            map_by_manager[i_manager[sp]][idx])
+                        carry_on = False
+                    else:
+                        i_manager[sp] += 1
+        for ii in range(len(selected_ids)):
+            selected_ids[ii] = list(np.sort(selected_ids[ii]))
+        return selected_ids
