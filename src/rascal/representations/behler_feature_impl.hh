@@ -162,7 +162,8 @@ namespace rascal {
       // get triplet distances
       // get precomputed cos_theta
       // calc G_incr
-      auto && G_incr{}
+      auto && G_incr{0};
+      if (G_incr !=0) {std::cout<< std::endl;}
       // get i/j atoms
       // sum up depending on species repetition (3 permutations?)
       throw std::runtime_error("Not yet implemented");

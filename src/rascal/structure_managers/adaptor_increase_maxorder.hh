@@ -95,8 +95,11 @@ namespace rascal {
         typename ManagerImplementation::template ClusterRef<Order>;
     using Vector_ref = typename Parent::Vector_ref;
     using Hypers_t = typename Parent::Hypers_t;
+    constexpr static Dim_t DistsPerTriplet{3};
     using TripletDistance_t =
-        Property<double, TripletOrder, AdaptorMaxOrder, 3>;
+        Property<double, TripletOrder, AdaptorMaxOrder, DistsPerTriplet>;
+    using TripletDirVec_t = Property<double, TripletOrder, AdaptorMaxOrder,
+                                     ThreeD, DistsPerTriplet>;
     //! Order added by the adaptor
     static constexpr size_t AdditionalOrder{traits::MaxOrder};
 
@@ -325,45 +328,62 @@ namespace rascal {
 
     bool compute_compact_clusters{false};
 
-    /* ---------------------------------------------------------------------- */
-    TripletDistance_t & get_triplet_distance() {
-      const std::string identifier{"triplet_distances"};
+    std::tuple<TripletDistance_t &, TripletDirVec_t &>
+    calculate_triplet_distance_directions() {
+      const std::string distance_identifier{"triplet_distances"};
+      const std::string direction_identifier{
+          "triplet_direction_vectors_(colums)"};
       auto & triplet_distances{*this->template get_property<TripletDistance_t>(
-          identifier, true, true)};
+          distance_identifier, true, true)};
+      auto & triplet_direction_vectors{
+          *this->template get_property<TripletDirVec_t>(direction_identifier,
+                                                        true, true)};
       if (triplet_distances.is_updated()) {
         return triplet_distances;
       }
+
+      triplet_distances.resize();
+      triplet_direction_vectors.resize();
 
       auto & direction_vectors{this->get_direction_vector()};
       auto & distances{this->get_distance()};
 
       auto & trip_to_i_atom{
           this->template get_neighbours_to_i_atoms<TripletOrder>()};
+      auto & clusters_from_manager{
+          this->template get_sub_clusters<PairOrder, TripletOrder>()};
 
-      auto & reverse_map{this->get_atoms_to_pair_map()};
       for (auto && atom : *this) {
         for (auto && trip : atom.triplets()) {
-          auto && atom_cluster_indices{trip_to_i_atom[trip]};
-          auto && i_atom_id{atom_cluster_indices(0)};
-          auto && j_atom_id{atom_cluster_indices(1)};
-          auto && k_atom_id{atom_cluster_indices(2)};
-
-          auto && i_atom{this->operator[](i_atom_id)};
-          auto && j_atom{this->operator[](j_atom_id)};
-          auto && k_atom{this->operator[](k_atom_id)};
-
-          auto & p_ij{reverse_map[{i_atom, j_atom}]};
-          auto & p_ik{reverse_map[{i_atom, k_atom}]};
-
+          auto & pair_ij{clusters_from_manager[trip][0]};
+          auto & pair_ik{clusters_from_manager[trip][1]};
           auto && dists{triplet_distances[trip]};
-          dists(0) = distances[p_ij];
-          dists(1) = distances[p_ik];
-          dists(2) = (this->position(trip.get_atom_tag_list()[2]) -
-                      this->position(trip.get_atom_tag_list()[1]))
-                         .norm();
+          dists(0) = distances[pair_ij];
+          dists(1) = distances[pair_ik];
+
+          auto && vectors{triplet_direction_vectors[trip]};
+          vectors.col(0) = direction_vectors[pair_ij];
+          vectors.col(1) = direction_vectors[pair_ik];
+
+          auto && r_jk{vectors.col(1) * dists(1) - vectors.col(0) - dists(0)};
+
+          dists(2) = r_jk.norm();
+          vectors.col(2) = r_jk / dists(2);
         }
+      }
+
+      triplet_distances.set_updated_status(true);
+      triplet_direction_vectors.set_updated_status(true);
+      return std::make_tuple(triplet_distances, triplet_direction_vectors);
+    }
+    /* ---------------------------------------------------------------------- */
+    TripletDistance_t & get_triplet_distance() {
+      return std::get<0>(this->calculate_triplet_distance_directions());
     }
 
+    /* ---------------------------------------------------------------------- */
+    TripletDirVec_t & get_triplet_direction_vectors() {
+      return std::get<1>(this->calculate_triplet_distance_directions());
     }
   };
 
@@ -438,8 +458,8 @@ namespace rascal {
 
     using traits = typename AdaptorMaxOrder<ManagerImplementation>::traits;
 
-    //! loop through the orders to get to the maximum order, this is agnostic to
-    //! the underlying MaxOrder, just goes to the maximum
+    //! loop through the orders to get to the maximum order, this is agnostic
+    //! to the underlying MaxOrder, just goes to the maximum
     static void loop(AtomClusterRef_t & /*atom */,
                      AdaptorMaxOrder<ManagerImplementation> & /*manager */) {}
   };
@@ -559,7 +579,6 @@ namespace rascal {
         std::get<traits::MaxOrder - 1>(this->cluster_indices_container)};
     max_cluster_indices.fill_sequence();
   }
-
 
 }  // namespace rascal
 

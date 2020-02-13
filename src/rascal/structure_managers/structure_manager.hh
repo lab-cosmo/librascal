@@ -781,6 +781,19 @@ namespace rascal {
     }
 
     /**
+     * Creates or fetches a property containing triplet direction vectors
+     */
+    template <bool HasDirectionVectors = traits::HasDirectionVectors,
+              typename std::enable_if_t<HasDirectionVectors and
+                                            (traits::MaxOrder >= TripletOrder),
+                                        int> = 0>
+    decltype(auto) get_triplet_direction_vectors() {
+      static_assert(HasDirectionVectors == traits::HasDirectionVectors,
+                    "HasDirectionVectors is a SFINAE, do not touch.");
+      return this->get_previous_manager()->get_triplet_direction_vectors();
+    }
+
+    /**
      * Creates or fetches a map from atoms to pairs
      */
     template <AdaptorTraits::Strict IsStrict = traits::Strict,

@@ -289,9 +289,7 @@ namespace rascal {
     }
 
     RevMap_t & get_atoms_to_pair_map() {
-      if (*this->atoms_to_pair_map != nullptr) {
-        return *this->atoms_to_pair_map;
-      } else {
+      if (*this->atoms_to_pair_map == nullptr) {
         auto & pair_to_i_atom{
             this->template get_neighbours_to_i_atoms<PairOrder>()};
 
@@ -312,6 +310,7 @@ namespace rascal {
           }
         }
       }
+      return *this->atoms_to_pair_map;
     }
 
    protected:

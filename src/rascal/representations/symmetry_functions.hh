@@ -136,6 +136,8 @@ namespace rascal {
     double r_s;
   };
 
+  constexpr size_t SymmetryFunction<SymmetryFunctionType::Gaussian>::Order;
+
   /* ---------------------------------------------------------------------- */
   /**
    * Triplet related symmetry function, also called `Angular narrow`. Narrow
@@ -196,6 +198,8 @@ namespace rascal {
     double prefactor;  // prefactor evaluation at construction
   };
 
+  constexpr size_t SymmetryFunction<SymmetryFunctionType::AngularNarrow>::Order;
+
   /* ---------------------------------------------------------------------- */
   /**
    * Triplet related symmetry function, also called `Angular wide`. Wide means
@@ -208,10 +212,11 @@ namespace rascal {
   template <>
   class SymmetryFunction<SymmetryFunctionType::AngularWide> {
    public:
+    static constexpr int DistsPerTriplet{3};
     static constexpr size_t Order{3};
 
     // return type for each function value and 3 derivative values
-    using Return_t = std::tuple<double, double, double, double>;
+    using Return_t = std::tuple<double, std::array<double, DistsPerTriplet>>;
     // usage?
     static constexpr bool DerivativeIsCollinear{false};
 
@@ -231,20 +236,24 @@ namespace rascal {
     }
 
     Return_t df_sym(const double & cos_theta, const double & r_ij,
-                    const double & r_ik, const double & /*r_jk*/) const {
+                    const double & r_ik, const double & r_jk) const {
+      auto && lam_cos_theta_1 {1. + this->lambda * cos_theta};
       auto && angular_contrib{
-          math::pow(1. + this->lambda * cos_theta, this->zeta)};
-      auto && exp_contrib{exp(-this->eta * (r_ij * r_ij + r_ik * r_ik))};
+          math::pow(lam_cos_theta_1, this->zeta)};
+      auto && r_ij2{r_ij * r_ij};
+      auto && r_ik2{r_ik * r_ik};
+      auto && exp_contrib{exp(-this->eta * (r_ij2 + r_ik2))};
       auto && fun_val{this->prefactor * angular_contrib * exp_contrib};
 
-      // helper for derivative
-      auto && psi{-1. / (r_ij * r_ik) * this->lambda * this->zeta /
-                  (1. + this->lambda * cos_theta)};
-      auto && phi{-psi - 1. / (r_ij * r_ij) * this->lambda * this->zeta /
-                             (1 + this->lambda * cos_theta)};
-      double const eta2{this->eta * 2};
-
-      return Return_t(fun_val, psi, phi, eta2);
+      auto && d_dr_ij{-2 * this->eta * r_ij * fun_val +
+                      this->zeta * (this->lambda / r_ik - cos_theta / r_ij) *
+                          fun_val / lam_cos_theta_1};
+      auto && d_dr_ik{-2 * this->eta * r_ik * fun_val +
+                      this->zeta * (this->lambda / r_ij - cos_theta / r_ik) *
+                          fun_val / lam_cos_theta_1};
+      auto && d_dr_jk{-this->lambda * r_jk * this->zeta * fun_val /
+                      (r_ij * r_ik * lam_cos_theta_1)};
+      return Return_t(fun_val, {d_dr_ij, d_dr_ik, d_dr_jk});
     }
 
    protected:
@@ -252,8 +261,11 @@ namespace rascal {
     double zeta;
     double lambda;
     double eta;
-    double prefactor;  // prefactor evaluation at construction
+    double prefactor;  // prefactor (2^(1-ζ))
   };
+
+  constexpr size_t SymmetryFunction<SymmetryFunctionType::AngularWide>::Order;
+
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_
