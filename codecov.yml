@@ -1,0 +1,12 @@
+coverage:
+  ignore:
+    - tests/.*
+    - examples/.*
+    - build/external/.*
+  status:
+    project:
+      default:
+        target: 82%
+    patch: off
+
+comment: off
