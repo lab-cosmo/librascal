@@ -203,7 +203,7 @@ namespace rascal {
     using math::pow;
 
     auto && pair_distances{
-        *manager->template get_property<Prop_t>(this->get_name())};
+        *manager->template get_property<Prop_t>(this->get_name(), true, true)};
 
     /* Gradients not yet implemented
      * auto && pair_distance_gradients{
