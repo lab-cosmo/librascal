@@ -182,7 +182,7 @@ namespace rascal {
     double cutoff_smooth_width{};
     bool compute_gradients{};
     bool cutoff_per_pair_type{false};
-    std::vector<double> distance_powers{{1.0}};
+    std::vector<double> distance_powers{1.0,};
     int descriptor_dimension{1};
 
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};

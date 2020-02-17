@@ -978,12 +978,13 @@ namespace rascal {
 
     /**
      * dot product between property block sparse A and B
-     * assumes order == 1 for the moment should use SFINAE to take care of
-     * the case order == 2
+     * Version for order == 1 (centers)
+     * Other orders are selected by SFINAE (yes, the version below seems to be
+     * the simplest way to achieve this)
      */
+    template<typename T = Self_t,
+             std::enable_if_t<T::Order == 1, int> = 0>
     Matrix_t dot(Self_t & B) {
-      static_assert(IsOrderOne,
-                    "This function should only be used for Order == 1.");
       Matrix_t mat(this->size(), B.size());
       bool do_direct_dot{false}, do_block_by_key_dot{false};
       if (this->are_keys_uniform() and B.are_keys_uniform()) {
@@ -1033,8 +1034,42 @@ namespace rascal {
     }
 
     /**
-     * dot product between property block sparse
+     * dot product between property block sparse A and B
+     * Version for order == 2 (pairs)
+     * Note the optimized uniform-keys (direct dot products) are not yet
+     * implemented here, especially since the only existing application for dot
+     * products of pairs (pair distances descriptor) does not use uniform keys
      */
+    template<typename T = Self_t,
+             std::enable_if_t<T::Order == 2, int> = 0>
+    Matrix_t dot(Self_t & B) {
+      Matrix_t mat(this->size(), B.size());
+      auto && manager_a{this->get_manager()};
+      auto && manager_b{B.get_manager()};
+      int i_row{0};
+      for (auto centerA : manager_a) {
+        for (auto pairA : centerA.pairs()) {
+          auto && rowA{this->operator[](pairA)};
+          int i_col{0};
+          for (auto centerB : manager_b) {
+            for (auto pairB : centerB.pairs()) {
+              auto && rowB{this->operator[](pairB)};
+              mat(i_row, i_col) = rowA.dot(rowB);
+              ++i_col;
+            }
+          } // pairs of manager_b
+          ++i_row;
+        }
+      } // pairs of manager_a
+      return mat;
+    }
+
+    /**
+     * Dot product between property block sparse and itself
+     * Version for Order == 1 (centers)
+     */
+    template<typename T = Self_t,
+             std::enable_if_t<T::Order == 1, int> = 0>
     Matrix_t dot() {
       static_assert(IsOrderOne,
                     "This function should only be used for Order == 1.");
@@ -1063,6 +1098,18 @@ namespace rascal {
         }
       }
       return mat;
+    }
+
+    /**
+     * Dot product between property block sparse and itself
+     * Version for Order == 2 (pairs)
+     * Stupid version that does all pairs, because the necessary functions to
+     * do the above magic with get_iterator_at() only work with Order == 1
+     */
+    template<typename T = Self_t,
+             std::enable_if_t<T::Order == 2, int> = 0>
+    Matrix_t dot() {
+      return this->dot(*this);
     }
   };
 
