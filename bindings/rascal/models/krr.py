@@ -1,7 +1,9 @@
+from ..utils import BaseIO
+
 import numpy as np
 
 
-class KRR(object):
+class KRR(BaseIO):
     """Kernel Ridge Regression model. Only compatible fully with sparse GPR
     training for the moment.
 
@@ -82,6 +84,16 @@ class KRR(object):
     def get_weigths(self):
         return self.weights
 
+    def get_init_params(self):
+        init_params = dict(weights=self.weights, kernel=self.kernel,
+                           X_train=self.X_train, self_contributions=self.self_contributions)
+        return init_params
+
+    def _set_data(self, data):
+        pass
+
+    def _get_data(self):
+        return dict()
 
 
 def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contributions, f_train=None, lambdas=None, jitter=1e-8):

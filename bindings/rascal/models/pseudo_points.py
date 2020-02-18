@@ -1,5 +1,6 @@
 from ..lib._rascal.models import kernels
 from ..neighbourlist import AtomsList
+from ..utils import BaseIO
 
 # names of existing pseudo points implementation on the pybinding side.
 _pseudo_points = {}
@@ -9,7 +10,7 @@ for k, v in kernels.__dict__.items():
         _pseudo_points[name] = v
 
 
-class PseudoPoints(object):
+class PseudoPoints(BaseIO):
     """
     Holds features to be used as references / sparse points / pseudo points
     in sparse GPR methods.
@@ -42,6 +43,17 @@ class PseudoPoints(object):
         else:
             raise ValueError(
                 'No pseudo point is appropiate for ' + str(representation))
+
+    def get_init_params(self):
+        init_params = dict(representation=self.representation)
+        return init_params
+
+    def _set_data(self, data):
+        self._pseudo_points = self._pseudo_points.from_dict(
+            data['pseudo_points'])
+
+    def _get_data(self):
+        return dict(pseudo_points=self._pseudo_points.to_dict())
 
     def extend(self, atoms_list, selected_indices):
         if isinstance(atoms_list, AtomsList):

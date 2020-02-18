@@ -1,4 +1,6 @@
 from ..models import PseudoPoints
+from ..utils import BaseIO
+
 import numpy as np
 from scipy.sparse.linalg import svds
 
@@ -34,7 +36,7 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
     return sel
 
 
-class CURFilter(object):
+class CURFilter(BaseIO):
     """CUR decomposition to select samples or features in a given feature matrix. Wrapper around the do_CUR function for convenience.
 
     Parameters

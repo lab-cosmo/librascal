@@ -366,6 +366,53 @@ namespace rascal {
     }
   };
 
+  /**
+   * Function to convert to a JSON object format with the given keywords. It
+   * is an overload of the function defined in the header class
+   * json.hpp.
+   */
+  template <class Calculator>
+  void to_json(json & j,
+               const PseudoPointsBlockSparse<Calculator> & pseudo_points) {
+    j["name"] = internal::type_name_demangled(
+        typeid(PseudoPointsBlockSparse<Calculator>).name());
+    j["values"] = pseudo_points.values;
+    j["indices"] = pseudo_points.indices;
+    j["counters"] = pseudo_points.counters;
+    j["inner_size"] = pseudo_points.inner_size;
+    j["center_species"] = pseudo_points.center_species;
+    j["keys"] = pseudo_points.keys;
+  }
+
+  /**
+   * Function used to read from the JSON file, given the keywords and convert
+   * the data into standard types. Overload of the function defined in
+   * json.hpp class header.
+   */
+  template <class Calculator>
+  void from_json(const json & j,
+                 PseudoPointsBlockSparse<Calculator> & pseudo_points) {
+    using Data_t = typename PseudoPointsBlockSparse<Calculator>::Data_t;
+    using Indices_t = typename PseudoPointsBlockSparse<Calculator>::Indices_t;
+    using Counters_t = typename PseudoPointsBlockSparse<Calculator>::Counters_t;
+    using Key_t = typename PseudoPointsBlockSparse<Calculator>::Key_t;
+
+    std::string name{internal::type_name_demangled(
+        typeid(PseudoPointsBlockSparse<Calculator>).name())};
+    if (name != j.at("name").get<std::string>()) {
+      std::stringstream err_str{};
+      err_str << "The saved object name does not match the asked type: '"
+              << name << "' != '" << j.at("name").get<std::string>() << "'.";
+      throw std::runtime_error(err_str.str());
+    }
+    pseudo_points.values = j.at("values").get<Data_t>();
+    pseudo_points.indices = j.at("indices").get<Indices_t>();
+    pseudo_points.counters = j.at("counters").get<Counters_t>();
+    pseudo_points.inner_size = j.at("inner_size").get<size_t>();
+    pseudo_points.center_species = j.at("center_species").get<std::set<int>>();
+    pseudo_points.keys = j.at("keys").get<std::set<Key_t>>();
+  }
+
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_MODELS_PSEUDO_POINTS_HH_

@@ -483,5 +483,21 @@ namespace rascal {
 
 }  // namespace rascal
 
+namespace nlohmann {
+  /**
+   * Special specialization of the json serialization for non default
+   * constructible type.
+   */
+  template <>
+  struct adl_serializer<rascal::SparseKernel> {
+    static rascal::SparseKernel from_json(const json & j) {
+      return rascal::SparseKernel{j};
+    }
+
+    static void to_json(json & j, const rascal::SparseKernel & t) {
+      j = t.parameters;
+    }
+  };
+}  // namespace nlohmann
 
 #endif  // SRC_RASCAL_MODELS_SPARSE_KERNELS_HH_

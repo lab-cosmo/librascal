@@ -3,9 +3,11 @@ import json
 from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
 import numpy as np
+from ..utils import BaseIO
+from copy import deepcopy
 
 
-class SphericalCovariants(object):
+class SphericalCovariants(BaseIO):
     """
     Computes a SphericalCovariants representation, i.e. lambda spectrum.
 
@@ -23,9 +25,6 @@ class SphericalCovariants(object):
 
     max_angular : int
         Highest angular momentum number (l) in the expansion
-
-    n_species : int
-        Number of species to be considered separately
 
     gaussian_sigma_type : str
         How the Gaussian atom sigmas (smearing widths) are allowed to
@@ -60,7 +59,7 @@ class SphericalCovariants(object):
 
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=0., n_species=1,
+                 gaussian_sigma_constant=0.,
                  cutoff_function_type="ShiftedCosine", normalize=True,
                  radial_basis="GTO",
                  soap_type="LambdaSpectrum", inversion_symmetry=True,
@@ -75,11 +74,12 @@ class SphericalCovariants(object):
         self.hypers = dict()
         self.update_hyperparameters(
             max_radial=max_radial, max_angular=max_angular,
-            n_species=n_species,
             soap_type=soap_type,
             normalize=normalize,
             inversion_symmetry=inversion_symmetry,
             lam=lam)
+
+        self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
 
         cutoff_function_parameters.update(
             interaction_cutoff=interaction_cutoff,
@@ -110,8 +110,7 @@ class SphericalCovariants(object):
             dict(name='strict', args=dict(cutoff=interaction_cutoff))
         ]
 
-        hypers_str = json.dumps(self.hypers)
-        self.rep_options = dict(name=self.name, args=[hypers_str])
+        self.rep_options = dict(name=self.name, args=[self.hypers])
 
         self._representation = CalculatorFactory(self.rep_options)
 
@@ -123,7 +122,7 @@ class SphericalCovariants(object):
         """
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
-                        'gaussian_sigma_constant', 'n_species', 'soap_type',
+                        'gaussian_sigma_constant', 'soap_type',
                         'inversion_symmetry', 'lam', 'cutoff_function',
                         'normalize', 'gaussian_density', 'radial_contribution',
                         'cutoff_function_parameters'}
@@ -151,7 +150,7 @@ class SphericalCovariants(object):
         self._representation.compute(frames.managers)
         return frames
 
-    def get_num_coefficients(self):
+    def get_num_coefficients(self, n_species=1):
         """Return the number of coefficients in the representation
 
         (this is the descriptor size per atomic centre)
@@ -160,40 +159,40 @@ class SphericalCovariants(object):
         if self.hypers['soap_type'] == 'LambdaSpectrum':
             if self.hypers['inversion_symmetry']:
                 n_col = (np.ceil((self.hypers['max_angular'] + 1)**2 / 2.0) -
-                         (1.0 + np.floor((self.hypers['lam'] - 1) / 2.0))**2 -
-                         np.floor((self.hypers['max_angular'] + 1 -
-                                   self.hypers['lam'])**2 / 2.0) *
-                         (self.hypers['lam'] % 2) -
-                         (np.ceil((self.hypers['max_angular'] + 1 -
-                                   self.hypers['lam'])**2 / 2.0) -
+                         (1.0 + np.floor((self.hypers['lam'] - 1) / 2.0))**2
+                         - np.floor((self.hypers['max_angular'] + 1
+                                     - self.hypers['lam'])**2 / 2.0)
+                         * (self.hypers['lam'] % 2)
+                         - (np.ceil((self.hypers['max_angular'] + 1
+                                     - self.hypers['lam'])**2 / 2.0) -
                             (self.hypers['max_angular'] -
                              self.hypers['lam'] + 1)) *
                          (1.0 - self.hypers['lam'] % 2))
                 if (self.hypers['lam'] % 2 == 1):
-                    n_col = -n_col + 0.5 * (2.0 + self.hypers['lam']
-                                            - 3 * self.hypers['lam']**2
-                                            + 2 * self.hypers['max_angular']
-                                            + 4 * self.hypers['lam']
-                                            * self.hypers['max_angular'])
+                    n_col = -n_col + 0.5 * (2.0 + self.hypers['lam'] -
+                                            3 * self.hypers['lam']**2 +
+                                            2 * self.hypers['max_angular'] +
+                                            4 * self.hypers['lam'] *
+                                            self.hypers['max_angular'])
                 n_col *= (2 * self.hypers['lam'] + 1)
-                return int(n_col * self.hypers['n_species']**2
-                           * self.hypers['max_radial']**2)
+                return int(n_col * n_species**2 *
+                           self.hypers['max_radial']**2)
             else:
-                return (self.hypers['n_species']**2 *
-                        self.hypers['max_radial']**2 *
-                        int((2 +
-                               self.hypers['lam'] -
-                             3 *
-                             self.hypers['lam']**2 +
-                             2 *
-                             self.hypers['max_angular'] +
-                             4 *
-                             self.hypers['lam'] *
-                             self.hypers['max_angular']) /
-                              2) *
-                        (2 *
-                         self.hypers['lam'] +
-                         1))
+                return (n_species**2 *
+                        self.hypers['max_radial']**2
+                        * int((2 +
+                               self.hypers['lam']
+                               - 3
+                               * self.hypers['lam']**2
+                               + 2
+                               * self.hypers['max_angular']
+                               + 4
+                               * self.hypers['lam']
+                               * self.hypers['max_angular']) /
+                              2)
+                        * (2
+                           * self.hypers['lam']
+                           + 1))
         else:
             raise ValueError('Only soap_type = LambdaSpectrum '
                              'implemented for now')
@@ -214,3 +213,31 @@ class SphericalCovariants(object):
                              'implemented for now')
 
         return keys
+
+    def get_init_params(self):
+        gaussian_density = self.hypers['gaussian_density']
+        cutoff_function = self.hypers['cutoff_function']
+        radial_contribution = self.hypers['radial_contribution']
+
+        init_params = dict(
+            interaction_cutoff=cutoff_function['cutoff']['value'],
+            cutoff_smooth_width=cutoff_function['smooth_width']['value'],
+            max_radial=self.hypers['max_radial'],
+            max_angular=self.hypers['max_angular'],
+            soap_type=self.hypers['soap_type'],
+            inversion_symmetry=self.hypers['inversion_symmetry'],
+            normalize=self.hypers['normalize'],
+            gaussian_sigma_type=gaussian_density['type'],
+            gaussian_sigma_constant=gaussian_density['gaussian_sigma']['value'],
+            lam=self.hypers['lam'],
+            cutoff_function_type=cutoff_function['type'],
+            radial_basis=radial_contribution['type'],
+            cutoff_function_parameters=self.cutoff_function_parameters,
+        )
+        return init_params
+
+    def _set_data(self, data):
+        pass
+
+    def _get_data(self):
+        return dict()

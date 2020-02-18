@@ -2,10 +2,11 @@ from ..lib._rascal.models.kernels import Kernel as Kernelcpp
 from ..lib._rascal.models.kernels import SparseKernel as SparseKernelcpp
 from ..neighbourlist import AtomsList
 from .pseudo_points import PseudoPoints
+from ..utils import BaseIO
 import json
 
 
-class Kernel(object):
+class Kernel(BaseIO):
 
     """
     Computes the kernel for a given representation. In the following
@@ -82,7 +83,6 @@ class Kernel(object):
             raise RuntimeError("Kernel name must be one of: Cosine, GAP.")
         hypers = dict(name=name, target_type=target_type)
         hypers.update(**kwargs)
-        hypers_str = json.dumps(hypers)
         self._rep = representation
         self._representation = representation._representation
         self.name = name
@@ -90,10 +90,23 @@ class Kernel(object):
         self.kernel_type = kernel_type
         self.target_type = target_type
         if 'Sparse' in kernel_type:
-            self._kernel = SparseKernelcpp(hypers_str)
+            self._kernel = SparseKernelcpp(hypers)
         else:
-            self._kernel = Kernelcpp(hypers_str)
+            self._kernel = Kernelcpp(hypers)
 
+    def get_init_params(self):
+        init_params = dict(representation=self._rep,
+                           name=self.name,
+                           kernel_type=self.kernel_type,
+                           target_type=self.target_type)
+        init_params.update(**self._kwargs)
+        return init_params
+
+    def _set_data(self, data):
+        pass
+
+    def _get_data(self):
+        return dict()
 
     def __call__(self, X, Y=None, grad=(False, False)):
         if isinstance(X, AtomsList):
