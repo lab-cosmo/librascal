@@ -37,13 +37,13 @@
 
 namespace rascal {
 
-  struct StrictNLCollectionFixture : MultipleStructureManagerNLCCStrictFixture {
+  struct StrictNLCCCollectionFixture : MultipleStructureManagerNLCCStrictFixture {
     using Parent = MultipleStructureManagerNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
-    StrictNLCollectionFixture() : Parent{} {};
+    StrictNLCCCollectionFixture() : Parent{} {};
 
-    ~StrictNLCollectionFixture() = default;
+    ~StrictNLCCCollectionFixture() = default;
 
     std::string filename{"reference_data/inputs/small_molecules-20.json"};
     int start{5};
@@ -52,7 +52,7 @@ namespace rascal {
 
   /**
    * BaseFixture is expected to be similar to
-   * StrictNLCollectionFixture for instance
+   * StrictNLCCCollectionFixture for instance
    */
   template <class BaseFixture>
   struct CollectionFixture : BaseFixture {
