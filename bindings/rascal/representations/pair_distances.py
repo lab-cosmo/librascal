@@ -52,7 +52,7 @@ class PairDistances(object):
         self.update_hyperparameters(
             n_species=n_species, normalize=normalize)
         if distance_powers:
-            self.update_hyperparameters(distance_powers)
+            self.update_hyperparameters(distance_powers=distance_powers)
 
         cutoff_function_parameters.update(
             interaction_cutoff=interaction_cutoff,
@@ -81,7 +81,7 @@ class PairDistances(object):
 
         """
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
-                        'n_species', 'cutoff_function', 
+                        'n_species', 'distance_powers', 'cutoff_function',
                         'normalize', 'cutoff_function_parameters'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
