@@ -34,8 +34,8 @@
 #include "test_calculator.hh"
 #include "test_manager_collection.hh"
 
-#include "rascal/models/sparse_kernels.hh"
 #include "rascal/models/pseudo_points.hh"
+#include "rascal/models/sparse_kernels.hh"
 
 namespace rascal {
 
@@ -85,14 +85,13 @@ namespace rascal {
         {{"zeta", 2}, {"target_type", "Atom"}, {"name", "GAP"}}};
   };
 
-
   /**
    * BaseFixture is expected to be similar to
    * StrictNLSparseKernelFixture
    */
   template <class BaseFixture>
   struct SparseKernelFixture : CollectionFixture<BaseFixture>,
-                         CalculatorFixture<BaseFixture> {
+                               CalculatorFixture<BaseFixture> {
     using ParentA = CollectionFixture<BaseFixture>;
     using ParentB = CalculatorFixture<BaseFixture>;
 

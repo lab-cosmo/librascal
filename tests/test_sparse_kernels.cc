@@ -35,7 +35,6 @@
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(sparse_kernels_test);
 
-
   using multiple_fixtures =
       boost::mpl::list<SparseKernelFixture<StrictNLSparseKernelFixture>>;
 
@@ -64,7 +63,6 @@ namespace rascal {
         }
       }
     }
-
 
     int i_collection{0};
     for (auto & collection : collections) {
