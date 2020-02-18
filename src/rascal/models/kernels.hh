@@ -39,6 +39,27 @@ namespace rascal {
 
     enum class TargetType { Structure, Atom };
 
+    /**
+     * optimized version of kernel.pow(this->zeta), using specialized cases
+     * for  zeta==1, 2, and 3. The generic case uses a for loop, which can
+     * be faster that std::pow, while introducing a few more numerical
+     * errors. Rely on RVO to avoid execive copies.
+     */
+    inline math::Matrix_t pow_zeta(math::Matrix_t && kernel,
+                                   const size_t & zeta) {
+      if (zeta == 1) {
+        return std::move(kernel);
+      } else if (zeta == 2) {
+        kernel = kernel.array().square();
+      } else if (zeta == 3) {
+        kernel = kernel.array().cube();
+      } else {
+        kernel = kernel.unaryExpr(
+            [zeta = zeta](double v) { return math::pow(v, zeta); });
+      }
+      return std::move(kernel);
+    }
+
     struct KernelImplBase {
       using Hypers_t = json;
     };
@@ -98,7 +119,7 @@ namespace rascal {
             auto && propB{*manager_b->template get_property<Property_t>(
                 representation_name, true)};
 
-            kernel(ii_A, ii_B) = this->pow_zeta(propA.dot(propB)).mean();
+            kernel(ii_A, ii_B) = pow_zeta(propA.dot(propB), this->zeta).mean();
             ++ii_B;
           }
           ++ii_A;
@@ -130,13 +151,13 @@ namespace rascal {
           const auto & manager_a = *manager_a_it;
           auto && propA{*manager_a->template get_property<Property_t>(
               representation_name)};
-          kernel(ii_A, ii_A) = this->pow_zeta(propA.dot()).mean();
+          kernel(ii_A, ii_A) = pow_zeta(propA.dot(), this->zeta).mean();
           auto manager_b_it = managers_a.begin() + ii_A + 1;
           for (size_t ii_B{ii_A + 1}; ii_B < managers_a.size(); ii_B++) {
             const auto & manager_b = *manager_b_it;
             auto && propB{*manager_b->template get_property<Property_t>(
                 representation_name)};
-            kernel(ii_A, ii_B) = this->pow_zeta(propA.dot(propB)).mean();
+            kernel(ii_A, ii_B) = pow_zeta(propA.dot(propB), this->zeta).mean();
             kernel(ii_B, ii_A) = kernel(ii_A, ii_B);
             ++manager_b_it;
           }
@@ -186,7 +207,7 @@ namespace rascal {
                 representation_name, true)};
 
             kernel.block(ii_A, ii_B, a_size, b_size) =
-                this->pow_zeta(propA.dot(propB));
+                pow_zeta(propA.dot(propB), this->zeta);
             ii_B += b_size;
           }
           ii_A += a_size;
@@ -225,7 +246,7 @@ namespace rascal {
           auto && propA{*manager_a->template get_property<Property_t>(
               representation_name)};
           kernel.block(iii_A, iii_A, a_size, a_size) =
-              this->pow_zeta(propA.dot());
+              pow_zeta(propA.dot(), this->zeta);
           auto manager_b_it = managers_a.begin() + ii_A + 1;
           for (size_t ii_B{ii_A + 1}; ii_B < managers_a.size(); ii_B++) {
             const auto & manager_b = *manager_b_it;
@@ -233,7 +254,7 @@ namespace rascal {
             auto && propB{*manager_b->template get_property<Property_t>(
                 representation_name)};
             kernel.block(iii_A, iii_B, a_size, b_size) =
-                this->pow_zeta(propA.dot(propB));
+                pow_zeta(propA.dot(propB), this->zeta);
             kernel.block(iii_B, iii_A, b_size, a_size) =
                 kernel.block(iii_A, iii_B, a_size, b_size).transpose();
             iii_B += b_size;
@@ -243,25 +264,6 @@ namespace rascal {
           ++manager_a_it;
         }
         return kernel;
-      }
-
-     private:
-      // optimized version of kernel.pow(this->zeta), using specialized cases
-      // for  zeta==1, 2, and 3. The generic case uses a for loop, which can
-      // be faster that std::pow, while introducing a few more numerical
-      // errors.
-      math::Matrix_t pow_zeta(math::Matrix_t && kernel) {
-        if (this->zeta == 1) {
-          return std::move(kernel);
-        } else if (this->zeta == 2) {
-          kernel = kernel.array().square();
-        } else if (this->zeta == 3) {
-          kernel = kernel.array().cube();
-        } else {
-          kernel = kernel.unaryExpr(
-              [zeta = this->zeta](double v) { return math::pow(v, zeta); });
-        }
-        return std::move(kernel);
       }
     };
   }  // namespace internal
@@ -316,6 +318,15 @@ namespace rascal {
       }
     }
 
+    //! Move constructor
+    Kernel(Kernel && other) noexcept
+        : identifiers{std::move(other.identifiers)}, parameters{},
+          target_type{std::move(other.target_type)},
+          kernel_type{std::move(other.kernel_type)}, kernel_impl{std::move(
+                                                         other.kernel_impl)} {
+      this->parameters = std::move(other.parameters);
+    }
+
     /*
      * The root compute kernel function. It computes the kernel between 2 set of
      * structures for a given representation specified by the calculator.
@@ -346,7 +357,8 @@ namespace rascal {
         return this->compute_helper<Property_t, TargetType::Atom>(
             representation_name, managers_a, managers_b);
       default:
-        throw std::logic_error("The combination of parameter is not handled.");
+        throw std::logic_error(
+            "The desired combination of parameters can not be handled.");
       }
     }
 
@@ -362,7 +374,8 @@ namespace rascal {
         return kernel->template compute<Property_t, Type>(
             managers_a, managers_b, representation_name);
       } else {
-        throw std::logic_error("The combination of parameter is not handled.");
+        throw std::logic_error(
+            "The desired combination of parameters can not be handled.");
       }
     }
 
@@ -383,7 +396,8 @@ namespace rascal {
         return this->compute_helper<Property_t, TargetType::Atom>(
             representation_name, managers_a);
       default:
-        throw std::logic_error("The combination of parameter is not handled.");
+        throw std::logic_error(
+            "The desired combination of parameters can not be handled.");
       }
     }
 
@@ -398,7 +412,8 @@ namespace rascal {
         return kernel->template compute<Property_t, Type>(managers_a,
                                                           representation_name);
       } else {
-        throw std::logic_error("The combination of parameter is not handled.");
+        throw std::logic_error(
+            "The desired combination of parameters can not be handled.");
       }
     }
 
@@ -408,7 +423,8 @@ namespace rascal {
     //! parameters of the kernel
     Hypers_t parameters{};
     /**
-     * Defines if the similarity if defined structure or atom wise
+     * Defines if the similarity is defined on the level of structures or per
+     * atom
      */
     internal::TargetType target_type{};
 

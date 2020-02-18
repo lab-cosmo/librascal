@@ -226,6 +226,8 @@ namespace rascal {
     std::string manager_name = internal::GetBindingTypeName<Manager_t>();
     py::class_<Manager_t, Parent, std::shared_ptr<Manager_t>> manager(
         mod, manager_name.c_str());
+    // bind the number of centers in the structure
+    manager.def("__len__", &Manager_t::size);
     return manager;
   }
 
@@ -239,6 +241,8 @@ namespace rascal {
     using Parent = typename Manager_t::Parent;
     py::class_<Manager_t, Parent, std::shared_ptr<Manager_t>> manager(
         mod, manager_name.c_str());
+    // bind the number of centers in the structure
+    manager.def("__len__", &Manager_t::size);
     return manager;
   }
 
@@ -642,7 +646,7 @@ namespace rascal {
         "__getitem__",
         [](ManagerCollection_t & v, int index) { return v[index]; },
         py::keep_alive<0, 1>());
-
+    manager_collection.def("__len__", &ManagerCollection_t::size);
     /**
      * Binds the `add_structures`. Instead of invoking the targeted function to
      * bind within a lambda function, a pointer-to-member-function is used here.
@@ -669,9 +673,6 @@ namespace rascal {
             ManagerCollection_t::add_structures,
         R"(Read a file and extract the structures from start to start + length.)",
         py::arg("filename"), py::arg("start") = 0, py::arg("length") = -1);
-
-    manager_collection.def("__len__",
-                           [](ManagerCollection_t & v) { return v.size(); });
 
     manager_collection.def("get_parameters", [](ManagerCollection_t & v) {
       return std::string(v.get_adaptors_parameters().dump(2));

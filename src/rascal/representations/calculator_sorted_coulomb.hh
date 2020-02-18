@@ -218,7 +218,7 @@ namespace rascal {
     void compute(StructureManager & managers);
 
     //! set hypers
-    void set_hyperparameters(const Hypers_t & /*hypers*/);
+    void set_hyperparameters(const Hypers_t & /*hypers*/) override;
 
     void update_central_cutoff(double /*cutoff*/);
 

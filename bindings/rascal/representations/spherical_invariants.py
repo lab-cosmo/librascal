@@ -101,7 +101,8 @@ class SphericalInvariants(object):
                  optimization_args={},
                  expansion_by_species_method="environment wise",
                  global_species=None,
-                 cutoff_function_parameters=dict()):
+                 cutoff_function_parameters=dict(),
+                 compute_gradients=False):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -120,8 +121,7 @@ class SphericalInvariants(object):
             soap_type=soap_type, normalize=normalize,
             inversion_symmetry=inversion_symmetry,
             expansion_by_species_method=expansion_by_species_method,
-            global_species=global_species)
-
+            global_species=global_species, compute_gradients=compute_gradients)
         cutoff_function_parameters.update(
             interaction_cutoff=interaction_cutoff,
             cutoff_smooth_width=cutoff_smooth_width
@@ -198,7 +198,7 @@ class SphericalInvariants(object):
                         'gaussian_sigma_constant', 'n_species', 'soap_type',
                         'inversion_symmetry', 'cutoff_function', 'normalize',
                         'gaussian_density', 'radial_contribution',
-                        'cutoff_function_parameters', 'expansion_by_species_method', 'global_species'}
+                        'cutoff_function_parameters', 'compute_gradients', 'expansion_by_species_method', 'global_species'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)

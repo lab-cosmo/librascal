@@ -73,7 +73,7 @@ def dump_reference_json():
             alp_normfacts[l, m] = mpmath.sqrt(
                 (2 * l + 1) / (2 * mpmath.pi)
                 / reduce(lambda x, y: mpmath.fmul(x, y),
-                       mpmath.arange(l - m + 1, l + m + 1), 1)
+                         mpmath.arange(l - m + 1, l + m + 1), 1)
             )
     if verbose:
         print("alp_normfacts")

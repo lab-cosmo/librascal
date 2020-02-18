@@ -53,10 +53,13 @@ class AtomsList(object):
         self.managers = managers
 
     def __iter__(self):
-        return self.managers
+        return self.managers.__iter__()
 
     def __getitem__(self, key):
         return self.managers[key]
+
+    def __len__(self):
+        return len(self.managers)
 
     def get_features(self, calculator, species=None):
         """
