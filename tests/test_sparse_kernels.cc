@@ -58,6 +58,7 @@ namespace rascal {
         selected_ids.back().emplace_back();
         int ii{0};
         for (auto center : manager) {
+          (void)center;
           selected_ids.back().back().push_back(ii);
           ++ii;
         }
