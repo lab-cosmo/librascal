@@ -37,7 +37,8 @@
 
 namespace rascal {
 
-  struct StrictNLCCCollectionFixture : MultipleStructureManagerNLCCStrictFixture {
+  struct StrictNLCCCollectionFixture
+      : MultipleStructureManagerNLCCStrictFixture {
     using Parent = MultipleStructureManagerNLCCStrictFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
 
