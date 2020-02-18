@@ -151,20 +151,25 @@ jobs:
           name: Install Python dependencies
           command: |
             python3.6 -m pip install -r requirements.txt
-            python3.6 -m pip install codecov
+            python3.6 -m pip install codecov coverage
       - run:
           name: Configure
           command: |
             mkdir build && cd build
-            cmake -DBUILD_BINDINGS=OFF -DBUILD_TESTS=ON \
+            cmake -DBUILD_BINDINGS=ON -DBUILD_TESTS=ON \
                   -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-coverage" \
                   ..
       - run:
           name: Build
           command: cd build && make
       - run:
-          name: Run tests
+          name: Run C++ tests
           command: cd build && ctest
+      - run:
+          name: Run Python tests
+          command: coverage run tests/python/python_binding_tests.py
+          environment:
+            PYTHONPATH: build/
       - run:
           name: Collect and upload coverage
           command: |
