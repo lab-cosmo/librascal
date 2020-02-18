@@ -483,5 +483,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-
 #endif  // SRC_RASCAL_MODELS_SPARSE_KERNELS_HH_

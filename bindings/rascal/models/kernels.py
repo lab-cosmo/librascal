@@ -94,7 +94,6 @@ class Kernel(object):
         else:
             self._kernel = Kernelcpp(hypers_str)
 
-
     def __call__(self, X, Y=None, grad=(False, False)):
         if isinstance(X, AtomsList):
             X = X.managers

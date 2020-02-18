@@ -231,7 +231,6 @@ namespace rascal {
       this->set_name(hypers);
     }
 
-
     /**
      * Returns if the calculator is able to compute gradients of the
      * representation w.r.t. atomic positions ?

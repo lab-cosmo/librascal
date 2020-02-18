@@ -83,7 +83,6 @@ class KRR(object):
         return self.weights
 
 
-
 def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contributions, f_train=None, lambdas=None, jitter=1e-8):
     """
     Defines the procedure to train a GAP model [1]:
