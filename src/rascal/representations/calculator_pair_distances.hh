@@ -219,7 +219,23 @@ namespace rascal {
 
     pair_distances.clear();
     pair_distances.set_shape(this->descriptor_dimension, 1);
-    pair_distances.resize();
+
+    std::vector<std::set<Key_t>> keys_list{};
+    for (auto center : manager) {
+      for (auto neigh : center.pairs()) {
+        Key_t pair_type{0, 0};
+        if (center.get_atom_type() <= neigh.get_atom_type()) {
+            pair_type[0] = center.get_atom_type();
+            pair_type[1] =  neigh.get_atom_type();
+        } else {
+            pair_type[1] = center.get_atom_type();
+            pair_type[0] = neigh.get_atom_type();
+        }
+        std::set<Key_t> keys{{pair_type}};
+        keys_list.emplace_back(keys);
+      }
+    }
+    pair_distances.resize(keys_list);
 
     for (auto center : manager) {
       for (auto neigh : center.pairs()) {
