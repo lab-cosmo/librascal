@@ -35,6 +35,7 @@ namespace rascal {
                                        py::module & /*m_internal*/) {
     std::string kernel_name = internal::GetBindingTypeName<Kernel>();
     py::class_<Kernel> kernel(mod, kernel_name.c_str());
+    kernel.def(py::init([](std::string & hyper_str) {
       // convert to json
       json hypers = json::parse(hyper_str);
       return std::make_unique<Kernel>(hypers);

@@ -1160,8 +1160,5 @@ namespace rascal {
     }
   }
 }  // namespace rascal
-  }
-
-}  // namespace rascal
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_
