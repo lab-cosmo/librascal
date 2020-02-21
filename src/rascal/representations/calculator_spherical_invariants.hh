@@ -193,6 +193,9 @@ namespace rascal {
     CalculatorSphericalInvariants &
     operator=(CalculatorSphericalInvariants && other) = default;
 
+    Eigen::ArrayXXi angular_radial_indices{};
+    Eigen::ArrayXXi chemical_indices{};
+
     void set_hyperparameters(const Hypers_t & hypers) {
       using internal::SphericalInvariantsType;
 
@@ -539,8 +542,9 @@ namespace rascal {
           auto && atom_j = neigh.get_atom_j();
           const int atom_j_tag{atom_j.get_atom_tag()};
           const bool is_center_atom{manager->is_center_atom(neigh)};
-          // compute grad contribution only if the neighbour is _not_ an
-          // image of the center
+          // compute grad contribution only if the neighbour is _not_ an image
+          // of the center (because then it moves with the center) or is
+          // within the unit cell (so that coefficients[j] exists)
           if (atom_j_tag == atom_i_tag and not is_center_atom) {
             continue;
           }
