@@ -198,8 +198,8 @@ namespace rascal {
                               std::uint32_t l,
                               std::uint32_t n1n2, std::uint32_t l_block_size,
                               std::uint32_t l_block_idx)
-        : n1{n1}, n2{n2}, l{l}, n1n2{n1n2}, l_block_size{l_block_size},
-          l_block_idx{l_block_idx} {}
+        : n1{n1}, n2{n2}, l_block_size{l_block_size},
+          l_block_idx{l_block_idx}, l{l}, n1n2{n1n2} {}
       // indices refering to coefficients of the spherical expansion
       std::uint32_t n1;
       std::uint32_t n2;
@@ -208,14 +208,12 @@ namespace rascal {
       // indices refering to the
       std::uint32_t l;
       std::uint32_t n1n2;
-
-    }
+    };
     //! list of possible input pairs when using coefficient_subselection
-    std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
-              unique_pair_list{};
+    std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess> unique_pair_list{};
     //! list of coefficient that will be computed, mapping keys to a list
     //! invariant coefficients that will be computed
-    std::map<internal::SortedKey<Key_t>, std::vector<PowerSpectrumCoeffIndex>>
+    std::map<internal::SortedKey<Key_t>, std::vector<PowerSpectrumCoeffIndex>, internal::CompareSortedKeyLess>
     coeff_indices_map{};
     //! list of coefficient that will be computed if there is no sparsification
     std::vector<PowerSpectrumCoeffIndex> coeff_indices{};
@@ -290,10 +288,10 @@ namespace rascal {
         // precompute the positions and sizes of the angular momentum channels
         // of the linear storage of the spherical expansion coefficients
         // related to the spherical harmonics
-        std::uint32_t max_angular{*std::max_element(angular_l.begin(), angular_l.end())};
+        std::uint32_t angular_max{*std::max_element(angular_l.begin(), angular_l.end())};
         std::vector<std::uint32_t> l_block_sizes{}, l_block_ids{};
         std::uint32_t pos{0};
-        for (std::uint32_t l{0}; l < max_angular; ++l) {
+        for (std::uint32_t l{0}; l < angular_max; ++l) {
           std::uint32_t size{2*l+1};
           l_block_sizes.push_back(size);
           l_block_ids.push_back(pos);
@@ -307,26 +305,26 @@ namespace rascal {
           // insertion order n1, n2, l, n1n2, l_block_size, l_block_idx
           // n1n2 is set to zero because we store the sparsified features as
           // one row
-          this->coeff_indices_map[spair].emplace_back({
+          this->coeff_indices_map[spair].emplace_back(
             radial_n1[i_pair], radial_n2[i_pair],
               static_cast<std::uint32_t>(i_pair), 0,
               l_block_sizes[angular_l[i_pair]], l_block_ids[angular_l[i_pair]]
-          });
+          );
         }
 
       } else {  // Default false (compute all coefficents)
         this->max_radial = hypers.at("max_radial").get<size_t>();
         this->max_angular = hypers.at("max_angular").get<size_t>();
         this->is_sparsified = false;
-
+        this->n_n1n2 = math::pow(this->max_radial, 2_size_t);
         for (size_t n1{0}; n1 < this->max_radial; ++n1) {
           for (size_t n2{0}; n2 < this->max_radial; ++n2) {
             size_t pos{0};
-            for (size_t l{0}; l < max_angular; ++l) {
+            for (size_t l{0}; l < this->max_angular+1; ++l) {
               size_t size{2*l+1};
-              this->coeff_indices.emplace_back({
+              this->coeff_indices.emplace_back(
                 n1, n2, l, n1*this->max_radial + n2, size, pos
-              });
+              );
               pos += size;
             }
           }
@@ -525,10 +523,10 @@ namespace rascal {
 
     internal::SphericalInvariantsType type{};
 
-    // precomputed l-factors the PowerSpectrum
+    //! precomputed l-factors the PowerSpectrum
     Eigen::VectorXd l_factors{};
 
-    // precomputed wigner symbols for the BiSpectrum
+    //! precomputed wigner symbols for the BiSpectrum
     Eigen::ArrayXd wigner_w3js{};
   };
 
@@ -600,7 +598,7 @@ namespace rascal {
     // using operator[] of soap_vector
     internal::SortedKey<Key_t> spair_type{pair_type};
 
-    const size_t n_n1n2{math::pow(this->max_radial, 2_size_t)};
+    // const size_t n_n1n2{this->n_n1n2};
     // to store the norm of the soap vectors
     SpectrumNorm_t<StructureManager> soap_vector_norm_inv{
         *manager, "power spectrums inverse norms", true};
@@ -622,24 +620,13 @@ namespace rascal {
           spair_type[1] = el2.first[0];
           auto & coef2{el2.second};
           auto && soap_vector_by_pair{soap_vector[spair_type]};
-
-          size_t n1n2{0};
-          size_t pos{0}, size{0};
-          for (size_t n1{0}; n1 < this->max_radial; ++n1) {
-            for (size_t n2{0}; n2 < this->max_radial; ++n2) {
-              soap_vector_by_pair(n1n2, 0) = coef1(n1, 0) * coef2(n2, 0);
-              pos = 1;
-              for (size_t l{1}; l < this->max_angular + 1; ++l) {
-                size = 2 * l + 1;
-                // do the reduction over m (with vectorization)
-                soap_vector_by_pair(n1n2, l) =
-                    (coef1.block(n1, pos, 1, size).array() *
-                     coef2.block(n2, pos, 1, size).array())
-                        .sum();
-                pos += size;
-              }
-              ++n1n2;
-            }
+          const auto & coef_ids{coeff_indices_map[spair_type]};
+          for (const auto& coef_idx : coef_ids) {
+            soap_vector_by_pair(coef_idx.n1n2, coef_idx.l) =
+              (coef1.block(coef_idx.n1, coef_idx.l_block_idx, 1,
+                coef_idx.l_block_size).array() *
+               coef2.block(coef_idx.n2, coef_idx.l_block_idx, 1,
+                coef_idx.l_block_size).array()).sum();
           }
           // multiply with the precomputed factors
           soap_vector_by_pair *= this->l_factors.asDiagonal();
@@ -722,7 +709,7 @@ namespace rascal {
                      ++cartesian_idx) {
                   const size_t cartesian_offset_n{cartesian_idx *
                                                   this->max_radial};
-                  const size_t cartesian_offset_n1n2{cartesian_idx * n_n1n2};
+                  const size_t cartesian_offset_n1n2{cartesian_idx * this->n_n1n2};
                   n1n2 = 0;
                   for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                     for (size_t n2{0}; n2 < this->max_radial; ++n2) {
@@ -753,7 +740,7 @@ namespace rascal {
                      ++cartesian_idx) {
                   const size_t cartesian_offset_n{cartesian_idx *
                                                   this->max_radial};
-                  const size_t cartesian_offset_n1n2{cartesian_idx * n_n1n2};
+                  const size_t cartesian_offset_n1n2{cartesian_idx * this->n_n1n2};
                   n1n2 = 0;
                   for (size_t n1{0}; n1 < this->max_radial; ++n1) {
                     for (size_t n2{0}; n2 < this->max_radial; ++n2) {
@@ -795,7 +782,7 @@ namespace rascal {
     }      // for center : manager
 
     if (this->normalize and this->compute_gradients) {
-      const size_t grad_component_size{n_n1n2 * (this->max_angular + 1)};
+      const size_t grad_component_size{this->n_n1n2 * (this->max_angular + 1)};
       this->update_gradients_for_normalization(
           soap_vectors, soap_vector_gradients, manager, soap_vector_norm_inv,
           grad_component_size);
@@ -1127,7 +1114,7 @@ namespace rascal {
           std::shared_ptr<StructureManager> manager) {
     size_t n_row{math::pow(this->max_radial, 2_size_t)};
     size_t n_col{this->max_angular + 1};
-
+    this->coeff_indices_map.clear();
     // clear the data container and resize it
     soap_vectors.clear();
     soap_vectors.set_shape(n_row, n_col);
@@ -1219,11 +1206,12 @@ namespace rascal {
         }  // auto neigh : center.pairs()
       }    // if compute_gradients
 
-      // inialize coeff_indices_map if the representation is not sparsified
+      // initialize coeff_indices_map if the representation is not sparsified
       if (not this->is_sparsified) {
-        this->coeff_indices_map.clear();
         for (const auto& key : pair_list) {
-          this->coeff_indices_map[key] = coeff_indices;
+          if (not this->coeff_indices_map.count(key)) {
+            this->coeff_indices_map[key] = coeff_indices;
+          }
         }
       }
     }      // for center : manager
