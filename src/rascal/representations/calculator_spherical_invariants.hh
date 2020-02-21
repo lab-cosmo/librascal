@@ -193,14 +193,42 @@ namespace rascal {
     CalculatorSphericalInvariants &
     operator=(CalculatorSphericalInvariants && other) = default;
 
-    Eigen::ArrayXXi angular_radial_indices{};
-    Eigen::ArrayXXi chemical_indices{};
+    struct PowerSpectrumCoeffIndex {
+      PowerSpectrumCoeffIndex(std::uint32_t n1, std::uint32_t n2,
+                              std::uint32_t l,
+                              std::uint32_t n1n2, std::uint32_t l_block_size,
+                              std::uint32_t l_block_idx)
+        : n1{n1}, n2{n2}, l{l}, n1n2{n1n2}, l_block_size{l_block_size},
+          l_block_idx{l_block_idx} {}
+      // indices refering to coefficients of the spherical expansion
+      std::uint32_t n1;
+      std::uint32_t n2;
+      std::uint32_t l_block_size;
+      std::uint32_t l_block_idx;
+      // indices refering to the
+      std::uint32_t l;
+      std::uint32_t n1n2;
+
+    }
+    //! list of possible input pairs when using coefficient_subselection
+    std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
+              unique_pair_list{};
+    //! list of coefficient that will be computed, mapping keys to a list
+    //! invariant coefficients that will be computed
+    std::map<internal::SortedKey<Key_t>, std::vector<PowerSpectrumCoeffIndex>>
+    coeff_indices_map{};
+    //! list of coefficient that will be computed if there is no sparsification
+    std::vector<PowerSpectrumCoeffIndex> coeff_indices{};
+    //! size of the first dimension in the dense invariant coefficient matrix
+    std::uint32_t n_n1n2{0};
+    //! tell if the calculator has been sparsified using
+    //! the coefficient_subselection input
+    bool is_sparsified{false};
 
     void set_hyperparameters(const Hypers_t & hypers) {
       using internal::SphericalInvariantsType;
 
-      this->max_radial = hypers.at("max_radial").get<size_t>();
-      this->max_angular = hypers.at("max_angular").get<size_t>();
+
       this->normalize = hypers.at("normalize").get<bool>();
       auto soap_type = hypers.at("soap_type").get<std::string>();
 
@@ -208,6 +236,101 @@ namespace rascal {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();
       } else {  // Default false (don't compute gradients)
         this->compute_gradients = false;
+      }
+
+      if (hypers.find("coefficient_subselection") != hypers.end()
+            and (soap_type == "PowerSpectrum")) {  // NOLINT
+        this->is_sparsified = true;
+        auto coefficient_subselection = hypers.at("coefficient_subselection").get<json>();
+        // get the indices of the subselected PowerSpectrum coefficients:
+        // p_{abn_1n_2l} where a and b refer to atomic species and should be
+        // lexicographically sorted so that a <= b, n_1 and n_2 refer to
+        // radial basis index and l refer to the angular index of the
+        // spherical harmonic
+        auto sp_a = coefficient_subselection.at("a").get<std::vector<typename Key_t::value_type>>();
+        auto sp_b = coefficient_subselection.at("b").get<std::vector<typename Key_t::value_type>>();
+        auto radial_n1 = coefficient_subselection.at("n1").get<std::vector<std::uint32_t>>();
+        auto radial_n2 = coefficient_subselection.at("n2").get<std::vector<std::uint32_t>>();
+        auto angular_l = coefficient_subselection.at("l").get<std::vector<std::uint32_t>>();
+        // check if the inputs are sane
+        {
+          if (sp_a.size() != sp_b.size()) {
+            throw std::logic_error(
+              R"(coefficient_subselection should have elements of the same size but: a.size() != b.size())");
+          } else if (sp_a.size() != radial_n1.size()) {
+            throw std::logic_error(
+              R"(coefficient_subselection should have elements of the same size but: a.size() != n1.size())");
+          } else if (sp_a.size() != radial_n2.size()) {
+            throw std::logic_error(
+              R"(coefficient_subselection should have elements of the same size but: a.size() != n2.size())");
+          } else if (sp_a.size() != angular_l.size()) {
+            throw std::logic_error(
+              R"(coefficient_subselection should have elements of the same size but: a.size() != l.size())");
+          }
+        }
+        this->n_n1n2 = 0;
+        this->max_angular = sp_a.size();
+        internal::Sorted<true> is_sorted{};
+        // collect all unique sorted pairs
+        for (size_t i_pair{0}; i_pair < sp_a.size(); ++i_pair) {
+          if (sp_a[i_pair] > sp_b[i_pair]) {
+             throw std::logic_error(
+            R"(coefficient_subselection should have only lexicographically
+              sorted pairs of atomic species in the selection but: a > b)");
+          }
+          Key_t pair{{sp_a[i_pair], sp_b[i_pair]}};
+          this->unique_pair_list.insert({is_sorted, pair});
+        }
+        // initialize coeff_indices_map
+        std::vector<PowerSpectrumCoeffIndex> init_vec{};
+        for (const auto& key : this->unique_pair_list) {
+          this->coeff_indices_map[key] = init_vec;
+        }
+
+        // precompute the positions and sizes of the angular momentum channels
+        // of the linear storage of the spherical expansion coefficients
+        // related to the spherical harmonics
+        std::uint32_t max_angular{*std::max_element(angular_l.begin(), angular_l.end())};
+        std::vector<std::uint32_t> l_block_sizes{}, l_block_ids{};
+        std::uint32_t pos{0};
+        for (std::uint32_t l{0}; l < max_angular; ++l) {
+          std::uint32_t size{2*l+1};
+          l_block_sizes.push_back(size);
+          l_block_ids.push_back(pos);
+          pos += size;
+        }
+
+        // fill coeff_indices_map
+        for (size_t i_pair{0}; i_pair < sp_a.size(); ++i_pair) {
+          Key_t pair{{sp_a[i_pair], sp_b[i_pair]}};
+          internal::SortedKey<Key_t> spair{is_sorted, pair};
+          // insertion order n1, n2, l, n1n2, l_block_size, l_block_idx
+          // n1n2 is set to zero because we store the sparsified features as
+          // one row
+          this->coeff_indices_map[spair].emplace_back({
+            radial_n1[i_pair], radial_n2[i_pair],
+              static_cast<std::uint32_t>(i_pair), 0,
+              l_block_sizes[angular_l[i_pair]], l_block_ids[angular_l[i_pair]]
+          });
+        }
+
+      } else {  // Default false (compute all coefficents)
+        this->max_radial = hypers.at("max_radial").get<size_t>();
+        this->max_angular = hypers.at("max_angular").get<size_t>();
+        this->is_sparsified = false;
+
+        for (size_t n1{0}; n1 < this->max_radial; ++n1) {
+          for (size_t n2{0}; n2 < this->max_radial; ++n2) {
+            size_t pos{0};
+            for (size_t l{0}; l < max_angular; ++l) {
+              size_t size{2*l+1};
+              this->coeff_indices.emplace_back({
+                n1, n2, l, n1*this->max_radial + n2, size, pos
+              });
+              pos += size;
+            }
+          }
+        }
       }
 
       if (soap_type == "PowerSpectrum") {
@@ -1095,6 +1218,14 @@ namespace rascal {
           keys_list_grad.emplace_back(grad_pair_list);
         }  // auto neigh : center.pairs()
       }    // if compute_gradients
+
+      // inialize coeff_indices_map if the representation is not sparsified
+      if (not this->is_sparsified) {
+        this->coeff_indices_map.clear();
+        for (const auto& key : pair_list) {
+          this->coeff_indices_map[key] = coeff_indices;
+        }
+      }
     }      // for center : manager
 
     soap_vectors.resize(keys_list);
