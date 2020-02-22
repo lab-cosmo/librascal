@@ -112,7 +112,6 @@ namespace rascal {
     base.def_readonly("default_prefix", &CalculatorBase::default_prefix);
     /*-------------------- rep-bind-start --------------------*/
     // Defines a particular structure manager type
-
     using TypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
                                    AdaptorNeighbourList, AdaptorStrict>;
