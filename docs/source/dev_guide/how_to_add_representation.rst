@@ -42,7 +42,7 @@ followed by the definition of its constructors and destructor
     :language: c++
     :start-after: rep-construc-start
     :end-before: rep-construc-end
-    :dedent: 2
+    :dedent: 4
 
 the declaration of the concrete implementation of the calculator interface
 
@@ -50,7 +50,7 @@ the declaration of the concrete implementation of the calculator interface
     :language: c++
     :start-after: rep-interface-start
     :end-before: rep-interface-end
-    :dedent: 2
+    :dedent: 4
 
 and the declaration of some functions for internal use in the protected section. The end of the class contains the different internal variables needed by the class
 
@@ -58,7 +58,7 @@ and the declaration of some functions for internal use in the protected section.
     :language: c++
     :start-after: rep-variables-start
     :end-before: rep-variables-end
-    :dedent: 2
+    :dedent: 4
 
 Implementing several types of the same representation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -114,6 +114,7 @@ We use ``pybind11`` to handle the generation of the python bindings. To make a n
 .. Note::
 
     To be able to use a particular structure manager stack in python, it also has to be binded. In the case a valid structure manager stack for your representation is not already binded, you will have to register it too in the :cpp:func:`add_structure_managers() <add_structure_managers>` function in ``bindings/bind_py_structure_manager.cc`` like in this example:
+    
     .. literalinclude:: ../../../bindings/bind_py_structure_manager.cc
         :language: c++
         :start-after: struc-man-bind-start
