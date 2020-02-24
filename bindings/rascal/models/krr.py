@@ -83,7 +83,7 @@ class KRR(object):
         return self.weights
 
 
-def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contributions, f_train=None, lambdas=None, jitter=1e-8):
+def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contributions, grad_train=None, lambdas=None, jitter=1e-8):
     """
     Defines the procedure to train a GAP model [1]:
     .. math::
@@ -140,9 +140,9 @@ def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contribution
         the corresponding isolated atom energies so that the model
         can be trained on the corresponding formation energies and
         still predict total energies.
-    f_train : np.array, optional
-        minus derivatives of y_train w.r.t. to the atomic motion, e.g.
-        interatomic forces, by default None
+    grad_train : np.array, optional
+        derivatives of y_train w.r.t. to the atomic motion, e.g.
+        minus interatomic forces, by default None
     lambdas : list/tuple, optional
         regularisation parameter for the training, i.e. lambdas[0] -> property
         and lambdas[1] -> gradients of the property, by default None
@@ -175,9 +175,9 @@ def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contribution
     KNM[:n_centers] /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
     Y /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
 
-    if f_train is not None:
+    if grad_train is not None:
         KNM[n_centers:] /= lambdas[1] / delta
-        F = - f_train.reshape((-1, 1)).copy()
+        F = grad_train.reshape((-1, 1)).copy()
         F /= lambdas[1] / delta
         Y = np.vstack([Y, F])
 
