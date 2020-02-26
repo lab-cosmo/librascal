@@ -228,54 +228,312 @@
 <p>A calculator of a representation is an object that builds a representation of the atomic structure contained in <em>a</em> structure manager. This class:</p>
 <ul class="simple">
 <li><p>inherits publicly from <a class="reference internal" href="../reference/cpp.html#_CPPv4N6rascal14CalculatorBaseE" title="rascal::CalculatorBase"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalculatorBase</span></code></a> to follow its interface and use some of the common utilies shared by such class.</p></li>
-<li><p>uses a <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute()</span></code> function expecting one or a list of structure manager(s) to build the representation efficiently.</p></li>
-<li><p>uses the <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Property</span></code> class to store the representation’s features.</p></li>
+<li><p>uses a <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute()</span></code> function expecting one or a list of structure manager(s) to build the representation efficiently and attach the resulting features to their respective structure manager.</p></li>
 </ul>
 <p>The behaviour of a representation calculator is defined at construction by hyperparameters which are specific to the representation.
-. These hyperparameters can</p>
-<blockquote>
-<div><ul class="simple">
+These hyperparameters can:</p>
+<ul class="simple">
 <li><p>define a particular implementation from a set of conceptually equivalent methods, implemented using primitive enums</p></li>
 <li><p>be scalar values or on/off features used as hyperparameters in the calculation of the represenation, implemented using primitive types</p></li>
 </ul>
-</div></blockquote>
-<p>Note that there is one representation manager per structure manager.</p>
-<p>To illustrate the basic structure that a new representation that would be implemented in <code class="docutils literal notranslate"><span class="pre">calculator_representation_name.hh</span></code> should follow, let’s take the example of the <a class="reference internal" href="../reference/cpp.html#_CPPv4N6rascal23CalculatorSortedCoulombE" title="rascal::CalculatorSortedCoulomb"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalculatorSortedCoulomb</span></code></a>. A detailed discussion of the sorted coulomb matrix representation can be found in <a class="footnote-reference brackets" href="#one" id="id1">1</a> and <a class="footnote-reference brackets" href="#two" id="id2">2</a>.</p>
+<p>To illustrate the basic structure that a new representation that would be implemented in <code class="docutils literal notranslate"><span class="pre">calculator_representation_name.hh</span></code> should follow, let’s take the example of the <a class="reference internal" href="../reference/cpp.html#_CPPv4N6rascal23CalculatorSortedCoulombE" title="rascal::CalculatorSortedCoulomb"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalculatorSortedCoulomb</span></code></a>. A detailed discussion of the sorted coulomb matrix representation can be found in Ref. <a class="footnote-reference brackets" href="#one" id="id1">1</a> and Ref. <a class="footnote-reference brackets" href="#two" id="id2">2</a>.</p>
 <p>The representation starts with the definition of some useful short hands</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * Implementation of the Environmental Coulomb Matrix</span>
+<span class="cm"> */</span>
+<span class="k">class</span> <span class="nc">CalculatorSortedCoulomb</span> <span class="o">:</span> <span class="k">public</span> <span class="n">CalculatorBase</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="k">using</span> <span class="n">Parent</span> <span class="o">=</span> <span class="n">CalculatorBase</span><span class="p">;</span>
+  <span class="c1">// type of the hyperparameters</span>
+  <span class="k">using</span> <span class="n">Hypers_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">Parent</span><span class="o">::</span><span class="n">Hypers_t</span><span class="p">;</span>
+  <span class="c1">// numeric type for the representation features</span>
+  <span class="k">using</span> <span class="n">Precision_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">Parent</span><span class="o">::</span><span class="n">Precision_t</span><span class="p">;</span>
+  <span class="c1">// type of the data structure for the representation feaures</span>
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">StructureManager</span><span class="o">&gt;</span>
+  <span class="k">using</span> <span class="n">Property_t</span> <span class="o">=</span>
+      <span class="n">Property</span><span class="o">&lt;</span><span class="n">Precision_t</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">StructureManager</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Dynamic</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span>
+  <span class="c1">// short hand type to help the iteration over the structure manager</span>
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">StructureManager</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">Order</span><span class="o">&gt;</span>
+  <span class="k">using</span> <span class="n">ClusterRef_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">StructureManager</span><span class="o">::</span><span class="k">template</span> <span class="n">ClusterRef</span><span class="o">&lt;</span><span class="n">Order</span><span class="o">&gt;</span><span class="p">;</span>
+  <span class="c1">// type of the datastructure used to register the list of valid</span>
+  <span class="c1">// hyperparameters</span>
+  <span class="k">using</span> <span class="n">ReferenceHypers_t</span> <span class="o">=</span> <span class="n">Parent</span><span class="o">::</span><span class="n">ReferenceHypers_t</span><span class="p">;</span>
+</pre></div>
+</div>
 <p>followed by the definition of its constructors and destructor</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//! Constructor</span>
+<span class="k">explicit</span> <span class="nf">CalculatorSortedCoulomb</span><span class="p">(</span><span class="k">const</span> <span class="n">Hypers_t</span> <span class="o">&amp;</span> <span class="n">hyper</span><span class="p">)</span>
+    <span class="o">:</span> <span class="n">CalculatorBase</span><span class="p">{}</span> <span class="p">{</span>
+  <span class="k">this</span><span class="o">-&gt;</span><span class="n">set_default_prefix</span><span class="p">(</span><span class="s">&quot;sorted_coulomb_&quot;</span><span class="p">);</span>
+  <span class="k">this</span><span class="o">-&gt;</span><span class="n">check_hyperparameters</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">reference_hypers</span><span class="p">,</span> <span class="n">hyper</span><span class="p">);</span>
+  <span class="c1">// Extract the options and hyperparameters</span>
+  <span class="k">this</span><span class="o">-&gt;</span><span class="n">set_hyperparameters</span><span class="p">(</span><span class="n">hyper</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">//! Copy constructor</span>
+<span class="n">CalculatorSortedCoulomb</span><span class="p">(</span><span class="k">const</span> <span class="n">CalculatorSortedCoulomb</span> <span class="o">&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
+
+<span class="c1">//! Move constructor</span>
+<span class="n">CalculatorSortedCoulomb</span><span class="p">(</span><span class="n">CalculatorSortedCoulomb</span> <span class="o">&amp;&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+
+<span class="c1">//! Destructor</span>
+<span class="k">virtual</span> <span class="o">~</span><span class="n">CalculatorSortedCoulomb</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+
+<span class="c1">//! Copy assignment operator</span>
+<span class="n">CalculatorSortedCoulomb</span> <span class="o">&amp;</span>
+<span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span> <span class="n">CalculatorSortedCoulomb</span> <span class="o">&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
+
+<span class="c1">//! Move assignment operator</span>
+<span class="n">CalculatorSortedCoulomb</span> <span class="o">&amp;</span>
+<span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="n">CalculatorSortedCoulomb</span> <span class="o">&amp;&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+</pre></div>
+</div>
 <p>the declaration of the concrete implementation of the calculator interface</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * Compute representation for a given structure manager.</span>
+<span class="cm"> *</span>
+<span class="cm"> * @tparam StructureManager a (single or collection)</span>
+<span class="cm"> * of structure manager(s) (in an iterator) held in shared_ptr</span>
+<span class="cm"> */</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">StructureManager</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">compute</span><span class="p">(</span><span class="n">StructureManager</span> <span class="o">&amp;</span> <span class="n">managers</span><span class="p">);</span>
+
+<span class="c1">//! set hypers</span>
+<span class="kt">void</span> <span class="nf">set_hyperparameters</span><span class="p">(</span><span class="k">const</span> <span class="n">Hypers_t</span> <span class="o">&amp;</span> <span class="cm">/*hypers*/</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">update_central_cutoff</span><span class="p">(</span><span class="kt">double</span> <span class="cm">/*cutoff*/</span><span class="p">);</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * check if size of the calculator is enough for current structure</span>
+<span class="cm"> * manager.</span>
+<span class="cm"> * size refers to the parameter that regulate the feature size of the</span>
+<span class="cm"> * calculator.</span>
+<span class="cm"> */</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">StructureManager</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">check_size_compatibility</span><span class="p">(</span><span class="n">StructureManager</span> <span class="o">&amp;</span> <span class="n">manager</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">center</span> <span class="p">:</span> <span class="n">manager</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">auto</span> <span class="n">n_neighbours</span><span class="p">{</span><span class="n">center</span><span class="p">.</span><span class="n">pairs</span><span class="p">().</span><span class="n">size</span><span class="p">()};</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">n_neighbours</span> <span class="o">&gt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;size is too small for this &quot;</span>
+                   <span class="s">&quot;structure and has been reset to: &quot;</span>
+                <span class="o">&lt;&lt;</span> <span class="n">n_neighbours</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+      <span class="k">this</span><span class="o">-&gt;</span><span class="n">size</span> <span class="o">=</span> <span class="n">n_neighbours</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <p>and the declaration of some functions for internal use in the protected section. The end of the class contains the different internal variables needed by the class</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// list of hyperparameters specific to the coulomb matrix</span>
+<span class="c1">// spherical cutoff for the atomic environment</span>
+<span class="kt">double</span> <span class="n">central_cutoff</span><span class="p">{};</span>
+
+<span class="kt">double</span> <span class="n">central_decay</span><span class="p">{};</span>
+<span class="kt">double</span> <span class="n">interaction_cutoff</span><span class="p">{};</span>
+<span class="kt">double</span> <span class="n">interaction_decay</span><span class="p">{};</span>
+<span class="c1">// at least equal to the largest number of neighours</span>
+<span class="kt">size_t</span> <span class="n">size</span><span class="p">{};</span>
+
+<span class="c1">//! reference the requiered hypers</span>
+<span class="n">ReferenceHypers_t</span> <span class="n">reference_hypers</span><span class="p">{</span>
+    <span class="p">{</span><span class="s">&quot;central_cutoff&quot;</span><span class="p">,</span> <span class="p">{}},</span>
+    <span class="p">{</span><span class="s">&quot;central_decay&quot;</span><span class="p">,</span> <span class="p">{}},</span>
+    <span class="p">{</span><span class="s">&quot;interaction_cutoff&quot;</span><span class="p">,</span> <span class="p">{}},</span>
+    <span class="p">{</span><span class="s">&quot;interaction_decay&quot;</span><span class="p">,</span> <span class="p">{}},</span>
+    <span class="p">{</span><span class="s">&quot;size&quot;</span><span class="p">,</span> <span class="p">{}},</span>
+    <span class="p">{</span><span class="s">&quot;sorting_algorithm&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;distance&quot;</span><span class="p">,</span> <span class="s">&quot;row_norm&quot;</span><span class="p">}},</span>
+<span class="p">};</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="implementing-several-types-of-the-same-representation">
 <h2><a class="toc-backref" href="#id7">Implementing several types of the same representation</a><a class="headerlink" href="#implementing-several-types-of-the-same-representation" title="Permalink to this headline">¶</a></h2>
-<p>Often there are different ways to implement the same fundamental representation. To be able to do this in rascal, the compute function is used with the type of of the implementation as template argument (or multiple if representation requires this). The switch between several implementations of conceptually equivalent parts of a representation can be implemented through several mechanisms such a virtual inheritance. We detail here how to implement such switch efficiently using the <a class="reference internal" href="../reference/cpp.html#_CPPv4N6rascal23CalculatorSortedCoulombE" title="rascal::CalculatorSortedCoulomb"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalculatorSortedCoulomb</span></code></a> as an example.</p>
+<p>Often there are different ways to implement the same fundamental representation. To be able to do this in rascal, the compute function is used with the type of the implementation as template argument (or multiple if representation requires this). The switch between several implementations of conceptually equivalent parts of a representation can be implemented through several mechanisms such a virtual inheritance. We detail here how to implement such switch efficiently using the <a class="reference internal" href="../reference/cpp.html#_CPPv4N6rascal23CalculatorSortedCoulombE" title="rascal::CalculatorSortedCoulomb"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalculatorSortedCoulomb</span></code></a> as an example.</p>
 <p>To make the coulomb matrix invariant with respect to permutation Ref. <a class="footnote-reference brackets" href="#two" id="id3">2</a> proposes to sort the upper triangular part of the coulomb matrix according to the norm of each rows or the distance from the central atom (see <a class="footnote-reference brackets" href="#one" id="id4">1</a> for details).</p>
-<p>The implementation of these two behaviour is encapsulated in the <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">SortCoulomMatrix</span></code> class and the choice between them is done with a template parameter using template specialization. Note that a in this particular case templated functions could be sufficient but to underline how to implement the most general case a class is used.</p>
+<p>The implementation of these two behaviour is encapsulated in the <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">SortCoulomMatrix</span></code> class and the choice between them is done with a template parameter using template specialization. Note that in this particular case templated functions could be sufficient but to underline how to implement the most general case a class is used.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// Enum class defining the several possible sorting options of the Coulomb</span>
+<span class="c1">// Matrix</span>
+<span class="k">enum</span> <span class="k">class</span> <span class="nc">CMSortAlgorithm</span> <span class="p">{</span>
+  <span class="n">Distance</span><span class="p">,</span>  <span class="c1">// sort according to the distance from the central atom</span>
+  <span class="n">RowNorm</span><span class="p">,</span>   <span class="c1">// sort according to the norm of the coulomb matrix rows</span>
+<span class="p">};</span>
+
+<span class="c1">// Empty general template class implementing the determination of the</span>
+<span class="c1">// sorting order for the coulomb matrix. It should never be instantiated.</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="n">CMSortAlgorithm</span> <span class="n">Method</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">SortCoulomMatrix</span> <span class="p">{};</span>
+</pre></div>
+</div>
 <p>The specific implementation of the two options is done in with template specialization</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;&gt;</span>
+<span class="k">struct</span> <span class="n">SortCoulomMatrix</span><span class="o">&lt;</span><span class="n">CMSortAlgorithm</span><span class="o">::</span><span class="n">Distance</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="cm">/**</span>
+<span class="cm">   * Sort the coulomb matrix using the distance to the central atom</span>
+<span class="cm">   * as reference order.</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param distance_mat distance matrix between all the atoms in the</span>
+<span class="cm">   *                      neighbourhood</span>
+<span class="cm">   */</span>
+  <span class="k">static</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="p">,</span> <span class="n">distiter</span><span class="o">&gt;&gt;</span>
+  <span class="n">get_coulomb_matrix_sorting_order</span><span class="p">(</span>
+      <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Ref</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&gt;</span> <span class="o">&amp;</span> <span class="n">distance_mat</span><span class="p">,</span>
+      <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Ref</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// initialize the distances to be sorted. the center is always first</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">distances_to_sort</span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+    <span class="n">distances_to_sort</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="n">distance_mat</span><span class="p">.</span><span class="n">cols</span><span class="p">());</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">idx_i</span><span class="p">{</span><span class="mi">1</span><span class="p">};</span> <span class="n">idx_i</span> <span class="o">&lt;</span> <span class="n">distance_mat</span><span class="p">.</span><span class="n">cols</span><span class="p">();</span> <span class="o">++</span><span class="n">idx_i</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">distances_to_sort</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">distance_mat</span><span class="p">(</span><span class="n">idx_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="c1">// find the sorting order</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="p">,</span> <span class="n">distiter</span><span class="o">&gt;&gt;</span> <span class="n">order_coulomb</span><span class="p">(</span>
+        <span class="n">distances_to_sort</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+    <span class="kt">size_t</span> <span class="n">nn</span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">distiter</span> <span class="n">it</span><span class="p">{</span><span class="n">distances_to_sort</span><span class="p">.</span><span class="n">begin</span><span class="p">()};</span>
+         <span class="n">it</span> <span class="o">!=</span> <span class="n">distances_to_sort</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">,</span> <span class="o">++</span><span class="n">nn</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">order_coulomb</span><span class="p">[</span><span class="n">nn</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_pair</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">it</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// use stable sort</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">stable_sort</span><span class="p">(</span><span class="n">order_coulomb</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">order_coulomb</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+                     <span class="n">ordering</span><span class="o">::</span><span class="n">ascending</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">order_coulomb</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">template</span> <span class="o">&lt;&gt;</span>
+<span class="k">struct</span> <span class="n">SortCoulomMatrix</span><span class="o">&lt;</span><span class="n">CMSortAlgorithm</span><span class="o">::</span><span class="n">RowNorm</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="cm">/**</span>
+<span class="cm">   * Sort the coulomb matrix using the distance to the central atom</span>
+<span class="cm">   * as reference order.</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param coulomb_mat coulomb matris between all the atoms in the</span>
+<span class="cm">   *                      neighbourhood</span>
+<span class="cm">   */</span>
+  <span class="k">static</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="p">,</span> <span class="n">distiter</span><span class="o">&gt;&gt;</span>
+  <span class="n">get_coulomb_matrix_sorting_order</span><span class="p">(</span>
+      <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Ref</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="p">,</span>
+      <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Ref</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&gt;</span> <span class="o">&amp;</span> <span class="n">coulomb_mat</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// initialize the distances to be sorted. the center is always first</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">distances_to_sort</span><span class="p">{};</span>
+    <span class="n">distances_to_sort</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="n">coulomb_mat</span><span class="p">.</span><span class="n">cols</span><span class="p">());</span>
+
+    <span class="k">auto</span> <span class="n">row_norms</span> <span class="o">=</span> <span class="n">coulomb_mat</span><span class="p">.</span><span class="n">colwise</span><span class="p">().</span><span class="n">squaredNorm</span><span class="p">().</span><span class="n">eval</span><span class="p">();</span>
+    <span class="n">row_norms</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1e200</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">idx_i</span><span class="p">{</span><span class="mi">0</span><span class="p">};</span> <span class="n">idx_i</span> <span class="o">&lt;</span> <span class="n">coulomb_mat</span><span class="p">.</span><span class="n">cols</span><span class="p">();</span> <span class="o">++</span><span class="n">idx_i</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">distances_to_sort</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">row_norms</span><span class="p">(</span><span class="n">idx_i</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="p">,</span> <span class="n">distiter</span><span class="o">&gt;&gt;</span> <span class="n">order_coulomb</span><span class="p">(</span>
+        <span class="n">distances_to_sort</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+    <span class="kt">size_t</span> <span class="n">nn</span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">distiter</span> <span class="n">it</span><span class="p">{</span><span class="n">distances_to_sort</span><span class="p">.</span><span class="n">begin</span><span class="p">()};</span>
+         <span class="n">it</span> <span class="o">!=</span> <span class="n">distances_to_sort</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">,</span> <span class="o">++</span><span class="n">nn</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">order_coulomb</span><span class="p">[</span><span class="n">nn</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_pair</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">it</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// use stable sort</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">stable_sort</span><span class="p">(</span><span class="n">order_coulomb</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">order_coulomb</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+                     <span class="n">ordering</span><span class="o">::</span><span class="n">descending</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">order_coulomb</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
 <p>The switch between the two behaviours is done in the <a class="reference internal" href="../reference/cpp.html#_CPPv4I0EN6rascal23CalculatorSortedCoulomb7computeEvR16StructureManager" title="rascal::CalculatorSortedCoulomb::compute"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute()</span></code></a> function which chooses the right type of computation method to compute the representation for each structure manager. At the moment the <a class="reference internal" href="../reference/cpp.html#_CPPv4I_N8internal15CMSortAlgorithmE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal23CalculatorSortedCoulomb12compute_loopEvR16StructureManager" title="rascal::CalculatorSortedCoulomb::compute_loop"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute_loop()</span></code></a> function has to be copied to every new calculator to allow iterations over structure managers. It is not necessary to understand this code, if one is only interested to integegrate a new representation into rascal.</p>
-<p>The actual implementation of the representation is in the function <a class="reference internal" href="../reference/cpp.html#_CPPv4I_N8internal15CMSortAlgorithmE0EN6rascal23CalculatorSortedCoulomb12compute_implEvRNSt10shared_ptrI16StructureManagerEE" title="rascal::CalculatorSortedCoulomb::compute_impl"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute_impl()</span></code></a> witch the computation method as template argument.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//! loop over a collection of manangers (note that maps would raise a</span>
+<span class="c1">//! compilation error)</span>
+<span class="k">template</span> <span class="o">&lt;</span>
+    <span class="n">internal</span><span class="o">::</span><span class="n">CMSortAlgorithm</span> <span class="n">AlgorithmType</span><span class="p">,</span> <span class="k">class</span> <span class="nc">StructureManager</span><span class="p">,</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">enable_if_t</span><span class="o">&lt;</span><span class="n">internal</span><span class="o">::</span><span class="n">is_proper_iterator</span><span class="o">&lt;</span><span class="n">StructureManager</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">,</span>
+                     <span class="kt">int</span><span class="o">&gt;</span> <span class="o">=</span> <span class="mi">0</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">compute_loop</span><span class="p">(</span><span class="n">StructureManager</span> <span class="o">&amp;</span> <span class="n">managers</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="o">&amp;</span> <span class="nl">manager</span> <span class="p">:</span> <span class="n">managers</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="o">-&gt;</span><span class="n">compute_impl</span><span class="o">&lt;</span><span class="n">AlgorithmType</span><span class="o">&gt;</span><span class="p">(</span><span class="n">manager</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">//! if it is not a list of managers</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="n">internal</span><span class="o">::</span><span class="n">CMSortAlgorithm</span> <span class="n">AlgorithmType</span><span class="p">,</span> <span class="k">class</span> <span class="nc">StructureManager</span><span class="p">,</span>
+          <span class="n">std</span><span class="o">::</span><span class="n">enable_if_t</span><span class="o">&lt;</span>
+              <span class="n">not</span><span class="p">(</span><span class="n">internal</span><span class="o">::</span><span class="n">is_proper_iterator</span><span class="o">&lt;</span><span class="n">StructureManager</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">),</span>
+              <span class="kt">int</span><span class="o">&gt;</span> <span class="o">=</span> <span class="mi">0</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">compute_loop</span><span class="p">(</span><span class="n">StructureManager</span> <span class="o">&amp;</span> <span class="n">manager</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="o">-&gt;</span><span class="n">compute_impl</span><span class="o">&lt;</span><span class="n">AlgorithmType</span><span class="o">&gt;</span><span class="p">(</span><span class="n">manager</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The actual implementation of the representation is in the function <a class="reference internal" href="../reference/cpp.html#_CPPv4I_N8internal15CMSortAlgorithmE0EN6rascal23CalculatorSortedCoulomb12compute_implEvRNSt10shared_ptrI16StructureManagerEE" title="rascal::CalculatorSortedCoulomb::compute_impl"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute_impl()</span></code></a> which is templated with the computation method.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">StructureManager</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">CalculatorSortedCoulomb</span><span class="o">::</span><span class="n">compute</span><span class="p">(</span><span class="n">StructureManager</span> <span class="o">&amp;</span> <span class="n">managers</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">auto</span> <span class="n">option</span><span class="p">{</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">options</span><span class="p">[</span><span class="s">&quot;sorting_algorithm&quot;</span><span class="p">]};</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">==</span> <span class="s">&quot;distance&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">compute_loop</span><span class="o">&lt;</span><span class="n">internal</span><span class="o">::</span><span class="n">CMSortAlgorithm</span><span class="o">::</span><span class="n">Distance</span><span class="o">&gt;</span><span class="p">(</span><span class="n">managers</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">option</span> <span class="o">==</span> <span class="s">&quot;row_norm&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">compute_loop</span><span class="o">&lt;</span><span class="n">internal</span><span class="o">::</span><span class="n">CMSortAlgorithm</span><span class="o">::</span><span class="n">RowNorm</span><span class="o">&gt;</span><span class="p">(</span><span class="n">managers</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="k">auto</span> <span class="n">error_message</span><span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">&quot;Option &#39;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">option</span> <span class="o">+</span>
+                       <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">&quot;&#39; is not implemented.&quot;</span><span class="p">)};</span>
+    <span class="k">throw</span> <span class="n">std</span><span class="o">::</span><span class="n">invalid_argument</span><span class="p">(</span><span class="n">error_message</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="write-the-python-bindings-of-a-new-representation">
 <h2><a class="toc-backref" href="#id8">Write the python bindings of a new representation</a><a class="headerlink" href="#write-the-python-bindings-of-a-new-representation" title="Permalink to this headline">¶</a></h2>
-<p>We use <code class="docutils literal notranslate"><span class="pre">pybind11</span></code> to handle the generation of python bindings. To make a new representation available for the use on the python side, you need to explicitly register your representation calculator for every possible structure manager stack that you want to make available in the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">add_representation_calculators()</span></code> function in <code class="docutils literal notranslate"><span class="pre">bindings/bind_py_representation_calculator.cc</span></code>. Here is an example on how it is done for the sorted coulomb representation.</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// Defines a particular structure manager type</span>
-
-  <span class="k">using</span> <span class="n">TypeHolder_t</span> <span class="o">=</span>
-      <span class="n">StructureManagerTypeHolder</span><span class="o">&lt;</span><span class="n">StructureManagerCenters</span><span class="p">,</span>
-                                 <span class="n">AdaptorNeighbourList</span><span class="p">,</span> <span class="n">AdaptorStrict</span><span class="o">&gt;</span><span class="p">;</span>
-  <span class="k">using</span> <span class="n">ManagerList_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">TypeHolder_t</span><span class="o">::</span><span class="n">type_list</span><span class="p">;</span>
-  <span class="c1">// using Manager_t = typename TypeHolder_t::type;</span>
-  <span class="c1">// StructureManagerCenters,AdaptorNeighbourList, AdaptorStrict</span>
-  <span class="c1">// Defines the representation manager type for the particular structure</span>
-  <span class="c1">// manager</span>
-  <span class="k">using</span> <span class="n">Calc1_t</span> <span class="o">=</span> <span class="n">CalculatorSortedCoulomb</span><span class="p">;</span>
-  <span class="c1">// Bind the interface of this representation manager</span>
-  <span class="k">auto</span> <span class="n">rep_sorted_coulomb</span> <span class="o">=</span>
-      <span class="n">add_representation_calculator</span><span class="o">&lt;</span><span class="n">Calc1_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">m_internal</span><span class="p">);</span>
-  <span class="n">bind_compute_function_helper</span><span class="o">&lt;</span><span class="n">ManagerList_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">rep_sorted_coulomb</span><span class="p">);</span>
+<p>We use <code class="docutils literal notranslate"><span class="pre">pybind11</span></code> to handle the generation of the python bindings. To make a new representation available to the python users, you need to explicitly register your representation calculator. Since the function <a class="reference internal" href="../reference/cpp.html#_CPPv4I0EN6rascal23CalculatorSortedCoulomb7computeEvR16StructureManager" title="rascal::CalculatorSortedCoulomb::compute"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute()</span></code></a> is templated with the type of the input structure manager, it has to be binded explicitly for every possible structure manager stack type that you want to allow as input. To do this you need to add you own binding code in the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">add_representation_calculators()</span></code> function in <code class="docutils literal notranslate"><span class="pre">bindings/bind_py_representation_calculator.cc</span></code> using the available infrastructure. Here is an example on how it is done for the sorted coulomb representation.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// Defines a particular structure manager type</span>
+<span class="k">using</span> <span class="n">TypeHolder_t</span> <span class="o">=</span>
+    <span class="n">StructureManagerTypeHolder</span><span class="o">&lt;</span><span class="n">StructureManagerCenters</span><span class="p">,</span>
+                               <span class="n">AdaptorNeighbourList</span><span class="p">,</span> <span class="n">AdaptorStrict</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">ManagerList_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">TypeHolder_t</span><span class="o">::</span><span class="n">type_list</span><span class="p">;</span>
+<span class="c1">// using Manager_t = typename TypeHolder_t::type;</span>
+<span class="c1">// StructureManagerCenters,AdaptorNeighbourList, AdaptorStrict</span>
+<span class="c1">// Defines the representation manager type for the particular structure</span>
+<span class="c1">// manager</span>
+<span class="k">using</span> <span class="n">Calc1_t</span> <span class="o">=</span> <span class="n">CalculatorSortedCoulomb</span><span class="p">;</span>
+<span class="c1">// Bind the interface of this representation manager</span>
+<span class="k">auto</span> <span class="n">rep_sorted_coulomb</span> <span class="o">=</span>
+    <span class="n">add_representation_calculator</span><span class="o">&lt;</span><span class="n">Calc1_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">m_internal</span><span class="p">);</span>
+<span class="n">bind_compute_function_helper</span><span class="o">&lt;</span><span class="n">ManagerList_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">rep_sorted_coulomb</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>The last step is to write a python class in <code class="docutils literal notranslate"><span class="pre">bindings/rascal/representations/</span></code> to simplify the use of the representation from the python side. You can use the implentation of the <code class="xref py py-class docutils literal notranslate"><span class="pre">SortedCoulombMatrix</span></code> in the <code class="docutils literal notranslate"><span class="pre">coulomb_matrix.py</span></code> as a template.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To be able to use a particular structure manager stack in python, it also has to be binded. In the case a valid structure manager stack for your representation is not already binded, you will have to register it too in the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">add_structure_managers()</span></code> function in <code class="docutils literal notranslate"><span class="pre">bindings/bind_py_structure_manager.cc</span></code> like in this example:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// bind the root structure manager</span>
+<span class="n">bind_structure_manager</span><span class="o">&lt;</span><span class="n">StructureManagerCenters</span><span class="o">&gt;</span><span class="p">(</span><span class="n">m_strc_mng</span><span class="p">,</span> <span class="n">m_internal</span><span class="p">);</span>
+<span class="n">bind_make_structure_manager</span><span class="o">&lt;</span><span class="n">StructureManagerCenters</span><span class="o">&gt;</span><span class="p">(</span><span class="n">m_nl</span><span class="p">);</span>
+<span class="c1">// bind a structure manager stack</span>
+<span class="n">BindAdaptorStack</span><span class="o">&lt;</span><span class="n">StructureManagerCenters</span><span class="p">,</span> <span class="n">AdaptorNeighbourList</span><span class="p">,</span>
+                 <span class="n">AdaptorStrict</span><span class="o">&gt;</span>
+    <span class="n">adaptor_stack_1</span><span class="p">{</span><span class="n">m_nl</span><span class="p">,</span> <span class="n">m_adp</span><span class="p">,</span> <span class="n">m_internal</span><span class="p">,</span> <span class="n">name_list</span><span class="p">};</span>
+<span class="c1">// bind the corresponding manager collection</span>
+<span class="n">bind_structure_manager_collection</span><span class="o">&lt;</span><span class="n">StructureManagerCenters</span><span class="p">,</span>
+                                  <span class="n">AdaptorNeighbourList</span><span class="p">,</span> <span class="n">AdaptorStrict</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="n">m_nl</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>The last step is to write a python class in <code class="docutils literal notranslate"><span class="pre">bindings/rascal/representations/</span></code> to simplify the use of the representation from the python side. You can use the implentation of the <code class="xref py py-class docutils literal notranslate"><span class="pre">SortedCoulombMatrix</span></code> in <code class="docutils literal notranslate"><span class="pre">coulomb_matrix.py</span></code> as a template.</p>
+</div>
+<div class="section" id="implement-and-test-gradients">
+<h2><a class="toc-backref" href="#id9">Implement and test gradients</a><a class="headerlink" href="#implement-and-test-gradients" title="Permalink to this headline">¶</a></h2>
+<p>In principle, all libRascal representations should implement gradients with
+respect to the atomic positions.  Currently the only representations to do so
+are the <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">SphericalExpansion</span></code> and <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">SphericalInvariants</span></code>
+(tensor order 0, body order 0–1 a.k.a. “RadialSpectrum” and “PowerSpectrum”) in
+the GTO and DVR radial basis.  Until we come up with a general, standard way of
+implementing gradients for any representation, please see those implementations
+for guidance.</p>
+<p>Once you’ve implemented the gradient – or derivative – of any function in
+libRascal, you must test that it actually corresponds to the gradient of the
+function that it purpots to be.  A finite-difference testing function is
+provided for this purpose; see <a class="reference internal" href="how_to_test.html#testing-gradients"><span class="std std-ref">Testing gradients</span></a> for details.</p>
 <dl class="footnote brackets">
 <dt class="label" id="one"><span class="brackets">1</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id4">2</a>)</span></dt>
 <dd><p><a class="reference external" href="http://www.qmlcode.org/qml.html#module-qml.representations">http://www.qmlcode.org/qml.html#module-qml.representations</a>.</p>
@@ -286,20 +544,6 @@ Fast and Accurate Modeling of Molecular Atomization Energies with Machine Learni
 Physical Review Letters, 108(5), 58301. <a class="reference external" href="https://doi.org/10.1103/PhysRevLett.108.058301">https://doi.org/10.1103/PhysRevLett.108.058301</a></p>
 </dd>
 </dl>
-</div>
-<div class="section" id="implement-and-test-gradients">
-<h2><a class="toc-backref" href="#id9">Implement and test gradients</a><a class="headerlink" href="#implement-and-test-gradients" title="Permalink to this headline">¶</a></h2>
-<p>In principle, all libRascal representations should implement gradients with
-respect to the atomic positions.  Currently the only representations to do so
-are the <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">SphericalExpansion</span></code> and <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">SphericalInvariants</span></code>
-(tensor order 0, body order 0–1 a.k.a. “RadialSpectrum” and “PowerSpectrum”) in
-the GTO radial basis.  Until we come up with a general, standard way of
-implementing gradients for any representation, please see those implementations
-for guidance.</p>
-<p>Once you’ve implemented the gradient – or derivative – of any function in
-libRascal, you must test that it actually corresponds to the gradient of the
-function that it purpots to be.  A finite-difference testing function is
-provided for this purpose; see <a class="reference internal" href="how_to_test.html#testing-gradients"><span class="std std-ref">Testing gradients</span></a> for details.</p>
 </div>
 </div>
 
