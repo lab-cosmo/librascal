@@ -360,7 +360,16 @@ namespace rascal {
     using Positions_t = Eigen::MatrixXd;
     using ArrayB_t = typename AtomicStructure<Dim>::ArrayB_t;
 
-    auto cell = j.at("cell").get<Cell_t>();
+    Cell_t cell{3, 3};
+    if (j.at("cell").count("array") == 1) {
+      // ASE changed its json writing scheme so that cell have an array entry
+      cell = j.at("cell").at("array").get<Cell_t>();
+    } else {
+      // old ASE (pre-v3.18) and regular rascal input format
+      cell = j.at("cell").get<Cell_t>();
+    }
+
+    // auto cell = j.at("cell").get<Cell_t>();
     auto positions = j.at("positions").get<Positions_t>();
 
     AtomTypes_t atom_types(positions.rows());
