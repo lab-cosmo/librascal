@@ -73,6 +73,11 @@ namespace rascal {
         for (auto & kernel : kernels) {
           auto mat = kernel.compute(representation, collection, sparse_points);
 
+          int n_centers{0};
+          for (auto & manager : collection) {
+            n_centers += manager->size();
+          }
+
           if (Fix::verbose) {
             std::cout << "target_type=" << static_cast<int>(kernel.target_type)
                       << " mat.size=" << mat.size() << std::endl;
@@ -83,12 +88,12 @@ namespace rascal {
                               collection.size() * sparse_points.size());
 
           } else if (kernel.target_type == internal::TargetType::Atom) {
-            int n_centers{0};
-            for (auto & manager : collection) {
-              n_centers += manager->size();
-            }
+
             BOOST_CHECK_EQUAL(mat.size(), n_centers * sparse_points.size());
           }
+
+          auto mat_der = kernel.compute_derivative(representation, collection, sparse_points);
+          BOOST_CHECK_EQUAL(mat_der.size(), 3*n_centers * sparse_points.size());
         }
       }
     }

@@ -964,6 +964,15 @@ namespace rascal {
       return MatrixMapConst_Ref_t(this->values.data(), n_row, n_col);
     }
 
+    MatrixMapConst_Ref_t get_raw_data_view_grad() const {
+      if (not this->are_keys_uniform()) {
+        throw std::runtime_error("The raw data is not a dense matrix.");
+      }
+      auto && n_row = this->size()*3;
+      auto && n_col = this->values.size() / n_row;
+      return MatrixMapConst_Ref_t(this->values.data(), n_row, n_col);
+    }
+
     std::array<int, 4> get_block_info_by_key(const Key_t & key) const {
       SortedKey_t skey{key};
       return this->get_block_info_by_key(skey);
@@ -975,6 +984,24 @@ namespace rascal {
       }
       auto && n_row = static_cast<int>(this->size());
       auto && n_col = this->get_nb_comp();
+      // since the keys are uniform we can use the first element of the map
+      auto && view_start = this->maps[0].get_location_by_key(skey);
+      // the block does all rows and the columns corresponding to skey
+      std::array<int, 4> arr = {{0, view_start, n_row, n_col}};
+      return arr;
+    }
+
+    std::array<int, 4> get_block_info_by_key_grad(const Key_t & key) const {
+      SortedKey_t skey{key};
+      return this->get_block_info_by_key_grad(skey);
+    }
+
+    std::array<int, 4> get_block_info_by_key_grad(const SortedKey_t & skey) const {
+      if (not this->are_keys_uniform()) {
+        throw std::runtime_error("The raw data is not a dense matrix.");
+      }
+      int n_row{static_cast<int>(this->size()*3)};
+      int n_col{this->get_nb_comp()/3};
       // since the keys are uniform we can use the first element of the map
       auto && view_start = this->maps[0].get_location_by_key(skey);
       // the block does all rows and the columns corresponding to skey

@@ -96,20 +96,20 @@ namespace rascal {
   //! register the population mechanism of the pseudo points class
   template <class ManagerCollection, class Calculator, class PseudoPoints>
   void bind_pseudo_points_push_back(py::class_<PseudoPoints> & pseudo_points) {
-    using ManagerPtr_t = typename ManagerCollection::value_type;
-    using Manager_t = typename ManagerPtr_t::element_type;
+    // using ManagerPtr_t = typename ManagerCollection::value_type;
+    // using Manager_t = typename ManagerPtr_t::element_type;
     pseudo_points.def(
         "extend",
         py::overload_cast<const Calculator &, const ManagerCollection &,
                           const std::vector<std::vector<int>> &>(
             &PseudoPoints::template push_back<ManagerCollection>),
         py::call_guard<py::gil_scoped_release>());
-    pseudo_points.def(
-        "extend",
-        py::overload_cast<const Calculator &, std::shared_ptr<Manager_t>,
-                          const std::vector<int> &>(
-            &PseudoPoints::template push_back<Manager_t>),
-        py::call_guard<py::gil_scoped_release>());
+    // pseudo_points.def(
+    //     "extend",
+    //     py::overload_cast<const Calculator &, std::shared_ptr<Manager_t>,
+    //                       const std::vector<int> &>(
+    //         &PseudoPoints::template push_back<Manager_t>),
+    //     py::call_guard<py::gil_scoped_release>());
   }
 
   /**

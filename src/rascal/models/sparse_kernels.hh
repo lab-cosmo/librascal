@@ -33,6 +33,8 @@
 #include "rascal/structure_managers/structure_manager_collection.hh"
 #include "rascal/utils/json_io.hh"
 
+#include <map>
+
 namespace rascal {
 
   namespace internal {
@@ -131,18 +133,7 @@ namespace rascal {
        */
       template <class PseudoPoints>
       math::Matrix_t compute(PseudoPoints & pseudo_points) {
-        math::Matrix_t KMM(pseudo_points.size(), pseudo_points.size());
-        KMM.setZero();
-        int start{0};
-        // loop over the species
-        for (const int & sp : pseudo_points.species()) {
-          // only the pseudo points of the same species contribute
-          auto block_size = pseudo_points.size_by_species(sp);
-          KMM.block(start, start, block_size, block_size) =
-              pow_zeta(pseudo_points.self_dot(sp), this->zeta);
-          start += block_size;
-        }
-        return KMM;
+        return pseudo_points.self_dot();
       }
 
       /**
@@ -238,57 +229,75 @@ namespace rascal {
           n_centers += manager->size() * SpatialDims;
         }
         size_t n_pseudo_points{pseudo_points.size()};
+        const auto& points_keys = pseudo_points.get_keys();
+
         math::Matrix_t KNM(n_centers, n_pseudo_points);
         KNM.setZero();
         size_t i_center{0};
-        // loop over the structures
         for (auto & manager : managers) {
           auto && prop_grad{*manager->template get_property<PropertyGradient_t>(
               representation_grad_name, true)};
+          auto && prop{*manager->template get_property<Property_t>(
+              representation_name, true)};
 
-          if (this->zeta == 1) {
-            // simpler version where the kernel derivative is one
-            for (auto center : manager) {
-              for (auto neigh : center.pairs_with_self_pair()) {
-                int sp{neigh.get_atom_type()};
-                KNM.block(i_center, 0, SpatialDims, n_pseudo_points) +=
-                    pseudo_points.dot_derivative(sp, prop_grad[neigh])
-                        .transpose();
+
+          math::Matrix_t KNM_man{3*prop_grad.size(), pseudo_points.size()};
+          KNM_man.setZero();
+          if (prop_grad.are_keys_uniform()) {
+            auto prop_keys = prop_grad.get_keys();
+            const auto matA = prop_grad.get_raw_data_view_grad();
+            for (const auto& key : points_keys) {
+              if (prop_keys.count(key)) {
+                const auto mA_info = prop_grad.get_block_info_by_key_grad(key);
+                KNM_man += matA.block(mA_info[0], mA_info[1],
+                    mA_info[2], mA_info[3]) * pseudo_points[key].transpose();
               }
-              i_center += SpatialDims;
             }
           } else {
-            auto && prop{*manager->template get_property<Property_t>(
-                representation_name, true)};
-            std::map<int, int> tag2index{};
-            int i_row{0};
-            // compute the gradient of the kernel w.r.t. the representation
-            // dk/dX without the pseudo point factor
-            math::Matrix_t rep(manager->size(), n_pseudo_points);
-            for (auto center : manager) {
-              int sp{center.get_atom_type()};
-              int tag{center.get_atom_tag()};
-              tag2index[tag] = i_row;
-              rep.row(i_row) =
-                  this->zeta *
-                  pow_zeta(pseudo_points.dot(sp, prop[center]), this->zeta - 1)
-                      .transpose();
-              i_row++;
-            }
-            // put together dk/dX, the pseudo points and dX/dr
+            int i_neigh{0};
             for (auto center : manager) {
               for (auto neigh : center.pairs_with_self_pair()) {
                 int sp{neigh.get_atom_type()};
-                auto atom_j = neigh.get_atom_j();
-                int tag{atom_j.get_atom_tag()};
-                KNM.block(i_center, 0, SpatialDims, n_pseudo_points) +=
+                KNM_man.block(i_neigh, 0, SpatialDims, n_pseudo_points) +=
                     pseudo_points.dot_derivative(sp, prop_grad[neigh])
-                        .transpose() *
-                    rep.row(tag2index[tag]).asDiagonal();
+                        .transpose();
+                i_neigh += SpatialDims;
               }
-              i_center += SpatialDims;
             }
           }
+
+          std::map<int, int> tag2index{};
+          int i_row{0};
+          // compute the gradient of the kernel w.r.t. the representation
+          // dk/dX without the pseudo point factor
+          math::Matrix_t rep(manager->size(), n_pseudo_points);
+          for (auto center : manager) {
+            int sp{center.get_atom_type()};
+            int tag{center.get_atom_tag()};
+            tag2index[tag] = i_row;
+            rep.row(i_row) =
+                this->zeta *
+                pow_zeta(pseudo_points.dot(sp, prop[center]), this->zeta - 1)
+                    .transpose();
+            i_row++;
+          }
+          int i_grad{0};
+          math::Matrix_t KNM_row{3, pseudo_points.size()};
+          for (auto center : manager) {
+            for (auto neigh : center.pairs_with_self_pair()) {
+              auto atom_j{neigh.get_atom_j()};
+              int tag_j{atom_j.get_atom_tag()};
+              int idx{tag2index[tag_j]};
+              KNM_row = KNM_man.block(i_grad, 0, SpatialDims, n_pseudo_points);
+              for (int i_dim; i_dim < SpatialDims; i_dim++) {
+                KNM_row.array().row(i_dim) *= rep.row(idx).array();
+              }
+              KNM.block(i_center, 0, SpatialDims, n_pseudo_points) += KNM_row;
+              i_grad+=SpatialDims;
+            }
+            ++i_center;
+          }
+
         }
         return KNM;
       }

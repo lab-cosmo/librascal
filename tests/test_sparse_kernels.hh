@@ -105,6 +105,7 @@ namespace rascal {
         collection.add_structures(this->ParentA::filename, this->ParentA::start,
                                   this->ParentA::length);
         for (auto & hypers : this->ParentB::representation_hypers) {
+          hypers["compute_gradients"] = true;
           this->representations.emplace_back(hypers);
           this->representations.back().compute(collection);
         }
