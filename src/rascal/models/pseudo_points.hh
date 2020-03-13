@@ -216,6 +216,7 @@ namespace rascal {
     //! dot product with itself to build the K_{MM} kernel matrix
     math::Matrix_t self_dot() const {
       math::Matrix_t KMM{this->size(), this->size()};
+      KMM.setZero();
       for (const Key_t & key : keys) {
         KMM += this->operator[](key) * this->operator[](key).transpose();
       }

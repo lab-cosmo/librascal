@@ -133,7 +133,7 @@ namespace rascal {
        */
       template <class PseudoPoints>
       math::Matrix_t compute(PseudoPoints & pseudo_points) {
-        return pseudo_points.self_dot();
+        return pow_zeta(pseudo_points.self_dot(), this->zeta);
       }
 
       /**
@@ -271,16 +271,28 @@ namespace rascal {
           // compute the gradient of the kernel w.r.t. the representation
           // dk/dX without the pseudo point factor
           math::Matrix_t rep(manager->size(), n_pseudo_points);
-          for (auto center : manager) {
-            int sp{center.get_atom_type()};
-            int tag{center.get_atom_tag()};
-            tag2index[tag] = i_row;
-            rep.row(i_row) =
-                this->zeta *
-                pow_zeta(pseudo_points.dot(sp, prop[center]), this->zeta - 1)
-                    .transpose();
-            i_row++;
+          if (this->zeta > 1) {
+            for (auto center : manager) {
+              int sp{center.get_atom_type()};
+              int tag{center.get_atom_tag()};
+              tag2index[tag] = i_row;
+              rep.row(i_row) =
+                  this->zeta *
+                  pow_zeta(pseudo_points.dot(sp, prop[center]), this->zeta - 1)
+                      .transpose();
+              i_row++;
+            }
+          } else {
+            for (auto center : manager) {
+              int sp{center.get_atom_type()};
+              int tag{center.get_atom_tag()};
+              tag2index[tag] = i_row;
+              const auto& mask = pseudo_points.masks_map.at(sp);
+              rep.row(i_row) = mask;
+              i_row++;
+            }
           }
+
           int i_grad{0};
           math::Matrix_t KNM_row{3, pseudo_points.size()};
           for (auto center : manager) {
@@ -289,13 +301,13 @@ namespace rascal {
               int tag_j{atom_j.get_atom_tag()};
               int idx{tag2index[tag_j]};
               KNM_row = KNM_man.block(i_grad, 0, SpatialDims, n_pseudo_points);
-              for (int i_dim; i_dim < SpatialDims; i_dim++) {
+              for (int i_dim{0}; i_dim < SpatialDims; i_dim++) {
                 KNM_row.array().row(i_dim) *= rep.row(idx).array();
               }
               KNM.block(i_center, 0, SpatialDims, n_pseudo_points) += KNM_row;
-              i_grad+=SpatialDims;
+              i_grad += SpatialDims;
             }
-            ++i_center;
+            i_center += SpatialDims;
           }
 
         }
