@@ -208,6 +208,12 @@ namespace rascal {
         this->compute_gradients = false;
       }
 
+      if (hypers.find("sparse_gradients") != hypers.end()) {
+        this->sparse_gradients = hypers.at("sparse_gradients").get<bool>();
+      } else {  // Default false (keep gradients as sparse as possible)
+        this->sparse_gradients = true;
+      }
+
       if (soap_type == "PowerSpectrum") {
         this->type = SphericalInvariantsType::PowerSpectrum;
         this->l_factors = internal::precompute_l_factors(this->max_angular);
@@ -401,6 +407,7 @@ namespace rascal {
     bool normalize{};
     bool compute_gradients{};
     bool inversion_symmetry{false};
+    bool sparse_gradients{};
 
     CalculatorSphericalExpansion rep_expansion;
 
@@ -1095,7 +1102,13 @@ namespace rascal {
               }
             }
           }
-          keys_list_grad.emplace_back(grad_pair_list);
+          
+          if (not this->sparse_gradients) {
+            keys_list_grad.emplace_back(grad_pair_list);
+          } else {
+            keys_list_grad.emplace_back(pair_list);
+          }
+
         }  // auto neigh : center.pairs()
       }    // if compute_gradients
     }      // for center : manager
