@@ -81,7 +81,7 @@ namespace rascal {
           std::sort(data.begin(), data.end());
         }
       }
-      
+
       SortedKey() :data{} {}
 
       SortedKey(const SortedKey& other) :data{other.data} {}
@@ -104,7 +104,11 @@ namespace rascal {
       }
 
       //! access or insert specified element. use with caution !
-      Value_t & operator[](size_t id) { return this->data[id]; }
+      template<class Int>
+      Value_t & operator[](const Int& id) { return this->data[id]; }
+
+      template<class Int>
+      const Value_t & operator[](const Int& id) const { return this->data[id]; }
 
       const Key_t & get_key() const { return data; }
     };

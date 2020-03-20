@@ -711,6 +711,7 @@ namespace rascal {
           // \grad_i p^{k}
           auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
 
+          std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess> grad_neigh_keys{};
           // \grad_i p^{kab} = \grad_i c^{k a} c^{k b} + c^{k a} \grad_i c^{k b}
           // by definition \grad_i c^{k a} is non zero for one key 'a' so
           // either a == b and we compute one term with a factor of 2 or only
@@ -740,10 +741,11 @@ namespace rascal {
                 spair_type[1] = coef_key_2[0];
               }
 
+              grad_neigh_keys.insert(spair_type);
               // \grad_i p^{k ab}
               auto soap_neigh_gradient_by_species_pair{
-                  soap_neigh_gradient[spair_type]};
-              size_t n1n2{0}, l_block_idx{0};
+                  soap_neigh_gradient[this->key_map[spair_type]]};
+              const auto & coef_ids{coeff_indices_map[spair_type]};
 
               // computes  \grad_i c^{k a}_{n_1} c^{k b}_{n_2}
               if (sorted or equal) {
@@ -752,27 +754,20 @@ namespace rascal {
                   const size_t cartesian_offset_n{cartesian_idx *
                                                   this->max_radial};
                   const size_t cartesian_offset_n1n2{cartesian_idx * this->n_n1n2};
-                  n1n2 = 0;
-                  for (size_t n1{0}; n1 < this->max_radial; ++n1) {
-                    for (size_t n2{0}; n2 < this->max_radial; ++n2) {
-                      l_block_idx = 0;
-                      for (size_t l{0}; l < this->max_angular + 1; ++l) {
-                        size_t l_block_size{2 * l + 1};
-                        // clang-format off
-                        soap_neigh_gradient_by_species_pair(
-                                n1n2 + cartesian_offset_n1n2, l) +=
-                          (grad_neigh_coefficients_1.block(
-                                n1 + cartesian_offset_n, l_block_idx,
-                                1,                       l_block_size).array() *
-                            expansion_coefficients_j_2.block(
-                                n2, l_block_idx,
-                                1,  l_block_size).array()).sum();
-                        // clang-format on
-                        l_block_idx += l_block_size;
-                      }
-                      ++n1n2;
-                    }  // for n2
-                  }    // for n1
+                  for (const auto& coef_idx : coef_ids) {
+                    // clang-format off
+                    soap_neigh_gradient_by_species_pair(
+                      coef_idx.n1n2 + cartesian_offset_n1n2, coef_idx.l) +=
+                      (grad_neigh_coefficients_1.block(
+                          coef_idx.n1 + cartesian_offset_n,
+                          coef_idx.l_block_idx, 1,
+                          coef_idx.l_block_size).array() *
+                       expansion_coefficients_j_2.block(
+                          coef_idx.n2, coef_idx.l_block_idx,
+                          1,  coef_idx.l_block_size).array()).sum()
+                      * coef_idx.l_factor;
+                    // clang-format on
+                  }  // for const auto& coef_idx : coef_ids
                 }      // for cartesian_idx
               }        // if (sorted or equal)
 
@@ -783,40 +778,38 @@ namespace rascal {
                   const size_t cartesian_offset_n{cartesian_idx *
                                                   this->max_radial};
                   const size_t cartesian_offset_n1n2{cartesian_idx * this->n_n1n2};
-                  n1n2 = 0;
-                  for (size_t n1{0}; n1 < this->max_radial; ++n1) {
-                    for (size_t n2{0}; n2 < this->max_radial; ++n2) {
-                      l_block_idx = 0;
-                      for (size_t l{0}; l < this->max_angular + 1; ++l) {
-                        size_t l_block_size{2 * l + 1};
-                        // clang-format off
-                        soap_neigh_gradient_by_species_pair(
-                                n1n2 + cartesian_offset_n1n2, l) +=
-                          (grad_neigh_coefficients_1.block(
-                                n2 + cartesian_offset_n, l_block_idx,
-                                1,                       l_block_size).array() *
-                            expansion_coefficients_j_2.block(
-                                n1, l_block_idx,
-                                1,  l_block_size).array()).sum();
-                        // clang-format on
-                        l_block_idx += l_block_size;
-                      }
-                      ++n1n2;
-                    }  // for n2
-                  }    // for n1
+                  for (const auto& coef_idx : coef_ids) {
+                    // clang-format off
+                    soap_neigh_gradient_by_species_pair(
+                      coef_idx.n1n2 + cartesian_offset_n1n2, coef_idx.l) +=
+                      (grad_neigh_coefficients_1.block(
+                            coef_idx.n2 + cartesian_offset_n,
+                            coef_idx.l_block_idx,
+                            1, coef_idx.l_block_size).array() *
+                       expansion_coefficients_j_2.block(
+                            coef_idx.n1, coef_idx.l_block_idx,
+                            1, coef_idx.l_block_size).array()).sum()
+                      * coef_idx.l_factor;
+                    // clang-format on
+                  }    // for const auto& coef_idx : coef_ids
                 }      // for cartesian_idx
               }        // if (not sorted or equal)
             }          // keys_coef_j
           }            // keys_coef_grad_neigh
 
-          // multiply with the constant 1 / \sqrt(2l+1) and
-          // the \sqrt(2) factor to account for the missing (b,a) components
-          auto keys = soap_neigh_gradient.get_keys();
-          for (const auto & key : keys) {
-            auto soap_neigh_gradient_by_species_pair{soap_neigh_gradient[key]};
-            soap_neigh_gradient_by_species_pair *= this->l_factors.asDiagonal();
+          // multiply with \sqrt(2) factor to account
+          // for the missing (b,a) components
+          for (const auto & key : grad_neigh_keys) {
             if (key[0] != key[1]) {
-              soap_neigh_gradient_by_species_pair *= math::SQRT_TWO;
+              auto soap_neigh_gradient_by_species_pair{soap_neigh_gradient[this->key_map[key]]};
+              const auto & coef_ids{coeff_indices_map[key]};
+              for (size_t cartesian_idx{0}; cartesian_idx < 3;
+                     ++cartesian_idx) {
+                const size_t cartesian_offset_n1n2{cartesian_idx * this->n_n1n2};
+                for (const auto& coef_idx : coef_ids) {
+                  soap_neigh_gradient_by_species_pair(coef_idx.n1n2 + cartesian_offset_n1n2, coef_idx.l) *= math::SQRT_TWO;
+                }
+              }
             }
           }
         }  // for neigh : center
