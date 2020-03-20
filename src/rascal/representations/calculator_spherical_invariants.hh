@@ -197,17 +197,19 @@ namespace rascal {
       PowerSpectrumCoeffIndex(std::uint32_t n1, std::uint32_t n2,
                               std::uint32_t l,
                               std::uint32_t n1n2, std::uint32_t l_block_size,
-                              std::uint32_t l_block_idx)
+                              std::uint32_t l_block_idx,
+                              double l_factor)
         : n1{n1}, n2{n2}, l_block_size{l_block_size},
-          l_block_idx{l_block_idx}, l{l}, n1n2{n1n2} {}
+          l_block_idx{l_block_idx}, l{l}, n1n2{n1n2}, l_factor{l_factor} {}
       // indices refering to coefficients of the spherical expansion
       std::uint32_t n1;
       std::uint32_t n2;
       std::uint32_t l_block_size;
       std::uint32_t l_block_idx;
-      // indices refering to the
+      // indices refering to the power spectrum
       std::uint32_t l;
       std::uint32_t n1n2;
+      double l_factor;
     };
     //! list of possible input pairs when using coefficient_subselection
     std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess> unique_pair_list{};
@@ -215,6 +217,10 @@ namespace rascal {
     //! invariant coefficients that will be computed
     std::map<internal::SortedKey<Key_t>, std::vector<PowerSpectrumCoeffIndex>, internal::CompareSortedKeyLess>
     coeff_indices_map{};
+    //! map the possible keys of the coefficient to the keys of the
+    //! powerspectrum. If sparsification then it maps to (0,0) always otherwise
+    //! it maps onto itself
+    std::map<internal::SortedKey<Key_t>, internal::SortedKey<Key_t>, internal::CompareSortedKeyLess> key_map{};
     //! list of coefficient that will be computed if there is no sparsification
     std::vector<PowerSpectrumCoeffIndex> coeff_indices{};
     //! size of the first dimension in the dense invariant coefficient matrix
@@ -266,8 +272,9 @@ namespace rascal {
               R"(coefficient_subselection should have elements of the same size but: a.size() != l.size())");
           }
         }
-        this->n_n1n2 = 0;
+        this->n_n1n2 = 1;
         this->max_angular = sp_a.size();
+
         internal::Sorted<true> is_sorted{};
         // collect all unique sorted pairs
         for (size_t i_pair{0}; i_pair < sp_a.size(); ++i_pair) {
@@ -298,6 +305,8 @@ namespace rascal {
           pos += size;
         }
 
+        this->l_factors = internal::precompute_l_factors(angular_max);
+
         // fill coeff_indices_map
         for (size_t i_pair{0}; i_pair < sp_a.size(); ++i_pair) {
           Key_t pair{{sp_a[i_pair], sp_b[i_pair]}};
@@ -308,13 +317,28 @@ namespace rascal {
           this->coeff_indices_map[spair].emplace_back(
             radial_n1[i_pair], radial_n2[i_pair],
               static_cast<std::uint32_t>(i_pair), 0,
-              l_block_sizes[angular_l[i_pair]], l_block_ids[angular_l[i_pair]]
+              l_block_sizes[angular_l[i_pair]], l_block_ids[angular_l[i_pair]],
+              this->l_factors[angular_l[i_pair]]
           );
+        }
+
+        Key_t sparsified_type{0, 0};
+        // there are 118 atomic elements atm
+        for (int sp1{1}; sp1 < 130; sp1++) {
+          for (int sp2{1}; sp2 < 130; sp2++) {
+            if (sp1 <= sp2) {
+              Key_t pair_type{sp1, sp2};
+              internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
+              internal::SortedKey<Key_t> ssparsified_type{is_sorted, sparsified_type};
+              this->key_map[spair_type] = ssparsified_type;
+            }
+          }
         }
 
       } else {  // Default false (compute all coefficents)
         this->max_radial = hypers.at("max_radial").get<size_t>();
         this->max_angular = hypers.at("max_angular").get<size_t>();
+        this->l_factors = internal::precompute_l_factors(this->max_angular);
         this->is_sparsified = false;
         this->n_n1n2 = math::pow(this->max_radial, 2_size_t);
         for (size_t n1{0}; n1 < this->max_radial; ++n1) {
@@ -323,32 +347,44 @@ namespace rascal {
             for (size_t l{0}; l < this->max_angular+1; ++l) {
               size_t size{2*l+1};
               this->coeff_indices.emplace_back(
-                n1, n2, l, n1*this->max_radial + n2, size, pos
+                n1, n2, l, n1*this->max_radial + n2, size, pos,
+                this->l_factors[l]
               );
               pos += size;
             }
           }
         }
+        internal::Sorted<true> is_sorted{};
+        // there are 118 atomic elements atm
+        for (int sp1{1}; sp1 < 130; sp1++) {
+          for (int sp2{1}; sp2 < 130; sp2++) {
+            if (sp1 <= sp2) {
+              Key_t pair_type{sp1, sp2};
+              internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
+              this->key_map[spair_type] = spair_type;
+            }
+          }
+        }
+
       }
 
       if (soap_type == "PowerSpectrum") {
         this->type = SphericalInvariantsType::PowerSpectrum;
-        this->l_factors = internal::precompute_l_factors(this->max_angular);
       } else if (soap_type == "RadialSpectrum") {
         this->type = SphericalInvariantsType::RadialSpectrum;
         if (this->max_angular > 0) {
-          throw std::logic_error("max_angular should be 0 with RadialSpectrum");
+            throw std::logic_error("max_angular should be 0 with RadialSpectrum");
         }
       } else if (soap_type == "BiSpectrum") {
         this->type = internal::SphericalInvariantsType::BiSpectrum;
         this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
         this->wigner_w3js = internal::precompute_wigner_w3js(
-            this->max_angular, this->inversion_symmetry);
+                  this->max_angular, this->inversion_symmetry);
       } else {
         throw std::logic_error(
-            "Requested SphericalInvariants type \'" + soap_type +
-            "\' has not been implemented.  Must be one of" +
-            ": 'PowerSpectrum', 'RadialSpectrum', or 'BiSpectrum'.");
+                  "Requested SphericalInvariants type \'" + soap_type +
+                  "\' has not been implemented.  Must be one of" +
+                  ": 'PowerSpectrum', 'RadialSpectrum', or 'BiSpectrum'.");
       }
 
       this->set_name(hypers);
@@ -617,25 +653,31 @@ namespace rascal {
           if (spair_type[0] > el2.first[0]) {
             continue;
           }
+
           spair_type[1] = el2.first[0];
           auto & coef2{el2.second};
-          auto && soap_vector_by_pair{soap_vector[spair_type]};
+          auto && soap_vector_by_pair{
+                  soap_vector[this->key_map[spair_type]]};
           const auto & coef_ids{coeff_indices_map[spair_type]};
           for (const auto& coef_idx : coef_ids) {
+            // multiply with the constant 1 / \sqrt(2l+1)
             soap_vector_by_pair(coef_idx.n1n2, coef_idx.l) =
               (coef1.block(coef_idx.n1, coef_idx.l_block_idx, 1,
                 coef_idx.l_block_size).array() *
                coef2.block(coef_idx.n2, coef_idx.l_block_idx, 1,
-                coef_idx.l_block_size).array()).sum();
+                coef_idx.l_block_size).array()).sum() * coef_idx.l_factor;
           }
-          // multiply with the precomputed factors
-          soap_vector_by_pair *= this->l_factors.asDiagonal();
+
+          // the \sqrt(2) factor to account for the missing (b,a) components
+          if (spair_type[0] < spair_type[1]) {
+            for (const auto& coef_idx : coef_ids) {
+              soap_vector_by_pair(coef_idx.n1n2, coef_idx.l) *= math::SQRT_TWO;
+            }
+          }
+
         }  // for el1 : coefficients
       }    // for el2 : coefficients
 
-      // the SQRT_TWO factor comes from the fact that
-      // the upper diagonal of the species is not considered
-      soap_vector.multiply_off_diagonal_elements_by(math::SQRT_TWO);
 
       // normalize the soap vector
       if (this->normalize) {
@@ -1112,7 +1154,7 @@ namespace rascal {
           InvariantsDerivative & soap_vector_gradients,
           ExpansionCoeff & expansions_coefficients,
           std::shared_ptr<StructureManager> manager) {
-    size_t n_row{math::pow(this->max_radial, 2_size_t)};
+    size_t n_row{this->n_n1n2};
     size_t n_col{this->max_angular + 1};
     this->coeff_indices_map.clear();
     // clear the data container and resize it

@@ -81,6 +81,15 @@ namespace rascal {
           std::sort(data.begin(), data.end());
         }
       }
+      
+      SortedKey() :data{} {}
+
+      SortedKey(const SortedKey& other) :data{other.data} {}
+
+      SortedKey & operator=(const SortedKey & other) {
+        this->data = other.data;
+        return *this;
+      }
 
       SortedKey(const Sorted<false> &, const Key_t & key) : SortedKey{key} {}
 
