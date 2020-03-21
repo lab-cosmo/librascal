@@ -49,13 +49,13 @@ class KRR(object):
                     i_center += 1
         return Y0
 
-    def _preprocess_input(self, managers, compute_gradients=False):
+    def _preprocess_input(self, managers, compute_gradients=False, numerical_gradients=False):
         """compute prediction kernel and total baseline contributions"""
-        kernel = self.kernel(managers, self.X_train, (compute_gradients, False))
+        kernel = self.kernel(managers, self.X_train, (compute_gradients, False), numerical_grad=numerical_gradients)
         Y0 = self._get_property_baseline(managers)
         return kernel, Y0
 
-    def predict(self, managers, compute_gradients=False):
+    def predict(self, managers, compute_gradients=False, numerical_gradients=False):
         """Predict properties associated with the atomic structures in managers
         or their derivative w.r.t. atomic positions (if compute_gradients==True).
 
@@ -73,7 +73,7 @@ class KRR(object):
         np.array
             predictions
         """
-        KNM, Y0 = self._preprocess_input(managers, compute_gradients)
+        KNM, Y0 = self._preprocess_input(managers, compute_gradients, numerical_gradients)
         if compute_gradients is False:
             return Y0 + np.dot(KNM, self.weights).reshape((-1))
         else:
