@@ -2,6 +2,7 @@ from ..lib._rascal.models.kernels import Kernel as Kernelcpp
 from ..lib._rascal.models.kernels import SparseKernel as SparseKernelcpp
 from ..neighbourlist import AtomsList
 from .pseudo_points import PseudoPoints
+from .kernel_utils import compute_numerical_kernel_gradients
 import json
 
 
@@ -39,7 +40,7 @@ class Kernel(object):
 
     Methods
     -------
-    __call__(X, Y=None, grad=(False, False))
+    __call__(X, Y=None, grad=(False, False), numerical_grad=False)
         Compute the kernel.
 
         Parameters
@@ -54,6 +55,8 @@ class Kernel(object):
                corresponds to the gradient of the 1st argument of the kernel
                w.r.t. the atomic positions.
 
+        numerical_grad : bool, compute the kernel gradient with finite
+                        difference
         Returns
         -------
         kernel_matrix: ndarray
@@ -94,9 +97,13 @@ class Kernel(object):
         else:
             self._kernel = Kernelcpp(hypers_str)
 
-    def __call__(self, X, Y=None, grad=(False, False)):
+    def __call__(self, X, Y=None, grad=(False, False), numerical_grad=False):
         if isinstance(X, AtomsList):
             X = X.managers
+
+        if numerical_grad is True and self.kernel_type != 'Sparse':
+            raise NotImplementedError('Numerical gradient have only been implemented for Sparse kernels.')
+
         if Y is None and grad == (False, False):
             # compute a kernel between features and themselves
             if self.kernel_type == 'Full':
@@ -110,7 +117,11 @@ class Kernel(object):
             if isinstance(Y, PseudoPoints):
                 Y = Y._pseudo_points
             # compute the block of the KNM matrix corresponding to forces
-            return self._kernel.compute_derivative(self._representation, X, Y)
+            if not numerical_grad:
+                return self._kernel.compute_derivative(self._representation, X, Y)
+            else:
+                return compute_numerical_kernel_gradients(self,
+                                    self._rep, X, Y, eps=1e-5)
         elif grad == (False, False):
             # compute the kernel between two sets of features
             if isinstance(Y, AtomsList):
