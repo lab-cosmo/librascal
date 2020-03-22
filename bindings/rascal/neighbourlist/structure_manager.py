@@ -55,6 +55,9 @@ class AtomsList(object):
     def __iter__(self):
         return self.managers
 
+    def __len__(self):
+        return len(self.managers)
+
     def __getitem__(self, key):
         return self.managers[key]
 
