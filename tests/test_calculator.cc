@@ -627,6 +627,8 @@ namespace rascal {
       auto & rep{*manager->template get_property<Prop_t>(representation.get_name())};
       auto & rep_sparse{*manager->template get_property<Prop_t>(representation_sparse.get_name())};
 
+      // test that the underlying data of sparse version is a subset of the
+      // original coefficient
       for (auto center : manager) {
         auto rep_r = rep[center].get_full_vector();
         auto rep_sparse_r = rep_sparse[center].get_full_vector();
@@ -642,6 +644,17 @@ namespace rascal {
           }
         }
       }
+
+      // test that get_features properly output the underlying data
+      auto X = rep.get_features();
+      auto X_sparse = rep_sparse.get_features();
+      for (size_t i_feat{0}; i_feat < selected_ids.size(); ++i_feat) {
+        auto rel_err_m{math::relative_error(X.col(selected_ids[i_feat]),
+                          X_sparse.col(i_feat), delta, epsilon)};
+        double rel_err = rel_err_m.maxCoeff();
+        BOOST_TEST(rel_err < delta);
+      }
+
     }
   }
   /* ---------------------------------------------------------------------- */
