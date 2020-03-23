@@ -8,6 +8,7 @@ import numpy as np
 
 def get_power_spectrum_index_mapping(sp_pairs, n_max, l_max):
     feat_idx2coeff_idx = {}
+    # i_feat corresponds the global linear index
     i_feat = 0
     for sp_pair,n1,n2,l in product(sp_pairs, range(n_max), range(n_max), range(l_max)):
         feat_idx2coeff_idx[i_feat] = dict(a=sp_pair[0],b=sp_pair[1],n1=n1,n2=n2,l=l)
