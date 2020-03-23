@@ -298,7 +298,7 @@ namespace rascal {
         std::uint32_t angular_max{*std::max_element(angular_l.begin(), angular_l.end())};
         std::vector<std::uint32_t> l_block_sizes{}, l_block_ids{};
         std::uint32_t pos{0};
-        for (std::uint32_t l{0}; l < angular_max; ++l) {
+        for (std::uint32_t l{0}; l <= angular_max; ++l) {
           std::uint32_t size{2*l+1};
           l_block_sizes.push_back(size);
           l_block_ids.push_back(pos);
@@ -1147,115 +1147,137 @@ namespace rascal {
           InvariantsDerivative & soap_vector_gradients,
           ExpansionCoeff & expansions_coefficients,
           std::shared_ptr<StructureManager> manager) {
-    size_t n_row{this->n_n1n2};
-    size_t n_col{this->max_angular + 1};
-    this->coeff_indices_map.clear();
-    // clear the data container and resize it
-    soap_vectors.clear();
-    soap_vectors.set_shape(n_row, n_col);
-
-    if (this->compute_gradients) {
-      soap_vector_gradients.clear();
-      soap_vector_gradients.set_shape(ThreeD * n_row, n_col);
-    }
-
-    std::vector<
-        std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>>
-        keys_list{};
-    std::vector<
-        std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>>
-        keys_list_grad{};
-
-    // identify the species in each environment and initialize soap_vectors
-    for (auto center : manager) {
-      auto atom_i_tag = center.get_atom_tag();
-      auto & coefficients{expansions_coefficients[center]};
+    if (this->is_sparsified) {
+      size_t n_row{this->n_n1n2};
+      size_t n_col{this->max_angular};
+      std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess> keys_list{};
       internal::Sorted<true> is_sorted{};
-
-      std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
-          pair_list{};
-      int center_type{center.get_atom_type()};
-      Key_t pair_type{center_type, center_type};
+      Key_t pair_type{0, 0};
       // avoid checking the order in pair_type by ensuring it has already been
       // done
       internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
+      keys_list.insert(spair_type);
+      // clear the data container and resize it
+      soap_vectors.clear();
+      soap_vectors.set_shape(n_row, n_col);
+      soap_vectors.resize(keys_list);
+      soap_vectors.setZero();
+      if (this->compute_gradients) {
+        soap_vector_gradients.clear();
+        soap_vector_gradients.set_shape(ThreeD * n_row, n_col);
+        soap_vector_gradients.resize(keys_list);
+        soap_vector_gradients.setZero();
+      }
+    } else {
+      size_t n_row{this->n_n1n2};
+      size_t n_col{this->max_angular + 1};
+      this->coeff_indices_map.clear();
+      // clear the data container and resize it
+      soap_vectors.clear();
+      soap_vectors.set_shape(n_row, n_col);
 
-      pair_list.insert({is_sorted, pair_type});
-      for (const auto & el1 : coefficients) {
-        auto && neigh1_type{el1.first[0]};
-        if (center_type <= neigh1_type) {
-          pair_type[0] = center_type;
-          pair_type[1] = neigh1_type;
-        } else {
-          pair_type[1] = center_type;
-          pair_type[0] = neigh1_type;
-        }
+      if (this->compute_gradients) {
+        soap_vector_gradients.clear();
+        soap_vector_gradients.set_shape(ThreeD * n_row, n_col);
+      }
+
+
+      std::vector<
+          std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>>
+          keys_list{};
+      std::vector<
+          std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>>
+          keys_list_grad{};
+
+      // identify the species in each environment and initialize soap_vectors
+      for (auto center : manager) {
+        auto atom_i_tag = center.get_atom_tag();
+        auto & coefficients{expansions_coefficients[center]};
+        internal::Sorted<true> is_sorted{};
+
+        std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
+            pair_list{};
+        int center_type{center.get_atom_type()};
+        Key_t pair_type{center_type, center_type};
+        // avoid checking the order in pair_type by ensuring it has already been
+        // done
+        internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
 
         pair_list.insert({is_sorted, pair_type});
-
-        for (const auto & el2 : coefficients) {
-          auto && neigh2_type{el2.first[0]};
-          if (neigh1_type <= neigh2_type) {
+        for (const auto & el1 : coefficients) {
+          auto && neigh1_type{el1.first[0]};
+          if (center_type <= neigh1_type) {
+            pair_type[0] = center_type;
+            pair_type[1] = neigh1_type;
+          } else {
+            pair_type[1] = center_type;
             pair_type[0] = neigh1_type;
-            pair_type[1] = neigh2_type;
-            pair_list.insert({is_sorted, pair_type});
+          }
+
+          pair_list.insert({is_sorted, pair_type});
+
+          for (const auto & el2 : coefficients) {
+            auto && neigh2_type{el2.first[0]};
+            if (neigh1_type <= neigh2_type) {
+              pair_type[0] = neigh1_type;
+              pair_type[1] = neigh2_type;
+              pair_list.insert({is_sorted, pair_type});
+            }
           }
         }
-      }
-      keys_list.emplace_back(pair_list);
-      if (this->compute_gradients) {
-        keys_list_grad.emplace_back(pair_list);
+        keys_list.emplace_back(pair_list);
+        if (this->compute_gradients) {
+          keys_list_grad.emplace_back(pair_list);
 
-        // Neighbour gradients need a separate pair list because if the species
-        // of j are not the same as either of the species for that SOAP entry,
-        // the gradient is zero.
-        // since we compute \grad_i p{j ab} we need the species present in
-        // the environment of c^{j}
-        for (auto neigh : center.pairs()) {
-          auto atom_j = neigh.get_atom_j();
-          auto & coef_j = expansions_coefficients[atom_j];
-          auto atom_j_tag = atom_j.get_atom_tag();
-          std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
-              grad_pair_list{};
-          // grad contribution is not zero if the neighbour is _not_ an
-          // image of the center
-          if (atom_j_tag != atom_i_tag) {
-            // list of keys present in the neighbor environment (contains
-            // center_type by definition)
-            std::vector<Key_t> keys_j{coef_j.get_keys()};
+          // Neighbour gradients need a separate pair list because if the species
+          // of j are not the same as either of the species for that SOAP entry,
+          // the gradient is zero.
+          // since we compute \grad_i p{j ab} we need the species present in
+          // the environment of c^{j}
+          for (auto neigh : center.pairs()) {
+            auto atom_j = neigh.get_atom_j();
+            auto & coef_j = expansions_coefficients[atom_j];
+            auto atom_j_tag = atom_j.get_atom_tag();
+            std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
+                grad_pair_list{};
+            // grad contribution is not zero if the neighbour is _not_ an
+            // image of the center
+            if (atom_j_tag != atom_i_tag) {
+              // list of keys present in the neighbor environment (contains
+              // center_type by definition)
+              std::vector<Key_t> keys_j{coef_j.get_keys()};
 
-            for (const auto & neigh_1_type : keys_j) {
-              for (const auto & neigh_2_type : keys_j) {
-                if (neigh_1_type[0] <= neigh_2_type[0]) {
-                  if ((center_type == neigh_1_type[0]) or
-                      (center_type == neigh_2_type[0])) {
-                    pair_type[0] = neigh_1_type[0];
-                    pair_type[1] = neigh_2_type[0];
-                    grad_pair_list.insert({is_sorted, pair_type});
+              for (const auto & neigh_1_type : keys_j) {
+                for (const auto & neigh_2_type : keys_j) {
+                  if (neigh_1_type[0] <= neigh_2_type[0]) {
+                    if ((center_type == neigh_1_type[0]) or
+                        (center_type == neigh_2_type[0])) {
+                      pair_type[0] = neigh_1_type[0];
+                      pair_type[1] = neigh_2_type[0];
+                      grad_pair_list.insert({is_sorted, pair_type});
+                    }
                   }
                 }
               }
             }
-          }
-          keys_list_grad.emplace_back(grad_pair_list);
-        }  // auto neigh : center.pairs()
-      }    // if compute_gradients
+            keys_list_grad.emplace_back(grad_pair_list);
+          }  // auto neigh : center.pairs()
+        }    // if compute_gradients
 
-      // initialize coeff_indices_map if the representation is not sparsified
-      if (not this->is_sparsified) {
+        // initialize coeff_indices_map if the representation is not sparsified
         for (const auto& key : pair_list) {
           if (not this->coeff_indices_map.count(key)) {
             this->coeff_indices_map[key] = coeff_indices;
           }
         }
-      }
-    }      // for center : manager
+      }      // for center : manager
 
-    soap_vectors.resize(keys_list);
-    soap_vectors.setZero();
-    if (this->compute_gradients) {
-      soap_vector_gradients.resize(keys_list_grad);
-      soap_vector_gradients.setZero();
+      soap_vectors.resize(keys_list);
+      soap_vectors.setZero();
+      if (this->compute_gradients) {
+        soap_vector_gradients.resize(keys_list_grad);
+        soap_vector_gradients.setZero();
+      }
     }
   }
 
