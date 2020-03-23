@@ -273,6 +273,8 @@ namespace rascal {
           }
         }
         this->n_n1n2 = 1;
+        this->max_radial = hypers.at("max_radial").get<size_t>();
+        // this->max_radial =0;
         this->max_angular = sp_a.size();
 
         internal::Sorted<true> is_sorted{};
