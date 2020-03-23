@@ -600,14 +600,14 @@ namespace rascal {
     using Manager_t = typename Fix::Manager_t;
     using Representation_t = typename Fix::Representation_t;
     using Prop_t = typename Representation_t::template Property_t<Manager_t>;
-    // using PropGrad_t = typename Fix::PropGrad_t;
+    using PropGrad_t = typename Representation_t::template PropertyGradient_t<Manager_t>;
 
     auto & managers = Fix::managers;
     auto & representation_hypers = Fix::representation_hypers;
     auto & representation_sparse_hypers = Fix::representation_sparse_hypers;
     auto & selected_features_global_ids = Fix::selected_features_global_ids;
 
-    const bool verbose{false};
+    const bool verbose{true};
     // relative error threshold
     const double delta{4e-7};
     // range of zero
@@ -638,7 +638,7 @@ namespace rascal {
           BOOST_TEST(rel_err < delta);
           if (verbose and (rel_err > delta)) {
             std::cout << "############## Man: " << i_manager <<
-                "Center tag: " << center.get_atom_tag() << std::endl;
+                " Center tag: " << center.get_atom_tag() << std::endl;
             std::cout << "REF:  " << rep_r.transpose() << std::endl;
             std::cout << "TEST: " << rep_sparse_r.transpose() << std::endl;
           }
@@ -655,8 +655,26 @@ namespace rascal {
         BOOST_TEST(rel_err < delta);
       }
 
+      // test that the sparsified gradients are a subset of the normal gradients
+      auto & rep_grad{*manager->template get_property<PropGrad_t>(representation.get_gradient_name())};
+      auto & rep_grad_sparse{*manager->template get_property<PropGrad_t>(representation_sparse.get_gradient_name())};
+      auto X_grad = rep_grad.get_features_gradient();
+      auto X_grad_sparse = rep_grad_sparse.get_features_gradient();
+      for (size_t i_feat{0}; i_feat < selected_ids.size(); ++i_feat) {
+        auto rel_err_m{math::relative_error(X_grad.col(selected_ids[i_feat]),
+                          X_grad_sparse.col(i_feat), delta, epsilon)};
+        double rel_err = rel_err_m.maxCoeff();
+        BOOST_TEST(rel_err < delta);
+        if (verbose and (rel_err > delta)) {
+          std::cout << "############## Man: " << i_manager <<
+              " col: " << i_feat << std::endl;
+          std::cout << "REF:  " << X_grad.col(selected_ids[i_feat]).transpose() << std::endl;
+          std::cout << "TEST: " << X_grad_sparse.col(i_feat).transpose() << std::endl;
+        }
+      }
     }
   }
+  
   /* ---------------------------------------------------------------------- */
   /**
    * Utility fixture used to compare representations computed with full and
