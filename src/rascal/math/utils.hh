@@ -189,6 +189,41 @@ namespace rascal {
 
       return rel_diff;
     }
+
+    /**
+     * Routine to compute the relative difference between 2 double.
+     * The return value depend on the closeness to zero:
+     * + if ref and test are not zero, then return relative error
+     * + if ref and test are within epsilon, then return 0.
+     * + if ref is within epsilon and test not, then return absolute error
+     *
+     * @param reference the double with the reference values
+     * @param test the double with the  values to check
+     * @param epsilon the threshold defining which values are effectivelly zero
+     * @param delta maximum relative error threshold
+     */
+    inline double relative_error(const double & reference,
+                           const double & test,
+                           const double & delta = 1e-10,
+                           const double & epsilon = DBL_FTOL) {
+      double rel_diff{std::abs(reference - test)};
+      bool is_zero_ref{std::abs(reference) < epsilon};
+      bool is_zero_test{std::abs(test) < epsilon};
+      if (is_zero_ref and is_zero_test) {
+        rel_diff = 0.;
+      } else if (not is_zero_ref) {
+        rel_diff /= reference;
+      }
+
+      if (rel_diff > delta) {
+        std::cout << "Diff in relative_error "
+                  << "diff: " << rel_diff
+                  << " ref: " << reference
+                  << " test: " << test << std::endl;
+      }
+
+      return rel_diff;
+    }
   }  // namespace math
 }  // namespace rascal
 
