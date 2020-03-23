@@ -1,9 +1,18 @@
 import json
+from itertools import product
 
 from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
 import numpy as np
 
+
+def get_power_spectrum_index_mapping(sp_pairs, n_max, l_max):
+    feat_idx2coeff_idx = {}
+    i_feat = 0
+    for sp_pair,n1,n2,l in product(sp_pairs, range(n_max), range(n_max), range(l_max)):
+        feat_idx2coeff_idx[i_feat] = dict(a=sp_pair[0],b=sp_pair[1],n1=n1,n2=n2,l=l)
+        i_feat += 1
+    return feat_idx2coeff_idx
 
 class SphericalInvariants(object):
 
@@ -101,6 +110,7 @@ class SphericalInvariants(object):
                  optimization_args={},
                  expansion_by_species_method="environment wise",
                  global_species=None,
+                 compute_gradients=False,
                  cutoff_function_parameters=dict(),
                  coefficient_subselection=None):
         """Construct a SphericalExpansion representation
@@ -122,6 +132,7 @@ class SphericalInvariants(object):
             inversion_symmetry=inversion_symmetry,
             expansion_by_species_method=expansion_by_species_method,
             global_species=global_species,
+            compute_gradients=compute_gradients,
             coefficient_subselection=coefficient_subselection)
 
         if self.hypers['coefficient_subselection'] is None:
@@ -204,6 +215,7 @@ class SphericalInvariants(object):
                         'inversion_symmetry', 'cutoff_function', 'normalize',
                         'gaussian_density', 'radial_contribution',
                         'cutoff_function_parameters', 'expansion_by_species_method',
+                        'compute_gradients',
                         'global_species', 'coefficient_subselection'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
@@ -292,3 +304,29 @@ class SphericalInvariants(object):
                              'PowerSpectrum || BiSpectrum '
                              'implemented for now')
         return keys
+
+    def get_feature_index_mapping(self, managers):
+        import ase
+        species = []
+        for ii in range(len(managers)):
+            manager = managers[ii]
+            if isinstance(manager, ase.Atoms):
+                species.extend(manager.get_atomic_numbers())
+            else:
+                for center in manager:
+                    sp = center.atom_type
+                    species.append(sp)
+        u_species = np.unique(species)
+        sp_pairs = self.get_keys(u_species)
+
+        n_max = self.hypers['max_radial']
+        l_max = self.hypers['max_angular']+1
+        if self.hypers['soap_type'] == 'PowerSpectrum':
+            feature_index_mapping = get_power_spectrum_index_mapping(
+                                                    sp_pairs, n_max, l_max)
+        else:
+            raise NotImplementedError('Only soap_type = '
+                             'PowerSpectrum '
+                             'implemented for now')
+
+        return feature_index_mapping
