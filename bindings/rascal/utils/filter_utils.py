@@ -1,6 +1,8 @@
 import numpy as np
 
 # utility functions for Filters
+
+
 def get_index_mappings_sample_per_species(managers, sps):
     # get various info from the structures about the center atom species and indexing
     types = []
@@ -31,6 +33,7 @@ def get_index_mappings_sample_per_species(managers, sps):
 
     return strides_by_sp, global_counter, map_by_manager, indices_by_sp
 
+
 def get_index_mappings_sample(managers):
     # get various info from the structures about the center atom species and indexing
     strides = [0]
@@ -49,16 +52,19 @@ def get_index_mappings_sample(managers):
 
     return strides, global_counter, map_by_manager
 
+
 def convert_selected_global_index2rascal_sample_per_species(managers, selected_ids_by_sp, strides_by_sp, map_by_manager, sps):
     # convert selected center indexing into the rascal format
     selected_ids = [[] for ii in range(len(managers))]
     for sp in sps:
-        ids = convert_selected_global_index2rascal_sample(managers, selected_ids_by_sp[sp], strides_by_sp[sp], map_by_manager)
-        for ii,selected_idx in zip(ids, selected_ids):
+        ids = convert_selected_global_index2rascal_sample(
+            managers, selected_ids_by_sp[sp], strides_by_sp[sp], map_by_manager)
+        for ii, selected_idx in zip(ids, selected_ids):
             selected_idx.extend(ii)
     for ii in range(len(selected_ids)):
         selected_ids[ii] = list(np.sort(selected_ids[ii]))
     return selected_ids
+
 
 def convert_selected_global_index2rascal_sample(managers, selected_ids_global, strides, map_by_manager):
     # convert selected center indexing into the rascal format

@@ -562,35 +562,33 @@ namespace rascal {
     std::vector<std::vector<int>> selected_features_global_ids{};
 
     SparsificationSphericalInvariantsFixture() {
-      json datas = json_io::load(
-              "reference_data/tests_only/sparsification_inputs.json");
+      json datas =
+          json_io::load("reference_data/tests_only/sparsification_inputs.json");
       for (const auto & data : datas) {
         json structure{{"filename", data.at("filename").get<std::string>()}};
         auto adaptors = data.at("hypers").at("adaptors").get<json>();
         auto rep_hyp = data.at("hypers").at("rep").get<json>();
         auto rep_sparse_hyp = data.at("hypers").at("rep_sparse").get<json>();
         auto selected_features_global_ids =
-          rep_sparse_hyp.at("coefficient_subselection")
-                    .at("selected_features_global_ids").get<std::vector<int>>();
+            rep_sparse_hyp.at("coefficient_subselection")
+                .at("selected_features_global_ids")
+                .get<std::vector<int>>();
         json parameters;
         parameters["structure"] = structure;
         parameters["adaptors"] = adaptors;
         this->factory_args.emplace_back(parameters);
         this->representation_hypers.emplace_back(rep_hyp);
         this->representation_sparse_hypers.emplace_back(rep_sparse_hyp);
-        this->selected_features_global_ids.emplace_back(selected_features_global_ids);
+        this->selected_features_global_ids.emplace_back(
+            selected_features_global_ids);
       }
     }
 
     ~SparsificationSphericalInvariantsFixture() = default;
-
   };
 
-
-  using sparsification_fixtures =
-      boost::mpl::list<
-        CalculatorFixture<SparsificationSphericalInvariantsFixture>>;
-
+  using sparsification_fixtures = boost::mpl::list<
+      CalculatorFixture<SparsificationSphericalInvariantsFixture>>;
 
   /**
    * Test the sparsification of the representation
@@ -600,7 +598,8 @@ namespace rascal {
     using Manager_t = typename Fix::Manager_t;
     using Representation_t = typename Fix::Representation_t;
     using Prop_t = typename Representation_t::template Property_t<Manager_t>;
-    using PropGrad_t = typename Representation_t::template PropertyGradient_t<Manager_t>;
+    using PropGrad_t =
+        typename Representation_t::template PropertyGradient_t<Manager_t>;
 
     auto & managers = Fix::managers;
     auto & representation_hypers = Fix::representation_hypers;
@@ -619,13 +618,15 @@ namespace rascal {
       representation.compute(manager);
 
       Representation_t representation_sparse{
-              representation_sparse_hypers[i_manager]};
+          representation_sparse_hypers[i_manager]};
       representation_sparse.compute(manager);
 
-      auto& selected_ids = selected_features_global_ids[i_manager];
+      auto & selected_ids = selected_features_global_ids[i_manager];
 
-      auto & rep{*manager->template get_property<Prop_t>(representation.get_name())};
-      auto & rep_sparse{*manager->template get_property<Prop_t>(representation_sparse.get_name())};
+      auto & rep{
+          *manager->template get_property<Prop_t>(representation.get_name())};
+      auto & rep_sparse{*manager->template get_property<Prop_t>(
+          representation_sparse.get_name())};
 
       // test that the underlying data of sparse version is a subset of the
       // original coefficient
@@ -634,11 +635,12 @@ namespace rascal {
         auto rep_sparse_r = rep_sparse[center].get_full_vector();
         for (size_t i_feat{0}; i_feat < selected_ids.size(); ++i_feat) {
           double rel_err{math::relative_error(rep_r[selected_ids[i_feat]],
-                                        rep_sparse_r[i_feat], delta, epsilon)};
+                                              rep_sparse_r[i_feat], delta,
+                                              epsilon)};
           BOOST_TEST(rel_err < delta);
-          if (verbose and (rel_err > delta)) {
-            std::cout << "############## Man: " << i_manager <<
-                " Center tag: " << center.get_atom_tag() << std::endl;
+          if (verbose and rel_err > delta) {
+            std::cout << "############## Man: " << i_manager
+                      << " Center tag: " << center.get_atom_tag() << std::endl;
             std::cout << "REF:  " << rep_r.transpose() << std::endl;
             std::cout << "TEST: " << rep_sparse_r.transpose() << std::endl;
           }
@@ -649,32 +651,37 @@ namespace rascal {
       auto X = rep.get_features();
       auto X_sparse = rep_sparse.get_features();
       for (size_t i_feat{0}; i_feat < selected_ids.size(); ++i_feat) {
-        auto rel_err_m{math::relative_error(X.col(selected_ids[i_feat]),
-                          X_sparse.col(i_feat), delta, epsilon)};
+        auto rel_err_m{math::relative_error(
+            X.col(selected_ids[i_feat]), X_sparse.col(i_feat), delta, epsilon)};
         double rel_err = rel_err_m.maxCoeff();
         BOOST_TEST(rel_err < delta);
       }
 
       // test that the sparsified gradients are a subset of the normal gradients
-      auto & rep_grad{*manager->template get_property<PropGrad_t>(representation.get_gradient_name())};
-      auto & rep_grad_sparse{*manager->template get_property<PropGrad_t>(representation_sparse.get_gradient_name())};
+      auto & rep_grad{*manager->template get_property<PropGrad_t>(
+          representation.get_gradient_name())};
+      auto & rep_grad_sparse{*manager->template get_property<PropGrad_t>(
+          representation_sparse.get_gradient_name())};
       auto X_grad = rep_grad.get_features_gradient();
       auto X_grad_sparse = rep_grad_sparse.get_features_gradient();
       for (size_t i_feat{0}; i_feat < selected_ids.size(); ++i_feat) {
         auto rel_err_m{math::relative_error(X_grad.col(selected_ids[i_feat]),
-                          X_grad_sparse.col(i_feat), delta, epsilon)};
+                                            X_grad_sparse.col(i_feat), delta,
+                                            epsilon)};
         double rel_err = rel_err_m.maxCoeff();
         BOOST_TEST(rel_err < delta);
-        if (verbose and (rel_err > delta)) {
-          std::cout << "############## Man: " << i_manager <<
-              " col: " << i_feat << std::endl;
-          std::cout << "REF:  " << X_grad.col(selected_ids[i_feat]).transpose() << std::endl;
-          std::cout << "TEST: " << X_grad_sparse.col(i_feat).transpose() << std::endl;
+        if (verbose and rel_err > delta) {
+          std::cout << "############## Man: " << i_manager << " col: " << i_feat
+                    << std::endl;
+          std::cout << "REF:  " << X_grad.col(selected_ids[i_feat]).transpose()
+                    << std::endl;
+          std::cout << "TEST: " << X_grad_sparse.col(i_feat).transpose()
+                    << std::endl;
         }
       }
     }
   }
-  
+
   /* ---------------------------------------------------------------------- */
   /**
    * Utility fixture used to compare representations computed with full and

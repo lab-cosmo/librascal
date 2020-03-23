@@ -82,9 +82,9 @@ namespace rascal {
         }
       }
 
-      SortedKey() :data{} {}
+      SortedKey() : data{} {}
 
-      SortedKey(const SortedKey& other) :data{other.data} {}
+      SortedKey(const SortedKey & other) : data{other.data} {}
 
       SortedKey & operator=(const SortedKey & other) {
         this->data = other.data;
@@ -104,11 +104,15 @@ namespace rascal {
       }
 
       //! access or insert specified element. use with caution !
-      template<class Int>
-      Value_t & operator[](const Int& id) { return this->data[id]; }
+      template <class Int>
+      Value_t & operator[](const Int & id) {
+        return this->data[id];
+      }
 
-      template<class Int>
-      const Value_t & operator[](const Int& id) const { return this->data[id]; }
+      template <class Int>
+      const Value_t & operator[](const Int & id) const {
+        return this->data[id];
+      }
 
       const Key_t & get_key() const { return data; }
     };
@@ -926,12 +930,12 @@ namespace rascal {
       return this->get_features_gradient(all_keys);
     }
 
-    Matrix_t get_features_gradient(const Keys_t& all_keys) {
+    Matrix_t get_features_gradient(const Keys_t & all_keys) {
       static_assert(Order_ == 2, "Gradients are a property of order 2.");
-      using ConstMapSoapGradFlat_t = const Eigen::Map<const
-          Eigen::Matrix<double, ThreeD, Eigen::Dynamic, Eigen::RowMajor>>;
-      size_t n_elements{this->size()*ThreeD};
-      int inner_size{this->get_nb_comp()/ThreeD};
+      using ConstMapSoapGradFlat_t = const Eigen::Map<
+          const Eigen::Matrix<double, ThreeD, Eigen::Dynamic, Eigen::RowMajor>>;
+      size_t n_elements{this->size() * ThreeD};
+      int inner_size{this->get_nb_comp() / ThreeD};
       Matrix_t features =
           Matrix_t::Zero(n_elements, inner_size * all_keys.size());
       int i_row_global{0};
@@ -942,9 +946,10 @@ namespace rascal {
         for (const auto & key : all_keys) {
           if (this->maps[i_pair].count(key) == 1) {
             const auto & neigh_key_val = neigh_val[key];
-            ConstMapSoapGradFlat_t neigh_key_val_flat(
-                neigh_key_val.data(), ThreeD, inner_size);
-            features.block(i_row_global, i_feat, ThreeD, inner_size) = neigh_key_val_flat;
+            ConstMapSoapGradFlat_t neigh_key_val_flat(neigh_key_val.data(),
+                                                      ThreeD, inner_size);
+            features.block(i_row_global, i_feat, ThreeD, inner_size) =
+                neigh_key_val_flat;
           }
           i_feat += inner_size;
         }  // keys

@@ -24,26 +24,26 @@ def dump_reference_json():
     from ase.io import read
     np.random.seed(10)
     fns = ['diamond_2atom_distorted.json',
-            'CaCrP2O7_mvc-11955_symmetrized.json',
-            'methane.json']
+           'CaCrP2O7_mvc-11955_symmetrized.json',
+           'methane.json']
     soap_types = ["PowerSpectrum"]
     Nselects = ['all', 'all_random', '8_random']
 
     sparsification_inputs = []
-    for fn, soap_type, Nselect in product(fns,soap_types,Nselects):
-        frames = read(join(inputs_path,fn),':')
+    for fn, soap_type, Nselect in product(fns, soap_types, Nselects):
+        frames = read(join(inputs_path, fn), ':')
 
         hypers = dict(soap_type=soap_type,
-                    interaction_cutoff=3.5,
-                    max_radial=2,
-                    max_angular=2,
-                    gaussian_sigma_constant=0.4,
-                    gaussian_sigma_type="Constant",
-                    cutoff_smooth_width=0.5,
-                    normalize=False,
-                    compute_gradients=True,
-                    expansion_by_species_method='structure wise',
-                    )
+                      interaction_cutoff=3.5,
+                      max_radial=2,
+                      max_angular=2,
+                      gaussian_sigma_constant=0.4,
+                      gaussian_sigma_type="Constant",
+                      cutoff_smooth_width=0.5,
+                      normalize=False,
+                      compute_gradients=True,
+                      expansion_by_species_method='structure wise',
+                      )
 
         soap = SphericalInvariants(**hypers)
         managers = soap.transform(frames)
@@ -51,7 +51,7 @@ def dump_reference_json():
 
         # select some features from the possible set
         mapping = soap.get_feature_index_mapping(managers)
-        selected_features = {key:[] for key in mapping[0].keys()}
+        selected_features = {key: [] for key in mapping[0].keys()}
         ids = np.array([key for key in mapping.keys()])
         if Nselect == 'all':
             pass
@@ -76,11 +76,11 @@ def dump_reference_json():
         managers_s = soap_s.transform(frames)
 
         sparsification_inputs.append(
-                dict(hypers=dict(rep=soap.hypers,
-                        rep_sparse=soap_s.hypers,
-                    adaptors=json.loads(managers_s.managers.get_parameters())),
-                filename=join(read_inputs_path,fn),
-                Nselect=Nselect))
+            dict(hypers=dict(rep=soap.hypers,
+                             rep_sparse=soap_s.hypers,
+                             adaptors=json.loads(managers_s.managers.get_parameters())),
+                 filename=join(read_inputs_path, fn),
+                 Nselect=Nselect))
 
     fn_out = join(root, dump_path, "sparsification_inputs.json")
     print(fn_out)

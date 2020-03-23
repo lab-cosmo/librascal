@@ -10,10 +10,12 @@ def get_power_spectrum_index_mapping(sp_pairs, n_max, l_max):
     feat_idx2coeff_idx = {}
     # i_feat corresponds the global linear index
     i_feat = 0
-    for sp_pair,n1,n2,l in product(sp_pairs, range(n_max), range(n_max), range(l_max)):
-        feat_idx2coeff_idx[i_feat] = dict(a=sp_pair[0],b=sp_pair[1],n1=n1,n2=n2,l=l)
+    for sp_pair, n1, n2, l in product(sp_pairs, range(n_max), range(n_max), range(l_max)):
+        feat_idx2coeff_idx[i_feat] = dict(
+            a=sp_pair[0], b=sp_pair[1], n1=n1, n2=n2, l=l)
         i_feat += 1
     return feat_idx2coeff_idx
+
 
 class SphericalInvariants(object):
 
@@ -266,12 +268,12 @@ class SphericalInvariants(object):
                         * self.hypers['max_radial']**3
                         * int(1 + 2 * self.hypers['max_angular']
                               + 3 * self.hypers['max_angular']**2 / 2
-                            + self.hypers['max_angular']**3 / 2))
+                              + self.hypers['max_angular']**3 / 2))
             else:
                 return (self.hypers['n_species']**3
                         * self.hypers['max_radial']**3
                         * int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)
-                                     * (2 * (self.hypers['max_angular'] + 1) + 3) / 8.0)))
+                                       * (2 * (self.hypers['max_angular'] + 1) + 3) / 8.0)))
         else:
             raise ValueError('Only soap_type = RadialSpectrum || '
                              'PowerSpectrum || BiSpectrum '
@@ -321,13 +323,13 @@ class SphericalInvariants(object):
         sp_pairs = self.get_keys(u_species)
 
         n_max = self.hypers['max_radial']
-        l_max = self.hypers['max_angular']+1
+        l_max = self.hypers['max_angular'] + 1
         if self.hypers['soap_type'] == 'PowerSpectrum':
             feature_index_mapping = get_power_spectrum_index_mapping(
-                                                    sp_pairs, n_max, l_max)
+                sp_pairs, n_max, l_max)
         else:
             raise NotImplementedError('Only soap_type = '
-                             'PowerSpectrum '
-                             'implemented for now')
+                                      'PowerSpectrum '
+                                      'implemented for now')
 
         return feature_index_mapping
