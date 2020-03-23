@@ -149,7 +149,7 @@ namespace rascal {
      * @param delta maximum relative error threshold
      */
     template <typename Derived>
-    Derived relative_error(const Eigen::MatrixBase<Derived> & reference,
+    Matrix_t relative_error(const Eigen::MatrixBase<Derived> & reference,
                            const Eigen::MatrixBase<Derived> & test,
                            const double & delta = 1e-10,
                            const double & epsilon = DBL_FTOL) {
@@ -165,7 +165,7 @@ namespace rascal {
                 << "' != '" << test.cols() << "'.";
         throw std::runtime_error(err_str.str());
       }
-      auto rel_diff = (reference - test).array().abs().matrix().eval();
+      Matrix_t rel_diff = (reference - test).array().abs().matrix().eval();
       auto is_zero_ref = (reference.array().abs() < epsilon).eval();
       auto is_zero_test = (test.array().abs() < epsilon).eval();
       for (int i_row{0}; i_row < reference.rows(); ++i_row) {
