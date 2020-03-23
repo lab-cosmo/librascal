@@ -40,7 +40,8 @@ class Kernel(object):
 
     Methods
     -------
-    __call__(X, Y=None, grad=(False, False), numerical_grad=False)
+    __call__(X, Y=None, compute_gradients=(False, False), 
+            numerical_gradients=False)
         Compute the kernel.
 
         Parameters
@@ -50,12 +51,12 @@ class Kernel(object):
 
         Y : AtomList, ManagerCollection or PseudoPoints* (C++ class).
 
-        grad : tuple specifying if the kernel should be computed using gradient
-               of the representation w.r.t. the atomic positions, e.g. (True, False)
-               corresponds to the gradient of the 1st argument of the kernel
-               w.r.t. the atomic positions.
+        compute_ gradients : tuple specifying if the kernel should be computed 
+               using the gradient of the representation w.r.t. the atomic positions, 
+               e.g. (True, False) corresponds to the gradient of the 1st argument 
+               of the kernel w.r.t. the atomic positions.
 
-        numerical_grad : bool, compute the kernel gradient with finite
+        numerical_gradients : bool, compute the kernel gradient with finite
                         difference
         Returns
         -------
@@ -63,8 +64,8 @@ class Kernel(object):
 
     """
 
-    def __init__(self, representation, name='Cosine', kernel_type='Full', target_type='Structure',
-                 **kwargs):
+    def __init__(self, representation, name='Cosine', kernel_type='Full', 
+                 target_type='Structure', **kwargs):
 
         # This case cannot be handled by the c++ side because c++ cannot deduce the
         # type from arguments inside a json, so it has to be casted in the c++
@@ -97,14 +98,15 @@ class Kernel(object):
         else:
             self._kernel = Kernelcpp(hypers_str)
 
-    def __call__(self, X, Y=None, grad=(False, False), numerical_grad=False):
+    def __call__(self, X, Y=None, compute_gradients=(False, False), 
+        numerical_gradients=False):
         if isinstance(X, AtomsList):
             X = X.managers
 
-        if numerical_grad is True and self.kernel_type != 'Sparse':
+        if numerical_gradients is True and self.kernel_type != 'Sparse':
             raise NotImplementedError('Numerical gradient have only been implemented for Sparse kernels.')
 
-        if Y is None and grad == (False, False):
+        if Y is None and compute_gradients == (False, False):
             # compute a kernel between features and themselves
             if self.kernel_type == 'Full':
                 return self._kernel.compute(self._representation, X)
@@ -113,16 +115,16 @@ class Kernel(object):
                     X = X._pseudo_points
                 # compute the KMM matrix
                 return self._kernel.compute(X)
-        elif grad == (True, False) and 'Sparse' in self.kernel_type:
+        elif compute_gradients == (True, False) and 'Sparse' in self.kernel_type:
             if isinstance(Y, PseudoPoints):
                 Y = Y._pseudo_points
             # compute the block of the KNM matrix corresponding to forces
-            if not numerical_grad:
+            if not numerical_gradients:
                 return self._kernel.compute_derivative(self._representation, X, Y)
             else:
                 return compute_numerical_kernel_gradients(self,
                                     self._rep, X, Y, eps=1e-5)
-        elif grad == (False, False):
+        elif compute_gradients == (False, False):
             # compute the kernel between two sets of features
             if isinstance(Y, AtomsList):
                 # to make predictions with the full covariance

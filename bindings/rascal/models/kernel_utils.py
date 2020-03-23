@@ -41,7 +41,7 @@ def compute_displaced_kernel(kernel, rep, frame, i_atom, disp, X_pseudo):
     """
     frame_d = update_frame(frame, i_atom, disp)
     managers = rep.transform([frame_d])
-    KNM_d = kernel(managers, X_pseudo, grad=(False, False))
+    KNM_d = kernel(managers, X_pseudo, compute_gradients=(False, False))
     return KNM_d
 
 def compute_numerical_kernel_gradient(kernel, representation, frame, X_pseudo, eps=1e-5):

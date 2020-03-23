@@ -54,9 +54,9 @@ class KRR(object):
         if numerical_gradients:
             if frames is None:
                 raise ValueError("Must provide  reference frames to compute numerical gradients")
-            kernel = self.kernel(frames, self.X_train, (compute_gradients, False), numerical_grad=numerical_gradients)
+            kernel = self.kernel(frames, self.X_train, (compute_gradients, False), numerical_gradients=numerical_gradients)
         else:
-            kernel = self.kernel(managers, self.X_train, (compute_gradients, False), numerical_grad=numerical_gradients)
+            kernel = self.kernel(managers, self.X_train, (compute_gradients, False), numerical_gradients=numerical_gradients)
         Y0 = self._get_property_baseline(managers)
         return kernel, Y0
 
