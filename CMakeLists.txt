@@ -186,7 +186,7 @@ endif()
 message(STATUS "Installation ROOT: ${CMAKE_INSTALL_PREFIX}")
 
 
-# Always use full RPATH
+# use full RPATH
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
@@ -196,11 +196,17 @@ if(NOT BUILD_PIP)
 else()
   # when installing through pip one needs to first build/install and then copy
   # to the python installation folders
-  set(CMAKE_INSTALL_RPATH "${PACKAGE_PREFIX}/lib")
-  # set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
-  # set(CMAKE_INSTALL_RPATH "\$ORIGIN/lib")
-  # # set(CMAKE_INSTALL_RPATH "${PACKAGE_PREFIX}/lib")
-  # # set(CMAKE_INSTALL_RPATH "../../../../../lib")
+  # set(CMAKE_INSTALL_RPATH "${PACKAGE_PREFIX}/lib")
+  set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+  set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../../../")
+  if(Apple)
+    set(MACOSX_RPATH ON)
+    set(CMAKE_INSTALL_RPATH "@loader_path/../../../../")
+  endif()
+
+
+  # set(CMAKE_INSTALL_RPATH "${PACKAGE_PREFIX}/lib")
+  # set(CMAKE_INSTALL_RPATH "../../../../../lib")
 endif()
 add_subdirectory(src)
 
