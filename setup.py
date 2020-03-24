@@ -14,6 +14,8 @@ except ImportError:
     print('  python3 -m pip install scikit-build')
     sys.exit(1)
 
+with open('./requirements_pip.txt', 'r') as fp:
+    requirements = list(filter(lambda x: '#' not in x, (line.strip() for line in fp)))
 
 setup(
     name="rascal",
@@ -26,5 +28,6 @@ atomic structures for machine learning.""",
       '-DINSTALL_PATH:STRING='+join(os.getcwd(),CMAKE_INSTALL_DIR()),
       '-DBUILD_EXAMPLES:BOOL=OFF',
       '-DBUILD_PIP:BOOL=ON'
-    ]
+    ],
+    install_requires=requirements
 )
