@@ -11,7 +11,7 @@ except ImportError:
     print('scikit-build is required to build from source.', file=sys.stderr)
     print('Please run:', file=sys.stderr)
     print('', file=sys.stderr)
-    print('  python -m pip install scikit-build')
+    print('  python3 -m pip install scikit-build')
     sys.exit(1)
 
 

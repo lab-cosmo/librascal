@@ -186,7 +186,7 @@ endif()
 message(STATUS "Installation ROOT: ${CMAKE_INSTALL_PREFIX}")
 
 
-# use full RPATH
+# use full RPATH by default. see link for more details on the topic
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
@@ -195,19 +195,17 @@ if(NOT BUILD_PIP)
   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 else()
   # when installing through pip one needs to first build/install and then copy
-  # to the python installation folders
-  # set(CMAKE_INSTALL_RPATH "${PACKAGE_PREFIX}/lib")
+  # to the python installation folders so we set a relative path allowing
+  # _rascal to find librascal.dylib
   set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
-  set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../../../")
-  if(Apple)
+  if(NOT APPLE AND UNIX)
+    set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../../../")
+  elseif(APPLE)
     set(MACOSX_RPATH ON)
     set(CMAKE_INSTALL_RPATH "@loader_path/../../../../")
   endif()
-
-
-  # set(CMAKE_INSTALL_RPATH "${PACKAGE_PREFIX}/lib")
-  # set(CMAKE_INSTALL_RPATH "../../../../../lib")
 endif()
+
 add_subdirectory(src)
 
 enable_testing()
