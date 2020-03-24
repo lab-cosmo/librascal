@@ -74,6 +74,9 @@ option(BUILD_TESTS "Build the unit tests" OFF)
 option(BUILD_DOC "Build documentation" OFF)
 option(BUILD_SANDBOX "If on, builds the sandbox" OFF)
 option(USER "Switch installation folder" OFF)
+option(BUILD_PIP "Change installation behaviour for pip installation" OFF)
+
+mark_as_advanced(BUILD_PIP)
 
 set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
 
@@ -89,8 +92,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
 
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 
     # Add -march=${TYPE_ARCHITECTURE} (-march=native by default) to the release
     # build flags
@@ -160,6 +163,10 @@ if(BUILD_BINDINGS)
                     print(sys.prefix)"
     OUTPUT_VARIABLE PACKAGE_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+  # string that has the path only from the python package prefix to
+  # site-packages
+  string(REPLACE "${PACKAGE_PREFIX}/" ""
+                      PYTHON_SITE_PACKAGES_CHUNK ${PYTHON_SITE_PACKAGES})
 endif()
 
 # figure out where to install the library
@@ -178,12 +185,23 @@ endif()
 
 message(STATUS "Installation ROOT: ${CMAKE_INSTALL_PREFIX}")
 
+
 # Always use full RPATH
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-
+if(NOT BUILD_PIP)
+  # normal installation procedure
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+else()
+  # when installing through pip one needs to first build/install and then copy
+  # to the python installation folders
+  set(CMAKE_INSTALL_RPATH "${PACKAGE_PREFIX}/lib")
+  # set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+  # set(CMAKE_INSTALL_RPATH "\$ORIGIN/lib")
+  # # set(CMAKE_INSTALL_RPATH "${PACKAGE_PREFIX}/lib")
+  # # set(CMAKE_INSTALL_RPATH "../../../../../lib")
+endif()
 add_subdirectory(src)
 
 enable_testing()
