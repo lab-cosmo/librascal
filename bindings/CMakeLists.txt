@@ -50,7 +50,8 @@ target_link_libraries(_rascal PRIVATE "${LIBRASCAL_NAME}")
 # Remove the 'lib' prefix, so that the python module is called _rascal
 set_target_properties(_rascal PROPERTIES PREFIX "")
 # Sets rule to install the bindings library in the rascal folder
-if (NOT BUILD_PIP)
+if (NOT SKBUILD)
+    # Normal installation procedure
     # copy rascal folder in the python distribution
     install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal" DESTINATION "${CMAKE_INSTALL_PREFIX}"
         PATTERN "*__pycache__" EXCLUDE
@@ -60,8 +61,7 @@ if (NOT BUILD_PIP)
     )
     install(TARGETS _rascal DESTINATION "${CMAKE_INSTALL_PREFIX}/rascal/lib")
 else()
-
-    # message(STATUS "${PYTHON_SITE_PACKAGES_CHUNK}")
+    # special installation path for pip installation
     # copy rascal folder in the python distribution
     install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal" DESTINATION "${CMAKE_INSTALL_PREFIX}/${PYTHON_SITE_PACKAGES_CHUNK}"
         PATTERN "*__pycache__" EXCLUDE

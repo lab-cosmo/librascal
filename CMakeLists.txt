@@ -74,9 +74,6 @@ option(BUILD_TESTS "Build the unit tests" OFF)
 option(BUILD_DOC "Build documentation" OFF)
 option(BUILD_SANDBOX "If on, builds the sandbox" OFF)
 option(USER "Switch installation folder" OFF)
-option(BUILD_PIP "Change installation behaviour for pip installation" OFF)
-
-mark_as_advanced(BUILD_PIP)
 
 set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
 
@@ -185,13 +182,18 @@ endif()
 
 message(STATUS "Installation ROOT: ${CMAKE_INSTALL_PREFIX}")
 
+if(SKBUILD)
+  # make sure we know when installing with setup.py (potentially for using with
+  # pip)
+  message(STATUS "The project is built using scikit-build")
+endif()
 
 # use full RPATH by default. see link for more details on the topic
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-if(NOT BUILD_PIP)
-  # normal installation procedure
+if(NOT SKBUILD)
+  # normal installation procedure 
   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 else()
   # when installing through pip one needs to first build/install and then copy

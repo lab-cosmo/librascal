@@ -19,15 +19,14 @@ with open('./requirements_pip.txt', 'r') as fp:
 
 setup(
     name="rascal",
-    version="0.3.8",
+    version="0.3.9",
     description="""A versatile and scalable computation of representations of
 atomic structures for machine learning.""",
     author='Félix Musil',
     license="LGPL-3",
     cmake_args=[
       '-DINSTALL_PATH:STRING='+join(os.getcwd(),CMAKE_INSTALL_DIR()),
-      '-DBUILD_EXAMPLES:BOOL=OFF',
-      '-DBUILD_PIP:BOOL=ON'
+      '-DBUILD_EXAMPLES:BOOL=OFF'
     ],
     install_requires=requirements
 )
