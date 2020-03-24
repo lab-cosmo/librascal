@@ -19,7 +19,7 @@ with open('./requirements_pip.txt', 'r') as fp:
 
 setup(
     name="rascal",
-    version="0.3.5",
+    version="0.3.8",
     description="""A versatile and scalable computation of representations of
 atomic structures for machine learning.""",
     author='Félix Musil',
