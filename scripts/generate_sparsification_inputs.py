@@ -85,7 +85,7 @@ def dump_reference_json():
     fn_out = join(root, dump_path, "sparsification_inputs.json")
     print(fn_out)
     with open(fn_out, 'w') as f:
-        json.dump(sparsification_inputs, f, indent=2)
+        json.dump(sparsification_inputs, f)
 
 ##########################################################################################
 ##########################################################################################
