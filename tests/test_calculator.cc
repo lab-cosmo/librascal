@@ -319,14 +319,19 @@ namespace rascal {
     // the keys of the center contribution (1st center)
     std::vector<std::vector<int>> all_keys{{8, 8},   {8, 15},  {8, 20},
                                            {15, 15}, {15, 20}, {20, 20}};
-    // the list of keys for each neighbor (1st center)
+
     std::vector<std::vector<std::vector<int>>> neigh_keys{
-        {{8, 15}, {15, 15}, {15, 20}}, {{8, 8}, {8, 15}, {8, 20}},
-        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
-        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
-        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
-        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
-        {{8, 15}, {15, 15}, {15, 20}}};
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}},
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}},
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
+        {{8, 20}, {15, 20}, {20, 20}, {20, 24}}};
 
     for (auto & manager : managers) {
       for (auto & hyper : hypers) {
@@ -340,7 +345,8 @@ namespace rascal {
             auto ii_pair = center.get_atom_ii();
             auto keys_grad_center = prop_grad.get_keys(ii_pair);
             if (verbose) {
-              std::cout << "Center gradient keys: ";
+              std::cout << "Center " << center.get_atom_type()
+                        << " gradient keys: ";
               for (auto key : keys_grad_center) {
                 std::cout << "{";
                 for (auto key_sp : key) {
@@ -530,6 +536,7 @@ namespace rascal {
           grad_fix.advance_center();
         } while (grad_fix.has_next());
         /* ---- grad-test-example-end2 ---- */
+        break;
       }
       ++filename_it;
     }
@@ -540,11 +547,149 @@ namespace rascal {
    * Utility fixture used to compare representations computed with full and
    * half neighbor lists.
    */
-  template <class CalculatorFixtureFull, class CalculatorFixtureHalf>
-  struct MergeHalfAndFull : CalculatorFixtureFull, CalculatorFixtureHalf {
-    using ParentFull = CalculatorFixtureFull;
-    using ParentHalf = CalculatorFixtureHalf;
-    using Representation_t = typename ParentFull::Representation_t;
+
+  /** Contains some simple periodic structures for testing complicated things
+   *  like gradients
+   */
+  struct SimpleFullFixture {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
+    using Structure_t = AtomicStructure<3>;
+
+    SimpleFullFixture() {
+      for (size_t i_filename{0}; i_filename < filenames.size(); ++i_filename) {
+        json parameters;
+        json structure{{"filename", filenames[i_filename]}};
+        json adaptors;
+        json ad1{{"name", "AdaptorNeighbourList"},
+                 {"initialization_arguments",
+                  {{"cutoff", cutoffs[i_filename]}, {"skin", cutoff_skin}}}};
+        json ad1b{{"name", "AdaptorCenterContribution"},
+                  {"initialization_arguments", {}}};
+        json ad2{
+            {"name", "AdaptorStrict"},
+            {"initialization_arguments", {{"cutoff", cutoffs[i_filename]}}}};
+        adaptors.emplace_back(ad1);
+        adaptors.emplace_back(ad1b);
+        adaptors.emplace_back(ad2);
+
+        parameters["structure"] = structure;
+        parameters["adaptors"] = adaptors;
+
+        this->factory_args.emplace_back(parameters);
+
+        this->representation_hypers.emplace_back();
+        auto fc_hyper = json::object(
+            {{"type", "ShiftedCosine"},
+             {"cutoff", {{"value", cutoffs[i_filename]}, {"unit", "AA"}}},
+             {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}});
+
+        for (auto & ri_hyp : this->radial_contribution_hypers) {
+          for (auto & sig_hyp : this->density_hypers) {
+            for (auto & rep_hyp : this->rep_hypers) {
+              rep_hyp["cutoff_function"] = fc_hyper;
+              rep_hyp["gaussian_density"] = sig_hyp;
+              rep_hyp["radial_contribution"] = ri_hyp;
+              this->representation_hypers.back().push_back(rep_hyp);
+            }
+          }
+        }
+      }
+    }
+
+    ~SimpleFullFixture() = default;
+
+    const std::vector<std::string> filenames{
+        "reference_data/inputs/diamond_2atom.json",
+        "reference_data/inputs/diamond_2atom_distorted.json",
+        "reference_data/inputs/SiCGe_wurtzite_like.json",
+        "reference_data/inputs/methane.json"};
+    const std::vector<double> cutoffs{{1.2, 1.2, 1.5, 4.}};
+    const double cutoff_skin{0.};
+
+    json factory_args{};
+    std::vector<Structure_t> structures{};
+
+    std::vector<std::vector<json>> representation_hypers{};
+    std::vector<json> fc_hypers{};
+
+    std::vector<json> density_hypers{
+        {{"type", "Constant"},
+         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> rep_hypers{{{"max_radial", 2},
+                                  {"max_angular", 2},
+                                  {"normalize", true},
+                                  {"soap_type", "PowerSpectrum"},
+                                  {"compute_gradients", true}},
+                                 {{"max_radial", 3},
+                                  {"max_angular", 0},
+                                  {"normalize", true},
+                                  {"soap_type", "RadialSpectrum"},
+                                  {"compute_gradients", true}}};
+  };
+
+  /** Contains some simple periodic structures for testing complicated things
+   *  like gradients
+   *  Should match the
+   */
+  struct SimpleHalfFixture {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters,
+                                   AdaptorNeighbourList, AdaptorHalfList,
+                                   AdaptorCenterContribution, AdaptorStrict>;
+    using Structure_t = AtomicStructure<3>;
+
+    SimpleHalfFixture() {
+      for (size_t i_filename{0}; i_filename < filenames.size(); ++i_filename) {
+        json parameters;
+        json structure{{"filename", filenames[i_filename]}};
+        json adaptors;
+        json ad1a{
+            {"name", "AdaptorNeighbourList"},
+            {"initialization_arguments", {{"cutoff", cutoffs[i_filename]}}}};
+        json ad1b{{"name", "AdaptorHalfList"},
+                  {"initialization_arguments", {}}};
+        json ad1c{{"name", "AdaptorCenterContribution"},
+                  {"initialization_arguments", {}}};
+        json ad2{
+            {"name", "AdaptorStrict"},
+            {"initialization_arguments", {{"cutoff", cutoffs[i_filename]}}}};
+
+        adaptors.emplace_back(ad1a);
+        adaptors.emplace_back(ad1b);
+        adaptors.emplace_back(ad1c);
+        adaptors.emplace_back(ad2);
+
+        parameters["structure"] = structure;
+        parameters["adaptors"] = adaptors;
+
+        this->factory_args.emplace_back(parameters);
+      }
+    }
+
+    ~SimpleHalfFixture() = default;
+
+    const std::vector<std::string> filenames{
+        "reference_data/inputs/diamond_2atom.json",
+        "reference_data/inputs/diamond_2atom_distorted.json",
+        "reference_data/inputs/SiCGe_wurtzite_like.json",
+        "reference_data/inputs/methane.json"};
+    const std::vector<double> cutoffs{{1.2, 1.2, 1.5, 4.}};
+    const double cutoff_skin{0.};
+
+    json factory_args{};
+    std::vector<Structure_t> structures{};
+  };
+
+  template <class FixtureFull, class FixtureHalf, class Calculator>
+  struct MergeHalfAndFull : MultipleStructureFixture<FixtureFull>,
+                            MultipleStructureFixture<FixtureHalf> {
+    using ParentFull = MultipleStructureFixture<FixtureFull>;
+    using ParentHalf = MultipleStructureFixture<FixtureHalf>;
+    using Representation_t = Calculator;
     using Manager_t = typename ParentFull::Manager_t;
     using ManagerHalf_t = typename ParentHalf::Manager_t;
     using Prop_t = typename Representation_t::template Property_t<Manager_t>;
@@ -555,28 +700,16 @@ namespace rascal {
     using PropGradHalf_t =
         typename Representation_t::template PropertyGradient_t<ManagerHalf_t>;
 
-    MergeHalfAndFull() {
-      for (auto hyper : ParentFull::representation_hypers) {
-        hyper["compute_gradients"] = true;
-        ParentFull::representations.emplace_back(hyper);
-      }
-    }
+    MergeHalfAndFull() {}
 
     ~MergeHalfAndFull() = default;
   };
-  template <template <class> class RepresentationFixture>
-  using RepFix_t =
-      CalculatorFixture<RepresentationFixture<SimplePeriodicNLCCStrictFixture>>;
-  template <template <class> class RepresentationFixture>
-  using RepFixHalf_t = CalculatorFixture<
-      RepresentationFixture<SimplePeriodicNLHalfCCStrictFixture>>;
 
-  using gradient_half_fixtures = boost::mpl::list<
-      MergeHalfAndFull<RepFix_t<SingleHypersSphericalExpansion>,
-                       RepFixHalf_t<SingleHypersSphericalExpansion>>,
-      MergeHalfAndFull<RepFix_t<SingleHypersSphericalInvariants>,
-                       RepFixHalf_t<SingleHypersSphericalInvariants>>>;
-
+  using gradient_half_fixtures =
+      boost::mpl::list<MergeHalfAndFull<SimpleFullFixture, SimpleHalfFixture,
+                                        CalculatorSphericalExpansion>,
+                       MergeHalfAndFull<SimpleFullFixture, SimpleHalfFixture,
+                                        CalculatorSphericalInvariants>>;
   /**
    * Test the representation gradients computed with a half neighbor list
    * against the full neighbor list implementation.
@@ -597,9 +730,11 @@ namespace rascal {
     using PropHalf_t = typename Fix::PropHalf_t;
     using PropGrad_t = typename Fix::PropGrad_t;
     using PropGradHalf_t = typename Fix::PropGradHalf_t;
+    using Representation_t = typename Fix::Representation_t;
     auto & managers = Fix::ParentFull::managers;
     auto & managers_half = Fix::ParentHalf::managers;
-    auto & representations = Fix::ParentFull::representations;
+    auto & representation_hypers = Fix::ParentFull::representation_hypers;
+
     const bool verbose{false};
     // relative error threshold
     const double delta{4e-7};
@@ -612,9 +747,10 @@ namespace rascal {
       throw std::runtime_error("managers.size() != managers_half.size()");
     }
     for (size_t i_manager{0}; i_manager < managers.size(); ++i_manager) {
-      for (auto & representation : representations) {
+      for (auto & rep_hypers : representation_hypers[i_manager]) {
         auto & manager = managers[i_manager];
         auto & manager_half = managers_half[i_manager];
+        Representation_t representation{rep_hypers};
         representation.compute(manager);
         representation.compute(manager_half);
 

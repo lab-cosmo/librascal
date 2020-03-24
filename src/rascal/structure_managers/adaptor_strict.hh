@@ -84,6 +84,8 @@ namespace rascal {
     using ManagerImplementation_t = ManagerImplementation;
     using Parent = StructureManager<Manager_t>;
     using ImplementationPtr_t = std::shared_ptr<ManagerImplementation>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const ManagerImplementation>;
     using traits = StructureManager_traits<AdaptorStrict>;
     using PreviousManager_t = typename traits::PreviousManager_t;
     using AtomRef_t = typename ManagerImplementation::AtomRef_t;
@@ -225,12 +227,15 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
-    // BUG8486@(till) I deleted the non const getters, because they are not
-    // needed
-    // if this was wrong, please explain
+    //! Get the manager used to build the instance
+    ConstImplementationPtr_t get_previous_manager_impl() const {
+      return this->manager->get_shared_ptr();
+    }
+
     //! returns the distance between atoms in a given pair
     template <size_t Order, size_t Layer>
-    double get_distance(const ClusterRefKey<Order, Layer> & pair) const {
+    const double &
+    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       return this->distance->operator[](pair);
     }
 

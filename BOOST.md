@@ -15,7 +15,7 @@ It seems that the brew recepy of boost is broken (compilation errors). Custom or
 ## Custom installation
 We use 7z to unpack (sudo apt-get install p7zip-full to install on ubuntu)
 ```
-export BOOST_DIR=/home/felix/git
+export BOOST_DIR=/path/to/download/directory
 wget https://sourceforge.net/projects/boost/files/boost/1.64.0/boost_1_64_0.7z/download -O $BOOST_DIR/boost_1_64_0.7z
 7z x $BOOST_DIR/boost_1_64_0.7z
 cd $BOOST_DIR/boost_1_64_0

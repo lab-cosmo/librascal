@@ -430,12 +430,13 @@ namespace rascal {
       /**
        * squared l^2 norm of the entire vector (sum of squared elements)
        */
-      void normalize() {
+      double normalize_and_get_norm() {
         double norm{this->norm()};
         auto block{this->get_full_vector()};
         if (std::abs(norm) > 0.) {
           block /= norm;
         }
+        return norm;
       }
 
       /**
@@ -967,6 +968,12 @@ namespace rascal {
       // the block does all rows and the columns corresponding to skey
       std::array<int, 4> arr = {{0, view_start, n_row, n_col}};
       return arr;
+    }
+
+    double sum() const { return this->values.sum(); }
+
+    double l1_norm() const {
+      return this->values.matrix().template lpNorm<1>();
     }
 
     /**

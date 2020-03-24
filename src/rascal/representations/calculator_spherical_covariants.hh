@@ -512,7 +512,7 @@ namespace rascal {
 
       // normalize the soap vector
       if (this->normalize) {
-        soap_vector.normalize();
+        soap_vector.normalize_and_get_norm();
       }
     }  // center
   }    // compute_lambdaspectrum

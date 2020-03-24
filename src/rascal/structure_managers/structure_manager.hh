@@ -170,6 +170,8 @@ namespace rascal {
     using traits = StructureManager_traits<ManagerImplementation>;
     using PreviousManager_t = typename traits::PreviousManager_t;
     using ImplementationPtr_t = std::shared_ptr<PreviousManager_t>;
+    using ConstImplementationPtr_t =
+        const std::shared_ptr<const PreviousManager_t>;
     //! type used to represent spatial coordinates, etc
     using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
     using Vector_ref = Eigen::Map<Vector_t>;
@@ -615,7 +617,8 @@ namespace rascal {
     template <size_t Order, size_t Layer,
               bool HasDistances = traits::HasDistances,
               typename std::enable_if_t<HasDistances, int> = 0>
-    inline double & get_distance(const ClusterRefKey<Order, Layer> & pair) {
+    const double &
+    get_distance(const ClusterRefKey<Order, Layer> & pair) const {
       static_assert(HasDistances == traits::HasDistances,
                     "The manager does not have distances.");
       return this->get_previous_manager()->get_distance(pair);
@@ -624,11 +627,15 @@ namespace rascal {
     template <size_t Order, size_t Layer,
               bool HasDirectionVectors = traits::HasDirectionVectors,
               typename std::enable_if_t<HasDirectionVectors, int> = 0>
-    inline const Vector_ref
-    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) {
+    const Vector_ref
+    get_direction_vector(const ClusterRefKey<Order, Layer> & pair) const {
       static_assert(HasDirectionVectors == traits::HasDirectionVectors,
                     "The manager does not have direction vectors.");
       return this->get_previous_manager()->get_direction_vector(pair);
+    }
+
+    bool is_not_masked() const {
+      return this->get_previous_manager()->is_not_masked();
     }
 
     //! Get the full type of the structure manager
@@ -641,7 +648,7 @@ namespace rascal {
       return this->implementation().shared_from_this();
     }
 
-    std::shared_ptr<const ManagerImplementation> get_shared_ptr() const {
+    const std::shared_ptr<const ManagerImplementation> get_shared_ptr() const {
       return this->implementation().shared_from_this();
     }
 
@@ -663,9 +670,7 @@ namespace rascal {
     bool is_ghost_atom(const ClusterRef<Order> & cluster) {
       static_assert(Order <= 2, R"(Usage of this function for clusters of order
       larger than 3 is ambiguous.)");
-      auto && atom_tag = static_cast<size_t>(cluster.get_atom_tag());
-      auto && n_centers = this->size();
-      return (atom_tag >= n_centers);
+      return (not this->is_center_atom(cluster));
     }
 
     /**
@@ -731,7 +736,12 @@ namespace rascal {
       return get_dyn_layer<traits::MaxOrder>(order,
                                              typename traits::LayerByOrder{});
     }
+
     ImplementationPtr_t get_previous_manager() {
+      return this->implementation().get_previous_manager_impl();
+    }
+
+    ConstImplementationPtr_t get_previous_manager() const {
       return this->implementation().get_previous_manager_impl();
     }
 

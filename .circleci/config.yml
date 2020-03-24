@@ -141,6 +141,42 @@ jobs:
           command: |
             cd build && make pretty-cpp && git diff --exit-code
 
+  # Special job collecting code coverage
+  coverage:
+    docker:
+    - image: cosmoepfl/rascal-ci:3
+    steps:
+      - checkout
+      - run:
+          name: Install Python dependencies
+          command: |
+            python3.6 -m pip install -r requirements.txt
+            python3.6 -m pip install codecov coverage
+      - run:
+          name: Configure
+          command: |
+            mkdir build && cd build
+            cmake -DBUILD_BINDINGS=ON -DBUILD_TESTS=ON \
+                  -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-coverage" \
+                  ..
+      - run:
+          name: Build
+          command: cd build && make
+      - run:
+          name: Run C++ tests
+          command: cd build && ctest
+      - run:
+          name: Run Python tests
+          command: coverage run tests/python/python_binding_tests.py
+          environment:
+            PYTHONPATH: build/
+      - run:
+          name: Collect and upload coverage
+          command: |
+            find . -type f -name '*.gcno' -exec gcov-7 -pb {} +
+            rm -f \#usr\#*.gcov
+            rm -f *\#external\#*.gcov
+            codecov -X gcov
 
 workflows:
   version: 2
@@ -150,6 +186,7 @@ workflows:
       - docs
       - pretty
       - valgrind
+      - coverage
       - gcc-5
       - gcc-9
       - gcc-9-debug
