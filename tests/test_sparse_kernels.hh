@@ -34,8 +34,8 @@
 #include "test_calculator.hh"
 #include "test_manager_collection.hh"
 
-#include "rascal/models/pseudo_points.hh"
 #include "rascal/models/sparse_kernels.hh"
+#include "rascal/models/sparse_points.hh"
 
 namespace rascal {
 

@@ -4,12 +4,12 @@ from ..neighbourlist import AtomsList
 # names of existing pseudo points implementation on the pybinding side.
 _pseudo_points = {}
 for k, v in kernels.__dict__.items():
-    if "PseudoPoints" in k:
+    if "SparsePoints" in k:
         name = k
         _pseudo_points[name] = v
 
 
-class PseudoPoints(object):
+class SparsePoints(object):
     """
     Holds features to be used as references / sparse points / pseudo points
     in sparse GPR methods.
@@ -37,7 +37,7 @@ class PseudoPoints(object):
     def __init__(self, representation):
         self.representation = representation
         if 'SphericalInvariants' in str(representation):
-            self._pseudo_points = _pseudo_points['PseudoPointsBlockSparse_SphericalInvariants'](
+            self._pseudo_points = _pseudo_points['SparsePointsBlockSparse_SphericalInvariants'](
             )
         else:
             raise ValueError(

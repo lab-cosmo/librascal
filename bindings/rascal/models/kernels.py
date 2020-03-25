@@ -1,7 +1,7 @@
 from ..lib._rascal.models.kernels import Kernel as Kernelcpp
 from ..lib._rascal.models.kernels import SparseKernel as SparseKernelcpp
 from ..neighbourlist import AtomsList
-from .pseudo_points import PseudoPoints
+from .sparse_points import SparsePoints
 import json
 
 
@@ -47,7 +47,7 @@ class Kernel(object):
         X : AtomList or ManagerCollection (C++ class)
             Container of atomic structures.
 
-        Y : AtomList, ManagerCollection or PseudoPoints* (C++ class).
+        Y : AtomList, ManagerCollection or SparsePoints* (C++ class).
 
         grad : tuple specifying if the kernel should be computed using gradient
                of the representation w.r.t. the atomic positions, e.g. (True, False)
@@ -102,13 +102,13 @@ class Kernel(object):
             if self.kernel_type == 'Full':
                 return self._kernel.compute(self._representation, X)
             elif self.kernel_type == 'Sparse':
-                if isinstance(X, PseudoPoints):
-                    X = X._pseudo_points
+                if isinstance(X, SparsePoints):
+                    X = X._sparse_points
                 # compute the KMM matrix
                 return self._kernel.compute(X)
         elif grad == (True, False) and 'Sparse' in self.kernel_type:
-            if isinstance(Y, PseudoPoints):
-                Y = Y._pseudo_points
+            if isinstance(Y, SparsePoints):
+                Y = Y._sparse_points
             # compute the block of the KNM matrix corresponding to forces
             return self._kernel.compute_derivative(self._representation, X, Y)
         elif grad == (False, False):
@@ -116,9 +116,9 @@ class Kernel(object):
             if isinstance(Y, AtomsList):
                 # to make predictions with the full covariance
                 Y = Y.managers
-            elif isinstance(Y, PseudoPoints):
+            elif isinstance(Y, SparsePoints):
                 # to make predictions with a sparse kernel method
-                Y = Y._pseudo_points
+                Y = Y._sparse_points
             return self._kernel.compute(self._representation, X, Y)
         else:
             raise NotImplementedError('The configuration: {} is not implemented for kernel {} in {} mode.'.format(

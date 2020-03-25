@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_MODELS_PSEUDO_POINTS_HH_
-#define SRC_RASCAL_MODELS_PSEUDO_POINTS_HH_
+#ifndef SRC_RASCAL_MODELS_SPARSE_POINTS_HH_
+#define SRC_RASCAL_MODELS_SPARSE_POINTS_HH_
 
 #include "rascal/math/utils.hh"
 #include "rascal/representations/calculator_base.hh"
@@ -47,7 +47,7 @@ namespace rascal {
    * depend on the type of the central atom.
    */
   template <class Calculator>
-  class PseudoPointsBlockSparse {
+  class SparsePointsBlockSparse {
    public:
     using Key_t = typename CalculatorBase::Key_t;
     using Data_t = std::map<int, std::map<Key_t, std::vector<double>>>;
@@ -87,14 +87,14 @@ namespace rascal {
     //! list of possible keys for accessing [key]
     std::set<Key_t> keys{};
 
-    PseudoPointsBlockSparse() {
+    SparsePointsBlockSparse() {
       // there is less than 130 elemtents
       for (int sp{1}; sp < 130; ++sp) {
         counters[sp] = 0;
       }
     }
 
-    bool operator==(const PseudoPointsBlockSparse<Calculator> & other) const {
+    bool operator==(const SparsePointsBlockSparse<Calculator> & other) const {
       if ((values == other.values) and (indices == other.indices) and  // NOLINT
           (counters == other.counters) and                             // NOLINT
           (inner_size == other.inner_size) and                         // NOLINT
@@ -326,7 +326,7 @@ namespace rascal {
                    pseudo_point_by_key.size()) {
           std::stringstream err_str{};
           err_str << "The representation changed size during the set-up of "
-                     "PseudoPointsBlockSparse:"
+                     "SparsePointsBlockSparse:"
                   << "'" << this->inner_size
                   << "!=" << pseudo_point_by_key.size() << "'.";
           throw std::logic_error(err_str.str());
@@ -368,4 +368,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_RASCAL_MODELS_PSEUDO_POINTS_HH_
+#endif  // SRC_RASCAL_MODELS_SPARSE_POINTS_HH_

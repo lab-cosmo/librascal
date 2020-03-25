@@ -67,7 +67,7 @@ namespace rascal {
     int i_collection{0};
     for (auto & collection : collections) {
       for (auto & representation : representations) {
-        PseudoPointsBlockSparse<Calculator_t> sparse_points{};
+        SparsePointsBlockSparse<Calculator_t> sparse_points{};
         sparse_points.push_back(representation, collection,
                                 selected_ids[i_collection]);
         for (auto & kernel : kernels) {

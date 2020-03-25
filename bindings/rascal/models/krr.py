@@ -13,7 +13,7 @@ class KRR(object):
     kernel : Kernel
         kernel class used to train the model
 
-    X_train : PseudoPoints
+    X_train : SparsePoints
         reference samples used for the training
 
     self_contributions : dictionary
@@ -130,7 +130,7 @@ def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contribution
         KNM_down = kernel(managers, X_pseudo, grad=(True, False))
         KNM = np.vstack([KNM, KNM_down])
         when training with derivatives.
-    X_pseudo : PseudoPoints
+    X_pseudo : SparsePoints
         basis samples to use in the model's interpolation
     y_train : np.array
         reference property

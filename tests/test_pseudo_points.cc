@@ -1,11 +1,11 @@
 /**
- * @file test_pseudo_points.cc
+ * @file test_sparse_points.cc
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
  * @date   7 January 2020
  *
- * @brief test the implementation of pseudo_points classes
+ * @brief test the implementation of sparse_points classes
  *
  * @section LICENSE
  *
@@ -31,27 +31,27 @@
 #include "test_calculator.hh"
 #include "test_manager_collection.hh"
 
-#include "rascal/models/pseudo_points.hh"
+#include "rascal/models/sparse_points.hh"
 #include "rascal/utils/json_io.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
 
 namespace rascal {
-  BOOST_AUTO_TEST_SUITE(pseudo_points_test);
+  BOOST_AUTO_TEST_SUITE(sparse_points_test);
 
   using ManagerCollection_t =
       ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
                         AdaptorCenterContribution, AdaptorStrict>;
 
   template <class Representation, class ManagerCollection,
-            template <class> class PseudoPoints>
-  struct PseudoPointsFixture {
+            template <class> class SparsePoints>
+  struct SparsePointsFixture {
     using Representation_t = Representation;
     using ManagerCollection_t = ManagerCollection;
-    using PseudoPoints_t = PseudoPoints<Representation>;
+    using SparsePoints_t = SparsePoints<Representation>;
 
-    PseudoPointsFixture() {
+    SparsePointsFixture() {
       hypers["cutoff_function"] = fc_hypers;
       hypers["gaussian_density"] = sigma_hypers;
       hypers["radial_contribution"] = {{"type", "GTO"}};
@@ -71,7 +71,7 @@ namespace rascal {
 
     json adaptors{};
 
-    PseudoPoints_t sparse_points{};
+    SparsePoints_t sparse_points{};
 
     double cutoff{3.};
     json hypers{{"max_radial", 1},
@@ -89,8 +89,8 @@ namespace rascal {
   };
 
   using multiple_fixtures = boost::mpl::list<
-      PseudoPointsFixture<CalculatorSphericalInvariants, ManagerCollection_t,
-                          PseudoPointsBlockSparse>>;
+      SparsePointsFixture<CalculatorSphericalInvariants, ManagerCollection_t,
+                          SparsePointsBlockSparse>>;
   /**
    * Tests if the features extracted from a set of structure features actually
    * match them after extraction.

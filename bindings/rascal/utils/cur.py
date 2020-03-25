@@ -1,4 +1,4 @@
-from ..models import PseudoPoints
+from ..models import SparsePoints
 import numpy as np
 from scipy.sparse.linalg import svds
 
@@ -82,7 +82,7 @@ class CURFilter(object):
 
         Returns
         -------
-        PseudoPoints
+        SparsePoints
             Selected samples
 
         Raises
@@ -122,10 +122,10 @@ class CURFilter(object):
                 managers, selected_ids_by_sp, strides_by_sp, map_by_manager)
 
             # build the pseudo points
-            pseudo_points = PseudoPoints(self._representation)
-            pseudo_points.extend(managers, self.selected_ids)
+            sparse_points = SparsePoints(self._representation)
+            sparse_points.extend(managers, self.selected_ids)
 
-            return pseudo_points
+            return sparse_points
         else:
             raise NotImplementedError("method: {}".format(self.act_on))
 
