@@ -2,6 +2,7 @@ import sys
 import os
 from os.path import join
 from distutils.sysconfig import get_python_lib
+from setuptools import find_packages
 
 try:
     from skbuild import setup
@@ -28,5 +29,7 @@ atomic structures for machine learning.""",
       '-DINSTALL_PATH:STRING='+join(os.getcwd(),CMAKE_INSTALL_DIR()),
       '-DBUILD_EXAMPLES:BOOL=OFF'
     ],
+    package_dir={"": "bindings"},
+    packages=find_packages(where='bindings'),
     install_requires=requirements
 )
