@@ -52,11 +52,19 @@ namespace rascal {
                py::overload_cast<const Calculator &, const StructureManagers &,
                                  const StructureManagers &>(
                    &Kernel::template compute<Calculator, StructureManagers>),
-               py::call_guard<py::gil_scoped_release>());
+               py::call_guard<py::gil_scoped_release>(),
+               R"(Compute the kernel between two sets of atomic structures,
+              i.e. StructureManagerCollections. The representation of the
+              atomic structures computed with calculator should have already
+              been computed.)");
     kernel.def("compute",
                py::overload_cast<const Calculator &, const StructureManagers &>(
                    &Kernel::template compute<Calculator, StructureManagers>),
-               py::call_guard<py::gil_scoped_release>());
+               py::call_guard<py::gil_scoped_release>(),
+               R"(Compute the kernel between a set of atomic structures,
+              i.e. StructureManagerCollections, and itself. The representation
+              of the atomic structures computed with calculator should have
+              already been computed.)");
   }
 
   //! Register compute functions of the SparseKernel class
@@ -69,15 +77,29 @@ namespace rascal {
                           const SparsePoints &>(
             &SparseKernel::template compute<Calculator, StructureManagers,
                                             SparsePoints>),
-        py::call_guard<py::gil_scoped_release>());
+        py::call_guard<py::gil_scoped_release>(),
+        R"(Compute the sparse kernel between the representation of a set of
+            atomic structures, i.e. StructureManagerCollections, and a set of
+            SparsePoints, i.e. the basis used by the sparse method.
+            The representation of the atomic structures computed with Calculator
+            should have already been computed.)");
     kernel.def("compute",
                py::overload_cast<const SparsePoints &>(
                    &SparseKernel::template compute<SparsePoints>),
-               py::call_guard<py::gil_scoped_release>());
-    kernel.def("compute_derivative",
-               &SparseKernel::template compute_derivative<
-                   Calculator, StructureManagers, SparsePoints>,
-               py::call_guard<py::gil_scoped_release>());
+               py::call_guard<py::gil_scoped_release>(),
+               R"(Compute the kernel between a set of SparsePoints, i.e.
+            the basis used by the sparse method, and itself.)");
+    kernel.def(
+        "compute_derivative",
+        &SparseKernel::template compute_derivative<
+            Calculator, StructureManagers, SparsePoints>,
+        py::call_guard<py::gil_scoped_release>(),
+        R"(Compute the sparse kernel between the gradient of representation of a
+            set of atomic structures w.r.t. the atomic positions,
+            i.e. StructureManagerCollections, and a set of SparsePoints, i.e.
+            the basis used by the sparse method. The gradients of the
+            representation of the atomic structures computed with Calculator
+            should have already been computed.)");
   }
 
   //! Register a pseudo points class
