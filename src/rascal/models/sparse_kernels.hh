@@ -386,10 +386,11 @@ namespace rascal {
         return this->compute_helper<Property_t, TargetType::Atom>(
             representation_name, managers, sparse_points);
       default:
-        throw std::logic_error("Given target_type " +
-                            this->parameters["target_type"].get<std::string>() +
-                              " is not known."
-                              " It is either 'Structure' or 'Atom')");
+        throw std::logic_error(
+            "Given target_type " +
+            this->parameters["target_type"].get<std::string>() +
+            " is not known."
+            " It is either 'Structure' or 'Atom')");
       }
     }
 
@@ -406,10 +407,11 @@ namespace rascal {
         return kernel->template compute<Property_t, Type>(
             managers, sparse_points, representation_name);
       } else {
-        throw std::logic_error("Given kernel_type " +
-                            this->parameters["kernel_type"].get<std::string>() +
-                              " is not known."
-                              " It is 'GAP'");
+        throw std::logic_error(
+            "Given kernel_type " +
+            this->parameters["kernel_type"].get<std::string>() +
+            " is not known."
+            " It is 'GAP'");
       }
     }
 
@@ -422,10 +424,11 @@ namespace rascal {
             downcast_sparse_kernel_impl<SparseKernelType::GAP>(kernel_impl);
         return kernel->compute(sparse_points);
       } else {
-        throw std::logic_error("Given kernel_type " +
-                            this->parameters["kernel_type"].get<std::string>() +
-                              " is not known."
-                              " It is 'GAP'");
+        throw std::logic_error(
+            "Given kernel_type " +
+            this->parameters["kernel_type"].get<std::string>() +
+            " is not known."
+            " It is 'GAP'");
       }
     }
 
@@ -467,10 +470,11 @@ namespace rascal {
             managers, sparse_points, representation_name,
             representation_grad_name);
       } else {
-        throw std::logic_error("Given kernel_type " +
-                            this->parameters["kernel_type"].get<std::string>() +
-                              " is not known."
-                              " It is 'GAP'");
+        throw std::logic_error(
+            "Given kernel_type " +
+            this->parameters["kernel_type"].get<std::string>() +
+            " is not known."
+            " It is 'GAP'");
       }
     }
 
