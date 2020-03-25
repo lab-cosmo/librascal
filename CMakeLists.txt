@@ -160,10 +160,6 @@ if(BUILD_BINDINGS)
                     print(sys.prefix)"
     OUTPUT_VARIABLE PACKAGE_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-  # string that has the path only from the python package prefix to
-  # site-packages
-  string(REPLACE "${PACKAGE_PREFIX}/" ""
-                      PYTHON_SITE_PACKAGES_CHUNK ${PYTHON_SITE_PACKAGES})
 endif()
 
 # figure out where to install the library
@@ -192,21 +188,29 @@ endif()
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-if(NOT SKBUILD)
-  # normal installation procedure
-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-else()
-  # when installing through pip one needs to first build/install and then copy
-  # to the python installation folders so we set a relative path allowing
-  # _rascal to find librascal.dylib
-  set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
-  if(NOT APPLE AND UNIX)
-    set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../../../")
-  elseif(APPLE)
-    set(MACOSX_RPATH ON)
-    set(CMAKE_INSTALL_RPATH "@loader_path/../../../../")
-  endif()
+set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+if(NOT APPLE AND UNIX)
+  set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../../../")
+elseif(APPLE)
+  set(MACOSX_RPATH ON)
+  set(CMAKE_INSTALL_RPATH "@loader_path/../../../../")
 endif()
+
+# if(NOT SKBUILD)
+#   # normal installation procedure
+#   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+# else()
+#   # when installing through pip one needs to first build/install and then copy
+#   # to the python installation folders so we set a relative path allowing
+#   # _rascal to find librascal.dylib
+#   set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+#   if(NOT APPLE AND UNIX)
+#     set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../../../")
+#   elseif(APPLE)
+#     set(MACOSX_RPATH ON)
+#     set(CMAKE_INSTALL_RPATH "@loader_path/../../../../")
+#   endif()
+# endif()
 
 add_subdirectory(src)
 
