@@ -43,14 +43,14 @@ class CURFilter(object):
         Representation calculator associated with the kernel
 
     Nselect: int
-        number of points to select. if act_on='sample per specie' then it should
+        number of points to select. if act_on='sample per species' then it should
         be a dictionary mapping atom type to the number of samples, e.g.
         Nselect = {1:200,6:100,8:50}.
 
     act_on: string
         Select how to apply the selection. Can be either of 'sample',
         'sample per species','feature'.
-        For the moment only 'sample per specie' is implemented.
+        For the moment only 'sample per species' is implemented.
 
     is_deterministic: bool
         flag to switch between selction criteria
@@ -60,11 +60,11 @@ class CURFilter(object):
 
     """
 
-    def __init__(self, representation, Nselect, act_on='sample per specie', is_deterministic=True, seed=10):
+    def __init__(self, representation, Nselect, act_on='sample per species', is_deterministic=True, seed=10):
         super(CURFilter, self).__init__()
         self._representation = representation
         self.Nselect = Nselect
-        if act_on in ['sample', 'sample per specie', 'feature']:
+        if act_on in ['sample', 'sample per species', 'feature']:
             self.act_on = act_on
         else:
             raise 'Wrong input: {}'.format(act_on)
@@ -92,7 +92,7 @@ class CURFilter(object):
         NotImplementedError
             [description]
         """
-        if self.act_on in ['sample per specie']:
+        if self.act_on in ['sample per species']:
             # get the dense feature matrix
             X = managers.get_features(self._representation)
 

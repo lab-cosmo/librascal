@@ -25,13 +25,22 @@ class SparsePoints(object):
     Methods
     -------
     extend(self, atoms_list, selected_indices):
-        Add pseudo points to the already existing collection
+        Extends the list of sparse points with the features contained in
+        atoms_list (AtomList class a wrapper for the ManagerCollection class in
+        c++) using selected_indices to choose which atom centered environment
+        will be add to the sparse points.
 
         Parameters
         ----------
         atoms_list : AtomList or ManagerCollection (C++ class)
             Container of atomic structures that holds features compatible with
             representation.
+
+        selected_indices : a list (same length as atoms_list) containing the
+            list of selected atomic environment indices within their respective
+            structures, e.g. [[0,3,7],[]] corresponds to selecting the
+            representation of environment 0, 3 and 7 in the first structure of
+            atoms_list and none in the second structure.
     """
 
     def __init__(self, representation):

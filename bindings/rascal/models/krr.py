@@ -2,7 +2,7 @@ import numpy as np
 
 
 class KRR(object):
-    """Kernel Ridge Regression model. Only compatible fully with sparse GPR
+    """Kernel Ridge Regression model. Only supports sparse GPR
     training for the moment.
 
     Parameters
@@ -79,7 +79,7 @@ class KRR(object):
         else:
             return np.dot(KNM, self.weights).reshape((-1, 3))
 
-    def get_weigths(self):
+    def get_weights(self):
         return self.weights
 
 
@@ -155,7 +155,10 @@ def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contribution
     KRR
         a trained model that can predict the property and its gradients
 
-    .. [1] Ceriotti, M., Willatt, M. J., & Csányi, G. (2018). Machine Learning of Atomic-Scale Properties Based on Physical Principles. In Handbook of Materials Modeling (pp. 1–27). Springer, Cham. https://doi.org/10.1007/978-3-319-42913-7_68-1
+    .. [1] Ceriotti, M., Willatt, M. J., & Csányi, G. (2018).
+        Machine Learning of Atomic-Scale Properties Based on Physical Principles.
+        In Handbook of Materials Modeling (pp. 1–27). Springer, Cham.
+        https://doi.org/10.1007/978-3-319-42913-7_68-1
     """
     KMM = kernel(X_pseudo)
     Y = y_train.reshape((-1, 1)).copy()
