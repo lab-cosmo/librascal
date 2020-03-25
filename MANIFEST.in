@@ -1,4 +1,4 @@
-include README.rst requirements_pip.txt CMakeLists.txt
+include README.rst requirements_pip.txt CMakeLists.txt pyproject.toml
 recursive-include  src *
 recursive-include  bindings *
 recursive-include  cmake *
