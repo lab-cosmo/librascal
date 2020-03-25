@@ -1,4 +1,4 @@
-from ase.calculators.calculator import Calculator,all_changes
+from ase.calculators.calculator import Calculator, all_changes
 from copy import deepcopy
 
 
@@ -14,7 +14,7 @@ class ASEMLCalculator(Calculator):
         a representation calculator of rascal compatible with the trained model
     """
 
-    implemented_properties = ['energy','forces']
+    implemented_properties = ['energy', 'forces']
     'Properties calculator can handle (energy, forces, ...)'
 
     default_parameters = {}
