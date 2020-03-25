@@ -230,10 +230,12 @@ build only the c++ library:
 
 Installing rascal
 ^^^^^^^^^^^^^^^^^
+To install the python library with c++ bindings:
 
 .. code:: shell
 
    pip install .
+
 
 Helpers for Developers
 ~~~~~~~~~~~~~~~~~~~~~~
