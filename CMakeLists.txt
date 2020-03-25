@@ -184,7 +184,8 @@ if(SKBUILD)
   message(STATUS "The project is built using scikit-build")
 endif()
 
-# use full RPATH by default. see link for more details on the topic
+# relative RPATH so that _rascal.so can find librascal.so when installed.
+# see link for more details on the topic
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
@@ -195,22 +196,6 @@ elseif(APPLE)
   set(MACOSX_RPATH ON)
   set(CMAKE_INSTALL_RPATH "@loader_path/../../../../")
 endif()
-
-# if(NOT SKBUILD)
-#   # normal installation procedure
-#   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-# else()
-#   # when installing through pip one needs to first build/install and then copy
-#   # to the python installation folders so we set a relative path allowing
-#   # _rascal to find librascal.dylib
-#   set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
-#   if(NOT APPLE AND UNIX)
-#     set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../../../")
-#   elseif(APPLE)
-#     set(MACOSX_RPATH ON)
-#     set(CMAKE_INSTALL_RPATH "@loader_path/../../../../")
-#   endif()
-# endif()
 
 add_subdirectory(src)
 
