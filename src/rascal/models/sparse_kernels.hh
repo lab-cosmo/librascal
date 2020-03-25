@@ -386,8 +386,10 @@ namespace rascal {
         return this->compute_helper<Property_t, TargetType::Atom>(
             representation_name, managers, sparse_points);
       default:
-        throw std::logic_error(
-            "The desired combination of parameters can not be handled.");
+        throw std::logic_error("Given target_type " +
+                              this->hypers["target_type"].get<std::string>() +
+                              " is not known."
+                              " It is either 'Structure' or 'Atom')");
       }
     }
 
