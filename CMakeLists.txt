@@ -193,7 +193,7 @@ endif()
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 if(NOT SKBUILD)
-  # normal installation procedure 
+  # normal installation procedure
   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 else()
   # when installing through pip one needs to first build/install and then copy
