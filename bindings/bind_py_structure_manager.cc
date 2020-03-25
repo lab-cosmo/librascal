@@ -881,32 +881,35 @@ namespace rascal {
     py::class_<ClusterRefBase>(m_internal, "ClusterRefBase");
     bind_cluster_refs(m_internal);
 
+    bind_atomic_structure(m_nl);
+
     py::module m_strc_mng = m_nl.def_submodule("StructureManager");
     m_strc_mng.doc() = "Structure Manager Classes";
     py::module m_adp = m_nl.def_submodule("Adaptor");
     m_adp.doc() = "Adaptor Classes";
 
-    using Manager_t = StructureManagerCenters;
-    bind_structure_manager<Manager_t>(m_strc_mng, m_internal);
-
-    // bind the factory function
-    bind_make_structure_manager<Manager_t>(m_nl);
+    // list of already binded manager stacks to avoid double binding
     std::set<std::string> name_list{};
-    BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorStrict>
-        adaptor_stack_1{m_nl, m_adp, m_internal, name_list};
-
-    BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorCenterContribution,
+    /*-------------------- struc-man-bind-start --------------------*/
+    // bind the root structure manager
+    bind_structure_manager<StructureManagerCenters>(m_strc_mng, m_internal);
+    bind_make_structure_manager<StructureManagerCenters>(m_nl);
+    // bind a structure manager stack
+    BindAdaptorStack<StructureManagerCenters, AdaptorNeighbourList,
                      AdaptorStrict>
+        adaptor_stack_1{m_nl, m_adp, m_internal, name_list};
+    // bind the corresponding manager collection
+    bind_structure_manager_collection<StructureManagerCenters,
+                                      AdaptorNeighbourList, AdaptorStrict>(
+        m_nl);
+    /*-------------------- struc-man-bind-end --------------------*/
+    BindAdaptorStack<StructureManagerCenters, AdaptorNeighbourList,
+                     AdaptorCenterContribution, AdaptorStrict>
         adaptor_stack_2{m_nl, m_adp, m_internal, name_list};
 
-    // bind the manager collection
-    bind_structure_manager_collection<Manager_t, AdaptorNeighbourList,
-                                      AdaptorStrict>(m_nl);
-
-    bind_structure_manager_collection<Manager_t, AdaptorNeighbourList,
+    bind_structure_manager_collection<StructureManagerCenters,
+                                      AdaptorNeighbourList,
                                       AdaptorCenterContribution, AdaptorStrict>(
         m_nl);
-
-    bind_atomic_structure(m_nl);
   }
 }  // namespace rascal

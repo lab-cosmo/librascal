@@ -81,7 +81,7 @@ class SphericalExpansion(BaseIO):
 
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=0.,
+                 gaussian_sigma_constant=0.3,
                  cutoff_function_type="ShiftedCosine",
                  radial_basis="GTO",
                  optimization_args={},

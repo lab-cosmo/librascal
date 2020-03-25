@@ -200,6 +200,12 @@ namespace rascal {
       explicit AtomicSmearingSpecification(const Hypers_t & hypers) {
         this->constant_gaussian_sigma =
             hypers.at("gaussian_sigma").at("value").get<double>();
+        if (this->constant_gaussian_sigma < 5e-2) {
+          std::stringstream err_str{};
+          err_str << "Constant gaussian sigma is too small: "
+                  << this->constant_gaussian_sigma << " < 5e-2";
+          throw std::runtime_error(err_str.str());
+        }
       }
       template <size_t Order, size_t Layer>
       double
