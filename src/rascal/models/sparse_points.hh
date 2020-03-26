@@ -336,11 +336,11 @@ namespace rascal {
     }
 
     math::Matrix_t get_features() const {
-      size_t n_pseudo_points{0};
+      size_t n_sparse_points{0};
       for (const auto & sp : this->center_species) {
-        n_pseudo_points += counters.at(sp);
+        n_sparse_points += counters.at(sp);
       }
-      math::Matrix_t mat{n_pseudo_points, this->inner_size * this->keys.size()};
+      math::Matrix_t mat{n_sparse_points, this->inner_size * this->keys.size()};
       mat.setZero();
       size_t i_row{0};
       for (const auto & sp : this->center_species) {

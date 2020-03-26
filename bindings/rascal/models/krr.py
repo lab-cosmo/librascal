@@ -95,6 +95,9 @@ class KRR(BaseIO):
     def _get_data(self):
         return dict()
 
+    def get_representation_calculator(self):
+        return self.kernel._rep
+
 def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contributions, grad_train=None, lambdas=None, jitter=1e-8):
     """
     Defines the procedure to train a GAP model [1]:

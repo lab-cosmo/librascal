@@ -94,8 +94,21 @@ def load_json(fn):
     -------
         loaded python object from fn
     """
+    def _decode(o):
+        # JSON does not have integer keys so they are converted to string
+        # to load the object as it was in python this hook converts to 'int' all
+        # dictionary keys that can be converted
+        if isinstance(o, str):
+            try:
+                return int(o)
+            except ValueError:
+                return o
+        elif isinstance(o, dict):
+            return {_decode(k): v for k, v in o.items()}
+        else:
+            return o
     with open(fn, 'r') as f:
-        data = json.load(f)
+        data = json.load(f, object_hook=_decode)
     return data
 
 
