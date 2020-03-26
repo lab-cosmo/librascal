@@ -1,7 +1,7 @@
 from ..lib._rascal.models.kernels import Kernel as Kernelcpp
 from ..lib._rascal.models.kernels import SparseKernel as SparseKernelcpp
 from ..neighbourlist import AtomsList
-from .pseudo_points import PseudoPoints
+from .sparse_points import SparsePoints
 from ..utils import BaseIO
 import json
 
@@ -11,7 +11,7 @@ class Kernel(BaseIO):
     """
     Computes the kernel for a given representation. In the following
     we refer to the training samples with 'N' and, in the case of
-    sparse kernels, we refer to the pseudo points with 'M'. So a
+    sparse kernels [1], we refer to the pseudo points with 'M'. So a
     kernel between the training samples and the pseudo points is
     'KNM'. For more information on sparse kernels see
     :meth:`rascal.models.krr.train_gap_model`.
@@ -35,7 +35,7 @@ class Kernel(BaseIO):
 
     kernel_type : string
         Type of kernel method, either 'Full' (computing exact covariance matrix)
-        or 'Sparse' (computing GAP like kernel for sparse kernel methods like
+        or 'Sparse' (computing GAP [2] like kernel for sparse kernel methods like
         Subset of Regressors)
 
     Methods
@@ -48,7 +48,7 @@ class Kernel(BaseIO):
         X : AtomList or ManagerCollection (C++ class)
             Container of atomic structures.
 
-        Y : AtomList, ManagerCollection or PseudoPoints* (C++ class).
+        Y : AtomList, ManagerCollection or SparsePoints* (C++ class).
 
         grad : tuple specifying if the kernel should be computed using gradient
                of the representation w.r.t. the atomic positions, e.g. (True, False)
@@ -58,6 +58,18 @@ class Kernel(BaseIO):
         Returns
         -------
         kernel_matrix: ndarray
+
+
+
+        .. [1] Joaquin Quiñonero-Candela, Carl Edward Rasmussen;
+                A Unifying View of Sparse Approximate Gaussian Process Regression,
+                6(Dec):1939--1959, 2005.
+                http://www.jmlr.org/papers/v6/quinonero-candela05a.html
+
+        .. [2] Ceriotti, M., Willatt, M. J., & Csányi, G. (2018).
+        Machine Learning of Atomic-Scale Properties Based on Physical Principles.
+        In Handbook of Materials Modeling (pp. 1–27). Springer, Cham.
+        https://doi.org/10.1007/978-3-319-42913-7_68-1
 
     """
 
@@ -116,13 +128,13 @@ class Kernel(BaseIO):
             if self.kernel_type == 'Full':
                 return self._kernel.compute(self._representation, X)
             elif self.kernel_type == 'Sparse':
-                if isinstance(X, PseudoPoints):
-                    X = X._pseudo_points
+                if isinstance(X, SparsePoints):
+                    X = X._sparse_points
                 # compute the KMM matrix
                 return self._kernel.compute(X)
         elif grad == (True, False) and 'Sparse' in self.kernel_type:
-            if isinstance(Y, PseudoPoints):
-                Y = Y._pseudo_points
+            if isinstance(Y, SparsePoints):
+                Y = Y._sparse_points
             # compute the block of the KNM matrix corresponding to forces
             return self._kernel.compute_derivative(self._representation, X, Y)
         elif grad == (False, False):
@@ -130,9 +142,9 @@ class Kernel(BaseIO):
             if isinstance(Y, AtomsList):
                 # to make predictions with the full covariance
                 Y = Y.managers
-            elif isinstance(Y, PseudoPoints):
+            elif isinstance(Y, SparsePoints):
                 # to make predictions with a sparse kernel method
-                Y = Y._pseudo_points
+                Y = Y._sparse_points
             return self._kernel.compute(self._representation, X, Y)
         else:
             raise NotImplementedError('The configuration: {} is not implemented for kernel {} in {} mode.'.format(

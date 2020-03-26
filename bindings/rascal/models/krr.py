@@ -4,7 +4,7 @@ import numpy as np
 
 
 class KRR(BaseIO):
-    """Kernel Ridge Regression model. Only compatible fully with sparse GPR
+    """Kernel Ridge Regression model. Only supports sparse GPR
     training for the moment.
 
     Parameters
@@ -15,7 +15,7 @@ class KRR(BaseIO):
     kernel : Kernel
         kernel class used to train the model
 
-    X_train : PseudoPoints
+    X_train : SparsePoints
         reference samples used for the training
 
     self_contributions : dictionary
@@ -81,7 +81,7 @@ class KRR(BaseIO):
         else:
             return np.dot(KNM, self.weights).reshape((-1, 3))
 
-    def get_weigths(self):
+    def get_weights(self):
         return self.weights
 
     def get_init_params(self):
@@ -95,8 +95,7 @@ class KRR(BaseIO):
     def _get_data(self):
         return dict()
 
-
-def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contributions, f_train=None, lambdas=None, jitter=1e-8):
+def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contributions, grad_train=None, lambdas=None, jitter=1e-8):
     """
     Defines the procedure to train a GAP model [1]:
     .. math::
@@ -143,7 +142,7 @@ def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contribution
         KNM_down = kernel(managers, X_pseudo, grad=(True, False))
         KNM = np.vstack([KNM, KNM_down])
         when training with derivatives.
-    X_pseudo : PseudoPoints
+    X_pseudo : SparsePoints
         basis samples to use in the model's interpolation
     y_train : np.array
         reference property
@@ -153,9 +152,9 @@ def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contribution
         the corresponding isolated atom energies so that the model
         can be trained on the corresponding formation energies and
         still predict total energies.
-    f_train : np.array, optional
-        minus derivatives of y_train w.r.t. to the atomic motion, e.g.
-        interatomic forces, by default None
+    grad_train : np.array, optional
+        derivatives of y_train w.r.t. to the atomic motion, e.g.
+        minus interatomic forces, by default None
     lambdas : list/tuple, optional
         regularisation parameter for the training, i.e. lambdas[0] -> property
         and lambdas[1] -> gradients of the property, by default None
@@ -168,7 +167,10 @@ def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contribution
     KRR
         a trained model that can predict the property and its gradients
 
-    .. [1] Ceriotti, M., Willatt, M. J., & Csányi, G. (2018). Machine Learning of Atomic-Scale Properties Based on Physical Principles. In Handbook of Materials Modeling (pp. 1–27). Springer, Cham. https://doi.org/10.1007/978-3-319-42913-7_68-1
+    .. [1] Ceriotti, M., Willatt, M. J., & Csányi, G. (2018).
+        Machine Learning of Atomic-Scale Properties Based on Physical Principles.
+        In Handbook of Materials Modeling (pp. 1–27). Springer, Cham.
+        https://doi.org/10.1007/978-3-319-42913-7_68-1
     """
     KMM = kernel(X_pseudo)
     Y = y_train.reshape((-1, 1)).copy()
@@ -188,9 +190,9 @@ def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contribution
     KNM[:n_centers] /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
     Y /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
 
-    if f_train is not None:
+    if grad_train is not None:
         KNM[n_centers:] /= lambdas[1] / delta
-        F = - f_train.reshape((-1, 1)).copy()
+        F = grad_train.reshape((-1, 1)).copy()
         F /= lambdas[1] / delta
         Y = np.vstack([Y, F])
 
@@ -198,7 +200,7 @@ def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contribution
 
     K = KMM + np.dot(KNM.T, KNM)
     Y = np.dot(KNM.T, Y)
-    weights = np.linalg.solve(K, Y)
+    weights = np.linalg.lstsq(K, Y, rcond=None)[0]
     model = KRR(weights, kernel, X_pseudo, self_contributions)
 
     # avoid memory clogging

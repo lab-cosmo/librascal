@@ -52,63 +52,85 @@ namespace rascal {
                py::overload_cast<const Calculator &, const StructureManagers &,
                                  const StructureManagers &>(
                    &Kernel::template compute<Calculator, StructureManagers>),
-               py::call_guard<py::gil_scoped_release>());
+               py::call_guard<py::gil_scoped_release>(),
+               R"(Compute the kernel between two sets of atomic structures,
+              i.e. StructureManagerCollections. The representation of the
+              atomic structures computed with calculator should have already
+              been computed.)");
     kernel.def("compute",
                py::overload_cast<const Calculator &, const StructureManagers &>(
                    &Kernel::template compute<Calculator, StructureManagers>),
-               py::call_guard<py::gil_scoped_release>());
+               py::call_guard<py::gil_scoped_release>(),
+               R"(Compute the kernel between a set of atomic structures,
+              i.e. StructureManagerCollections, and itself. The representation
+              of the atomic structures computed with calculator should have
+              already been computed.)");
   }
 
   //! Register compute functions of the SparseKernel class
   template <internal::SparseKernelType Type, class Calculator,
-            class StructureManagers, class PseudoPoints, class CalculatorBind>
+            class StructureManagers, class SparsePoints, class CalculatorBind>
   void bind_sparse_kernel_compute_function(CalculatorBind & kernel) {
     kernel.def(
         "compute",
         py::overload_cast<const Calculator &, const StructureManagers &,
-                          const PseudoPoints &>(
+                          const SparsePoints &>(
             &SparseKernel::template compute<Calculator, StructureManagers,
-                                            PseudoPoints>),
-        py::call_guard<py::gil_scoped_release>());
+                                            SparsePoints>),
+        py::call_guard<py::gil_scoped_release>(),
+        R"(Compute the sparse kernel between the representation of a set of
+            atomic structures, i.e. StructureManagerCollections, and a set of
+            SparsePoints, i.e. the basis used by the sparse method.
+            The representation of the atomic structures computed with Calculator
+            should have already been computed.)");
     kernel.def("compute",
-               py::overload_cast<const PseudoPoints &>(
-                   &SparseKernel::template compute<PseudoPoints>),
-               py::call_guard<py::gil_scoped_release>());
-    kernel.def("compute_derivative",
-               &SparseKernel::template compute_derivative<
-                   Calculator, StructureManagers, PseudoPoints>,
-               py::call_guard<py::gil_scoped_release>());
+               py::overload_cast<const SparsePoints &>(
+                   &SparseKernel::template compute<SparsePoints>),
+               py::call_guard<py::gil_scoped_release>(),
+               R"(Compute the kernel between a set of SparsePoints, i.e.
+            the basis used by the sparse method, and itself.)");
+    kernel.def(
+        "compute_derivative",
+        &SparseKernel::template compute_derivative<
+            Calculator, StructureManagers, SparsePoints>,
+        py::call_guard<py::gil_scoped_release>(),
+        R"(Compute the sparse kernel between the gradient of representation of a
+            set of atomic structures w.r.t. the atomic positions,
+            i.e. StructureManagerCollections, and a set of SparsePoints, i.e.
+            the basis used by the sparse method. The gradients of the
+            representation of the atomic structures computed with Calculator
+            should have already been computed.)");
   }
 
   //! Register a pseudo points class
-  template <class PseudoPoints>
-  static py::class_<PseudoPoints>
-  add_pseudo_points(py::module & mod, py::module & /*m_internal*/) {
+  template <class SparsePoints>
+  static py::class_<SparsePoints>
+  add_sparse_points(py::module & mod, py::module & /*m_internal*/) {
     std::string pseudo_point_name =
-        internal::GetBindingTypeName<PseudoPoints>();
-    py::class_<PseudoPoints> pseudo_points(mod, pseudo_point_name.c_str());
-    pseudo_points.def(py::init());
-    pseudo_points.def("size", &PseudoPoints::size);
-    pseudo_points.def("get_features", &PseudoPoints::get_features);
-    return pseudo_points;
+        internal::GetBindingTypeName<SparsePoints>();
+    py::class_<SparsePoints> sparse_points(mod, pseudo_point_name.c_str());
+    sparse_points.def(py::init());
+    sparse_points.def("size", &SparsePoints::size);
+    sparse_points.def("get_features", &SparsePoints::get_features);
+    return sparse_points;
   }
 
   //! register the population mechanism of the pseudo points class
-  template <class ManagerCollection, class Calculator, class PseudoPoints>
-  void bind_pseudo_points_push_back(py::class_<PseudoPoints> & pseudo_points) {
+  template <class ManagerCollection, class Calculator, class SparsePoints>
+  void bind_sparse_points_push_back(py::class_<SparsePoints> & sparse_points) {
     using ManagerPtr_t = typename ManagerCollection::value_type;
     using Manager_t = typename ManagerPtr_t::element_type;
-    pseudo_points.def(
+    sparse_points.def(
         "extend",
         py::overload_cast<const Calculator &, const ManagerCollection &,
                           const std::vector<std::vector<int>> &>(
-            &PseudoPoints::template push_back<ManagerCollection>),
+            &SparsePoints::template push_back<ManagerCollection>),
         py::call_guard<py::gil_scoped_release>());
-    pseudo_points.def(
+    sparse_points.def(
         "extend",
         py::overload_cast<const Calculator &, std::shared_ptr<Manager_t>,
                           const std::vector<int> &>(
-            &PseudoPoints::template push_back<Manager_t>),
+            &SparsePoints::template push_back<Manager_t>),
         py::call_guard<py::gil_scoped_release>());
   }
 
@@ -132,7 +154,7 @@ namespace rascal {
     // Defines the representation manager type for the particular structure
     // manager
     using Calc1_t = CalculatorSphericalInvariants;
-    using PseudoPoints_1_t = PseudoPointsBlockSparse<Calc1_t>;
+    using SparsePoints_1_t = SparsePointsBlockSparse<Calc1_t>;
 
     // Bind the interface of this representation manager
     auto kernel = add_kernel<Kernel>(mod, m_internal);
@@ -147,9 +169,9 @@ namespace rascal {
     internal::bind_dict_representation(sparse_kernel);
     bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
                                         Calc1_t, ManagerCollection_2_t,
-                                        PseudoPoints_1_t>(sparse_kernel);
-    auto pseudo_points = add_pseudo_points<PseudoPoints_1_t>(mod, m_internal);
-    bind_pseudo_points_push_back<ManagerCollection_2_t, Calc1_t>(pseudo_points);
-    internal::bind_dict_representation(pseudo_points);
+                                        SparsePoints_1_t>(sparse_kernel);
+    auto sparse_points = add_sparse_points<SparsePoints_1_t>(mod, m_internal);
+    bind_sparse_points_push_back<ManagerCollection_2_t, Calc1_t>(sparse_points);
+    internal::bind_dict_representation(sparse_points);
   }
 }  // namespace rascal

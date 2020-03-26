@@ -358,7 +358,10 @@ namespace rascal {
             representation_name, managers_a, managers_b);
       default:
         throw std::logic_error(
-            "The desired combination of parameters can not be handled.");
+            "Given target_type " +
+            this->parameters["target_type"].get<std::string>() +
+            " is not known."
+            " It is either 'Structure' or 'Atom')");
       }
     }
 
@@ -375,7 +378,10 @@ namespace rascal {
             managers_a, managers_b, representation_name);
       } else {
         throw std::logic_error(
-            "The desired combination of parameters can not be handled.");
+            "Given kernel_type " +
+            this->parameters["kernel_type"].get<std::string>() +
+            " is not known."
+            " It is 'Cosine'");
       }
     }
 
@@ -397,7 +403,10 @@ namespace rascal {
             representation_name, managers_a);
       default:
         throw std::logic_error(
-            "The desired combination of parameters can not be handled.");
+            "Given target_type " +
+            this->parameters["target_type"].get<std::string>() +
+            " is not known."
+            " It is either 'Structure' or 'Atom')");
       }
     }
 
@@ -413,7 +422,10 @@ namespace rascal {
                                                           representation_name);
       } else {
         throw std::logic_error(
-            "The desired combination of parameters can not be handled.");
+            "Given kernel_type " +
+            this->parameters["kernel_type"].get<std::string>() +
+            " is not known."
+            " It is 'Cosine'");
       }
     }
 

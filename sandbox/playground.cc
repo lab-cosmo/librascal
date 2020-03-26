@@ -26,7 +26,7 @@
  */
 
 #include "rascal/models/sparse_kernels.hh"
-#include "rascal/models/pseudo_points.hh"
+#include "rascal/models/sparse_points.hh"
 #include "rascal/utils/basic_types.hh"
 #include "rascal/models/kernels.hh"
 #include "rascal/utils/utils.hh"
@@ -126,7 +126,7 @@ int main() {
   // auto && soap_vector_gradients{*manager->template get_property_ptr<PropGrad_t>(
   //     representation.get_gradient_name())};
 
-  PseudoPointsBlockSparse<Representation_t> sparse_points{};
+  SparsePointsBlockSparse<Representation_t> sparse_points{};
 
   std::vector<std::vector<int>> selected_ids;
   int n_centers{0};
@@ -185,7 +185,7 @@ int main() {
   json j;
   j = sparse_points;
   std::cout << j.dump()<< std::endl;;
-  auto sparse_points_b = j.get<PseudoPointsBlockSparse<Representation_t>>();
+  auto sparse_points_b = j.get<SparsePointsBlockSparse<Representation_t>>();
 
   auto KNM_test_b{kernel.compute(representation, managers, sparse_points)};
 

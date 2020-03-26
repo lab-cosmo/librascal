@@ -1,15 +1,15 @@
 /**
- * @file test_kernels.hh
+ * @file test_sparse_kernels.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
- * @date   18 June 2019
+ * @date   18 Jan 2020
  *
- * @brief test the implementation of similarity kernel classes
+ * @brief test the implementation of sparse similarity kernel classes
  *
  * @section LICENSE
  *
- * Copyright  2019 Felix Musil, COSMO (EPFL), LAMMM (EPFL)
+ * Copyright  2020 Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
  * Rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -27,23 +27,24 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef TESTS_TEST_KERNELS_HH_
-#define TESTS_TEST_KERNELS_HH_
+#ifndef TESTS_TEST_SPARSE_KERNELS_HH_
+#define TESTS_TEST_SPARSE_KERNELS_HH_
 
 #include "test_adaptor.hh"
 #include "test_calculator.hh"
 #include "test_manager_collection.hh"
 
-#include "rascal/models/kernels.hh"
+#include "rascal/models/sparse_kernels.hh"
+#include "rascal/models/sparse_points.hh"
 
 namespace rascal {
 
-  struct StrictNLKernelFixture : StrictNLCCCollectionFixture {
+  struct StrictNLSparseKernelFixture : StrictNLCCCollectionFixture {
     using Parent = StrictNLCCCollectionFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;
 
-    StrictNLKernelFixture() : Parent{} {
+    StrictNLSparseKernelFixture() : Parent{} {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
@@ -57,7 +58,7 @@ namespace rascal {
         }
       }
     }
-    ~StrictNLKernelFixture() = default;
+    ~StrictNLSparseKernelFixture() = default;
 
     std::vector<json> representation_hypers{};
 
@@ -80,73 +81,17 @@ namespace rascal {
                                   {"normalize", true}}};
 
     std::vector<json> kernel_hypers{
-        {{"zeta", 2}, {"target_type", "Structure"}, {"name", "Cosine"}},
-        {{"zeta", 2}, {"target_type", "Atom"}, {"name", "Cosine"}}};
-  };
-
-  struct DataSphericalInvariantsKernelFixture {
-    using ManagerTypeHolder_t =
-        StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorNeighbourList,
-                                   AdaptorCenterContribution, AdaptorStrict>;
-    using Representation_t = CalculatorSphericalInvariants;
-
-    DataSphericalInvariantsKernelFixture() {
-      auto datas =
-          json::from_ubjson(internal::read_binary_file(this->ref_filename));
-      this->ref_data = datas["rep_info"]["spherical_invariants"];
-      this->filename = datas["filename"];
-      this->start = datas["start"];
-      this->length = datas["length"];
-
-      for (auto & cutoff : datas["cutoffs"]) {
-        json parameters;
-        json structure{};
-        json adaptors;
-        json ad1{{"name", "AdaptorNeighbourList"},
-                 {"initialization_arguments", {{"cutoff", cutoff}}}};
-        json ad1b{{"name", "AdaptorCenterContribution"},
-                  {"initialization_arguments", {}}};
-        json ad2{{"name", "AdaptorStrict"},
-                 {"initialization_arguments", {{"cutoff", cutoff}}}};
-        adaptors.emplace_back(ad1);
-        // ad1b is dummy name
-        adaptors.emplace_back(ad1b);
-        adaptors.emplace_back(ad2);
-
-        parameters["structure"] = structure;
-        parameters["adaptors"] = adaptors;
-        this->factory_args.push_back(parameters);
-      }
-
-      for (auto & data : this->ref_data[0].get<json>()) {
-        this->representation_hypers.push_back(data["hypers_rep"]);
-        this->kernel_hypers.push_back(data["hypers_kernel"]);
-      }
-    }
-
-    ~DataSphericalInvariantsKernelFixture() = default;
-
-    json ref_data{};
-
-    std::vector<json> factory_args{};
-    std::vector<json> representation_hypers{};
-    std::vector<json> kernel_hypers{};
-
-    std::string ref_filename{
-        "reference_data/tests_only/kernel_reference.ubjson"};
-    std::string filename{""};
-    int start{0};
-    int length{0};
+        {{"zeta", 2}, {"target_type", "Structure"}, {"name", "GAP"}},
+        {{"zeta", 2}, {"target_type", "Atom"}, {"name", "GAP"}}};
   };
 
   /**
    * BaseFixture is expected to be similar to
-   * StrictNLKernelFixture
+   * StrictNLSparseKernelFixture
    */
   template <class BaseFixture>
-  struct KernelFixture : CollectionFixture<BaseFixture>,
-                         CalculatorFixture<BaseFixture> {
+  struct SparseKernelFixture : CollectionFixture<BaseFixture>,
+                               CalculatorFixture<BaseFixture> {
     using ParentA = CollectionFixture<BaseFixture>;
     using ParentB = CalculatorFixture<BaseFixture>;
 
@@ -155,28 +100,28 @@ namespace rascal {
     using Calculator_t = typename ParentB::Representation_t;
     using Property_t = typename Calculator_t::template Property_t<Manager_t>;
 
-    KernelFixture() : ParentA{}, ParentB{} {
+    SparseKernelFixture() : ParentA{}, ParentB{} {
       for (auto & collection : this->collections) {
         collection.add_structures(this->ParentA::filename, this->ParentA::start,
                                   this->ParentA::length);
-        for (auto & hyper : this->ParentB::representation_hypers) {
-          this->representations.emplace_back(hyper);
+        for (auto & hypers : this->ParentB::representation_hypers) {
+          this->representations.emplace_back(hypers);
           this->representations.back().compute(collection);
         }
       }
 
-      for (auto & hyper : this->ParentA::kernel_hypers) {
-        this->kernels.emplace_back(hyper);
+      for (auto & hypers : this->ParentA::kernel_hypers) {
+        this->kernels.emplace_back(hypers);
       }
     }
 
-    std::vector<Kernel> kernels{};
+    std::vector<SparseKernel> kernels{};
 
-    ~KernelFixture() = default;
+    ~SparseKernelFixture() = default;
 
     bool verbose{false};
   };
 
 }  // namespace rascal
 
-#endif  // TESTS_TEST_KERNELS_HH_
+#endif  // TESTS_TEST_SPARSE_KERNELS_HH_

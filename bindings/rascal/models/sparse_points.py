@@ -5,12 +5,12 @@ from ..utils import BaseIO
 # names of existing pseudo points implementation on the pybinding side.
 _pseudo_points = {}
 for k, v in kernels.__dict__.items():
-    if "PseudoPoints" in k:
+    if "SparsePoints" in k:
         name = k
         _pseudo_points[name] = v
 
 
-class PseudoPoints(BaseIO):
+class SparsePoints(BaseIO):
     """
     Holds features to be used as references / sparse points / pseudo points
     in sparse GPR methods.
@@ -26,19 +26,28 @@ class PseudoPoints(BaseIO):
     Methods
     -------
     extend(self, atoms_list, selected_indices):
-        Add pseudo points to the already existing collection
+        Extends the list of sparse points with the features contained in
+        atoms_list (AtomList class a wrapper for the ManagerCollection class in
+        c++) using selected_indices to choose which atom centered environment
+        will be add to the sparse points.
 
         Parameters
         ----------
         atoms_list : AtomList or ManagerCollection (C++ class)
             Container of atomic structures that holds features compatible with
             representation.
+
+        selected_indices : a list (same length as atoms_list) containing the
+            list of selected atomic environment indices within their respective
+            structures, e.g. [[0,3,7],[]] corresponds to selecting the
+            representation of environment 0, 3 and 7 in the first structure of
+            atoms_list and none in the second structure.
     """
 
     def __init__(self, representation):
         self.representation = representation
         if 'SphericalInvariants' in str(representation):
-            self._pseudo_points = _pseudo_points['PseudoPointsBlockSparse_SphericalInvariants'](
+            self._pseudo_points = _pseudo_points['SparsePointsBlockSparse_SphericalInvariants'](
             )
         else:
             raise ValueError(
@@ -50,10 +59,10 @@ class PseudoPoints(BaseIO):
 
     def _set_data(self, data):
         self._pseudo_points = self._pseudo_points.from_dict(
-            data['pseudo_points'])
+            data['sparse_points'])
 
     def _get_data(self):
-        return dict(pseudo_points=self._pseudo_points.to_dict())
+        return dict(sparse_points=self._pseudo_points.to_dict())
 
     def extend(self, atoms_list, selected_indices):
         if isinstance(atoms_list, AtomsList):

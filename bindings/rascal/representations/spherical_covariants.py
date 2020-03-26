@@ -159,13 +159,13 @@ class SphericalCovariants(BaseIO):
         if self.hypers['soap_type'] == 'LambdaSpectrum':
             if self.hypers['inversion_symmetry']:
                 n_col = (np.ceil((self.hypers['max_angular'] + 1)**2 / 2.0) -
-                         (1.0 + np.floor((self.hypers['lam'] - 1) / 2.0))**2
-                         - np.floor((self.hypers['max_angular'] + 1
-                                     - self.hypers['lam'])**2 / 2.0)
-                         * (self.hypers['lam'] % 2)
-                         - (np.ceil((self.hypers['max_angular'] + 1
-                                     - self.hypers['lam'])**2 / 2.0) -
-                            (self.hypers['max_angular'] -
+                         (1.0 + np.floor((self.hypers['lam'] - 1) / 2.0))**2 -
+                         np.floor((self.hypers['max_angular'] + 1 -
+                                   self.hypers['lam'])**2 / 2.0) *
+                         (self.hypers['lam'] % 2) -
+                         (np.ceil((self.hypers['max_angular'] + 1 -
+                                   self.hypers['lam'])**2 / 2.0) -
+                          (self.hypers['max_angular'] -
                              self.hypers['lam'] + 1)) *
                          (1.0 - self.hypers['lam'] % 2))
                 if (self.hypers['lam'] % 2 == 1):

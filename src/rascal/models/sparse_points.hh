@@ -1,5 +1,5 @@
 /**
- * @file   rascal/models/pseudo_points.hh
+ * @file   rascal/models/sparse_points.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_MODELS_PSEUDO_POINTS_HH_
-#define SRC_RASCAL_MODELS_PSEUDO_POINTS_HH_
+#ifndef SRC_RASCAL_MODELS_SPARSE_POINTS_HH_
+#define SRC_RASCAL_MODELS_SPARSE_POINTS_HH_
 
 #include "rascal/math/utils.hh"
 #include "rascal/representations/calculator_base.hh"
@@ -47,7 +47,7 @@ namespace rascal {
    * depend on the type of the central atom.
    */
   template <class Calculator>
-  class PseudoPointsBlockSparse {
+  class SparsePointsBlockSparse {
    public:
     using Key_t = typename CalculatorBase::Key_t;
     using Data_t = std::map<int, std::map<Key_t, std::vector<double>>>;
@@ -87,14 +87,14 @@ namespace rascal {
     //! list of possible keys for accessing [key]
     std::set<Key_t> keys{};
 
-    PseudoPointsBlockSparse() {
+    SparsePointsBlockSparse() {
       // there is less than 130 elemtents
       for (int sp{1}; sp < 130; ++sp) {
         counters[sp] = 0;
       }
     }
 
-    bool operator==(const PseudoPointsBlockSparse<Calculator> & other) const {
+    bool operator==(const SparsePointsBlockSparse<Calculator> & other) const {
       if ((values == other.values) and (indices == other.indices) and  // NOLINT
           (counters == other.counters) and                             // NOLINT
           (inner_size == other.inner_size) and                         // NOLINT
@@ -326,7 +326,7 @@ namespace rascal {
                    pseudo_point_by_key.size()) {
           std::stringstream err_str{};
           err_str << "The representation changed size during the set-up of "
-                     "PseudoPointsBlockSparse:"
+                     "SparsePointsBlockSparse:"
                   << "'" << this->inner_size
                   << "!=" << pseudo_point_by_key.size() << "'.";
           throw std::logic_error(err_str.str());
@@ -373,15 +373,15 @@ namespace rascal {
    */
   template <class Calculator>
   void to_json(json & j,
-               const PseudoPointsBlockSparse<Calculator> & pseudo_points) {
+               const SparsePointsBlockSparse<Calculator> & sparse_points) {
     j["name"] = internal::type_name_demangled(
-        typeid(PseudoPointsBlockSparse<Calculator>).name());
-    j["values"] = pseudo_points.values;
-    j["indices"] = pseudo_points.indices;
-    j["counters"] = pseudo_points.counters;
-    j["inner_size"] = pseudo_points.inner_size;
-    j["center_species"] = pseudo_points.center_species;
-    j["keys"] = pseudo_points.keys;
+        typeid(SparsePointsBlockSparse<Calculator>).name());
+    j["values"] = sparse_points.values;
+    j["indices"] = sparse_points.indices;
+    j["counters"] = sparse_points.counters;
+    j["inner_size"] = sparse_points.inner_size;
+    j["center_species"] = sparse_points.center_species;
+    j["keys"] = sparse_points.keys;
   }
 
   /**
@@ -391,28 +391,28 @@ namespace rascal {
    */
   template <class Calculator>
   void from_json(const json & j,
-                 PseudoPointsBlockSparse<Calculator> & pseudo_points) {
-    using Data_t = typename PseudoPointsBlockSparse<Calculator>::Data_t;
-    using Indices_t = typename PseudoPointsBlockSparse<Calculator>::Indices_t;
-    using Counters_t = typename PseudoPointsBlockSparse<Calculator>::Counters_t;
-    using Key_t = typename PseudoPointsBlockSparse<Calculator>::Key_t;
+                 SparsePointsBlockSparse<Calculator> & sparse_points) {
+    using Data_t = typename SparsePointsBlockSparse<Calculator>::Data_t;
+    using Indices_t = typename SparsePointsBlockSparse<Calculator>::Indices_t;
+    using Counters_t = typename SparsePointsBlockSparse<Calculator>::Counters_t;
+    using Key_t = typename SparsePointsBlockSparse<Calculator>::Key_t;
 
     std::string name{internal::type_name_demangled(
-        typeid(PseudoPointsBlockSparse<Calculator>).name())};
+        typeid(SparsePointsBlockSparse<Calculator>).name())};
     if (name != j.at("name").get<std::string>()) {
       std::stringstream err_str{};
       err_str << "The saved object name does not match the asked type: '"
               << name << "' != '" << j.at("name").get<std::string>() << "'.";
       throw std::runtime_error(err_str.str());
     }
-    pseudo_points.values = j.at("values").get<Data_t>();
-    pseudo_points.indices = j.at("indices").get<Indices_t>();
-    pseudo_points.counters = j.at("counters").get<Counters_t>();
-    pseudo_points.inner_size = j.at("inner_size").get<size_t>();
-    pseudo_points.center_species = j.at("center_species").get<std::set<int>>();
-    pseudo_points.keys = j.at("keys").get<std::set<Key_t>>();
+    sparse_points.values = j.at("values").get<Data_t>();
+    sparse_points.indices = j.at("indices").get<Indices_t>();
+    sparse_points.counters = j.at("counters").get<Counters_t>();
+    sparse_points.inner_size = j.at("inner_size").get<size_t>();
+    sparse_points.center_species = j.at("center_species").get<std::set<int>>();
+    sparse_points.keys = j.at("keys").get<std::set<Key_t>>();
   }
 
 }  // namespace rascal
 
-#endif  // SRC_RASCAL_MODELS_PSEUDO_POINTS_HH_
+#endif  // SRC_RASCAL_MODELS_SPARSE_POINTS_HH_

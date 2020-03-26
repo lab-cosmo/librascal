@@ -646,7 +646,8 @@ namespace rascal {
         "__getitem__",
         [](ManagerCollection_t & v, int index) { return v[index]; },
         py::keep_alive<0, 1>());
-    manager_collection.def("__len__", &ManagerCollection_t::size);
+    manager_collection.def("__len__", &ManagerCollection_t::size,
+                           "Get number of structures in the collection.");
     /**
      * Binds the `add_structures`. Instead of invoking the targeted function to
      * bind within a lambda function, a pointer-to-member-function is used here.
