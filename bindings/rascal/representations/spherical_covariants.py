@@ -166,7 +166,7 @@ class SphericalCovariants(object):
                          (self.hypers['lam'] % 2) -
                          (np.ceil((self.hypers['max_angular'] + 1 -
                                    self.hypers['lam'])**2 / 2.0) -
-                            (self.hypers['max_angular'] -
+                          (self.hypers['max_angular'] -
                              self.hypers['lam'] + 1)) *
                          (1.0 - self.hypers['lam'] % 2))
                 if (self.hypers['lam'] % 2 == 1):
@@ -182,7 +182,7 @@ class SphericalCovariants(object):
                 return (self.hypers['n_species']**2 *
                         self.hypers['max_radial']**2 *
                         int((2 +
-                               self.hypers['lam'] -
+                             self.hypers['lam'] -
                              3 *
                              self.hypers['lam']**2 +
                              2 *
@@ -190,7 +190,7 @@ class SphericalCovariants(object):
                              4 *
                              self.hypers['lam'] *
                              self.hypers['max_angular']) /
-                              2) *
+                            2) *
                         (2 *
                          self.hypers['lam'] +
                          1))

@@ -168,10 +168,11 @@ namespace rascal {
     template <class StructureManager>
     using SpectrumNorm_t = Property<double, 1, StructureManager, 1>;
 
-    explicit CalculatorSphericalInvariants(const Hypers_t & hyper)
-        : CalculatorBase{}, rep_expansion{hyper} {
+    explicit CalculatorSphericalInvariants(const Hypers_t & hypers)
+        : CalculatorBase{}, rep_expansion{hypers} {
       this->set_default_prefix("spherical_invariants_");
-      this->set_hyperparameters(hyper);
+      this->set_hyperparameters(hypers);
+      this->hypers = hypers;
     }
 
     //! Copy constructor
@@ -193,7 +194,7 @@ namespace rascal {
     CalculatorSphericalInvariants &
     operator=(CalculatorSphericalInvariants && other) = default;
 
-    void set_hyperparameters(const Hypers_t & hypers) {
+    void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::SphericalInvariantsType;
 
       this->max_radial = hypers.at("max_radial").get<size_t>();
@@ -229,6 +230,12 @@ namespace rascal {
 
       this->set_name(hypers);
     }
+
+    /**
+     * Returns if the calculator is able to compute gradients of the
+     * representation w.r.t. atomic positions ?
+     */
+    bool does_gradients() const override { return this->compute_gradients; }
 
     /**
      * Compute representation for a given structure manager.
@@ -1098,6 +1105,8 @@ namespace rascal {
     if (this->compute_gradients) {
       soap_vector_gradients.resize(keys_list_grad);
       soap_vector_gradients.setZero();
+    } else {
+      soap_vector_gradients.resize();
     }
   }
 
@@ -1134,7 +1143,6 @@ namespace rascal {
       // initialize the radial spectrum to 0 and the proper size
       keys_list.emplace_back(keys);
       keys_list_grad.emplace_back(keys);
-
       for (auto neigh : center.pairs()) {
         (void)neigh;  // to avoid compiler warning
         keys_list_grad.emplace_back(keys);
@@ -1146,9 +1154,10 @@ namespace rascal {
     if (this->compute_gradients) {
       soap_vector_gradients.resize(keys_list_grad);
       soap_vector_gradients.setZero();
+    } else {
+      soap_vector_gradients.resize();
     }
   }
-
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_

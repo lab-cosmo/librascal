@@ -38,8 +38,8 @@
 
 namespace rascal {
 
-  struct StrictNLKernelFixture : StrictNLCollectionFixture {
-    using Parent = StrictNLCollectionFixture;
+  struct StrictNLKernelFixture : StrictNLCCCollectionFixture {
+    using Parent = StrictNLCCCollectionFixture;
     using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
     using Representation_t = CalculatorSphericalInvariants;
 

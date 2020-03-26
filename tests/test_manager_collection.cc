@@ -37,7 +37,7 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(manager_collection_test);
 
   using fixtures_test =
-      boost::mpl::list<CollectionFixture<StrictNLCollectionFixture>>;
+      boost::mpl::list<CollectionFixture<StrictNLCCCollectionFixture>>;
 
   /**
    * Test loading structures from file in ubjson binary format

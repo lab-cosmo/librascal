@@ -57,5 +57,5 @@ PYBIND11_MODULE(_rascal, mod) {
   rascal::add_structure_managers(m_nl, m_internal);
   rascal::add_representation_calculators(m_repr, m_internal);
   rascal::utils_binding(m_utl);
-  rascal::add_kernels(m_kernels, m_internal);
+  rascal::add_models(m_kernels, m_internal);
 }

@@ -25,6 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "rascal/models/sparse_kernels.hh"
+#include "rascal/models/sparse_points.hh"
 #include "rascal/utils/basic_types.hh"
 #include "rascal/models/kernels.hh"
 #include "rascal/utils/utils.hh"
@@ -53,32 +55,27 @@
 
 using namespace rascal;  // NOLINT
 
-using ManagerTypeHolder_t = StructureManagerTypeHolder<StructureManagerCenters,
-                                    AdaptorNeighbourList,
-                                    AdaptorCenterContribution, AdaptorStrict>;
-using ManagerTypeList_t = typename ManagerTypeHolder_t::type_list;
-using Manager_t = typename ManagerTypeHolder_t::type;
+using Representation_t = CalculatorSphericalInvariants;
 using ManagerCollection_t =
-    typename TypeHolderInjector<ManagerCollection, ManagerTypeList_t>::type;
-using Representation_t = CalculatorSphericalExpansion;
-using Prop_t = typename Representation_t::template Property_t<Manager_t>;
-using PropGrad_t = typename Representation_t::template PropertyGradient_t<Manager_t>;
-
-constexpr static size_t ClusterLayer_{
-          Manager_t::template cluster_layer_from_order<2>()};
+        ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
+                          AdaptorCenterContribution, AdaptorStrict>;
+using Manager_t = typename ManagerCollection_t::Manager_t;
+using ManagerHalf_t = AdaptorStrict<
+    AdaptorCenterContribution<AdaptorHalfList<
+                AdaptorNeighbourList<StructureManagerCenters>>>>;
 
 int main() {
 
-  std::string filename{"../reference_data/inputs/diamond_2atom_distorted.json"};
+  std::string filename{"../reference_data/inputs/small_molecules-20.json"};
 
-  double cutoff{2.5};
-
-  json hypers{{"max_radial", 2},
-              {"max_angular", 2},
+  double cutoff{3.};
+  json hypers{{"max_radial", 1},
+              {"max_angular", 1},
               {"compute_gradients", true},
               {"soap_type", "PowerSpectrum"},
-              {"normalize", false},
-              {"expansion_by_species_method", "environment wise"}};
+              {"normalize", true},
+              {"expansion_by_species_method", "user defined"},
+              {"global_species", {1,6,7,8}} };
 
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
@@ -89,9 +86,6 @@ int main() {
   hypers["cutoff_function"] = fc_hypers;
   hypers["gaussian_density"] = sigma_hypers;
   hypers["radial_contribution"] = {{"type", "GTO"}};
-
-  // json kernel_hypers{
-  //       {"zeta", 1}, {"target_type", "Atom"}, {"name", "Cosine"}};
 
   json structure{{"filename", filename}};
   json adaptors;
@@ -108,78 +102,85 @@ int main() {
   adaptors.emplace_back(ad1c);
   adaptors.emplace_back(ad2);
 
-  ManagerCollection_t collection{adaptors};
-  collection.add_structures(filename, 0, 1);
+  // auto manager =
+  //     make_structure_manager_stack<StructureManagerCenters,
+  //                                  AdaptorNeighbourList,
+  //                                  AdaptorCenterContribution, AdaptorStrict>(
+  //         structure, adaptors);
+  ManagerCollection_t managers{adaptors};
+  managers.add_structures(filename, 0, 10);
+  Representation_t representation{hypers};
 
-  Representation_t coeff_calc{hypers};
+  representation.compute(managers);
 
-  coeff_calc.compute(collection);
-  std::cout.setf(std::ios::scientific);
-  std::cout.precision(5);
-  for (const auto & manager : collection) {
-    auto & grad{*manager->template get_property<PropGrad_t>(coeff_calc.get_gradient_name())};
-    int n_row{grad.get_nb_row()};
-    int n_col{grad.get_nb_col()};
+  // constexpr size_t n_centers_print{5};
+  // constexpr size_t n_neigh_print{1000};
+  // size_t center_count{0};
 
+  std::cout << "Gradients are printed with: First Cartesian component, "
+               "then species pairs, along the columns; n-n'-l along the rows.";
+  std::cout << std::endl;
+
+  // auto && soap_vectors{
+  //     *manager->template get_property_ptr<Prop_t>(representation.get_name())};
+  // auto && soap_vector_gradients{*manager->template get_property_ptr<PropGrad_t>(
+  //     representation.get_gradient_name())};
+
+  SparsePointsBlockSparse<Representation_t> sparse_points{};
+
+  std::vector<std::vector<int>> selected_ids;
+  int n_centers{0};
+  for (auto & manager : managers) {
+    selected_ids.emplace_back();
+    int ii{0};
     for (auto center : manager) {
-      // current atom is atom_i or i
-      // [atom_j.get_atom_tag()] -> list of pairs  ij, ij', ij'' ... where
-      // j primes are periodic images of j
-      std::map<int, std::vector<
-          ClusterRefKey<2, ClusterLayer_> >> periodic_images_of_center{};
-      for (auto pair : center.pairs()) {
-        auto atom_j = pair.get_atom_j();
-        int atom_tag_j = atom_j.get_atom_tag();
-        if (not manager->is_ghost_atom(pair)) {
-          periodic_images_of_center[atom_tag_j].emplace_back(static_cast<ClusterRefKey<2, ClusterLayer_>>(pair));
-        }
-      }
-
-      for (auto pair : center.pairs()) {
-        auto atom_j = pair.get_atom_j();
-        int atom_tag_j = atom_j.get_atom_tag();
-        if (periodic_images_of_center.count(atom_tag_j) and manager->is_ghost_atom(pair)) {
-          periodic_images_of_center[atom_tag_j].emplace_back(std::move(static_cast<ClusterRefKey<2, ClusterLayer_>>(pair)));
-        }
-      }
-
-      for (const auto& el : periodic_images_of_center) {
-        int atom_tag_j{el.first};
-        auto p_images = el.second;
-        std::vector<int> key{grad[p_images.at(0)].get_keys().at(0)};
-        math::Matrix_t sum{n_row, n_col};
-        sum.setZero();
-        for (const auto& p_image : el.second) {
-          sum += grad[p_image][key];
-        }
-        for (const auto& p_image : el.second) {
-          grad[p_image][key] = sum;
-        }
-      }
-      auto atom_ii = center.get_atom_ii();
-
-      std::cout << "Center " << center.get_atom_tag() << std::endl;
-      std::cout << "grad ii: "<< std::endl << grad[atom_ii].get_full_vector().transpose() << std::endl;
-      for (const auto & el : periodic_images_of_center) {
-        std::cout << " atom_j " << el.first << " Images tags:";
-        for (const auto & p_im : el.second) {
-          int tag = p_im.get_atom_tag();
-          // auto pos = manager->position(tag);
-          std::cout << tag << " | "<< std::endl;
-          std::cout << grad[p_im].get_full_vector().transpose()  << std::endl;
-          break;
-        }
-        std::cout << std::endl;
-      }
+      selected_ids.back().push_back(ii);
+      ++ii;
+      ++n_centers;
     }
   }
-  // Representation_t soap{hypers};
 
-  // soap.compute(collection);
+  sparse_points.push_back(representation, managers, selected_ids);
 
-  // Kernel kernel{kernel_hypers};
+  auto feat_ref = managers.get_features(representation);
 
-  // auto kk = kernel.compute(soap, collection, collection);
+  auto feat_test = sparse_points.get_features();
+  math::Matrix_t KNM_ref(n_centers, sparse_points.size());
+  KNM_ref = feat_ref * feat_test.transpose();
+  math::Matrix_t KNM(managers.size(), sparse_points.size());
+  KNM.setZero();
+  auto Msps = sparse_points.species_by_points();
+  int i_row{0};
+  int i_manager{0};
+  for (auto manager : managers) {
+    for (auto center : manager) {
+      int i_col{0};
+      for (auto sp : Msps) {
+        if (sp == center.get_atom_type()) {
+          KNM(i_manager, i_col) += KNM_ref(i_row, i_col);
+        }
+        ++i_col;
+      }
+      ++i_row;
+    }
+    ++i_manager;
+  }
+
+  json kernel_hypers{
+        {"zeta", 1}, {"target_type", "Structure"}, {"name", "GAP"}};
+  SparseKernel kernel{kernel_hypers};
+
+  auto KNM_test{kernel.compute(representation, managers, sparse_points)};
+  auto KNM_der{kernel.compute_derivative(representation, managers, sparse_points)};
+  auto diff = math::relative_error(KNM, KNM_test);
+
+  std::cout << diff << std::endl;
+  std::cout << "============================" << std::endl;
+  std::cout << KNM<< std::endl;
+  std::cout << "============================" << std::endl;
+  std::cout << KNM_test<< std::endl;
+  std::cout << "============================" << std::endl;
+  std::cout << KNM_der<< std::endl;
 
   // std::cout << kk << std::endl;
 
@@ -191,26 +192,175 @@ int main() {
   // for (const auto & manager : collection) {
   //   auto & desc{*manager->template get_property<Prop_t>(soap.get_name())};
   //   int ii{0};
+  // math::Matrix_t KNM_ref(n_centers, sparse_points.size());
+  // KNM_ref = feat_ref * feat_test.transpose();
+  // math::Matrix_t KNM(managers.size(), sparse_points.size());
+  // auto Msps = sparse_points.species_by_points();
+  // int i_row{0};
+  // for (auto manager : managers) {
   //   for (auto center : manager) {
-  //     if (ii == 1) {
-  //       std::cout << desc[center].get_full_vector().transpose() << std::endl;
+  //     int i_col{0};
+  //     for (auto sp : Msps) {
+  //       if (sp != center.get_atom_type()) {
+  //         KNM_ref(i_row, i_col) = 0;
+  //       }
+  //       ++i_col;
   //     }
-  //     ++ii;
+  //     ++i_row;
   //   }
+  // }
 
-  //   // auto & grad{*manager->template get_property<PropGrad_t>(soap.get_gradient_name())};
-  //   // math::Vector_t sum(grad.get_keys().size() * grad.get_nb_comp());
-  //   // sum.setZero();
-  //   // auto data = grad.get_raw_data_view();
-  //   // std::cout << grad.sum() << std::endl;
-  //   // std::cout << grad.l1_norm() << std::endl;
-  //   // for (auto center : manager) {
-  //   //   sum += grad.get_dense_row(center.get_atom_ii());
-  //   //   for (auto neigh : center.pairs_with_self_pair()) {
-  //   //     sum += grad.get_dense_row(neigh);
-  //   //   }
-  //   //   std::cout << sum << std::endl;
-  //   //   std::cout << "##############################" << std::endl;
+
+  // json kernel_hypers{
+  //       {"zeta", 1}, {"target_type", "Atom"}, {"name", "GAP"}};
+  // SparseKernel kernel{kernel_hypers};
+
+  // auto KNM_test{kernel.compute(representation, managers, sparse_points)};
+
+  // auto diff = math::relative_error(KNM_ref, KNM_test);
+
+  // std::cout << diff << std::endl;
+  // std::cout << "============================" << std::endl;
+  // std::cout << KNM_ref<< std::endl;
+  // std::cout << "============================" << std::endl;
+  // std::cout << KNM_test<< std::endl;
+  // sparse_points.push_back(representation, managers, selected_ids);
+
+  // auto feat_ref = managers.get_features(representation);
+
+  // auto feat_test = sparse_points.get_features();
+  // for (int i_row{0}; i_row < feat_ref.rows(); i_row++) {
+  //   auto diff = (feat_ref.rowwise() - feat_test.row(i_row)).rowwise().lpNorm<1>();
+  //   std::cout << "Number of matching row "<< i_row << " :" << (diff.array() < 1e-16).count() << std::endl;
+  // }
+
+  // std::cout << feat_ref<< std::endl;
+  // std::cout << "============================" << std::endl;
+  // std::cout << feat_test<< std::endl;
+  // for (auto center : manager) {
+  //   // if (center_count >= n_centers_print) {
+  //   //   break;
   //   // }
+  //   size_t n_species_center{soap_vectors.get_keys(center).size()};
+  //   std::cout << "============================" << std::endl;
+  //   std::cout << "Center " << center.get_index();
+  //   std::cout << " of type " << center.get_atom_type() << std::endl;
+  //   int maxRow, maxCol;
+  //   auto diff_rep_m{math::relative_error(soap_vectors.get_dense_row(center), soap_vectors_half.get_dense_row(center), 1e-15)};
+  //   double diff_rep = diff_rep_m.maxCoeff(&maxRow, &maxCol);
+  //   std::cout << "max error: " << diff_rep << " ref val: " << soap_vectors.get_dense_row(center)(maxRow, maxCol) << " Nb_neigh: "<< center.pairs().size() << std::endl;
+  //   if (diff_rep > 1e-13) {
+  //     std::cout << "Ref: " << std::endl<< soap_vectors.get_dense_row(center);
+  //     std::cout << std::endl;
+  //     std::cout << "Test: " << std::endl<< soap_vectors_half.get_dense_row(center);
+  //     std::cout << std::endl;
+  //   }
+  //   auto keys_center = soap_vectors[center].get_keys();
+  //   std::cout << "Center data keys: ";
+  //   for (auto key : keys_center) {
+  //     std::cout << "(";
+  //     for (auto key_sp : key) {
+  //       std::cout << key_sp << ", ";
+  //     }
+  //     std::cout << "\b\b) ";
+  //   }
+  //   std::cout << std::endl;
+  //   auto ii_pair = center.get_atom_ii();
+
+  //   auto half_it = manager_half->get_iterator_at(center_count, 0);
+  //   auto half_center = *(half_it);
+  //   std::cout << "Tags:  (";
+  //   for (auto neigh : half_center.pairs()) {
+  //     auto neigh_type = neigh.get_atom_tag();
+  //     std::cout << neigh_type << ", ";
+  //   }
+  //   std::cout << "\b\b) ";
+  //   std::cout << std::endl;
+
+  //   std::cout << "Types: (";
+  //   for (auto neigh : half_center.pairs()) {
+  //     auto neigh_type = neigh.get_atom_type();
+  //     std::cout << neigh_type << ", ";
+  //   }
+  //   std::cout << "\b\b) ";
+  //   std::cout << std::endl;
+
+  //   auto diff_ii_m{math::relative_error(soap_vector_gradients.get_dense_row(ii_pair), soap_vector_gradients_half.get_dense_row(half_center.get_atom_ii()), 1e-15)};
+  //   double diff_ii = diff_ii_m.maxCoeff(&maxRow, &maxCol);
+  //   std::cout << "max error: " << diff_ii << " ref val: " << soap_vector_gradients.get_dense_row(ii_pair)(maxRow, maxCol) << " Nb_neigh: "<< center.pairs().size() << std::endl;
+  //   if (diff_ii > 1e-12) {
+  //     std::cout << "Ref: " << std::endl<< soap_vector_gradients.get_dense_row(ii_pair).transpose();
+  //     std::cout << std::endl;
+  //     std::cout << "Test: " << std::endl<< soap_vector_gradients_half.get_dense_row(half_center.get_atom_ii()).transpose();
+  //     std::cout << std::endl;
+  //   }
+  //   auto keys_grad_center = soap_vector_gradients[ii_pair].get_keys();
+  //   std::cout << "Center gradient keys: ";
+  //   for (auto key : keys_grad_center) {
+  //     std::cout << "(";
+  //     for (auto key_sp : key) {
+  //       std::cout << key_sp << ", ";
+  //     }
+  //     std::cout << "\b\b) ";
+  //   }
+  //   std::cout << std::endl;
+
+  //   size_t neigh_count{0};
+  //   for (auto neigh : center.pairs()) {
+  //     // if (neigh_count >= n_neigh_print) {
+  //     //   break;
+  //     // }
+  //     auto neigh_type = neigh.get_atom_type();
+  //     auto tags = neigh.get_atom_tag_list();
+  //     if (tags[1] <= tags[0]) {continue;}
+  //     auto half_neigh_it = half_center.template get_clusters_of_order<2>(1+neigh_count).begin();
+  //     // auto half_neigh_it = half_center.pairs().begin();
+  //     // for (size_t ii{0}; ii < neigh_count; ii++) {
+  //     //   ++half_neigh_it;
+  //     // }
+  //     auto half_neigh = *(half_neigh_it);
+
+  //     std::cout << "Neighbour "<< neigh_type <<" tags: ";
+
+  //     std::cout << "(";
+  //     for (auto tag : tags) {
+  //       std::cout << tag << ", ";
+  //     }
+  //     std::cout << "\b\b) ";
+  //     std::cout << std::endl;
+
+  //     auto keys_neigh = soap_vector_gradients[neigh].get_keys();
+  //     std::cout << "Neighbour "<< neigh_type <<" keys: ";
+  //     for (auto key : keys_neigh) {
+  //       std::cout << "(";
+  //       for (auto key_sp : key) {
+  //         std::cout << key_sp << ", ";
+  //       }
+  //       std::cout << "\b\b) ";
+  //     }
+  //     std::cout << std::endl;
+  //     auto keys_neigh_half = soap_vector_gradients_half[half_neigh].get_keys();
+  //     std::cout << " /// ";
+  //     for (auto key : keys_neigh_half) {
+  //       std::cout << "(";
+  //       for (auto key_sp : key) {
+  //         std::cout << key_sp << ", ";
+  //       }
+  //       std::cout << "\b\b) ";
+  //     }
+  //     std::cout << std::endl;
+  //     auto diff_ij_m{math::relative_error(soap_vector_gradients.get_dense_row(neigh), soap_vector_gradients_half.get_dense_row(half_neigh), 1e-10)};
+  //   double diff_ij = diff_ij_m.maxCoeff(&maxRow, &maxCol);
+  //   std::cout << "max error: " << diff_ij << " ref val: " << soap_vector_gradients.get_dense_row(neigh)(maxRow, maxCol) << " Nb_neigh: "<< center.pairs().size() << std::endl;
+  //     if (diff_ij > 1e-12) {
+  //       std::cout << "Ref: " << std::endl<< soap_vector_gradients.get_dense_row(neigh).transpose();
+  //       std::cout << std::endl;
+  //       std::cout << "Test: " << std::endl<< soap_vector_gradients_half.get_dense_row(half_neigh).transpose();
+  //       std::cout << std::endl;
+  //     }
+
+  //     ++neigh_count;
+  //   }
+  //   ++center_count;
   // }
 }

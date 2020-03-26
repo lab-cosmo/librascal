@@ -174,6 +174,7 @@ namespace rascal {
         : CalculatorBase{}, rep_expansion{hyper} {
       this->set_default_prefix("spherical_covariants_");
       this->set_hyperparameters(hyper);
+      this->hypers = hyper;
     }
 
     //! Copy constructor
@@ -195,7 +196,7 @@ namespace rascal {
     CalculatorSphericalCovariants &
     operator=(CalculatorSphericalCovariants && other) = default;
 
-    void set_hyperparameters(const Hypers_t & hypers) {
+    void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::SphericalCovariantsType;
       this->max_radial = hypers.at("max_radial").get<size_t>();
       this->max_angular = hypers.at("max_angular").get<size_t>();
