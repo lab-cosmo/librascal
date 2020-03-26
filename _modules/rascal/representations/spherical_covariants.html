@@ -328,7 +328,7 @@
                          <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;lam&#39;</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span>
                          <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_angular&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span>
                                    <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;lam&#39;</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">-</span>
-                            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_angular&#39;</span><span class="p">]</span> <span class="o">-</span>
+                          <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_angular&#39;</span><span class="p">]</span> <span class="o">-</span>
                              <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;lam&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">*</span>
                          <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;lam&#39;</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span><span class="p">))</span>
                 <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;lam&#39;</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
@@ -344,7 +344,7 @@
                 <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;n_species&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_radial&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span>
                         <span class="nb">int</span><span class="p">((</span><span class="mi">2</span> <span class="o">+</span>
-                               <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;lam&#39;</span><span class="p">]</span> <span class="o">-</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;lam&#39;</span><span class="p">]</span> <span class="o">-</span>
                              <span class="mi">3</span> <span class="o">*</span>
                              <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;lam&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span>
                              <span class="mi">2</span> <span class="o">*</span>
@@ -352,7 +352,7 @@
                              <span class="mi">4</span> <span class="o">*</span>
                              <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;lam&#39;</span><span class="p">]</span> <span class="o">*</span>
                              <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_angular&#39;</span><span class="p">])</span> <span class="o">/</span>
-                              <span class="mi">2</span><span class="p">)</span> <span class="o">*</span>
+                            <span class="mi">2</span><span class="p">)</span> <span class="o">*</span>
                         <span class="p">(</span><span class="mi">2</span> <span class="o">*</span>
                          <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;lam&#39;</span><span class="p">]</span> <span class="o">+</span>
                          <span class="mi">1</span><span class="p">))</span>

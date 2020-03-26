@@ -226,7 +226,7 @@
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv4N6rascal8internal18RadialContribution19set_hyperparametersERK8Hypers_t">
-<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a386d15fbbca6fe167f620a14c616d8eb"></span>void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal18RadialContribution19set_hyperparametersERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a9a9bf9016567f0cd84f6c9319494dd86"></span>void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal8internal18RadialContribution19set_hyperparametersERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Set hyperparameters. <dl class="simple">
 <dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">hypers</span></code>: is expected to be the same as the the input of the spherical expansion </p></li>
@@ -339,7 +339,7 @@
 
 <dl class="function">
 <dt id="_CPPv4N6rascal8internal18RadialContribution19set_hyperparametersERK8Hypers_t">
-<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1DVR_01_4_1a19413d20901a94d08db5c174de7041ad"></span>void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><br /></dt>
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1DVR_01_4_1a122cab60306300341b4a1960cb2058f4"></span>void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><br /></dt>
 <dd><p>Set hyperparameters.</p>
 <p><dl class="simple">
 <dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
@@ -380,7 +380,7 @@
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv4N6rascal28CalculatorSphericalExpansion19set_hyperparametersERK8Hypers_t">
-<span class="target" id="classrascal_1_1CalculatorSphericalExpansion_1ac282c2b242dca1fc6feeb9d8a16b9fbf"></span>void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal28CalculatorSphericalExpansion19set_hyperparametersERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="classrascal_1_1CalculatorSphericalExpansion_1abb93bf6b6c337539ca9716828040e877"></span>void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal28CalculatorSphericalExpansion19set_hyperparametersERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Set the hyperparameters of this descriptor from a json-like container.</p>
 <p><dl class="simple">
 <dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
@@ -399,10 +399,16 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="_CPPv4NK6rascal28CalculatorSphericalExpansion14does_gradientsEv">
+<span class="target" id="classrascal_1_1CalculatorSphericalExpansion_1a78ee84a9c58bf031aaaae94d5600366c"></span>bool <code class="sig-name descname">does_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK6rascal28CalculatorSphericalExpansion14does_gradientsEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Returns if the calculator is able to compute gradients of the representation w.r.t. atomic positions ? </p>
+</dd></dl>
+
+<dl class="function">
 <dt id="_CPPv4N6rascal28CalculatorSphericalExpansion28CalculatorSphericalExpansionERK8Hypers_t">
 <span class="target" id="classrascal_1_1CalculatorSphericalExpansion_1a9698872930e4e6bccad9e3c8b9df6d37"></span><code class="sig-name descname">CalculatorSphericalExpansion</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hyper</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal28CalculatorSphericalExpansion28CalculatorSphericalExpansionERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Construct a new Calculator using a hyperparameters container</p>
-<p>See <a class="reference internal" href="#classrascal_1_1CalculatorSphericalExpansion_1ac282c2b242dca1fc6feeb9d8a16b9fbf"><span class="std std-ref">set_hyperparameters()</span></a> for a description of the hypers</p>
+<p>See <a class="reference internal" href="#classrascal_1_1CalculatorSphericalExpansion_1abb93bf6b6c337539ca9716828040e877"><span class="std std-ref">set_hyperparameters()</span></a> for a description of the hypers</p>
 <p></p>
 <p><dl class="simple">
 <dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
@@ -530,8 +536,14 @@
 
 <dl class="function">
 <dt id="_CPPv4N6rascal29CalculatorSphericalInvariants19set_hyperparametersERK8Hypers_t">
-<span class="target" id="classrascal_1_1CalculatorSphericalInvariants_1a89d24beabba1249f0fcd5a9877d2556e"></span>void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t&amp;<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal29CalculatorSphericalInvariants19set_hyperparametersERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="classrascal_1_1CalculatorSphericalInvariants_1a4021205c9ae8eb54fbbec62b0a5e583b"></span>void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t&amp;<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal29CalculatorSphericalInvariants19set_hyperparametersERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Pure Virtual Function to set hyperparameters of the representation. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4NK6rascal29CalculatorSphericalInvariants14does_gradientsEv">
+<span class="target" id="classrascal_1_1CalculatorSphericalInvariants_1a43e448c8276fbaa40e75f8737664a1eb"></span>bool <code class="sig-name descname">does_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK6rascal29CalculatorSphericalInvariants14does_gradientsEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Returns if the calculator is able to compute gradients of the representation w.r.t. atomic positions ? </p>
 </dd></dl>
 
 <dl class="function">
@@ -638,7 +650,7 @@ StructureManager is compatible with the representation <dl class="simple">
 
 <dl class="function">
 <dt id="_CPPv4N6rascal29CalculatorSphericalCovariants19set_hyperparametersERK8Hypers_t">
-<span class="target" id="classrascal_1_1CalculatorSphericalCovariants_1a5e052833797ff7fc0d438b47cea93a25"></span>void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t&amp;<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal29CalculatorSphericalCovariants19set_hyperparametersERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="classrascal_1_1CalculatorSphericalCovariants_1a82468ef27e198ead40d42fbae96b3a6c"></span>void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t&amp;<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal29CalculatorSphericalCovariants19set_hyperparametersERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Pure Virtual Function to set hyperparameters of the representation. </p>
 </dd></dl>
 
@@ -836,7 +848,7 @@ StructureManager is compatible with the representation <dl class="simple">
 
 <dl class="type">
 <dt>
-<em class="property">typedef </em>boost::mpl::list&lt;KernelFixture&lt;StrictNLKernelFixture&gt;&gt; <code class="sig-name descname">multiple_fixtures</code><br /></dt>
+<em class="property">typedef </em>boost::mpl::list&lt;SparseKernelFixture&lt;StrictNLSparseKernelFixture&gt;&gt; <code class="sig-name descname">multiple_fixtures</code><br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
@@ -921,7 +933,7 @@ StructureManager is compatible with the representation <dl class="simple">
 
 <dl class="type">
 <dt>
-<em class="property">using </em><code class="sig-name descname">fixtures_test</code> = boost::mpl::list&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal17CollectionFixtureE" title="rascal::CollectionFixture">CollectionFixture</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal25StrictNLCollectionFixtureE" title="rascal::StrictNLCollectionFixture">StrictNLCollectionFixture</a>&gt;&gt;<br /></dt>
+<em class="property">using </em><code class="sig-name descname">fixtures_test</code> = boost::mpl::list&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal17CollectionFixtureE" title="rascal::CollectionFixture">CollectionFixture</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal27StrictNLCCCollectionFixtureE" title="rascal::StrictNLCCCollectionFixture">StrictNLCCCollectionFixture</a>&gt;&gt;<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
@@ -996,6 +1008,11 @@ StructureManager is compatible with the representation <dl class="simple">
 
 <dl class="type">
 <dt>
+<em class="property">using </em><code class="sig-name descname">ManagerCollection_t</code> = ManagerCollection&lt;<a class="reference internal" href="#_CPPv4N6rascal23StructureManagerCentersE" title="rascal::StructureManagerCenters">StructureManagerCenters</a>, AdaptorNeighbourList, AdaptorCenterContribution, AdaptorStrict&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
 <em class="property">using </em><code class="sig-name descname">pair_fixtures</code> = boost::mpl::list&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal14ManagerFixtureE" title="rascal::ManagerFixture">ManagerFixture</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal22StructureManagerLammpsE" title="rascal::StructureManagerLammps">StructureManagerLammps</a>&gt;&gt;<br /></dt>
 <dd></dd></dl>
 
@@ -1050,6 +1067,16 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title
 <dl class="function">
 <dt>
 template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10KernelTypeE" title="rascal::internal::KernelType">KernelType</a> <code class="sig-name descname">Type</code>&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::KernelImpl&lt;<a class="reference internal" href="#_CPPv4I_N8internal10KernelTypeEEN6rascal20downcast_kernel_implENSt10shared_ptrIN8internal10KernelImplI4TypeEEEERNSt10shared_ptrIN8internal14KernelImplBaseEEE" title="rascal::downcast_kernel_impl::Type">Type</a>&gt;&gt; <code class="sig-name descname">downcast_kernel_impl</code><span class="sig-paren">(</span>std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal14KernelImplBaseE" title="rascal::internal::KernelImplBase">KernelImplBase</a>&gt; &amp;<em>kernel_impl</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16SparseKernelTypeE" title="rascal::internal::SparseKernelType">SparseKernelType</a> <code class="sig-name descname">Type</code>, class <code class="sig-name descname">Hypers</code>&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal14KernelImplBaseE" title="rascal::internal::KernelImplBase">KernelImplBase</a>&gt; <code class="sig-name descname">make_sparse_kernel_impl</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I_N8internal16SparseKernelTypeE0EN6rascal23make_sparse_kernel_implENSt10shared_ptrIN8internal14KernelImplBaseEEERK6Hypers" title="rascal::make_sparse_kernel_impl::Hypers">Hypers</a> &amp;<em>hypers</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16SparseKernelTypeE" title="rascal::internal::SparseKernelType">SparseKernelType</a> <code class="sig-name descname">Type</code>&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::SparseKernelImpl&lt;<a class="reference internal" href="#_CPPv4I_N8internal16SparseKernelTypeEEN6rascal27downcast_sparse_kernel_implENSt10shared_ptrIN8internal16SparseKernelImplI4TypeEEEERNSt10shared_ptrIN8internal14KernelImplBaseEEE" title="rascal::downcast_sparse_kernel_impl::Type">Type</a>&gt;&gt; <code class="sig-name descname">downcast_sparse_kernel_impl</code><span class="sig-paren">(</span>std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal14KernelImplBaseE" title="rascal::internal::KernelImplBase">KernelImplBase</a>&gt; &amp;<em>kernel_impl</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -1884,12 +1911,27 @@ template&lt;class <code class="sig-name descname">ErrorMethod</code>&gt;<br /><e
 
 <dl class="function">
 <dt>
+<code class="sig-name descname">BOOST_AUTO_TEST_SUITE</code><span class="sig-paren">(</span>sparse_points_test<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>data_matching_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal17multiple_fixturesE" title="rascal::multiple_fixtures">multiple_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 <code class="sig-name descname">BOOST_AUTO_TEST_SUITE</code><span class="sig-paren">(</span>RascalUtilityTests<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
 <code class="sig-name descname">BOOST_AUTO_TEST_CASE</code><span class="sig-paren">(</span>combine_enums_test<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_AUTO_TEST_SUITE</code><span class="sig-paren">(</span>sparse_kernels_test<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2004,7 +2046,7 @@ template&lt;class <code class="sig-name descname">ErrorMethod</code>&gt;<br /><e
 
 <dl class="function">
 <dt>
-<em class="property">static</em> py::class_&lt;<a class="reference internal" href="#_CPPv4N6rascal6KernelE" title="rascal::Kernel">Kernel</a>&gt; <code class="sig-name descname">add_kernel</code><span class="sig-paren">(</span>py::module &amp;<em>mod</em>, py::module&amp;<span class="sig-paren">)</span><br /></dt>
+template&lt;class <code class="sig-name descname">Kernel</code>&gt;<br /><em class="property">static</em> py::class_&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal10add_kernelEN2py6class_I6KernelEERN2py6moduleERN2py6moduleE" title="rascal::add_kernel::Kernel">Kernel</a>&gt; <code class="sig-name descname">add_kernel</code><span class="sig-paren">(</span>py::module &amp;<em>mod</em>, py::module&amp;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2014,7 +2056,22 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title
 
 <dl class="function">
 <dt>
-void <code class="sig-name descname">add_kernels</code><span class="sig-paren">(</span>py::module &amp;<em>mod</em>, py::module &amp;<em>m_internal</em><span class="sig-paren">)</span><br /></dt>
+template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16SparseKernelTypeE" title="rascal::internal::SparseKernelType">SparseKernelType</a> <code class="sig-name descname">Type</code>, class <code class="sig-name descname">Calculator</code>, class <code class="sig-name descname">StructureManagers</code>, class <code class="sig-name descname">SparsePoints</code>, class <code class="sig-name descname">CalculatorBind</code>&gt;<br />void <code class="sig-name descname">bind_sparse_kernel_compute_function</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I_N8internal16SparseKernelTypeE0000EN6rascal35bind_sparse_kernel_compute_functionEvR14CalculatorBind" title="rascal::bind_sparse_kernel_compute_function::CalculatorBind">CalculatorBind</a> &amp;<em>kernel</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">SparsePoints</code>&gt;<br /><em class="property">static</em> py::class_&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal17add_sparse_pointsEN2py6class_I12SparsePointsEERN2py6moduleERN2py6moduleE" title="rascal::add_sparse_points::SparsePoints">SparsePoints</a>&gt; <code class="sig-name descname">add_sparse_points</code><span class="sig-paren">(</span>py::module &amp;<em>mod</em>, py::module&amp;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">ManagerCollection</code>, class <code class="sig-name descname">Calculator</code>, class <code class="sig-name descname">SparsePoints</code>&gt;<br />void <code class="sig-name descname">bind_sparse_points_push_back</code><span class="sig-paren">(</span>py::class_&lt;<a class="reference internal" href="#_CPPv4I000EN6rascal28bind_sparse_points_push_backEvRN2py6class_I12SparsePointsEE" title="rascal::bind_sparse_points_push_back::SparsePoints">SparsePoints</a>&gt; &amp;<em>sparse_points</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+void <code class="sig-name descname">add_models</code><span class="sig-paren">(</span>py::module &amp;<em>mod</em>, py::module &amp;<em>m_internal</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3429,6 +3486,11 @@ void <code class="sig-name descname">set_name</code><span class="sig-paren">(</s
 
 <dl class="function">
 <dt>
+<em class="property">virtual</em> bool <code class="sig-name descname">does_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 std::string <code class="sig-name descname">get_options_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -3466,7 +3528,7 @@ std::map&lt;std::string, std::string&gt; <code class="sig-name descname">options
 <dl class="class">
 <dt>
 template&lt;class <code class="sig-name descname">BaseFixture</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">CalculatorFixture</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4I0EN6rascal24MultipleStructureFixtureE" title="rascal::MultipleStructureFixture">MultipleStructureFixture</a>&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture::BaseFixture">BaseFixture</a>&gt;<br /></dt>
-<dd><p>Subclassed by rascal::KernelFixture&lt; BaseFixture &gt;</p>
+<dd><p>Subclassed by rascal::KernelFixture&lt; BaseFixture &gt;, rascal::SparseKernelFixture&lt; BaseFixture &gt;</p>
 </dd></dl>
 
 <dl class="class">
@@ -3635,6 +3697,11 @@ void <code class="sig-name descname">set_hyperparameters</code><span class="sig-
 
 <dl class="function">
 <dt>
+bool <code class="sig-name descname">does_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 <code class="sig-name descname">CalculatorSphericalExpansion</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hyper</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -3724,6 +3791,11 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title
 <dl class="function">
 <dt>
 void <code class="sig-name descname">set_hyperparameters</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t&amp;<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+bool <code class="sig-name descname">does_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3915,7 +3987,7 @@ IndexConstArray <code class="sig-name descname">get_cluster_indices</code><span 
 <dl class="class">
 <dt>
 template&lt;class <code class="sig-name descname">BaseFixture</code>&gt;<br /><em class="property">struct </em><code class="sig-name descname">CollectionFixture</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv4I0EN6rascal17CollectionFixtureE" title="rascal::CollectionFixture::BaseFixture">BaseFixture</a><br /></dt>
-<dd><p>Subclassed by rascal::KernelFixture&lt; BaseFixture &gt;</p>
+<dd><p>Subclassed by rascal::KernelFixture&lt; BaseFixture &gt;, rascal::SparseKernelFixture&lt; BaseFixture &gt;</p>
 </dd></dl>
 
 <dl class="class">
@@ -4010,6 +4082,14 @@ double <code class="sig-name descname">fd_error_tol</code> = {1E-6}<br /></dt>
 <dt>
 <em class="property">class </em><code class="sig-name descname">Kernel</code><br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<code class="sig-name descname">Kernel</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal6Kernel6KernelERR6Kernel" title="rascal::Kernel::Kernel">Kernel</a> &amp;&amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Members</p>
 <dl class="member">
 <dt>
@@ -4277,7 +4357,7 @@ template&lt;class <code class="sig-name descname">BaseFixture</code>&gt;<br /><e
 <dl class="class">
 <dt>
 <em class="property">struct </em><code class="sig-name descname">MultipleStructureManagerNLCCStrictFixture</code><br /></dt>
-<dd><p>Subclassed by rascal::StrictNLCollectionFixture</p>
+<dd><p>Subclassed by rascal::StrictNLCCCollectionFixture</p>
 </dd></dl>
 
 <dl class="class">
@@ -4496,6 +4576,118 @@ double <code class="sig-name descname">fd_error_tol</code> = {1E-4}<br /></dt>
 
 <dl class="class">
 <dt>
+<em class="property">class </em><code class="sig-name descname">SparseKernel</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<code class="sig-name descname">SparseKernel</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal12SparseKernel12SparseKernelERR12SparseKernel" title="rascal::SparseKernel::SparseKernel">SparseKernel</a> &amp;&amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="member">
+<dt>
+std::vector&lt;std::string&gt; <code class="sig-name descname">identifiers</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+Hypers_t <code class="sig-name descname">parameters</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a> <code class="sig-name descname">target_type</code> = {}<br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+template&lt;class <code class="sig-name descname">Calculator</code>&gt;<br /><em class="property">class </em><code class="sig-name descname">SparsePointsBlockSparse</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+size_t <code class="sig-name descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+size_t <code class="sig-name descname">size_by_species</code><span class="sig-paren">(</span><em class="property">const</em> int &amp;<em>sp</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">const</em> std::set&lt;int&gt; &amp;<code class="sig-name descname">species</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+std::vector&lt;int&gt; <code class="sig-name descname">species_by_points</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">self_dot</code><span class="sig-paren">(</span><em class="property">const</em> int &amp;<em>sp</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Val</code>&gt;<br />ColVector_t <code class="sig-name descname">dot</code><span class="sig-paren">(</span><em class="property">const</em> int &amp;<em>sp</em>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::InternallySortedKeyMap&lt;Key_t, <a class="reference internal" href="#_CPPv4I0ENK6rascal23SparsePointsBlockSparse3dotE11ColVector_tRKiRN8internal22InternallySortedKeyMapI5Key_t3ValEE" title="rascal::SparsePointsBlockSparse::dot::Val">Val</a>&gt; &amp;<em>representation</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Val</code>&gt;<br />ColVectorDer_t <code class="sig-name descname">dot_derivative</code><span class="sig-paren">(</span><em class="property">const</em> int &amp;<em>sp</em>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::InternallySortedKeyMap&lt;Key_t, <a class="reference internal" href="#_CPPv4I0ENK6rascal23SparsePointsBlockSparse14dot_derivativeE14ColVectorDer_tRKiRN8internal22InternallySortedKeyMapI5Key_t3ValEE" title="rascal::SparsePointsBlockSparse::dot_derivative::Val">Val</a>&gt; &amp;<em>representation_grad</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">ManagerCollection</code>&gt;<br />void <code class="sig-name descname">push_back</code><span class="sig-paren">(</span><em class="property">const</em> Calculator &amp;<em>calculator</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal23SparsePointsBlockSparse9push_backEvRK10CalculatorRK17ManagerCollectionRKNSt6vectorINSt6vectorIiEEEE" title="rascal::SparsePointsBlockSparse::push_back::ManagerCollection">ManagerCollection</a> &amp;<em>collection</em>, <em class="property">const</em> std::vector&lt;std::vector&lt;int&gt;&gt; &amp;<em>selected_center_indices</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="member">
+<dt>
+Data_t <code class="sig-name descname">values</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+Indices_t <code class="sig-name descname">indices</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+Counters_t <code class="sig-name descname">counters</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+size_t <code class="sig-name descname">inner_size</code> = {0}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+std::set&lt;int&gt; <code class="sig-name descname">center_species</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+std::set&lt;Key_t&gt; <code class="sig-name descname">keys</code> = {}<br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
 template&lt;class <code class="sig-name descname">ManagerImplementation</code>, size_t <code class="sig-name descname">MaxOrder</code>&gt;<br /><em class="property">class </em><code class="sig-name descname">SpeciesManager</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal10UpdateableE" title="rascal::Updateable">Updateable</a>, <em class="property">public</em> std::enable_shared_from_this&lt;<a class="reference internal" href="#_CPPv4I0_6size_tEN6rascal14SpeciesManagerE" title="rascal::SpeciesManager">SpeciesManager</a>&lt;<a class="reference internal" href="#_CPPv4I0_6size_tEN6rascal14SpeciesManagerE" title="rascal::SpeciesManager::ManagerImplementation">ManagerImplementation</a>, <a class="reference internal" href="#_CPPv4I0_6size_tEN6rascal14SpeciesManagerE" title="rascal::SpeciesManager::MaxOrder">MaxOrder</a>&gt;&gt;<br /></dt>
 <dd><div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
@@ -4597,8 +4789,8 @@ template&lt;&gt;<br />void <code class="sig-name descname">perform_filtering</co
 
 <dl class="class">
 <dt>
-<em class="property">struct </em><code class="sig-name descname">StrictNLCollectionFixture</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal41MultipleStructureManagerNLCCStrictFixtureE" title="rascal::MultipleStructureManagerNLCCStrictFixture">MultipleStructureManagerNLCCStrictFixture</a><br /></dt>
-<dd><p>Subclassed by rascal::StrictNLKernelFixture</p>
+<em class="property">struct </em><code class="sig-name descname">StrictNLCCCollectionFixture</code> : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal41MultipleStructureManagerNLCCStrictFixtureE" title="rascal::MultipleStructureManagerNLCCStrictFixture">MultipleStructureManagerNLCCStrictFixture</a><br /></dt>
+<dd><p>Subclassed by rascal::StrictNLKernelFixture, rascal::StrictNLSparseKernelFixture</p>
 </dd></dl>
 
 <dl class="class">
@@ -5765,6 +5957,17 @@ bool <code class="sig-name descname">get_update_status</code><span class="sig-pa
 
 <dl class="enum">
 <dt>
+<em class="property">enum </em><code class="sig-name descname">SparseKernelType</code><br /></dt>
+<dd><p><em>Values:</em></p>
+<dl class="enumerator">
+<dt>
+<code class="sig-name descname">GAP</code><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="enum">
+<dt>
 <em class="property">enum </em><code class="sig-name descname">CMSortAlgorithm</code><br /></dt>
 <dd><p><em>Values:</em></p>
 <dl class="enumerator">
@@ -5898,6 +6101,11 @@ bool <code class="sig-name descname">get_update_status</code><span class="sig-pa
 </div>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">pow_zeta</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> &amp;&amp;<em>kernel</em>, <em class="property">const</em> size_t &amp;<em>zeta</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
 <dl class="function">
 <dt>
 Eigen::ArrayXd <code class="sig-name descname">precompute_wigner_3js</code><span class="sig-paren">(</span>size_t <em>max_angular</em>, bool <em>inversion_symmetry</em>, size_t <em>lambda</em><span class="sig-paren">)</span><br /></dt>
@@ -6520,7 +6728,7 @@ size_t <code class="sig-name descname">zeta</code> = {1}<br /></dt>
 <dl class="class">
 <dt>
 <em class="property">struct </em><code class="sig-name descname">KernelImplBase</code><br /></dt>
-<dd><p>Subclassed by rascal::internal::KernelImpl&lt; internal::KernelType::Cosine &gt;</p>
+<dd><p>Subclassed by rascal::internal::KernelImpl&lt; internal::KernelType::Cosine &gt;, rascal::internal::SparseKernelImpl&lt; internal::SparseKernelType::GAP &gt;</p>
 </dd></dl>
 
 <dl class="class">
@@ -6891,6 +7099,42 @@ template&lt;class <code class="sig-name descname">KeyType</code>&gt;<br /><em cl
 <dl class="function">
 <dt>
 Value_t &amp;<code class="sig-name descname">operator[]</code><span class="sig-paren">(</span>size_t <em>id</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+template&lt;&gt;<br /><em class="property">struct </em><code class="sig-name descname">SparseKernelImpl</code>&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16SparseKernelTypeE" title="rascal::internal::SparseKernelType">SparseKernelType</a>::GAP&gt; : <em class="property">public</em> <a class="reference internal" href="#_CPPv46rascal" title="rascal">rascal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal14KernelImplBaseE" title="rascal::internal::KernelImplBase">KernelImplBase</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Property_t</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a> <code class="sig-name descname">Type</code>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType9StructureEEiEE00EN6rascal8internal16SparseKernelImpl7computeEN4math8Matrix_tER17StructureManagersR12SparsePointsRKNSt6stringE" title="rascal::internal::SparseKernelImpl::compute::Type">Type</a> == <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a>::Structure, int&gt; = 0, class <code class="sig-name descname">StructureManagers</code>, class <code class="sig-name descname">SparsePoints</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType9StructureEEiEE00EN6rascal8internal16SparseKernelImpl7computeEN4math8Matrix_tER17StructureManagersR12SparsePointsRKNSt6stringE" title="rascal::internal::SparseKernelImpl::compute::StructureManagers">StructureManagers</a> &amp;<em>managers</em>, <a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType9StructureEEiEE00EN6rascal8internal16SparseKernelImpl7computeEN4math8Matrix_tER17StructureManagersR12SparsePointsRKNSt6stringE" title="rascal::internal::SparseKernelImpl::compute::SparsePoints">SparsePoints</a> &amp;<em>sparse_points</em>, <em class="property">const</em> std::string &amp;<em>representation_name</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">SparsePoints</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN6rascal8internal16SparseKernelImpl7computeEN4math8Matrix_tER12SparsePoints" title="rascal::internal::SparseKernelImpl::compute::SparsePoints">SparsePoints</a> &amp;<em>sparse_points</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Property_t</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a> <code class="sig-name descname">Type</code>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE00EN6rascal8internal16SparseKernelImpl7computeEN4math8Matrix_tERK17StructureManagersRK12SparsePointsRKNSt6stringE" title="rascal::internal::SparseKernelImpl::compute::Type">Type</a> == <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a>::Atom, int&gt; = 0, class <code class="sig-name descname">StructureManagers</code>, class <code class="sig-name descname">SparsePoints</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE00EN6rascal8internal16SparseKernelImpl7computeEN4math8Matrix_tERK17StructureManagersRK12SparsePointsRKNSt6stringE" title="rascal::internal::SparseKernelImpl::compute::StructureManagers">StructureManagers</a> &amp;<em>managers</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE00EN6rascal8internal16SparseKernelImpl7computeEN4math8Matrix_tERK17StructureManagersRK12SparsePointsRKNSt6stringE" title="rascal::internal::SparseKernelImpl::compute::SparsePoints">SparsePoints</a> &amp;<em>sparse_points</em>, <em class="property">const</em> std::string &amp;<em>representation_name</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Property_t</code>, class <code class="sig-name descname">PropertyGradient_t</code>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a> <code class="sig-name descname">Type</code>, std::enable_if_t&lt;<a class="reference internal" href="#_CPPv4I00_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE00EN6rascal8internal16SparseKernelImpl18compute_derivativeEN4math8Matrix_tER17StructureManagersR12SparsePointsRKNSt6stringERKNSt6stringE" title="rascal::internal::SparseKernelImpl::compute_derivative::Type">Type</a> == <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10TargetTypeE" title="rascal::internal::TargetType">TargetType</a>::Atom, int&gt; = 0, class <code class="sig-name descname">StructureManagers</code>, class <code class="sig-name descname">SparsePoints</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute_derivative</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE00EN6rascal8internal16SparseKernelImpl18compute_derivativeEN4math8Matrix_tER17StructureManagersR12SparsePointsRKNSt6stringERKNSt6stringE" title="rascal::internal::SparseKernelImpl::compute_derivative::StructureManagers">StructureManagers</a> &amp;<em>managers</em>, <a class="reference internal" href="#_CPPv4I00_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE00EN6rascal8internal16SparseKernelImpl18compute_derivativeEN4math8Matrix_tER17StructureManagersR12SparsePointsRKNSt6stringERKNSt6stringE" title="rascal::internal::SparseKernelImpl::compute_derivative::SparsePoints">SparsePoints</a> &amp;<em>sparse_points</em>, <em class="property">const</em> std::string &amp;<em>representation_name</em>, <em class="property">const</em> std::string &amp;<em>representation_grad_name</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="member">
+<dt>
+size_t <code class="sig-name descname">zeta</code> = {1}<br /></dt>
 <dd></dd></dl>
 
 </div>
