@@ -227,8 +227,6 @@ namespace rascal {
         key_map{};
     //! list of coefficient that will be computed if there is no sparsification
     std::vector<PowerSpectrumCoeffIndex> coeff_indices{};
-    //! size of the first dimension in the dense invariant coefficient matrix
-    std::uint32_t n_n1n2{0};
     //! tell if the calculator has been sparsified using
     //! the coefficient_subselection input
     bool is_sparsified{false};
@@ -244,6 +242,9 @@ namespace rascal {
       } else {  // Default false (don't compute gradients)
         this->compute_gradients = false;
       }
+
+      this->max_radial = hypers.at("max_radial").get<size_t>();
+      this->max_angular = hypers.at("max_angular").get<size_t>();
 
       if (hypers.find("coefficient_subselection") != hypers.end() and
           (soap_type == "PowerSpectrum")) {  // NOLINT
@@ -265,6 +266,13 @@ namespace rascal {
             coefficient_subselection.at("n2").get<std::vector<std::uint32_t>>();
         auto angular_l =
             coefficient_subselection.at("l").get<std::vector<std::uint32_t>>();
+
+        std::uint32_t angular_max{
+            *std::max_element(angular_l.begin(), angular_l.end())};
+        std::uint32_t radial1_max{
+            *std::max_element(radial_n1.begin(), radial_n1.end())};
+        std::uint32_t radial2_max{
+            *std::max_element(radial_n2.begin(), radial_n2.end())};
         // check if the inputs are sane
         {
           if (sp_a.size() != sp_b.size()) {
@@ -280,11 +288,31 @@ namespace rascal {
             throw std::logic_error(
                 R"(coefficient_subselection should have elements of the same size but: a.size() != l.size())");
           }
+
+          if (angular_max >= this->max_angular + 1) {
+            std::stringstream err_str{};
+            err_str << "'max(l)' in coefficient_subselection is larger"
+                  << " than 'max_angular+1'"
+                  << angular_max << " >= " << this->max_angular + 1 << std::endl;
+            throw std::runtime_error(err_str.str());
+          }
+          if (radial1_max >= this->max_radial) {
+            std::stringstream err_str{};
+            err_str << "'max(n1)' in coefficient_subselection is larger"
+                  << " than 'max_radial'"
+                  << radial1_max << " >= " << this->max_radial << std::endl;
+            throw std::runtime_error(err_str.str());
+          }
+          if (radial2_max >= this->max_radial) {
+            std::stringstream err_str{};
+            err_str << "'max(n2)' in coefficient_subselection is larger"
+                  << " than 'max_radial'"
+                  << radial2_max << " >= " << this->max_radial << std::endl;
+            throw std::runtime_error(err_str.str());
+          }
         }
-        this->n_n1n2 = 1;
-        this->max_radial = hypers.at("max_radial").get<size_t>();
-        // this->max_radial =0;
-        this->max_angular = sp_a.size();
+        this->shape[0] = 1;
+        this->shape[1] = sp_a.size();
 
         internal::Sorted<true> is_sorted{};
         // collect all unique sorted pairs
@@ -306,18 +334,16 @@ namespace rascal {
         // precompute the positions and sizes of the angular momentum channels
         // of the linear storage of the spherical expansion coefficients
         // related to the spherical harmonics
-        std::uint32_t angular_max{
-            *std::max_element(angular_l.begin(), angular_l.end())};
         std::vector<std::uint32_t> l_block_sizes{}, l_block_ids{};
         std::uint32_t pos{0};
-        for (std::uint32_t l{0}; l <= angular_max; ++l) {
+        for (std::uint32_t l{0}; l < this->max_angular+1; ++l) {
           std::uint32_t size{2 * l + 1};
           l_block_sizes.push_back(size);
           l_block_ids.push_back(pos);
           pos += size;
         }
 
-        this->l_factors = internal::precompute_l_factors(angular_max);
+        this->l_factors = internal::precompute_l_factors(this->max_angular);
 
         // fill coeff_indices_map
         for (size_t i_pair{0}; i_pair < sp_a.size(); ++i_pair) {
@@ -348,11 +374,11 @@ namespace rascal {
         }
 
       } else {  // Default false (compute all coefficents)
-        this->max_radial = hypers.at("max_radial").get<size_t>();
-        this->max_angular = hypers.at("max_angular").get<size_t>();
+
         this->l_factors = internal::precompute_l_factors(this->max_angular);
         this->is_sparsified = false;
-        this->n_n1n2 = math::pow(this->max_radial, 2_size_t);
+        this->shape[0] = math::pow(this->max_radial, 2_size_t);
+        this->shape[1] = this->max_angular + 1;
         for (size_t n1{0}; n1 < this->max_radial; ++n1) {
           for (size_t n2{0}; n2 < this->max_radial; ++n2) {
             size_t pos{0};
@@ -567,6 +593,8 @@ namespace rascal {
    protected:
     size_t max_radial{};
     size_t max_angular{};
+    // shape of the inner dense section of the computed invariant coefficients
+    std::array<size_t, 2> shape{{0, 0}};
     bool normalize{};
     bool compute_gradients{};
     bool inversion_symmetry{false};
@@ -650,7 +678,6 @@ namespace rascal {
     // using operator[] of soap_vector
     internal::SortedKey<Key_t> spair_type{pair_type};
 
-    // const size_t n_n1n2{this->n_n1n2};
     // to store the norm of the soap vectors
     SpectrumNorm_t<StructureManager> soap_vector_norm_inv{
         *manager, "power spectrums inverse norms", true};
@@ -774,7 +801,7 @@ namespace rascal {
                   const size_t cartesian_offset_n{cartesian_idx *
                                                   this->max_radial};
                   const size_t cartesian_offset_n1n2{cartesian_idx *
-                                                     this->n_n1n2};
+                                                     this->shape[0]};
                   for (const auto & coef_idx : coef_ids) {
                     // clang-format off
                     soap_neigh_gradient_by_species_pair(
@@ -799,7 +826,7 @@ namespace rascal {
                   const size_t cartesian_offset_n{cartesian_idx *
                                                   this->max_radial};
                   const size_t cartesian_offset_n1n2{cartesian_idx *
-                                                     this->n_n1n2};
+                                                     this->shape[0]};
                   for (const auto & coef_idx : coef_ids) {
                     // clang-format off
                     soap_neigh_gradient_by_species_pair(
@@ -829,7 +856,7 @@ namespace rascal {
               for (size_t cartesian_idx{0}; cartesian_idx < 3;
                    ++cartesian_idx) {
                 const size_t cartesian_offset_n1n2{cartesian_idx *
-                                                   this->n_n1n2};
+                                                   this->shape[0]};
                 for (const auto & coef_idx : coef_ids) {
                   soap_neigh_gradient_by_species_pair(
                       coef_idx.n1n2 + cartesian_offset_n1n2, coef_idx.l) *=
@@ -843,7 +870,7 @@ namespace rascal {
     }      // for center : manager
 
     if (this->normalize and this->compute_gradients) {
-      const size_t grad_component_size{this->n_n1n2 * (this->max_angular + 1)};
+      const size_t grad_component_size{this->shape[0] * (this->max_angular + 1)};
       this->update_gradients_for_normalization(
           soap_vectors, soap_vector_gradients, manager, soap_vector_norm_inv,
           grad_component_size);
@@ -1174,8 +1201,8 @@ namespace rascal {
           ExpansionCoeff & expansions_coefficients,
           std::shared_ptr<StructureManager> manager) {
     if (this->is_sparsified) {
-      size_t n_row{this->n_n1n2};
-      size_t n_col{this->max_angular};
+      size_t n_row{this->shape[0]};
+      size_t n_col{this->shape[1]};
       std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
           keys_list{};
       internal::Sorted<true> is_sorted{};
@@ -1199,8 +1226,8 @@ namespace rascal {
         soap_vector_gradients.resize();
       }
     } else {
-      size_t n_row{this->n_n1n2};
-      size_t n_col{this->max_angular + 1};
+      size_t n_row{this->shape[0]};
+      size_t n_col{this->shape[1]};
       this->coeff_indices_map.clear();
       // clear the data container and resize it
       soap_vectors.clear();
