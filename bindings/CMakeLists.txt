@@ -47,7 +47,7 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal" DESTINATION "${PYTHON_SIT
 # builds the python bindings (must be after setting up the rpath)
 # SYSTEM: use include_directory(SYSTEM)
 # NO_EXTRAS: do not setup LTO (link time optimization) and striping of the
-#            shared library 
+#            shared library
 pybind11_add_module(_rascal ${BINDING_SRCS} SYSTEM NO_EXTRAS)
 target_compile_options(_rascal PRIVATE -Werror)
 

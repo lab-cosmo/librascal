@@ -82,13 +82,13 @@ class SphericalExpansion(object):
 
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=0.,
+                 gaussian_sigma_constant=0.3,
                  cutoff_function_type="ShiftedCosine",
                  n_species=1, radial_basis="GTO",
                  method='thread', n_workers=1, disable_pbar=False,
                  optimization_args={},
                  expansion_by_species_method="environment wise",
-                 global_species=None,
+                 global_species=None, compute_gradients=False,
                  cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
@@ -108,7 +108,8 @@ class SphericalExpansion(object):
             max_radial=max_radial, max_angular=max_angular,
             n_species=n_species,
             expansion_by_species_method=expansion_by_species_method,
-            global_species=global_species
+            global_species=global_species,
+            compute_gradients=compute_gradients
         )
 
         cutoff_function_parameters.update(
@@ -171,11 +172,6 @@ class SphericalExpansion(object):
         self.rep_options = dict(name=self.name, args=[hypers_str])
 
         n_features = self.get_num_coefficients()
-        self.feature_options = dict(name='blocksparse_double', args=[
-                                    n_features, hypers_str])
-
-        self.misc = dict(method=method, n_workers=n_workers,
-                         disable_pbar=disable_pbar)
 
         self._representation = CalculatorFactory(self.rep_options)
 
@@ -196,6 +192,7 @@ class SphericalExpansion(object):
             'gaussian_density',
             'cutoff_function',
             'radial_contribution',
+            'compute_gradients',
             'cutoff_function_parameters', 'expansion_by_species_method', 'global_species'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}

@@ -2,6 +2,7 @@ from .fps import fps, FPSFilter
 from ..lib._rascal.utils import ostream_redirect
 from ..lib import utils
 from .pool_worker import FactoryPool
+from .cur import CURFilter
 
 ostream_redirect = utils.__dict__['ostream_redirect']
 
@@ -18,11 +19,3 @@ def is_notebook():
             return False  # Other type (?)
     except NameError:
         return False      # Probably standard Python interpreter
-
-
-# if is_notebook():
-#     from tqdm import tqdm_notebook as tqdm_cs
-#     ascii = False
-# else:
-#     from tqdm import tqdm as tqdm_cs
-#     ascii = True

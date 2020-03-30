@@ -200,6 +200,12 @@ namespace rascal {
       explicit AtomicSmearingSpecification(const Hypers_t & hypers) {
         this->constant_gaussian_sigma =
             hypers.at("gaussian_sigma").at("value").get<double>();
+        if (this->constant_gaussian_sigma < 5e-2) {
+          std::stringstream err_str{};
+          err_str << "Constant gaussian sigma is too small: "
+                  << this->constant_gaussian_sigma << " < 5e-2";
+          throw std::runtime_error(err_str.str());
+        }
       }
       template <size_t Order, size_t Layer>
       double
@@ -351,7 +357,7 @@ namespace rascal {
        * @param hypers is expected to be the same as the the input of
        *         the spherical expansion
        */
-      void set_hyperparameters(const Hypers_t & hypers) {
+      void set_hyperparameters(const Hypers_t & hypers) override {
         this->hypers = hypers;
 
         this->max_radial = hypers.at("max_radial");
@@ -400,7 +406,7 @@ namespace rascal {
         }
       }
 
-      void precompute() {
+      void precompute() override {
         this->precompute_radial_sigmas();
         this->precompute_radial_overlap();
         this->ortho_norm_matrix =
@@ -766,7 +772,7 @@ namespace rascal {
        * @param hypers is expected to be the same as the the input of
        *         the spherical expansion
        */
-      void set_hyperparameters(const Hypers_t & hypers) {
+      void set_hyperparameters(const Hypers_t & hypers) override {
         this->hypers = hypers;
 
         this->max_radial = hypers.at("max_radial");
@@ -814,7 +820,7 @@ namespace rascal {
         }
       }
 
-      void precompute() {
+      void precompute() override {
         auto point_weight{math::compute_gauss_legendre_points_weights(
             0., this->interaction_cutoff + 3 * this->smearing,
             this->max_radial)};
@@ -1055,7 +1061,7 @@ namespace rascal {
       }
 
      protected:
-      void precompute() {
+      void precompute() override {
         this->precompute_fac_a();
         this->precompute_center_contribution();
       }
@@ -1216,15 +1222,15 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the structure
      */
-    void set_hyperparameters(const Hypers_t & hypers) {
+    void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::AtomicSmearingType;
       using internal::CutoffFunctionType;
       using internal::OptimizationType;
       using internal::RadialBasisType;
       this->hypers = hypers;
 
-      this->max_radial = hypers.at("max_radial");
-      this->max_angular = hypers.at("max_angular");
+      this->max_radial = hypers.at("max_radial").get<size_t>();
+      this->max_angular = hypers.at("max_angular").get<size_t>();
       if (hypers.count("compute_gradients")) {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();
       } else {  // Default false (don't compute gradients)
@@ -1382,7 +1388,8 @@ namespace rascal {
         break;
       }
       default:
-        throw std::logic_error("The combination of parameter is not handled.");
+        throw std::logic_error(
+            "The desired combination of parameters can not be handled.");
         break;
       }
 
@@ -1406,6 +1413,12 @@ namespace rascal {
 
       this->set_name(hypers);
     }
+
+    /**
+     * Returns if the calculator is able to compute gradients of the
+     * representation w.r.t. atomic positions ?
+     */
+    bool does_gradients() const override { return this->compute_gradients; }
 
     /**
      * Construct a new Calculator using a hyperparameters container
@@ -1532,8 +1545,6 @@ namespace rascal {
 
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
     internal::CutoffFunctionType cutoff_function_type{};
-
-    Hypers_t hypers{};
 
     math::SphericalHarmonics spherical_harmonics{};
 
@@ -2045,6 +2056,8 @@ namespace rascal {
     if (compute_gradients) {
       expansions_coefficients_gradient.resize(keys_list_grad);
       expansions_coefficients_gradient.setZero();
+    } else {
+      expansions_coefficients_gradient.resize();
     }
   }
 
@@ -2090,6 +2103,8 @@ namespace rascal {
     if (this->compute_gradients) {
       expansions_coefficients_gradient.resize(keys_list_grad);
       expansions_coefficients_gradient.setZero();
+    } else {
+      expansions_coefficients_gradient.resize();
     }
   }
 
@@ -2148,6 +2163,8 @@ namespace rascal {
     if (this->compute_gradients) {
       expansions_coefficients_gradient.resize(keys_list_grad);
       expansions_coefficients_gradient.setZero();
+    } else {
+      expansions_coefficients_gradient.resize();
     }
   }
 

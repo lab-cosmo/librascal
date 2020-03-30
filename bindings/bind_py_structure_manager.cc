@@ -226,6 +226,8 @@ namespace rascal {
     std::string manager_name = internal::GetBindingTypeName<Manager_t>();
     py::class_<Manager_t, Parent, std::shared_ptr<Manager_t>> manager(
         mod, manager_name.c_str());
+    // bind the number of centers in the structure
+    manager.def("__len__", &Manager_t::size);
     return manager;
   }
 
@@ -239,6 +241,8 @@ namespace rascal {
     using Parent = typename Manager_t::Parent;
     py::class_<Manager_t, Parent, std::shared_ptr<Manager_t>> manager(
         mod, manager_name.c_str());
+    // bind the number of centers in the structure
+    manager.def("__len__", &Manager_t::size);
     return manager;
   }
 
@@ -642,7 +646,8 @@ namespace rascal {
         "__getitem__",
         [](ManagerCollection_t & v, int index) { return v[index]; },
         py::keep_alive<0, 1>());
-
+    manager_collection.def("__len__", &ManagerCollection_t::size,
+                           "Get number of structures in the collection.");
     /**
      * Binds the `add_structures`. Instead of invoking the targeted function to
      * bind within a lambda function, a pointer-to-member-function is used here.
@@ -669,9 +674,6 @@ namespace rascal {
             ManagerCollection_t::add_structures,
         R"(Read a file and extract the structures from start to start + length.)",
         py::arg("filename"), py::arg("start") = 0, py::arg("length") = -1);
-
-    manager_collection.def("__len__",
-                           [](ManagerCollection_t & v) { return v.size(); });
 
     manager_collection.def("get_parameters", [](ManagerCollection_t & v) {
       return std::string(v.get_adaptors_parameters().dump(2));
@@ -880,32 +882,35 @@ namespace rascal {
     py::class_<ClusterRefBase>(m_internal, "ClusterRefBase");
     bind_cluster_refs(m_internal);
 
+    bind_atomic_structure(m_nl);
+
     py::module m_strc_mng = m_nl.def_submodule("StructureManager");
     m_strc_mng.doc() = "Structure Manager Classes";
     py::module m_adp = m_nl.def_submodule("Adaptor");
     m_adp.doc() = "Adaptor Classes";
 
-    using Manager_t = StructureManagerCenters;
-    bind_structure_manager<Manager_t>(m_strc_mng, m_internal);
-
-    // bind the factory function
-    bind_make_structure_manager<Manager_t>(m_nl);
+    // list of already binded manager stacks to avoid double binding
     std::set<std::string> name_list{};
-    BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorStrict>
-        adaptor_stack_1{m_nl, m_adp, m_internal, name_list};
-
-    BindAdaptorStack<Manager_t, AdaptorNeighbourList, AdaptorCenterContribution,
+    /*-------------------- struc-man-bind-start --------------------*/
+    // bind the root structure manager
+    bind_structure_manager<StructureManagerCenters>(m_strc_mng, m_internal);
+    bind_make_structure_manager<StructureManagerCenters>(m_nl);
+    // bind a structure manager stack
+    BindAdaptorStack<StructureManagerCenters, AdaptorNeighbourList,
                      AdaptorStrict>
+        adaptor_stack_1{m_nl, m_adp, m_internal, name_list};
+    // bind the corresponding manager collection
+    bind_structure_manager_collection<StructureManagerCenters,
+                                      AdaptorNeighbourList, AdaptorStrict>(
+        m_nl);
+    /*-------------------- struc-man-bind-end --------------------*/
+    BindAdaptorStack<StructureManagerCenters, AdaptorNeighbourList,
+                     AdaptorCenterContribution, AdaptorStrict>
         adaptor_stack_2{m_nl, m_adp, m_internal, name_list};
 
-    // bind the manager collection
-    bind_structure_manager_collection<Manager_t, AdaptorNeighbourList,
-                                      AdaptorStrict>(m_nl);
-
-    bind_structure_manager_collection<Manager_t, AdaptorNeighbourList,
+    bind_structure_manager_collection<StructureManagerCenters,
+                                      AdaptorNeighbourList,
                                       AdaptorCenterContribution, AdaptorStrict>(
         m_nl);
-
-    bind_atomic_structure(m_nl);
   }
 }  // namespace rascal

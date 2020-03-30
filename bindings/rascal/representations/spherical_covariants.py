@@ -60,7 +60,7 @@ class SphericalCovariants(object):
 
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=0., n_species=1,
+                 gaussian_sigma_constant=0.3, n_species=1,
                  cutoff_function_type="ShiftedCosine", normalize=True,
                  radial_basis="GTO",
                  soap_type="LambdaSpectrum", inversion_symmetry=True,

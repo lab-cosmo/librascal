@@ -142,8 +142,8 @@ if(BUILD_BINDINGS)
 
   add_external_package(pybind11 VERSION 2.3.0 CONFIG)
 
-    # Get where python site-packages is
-    if(NOT USER)
+   # Get where python site-packages is
+  if(NOT USER)
     execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "from distutils.sysconfig import \
                       get_python_lib; print(get_python_lib())"
       OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
