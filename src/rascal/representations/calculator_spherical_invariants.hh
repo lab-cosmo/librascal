@@ -292,22 +292,22 @@ namespace rascal {
           if (angular_max >= this->max_angular + 1) {
             std::stringstream err_str{};
             err_str << "'max(l)' in coefficient_subselection is larger"
-                  << " than 'max_angular+1'"
-                  << angular_max << " >= " << this->max_angular + 1 << std::endl;
+                    << " than 'max_angular+1'" << angular_max
+                    << " >= " << this->max_angular + 1 << std::endl;
             throw std::runtime_error(err_str.str());
           }
           if (radial1_max >= this->max_radial) {
             std::stringstream err_str{};
             err_str << "'max(n1)' in coefficient_subselection is larger"
-                  << " than 'max_radial'"
-                  << radial1_max << " >= " << this->max_radial << std::endl;
+                    << " than 'max_radial'" << radial1_max
+                    << " >= " << this->max_radial << std::endl;
             throw std::runtime_error(err_str.str());
           }
           if (radial2_max >= this->max_radial) {
             std::stringstream err_str{};
             err_str << "'max(n2)' in coefficient_subselection is larger"
-                  << " than 'max_radial'"
-                  << radial2_max << " >= " << this->max_radial << std::endl;
+                    << " than 'max_radial'" << radial2_max
+                    << " >= " << this->max_radial << std::endl;
             throw std::runtime_error(err_str.str());
           }
         }
@@ -336,7 +336,7 @@ namespace rascal {
         // related to the spherical harmonics
         std::vector<std::uint32_t> l_block_sizes{}, l_block_ids{};
         std::uint32_t pos{0};
-        for (std::uint32_t l{0}; l < this->max_angular+1; ++l) {
+        for (std::uint32_t l{0}; l < this->max_angular + 1; ++l) {
           std::uint32_t size{2 * l + 1};
           l_block_sizes.push_back(size);
           l_block_ids.push_back(pos);
@@ -374,7 +374,6 @@ namespace rascal {
         }
 
       } else {  // Default false (compute all coefficents)
-
         this->l_factors = internal::precompute_l_factors(this->max_angular);
         this->is_sparsified = false;
         this->shape[0] = math::pow(this->max_radial, 2_size_t);
@@ -870,7 +869,8 @@ namespace rascal {
     }      // for center : manager
 
     if (this->normalize and this->compute_gradients) {
-      const size_t grad_component_size{this->shape[0] * (this->max_angular + 1)};
+      const size_t grad_component_size{this->shape[0] *
+                                       (this->max_angular + 1)};
       this->update_gradients_for_normalization(
           soap_vectors, soap_vector_gradients, manager, soap_vector_norm_inv,
           grad_component_size);
