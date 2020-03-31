@@ -1,4 +1,6 @@
+from ..utils import BaseIO
 from ..models import SparsePoints
+
 import numpy as np
 from scipy.sparse.linalg import svds
 
@@ -34,7 +36,7 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
     return sel
 
 
-class CURFilter(object):
+class CURFilter(BaseIO):
     """CUR decomposition to select samples or features in a given feature matrix. Wrapper around the do_CUR function for convenience.
 
     Parameters
@@ -67,7 +69,9 @@ class CURFilter(object):
         if act_on in ['sample', 'sample per species', 'feature']:
             self.act_on = act_on
         else:
-            raise 'Wrong input: {}'.format(act_on)
+            raise NotImplementedError(
+                '"act_on" should be either of: "{}", "{}", "{}"'.format(
+                    *['sample', 'sample per species', 'feature']))
         self.is_deterministic = is_deterministic
         self.seed = seed
         self.selected_ids = None

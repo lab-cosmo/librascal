@@ -132,16 +132,14 @@ int main() {
   std::cout << "============================" << std::endl;
   std::cout << KNM_der<< std::endl;
 
-  // std::cout << kk << std::endl;
+  json j;
+  j = sparse_points;
+  std::cout << j.dump()<< std::endl;;
+  auto sparse_points_b = j.get<SparsePointsBlockSparse<Representation_t>>();
 
+  auto KNM_test_b{kernel.compute(representation, managers, sparse_points)};
 
-  // Representation_t soap{hypers};
-  // soap.compute(collection);
-  // std::cout.precision(10);
-  // std::cout.setf(std::ios::scientific);
-  // for (const auto & manager : collection) {
-  //   auto & desc{*manager->template get_property<Prop_t>(soap.get_name())};
-  //   int ii{0};
+  math::relative_error(KNM, KNM_test_b);
   // math::Matrix_t KNM_ref(n_centers, sparse_points.size());
   // KNM_ref = feat_ref * feat_test.transpose();
   // math::Matrix_t KNM(managers.size(), sparse_points.size());

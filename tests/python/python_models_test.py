@@ -1,5 +1,6 @@
 from rascal.representations import SphericalInvariants
 from rascal.models import Kernel
+from rascal.utils import from_dict
 from test_utils import load_json_frame, BoxList, Box
 import unittest
 import numpy as np
@@ -54,3 +55,18 @@ class TestCosineKernel(unittest.TestCase):
             Kernel(rep, name="Cosine", target_type="Structure", zeta=2.5)
         with self.assertRaises(ValueError):
             Kernel(rep, name="Cosine", target_type="Structure", zeta=-2)
+
+    def test_serialization(self):
+        rep = SphericalInvariants(**self.hypers)
+
+        for target_type in ["Atom", "Structure"]:
+            cosine_kernel = Kernel(
+                rep, name="Cosine", target_type=target_type, zeta=2)
+
+            cosine_kernel_dict = cosine_kernel.to_dict()
+
+            cosine_kernel_copy = from_dict(cosine_kernel_dict)
+
+            cosine_kernel_copy_dict = cosine_kernel_copy.to_dict()
+
+            self.assertTrue(cosine_kernel_dict == cosine_kernel_copy_dict)

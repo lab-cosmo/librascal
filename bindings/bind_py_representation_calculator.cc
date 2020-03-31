@@ -40,15 +40,12 @@ namespace rascal {
 
     py::class_<Calculator, CalculatorBase> representation(
         mod, representation_name.c_str());
-    // use custom constructor to pass json formated string as initializer
-    // an alternative would be to convert python dict to json internally
-    // but needs some work on in the pybind machinery
-    representation.def(py::init([](std::string & hyper_str) {
+    representation.def(py::init([](const py::dict & hyper) {
       // convert to json
-      json hypers = json::parse(hyper_str);
+      json hypers = hyper;
       return std::make_unique<Calculator>(hypers);
     }));
-
+    internal::bind_dict_representation(representation);
     return representation;
   }
 

@@ -182,8 +182,16 @@ namespace rascal {
         delete;
 
     //! Move constructor
-    CalculatorSphericalCovariants(CalculatorSphericalCovariants && other) =
-        default;
+    CalculatorSphericalCovariants(
+        CalculatorSphericalCovariants && other) noexcept
+        : CalculatorBase{std::move(other)}, max_radial{std::move(
+                                                other.max_radial)},
+          max_angular{std::move(other.max_angular)}, rep_expansion{std::move(
+                                                         other.rep_expansion)},
+          type{std::move(other.type)}, wigner_3js{std::move(other.wigner_3js)},
+          inversion_symmetry{std::move(other.inversion_symmetry)},
+          lambda{std::move(other.lambda)}, normalize{
+                                               std::move(other.normalize)} {}
 
     //! Destructor
     virtual ~CalculatorSphericalCovariants() = default;
@@ -195,6 +203,17 @@ namespace rascal {
     //! Move assignment operator
     CalculatorSphericalCovariants &
     operator=(CalculatorSphericalCovariants && other) = default;
+
+    bool operator==(const CalculatorSphericalCovariants & other) const {
+      return (this->max_radial == other.max_radial and
+              this->max_angular == other.max_angular and
+              this->rep_expansion == other.rep_expansion and
+              this->type == other.type and
+              (this->wigner_3js.array() == other.wigner_3js.array()).all() and
+              this->inversion_symmetry == other.inversion_symmetry and
+              this->lambda == other.lambda and
+              this->normalize == other.normalize);
+    }
 
     void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::SphericalCovariantsType;
@@ -519,5 +538,23 @@ namespace rascal {
   }    // compute_lambdaspectrum
 
 }  // namespace rascal
+
+namespace nlohmann {
+  /**
+   * Special specialization of the json serialization for non default
+   * constructible type.
+   */
+  template <>
+  struct adl_serializer<rascal::CalculatorSphericalCovariants> {
+    static rascal::CalculatorSphericalCovariants from_json(const json & j) {
+      return rascal::CalculatorSphericalCovariants{j};
+    }
+
+    static void to_json(json & j,
+                        const rascal::CalculatorSphericalCovariants & t) {
+      j = t.hypers;
+    }
+  };
+}  // namespace nlohmann
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_COVARIANTS_HH_

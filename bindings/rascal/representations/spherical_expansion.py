@@ -3,9 +3,11 @@ import json
 from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
 import numpy as np
+from ..utils import BaseIO
+from copy import deepcopy
 
 
-class SphericalExpansion(object):
+class SphericalExpansion(BaseIO):
 
     """
     Computes the spherical expansion of the neighbour density [soap]
@@ -24,9 +26,6 @@ class SphericalExpansion(object):
 
     max_angular : int
         Highest angular momentum number (l) in the expansion
-
-    n_species : int
-        Number of species to be considered separately
 
     gaussian_sigma_type : str
         How the Gaussian atom sigmas (smearing widths) are allowed to
@@ -84,8 +83,7 @@ class SphericalExpansion(object):
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0.3,
                  cutoff_function_type="ShiftedCosine",
-                 n_species=1, radial_basis="GTO",
-                 method='thread', n_workers=1, disable_pbar=False,
+                 radial_basis="GTO",
                  optimization_args={},
                  expansion_by_species_method="environment wise",
                  global_species=None, compute_gradients=False,
@@ -106,12 +104,11 @@ class SphericalExpansion(object):
 
         self.update_hyperparameters(
             max_radial=max_radial, max_angular=max_angular,
-            n_species=n_species,
             expansion_by_species_method=expansion_by_species_method,
             global_species=global_species,
             compute_gradients=compute_gradients
         )
-
+        self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
         cutoff_function_parameters.update(
             interaction_cutoff=interaction_cutoff,
             cutoff_smooth_width=cutoff_smooth_width
@@ -126,7 +123,7 @@ class SphericalExpansion(object):
                 unit='A'
             ),
         )
-
+        self.optimization_args = deepcopy(optimization_args)
         if 'type' in optimization_args:
             if optimization_args['type'] == 'Spline':
                 if 'accuracy' in optimization_args:
@@ -168,8 +165,7 @@ class SphericalExpansion(object):
             dict(name='strict', args=dict(cutoff=interaction_cutoff))
         ]
 
-        hypers_str = json.dumps(self.hypers)
-        self.rep_options = dict(name=self.name, args=[hypers_str])
+        self.rep_options = dict(name=self.name, args=[self.hypers])
 
         n_features = self.get_num_coefficients()
 
@@ -188,7 +184,6 @@ class SphericalExpansion(object):
             'max_angular',
             'gaussian_sigma_type',
             'gaussian_sigma_constant',
-            'n_species',
             'gaussian_density',
             'cutoff_function',
             'radial_contribution',
@@ -218,13 +213,13 @@ class SphericalExpansion(object):
         self._representation.compute(frames.managers)
         return frames
 
-    def get_num_coefficients(self):
+    def get_num_coefficients(self, n_species=1):
         """Return the number of coefficients in the spherical expansion
 
         (this is the descriptor size per atomic centre)
 
         """
-        return (self.hypers['n_species'] * self.hypers['max_radial']
+        return (n_species * self.hypers['max_radial']
                 * (self.hypers['max_angular'] + 1)**2)
 
     def get_keys(self, species):
@@ -235,3 +230,30 @@ class SphericalExpansion(object):
         for sp in species:
             keys.append([sp])
         return keys
+
+    def get_init_params(self):
+        gaussian_density = self.hypers['gaussian_density']
+        cutoff_function = self.hypers['cutoff_function']
+        radial_contribution = self.hypers['radial_contribution']
+
+        init_params = dict(
+            interaction_cutoff=cutoff_function['cutoff'][
+                'value'], cutoff_smooth_width=cutoff_function['smooth_width']['value'],
+            max_radial=self.hypers['max_radial'], max_angular=self.hypers['max_angular'],
+            expansion_by_species_method=self.hypers['expansion_by_species_method'],
+            global_species=self.hypers['global_species'],
+            compute_gradients=self.hypers['compute_gradients'],
+            gaussian_sigma_type=gaussian_density['type'],
+            gaussian_sigma_constant=gaussian_density['gaussian_sigma']['value'],
+            cutoff_function_type=cutoff_function['type'],
+            radial_basis=radial_contribution['type'],
+            optimization_args=self.optimization_args,
+            cutoff_function_parameters=self.cutoff_function_parameters,
+        )
+        return init_params
+
+    def _set_data(self, data):
+        pass
+
+    def _get_data(self):
+        return dict()

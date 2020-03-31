@@ -1,5 +1,5 @@
 /**
- * @file   rascal/models/pseudo_points.hh
+ * @file   rascal/models/sparse_points.hh
  *
  * @author Felix Musil <felix.musil@epfl.ch>
  *
@@ -336,11 +336,11 @@ namespace rascal {
     }
 
     math::Matrix_t get_features() const {
-      size_t n_pseudo_points{0};
+      size_t n_sparse_points{0};
       for (const auto & sp : this->center_species) {
-        n_pseudo_points += counters.at(sp);
+        n_sparse_points += counters.at(sp);
       }
-      math::Matrix_t mat{n_pseudo_points, this->inner_size * this->keys.size()};
+      math::Matrix_t mat{n_sparse_points, this->inner_size * this->keys.size()};
       mat.setZero();
       size_t i_row{0};
       for (const auto & sp : this->center_species) {
@@ -365,6 +365,53 @@ namespace rascal {
       return mat;
     }
   };
+
+  /**
+   * Function to convert to a JSON object format with the given keywords. It
+   * is an overload of the function defined in the header class
+   * json.hpp.
+   */
+  template <class Calculator>
+  void to_json(json & j,
+               const SparsePointsBlockSparse<Calculator> & sparse_points) {
+    j["name"] = internal::type_name_demangled(
+        typeid(SparsePointsBlockSparse<Calculator>).name());
+    j["values"] = sparse_points.values;
+    j["indices"] = sparse_points.indices;
+    j["counters"] = sparse_points.counters;
+    j["inner_size"] = sparse_points.inner_size;
+    j["center_species"] = sparse_points.center_species;
+    j["keys"] = sparse_points.keys;
+  }
+
+  /**
+   * Function used to read from the JSON file, given the keywords and convert
+   * the data into standard types. Overload of the function defined in
+   * json.hpp class header.
+   */
+  template <class Calculator>
+  void from_json(const json & j,
+                 SparsePointsBlockSparse<Calculator> & sparse_points) {
+    using Data_t = typename SparsePointsBlockSparse<Calculator>::Data_t;
+    using Indices_t = typename SparsePointsBlockSparse<Calculator>::Indices_t;
+    using Counters_t = typename SparsePointsBlockSparse<Calculator>::Counters_t;
+    using Key_t = typename SparsePointsBlockSparse<Calculator>::Key_t;
+
+    std::string name{internal::type_name_demangled(
+        typeid(SparsePointsBlockSparse<Calculator>).name())};
+    if (name != j.at("name").get<std::string>()) {
+      std::stringstream err_str{};
+      err_str << "The saved object name does not match the asked type: '"
+              << name << "' != '" << j.at("name").get<std::string>() << "'.";
+      throw std::runtime_error(err_str.str());
+    }
+    sparse_points.values = j.at("values").get<Data_t>();
+    sparse_points.indices = j.at("indices").get<Indices_t>();
+    sparse_points.counters = j.at("counters").get<Counters_t>();
+    sparse_points.inner_size = j.at("inner_size").get<size_t>();
+    sparse_points.center_species = j.at("center_species").get<std::set<int>>();
+    sparse_points.keys = j.at("keys").get<std::set<Key_t>>();
+  }
 
 }  // namespace rascal
 

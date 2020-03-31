@@ -5,9 +5,10 @@ from ..neighbourlist import AtomsList
 from .base import CalculatorFactory
 from ..utils import FactoryPool
 from itertools import starmap
+from ..utils import BaseIO
 
 
-class SortedCoulombMatrix(object):
+class SortedCoulombMatrix(BaseIO):
     """
     Computes the Sorted Coulomb matrix representation [1].
 
@@ -38,8 +39,7 @@ class SortedCoulombMatrix(object):
         Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301
     """
 
-    def __init__(self, cutoff, sorting_algorithm='row_norm', size=10, central_decay=-1, interaction_cutoff=10, interaction_decay=-1,
-                 method='thread', n_workers=1, disable_pbar=False):
+    def __init__(self, cutoff, sorting_algorithm='row_norm', size=10, central_decay=-1, interaction_cutoff=10, interaction_decay=-1):
         self.name = 'sortedcoulomb'
         self.size = size
         self.hypers = dict()
@@ -57,8 +57,6 @@ class SortedCoulombMatrix(object):
             dict(name='neighbourlist', args=dict(cutoff=cutoff)),
             dict(name='strict', args=dict(cutoff=cutoff))
         ]
-        self.misc = dict(method=method, n_workers=n_workers,
-                         disable_pbar=disable_pbar)
 
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
@@ -91,8 +89,7 @@ class SortedCoulombMatrix(object):
 
         self.size = self.get_size(frames.managers)
         self.update_hyperparameters(size=self.size)
-        hypers_str = json.dumps(self.hypers)
-        self.rep_options = dict(name=self.name, args=[hypers_str])
+        self.rep_options = dict(name=self.name, args=[self.hypers])
         self._representation = CalculatorFactory(self.rep_options)
 
         self._representation.compute(frames.managers)
@@ -109,3 +106,20 @@ class SortedCoulombMatrix(object):
                 Nneigh.append(center.nb_pairs + 1)
         size = int(np.max(Nneigh))
         return size
+
+    def get_init_params(self):
+        init_params = dict(
+            cutoff=self.hypers['central_cutoff'],
+            sorting_algorithm=self.hypers['sorting_algorithm'],
+            size=self.hypers['size'],
+            central_decay=self.hypers['central_decay'],
+            interaction_cutoff=self.hypers['interaction_cutoff'],
+            interaction_decay=self.hypers['interaction_decay']
+        )
+        return init_params
+
+    def _set_data(self, data):
+        pass
+
+    def _get_data(self):
+        return dict()
