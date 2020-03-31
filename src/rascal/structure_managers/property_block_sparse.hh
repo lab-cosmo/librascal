@@ -92,7 +92,8 @@ namespace rascal {
       }
 
       bool operator==(const SortedKey & other) const {
-        return std::equal(this->data.begin(), this->data.end(), other.data.begin(), other.data.end());
+        return std::equal(this->data.begin(), this->data.end(),
+                          other.data.begin(), other.data.end());
       }
 
       SortedKey(const Sorted<false> &, const Key_t & key) : SortedKey{key} {}
