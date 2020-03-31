@@ -128,7 +128,7 @@ class FPSFilter(object):
         self.fps_minmax_d2 = None
 
     def fit(self, managers):
-        """Perform CUR selection of samples/features.
+        """Perform FPS selection of samples/features.
         Parameters
         ----------
         managers : AtomsList
