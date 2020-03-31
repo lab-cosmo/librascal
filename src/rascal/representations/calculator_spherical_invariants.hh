@@ -182,15 +182,17 @@ namespace rascal {
     //! Move constructor
     CalculatorSphericalInvariants(
         CalculatorSphericalInvariants && other) noexcept
-        : CalculatorBase{std::move(other)}, max_radial{std::move(
+        : CalculatorBase{std::move(other)},unique_pair_list{other.unique_pair_list},coeff_indices_map{other.coeff_indices_map},key_map{other.key_map},coeff_indices{other.coeff_indices},is_sparsified{other.is_sparsified},
+         max_radial{std::move(
                                                 other.max_radial)},
-          max_angular{std::move(other.max_angular)}, normalize{std::move(
+          max_angular{std::move(other.max_angular)}, shape{std::move(other.shape)}, normalize{std::move(
                                                          other.normalize)},
           compute_gradients{std::move(other.compute_gradients)},
           inversion_symmetry{std::move(other.inversion_symmetry)},
           rep_expansion{std::move(other.rep_expansion)},
           type{std::move(other.type)}, l_factors{std::move(other.l_factors)},
-          wigner_w3js{std::move(other.wigner_w3js)} {}
+          wigner_w3js{std::move(other.wigner_w3js)}
+           {}
     //! Destructor
     virtual ~CalculatorSphericalInvariants() = default;
 
@@ -202,6 +204,7 @@ namespace rascal {
     CalculatorSphericalInvariants &
     operator=(CalculatorSphericalInvariants && other) = default;
 
+    //!
     struct PowerSpectrumCoeffIndex {
       PowerSpectrumCoeffIndex(std::uint32_t n1, std::uint32_t n2,
                               std::uint32_t l, std::uint32_t n1n2,
@@ -218,6 +221,17 @@ namespace rascal {
       std::uint32_t l;
       std::uint32_t n1n2;
       double l_factor;
+
+      bool operator==(const PowerSpectrumCoeffIndex& other) const {
+        bool ret{this->n1 == other.n1 and
+                  this->n2 == other.n2 and
+                  this->l_block_size == other.l_block_size and
+                  this->l_block_idx == other.l_block_idx and
+                  this->l == other.l and
+                  this->n1n2 == other.n1n2 and
+                  math::relative_error(this->l_factor, other.l_factor) < 1e-10};
+        return ret;
+      }
     };
     //! list of possible input pairs when using coefficient_subselection
     std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
@@ -444,7 +458,8 @@ namespace rascal {
           (this->l_factors.array() == other.l_factors.array()).all() and
           (this->wigner_w3js.array() == other.wigner_w3js.array()).all()};
       bool rep_expansion_match{this->rep_expansion == other.rep_expansion};
-      return (grad_match and main_hypers_match and rep_expansion_match);
+      bool sparsification_match{this->unique_pair_list == other.unique_pair_list and this->coeff_indices_map == other.coeff_indices_map and this->key_map == other.key_map and this->coeff_indices == other.coeff_indices and this->is_sparsified == other.is_sparsified};
+      return (grad_match and main_hypers_match and rep_expansion_match and sparsification_match);
     }
 
     /**
