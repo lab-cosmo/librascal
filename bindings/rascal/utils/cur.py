@@ -69,7 +69,7 @@ class CURFilter(BaseIO):
         if act_on in ['sample', 'sample per species', 'feature']:
             self.act_on = act_on
         else:
-            raise NotImplementedError(
+            raise ValueError(
                 '"act_on" should be either of: "{}", "{}", "{}"'.format(
                     *['sample', 'sample per species', 'feature']))
         self.is_deterministic = is_deterministic
