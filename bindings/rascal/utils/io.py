@@ -29,7 +29,7 @@ def dump_obj(fn, instance, version=CURRENT_VERSION):
         When instance does not inherit from BaseIO
     """
     if isinstance(instance, BaseIO):
-        instance.to_file(fn, version)
+        to_file(fn, instance, version)
     else:
         raise RuntimeError('The instance does not inherit from BaseIO: {}'.format(
             instance.__class__.__mro__))
@@ -48,7 +48,7 @@ def load_obj(fn):
     python class that inherits from BaseIO
 
     """
-    return BaseIO().from_file(fn)
+    return from_file(fn)
 
 
 def dump_json(fn, data):

@@ -185,3 +185,16 @@ class CURFilter(BaseIO):
         for ii in range(len(selected_ids)):
             selected_ids[ii] = list(np.sort(selected_ids[ii]))
         return selected_ids
+
+    def _get_data(self):
+        return dict(selected_ids=self.selected_ids)
+
+    def _set_data(self, data):
+        self.selected_ids = data['selected_ids']
+
+    def _get_init_params(self):
+        return dict(representation=self._representation,
+                    Nselect=self.Nselect,
+                    act_on=self.act_on,
+                    is_deterministic=self.is_deterministic,
+                    seed=self.seed,)
