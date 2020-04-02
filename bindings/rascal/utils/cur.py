@@ -177,8 +177,8 @@ class CURFilter(BaseIO):
             for idx in selected_ids_by_sp[sp]:
                 carry_on = True
                 while carry_on:
-                    if idx >= strides_by_sp[sp][i_manager[sp]] and
-                                    idx < strides_by_sp[sp][i_manager[sp] + 1]:
+                    if (idx >= strides_by_sp[sp][i_manager[sp]] and
+                                    idx < strides_by_sp[sp][i_manager[sp] + 1]):
                         selected_ids[i_manager[sp]].append(
                             map_by_manager[i_manager[sp]][idx])
                         carry_on = False
