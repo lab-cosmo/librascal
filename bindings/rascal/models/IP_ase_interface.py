@@ -43,7 +43,7 @@ class ASEMLCalculator(Calculator, BaseIO):
         self.results['free_energy'] = energy
         self.results['forces'] = forces
 
-    def get_init_params(self):
+    def _get_init_params(self):
         init_params = dict(model=self.model, representation=self.representation)
         init_params.update(**self.kwargs)
         return init_params

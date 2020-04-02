@@ -9,7 +9,9 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
     """ Apply CUR selection [1] of Nsel rows or columns of the
     given feature matrix X[n_samples, n_features].
 
-    .. [1] Mahoney, M. W., & Drineas, P. (2009). CUR matrix decompositions for improved data analysis. Proceedings of the National Academy of Sciences,106(3), 697–702. https://doi.org/10.1073/pnas.0803205106
+    .. [1] Mahoney, M. W., & Drineas, P. (2009). CUR matrix decompositions for
+    improved data analysis. Proceedings of the National Academy of Sciences,106(3),
+    697–702. https://doi.org/10.1073/pnas.0803205106
     """
     U, _, VT = svds(X, Nsel)
     if 'sample' in act_on:
@@ -37,7 +39,8 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
 
 
 class CURFilter(BaseIO):
-    """CUR decomposition to select samples or features in a given feature matrix. Wrapper around the do_CUR function for convenience.
+    """CUR decomposition to select samples or features in a given feature matrix.
+    Wrapper around the do_CUR function for convenience.
 
     Parameters
     ----------
@@ -62,14 +65,14 @@ class CURFilter(BaseIO):
 
     """
 
-    def __init__(self, representation, Nselect, act_on='sample per species', is_deterministic=True, seed=10):
-        super(CURFilter, self).__init__()
+    def __init__(self, representation, Nselect, act_on='sample per species',
+                                                is_deterministic=True, seed=10):
         self._representation = representation
         self.Nselect = Nselect
         if act_on in ['sample', 'sample per species', 'feature']:
             self.act_on = act_on
         else:
-            raise NotImplementedError(
+            raise ValueError(
                 '"act_on" should be either of: "{}", "{}", "{}"'.format(
                     *['sample', 'sample per species', 'feature']))
         self.is_deterministic = is_deterministic
@@ -102,7 +105,8 @@ class CURFilter(BaseIO):
 
             sps = list(self.Nselect.keys())
 
-            # get various info from the structures about the center atom species and indexing
+            # get various info from the structures about the center atom species
+            # and indexing
             (strides_by_sp, global_counter, map_by_manager,
              indices_by_sp) = self.get_index_mappings_sample_per_species(managers)
 
@@ -163,7 +167,8 @@ class CURFilter(BaseIO):
 
         return strides_by_sp, global_counter, map_by_manager, indices_by_sp
 
-    def convert_selected_global_index2rascal_sample_per_species(self, managers, selected_ids_by_sp, strides_by_sp, map_by_manager):
+    def convert_selected_global_index2rascal_sample_per_species(self, managers,
+                            selected_ids_by_sp, strides_by_sp, map_by_manager):
         # convert selected center indexing into the rascal format
         selected_ids = [[] for ii in range(len(managers))]
         sps = list(self.Nselect.keys())
@@ -172,7 +177,8 @@ class CURFilter(BaseIO):
             for idx in selected_ids_by_sp[sp]:
                 carry_on = True
                 while carry_on:
-                    if idx >= strides_by_sp[sp][i_manager[sp]] and idx < strides_by_sp[sp][i_manager[sp] + 1]:
+                    if (idx >= strides_by_sp[sp][i_manager[sp]] and
+                                    idx < strides_by_sp[sp][i_manager[sp] + 1]):
                         selected_ids[i_manager[sp]].append(
                             map_by_manager[i_manager[sp]][idx])
                         carry_on = False
@@ -181,3 +187,16 @@ class CURFilter(BaseIO):
         for ii in range(len(selected_ids)):
             selected_ids[ii] = list(np.sort(selected_ids[ii]))
         return selected_ids
+
+    def _get_data(self):
+        return dict(selected_ids=self.selected_ids)
+
+    def _set_data(self, data):
+        self.selected_ids = data['selected_ids']
+
+    def _get_init_params(self):
+        return dict(representation=self._representation,
+                    Nselect=self.Nselect,
+                    act_on=self.act_on,
+                    is_deterministic=self.is_deterministic,
+                    seed=self.seed,)

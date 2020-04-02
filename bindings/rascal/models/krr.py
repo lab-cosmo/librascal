@@ -24,7 +24,6 @@ class KRR(BaseIO):
     """
 
     def __init__(self, weights, kernel, X_train, self_contributions):
-        super(KRR, self).__init__()
         # Weights of the krr model
         self.weights = weights
         self.kernel = kernel
@@ -84,9 +83,10 @@ class KRR(BaseIO):
     def get_weights(self):
         return self.weights
 
-    def get_init_params(self):
+    def _get_init_params(self):
         init_params = dict(weights=self.weights, kernel=self.kernel,
-                           X_train=self.X_train, self_contributions=self.self_contributions)
+                           X_train=self.X_train,
+                           self_contributions=self.self_contributions)
         return init_params
 
     def _set_data(self, data):
@@ -98,7 +98,9 @@ class KRR(BaseIO):
     def get_representation_calculator(self):
         return self.kernel._rep
 
-def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train, self_contributions, grad_train=None, lambdas=None, jitter=1e-8):
+
+def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train,
+                    self_contributions, grad_train=None, lambdas=None, jitter=1e-8):
     """
     Defines the procedure to train a GAP model [1]:
     .. math::
