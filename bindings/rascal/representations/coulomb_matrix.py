@@ -107,7 +107,7 @@ class SortedCoulombMatrix(BaseIO):
         size = int(np.max(Nneigh))
         return size
 
-    def get_init_params(self):
+    def _get_init_params(self):
         init_params = dict(
             cutoff=self.hypers['central_cutoff'],
             sorting_algorithm=self.hypers['sorting_algorithm'],

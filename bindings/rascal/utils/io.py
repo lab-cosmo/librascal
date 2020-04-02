@@ -208,44 +208,54 @@ def get_supported_io_versions():
 
 class BaseIO(ABC):
     """
-    fetch the state of self using the _get_data and get_init_params functions that should be implemented in the Implementation class that inherits from BaseIO.
+    Definition of the interface of a python class that can be serialized by the
+    to_dict() function. It corresponds to 3 methods:
 
-    get_init_params is expected to return a dictionary containing all the
+    + _get_init_params is expected to return a dictionary containing all the
     parameters used by the __init__() methods.
 
-    _get_data is expected to return a dictionary containing all the data
-    that is not set by the initialization of the class."""
+    + _get_data is expected to return a dictionary containing all the data
+    that is not set by the initialization of the class.
+
+    + _set_data is expected to set the data that has been extracted by _get_data
+    """
     @abstractmethod
     def _get_data(self):
+        return dict()
+
+    @abstractmethod
+    def _set_data(self, data):
         pass
 
     @abstractmethod
-    def get_init_params(self):
-        pass
+    def _get_init_params(self):
+        return dict()
 
 def _get_state(obj):
     if isinstance(obj, BaseIO) is True:
         state = dict(data=obj._get_data(),
-                 init_params=obj.get_init_params())
+                 init_params=obj._get_init_params())
     else:
         raise ValueError(
                 'input object: "{}" does not inherit from "BaseIO"'.format(obj))
     return state
 
 def to_dict(obj, version=CURRENT_VERSION):
-    """recursirvely convert the python object obj into a dictionary that
-    can be used to create a copy of obj.
-    obj has to inherit from BaseIO and implements a _get_data and
-    get_init_params methods"""
+    """recursirvely convert the python object obj into a dictionary (serialized
+    version).
+    obj has to inherit from BaseIO."""
 
     state = _get_state(obj)
 
+    # loop over the 2 fields of state
     for name, entry in state.items():
         if isinstance(entry, dict):
+            # case of potentially nested objects
             for k, v in entry.items():
                 if isinstance(v, BaseIO) is True:
                     state[name][k] = to_dict(v, version)
                 elif isinstance(v, list):
+                    # make sure list of objects are properly serialized
                     ll = []
                     for val in v:
                         if isinstance(val, BaseIO) is True:
@@ -253,30 +263,40 @@ def to_dict(obj, version=CURRENT_VERSION):
                         else:
                             ll.append(val)
                     state[name][k] = ll
-
     data = obj2dict[version](obj.__class__, state)
     return data
 
 def from_dict(data):
-    """recursirvely convert python a dictionary that
-    obj has to inherit from BaseIO."""
+    """recursirvely convert a python dictionary describing an object inherited
+    from BaseIO."""
+    # temporary dictionary to hold the object being recovered
+    data_obj = dict()
     version = data['version']
     for name, entry in data.items():
         if isinstance(entry, dict):
+            data_obj[name] = dict()
             for k, v in entry.items():
                 if is_valid_object_dict[version](v) is True:
-                    data[name][k] = from_dict(v)
+                    # in case of nested objects
+                    data_obj[name][k] = from_dict(v)
                 elif isinstance(v, list):
+                    # in case of list make sure to handle list of serialized
+                    # objects
                     ll = []
                     for val in v:
                         if is_valid_object_dict[version](val) is True:
                             ll.append(from_dict(val))
                         else:
                             ll.append(val)
+                    data_obj[name][k] = ll
+                else:
+                    # just transfer the data
+                    data_obj[name][k] = v
+        else:
+            # just transfer the data
+            data_obj[name] = entry
 
-                    data[name][k] = ll
-
-    obj = dict2obj[version](data)
+    obj = dict2obj[version](data_obj)
     return obj
 
 def to_file(fn, obj, version=CURRENT_VERSION):

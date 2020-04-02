@@ -9,7 +9,9 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
     """ Apply CUR selection [1] of Nsel rows or columns of the
     given feature matrix X[n_samples, n_features].
 
-    .. [1] Mahoney, M. W., & Drineas, P. (2009). CUR matrix decompositions for improved data analysis. Proceedings of the National Academy of Sciences,106(3), 697–702. https://doi.org/10.1073/pnas.0803205106
+    .. [1] Mahoney, M. W., & Drineas, P. (2009). CUR matrix decompositions for
+    improved data analysis. Proceedings of the National Academy of Sciences,106(3),
+    697–702. https://doi.org/10.1073/pnas.0803205106
     """
     U, _, VT = svds(X, Nsel)
     if 'sample' in act_on:
@@ -37,7 +39,8 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
 
 
 class CURFilter(BaseIO):
-    """CUR decomposition to select samples or features in a given feature matrix. Wrapper around the do_CUR function for convenience.
+    """CUR decomposition to select samples or features in a given feature matrix.
+    Wrapper around the do_CUR function for convenience.
 
     Parameters
     ----------
@@ -62,8 +65,8 @@ class CURFilter(BaseIO):
 
     """
 
-    def __init__(self, representation, Nselect, act_on='sample per species', is_deterministic=True, seed=10):
-        super(CURFilter, self).__init__()
+    def __init__(self, representation, Nselect, act_on='sample per species',
+                                                is_deterministic=True, seed=10):
         self._representation = representation
         self.Nselect = Nselect
         if act_on in ['sample', 'sample per species', 'feature']:
@@ -102,7 +105,8 @@ class CURFilter(BaseIO):
 
             sps = list(self.Nselect.keys())
 
-            # get various info from the structures about the center atom species and indexing
+            # get various info from the structures about the center atom species
+            # and indexing
             (strides_by_sp, global_counter, map_by_manager,
              indices_by_sp) = self.get_index_mappings_sample_per_species(managers)
 

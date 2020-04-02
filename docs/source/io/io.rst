@@ -17,10 +17,10 @@ The serialization of Librascal's native c++ objects rely on the `json type
 <https://github.com/nlohmann/json>`_
 but only a few object have this capability (at the moment only the ones required for saving a trained KRR model).
 On the other hand Librascal's python objects that inherit from the :py:class:`rascal.utils.BaseIO` can be serialized
-to a dictionary (see :py:meth:`rascal.utils.BaseIO.to_dict` function) or a file, :py:meth:`rascal.utils.BaseIO.dump_obj`
+to a dictionary (see :py:meth:`rascal.utils.to_dict` function) or a file, :py:meth:`rascal.utils.dump_obj`
 which supports the `JSON` format. Note that numpy arrays larger than 200MB will be saved in a separate `.npy` file
 referenced in the main object file (both files should be in the same folder).
-The function :py:meth:`rascal.utils.BaseIO.load_obj` loads a Librascal python object.
+The function :py:meth:`rascal.utils.load_obj` loads a Librascal python object.
 An example is available in the `MLIP_example.ipynb` jupyter notebook.
 
 .. _ASE: https://wiki.fysik.dtu.dk/ase/ase/io/io.html

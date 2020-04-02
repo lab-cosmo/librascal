@@ -24,7 +24,6 @@ class KRR(BaseIO):
     """
 
     def __init__(self, weights, kernel, X_train, self_contributions):
-        super(KRR, self).__init__()
         # Weights of the krr model
         self.weights = weights
         self.kernel = kernel
@@ -84,7 +83,7 @@ class KRR(BaseIO):
     def get_weights(self):
         return self.weights
 
-    def get_init_params(self):
+    def _get_init_params(self):
         init_params = dict(weights=self.weights, kernel=self.kernel,
                            X_train=self.X_train, self_contributions=self.self_contributions)
         return init_params

@@ -75,7 +75,6 @@ class Kernel(BaseIO):
 
     def __init__(self, representation, name='Cosine', kernel_type='Full', target_type='Structure',
                  **kwargs):
-        super(Kernel, self).__init__()
         # This case cannot be handled by the c++ side because c++ cannot deduce the
         # type from arguments inside a json, so it has to be casted in the c++
         # side. Therefore zeta has to be checked here.
@@ -106,7 +105,7 @@ class Kernel(BaseIO):
         else:
             self._kernel = Kernelcpp(hypers)
 
-    def get_init_params(self):
+    def _get_init_params(self):
         init_params = dict(representation=self._rep,
                            name=self.name,
                            kernel_type=self.kernel_type,

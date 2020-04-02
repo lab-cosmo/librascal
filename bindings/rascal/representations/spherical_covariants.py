@@ -214,7 +214,7 @@ class SphericalCovariants(BaseIO):
 
         return keys
 
-    def get_init_params(self):
+    def _get_init_params(self):
         gaussian_density = self.hypers['gaussian_density']
         cutoff_function = self.hypers['cutoff_function']
         radial_contribution = self.hypers['radial_contribution']

@@ -45,7 +45,6 @@ class SparsePoints(BaseIO):
     """
 
     def __init__(self, representation):
-        super(SparsePoints, self).__init__()
         self.representation = representation
         if 'SphericalInvariants' in str(representation):
             self._sparse_points = _sparse_points['SparsePointsBlockSparse_SphericalInvariants'](
@@ -54,7 +53,7 @@ class SparsePoints(BaseIO):
             raise ValueError(
                 'No pseudo point is appropiate for ' + str(representation))
 
-    def get_init_params(self):
+    def _get_init_params(self):
         init_params = dict(representation=self.representation)
         return init_params
 
