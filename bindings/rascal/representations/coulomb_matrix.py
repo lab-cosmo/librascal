@@ -39,7 +39,8 @@ class SortedCoulombMatrix(BaseIO):
         Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301
     """
 
-    def __init__(self, cutoff, sorting_algorithm='row_norm', size=10, central_decay=-1, interaction_cutoff=10, interaction_decay=-1):
+    def __init__(self, cutoff, sorting_algorithm='row_norm', size=10,
+                 central_decay=-1, interaction_cutoff=10, interaction_decay=-1):
         self.name = 'sortedcoulomb'
         self.size = size
         self.hypers = dict()

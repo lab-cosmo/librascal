@@ -47,8 +47,8 @@ class SparsePoints(BaseIO):
     def __init__(self, representation):
         self.representation = representation
         if 'SphericalInvariants' in str(representation):
-            self._sparse_points = _sparse_points['SparsePointsBlockSparse_SphericalInvariants'](
-            )
+            self._sparse_points = _sparse_points[
+                'SparsePointsBlockSparse_SphericalInvariants']()
         else:
             raise ValueError(
                 'No pseudo point is appropiate for ' + str(representation))
@@ -67,7 +67,8 @@ class SparsePoints(BaseIO):
     def extend(self, atoms_list, selected_indices):
         if isinstance(atoms_list, AtomsList):
             self._sparse_points.extend(
-                self.representation._representation, atoms_list.managers, selected_indices)
+                self.representation._representation, atoms_list.managers,
+                selected_indices)
         else:
             self._sparse_points.extend(
                 self.representation._representation, atoms_list, selected_indices)

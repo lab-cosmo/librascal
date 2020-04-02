@@ -231,14 +231,16 @@ class BaseIO(ABC):
     def _get_init_params(self):
         return dict()
 
+
 def _get_state(obj):
     if isinstance(obj, BaseIO) is True:
         state = dict(data=obj._get_data(),
-                 init_params=obj._get_init_params())
+                     init_params=obj._get_init_params())
     else:
         raise ValueError(
-                'input object: "{}" does not inherit from "BaseIO"'.format(obj))
+            'input object: "{}" does not inherit from "BaseIO"'.format(obj))
     return state
+
 
 def to_dict(obj, version=CURRENT_VERSION):
     """recursirvely convert the python object obj into a dictionary (serialized
@@ -265,6 +267,7 @@ def to_dict(obj, version=CURRENT_VERSION):
                     state[name][k] = ll
     data = obj2dict[version](obj.__class__, state)
     return data
+
 
 def from_dict(data):
     """recursirvely convert a python dictionary describing an object inherited
@@ -299,6 +302,7 @@ def from_dict(data):
     obj = dict2obj[version](data_obj)
     return obj
 
+
 def to_file(fn, obj, version=CURRENT_VERSION):
     """Saves the object to a file name 'fn' using the to_dict()
         serialization procedure."""
@@ -313,6 +317,7 @@ def to_file(fn, obj, version=CURRENT_VERSION):
     else:
         raise NotImplementedError(
             'Unknown file extention: {}'.format(file_extension))
+
 
 def from_file(fn):
     """Loads an object that was saved using to_file() from a file"""
@@ -332,6 +337,7 @@ def from_file(fn):
     else:
         raise NotImplementedError(
             'Unknown file extention: {}'.format(file_extension))
+
 
 def _dump_npy(fn, data, class_name):
     """Saves numpy array that are large into a file different from the
@@ -354,6 +360,7 @@ def _dump_npy(fn, data, class_name):
 
         elif is_npy(v) is True:
             data[k] = ['npy', v.tolist()]
+
 
 def _load_npy(data, path):
     """Loads a numpy array saved using _dump_npy(). The array is mmaped

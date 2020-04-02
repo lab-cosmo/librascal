@@ -196,7 +196,8 @@ class SphericalInvariants(BaseIO):
                         'gaussian_sigma_constant', 'soap_type',
                         'inversion_symmetry', 'cutoff_function', 'normalize',
                         'gaussian_density', 'radial_contribution',
-                        'cutoff_function_parameters', 'compute_gradients', 'expansion_by_species_method', 'global_species'}
+                        'cutoff_function_parameters', 'compute_gradients',
+                        'expansion_by_species_method', 'global_species'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
         self.hypers.update(hypers_clean)

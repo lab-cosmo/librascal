@@ -167,7 +167,8 @@ class CURFilter(BaseIO):
 
         return strides_by_sp, global_counter, map_by_manager, indices_by_sp
 
-    def convert_selected_global_index2rascal_sample_per_species(self, managers, selected_ids_by_sp, strides_by_sp, map_by_manager):
+    def convert_selected_global_index2rascal_sample_per_species(self, managers,
+                            selected_ids_by_sp, strides_by_sp, map_by_manager):
         # convert selected center indexing into the rascal format
         selected_ids = [[] for ii in range(len(managers))]
         sps = list(self.Nselect.keys())
@@ -176,7 +177,8 @@ class CURFilter(BaseIO):
             for idx in selected_ids_by_sp[sp]:
                 carry_on = True
                 while carry_on:
-                    if idx >= strides_by_sp[sp][i_manager[sp]] and idx < strides_by_sp[sp][i_manager[sp] + 1]:
+                    if idx >= strides_by_sp[sp][i_manager[sp]] and
+                                    idx < strides_by_sp[sp][i_manager[sp] + 1]:
                         selected_ids[i_manager[sp]].append(
                             map_by_manager[i_manager[sp]][idx])
                         carry_on = False

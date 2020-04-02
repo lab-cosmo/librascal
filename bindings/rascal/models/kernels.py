@@ -73,8 +73,8 @@ class Kernel(BaseIO):
 
     """
 
-    def __init__(self, representation, name='Cosine', kernel_type='Full', target_type='Structure',
-                 **kwargs):
+    def __init__(self, representation, name='Cosine', kernel_type='Full',
+                 target_type='Structure', **kwargs):
         # This case cannot be handled by the c++ side because c++ cannot deduce the
         # type from arguments inside a json, so it has to be casted in the c++
         # side. Therefore zeta has to be checked here.
@@ -146,5 +146,6 @@ class Kernel(BaseIO):
                 Y = Y._sparse_points
             return self._kernel.compute(self._representation, X, Y)
         else:
-            raise NotImplementedError('The configuration: {} is not implemented for kernel {} in {} mode.'.format(
-                grad, self.name, self.kernel_type))
+            raise NotImplementedError(
+                'The configuration: {} is not implemented for kernel {} in {} mode.'.format(
+                    grad, self.name, self.kernel_type))

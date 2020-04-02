@@ -85,7 +85,8 @@ class KRR(BaseIO):
 
     def _get_init_params(self):
         init_params = dict(weights=self.weights, kernel=self.kernel,
-                           X_train=self.X_train, self_contributions=self.self_contributions)
+                           X_train=self.X_train,
+                           self_contributions=self.self_contributions)
         return init_params
 
     def _set_data(self, data):
