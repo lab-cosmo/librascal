@@ -234,18 +234,19 @@ class FPSFilter(BaseIO):
         elif self.act_on in ['feature']:
             feat_idx2coeff_idx = self._representation.get_feature_index_mapping(
                 managers)
-            selected_features = {key: []
+            self.selected_ids = {key: []
                                  for key in feat_idx2coeff_idx[0].keys()}
             selected_ids_sorting = np.argsort(self.selected_feature_ids_global[:n_select])
-            self.selected_ids = self.selected_feature_ids_global[selected_ids_sorting]
-            for idx in self.selected_ids:
+            selected_feature_ids = self.selected_feature_ids_global[selected_ids_sorting]
+            for idx in selected_feature_ids:
                 coef_idx = feat_idx2coeff_idx[idx]
-                for key in selected_features.keys():
-                    selected_features[key].append(int(coef_idx[key]))
+                for key in self.selected_ids.keys():
+                    self.selected_ids[key].append(int(coef_idx[key]))
             # keep the global indices and ordering for ease of use
-            selected_features['selected_features_global_ids'] = self.selected_ids.tolist()
-            selected_features['selected_features_global_ids_fps_ordering'] = selected_ids_sorting.tolist()
-            return dict(coefficient_subselection=selected_features)
+            self.selected_ids['selected_features_global_ids'] = selected_feature_ids.tolist()
+            self.selected_ids['selected_features_global_ids_fps_ordering'] = selected_ids_sorting.tolist()
+            self.selected_ids = dict(coefficient_subselection=self.selected_ids)
+            return self.selected_ids
 
     def fit_transform(self, managers):
         return self.fit(managers).transform(managers)
