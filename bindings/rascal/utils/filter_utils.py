@@ -20,7 +20,8 @@ def get_index_mappings_sample_per_species(managers, sps):
                 counter[at.atom_type] += 1
                 global_counter[at.atom_type] += 1
             else:
-                raise ValueError('Atom type {} has not been specified in fselect: {}'.format(
+                raise ValueError(
+                    'Atom type {} has not been specified in fselect: {}'.format(
                     at.atom_type, sps))
         for sp in sps:
             strides_by_sp[sp].append(counter[sp])
@@ -53,7 +54,8 @@ def get_index_mappings_sample(managers):
     return strides, global_counter, map_by_manager
 
 
-def convert_selected_global_index2rascal_sample_per_species(managers, selected_ids_by_sp, strides_by_sp, map_by_manager, sps):
+def convert_selected_global_index2rascal_sample_per_species(managers, selected_ids_by_sp,
+                                strides_by_sp, map_by_manager, sps):
     # convert selected center indexing into the rascal format
     selected_ids = [[] for ii in range(len(managers))]
     for sp in sps:
@@ -66,7 +68,8 @@ def convert_selected_global_index2rascal_sample_per_species(managers, selected_i
     return selected_ids
 
 
-def convert_selected_global_index2rascal_sample(managers, selected_ids_global, strides, map_by_manager):
+def convert_selected_global_index2rascal_sample(managers, selected_ids_global,
+                                                        strides, map_by_manager):
     # convert selected center indexing into the rascal format
     selected_ids = [[] for ii in range(len(managers))]
     i_manager = 0
