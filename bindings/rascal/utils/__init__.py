@@ -1,7 +1,6 @@
 from .fps import fps, FPSFilter
 from ..lib._rascal.utils import ostream_redirect
 from ..lib import utils
-from .pool_worker import FactoryPool
 from copy import deepcopy
 from .io import (BaseIO, to_dict, from_dict, get_current_io_version,
                  get_supported_io_versions, dump_obj, load_obj)

@@ -3,7 +3,6 @@ import json
 
 from ..neighbourlist import AtomsList
 from .base import CalculatorFactory
-from ..utils import FactoryPool
 from itertools import starmap
 from ..utils import BaseIO
 
