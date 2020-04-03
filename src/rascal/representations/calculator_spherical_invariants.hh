@@ -253,7 +253,7 @@ namespace rascal {
     //! the coefficient_subselection input
     bool is_sparsified{false};
 
-    void set_hyperparameters(const Hypers_t & hypers) {
+    void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::SphericalInvariantsType;
 
       this->normalize = hypers.at("normalize").get<bool>();
