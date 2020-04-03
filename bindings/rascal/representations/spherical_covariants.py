@@ -136,12 +136,12 @@ class SphericalCovariants(BaseIO):
 
         Parameters
         ----------
-        frames : list(ase.Atoms)
+        frames : list(ase.Atoms) or AtomsList
             List of atomic structures.
 
         Returns
         -------
-
+           AtomsList : Object containing the representation
 
         """
         if not isinstance(frames, AtomsList):
