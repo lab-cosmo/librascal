@@ -1,9 +1,9 @@
 from ..utils import BaseIO
 from ..models import SparsePoints
 from ..utils.filter_utils import (get_index_mappings_sample_per_species,
-                           convert_selected_global_index2rascal_sample_per_species,
-                           get_index_mappings_sample,
-                           convert_selected_global_index2rascal_sample)
+                                  convert_selected_global_index2rascal_sample_per_species,
+                                  get_index_mappings_sample,
+                                  convert_selected_global_index2rascal_sample)
 
 import numpy as np
 from scipy.sparse.linalg import svds
@@ -73,7 +73,7 @@ class CURFilter(BaseIO):
     """
 
     def __init__(self, representation, Nselect, act_on='sample per species',
-                                                is_deterministic=True, seed=10):
+                 is_deterministic=True, seed=10):
         self._representation = representation
         self.Nselect = Nselect
         if act_on in ['sample', 'sample per species', 'feature']:
@@ -94,7 +94,6 @@ class CURFilter(BaseIO):
         self.selected_sample_ids_by_sp = None
         # for feature selection
         self.selected_feature_ids_global = None
-
 
     def fit(self, managers):
         """Perform CUR selection of samples/features.
@@ -142,14 +141,14 @@ class CURFilter(BaseIO):
             for sp in sps:
                 print('Selecting species: {}'.format(sp))
                 self.selected_sample_ids_by_sp[sp] = do_CUR(X_by_sp[sp], self.Nselect[sp], self.act_on,
-                                                        self.is_deterministic, self.seed)
+                                                            self.is_deterministic, self.seed)
 
         elif self.act_on in ['sample']:
             self.selected_sample_ids = do_CUR(X, self.Nselect, self.act_on,
-                                               self.is_deterministic, self.seed)
+                                              self.is_deterministic, self.seed)
         elif self.act_on in ['feature']:
             self.selected_feature_ids_global = do_CUR(X, self.Nselect, self.act_on,
-                                                        self.is_deterministic, self.seed)
+                                                      self.is_deterministic, self.seed)
         else:
             raise ValueError("method: {}".format(self.act_on))
 
@@ -178,7 +177,7 @@ class CURFilter(BaseIO):
             selected_ids_global = np.sort(self.selected_sample_ids[:n_select])
             strides, _, map_by_manager = get_index_mappings_sample(managers)
             self.selected_ids = convert_selected_global_index2rascal_sample(managers,
-                                                selected_ids_global, strides, map_by_manager)
+                                                                            selected_ids_global, strides, map_by_manager)
             return self.selected_ids
             # # build the pseudo points
             # pseudo_points = SparsePoints(self._representation)
@@ -190,31 +189,36 @@ class CURFilter(BaseIO):
                 managers)
             self.selected_ids = {key: []
                                  for key in feat_idx2coeff_idx[0].keys()}
-            selected_ids_sorting = np.argsort(self.selected_feature_ids_global[:n_select])
+            selected_ids_sorting = np.argsort(
+                self.selected_feature_ids_global[:n_select])
             selected_feature_ids = self.selected_feature_ids_global[selected_ids_sorting]
             for idx in selected_feature_ids:
                 coef_idx = feat_idx2coeff_idx[idx]
                 for key in self.selected_ids.keys():
                     self.selected_ids[key].append(int(coef_idx[key]))
             # keep the global indices and ordering for ease of use
-            self.selected_ids['selected_features_global_ids'] = selected_feature_ids.tolist()
-            self.selected_ids['selected_features_global_ids_fps_ordering'] = selected_ids_sorting.tolist()
+            self.selected_ids['selected_features_global_ids'] = selected_feature_ids.tolist(
+            )
+            self.selected_ids['selected_features_global_ids_fps_ordering'] = selected_ids_sorting.tolist(
+            )
             self.selected_ids = dict(coefficient_subselection=self.selected_ids)
             return self.selected_ids
 
     def fit_transform(self, managers):
         return self.fit(managers).transform(managers)
+
     def _get_data(self):
         return dict(selected_ids=self.selected_ids,
                     selected_sample_ids=self.selected_sample_ids,
                     selected_sample_ids_by_sp=self.selected_sample_ids_by_sp,
-                   selected_feature_ids_global=self.selected_feature_ids_global)
+                    selected_feature_ids_global=self.selected_feature_ids_global)
 
     def _set_data(self, data):
         self.selected_ids = data['selected_ids']
         self.selected_sample_ids = data['selected_sample_ids']
         self.selected_sample_ids_by_sp = data['selected_sample_ids_by_sp']
         self.selected_feature_ids_global = data['selected_feature_ids_global']
+
     def _get_init_params(self):
         return dict(representation=self._representation,
                     Nselect=self.Nselect,

@@ -115,7 +115,7 @@ class FPSFilter(BaseIO):
     """
 
     def __init__(self, representation, Nselect, act_on='sample per species',
-                                                starting_index=0):
+                 starting_index=0):
         self._representation = representation
         self.Nselect = Nselect
         self.starting_index = starting_index
@@ -222,10 +222,10 @@ class FPSFilter(BaseIO):
             selected_ids_global = np.sort(self.selected_sample_ids[:n_select])
             strides, _, map_by_manager = get_index_mappings_sample(managers)
             self.selected_ids = convert_selected_global_index2rascal_sample(managers,
-                                        selected_ids_global, strides, map_by_manager)
+                                                                            selected_ids_global, strides, map_by_manager)
             return self.selected_ids
-            ## SparsePoints is not compatible with a non center atom species
-            ## dependant sparse points
+            # SparsePoints is not compatible with a non center atom species
+            # dependant sparse points
             # # build the pseudo points
             # pseudo_points = SparsePoints(self._representation)
             # pseudo_points.extend(managers, self.selected_ids)
@@ -236,15 +236,18 @@ class FPSFilter(BaseIO):
                 managers)
             self.selected_ids = {key: []
                                  for key in feat_idx2coeff_idx[0].keys()}
-            selected_ids_sorting = np.argsort(self.selected_feature_ids_global[:n_select])
+            selected_ids_sorting = np.argsort(
+                self.selected_feature_ids_global[:n_select])
             selected_feature_ids = self.selected_feature_ids_global[selected_ids_sorting]
             for idx in selected_feature_ids:
                 coef_idx = feat_idx2coeff_idx[idx]
                 for key in self.selected_ids.keys():
                     self.selected_ids[key].append(int(coef_idx[key]))
             # keep the global indices and ordering for ease of use
-            self.selected_ids['selected_features_global_ids'] = selected_feature_ids.tolist()
-            self.selected_ids['selected_features_global_ids_fps_ordering'] = selected_ids_sorting.tolist()
+            self.selected_ids['selected_features_global_ids'] = selected_feature_ids.tolist(
+            )
+            self.selected_ids['selected_features_global_ids_fps_ordering'] = selected_ids_sorting.tolist(
+            )
             self.selected_ids = dict(coefficient_subselection=self.selected_ids)
             return self.selected_ids
 
@@ -268,7 +271,7 @@ class FPSFilter(BaseIO):
         return dict(selected_ids=self.selected_ids,
                     selected_sample_ids=self.selected_sample_ids,
                     selected_sample_ids_by_sp=self.selected_sample_ids_by_sp,
-                   selected_feature_ids_global=self.selected_feature_ids_global)
+                    selected_feature_ids_global=self.selected_feature_ids_global)
 
     def _set_data(self, data):
         self.selected_ids = data['selected_ids']

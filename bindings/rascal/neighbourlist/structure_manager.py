@@ -81,7 +81,7 @@ class AtomsList(object):
         selected_ids = list(map(int, selected_ids))
         new_managers = self.managers.get_subset(selected_ids)
         new_atom_list = AtomsList([self._frames[idx] for idx in selected_ids],
-                                    self.nl_options, managers=new_managers)
+                                  self.nl_options, managers=new_managers)
         return new_atom_list
 
     def get_features(self, calculator, species=None):

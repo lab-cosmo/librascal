@@ -636,8 +636,10 @@ namespace rascal {
 
     // bind manager splitter
 
-    manager_collection.def("get_subset", py::overload_cast<const std::vector<int>& >(
-                   &ManagerCollection_t::template get_subset<int>),
+    manager_collection.def(
+        "get_subset",
+        py::overload_cast<const std::vector<int> &>(
+            &ManagerCollection_t::template get_subset<int>),
         R"(Build a new collection containing a subset of the structure managers
               selected by selected_ids.)");
 
