@@ -1895,7 +1895,7 @@ namespace rascal {
         // (the periodic images move with the center, so their contribution to
         // the center gradient is zero)
         if (compute_gradients and (atom_j_tag != atom_i_tag)) {  // NOLINT
-          // \grad_i c^j
+          // \grad_j c^i
           auto & coefficients_neigh_gradient =
               expansions_coefficients_gradient[neigh];
 
@@ -1909,9 +1909,9 @@ namespace rascal {
           // grad_i c^{ib}
           auto && gradient_center_by_type{
               coefficients_center_gradient[neigh_type]};
-          // grad_i c^{ja}
+          // grad_j c^{ib}
           auto && gradient_neigh_by_type{
-              coefficients_neigh_gradient[center_type]};
+              coefficients_neigh_gradient[neigh_type]};
 
           // clang-format off
           // d/dr_{ij} (c_{ij} f_c{r_{ij}})
@@ -1924,19 +1924,10 @@ namespace rascal {
           for (int cartesian_idx{0}; cartesian_idx < ThreeD;
                  ++cartesian_idx) {
             l_block_idx = 0;
-            double parity{-1.};  // account for (-1)^{l+1}
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                 ++angular_l) {
               size_t l_block_size{2 * angular_l + 1};
               pair_gradient_contribution.resize(this->max_radial, l_block_size);
-              /*
-               pair_gradient_contribution_p1.col(angular_l)
-                * harmonics.segment(l_block_idx, l_block_size)
-               should be precomputed like pair_gradient_contribution_p1
-
-               the memory layout of pair_gradient_contribution_p1.col(angular_l)
-               is not the best one considering the access.
-               */
               pair_gradient_contribution =
                 pair_gradient_contribution_p1.col(angular_l)
                 * harmonics.segment(l_block_idx, l_block_size)
@@ -1949,23 +1940,21 @@ namespace rascal {
 
               // Each Cartesian gradient component occupies a contiguous block
               // (row-major storage)
-              // grad_i c^{ib} = - \sum_{j} grad_j c^{ij}
+              // grad_i c^{ib} = - \sum_{j} grad_j c^{ijb}
               gradient_center_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
                   max_radial, l_block_size) -= pair_gradient_contribution;
-              // grad_i c^{ja} = (-1)^{l+1} grad_j c^{ij}
+              // grad_j c^{ib} =  grad_j c^{ijb}
               gradient_neigh_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
-                  max_radial, l_block_size) = parity *
-                    pair_gradient_contribution;
+                  max_radial, l_block_size) = pair_gradient_contribution;
               l_block_idx += l_block_size;
-              parity *= -1.;
               // clang-format on
             }  // for (angular_l)
           }    // for cartesian_idx
 
           // half list branch for accumulating parts of grad_j c^{j} using
-          // grad_j c^{ji a} = - grad_i c^{ji a}
+          // grad_j c^{ji a} = (-1)^l grad_j c^{ij b}
           if (IsHalfNL) {
             if (is_center_atom) {
               // grad_j c^{j}
@@ -1975,9 +1964,28 @@ namespace rascal {
               auto gradient_neigh_center_by_type =
                   coefficients_neigh_center_gradient[center_type];
 
-              gradient_neigh_center_by_type -= gradient_neigh_by_type;
-            }  // if (is_center_atom)
-          }    // if (IsHalfNL)
+              for (int cartesian_idx{0}; cartesian_idx < ThreeD;
+                    ++cartesian_idx) {
+                l_block_idx = 0;
+                double parity{1};
+                for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+                    ++angular_l) {
+                  size_t l_block_size{2 * angular_l + 1};
+                  // clang-format off
+                  gradient_neigh_center_by_type.block(
+                      cartesian_idx * max_radial, l_block_idx,
+                      max_radial, l_block_size) += parity *
+                                  gradient_neigh_by_type.block(
+                                    cartesian_idx * max_radial, l_block_idx,
+                                    max_radial, l_block_size);
+
+                  l_block_idx += l_block_size;
+                  parity *= -1.;
+                  // clang-format on
+                }  // for (angular_l)
+              }    // for cartesian_idx
+            }      // if (is_center_atom)
+          }        // if (IsHalfNL)
         }      // if (compute_gradients)
       }        // for (neigh : center)
 
@@ -1988,9 +1996,9 @@ namespace rascal {
       // of these terms.
       if (not IsHalfNL) {
         if (compute_gradients) {
-          // sum of d/dr_{i} C^{ji}_{nlm} when center j has several periodic
+          // sum of d/dr_{j} C^{ij b}_{nlm} when center j has several periodic
           // images of center i in its environment
-          auto di_c_ji_sum = math::Matrix_t(n_row, n_col);
+          auto dj_c_ij_sum = math::Matrix_t(n_row, n_col);
 
           std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
               periodic_images_of_center =
@@ -2004,13 +2012,16 @@ namespace rascal {
             Key_t key{
                 expansions_coefficients_gradient[p_images.at(0)].get_keys().at(
                     0)};
-            di_c_ji_sum = expansions_coefficients_gradient[p_images[0]][key];
+            // initialize the sum with the first element
+            dj_c_ij_sum = expansions_coefficients_gradient[p_images[0]][key];
+            // accumulate the rest of the sum
             for (auto image_it = p_images.begin() + 1, im_e = p_images.end();
                  image_it != im_e; ++image_it) {
-              di_c_ji_sum += expansions_coefficients_gradient[*image_it][key];
+              dj_c_ij_sum += expansions_coefficients_gradient[*image_it][key];
             }
+            // assign the sum to all the corresponding gradient entries
             for (const auto & p_image : el.second) {
-              expansions_coefficients_gradient[p_image][key] = di_c_ji_sum;
+              expansions_coefficients_gradient[p_image][key] = dj_c_ij_sum;
             }
           }  // end of periodic images business
         }    // if (compute_gradients)
