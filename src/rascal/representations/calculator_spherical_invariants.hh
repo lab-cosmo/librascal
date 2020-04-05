@@ -912,8 +912,7 @@ namespace rascal {
     }      // for center : manager
 
     if (this->normalize and this->compute_gradients) {
-      const size_t grad_component_size{this->shape[0] *
-                                       (this->max_angular + 1)};
+      const size_t grad_component_size{this->shape[0] * this->shape[1]};
       this->update_gradients_for_normalization(
           soap_vectors, soap_vector_gradients, manager, soap_vector_norm_inv,
           grad_component_size);
