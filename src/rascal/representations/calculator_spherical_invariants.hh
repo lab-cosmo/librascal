@@ -556,14 +556,14 @@ namespace rascal {
         std::shared_ptr<StructureManager> manager);
 
     /**
-     * Update the gradients \grad_i p^{k} to include normalization, N_i,
-     * resulting in \grad_i \tilde{p}^{k}.
+     * Update the gradients \grad_k p^{i} to include normalization, N_i,
+     * resulting in \grad_k \tilde{p}^{i}.
      * We have:
-     * \grad_i \tilde{p}^{k} = \grad_i p^{k} / N_k
-             - \tilde{p}^{k} [\tilde{p}^{k} \cdot \grad_i p^{k} / N_k],
+     * \grad_k \tilde{p}^{i} = \grad_k p^{i} / N_i
+             - \tilde{p}^{i} [\tilde{p}^{i} \cdot \grad_k p^{i} / N_i],
      * where $\cdot$ is a dot product between vectors.
      * Note that this expects the soap vectors to be normalized already, and
-     * the norm stored separately
+     * the norm stored separately.
      */
     template <class StructureManager, class SpectrumNorm>
     void update_gradients_for_normalization(
@@ -577,26 +577,24 @@ namespace rascal {
       // divide all gradients with the normalization factor N_i
       for (auto center : manager) {
         for (auto neigh : center.pairs_with_self_pair()) {
-          auto atom_j = neigh.get_atom_j();
-          soap_vector_gradients[neigh].multiply_elements_by(inv_norms[atom_j]);
+          soap_vector_gradients[neigh].multiply_elements_by(inv_norms[center]);
         }
       }
 
-      // \tilde{p}^{k} \cdot \grad_i p^{k} / N_k
+      // \tilde{p}^{i} \cdot \grad_k p^{i} / N_i
       Eigen::Vector3d soap_vector_dot_gradient{};
 
       // compute the dot product and update the gradients to be normalized
       for (auto center : manager) {
         for (auto neigh : center.pairs_with_self_pair()) {
-          auto atom_j = neigh.get_atom_j();
-          const auto & soap_vector = soap_vectors[atom_j];
+          const auto & soap_vector = soap_vectors[center];
           auto & soap_vector_gradients_by_neigh = soap_vector_gradients[neigh];
           soap_vector_dot_gradient.setZero();
           // make sure to iterate over keys that are present in both soap_vector
           // and soap_vector_gradients_by_neigh
           const auto keys_grad = soap_vector_gradients_by_neigh.get_keys();
           const auto keys_intersect = soap_vector.intersection(keys_grad);
-          // compute \tilde{p}^{k} \cdot \grad_i p^{k} / N_k
+          // compute \tilde{p}^{i} \cdot \grad_k p^{i} / N_i
           for (const auto & key : keys_intersect) {
             auto soap_gradient_by_species_pair =
                 soap_vector_gradients_by_neigh[key];
@@ -623,7 +621,7 @@ namespace rascal {
                 grad_component_size);
             ConstMapSoapFlat_t soap_vector_N(soap_vector_by_species_pair.data(),
                                              grad_component_size);
-            // compute \tilde{p}^{k} [\tilde{p}^{k} \cdot \grad_i p^{k} / N_k]
+            // compute \tilde{p}^{i} [\tilde{p}^{i} \cdot \grad_k p^{i} / N_i]
             // as an outer product
             soap_gradient_dim_N -=
                 soap_vector_dot_gradient * soap_vector_N.transpose();
