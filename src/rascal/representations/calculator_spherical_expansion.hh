@@ -1965,11 +1965,11 @@ namespace rascal {
                   coefficients_neigh_center_gradient[center_type];
 
               for (int cartesian_idx{0}; cartesian_idx < ThreeD;
-                    ++cartesian_idx) {
+                   ++cartesian_idx) {
                 l_block_idx = 0;
                 double parity{1};
                 for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-                    ++angular_l) {
+                     ++angular_l) {
                   size_t l_block_size{2 * angular_l + 1};
                   // clang-format off
                   gradient_neigh_center_by_type.block(
@@ -1986,8 +1986,8 @@ namespace rascal {
               }    // for cartesian_idx
             }      // if (is_center_atom)
           }        // if (IsHalfNL)
-        }      // if (compute_gradients)
-      }        // for (neigh : center)
+        }          // if (compute_gradients)
+      }            // for (neigh : center)
 
       // In the case of having several periodic images of other centers in
       // the environment of center i, we need to sum up
