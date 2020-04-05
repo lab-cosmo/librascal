@@ -427,7 +427,9 @@ namespace rascal {
         "reference_data/inputs/SiC_moissanite.json",
         "reference_data/inputs/SiCGe_wurtzite_like.json",
         "reference_data/inputs/SiC_moissanite_supercell.json",
-        "reference_data/inputs/methane.json"};
+        "reference_data/inputs/methane.json",
+        "reference_data/inputs/small_molecule.json",
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
 
     const double cutoff{2.5};
     const double cutoff_skin{0.};
@@ -975,8 +977,7 @@ namespace rascal {
         // We need grad_i c^{j} -- using just 'neigh' would give us
         // grad_j c^{i}, hence the swap
         auto neigh_swap{swap_pair_ref(neigh)};
-        auto & gradients_neigh{
-            gradients_sparse[neigh_swap]};
+        auto & gradients_neigh{gradients_sparse[neigh_swap]};
         // The set of species keys should be the same for all images of i
         auto keys_neigh{gradients_neigh.get_keys()};
         for (auto & key : keys_neigh) {
@@ -1014,7 +1015,8 @@ namespace rascal {
     PairRefKey_t swap_pair_ref(const PairRef_t & pair_ref) {
       // Get iterable atom_j from pair_ref
       auto && atom_j_tag = pair_ref.get_internal_neighbour_atom_tag();
-      auto && atom_j_index = this->structure_manager->get_atom_index(atom_j_tag);
+      auto && atom_j_index =
+          this->structure_manager->get_atom_index(atom_j_tag);
       auto atom_j_it = this->structure_manager->get_iterator_at(atom_j_index);
       auto && atom_j{*atom_j_it};
       // get the index of the center atom
@@ -1025,7 +1027,8 @@ namespace rascal {
       for (auto new_pair : atom_j.pairs()) {
         // make sure new_pair refers to atom within the unit cell
         if (not this->structure_manager->is_ghost_atom(new_pair)) {
-          size_t i_trial_index{this->structure_manager->get_atom_index(new_pair.get_internal_neighbour_atom_tag())};
+          size_t i_trial_index{this->structure_manager->get_atom_index(
+              new_pair.get_internal_neighbour_atom_tag())};
           // Is this the i (old center) atom ?
           if (i_trial_index == i_index) {
             pairs_ji.emplace_back(std::move(new_pair));
@@ -1040,9 +1043,10 @@ namespace rascal {
         throw std::range_error(err_str.str());
       } else if (pairs_ji.size() > 1) {
         std::stringstream err_str{};
-        err_str << "Found more than one (j,i) pair within the unit cell for pair"
-                << " (i=" << pair_ref.front() << ", j=" << pair_ref.back()
-                << "); access index for j = " << atom_j_tag;
+        err_str
+            << "Found more than one (j,i) pair within the unit cell for pair"
+            << " (i=" << pair_ref.front() << ", j=" << pair_ref.back()
+            << "); access index for j = " << atom_j_tag;
         throw std::range_error(err_str.str());
       }
       return pairs_ji.front();
