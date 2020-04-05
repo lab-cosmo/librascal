@@ -611,7 +611,8 @@ namespace rascal {
 
           // Now update each species-pair-block using the dot-product just
           // computed
-          for (const auto & key : keys_intersect) {
+          // for (const auto & key : keys_intersect) {
+          for (const auto & key : soap_vector.get_keys()) {
             auto soap_gradient_by_species_pair =
                 soap_vector_gradients_by_neigh[key];
             const auto & soap_vector_by_species_pair = soap_vector[key];
@@ -1353,7 +1354,8 @@ namespace rascal {
                 }
               }
             }
-            keys_list_grad.emplace_back(grad_pair_list);
+            // keys_list_grad.emplace_back(grad_pair_list);
+            keys_list_grad.emplace_back(pair_list);
           }  // auto neigh : center.pairs()
         }    // if compute_gradients
 
