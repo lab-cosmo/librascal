@@ -10,6 +10,7 @@ BETA_VERSION = '0.1'
 
 CURRENT_VERSION = BETA_VERSION
 
+MAX_RECURSION_DEPTH = 20
 
 def dump_obj(fn, instance, version=CURRENT_VERSION):
     """Save a python object that inherits from the BaseIO class
@@ -242,11 +243,18 @@ def _get_state(obj):
     return state
 
 
-def to_dict(obj, version=CURRENT_VERSION):
+def to_dict(obj, version=CURRENT_VERSION, recursion_depth=0):
     """Recursively serialize to dict via the BaseIO interface.
 
     obj has to inherit from BaseIO."""
-
+    if recursion_depth >= MAX_RECURSION_DEPTH:
+        raise ValueError(
+          "The object to be serialized to dict contains more than {}".format(MAX_RECURSION_DEPTH)
+         + " levels of nested objects suggesting there is a circular reference."
+         + " Objects containing a reference to themselves are not supported.")
+    else:
+        recursion_depth += 1
+        
     state = _get_state(obj)
 
     # loop over the 2 fields of state
@@ -255,13 +263,13 @@ def to_dict(obj, version=CURRENT_VERSION):
             # case of potentially nested objects
             for k, v in entry.items():
                 if isinstance(v, BaseIO) is True:
-                    state[name][k] = to_dict(v, version)
+                    state[name][k] = to_dict(v, version, recursion_depth)
                 elif isinstance(v, list):
                     # make sure list of objects are properly serialized
                     ll = []
                     for val in v:
                         if isinstance(val, BaseIO) is True:
-                            ll.append(to_dict(val, version))
+                            ll.append(to_dict(val, version, recursion_depth))
                         else:
                             ll.append(val)
                     state[name][k] = ll
