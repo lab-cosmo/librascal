@@ -73,7 +73,6 @@ option(BUILD_PROFILING "Build the files for profiling" OFF)
 option(BUILD_TESTS "Build the unit tests" OFF)
 option(BUILD_DOC "Build documentation" OFF)
 option(BUILD_SANDBOX "If on, builds the sandbox" OFF)
-option(USER "Switch installation folder" OFF)
 
 set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
 
@@ -142,47 +141,48 @@ if(BUILD_BINDINGS)
 
   add_external_package(pybind11 VERSION 2.3.0 CONFIG)
 
-   # Get where python site-packages is
-  if(NOT USER)
-    execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "from distutils.sysconfig import \
-                      get_python_lib; print(get_python_lib())"
-      OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
-      )
-  else()
-    # Get where python local site-packages is
-    execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "import site; \
-                      print(site.USER_SITE)"
-      OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
-      )
-  endif()
+
+  execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "from distutils.sysconfig import \
+                    get_python_lib; print(get_python_lib())"
+    OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
 
   execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "import sys; \
                     print(sys.prefix)"
     OUTPUT_VARIABLE PACKAGE_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+  )
 endif()
 
 # figure out where to install the library
 if(NOT "${INSTALL_PATH}" STREQUAL "")
   set(CMAKE_INSTALL_PREFIX "${INSTALL_PATH}")
-elseif(NOT BUILD_BINDINGS AND NOT USER)
+elseif(NOT BUILD_BINDINGS)
   set(CMAKE_INSTALL_PREFIX "/usr")
   message(STATUS "INSTALLATION REQUIRES SUDO RIGHTS")
-elseif(NOT BUILD_BINDINGS AND USER)
-  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local")
-elseif(BUILD_BINDINGS AND NOT USER)
+elseif(BUILD_BINDINGS)
   set(CMAKE_INSTALL_PREFIX "${PACKAGE_PREFIX}")
-elseif(BUILD_BINDINGS AND USER)
-  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local")
 endif()
 
 message(STATUS "Installation ROOT: ${CMAKE_INSTALL_PREFIX}")
 
-# Always use full RPATH
+if(SKBUILD)
+  # make sure we know when installing with setup.py (potentially for using with
+  # pip)
+  message(STATUS "The project is built using scikit-build")
+endif()
+
+# relative RPATH so that _rascal.so can find librascal.so when installed.
+# see link for more details on the topic
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+if(NOT APPLE AND UNIX)
+  set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../../../")
+elseif(APPLE)
+  set(MACOSX_RPATH ON)
+  set(CMAKE_INSTALL_RPATH "@loader_path/../../../../")
+endif()
 
 add_subdirectory(src)
 

@@ -36,13 +36,8 @@ set(BINDING_SRCS
     bind_py_models.cc
 )
 
-# copy rascal folder in the python distribution
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal" DESTINATION "${PYTHON_SITE_PACKAGES}"
-    PATTERN "*__pycache__" EXCLUDE
-    PATTERN "*.pyc" EXCLUDE
-    PATTERN "*.so" EXCLUDE
-    PATTERN "*.dylib" EXCLUDE
-)
+
+
 
 # builds the python bindings (must be after setting up the rpath)
 # SYSTEM: use include_directory(SYSTEM)
@@ -55,7 +50,16 @@ target_link_libraries(_rascal PRIVATE "${LIBRASCAL_NAME}")
 # Remove the 'lib' prefix, so that the python module is called _rascal
 set_target_properties(_rascal PROPERTIES PREFIX "")
 # Sets rule to install the bindings library in the rascal folder
-install(TARGETS _rascal DESTINATION "${PYTHON_SITE_PACKAGES}/rascal/lib")
+
+# Normal installation procedure
+# copy rascal folder in the python distribution
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal" DESTINATION "${CMAKE_INSTALL_PREFIX}/bindings"
+    PATTERN "*__pycache__" EXCLUDE
+    PATTERN "*.pyc" EXCLUDE
+    PATTERN "*.so" EXCLUDE
+    PATTERN "*.dylib" EXCLUDE
+)
+install(TARGETS _rascal DESTINATION "${CMAKE_INSTALL_PREFIX}/bindings/rascal/lib")
 
 # Copy the python wrappers in the build folder
 # Copy the resulting bindings lib in the python wrapper lib folder

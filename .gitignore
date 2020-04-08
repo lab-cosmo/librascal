@@ -8,6 +8,9 @@ docs/_build
 *__pycache__
 *_rascal.*
 *.pyc
+_skbuild
+dist
+MANIFEST
 
 # Prerequisites
 *.d
