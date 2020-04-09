@@ -269,20 +269,21 @@ namespace rascal {
       using type = typename InjectTypeHolderHelper<Collection, T...>::type;
     };
   }  // namespace detail
-     /**
-      * Utility class holding the fully typed Collection class in type member
-      *
-      * @tparam Collection a class templated by a structure manager and a list
-      * of adaptors
-      *
-      * @tparam StructureManagerTypeHolder_ a
-      *                  StructureManagerTypeHolder::type_list
-      *
-      * This utility does not help directly for templated function,
-      * so to handle this case the function should inserted in a functor.
-      * C++17 would allow to avoid the functor
-      * see https://stackoverflow.com/a/49291186/11609484.
-      */
+
+  /**
+   * Utility class holding the fully typed Collection class in type member
+   *
+   * @tparam Collection a class templated by a structure manager and a list
+   * of adaptors
+   *
+   * @tparam StructureManagerTypeHolder_ a
+   *                  StructureManagerTypeHolder::type_list
+   *
+   * This utility does not help directly for templated function,
+   * so to handle this case the function should inserted in a functor.
+   * C++17 would allow to avoid the functor
+   * see https://stackoverflow.com/a/49291186/11609484.
+   */
   template <template <typename Manager,
                       template <class> class... AdaptorImplementation>
             class Collection,
