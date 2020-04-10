@@ -1,4 +1,4 @@
-from .fps import fps
+from .fps import fps, FPSFilter
 from ..lib._rascal.utils import ostream_redirect
 from ..lib import utils
 from .pool_worker import FactoryPool
