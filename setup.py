@@ -24,5 +24,6 @@ atomic structures for machine learning.""",
     ],
     package_dir={"": "bindings"},
     packages=find_packages(where='bindings'),
-    install_requires=requirements
+    install_requires=requirements,
+    zip_safe=False
 )
