@@ -194,6 +194,7 @@ class CURFilter(BaseIO):
         return data
 
     def _set_data(self, data):
+        super()._set_data(data)
         self.selected_ids = data['selected_ids']
 
     def _get_init_params(self):

@@ -58,6 +58,7 @@ class SparsePoints(BaseIO):
         return init_params
 
     def _set_data(self, data):
+        super()._set_data(data)
         self._sparse_points = self._sparse_points.from_dict(
             data['sparse_points'])
 
