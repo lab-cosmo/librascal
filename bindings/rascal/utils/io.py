@@ -254,7 +254,7 @@ def to_dict(obj, version=CURRENT_VERSION, recursion_depth=0):
          + " Objects containing a reference to themselves are not supported.")
     else:
         recursion_depth += 1
-        
+
     state = _get_state(obj)
 
     # loop over the 2 fields of state
@@ -340,7 +340,8 @@ def from_file(fn):
             return from_dict(data)
         else:
             raise RuntimeError(
-                'The file: {}; does not contain a valid dictionary representation of an object.'.format(fn))
+                'The file: {}; does not contain a valid dictionary'
+                + ' representation of an object.'.format(fn))
 
     else:
         raise NotImplementedError(
