@@ -117,7 +117,7 @@ class Kernel(BaseIO):
         pass
 
     def _get_data(self):
-        return dict()
+        return super()._get_data()
 
     def __call__(self, X, Y=None, grad=(False, False)):
         if isinstance(X, AtomsList):

@@ -256,4 +256,4 @@ class SphericalExpansion(BaseIO):
         pass
 
     def _get_data(self):
-        return dict()
+        return super()._get_data()

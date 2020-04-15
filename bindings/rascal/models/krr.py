@@ -93,7 +93,7 @@ class KRR(BaseIO):
         pass
 
     def _get_data(self):
-        return dict()
+        return super()._get_data()
 
     def get_representation_calculator(self):
         return self.kernel._rep

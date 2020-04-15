@@ -62,7 +62,9 @@ class SparsePoints(BaseIO):
             data['sparse_points'])
 
     def _get_data(self):
-        return dict(sparse_points=self._sparse_points.to_dict())
+        data = super()._get_data()
+        data.update(sparse_points=self._sparse_points.to_dict())
+        return data
 
     def extend(self, atoms_list, selected_indices):
         if isinstance(atoms_list, AtomsList):
