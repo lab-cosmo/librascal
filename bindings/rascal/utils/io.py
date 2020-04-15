@@ -340,8 +340,8 @@ def from_file(fn):
             return from_dict(data)
         else:
             raise RuntimeError(
-                'The file: {}; does not contain a valid dictionary'
-                + ' representation of an object.'.format(fn))
+                'The file: {}; does not contain a valid dictionary'.format(fn)
+                + ' representation of an object.')
 
     else:
         raise NotImplementedError(
