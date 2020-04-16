@@ -93,6 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../SOAP.html">SOAP Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../representation/representations.html">Representations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../models/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io/io.html">Saving and Loading in Librascal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../neighbour_list/neighbour-list-manager.html">Neighbour List Manager</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../dev_guide/developer.html">Developer’s guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API reference</a></li>
@@ -167,9 +168,10 @@
 <span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">CalculatorFactory</span>
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">FactoryPool</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">starmap</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">BaseIO</span>
 
 
-<div class="viewcode-block" id="SortedCoulombMatrix"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SortedCoulombMatrix">[docs]</a><span class="k">class</span> <span class="nc">SortedCoulombMatrix</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SortedCoulombMatrix"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SortedCoulombMatrix">[docs]</a><span class="k">class</span> <span class="nc">SortedCoulombMatrix</span><span class="p">(</span><span class="n">BaseIO</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the Sorted Coulomb matrix representation [1].</span>
 
@@ -200,8 +202,8 @@
 <span class="sd">        Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">sorting_algorithm</span><span class="o">=</span><span class="s1">&#39;row_norm&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">central_decay</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">interaction_cutoff</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">interaction_decay</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-                 <span class="n">method</span><span class="o">=</span><span class="s1">&#39;thread&#39;</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">disable_pbar</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">sorting_algorithm</span><span class="o">=</span><span class="s1">&#39;row_norm&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">central_decay</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">interaction_cutoff</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">interaction_decay</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;sortedcoulomb&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -219,8 +221,6 @@
             <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;neighbourlist&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">)),</span>
             <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;strict&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">))</span>
         <span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">misc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">n_workers</span><span class="o">=</span><span class="n">n_workers</span><span class="p">,</span>
-                         <span class="n">disable_pbar</span><span class="o">=</span><span class="n">disable_pbar</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SortedCoulombMatrix.update_hyperparameters"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SortedCoulombMatrix.update_hyperparameters">[docs]</a>    <span class="k">def</span> <span class="nf">update_hyperparameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">hypers</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Store the given dict of hyperparameters</span>
@@ -253,8 +253,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_size</span><span class="p">(</span><span class="n">frames</span><span class="o">.</span><span class="n">managers</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_hyperparameters</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="n">hypers_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rep_options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">hypers_str</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rep_options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_representation</span> <span class="o">=</span> <span class="n">CalculatorFactory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rep_options</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_representation</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">frames</span><span class="o">.</span><span class="n">managers</span><span class="p">)</span>
@@ -270,7 +269,24 @@
             <span class="k">for</span> <span class="n">center</span> <span class="ow">in</span> <span class="n">manager</span><span class="p">:</span>
                 <span class="n">Nneigh</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">center</span><span class="o">.</span><span class="n">nb_pairs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">Nneigh</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">size</span></div>
+        <span class="k">return</span> <span class="n">size</span>
+
+    <span class="k">def</span> <span class="nf">_get_init_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">init_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">cutoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;central_cutoff&#39;</span><span class="p">],</span>
+            <span class="n">sorting_algorithm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;sorting_algorithm&#39;</span><span class="p">],</span>
+            <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">],</span>
+            <span class="n">central_decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;central_decay&#39;</span><span class="p">],</span>
+            <span class="n">interaction_cutoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;interaction_cutoff&#39;</span><span class="p">],</span>
+            <span class="n">interaction_decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;interaction_decay&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">init_params</span>
+
+    <span class="k">def</span> <span class="nf">_set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_set_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_get_data</span><span class="p">()</span></div>
 </pre></div>
 
            </div>

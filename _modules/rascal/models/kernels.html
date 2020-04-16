@@ -93,6 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../SOAP.html">SOAP Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../representation/representations.html">Representations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../models/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io/io.html">Saving and Loading in Librascal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../neighbour_list/neighbour-list-manager.html">Neighbour List Manager</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../dev_guide/developer.html">Developer’s guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API reference</a></li>
@@ -164,10 +165,11 @@
 <span class="kn">from</span> <span class="nn">..lib._rascal.models.kernels</span> <span class="k">import</span> <span class="n">SparseKernel</span> <span class="k">as</span> <span class="n">SparseKernelcpp</span>
 <span class="kn">from</span> <span class="nn">..neighbourlist</span> <span class="k">import</span> <span class="n">AtomsList</span>
 <span class="kn">from</span> <span class="nn">.sparse_points</span> <span class="k">import</span> <span class="n">SparsePoints</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">BaseIO</span>
 <span class="kn">import</span> <span class="nn">json</span>
 
 
-<div class="viewcode-block" id="Kernel"><a class="viewcode-back" href="../../../reference/python.html#rascal.models.Kernel">[docs]</a><span class="k">class</span> <span class="nc">Kernel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Kernel"><a class="viewcode-back" href="../../../reference/python.html#rascal.models.Kernel">[docs]</a><span class="k">class</span> <span class="nc">Kernel</span><span class="p">(</span><span class="n">BaseIO</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the kernel for a given representation. In the following</span>
@@ -234,9 +236,8 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">representation</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Cosine&#39;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s1">&#39;Full&#39;</span><span class="p">,</span> <span class="n">target_type</span><span class="o">=</span><span class="s1">&#39;Structure&#39;</span><span class="p">,</span>
-                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">representation</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Cosine&#39;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s1">&#39;Full&#39;</span><span class="p">,</span>
+                 <span class="n">target_type</span><span class="o">=</span><span class="s1">&#39;Structure&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># This case cannot be handled by the c++ side because c++ cannot deduce the</span>
         <span class="c1"># type from arguments inside a json, so it has to be casted in the c++</span>
         <span class="c1"># side. Therefore zeta has to be checked here.</span>
@@ -256,7 +257,6 @@
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Kernel name must be one of: Cosine, GAP.&quot;</span><span class="p">)</span>
         <span class="n">hypers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">target_type</span><span class="o">=</span><span class="n">target_type</span><span class="p">)</span>
         <span class="n">hypers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">hypers_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">hypers</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span> <span class="o">=</span> <span class="n">representation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_representation</span> <span class="o">=</span> <span class="n">representation</span><span class="o">.</span><span class="n">_representation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
@@ -264,9 +264,23 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">kernel_type</span> <span class="o">=</span> <span class="n">kernel_type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target_type</span> <span class="o">=</span> <span class="n">target_type</span>
         <span class="k">if</span> <span class="s1">&#39;Sparse&#39;</span> <span class="ow">in</span> <span class="n">kernel_type</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="n">SparseKernelcpp</span><span class="p">(</span><span class="n">hypers_str</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="n">SparseKernelcpp</span><span class="p">(</span><span class="n">hypers</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="n">Kernelcpp</span><span class="p">(</span><span class="n">hypers_str</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span> <span class="o">=</span> <span class="n">Kernelcpp</span><span class="p">(</span><span class="n">hypers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_init_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">init_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">representation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="p">,</span>
+                           <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                           <span class="n">kernel_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_type</span><span class="p">,</span>
+                           <span class="n">target_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">target_type</span><span class="p">)</span>
+        <span class="n">init_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">init_params</span>
+
+    <span class="k">def</span> <span class="nf">_set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_set_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_get_data</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Kernel.__call__"><a class="viewcode-back" href="../../../reference/python.html#rascal.models.Kernel.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">)):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">AtomsList</span><span class="p">):</span>
@@ -295,8 +309,9 @@
                 <span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">_sparse_points</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_representation</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;The configuration: </span><span class="si">{}</span><span class="s1"> is not implemented for kernel </span><span class="si">{}</span><span class="s1"> in </span><span class="si">{}</span><span class="s1"> mode.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_type</span><span class="p">))</span></div></div>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s1">&#39;The configuration: </span><span class="si">{}</span><span class="s1"> is not implemented for kernel </span><span class="si">{}</span><span class="s1"> in </span><span class="si">{}</span><span class="s1"> mode.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_type</span><span class="p">))</span></div></div>
 </pre></div>
 
            </div>

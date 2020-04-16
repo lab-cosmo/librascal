@@ -93,6 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../SOAP.html">SOAP Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../representation/representations.html">Representations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../models/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io/io.html">Saving and Loading in Librascal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../neighbour_list/neighbour-list-manager.html">Neighbour List Manager</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../dev_guide/developer.html">Developer’s guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API reference</a></li>
@@ -404,9 +405,9 @@
     <span class="k">if</span> <span class="s1">&#39;center_atoms_mask&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
         <span class="c1"># add a default mask</span>
         <span class="k">if</span> <span class="n">id_select</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">frame</span><span class="o">.</span><span class="n">get_number_of_atoms</span><span class="p">(),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">frame</span><span class="o">.</span><span class="n">get_number_of_atoms</span><span class="p">(),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;center_atoms_mask&#39;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">id_select</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -479,9 +480,9 @@
     <span class="k">if</span> <span class="s1">&#39;center_atoms_mask&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
         <span class="c1"># add a default mask</span>
         <span class="k">if</span> <span class="n">species_select</span><span class="p">:</span>
-            <span class="n">old_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">frame</span><span class="o">.</span><span class="n">get_number_of_atoms</span><span class="p">(),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+            <span class="n">old_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">old_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">frame</span><span class="o">.</span><span class="n">get_number_of_atoms</span><span class="p">(),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+            <span class="n">old_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">old_mask</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;center_atoms_mask&#39;</span><span class="p">]</span>
     <span class="c1"># Python&#39;s &quot;bitwise&quot; operators do per-element logical operations in NumPy</span>

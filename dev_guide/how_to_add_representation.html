@@ -95,6 +95,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../SOAP.html">SOAP Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../representation/representations.html">Representations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../models/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io/io.html">Saving and Loading in Librascal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../neighbour_list/neighbour-list-manager.html">Neighbour List Manager</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="developer.html">Developer’s guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="how_to_contribute.html">How to contribute</a></li>
@@ -274,7 +275,13 @@ These hyperparameters can:</p>
 <span class="n">CalculatorSortedCoulomb</span><span class="p">(</span><span class="k">const</span> <span class="n">CalculatorSortedCoulomb</span> <span class="o">&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
 
 <span class="c1">//! Move constructor</span>
-<span class="n">CalculatorSortedCoulomb</span><span class="p">(</span><span class="n">CalculatorSortedCoulomb</span> <span class="o">&amp;&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+<span class="n">CalculatorSortedCoulomb</span><span class="p">(</span><span class="n">CalculatorSortedCoulomb</span> <span class="o">&amp;&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="k">noexcept</span>
+    <span class="o">:</span> <span class="n">CalculatorBase</span><span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">other</span><span class="p">)},</span> <span class="n">central_cutoff</span><span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span>
+                                            <span class="n">other</span><span class="p">.</span><span class="n">central_cutoff</span><span class="p">)},</span>
+      <span class="n">central_decay</span><span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">central_decay</span><span class="p">)},</span>
+      <span class="n">interaction_cutoff</span><span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">interaction_cutoff</span><span class="p">)},</span>
+      <span class="n">interaction_decay</span><span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">interaction_decay</span><span class="p">)},</span>
+      <span class="n">size</span><span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">size</span><span class="p">)}</span> <span class="p">{}</span>
 
 <span class="c1">//! Destructor</span>
 <span class="k">virtual</span> <span class="o">~</span><span class="n">CalculatorSortedCoulomb</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
@@ -309,7 +316,6 @@ These hyperparameters can:</p>
 <span class="cm"> * size refers to the parameter that regulate the feature size of the</span>
 <span class="cm"> * calculator.</span>
 <span class="cm"> */</span>
-
 <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">StructureManager</span><span class="o">&gt;</span>
 <span class="kt">void</span> <span class="n">check_size_compatibility</span><span class="p">(</span><span class="n">StructureManager</span> <span class="o">&amp;</span> <span class="n">manager</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">center</span> <span class="p">:</span> <span class="n">manager</span><span class="p">)</span> <span class="p">{</span>

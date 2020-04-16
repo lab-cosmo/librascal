@@ -93,6 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../SOAP.html">SOAP Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../representation/representations.html">Representations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../models/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../io/io.html">Saving and Loading in Librascal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../neighbour_list/neighbour-list-manager.html">Neighbour List Manager</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../dev_guide/developer.html">Developer’s guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API reference</a></li>
@@ -165,9 +166,11 @@
 <span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">CalculatorFactory</span><span class="p">,</span> <span class="n">cutoff_function_dict_switch</span>
 <span class="kn">from</span> <span class="nn">..neighbourlist</span> <span class="k">import</span> <span class="n">AtomsList</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">BaseIO</span>
 
 
-<div class="viewcode-block" id="SphericalInvariants"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SphericalInvariants">[docs]</a><span class="k">class</span> <span class="nc">SphericalInvariants</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SphericalInvariants"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SphericalInvariants">[docs]</a><span class="k">class</span> <span class="nc">SphericalInvariants</span><span class="p">(</span><span class="n">BaseIO</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.</span>
@@ -186,9 +189,6 @@
 
 <span class="sd">    max_angular : int</span>
 <span class="sd">        Highest angular momentum number (l) in the expansion</span>
-
-<span class="sd">    n_species : int</span>
-<span class="sd">        Number of species to be considered separately</span>
 
 <span class="sd">    gaussian_sigma_type : str</span>
 <span class="sd">        How the Gaussian atom sigmas (smearing widths) are allowed to</span>
@@ -256,7 +256,7 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction_cutoff</span><span class="p">,</span> <span class="n">cutoff_smooth_width</span><span class="p">,</span>
                  <span class="n">max_radial</span><span class="p">,</span> <span class="n">max_angular</span><span class="p">,</span> <span class="n">gaussian_sigma_type</span><span class="p">,</span>
-                 <span class="n">gaussian_sigma_constant</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">n_species</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">gaussian_sigma_constant</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
                  <span class="n">cutoff_function_type</span><span class="o">=</span><span class="s2">&quot;ShiftedCosine&quot;</span><span class="p">,</span>
                  <span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;PowerSpectrum&quot;</span><span class="p">,</span> <span class="n">inversion_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">radial_basis</span><span class="o">=</span><span class="s2">&quot;GTO&quot;</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -279,11 +279,11 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">update_hyperparameters</span><span class="p">(</span>
             <span class="n">max_radial</span><span class="o">=</span><span class="n">max_radial</span><span class="p">,</span> <span class="n">max_angular</span><span class="o">=</span><span class="n">max_angular</span><span class="p">,</span>
-            <span class="n">n_species</span><span class="o">=</span><span class="n">n_species</span><span class="p">,</span>
             <span class="n">soap_type</span><span class="o">=</span><span class="n">soap_type</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
             <span class="n">inversion_symmetry</span><span class="o">=</span><span class="n">inversion_symmetry</span><span class="p">,</span>
             <span class="n">expansion_by_species_method</span><span class="o">=</span><span class="n">expansion_by_species_method</span><span class="p">,</span>
             <span class="n">global_species</span><span class="o">=</span><span class="n">global_species</span><span class="p">,</span> <span class="n">compute_gradients</span><span class="o">=</span><span class="n">compute_gradients</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cutoff_function_parameters</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">cutoff_function_parameters</span><span class="p">)</span>
         <span class="n">cutoff_function_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="n">interaction_cutoff</span><span class="o">=</span><span class="n">interaction_cutoff</span><span class="p">,</span>
             <span class="n">cutoff_smooth_width</span><span class="o">=</span><span class="n">cutoff_smooth_width</span>
@@ -298,7 +298,7 @@
                 <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;AA&#39;</span>
             <span class="p">),</span>
         <span class="p">)</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimization_args</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">optimization_args</span><span class="p">)</span>
         <span class="k">if</span> <span class="s1">&#39;type&#39;</span> <span class="ow">in</span> <span class="n">optimization_args</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Spline&#39;</span><span class="p">:</span>
                 <span class="k">if</span> <span class="s1">&#39;accuracy&#39;</span> <span class="ow">in</span> <span class="n">optimization_args</span><span class="p">:</span>
@@ -344,8 +344,7 @@
             <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;strict&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">interaction_cutoff</span><span class="p">))</span>
         <span class="p">]</span>
 
-        <span class="n">hypers_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rep_options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">hypers_str</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rep_options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_representation</span> <span class="o">=</span> <span class="n">CalculatorFactory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rep_options</span><span class="p">)</span>
 
@@ -357,10 +356,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">allowed_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;interaction_cutoff&#39;</span><span class="p">,</span> <span class="s1">&#39;cutoff_smooth_width&#39;</span><span class="p">,</span>
                         <span class="s1">&#39;max_radial&#39;</span><span class="p">,</span> <span class="s1">&#39;max_angular&#39;</span><span class="p">,</span> <span class="s1">&#39;gaussian_sigma_type&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;gaussian_sigma_constant&#39;</span><span class="p">,</span> <span class="s1">&#39;n_species&#39;</span><span class="p">,</span> <span class="s1">&#39;soap_type&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;gaussian_sigma_constant&#39;</span><span class="p">,</span> <span class="s1">&#39;soap_type&#39;</span><span class="p">,</span>
                         <span class="s1">&#39;inversion_symmetry&#39;</span><span class="p">,</span> <span class="s1">&#39;cutoff_function&#39;</span><span class="p">,</span> <span class="s1">&#39;normalize&#39;</span><span class="p">,</span>
                         <span class="s1">&#39;gaussian_density&#39;</span><span class="p">,</span> <span class="s1">&#39;radial_contribution&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;cutoff_function_parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;compute_gradients&#39;</span><span class="p">,</span> <span class="s1">&#39;expansion_by_species_method&#39;</span><span class="p">,</span> <span class="s1">&#39;global_species&#39;</span><span class="p">}</span>
+                        <span class="s1">&#39;cutoff_function_parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;compute_gradients&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;expansion_by_species_method&#39;</span><span class="p">,</span> <span class="s1">&#39;global_species&#39;</span><span class="p">}</span>
         <span class="n">hypers_clean</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">hypers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hypers</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">allowed_keys</span><span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">hypers_clean</span><span class="p">)</span>
@@ -386,17 +386,17 @@
 
         <span class="k">return</span> <span class="n">frames</span></div>
 
-<div class="viewcode-block" id="SphericalInvariants.get_num_coefficients"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SphericalInvariants.get_num_coefficients">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_coefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SphericalInvariants.get_num_coefficients"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SphericalInvariants.get_num_coefficients">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_coefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_species</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the number of coefficients in the representation</span>
 
 <span class="sd">        (this is the descriptor size per atomic centre)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;soap_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RadialSpectrum&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;n_species&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_radial&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">n_species</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_radial&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;soap_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PowerSpectrum&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;n_species&#39;</span><span class="p">]</span> <span class="o">*</span>
-                         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;n_species&#39;</span><span class="p">]</span> <span class="o">+</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">n_species</span> <span class="o">*</span>
+                         <span class="p">(</span><span class="n">n_species</span> <span class="o">+</span>
                           <span class="mi">1</span><span class="p">))</span> <span class="o">/</span>
                         <span class="mi">2</span><span class="p">)</span> <span class="o">*</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_radial&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span>
@@ -404,13 +404,13 @@
                      <span class="mi">1</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;soap_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;BiSpectrum&#39;</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;inversion_symmetry&#39;</span><span class="p">]:</span>
-                <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;n_species&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">3</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">n_species</span><span class="o">**</span><span class="mi">3</span>
                         <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_radial&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">3</span>
                         <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_angular&#39;</span><span class="p">]</span>
                               <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_angular&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">2</span>
                               <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_angular&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;n_species&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">3</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">n_species</span><span class="o">**</span><span class="mi">3</span>
                         <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_radial&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">3</span>
                         <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_angular&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
                                        <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_angular&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mf">8.0</span><span class="p">)))</span>
@@ -446,7 +446,37 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Only soap_type = RadialSpectrum || &#39;</span>
                              <span class="s1">&#39;PowerSpectrum || BiSpectrum &#39;</span>
                              <span class="s1">&#39;implemented for now&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">keys</span></div></div>
+        <span class="k">return</span> <span class="n">keys</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_init_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">gaussian_density</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;gaussian_density&#39;</span><span class="p">]</span>
+        <span class="n">cutoff_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;cutoff_function&#39;</span><span class="p">]</span>
+        <span class="n">radial_contribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;radial_contribution&#39;</span><span class="p">]</span>
+
+        <span class="n">init_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">interaction_cutoff</span><span class="o">=</span><span class="n">cutoff_function</span><span class="p">[</span><span class="s1">&#39;cutoff&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">],</span>
+            <span class="n">cutoff_smooth_width</span><span class="o">=</span><span class="n">cutoff_function</span><span class="p">[</span><span class="s1">&#39;smooth_width&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">],</span>
+            <span class="n">max_radial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_radial&#39;</span><span class="p">],</span> <span class="n">max_angular</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_angular&#39;</span><span class="p">],</span>
+            <span class="n">soap_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;soap_type&#39;</span><span class="p">],</span>
+            <span class="n">inversion_symmetry</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;inversion_symmetry&#39;</span><span class="p">],</span>
+            <span class="n">normalize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;normalize&#39;</span><span class="p">],</span>
+            <span class="n">expansion_by_species_method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;expansion_by_species_method&#39;</span><span class="p">],</span>
+            <span class="n">global_species</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;global_species&#39;</span><span class="p">],</span>
+            <span class="n">compute_gradients</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;compute_gradients&#39;</span><span class="p">],</span>
+            <span class="n">gaussian_sigma_type</span><span class="o">=</span><span class="n">gaussian_density</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span>
+            <span class="n">gaussian_sigma_constant</span><span class="o">=</span><span class="n">gaussian_density</span><span class="p">[</span><span class="s1">&#39;gaussian_sigma&#39;</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">],</span>
+            <span class="n">cutoff_function_type</span><span class="o">=</span><span class="n">cutoff_function</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span>
+            <span class="n">radial_basis</span><span class="o">=</span><span class="n">radial_contribution</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span>
+            <span class="n">optimization_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimization_args</span><span class="p">,</span>
+            <span class="n">cutoff_function_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff_function_parameters</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">init_params</span>
+
+    <span class="k">def</span> <span class="nf">_set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_set_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_get_data</span><span class="p">()</span></div>
 </pre></div>
 
            </div>
