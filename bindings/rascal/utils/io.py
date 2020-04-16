@@ -234,7 +234,7 @@ class BaseIO(ABC):
 
 
 def _get_state(obj):
-    if isinstance(obj, BaseIO) is True:
+    if isinstance(obj, BaseIO):
         state = dict(data=obj._get_data(),
                      init_params=obj._get_init_params())
     else:
@@ -262,13 +262,13 @@ def to_dict(obj, version=CURRENT_VERSION, recursion_depth=0):
         if isinstance(entry, dict):
             # case of potentially nested objects
             for k, v in entry.items():
-                if isinstance(v, BaseIO) is True:
+                if isinstance(v, BaseIO):
                     state[name][k] = to_dict(v, version, recursion_depth)
                 elif isinstance(v, list):
                     # make sure list of objects are properly serialized
                     ll = []
                     for val in v:
-                        if isinstance(val, BaseIO) is True:
+                        if isinstance(val, BaseIO):
                             ll.append(to_dict(val, version, recursion_depth))
                         else:
                             ll.append(val)
@@ -286,7 +286,7 @@ def from_dict(data):
         if isinstance(entry, dict):
             data_obj[name] = dict()
             for k, v in entry.items():
-                if is_valid_object_dict[version](v) is True:
+                if is_valid_object_dict[version](v):
                     # in case of nested objects
                     data_obj[name][k] = from_dict(v)
                 elif isinstance(v, list):
@@ -294,7 +294,7 @@ def from_dict(data):
                     # objects
                     ll = []
                     for val in v:
-                        if is_valid_object_dict[version](val) is True:
+                        if is_valid_object_dict[version](val):
                             ll.append(from_dict(val))
                         else:
                             ll.append(val)
@@ -360,7 +360,7 @@ def _dump_npy(fn, data, class_name):
             if 'class_name' in data:
                 class_name = data['class_name'].lower()
             _dump_npy(fn, v, class_name)
-        elif is_large_array(v) is True:
+        elif is_large_array(v):
             if 'tag' in data:
                 class_name += '-' + data['tag']
             v_fn = filename + '-{}-{}'.format(class_name, k) + '.npy'
@@ -368,7 +368,7 @@ def _dump_npy(fn, data, class_name):
             data[k] = v_bfn
             np.save(v_fn, v)
 
-        elif is_npy(v) is True:
+        elif is_npy(v):
             data[k] = ['npy', v.tolist()]
 
 
@@ -380,7 +380,7 @@ def _load_npy(data, path):
     for k, v in data.items():
         if isinstance(v, dict):
             _load_npy(v, path)
-        elif is_npy_filename(v) is True:
+        elif is_npy_filename(v):
             data[k] = np.load(os.path.join(path, v), mmap_mode='r')
         elif isinstance(v, list):
             if len(v) == 2:

@@ -18,7 +18,7 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
         weights = np.mean(np.square(U), axis=1)
     elif 'feature' in act_on:
         weights = np.mean(np.square(VT), axis=0)
-    if is_deterministic is True:
+    if is_deterministic:
         # sorting is smallest to largest hence the minus
         sel = np.argsort(-weights)[:Nsel]
     elif is_deterministic is False:
@@ -26,7 +26,7 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
         # sorting is smallest to largest hence the minus
         sel = np.argsort(np.random.rand(*weights.shape) - weights)[:Nsel]
 
-    if verbose is True:
+    if verbose:
         if 'sample' in act_on:
             C = X[sel, :]
         elif 'feature' in act_on:
