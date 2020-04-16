@@ -150,6 +150,59 @@ namespace rascal {
     }
   }
 
+  /**
+   * Tests the serialization works properly, i.e. the deserialized object is
+   * effectively the same as the original one, and that trying to get a type
+   * mismatched with the serialized sparse_points throws an error.
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(serialization_test, Fix, multiple_fixtures,
+                                   Fix) {
+    const bool verbose{false};
+    auto & sparse_points = Fix::sparse_points;
+
+    typename Fix::ManagerCollection_t managers{Fix::adaptors};
+    managers.add_structures(Fix::filename, 0, 3);
+    typename Fix::Representation_t representation{Fix::hypers};
+
+    representation.compute(managers);
+
+    std::vector<std::vector<int>> selected_ids;
+    std::random_device rd;
+    std::mt19937 gen{rd()};
+    auto dice{std::uniform_real_distribution<double>(0., 1.)};
+    for (auto & manager : managers) {
+      selected_ids.emplace_back();
+      int ii{0};
+      for (auto center : manager) {
+        (void)center;  // to avoid compiler warning
+        double roll{dice(gen)};
+        if (roll < 0.85) {
+          selected_ids.back().push_back(ii);
+        } else if (verbose) {
+          std::cout << "Center " << ii << " will not be considered."
+                    << std::endl;
+        }
+        ++ii;
+      }
+    }
+
+    sparse_points.push_back(representation, managers, selected_ids);
+
+    json j;
+    j = sparse_points;
+    if (verbose) {
+      std::cout << j.dump() << std::endl;
+    }
+
+    auto sparse_points_b = j.template get<typename Fix::SparsePoints_t>();
+    bool test{sparse_points == sparse_points_b};
+    BOOST_TEST(test);
+
+    BOOST_CHECK_THROW(
+        j.template get<SparsePointsBlockSparse<CalculatorSphericalExpansion>>(),
+        std::runtime_error);
+  }
+
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal

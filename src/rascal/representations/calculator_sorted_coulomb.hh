@@ -193,7 +193,13 @@ namespace rascal {
     CalculatorSortedCoulomb(const CalculatorSortedCoulomb & other) = delete;
 
     //! Move constructor
-    CalculatorSortedCoulomb(CalculatorSortedCoulomb && other) = default;
+    CalculatorSortedCoulomb(CalculatorSortedCoulomb && other) noexcept
+        : CalculatorBase{std::move(other)}, central_cutoff{std::move(
+                                                other.central_cutoff)},
+          central_decay{std::move(other.central_decay)},
+          interaction_cutoff{std::move(other.interaction_cutoff)},
+          interaction_decay{std::move(other.interaction_decay)},
+          size{std::move(other.size)} {}
 
     //! Destructor
     virtual ~CalculatorSortedCoulomb() = default;
@@ -207,6 +213,16 @@ namespace rascal {
     operator=(CalculatorSortedCoulomb && other) = default;
     /* -------------------- rep-construc-end -------------------- */
 
+    bool operator==(const CalculatorSortedCoulomb & other) const {
+      bool algo_match{
+          this->hypers.at("sorting_algorithm").template get<std::string>() ==
+          other.hypers.at("sorting_algorithm").template get<std::string>()};
+      return (this->central_cutoff == other.central_cutoff and
+              this->central_decay == other.central_decay and
+              this->interaction_cutoff == other.interaction_cutoff and
+              this->interaction_decay == other.interaction_decay and
+              this->size == other.size and algo_match);
+    }
     /* -------------------- rep-interface-start -------------------- */
     /**
      * Compute representation for a given structure manager.
@@ -228,7 +244,6 @@ namespace rascal {
      * size refers to the parameter that regulate the feature size of the
      * calculator.
      */
-
     template <class StructureManager>
     void check_size_compatibility(StructureManager & manager) {
       for (auto center : manager) {
@@ -544,5 +559,22 @@ namespace rascal {
     }
   }
 }  // namespace rascal
+
+namespace nlohmann {
+  /**
+   * Special specialization of the json serialization for non default
+   * constructible type.
+   */
+  template <>
+  struct adl_serializer<rascal::CalculatorSortedCoulomb> {
+    static rascal::CalculatorSortedCoulomb from_json(const json & j) {
+      return rascal::CalculatorSortedCoulomb{j};
+    }
+
+    static void to_json(json & j, const rascal::CalculatorSortedCoulomb & t) {
+      j = t.hypers;
+    }
+  };
+}  // namespace nlohmann
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SORTED_COULOMB_HH_

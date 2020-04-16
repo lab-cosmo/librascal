@@ -1,15 +1,16 @@
 from ..lib._rascal.models import kernels
 from ..neighbourlist import AtomsList
+from ..utils import BaseIO
 
 # names of existing pseudo points implementation on the pybinding side.
-_pseudo_points = {}
+_sparse_points = {}
 for k, v in kernels.__dict__.items():
     if "SparsePoints" in k:
         name = k
-        _pseudo_points[name] = v
+        _sparse_points[name] = v
 
 
-class SparsePoints(object):
+class SparsePoints(BaseIO):
     """
     Holds features to be used as references / sparse points / pseudo points
     in sparse GPR methods.
@@ -46,22 +47,37 @@ class SparsePoints(object):
     def __init__(self, representation):
         self.representation = representation
         if 'SphericalInvariants' in str(representation):
-            self._pseudo_points = _pseudo_points['SparsePointsBlockSparse_SphericalInvariants'](
-            )
+            self._sparse_points = _sparse_points[
+                'SparsePointsBlockSparse_SphericalInvariants']()
         else:
             raise ValueError(
                 'No pseudo point is appropiate for ' + str(representation))
 
+    def _get_init_params(self):
+        init_params = dict(representation=self.representation)
+        return init_params
+
+    def _set_data(self, data):
+        super()._set_data(data)
+        self._sparse_points = self._sparse_points.from_dict(
+            data['sparse_points'])
+
+    def _get_data(self):
+        data = super()._get_data()
+        data.update(sparse_points=self._sparse_points.to_dict())
+        return data
+
     def extend(self, atoms_list, selected_indices):
         if isinstance(atoms_list, AtomsList):
-            self._pseudo_points.extend(
-                self.representation._representation, atoms_list.managers, selected_indices)
+            self._sparse_points.extend(
+                self.representation._representation, atoms_list.managers,
+                selected_indices)
         else:
-            self._pseudo_points.extend(
+            self._sparse_points.extend(
                 self.representation._representation, atoms_list, selected_indices)
 
     def size(self):
-        return self._pseudo_points.size()
+        return self._sparse_points.size()
 
     def get_features(self):
-        return self._pseudo_points.get_features()
+        return self._sparse_points.get_features()

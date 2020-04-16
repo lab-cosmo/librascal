@@ -35,9 +35,9 @@ namespace rascal {
                                        py::module & /*m_internal*/) {
     std::string kernel_name = internal::GetBindingTypeName<Kernel>();
     py::class_<Kernel> kernel(mod, kernel_name.c_str());
-    kernel.def(py::init([](std::string & hyper_str) {
+    kernel.def(py::init([](const py::dict & hyper) {
       // convert to json
-      json hypers = json::parse(hyper_str);
+      json hypers = hyper;
       return std::make_unique<Kernel>(hypers);
     }));
 
@@ -158,6 +158,7 @@ namespace rascal {
 
     // Bind the interface of this representation manager
     auto kernel = add_kernel<Kernel>(mod, m_internal);
+    internal::bind_dict_representation(kernel);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
                                  ManagerCollection_1_t>(kernel);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
@@ -165,10 +166,12 @@ namespace rascal {
 
     // bind the sparse kernel and pseudo points class
     auto sparse_kernel = add_kernel<SparseKernel>(mod, m_internal);
+    internal::bind_dict_representation(sparse_kernel);
     bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
                                         Calc1_t, ManagerCollection_2_t,
                                         SparsePoints_1_t>(sparse_kernel);
     auto sparse_points = add_sparse_points<SparsePoints_1_t>(mod, m_internal);
     bind_sparse_points_push_back<ManagerCollection_2_t, Calc1_t>(sparse_points);
+    internal::bind_dict_representation(sparse_points);
   }
 }  // namespace rascal
