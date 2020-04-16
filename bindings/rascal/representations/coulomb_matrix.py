@@ -118,7 +118,7 @@ class SortedCoulombMatrix(BaseIO):
         return init_params
 
     def _set_data(self, data):
-        pass
+        super()._set_data(data)
 
     def _get_data(self):
-        return dict()
+        return super()._get_data()

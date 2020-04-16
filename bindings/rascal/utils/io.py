@@ -10,6 +10,7 @@ BETA_VERSION = '0.1'
 
 CURRENT_VERSION = BETA_VERSION
 
+MAX_RECURSION_DEPTH = 20
 
 def dump_obj(fn, instance, version=CURRENT_VERSION):
     """Save a python object that inherits from the BaseIO class
@@ -207,9 +208,9 @@ def get_supported_io_versions():
 
 
 class BaseIO(ABC):
-    """
-    Definition of the interface of a python class that can be (de)serialized by
-    the (from/to)_dict() function. It corresponds to 3 methods:
+    """Interface of a Python class serializable by to_dict()
+
+    It corresponds to 3 methods:
 
     + _get_init_params is expected to return a dictionary containing all the
     parameters used by the __init__() methods.
@@ -242,7 +243,7 @@ class BaseIO(ABC):
 
 
 def _get_state(obj):
-    if isinstance(obj, BaseIO) is True:
+    if isinstance(obj, BaseIO):
         state = dict(data=obj._get_data(),
                      init_params=obj._get_init_params())
     else:
@@ -251,10 +252,17 @@ def _get_state(obj):
     return state
 
 
-def to_dict(obj, version=CURRENT_VERSION):
-    """recursirvely convert the python object obj into a dictionary (serialized
-    version).
+def to_dict(obj, version=CURRENT_VERSION, recursion_depth=0):
+    """Recursively serialize to dict via the BaseIO interface.
+
     obj has to inherit from BaseIO."""
+    if recursion_depth >= MAX_RECURSION_DEPTH:
+        raise ValueError(
+          "The object to be serialized to dict contains more than {}".format(MAX_RECURSION_DEPTH)
+         + " levels of nested objects suggesting there is a circular reference."
+         + " Objects containing a reference to themselves are not supported.")
+    else:
+        recursion_depth += 1
 
     state = _get_state(obj)
 
@@ -263,14 +271,14 @@ def to_dict(obj, version=CURRENT_VERSION):
         if isinstance(entry, dict):
             # case of potentially nested objects
             for k, v in entry.items():
-                if isinstance(v, BaseIO) is True:
-                    state[name][k] = to_dict(v, version)
+                if isinstance(v, BaseIO):
+                    state[name][k] = to_dict(v, version, recursion_depth)
                 elif isinstance(v, list):
                     # make sure list of objects are properly serialized
                     ll = []
                     for val in v:
-                        if isinstance(val, BaseIO) is True:
-                            ll.append(to_dict(val, version))
+                        if isinstance(val, BaseIO):
+                            ll.append(to_dict(val, version, recursion_depth))
                         else:
                             ll.append(val)
                     state[name][k] = ll
@@ -279,8 +287,7 @@ def to_dict(obj, version=CURRENT_VERSION):
 
 
 def from_dict(data):
-    """recursirvely convert a python dictionary describing an object inherited
-    from BaseIO."""
+    """Recursirvely deserialize from dict via the BaseIO interface."""
     # temporary dictionary to hold the object being recovered
     data_obj = dict()
     version = data['version']
@@ -288,7 +295,7 @@ def from_dict(data):
         if isinstance(entry, dict):
             data_obj[name] = dict()
             for k, v in entry.items():
-                if is_valid_object_dict[version](v) is True:
+                if is_valid_object_dict[version](v):
                     # in case of nested objects
                     data_obj[name][k] = from_dict(v)
                 elif isinstance(v, list):
@@ -296,7 +303,7 @@ def from_dict(data):
                     # objects
                     ll = []
                     for val in v:
-                        if is_valid_object_dict[version](val) is True:
+                        if is_valid_object_dict[version](val):
                             ll.append(from_dict(val))
                         else:
                             ll.append(val)
@@ -313,8 +320,9 @@ def from_dict(data):
 
 
 def to_file(fn, obj, version=CURRENT_VERSION):
-    """Saves the object to a file name 'fn' using the to_dict()
-        serialization procedure."""
+    """Saves the object 'obj' to a file named 'fn'.
+
+    It uses the to_dict() serialization procedure."""
     fn = os.path.abspath(fn)
     filename, file_extension = os.path.splitext(fn)
     data = to_dict(obj, version=version)
@@ -341,7 +349,8 @@ def from_file(fn):
             return from_dict(data)
         else:
             raise RuntimeError(
-                'The file: {}; does not contain a valid dictionary representation of an object.'.format(fn))
+                'The file: {}; does not contain a valid dictionary'.format(fn)
+                + ' representation of an object.')
 
     else:
         raise NotImplementedError(
@@ -349,8 +358,9 @@ def from_file(fn):
 
 
 def _dump_npy(fn, data, class_name):
-    """Saves numpy array that are large into a file different from the
-    main saved file. The main file contains a relative path to the *.npy
+    """Saves numpy array to the object file.
+
+    If the array is large (>50MB) main file contains a relative path to the *.npy
     file so that it can be loaded properly.
     Small numpy array are converted to lists and saved in the main file."""
     filename, file_extension = os.path.splitext(fn)
@@ -359,7 +369,7 @@ def _dump_npy(fn, data, class_name):
             if 'class_name' in data:
                 class_name = data['class_name'].lower()
             _dump_npy(fn, v, class_name)
-        elif is_large_array(v) is True:
+        elif is_large_array(v):
             if 'tag' in data:
                 class_name += '-' + data['tag']
             v_fn = filename + '-{}-{}'.format(class_name, k) + '.npy'
@@ -367,17 +377,19 @@ def _dump_npy(fn, data, class_name):
             data[k] = v_bfn
             np.save(v_fn, v)
 
-        elif is_npy(v) is True:
+        elif is_npy(v):
             data[k] = ['npy', v.tolist()]
 
 
 def _load_npy(data, path):
-    """Loads a numpy array saved using _dump_npy(). The array is mmaped
-    so it is physically loaded only when needed."""
+    """Loads a numpy array saved using _dump_npy().
+
+    A large array stored in a different file is mmaped so it is physically
+    loaded only when needed."""
     for k, v in data.items():
         if isinstance(v, dict):
             _load_npy(v, path)
-        elif is_npy_filename(v) is True:
+        elif is_npy_filename(v):
             data[k] = np.load(os.path.join(path, v), mmap_mode='r')
         elif isinstance(v, list):
             if len(v) == 2:
