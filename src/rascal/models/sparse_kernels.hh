@@ -251,15 +251,32 @@ namespace rascal {
           dKdr.setZero();
           auto && prop_grad{*manager->template get_property<PropertyGradient_t>(
               representation_grad_name, true)};
-
+          std::map<int, std::set<int>> gradient_sum_counter{};
+          for (auto center : manager) {
+            std::set<int> count{};
+            gradient_sum_counter[center.get_atom_tag()] = count;
+          }
           if (this->zeta == 1) {
             // simpler version where the kernel derivative is one
             for (auto center : manager) {
               int sp{center.get_atom_type()};
+              auto atom_i_tag = center.get_atom_tag();
               for (auto neigh : center.pairs_with_self_pair()) {
-                dKdr[neigh.get_atom_j()] +=
-                    sparse_points.dot_derivative(sp, prop_grad[neigh])
-                        .transpose();
+                auto atom_j = neigh.get_atom_j();
+                auto atom_j_tag = atom_j.get_atom_tag();
+                // prop_grad contains \grad_j X_i where j is a neighbor atom
+                // and i a center atom
+                // for computing the kernel gradient we only want the terms
+                // when j corresponds also to a central atom (so periodic
+                // images contributions are excluded unless only periodic
+                // images exist in the neighborhood then one of these is
+                // included)
+                if (gradient_sum_counter[atom_j_tag].count(atom_i_tag) == 0) {
+                  dKdr[atom_j] +=
+                      sparse_points.dot_derivative(sp, prop_grad[neigh])
+                          .transpose();
+                  gradient_sum_counter[atom_j_tag].insert(atom_i_tag);
+                }
               }
             }
           } else {
@@ -268,6 +285,7 @@ namespace rascal {
             // put together dk/dX, the pseudo points and dX/dr
             for (auto center : manager) {
               int sp{center.get_atom_type()};
+              auto atom_i_tag = center.get_atom_tag();
               // compute the gradient of the kernel w.r.t. the representation
               // dk/dX without the pseudo point factor
               Eigen::Matrix<double, 1, Eigen::Dynamic> rep =
@@ -275,10 +293,22 @@ namespace rascal {
                   pow_zeta(sparse_points.dot(sp, prop[center]), this->zeta - 1)
                       .transpose();
               for (auto neigh : center.pairs_with_self_pair()) {
-                dKdr[neigh.get_atom_j()] +=
-                    sparse_points.dot_derivative(sp, prop_grad[neigh])
-                        .transpose() *
-                    rep.asDiagonal();
+                auto atom_j = neigh.get_atom_j();
+                auto atom_j_tag = atom_j.get_atom_tag();
+                // prop_grad contains \grad_j X_i where j is a neighbor atom
+                // and i a center atom
+                // for computing the kernel gradient we only want the terms
+                // when j corresponds also to a central atom (so periodic
+                // images contributions are excluded unless only periodic
+                // images exist in the neighborhood then one of these is
+                // included)
+                if (gradient_sum_counter[atom_j_tag].count(atom_i_tag) == 0) {
+                  dKdr[atom_j] +=
+                      sparse_points.dot_derivative(sp, prop_grad[neigh])
+                          .transpose() *
+                      rep.asDiagonal();
+                  gradient_sum_counter[atom_j_tag].insert(atom_i_tag);
+                }
               }
             }
           }

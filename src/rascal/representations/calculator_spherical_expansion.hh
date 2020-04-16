@@ -71,7 +71,7 @@ namespace rascal {
      */
     template <class StructureManager, class ClusterRefCenter>
     auto find_periodic_images_pairs_in_environment(
-        const std::shared_ptr<StructureManager> & manager,
+        const std::shared_ptr<StructureManager> & /*manager*/,
         ClusterRefCenter & center) {
       static_assert(ClusterRefCenter::IsOrderOne,
                     "Input cluster should be of Order == 1.");
@@ -83,24 +83,14 @@ namespace rascal {
       // periodic images.
       std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
           periodic_images_of_center{};
-
-      // find all center atoms within the environment of i
+      int atom_tag_i = center.get_atom_tag();
+      // find the periodic images of the same atoms
       for (auto pair : center.pairs()) {
         auto atom_j = pair.get_atom_j();
         int atom_tag_j = atom_j.get_atom_tag();
-        if (not manager->is_ghost_atom(pair)) {
+        if (atom_tag_j != atom_tag_i) {
           periodic_images_of_center[atom_tag_j].emplace_back(
               static_cast<ClusterRefKey<2, ClusterLayer>>(pair));
-        }
-      }
-      // find the periodic images of the found center atoms
-      for (auto pair : center.pairs()) {
-        auto atom_j = pair.get_atom_j();
-        int atom_tag_j = atom_j.get_atom_tag();
-        if (periodic_images_of_center.count(atom_tag_j) and
-            manager->is_ghost_atom(pair)) {
-          periodic_images_of_center[atom_tag_j].emplace_back(
-              std::move(static_cast<ClusterRefKey<2, ClusterLayer>>(pair)));
         }
       }
 

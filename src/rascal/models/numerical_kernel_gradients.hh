@@ -39,7 +39,7 @@ namespace rascal {
 
 
   template<class KernelImpl, class Calculator, class Manager, class SparsePoints, typename Derived>
-  math::Matrix_t compute_displaced_kernel(const KernelImpl& kernel, const Calculator&  calculator, const Manager& manager, const SparsePoints& sparse_points, const size_t& i_atom, const Eigen::MatrixBase<Derived>& disp) {
+  math::Matrix_t compute_displaced_kernel(KernelImpl& kernel, Calculator&  calculator, Manager& manager, const SparsePoints& sparse_points, const size_t& i_atom, const Eigen::MatrixBase<Derived>& disp) {
     // get a copy of the atomic_structure object
     auto manager_root = extract_underlying_manager<0>(manager);
     json structure_copy = manager_root->get_atomic_structure();
@@ -53,50 +53,55 @@ namespace rascal {
     // compute the representation of the modified structure
     calculator.compute(manager);
     // compute the kernel of the modified structure
-    math::Matrix_t KNM = kernel.compute(calculator, manager, sparse_points);
+    std::vector<std::remove_const_t<Manager>> managers{};
+    managers.emplace_back(manager);
+    math::Matrix_t KNM = kernel.compute(calculator, managers, sparse_points);
     // reset neighborlist to the original structure
     manager->update(structure_copy.template get<AtomicStructure<ThreeD>>());
     return KNM;
   }
 
   template<class KernelImpl, class Calculator, class Manager, class SparsePoints>
-  math::Matrix_t compute_numerical_kernel_gradient(const KernelImpl& kernel,
-                                                    const Calculator& calculator,
-                                                    const Manager& manager,
+  math::Matrix_t compute_numerical_kernel_gradient(KernelImpl& kernel,
+                                                    Calculator& calculator,
+                                                    Manager& manager,
                                                     const SparsePoints& sparse_points,
                                                     const double& h_disp) {
-    auto disps = h_disp*Eigen::Matrix3d::Identity();
+    Eigen::Matrix3d disps = h_disp*Eigen::Matrix3d::Identity();
     size_t n_sparse_points{sparse_points.size()};
-    math::Matrix_t KNM{manager.size() * ThreeD, n_sparse_points};
-    for (size_t i_atom{0}; i_atom < manager.size(); ++i_atom) {
+    math::Matrix_t KNM{manager->size() * ThreeD, n_sparse_points};
+    KNM.setZero();
+    for (size_t i_atom{0}; i_atom < manager->size(); ++i_atom) {
       for (int i_der{0}; i_der < ThreeD; ++i_der) {
         // use centered finite difference to estimate gradient
         math::Matrix_t KNM_p = compute_displaced_kernel(kernel, calculator, manager, sparse_points, i_atom, disps.row(i_der));
         math::Matrix_t KNM_m = compute_displaced_kernel(kernel, calculator, manager, sparse_points, i_atom, -disps.row(i_der));
-        KNM.row(i_atom * ThreeD + i_der) =
-            (KNM_p - KNM_m).rowwise().sum() / (2*h_disp);
+        KNM.row(i_atom * ThreeD + i_der) = (KNM_p - KNM_m).colwise().sum() / (2*h_disp);
       }
     }
+    return KNM;
   }
 
   template<class KernelImpl, class Calculator, class Managers, class SparsePoints>
-  math::Matrix_t compute_numerical_kernel_gradients(const KernelImpl& kernel,
-                                                    const Calculator& calculator,
-                                                    const Managers& managers,
+  math::Matrix_t compute_numerical_kernel_gradients(KernelImpl& kernel,
+                                                    Calculator& calculator,
+                                                    Managers& managers,
                                                     const SparsePoints& sparse_points,
                                                     double h_disp = 1e-5) {
     size_t n_centers{0};
     for (const auto& manager : managers) {
-      n_centers += manager.size() * ThreeD;
+      n_centers += manager->size() * ThreeD;
     }
     size_t n_sparse_points{sparse_points.size()};
     math::Matrix_t KNM{n_centers, n_sparse_points};
+    KNM.setZero();
     size_t i_centers{0};
     for (const auto& manager : managers) {
-      KNM.block(i_centers, 0, manager.size() * ThreeD, n_sparse_points) =
+      KNM.block(i_centers, 0, manager->size() * ThreeD, n_sparse_points) =
         compute_numerical_kernel_gradient(kernel, calculator, manager, sparse_points, h_disp);
-      i_centers += manager.size() * ThreeD;
+      i_centers += manager->size() * ThreeD;
     }
+    return KNM;
   }
 }  // namespace rascal
 

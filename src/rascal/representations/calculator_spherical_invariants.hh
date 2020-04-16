@@ -774,9 +774,9 @@ namespace rascal {
 
       if (this->compute_gradients) {
         const int atom_i_tag{center.get_atom_tag()};
-        // c^{k}
-        auto & coefficients_j{expansions_coefficients[center]};
-        std::vector<Key_t> keys_coef_j{coefficients_j.get_keys()};
+        // c^{i}
+        auto & coefficients{expansions_coefficients[center]};
+        std::vector<Key_t> keys_coef{coefficients.get_keys()};
 
         // Sum the gradients wrt the neighbour atom position
         // compute the \grad_k p^{i} coeffs where k is either i or j
@@ -810,10 +810,10 @@ namespace rascal {
             const auto & grad_neigh_coefficients_1{
                 grad_neigh_coefficients[coef_key_1]};
 
-            for (const auto & coef_key_2 : keys_coef_j) {
+            for (const auto & coef_key_2 : keys_coef) {
               // c^{i b}
-              const auto & expansion_coefficients_j_2{
-                  coefficients_j[coef_key_2]};
+              const auto & expansion_coefficients_2{
+                  coefficients[coef_key_2]};
               bool sorted{true}, equal{false};
               // make sure spair_type has sorted entries
               if (coef_key_1[0] > coef_key_2[0]) {
@@ -851,7 +851,7 @@ namespace rascal {
                           coef_idx.n1 + cartesian_offset_n,
                           coef_idx.l_block_idx, 1,
                           coef_idx.l_block_size).array() *
-                       expansion_coefficients_j_2.block(
+                       expansion_coefficients_2.block(
                           coef_idx.n2, coef_idx.l_block_idx,
                           1,  coef_idx.l_block_size).array()).sum()
                       * coef_idx.l_factor;
@@ -876,7 +876,7 @@ namespace rascal {
                             coef_idx.n2 + cartesian_offset_n,
                             coef_idx.l_block_idx,
                             1, coef_idx.l_block_size).array() *
-                       expansion_coefficients_j_2.block(
+                       expansion_coefficients_2.block(
                             coef_idx.n1, coef_idx.l_block_idx,
                             1, coef_idx.l_block_size).array()).sum()
                       * coef_idx.l_factor;
@@ -884,7 +884,7 @@ namespace rascal {
                   }  // for const auto& coef_idx : coef_ids
                 }    // for cartesian_idx
               }      // if (not sorted or equal)
-            }        // keys_coef_j
+            }        // keys_coef
           }          // keys_coef_grad_neigh
 
           // multiply with \sqrt(2) factor to account
