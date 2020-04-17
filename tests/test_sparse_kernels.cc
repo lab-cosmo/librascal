@@ -106,7 +106,8 @@ namespace rascal {
                                    AdaptorCenterContribution, AdaptorStrict>;
     using Manager_t = typename ManagerTypeHolder_t::type;
     using ManagerCollection_t =
-      typename TypeHolderInjector<ManagerCollection, ManagerTypeHolder_t::type_list>::type;
+        typename TypeHolderInjector<ManagerCollection,
+                                    ManagerTypeHolder_t::type_list>::type;
     using Structure_t = AtomicStructure<3>;
     using Representation_t = CalculatorSphericalInvariants;
     using SparsePoints_t = SparsePointsBlockSparse<Representation_t>;
@@ -129,8 +130,7 @@ namespace rascal {
   /**
    * Test the analytical kernel gradients against numerical kernel gradients.
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(grad_test, Fix,
-                                   sparse_grad_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(grad_test, Fix, sparse_grad_fixtures, Fix) {
     // using Manager_t = typename Fix::Manager_t;
     using ManagerCollection_t = typename Fix::ManagerCollection_t;
     using Representation_t = typename Fix::Representation_t;
@@ -151,7 +151,8 @@ namespace rascal {
       json adaptors_input = input.at("adaptors").template get<json>();
       json calculator_input = input.at("calculator").template get<json>();
       json kernel_input = input.at("kernel").template get<json>();
-      auto selected_ids = input.at("selected_ids").template get<std::vector<std::vector<int>>>();
+      auto selected_ids = input.at("selected_ids")
+                              .template get<std::vector<std::vector<int>>>();
       // initialize classes
       Kernel_t kernel{kernel_input};
       kernel_input.at("target_type") = "Atom";
@@ -160,14 +161,18 @@ namespace rascal {
       SparsePoints_t sparse_points{};
       Representation_t representation{calculator_input};
       // load structures, compute representation and fill sparse points
-      managers.add_structures(filename, 0, input.at("n_structures").template get<int>());
+      managers.add_structures(filename, 0,
+                              input.at("n_structures").template get<int>());
       representation.compute(managers);
       sparse_points.push_back(representation, managers, selected_ids);
       // compute kernel gradients
-      auto KNM_der{kernel.compute_derivative(representation, managers, sparse_points)};
-      auto KNM_num_der{compute_numerical_kernel_gradients(kernel_num, representation, managers, sparse_points, input.at("h").template get<double>())};
+      auto KNM_der{
+          kernel.compute_derivative(representation, managers, sparse_points)};
+      auto KNM_num_der{compute_numerical_kernel_gradients(
+          kernel_num, representation, managers, sparse_points,
+          input.at("h").template get<double>())};
       auto diff = math::relative_error(KNM_der, KNM_num_der, delta, epsilon);
-      int col_max{0},row_max{0};
+      int col_max{0}, row_max{0};
       double max_rel_diff{diff.maxCoeff(&row_max, &col_max)};
       BOOST_TEST(max_rel_diff < delta);
       if (verbose and max_rel_diff > delta) {
@@ -177,9 +182,9 @@ namespace rascal {
         std::cout << kernel_input.dump() << std::endl;
         std::cout << diff.row(row_max) << std::endl;
         std::cout << "============================" << std::endl;
-        std::cout << KNM_der.row(row_max)<< std::endl;
+        std::cout << KNM_der.row(row_max) << std::endl;
         std::cout << "============================" << std::endl;
-        std::cout << KNM_num_der.row(row_max)<< std::endl;
+        std::cout << KNM_num_der.row(row_max) << std::endl;
         std::cout << "============================" << std::endl;
       }
     }

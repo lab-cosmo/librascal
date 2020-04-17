@@ -34,10 +34,9 @@
 #include "test_calculator.hh"
 #include "test_manager_collection.hh"
 
+#include "rascal/models/numerical_kernel_gradients.hh"
 #include "rascal/models/sparse_kernels.hh"
 #include "rascal/models/sparse_points.hh"
-#include "rascal/models/numerical_kernel_gradients.hh"
-
 
 namespace rascal {
 

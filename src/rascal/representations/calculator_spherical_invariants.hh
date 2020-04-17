@@ -812,8 +812,7 @@ namespace rascal {
 
             for (const auto & coef_key_2 : keys_coef) {
               // c^{i b}
-              const auto & expansion_coefficients_2{
-                  coefficients[coef_key_2]};
+              const auto & expansion_coefficients_2{coefficients[coef_key_2]};
               bool sorted{true}, equal{false};
               // make sure spair_type has sorted entries
               if (coef_key_1[0] > coef_key_2[0]) {

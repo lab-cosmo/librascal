@@ -113,12 +113,13 @@ namespace rascal {
 
     size_t get_number_of_atoms() const { return positions.cols(); }
 
-    template<typename Derived>
-    void displace_position(const size_t& i_atom, const Eigen::MatrixBase<Derived>& disp) {
+    template <typename Derived>
+    void displace_position(const size_t & i_atom,
+                           const Eigen::MatrixBase<Derived> & disp) {
       if (i_atom >= this->get_number_of_atoms()) {
         std::stringstream err_str{};
-        err_str << "Trying to displace an atom that does not exist: '"
-                  << i_atom << "' >= '" << this->get_number_of_atoms() << "'.";
+        err_str << "Trying to displace an atom that does not exist: '" << i_atom
+                << "' >= '" << this->get_number_of_atoms() << "'.";
         throw std::runtime_error(err_str.str());
       }
       this->positions.col(i_atom) += disp;
