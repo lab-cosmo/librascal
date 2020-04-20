@@ -379,7 +379,7 @@ namespace rascal {
             BOOST_TEST(keys_grad_center.size() == all_keys.size());
             for (size_t ii{0}; ii < keys_grad_center.size(); ii++) {
               BOOST_TEST(keys_grad_center[ii] == all_keys[ii],
-                           boost::test_tools::per_element());
+                         boost::test_tools::per_element());
             }
 
             int i_neigh{0};
@@ -401,13 +401,13 @@ namespace rascal {
                 BOOST_TEST(keys_neigh.size() == neigh_keys[i_neigh].size());
                 for (size_t ii{0}; ii < keys_neigh.size(); ii++) {
                   BOOST_TEST(keys_neigh[ii] == neigh_keys[i_neigh][ii],
-                              boost::test_tools::per_element());
+                             boost::test_tools::per_element());
                 }
               } else {
                 BOOST_TEST(keys_neigh.size() == all_keys.size());
                 for (size_t ii{0}; ii < keys_neigh.size(); ii++) {
                   BOOST_TEST(keys_neigh[ii] == all_keys[ii],
-                              boost::test_tools::per_element());
+                             boost::test_tools::per_element());
                 }
               }
               ++i_neigh;

@@ -586,7 +586,16 @@ namespace rascal {
 
       // compute the dot product and update the gradients to be normalized
       for (auto center : manager) {
+        const int atom_i_tag{center.get_atom_tag()};
         for (auto neigh : center.pairs_with_self_pair()) {
+          auto && atom_j = neigh.get_atom_j();
+          const int atom_j_tag{atom_j.get_atom_tag()};
+          // const bool is_center_atom{manager->is_center_atom(neigh)};
+          // compute grad contribution only if the neighbour is _not_ an image
+          // of the center (because then it moves with the center)
+          if (atom_j_tag == atom_i_tag and manager->is_ghost_atom(neigh)) {
+            continue;
+          }
           const auto & soap_vector = soap_vectors[center];
           auto & soap_vector_gradients_by_neigh = soap_vector_gradients[neigh];
           soap_vector_dot_gradient.setZero();
@@ -611,7 +620,7 @@ namespace rascal {
 
           // Now update each species-pair-block using the dot-product just
           // computed
-          // for (const auto & key : keys_intersect) {
+          // for (const auto & key : keys_grad) {
           for (const auto & key : soap_vector.get_keys()) {
             auto soap_gradient_by_species_pair =
                 soap_vector_gradients_by_neigh[key];
