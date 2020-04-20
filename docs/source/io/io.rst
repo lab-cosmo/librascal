@@ -23,4 +23,10 @@ referenced in the main object file (both files should be in the same folder).
 The function :py:meth:`rascal.utils.load_obj` loads a Librascal python object.
 An example is available in the `MLIP_example.ipynb` jupyter notebook.
 
+To produce human-readable and compact JSON files with python some external tools such as
+prettyjson_ could be used.
+
+
 .. _ASE: https://wiki.fysik.dtu.dk/ase/ase/io/io.html
+
+.. _prettyjson: https://wiki.fysik.dtu.dk/ase/ase/io/io.html
