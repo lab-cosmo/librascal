@@ -1329,7 +1329,6 @@ namespace rascal {
           for (auto neigh : center.pairs()) {
             int neigh_type{neigh.get_atom_type()};
             auto atom_j = neigh.get_atom_j();
-            // auto & coef_j = expansions_coefficients[atom_j];
             auto atom_j_tag = atom_j.get_atom_tag();
             std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
                 grad_pair_list{};
@@ -1352,9 +1351,17 @@ namespace rascal {
                   }
                 }
               }
+              if (not this->normalize) {
+                keys_list_grad.emplace_back(grad_pair_list);
+              } else {
+                // the normalization: \grad_k \tilde{p}^{i} ~ \tilde{p}^{i}
+                // the keys for the gradient are the same as for the
+                // representation
+                keys_list_grad.emplace_back(pair_list);
+              }
+            } else {
+              keys_list_grad.emplace_back(grad_pair_list);
             }
-            // keys_list_grad.emplace_back(grad_pair_list);
-            keys_list_grad.emplace_back(pair_list);
           }  // auto neigh : center.pairs()
         }    // if compute_gradients
 
