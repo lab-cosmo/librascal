@@ -200,6 +200,12 @@ namespace rascal {
       explicit AtomicSmearingSpecification(const Hypers_t & hypers) {
         this->constant_gaussian_sigma =
             hypers.at("gaussian_sigma").at("value").get<double>();
+        if (this->constant_gaussian_sigma < 5e-2) {
+          std::stringstream err_str{};
+          err_str << "Constant gaussian sigma is too small: "
+                  << this->constant_gaussian_sigma << " < 5e-2";
+          throw std::runtime_error(err_str.str());
+        }
       }
       template <size_t Order, size_t Layer>
       double
@@ -351,7 +357,7 @@ namespace rascal {
        * @param hypers is expected to be the same as the the input of
        *         the spherical expansion
        */
-      void set_hyperparameters(const Hypers_t & hypers) {
+      void set_hyperparameters(const Hypers_t & hypers) override {
         this->hypers = hypers;
 
         this->max_radial = hypers.at("max_radial");
@@ -400,7 +406,7 @@ namespace rascal {
         }
       }
 
-      void precompute() {
+      void precompute() override {
         this->precompute_radial_sigmas();
         this->precompute_radial_overlap();
         this->ortho_norm_matrix =
@@ -766,7 +772,7 @@ namespace rascal {
        * @param hypers is expected to be the same as the the input of
        *         the spherical expansion
        */
-      void set_hyperparameters(const Hypers_t & hypers) {
+      void set_hyperparameters(const Hypers_t & hypers) override {
         this->hypers = hypers;
 
         this->max_radial = hypers.at("max_radial");
@@ -814,7 +820,7 @@ namespace rascal {
         }
       }
 
-      void precompute() {
+      void precompute() override {
         auto point_weight{math::compute_gauss_legendre_points_weights(
             0., this->interaction_cutoff + 3 * this->smearing,
             this->max_radial)};
@@ -1055,7 +1061,7 @@ namespace rascal {
       }
 
      protected:
-      void precompute() {
+      void precompute() override {
         this->precompute_fac_a();
         this->precompute_center_contribution();
       }
@@ -1216,15 +1222,15 @@ namespace rascal {
      * @throw logic_error if an invalid option or combination of options is
      *                    specified in the structure
      */
-    void set_hyperparameters(const Hypers_t & hypers) {
+    void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::AtomicSmearingType;
       using internal::CutoffFunctionType;
       using internal::OptimizationType;
       using internal::RadialBasisType;
       this->hypers = hypers;
 
-      this->max_radial = hypers.at("max_radial");
-      this->max_angular = hypers.at("max_angular");
+      this->max_radial = hypers.at("max_radial").get<size_t>();
+      this->max_angular = hypers.at("max_angular").get<size_t>();
       if (hypers.count("compute_gradients")) {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();
       } else {  // Default false (don't compute gradients)
@@ -1382,7 +1388,8 @@ namespace rascal {
         break;
       }
       default:
-        throw std::logic_error("The combination of parameter is not handled.");
+        throw std::logic_error(
+            "The desired combination of parameters can not be handled.");
         break;
       }
 
@@ -1406,6 +1413,27 @@ namespace rascal {
 
       this->set_name(hypers);
     }
+
+    bool operator==(const CalculatorSphericalExpansion & other) const {
+      bool is_equal{
+          (this->does_gradients() == other.does_gradients()) and
+          (this->interaction_cutoff == other.interaction_cutoff) and
+          (this->cutoff_smooth_width == other.cutoff_smooth_width) and
+          (this->interpolator_accuracy == other.interpolator_accuracy) and
+          (this->max_radial == other.max_radial) and
+          (this->max_angular == other.max_angular) and
+          (this->atomic_smearing_type == other.atomic_smearing_type) and
+          (this->radial_integral_type == other.radial_integral_type) and
+          (this->optimization_type == other.optimization_type) and
+          (this->cutoff_function_type == other.cutoff_function_type)};
+      return is_equal;
+    }
+
+    /**
+     * Returns if the calculator is able to compute gradients of the
+     * representation w.r.t. atomic positions ?
+     */
+    bool does_gradients() const override { return this->compute_gradients; }
 
     /**
      * Construct a new Calculator using a hyperparameters container
@@ -1432,8 +1460,23 @@ namespace rascal {
         delete;
 
     //! Move constructor
-    CalculatorSphericalExpansion(CalculatorSphericalExpansion && other) =
-        default;
+    CalculatorSphericalExpansion(CalculatorSphericalExpansion && other) noexcept
+        : CalculatorBase{std::move(other)}, interaction_cutoff{std::move(
+                                                other.interaction_cutoff)},
+          cutoff_smooth_width{std::move(other.cutoff_smooth_width)},
+          interpolator_accuracy{std::move(other.interpolator_accuracy)},
+          max_radial{std::move(other.max_radial)}, max_angular{std::move(
+                                                       other.max_angular)},
+          compute_gradients{std::move(other.compute_gradients)},
+          expansion_by_species{std::move(other.expansion_by_species)},
+          global_species{std::move(other.global_species)},
+          atomic_smearing_type{std::move(other.atomic_smearing_type)},
+          radial_integral{std::move(other.radial_integral)},
+          radial_integral_type{std::move(other.radial_integral_type)},
+          optimization_type{std::move(other.optimization_type)},
+          cutoff_function{std::move(other.cutoff_function)},
+          cutoff_function_type{std::move(other.cutoff_function_type)},
+          spherical_harmonics{std::move(other.spherical_harmonics)} {}
 
     //! Destructor
     virtual ~CalculatorSphericalExpansion() = default;
@@ -1532,8 +1575,6 @@ namespace rascal {
 
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
     internal::CutoffFunctionType cutoff_function_type{};
-
-    Hypers_t hypers{};
 
     math::SphericalHarmonics spherical_harmonics{};
 
@@ -2045,6 +2086,8 @@ namespace rascal {
     if (compute_gradients) {
       expansions_coefficients_gradient.resize(keys_list_grad);
       expansions_coefficients_gradient.setZero();
+    } else {
+      expansions_coefficients_gradient.resize();
     }
   }
 
@@ -2090,6 +2133,8 @@ namespace rascal {
     if (this->compute_gradients) {
       expansions_coefficients_gradient.resize(keys_list_grad);
       expansions_coefficients_gradient.setZero();
+    } else {
+      expansions_coefficients_gradient.resize();
     }
   }
 
@@ -2148,9 +2193,29 @@ namespace rascal {
     if (this->compute_gradients) {
       expansions_coefficients_gradient.resize(keys_list_grad);
       expansions_coefficients_gradient.setZero();
+    } else {
+      expansions_coefficients_gradient.resize();
     }
   }
 
 }  // namespace rascal
+
+namespace nlohmann {
+  /**
+   * Special specialization of the json serialization for non default
+   * constructible type.
+   */
+  template <>
+  struct adl_serializer<rascal::CalculatorSphericalExpansion> {
+    static rascal::CalculatorSphericalExpansion from_json(const json & j) {
+      return rascal::CalculatorSphericalExpansion{j};
+    }
+
+    static void to_json(json & j,
+                        const rascal::CalculatorSphericalExpansion & t) {
+      j = t.hypers;
+    }
+  };
+}  // namespace nlohmann
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_

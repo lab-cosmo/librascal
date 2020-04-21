@@ -168,10 +168,11 @@ namespace rascal {
     template <class StructureManager>
     using SpectrumNorm_t = Property<double, 1, StructureManager, 1>;
 
-    explicit CalculatorSphericalInvariants(const Hypers_t & hyper)
-        : CalculatorBase{}, rep_expansion{hyper} {
+    explicit CalculatorSphericalInvariants(const Hypers_t & hypers)
+        : CalculatorBase{}, rep_expansion{hypers} {
       this->set_default_prefix("spherical_invariants_");
-      this->set_hyperparameters(hyper);
+      this->set_hyperparameters(hypers);
+      this->hypers = hypers;
     }
 
     //! Copy constructor
@@ -179,9 +180,17 @@ namespace rascal {
         delete;
 
     //! Move constructor
-    CalculatorSphericalInvariants(CalculatorSphericalInvariants && other) =
-        default;
-
+    CalculatorSphericalInvariants(
+        CalculatorSphericalInvariants && other) noexcept
+        : CalculatorBase{std::move(other)}, max_radial{std::move(
+                                                other.max_radial)},
+          max_angular{std::move(other.max_angular)}, normalize{std::move(
+                                                         other.normalize)},
+          compute_gradients{std::move(other.compute_gradients)},
+          inversion_symmetry{std::move(other.inversion_symmetry)},
+          rep_expansion{std::move(other.rep_expansion)},
+          type{std::move(other.type)}, l_factors{std::move(other.l_factors)},
+          wigner_w3js{std::move(other.wigner_w3js)} {}
     //! Destructor
     virtual ~CalculatorSphericalInvariants() = default;
 
@@ -193,7 +202,7 @@ namespace rascal {
     CalculatorSphericalInvariants &
     operator=(CalculatorSphericalInvariants && other) = default;
 
-    void set_hyperparameters(const Hypers_t & hypers) {
+    void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::SphericalInvariantsType;
 
       this->max_radial = hypers.at("max_radial").get<size_t>();
@@ -229,6 +238,26 @@ namespace rascal {
 
       this->set_name(hypers);
     }
+
+    bool operator==(const CalculatorSphericalInvariants & other) const {
+      bool grad_match{this->does_gradients() == other.does_gradients()};
+      bool main_hypers_match{
+          this->max_radial == other.max_radial and
+          this->max_angular == other.max_angular and
+          this->normalize == other.normalize and
+          this->inversion_symmetry == other.inversion_symmetry and
+          this->type == other.type and
+          (this->l_factors.array() == other.l_factors.array()).all() and
+          (this->wigner_w3js.array() == other.wigner_w3js.array()).all()};
+      bool rep_expansion_match{this->rep_expansion == other.rep_expansion};
+      return (grad_match and main_hypers_match and rep_expansion_match);
+    }
+
+    /**
+     * Returns if the calculator is able to compute gradients of the
+     * representation w.r.t. atomic positions ?
+     */
+    bool does_gradients() const override { return this->compute_gradients; }
 
     /**
      * Compute representation for a given structure manager.
@@ -1098,6 +1127,8 @@ namespace rascal {
     if (this->compute_gradients) {
       soap_vector_gradients.resize(keys_list_grad);
       soap_vector_gradients.setZero();
+    } else {
+      soap_vector_gradients.resize();
     }
   }
 
@@ -1134,7 +1165,6 @@ namespace rascal {
       // initialize the radial spectrum to 0 and the proper size
       keys_list.emplace_back(keys);
       keys_list_grad.emplace_back(keys);
-
       for (auto neigh : center.pairs()) {
         (void)neigh;  // to avoid compiler warning
         keys_list_grad.emplace_back(keys);
@@ -1146,9 +1176,28 @@ namespace rascal {
     if (this->compute_gradients) {
       soap_vector_gradients.resize(keys_list_grad);
       soap_vector_gradients.setZero();
+    } else {
+      soap_vector_gradients.resize();
     }
   }
-
 }  // namespace rascal
+
+namespace nlohmann {
+  /**
+   * Special specialization of the json serialization for non default
+   * constructible type.
+   */
+  template <>
+  struct adl_serializer<rascal::CalculatorSphericalInvariants> {
+    static rascal::CalculatorSphericalInvariants from_json(const json & j) {
+      return rascal::CalculatorSphericalInvariants{j};
+    }
+
+    static void to_json(json & j,
+                        const rascal::CalculatorSphericalInvariants & t) {
+      j = t.hypers;
+    }
+  };
+}  // namespace nlohmann
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_

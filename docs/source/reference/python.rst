@@ -26,6 +26,18 @@ Representations
    :members:
 
 Models
-===============
+======
 .. autoclass:: rascal.models.Kernel
    :members:
+
+IO
+===
+
+.. autofunction:: rascal.utils.dump_obj
+
+.. autofunction:: rascal.utils.load_obj
+
+.. autoclass:: rascal.utils.BaseIO
+   :members:
+
+

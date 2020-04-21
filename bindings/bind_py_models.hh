@@ -33,9 +33,11 @@
 #include "bind_py_structure_manager.hh"
 
 #include "rascal/models/kernels.hh"
+#include "rascal/models/sparse_kernels.hh"
+#include "rascal/models/sparse_points.hh"
 
 namespace rascal {
-  void add_kernels(py::module &, py::module &);
+  void add_models(py::module &, py::module &);
 }
 
 #endif  // BINDINGS_BIND_PY_MODELS_HH_

@@ -53,10 +53,13 @@ class AtomsList(object):
         self.managers = managers
 
     def __iter__(self):
-        return self.managers
+        return self.managers.__iter__()
 
     def __getitem__(self, key):
         return self.managers[key]
+
+    def __len__(self):
+        return len(self.managers)
 
     def get_features(self, calculator, species=None):
         """
@@ -239,9 +242,9 @@ def mask_center_atoms_by_id(frame, id_select=None, id_blacklist=None):
     if 'center_atoms_mask' not in frame.arrays:
         # add a default mask
         if id_select is not None:
-            mask = np.zeros((frame.get_number_of_atoms(),), dtype='bool')
+            mask = np.zeros((len(frame),), dtype='bool')
         else:
-            mask = np.ones((frame.get_number_of_atoms(),), dtype='bool')
+            mask = np.ones((len(frame),), dtype='bool')
     else:
         mask = frame.arrays['center_atoms_mask']
     if id_select is not None:
@@ -314,9 +317,9 @@ def mask_center_atoms_by_species(frame, species_select=[],
     if 'center_atoms_mask' not in frame.arrays:
         # add a default mask
         if species_select:
-            old_mask = np.zeros((frame.get_number_of_atoms(),), dtype='bool')
+            old_mask = np.zeros((len(frame),), dtype='bool')
         else:
-            old_mask = np.ones((frame.get_number_of_atoms(),), dtype='bool')
+            old_mask = np.ones((len(frame),), dtype='bool')
     else:
         old_mask = frame.arrays['center_atoms_mask']
     # Python's "bitwise" operators do per-element logical operations in NumPy
