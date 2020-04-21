@@ -9,14 +9,14 @@ def get_index_mappings_sample_per_species(managers, sps):
     strides_by_sp = {sp: [0] for sp in sps}
     global_counter = {sp: 0 for sp in sps}
     indices_by_sp = {sp: [] for sp in sps}
-    map_by_manager = [{} for ii in range(len(managers))]
+    map_by_manager = {sp:[{} for ii in range(len(managers)) ] for sp in sps}
     for i_man in range(len(managers)):
         man = managers[i_man]
         counter = {sp: 0 for sp in sps}
         for i_at, at in enumerate(man):
             types.append(at.atom_type)
             if at.atom_type in sps:
-                map_by_manager[i_man][global_counter[at.atom_type]] = i_at
+                map_by_manager[sp][i_man][global_counter[at.atom_type]] = i_at
                 counter[at.atom_type] += 1
                 global_counter[at.atom_type] += 1
             else:
@@ -60,7 +60,7 @@ def convert_selected_global_index2rascal_sample_per_species(managers, selected_i
     selected_ids = [[] for ii in range(len(managers))]
     for sp in sps:
         ids = convert_selected_global_index2rascal_sample(
-            managers, selected_ids_by_sp[sp], strides_by_sp[sp], map_by_manager)
+            managers, selected_ids_by_sp[sp], strides_by_sp[sp], map_by_manager[sp])
         for ii, selected_idx in zip(ids, selected_ids):
             selected_idx.extend(ii)
     for ii in range(len(selected_ids)):
