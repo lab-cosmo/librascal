@@ -186,7 +186,7 @@ if(NOT APPLE AND UNIX)
 elseif(APPLE)
   set(MACOSX_RPATH ON)
   # this link path accommodates most installations
-  # `@loader_path/../../../..//../../../../` should allow to link libraries
+  # `@loader_path/../../../../` should allow to link libraries
   # in `$PREFIX/lib`
   set(CMAKE_INSTALL_RPATH "@loader_path/../../../../")
   # this link path accommodates installation with `python setup.py install'
