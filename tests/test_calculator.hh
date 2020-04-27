@@ -427,9 +427,11 @@ namespace rascal {
         "reference_data/inputs/SiC_moissanite.json",
         "reference_data/inputs/SiCGe_wurtzite_like.json",
         "reference_data/inputs/SiC_moissanite_supercell.json",
-        "reference_data/inputs/methane.json"};
+        "reference_data/inputs/methane.json",
+        "reference_data/inputs/small_molecule.json",
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
 
-    const double cutoff{2.5};
+    const double cutoff{3.};
     const double cutoff_skin{0.};
 
     json factory_args{};
@@ -561,7 +563,7 @@ namespace rascal {
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
+         {"cutoff", {{"value", 3}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
@@ -599,7 +601,7 @@ namespace rascal {
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
+         {"cutoff", {{"value", 3}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
