@@ -178,11 +178,15 @@ set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
 if(NOT APPLE AND UNIX)
+  # this link path accommodates most installations
   set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../../../")
+  # this link path accommodates installation with `python setup.py install'
   set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../lib")
 elseif(APPLE)
   set(MACOSX_RPATH ON)
+  # this link path accommodates most installations
   set(CMAKE_INSTALL_RPATH "@loader_path/../../../../")
+  # this link path accommodates installation with `python setup.py install'
   set(CMAKE_INSTALL_RPATH "@loader_path/../../lib")
 endif()
 
