@@ -48,6 +48,7 @@ namespace rascal {
     using CutFun_t = CutoffFunction<InlCutoffFunctionType::Cosine>;
     const double r_cut{1.1};
     const UnitStyle unit_style{units::metal};
+    static constexpr auto SymFunType(){return MySymFunType;}
     std::shared_ptr<CutFun_t> cut_fun{std::make_shared<CutFun_t>(
         unit_style,
         json{{"params", {}}, {"r_cut", {{"value", r_cut}, {"unit", "Å"}}}})};
@@ -108,6 +109,8 @@ namespace rascal {
    */
   using GaussianSymFun = BehlerFeatureFixture<SymmetryFunctionType::Gaussian,
                                               SymmetryFunctionType::Gaussian>;
+
+
   BOOST_FIXTURE_TEST_CASE(pair_permutation_test, GaussianSymFun) {
     ManagerFixture<StructureManagerLammps> manager_fix{};
     auto half_list_ptr{
@@ -119,9 +122,12 @@ namespace rascal {
     using GVals_t =
         Property<double, AtomOrder,
                  AdaptorStrict<AdaptorHalfList<StructureManagerLammps>>>;
+
+    constexpr auto Order{SymmetryFunction<SymFunType()>::Order};
     using dGVals_t =
-        Property<double, AtomOrder,
-                 AdaptorStrict<AdaptorHalfList<StructureManagerLammps>>, 3>;
+        Property<double, Order,
+                 AdaptorStrict<AdaptorHalfList<StructureManagerLammps>>,
+                 nb_distances(Order)>;
     // results without permutation
     auto G01_vals{std::make_shared<GVals_t>(manager)};
     // results with permutation
@@ -206,16 +212,11 @@ namespace rascal {
 
         double df_s{-2 * eta * (r_ij - r_s) * f_s};
 
-        auto && dG_incr{manager.get_direction_vector(pair) *
-                        (df_s * f_c + f_s * df_c)};
+        auto && dG_incr{df_s * f_c + f_s * df_c};
 
-        int flip_direction{-1};
-        dG01_ref_derivatives->operator[](atom) += dG_incr;
-        dG01_ref_derivatives->operator[](pair) -= dG_incr;
-        dG10_ref_derivatives->operator[](pair) += flip_direction * dG_incr;
-        dG10_ref_derivatives->operator[](atom) -= flip_direction * dG_incr;
-        dG11_ref_derivatives->operator[](atom) += 2 * dG_incr;
-        dG11_ref_derivatives->operator[](pair) -= 2 * dG_incr;
+        dG01_ref_derivatives->operator[](pair) = dG_incr;
+        dG10_ref_derivatives->operator[](pair) = dG_incr;
+        dG11_ref_derivatives->operator[](pair) = dG_incr;
       }
     }
 

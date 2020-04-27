@@ -311,7 +311,7 @@ namespace rascal {
     //! Tells if the cluster is a center
     template <size_t Layer>
     bool is_center_atom(const ClusterRefKey<2, Layer> & cluster) {
-      // get the corresponding atom_j from pair_ij and check if the tag of j is
+      // get the corresponding atom_j from pairij and check if the tag of j is
       // the same in atom_j and pair_ij. In pair_ij the atom_tag could
       // correspond to a ghost atom while the tag of atom_j always correspond to
       // an atom in the unit cell.
@@ -806,7 +806,7 @@ namespace rascal {
     }
 
     /**
-     * creates or fetches and possibly refreshes a property storing clusters
+     * creates or fetches and refreshes if necessary a property storing clusters
      * of order StoredOrder constituting the higher-order cluster. Example
      * 1: sub_clusters<AtomOrder> yields a property containing the atom
      * clusters for each atom in the cluster. Example 2:

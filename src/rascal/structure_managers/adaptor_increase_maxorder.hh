@@ -466,7 +466,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Dispatch to the approprate loop
+   * Dispatch to the appropriate loop
    */
   template <class ManagerImplementation>
   void AdaptorMaxOrder<ManagerImplementation>::update_self() {

@@ -163,7 +163,9 @@ namespace rascal {
       // get precomputed cos_theta
       // calc G_incr
       auto && G_incr{0};
-      if (G_incr !=0) {std::cout<< std::endl;}
+      if (G_incr != 0) {
+        std::cout << std::endl;
+      }
       // get i/j atoms
       // sum up depending on species repetition (3 permutations?)
       throw std::runtime_error("Not yet implemented");
@@ -193,12 +195,13 @@ namespace rascal {
     using OutputVal_t = Property<double, AtomOrder, StructureManager>;
     OutputVal_t & fun_vals{dynamic_cast<OutputVal_t &>(*output_values)};
 
-    using OutputDerivative_t = Property<double, AtomOrder, StructureManager, 3>;
+    constexpr auto Order{SymmetryFunction_t::Order};
+    using OutputDerivative_t =
+        Property<double, Order, StructureManager, nb_distances(Order)>;
     OutputDerivative_t & fun_derivatives{
         dynamic_cast<OutputDerivative_t &>(*output_derivatives)};
 
     auto & pair_distances{manager.get_distance()};
-    auto & pair_directions{manager.get_direction_vector()};
 
     auto & neigh_to_i_atom{
         manager
@@ -219,28 +222,24 @@ namespace rascal {
 
           auto && G_incr{sym_fun_value * cut_fun_value};
 
-          auto && dG_incr_r{(sym_fun_value * cut_fun_derivative +
-                             sym_fun_derivative * cut_fun_value)};
-          auto && dG_incr{dG_incr_r *
-                          Permutation::flip_direction(pair_directions[pair])};
+          auto && dG_incr{(sym_fun_value * cut_fun_derivative +
+                           sym_fun_derivative * cut_fun_value)};
 
           auto && atom_cluster_indices{neigh_to_i_atom[pair]};
           auto && i_atom{manager[atom_cluster_indices(Permutation::leading())]};
-          auto && j_atom{manager[atom_cluster_indices(Permutation::second())]};
 
+          fun_derivatives[pair] = dG_incr;
           switch (RepSpecies) {
           case RepeatedSpecies::Not: {
             fun_vals[i_atom] += G_incr;
-            fun_derivatives[i_atom] += dG_incr;
-            fun_derivatives[j_atom] -= dG_incr;
             break;
           }
 
           case RepeatedSpecies::All: {
             fun_vals[i_atom] += G_incr;
+            auto && j_atom{
+                manager[atom_cluster_indices(Permutation::second())]};
             fun_vals[j_atom] += G_incr;
-            fun_derivatives[i_atom] += 2 * dG_incr;
-            fun_derivatives[j_atom] -= 2 * dG_incr;
             break;
           }
 
@@ -251,59 +250,60 @@ namespace rascal {
         }
       }
       break;
+      }
+      case TripletOrder: {
+        throw std::runtime_error("Not yet implemented");
+        break;
+      }
+      default:
+        std::stringstream err{};
+        err << "unknown symmetry function order " << SymmetryFunction_t::Order;
+        throw std::runtime_error(err.str());
+        break;
+      }
     }
-    case TripletOrder: {
-      throw std::runtime_error("Not yet implemented");
-      break;
+
+    /* ---------------------------------------------------------------------- */
+    template <SymmetryFunctionType MySymFunType,
+              SymmetryFunctionType... SymFunTypes>
+    void BehlerFeature<MySymFunType, SymFunTypes...>::init(
+        const UnitStyle & /*units*/) {
+      // if (this->is_initialised) {
+      //   throw std::runtime_error("double initialisation");
+      // }
+      // // counting the number of parameters to store per cutoff
+      // for (const auto & param : this->raw_params) {
+      //   auto && r_cut{param.at("r_cut").template get<double>()};
+      //   nb_param_per_cutoff[r_cut]++;
+      // }
+
+      // // allocate storage
+      // for (const auto & key_val : nb_param_per_cutoff) {
+      //   auto && r_cut{key_val.first};
+      //   this->params[r_cut].resize(SymmetryFun<SymFunType>::NbParams,
+      //                              nb_param_per_cutoff[r_cut]);
+      //   this->params[r_cut].setZero();
+      // }
+
+      // // store params in storage
+      // std::map<double, size_t> nb_param_counter{};
+      // for (auto && param : this->raw_params) {
+      //   auto && r_cut{param.at("r_cut").template get<double>()};
+
+      //   this->params[r_cut].col(nb_param_counter[r_cut]++) =
+      //       SymmetryFun<SymFunType>::read(param, units);
+      // }
+
+      // // determine which species repetition scenario we are in
+      // for (auto && species : param.at("species").template get<std::string>())
+      // {
+      //   this->species_combo
+      // }
+      // auto species{};
+
+      // this->is_initialised = true;
     }
-    default:
-      std::stringstream err{};
-      err << "unknown symmetry function order " << SymmetryFunction_t::Order;
-      throw std::runtime_error(err.str());
-      break;
-    }
-  }
 
-  /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType MySymFunType,
-            SymmetryFunctionType... SymFunTypes>
-  void BehlerFeature<MySymFunType, SymFunTypes...>::init(
-      const UnitStyle & /*units*/) {
-    // if (this->is_initialised) {
-    //   throw std::runtime_error("double initialisation");
-    // }
-    // // counting the number of parameters to store per cutoff
-    // for (const auto & param : this->raw_params) {
-    //   auto && r_cut{param.at("r_cut").template get<double>()};
-    //   nb_param_per_cutoff[r_cut]++;
-    // }
-
-    // // allocate storage
-    // for (const auto & key_val : nb_param_per_cutoff) {
-    //   auto && r_cut{key_val.first};
-    //   this->params[r_cut].resize(SymmetryFun<SymFunType>::NbParams,
-    //                              nb_param_per_cutoff[r_cut]);
-    //   this->params[r_cut].setZero();
-    // }
-
-    // // store params in storage
-    // std::map<double, size_t> nb_param_counter{};
-    // for (auto && param : this->raw_params) {
-    //   auto && r_cut{param.at("r_cut").template get<double>()};
-
-    //   this->params[r_cut].col(nb_param_counter[r_cut]++) =
-    //       SymmetryFun<SymFunType>::read(param, units);
-    // }
-
-    // // determine which species repetition scenario we are in
-    // for (auto && species : param.at("species").template get<std::string>()) {
-    //   this->species_combo
-    // }
-    // auto species{};
-
-    // this->is_initialised = true;
-  }
-
-}  // namespace rascal
+  }  // namespace rascal
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_
