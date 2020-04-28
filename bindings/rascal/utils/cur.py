@@ -144,13 +144,13 @@ class CURFilter(BaseIO):
         strides_by_sp = {sp: [0] for sp in sps}
         global_counter = {sp: 0 for sp in sps}
         indices_by_sp = {sp: [] for sp in sps}
-        map_by_manager = [{} for ii in range(len(managers))]
+        map_by_manager = {sp:[{} for ii in range(len(managers)) ] for sp in sps}
         for i_man, man in enumerate(managers):
             counter = {sp: 0 for sp in sps}
             for i_at, at in enumerate(man):
                 types.append(at.atom_type)
                 if at.atom_type in sps:
-                    map_by_manager[i_man][global_counter[at.atom_type]] = i_at
+                    map_by_manager[at.atom_type][i_man][global_counter[at.atom_type]] = i_at
                     counter[at.atom_type] += 1
                     global_counter[at.atom_type] += 1
                 else:
@@ -180,7 +180,7 @@ class CURFilter(BaseIO):
                     if (idx >= strides_by_sp[sp][i_manager[sp]] and
                                     idx < strides_by_sp[sp][i_manager[sp] + 1]):
                         selected_ids[i_manager[sp]].append(
-                            map_by_manager[i_manager[sp]][idx])
+                            map_by_manager[sp][i_manager[sp]][idx])
                         carry_on = False
                     else:
                         i_manager[sp] += 1
