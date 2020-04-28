@@ -26,8 +26,8 @@ setup(
     version=version,
     description="""A versatile and scalable computation of representations of
 atomic structures for machine learning.""",
-    author='Félix Musil',
-    license="LGPL-3",
+    author='librascal developers',
+    license="LGPL-3.0-or-later",
     cmake_args=[
       '-DINSTALL_PATH:STRING='+join(os.getcwd(),CMAKE_INSTALL_DIR()),
       '-DBUILD_EXAMPLES:BOOL=OFF'
