@@ -52,6 +52,14 @@ Installation
 
 .. start-install
 
+The installation of the library for python use can be done simply with:
+
+.. code:: bash
+
+   pip install .
+
+assuming that `python` 3.5 (or higher) and `gcc` or `clang` are available.
+
 Dependencies
 ~~~~~~~~~~~~
 
@@ -222,13 +230,12 @@ build only the c++ library:
 
 Installing rascal
 ^^^^^^^^^^^^^^^^^
+To install the python library with c++ bindings:
 
 .. code:: shell
 
-   mkdir ../build
-   cd build
-   cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_BINDINGS=ON ..
-   make install
+   pip install .
+
 
 Helpers for Developers
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -337,7 +344,6 @@ Miscellaneous Information
    -  -DCMAKE_C_COMPILER
    -  -DCMAKE_BUILD_TYPE
    -  -DBUILD_BINDINGS
-   -  -DUSER
    -  -DINSTALL_PATH
    -  -DBUILD_DOC
    -  -DBUILD_TESTS
@@ -354,11 +360,6 @@ Miscellaneous Information
       -  empty (default) -> does not install in a custom folder
       -  custom string -> root path for the installation
 
-   -  -DUSER:
-
-      -  OFF (default) -> changes nothing
-      -  ON -> install root is in the user’s home directory, i.e.
-         ``~/.local/``
 
 To build librascal as a docker environment:
 
