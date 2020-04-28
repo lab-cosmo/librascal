@@ -220,6 +220,11 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/cosmo-epfl/librascal.git
 </pre></div>
 </div>
+<p>The installation of the library for python use can be done simply with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install .
+</pre></div>
+</div>
+<p>assuming that <cite>python</cite> 3.5 (or higher) and <cite>gcc</cite> or <cite>clang</cite> are available.</p>
 <div class="section" id="dependencies">
 <h3>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h3>
 <p>Before installing librascal, please make sure you have at least the
@@ -398,10 +403,8 @@ make
 </div>
 <div class="section" id="installing-rascal">
 <h4>Installing rascal<a class="headerlink" href="#installing-rascal" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>mkdir ../build
-<span class="nb">cd</span> build
-cmake -DCMAKE_BUILD_TYPE<span class="o">=</span>Release -DBUILD_TESTS<span class="o">=</span>ON -DBUILD_BINDINGS<span class="o">=</span>ON ..
-make install
+<p>To install the python library with c++ bindings:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install .
 </pre></div>
 </div>
 </div>
@@ -499,7 +502,6 @@ inclusion in the
 <li><p>-DCMAKE_C_COMPILER</p></li>
 <li><p>-DCMAKE_BUILD_TYPE</p></li>
 <li><p>-DBUILD_BINDINGS</p></li>
-<li><p>-DUSER</p></li>
 <li><p>-DINSTALL_PATH</p></li>
 <li><p>-DBUILD_DOC</p></li>
 <li><p>-DBUILD_TESTS</p></li>
@@ -517,13 +519,6 @@ inclusion in the
 <ul>
 <li><p>empty (default) -&gt; does not install in a custom folder</p></li>
 <li><p>custom string -&gt; root path for the installation</p></li>
-</ul>
-</li>
-<li><p>-DUSER:</p>
-<ul>
-<li><p>OFF (default) -&gt; changes nothing</p></li>
-<li><p>ON -&gt; install root is in the user’s home directory, i.e.
-<code class="docutils literal notranslate"><span class="pre">~/.local/</span></code></p></li>
 </ul>
 </li>
 </ul>
