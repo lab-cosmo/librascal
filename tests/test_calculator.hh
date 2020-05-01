@@ -429,7 +429,7 @@ namespace rascal {
         "reference_data/inputs/SiC_moissanite_supercell.json",
         "reference_data/inputs/methane.json"};
 
-    const double cutoff{2.5};
+    const double cutoff{3.};
     const double cutoff_skin{0.};
 
     json factory_args{};
@@ -561,7 +561,7 @@ namespace rascal {
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
+         {"cutoff", {{"value", 3}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
@@ -599,22 +599,27 @@ namespace rascal {
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
+         {"cutoff", {{"value", 3}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 
     std::vector<json> density_hypers{
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 2},
-                                  {"max_angular", 2},
-                                  {"normalize", true},
+    // std::vector<json> rep_hypers{{{"max_radial", 2},
+    //                               {"max_angular", 2},
+    //                               {"normalize", true},
+    //                               {"soap_type", "PowerSpectrum"},
+    //                               {"compute_gradients", true}},
+    //                              {{"max_radial", 2},
+    //                               {"max_angular", 0},
+    //                               {"normalize", true},
+    //                               {"soap_type", "RadialSpectrum"},
+    //                               {"compute_gradients", true}}};
+    std::vector<json> rep_hypers{{{"max_radial", 3},
+                                  {"max_angular", 3},
+                                  {"normalize", false},
                                   {"soap_type", "PowerSpectrum"},
-                                  {"compute_gradients", true}},
-                                 {{"max_radial", 2},
-                                  {"max_angular", 0},
-                                  {"normalize", true},
-                                  {"soap_type", "RadialSpectrum"},
                                   {"compute_gradients", true}}};
   };
 
