@@ -135,25 +135,27 @@ namespace rascal {
     math::Matrix_t self_dot(const int & sp) const {
       math::Matrix_t KMM_by_sp(this->counters.at(sp), this->counters.at(sp));
       KMM_by_sp.setZero();
-      const auto & values_by_sp = values.at(sp);
-      const auto & indices_by_sp = indices.at(sp);
-      for (const Key_t & key : keys) {
-        const auto & indices_by_sp_key = indices_by_sp.at(key);
-        auto mat = Eigen::Map<const math::Matrix_t>(
-            values_by_sp.at(key).data(),
-            static_cast<Eigen::Index>(indices_by_sp_key.size()),
-            static_cast<Eigen::Index>(this->inner_size));
-        // the following does the same as:
-        // auto KMM_by_key = (mat * mat.transpose()).eval();
-        math::Matrix_t KMM_by_key(indices_by_sp_key.size(),
-                                  indices_by_sp_key.size());
-        KMM_by_key =
-            KMM_by_key.setZero().selfadjointView<Eigen::Upper>().rankUpdate(
-                mat);
-        for (int i_row{0}; i_row < KMM_by_key.rows(); i_row++) {
-          for (int i_col{0}; i_col < KMM_by_key.cols(); i_col++) {
-            KMM_by_sp(indices_by_sp_key[i_row], indices_by_sp_key[i_col]) +=
-                KMM_by_key(i_row, i_col);
+      const auto & values_by_sp = this->values.at(sp);
+      const auto & indices_by_sp = this->indices.at(sp);
+      for (const Key_t & key : this->keys) {
+        if (indices_by_sp.count(key)) {
+          const auto & indices_by_sp_key = indices_by_sp.at(key);
+          auto mat = Eigen::Map<const math::Matrix_t>(
+              values_by_sp.at(key).data(),
+              static_cast<Eigen::Index>(indices_by_sp_key.size()),
+              static_cast<Eigen::Index>(this->inner_size));
+          // the following does the same as:
+          // auto KMM_by_key = (mat * mat.transpose()).eval();
+          math::Matrix_t KMM_by_key(indices_by_sp_key.size(),
+                                    indices_by_sp_key.size());
+          KMM_by_key =
+              KMM_by_key.setZero().selfadjointView<Eigen::Upper>().rankUpdate(
+                  mat);
+          for (int i_row{0}; i_row < KMM_by_key.rows(); i_row++) {
+            for (int i_col{0}; i_col < KMM_by_key.cols(); i_col++) {
+              KMM_by_sp(indices_by_sp_key[i_row], indices_by_sp_key[i_col]) +=
+                  KMM_by_key(i_row, i_col);
+            }
           }
         }
       }  // key
