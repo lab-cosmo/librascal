@@ -88,8 +88,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
     "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
 
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 
     # Add -march=${TYPE_ARCHITECTURE} (-march=native by default) to the release
     # build flags
@@ -180,17 +180,17 @@ set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
 if(NOT APPLE AND UNIX)
   # this link path accommodates most installations
   # `$ORIGIN/../../../../` should allow to link libraries in `$PREFIX/lib`
-  # `\\$ORIGIN/../../lib` accommodates installation with
-  # `python setup.py install'
-  set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../../../" "\\$ORIGIN/../../lib")
+  set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../../../")
+  # this link path accommodates installation with `python setup.py install'
+  set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../lib")
 elseif(APPLE)
   set(MACOSX_RPATH ON)
   # this link path accommodates most installations
   # `@loader_path/../../../../` should allow to link libraries
   # in `$PREFIX/lib`
-  # `@loader_path/../../lib` accommodates installation with
-  # `python setup.py install'
-  set(CMAKE_INSTALL_RPATH "@loader_path/../../../../" "@loader_path/../../lib")
+  set(CMAKE_INSTALL_RPATH "@loader_path/../../../../")
+  # this link path accommodates installation with `python setup.py install'
+  set(CMAKE_INSTALL_RPATH "@loader_path/../../lib")
 endif()
 
 add_subdirectory(src)
