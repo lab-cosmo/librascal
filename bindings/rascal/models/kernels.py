@@ -6,6 +6,9 @@ from ..utils import BaseIO
 import json
 
 
+import numpy as np
+
+
 class Kernel(BaseIO):
 
     """

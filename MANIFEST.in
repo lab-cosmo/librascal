@@ -1,0 +1,7 @@
+include README.rst requirements_pip.txt CMakeLists.txt pyproject.toml
+recursive-include  src *
+recursive-include  bindings *
+recursive-include  cmake *
+recursive-include  src *
+recursive-exclude * __pycache__
+recursive-exclude * *.pyc
