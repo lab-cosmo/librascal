@@ -821,6 +821,72 @@ namespace rascal {
                                                   : PropertyOrder - 1> &
     get_sub_clusters();
 
+    class PairLookupDirectory {
+      static constexpr Dim_t Layer() {
+        return StructureManager::template cluster_layer_from_order<PairOrder>();
+      }
+
+     public:
+      using PairCluster_t = ClusterRefKey<PairOrder, Layer()>;
+
+      PairLookupDirectory() {
+        if (traits::MaxOrder < PairOrder) {
+          std::stringstream error{};
+
+          error << "pair lookup directories only make sense for managers which "
+                   "have pairs. This manager has a max order of "
+                << traits::MaxOrder;
+          throw std::runtime_error(error.str());
+        }
+      }
+
+      template <size_t CallerOrderI, size_t CallerOrderJ,
+                bool HasPairs = traits::MaxOrder >= PairOrder>
+      const std::enable_if_t<HasPairs, PairCluster_t> &
+      get_pair(const ClusterRefKey<AtomOrder, CallerOrderI> & atom_i,
+               const ClusterRefKey<AtomOrder, CallerOrderJ> & atom_j) const {
+        return this->pairs[atom_i.get_cluster_index(this->Layer())]
+                          [atom_j.get_cluster_index(this->Layer())];
+      }
+
+      void update(StructureManager & manager);
+
+      void set_out_of_date() { this->is_updated_flag = false; }
+
+      bool is_updated() const { return this->is_updated_flag; }
+
+     protected:
+      std::vector<std::vector<PairCluster_t>> pairs{};
+      bool is_updated_flag{false};
+    };
+
+    class PairLookupDirectoryDummy {
+     public:
+      void set_out_of_date() const {}
+      void update(StructureManager & /*manager*/) const {}
+      bool is_updated() const { throw std::runtime_error{}; }
+    };
+
+    using PairLookup_t =
+        std::conditional_t<traits::MaxOrder >= PairOrder, PairLookupDirectory,
+                           PairLookupDirectoryDummy>;
+    using PairLookupDirectory_ptr = std::shared_ptr<PairLookup_t>;
+    /**
+     * creates or fetches and refreshes if necessary a container of pair
+     * clusters, which can be retrieved using two atom clusters
+     */
+    PairLookupDirectory_ptr get_pair_lookup_directory() {
+      if (not this->pairs_directory) {
+        this->pairs_directory = std::make_shared<PairLookupDirectory>();
+      }
+
+      if (not this->pairs_directory->is_updated()) {
+        this->pairs_directory->update(*this);
+      }
+
+      return this->pairs_directory;
+    }
+
     //! get reference to ancestor of given type
     template <
         typename Ancestor,
@@ -847,6 +913,9 @@ namespace rascal {
      * Should only be used in the StructureManagerRoot
      */
     void update_children() final {
+      if (this->pairs_directory) {
+        this->pairs_directory->set_out_of_date();
+      }
       if (not this->get_update_status()) {
         this->implementation().update_self();
         this->set_update_status(true);
@@ -918,6 +987,13 @@ namespace rascal {
     ClusterIndex_t cluster_indices_container;
 
     std::map<std::string, std::shared_ptr<PropertyBase>> properties{};
+
+    /**
+     * optional directory to look up pair clusters knowing the atom clusters
+     * making up the pair. e.g. used for storing pair-related properties based
+     * on triplets
+     */
+    std::shared_ptr<PairLookup_t> pairs_directory{nullptr};
   };
 
   /* ---------------------------------------------------------------------- */
@@ -1044,13 +1120,6 @@ namespace rascal {
     }
 
     // fill it
-    // map from atom tags to cluster indices
-    constexpr auto AtomLayer{
-        ManagerImplementation::template cluster_layer_from_order<AtomOrder>()};
-    using AtomClusterRef_t = ClusterRefKey<AtomOrder, AtomLayer>;
-    using Key_t = std::array<AtomClusterRef_t, StoredOrder>;
-    using Value_t = typename PropertyLookup_t::StoredElement;
-
     switch (StoredOrder) {  // we're switching at this level, because the case
                             // of Atom clusters is especially simple
     case AtomOrder: {
@@ -1071,26 +1140,7 @@ namespace rascal {
     }
     case PairOrder: {
       property.resize();
-      std::map<Key_t, Value_t> reverse_map{};
-      {
-        auto & cluster_to_i_atom{
-            this->template get_neighbours_to_i_atoms<PairOrder>()};
-
-        for (auto && atom : *this) {
-          for (auto && cluster :
-               atom.template get_clusters_of_order<PairOrder>()) {
-            auto && atom_cluster_indices{cluster_to_i_atom[cluster]};
-
-            auto && key{
-                internal::fill_cluster_array(*this, atom_cluster_indices)};
-
-            std::pair<Key_t, Value_t> key_val(key, cluster);
-
-            reverse_map.insert(key_val);
-          }
-        }
-      }
-
+      PairLookupDirectory & reverse_map{*this->get_pair_lookup_directory()};
       {
         auto & cluster_to_i_atom{
             this->template get_neighbours_to_i_atoms<PropertyOrder>()};
@@ -1103,7 +1153,8 @@ namespace rascal {
             auto & entry{property[cluster]};
 
             for (size_t i{0}; i < NbKeys; ++i) {
-              entry[i] = reverse_map[{atom_clusters[0], atom_clusters[i + 1]}];
+              entry[i] =
+                  reverse_map.get_pair(atom_clusters[0], atom_clusters[i + 1]);
             }
           }
         }
@@ -1120,8 +1171,31 @@ namespace rascal {
     return property;
   }
 
-  /* ----------------------------------------------------------------------
-   */
+  /* ---------------------------------------------------------------------- */
+  template <class ManagerImplementation>
+  void StructureManager<ManagerImplementation>::PairLookupDirectory::update(
+      StructureManager & manager) {
+    this->pairs.resize(manager.size_with_ghosts());
+    auto & cluster_to_i_atom{
+        manager.template get_neighbours_to_i_atoms<PairOrder>()};
+
+    size_t counter{0};
+    for (auto && atom : manager) {
+      auto & j_container{this->pairs[counter]};
+      auto && pairs {atom.template get_clusters_of_order<PairOrder>()};
+      j_container.resize(pairs.size());
+      ++counter;
+      for (auto && pair : pairs) {
+        auto && atom_cluster_indices{cluster_to_i_atom[pair]};
+        auto && j_atom_cluster_id{atom_cluster_indices(1)};
+        j_container[j_atom_cluster_id] = pair;
+      }
+    }
+
+    this->is_updated_flag=true;
+  }
+
+  /* ---------------------------------------------------------------------- */
   namespace internal {
     //! helper function that allows to append extra elements to an array It
     //! returns the given array, plus one element

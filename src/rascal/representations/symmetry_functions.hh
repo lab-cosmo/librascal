@@ -95,7 +95,7 @@ namespace rascal {
    * to the number of handshakes amongst Order people if everyone shakes
    * everyone else's hand).
    */
-  constexpr  size_t nb_distances(const size_t& Order) {
+  constexpr size_t nb_distances(const size_t & Order) {
     return Order*(Order-1)/2;
   }
 
