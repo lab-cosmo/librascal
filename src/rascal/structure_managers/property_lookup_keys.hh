@@ -59,7 +59,7 @@ namespace rascal {
     using StoredElement = ClusterRefKey<StoredOrder, StoredLayer>;
     using value = std::array<StoredElement, NbKeys>;
     using reference = value &;
-    using const_reference = const value & ;
+    using const_reference = const value &;
     //    constexpr static size_t StoredOrder{value::order()};
 
     //! Default constructor

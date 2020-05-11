@@ -773,7 +773,7 @@ namespace rascal {
      */
     template <bool HasDistances = traits::HasDistances,
               typename std::enable_if_t<
-                  HasDistances and (traits::MaxOrder >= TripletOrder), int> = 0>
+                  HasDistances and(traits::MaxOrder >= TripletOrder), int> = 0>
     decltype(auto) get_triplet_distance() {
       static_assert(HasDistances == traits::HasDistances,
                     "HasDistances is a SFINAE, do not touch.");
@@ -1197,7 +1197,7 @@ namespace rascal {
       }
     }
 
-    this->is_updated_flag=true;
+    this->is_updated_flag = true;
   }
 
   /* ---------------------------------------------------------------------- */

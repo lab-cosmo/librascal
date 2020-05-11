@@ -138,7 +138,8 @@ namespace rascal {
     BehlerFeature(std::shared_ptr<CutoffFunctionBase> cut_fun,
                   const UnitStyle & unit_style, const json & raw_params)
         : Parent(MySymFunType, cut_fun, SymmetryFunction_t::Order, raw_params),
-          sym_fun{unit_style, raw_params.at("params")} {
+          sym_fun{unit_style,
+                  raw_params.at("params" + canary(raw_params, "params"))} {
       if (raw_params.at("type").get<std::string>() != get_name(MySymFunType)) {
         std::stringstream err{};
         err << "params for symmetry function of type '"

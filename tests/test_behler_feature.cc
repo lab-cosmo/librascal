@@ -44,37 +44,90 @@ namespace rascal {
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
   struct BehlerFeatureFixture {
-    BehlerFeatureFixture() {}
+    json make_params() {
+      json retval{};
+      switch (MySymFunType) {
+      case SymmetryFunctionType::Gaussian: {
+        retval = json{{"type", "Gaussian"},
+                      {"index", 0},
+                      {"unit", "eV"},
+                      {"params",
+                       {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
+                        {"r_s", {{"value", 0.6}, {"unit", "Å"}}}}},
+                      {"species", {"Mg", "Si"}},
+                      {"r_cut", {{"value", this->r_cut}, {"unit", "Å"}}}};
+        std::cout << retval.at("type").get<std::string>() << std::endl;
+        std::cout << retval.at("index").get<int>() << std::endl;
+        std::cout << retval.at("params").at("eta").at("value").get<double>()
+                  << std::endl;
+        std::cout << retval.at("params").at("r_s").at("value").get<double>()
+                  << std::endl;
+        std::cout << retval << std::endl;
+        break;
+      }
+      case SymmetryFunctionType::AngularNarrow: {
+        retval = json{{"type", "AngularNarrow"},
+                      {"index", 1},
+                      {"unit", "eV"},
+                      {"params",
+                       {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
+                        {"zeta", {{"value", 0.6}, {"unit", "-"}}},
+                        {"lambda", {{"value", 0.6}, {"unit", "-"}}}}},
+                      {"species", {"Mg", "Si", "Si"}},
+                      {"r_cut",
+                       {{"value", this->r_cut},
+                        {"unit", "Å"}}}};
+        std::cout << "hallo" << std::endl;
+        std::cout << retval << std::endl;
+
+        std::cout << retval.at("type").get<std::string>() << std::endl;
+        std::cout << retval.at("index").get<int>() << std::endl;
+        std::cout << retval.at("params").at("eta").at("value").get<double>()
+                  << std::endl;
+        std::cout << retval.at("params").at("zeta").at("value").get<double>()
+                  << std::endl;
+        std::cout << retval.at("params").at("lambda").at("value").get<double>()
+                  << std::endl;
+        break;
+      }
+      default:
+        throw std::runtime_error(
+            "This SymmetryFunctionType is not yet implemented");
+      }
+      return retval;
+    }
+
+    BehlerFeatureFixture() : raw_params(make_params()) {}
+
     using CutFun_t = CutoffFunction<InlCutoffFunctionType::Cosine>;
     const double r_cut{1.1};
     const UnitStyle unit_style{units::metal};
-    static constexpr auto SymFunType(){return MySymFunType;}
+    static constexpr auto SymFunType() { return MySymFunType; }
+
     std::shared_ptr<CutFun_t> cut_fun{std::make_shared<CutFun_t>(
         unit_style,
         json{{"params", {}}, {"r_cut", {{"value", r_cut}, {"unit", "Å"}}}})};
-    json raw_params{{"type", "Gaussian"},
-                    {"index", 0},
-                    {"unit", "eV"},
-                    {"params",
-                     {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
-                      {"r_s", {{"value", 0.6}, {"unit", "Å"}}}}},
-                    {"species", {"Mg", "Si"}},
-                    {"r_cut", {{"value", r_cut}, {"unit", "Å"}}}};
-    BehlerFeature<MySymFunType, SymFunTypes...> bf{cut_fun, unit_style,
-                                                   raw_params};
+    json raw_params;
+    BehlerFeature<MySymFunType, SymFunTypes...> bf{
+        this->cut_fun, this->unit_style, this->raw_params};
   };
 
   // list of all tested BehlerFeatures
-  using Features = boost::mpl::list<BehlerFeatureFixture<
-      SymmetryFunctionType::Gaussian, SymmetryFunctionType::AngularNarrow>>;
+  using Features =
+      boost::mpl::list<BehlerFeatureFixture<SymmetryFunctionType::AngularNarrow,
+                                            SymmetryFunctionType::AngularNarrow,
+                                            SymmetryFunctionType::Gaussian>,
+                       BehlerFeatureFixture<SymmetryFunctionType::Gaussian,
+                                            SymmetryFunctionType::AngularNarrow,
+                                            SymmetryFunctionType::Gaussian>>;
+
+  BOOST_AUTO_TEST_SUITE(behler_parinello_feature_tests);
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Features, Fix) {}
 
   // list of all tested BehlerFeatures defined on pairs
   using PairFeatures =
       boost::mpl::list<BehlerFeatureFixture<SymmetryFunctionType::Gaussian,
                                             SymmetryFunctionType::Gaussian>>;
-
-  BOOST_AUTO_TEST_SUITE(behler_parinello_feature_tests);
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Features, Fix) {}
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test, Fix, PairFeatures, Fix) {
     ManagerFixture<StructureManagerLammps> manager_fix{};
@@ -110,8 +163,7 @@ namespace rascal {
   using GaussianSymFun = BehlerFeatureFixture<SymmetryFunctionType::Gaussian,
                                               SymmetryFunctionType::Gaussian>;
 
-
-  BOOST_FIXTURE_TEST_CASE(pair_permutation_test, GaussianSymFun) {
+  BOOST_FIXTURE_TEST_CASE(pairmutation_test, GaussianSymFun) {
     ManagerFixture<StructureManagerLammps> manager_fix{};
     auto half_list_ptr{
         make_adapted_manager<AdaptorHalfList>(manager_fix.manager)};

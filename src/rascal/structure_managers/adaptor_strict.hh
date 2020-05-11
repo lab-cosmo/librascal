@@ -126,11 +126,11 @@ namespace rascal {
     using StoredRefKey_t = ClusterRefKey<PairOrder, PairLayer>;
 
     using RevMapKey_t = std::array<AtomClusterRef_t, PairOrder>;
-    using RevMap_t = std::unique_ptr<std::map<RevMapKey_t, StoredRefKey_t>> ;
+    using RevMap_t = std::unique_ptr<std::map<RevMapKey_t, StoredRefKey_t>>;
 
     static_assert(traits::MaxOrder == 2,
                   "ManagerImlementation needs to handle pairs");
-    
+
     //! Default constructor
     AdaptorStrict() = delete;
 
@@ -300,10 +300,9 @@ namespace rascal {
             auto && i_atom_id{atom_cluster_indices(0)};
             auto && j_atom_id{atom_cluster_indices(1)};
 
-            // TODO: avoid creating key and pair by value
-            RevMapKey_t key{*this->get_iterator_at(i_atom_id),
-                      *this->get_iterator_at(j_atom_id)};
-            std::pair<RevMapKey_t, StoredRefKey_t> key_val(
+            RevMapKey_t && key{*this->get_iterator_at(i_atom_id),
+                               *this->get_iterator_at(j_atom_id)};
+            std::pair<RevMapKey_t, StoredRefKey_t> && key_val(
                 key, dynamic_cast<StoredRefKey_t &>(pair));
 
             this->atoms_to_pair_map->insert(key_val);

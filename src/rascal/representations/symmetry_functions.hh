@@ -103,12 +103,23 @@ namespace rascal {
   /**
    * Radial symmetry function as proposed in Behler (2007) PRL 98, 146401; it
    * has two parameters eta and r_s for the form
-   * SF(r_ij) = exp(-eta (r_ij - * r_s)^2)
+   * SF(r_ij) = exp(-η (r_ij - * r_s)²)
    *
    * where r_ij is the distance between atoms, r_s is the value for shifting and
    * eta scales the exponent.
    */
 
+  std::string canary(const json & params, const std::string & name) {
+    try {
+      std::cout <<params.at(name) << std::endl;
+    } catch ( json::exception & error) {
+      std::stringstream errmsg {};
+      errmsg << "Can't access field '" << name << "' in json '" << params
+             << "'";
+      throw std::runtime_error(errmsg.str());
+    }
+    return "";
+  }
   template <>
   class SymmetryFunction<SymmetryFunctionType::Gaussian> {
    public:
@@ -124,8 +135,9 @@ namespace rascal {
 
     // constructor
     SymmetryFunction(const UnitStyle & unit_style, const json & params)
-        : params{params}, eta{json_io::check_units(unit_style.distance(-2),
-                                                   params.at("eta"))},
+        : params{params}, eta{json_io::check_units(
+                              unit_style.distance(-2),
+                              params.at("eta" + canary(params, "eta")))},
           r_s{json_io::check_units(unit_style.distance(), params.at("r_s"))} {}
 
     double f_sym(const double & r_ij) const {
@@ -154,7 +166,7 @@ namespace rascal {
    * cutoff.
    *
    * SF =
-   * 2^(1-zeta) * (1 + lambda * cos_theta)^zeta * exp(r_ij^2 + r_ik^2 + r_jk^2)
+   * 2^(1-ζ) * (1 + λ * cos(ϑ))^ζ * exp(r_ij² + r_ik² + r_jk²)
    */
   template <>
   class SymmetryFunction<SymmetryFunctionType::AngularNarrow> {
@@ -191,7 +203,7 @@ namespace rascal {
       auto && fun_val{this->prefactor * angular_contrib * exp_contrib};
 
       // helper for derivative
-      // auto && psi_ij{-1/(r_ij * rik) * this->lambda * this->zeta / ()}
+      // auto && ψ_ij{-1/(r_ij * rik) * this->λ * this->ζ / ()}
 
       double dval_i{0};
       double dval_j{0};
@@ -216,7 +228,7 @@ namespace rascal {
    * cutoff.
    *
    * SF =
-   * 2^(1-zeta) * (1 + lambda * cos_theta)^zeta * exp(r_ij^2 + r_ik^2)
+   * 2^(1-ζ) * (1 + λ * cos(ϑ))^ζ * exp(r_ij² + r_ik²)
    */
   template <>
   class SymmetryFunction<SymmetryFunctionType::AngularWide> {
