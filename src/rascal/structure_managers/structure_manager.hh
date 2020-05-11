@@ -845,8 +845,8 @@ namespace rascal {
       const std::enable_if_t<HasPairs, PairCluster_t> &
       get_pair(const ClusterRefKey<AtomOrder, CallerOrderI> & atom_i,
                const ClusterRefKey<AtomOrder, CallerOrderJ> & atom_j) const {
-        return this->pairs[atom_i.get_cluster_index(this->Layer())]
-                          [atom_j.get_cluster_index(this->Layer())];
+        return this->pairs[atom_i.get_cluster_index(this->Layer())].at(
+            atom_j.get_cluster_index(this->Layer()));
       }
 
       void update(StructureManager & manager);
@@ -856,7 +856,7 @@ namespace rascal {
       bool is_updated() const { return this->is_updated_flag; }
 
      protected:
-      std::vector<std::vector<PairCluster_t>> pairs{};
+      std::vector<std::map<size_t, PairCluster_t>> pairs{};
       bool is_updated_flag{false};
     };
 
@@ -1006,8 +1006,9 @@ namespace rascal {
         StructureManager::template cluster_layer_from_order<Order>()};
     std::stringstream identifier{};
     identifier << "neighbours_to_i_atoms_Order=" << Order << "_Layer=" << Layer;
+    auto identifier_str{identifier.str()};
     bool property_at_wrong_layer{
-        this->is_property_in_stack(identifier.str()) and
+        this->is_property_in_stack(identifier_str) and
         not this->is_property_in_current_level(identifier.str())};
     if (property_at_wrong_layer) {
       // complain and die
@@ -1041,7 +1042,11 @@ namespace rascal {
       for (auto && cluster : atom.template get_clusters_of_order<Order>()) {
         auto && atom_tags{cluster.get_atom_tag_list()};
         for (size_t i{0}; i < Order; ++i) {
-          property[cluster](i) = tag_to_id[atom_tags[i]];
+          auto & id{tag_to_id[atom_tags[i]]};
+          auto & storage_ref{property[cluster](i)};
+          storage_ref = id;
+          // property[cluster](i) =
+          //     tag_to_id[atom_tags[i]];
         }
       }
     }
@@ -1181,11 +1186,11 @@ namespace rascal {
 
     size_t counter{0};
     for (auto && atom : manager) {
-      auto & j_container{this->pairs[counter]};
-      auto && pairs {atom.template get_clusters_of_order<PairOrder>()};
-      j_container.resize(pairs.size());
+      auto & j_container{this->pairs.at(counter)};
+      auto && pair_clusters {atom.template get_clusters_of_order<PairOrder>()};
+      j_container.clear();
       ++counter;
-      for (auto && pair : pairs) {
+      for (auto && pair : pair_clusters) {
         auto && atom_cluster_indices{cluster_to_i_atom[pair]};
         auto && j_atom_cluster_id{atom_cluster_indices(1)};
         j_container[j_atom_cluster_id] = pair;
