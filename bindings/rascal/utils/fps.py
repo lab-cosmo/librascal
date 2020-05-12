@@ -253,10 +253,10 @@ class FPSFilter(BaseIO):
             self.selected_ids = dict(coefficient_subselection=self.selected_ids)
             return self.selected_ids
 
-    def fit_transform(self, managers):
+    def select_and_filter(self, managers):
         return self.select(managers).filter(managers)
 
-    def plot(self):
+    def plot_fps_error(self):
         import matplotlib.pyplot as plt
         if self.fps_minmax_d2_by_sp is None:
             plt.semilogy(self.fps_minmax_d2, label=self.act_on)

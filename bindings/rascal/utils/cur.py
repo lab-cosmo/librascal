@@ -211,7 +211,7 @@ class CURFilter(BaseIO):
             self.selected_ids = dict(coefficient_subselection=self.selected_ids)
             return self.selected_ids
 
-    def fit_transform(self, managers):
+    def select_and_filter(self, managers):
         return self.select(managers).filter(managers)
 
     def _get_data(self):
