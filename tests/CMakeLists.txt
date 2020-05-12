@@ -29,7 +29,6 @@ else()
     set(TEST_RUNNER "")
 endif()
 
-
 add_library(rascal_tests_main STATIC helpers/tests_main.cc)
 # make sure all tests include the boost that has been found
 target_include_directories(rascal_tests_main SYSTEM PRIVATE ${Boost_INCLUDE_DIR})

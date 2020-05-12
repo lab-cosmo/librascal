@@ -1,10 +1,10 @@
 from ..utils import BaseIO
-from ..models import SparsePoints
 from ..utils.filter_utils import (get_index_mappings_sample_per_species,
                                   convert_selected_global_index2rascal_sample_per_species,
                                   get_index_mappings_sample,
                                   convert_selected_global_index2rascal_sample)
 
+from ..models.sparse_points import SparsePoints
 import numpy as np
 from scipy.sparse.linalg import svds
 
@@ -76,12 +76,12 @@ class CURFilter(BaseIO):
                  is_deterministic=True, seed=10):
         self._representation = representation
         self.Nselect = Nselect
-        if act_on in ['sample', 'sample per species', 'feature']:
+        modes = ['sample', 'sample per species', 'feature']
+        if act_on in modes:
             self.act_on = act_on
         else:
             raise ValueError(
-                '"act_on" should be either of: "{}", "{}", "{}"'.format(
-                    *['sample', 'sample per species', 'feature']))
+                '"act_on" should be either of: "{}", "{}", "{}"'.format(*modes))
         self.is_deterministic = is_deterministic
         self.seed = seed
         # effectively selected list of indices at the transform step
@@ -118,7 +118,7 @@ class CURFilter(BaseIO):
         # get the dense feature matrix
         X = managers.get_features(self._representation)
 
-        if self.act_on in ['sample per species']:
+        if self.act_on == 'sample per species':
             sps = list(self.Nselect.keys())
 
             # get various info from the structures about the center atom species and indexing
@@ -143,10 +143,10 @@ class CURFilter(BaseIO):
                 self.selected_sample_ids_by_sp[sp] = do_CUR(X_by_sp[sp], self.Nselect[sp], self.act_on,
                                                             self.is_deterministic, self.seed)
 
-        elif self.act_on in ['sample']:
+        elif self.act_on == 'sample':
             self.selected_sample_ids = do_CUR(X, self.Nselect, self.act_on,
                                               self.is_deterministic, self.seed)
-        elif self.act_on in ['feature']:
+        elif self.act_on == 'feature':
             self.selected_feature_ids_global = do_CUR(X, self.Nselect, self.act_on,
                                                       self.is_deterministic, self.seed)
         else:
@@ -158,7 +158,7 @@ class CURFilter(BaseIO):
         if n_select is None:
             n_select = self.Nselect
 
-        if self.act_on in ['sample per species']:
+        if self.act_on == 'sample per species':
             sps = list(n_select.keys())
             # get various info from the structures about the center atom species and indexing
             (strides_by_sp, global_counter, map_by_manager,
@@ -173,7 +173,7 @@ class CURFilter(BaseIO):
             pseudo_points.extend(managers, self.selected_ids)
             return pseudo_points
 
-        elif self.act_on in ['sample']:
+        elif self.act_on == 'sample':
             selected_ids_global = np.sort(self.selected_sample_ids[:n_select])
             strides, _, map_by_manager = get_index_mappings_sample(managers)
             self.selected_ids = convert_selected_global_index2rascal_sample(managers,
@@ -184,7 +184,7 @@ class CURFilter(BaseIO):
             # pseudo_points.extend(managers, self.selected_ids)
             # return pseudo_points
 
-        elif self.act_on in ['feature']:
+        elif self.act_on == 'feature':
             feat_idx2coeff_idx = self._representation.get_feature_index_mapping(
                 managers)
             self.selected_ids = {key: []
