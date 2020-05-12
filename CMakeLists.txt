@@ -180,17 +180,21 @@ set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
 if(NOT APPLE AND UNIX)
   # this link path accommodates most installations
   # `$ORIGIN/../../../../` should allow to link libraries in `$PREFIX/lib`
+  # `$ORIGIN/../../src` should allow to link libraries from the build folder
   # `$ORIGIN/../../lib` accommodates installation with
   # `python setup.py install'
-  set(CMAKE_INSTALL_RPATH "$ORIGIN/../../../../" "$ORIGIN/../../lib" "$ORIGIN/../../src")
+  set(CMAKE_INSTALL_RPATH "$ORIGIN/../../../../" "$ORIGIN/../../lib"
+                          "$ORIGIN/../../src")
 elseif(APPLE)
   set(MACOSX_RPATH ON)
   # this link path accommodates most installations
   # `@loader_path/../../../../` should allow to link libraries
   # in `$PREFIX/lib`
+  # `@loader_path/../../src` should allow to link libraries from the build folder
   # `@loader_path/../../lib` accommodates installation with
   # `python setup.py install'
-  set(CMAKE_INSTALL_RPATH "@loader_path/../../../../" "@loader_path/../../lib" "@loader_path/../../src")
+  set(CMAKE_INSTALL_RPATH "@loader_path/../../../../" "@loader_path/../../lib"
+                          "@loader_path/../../src")
 endif()
 
 add_subdirectory(src)
