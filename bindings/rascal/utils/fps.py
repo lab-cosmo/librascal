@@ -126,7 +126,7 @@ class FPSFilter(BaseIO):
             raise ValueError(
                 '"act_on" should be either of: "{}", "{}", "{}"'.format(*modes))
 
-        # effectively selected list of indices at the transform step
+        # effectively selected list of indices at the filter step
         # the indices have been reordered for effiency and compatibility with
         # the c++ routines
         self.selected_ids = None
@@ -140,7 +140,7 @@ class FPSFilter(BaseIO):
         self.fps_minmax_d2_by_sp = None
         self.fps_minmax_d2 = None
 
-    def fit(self, managers):
+    def select(self, managers):
         """Perform FPS selection of samples/features.
         Parameters
         ----------
@@ -200,7 +200,7 @@ class FPSFilter(BaseIO):
         else:
             raise NotImplementedError("method: {}".format(self.act_on))
 
-    def transform(self, managers, n_select=None):
+    def filter(self, managers, n_select=None):
         from ..models import SparsePoints
         if n_select is None:
             n_select = self.Nselect
@@ -254,7 +254,7 @@ class FPSFilter(BaseIO):
             return self.selected_ids
 
     def fit_transform(self, managers):
-        return self.fit(managers).transform(managers)
+        return self.select(managers).filter(managers)
 
     def plot(self):
         import matplotlib.pyplot as plt

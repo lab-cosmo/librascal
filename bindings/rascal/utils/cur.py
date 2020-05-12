@@ -91,7 +91,7 @@ class CURFilter(BaseIO):
                 '"act_on" should be either of: "{}", "{}", "{}"'.format(*modes))
         self.is_deterministic = is_deterministic
         self.seed = seed
-        # effectively selected list of indices at the transform step
+        # effectively selected list of indices at the filter step
         # the indices have been reordered for effiency and compatibility with
         # the c++ routines
         self.selected_ids = None
@@ -102,7 +102,7 @@ class CURFilter(BaseIO):
         # for feature selection
         self.selected_feature_ids_global = None
 
-    def fit(self, managers):
+    def select(self, managers):
         """Perform CUR selection of samples/features.
 
         Parameters
@@ -161,7 +161,7 @@ class CURFilter(BaseIO):
 
         return self
 
-    def transform(self, managers, n_select=None):
+    def filter(self, managers, n_select=None):
         if n_select is None:
             n_select = self.Nselect
 
@@ -212,7 +212,7 @@ class CURFilter(BaseIO):
             return self.selected_ids
 
     def fit_transform(self, managers):
-        return self.fit(managers).transform(managers)
+        return self.select(managers).filter(managers)
 
     def _get_data(self):
         data = super()._get_data()

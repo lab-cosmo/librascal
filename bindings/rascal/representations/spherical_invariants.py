@@ -1,5 +1,6 @@
 import json
 from itertools import product
+import ase
 
 from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
@@ -370,7 +371,7 @@ class SphericalInvariants(BaseIO):
         return keys
 
     def get_feature_index_mapping(self, managers):
-        import ase
+
         species = []
         for ii in range(len(managers)):
             manager = managers[ii]

@@ -5,10 +5,20 @@ import numpy as np
 
 def get_index_mappings_sample_per_species(managers, sps):
     # get various info from the structures about the center atom species and indexing
+
+    # list of the atom types following the order in managers accross the
+    # atomic structures
     types = []
+    # list the positions of the begining of each structure in arrays that
+    # have one row per atom of species sp
     strides_by_sp = {sp: [0] for sp in sps}
+    # count the number of atoms of a particular element sp
     global_counter = {sp: 0 for sp in sps}
+    # map position in arrays that have one row per atom of species sp to
+    # the position in array that has one row per atom
     indices_by_sp = {sp: [] for sp in sps}
+    # map species / structure index / global atom index to the atom index
+    # in the structure
     map_by_manager = {sp:[{} for ii in range(len(managers)) ] for sp in sps}
     for i_man in range(len(managers)):
         man = managers[i_man]
@@ -37,8 +47,14 @@ def get_index_mappings_sample_per_species(managers, sps):
 
 def get_index_mappings_sample(managers):
     # get various info from the structures about the center atom species and indexing
+
+    # list the positions of the begining of each structure in arrays that
+    # have one row per atom
     strides = [0]
+    # count the number of atoms in managers
     global_counter = 0
+    # map the structure index / global atom index to the atom index in the
+    # structure
     map_by_manager = [{} for ii in range(len(managers))]
     for i_man in range(len(managers)):
         man = managers[i_man]
@@ -57,6 +73,8 @@ def get_index_mappings_sample(managers):
 def convert_selected_global_index2rascal_sample_per_species(managers, selected_ids_by_sp,
                                 strides_by_sp, map_by_manager, sps):
     # convert selected center indexing into the rascal format
+
+    # list the atom indices (within their structure) that have been selected
     selected_ids = [[] for ii in range(len(managers))]
     for sp in sps:
         ids = convert_selected_global_index2rascal_sample(
@@ -71,6 +89,8 @@ def convert_selected_global_index2rascal_sample_per_species(managers, selected_i
 def convert_selected_global_index2rascal_sample(managers, selected_ids_global,
                                                         strides, map_by_manager):
     # convert selected center indexing into the rascal format
+
+    # list the atom indices (within their structure) that have been selected
     selected_ids = [[] for ii in range(len(managers))]
     i_manager = 0
     for idx in selected_ids_global:
