@@ -184,7 +184,7 @@ if(NOT APPLE AND UNIX)
   # `$ORIGIN/../../lib` accommodates installation with
   # `python setup.py install'
   set(CMAKE_INSTALL_RPATH "$ORIGIN/../../../../" "$ORIGIN/../../lib"
-                          "$ORIGIN/../../src")
+                          "$ORIGIN/../../src" "$ORIGIN/../src")
 elseif(APPLE)
   set(MACOSX_RPATH ON)
   # this link path accommodates most installations
@@ -194,7 +194,7 @@ elseif(APPLE)
   # `@loader_path/../../lib` accommodates installation with
   # `python setup.py install'
   set(CMAKE_INSTALL_RPATH "@loader_path/../../../../" "@loader_path/../../lib"
-                          "@loader_path/../../src")
+                          "@loader_path/../../src" "@loader_path/../src")
 endif()
 
 add_subdirectory(src)
