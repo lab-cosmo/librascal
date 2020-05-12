@@ -119,10 +119,12 @@ class FPSFilter(BaseIO):
         self._representation = representation
         self.Nselect = Nselect
         self.starting_index = starting_index
-        if act_on in ['sample', 'sample per species', 'feature']:
+        modes = ['sample', 'sample per species', 'feature']
+        if act_on in modes:
             self.act_on = act_on
         else:
-            raise 'Wrong input: {}'.format(act_on)
+            raise ValueError(
+                '"act_on" should be either of: "{}", "{}", "{}"'.format(*modes))
 
         # effectively selected list of indices at the transform step
         # the indices have been reordered for effiency and compatibility with
@@ -159,7 +161,7 @@ class FPSFilter(BaseIO):
         # get the dense feature matrix
         X = managers.get_features(self._representation)
 
-        if self.act_on in ['sample per species']:
+        if self.act_on == 'sample per species':
             sps = list(self.Nselect.keys())
 
             # get various info from the structures about the center atom species and indexing
@@ -187,11 +189,11 @@ class FPSFilter(BaseIO):
                 self.fps_minmax_d2_by_sp[sp] = fps_out['fps_minmax_d2']
 
             return self
-        elif self.act_on in ['feature']:
+        elif self.act_on == 'feature':
             fps_out = fps(X.T, self.Nselect, starting_index=self.starting_index)
             self.selected_feature_ids_global = fps_out['fps_indices']
             self.fps_minmax_d2 = fps_out['fps_minmax_d2']
-        elif self.act_on in ['sample']:
+        elif self.act_on == 'sample':
             fps_out = fps(X, self.Nselect, starting_index=self.starting_index)
             self.selected_sample_ids = fps_out['fps_indices']
             self.fps_minmax_d2 = fps_out['fps_minmax_d2']
@@ -203,7 +205,7 @@ class FPSFilter(BaseIO):
         if n_select is None:
             n_select = self.Nselect
 
-        if self.act_on in ['sample per species']:
+        if self.act_on == 'sample per species':
             sps = list(n_select.keys())
             # get various info from the structures about the center atom species and indexing
             (strides_by_sp, global_counter, map_by_manager,
@@ -218,7 +220,7 @@ class FPSFilter(BaseIO):
             pseudo_points.extend(managers, self.selected_ids)
             return pseudo_points
 
-        elif self.act_on in ['sample']:
+        elif self.act_on == 'sample':
             selected_ids_global = np.sort(self.selected_sample_ids[:n_select])
             strides, _, map_by_manager = get_index_mappings_sample(managers)
             self.selected_ids = convert_selected_global_index2rascal_sample(managers,
@@ -231,7 +233,7 @@ class FPSFilter(BaseIO):
             # pseudo_points.extend(managers, self.selected_ids)
             # return pseudo_points
 
-        elif self.act_on in ['feature']:
+        elif self.act_on == 'feature':
             feat_idx2coeff_idx = self._representation.get_feature_index_mapping(
                 managers)
             self.selected_ids = {key: []

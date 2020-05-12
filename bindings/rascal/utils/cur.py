@@ -33,12 +33,19 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
     if verbose:
         if 'sample' in act_on:
             C = X[sel, :]
-            Cp = np.linalg.pinv(C)
-            err = np.sqrt(np.sum((X - np.dot(np.dot(X, Cp), C))**2))
+            # equivalent to
+            # Cp = np.linalg.pinv(C)
+            # err = np.sqrt(np.sum((X - np.dot(np.dot(X, Cp), C))**2))
+            err = np.sqrt(np.sum((
+                X - np.dot(np.linalg.lstsq(C.T, X.T, rcond=None)[0].T, C))**2))
+
         elif 'feature' in act_on:
             C = X[:, sel]
-            Cp = np.linalg.pinv(C)
-            err = np.sqrt(np.sum((X - np.dot(C, np.dot(Cp, X)))**2))
+            # equivalent to
+            # Cp = np.linalg.pinv(C)
+            # err = np.sqrt(np.sum((X - np.dot(C, np.dot(Cp, X)))**2))
+            err = np.sqrt(np.sum((
+                X - np.dot(C, np.linalg.lstsq(C, X, rcond=None)[0]))**2))
 
         print('Reconstruction RMSE={:.3e}'.format(err))
 
