@@ -182,10 +182,14 @@ namespace rascal {
     //! Move constructor
     CalculatorSphericalInvariants(
         CalculatorSphericalInvariants && other) noexcept
-        : CalculatorBase{std::move(other)}, max_radial{std::move(
-                                                other.max_radial)},
-          max_angular{std::move(other.max_angular)}, normalize{std::move(
-                                                         other.normalize)},
+        : CalculatorBase{std::move(other)},
+          unique_pair_list{other.unique_pair_list},
+          coeff_indices_map{other.coeff_indices_map}, key_map{other.key_map},
+          coeff_indices{other.coeff_indices},
+          is_sparsified{other.is_sparsified},
+          max_radial{std::move(other.max_radial)}, max_angular{std::move(
+                                                       other.max_angular)},
+          shape{std::move(other.shape)}, normalize{std::move(other.normalize)},
           compute_gradients{std::move(other.compute_gradients)},
           inversion_symmetry{std::move(other.inversion_symmetry)},
           rep_expansion{std::move(other.rep_expansion)},
@@ -202,11 +206,56 @@ namespace rascal {
     CalculatorSphericalInvariants &
     operator=(CalculatorSphericalInvariants && other) = default;
 
+    //!
+    struct PowerSpectrumCoeffIndex {
+      PowerSpectrumCoeffIndex(std::uint32_t n1, std::uint32_t n2,
+                              std::uint32_t l, std::uint32_t n1n2,
+                              std::uint32_t l_block_size,
+                              std::uint32_t l_block_idx, double l_factor)
+          : n1{n1}, n2{n2}, l_block_size{l_block_size},
+            l_block_idx{l_block_idx}, l{l}, n1n2{n1n2}, l_factor{l_factor} {}
+      // indices refering to coefficients of the spherical expansion
+      std::uint32_t n1;
+      std::uint32_t n2;
+      std::uint32_t l_block_size;
+      std::uint32_t l_block_idx;
+      // indices refering to the power spectrum
+      std::uint32_t l;
+      std::uint32_t n1n2;
+      double l_factor;
+
+      bool operator==(const PowerSpectrumCoeffIndex & other) const {
+        bool ret{this->n1 == other.n1 and this->n2 == other.n2 and
+                 this->l_block_size == other.l_block_size and
+                 this->l_block_idx == other.l_block_idx and
+                 this->l == other.l and this->n1n2 == other.n1n2 and
+                 math::relative_error(this->l_factor, other.l_factor) < 1e-10};
+        return ret;
+      }
+    };
+    //! list of possible input pairs when using coefficient_subselection
+    std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
+        unique_pair_list{};
+    //! list of coefficient that will be computed, mapping keys to a list
+    //! invariant coefficients that will be computed
+    std::map<internal::SortedKey<Key_t>, std::vector<PowerSpectrumCoeffIndex>,
+             internal::CompareSortedKeyLess>
+        coeff_indices_map{};
+    //! map the possible keys of the coefficient to the keys of the
+    //! powerspectrum. If sparsification then it maps to (0,0) always otherwise
+    //! it maps onto itself
+    std::map<internal::SortedKey<Key_t>, internal::SortedKey<Key_t>,
+             internal::CompareSortedKeyLess>
+        key_map{};
+    //! list of coefficient that will be computed if there is no sparsification
+    std::vector<PowerSpectrumCoeffIndex> coeff_indices{};
+    //! tell if the calculator has been sparsified using
+    //! the coefficient_subselection input
+    bool is_sparsified{false};
+
     void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::SphericalInvariantsType;
 
-      this->max_radial = hypers.at("max_radial").get<size_t>();
-      this->max_angular = hypers.at("max_angular").get<size_t>();
       this->normalize = hypers.at("normalize").get<bool>();
       auto soap_type = hypers.at("soap_type").get<std::string>();
 
@@ -216,9 +265,168 @@ namespace rascal {
         this->compute_gradients = false;
       }
 
+      this->max_radial = hypers.at("max_radial").get<size_t>();
+      this->max_angular = hypers.at("max_angular").get<size_t>();
+
+      if (hypers.find("coefficient_subselection") != hypers.end() and
+          (soap_type == "PowerSpectrum")) {  // NOLINT
+        this->is_sparsified = true;
+        auto coefficient_subselection =
+            hypers.at("coefficient_subselection").get<json>();
+        // get the indices of the subselected PowerSpectrum coefficients:
+        // p_{abn_1n_2l} where a and b refer to atomic species and should be
+        // lexicographically sorted so that a <= b, n_1 and n_2 refer to
+        // radial basis index and l refer to the angular index of the
+        // spherical harmonic
+        auto sp_a = coefficient_subselection.at("a")
+                        .get<std::vector<typename Key_t::value_type>>();
+        auto sp_b = coefficient_subselection.at("b")
+                        .get<std::vector<typename Key_t::value_type>>();
+        auto radial_n1 =
+            coefficient_subselection.at("n1").get<std::vector<std::uint32_t>>();
+        auto radial_n2 =
+            coefficient_subselection.at("n2").get<std::vector<std::uint32_t>>();
+        auto angular_l =
+            coefficient_subselection.at("l").get<std::vector<std::uint32_t>>();
+
+        std::uint32_t angular_max{
+            *std::max_element(angular_l.begin(), angular_l.end())};
+        std::uint32_t radial1_max{
+            *std::max_element(radial_n1.begin(), radial_n1.end())};
+        std::uint32_t radial2_max{
+            *std::max_element(radial_n2.begin(), radial_n2.end())};
+        // check if the inputs are sane
+        {
+          if (sp_a.size() != sp_b.size()) {
+            throw std::logic_error(
+                R"(coefficient_subselection should have elements of the same size but: a.size() != b.size())");
+          } else if (sp_a.size() != radial_n1.size()) {
+            throw std::logic_error(
+                R"(coefficient_subselection should have elements of the same size but: a.size() != n1.size())");
+          } else if (sp_a.size() != radial_n2.size()) {
+            throw std::logic_error(
+                R"(coefficient_subselection should have elements of the same size but: a.size() != n2.size())");
+          } else if (sp_a.size() != angular_l.size()) {
+            throw std::logic_error(
+                R"(coefficient_subselection should have elements of the same size but: a.size() != l.size())");
+          }
+
+          if (angular_max >= this->max_angular + 1) {
+            std::stringstream err_str{};
+            err_str << "'max(l)' in coefficient_subselection is larger"
+                    << " than 'max_angular+1'" << angular_max
+                    << " >= " << this->max_angular + 1 << std::endl;
+            throw std::runtime_error(err_str.str());
+          }
+          if (radial1_max >= this->max_radial) {
+            std::stringstream err_str{};
+            err_str << "'max(n1)' in coefficient_subselection is larger"
+                    << " than 'max_radial'" << radial1_max
+                    << " >= " << this->max_radial << std::endl;
+            throw std::runtime_error(err_str.str());
+          }
+          if (radial2_max >= this->max_radial) {
+            std::stringstream err_str{};
+            err_str << "'max(n2)' in coefficient_subselection is larger"
+                    << " than 'max_radial'" << radial2_max
+                    << " >= " << this->max_radial << std::endl;
+            throw std::runtime_error(err_str.str());
+          }
+        }
+        this->shape[0] = 1;
+        this->shape[1] = sp_a.size();
+
+        internal::Sorted<true> is_sorted{};
+        // collect all unique sorted pairs
+        for (size_t i_pair{0}; i_pair < sp_a.size(); ++i_pair) {
+          if (sp_a[i_pair] > sp_b[i_pair]) {
+            throw std::logic_error(
+                R"(coefficient_subselection should have only lexicographically
+              sorted pairs of atomic species in the selection but: a > b)");
+          }
+          Key_t pair{{sp_a[i_pair], sp_b[i_pair]}};
+          this->unique_pair_list.insert({is_sorted, pair});
+        }
+        // initialize coeff_indices_map
+        std::vector<PowerSpectrumCoeffIndex> init_vec{};
+        for (const auto & key : this->unique_pair_list) {
+          this->coeff_indices_map[key] = init_vec;
+        }
+
+        // precompute the positions and sizes of the angular momentum channels
+        // of the linear storage of the spherical expansion coefficients
+        // related to the spherical harmonics
+        std::vector<std::uint32_t> l_block_sizes{}, l_block_ids{};
+        std::uint32_t pos{0};
+        for (std::uint32_t l{0}; l < this->max_angular + 1; ++l) {
+          std::uint32_t size{2 * l + 1};
+          l_block_sizes.push_back(size);
+          l_block_ids.push_back(pos);
+          pos += size;
+        }
+
+        this->l_factors = internal::precompute_l_factors(this->max_angular);
+
+        // fill coeff_indices_map
+        for (size_t i_pair{0}; i_pair < sp_a.size(); ++i_pair) {
+          Key_t pair{{sp_a[i_pair], sp_b[i_pair]}};
+          internal::SortedKey<Key_t> spair{is_sorted, pair};
+          // insertion order n1, n2, l, n1n2, l_block_size, l_block_idx
+          // n1n2 is set to zero because we store the sparsified features as
+          // one row
+          this->coeff_indices_map[spair].emplace_back(
+              radial_n1[i_pair], radial_n2[i_pair],
+              static_cast<std::uint32_t>(i_pair), 0,
+              l_block_sizes[angular_l[i_pair]], l_block_ids[angular_l[i_pair]],
+              this->l_factors[angular_l[i_pair]]);
+        }
+
+        Key_t sparsified_type{0, 0};
+        // there are 118 atomic elements atm
+        for (int sp1{1}; sp1 < 130; sp1++) {
+          for (int sp2{1}; sp2 < 130; sp2++) {
+            if (sp1 <= sp2) {
+              Key_t pair_type{sp1, sp2};
+              internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
+              internal::SortedKey<Key_t> ssparsified_type{is_sorted,
+                                                          sparsified_type};
+              this->key_map[spair_type] = ssparsified_type;
+            }
+          }
+        }
+
+      } else {  // Default false (compute all coefficents)
+        this->l_factors = internal::precompute_l_factors(this->max_angular);
+        this->is_sparsified = false;
+        this->shape[0] = math::pow(this->max_radial, 2_size_t);
+        this->shape[1] = this->max_angular + 1;
+        for (size_t n1{0}; n1 < this->max_radial; ++n1) {
+          for (size_t n2{0}; n2 < this->max_radial; ++n2) {
+            size_t pos{0};
+            for (size_t l{0}; l < this->max_angular + 1; ++l) {
+              size_t size{2 * l + 1};
+              this->coeff_indices.emplace_back(n1, n2, l,
+                                               n1 * this->max_radial + n2, size,
+                                               pos, this->l_factors[l]);
+              pos += size;
+            }
+          }
+        }
+        internal::Sorted<true> is_sorted{};
+        // there are 118 atomic elements atm
+        for (int sp1{1}; sp1 < 130; sp1++) {
+          for (int sp2{1}; sp2 < 130; sp2++) {
+            if (sp1 <= sp2) {
+              Key_t pair_type{sp1, sp2};
+              internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
+              this->key_map[spair_type] = spair_type;
+            }
+          }
+        }
+      }
+
       if (soap_type == "PowerSpectrum") {
         this->type = SphericalInvariantsType::PowerSpectrum;
-        this->l_factors = internal::precompute_l_factors(this->max_angular);
       } else if (soap_type == "RadialSpectrum") {
         this->type = SphericalInvariantsType::RadialSpectrum;
         if (this->max_angular > 0) {
@@ -250,7 +458,14 @@ namespace rascal {
           (this->l_factors.array() == other.l_factors.array()).all() and
           (this->wigner_w3js.array() == other.wigner_w3js.array()).all()};
       bool rep_expansion_match{this->rep_expansion == other.rep_expansion};
-      return (grad_match and main_hypers_match and rep_expansion_match);
+      bool sparsification_match{
+          this->unique_pair_list == other.unique_pair_list and
+          this->coeff_indices_map == other.coeff_indices_map and
+          this->key_map == other.key_map and
+          this->coeff_indices == other.coeff_indices and
+          this->is_sparsified == other.is_sparsified};
+      return (grad_match and main_hypers_match and rep_expansion_match and
+              sparsification_match);
     }
 
     /**
@@ -420,6 +635,8 @@ namespace rascal {
    protected:
     size_t max_radial{};
     size_t max_angular{};
+    // shape of the inner dense section of the computed invariant coefficients
+    std::array<size_t, 2> shape{{0, 0}};
     bool normalize{};
     bool compute_gradients{};
     bool inversion_symmetry{false};
@@ -428,10 +645,10 @@ namespace rascal {
 
     internal::SphericalInvariantsType type{};
 
-    // precomputed l-factors the PowerSpectrum
+    //! precomputed l-factors the PowerSpectrum
     Eigen::VectorXd l_factors{};
 
-    // precomputed wigner symbols for the BiSpectrum
+    //! precomputed wigner symbols for the BiSpectrum
     Eigen::ArrayXd wigner_w3js{};
   };
 
@@ -503,7 +720,6 @@ namespace rascal {
     // using operator[] of soap_vector
     internal::SortedKey<Key_t> spair_type{pair_type};
 
-    const size_t n_n1n2{math::pow(this->max_radial, 2_size_t)};
     // to store the norm of the soap vectors
     SpectrumNorm_t<StructureManager> soap_vector_norm_inv{
         *manager, "power spectrums inverse norms", true};
@@ -522,36 +738,34 @@ namespace rascal {
           if (spair_type[0] > el2.first[0]) {
             continue;
           }
+
           spair_type[1] = el2.first[0];
           auto & coef2{el2.second};
-          auto && soap_vector_by_pair{soap_vector[spair_type]};
+          auto && soap_vector_by_pair{soap_vector[this->key_map[spair_type]]};
+          const auto & coef_ids{coeff_indices_map[spair_type]};
+          for (const auto & coef_idx : coef_ids) {
+            // multiply with the constant 1 / \sqrt(2l+1)
+            soap_vector_by_pair(coef_idx.n1n2, coef_idx.l) =
+                (coef1
+                     .block(coef_idx.n1, coef_idx.l_block_idx, 1,
+                            coef_idx.l_block_size)
+                     .array() *
+                 coef2
+                     .block(coef_idx.n2, coef_idx.l_block_idx, 1,
+                            coef_idx.l_block_size)
+                     .array())
+                    .sum() *
+                coef_idx.l_factor;
+          }
 
-          size_t n1n2{0};
-          size_t pos{0}, size{0};
-          for (size_t n1{0}; n1 < this->max_radial; ++n1) {
-            for (size_t n2{0}; n2 < this->max_radial; ++n2) {
-              soap_vector_by_pair(n1n2, 0) = coef1(n1, 0) * coef2(n2, 0);
-              pos = 1;
-              for (size_t l{1}; l < this->max_angular + 1; ++l) {
-                size = 2 * l + 1;
-                // do the reduction over m (with vectorization)
-                soap_vector_by_pair(n1n2, l) =
-                    (coef1.block(n1, pos, 1, size).array() *
-                     coef2.block(n2, pos, 1, size).array())
-                        .sum();
-                pos += size;
-              }
-              ++n1n2;
+          // the \sqrt(2) factor to account for the missing (b,a) components
+          if (spair_type[0] < spair_type[1]) {
+            for (const auto & coef_idx : coef_ids) {
+              soap_vector_by_pair(coef_idx.n1n2, coef_idx.l) *= math::SQRT_TWO;
             }
           }
-          // multiply with the precomputed factors
-          soap_vector_by_pair *= this->l_factors.asDiagonal();
         }  // for el1 : coefficients
       }    // for el2 : coefficients
-
-      // the SQRT_TWO factor comes from the fact that
-      // the upper diagonal of the species is not considered
-      soap_vector.multiply_off_diagonal_elements_by(math::SQRT_TWO);
 
       // normalize the soap vector
       if (this->normalize) {
@@ -568,8 +782,9 @@ namespace rascal {
           auto && atom_j = neigh.get_atom_j();
           const int atom_j_tag{atom_j.get_atom_tag()};
           const bool is_center_atom{manager->is_center_atom(neigh)};
-          // compute grad contribution only if the neighbour is _not_ an
-          // image of the center
+          // compute grad contribution only if the neighbour is _not_ an image
+          // of the center (because then it moves with the center) or is
+          // within the unit cell (so that coefficients[j] exists)
           if (atom_j_tag == atom_i_tag and not is_center_atom) {
             continue;
           }
@@ -584,6 +799,8 @@ namespace rascal {
           // \grad_i p^{k}
           auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
 
+          std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
+              grad_neigh_keys{};
           // \grad_i p^{kab} = \grad_i c^{k a} c^{k b} + c^{k a} \grad_i c^{k b}
           // by definition \grad_i c^{k a} is non zero for one key 'a' so
           // either a == b and we compute one term with a factor of 2 or only
@@ -613,10 +830,11 @@ namespace rascal {
                 spair_type[1] = coef_key_2[0];
               }
 
+              grad_neigh_keys.insert(spair_type);
               // \grad_i p^{k ab}
               auto soap_neigh_gradient_by_species_pair{
-                  soap_neigh_gradient[spair_type]};
-              size_t n1n2{0}, l_block_idx{0};
+                  soap_neigh_gradient[this->key_map[spair_type]]};
+              const auto & coef_ids{coeff_indices_map[spair_type]};
 
               // computes  \grad_i c^{k a}_{n_1} c^{k b}_{n_2}
               if (sorted or equal) {
@@ -624,30 +842,24 @@ namespace rascal {
                      ++cartesian_idx) {
                   const size_t cartesian_offset_n{cartesian_idx *
                                                   this->max_radial};
-                  const size_t cartesian_offset_n1n2{cartesian_idx * n_n1n2};
-                  n1n2 = 0;
-                  for (size_t n1{0}; n1 < this->max_radial; ++n1) {
-                    for (size_t n2{0}; n2 < this->max_radial; ++n2) {
-                      l_block_idx = 0;
-                      for (size_t l{0}; l < this->max_angular + 1; ++l) {
-                        size_t l_block_size{2 * l + 1};
-                        // clang-format off
-                        soap_neigh_gradient_by_species_pair(
-                                n1n2 + cartesian_offset_n1n2, l) +=
-                          (grad_neigh_coefficients_1.block(
-                                n1 + cartesian_offset_n, l_block_idx,
-                                1,                       l_block_size).array() *
-                            expansion_coefficients_j_2.block(
-                                n2, l_block_idx,
-                                1,  l_block_size).array()).sum();
-                        // clang-format on
-                        l_block_idx += l_block_size;
-                      }
-                      ++n1n2;
-                    }  // for n2
-                  }    // for n1
-                }      // for cartesian_idx
-              }        // if (sorted or equal)
+                  const size_t cartesian_offset_n1n2{cartesian_idx *
+                                                     this->shape[0]};
+                  for (const auto & coef_idx : coef_ids) {
+                    // clang-format off
+                    soap_neigh_gradient_by_species_pair(
+                      coef_idx.n1n2 + cartesian_offset_n1n2, coef_idx.l) +=
+                      (grad_neigh_coefficients_1.block(
+                          coef_idx.n1 + cartesian_offset_n,
+                          coef_idx.l_block_idx, 1,
+                          coef_idx.l_block_size).array() *
+                       expansion_coefficients_j_2.block(
+                          coef_idx.n2, coef_idx.l_block_idx,
+                          1,  coef_idx.l_block_size).array()).sum()
+                      * coef_idx.l_factor;
+                    // clang-format on
+                  }  // for const auto& coef_idx : coef_ids
+                }    // for cartesian_idx
+              }      // if (sorted or equal)
 
               // computes c^{k a}_{n_1} \grad_i c^{k b}_{n_2}
               if (not sorted or equal) {
@@ -655,41 +867,44 @@ namespace rascal {
                      ++cartesian_idx) {
                   const size_t cartesian_offset_n{cartesian_idx *
                                                   this->max_radial};
-                  const size_t cartesian_offset_n1n2{cartesian_idx * n_n1n2};
-                  n1n2 = 0;
-                  for (size_t n1{0}; n1 < this->max_radial; ++n1) {
-                    for (size_t n2{0}; n2 < this->max_radial; ++n2) {
-                      l_block_idx = 0;
-                      for (size_t l{0}; l < this->max_angular + 1; ++l) {
-                        size_t l_block_size{2 * l + 1};
-                        // clang-format off
-                        soap_neigh_gradient_by_species_pair(
-                                n1n2 + cartesian_offset_n1n2, l) +=
-                          (grad_neigh_coefficients_1.block(
-                                n2 + cartesian_offset_n, l_block_idx,
-                                1,                       l_block_size).array() *
-                            expansion_coefficients_j_2.block(
-                                n1, l_block_idx,
-                                1,  l_block_size).array()).sum();
-                        // clang-format on
-                        l_block_idx += l_block_size;
-                      }
-                      ++n1n2;
-                    }  // for n2
-                  }    // for n1
-                }      // for cartesian_idx
-              }        // if (not sorted or equal)
-            }          // keys_coef_j
-          }            // keys_coef_grad_neigh
+                  const size_t cartesian_offset_n1n2{cartesian_idx *
+                                                     this->shape[0]};
+                  for (const auto & coef_idx : coef_ids) {
+                    // clang-format off
+                    soap_neigh_gradient_by_species_pair(
+                      coef_idx.n1n2 + cartesian_offset_n1n2, coef_idx.l) +=
+                      (grad_neigh_coefficients_1.block(
+                            coef_idx.n2 + cartesian_offset_n,
+                            coef_idx.l_block_idx,
+                            1, coef_idx.l_block_size).array() *
+                       expansion_coefficients_j_2.block(
+                            coef_idx.n1, coef_idx.l_block_idx,
+                            1, coef_idx.l_block_size).array()).sum()
+                      * coef_idx.l_factor;
+                    // clang-format on
+                  }  // for const auto& coef_idx : coef_ids
+                }    // for cartesian_idx
+              }      // if (not sorted or equal)
+            }        // keys_coef_j
+          }          // keys_coef_grad_neigh
 
-          // multiply with the constant 1 / \sqrt(2l+1) and
-          // the \sqrt(2) factor to account for the missing (b,a) components
-          auto keys = soap_neigh_gradient.get_keys();
-          for (const auto & key : keys) {
-            auto soap_neigh_gradient_by_species_pair{soap_neigh_gradient[key]};
-            soap_neigh_gradient_by_species_pair *= this->l_factors.asDiagonal();
+          // multiply with \sqrt(2) factor to account
+          // for the missing (b,a) components
+          for (const auto & key : grad_neigh_keys) {
             if (key[0] != key[1]) {
-              soap_neigh_gradient_by_species_pair *= math::SQRT_TWO;
+              auto soap_neigh_gradient_by_species_pair{
+                  soap_neigh_gradient[this->key_map[key]]};
+              const auto & coef_ids{coeff_indices_map[key]};
+              for (size_t cartesian_idx{0}; cartesian_idx < 3;
+                   ++cartesian_idx) {
+                const size_t cartesian_offset_n1n2{cartesian_idx *
+                                                   this->shape[0]};
+                for (const auto & coef_idx : coef_ids) {
+                  soap_neigh_gradient_by_species_pair(
+                      coef_idx.n1n2 + cartesian_offset_n1n2, coef_idx.l) *=
+                      math::SQRT_TWO;
+                }
+              }
             }
           }
         }  // for neigh : center
@@ -697,7 +912,7 @@ namespace rascal {
     }      // for center : manager
 
     if (this->normalize and this->compute_gradients) {
-      const size_t grad_component_size{n_n1n2 * (this->max_angular + 1)};
+      const size_t grad_component_size{this->shape[0] * this->shape[1]};
       this->update_gradients_for_normalization(
           soap_vectors, soap_vector_gradients, manager, soap_vector_norm_inv,
           grad_component_size);
@@ -1027,108 +1242,141 @@ namespace rascal {
           InvariantsDerivative & soap_vector_gradients,
           ExpansionCoeff & expansions_coefficients,
           std::shared_ptr<StructureManager> manager) {
-    size_t n_row{math::pow(this->max_radial, 2_size_t)};
-    size_t n_col{this->max_angular + 1};
-
-    // clear the data container and resize it
-    soap_vectors.clear();
-    soap_vectors.set_shape(n_row, n_col);
-
-    if (this->compute_gradients) {
-      soap_vector_gradients.clear();
-      soap_vector_gradients.set_shape(ThreeD * n_row, n_col);
-    }
-
-    std::vector<
-        std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>>
-        keys_list{};
-    std::vector<
-        std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>>
-        keys_list_grad{};
-
-    // identify the species in each environment and initialize soap_vectors
-    for (auto center : manager) {
-      auto atom_i_tag = center.get_atom_tag();
-      auto & coefficients{expansions_coefficients[center]};
-      internal::Sorted<true> is_sorted{};
-
+    if (this->is_sparsified) {
+      size_t n_row{this->shape[0]};
+      size_t n_col{this->shape[1]};
       std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
-          pair_list{};
-      int center_type{center.get_atom_type()};
-      Key_t pair_type{center_type, center_type};
+          keys_list{};
+      internal::Sorted<true> is_sorted{};
+      Key_t pair_type{0, 0};
       // avoid checking the order in pair_type by ensuring it has already been
       // done
       internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
+      keys_list.insert(spair_type);
+      // clear the data container and resize it
+      soap_vectors.clear();
+      soap_vectors.set_shape(n_row, n_col);
+      soap_vectors.resize(keys_list);
+      soap_vectors.setZero();
+      if (this->compute_gradients) {
+        soap_vector_gradients.clear();
+        soap_vector_gradients.set_shape(ThreeD * n_row, n_col);
+        soap_vector_gradients.resize(keys_list);
+        soap_vector_gradients.setZero();
+      } else {
+        soap_vector_gradients.clear();
+        soap_vector_gradients.resize();
+      }
+    } else {
+      size_t n_row{this->shape[0]};
+      size_t n_col{this->shape[1]};
+      this->coeff_indices_map.clear();
+      // clear the data container and resize it
+      soap_vectors.clear();
+      soap_vectors.set_shape(n_row, n_col);
 
-      pair_list.insert({is_sorted, pair_type});
-      for (const auto & el1 : coefficients) {
-        auto && neigh1_type{el1.first[0]};
-        if (center_type <= neigh1_type) {
-          pair_type[0] = center_type;
-          pair_type[1] = neigh1_type;
-        } else {
-          pair_type[1] = center_type;
-          pair_type[0] = neigh1_type;
-        }
+      if (this->compute_gradients) {
+        soap_vector_gradients.clear();
+        soap_vector_gradients.set_shape(ThreeD * n_row, n_col);
+      }
+
+      std::vector<
+          std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>>
+          keys_list{};
+      std::vector<
+          std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>>
+          keys_list_grad{};
+
+      // identify the species in each environment and initialize soap_vectors
+      for (auto center : manager) {
+        auto atom_i_tag = center.get_atom_tag();
+        auto & coefficients{expansions_coefficients[center]};
+        internal::Sorted<true> is_sorted{};
+
+        std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
+            pair_list{};
+        int center_type{center.get_atom_type()};
+        Key_t pair_type{center_type, center_type};
+        // avoid checking the order in pair_type by ensuring it has already been
+        // done
+        internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
 
         pair_list.insert({is_sorted, pair_type});
-
-        for (const auto & el2 : coefficients) {
-          auto && neigh2_type{el2.first[0]};
-          if (neigh1_type <= neigh2_type) {
+        for (const auto & el1 : coefficients) {
+          auto && neigh1_type{el1.first[0]};
+          if (center_type <= neigh1_type) {
+            pair_type[0] = center_type;
+            pair_type[1] = neigh1_type;
+          } else {
+            pair_type[1] = center_type;
             pair_type[0] = neigh1_type;
-            pair_type[1] = neigh2_type;
-            pair_list.insert({is_sorted, pair_type});
+          }
+
+          pair_list.insert({is_sorted, pair_type});
+
+          for (const auto & el2 : coefficients) {
+            auto && neigh2_type{el2.first[0]};
+            if (neigh1_type <= neigh2_type) {
+              pair_type[0] = neigh1_type;
+              pair_type[1] = neigh2_type;
+              pair_list.insert({is_sorted, pair_type});
+            }
           }
         }
-      }
-      keys_list.emplace_back(pair_list);
-      if (this->compute_gradients) {
-        keys_list_grad.emplace_back(pair_list);
+        keys_list.emplace_back(pair_list);
+        if (this->compute_gradients) {
+          keys_list_grad.emplace_back(pair_list);
 
-        // Neighbour gradients need a separate pair list because if the species
-        // of j are not the same as either of the species for that SOAP entry,
-        // the gradient is zero.
-        // since we compute \grad_i p{j ab} we need the species present in
-        // the environment of c^{j}
-        for (auto neigh : center.pairs()) {
-          auto atom_j = neigh.get_atom_j();
-          auto & coef_j = expansions_coefficients[atom_j];
-          auto atom_j_tag = atom_j.get_atom_tag();
-          std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
-              grad_pair_list{};
-          // grad contribution is not zero if the neighbour is _not_ an
-          // image of the center
-          if (atom_j_tag != atom_i_tag) {
-            // list of keys present in the neighbor environment (contains
-            // center_type by definition)
-            std::vector<Key_t> keys_j{coef_j.get_keys()};
+          // Neighbour gradients need a separate pair list because if the
+          // species of j are not the same as either of the species for that
+          // SOAP entry, the gradient is zero. since we compute \grad_i p{j ab}
+          // we need the species present in the environment of c^{j}
+          for (auto neigh : center.pairs()) {
+            auto atom_j = neigh.get_atom_j();
+            auto & coef_j = expansions_coefficients[atom_j];
+            auto atom_j_tag = atom_j.get_atom_tag();
+            std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
+                grad_pair_list{};
+            // grad contribution is not zero if the neighbour is _not_ an
+            // image of the center
+            if (atom_j_tag != atom_i_tag) {
+              // list of keys present in the neighbor environment (contains
+              // center_type by definition)
+              std::vector<Key_t> keys_j{coef_j.get_keys()};
 
-            for (const auto & neigh_1_type : keys_j) {
-              for (const auto & neigh_2_type : keys_j) {
-                if (neigh_1_type[0] <= neigh_2_type[0]) {
-                  if ((center_type == neigh_1_type[0]) or
-                      (center_type == neigh_2_type[0])) {
-                    pair_type[0] = neigh_1_type[0];
-                    pair_type[1] = neigh_2_type[0];
-                    grad_pair_list.insert({is_sorted, pair_type});
+              for (const auto & neigh_1_type : keys_j) {
+                for (const auto & neigh_2_type : keys_j) {
+                  if (neigh_1_type[0] <= neigh_2_type[0]) {
+                    if ((center_type == neigh_1_type[0]) or
+                        (center_type == neigh_2_type[0])) {
+                      pair_type[0] = neigh_1_type[0];
+                      pair_type[1] = neigh_2_type[0];
+                      grad_pair_list.insert({is_sorted, pair_type});
+                    }
                   }
                 }
               }
             }
-          }
-          keys_list_grad.emplace_back(grad_pair_list);
-        }  // auto neigh : center.pairs()
-      }    // if compute_gradients
-    }      // for center : manager
+            keys_list_grad.emplace_back(grad_pair_list);
+          }  // auto neigh : center.pairs()
+        }    // if compute_gradients
 
-    soap_vectors.resize(keys_list);
-    soap_vectors.setZero();
-    if (this->compute_gradients) {
-      soap_vector_gradients.resize(keys_list_grad);
-      soap_vector_gradients.setZero();
-    } else {
-      soap_vector_gradients.resize();
+        // initialize coeff_indices_map if the representation is not sparsified
+        for (const auto & key : pair_list) {
+          if (not this->coeff_indices_map.count(key)) {
+            this->coeff_indices_map[key] = coeff_indices;
+          }
+        }
+      }  // for center : manager
+
+      soap_vectors.resize(keys_list);
+      soap_vectors.setZero();
+      if (this->compute_gradients) {
+        soap_vector_gradients.resize(keys_list_grad);
+        soap_vector_gradients.setZero();
+      } else {
+        soap_vector_gradients.resize();
+      }
     }
   }
 

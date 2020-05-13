@@ -1,5 +1,4 @@
 from ..lib import representation_calculators
-from ..utils.pool_worker import FactoryPool
 from ..neighbourlist.base import NeighbourListFactory
 from ..neighbourlist.structure_manager import convert_to_structure_list
 

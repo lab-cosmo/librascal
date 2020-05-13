@@ -1,4 +1,9 @@
 from ..utils import BaseIO
+from ..utils.filter_utils import (get_index_mappings_sample_per_species,
+                                  convert_selected_global_index2perstructure_index_per_species,
+                                  get_index_mappings_sample,
+                                  convert_selected_global_index2perstructure_index)
+
 from ..models.sparse_points import SparsePoints
 import numpy as np
 from scipy.sparse.linalg import svds
@@ -28,10 +33,20 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
     if verbose:
         if 'sample' in act_on:
             C = X[sel, :]
+            # equivalent to
+            # Cp = np.linalg.pinv(C)
+            # err = np.sqrt(np.sum((X - np.dot(np.dot(X, Cp), C))**2))
+            err = np.sqrt(np.sum((
+                X - np.dot(np.linalg.lstsq(C.T, X.T, rcond=None)[0].T, C))**2))
+
         elif 'feature' in act_on:
             C = X[:, sel]
-        Cp = np.linalg.pinv(C)
-        err = np.sqrt(np.sum((X - np.dot(np.dot(X, Cp), C))**2))
+            # equivalent to
+            # Cp = np.linalg.pinv(C)
+            # err = np.sqrt(np.sum((X - np.dot(C, np.dot(Cp, X)))**2))
+            err = np.sqrt(np.sum((
+                X - np.dot(C, np.linalg.lstsq(C, X, rcond=None)[0]))**2))
+
         print('Reconstruction RMSE={:.3e}'.format(err))
 
     return sel
@@ -65,20 +80,29 @@ class CURFilter(BaseIO):
     """
 
     def __init__(self, representation, Nselect, act_on='sample per species',
-                                                is_deterministic=True, seed=10):
+                 is_deterministic=True, seed=10):
         self._representation = representation
         self.Nselect = Nselect
-        if act_on in ['sample', 'sample per species', 'feature']:
+        modes = ['sample', 'sample per species', 'feature']
+        if act_on in modes:
             self.act_on = act_on
         else:
             raise ValueError(
-                '"act_on" should be either of: "{}", "{}", "{}"'.format(
-                    *['sample', 'sample per species', 'feature']))
+                '"act_on" should be either of: "{}", "{}", "{}"'.format(*modes))
         self.is_deterministic = is_deterministic
         self.seed = seed
+        # effectively selected list of indices at the filter step
+        # the indices have been reordered for effiency and compatibility with
+        # the c++ routines
         self.selected_ids = None
+        # for 'sample' selection
+        self.selected_sample_ids = None
+        # for 'sample per species' selection
+        self.selected_sample_ids_by_sp = None
+        # for feature selection
+        self.selected_feature_ids_global = None
 
-    def fit_transform(self, managers):
+    def select(self, managers):
         """Perform CUR selection of samples/features.
 
         Parameters
@@ -98,16 +122,15 @@ class CURFilter(BaseIO):
         NotImplementedError
             [description]
         """
-        if self.act_on in ['sample per species']:
-            # get the dense feature matrix
-            X = managers.get_features(self._representation)
+        # get the dense feature matrix
+        X = managers.get_features(self._representation)
 
+        if self.act_on == 'sample per species':
             sps = list(self.Nselect.keys())
 
-            # get various info from the structures about the center atom species
-            # and indexing
+            # get various info from the structures about the center atom species and indexing
             (strides_by_sp, global_counter, map_by_manager,
-             indices_by_sp) = self.get_index_mappings_sample_per_species(managers)
+             indices_by_sp) = get_index_mappings_sample_per_species(managers, sps)
 
             print('The number of pseudo points selected by central atom species is: {}'.format(
                 self.Nselect))
@@ -119,82 +142,92 @@ class CURFilter(BaseIO):
             self._XX = X_by_sp
 
             # split the dense feature matrix by center species and apply CUR decomposition
-            selected_ids_by_sp = {}
+            self.selected_sample_ids_by_sp = {}
+            self.fps_minmax_d2_by_sp = {}
+            self.fps_hausforff_d2_by_sp = {}
             for sp in sps:
                 print('Selecting species: {}'.format(sp))
-                selected_ids_by_sp[sp] = np.sort(do_CUR(X_by_sp[sp], self.Nselect[sp], self.act_on,
-                                                        self.is_deterministic, self.seed))
+                self.selected_sample_ids_by_sp[sp] = do_CUR(X_by_sp[sp], self.Nselect[sp], self.act_on,
+                                                            self.is_deterministic, self.seed)
 
-            self.selected_ids = self.convert_selected_global_index2rascal_sample_per_species(
-                managers, selected_ids_by_sp, strides_by_sp, map_by_manager)
-
-            # build the pseudo points
-            sparse_points = SparsePoints(self._representation)
-            sparse_points.extend(managers, self.selected_ids)
-
-            return sparse_points
+        elif self.act_on == 'sample':
+            self.selected_sample_ids = do_CUR(X, self.Nselect, self.act_on,
+                                              self.is_deterministic, self.seed)
+        elif self.act_on == 'feature':
+            self.selected_feature_ids_global = do_CUR(X, self.Nselect, self.act_on,
+                                                      self.is_deterministic, self.seed)
         else:
-            raise NotImplementedError("method: {}".format(self.act_on))
+            raise ValueError("method: {}".format(self.act_on))
 
-    def get_index_mappings_sample_per_species(self, managers):
-        # get various info from the structures about the center atom species and indexing
-        sps = list(self.Nselect.keys())
-        types = []
-        strides_by_sp = {sp: [0] for sp in sps}
-        global_counter = {sp: 0 for sp in sps}
-        indices_by_sp = {sp: [] for sp in sps}
-        map_by_manager = {sp:[{} for ii in range(len(managers)) ] for sp in sps}
-        for i_man, man in enumerate(managers):
-            counter = {sp: 0 for sp in sps}
-            for i_at, at in enumerate(man):
-                types.append(at.atom_type)
-                if at.atom_type in sps:
-                    map_by_manager[at.atom_type][i_man][global_counter[at.atom_type]] = i_at
-                    counter[at.atom_type] += 1
-                    global_counter[at.atom_type] += 1
-                else:
-                    raise ValueError('Atom type {} has not been specified in fselect: {}'.format(
-                        at.atom_type, self.Nselect))
-            for sp in sps:
-                strides_by_sp[sp].append(counter[sp])
+        return self
 
-        for sp in sps:
-            strides_by_sp[sp] = np.cumsum(strides_by_sp[sp])
+    def filter(self, managers, n_select=None):
+        if n_select is None:
+            n_select = self.Nselect
 
-        for ii, sp in enumerate(types):
-            indices_by_sp[sp].append(ii)
+        if self.act_on == 'sample per species':
+            sps = list(n_select.keys())
+            # get various info from the structures about the center atom species and indexing
+            (strides_by_sp, global_counter, map_by_manager,
+             indices_by_sp) = get_index_mappings_sample_per_species(managers, sps)
+            selected_ids_by_sp = {key: np.sort(val[:n_select[key]])
+                                  for key, val in self.selected_sample_ids_by_sp.items()}
+            self.selected_ids = convert_selected_global_index2perstructure_index_per_species(
+                managers, selected_ids_by_sp, strides_by_sp, map_by_manager, sps)
+            # return self.selected_ids
+            # build the pseudo points
+            pseudo_points = SparsePoints(self._representation)
+            pseudo_points.extend(managers, self.selected_ids)
+            return pseudo_points
 
-        return strides_by_sp, global_counter, map_by_manager, indices_by_sp
+        elif self.act_on == 'sample':
+            selected_ids_global = np.sort(self.selected_sample_ids[:n_select])
+            strides, _, map_by_manager = get_index_mappings_sample(managers)
+            self.selected_ids = convert_selected_global_index2perstructure_index(managers,
+                                                                            selected_ids_global, strides, map_by_manager)
+            return self.selected_ids
+            # # build the pseudo points
+            # pseudo_points = SparsePoints(self._representation)
+            # pseudo_points.extend(managers, self.selected_ids)
+            # return pseudo_points
 
-    def convert_selected_global_index2rascal_sample_per_species(self, managers,
-                            selected_ids_by_sp, strides_by_sp, map_by_manager):
-        # convert selected center indexing into the rascal format
-        selected_ids = [[] for ii in range(len(managers))]
-        sps = list(self.Nselect.keys())
-        i_manager = {sp: 0 for sp in sps}
-        for sp in sps:
-            for idx in selected_ids_by_sp[sp]:
-                carry_on = True
-                while carry_on:
-                    if (idx >= strides_by_sp[sp][i_manager[sp]] and
-                                    idx < strides_by_sp[sp][i_manager[sp] + 1]):
-                        selected_ids[i_manager[sp]].append(
-                            map_by_manager[sp][i_manager[sp]][idx])
-                        carry_on = False
-                    else:
-                        i_manager[sp] += 1
-        for ii in range(len(selected_ids)):
-            selected_ids[ii] = list(np.sort(selected_ids[ii]))
-        return selected_ids
+        elif self.act_on == 'feature':
+            feat_idx2coeff_idx = self._representation.get_feature_index_mapping(
+                managers)
+            self.selected_ids = {key: []
+                                 for key in feat_idx2coeff_idx[0].keys()}
+            selected_ids_sorting = np.argsort(
+                self.selected_feature_ids_global[:n_select])
+            selected_feature_ids = self.selected_feature_ids_global[selected_ids_sorting]
+            for idx in selected_feature_ids:
+                coef_idx = feat_idx2coeff_idx[idx]
+                for key in self.selected_ids.keys():
+                    self.selected_ids[key].append(int(coef_idx[key]))
+            # keep the global indices and ordering for ease of use
+            self.selected_ids['selected_features_global_ids'] = selected_feature_ids.tolist(
+            )
+            self.selected_ids['selected_features_global_ids_fps_ordering'] = selected_ids_sorting.tolist(
+            )
+            self.selected_ids = dict(coefficient_subselection=self.selected_ids)
+            return self.selected_ids
+
+    def select_and_filter(self, managers):
+        return self.select(managers).filter(managers)
 
     def _get_data(self):
         data = super()._get_data()
-        data.update(selected_ids=self.selected_ids)
+        data.update(selected_ids=self.selected_ids,
+                    selected_sample_ids=self.selected_sample_ids,
+                    selected_sample_ids_by_sp=self.selected_sample_ids_by_sp,
+                    selected_feature_ids_global=self.selected_feature_ids_global)
         return data
 
     def _set_data(self, data):
         super()._set_data(data)
         self.selected_ids = data['selected_ids']
+        self.selected_sample_ids = data['selected_sample_ids']
+        self.selected_sample_ids_by_sp = data['selected_sample_ids_by_sp']
+        self.selected_feature_ids_global = data['selected_feature_ids_global']
 
     def _get_init_params(self):
         return dict(representation=self._representation,

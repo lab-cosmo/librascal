@@ -82,6 +82,20 @@ namespace rascal {
         }
       }
 
+      SortedKey() : data{} {}
+
+      SortedKey(const SortedKey & other) : data{other.data} {}
+
+      SortedKey & operator=(const SortedKey & other) {
+        this->data = other.data;
+        return *this;
+      }
+
+      bool operator==(const SortedKey & other) const {
+        return std::equal(this->data.begin(), this->data.end(),
+                          other.data.begin(), other.data.end());
+      }
+
       SortedKey(const Sorted<false> &, const Key_t & key) : SortedKey{key} {}
 
       SortedKey(const Sorted<true> &, const Key_t & key) : data{key} {}
@@ -95,7 +109,15 @@ namespace rascal {
       }
 
       //! access or insert specified element. use with caution !
-      Value_t & operator[](size_t id) { return this->data[id]; }
+      template <class Int>
+      Value_t & operator[](const Int & id) {
+        return this->data[id];
+      }
+
+      template <class Int>
+      const Value_t & operator[](const Int & id) const {
+        return this->data[id];
+      }
 
       const Key_t & get_key() const { return data; }
     };
@@ -917,6 +939,39 @@ namespace rascal {
       Matrix_t features =
           Matrix_t::Zero(n_elements, inner_size * all_keys.size());
       this->fill_dense_feature_matrix(features, all_keys);
+      return features;
+    }
+
+    Matrix_t get_features_gradient() {
+      auto all_keys = this->get_keys();
+      return this->get_features_gradient(all_keys);
+    }
+
+    Matrix_t get_features_gradient(const Keys_t & all_keys) {
+      static_assert(Order_ == 2, "Gradients are a property of order 2.");
+      using ConstMapSoapGradFlat_t = const Eigen::Map<
+          const Eigen::Matrix<double, ThreeD, Eigen::Dynamic, Eigen::RowMajor>>;
+      size_t n_elements{this->size() * ThreeD};
+      int inner_size{this->get_nb_comp() / ThreeD};
+      Matrix_t features =
+          Matrix_t::Zero(n_elements, inner_size * all_keys.size());
+      int i_row_global{0};
+      size_t n_pairs{this->maps.size()};
+      for (size_t i_pair{0}; i_pair < n_pairs; i_pair++) {
+        int i_feat{0};
+        const auto & neigh_val = this->maps[i_pair];
+        for (const auto & key : all_keys) {
+          if (this->maps[i_pair].count(key) == 1) {
+            const auto & neigh_key_val = neigh_val[key];
+            ConstMapSoapGradFlat_t neigh_key_val_flat(neigh_key_val.data(),
+                                                      ThreeD, inner_size);
+            features.block(i_row_global, i_feat, ThreeD, inner_size) =
+                neigh_key_val_flat;
+          }
+          i_feat += inner_size;
+        }  // keys
+        i_row_global += ThreeD;
+      }  // centers
       return features;
     }
 

@@ -100,6 +100,30 @@ namespace rascal {
     ManagerCollection & operator=(ManagerCollection && other) = default;
 
     /**
+     * Build a new collection containing a subset of the structure managers
+     * selected by selected_ids.
+     *
+     * @return a new manager collection
+     */
+    template <typename Int>
+    Self_t get_subset(const std::vector<Int> & selected_ids) {
+      Int idx_max{*std::max_element(selected_ids.begin(), selected_ids.end())};
+      if (idx_max >= static_cast<Int>(this->size())) {
+        std::stringstream error{};
+        error << "selected_ids has at least one out of bound index: '"
+              << idx_max
+              << "' for the number of managers in the collection is '"
+              << this->size() << "'.";
+        throw std::runtime_error(error.str());
+      }
+      Self_t new_collection{this->adaptor_parameters};
+      for (const auto & idx : selected_ids) {
+        new_collection.add_structure(this->managers[idx]);
+      }
+      return new_collection;
+    }
+
+    /**
      * Give the ManagerCollection the iterator functionality using Data_t
      * functionality
      */

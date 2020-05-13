@@ -149,10 +149,10 @@ namespace rascal {
      * @param delta maximum relative error threshold
      */
     template <typename Derived>
-    Derived relative_error(const Eigen::MatrixBase<Derived> & reference,
-                           const Eigen::MatrixBase<Derived> & test,
-                           const double & delta = 1e-10,
-                           const double & epsilon = DBL_FTOL) {
+    Matrix_t relative_error(const Eigen::MatrixBase<Derived> & reference,
+                            const Eigen::MatrixBase<Derived> & test,
+                            const double & delta = 1e-10,
+                            const double & epsilon = DBL_FTOL) {
       if (reference.rows() != test.rows()) {
         std::stringstream err_str{};
         err_str << "reference.rows() != test.rows(): '" << reference.rows()
@@ -165,7 +165,7 @@ namespace rascal {
                 << "' != '" << test.cols() << "'.";
         throw std::runtime_error(err_str.str());
       }
-      auto rel_diff = (reference - test).array().abs().matrix().eval();
+      Matrix_t rel_diff = (reference - test).array().abs().matrix().eval();
       auto is_zero_ref = (reference.array().abs() < epsilon).eval();
       auto is_zero_test = (test.array().abs() < epsilon).eval();
       for (int i_row{0}; i_row < reference.rows(); ++i_row) {
@@ -185,6 +185,39 @@ namespace rascal {
                   << "diff: " << rel_diff(maxRow, maxCol)
                   << " ref: " << reference(maxRow, maxCol)
                   << " test: " << test(maxRow, maxCol) << std::endl;
+      }
+
+      return rel_diff;
+    }
+
+    /**
+     * Routine to compute the relative difference between 2 double.
+     * The return value depend on the closeness to zero:
+     * + if ref and test are not zero, then return relative error
+     * + if ref and test are within epsilon, then return 0.
+     * + if ref is within epsilon and test not, then return absolute error
+     *
+     * @param reference the double with the reference values
+     * @param test the double with the  values to check
+     * @param epsilon the threshold defining which values are effectivelly zero
+     * @param delta maximum relative error threshold
+     */
+    inline double relative_error(const double & reference, const double & test,
+                                 const double & delta = 1e-10,
+                                 const double & epsilon = DBL_FTOL) {
+      double rel_diff{std::abs(reference - test)};
+      bool is_zero_ref{std::abs(reference) < epsilon};
+      bool is_zero_test{std::abs(test) < epsilon};
+      if (is_zero_ref and is_zero_test) {
+        rel_diff = 0.;
+      } else if (not is_zero_ref) {
+        rel_diff /= reference;
+      }
+
+      if (rel_diff > delta) {
+        std::cout << "Diff in relative_error "
+                  << "diff: " << rel_diff << " ref: " << reference
+                  << " test: " << test << std::endl;
       }
 
       return rel_diff;
