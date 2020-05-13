@@ -1,8 +1,8 @@
 from ..utils import BaseIO
 from ..utils.filter_utils import (get_index_mappings_sample_per_species,
-                                  convert_selected_global_index2rascal_sample_per_species,
+                                  convert_selected_global_index2perstructure_index_per_species,
                                   get_index_mappings_sample,
-                                  convert_selected_global_index2rascal_sample)
+                                  convert_selected_global_index2perstructure_index)
 
 from ..models.sparse_points import SparsePoints
 import numpy as np
@@ -172,7 +172,7 @@ class CURFilter(BaseIO):
              indices_by_sp) = get_index_mappings_sample_per_species(managers, sps)
             selected_ids_by_sp = {key: np.sort(val[:n_select[key]])
                                   for key, val in self.selected_sample_ids_by_sp.items()}
-            self.selected_ids = convert_selected_global_index2rascal_sample_per_species(
+            self.selected_ids = convert_selected_global_index2perstructure_index_per_species(
                 managers, selected_ids_by_sp, strides_by_sp, map_by_manager, sps)
             # return self.selected_ids
             # build the pseudo points
@@ -183,7 +183,7 @@ class CURFilter(BaseIO):
         elif self.act_on == 'sample':
             selected_ids_global = np.sort(self.selected_sample_ids[:n_select])
             strides, _, map_by_manager = get_index_mappings_sample(managers)
-            self.selected_ids = convert_selected_global_index2rascal_sample(managers,
+            self.selected_ids = convert_selected_global_index2perstructure_index(managers,
                                                                             selected_ids_global, strides, map_by_manager)
             return self.selected_ids
             # # build the pseudo points

@@ -70,14 +70,14 @@ def get_index_mappings_sample(managers):
     return strides, global_counter, map_by_manager
 
 
-def convert_selected_global_index2rascal_sample_per_species(managers, selected_ids_by_sp,
+def convert_selected_global_index2perstructure_index_per_species(managers, selected_ids_by_sp,
                                 strides_by_sp, map_by_manager, sps):
     # convert selected center indexing into the rascal format
 
     # list the atom indices (within their structure) that have been selected
     selected_ids = [[] for ii in range(len(managers))]
     for sp in sps:
-        ids = convert_selected_global_index2rascal_sample(
+        ids = convert_selected_global_index2perstructure_index(
             managers, selected_ids_by_sp[sp], strides_by_sp[sp], map_by_manager[sp])
         for ii, selected_idx in zip(ids, selected_ids):
             selected_idx.extend(ii)
@@ -86,7 +86,7 @@ def convert_selected_global_index2rascal_sample_per_species(managers, selected_i
     return selected_ids
 
 
-def convert_selected_global_index2rascal_sample(managers, selected_ids_global,
+def convert_selected_global_index2perstructure_index(managers, selected_ids_global,
                                                         strides, map_by_manager):
     # convert selected center indexing into the rascal format
 
