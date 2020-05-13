@@ -171,32 +171,6 @@ if(SKBUILD)
   message(STATUS "The project is built using scikit-build")
 endif()
 
-# relative RPATH so that _rascal.so can find librascal.so when installed.
-# see link for more details on the topic
-# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
-set(CMAKE_SKIP_BUILD_RPATH  FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
-if(NOT APPLE AND UNIX)
-  # this link path accommodates most installations
-  # `$ORIGIN/../../../../` should allow to link libraries in `$PREFIX/lib`
-  # `$ORIGIN/../../src` should allow to link libraries from the build folder
-  # `$ORIGIN/../../lib` accommodates installation with
-  # `python setup.py install'
-  set(CMAKE_INSTALL_RPATH "$ORIGIN/../../../../" "$ORIGIN/../../lib"
-                          "$ORIGIN/../../src" "$ORIGIN/../src")
-elseif(APPLE)
-  set(MACOSX_RPATH ON)
-  # this link path accommodates most installations
-  # `@loader_path/../../../../` should allow to link libraries
-  # in `$PREFIX/lib`
-  # `@loader_path/../../src` should allow to link libraries from the build folder
-  # `@loader_path/../../lib` accommodates installation with
-  # `python setup.py install'
-  set(CMAKE_INSTALL_RPATH "@loader_path/../../../../" "@loader_path/../../lib"
-                          "@loader_path/../../src" "@loader_path/../src")
-endif()
-
 add_subdirectory(src)
 
 enable_testing()
