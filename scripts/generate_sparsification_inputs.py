@@ -7,6 +7,7 @@ from os.path import join
 import sys
 import argparse
 import numpy as np
+from prettyjson import prettyjson
 
 # dump radial and power spectra for methane
 
@@ -85,7 +86,9 @@ def dump_reference_json():
     fn_out = join(root, dump_path, "sparsification_inputs.json")
     print(fn_out)
     with open(fn_out, 'w') as f:
-        json.dump(sparsification_inputs, f)
+        sparsification_inputs_pretty = prettyjson(sparsification_inputs,
+                                                    indent=2, maxlinelength=80)
+        f.write(sparsification_inputs_pretty)
 
 ##########################################################################################
 ##########################################################################################
