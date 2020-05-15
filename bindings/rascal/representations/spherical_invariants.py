@@ -154,6 +154,8 @@ class SphericalInvariants(BaseIO):
         of radial expension indices and 'l' is the list of spherical expansion
         index. Each of these lists have the same size and their ith element
         refers to one PowerSpectrum coefficient that will be computed.
+        :class:`..utils.FPSFilter` and :class:`..utils.CURFilter` with
+        `act_on` set to `feature` output such dictionary.
 
     Methods
     -------

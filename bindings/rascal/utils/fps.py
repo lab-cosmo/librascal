@@ -96,7 +96,7 @@ def fps(feature_matrix, n_select, starting_index=None,
 
 
 class FPSFilter(BaseIO):
-    """Farther Point Sampling (FPS) to select samples or features in a given feature matrix.
+    """Farthest Point Sampling (FPS) to select samples or features in a given feature matrix.
     Wrapper around the fps function for convenience.
     Parameters
     ----------
