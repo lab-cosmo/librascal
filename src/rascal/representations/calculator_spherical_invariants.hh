@@ -189,7 +189,7 @@ namespace rascal {
           is_sparsified{other.is_sparsified},
           max_radial{std::move(other.max_radial)}, max_angular{std::move(
                                                        other.max_angular)},
-          shape{std::move(other.shape)}, normalize{std::move(other.normalize)},
+          inner_invariants_shape{std::move(other.inner_invariants_shape)}, normalize{std::move(other.normalize)},
           compute_gradients{std::move(other.compute_gradients)},
           inversion_symmetry{std::move(other.inversion_symmetry)},
           rep_expansion{std::move(other.rep_expansion)},
@@ -268,8 +268,35 @@ namespace rascal {
       this->max_radial = hypers.at("max_radial").get<size_t>();
       this->max_angular = hypers.at("max_angular").get<size_t>();
 
-      if (hypers.find("coefficient_subselection") != hypers.end() and
-          (soap_type == "PowerSpectrum")) {  // NOLINT
+
+
+      if (soap_type == "PowerSpectrum") {
+        this->type = SphericalInvariantsType::PowerSpectrum;
+      } else if (soap_type == "RadialSpectrum") {
+        this->type = SphericalInvariantsType::RadialSpectrum;
+        if (this->max_angular > 0) {
+          throw std::logic_error("max_angular should be 0 with RadialSpectrum");
+        }
+      } else if (soap_type == "BiSpectrum") {
+        this->type = internal::SphericalInvariantsType::BiSpectrum;
+        this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
+        this->wigner_w3js = internal::precompute_wigner_w3js(
+            this->max_angular, this->inversion_symmetry);
+      } else {
+        throw std::logic_error(
+            "Requested SphericalInvariants type \'" + soap_type +
+            "\' has not been implemented.  Must be one of" +
+            ": 'PowerSpectrum', 'RadialSpectrum', or 'BiSpectrum'.");
+      }
+
+      this->set_name(hypers);
+    }
+
+    void set_hyperparameters_powerspectrum(const Hypers_t & hypers) {
+      using internal::SphericalInvariantsType;
+      this->type = SphericalInvariantsType::RadialSpectrum;
+
+      if (hypers.find("coefficient_subselection") != hypers.end()) {
         this->is_sparsified = true;
         auto coefficient_subselection =
             hypers.at("coefficient_subselection").get<json>();
@@ -333,8 +360,8 @@ namespace rascal {
             throw std::runtime_error(err_str.str());
           }
         }
-        this->shape[0] = 1;
-        this->shape[1] = sp_a.size();
+        this->inner_invariants_shape[0] = 1;
+        this->inner_invariants_shape[1] = sp_a.size();
 
         internal::Sorted<true> is_sorted{};
         // collect all unique sorted pairs
@@ -383,8 +410,8 @@ namespace rascal {
 
         Key_t sparsified_type{0, 0};
         // there are 118 atomic elements atm
-        for (int sp1{1}; sp1 < 130; sp1++) {
-          for (int sp2{1}; sp2 < 130; sp2++) {
+        for (int sp1{1}; sp1 < MaxChemElements; sp1++) {
+          for (int sp2{1}; sp2 < MaxChemElements; sp2++) {
             if (sp1 <= sp2) {
               Key_t pair_type{sp1, sp2};
               internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
@@ -398,8 +425,8 @@ namespace rascal {
       } else {  // Default false (compute all coefficents)
         this->l_factors = internal::precompute_l_factors(this->max_angular);
         this->is_sparsified = false;
-        this->shape[0] = math::pow(this->max_radial, 2_size_t);
-        this->shape[1] = this->max_angular + 1;
+        this->inner_invariants_shape[0] = math::pow(this->max_radial, 2_size_t);
+        this->inner_invariants_shape[1] = this->max_angular + 1;
         for (size_t n1{0}; n1 < this->max_radial; ++n1) {
           for (size_t n2{0}; n2 < this->max_radial; ++n2) {
             size_t pos{0};
@@ -414,8 +441,8 @@ namespace rascal {
         }
         internal::Sorted<true> is_sorted{};
         // there are 118 atomic elements atm
-        for (int sp1{1}; sp1 < 130; sp1++) {
-          for (int sp2{1}; sp2 < 130; sp2++) {
+        for (int sp1{1}; sp1 < MaxChemElements; sp1++) {
+          for (int sp2{1}; sp2 < MaxChemElements; sp2++) {
             if (sp1 <= sp2) {
               Key_t pair_type{sp1, sp2};
               internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
@@ -424,27 +451,6 @@ namespace rascal {
           }
         }
       }
-
-      if (soap_type == "PowerSpectrum") {
-        this->type = SphericalInvariantsType::PowerSpectrum;
-      } else if (soap_type == "RadialSpectrum") {
-        this->type = SphericalInvariantsType::RadialSpectrum;
-        if (this->max_angular > 0) {
-          throw std::logic_error("max_angular should be 0 with RadialSpectrum");
-        }
-      } else if (soap_type == "BiSpectrum") {
-        this->type = internal::SphericalInvariantsType::BiSpectrum;
-        this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
-        this->wigner_w3js = internal::precompute_wigner_w3js(
-            this->max_angular, this->inversion_symmetry);
-      } else {
-        throw std::logic_error(
-            "Requested SphericalInvariants type \'" + soap_type +
-            "\' has not been implemented.  Must be one of" +
-            ": 'PowerSpectrum', 'RadialSpectrum', or 'BiSpectrum'.");
-      }
-
-      this->set_name(hypers);
     }
 
     bool operator==(const CalculatorSphericalInvariants & other) const {
@@ -636,7 +642,7 @@ namespace rascal {
     size_t max_radial{};
     size_t max_angular{};
     // shape of the inner dense section of the computed invariant coefficients
-    std::array<size_t, 2> shape{{0, 0}};
+    std::array<size_t, 2> inner_invariants_shape{{0, 0}};
     bool normalize{};
     bool compute_gradients{};
     bool inversion_symmetry{false};
@@ -744,6 +750,7 @@ namespace rascal {
           auto && soap_vector_by_pair{soap_vector[this->key_map[spair_type]]};
           const auto & coef_ids{coeff_indices_map[spair_type]};
           for (const auto & coef_idx : coef_ids) {
+            // the Powerspectrum coefficient and
             // multiply with the constant 1 / \sqrt(2l+1)
             soap_vector_by_pair(coef_idx.n1n2, coef_idx.l) =
                 (coef1
@@ -843,7 +850,7 @@ namespace rascal {
                   const size_t cartesian_offset_n{cartesian_idx *
                                                   this->max_radial};
                   const size_t cartesian_offset_n1n2{cartesian_idx *
-                                                     this->shape[0]};
+                                                     this->inner_invariants_shape[0]};
                   for (const auto & coef_idx : coef_ids) {
                     // clang-format off
                     soap_neigh_gradient_by_species_pair(
@@ -868,7 +875,7 @@ namespace rascal {
                   const size_t cartesian_offset_n{cartesian_idx *
                                                   this->max_radial};
                   const size_t cartesian_offset_n1n2{cartesian_idx *
-                                                     this->shape[0]};
+                                                     this->inner_invariants_shape[0]};
                   for (const auto & coef_idx : coef_ids) {
                     // clang-format off
                     soap_neigh_gradient_by_species_pair(
@@ -898,7 +905,7 @@ namespace rascal {
               for (size_t cartesian_idx{0}; cartesian_idx < 3;
                    ++cartesian_idx) {
                 const size_t cartesian_offset_n1n2{cartesian_idx *
-                                                   this->shape[0]};
+                                                   this->inner_invariants_shape[0]};
                 for (const auto & coef_idx : coef_ids) {
                   soap_neigh_gradient_by_species_pair(
                       coef_idx.n1n2 + cartesian_offset_n1n2, coef_idx.l) *=
@@ -912,7 +919,7 @@ namespace rascal {
     }      // for center : manager
 
     if (this->normalize and this->compute_gradients) {
-      const size_t grad_component_size{this->shape[0] * this->shape[1]};
+      const size_t grad_component_size{this->inner_invariants_shape[0] * this->inner_invariants_shape[1]};
       this->update_gradients_for_normalization(
           soap_vectors, soap_vector_gradients, manager, soap_vector_norm_inv,
           grad_component_size);
@@ -1243,8 +1250,8 @@ namespace rascal {
           ExpansionCoeff & expansions_coefficients,
           std::shared_ptr<StructureManager> manager) {
     if (this->is_sparsified) {
-      size_t n_row{this->shape[0]};
-      size_t n_col{this->shape[1]};
+      size_t n_row{this->inner_invariants_shape[0]};
+      size_t n_col{this->inner_invariants_shape[1]};
       std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
           keys_list{};
       internal::Sorted<true> is_sorted{};
@@ -1268,8 +1275,8 @@ namespace rascal {
         soap_vector_gradients.resize();
       }
     } else {
-      size_t n_row{this->shape[0]};
-      size_t n_col{this->shape[1]};
+      size_t n_row{this->inner_invariants_shape[0]};
+      size_t n_col{this->inner_invariants_shape[1]};
       this->coeff_indices_map.clear();
       // clear the data container and resize it
       soap_vectors.clear();
