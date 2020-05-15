@@ -215,7 +215,7 @@ namespace rascal {
       }
 
       if (rel_diff > delta) {
-        std::cout << "Diff in relative_error "
+        std::cout << "Error relative to reference "
                   << "diff: " << rel_diff << " ref: " << reference
                   << " test: " << test << std::endl;
       }
