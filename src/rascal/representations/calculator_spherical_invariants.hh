@@ -189,8 +189,9 @@ namespace rascal {
           is_sparsified{other.is_sparsified},
           max_radial{std::move(other.max_radial)}, max_angular{std::move(
                                                        other.max_angular)},
-          inner_invariants_shape{std::move(other.inner_invariants_shape)}, normalize{std::move(other.normalize)},
-          compute_gradients{std::move(other.compute_gradients)},
+          inner_invariants_shape{std::move(other.inner_invariants_shape)},
+          normalize{std::move(other.normalize)}, compute_gradients{std::move(
+                                                     other.compute_gradients)},
           inversion_symmetry{std::move(other.inversion_symmetry)},
           rep_expansion{std::move(other.rep_expansion)},
           type{std::move(other.type)}, l_factors{std::move(other.l_factors)},
@@ -864,8 +865,8 @@ namespace rascal {
                      ++cartesian_idx) {
                   const size_t cartesian_offset_n{cartesian_idx *
                                                   this->max_radial};
-                  const size_t cartesian_offset_n1n2{cartesian_idx *
-                                                     this->inner_invariants_shape[0]};
+                  const size_t cartesian_offset_n1n2{
+                      cartesian_idx * this->inner_invariants_shape[0]};
                   for (const auto & coef_idx : coef_ids) {
                     // clang-format off
                     soap_neigh_gradient_by_species_pair(
@@ -889,8 +890,8 @@ namespace rascal {
                      ++cartesian_idx) {
                   const size_t cartesian_offset_n{cartesian_idx *
                                                   this->max_radial};
-                  const size_t cartesian_offset_n1n2{cartesian_idx *
-                                                     this->inner_invariants_shape[0]};
+                  const size_t cartesian_offset_n1n2{
+                      cartesian_idx * this->inner_invariants_shape[0]};
                   for (const auto & coef_idx : coef_ids) {
                     // clang-format off
                     soap_neigh_gradient_by_species_pair(
@@ -919,8 +920,8 @@ namespace rascal {
               const auto & coef_ids{coeff_indices_map[key]};
               for (size_t cartesian_idx{0}; cartesian_idx < 3;
                    ++cartesian_idx) {
-                const size_t cartesian_offset_n1n2{cartesian_idx *
-                                                   this->inner_invariants_shape[0]};
+                const size_t cartesian_offset_n1n2{
+                    cartesian_idx * this->inner_invariants_shape[0]};
                 for (const auto & coef_idx : coef_ids) {
                   soap_neigh_gradient_by_species_pair(
                       coef_idx.n1n2 + cartesian_offset_n1n2, coef_idx.l) *=
@@ -934,7 +935,8 @@ namespace rascal {
     }      // for center : manager
 
     if (this->normalize and this->compute_gradients) {
-      const size_t grad_component_size{this->inner_invariants_shape[0] * this->inner_invariants_shape[1]};
+      const size_t grad_component_size{this->inner_invariants_shape[0] *
+                                       this->inner_invariants_shape[1]};
       this->update_gradients_for_normalization(
           soap_vectors, soap_vector_gradients, manager, soap_vector_norm_inv,
           grad_component_size);
