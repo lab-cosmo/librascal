@@ -268,10 +268,8 @@ namespace rascal {
       this->max_radial = hypers.at("max_radial").get<size_t>();
       this->max_angular = hypers.at("max_angular").get<size_t>();
 
-
-
       if (soap_type == "PowerSpectrum") {
-        this->type = SphericalInvariantsType::PowerSpectrum;
+        this->set_hyperparameters_powerspectrum(hypers);
       } else if (soap_type == "RadialSpectrum") {
         this->type = SphericalInvariantsType::RadialSpectrum;
         if (this->max_angular > 0) {
@@ -292,9 +290,26 @@ namespace rascal {
       this->set_name(hypers);
     }
 
+    /**
+     * Set hyperparameters when computing the PowerSpectrum.
+     *
+     * @param hypers a json type object containing fields:
+     *  - coefficient_subselection (optional)
+     *      if not present then all the coefficients are computed following
+     *      max_radial, max_angular and the atomic species present.
+     *      it should have the following form
+     *      `{'a': [...], 'b': [...], 'n1': [...], 'n2': [...], 'l': [...]}`
+     *      where 'a' and 'b' are lists of atomic species, 'n1' and 'n2' are
+     *      lists of radial expension indices and 'l' is the list of spherical
+     *      expansion index. Each of these lists have the same size and their
+     *      ith element refers to one PowerSpectrum coefficient that will be
+     *      computed.
+     *      Note that values in 'n1', 'n2', 'l' should not exceed max_radial-1
+     *      and max_angular.
+     */
     void set_hyperparameters_powerspectrum(const Hypers_t & hypers) {
       using internal::SphericalInvariantsType;
-      this->type = SphericalInvariantsType::RadialSpectrum;
+      this->type = SphericalInvariantsType::PowerSpectrum;
 
       if (hypers.find("coefficient_subselection") != hypers.end()) {
         this->is_sparsified = true;
