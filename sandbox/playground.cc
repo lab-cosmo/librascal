@@ -27,7 +27,6 @@
 
 #include "rascal/models/sparse_kernels.hh"
 #include "rascal/models/sparse_points.hh"
-#include "rascal/models/numerical_kernel_gradients.hh"
 #include "rascal/utils/basic_types.hh"
 #include "rascal/models/kernels.hh"
 #include "rascal/utils/utils.hh"
@@ -55,7 +54,7 @@
 #include <iterator>
 #include <chrono>
 
-const int N_ITERATIONS = 10;
+
 
 using namespace rascal;  // NOLINT
 
@@ -84,10 +83,11 @@ int main(int argc, char * argv[]) {
   json input = json_io::load(argv[1]);
 
   std::string filename{input["filename"].get<std::string>()};
+  const int N_ITERATIONS = input["N_ITERATIONS"].get<int>();
   json adaptors = input["adaptors"].get<json>();
   json calculator = input["calculator"].get<json>();
   SparseKernel kernel{input["kernel"]};
-  ManagerCollection_t managers{adaptors};
+
 
   Representation_t representation{calculator};
 
@@ -98,16 +98,31 @@ int main(int argc, char * argv[]) {
 
   auto start = std::chrono::high_resolution_clock::now();
   // This is the part that should get profiled
-  for (size_t looper{0}; looper < N_ITERATIONS; looper++) {
+  for (int looper{0}; looper < N_ITERATIONS; looper++) {
     // compute NL
+    ManagerCollection_t managers{adaptors};
     managers.add_structures(filename, 0, input["n_structures"].get<int>());
-    // compute representation
-    representation.compute(managers);
   }
   auto finish = std::chrono::high_resolution_clock::now();
 
   elapsed = finish - start;
-  std::cout << "NL and Representation"
+  std::cout << "NL"
+            << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
+            << std::endl;
+
+  // compute NL
+  ManagerCollection_t managers{adaptors};
+  managers.add_structures(filename, 0, input["n_structures"].get<int>());
+  start = std::chrono::high_resolution_clock::now();
+  // This is the part that should get profiled
+  for (int looper{0}; looper < N_ITERATIONS; looper++) {
+    // compute representation
+    representation.compute(managers);
+  }
+  finish = std::chrono::high_resolution_clock::now();
+
+  elapsed = finish - start;
+  std::cout << "Representation"
             << " elapsed: " << elapsed.count() / N_ITERATIONS << " seconds"
             << std::endl;
 
