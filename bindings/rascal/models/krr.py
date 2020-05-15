@@ -37,7 +37,8 @@ class KRR(BaseIO):
             Y0 = np.zeros(len(managers))
             for i_manager, manager in enumerate(managers):
                 for center in manager:
-                    Y0[i_manager] += self.self_contributions[center.atom_type]
+                    Y0[i_manager] += self.self_contributions.get(
+                                                        center.atom_type, 0)
         elif self.target_type == 'Atom':
             n_centers = 0
             for manager in managers:
@@ -46,7 +47,8 @@ class KRR(BaseIO):
             i_center = 0
             for manager in managers:
                 for center in manager:
-                    Y0[i_center] = self.self_contributions[center.atom_type]
+                    Y0[i_center] = self.self_contributions.get(
+                                                        center.atom_type, 0)
                     i_center += 1
         return Y0
 

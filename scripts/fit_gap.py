@@ -35,7 +35,11 @@ def fit_save_model(parameters):
     if isinstance(energy_baseline_in, collections.abc.Mapping):
         energy_baseline = energy_baseline_in
     else:
-        energy_baseline = collections.defaultdict(lambda: energy_baseline_in)
+        all_species = set()
+        for geom in source_geoms:
+            all_species = all_species.union(geom.get_atomic_numbers())
+        energy_baseline = {species: energy_baseline_in
+                           for species in all_species}
     energy_delta = parameters.get('energy_delta', 1.)
     energy_regularizer = parameters['energy_regularizer'] / energy_delta
     force_regularizer = parameters['force_regularizer'] / energy_delta
