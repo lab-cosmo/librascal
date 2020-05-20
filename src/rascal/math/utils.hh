@@ -139,14 +139,14 @@ namespace rascal {
     /**
      * Routine to compute the relative difference between the values of
      * Eigen Matrices. The return value depend on the closeness to zero:
-     * + if ref and test are not zero, then return relative error
+     * + if ref is not zero, then return relative error
      * + if ref and test are within epsilon, then return 0.
      * + if ref is within epsilon and test not, then return absolute error
      *
      * @param reference the matrix with the reference values
      * @param test the matrix with the  values to check
      * @param epsilon the threshold defining which values are effectivelly zero
-     * @param delta maximum relative error threshold
+     * @param delta maximum relative error threshold to print a warning
      */
     template <typename Derived>
     Matrix_t relative_error(const Eigen::MatrixBase<Derived> & reference,
@@ -193,14 +193,14 @@ namespace rascal {
     /**
      * Routine to compute the relative difference between 2 double.
      * The return value depend on the closeness to zero:
-     * + if ref and test are not zero, then return relative error
+     * + if ref is not zero, then return relative error
      * + if ref and test are within epsilon, then return 0.
      * + if ref is within epsilon and test not, then return absolute error
      *
      * @param reference the double with the reference values
      * @param test the double with the  values to check
      * @param epsilon the threshold defining which values are effectivelly zero
-     * @param delta maximum relative error threshold
+     * @param delta maximum relative error threshold to print a warning
      */
     inline double relative_error(const double & reference, const double & test,
                                  const double & delta = 1e-10,
