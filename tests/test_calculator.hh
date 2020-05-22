@@ -599,6 +599,7 @@ namespace rascal {
     ~SingleHypersSphericalInvariants() = default;
 
     std::vector<json> representation_hypers{};
+
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},

@@ -2,9 +2,9 @@ from .io import BaseIO
 from ..lib import sparsification
 
 from .filter_utils import (get_index_mappings_sample_per_species,
-                           convert_selected_global_index2rascal_sample_per_species,
+                           convert_selected_global_index2perstructure_index_per_species,
                            get_index_mappings_sample,
-                           convert_selected_global_index2rascal_sample)
+                           convert_selected_global_index2perstructure_index)
 import numpy as np
 
 
@@ -96,7 +96,7 @@ def fps(feature_matrix, n_select, starting_index=None,
 
 
 class FPSFilter(BaseIO):
-    """Farther Point Sampling (FPS) to select samples or features in a given feature matrix.
+    """Farthest Point Sampling (FPS) to select samples or features in a given feature matrix.
     Wrapper around the fps function for convenience.
     Parameters
     ----------
@@ -119,12 +119,14 @@ class FPSFilter(BaseIO):
         self._representation = representation
         self.Nselect = Nselect
         self.starting_index = starting_index
-        if act_on in ['sample', 'sample per species', 'feature']:
+        modes = ['sample', 'sample per species', 'feature']
+        if act_on in modes:
             self.act_on = act_on
         else:
-            raise 'Wrong input: {}'.format(act_on)
+            raise ValueError(
+                '"act_on" should be either of: "{}", "{}", "{}"'.format(*modes))
 
-        # effectively selected list of indices at the transform step
+        # effectively selected list of indices at the filter step
         # the indices have been reordered for effiency and compatibility with
         # the c++ routines
         self.selected_ids = None
@@ -138,7 +140,7 @@ class FPSFilter(BaseIO):
         self.fps_minmax_d2_by_sp = None
         self.fps_minmax_d2 = None
 
-    def fit(self, managers):
+    def select(self, managers):
         """Perform FPS selection of samples/features.
         Parameters
         ----------
@@ -159,7 +161,7 @@ class FPSFilter(BaseIO):
         # get the dense feature matrix
         X = managers.get_features(self._representation)
 
-        if self.act_on in ['sample per species']:
+        if self.act_on == 'sample per species':
             sps = list(self.Nselect.keys())
 
             # get various info from the structures about the center atom species and indexing
@@ -187,30 +189,30 @@ class FPSFilter(BaseIO):
                 self.fps_minmax_d2_by_sp[sp] = fps_out['fps_minmax_d2']
 
             return self
-        elif self.act_on in ['feature']:
+        elif self.act_on == 'feature':
             fps_out = fps(X.T, self.Nselect, starting_index=self.starting_index)
             self.selected_feature_ids_global = fps_out['fps_indices']
             self.fps_minmax_d2 = fps_out['fps_minmax_d2']
-        elif self.act_on in ['sample']:
+        elif self.act_on == 'sample':
             fps_out = fps(X, self.Nselect, starting_index=self.starting_index)
             self.selected_sample_ids = fps_out['fps_indices']
             self.fps_minmax_d2 = fps_out['fps_minmax_d2']
         else:
             raise NotImplementedError("method: {}".format(self.act_on))
 
-    def transform(self, managers, n_select=None):
+    def filter(self, managers, n_select=None):
         from ..models import SparsePoints
         if n_select is None:
             n_select = self.Nselect
 
-        if self.act_on in ['sample per species']:
+        if self.act_on == 'sample per species':
             sps = list(n_select.keys())
             # get various info from the structures about the center atom species and indexing
             (strides_by_sp, global_counter, map_by_manager,
              indices_by_sp) = get_index_mappings_sample_per_species(managers, sps)
             selected_ids_by_sp = {key: np.sort(val[:n_select[key]])
                                   for key, val in self.selected_sample_ids_by_sp.items()}
-            self.selected_ids = convert_selected_global_index2rascal_sample_per_species(
+            self.selected_ids = convert_selected_global_index2perstructure_index_per_species(
                 managers, selected_ids_by_sp, strides_by_sp, map_by_manager, sps)
             # return self.selected_ids
             # build the pseudo points
@@ -218,10 +220,10 @@ class FPSFilter(BaseIO):
             pseudo_points.extend(managers, self.selected_ids)
             return pseudo_points
 
-        elif self.act_on in ['sample']:
+        elif self.act_on == 'sample':
             selected_ids_global = np.sort(self.selected_sample_ids[:n_select])
             strides, _, map_by_manager = get_index_mappings_sample(managers)
-            self.selected_ids = convert_selected_global_index2rascal_sample(managers,
+            self.selected_ids = convert_selected_global_index2perstructure_index(managers,
                                                                             selected_ids_global, strides, map_by_manager)
             return self.selected_ids
             # SparsePoints is not compatible with a non center atom species
@@ -231,7 +233,7 @@ class FPSFilter(BaseIO):
             # pseudo_points.extend(managers, self.selected_ids)
             # return pseudo_points
 
-        elif self.act_on in ['feature']:
+        elif self.act_on == 'feature':
             feat_idx2coeff_idx = self._representation.get_feature_index_mapping(
                 managers)
             self.selected_ids = {key: []
@@ -251,10 +253,10 @@ class FPSFilter(BaseIO):
             self.selected_ids = dict(coefficient_subselection=self.selected_ids)
             return self.selected_ids
 
-    def fit_transform(self, managers):
-        return self.fit(managers).transform(managers)
+    def select_and_filter(self, managers):
+        return self.select(managers).filter(managers)
 
-    def plot(self):
+    def plot_fps_error(self):
         import matplotlib.pyplot as plt
         if self.fps_minmax_d2_by_sp is None:
             plt.semilogy(self.fps_minmax_d2, label=self.act_on)

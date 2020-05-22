@@ -4,7 +4,35 @@ import numpy as np
 
 
 def get_index_mappings_sample_per_species(managers, sps):
-    # get various info from the structures about the center atom species and indexing
+    '''Get various info from the structures about the center atom species
+    and indexing per species.
+
+    Parameters
+    ----------
+
+    managers : AtomsList
+        list of atomic structures
+    sps : list
+        list of unique center atom species present in managers
+
+    Returns
+    -------
+
+    strides_by_sp : dict
+        list the positions of the begining of each structure in arrays that
+        have one row per atom of species sp
+    global_counter : dict
+        count the number of atoms of a particular element sp
+    map_by_manager : dict
+        map species / structure index / global atom index to the atom index
+        in the structure
+    indices_by_sp : dict
+        map position in arrays that have one row per atom of species sp to
+        the position in array that has one row per atom
+    '''
+
+    # list of the atom types following the order in managers accross the
+    # atomic structures
     types = []
     strides_by_sp = {sp: [0] for sp in sps}
     global_counter = {sp: 0 for sp in sps}
@@ -16,7 +44,7 @@ def get_index_mappings_sample_per_species(managers, sps):
         for i_at, at in enumerate(man):
             types.append(at.atom_type)
             if at.atom_type in sps:
-                map_by_manager[at.atom_type][i_man][global_counter[at.atom_type]] = i_at
+                map_by_manager[sp][i_man][global_counter[at.atom_type]] = i_at
                 counter[at.atom_type] += 1
                 global_counter[at.atom_type] += 1
             else:
@@ -35,7 +63,27 @@ def get_index_mappings_sample_per_species(managers, sps):
     return strides_by_sp, global_counter, map_by_manager, indices_by_sp
 
 def get_index_mappings_sample(managers):
-    # get various info from the structures about the center atom species and indexing
+    '''Get various info from the structures about the center atom species and indexing.
+
+    Parameters
+    ----------
+
+    managers : AtomsList
+        list of atomic structures
+
+    Returns
+    -------
+
+    strides : list
+        list the positions of the begining of each structure in arrays that
+        have one row per atom
+    global_counter : int
+        count the number of atoms in managers
+    map_by_manager : dict
+        map the structure index / global atom index to the atom index in the
+        structure
+    '''
+
     strides = [0]
     global_counter = 0
     map_by_manager = [{} for ii in range(len(managers))]
@@ -53,9 +101,76 @@ def get_index_mappings_sample(managers):
     return strides, global_counter, map_by_manager
 
 
-def convert_selected_global_index2rascal_sample(managers, selected_ids_global,
+def convert_selected_global_index2perstructure_index_per_species(managers, selected_ids_by_sp,
+                                strides_by_sp, map_by_manager, sps):
+    '''Convert selected center indexing into the rascal format.
+
+    See get_index_mappings_sample_per_species to make the intput
+
+    Parameters
+    ----------
+
+    managers : AtomsList
+        list of atomic structures
+    sps : list
+        list of unique center atom species present in managers
+    strides_by_sp : dict
+        list the positions of the begining of each structure in arrays that
+        have one row per atom of species sp
+    map_by_manager : dict
+        map species / structure index / global atom index to the atom index
+        in the structure
+    indices_by_sp : dict
+        map position in arrays that have one row per atom of species sp to
+        the position in array that has one row per atom
+
+    Returns
+    -------
+
+    selected_ids : list of lists
+        list the atom indices (within their structure) that have been selected
+    '''
+
+    selected_ids = [[] for ii in range(len(managers))]
+    for sp in sps:
+        ids = convert_selected_global_index2perstructure_index(
+            managers, selected_ids_by_sp[sp], strides_by_sp[sp], map_by_manager[sp])
+        for ii, selected_idx in zip(ids, selected_ids):
+            selected_idx.extend(ii)
+    for ii in range(len(selected_ids)):
+        selected_ids[ii] = list(np.sort(selected_ids[ii]))
+    return selected_ids
+
+
+def convert_selected_global_index2perstructure_index(managers, selected_ids_global,
                                                         strides, map_by_manager):
-    # convert selected center indexing into the rascal format
+    '''Convert selected center indexing into the rascal format.
+
+    See get_index_mappings_sample to make the intput
+
+    Parameters
+    ----------
+
+    managers : AtomsList
+        list of atomic structures
+    sps : list
+        list of unique center atom species present in managers
+    strides : list
+        list the positions of the begining of each structure in arrays that
+        have one row per atom
+    global_counter : int
+        count the number of atoms in managers
+    map_by_manager : dict
+        map the structure index / global atom index to the atom index in the
+        structure
+
+    Returns
+    -------
+
+    selected_ids : list of lists
+        list the atom indices (within their structure) that have been selected
+    '''
+
     selected_ids = [[] for ii in range(len(managers))]
     i_manager = 0
     for idx in selected_ids_global:

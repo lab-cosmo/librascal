@@ -62,7 +62,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_SHARED_LIBS ON)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(rascalTools)
 
 ########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ########
@@ -73,7 +73,6 @@ option(BUILD_PROFILING "Build the files for profiling" OFF)
 option(BUILD_TESTS "Build the unit tests" OFF)
 option(BUILD_DOC "Build documentation" OFF)
 option(BUILD_SANDBOX "If on, builds the sandbox" OFF)
-option(USER "Switch installation folder" OFF)
 
 set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
 
@@ -142,47 +141,35 @@ if(BUILD_BINDINGS)
 
   add_external_package(pybind11 VERSION 2.3.0 CONFIG)
 
-   # Get where python site-packages is
-  if(NOT USER)
-    execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "from distutils.sysconfig import \
-                      get_python_lib; print(get_python_lib())"
-      OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
-      )
-  else()
-    # Get where python local site-packages is
-    execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "import site; \
-                      print(site.USER_SITE)"
-      OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
-      )
-  endif()
+
+  execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "from distutils.sysconfig import \
+                    get_python_lib; print(get_python_lib())"
+    OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
 
   execute_process ( COMMAND "${PYTHON_EXECUTABLE}" -c "import sys; \
                     print(sys.prefix)"
     OUTPUT_VARIABLE PACKAGE_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+  )
 endif()
 
 # figure out where to install the library
 if(NOT "${INSTALL_PATH}" STREQUAL "")
   set(CMAKE_INSTALL_PREFIX "${INSTALL_PATH}")
-elseif(NOT BUILD_BINDINGS AND NOT USER)
+elseif(NOT BUILD_BINDINGS)
   set(CMAKE_INSTALL_PREFIX "/usr")
   message(STATUS "INSTALLATION REQUIRES SUDO RIGHTS")
-elseif(NOT BUILD_BINDINGS AND USER)
-  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local")
-elseif(BUILD_BINDINGS AND NOT USER)
+elseif(BUILD_BINDINGS)
   set(CMAKE_INSTALL_PREFIX "${PACKAGE_PREFIX}")
-elseif(BUILD_BINDINGS AND USER)
-  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local")
 endif()
 
 message(STATUS "Installation ROOT: ${CMAKE_INSTALL_PREFIX}")
 
-# Always use full RPATH
-# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
-set(CMAKE_SKIP_BUILD_RPATH  FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+if(SKBUILD)
+  # make sure we know when installing with setup.py (potentially for using with
+  # pip)
+  message(STATUS "The project is built using scikit-build")
+endif()
 
 add_subdirectory(src)
 
@@ -220,13 +207,13 @@ include(cpplint)
 # Checking hh/cc files for compliance with coding conventions
 if(CPPLINT_FOUND)
   # register the folders to check for cpp code conventions compliance
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
+  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bindings" "")
+  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/examples"
     "--filter=-build/namespaces")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/benchmarks" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/profiles" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/benchmarks" "")
+  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/profiles" "")
+  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src" "")
+  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests" "")
 endif()
 
 # Check for clang-format
@@ -235,12 +222,12 @@ include(clangformat)
 if(CLANG_FORMAT_FOUND)
   # register the folders to apply clang-format with given configuration
   # .clang-format in project root folder
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/benchmarks" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/profiles" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bindings" "")
+  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/examples")
+  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/benchmarks" "")
+  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/profiles" "")
+  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src" "")
+  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests" "")
 endif()
 
 # Check for autopep8
@@ -249,14 +236,14 @@ include(autopep8)
 if(AUTOPEP8_FOUND)
   # register the folders to apply autopep8 with given configuration
   # .pycodestyle in project root folder
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings")
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts")
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
+  autopep8_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bindings")
+  autopep8_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/scripts")
+  autopep8_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests")
 endif()
 
 # Removes every file in the build folder except the external libraries to
 # prevent redownloading external libraries
 add_custom_target(
     deepclean
-    COMMAND "${PYTHON_EXECUTABLE}" ${CMAKE_SOURCE_DIR}/scripts/developer_utils.py deepclean
+    COMMAND "${PYTHON_EXECUTABLE}" ${CMAKE_CURRENT_SOURCE_DIR}/scripts/developer_utils.py deepclean
   )

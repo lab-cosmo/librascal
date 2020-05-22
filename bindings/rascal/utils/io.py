@@ -220,7 +220,7 @@ class BaseIO(ABC):
 
     + _set_data is expected to set the data that has been extracted by _get_data
 
-    The underlying c++ objects are not pickable so deepcopy does not work out
+    The underlying c++ objects are not pickle-able so deepcopy does not work out
     of the box. This class provides an override of the __deepcopy__() function
     so that classes that inherit from this base class can be deepcopied.
     """

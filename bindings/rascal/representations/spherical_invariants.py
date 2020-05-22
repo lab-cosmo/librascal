@@ -1,5 +1,6 @@
 import json
 from itertools import product
+import ase
 
 from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
@@ -24,7 +25,7 @@ class SphericalInvariants(BaseIO):
     """
     Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.
 
-    Hyperparameters
+    Attributes
     ----------
     interaction_cutoff : float
         Maximum pairwise distance for atoms to be considered in
@@ -91,6 +92,71 @@ class SphericalInvariants(BaseIO):
         should contain all the species present in the structure for which
         invariants will be computed
 
+    compute_gradients : bool
+        control the computation of the representation's gradients w.r.t. atomic
+        positions.
+
+    cutoff_function_type : string
+        Choose the type of smooth cutoff function used to define the local
+        environment. Can be either 'ShiftedCosine' or 'RadialScaling'.
+
+        If 'ShiftedCosine', the functional form of the switching function is:
+
+        .. math::
+
+            sc(r) = \\begin{cases}
+            1 &r < r_c - sw,\\\\
+            0.5 + 0.5 \cos(\pi * (r - r_c + sw) / sw) &r_c - sw < r <= r_c, \\\\
+            0 &r_c < r,
+            \\end{cases}
+
+        where :math:`r_c` is the interaction_cutoff and :math:`sw` is the
+        cutoff_smooth_width.
+
+        If 'RadialScaling', the functional form of the switching function is
+        as expressed in equation 21 of https://doi.org/10.1039/c8cp05921g:
+
+        .. math::
+
+            rs(r) = sc(r) u(r),
+
+        where
+
+        .. math::
+
+            u(r) = \\begin{cases}
+            \\frac{1}{(r/r_0)^m} &\\text{if c=0,}\\\\
+            1 &\\text{if m=0,} \\\\
+            \\frac{c}{c+(r/r_0)^m} &\\text{else},
+            \\end{cases}
+
+        where :math:`c` is the rate, :math:`r_0` is the scale, :math:`m` is the
+        exponent.
+
+    cutoff_function_parameters : dict
+        Additional parameters for the cutoff function.
+        if cutoff_function_type == 'RadialScaling' then it should have the form
+
+        .. code:: python
+
+            dict(rate=dict(value=..., unit='AA'),
+                 scale=dict(value=..., unit='AA'),
+                 exponent=dict(value=..., unit='AA'))
+
+        where :code:`...` should be replaced by the desired value.
+
+    coefficient_subselection : list or None
+        if None then all the coefficients are computed following max_radial,
+        max_angular and the atomic species present.
+        if :code:`soap_type == 'PowerSpectrum'` and it has the form
+        :code:`{'a': [...], 'b': [...], 'n1': [...], 'n2': [...], 'l': [...]}`
+        where 'a' and 'b' are lists of atomic species, 'n1' and 'n2' are lists
+        of radial expension indices and 'l' is the list of spherical expansion
+        index. Each of these lists have the same size and their ith element
+        refers to one PowerSpectrum coefficient that will be computed.
+        :class:`..utils.FPSFilter` and :class:`..utils.CURFilter` with
+        `act_on` set to `feature` output such dictionary.
+
     Methods
     -------
     transform(frames)
@@ -137,7 +203,7 @@ class SphericalInvariants(BaseIO):
             coefficient_subselection=coefficient_subselection)
 
         if self.hypers['coefficient_subselection'] is None:
-            self.hypers.pop('coefficient_subselection')
+            del self.hypers['coefficient_subselection']
 
         self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
         cutoff_function_parameters.update(
@@ -307,7 +373,7 @@ class SphericalInvariants(BaseIO):
         return keys
 
     def get_feature_index_mapping(self, managers):
-        import ase
+
         species = []
         for ii in range(len(managers)):
             manager = managers[ii]

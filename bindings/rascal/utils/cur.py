@@ -1,10 +1,10 @@
 from ..utils import BaseIO
-from ..models import SparsePoints
 from ..utils.filter_utils import (get_index_mappings_sample_per_species,
-                                  convert_selected_global_index2rascal_sample_per_species,
+                                  convert_selected_global_index2perstructure_index_per_species,
                                   get_index_mappings_sample,
-                                  convert_selected_global_index2rascal_sample)
+                                  convert_selected_global_index2perstructure_index)
 
+from ..models.sparse_points import SparsePoints
 import numpy as np
 from scipy.sparse.linalg import svds
 
@@ -33,12 +33,19 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
     if verbose:
         if 'sample' in act_on:
             C = X[sel, :]
-            Cp = np.linalg.pinv(C)
-            err = np.sqrt(np.sum((X - np.dot(np.dot(X, Cp), C))**2))
+            # equivalent to
+            # Cp = np.linalg.pinv(C)
+            # err = np.sqrt(np.sum((X - np.dot(np.dot(X, Cp), C))**2))
+            err = np.sqrt(np.sum((
+                X - np.dot(np.linalg.lstsq(C.T, X.T, rcond=None)[0].T, C))**2))
+
         elif 'feature' in act_on:
             C = X[:, sel]
-            Cp = np.linalg.pinv(C)
-            err = np.sqrt(np.sum((X - np.dot(C, np.dot(Cp, X)))**2))
+            # equivalent to
+            # Cp = np.linalg.pinv(C)
+            # err = np.sqrt(np.sum((X - np.dot(C, np.dot(Cp, X)))**2))
+            err = np.sqrt(np.sum((
+                X - np.dot(C, np.linalg.lstsq(C, X, rcond=None)[0]))**2))
 
         print('Reconstruction RMSE={:.3e}'.format(err))
 
@@ -76,15 +83,15 @@ class CURFilter(BaseIO):
                  is_deterministic=True, seed=10):
         self._representation = representation
         self.Nselect = Nselect
-        if act_on in ['sample', 'sample per species', 'feature']:
+        modes = ['sample', 'sample per species', 'feature']
+        if act_on in modes:
             self.act_on = act_on
         else:
             raise ValueError(
-                '"act_on" should be either of: "{}", "{}", "{}"'.format(
-                    *['sample', 'sample per species', 'feature']))
+                '"act_on" should be either of: "{}", "{}", "{}"'.format(*modes))
         self.is_deterministic = is_deterministic
         self.seed = seed
-        # effectively selected list of indices at the transform step
+        # effectively selected list of indices at the filter step
         # the indices have been reordered for effiency and compatibility with
         # the c++ routines
         self.selected_ids = None
@@ -95,7 +102,7 @@ class CURFilter(BaseIO):
         # for feature selection
         self.selected_feature_ids_global = None
 
-    def fit(self, managers):
+    def select(self, managers):
         """Perform CUR selection of samples/features.
 
         Parameters
@@ -118,7 +125,7 @@ class CURFilter(BaseIO):
         # get the dense feature matrix
         X = managers.get_features(self._representation)
 
-        if self.act_on in ['sample per species']:
+        if self.act_on == 'sample per species':
             sps = list(self.Nselect.keys())
 
             # get various info from the structures about the center atom species and indexing
@@ -143,10 +150,10 @@ class CURFilter(BaseIO):
                 self.selected_sample_ids_by_sp[sp] = do_CUR(X_by_sp[sp], self.Nselect[sp], self.act_on,
                                                             self.is_deterministic, self.seed)
 
-        elif self.act_on in ['sample']:
+        elif self.act_on == 'sample':
             self.selected_sample_ids = do_CUR(X, self.Nselect, self.act_on,
                                               self.is_deterministic, self.seed)
-        elif self.act_on in ['feature']:
+        elif self.act_on == 'feature':
             self.selected_feature_ids_global = do_CUR(X, self.Nselect, self.act_on,
                                                       self.is_deterministic, self.seed)
         else:
@@ -154,18 +161,18 @@ class CURFilter(BaseIO):
 
         return self
 
-    def transform(self, managers, n_select=None):
+    def filter(self, managers, n_select=None):
         if n_select is None:
             n_select = self.Nselect
 
-        if self.act_on in ['sample per species']:
+        if self.act_on == 'sample per species':
             sps = list(n_select.keys())
             # get various info from the structures about the center atom species and indexing
             (strides_by_sp, global_counter, map_by_manager,
              indices_by_sp) = get_index_mappings_sample_per_species(managers, sps)
             selected_ids_by_sp = {key: np.sort(val[:n_select[key]])
                                   for key, val in self.selected_sample_ids_by_sp.items()}
-            self.selected_ids = convert_selected_global_index2rascal_sample_per_species(
+            self.selected_ids = convert_selected_global_index2perstructure_index_per_species(
                 managers, selected_ids_by_sp, strides_by_sp, map_by_manager, sps)
             # return self.selected_ids
             # build the pseudo points
@@ -173,10 +180,10 @@ class CURFilter(BaseIO):
             pseudo_points.extend(managers, self.selected_ids)
             return pseudo_points
 
-        elif self.act_on in ['sample']:
+        elif self.act_on == 'sample':
             selected_ids_global = np.sort(self.selected_sample_ids[:n_select])
             strides, _, map_by_manager = get_index_mappings_sample(managers)
-            self.selected_ids = convert_selected_global_index2rascal_sample(managers,
+            self.selected_ids = convert_selected_global_index2perstructure_index(managers,
                                                                             selected_ids_global, strides, map_by_manager)
             return self.selected_ids
             # # build the pseudo points
@@ -184,7 +191,7 @@ class CURFilter(BaseIO):
             # pseudo_points.extend(managers, self.selected_ids)
             # return pseudo_points
 
-        elif self.act_on in ['feature']:
+        elif self.act_on == 'feature':
             feat_idx2coeff_idx = self._representation.get_feature_index_mapping(
                 managers)
             self.selected_ids = {key: []
@@ -204,8 +211,8 @@ class CURFilter(BaseIO):
             self.selected_ids = dict(coefficient_subselection=self.selected_ids)
             return self.selected_ids
 
-    def fit_transform(self, managers):
-        return self.fit(managers).transform(managers)
+    def select_and_filter(self, managers):
+        return self.select(managers).filter(managers)
 
     def _get_data(self):
         data = super()._get_data()
