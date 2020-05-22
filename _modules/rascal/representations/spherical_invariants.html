@@ -162,6 +162,8 @@
             
   <h1>Source code for rascal.representations.spherical_invariants</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">product</span>
+<span class="kn">import</span> <span class="nn">ase</span>
 
 <span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">CalculatorFactory</span><span class="p">,</span> <span class="n">cutoff_function_dict_switch</span>
 <span class="kn">from</span> <span class="nn">..neighbourlist</span> <span class="k">import</span> <span class="n">AtomsList</span>
@@ -170,12 +172,23 @@
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">BaseIO</span>
 
 
+<span class="k">def</span> <span class="nf">get_power_spectrum_index_mapping</span><span class="p">(</span><span class="n">sp_pairs</span><span class="p">,</span> <span class="n">n_max</span><span class="p">,</span> <span class="n">l_max</span><span class="p">):</span>
+    <span class="n">feat_idx2coeff_idx</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># i_feat corresponds the global linear index</span>
+    <span class="n">i_feat</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">sp_pair</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="n">sp_pairs</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_max</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_max</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">l_max</span><span class="p">)):</span>
+        <span class="n">feat_idx2coeff_idx</span><span class="p">[</span><span class="n">i_feat</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">a</span><span class="o">=</span><span class="n">sp_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">b</span><span class="o">=</span><span class="n">sp_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n1</span><span class="o">=</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="o">=</span><span class="n">n2</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="n">l</span><span class="p">)</span>
+        <span class="n">i_feat</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">feat_idx2coeff_idx</span>
+
+
 <div class="viewcode-block" id="SphericalInvariants"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SphericalInvariants">[docs]</a><span class="k">class</span> <span class="nc">SphericalInvariants</span><span class="p">(</span><span class="n">BaseIO</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.</span>
 
-<span class="sd">    Hyperparameters</span>
+<span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    interaction_cutoff : float</span>
 <span class="sd">        Maximum pairwise distance for atoms to be considered in</span>
@@ -242,6 +255,71 @@
 <span class="sd">        should contain all the species present in the structure for which</span>
 <span class="sd">        invariants will be computed</span>
 
+<span class="sd">    compute_gradients : bool</span>
+<span class="sd">        control the computation of the representation&#39;s gradients w.r.t. atomic</span>
+<span class="sd">        positions.</span>
+
+<span class="sd">    cutoff_function_type : string</span>
+<span class="sd">        Choose the type of smooth cutoff function used to define the local</span>
+<span class="sd">        environment. Can be either &#39;ShiftedCosine&#39; or &#39;RadialScaling&#39;.</span>
+
+<span class="sd">        If &#39;ShiftedCosine&#39;, the functional form of the switching function is:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            sc(r) = \\begin{cases}</span>
+<span class="sd">            1 &amp;r &lt; r_c - sw,\\\\</span>
+<span class="sd">            0.5 + 0.5 \cos(\pi * (r - r_c + sw) / sw) &amp;r_c - sw &lt; r &lt;= r_c, \\\\</span>
+<span class="sd">            0 &amp;r_c &lt; r,</span>
+<span class="sd">            \\end{cases}</span>
+
+<span class="sd">        where :math:`r_c` is the interaction_cutoff and :math:`sw` is the</span>
+<span class="sd">        cutoff_smooth_width.</span>
+
+<span class="sd">        If &#39;RadialScaling&#39;, the functional form of the switching function is</span>
+<span class="sd">        as expressed in equation 21 of https://doi.org/10.1039/c8cp05921g:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            rs(r) = sc(r) u(r),</span>
+
+<span class="sd">        where</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            u(r) = \\begin{cases}</span>
+<span class="sd">            \\frac{1}{(r/r_0)^m} &amp;\\text{if c=0,}\\\\</span>
+<span class="sd">            1 &amp;\\text{if m=0,} \\\\</span>
+<span class="sd">            \\frac{c}{c+(r/r_0)^m} &amp;\\text{else},</span>
+<span class="sd">            \\end{cases}</span>
+
+<span class="sd">        where :math:`c` is the rate, :math:`r_0` is the scale, :math:`m` is the</span>
+<span class="sd">        exponent.</span>
+
+<span class="sd">    cutoff_function_parameters : dict</span>
+<span class="sd">        Additional parameters for the cutoff function.</span>
+<span class="sd">        if cutoff_function_type == &#39;RadialScaling&#39; then it should have the form</span>
+
+<span class="sd">        .. code:: python</span>
+
+<span class="sd">            dict(rate=dict(value=..., unit=&#39;AA&#39;),</span>
+<span class="sd">                 scale=dict(value=..., unit=&#39;AA&#39;),</span>
+<span class="sd">                 exponent=dict(value=..., unit=&#39;AA&#39;))</span>
+
+<span class="sd">        where :code:`...` should be replaced by the desired value.</span>
+
+<span class="sd">    coefficient_subselection : list or None</span>
+<span class="sd">        if None then all the coefficients are computed following max_radial,</span>
+<span class="sd">        max_angular and the atomic species present.</span>
+<span class="sd">        if :code:`soap_type == &#39;PowerSpectrum&#39;` and it has the form</span>
+<span class="sd">        :code:`{&#39;a&#39;: [...], &#39;b&#39;: [...], &#39;n1&#39;: [...], &#39;n2&#39;: [...], &#39;l&#39;: [...]}`</span>
+<span class="sd">        where &#39;a&#39; and &#39;b&#39; are lists of atomic species, &#39;n1&#39; and &#39;n2&#39; are lists</span>
+<span class="sd">        of radial expension indices and &#39;l&#39; is the list of spherical expansion</span>
+<span class="sd">        index. Each of these lists have the same size and their ith element</span>
+<span class="sd">        refers to one PowerSpectrum coefficient that will be computed.</span>
+<span class="sd">        :class:`..utils.FPSFilter` and :class:`..utils.CURFilter` with</span>
+<span class="sd">        `act_on` set to `feature` output such dictionary.</span>
+
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
 <span class="sd">    transform(frames)</span>
@@ -263,8 +341,9 @@
                  <span class="n">optimization_args</span><span class="o">=</span><span class="p">{},</span>
                  <span class="n">expansion_by_species_method</span><span class="o">=</span><span class="s2">&quot;environment wise&quot;</span><span class="p">,</span>
                  <span class="n">global_species</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">compute_gradients</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">cutoff_function_parameters</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span>
-                 <span class="n">compute_gradients</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                 <span class="n">coefficient_subselection</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Construct a SphericalExpansion representation</span>
 
 <span class="sd">        Required arguments are all the hyperparameters named in the</span>
@@ -282,7 +361,13 @@
             <span class="n">soap_type</span><span class="o">=</span><span class="n">soap_type</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
             <span class="n">inversion_symmetry</span><span class="o">=</span><span class="n">inversion_symmetry</span><span class="p">,</span>
             <span class="n">expansion_by_species_method</span><span class="o">=</span><span class="n">expansion_by_species_method</span><span class="p">,</span>
-            <span class="n">global_species</span><span class="o">=</span><span class="n">global_species</span><span class="p">,</span> <span class="n">compute_gradients</span><span class="o">=</span><span class="n">compute_gradients</span><span class="p">)</span>
+            <span class="n">global_species</span><span class="o">=</span><span class="n">global_species</span><span class="p">,</span>
+            <span class="n">compute_gradients</span><span class="o">=</span><span class="n">compute_gradients</span><span class="p">,</span>
+            <span class="n">coefficient_subselection</span><span class="o">=</span><span class="n">coefficient_subselection</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;coefficient_subselection&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;coefficient_subselection&#39;</span><span class="p">]</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">cutoff_function_parameters</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">cutoff_function_parameters</span><span class="p">)</span>
         <span class="n">cutoff_function_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="n">interaction_cutoff</span><span class="o">=</span><span class="n">interaction_cutoff</span><span class="p">,</span>
@@ -359,10 +444,12 @@
                         <span class="s1">&#39;gaussian_sigma_constant&#39;</span><span class="p">,</span> <span class="s1">&#39;soap_type&#39;</span><span class="p">,</span>
                         <span class="s1">&#39;inversion_symmetry&#39;</span><span class="p">,</span> <span class="s1">&#39;cutoff_function&#39;</span><span class="p">,</span> <span class="s1">&#39;normalize&#39;</span><span class="p">,</span>
                         <span class="s1">&#39;gaussian_density&#39;</span><span class="p">,</span> <span class="s1">&#39;radial_contribution&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;cutoff_function_parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;compute_gradients&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;expansion_by_species_method&#39;</span><span class="p">,</span> <span class="s1">&#39;global_species&#39;</span><span class="p">}</span>
+                        <span class="s1">&#39;cutoff_function_parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;expansion_by_species_method&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;compute_gradients&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;global_species&#39;</span><span class="p">,</span> <span class="s1">&#39;coefficient_subselection&#39;</span><span class="p">}</span>
         <span class="n">hypers_clean</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">hypers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hypers</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">allowed_keys</span><span class="p">}</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">hypers_clean</span><span class="p">)</span>
         <span class="k">return</span></div>
 
@@ -371,12 +458,12 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        frames : list(ase.Atoms)</span>
+<span class="sd">        frames : list(ase.Atoms) or AtomsList</span>
 <span class="sd">            List of atomic structures.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            Object containing the representation</span>
+<span class="sd">           AtomsList : Object containing the representation</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">AtomsList</span><span class="p">):</span>
@@ -447,6 +534,32 @@
                              <span class="s1">&#39;PowerSpectrum || BiSpectrum &#39;</span>
                              <span class="s1">&#39;implemented for now&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">keys</span></div>
+
+    <span class="k">def</span> <span class="nf">get_feature_index_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">managers</span><span class="p">):</span>
+
+        <span class="n">species</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">managers</span><span class="p">)):</span>
+            <span class="n">manager</span> <span class="o">=</span> <span class="n">managers</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">):</span>
+                <span class="n">species</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">manager</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">())</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">managers</span><span class="p">,</span> <span class="n">AtomsList</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">center</span> <span class="ow">in</span> <span class="n">manager</span><span class="p">:</span>
+                    <span class="n">sp</span> <span class="o">=</span> <span class="n">center</span><span class="o">.</span><span class="n">atom_type</span>
+                    <span class="n">species</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span>
+        <span class="n">u_species</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
+        <span class="n">sp_pairs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_keys</span><span class="p">(</span><span class="n">u_species</span><span class="p">)</span>
+
+        <span class="n">n_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_radial&#39;</span><span class="p">]</span>
+        <span class="n">l_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;max_angular&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;soap_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PowerSpectrum&#39;</span><span class="p">:</span>
+            <span class="n">feature_index_mapping</span> <span class="o">=</span> <span class="n">get_power_spectrum_index_mapping</span><span class="p">(</span>
+                <span class="n">sp_pairs</span><span class="p">,</span> <span class="n">n_max</span><span class="p">,</span> <span class="n">l_max</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Only soap_type = &#39;</span>
+                                      <span class="s1">&#39;PowerSpectrum &#39;</span>
+                                      <span class="s1">&#39;implemented for now&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">feature_index_mapping</span>
 
     <span class="k">def</span> <span class="nf">_get_init_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">gaussian_density</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;gaussian_density&#39;</span><span class="p">]</span>

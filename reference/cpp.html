@@ -542,6 +542,22 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="_CPPv4N6rascal29CalculatorSphericalInvariants33set_hyperparameters_powerspectrumERK8Hypers_t">
+<span class="target" id="classrascal_1_1CalculatorSphericalInvariants_1aced7d7b0b8f7f6ae29acbc8dd576a6d6"></span>void <code class="sig-name descname">set_hyperparameters_powerspectrum</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal29CalculatorSphericalInvariants33set_hyperparameters_powerspectrumERK8Hypers_t" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Set hyperparameters when computing the PowerSpectrum.</p>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">hypers</span></code>: a json type object containing fields:<ul>
+<li><p>coefficient_subselection (optional) if not present then all the coefficients are computed following max_radial, max_angular and the atomic species present. it should have the following form `{‘a’: […], ‘b’: […], ‘n1’: […], ‘n2’: […], ‘l’: […]}` where ‘a’ and ‘b’ are lists of atomic species, ‘n1’ and ‘n2’ are lists of radial expension indices and ‘l’ is the list of spherical expansion index. Each of these lists have the same size and their ith element refers to one PowerSpectrum coefficient that will be computed. Note that values in ‘n1’, ‘n2’, ‘l’ should not exceed max_radial-1 and max_angular. </p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="_CPPv4NK6rascal29CalculatorSphericalInvariants14does_gradientsEv">
 <span class="target" id="classrascal_1_1CalculatorSphericalInvariants_1a43e448c8276fbaa40e75f8737664a1eb"></span>bool <code class="sig-name descname">does_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK6rascal29CalculatorSphericalInvariants14does_gradientsEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Returns if the calculator is able to compute gradients of the representation w.r.t. atomic positions ? </p>
@@ -604,6 +620,39 @@ StructureManager is compatible with the representation <dl class="simple">
 <li><p>{p}^{k} [{p}^{k}   p^{k} / N_k], where $$ is a dot product between vectors. Note that this expects the soap vectors to be normalized already, and the norm stored separately </p></li>
 </ul>
 </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="member">
+<dt id="_CPPv4N6rascal29CalculatorSphericalInvariants16unique_pair_listE">
+<span class="target" id="classrascal_1_1CalculatorSphericalInvariants_1a856f422a3ec2c14e7842e2038c5b781d"></span>std::set&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::SortedKey&lt;Key_t&gt;, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::CompareSortedKeyLess&gt; <code class="sig-name descname">unique_pair_list</code> = {}<a class="headerlink" href="#_CPPv4N6rascal29CalculatorSphericalInvariants16unique_pair_listE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>list of possible input pairs when using coefficient_subselection </p>
+</dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N6rascal29CalculatorSphericalInvariants17coeff_indices_mapE">
+<span class="target" id="classrascal_1_1CalculatorSphericalInvariants_1afbdcda8f44943e66547ee376d4e2811a"></span>std::map&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::SortedKey&lt;Key_t&gt;, std::vector&lt;PowerSpectrumCoeffIndex&gt;, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::CompareSortedKeyLess&gt; <code class="sig-name descname">coeff_indices_map</code> = {}<a class="headerlink" href="#_CPPv4N6rascal29CalculatorSphericalInvariants17coeff_indices_mapE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>list of coefficient that will be computed, mapping keys to a list invariant coefficients that will be computed </p>
+</dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N6rascal29CalculatorSphericalInvariants7key_mapE">
+<span class="target" id="classrascal_1_1CalculatorSphericalInvariants_1aee2922f51b66018a9bcfe8dd1cf8fbf3"></span>std::map&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::SortedKey&lt;Key_t&gt;, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::SortedKey&lt;Key_t&gt;, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::CompareSortedKeyLess&gt; <code class="sig-name descname">key_map</code> = {}<a class="headerlink" href="#_CPPv4N6rascal29CalculatorSphericalInvariants7key_mapE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>map the possible keys of the coefficient to the keys of the powerspectrum. If sparsification then it maps to (0,0) always otherwise it maps onto itself </p>
+</dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N6rascal29CalculatorSphericalInvariants13coeff_indicesE">
+<span class="target" id="classrascal_1_1CalculatorSphericalInvariants_1aadaa137a7b4bdf120bdc89e64373c3ee"></span>std::vector&lt;PowerSpectrumCoeffIndex&gt; <code class="sig-name descname">coeff_indices</code> = {}<a class="headerlink" href="#_CPPv4N6rascal29CalculatorSphericalInvariants13coeff_indicesE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>list of coefficient that will be computed if there is no sparsification </p>
+</dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N6rascal29CalculatorSphericalInvariants13is_sparsifiedE">
+<span class="target" id="classrascal_1_1CalculatorSphericalInvariants_1a85d8f496627a9ecb05a98ca8b801b68b"></span>bool <code class="sig-name descname">is_sparsified</code> = {false}<a class="headerlink" href="#_CPPv4N6rascal29CalculatorSphericalInvariants13is_sparsifiedE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>tell if the calculator has been sparsified using the coefficient_subselection input </p>
 </dd></dl>
 
 </div>
@@ -905,6 +954,11 @@ StructureManager is compatible with the representation <dl class="simple">
 <dl class="type">
 <dt>
 <em class="property">using </em><code class="sig-name descname">gradient_fixtures</code> = boost::mpl::list&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;SingleHypersSphericalExpansion&lt;SimplePeriodicNLCCStrictFixture&gt;&gt;, <a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;SingleHypersSphericalInvariants&lt;SimplePeriodicNLCCStrictFixture&gt;&gt;&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">using </em><code class="sig-name descname">sparsification_fixtures</code> = boost::mpl::list&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal17CalculatorFixtureE" title="rascal::CalculatorFixture">CalculatorFixture</a>&lt;SparsificationSphericalInvariantsFixture&gt;&gt;<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
@@ -1468,6 +1522,11 @@ template&lt;typename <code class="sig-name descname">T</code>&gt;<br />auto <cod
 <dl class="function">
 <dt>
 <code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>spherical_representation_gradients, Fix, <a class="reference internal" href="#_CPPv4N6rascal17gradient_fixturesE" title="rascal::gradient_fixtures">gradient_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>sparsification_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal23sparsification_fixturesE" title="rascal::sparsification_fixtures">sparsification_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2236,6 +2295,11 @@ void <code class="sig-name descname">utils_binding</code><span class="sig-paren"
 <dl class="member">
 <dt>
 <em class="property">constexpr</em> int <code class="sig-name descname">QuadrupletOrder</code> = {4}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+<em class="property">constexpr</em> int <code class="sig-name descname">MaxChemElements</code> = {130}<br /></dt>
 <dd></dd></dl>
 
 <dl class="member">
@@ -3806,6 +3870,11 @@ void <code class="sig-name descname">set_hyperparameters</code><span class="sig-
 
 <dl class="function">
 <dt>
+void <code class="sig-name descname">set_hyperparameters_powerspectrum</code><span class="sig-paren">(</span><em class="property">const</em> Hypers_t &amp;<em>hypers</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 bool <code class="sig-name descname">does_gradients</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
@@ -3847,6 +3916,34 @@ template&lt;class <code class="sig-name descname">StructureManager</code>, class
 <dl class="function">
 <dt>
 template&lt;class <code class="sig-name descname">StructureManager</code>, class <code class="sig-name descname">SpectrumNorm</code>&gt;<br />void <code class="sig-name descname">update_gradients_for_normalization</code><span class="sig-paren">(</span>Property_t&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::StructureManager">StructureManager</a>&gt; &amp;<em>soap_vectors</em>, PropertyGradient_t&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::StructureManager">StructureManager</a>&gt; &amp;<em>soap_vector_gradients</em>, std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::StructureManager">StructureManager</a>&gt; <em>manager</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::SpectrumNorm">SpectrumNorm</a> &amp;<em>inv_norms</em>, <em class="property">const</em> size_t &amp;<em>grad_component_size</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="member">
+<dt>
+std::set&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::SortedKey&lt;Key_t&gt;, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::CompareSortedKeyLess&gt; <code class="sig-name descname">unique_pair_list</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+std::map&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::SortedKey&lt;Key_t&gt;, std::vector&lt;PowerSpectrumCoeffIndex&gt;, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::CompareSortedKeyLess&gt; <code class="sig-name descname">coeff_indices_map</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+std::map&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::SortedKey&lt;Key_t&gt;, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::SortedKey&lt;Key_t&gt;, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::CompareSortedKeyLess&gt; <code class="sig-name descname">key_map</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+std::vector&lt;PowerSpectrumCoeffIndex&gt; <code class="sig-name descname">coeff_indices</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+bool <code class="sig-name descname">is_sparsified</code> = {false}<br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -4292,6 +4389,11 @@ ManagerCollection &amp;<code class="sig-name descname">operator=</code><span cla
 <dl class="function">
 <dt>
 ManagerCollection &amp;<code class="sig-name descname">operator=</code><span class="sig-paren">(</span>ManagerCollection &amp;&amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">Int</code>&gt;<br />Self_t <code class="sig-name descname">get_subset</code><span class="sig-paren">(</span><em class="property">const</em> std::vector&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal17ManagerCollection10get_subsetE6Self_tRKNSt6vectorI3IntEE" title="rascal::ManagerCollection::get_subset::Int">Int</a>&gt; &amp;<em>selected_ids</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -7114,7 +7216,7 @@ template&lt;class <code class="sig-name descname">KeyType</code>&gt;<br /><em cl
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt>
-Value_t &amp;<code class="sig-name descname">operator[]</code><span class="sig-paren">(</span>size_t <em>id</em><span class="sig-paren">)</span><br /></dt>
+template&lt;class <code class="sig-name descname">Int</code>&gt;<br />Value_t &amp;<code class="sig-name descname">operator[]</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal8internal9SortedKeyixER7Value_tRK3Int" title="rascal::internal::SortedKey::operator[]::Int">Int</a> &amp;<em>id</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -7553,7 +7655,12 @@ double <code class="sig-name descname">pow</code><span class="sig-paren">(</span
 
 <dl class="function">
 <dt>
-template&lt;typename <code class="sig-name descname">Derived</code>&gt;<br /><a class="reference internal" href="#_CPPv4I0EN6rascal4math14relative_errorE7DerivedRKN5Eigen10MatrixBaseI7DerivedEERKN5Eigen10MatrixBaseI7DerivedEERKdRKd" title="rascal::math::relative_error::Derived">Derived</a> <code class="sig-name descname">relative_error</code><span class="sig-paren">(</span><em class="property">const</em> Eigen::MatrixBase&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal4math14relative_errorE7DerivedRKN5Eigen10MatrixBaseI7DerivedEERKN5Eigen10MatrixBaseI7DerivedEERKdRKd" title="rascal::math::relative_error::Derived">Derived</a>&gt; &amp;<em>reference</em>, <em class="property">const</em> Eigen::MatrixBase&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal4math14relative_errorE7DerivedRKN5Eigen10MatrixBaseI7DerivedEERKN5Eigen10MatrixBaseI7DerivedEERKdRKd" title="rascal::math::relative_error::Derived">Derived</a>&gt; &amp;<em>test</em>, <em class="property">const</em> double &amp;<em>delta</em> = 1e-10, <em class="property">const</em> double &amp;<em>epsilon</em> = <a class="reference internal" href="#_CPPv4N6rascal4math8DBL_FTOLE" title="rascal::math::DBL_FTOL">DBL_FTOL</a><span class="sig-paren">)</span><br /></dt>
+template&lt;typename <code class="sig-name descname">Derived</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">relative_error</code><span class="sig-paren">(</span><em class="property">const</em> Eigen::MatrixBase&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal4math14relative_errorE8Matrix_tRKN5Eigen10MatrixBaseI7DerivedEERKN5Eigen10MatrixBaseI7DerivedEERKdRKd" title="rascal::math::relative_error::Derived">Derived</a>&gt; &amp;<em>reference</em>, <em class="property">const</em> Eigen::MatrixBase&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal4math14relative_errorE8Matrix_tRKN5Eigen10MatrixBaseI7DerivedEERKN5Eigen10MatrixBaseI7DerivedEERKdRKd" title="rascal::math::relative_error::Derived">Derived</a>&gt; &amp;<em>test</em>, <em class="property">const</em> double &amp;<em>delta</em> = 1e-10, <em class="property">const</em> double &amp;<em>epsilon</em> = <a class="reference internal" href="#_CPPv4N6rascal4math8DBL_FTOLE" title="rascal::math::DBL_FTOL">DBL_FTOL</a><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+double <code class="sig-name descname">relative_error</code><span class="sig-paren">(</span><em class="property">const</em> double &amp;<em>reference</em>, <em class="property">const</em> double &amp;<em>test</em>, <em class="property">const</em> double &amp;<em>delta</em> = 1e-10, <em class="property">const</em> double &amp;<em>epsilon</em> = <a class="reference internal" href="#_CPPv4N6rascal4math8DBL_FTOLE" title="rascal::math::DBL_FTOL">DBL_FTOL</a><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>

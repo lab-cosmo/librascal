@@ -382,6 +382,10 @@
 <span class="sd">    that is not set by the initialization of the class.</span>
 
 <span class="sd">    + _set_data is expected to set the data that has been extracted by _get_data</span>
+
+<span class="sd">    The underlying c++ objects are not pickle-able so deepcopy does not work out</span>
+<span class="sd">    of the box. This class provides an override of the __deepcopy__() function</span>
+<span class="sd">    so that classes that inherit from this base class can be deepcopied.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -393,7 +397,12 @@
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">_get_init_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Overrides deepcopy default behaviour with custom serialization</span>
+<span class="sd">        instead of using pickle.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">from_dict</span><span class="p">(</span><span class="n">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span></div>
 
 
 <span class="k">def</span> <span class="nf">_get_state</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>

@@ -354,10 +354,10 @@ Physical Review Letters, 108(5), 58301. <a class="reference external" href="http
 <dd><p>Compute the representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>)</em>) – List of atomic structures.</p>
+<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>) or </em><em>AtomsList</em>) – List of atomic structures.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>AtomsList</strong></p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Object containing the representation</p>
@@ -376,35 +376,118 @@ Physical Review Letters, 108(5), 58301. <a class="reference external" href="http
 
 <dl class="class">
 <dt id="rascal.representations.SphericalInvariants">
-<em class="property">class </em><code class="sig-prename descclassname">rascal.representations.</code><code class="sig-name descname">SphericalInvariants</code><span class="sig-paren">(</span><em class="sig-param">interaction_cutoff</em>, <em class="sig-param">cutoff_smooth_width</em>, <em class="sig-param">max_radial</em>, <em class="sig-param">max_angular</em>, <em class="sig-param">gaussian_sigma_type</em>, <em class="sig-param">gaussian_sigma_constant=0.3</em>, <em class="sig-param">cutoff_function_type='ShiftedCosine'</em>, <em class="sig-param">soap_type='PowerSpectrum'</em>, <em class="sig-param">inversion_symmetry=True</em>, <em class="sig-param">radial_basis='GTO'</em>, <em class="sig-param">normalize=True</em>, <em class="sig-param">optimization_args={}</em>, <em class="sig-param">expansion_by_species_method='environment wise'</em>, <em class="sig-param">global_species=None</em>, <em class="sig-param">cutoff_function_parameters={}</em>, <em class="sig-param">compute_gradients=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_invariants.html#SphericalInvariants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalInvariants" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rascal.representations.</code><code class="sig-name descname">SphericalInvariants</code><span class="sig-paren">(</span><em class="sig-param">interaction_cutoff</em>, <em class="sig-param">cutoff_smooth_width</em>, <em class="sig-param">max_radial</em>, <em class="sig-param">max_angular</em>, <em class="sig-param">gaussian_sigma_type</em>, <em class="sig-param">gaussian_sigma_constant=0.3</em>, <em class="sig-param">cutoff_function_type='ShiftedCosine'</em>, <em class="sig-param">soap_type='PowerSpectrum'</em>, <em class="sig-param">inversion_symmetry=True</em>, <em class="sig-param">radial_basis='GTO'</em>, <em class="sig-param">normalize=True</em>, <em class="sig-param">optimization_args={}</em>, <em class="sig-param">expansion_by_species_method='environment wise'</em>, <em class="sig-param">global_species=None</em>, <em class="sig-param">compute_gradients=False</em>, <em class="sig-param">cutoff_function_parameters={}</em>, <em class="sig-param">coefficient_subselection=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_invariants.html#SphericalInvariants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalInvariants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.</p>
-<dl>
-<dt>interaction_cutoff<span class="classifier">float</span></dt><dd><p>Maximum pairwise distance for atoms to be considered in
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.interaction_cutoff">
+<code class="sig-name descname">interaction_cutoff</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.interaction_cutoff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum pairwise distance for atoms to be considered in
 expansion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
-<dt>cutoff_smooth_width<span class="classifier">float</span></dt><dd><p>The distance over which the the interaction is smoothed to zero</p>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.cutoff_smooth_width">
+<code class="sig-name descname">cutoff_smooth_width</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.cutoff_smooth_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>The distance over which the the interaction is smoothed to zero</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
-<dt>max_radial<span class="classifier">int</span></dt><dd><p>Number of radial basis functions</p>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.max_radial">
+<code class="sig-name descname">max_radial</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.max_radial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of radial basis functions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
 </dd>
-<dt>max_angular<span class="classifier">int</span></dt><dd><p>Highest angular momentum number (l) in the expansion</p>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.max_angular">
+<code class="sig-name descname">max_angular</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.max_angular" title="Permalink to this definition">¶</a></dt>
+<dd><p>Highest angular momentum number (l) in the expansion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
 </dd>
-<dt>gaussian_sigma_type<span class="classifier">str</span></dt><dd><p>How the Gaussian atom sigmas (smearing widths) are allowed to
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.gaussian_sigma_type">
+<code class="sig-name descname">gaussian_sigma_type</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.gaussian_sigma_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>How the Gaussian atom sigmas (smearing widths) are allowed to
 vary – fixed (‘Constant’), by species (‘PerSpecies’), or by
 distance from the central atom (‘Radial’).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
 </dd>
-<dt>gaussian_sigma_constant<span class="classifier">float</span></dt><dd><p>Specifies the atomic Gaussian widths, in the case where they’re
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.gaussian_sigma_constant">
+<code class="sig-name descname">gaussian_sigma_constant</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.gaussian_sigma_constant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the atomic Gaussian widths, in the case where they’re
 fixed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
-<dt>soap_type<span class="classifier">string</span></dt><dd><p>Specifies the type of representation to be computed
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.soap_type">
+<code class="sig-name descname">soap_type</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.soap_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the type of representation to be computed
 (power spectrum etc.).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>string</p>
 </dd>
-<dt>inversion_symmetry<span class="classifier">Boolean</span></dt><dd><p>Specifies whether inversion invariance should be enforced.
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.inversion_symmetry">
+<code class="sig-name descname">inversion_symmetry</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.inversion_symmetry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies whether inversion invariance should be enforced.
 (Only relevant for BiSpectrum.)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Boolean</p>
 </dd>
-<dt>normalize<span class="classifier">boolean</span></dt><dd><p>Whether to normalize so that the kernel between identical environments
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.normalize">
+<code class="sig-name descname">normalize</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to normalize so that the kernel between identical environments
 is 1.  Default and highly recommended: True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>boolean</p>
 </dd>
-<dt>expansion_by_species_method<span class="classifier">string</span></dt><dd><p>Specifies the how the species key of the invariant are set-up.
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.expansion_by_species_method">
+<code class="sig-name descname">expansion_by_species_method</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.expansion_by_species_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the how the species key of the invariant are set-up.
 Possible values: ‘environment wise’, ‘user defined’, ‘structure wise’.
 The descriptor is computed for each atomic enviroment and it is indexed
 using tuples of atomic species that are present within the environment.
@@ -426,12 +509,110 @@ memory footprint and the use of matrix matrix products.</p>
 <p>Note that the sparsity of the gradient coefficients and their use to
 build kernels does not allow for clear efficiency gains so their
 sparsity is kept irrespective of expansion_by_species_method.</p>
-</dd>
-<dt>global_species<span class="classifier">list</span></dt><dd><p>list of species to use to set-up the species key of the invariant. It
-should contain all the species present in the structure for which
-invariants will be computed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>string</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.global_species">
+<code class="sig-name descname">global_species</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.global_species" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of species to use to set-up the species key of the invariant. It
+should contain all the species present in the structure for which
+invariants will be computed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.compute_gradients">
+<code class="sig-name descname">compute_gradients</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.compute_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>control the computation of the representation’s gradients w.r.t. atomic
+positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.cutoff_function_type">
+<code class="sig-name descname">cutoff_function_type</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.cutoff_function_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Choose the type of smooth cutoff function used to define the local
+environment. Can be either ‘ShiftedCosine’ or ‘RadialScaling’.</p>
+<p>If ‘ShiftedCosine’, the functional form of the switching function is:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}sc(r) = \begin{cases}
+1 &amp;r &lt; r_c - sw,\\
+0.5 + 0.5 \cos(\pi * (r - r_c + sw) / sw) &amp;r_c - sw &lt; r &lt;= r_c, \\
+0 &amp;r_c &lt; r,
+\end{cases}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(r_c\)</span> is the interaction_cutoff and <span class="math notranslate nohighlight">\(sw\)</span> is the
+cutoff_smooth_width.</p>
+<p>If ‘RadialScaling’, the functional form of the switching function is
+as expressed in equation 21 of <a class="reference external" href="https://doi.org/10.1039/c8cp05921g">https://doi.org/10.1039/c8cp05921g</a>:</p>
+<div class="math notranslate nohighlight">
+\[rs(r) = sc(r) u(r),\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}u(r) = \begin{cases}
+\frac{1}{(r/r_0)^m} &amp;\text{if c=0,}\\
+1 &amp;\text{if m=0,} \\
+\frac{c}{c+(r/r_0)^m} &amp;\text{else},
+\end{cases}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(c\)</span> is the rate, <span class="math notranslate nohighlight">\(r_0\)</span> is the scale, <span class="math notranslate nohighlight">\(m\)</span> is the
+exponent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.cutoff_function_parameters">
+<code class="sig-name descname">cutoff_function_parameters</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.cutoff_function_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional parameters for the cutoff function.
+if cutoff_function_type == ‘RadialScaling’ then it should have the form</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">dict</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">value</span><span class="o">=...</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;AA&#39;</span><span class="p">),</span>
+     <span class="n">scale</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">value</span><span class="o">=...</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;AA&#39;</span><span class="p">),</span>
+     <span class="n">exponent</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">value</span><span class="o">=...</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;AA&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>where <code class="code docutils literal notranslate"><span class="pre">...</span></code> should be replaced by the desired value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.coefficient_subselection">
+<code class="sig-name descname">coefficient_subselection</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.coefficient_subselection" title="Permalink to this definition">¶</a></dt>
+<dd><p>if None then all the coefficients are computed following max_radial,
+max_angular and the atomic species present.
+if <code class="code docutils literal notranslate"><span class="pre">soap_type</span> <span class="pre">==</span> <span class="pre">'PowerSpectrum'</span></code> and it has the form
+<code class="code docutils literal notranslate"><span class="pre">{'a':</span> <span class="pre">[...],</span> <span class="pre">'b':</span> <span class="pre">[...],</span> <span class="pre">'n1':</span> <span class="pre">[...],</span> <span class="pre">'n2':</span> <span class="pre">[...],</span> <span class="pre">'l':</span> <span class="pre">[...]}</span></code>
+where ‘a’ and ‘b’ are lists of atomic species, ‘n1’ and ‘n2’ are lists
+of radial expension indices and ‘l’ is the list of spherical expansion
+index. Each of these lists have the same size and their ith element
+refers to one PowerSpectrum coefficient that will be computed.
+<code class="xref py py-class docutils literal notranslate"><span class="pre">utils.FPSFilter</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">utils.CURFilter</span></code> with
+<cite>act_on</cite> set to <cite>feature</cite> output such dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list or None</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="method">
 <dt id="rascal.representations.SphericalInvariants.transform">
 <code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">frames</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_invariants.html#SphericalInvariants.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalInvariants.transform" title="Permalink to this definition">¶</a></dt>
@@ -464,10 +645,10 @@ environments”, Phys. Rev. B. 87(18), p. 184115
 <dd><p>Compute the representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>)</em>) – List of atomic structures.</p>
+<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>) or </em><em>AtomsList</em>) – List of atomic structures.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>AtomsList</strong></p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Object containing the representation</p>
@@ -488,30 +669,109 @@ environments”, Phys. Rev. B. 87(18), p. 184115
 <dt id="rascal.representations.SphericalCovariants">
 <em class="property">class </em><code class="sig-prename descclassname">rascal.representations.</code><code class="sig-name descname">SphericalCovariants</code><span class="sig-paren">(</span><em class="sig-param">interaction_cutoff</em>, <em class="sig-param">cutoff_smooth_width</em>, <em class="sig-param">max_radial</em>, <em class="sig-param">max_angular</em>, <em class="sig-param">gaussian_sigma_type</em>, <em class="sig-param">gaussian_sigma_constant=0.3</em>, <em class="sig-param">cutoff_function_type='ShiftedCosine'</em>, <em class="sig-param">normalize=True</em>, <em class="sig-param">radial_basis='GTO'</em>, <em class="sig-param">soap_type='LambdaSpectrum'</em>, <em class="sig-param">inversion_symmetry=True</em>, <em class="sig-param">lam=0</em>, <em class="sig-param">cutoff_function_parameters={}</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_covariants.html#SphericalCovariants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalCovariants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a SphericalCovariants representation, i.e. lambda spectrum.</p>
-<dl class="simple">
-<dt>interaction_cutoff<span class="classifier">float</span></dt><dd><p>Maximum pairwise distance for atoms to be considered in
+<dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.interaction_cutoff">
+<code class="sig-name descname">interaction_cutoff</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.interaction_cutoff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum pairwise distance for atoms to be considered in
 expansion</p>
-</dd>
-<dt>cutoff_smooth_width<span class="classifier">float</span></dt><dd><p>The distance over which the the interaction is smoothed to zero</p>
-</dd>
-<dt>max_radial<span class="classifier">int</span></dt><dd><p>Number of radial basis functions</p>
-</dd>
-<dt>max_angular<span class="classifier">int</span></dt><dd><p>Highest angular momentum number (l) in the expansion</p>
-</dd>
-<dt>gaussian_sigma_type<span class="classifier">str</span></dt><dd><p>How the Gaussian atom sigmas (smearing widths) are allowed to
-vary – fixed (‘Constant’), by species (‘PerSpecies’), or by
-distance from the central atom (‘Radial’).</p>
-</dd>
-<dt>gaussian_sigma_constant<span class="classifier">float</span></dt><dd><p>Specifies the atomic Gaussian widths, in the case where they’re
-fixed.</p>
-</dd>
-<dt>soap_type<span class="classifier">string</span></dt><dd><p>Specifies the type of representation to be computed.</p>
-</dd>
-<dt>inversion_symmetry<span class="classifier">Boolean</span></dt><dd><p>Specifies whether inversion invariance should be enforced.</p>
-</dd>
-<dt>lam<span class="classifier">int</span></dt><dd><p>Order of the lambda spectrum.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.cutoff_smooth_width">
+<code class="sig-name descname">cutoff_smooth_width</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.cutoff_smooth_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>The distance over which the the interaction is smoothed to zero</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.max_radial">
+<code class="sig-name descname">max_radial</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.max_radial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of radial basis functions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.max_angular">
+<code class="sig-name descname">max_angular</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.max_angular" title="Permalink to this definition">¶</a></dt>
+<dd><p>Highest angular momentum number (l) in the expansion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.gaussian_sigma_type">
+<code class="sig-name descname">gaussian_sigma_type</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.gaussian_sigma_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>How the Gaussian atom sigmas (smearing widths) are allowed to
+vary – fixed (‘Constant’), by species (‘PerSpecies’), or by
+distance from the central atom (‘Radial’).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.gaussian_sigma_constant">
+<code class="sig-name descname">gaussian_sigma_constant</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.gaussian_sigma_constant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the atomic Gaussian widths, in the case where they’re
+fixed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.soap_type">
+<code class="sig-name descname">soap_type</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.soap_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the type of representation to be computed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.inversion_symmetry">
+<code class="sig-name descname">inversion_symmetry</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.inversion_symmetry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies whether inversion invariance should be enforced.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.lam">
+<code class="sig-name descname">lam</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.lam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Order of the lambda spectrum.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="method">
 <dt id="rascal.representations.SphericalCovariants.transform">
 <code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">frames</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_covariants.html#SphericalCovariants.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalCovariants.transform" title="Permalink to this definition">¶</a></dt>
@@ -545,7 +805,13 @@ Atomistic Systems. Physical Review Letters, 120(3), 036002.
 <dd><p>Compute the representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>)</em>) – List of atomic structures.</p>
+<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>) or </em><em>AtomsList</em>) – List of atomic structures.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>AtomsList</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Object containing the representation</p>
 </dd>
 </dl>
 </dd></dl>
@@ -681,6 +947,9 @@ In Handbook of Materials Modeling (pp. 1–27). Springer, Cham.
 <ul class="simple">
 <li><p>_set_data is expected to set the data that has been extracted by _get_data</p></li>
 </ul>
+<p>The underlying c++ objects are not pickle-able so deepcopy does not work out
+of the box. This class provides an override of the __deepcopy__() function
+so that classes that inherit from this base class can be deepcopied.</p>
 </dd></dl>
 
 </div>
