@@ -88,8 +88,7 @@ namespace rascal {
     std::set<Key_t> keys{};
 
     SparsePointsBlockSparse() {
-      // there is less than 130 elemtents
-      for (int sp{1}; sp < 130; ++sp) {
+      for (int sp{1}; sp < MaxChemElements; ++sp) {
         counters[sp] = 0;
       }
     }

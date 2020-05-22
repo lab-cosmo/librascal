@@ -62,7 +62,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_SHARED_LIBS ON)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(rascalTools)
 
 ########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ########
@@ -171,28 +171,6 @@ if(SKBUILD)
   message(STATUS "The project is built using scikit-build")
 endif()
 
-# relative RPATH so that _rascal.so can find librascal.so when installed.
-# see link for more details on the topic
-# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
-set(CMAKE_SKIP_BUILD_RPATH  FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
-if(NOT APPLE AND UNIX)
-  # this link path accommodates most installations
-  # `$ORIGIN/../../../../` should allow to link libraries in `$PREFIX/lib`
-  set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../../../")
-  # this link path accommodates installation with `python setup.py install'
-  set(CMAKE_INSTALL_RPATH "\\$ORIGIN/../../lib")
-elseif(APPLE)
-  set(MACOSX_RPATH ON)
-  # this link path accommodates most installations
-  # `@loader_path/../../../../` should allow to link libraries
-  # in `$PREFIX/lib`
-  set(CMAKE_INSTALL_RPATH "@loader_path/../../../../")
-  # this link path accommodates installation with `python setup.py install'
-  set(CMAKE_INSTALL_RPATH "@loader_path/../../lib")
-endif()
-
 add_subdirectory(src)
 
 enable_testing()
@@ -229,13 +207,13 @@ include(cpplint)
 # Checking hh/cc files for compliance with coding conventions
 if(CPPLINT_FOUND)
   # register the folders to check for cpp code conventions compliance
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/examples"
+  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bindings" "")
+  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/examples"
     "--filter=-build/namespaces")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/benchmarks" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/profiles" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
-  cpplint_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/benchmarks" "")
+  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/profiles" "")
+  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src" "")
+  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests" "")
 endif()
 
 # Check for clang-format
@@ -244,12 +222,12 @@ include(clangformat)
 if(CLANG_FORMAT_FOUND)
   # register the folders to apply clang-format with given configuration
   # .clang-format in project root folder
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/examples")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/benchmarks" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/performance/profiles" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/src" "")
-  clang_format_add_subdirectory("${CMAKE_SOURCE_DIR}/tests" "")
+  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bindings" "")
+  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/examples")
+  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/benchmarks" "")
+  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/profiles" "")
+  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src" "")
+  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests" "")
 endif()
 
 # Check for autopep8
@@ -258,14 +236,14 @@ include(autopep8)
 if(AUTOPEP8_FOUND)
   # register the folders to apply autopep8 with given configuration
   # .pycodestyle in project root folder
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/bindings")
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/scripts")
-  autopep8_add_subdirectory("${CMAKE_SOURCE_DIR}/tests")
+  autopep8_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bindings")
+  autopep8_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/scripts")
+  autopep8_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests")
 endif()
 
 # Removes every file in the build folder except the external libraries to
 # prevent redownloading external libraries
 add_custom_target(
     deepclean
-    COMMAND "${PYTHON_EXECUTABLE}" ${CMAKE_SOURCE_DIR}/scripts/developer_utils.py deepclean
+    COMMAND "${PYTHON_EXECUTABLE}" ${CMAKE_CURRENT_SOURCE_DIR}/scripts/developer_utils.py deepclean
   )

@@ -3,7 +3,6 @@ import json
 
 from ..neighbourlist import AtomsList
 from .base import CalculatorFactory
-from ..utils import FactoryPool
 from itertools import starmap
 from ..utils import BaseIO
 
@@ -72,18 +71,17 @@ class SortedCoulombMatrix(BaseIO):
         self.hypers.update(hypers_clean)
 
     def transform(self, frames):
-        """
-        Compute the representation.
+        """Compute the representation.
 
         Parameters
         ----------
-        frames : list(ase.Atoms)
+        frames : list(ase.Atoms) or AtomsList
             List of atomic structures.
 
         Returns
         -------
+           AtomsList : Object containing the representation
 
-            Object containing the representation
         """
         if not isinstance(frames, AtomsList):
             frames = AtomsList(frames, self.nl_options)

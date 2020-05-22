@@ -11,6 +11,7 @@ docs/_build
 _skbuild
 dist
 MANIFEST
+*rascal.egg-info
 # Prerequisites
 *.d
 

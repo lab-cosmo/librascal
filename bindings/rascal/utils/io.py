@@ -219,6 +219,10 @@ class BaseIO(ABC):
     that is not set by the initialization of the class.
 
     + _set_data is expected to set the data that has been extracted by _get_data
+
+    The underlying c++ objects are not pickle-able so deepcopy does not work out
+    of the box. This class provides an override of the __deepcopy__() function
+    so that classes that inherit from this base class can be deepcopied.
     """
     @abstractmethod
     def _get_data(self):
@@ -231,6 +235,11 @@ class BaseIO(ABC):
     @abstractmethod
     def _get_init_params(self):
         return dict()
+
+    def __deepcopy__(self, memo=None):
+        """ Overrides deepcopy default behaviour with custom serialization
+        instead of using pickle."""
+        return from_dict(to_dict(self))
 
 
 def _get_state(obj):

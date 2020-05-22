@@ -370,6 +370,7 @@ namespace rascal {
   constexpr int PairOrder{2};
   constexpr int TripletOrder{3};
   constexpr int QuadrupletOrder{4};
+  constexpr int MaxChemElements{130};
 
 }  // namespace rascal
 

@@ -57,50 +57,24 @@ using namespace rascal;  // NOLINT
 
 using Representation_t = CalculatorSphericalInvariants;
 using ManagerCollection_t =
-        ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
-                          AdaptorCenterContribution, AdaptorStrict>;
-using Manager_t = typename ManagerCollection_t::Manager_t;
-using ManagerHalf_t = AdaptorStrict<
-    AdaptorCenterContribution<AdaptorHalfList<
-                AdaptorNeighbourList<StructureManagerCenters>>>>;
+    typename TypeHolderInjector<ManagerCollection, ManagerTypeList_t>::type;
+using Representation_t = CalculatorSphericalInvariants;
+using Prop_t = typename Representation_t::template Property_t<Manager_t>;
+using PropGrad_t = typename Representation_t::template PropertyGradient_t<Manager_t>;
+
+constexpr static size_t ClusterLayer_{
+          Manager_t::template cluster_layer_from_order<2>()};
 
 int main() {
 
-  std::string filename{"../reference_data/inputs/small_molecules-20.json"};
+  std::string filename{"../reference_data/inputs/diamond_2atom_distorted.json"};
 
-  double cutoff{3.};
-  json hypers{{"max_radial", 1},
-              {"max_angular", 1},
-              {"compute_gradients", true},
-              {"soap_type", "PowerSpectrum"},
-              {"normalize", true},
-              {"expansion_by_species_method", "user defined"},
-              {"global_species", {1,6,7,8}} };
+  // json kernel_hypers{
+  //       {"zeta", 1}, {"target_type", "Atom"}, {"name", "Cosine"}};
+  json hypers = json_io::load("../reference_data/sparse_soap_input.json");
+  json adaptors = json_io::load("../reference_data/adaptor_input.json");
 
-  json fc_hypers{{"type", "ShiftedCosine"},
-                 {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
-                 {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
-  json sigma_hypers{{"type", "Constant"},
-                    {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
-
-  hypers["cutoff_function"] = fc_hypers;
-  hypers["gaussian_density"] = sigma_hypers;
-  hypers["radial_contribution"] = {{"type", "GTO"}};
-
-  json structure{{"filename", filename}};
-  json adaptors;
-  json adaptors_half;
-  json ad1a{{"name", "AdaptorNeighbourList"},
-           {"initialization_arguments", {{"cutoff", cutoff}}}};
-  json ad1b{{"name", "AdaptorHalfList"},
-            {"initialization_arguments", {}}};
-  json ad1c{{"name", "AdaptorCenterContribution"},
-            {"initialization_arguments", {}}};
-  json ad2{{"name", "AdaptorStrict"},
-           {"initialization_arguments", {{"cutoff", cutoff}}}};
-  adaptors.emplace_back(ad1a);
-  adaptors.emplace_back(ad1c);
-  adaptors.emplace_back(ad2);
+  // std::cout << adaptors.dump(2) << std::endl;
 
   // auto manager =
   //     make_structure_manager_stack<StructureManagerCenters,
@@ -126,44 +100,20 @@ int main() {
   // auto && soap_vector_gradients{*manager->template get_property_ptr<PropGrad_t>(
   //     representation.get_gradient_name())};
 
-  SparsePointsBlockSparse<Representation_t> sparse_points{};
+  coeff_calc.compute(collection);
+  std::cout.setf(std::ios::scientific);
+  std::cout.precision(5);
+  for (const auto & manager : collection) {
+    auto & rep{*manager->template get_property<Prop_t>(coeff_calc.get_name())};
+    auto X = rep.get_features();
 
-  std::vector<std::vector<int>> selected_ids;
-  int n_centers{0};
-  for (auto & manager : managers) {
-    selected_ids.emplace_back();
-    int ii{0};
+
+    std::cout << X << std::endl;
+    std::cout <<  std::endl;
     for (auto center : manager) {
-      selected_ids.back().push_back(ii);
-      ++ii;
-      ++n_centers;
+      std::cout << rep[center].get_full_vector().transpose() << std::endl;
     }
-  }
 
-  sparse_points.push_back(representation, managers, selected_ids);
-
-  auto feat_ref = managers.get_features(representation);
-
-  auto feat_test = sparse_points.get_features();
-  math::Matrix_t KNM_ref(n_centers, sparse_points.size());
-  KNM_ref = feat_ref * feat_test.transpose();
-  math::Matrix_t KNM(managers.size(), sparse_points.size());
-  KNM.setZero();
-  auto Msps = sparse_points.species_by_points();
-  int i_row{0};
-  int i_manager{0};
-  for (auto manager : managers) {
-    for (auto center : manager) {
-      int i_col{0};
-      for (auto sp : Msps) {
-        if (sp == center.get_atom_type()) {
-          KNM(i_manager, i_col) += KNM_ref(i_row, i_col);
-        }
-        ++i_col;
-      }
-      ++i_row;
-    }
-    ++i_manager;
   }
 
   json kernel_hypers{

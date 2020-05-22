@@ -1,4 +1,6 @@
 import json
+from itertools import product
+import ase
 
 from .base import CalculatorFactory, cutoff_function_dict_switch
 from ..neighbourlist import AtomsList
@@ -7,12 +9,23 @@ from copy import deepcopy
 from ..utils import BaseIO
 
 
+def get_power_spectrum_index_mapping(sp_pairs, n_max, l_max):
+    feat_idx2coeff_idx = {}
+    # i_feat corresponds the global linear index
+    i_feat = 0
+    for sp_pair, n1, n2, l in product(sp_pairs, range(n_max), range(n_max), range(l_max)):
+        feat_idx2coeff_idx[i_feat] = dict(
+            a=sp_pair[0], b=sp_pair[1], n1=n1, n2=n2, l=l)
+        i_feat += 1
+    return feat_idx2coeff_idx
+
+
 class SphericalInvariants(BaseIO):
 
     """
     Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.
 
-    Hyperparameters
+    Attributes
     ----------
     interaction_cutoff : float
         Maximum pairwise distance for atoms to be considered in
@@ -79,6 +92,71 @@ class SphericalInvariants(BaseIO):
         should contain all the species present in the structure for which
         invariants will be computed
 
+    compute_gradients : bool
+        control the computation of the representation's gradients w.r.t. atomic
+        positions.
+
+    cutoff_function_type : string
+        Choose the type of smooth cutoff function used to define the local
+        environment. Can be either 'ShiftedCosine' or 'RadialScaling'.
+
+        If 'ShiftedCosine', the functional form of the switching function is:
+
+        .. math::
+
+            sc(r) = \\begin{cases}
+            1 &r < r_c - sw,\\\\
+            0.5 + 0.5 \cos(\pi * (r - r_c + sw) / sw) &r_c - sw < r <= r_c, \\\\
+            0 &r_c < r,
+            \\end{cases}
+
+        where :math:`r_c` is the interaction_cutoff and :math:`sw` is the
+        cutoff_smooth_width.
+
+        If 'RadialScaling', the functional form of the switching function is
+        as expressed in equation 21 of https://doi.org/10.1039/c8cp05921g:
+
+        .. math::
+
+            rs(r) = sc(r) u(r),
+
+        where
+
+        .. math::
+
+            u(r) = \\begin{cases}
+            \\frac{1}{(r/r_0)^m} &\\text{if c=0,}\\\\
+            1 &\\text{if m=0,} \\\\
+            \\frac{c}{c+(r/r_0)^m} &\\text{else},
+            \\end{cases}
+
+        where :math:`c` is the rate, :math:`r_0` is the scale, :math:`m` is the
+        exponent.
+
+    cutoff_function_parameters : dict
+        Additional parameters for the cutoff function.
+        if cutoff_function_type == 'RadialScaling' then it should have the form
+
+        .. code:: python
+
+            dict(rate=dict(value=..., unit='AA'),
+                 scale=dict(value=..., unit='AA'),
+                 exponent=dict(value=..., unit='AA'))
+
+        where :code:`...` should be replaced by the desired value.
+
+    coefficient_subselection : list or None
+        if None then all the coefficients are computed following max_radial,
+        max_angular and the atomic species present.
+        if :code:`soap_type == 'PowerSpectrum'` and it has the form
+        :code:`{'a': [...], 'b': [...], 'n1': [...], 'n2': [...], 'l': [...]}`
+        where 'a' and 'b' are lists of atomic species, 'n1' and 'n2' are lists
+        of radial expension indices and 'l' is the list of spherical expansion
+        index. Each of these lists have the same size and their ith element
+        refers to one PowerSpectrum coefficient that will be computed.
+        :class:`..utils.FPSFilter` and :class:`..utils.CURFilter` with
+        `act_on` set to `feature` output such dictionary.
+
     Methods
     -------
     transform(frames)
@@ -100,8 +178,9 @@ class SphericalInvariants(BaseIO):
                  optimization_args={},
                  expansion_by_species_method="environment wise",
                  global_species=None,
+                 compute_gradients=False,
                  cutoff_function_parameters=dict(),
-                 compute_gradients=False):
+                 coefficient_subselection=None):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -119,7 +198,13 @@ class SphericalInvariants(BaseIO):
             soap_type=soap_type, normalize=normalize,
             inversion_symmetry=inversion_symmetry,
             expansion_by_species_method=expansion_by_species_method,
-            global_species=global_species, compute_gradients=compute_gradients)
+            global_species=global_species,
+            compute_gradients=compute_gradients,
+            coefficient_subselection=coefficient_subselection)
+
+        if self.hypers['coefficient_subselection'] is None:
+            del self.hypers['coefficient_subselection']
+
         self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
         cutoff_function_parameters.update(
             interaction_cutoff=interaction_cutoff,
@@ -196,10 +281,12 @@ class SphericalInvariants(BaseIO):
                         'gaussian_sigma_constant', 'soap_type',
                         'inversion_symmetry', 'cutoff_function', 'normalize',
                         'gaussian_density', 'radial_contribution',
-                        'cutoff_function_parameters', 'compute_gradients',
-                        'expansion_by_species_method', 'global_species'}
+                        'cutoff_function_parameters', 'expansion_by_species_method',
+                        'compute_gradients',
+                        'global_species', 'coefficient_subselection'}
         hypers_clean = {key: hypers[key] for key in hypers
                         if key in allowed_keys}
+
         self.hypers.update(hypers_clean)
         return
 
@@ -208,12 +295,12 @@ class SphericalInvariants(BaseIO):
 
         Parameters
         ----------
-        frames : list(ase.Atoms)
+        frames : list(ase.Atoms) or AtomsList
             List of atomic structures.
 
         Returns
         -------
-            Object containing the representation
+           AtomsList : Object containing the representation
 
         """
         if not isinstance(frames, AtomsList):
@@ -284,6 +371,32 @@ class SphericalInvariants(BaseIO):
                              'PowerSpectrum || BiSpectrum '
                              'implemented for now')
         return keys
+
+    def get_feature_index_mapping(self, managers):
+
+        species = []
+        for ii in range(len(managers)):
+            manager = managers[ii]
+            if isinstance(manager, ase.Atoms):
+                species.extend(manager.get_atomic_numbers())
+            elif isinstance(managers, AtomsList):
+                for center in manager:
+                    sp = center.atom_type
+                    species.append(sp)
+        u_species = np.unique(species)
+        sp_pairs = self.get_keys(u_species)
+
+        n_max = self.hypers['max_radial']
+        l_max = self.hypers['max_angular'] + 1
+        if self.hypers['soap_type'] == 'PowerSpectrum':
+            feature_index_mapping = get_power_spectrum_index_mapping(
+                sp_pairs, n_max, l_max)
+        else:
+            raise NotImplementedError('Only soap_type = '
+                                      'PowerSpectrum '
+                                      'implemented for now')
+
+        return feature_index_mapping
 
     def _get_init_params(self):
         gaussian_density = self.hypers['gaussian_density']
