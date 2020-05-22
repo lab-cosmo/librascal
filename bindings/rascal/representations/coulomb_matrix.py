@@ -38,9 +38,16 @@ class SortedCoulombMatrix(BaseIO):
         Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301
     """
 
-    def __init__(self, cutoff, sorting_algorithm='row_norm', size=10,
-                 central_decay=-1, interaction_cutoff=10, interaction_decay=-1):
-        self.name = 'sortedcoulomb'
+    def __init__(
+        self,
+        cutoff,
+        sorting_algorithm="row_norm",
+        size=10,
+        central_decay=-1,
+        interaction_cutoff=10,
+        interaction_decay=-1,
+    ):
+        self.name = "sortedcoulomb"
         self.size = size
         self.hypers = dict()
         self.update_hyperparameters(
@@ -53,9 +60,9 @@ class SortedCoulombMatrix(BaseIO):
         )
 
         self.nl_options = [
-            dict(name='centers', args=dict()),
-            dict(name='neighbourlist', args=dict(cutoff=cutoff)),
-            dict(name='strict', args=dict(cutoff=cutoff))
+            dict(name="centers", args=dict()),
+            dict(name="neighbourlist", args=dict(cutoff=cutoff)),
+            dict(name="strict", args=dict(cutoff=cutoff)),
         ]
 
     def update_hyperparameters(self, **hypers):
@@ -64,10 +71,17 @@ class SortedCoulombMatrix(BaseIO):
         Also updates the internal json-like representation
 
         """
-        allowed_keys = {'sorting_algorithm', 'central_cutoff', 'central_decay',
-                        'interaction_cutoff', 'interaction_decay', 'size'}
-        hypers_clean = {key: hypers[key] for key in hypers
-                        if key in allowed_keys}
+        allowed_keys = {
+            "sorting_algorithm",
+            "central_cutoff",
+            "central_decay",
+            "interaction_cutoff",
+            "interaction_decay",
+            "size",
+        }
+        hypers_clean = {
+            key: hypers[key] for key in hypers if key in allowed_keys
+        }
         self.hypers.update(hypers_clean)
 
     def transform(self, frames):
@@ -108,12 +122,12 @@ class SortedCoulombMatrix(BaseIO):
 
     def _get_init_params(self):
         init_params = dict(
-            cutoff=self.hypers['central_cutoff'],
-            sorting_algorithm=self.hypers['sorting_algorithm'],
-            size=self.hypers['size'],
-            central_decay=self.hypers['central_decay'],
-            interaction_cutoff=self.hypers['interaction_cutoff'],
-            interaction_decay=self.hypers['interaction_decay']
+            cutoff=self.hypers["central_cutoff"],
+            sorting_algorithm=self.hypers["sorting_algorithm"],
+            size=self.hypers["size"],
+            central_decay=self.hypers["central_decay"],
+            interaction_cutoff=self.hypers["interaction_cutoff"],
+            interaction_decay=self.hypers["interaction_decay"],
         )
         return init_params
 

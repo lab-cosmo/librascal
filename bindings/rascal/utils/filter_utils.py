@@ -19,7 +19,7 @@ def get_index_mappings_sample_per_species(managers, sps):
     indices_by_sp = {sp: [] for sp in sps}
     # map species / structure index / global atom index to the atom index
     # in the structure
-    map_by_manager = {sp:[{} for ii in range(len(managers)) ] for sp in sps}
+    map_by_manager = {sp: [{} for ii in range(len(managers))] for sp in sps}
     for i_man in range(len(managers)):
         man = managers[i_man]
         counter = {sp: 0 for sp in sps}
@@ -31,8 +31,10 @@ def get_index_mappings_sample_per_species(managers, sps):
                 global_counter[at.atom_type] += 1
             else:
                 raise ValueError(
-                    'Atom type {} has not been specified in fselect: {}'.format(
-                    at.atom_type, sps))
+                    "Atom type {} has not been specified in fselect: {}".format(
+                        at.atom_type, sps
+                    )
+                )
         for sp in sps:
             strides_by_sp[sp].append(counter[sp])
 
@@ -70,15 +72,20 @@ def get_index_mappings_sample(managers):
     return strides, global_counter, map_by_manager
 
 
-def convert_selected_global_index2perstructure_index_per_species(managers, selected_ids_by_sp,
-                                strides_by_sp, map_by_manager, sps):
+def convert_selected_global_index2perstructure_index_per_species(
+    managers, selected_ids_by_sp, strides_by_sp, map_by_manager, sps
+):
     # convert selected center indexing into the rascal format
 
     # list the atom indices (within their structure) that have been selected
     selected_ids = [[] for ii in range(len(managers))]
     for sp in sps:
         ids = convert_selected_global_index2perstructure_index(
-            managers, selected_ids_by_sp[sp], strides_by_sp[sp], map_by_manager[sp])
+            managers,
+            selected_ids_by_sp[sp],
+            strides_by_sp[sp],
+            map_by_manager[sp],
+        )
         for ii, selected_idx in zip(ids, selected_ids):
             selected_idx.extend(ii)
     for ii in range(len(selected_ids)):
@@ -86,8 +93,9 @@ def convert_selected_global_index2perstructure_index_per_species(managers, selec
     return selected_ids
 
 
-def convert_selected_global_index2perstructure_index(managers, selected_ids_global,
-                                                        strides, map_by_manager):
+def convert_selected_global_index2perstructure_index(
+    managers, selected_ids_global, strides, map_by_manager
+):
     # convert selected center indexing into the rascal format
 
     # list the atom indices (within their structure) that have been selected

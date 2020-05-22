@@ -5,8 +5,12 @@ from operator import and_
 import numpy as np
 
 from ..lib import neighbour_list
-from .base import (NeighbourListFactory, is_valid_structure,
-                   adapt_structure, StructureCollectionFactory)
+from .base import (
+    NeighbourListFactory,
+    is_valid_structure,
+    adapt_structure,
+    StructureCollectionFactory,
+)
 
 
 class AtomsList(object):
@@ -25,7 +29,9 @@ class AtomsList(object):
     -------
     """
 
-    def __init__(self, frames, nl_options, start=None, length=None, managers=None):
+    def __init__(
+        self, frames, nl_options, start=None, length=None, managers=None
+    ):
         self.nl_options = nl_options
         self._frames = frames
 
@@ -50,8 +56,11 @@ class AtomsList(object):
             try:
                 managers.add_structures(structures)
             except Exception as e:
-                raise RuntimeError("Neighbourlist of structures failed "
-                                   + "because: " + str(e))
+                raise RuntimeError(
+                    "Neighbourlist of structures failed "
+                    + "because: "
+                    + str(e)
+                )
             self.managers = managers
 
     def __iter__(self):
@@ -80,8 +89,11 @@ class AtomsList(object):
         """
         selected_ids = list(map(int, selected_ids))
         new_managers = self.managers.get_subset(selected_ids)
-        new_atom_list = AtomsList([self._frames[idx] for idx in selected_ids],
-                                  self.nl_options, managers=new_managers)
+        new_atom_list = AtomsList(
+            [self._frames[idx] for idx in selected_ids],
+            self.nl_options,
+            managers=new_managers,
+        )
         return new_atom_list
 
     def get_features(self, calculator, species=None):
@@ -100,12 +112,12 @@ class AtomsList(object):
         """
 
         if species is None:
-            X = self.managers.get_features(
-                calculator._representation)
+            X = self.managers.get_features(calculator._representation)
         else:
             keys_list = calculator.get_keys(species)
             X = self.managers.get_features(
-                calculator._representation, keys_list)
+                calculator._representation, keys_list
+            )
 
         return X
 
@@ -122,7 +134,8 @@ class AtomsList(object):
             alphabetically to the corresponding feature matrices
         """
         return self.managers.get_features_by_species(
-            calculator._representation)
+            calculator._representation
+        )
 
 
 def get_neighbourlist(structure, options):
@@ -143,7 +156,8 @@ def convert_to_structure_list(frames):
                 structure = unpack_ase(frame)
             else:
                 raise RuntimeError(
-                    'Cannot convert structure of type {}'.format(type(frame)))
+                    "Cannot convert structure of type {}".format(type(frame))
+                )
         structure = sanitize_non_periodic_structure(structure)
         structure_list.append(**structure)
     return structure_list
@@ -168,29 +182,29 @@ def sanitize_non_periodic_structure(structure):
         cell and positions have been modified if structure is not periodic
     """
 
-    if np.all(structure['pbc'] == 0):
-        cell = structure['cell']
+    if np.all(structure["pbc"] == 0):
+        cell = structure["cell"]
         if np.allclose(cell, np.zeros((3, 3))):
-            pos = structure['positions']
+            pos = structure["positions"]
             bounds = np.array([pos.min(axis=1), pos.max(axis=1)])
             bounding_box_lengths = bounds[1] - bounds[0]
             new_cell = np.diag(bounding_box_lengths)
             CoM = pos.mean(axis=1)
             disp = 0.5 * bounding_box_lengths - CoM
             new_pos = pos + disp[:, None]
-            structure['positions'] = new_pos
+            structure["positions"] = new_pos
     return structure
 
 
 def is_ase_Atoms(frame):
     is_ase = True
-    if not hasattr(frame, 'get_cell'):
+    if not hasattr(frame, "get_cell"):
         is_ase = False
-    if not hasattr(frame, 'get_positions'):
+    if not hasattr(frame, "get_positions"):
         is_ase = False
-    if not hasattr(frame, 'get_atomic_numbers'):
+    if not hasattr(frame, "get_atomic_numbers"):
         is_ase = False
-    if not hasattr(frame, 'get_pbc'):
+    if not hasattr(frame, "get_pbc"):
         is_ase = False
     return is_ase
 
@@ -224,9 +238,13 @@ def unpack_ase(frame):
     else:
         center_atoms_mask = np.ones_like(numbers, dtype=bool)
 
-    return adapt_structure(cell=cell, positions=positions,
-                           atom_types=numbers, pbc=pbc,
-                           center_atoms_mask=center_atoms_mask)
+    return adapt_structure(
+        cell=cell,
+        positions=positions,
+        atom_types=numbers,
+        pbc=pbc,
+        center_atoms_mask=center_atoms_mask,
+    )
 
 
 def mask_center_atoms_by_id(frame, id_select=None, id_blacklist=None):
@@ -262,23 +280,24 @@ def mask_center_atoms_by_id(frame, id_select=None, id_blacklist=None):
     `mask_center_atoms_by_species` to allow mixed species/id-based
     masking.
     """
-    if 'center_atoms_mask' not in frame.arrays:
+    if "center_atoms_mask" not in frame.arrays:
         # add a default mask
         if id_select is not None:
-            mask = np.zeros((len(frame),), dtype='bool')
+            mask = np.zeros((len(frame),), dtype="bool")
         else:
-            mask = np.ones((len(frame),), dtype='bool')
+            mask = np.ones((len(frame),), dtype="bool")
     else:
-        mask = frame.arrays['center_atoms_mask']
+        mask = frame.arrays["center_atoms_mask"]
     if id_select is not None:
         mask[id_select] = True
     if id_blacklist is not None:
         mask[id_blacklist] = False
-    frame.arrays['center_atoms_mask'] = mask
+    frame.arrays["center_atoms_mask"] = mask
 
 
-def mask_center_atoms_by_species(frame, species_select=[],
-                                 species_blacklist=[]):
+def mask_center_atoms_by_species(
+    frame, species_select=[], species_blacklist=[]
+):
     """Mask the centers of an ASE atoms object, by atomic species
 
     Parameters
@@ -314,16 +333,18 @@ def mask_center_atoms_by_species(frame, species_select=[],
     This logic allows this function to be combined with
     `mask_center_atoms_by_id` to allow mixed species/id-based masking.
     """
-    select_is_str = reduce(and_,
-                           map(lambda x: isinstance(x, str), species_select),
-                           True)
-    select_is_int = reduce(and_,
-                           map(lambda x: isinstance(x, int), species_select),
-                           True)
+    select_is_str = reduce(
+        and_, map(lambda x: isinstance(x, str), species_select), True
+    )
+    select_is_int = reduce(
+        and_, map(lambda x: isinstance(x, int), species_select), True
+    )
     blacklist_is_str = reduce(
-        and_, map(lambda x: isinstance(x, str), species_blacklist), True)
+        and_, map(lambda x: isinstance(x, str), species_blacklist), True
+    )
     blacklist_is_int = reduce(
-        and_, map(lambda x: isinstance(x, int), species_blacklist), True)
+        and_, map(lambda x: isinstance(x, int), species_blacklist), True
+    )
     if select_is_str:
         id_select = np.isin(frame.get_chemical_symbols(), species_select)
     elif select_is_int:
@@ -336,16 +357,17 @@ def mask_center_atoms_by_species(frame, species_select=[],
         id_blacklist = np.isin(frame.get_atomic_numbers(), species_blacklist)
     else:
         raise ValueError(
-            "Species blacklist must be either all string or all int")
-    if 'center_atoms_mask' not in frame.arrays:
+            "Species blacklist must be either all string or all int"
+        )
+    if "center_atoms_mask" not in frame.arrays:
         # add a default mask
         if species_select:
-            old_mask = np.zeros((len(frame),), dtype='bool')
+            old_mask = np.zeros((len(frame),), dtype="bool")
         else:
-            old_mask = np.ones((len(frame),), dtype='bool')
+            old_mask = np.ones((len(frame),), dtype="bool")
     else:
-        old_mask = frame.arrays['center_atoms_mask']
+        old_mask = frame.arrays["center_atoms_mask"]
     # Python's "bitwise" operators do per-element logical operations in NumPy
     # see for instance https://docs.scipy.org/doc/numpy/reference/ufuncs.html#comparison-functions
     mask = (old_mask | id_select) & ~id_blacklist
-    frame.arrays['center_atoms_mask'] = mask
+    frame.arrays["center_atoms_mask"] = mask
