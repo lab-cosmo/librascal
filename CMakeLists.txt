@@ -230,15 +230,14 @@ if(CLANG_FORMAT_FOUND)
   clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests" "")
 endif()
 
-# Check for autopep8
-include(autopep8)
-# Add python files for autoformatting with autopep8
-if(AUTOPEP8_FOUND)
-  # register the folders to apply autopep8 with given configuration
-  # .pycodestyle in project root folder
-  autopep8_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bindings")
-  autopep8_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/scripts")
-  autopep8_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests")
+# Check for black
+include(black)
+# Add python files for autoformatting with black
+if(BLACK_FOUND)
+  # register the folders to apply black 
+  black_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/scripts")
+  black_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bindings")
+  black_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests")
 endif()
 
 # Removes every file in the build folder except the external libraries to
