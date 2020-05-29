@@ -1,6 +1,5 @@
 from ..utils import BaseIO
-from ..models import SparsePoints
-
+from ..models.sparse_points import SparsePoints
 import numpy as np
 from scipy.sparse.linalg import svds
 
