@@ -38,6 +38,9 @@ def fit_save_model(parameters):
         all_species = set()
         for geom in source_geoms:
             all_species = all_species.union(geom.get_atomic_numbers())
+            # Convert to int because otherwise it's a numpy type
+            # (which doesn't play well with json)
+            all_species = set(int(sp) for sp in all_species)
         energy_baseline = {species: energy_baseline_in
                            for species in all_species}
     energy_delta = parameters.get('energy_delta', 1.)
