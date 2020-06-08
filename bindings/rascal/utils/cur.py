@@ -10,12 +10,34 @@ from scipy.sparse.linalg import svds
 
 
 def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=True):
-    """ Apply CUR selection [1] of Nsel rows or columns of the
-    given feature matrix X[n_samples, n_features].
+    """ Apply CUR selection [1] to the input matrix.
+
+    Return a list of indices to select.
+
+    Parameters:
+        X       The matrix to sparsify
+        Nsel    The number of features to keep (must be between 1 and
+                the size of the matrix along the selected dimension)
+        act_on  Whether to act on rows or columns of the matrix.  If
+                this string contains 'sample' (the default), selection
+                acts on rows.  If it contains 'feature', selection acts
+                on columns.  If it contains both or neither, raise a
+                ValueError.
+        is_deterministic
+                Whether to use the "deterministic" selection algorithm
+                described in [2], rather than the original probabilistic
+                criterion
+        seed    Random seed for probabilistic selection (default 10. You
+                may want to change this.)
+        verbose Print the reconstruction error? (default True)
 
     .. [1] Mahoney, M. W., & Drineas, P. (2009). CUR matrix decompositions for
-    improved data analysis. Proceedings of the National Academy of Sciences,106(3),
-    697–702. https://doi.org/10.1073/pnas.0803205106
+    improved data analysis. Proceedings of the National Academy of Sciences,
+    106(3), 697–702. https://doi.org/10.1073/pnas.0803205106
+    .. [2] Imbalzano, G.; Anelli, A.; Giofré, D.; Klees, S.; Behler, J.;
+    Ceriotti, M. Automatic Selection of Atomic Fingerprints and Reference
+    Configurations for Machine-Learning Potentials. J. Chem. Phys. 2018, 148
+    (24), 241730. https://doi.org/10.1063/1.5024611.
     """
     U, _, VT = svds(X, Nsel)
     if 'sample' in act_on:
