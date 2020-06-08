@@ -8,7 +8,7 @@ class TestCURFun(unittest.TestCase):
 
     def setUp(self):
         np.random.seed(2718)
-        self.mat = np.random.rand((400, 500))
+        self.mat = np.random.random((400, 500))
 
     def testCURNormal(self):
         """Test CUR on a matrix: Usual case (k < N and k < M)"""
@@ -23,7 +23,7 @@ class TestCURFun(unittest.TestCase):
         n_sel_rows = 400
         n_sel_cols = 500
         sel_rows = cur.do_CUR(self.mat, n_sel_rows, 'sample')
-        sel_cols = cur.do_CUR(self.mat, n_sel_cols, 'feature)
+        sel_cols = cur.do_CUR(self.mat, n_sel_cols, 'feature')
         self.assertEqual(sel_rows, np.arange(n_sel_rows))
         self.assertEqual(sel_cols, np.arange(n_sel_cols))
 
