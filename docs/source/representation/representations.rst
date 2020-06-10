@@ -46,7 +46,7 @@ For atomic degrees of freedom (e.g., positions, momentum, but not e.g., volume, 
    \frac{\partial Q}{\partial l_k} = \frac{\partial q_k}{\partial l_k} + \sum_{j\in N_j}\frac{\partial q_j}{\partial l_k}.
 
 
-As a practical implementation note, the cross terms :math:`\partial q_j/\partial l_k` can in many cases be stored as by-products of computing the derivatives :math:`\partial q_i/\partial l_i`, meaning that one single loop over every atom with a nested single loop over each of its neighbours from a half-neighbour-list is sufficient to compute all terms. Note that the :math:`j`-atoms can be 'normal' atoms, or could be ghost atoms (images of atoms due to periodic boundary conditions or domain decomposition).
+As a practical implementation note, the cross terms :math:`\partial q_j/\partial l_k` can in many cases be stored as by-products of computing the derivatives :math:`\partial q_i/\partial l_i`, meaning that one single loop over every atom with a nested single loop over each of its neighbours from a half-neighbour-list is sufficient to compute all terms. Note that while the atom :math:`k` is a 'normal' center atom, the :math:`j`-atoms can be center atoms, or could be ghost atoms (images of atoms due to periodic boundary conditions or domain decomposition).
 
 Note regarding periodic boundary conditions on small simulation boxes
 ---------------------------------------------------------------------
@@ -64,7 +64,7 @@ In this situation, the neighbourhood of atom :math:`j` is :math:`N_j = \{i', i''
 Following the approach outlined above, the derivative of :math:`Q` with respect to the position :math:`x_j` of atom :math:`j` is
 
 .. math::
-    \frac{\partial Q}{\partial x_j} = \frac{\partial q_j}{\partial x_j} + \frac{\partial q_{i'}}{\partial x_j} + \frac{\partial q_{i''}}{\partial x_j}.
+    \frac{\partial Q}{\partial x_j} =\frac{\partial q_j}{\partial x_j} + \sum_{k\in N_j}\frac{\partial q_k}{\partial x_j}= \frac{\partial q_j}{\partial x_j} + \frac{\partial q_{i'}}{\partial x_j} + \frac{\partial q_{i''}}{\partial x_j}.
 
 Now, it may look surprising to consider separately the derivatives of the ghost terms :math:`q_{i'}` and :math:`q_{i''}`, since periodicity clearly requires that these quantities are in reality just the quantity :math:`q_i`. One might wish to express this explicitly and write the derivative rather as:
 
@@ -86,4 +86,4 @@ Check the figure to convince yourself. We can thus substitute this result back i
 .. math::
     \frac{\partial Q}{\partial x_j} = \frac{\partial q_j}{\partial x_j} + \left.\frac{\partial q_{i}}{\partial x_j}\right|_\mathrm{pbc} =  \frac{\partial q_j}{\partial x_j}+ \frac{\partial q_i}{\partial x_{j'}} + \frac{\partial q_{i}}{\partial x_{j''}} =  \frac{\partial q_j}{\partial x_j}+ \frac{\partial q_{i''}}{\partial x_{j}}+\frac{\partial q_{i'}}{\partial x_{j}}
 
-We now have recovered the initial formulation, where we did not pay any special consideration to the periodic boundary conditions. This result is genera., We can conclude that it is mathematically valid, but practically unnecessary to consider periodic boundary conditions as a special case.
+We now have recovered the initial formulation, where we did not pay any special consideration to the periodic boundary conditions. This result is general. We can conclude that it is mathematically valid, but practically unnecessary to consider periodic boundary conditions as a special case.
