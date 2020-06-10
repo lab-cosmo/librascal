@@ -6,10 +6,12 @@ from ..utils.filter_utils import (get_index_mappings_sample_per_species,
 
 from ..models.sparse_points import SparsePoints
 import numpy as np
-from scipy.sparse.linalg import svds
+from numpy import linalg
+import scipy.sparse.linalg as sparselinalg
 
 
-def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=True):
+def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10,
+           use_sparse_svd=False, verbose=True):
     """ Apply CUR selection [1] to the input matrix.
 
     Return a list of indices to select.
@@ -18,6 +20,7 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
         X       The matrix to sparsify
         Nsel    The number of features to keep (must be between 1 and
                 the size of the matrix along the selected dimension)
+    Optional parameters:
         act_on  Whether to act on rows or columns of the matrix.  If
                 this string contains 'sample' (the default), selection
                 acts on rows.  If it contains 'feature', selection acts
@@ -29,6 +32,12 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
                 criterion
         seed    Random seed for probabilistic selection (default 10. You
                 may want to change this.)
+        use_sparse_svd
+                Whether to use sparse SVD (i.e., Lanczos iteration) to
+                decompose the matrix product, rather than the full
+                version.  May be more efficient when selecting a small
+                number of entries from a very large number of rows or
+                columns.  Default False.
         verbose Print the reconstruction error? (default True)
 
     .. [1] Mahoney, M. W., & Drineas, P. (2009). CUR matrix decompositions for
@@ -39,19 +48,27 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
     Configurations for Machine-Learning Potentials. J. Chem. Phys. 2018, 148
     (24), 241730. https://doi.org/10.1063/1.5024611.
     """
-    U, _, VT = svds(X, Nsel)
-    if 'sample' in act_on:
+    if use_sparse_svd:
+        U, _, VT = sparselinalg.svds(X, Nsel)
+    else:
+        U, _, VT = linalg.svd(X)
+    if ('sample' in act_on) and ('feature' in act_on):
+        raise ValueError("Must supply either 'sample' or 'feature' in 'act_on'"
+                         " string, not both")
+    elif 'sample' in act_on:
         weights = np.mean(np.square(U), axis=1)
     elif 'feature' in act_on:
         weights = np.mean(np.square(VT), axis=0)
+    else:
+        raise ValueError("Must supply either 'sample' or 'feature' in 'act_on'"
+                         " string.")
     if is_deterministic:
         # sorting is smallest to largest hence the minus
         sel = np.argsort(-weights)[:Nsel]
-    elif is_deterministic is False:
+    else:
         np.random.seed(seed)
         # sorting is smallest to largest hence the minus
         sel = np.argsort(np.random.rand(*weights.shape) - weights)[:Nsel]
-
     if verbose:
         if 'sample' in act_on:
             C = X[sel, :]
@@ -60,7 +77,6 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
             # err = np.sqrt(np.sum((X - np.dot(np.dot(X, Cp), C))**2))
             err = np.sqrt(np.sum((
                 X - np.dot(np.linalg.lstsq(C.T, X.T, rcond=None)[0].T, C))**2))
-
         elif 'feature' in act_on:
             C = X[:, sel]
             # equivalent to
@@ -68,9 +84,7 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10, verbose=Tr
             # err = np.sqrt(np.sum((X - np.dot(C, np.dot(Cp, X)))**2))
             err = np.sqrt(np.sum((
                 X - np.dot(C, np.linalg.lstsq(C, X, rcond=None)[0]))**2))
-
         print('Reconstruction RMSE={:.3e}'.format(err))
-
     return sel
 
 
