@@ -28,15 +28,15 @@ class TestCURFun(unittest.TestCase):
         n_sel_cols = 500
         sel_rows = cur.do_CUR(self.mat, n_sel_rows, 'sample', verbose=False)
         sel_cols = cur.do_CUR(self.mat, n_sel_cols, 'feature', verbose=False)
-        self.assertEqual(list(sel_rows), list(range(n_sel_rows)))
-        self.assertEqual(list(sel_cols), list(range(n_sel_cols)))
+        self.assertEqual(sorted(list(sel_rows)), list(range(n_sel_rows)))
+        self.assertEqual(sorted(list(sel_cols)), list(range(n_sel_cols)))
 
     def testCURMid(self):
         """Test CUR on a matrix where M < k < N (or vice versa)"""
         n_sel = 450
-        sel_cols = cur.do_CUR(self.mat, n_sel, 'feature', verbose=False)
-        sel_rows = cur.do_CUR(self.mat.T, n_sel, 'sample', verbose=False)
-        self.assertEqual(sel_rows, sel_cols)
+        sel_rows = cur.do_CUR(self.mat, n_sel, 'sample', verbose=False)
+        sel_cols = cur.do_CUR(self.mat.T, n_sel, 'feature', verbose=False)
+        self.assertEqual(sorted(list(sel_rows)), sorted(list(sel_cols)))
 
     def testCURActOn(self):
         """Test behaviour of the 'act_on' argument"""
@@ -51,7 +51,7 @@ class TestCURFun(unittest.TestCase):
         n_sel = 200
         seed1 = 1618
         sel1 = cur.do_CUR(self.mat, n_sel, 'sample', True, seed1, verbose=False)
-        seed2 = 1618
+        seed2 = 31415
         sel2 = cur.do_CUR(self.mat, n_sel, 'sample', True, seed2, verbose=False)
         self.assertEqual(list(sel1), list(sel2))
 
