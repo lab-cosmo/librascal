@@ -74,16 +74,16 @@ Now, it may look surprising to consider separately the derivatives of the ghost 
 which is, of course, correct as well. However, the quantity :math:`\partial q_i/\partial x_j|_\mathrm{pbc}` becomes, when written out,
 
 .. math::
-   \left.\frac{\partial q_{i}}{\partial x_j}\right|_\mathrm{pbc} = \frac{\partial q_i}{\partial x_{j'}} + \frac{\partial q_{i}}{\partial x_{j''}},
+   \left.\frac{\partial q_{i}}{\partial x_j}\right|_\mathrm{pbc} = \frac{\partial q_i}{\partial x_{j'}} + \frac{\partial q_{i}}{\partial x_{j''}}.
 
-the right-hand side terms of this last equation are simply the periodically shifted expressions of the terms
+The right-hand side terms of this last equation are simply the periodically shifted expressions of the terms
 
 .. math::
-   \frac{\partial q_{i}}{\partial x_{j'}} = \frac{\partial q_{i''}}{\partial x_{j}},\quad \frac{\partial q_{i}}{\partial x_{j''}} = \frac{\partial q_{i'}}{\partial x_{j}}.
+   \frac{\partial q_{i}}{\partial x_{j'}} = \frac{\partial q_{i'}}{\partial x_{j}},\quad \frac{\partial q_{i}}{\partial x_{j''}} = \frac{\partial q_{i''}}{\partial x_{j}}.
 
 Check the figure to convince yourself. We can thus substitute this result back into the periodic formulation,
 
 .. math::
-    \frac{\partial Q}{\partial x_j} = \frac{\partial q_j}{\partial x_j} + \left.\frac{\partial q_{i}}{\partial x_j}\right|_\mathrm{pbc} =  \frac{\partial q_j}{\partial x_j}+ \frac{\partial q_i}{\partial x_{j'}} + \frac{\partial q_{i}}{\partial x_{j''}} =  \frac{\partial q_j}{\partial x_j}+ \frac{\partial q_{i''}}{\partial x_{j}}+\frac{\partial q_{i'}}{\partial x_{j}}
+    \frac{\partial Q}{\partial x_j} = \frac{\partial q_j}{\partial x_j} + \left.\frac{\partial q_{i}}{\partial x_j}\right|_\mathrm{pbc} =  \frac{\partial q_j}{\partial x_j}+ \frac{\partial q_i}{\partial x_{j'}} + \frac{\partial q_{i}}{\partial x_{j''}} =  \frac{\partial q_j}{\partial x_j}+ \frac{\partial q_{i'}}{\partial x_{j}}+\frac{\partial q_{i''}}{\partial x_{j}}
 
 We now have recovered the initial formulation, where we did not pay any special consideration to the periodic boundary conditions. This result is general. We can conclude that it is mathematically valid, but practically unnecessary to consider periodic boundary conditions as a special case.
