@@ -43,7 +43,7 @@ where the dependence on :math:`\boldsymbol l` has been dropped for simplicity :m
 For atomic degrees of freedom (e.g., positions, momentum, but not e.g., volume, box tilt angle, etc) we can use the short-range assumption by defining the neighbourhood :math:`N_j` which is the set of all atoms close enough to atom :math:`j` to interact with it. We can then rewrite above equation in the convenient form
 
 .. math::
-   \frac{\partial Q}{\partial l_k} = \frac{\partial q_k}{\partial l_k} + \sum_{j\in N_j}\frac{\partial q_j}{\partial l_k}.
+   \frac{\partial Q}{\partial l_k} = \frac{\partial q_k}{\partial l_k} + \sum_{j\in N_k}\frac{\partial q_j}{\partial l_k}.
 
 
 As a practical implementation note, the cross terms :math:`\partial q_j/\partial l_k` can in many cases be stored as by-products of computing the derivatives :math:`\partial q_i/\partial l_i`, meaning that one single loop over every atom with a nested single loop over each of its neighbours from a half-neighbour-list is sufficient to compute all terms. Note that while the atom :math:`k` is a 'normal' center atom, the :math:`j`-atoms can be center atoms, or could be ghost atoms (images of atoms due to periodic boundary conditions or domain decomposition).
@@ -74,7 +74,7 @@ Now, it may look surprising to consider separately the derivatives of the ghost 
 which is, of course, correct as well. However, the quantity :math:`\partial q_i/\partial x_j|_\mathrm{pbc}` becomes, when written out,
 
 .. math::
-   \left.\frac{\partial q_{i}}{\partial x_j}\right|_\mathrm{pbc} = \frac{\partial q_i}{\partial x_{j'}} + \frac{\partial q_{i}}{\partial x_{j''}}.
+   \left.\frac{\partial q_{i}}{\partial x_j}\right|_\mathrm{pbc} = \frac{\partial q_i}{\partial x_{j'}}\underbrace{\frac{\partial x_{j'}}{\partial x_j}}_{=1} + \frac{\partial q_{i}}{\partial x_{j''}}\underbrace{\frac{\partial x_{j''}}{\partial x_j}}_{=1} = \frac{\partial q_i}{\partial x_{j'}} + \frac{\partial q_{i}}{\partial x_{j''}}.
 
 The right-hand side terms of this last equation are simply the periodically shifted expressions of the terms
 
