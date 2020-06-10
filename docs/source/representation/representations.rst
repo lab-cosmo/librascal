@@ -33,21 +33,20 @@ Consider a quantity :math:`Q(\{l_i\})` which depends on a number of degrees of f
 .. math::
    Q(\boldsymbol l) = \sum_j q_j(\boldsymbol l).
 
-Assume furthermore that :math:`Q` arises from short-range interatomic interactions (i.e., no Coulomb forces).
 The derivative of this quantity with respect to any degree of freedom :math:`l_k` then becomes
 
 .. math::
    \frac{\partial Q}{\partial l_k} = \sum_j\frac{\partial q_j}{\partial l_k},
 
-where the dependence on :math:`\boldsymbol l` has been dropped for simplicity :math:`Q = Q(\boldsymbol l)`.
+where the dependence on :math:`\boldsymbol l` has been dropped for simplicity :math:`Q = Q(\boldsymbol l)`. Assume furthermore that :math:`Q` arises from short-range interatomic interactions (i.e., no Coulomb forces).
 
-For atomic degrees of freedom (e.g., positions, momentum, but not e.g., volume, box tilt angle, etc) we can use the short-range assumption by defining the neighbourhood :math:`N_j` which is the set of all atoms close enough to atom :math:`j` to interact with it. We can then rewrite above equation in the practical form
+For atomic degrees of freedom (e.g., positions, momentum, but not e.g., volume, box tilt angle, etc) we can use the short-range assumption by defining the neighbourhood :math:`N_j` which is the set of all atoms close enough to atom :math:`j` to interact with it. We can then rewrite above equation in the convenient form
 
 .. math::
    \frac{\partial Q}{\partial l_k} = \frac{\partial q_k}{\partial l_k} + \sum_{j\in N_j}\frac{\partial q_j}{\partial l_k}.
 
 
-As a practical implementation note, the cross terms :math:`\partial q_j/\partial l_k` can in many cases be stored as by-products of computing the derivatives :math:`\partial q_i/\partial l_i`, meaning that one single loop over every atom with a nested single loop over each of its neighbours is sufficient to compute all terms.
+As a practical implementation note, the cross terms :math:`\partial q_j/\partial l_k` can in many cases be stored as by-products of computing the derivatives :math:`\partial q_i/\partial l_i`, meaning that one single loop over every atom with a nested single loop over each of its neighbours from a half-neighbour-list is sufficient to compute all terms. Note that the :math:`j`-atoms can be 'normal' atoms, or could be ghost atoms (images of atoms due to periodic boundary conditions or domain decomposition).
 
 Note regarding periodic boundary conditions on small simulation boxes
 ---------------------------------------------------------------------
@@ -56,6 +55,8 @@ In small periodic simulation boxes, the short-range cutoff radius can be large e
 
 
 .. image:: ../../figures/PBC_gradient.png
+   :width: 400
+   :alt: small periodic box with large cutoff radius
 
 
 In this situation, the neighbourhood of atom :math:`j` is :math:`N_j = \{i', i''\}`, containing twice the ghost of atom :math:`i`, similarly, :math:`N_i = \{j', j''\}`.
@@ -75,9 +76,14 @@ which is, of course, correct as well. However, the quantity :math:`\partial q_i/
 .. math::
    \left.\frac{\partial q_{i}}{\partial x_j}\right|_\mathrm{pbc} = \frac{\partial q_i}{\partial x_{j'}} + \frac{\partial q_{i}}{\partial x_{j''}},
 
-which are simply the  periodically shifted expressions of the terms
+the right-hand side terms of this last equation are simply the periodically shifted expressions of the terms
 
 .. math::
    \frac{\partial q_{i}}{\partial x_{j'}} = \frac{\partial q_{i''}}{\partial x_{j}},\quad \frac{\partial q_{i}}{\partial x_{j''}} = \frac{\partial q_{i'}}{\partial x_{j}}.
 
-We now have recovered the initial formulation, where we did not pay any special consideration to the periodic boundary conditions. This result is general, and it is therefore valid, but unnecessary to consider periodic boundary conditions as a special case.
+Check the figure to convince yourself. We can thus substitute this result back into the periodic formulation,
+
+.. math::
+    \frac{\partial Q}{\partial x_j} = \frac{\partial q_j}{\partial x_j} + \left.\frac{\partial q_{i}}{\partial x_j}\right|_\mathrm{pbc} =  \frac{\partial q_j}{\partial x_j}+ \frac{\partial q_i}{\partial x_{j'}} + \frac{\partial q_{i}}{\partial x_{j''}} =  \frac{\partial q_j}{\partial x_j}+ \frac{\partial q_{i''}}{\partial x_{j}}+\frac{\partial q_{i'}}{\partial x_{j}}
+
+We now have recovered the initial formulation, where we did not pay any special consideration to the periodic boundary conditions. This result is genera., We can conclude that it is mathematically valid, but practically unnecessary to consider periodic boundary conditions as a special case.
