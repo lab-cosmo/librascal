@@ -55,5 +55,11 @@ class TestCURFun(unittest.TestCase):
         sel2 = cur.do_CUR(self.mat, n_sel, 'sample', True, seed2, verbose=False)
         self.assertEqual(list(sel1), list(sel2))
 
-    # TODO test full vs. sparse SVD (once implemented)
+    def testFullSparseSVD(self):
+        n_sel = 200
+        sel1 = cur.do_CUR(self.mat, n_sel, 'sample', True,
+                          use_sparse_svd=True, verbose=False)
+        sel2 = cur.do_CUR(self.mat, n_sel, 'sample', True,
+                          use_sparse_svd=False, verbose=False)
+        self.assertEqual(set(sel1), set(sel2))
 

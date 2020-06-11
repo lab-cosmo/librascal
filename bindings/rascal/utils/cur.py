@@ -52,6 +52,8 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10,
         U, _, VT = sparselinalg.svds(X, Nsel)
     else:
         U, _, VT = linalg.svd(X)
+        U = U[:, :Nsel]
+        VT = VT[:Nsel, :]
     if ('sample' in act_on) and ('feature' in act_on):
         raise ValueError("Must supply either 'sample' or 'feature' in 'act_on'"
                          " string, not both")
