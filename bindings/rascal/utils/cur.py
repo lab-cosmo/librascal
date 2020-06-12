@@ -48,6 +48,11 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10,
     Configurations for Machine-Learning Potentials. J. Chem. Phys. 2018, 148
     (24), 241730. https://doi.org/10.1063/1.5024611.
     """
+    # TODO sparse SVD does not work for the case M < k < N (or vice versa).
+    #      (the statistical "leverage scores" are all the same because there
+    #       are at most min(M, N) - 1 singular vectors.  But this doesn't
+    #       mean a perfect reconstruction is possible with only min(M, N)
+    #       rows / columns of X, does it...?
     if use_sparse_svd:
         U, _, VT = sparselinalg.svds(X, Nsel)
     else:
@@ -152,6 +157,7 @@ class CURFilter(BaseIO):
         -------
         SparsePoints
             Selected samples
+            TODO wrong! This only returns self!
 
         Raises
         ------

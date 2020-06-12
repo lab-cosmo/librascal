@@ -18,7 +18,7 @@ from python_models_test import (
 from python_math_test import TestMath
 
 from python_test_sparsify_fps import TestFPS
-from python_test_sparsify_cur import TestCURFun
+from python_test_sparsify_cur import TestCURFun, TestCURFilter
 
 
 class SimpleCheck(unittest.TestCase):
