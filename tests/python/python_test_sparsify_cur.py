@@ -28,15 +28,15 @@ class TestCURFun(unittest.TestCase):
         n_sel_cols = 500
         sel_rows = cur.do_CUR(self.mat, n_sel_rows, 'sample', verbose=False)
         sel_cols = cur.do_CUR(self.mat, n_sel_cols, 'feature', verbose=False)
-        self.assertEqual(sorted(list(sel_rows)), list(range(n_sel_rows)))
-        self.assertEqual(sorted(list(sel_cols)), list(range(n_sel_cols)))
+        self.assertCountEqual(sel_rows, range(n_sel_rows))
+        self.assertCountEqual(sel_cols, range(n_sel_cols))
 
     def testCURMid(self):
         """Test CUR on a matrix where M < k < N (or vice versa)"""
         n_sel = 450
         sel_rows = cur.do_CUR(self.mat, n_sel, 'sample', verbose=False)
         sel_cols = cur.do_CUR(self.mat.T, n_sel, 'feature', verbose=False)
-        self.assertEqual(sorted(list(sel_rows)), sorted(list(sel_cols)))
+        self.assertCountEqual(sel_rows, sel_cols)
 
     def testCURActOn(self):
         """Test behaviour of the 'act_on' argument"""
@@ -44,7 +44,7 @@ class TestCURFun(unittest.TestCase):
         sel_rows = cur.do_CUR(self.mat, n_sel, 'rrrsampledsasfd', verbose=False)
         sel_cols = cur.do_CUR(self.mat, n_sel, 'ffffeaturewombat', verbose=False)
         self.assertRaises(ValueError, cur.do_CUR, self.mat, n_sel, 'featuresample')
-        self.assertRaises(ValueError, cur.do_CUR, self.mat, n_sel, 'blablafoobar')
+        self.assertRaises(ValueError, cur.do_CUR, self.mat, n_sel, 'spamspam')
 
     def testIsDeterministic(self):
         """Test that deterministic selection is independent of the random seed"""
@@ -61,5 +61,5 @@ class TestCURFun(unittest.TestCase):
                           use_sparse_svd=True, verbose=False)
         sel2 = cur.do_CUR(self.mat, n_sel, 'sample', True,
                           use_sparse_svd=False, verbose=False)
-        self.assertEqual(set(sel1), set(sel2))
+        self.assertCountEqual(sel1, sel2)
 
