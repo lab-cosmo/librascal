@@ -5,7 +5,7 @@
  *
  * @date   18 Dec 2019
  *
- * @brief  testing Behler-Parinello G-functions
+ * @brief  testing Behler-Parrinello G-functions
  *
  * Copyright © 2019 Till Junge
  *
@@ -74,9 +74,7 @@ namespace rascal {
                         {"zeta", {{"value", 0.6}, {"unit", "-"}}},
                         {"lambda", {{"value", 0.6}, {"unit", "-"}}}}},
                       {"species", {"Mg", "Si", "Si"}},
-                      {"r_cut",
-                       {{"value", this->r_cut},
-                        {"unit", "Å"}}}};
+                      {"r_cut", {{"value", this->r_cut}, {"unit", "Å"}}}};
         std::cout << "hallo" << std::endl;
         std::cout << retval << std::endl;
 
@@ -108,8 +106,10 @@ namespace rascal {
         unit_style,
         json{{"params", {}}, {"r_cut", {{"value", r_cut}, {"unit", "Å"}}}})};
     json raw_params;
-    BehlerFeature<MySymFunType, SymFunTypes...> bf{
-        this->cut_fun, this->unit_style, this->raw_params};
+    static constexpr auto Order{SymmetryFunction<MySymFunType>::Order};
+    using BehlerFeature_t =
+        BehlerFeatureOrderSelector_t<Order, MySymFunType, SymFunTypes...>;
+    BehlerFeature_t bf{this->cut_fun, this->unit_style, this->raw_params};
   };
 
   // list of all tested BehlerFeatures
@@ -121,35 +121,73 @@ namespace rascal {
                                             SymmetryFunctionType::AngularNarrow,
                                             SymmetryFunctionType::Gaussian>>;
 
-  BOOST_AUTO_TEST_SUITE(behler_parinello_feature_tests);
+  BOOST_AUTO_TEST_SUITE(behler_parrinello_feature_tests);
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, Features, Fix) {}
 
   // list of all tested BehlerFeatures defined on pairs
   using PairFeatures =
       boost::mpl::list<BehlerFeatureFixture<SymmetryFunctionType::Gaussian,
                                             SymmetryFunctionType::Gaussian>>;
-
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test, Fix, PairFeatures, Fix) {
     ManagerFixture<StructureManagerLammps> manager_fix{};
     auto manager_ptr{
         make_adapted_manager<AdaptorStrict>(manager_fix.manager, Fix::r_cut)};
     auto & manager{*manager_ptr};
     manager.update();
+
+    constexpr auto Order{Fix::BehlerFeature_t::SymmetryFunction_t::Order};
     using GVals_t =
-        Property<double, AtomOrder, AdaptorStrict<StructureManagerLammps>>;
+        Property<double, AtomOrder, AdaptorStrict<StructureManagerLammps>,
+                 nb_distances(Order)>;
     auto G_vals{std::make_shared<GVals_t>(manager)};
 
     // Yes, the pairs in this manager do not have the correct species, but this
     // doesn't interfere with testing the compute algo
-    Fix::bf.template compute<RepeatedSpecies::All, Permutation<2, 0, 1>>(
+    Fix::bf.template compute<RepeatedSpecies::All, Permutation<Order, 0, 1>>(
         manager, G_vals);
-    Fix::bf.template compute<RepeatedSpecies::Not, Permutation<2, 0, 1>>(
+    Fix::bf.template compute<RepeatedSpecies::Not, Permutation<Order, 0, 1>>(
         manager, G_vals);
 
     auto throw_unknown_species_rep{[&manager, &G_vals, this]() {
-      this->bf
-          .template compute<RepeatedSpecies::FirstTwo, Permutation<2, 0, 1>>(
-              manager, G_vals);
+      this->bf.template compute<RepeatedSpecies::FirstTwo,
+                                Permutation<Order, 0, 1>>(manager,
+                                                                    G_vals);
+    }};
+
+    BOOST_CHECK_THROW(throw_unknown_species_rep(), std::runtime_error);
+  }
+
+  // list of all tested BehlerFeatures defined on triplets
+  using TripletFeatures = boost::mpl::list<
+      BehlerFeatureFixture<SymmetryFunctionType::AngularNarrow,
+                           SymmetryFunctionType::AngularNarrow>>;
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test_triplet, Fix, TripletFeatures,
+                                   Fix) {
+    ManagerFixture<StructureManagerLammps> manager_fix{};
+    auto strict_manager_ptr{
+        make_adapted_manager<AdaptorStrict>(manager_fix.manager, Fix::r_cut)};
+    auto triplet_manager_ptr{
+        make_adapted_manager<AdaptorMaxOrder>(strict_manager_ptr)};
+    auto & manager{*triplet_manager_ptr};
+    manager.update();
+    constexpr auto Order{Fix::BehlerFeature_t::SymmetryFunction_t::Order};
+    using GVals_t =
+        Property<double, AtomOrder,
+                 AdaptorMaxOrder<AdaptorStrict<StructureManagerLammps>>,
+                 nb_distances(Order)>;
+    auto G_vals{std::make_shared<GVals_t>(manager)};
+
+    // Yes, the pairs in this manager do not have the correct species, but this
+    // doesn't interfere with testing the compute algo
+    Fix::bf.template compute<RepeatedSpecies::All, Permutation<Order, 0, 1, 2>>(
+        manager, G_vals);
+    Fix::bf.template compute<RepeatedSpecies::Not, Permutation<Order, 0, 1, 2>>(
+        manager, G_vals);
+
+    auto throw_unknown_species_rep{[&manager, &G_vals, this]() {
+      this->bf.template compute<RepeatedSpecies::FirstTwo,
+                                Permutation<Order, 2, 0, 1>>(manager, G_vals);
     }};
 
     BOOST_CHECK_THROW(throw_unknown_species_rep(), std::runtime_error);
@@ -314,7 +352,6 @@ namespace rascal {
         dG11_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
   }
-
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal

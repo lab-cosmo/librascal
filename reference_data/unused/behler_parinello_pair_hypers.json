@@ -3,22 +3,22 @@
         "species": ["Mg", "Si"],
         "nodes_per_hidden_layer": [20, 20],
         "activation_functions": [{
-                "type": "CosineShifted",
-                "_comment": "params is usually empty, except for CosineShifted",
+                "type": "ShiftedCosine",
+                "_comment": "params is usually empty, except for ShiftedCosine",
                 "params": {
                     "alpha": 0.9
                 }
             },
             {
-                "type": "CosineShifted",
-                "_comment": "params is usually empty, except for CosineShifted",
+                "type": "ShiftedCosine",
+                "_comment": "params is usually empty, except for ShiftedCosine",
                 "params": {
                     "alpha": 0.9
                 }
             },
             {
                 "type": "Unity",
-                "_comment": "params is usually empty, except for CosineShifted",
+                "_comment": "params is usually empty, except for ShiftedCosine",
                 "params": {}
             }
         ]
@@ -27,8 +27,8 @@
     "input_layer": {
         "scaling": "None",
         "cutoff_function": {
-            "type": "CosineShifted",
-            "_comment": "params is usually empty, except for CosineShifted",
+            "type": "ShiftedCosine",
+            "_comment": "params is usually empty, except for ShiftedCosine",
             "params": {
                 "alpha": 0.9
             }

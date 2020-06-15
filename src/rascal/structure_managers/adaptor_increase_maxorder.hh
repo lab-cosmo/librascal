@@ -278,6 +278,16 @@ namespace rascal {
       return this->manager->get_shared_ptr();
     }
 
+    /* ---------------------------------------------------------------------- */
+    TripletDistance_t & get_triplet_distance() {
+      return std::get<0>(this->calculate_triplet_distance_directions());
+    }
+
+    /* ---------------------------------------------------------------------- */
+    TripletDirVec_t & get_triplet_direction_vectors() {
+      return std::get<1>(this->calculate_triplet_distance_directions());
+    }
+
    protected:
     template <bool IsCompactCluster>
     void update_self_helper();
@@ -330,16 +340,17 @@ namespace rascal {
 
     std::tuple<TripletDistance_t &, TripletDirVec_t &>
     calculate_triplet_distance_directions() {
+      using Ret_t =std::tuple<TripletDistance_t &, TripletDirVec_t &>;
       const std::string distance_identifier{"triplet_distances"};
       const std::string direction_identifier{
-          "triplet_direction_vectors_(colums)"};
+          "triplet_direction_vectors_(columns)"};
       auto & triplet_distances{*this->template get_property<TripletDistance_t>(
           distance_identifier, true, true)};
       auto & triplet_direction_vectors{
           *this->template get_property<TripletDirVec_t>(direction_identifier,
                                                         true, true)};
       if (triplet_distances.is_updated()) {
-        return triplet_distances;
+        return Ret_t{triplet_distances, triplet_direction_vectors};
       }
 
       triplet_distances.resize();
@@ -348,8 +359,6 @@ namespace rascal {
       auto & direction_vectors{this->get_direction_vector()};
       auto & distances{this->get_distance()};
 
-      auto & trip_to_i_atom{
-          this->template get_neighbours_to_i_atoms<TripletOrder>()};
       auto & clusters_from_manager{
           this->template get_sub_clusters<PairOrder, TripletOrder>()};
 
@@ -358,32 +367,28 @@ namespace rascal {
           auto & pair_ij{clusters_from_manager[trip][0]};
           auto & pair_ik{clusters_from_manager[trip][1]};
           auto && dists{triplet_distances[trip]};
-          dists(0) = distances[pair_ij];
-          dists(1) = distances[pair_ik];
+          auto & d_ij{dists(0)};
+          auto & d_jk{dists(1)};
+          auto & d_ki{dists(2)};
+          d_ij = distances[pair_ij];
+          d_ki = distances[pair_ik];
 
           auto && vectors{triplet_direction_vectors[trip]};
-          vectors.col(0) = direction_vectors[pair_ij];
-          vectors.col(1) = direction_vectors[pair_ik];
+          auto && v_ij{vectors.col(0)};
+          auto && v_jk{vectors.col(1)};
+          auto && v_ki{vectors.col(2)};
 
-          auto && r_jk{vectors.col(1) * dists(1) - vectors.col(0) - dists(0)};
-
-          dists(2) = r_jk.norm();
-          vectors.col(2) = r_jk / dists(2);
+          v_ij = direction_vectors[pair_ij];
+          v_ki = -direction_vectors[pair_ik];
+          auto && r_jk{-v_ki * d_ki - v_ij * d_ij};
+          d_jk = r_jk.norm();
+          v_jk = r_jk / d_jk;
         }
       }
 
       triplet_distances.set_updated_status(true);
       triplet_direction_vectors.set_updated_status(true);
-      return std::make_tuple(triplet_distances, triplet_direction_vectors);
-    }
-    /* ---------------------------------------------------------------------- */
-    TripletDistance_t & get_triplet_distance() {
-      return std::get<0>(this->calculate_triplet_distance_directions());
-    }
-
-    /* ---------------------------------------------------------------------- */
-    TripletDirVec_t & get_triplet_direction_vectors() {
-      return std::get<1>(this->calculate_triplet_distance_directions());
+      return Ret_t{triplet_distances, triplet_direction_vectors};
     }
   };
 

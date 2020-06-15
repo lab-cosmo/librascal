@@ -43,13 +43,13 @@ namespace rascal {
     static const bool verbose{false};
     std::vector<json> fc_hypers{
         R"({
-        "type": "CosineShifted",
+        "type": "ShiftedCosine",
         "cutoff": {"value": 3, "unit": "AA"},
         "smooth_width": {"value": 0.5, "unit": "AA"}
       })"_json,
     };
     using Cutoff_t =
-        internal::CutoffFunction<internal::CutoffFunctionType::CosineShifted>;
+        internal::CutoffFunction<internal::CutoffFunctionType::ShiftedCosine>;
 
     for (auto & fc_hyper : fc_hypers) {
       if (verbose) {

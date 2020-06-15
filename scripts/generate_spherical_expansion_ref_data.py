@@ -1,16 +1,16 @@
 """Generate reference data for the librascal spherical expansion"""
+import rascal.lib as lrl
+import rascal
+from rascal.utils import ostream_redirect
+from rascal.representations import SphericalExpansion
+import json
+import ase
+import argparse
+import numpy as np
+from ase.io import read
 import sys
 import os
 sys.path.insert(0, '../build/')
-from ase.io import read
-import numpy as np
-import argparse
-import ase
-import json
-from rascal.representations import SphericalExpansion
-from rascal.utils import ostream_redirect
-import rascal
-import rascal.lib as lrl
 
 root = os.path.abspath('../')
 rascal_reference_path = os.path.join(root, 'reference_data/')
@@ -47,7 +47,7 @@ def dump_reference_json():
     max_angulars = [3, 6]
     cutoff_smooth_widths = [0., 1.]
     radial_basis = ["GTO", "DVR"]
-    cutoff_function_types = ['CosineShifted', 'RadialScaling']
+    cutoff_function_types = ['ShiftedCosine', 'RadialScaling']
     fns = [
         os.path.join(
             inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),

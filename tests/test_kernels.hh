@@ -62,7 +62,7 @@ namespace rascal {
     std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
-        {{"type", "CosineShifted"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
 

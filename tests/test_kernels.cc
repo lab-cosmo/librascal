@@ -35,6 +35,7 @@
 namespace rascal {
   BOOST_AUTO_TEST_SUITE(kernels_test);
 
+  BOOST_AUTO_TEST_CASE(nuescht){};
   using multiple_ref_fixtures =
       // TODO(felixmax?) KernelFixture<DataSphericalInvariantsKernelFixture>>;
       boost::mpl::list<>;

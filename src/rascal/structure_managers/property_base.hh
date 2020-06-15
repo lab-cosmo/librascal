@@ -40,6 +40,15 @@
 namespace rascal {
 
   /**
+   * returns the number of distances a cluster of order Order has. (Corresponds
+   * to the number of handshakes amongst Order people if everyone shakes
+   * everyone else's hand).
+   */
+  constexpr size_t nb_distances(const size_t & Order) {
+    return (Order * (Order - 1)) / 2;
+  }
+
+  /**
    * Base class defintion of a ``property``, defining an interface.
    */
   class PropertyBase {

@@ -1,11 +1,11 @@
 /**
- * file   representation_manager_behler_parinello_impl.hh
+ * file   representation_manager_behler_parrinello_impl.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
  * @date   13 Dec 2018
  *
- * @brief  implementation for Behler-Parinello representation manager
+ * @brief  implementation for Behler-Parrinello representation manager
  *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -25,20 +25,20 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_IMPL_HH_
-#define SRC_RASCAL_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_IMPL_HH_
+#ifndef SRC_RASCAL_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARRINELLO_IMPL_HH_
+#define SRC_RASCAL_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARRINELLO_IMPL_HH_
 
 #include "utils/for_each_at_order.hh"
 namespace rascal {
 
   template <class StructureManager>
-  BehlerParinello<StructureManager>::BehlerParinello(
+  BehlerParrinello<StructureManager>::BehlerParrinello(
       StructureManager & structure, const json & hypers)
       : structure{structure}, species{structure} {}
 
   /* ---------------------------------------------------------------------- */
   template <class StructureManager>
-  void BehlerParinello<StructureManager>::update() {
+  void BehlerParrinello<StructureManager>::update() {
     this->species.update();
     for (auto && tup : this->species.filters_by_nb_elements<1>()) {
       auto && species{tup.first};
@@ -70,7 +70,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class StructureManager>
-  void BehlerParinello<StructureManager>::compute() {
+  void BehlerParrinello<StructureManager>::compute() {
     using utils::for_each_at_order;
 
     //! precompute precomputable values
@@ -105,32 +105,38 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class StructureManager>
   template <size_t Order>
-  void BehlerParinello<StructureManager>::evaluate_pair_symmetry_function_group(
+  void BehlerParrinello<StructureManager>::evaluate_pair_symmetry_function_group(
       std::vector<InputNodeContributionBase> & symmetry_funs) {
     for (auto && symmetry_fun : symmetry_funs) {
-      this->evaluate_sym_fun<Permutation<0, 1>>((symmetry_fun));
-      this->evaluate_sym_fun<Permutation<1, 0>>((symmetry_fun));
+      this->evaluate_sym_fun<Permutation<PairOrder, 0, 1>>((symmetry_fun));
+      this->evaluate_sym_fun<Permutation<PairOrder, 1, 0>>((symmetry_fun));
     }
   }
   /* ---------------------------------------------------------------------- */
   template <class StructureManager>
   template <size_t Order>
   void
-  BehlerParinello<StructureManager>::evaluate_triplet_symmetry_function_group(
+  BehlerParrinello<StructureManager>::evaluate_triplet_symmetry_function_group(
       std::vector<InputNodeContributionBase> & symmetry_funs) {
     for (auto && symmetry_fun : symmetry_funs) {
-      this->evaluate_sym_fun<Permutation<0, 1, 2>>((symmetry_fun));
-      this->evaluate_sym_fun<Permutation<1, 2, 0>>((symmetry_fun));
-      this->evaluate_sym_fun<Permutation<2, 0, 1>>((symmetry_fun));
+      this->evaluate_sym_fun<Permutation<TripletOrder, 0, 1, 2>>(
+          (symmetry_fun));
+      this->evaluate_sym_fun<Permutation<TripletOrder, 1, 2, 0>>(
+          (symmetry_fun));
+      this->evaluate_sym_fun<Permutation<TripletOrder, 2, 0, 1>>(
+          (symmetry_fun));
 
       if (not this->legacy_behaviour) {
-        this->evaluate_sym_fun<Permutation<2, 1, 0>>((symmetry_fun));
-        this->evaluate_sym_fun<Permutation<1, 0, 2>>((symmetry_fun));
-        this->evaluate_sym_fun<Permutation<0, 2, 1>>((symmetry_fun));
+        this->evaluate_sym_fun<Permutation<TripletOrder, 2, 1, 0>>(
+            (symmetry_fun));
+        this->evaluate_sym_fun<Permutation<TripletOrder, 1, 0, 2>>(
+            (symmetry_fun));
+        this->evaluate_sym_fun<Permutation<TripletOrder, 0, 2, 1>>(
+            (symmetry_fun));
       }
     }
   }
 
 }  // namespace rascal
 
-#endif  // SRC_RASCAL_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_IMPL_HH_
+#endif  // SRC_RASCAL_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARRINELLO_IMPL_HH_

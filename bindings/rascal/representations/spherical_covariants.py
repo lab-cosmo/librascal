@@ -61,7 +61,7 @@ class SphericalCovariants(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
-                 cutoff_function_type="CosineShifted", normalize=True,
+                 cutoff_function_type="ShiftedCosine", normalize=True,
                  radial_basis="GTO",
                  soap_type="LambdaSpectrum", inversion_symmetry=True,
                  lam=0,
@@ -166,7 +166,7 @@ class SphericalCovariants(object):
                          (self.hypers['lam'] % 2) -
                          (np.ceil((self.hypers['max_angular'] + 1 -
                                    self.hypers['lam'])**2 / 2.0) -
-                            (self.hypers['max_angular'] -
+                          (self.hypers['max_angular'] -
                              self.hypers['lam'] + 1)) *
                          (1.0 - self.hypers['lam'] % 2))
                 if (self.hypers['lam'] % 2 == 1):
@@ -182,7 +182,7 @@ class SphericalCovariants(object):
                 return (self.hypers['n_species']**2 *
                         self.hypers['max_radial']**2 *
                         int((2 +
-                               self.hypers['lam'] -
+                             self.hypers['lam'] -
                              3 *
                              self.hypers['lam']**2 +
                              2 *
@@ -190,7 +190,7 @@ class SphericalCovariants(object):
                              4 *
                              self.hypers['lam'] *
                              self.hypers['max_angular']) /
-                              2) *
+                            2) *
                         (2 *
                          self.hypers['lam'] +
                          1))

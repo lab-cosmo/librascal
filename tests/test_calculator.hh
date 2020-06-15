@@ -34,7 +34,7 @@
 #include "test_structure.hh"
 
 #include "rascal/representations/calculator_base.hh"
-// #include "rascal/representations/calculator_behler_parinello.hh"
+// #include "rascal/representations/calculator_behler_parrinello.hh"
 #include "rascal/representations/calculator_sorted_coulomb.hh"
 #include "rascal/representations/calculator_spherical_covariants.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
@@ -119,10 +119,10 @@ namespace rascal {
     std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
-        {{"type", "CosineShifted"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "CosineShifted"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -185,10 +185,10 @@ namespace rascal {
     std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
-        {{"type", "CosineShifted"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "CosineShifted"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -263,10 +263,10 @@ namespace rascal {
     std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
-        {{"type", "CosineShifted"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "CosineShifted"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}},
         {{"type", "RadialScaling"},
@@ -362,10 +362,10 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
-        {{"type", "CosineShifted"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "CosineShifted"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -568,7 +568,7 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
-        {{"type", "CosineShifted"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -606,7 +606,7 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
-        {{"type", "CosineShifted"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -650,7 +650,7 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
     std::vector<json> fc_hypers{
-        {{"type", "CosineShifted"},
+        {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 3.5}, {"unit", "AA"}}},
          {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
 
@@ -1154,13 +1154,13 @@ namespace rascal {
          {"sorting_algorithm", "row_norm"}}};
   };
 
-  // struct MultipleStructureBehlerParinello
+  // struct MultipleStructureBehlerParrinello
   //     : MultipleStructureManagerNLStrictFixture {
   //   using Parent = MultipleStructureManagerNLStrictFixture;
   //   using ManagerTypeHolder_t = typename Parent::ManagerTypeHolder_t;
-  //   using Representation_t = CalculatorBehlerParinello;
-  //   MultipleStructureBehlerParinello() : Parent{} {};
-  //   ~MultipleStructureBehlerParinello() = default;
+  //   using Representation_t = CalculatorBehlerParrinello;
+  //   MultipleStructureBehlerParrinello() : Parent{} {};
+  //   ~MultipleStructureBehlerParrinello() = default;
 
   //   std::vector<json> representation_hypers{
   //       {{"bla", 3.}, {"bla list", "em"}, {"identifier", "name"}}};

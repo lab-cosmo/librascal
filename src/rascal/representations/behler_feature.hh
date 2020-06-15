@@ -33,17 +33,10 @@
 #include "rascal/representations/symmetry_functions.hh"
 #include "rascal/structure_managers/property.hh"
 #include "rascal/utils/json_io.hh"
+#include "rascal/utils/permutation.hh"
 
 namespace rascal {
 
-  enum class RepeatedSpecies {
-    Unknown,    // has not been evaluated yet
-    Not,        // all species in this cluster are unique
-    All,        // all atoms in this cluster are same species
-    FirstTwo,   // the first two atoms of this cluster are of same species
-    SecondTwo,  // the second two atoms of this cluster are of same species
-    OuterTwo    // the first and last atom in this cluster are of same species
-  };
 
   /**
    * A BehlerFeature is a single G function with a single set of parameters
@@ -126,16 +119,23 @@ namespace rascal {
     std::shared_ptr<CutoffFunctionBase> cut_fun;
   };
 
+
+  
+
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
-  class BehlerFeature final : public BehlerFeatureBase<SymFunTypes...> {
+  class BehlerPairFeature final : public BehlerFeatureBase<SymFunTypes...> {
    public:
     using SymmetryFunction_t = SymmetryFunction<MySymFunType>;
     using Parent = BehlerFeatureBase<SymFunTypes...>;
 
+    static constexpr size_t Order{SymmetryFunction_t::Order};
+    static_assert(Order == PairOrder,
+                  "Should only be instantiated for pair symmetry functions");
+
     //! Default constructor
-    BehlerFeature(std::shared_ptr<CutoffFunctionBase> cut_fun,
+    BehlerPairFeature(std::shared_ptr<CutoffFunctionBase> cut_fun,
                   const UnitStyle & unit_style, const json & raw_params)
         : Parent(MySymFunType, cut_fun, SymmetryFunction_t::Order, raw_params),
           sym_fun{unit_style,
@@ -161,19 +161,19 @@ namespace rascal {
     }
 
     //! Copy constructor
-    BehlerFeature(const BehlerFeature & other) = delete;
+    BehlerPairFeature(const BehlerPairFeature & other) = delete;
 
     //! Move constructor
-    BehlerFeature(BehlerFeature && other) = default;
+    BehlerPairFeature(BehlerPairFeature && other) = default;
 
     //! Destructor
-    ~BehlerFeature() = default;
+    ~BehlerPairFeature() = default;
 
     //! Copy assignment operator
-    BehlerFeature & operator=(const BehlerFeature & other) = delete;
+    BehlerPairFeature & operator=(const BehlerPairFeature & other) = delete;
 
     //! Move assignment operator
-    BehlerFeature & operator=(BehlerFeature && other) = default;
+    BehlerPairFeature & operator=(BehlerPairFeature && other) = default;
 
     void init(const UnitStyle & units) final;
 
@@ -188,20 +188,115 @@ namespace rascal {
 
     size_t get_index() const;  // to implement
 
+    /* ---------------------------------------------------------------------- */
     template <RepeatedSpecies RepSpecies, typename Permutation,
               class StructureManager>
     void compute_helper(StructureManager & manager,
                         std::shared_ptr<PropertyBase> output) const;
 
+    /* ---------------------------------------------------------------------- */
     template <RepeatedSpecies RepSpecies, typename Permutation,
               class StructureManager>
-    void compute_helper(StructureManager & manager,
-                        std::shared_ptr<PropertyBase> output,
-                        std::shared_ptr<PropertyBase> output_derivatives) const;
+    void compute_helper(
+        StructureManager & manager, std::shared_ptr<PropertyBase> output,
+        std::shared_ptr<PropertyBase> output_derivatives) const;
 
    protected:
     SymmetryFunction<MySymFunType> sym_fun;
   };
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunctionType MySymFunType,
+            SymmetryFunctionType... SymFunTypes>
+  constexpr size_t  BehlerPairFeature<MySymFunType, SymFunTypes...>::Order;
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunctionType MySymFunType,
+            SymmetryFunctionType... SymFunTypes>
+  class BehlerTripletFeature final : public BehlerFeatureBase<SymFunTypes...> {
+   public:
+    using SymmetryFunction_t = SymmetryFunction<MySymFunType>;
+    using Parent = BehlerFeatureBase<SymFunTypes...>;
+
+    static constexpr size_t Order{SymmetryFunction_t::Order};
+    static_assert(Order == TripletOrder,
+                  "Should only be instantiated for triplet symmetry functions");
+
+    //! Default constructor
+    BehlerTripletFeature(std::shared_ptr<CutoffFunctionBase> cut_fun,
+                  const UnitStyle & unit_style, const json & raw_params)
+        : Parent(MySymFunType, cut_fun, SymmetryFunction_t::Order, raw_params),
+          sym_fun{unit_style,
+                  raw_params.at("params" + canary(raw_params, "params"))} {
+      if (raw_params.at("type").get<std::string>() != get_name(MySymFunType)) {
+        std::stringstream err{};
+        err << "params for symmetry function of type '"
+            << raw_params.at("type").get<std::string>()
+            << "' provided to initialise a symmetry function of type '"
+            << get_name(MySymFunType);
+        throw std::runtime_error(err.str());
+      }
+
+      if (cut_fun->get_cutoff() !=
+          json_io::check_units(unit_style.distance(), raw_params.at("r_cut"))) {
+        std::stringstream err{};
+        err << "Mismatch: the provided cutoff function has a cuttoff radius of "
+            << cut_fun->get_cutoff()
+            << " but the parameters prescribe a cutoff radius of "
+            << raw_params.at("r_cut").at("value").get<double>();
+        throw std::runtime_error(err.str());
+      }
+    }
+
+    //! Copy constructor
+    BehlerTripletFeature(const BehlerTripletFeature & other) = delete;
+
+    //! Move constructor
+    BehlerTripletFeature(BehlerTripletFeature && other) = default;
+
+    //! Destructor
+    ~BehlerTripletFeature() = default;
+
+    //! Copy assignment operator
+    BehlerTripletFeature & operator=(const BehlerTripletFeature & other) = delete;
+
+    //! Move assignment operator
+    BehlerTripletFeature & operator=(BehlerTripletFeature && other) = default;
+
+    void init(const UnitStyle & units) final;
+
+    // template <RepeatedSpecies RepSpecies, class StructureManager>
+    // void compute(StructureManager & manager,
+    //              std::shared_ptr<PropertyBase> output) const;
+
+    // template <RepeatedSpecies RepSpecies, class StructureManager>
+    // void compute(StructureManager & manager,
+    //              std::shared_ptr<PropertyBase> output,
+    //              std::shared_ptr<PropertyBase> output_derivatives) const;
+
+    size_t get_index() const;  // to implement
+
+    /* ---------------------------------------------------------------------- */
+    template <RepeatedSpecies RepSpecies, typename Permutation,
+              class StructureManager>
+    void compute_helper(StructureManager & manager,
+                              std::shared_ptr<PropertyBase> output) const;
+
+    /* ---------------------------------------------------------------------- */
+    template <RepeatedSpecies RepSpecies, typename Permutation,
+              class StructureManager>
+    void compute_helper(
+        StructureManager & manager, std::shared_ptr<PropertyBase> output,
+        std::shared_ptr<PropertyBase> output_derivatives) const;
+
+   protected:
+    SymmetryFunction<MySymFunType> sym_fun;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunctionType MySymFunType,
+            SymmetryFunctionType... SymFunTypes>
+  constexpr size_t  BehlerTripletFeature<MySymFunType, SymFunTypes...>::Order;
 
 }  // namespace rascal
 #include "behler_feature_impl.hh"

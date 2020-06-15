@@ -37,6 +37,26 @@ namespace rascal {
   struct BehlerFeatureBase<SymFunTypes...>::SymFunctionsVTable {};
 
   /* ---------------------------------------------------------------------- */
+  template <size_t Order, SymmetryFunctionType Head,
+            SymmetryFunctionType... SymFunTypes>
+  struct BehlerFeatureOrderSelector {};
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunctionType Head, SymmetryFunctionType... SymFunTypes>
+  struct BehlerFeatureOrderSelector<PairOrder, Head, SymFunTypes...> {
+    using type = BehlerPairFeature<Head, SymFunTypes...>;
+  };
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunctionType Head, SymmetryFunctionType... SymFunTypes>
+  struct BehlerFeatureOrderSelector<TripletOrder, Head, SymFunTypes...> {
+    using type = BehlerTripletFeature<Head, SymFunTypes...>;
+  };
+
+  template <size_t Order, SymmetryFunctionType Head,
+            SymmetryFunctionType... SymFunTypes>
+  using BehlerFeatureOrderSelector_t =
+      typename BehlerFeatureOrderSelector<Order, Head, SymFunTypes...>::type;
+
+  /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType... SymFunTypes>
   template <SymmetryFunctionType Head, SymmetryFunctionType... Tail>
   struct BehlerFeatureBase<SymFunTypes...>::SymFunctionsVTable<Head, Tail...> {
@@ -45,9 +65,10 @@ namespace rascal {
     static void compute(const BehlerFeatureBase & behler_feature,
                         StructureManager & manager, PropertyPtr... outputs) {
       if (behler_feature.sym_fun_type == Head) {
-        auto & feature{
-            dynamic_cast<const BehlerFeature<Head, SymFunTypes...> &>(
-                behler_feature)};
+        constexpr auto Order{SymmetryFunction<Head>::Order};
+        using Feature_t =
+            BehlerFeatureOrderSelector_t<Order, Head, SymFunTypes...>;
+        auto & feature{dynamic_cast<const Feature_t &>(behler_feature)};
         feature.compute_helper(manager, outputs...);
       } else {
         SymFunctionsVTable<Tail...>::template compute<RepSpecies, Permutation>(
@@ -68,9 +89,10 @@ namespace rascal {
     static void compute(const BehlerFeatureBase & behler_feature,
                         StructureManager & manager, PropertyPtr... outputs) {
       if (behler_feature.sym_fun_type == Head) {
-        auto & feature{
-            dynamic_cast<const BehlerFeature<Head, SymFunTypes...> &>(
-                behler_feature)};
+        constexpr auto Order{SymmetryFunction<Head>::Order};
+        using Feature_t =
+            BehlerFeatureOrderSelector_t<Order, Head, SymFunTypes...>;
+        auto & feature{dynamic_cast<const Feature_t &>(behler_feature)};
         feature.template compute_helper<RepSpecies, Permutation>(manager,
                                                                  outputs...);
       } else {
@@ -110,72 +132,48 @@ namespace rascal {
             SymmetryFunctionType... SymFunTypes>
   template <RepeatedSpecies RepSpecies, typename Permutation,
             class StructureManager>
-  void BehlerFeature<MySymFunType, SymFunTypes...>::compute_helper(
+  void BehlerPairFeature<MySymFunType, SymFunTypes...>::compute_helper(
       StructureManager & manager, std::shared_ptr<PropertyBase> output) const {
-    auto & cutoffs{this->cut_fun->get_value(manager)};
+    static_assert(Permutation::Size == Order,
+                  "Permutation size needs to equal cluster order");
+    auto & cutoffs{this->cut_fun->get_pair_value(manager)};
 
     // eval
     using Output_t = Property<double, AtomOrder, StructureManager>;
     Output_t & fun_vals{dynamic_cast<Output_t &>(*output)};
     auto & pair_distances{manager.get_distance()};
-    // auto & triplet_distances{}
-
-    auto & neigh_to_i_atom{
-        manager
-            .template get_neighbours_to_i_atoms<SymmetryFunction_t::Order>()};
 
     fun_vals.resize();
-    switch (SymmetryFunction_t::Order) {
-    case PairOrder: {
-      for (auto && atom : manager) {
-        for (auto && pair : atom.pairs()) {
-          // compute the increment to the G function value
-          auto && G_incr{this->sym_fun.f_sym(pair_distances[pair]) *
-                         cutoffs[pair]};
 
-          auto && atom_cluster_indices{neigh_to_i_atom[pair]};
-          auto && i_atom{manager[atom_cluster_indices(Permutation::leading())]};
+    auto & neigh_to_i_atom{
+        manager.template get_neighbours_to_i_atoms<PairOrder>()};
+    for (auto && atom : manager) {
+      for (auto && pair : atom.pairs()) {
+        // compute the increment to the G function value
+        auto && G_incr{this->sym_fun.f_sym(pair_distances[pair]) *
+                       cutoffs[pair]};
 
-          switch (RepSpecies) {
-          case RepeatedSpecies::Not: {
-            fun_vals[i_atom] += G_incr;
-            break;
-          }
+        auto && atom_cluster_indices{neigh_to_i_atom[pair]};
+        auto && i_atom{manager[atom_cluster_indices(Permutation::leading())]};
 
-          case RepeatedSpecies::All: {
-            auto && j_atom{
-                manager[atom_cluster_indices(Permutation::second())]};
-            fun_vals[i_atom] += G_incr;
-            fun_vals[j_atom] += G_incr;
-            break;
-          }
+        switch (RepSpecies) {
+        case RepeatedSpecies::Not: {
+          fun_vals[i_atom] += G_incr;
+          break;
+        }
 
-          default:
-            throw std::runtime_error("Unknown species repetition pattern");
-            break;
-          }
+        case RepeatedSpecies::All: {
+          auto && j_atom{manager[atom_cluster_indices(Permutation::second())]};
+          fun_vals[i_atom] += G_incr;
+          fun_vals[j_atom] += G_incr;
+          break;
+        }
+
+        default:
+          throw std::runtime_error("Unknown species repetition pattern");
+          break;
         }
       }
-      break;
-    }
-    case TripletOrder: {
-      // get triplet distances
-      // get precomputed cos_theta
-      // calc G_incr
-      auto && G_incr{0};
-      if (G_incr != 0) {
-        std::cout << std::endl;
-      }
-      // get i/j atoms
-      // sum up depending on species repetition (3 permutations?)
-      throw std::runtime_error("Not yet implemented");
-      break;
-    }
-    default:
-      std::stringstream err{};
-      err << "unknown symmetry function order " << SymmetryFunction_t::Order;
-      throw std::runtime_error(err.str());
-      break;
     }
   }
 
@@ -184,7 +182,116 @@ namespace rascal {
             SymmetryFunctionType... SymFunTypes>
   template <RepeatedSpecies RepSpecies, typename Permutation,
             class StructureManager>
-  void BehlerFeature<MySymFunType, SymFunTypes...>::compute_helper(
+  void BehlerTripletFeature<MySymFunType, SymFunTypes...>::compute_helper(
+      StructureManager & manager, std::shared_ptr<PropertyBase> output) const {
+    static_assert(Permutation::Size == Order,
+                  "Permutation size needs to equal cluster order");
+
+    auto & triplet_cutoffs{this->cut_fun->get_triplet_value(manager)};
+
+    // eval
+    using Output_t = Property<double, AtomOrder, StructureManager>;
+    Output_t & fun_vals{dynamic_cast<Output_t &>(*output)};
+    auto & triplet_distances{manager.get_triplet_distance()};
+    auto & cos_angles{get_cos_angles(manager)};
+
+    fun_vals.resize();
+    auto & neigh_to_i_atom{
+        manager.template get_neighbours_to_i_atoms<TripletOrder>()};
+
+    auto orderings{Permutation::template get_triplet_orderings<RepSpecies>()};
+    for (auto && atom : manager) {
+      for (auto && triplet : atom.triplets()) {
+        auto && trip_dist{triplet_distances[triplet]};
+        auto && trip_cutoffs{triplet_cutoffs[triplet]};
+        auto && trip_cos{cos_angles[triplet]};
+        auto && atom_cluster_indices{neigh_to_i_atom[triplet]};
+
+        for (auto && ordering : orderings) {
+          auto && G_incr{
+              this->sym_fun.f_sym(trip_cos, trip_dist, trip_cutoffs, ordering)};
+          auto && i_atom{manager[atom_cluster_indices(ordering[0])]};
+          fun_vals[i_atom] += G_incr;
+        }
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunctionType MySymFunType,
+            SymmetryFunctionType... SymFunTypes>
+  template <RepeatedSpecies RepSpecies, typename Permutation,
+            class StructureManager>
+  void BehlerPairFeature<MySymFunType, SymFunTypes...>::compute_helper(
+      StructureManager & manager, std::shared_ptr<PropertyBase> output_values,
+      std::shared_ptr<PropertyBase> output_derivatives) const {
+    auto && cutoff_tup{this->cut_fun->get_pair_derivative(manager)};
+    auto & cutoff_values{std::get<0>(cutoff_tup)};
+    auto & cutoff_derivatives{std::get<1>(cutoff_tup)};
+
+    // eval
+    using OutputVal_t = Property<double, AtomOrder, StructureManager>;
+    OutputVal_t & fun_vals{dynamic_cast<OutputVal_t &>(*output_values)};
+
+    constexpr auto Order{SymmetryFunction_t::Order};
+    using OutputDerivative_t =
+        Property<double, Order, StructureManager, nb_distances(Order)>;
+    OutputDerivative_t & fun_derivatives{
+        dynamic_cast<OutputDerivative_t &>(*output_derivatives)};
+
+    auto & pair_distances{manager.get_distance()};
+
+    auto & neigh_to_i_atom{
+        manager
+            .template get_neighbours_to_i_atoms<SymmetryFunction_t::Order>()};
+
+    fun_vals.resize();
+    fun_derivatives.resize();
+    for (auto && atom : manager) {
+      for (auto && pair : atom.pairs()) {
+        // compute the increment to the G function value
+        auto && sym_fun_tup{this->sym_fun.df_sym(pair_distances[pair])};
+        double & sym_fun_value{std::get<0>(sym_fun_tup)};
+        double & sym_fun_derivative{std::get<1>(sym_fun_tup)};
+        double & cut_fun_value{cutoff_values[pair]};
+        double & cut_fun_derivative{cutoff_derivatives[pair]};
+
+        auto && G_incr{sym_fun_value * cut_fun_value};
+
+        auto && dG_incr{(sym_fun_value * cut_fun_derivative +
+                         sym_fun_derivative * cut_fun_value)};
+
+        auto && atom_cluster_indices{neigh_to_i_atom[pair]};
+        auto && i_atom{manager[atom_cluster_indices(Permutation::leading())]};
+
+        fun_derivatives[pair] = dG_incr;
+        switch (RepSpecies) {
+        case RepeatedSpecies::Not: {
+          fun_vals[i_atom] += G_incr;
+          break;
+        }
+
+        case RepeatedSpecies::All: {
+          fun_vals[i_atom] += G_incr;
+          auto && j_atom{manager[atom_cluster_indices(Permutation::second())]};
+          fun_vals[j_atom] += G_incr;
+          break;
+        }
+
+        default:
+          throw std::runtime_error("Unknown species repetition pattern");
+          break;
+        }
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunctionType MySymFunType,
+            SymmetryFunctionType... SymFunTypes>
+  template <RepeatedSpecies RepSpecies, typename Permutation,
+            class StructureManager>
+  void BehlerTripletFeature<MySymFunType, SymFunTypes...>::compute_helper(
       StructureManager & manager, std::shared_ptr<PropertyBase> output_values,
       std::shared_ptr<PropertyBase> output_derivatives) const {
     auto && cutoff_tup{this->cut_fun->get_derivative(manager)};
@@ -209,101 +316,56 @@ namespace rascal {
 
     fun_vals.resize();
     fun_derivatives.resize();
-    switch (SymmetryFunction_t::Order) {
-    case PairOrder: {
-      for (auto && atom : manager) {
-        for (auto && pair : atom.pairs()) {
-          // compute the increment to the G function value
-          auto && sym_fun_tup{this->sym_fun.df_sym(pair_distances[pair])};
-          double & sym_fun_value{std::get<0>(sym_fun_tup)};
-          double & sym_fun_derivative{std::get<1>(sym_fun_tup)};
-          double & cut_fun_value{cutoff_values[pair]};
-          double & cut_fun_derivative{cutoff_derivatives[pair]};
 
-          auto && G_incr{sym_fun_value * cut_fun_value};
+    throw std::runtime_error("Not yet implemented");
+  }
 
-          auto && dG_incr{(sym_fun_value * cut_fun_derivative +
-                           sym_fun_derivative * cut_fun_value)};
+  /* ---------------------------------------------------------------------- */
+  template <SymmetryFunctionType MySymFunType,
+            SymmetryFunctionType... SymFunTypes>
+  void BehlerPairFeature<MySymFunType, SymFunTypes...>::init(
+      const UnitStyle & /*units*/) {
+    // if (this->is_initialised) {
+    //   throw std::runtime_error("double initialisation");
+    // }
+    // // counting the number of parameters to store per cutoff
+    // for (const auto & param : this->raw_params) {
+    //   auto && r_cut{param.at("r_cut").template get<double>()};
+    //   nb_param_per_cutoff[r_cut]++;
+    // }
 
-          auto && atom_cluster_indices{neigh_to_i_atom[pair]};
-          auto && i_atom{manager[atom_cluster_indices(Permutation::leading())]};
+    // // allocate storage
+    // for (const auto & key_val : nb_param_per_cutoff) {
+    //   auto && r_cut{key_val.first};
+    //   this->params[r_cut].resize(SymmetryFun<SymFunType>::NbParams,
+    //                              nb_param_per_cutoff[r_cut]);
+    //   this->params[r_cut].setZero();
+    // }
 
-          fun_derivatives[pair] = dG_incr;
-          switch (RepSpecies) {
-          case RepeatedSpecies::Not: {
-            fun_vals[i_atom] += G_incr;
-            break;
-          }
+    // // store params in storage
+    // std::map<double, size_t> nb_param_counter{};
+    // for (auto && param : this->raw_params) {
+    //   auto && r_cut{param.at("r_cut").template get<double>()};
 
-          case RepeatedSpecies::All: {
-            fun_vals[i_atom] += G_incr;
-            auto && j_atom{
-                manager[atom_cluster_indices(Permutation::second())]};
-            fun_vals[j_atom] += G_incr;
-            break;
-          }
+    //   this->params[r_cut].col(nb_param_counter[r_cut]++) =
+    //       SymmetryFun<SymFunType>::read(param, units);
+    // }
 
-          default:
-            throw std::runtime_error("Unknown species repetition pattern");
-            break;
-          }
-        }
-      }
-      break;
-      }
-      case TripletOrder: {
-        throw std::runtime_error("Not yet implemented");
-        break;
-      }
-      default:
-        std::stringstream err{};
-        err << "unknown symmetry function order " << SymmetryFunction_t::Order;
-        throw std::runtime_error(err.str());
-        break;
-      }
-    }
+    // // determine which species repetition scenario we are in
+    // for (auto && species : param.at("species").template get<std::string>())
+    // {
+    //   this->species_combo
+    // }
+    // auto species{};
 
-    /* ---------------------------------------------------------------------- */
-    template <SymmetryFunctionType MySymFunType,
-              SymmetryFunctionType... SymFunTypes>
-    void BehlerFeature<MySymFunType, SymFunTypes...>::init(
-        const UnitStyle & /*units*/) {
-      // if (this->is_initialised) {
-      //   throw std::runtime_error("double initialisation");
-      // }
-      // // counting the number of parameters to store per cutoff
-      // for (const auto & param : this->raw_params) {
-      //   auto && r_cut{param.at("r_cut").template get<double>()};
-      //   nb_param_per_cutoff[r_cut]++;
-      // }
+    // this->is_initialised = true;
+  }
+  template <SymmetryFunctionType MySymFunType,
+            SymmetryFunctionType... SymFunTypes>
+  void BehlerTripletFeature<MySymFunType, SymFunTypes...>::init(
+      const UnitStyle & /*units*/) {
+  }
 
-      // // allocate storage
-      // for (const auto & key_val : nb_param_per_cutoff) {
-      //   auto && r_cut{key_val.first};
-      //   this->params[r_cut].resize(SymmetryFun<SymFunType>::NbParams,
-      //                              nb_param_per_cutoff[r_cut]);
-      //   this->params[r_cut].setZero();
-      // }
-
-      // // store params in storage
-      // std::map<double, size_t> nb_param_counter{};
-      // for (auto && param : this->raw_params) {
-      //   auto && r_cut{param.at("r_cut").template get<double>()};
-
-      //   this->params[r_cut].col(nb_param_counter[r_cut]++) =
-      //       SymmetryFun<SymFunType>::read(param, units);
-      // }
-
-      // // determine which species repetition scenario we are in
-      // for (auto && species : param.at("species").template get<std::string>())
-      // {
-      //   this->species_combo
-      // }
-      // auto species{};
-
-      // this->is_initialised = true;
-    }
-
-  }  // namespace rascal
+}  // namespace rascal
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_

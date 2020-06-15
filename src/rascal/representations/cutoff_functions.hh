@@ -114,7 +114,7 @@ namespace rascal {
      */
     enum class CutoffFunctionType {
       Cosine,
-      CosineShifted,
+      ShiftedCosine,
       RadialScaling,
       End_
     };
@@ -223,7 +223,7 @@ namespace rascal {
     };
 
     template <>
-    class CutoffFunction<internal::CutoffFunctionType::CosineShifted>
+    class CutoffFunction<internal::CutoffFunctionType::ShiftedCosine>
         : public CutoffFunctionBase {
      public:
       using Hypers_t = CutoffFunctionBase::Hypers_t;
@@ -249,7 +249,7 @@ namespace rascal {
       std::string make_identifier() const {
         std::stringstream id{};
         id.precision(14);
-        id << "CosineShifted_" << this->cutoff << "_" << this->smooth_width;
+        id << "ShiftedCosine_" << this->cutoff << "_" << this->smooth_width;
         return id.str();
       }
       //! keep the hypers
@@ -390,9 +390,9 @@ namespace rascal {
     inline void
     CutoffFunctionBase::compute_helper(StructureManager & manager) const {
       switch (CutFunType) {
-      case CutoffFunctionType::CosineShifted: {
+      case CutoffFunctionType::ShiftedCosine: {
         auto & cutoff_function{static_cast<
-            const CutoffFunction<CutoffFunctionType::CosineShifted> &>(*this)};
+            const CutoffFunction<CutoffFunctionType::ShiftedCosine> &>(*this)};
         cutoff_function.compute(manager);
         break;
       }

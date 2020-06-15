@@ -32,16 +32,57 @@
 
 namespace rascal {
 
-  template <size_t Size, size_t First, size_t Second, size_t Third = Size - 1>
+  /**
+   * Refers to the pattern of repeated species in the permuted cluster, as it is
+   * evaluated by the symmetry function
+   */
+  enum class RepeatedSpecies {
+    Unknown,    // has not been evaluated yet
+    Not,        // all species in this cluster are unique
+    All,        // all atoms in this cluster are same species
+    FirstTwo,   // the first two atoms of this cluster are of same species
+    SecondTwo,  // the second two atoms of this cluster are of same species
+    OuterTwo    // the first and last atom in this cluster are of same species
+  };
+
+  constexpr size_t nb_triplet_orderings(const RepeatedSpecies rep) {
+    switch (rep) {
+    case RepeatedSpecies::Not: {
+      return 1;
+      break;
+    }
+    case RepeatedSpecies::FirstTwo: {
+      // fall-through
+    }
+    case RepeatedSpecies::OuterTwo: {
+      return 2;
+      break;
+    }
+    case RepeatedSpecies::SecondTwo: {
+      return 0;  // yes, this case has nothing to compute
+      break;
+    }
+    case RepeatedSpecies::All: {
+      return 3;
+      break;
+    }
+    default: {
+      throw std::runtime_error("Unknown species repetition");
+    }
+    }
+  }
+
+  template <size_t Size_, size_t First, size_t Second, size_t Third = Size_ - 1>
   struct Permutation {
-    static_assert((First != Second) && (Size > First) && (Size > Second) &&
-                      (Size > Third) &&
-                      ((Size == 2) ||
-                       ((Size == 3) && (Second != Third) && (First != Third))),
+    static_assert((First != Second) && (Size_ > First) && (Size_ > Second) &&
+                      (Size_ > Third) &&
+                      ((Size_ == 2) ||
+                       ((Size_ == 3) && (Second != Third) && (First != Third))),
                   "Not a valid  pair or triplet permutation");
     static constexpr int leading() { return First; }
     static constexpr int second() { return Second; }
-    template <bool IsTriplet = (Size == 3)>
+    static constexpr size_t Size{Size_};
+    template <bool IsTriplet = (Size_ == 3)>
     static constexpr std::enable_if_t<IsTriplet, int> third() {
       return Third;
     }
@@ -56,12 +97,12 @@ namespace rascal {
       return manager.get_atom_index(cluster.get_atom_tag_list(second()));
     }
 
-    template <class Derived, bool IsPair = (Size == PairOrder),
+    template <class Derived, bool IsPair = (Size_ == PairOrder),
               std::enable_if_t<IsPair, int> = 0>
     static auto
     flip_direction(const Eigen::MatrixBase<Derived> & direction_vector)
         -> decltype(1 * direction_vector) {
-      static_assert(Size == PairOrder, "IsPair is a SFINAE, don't touch");
+      static_assert(Size_ == PairOrder, "IsPair is a SFINAE, don't touch");
       if (First > Second) {
         return -1 * direction_vector;
       } else {
@@ -70,12 +111,70 @@ namespace rascal {
     }
 
     template <typename StructureManager, typename Cluster,
-              bool IsTriplet = (Size == 3)>
+              bool IsTriplet = (Size_ == 3)>
     static std::enable_if_t<IsTriplet, int> third(StructureManager & manager,
                                                   const Cluster & cluster) {
       return manager.get_atom_index(cluster.get_atom_tag_list(third()));
     }
+
+    template <RepeatedSpecies RepSpecies>
+    constexpr static std::array<std::array<size_t, 3>,
+                                nb_triplet_orderings(RepSpecies)>
+    get_triplet_orderings() {
+      std::array<std::array<size_t, 3>, nb_triplet_orderings(RepSpecies)>
+          retval{};
+
+      switch (RepSpecies) {
+      case RepeatedSpecies::Not: {
+        retval[0][0] = leading();
+        retval[0][1] = second();
+        retval[0][2] = third();
+        break;
+      }
+      case RepeatedSpecies::FirstTwo: {
+        retval[0][0] = leading();
+        retval[0][1] = second();
+        retval[0][2] = third();
+
+        retval[1][0] = second();
+        retval[1][1] = leading();
+        retval[1][2] = third();
+        break;
+      }
+      case RepeatedSpecies::OuterTwo: {
+        retval[0][0] = leading();
+        retval[0][1] = second();
+        retval[0][2] = third();
+
+        retval[1][0] = third();
+        retval[1][1] = second();
+        retval[1][2] = leading();
+        break;
+      }
+      case RepeatedSpecies::All: {
+        retval[0][0] = leading();
+        retval[0][1] = second();
+        retval[0][2] = third();
+
+        retval[1][0] = second();
+        retval[1][1] = third();
+        retval[1][2] = leading();
+
+        retval[1][0] = third();
+        retval[1][1] = leading();
+        retval[1][2] = second();
+        break;
+      }
+      default:
+        throw std::runtime_error("Unknown species repetition");
+        break;
+      }
+
+      return retval;
+    }
   };
+  template <size_t Size_, size_t First, size_t Second, size_t Third>
+  constexpr size_t Permutation<Size_, First, Second, Third>::Size;
 
 }  // namespace rascal
 

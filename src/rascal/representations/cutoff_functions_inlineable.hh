@@ -54,7 +54,12 @@ namespace rascal {
   class CutoffFunctionBase {
    public:
     template <typename StructureManager>
-    using Property_t = Property<double, PairOrder, StructureManager>;
+    using PairProperty_t =
+        Property<double, PairOrder, StructureManager, nb_distances(PairOrder)>;
+
+    template <typename StructureManager>
+    using TripletProperty_t = Property<double, TripletOrder, StructureManager,
+                                       nb_distances(TripletOrder)>;
 
     //! Constructor
     explicit CutoffFunctionBase(const InlCutoffFunctionType & cut_fun_type,
@@ -73,10 +78,18 @@ namespace rascal {
 
     using Hypers_t = CalculatorBase::Hypers_t;
 
-    //! Main worker (raison d'être)
+    //! Main worker (raison d'être). Evaluates cutoff function for all pairs
     template <class StructureManager>
     inline void compute(StructureManager & manager,
                         const Evaluation & evaluation) const;
+
+    /**
+     * use evaluated cutoff functions and fill triplet properties. Order is
+     * f_c(r_ij), f_c(r_jk), f_c(r_ki)
+     */
+    template <class StructureManager>
+    inline void compute_triplet(StructureManager & manager,
+                                const Evaluation & evaluation) const;
 
     /**
      * The identifier string must provide a unique name for a property to
@@ -92,8 +105,8 @@ namespace rascal {
      * fresh
      */
     template <typename StructureManager>
-    inline Property_t<StructureManager> &
-    get_value(StructureManager & manager) const;
+    inline PairProperty_t<StructureManager> &
+    get_pair_value(StructureManager & manager) const;
 
     /**
      * returns the property with cutoff functions values and derivatives,
@@ -101,23 +114,56 @@ namespace rascal {
      */
     template <typename StructureManager>
     std::tuple<
-        Property_t<StructureManager> &,
-        Property_t<StructureManager> &> inline get_derivative(StructureManager &
-                                                                  manager)
+        PairProperty_t<StructureManager> &,
+        PairProperty_t<
+            StructureManager> &> inline get_pair_derivative(StructureManager &
+                                                                manager) const;
+
+    /**
+     * returns the property with cutoff functions value, guaranteed to be
+     * fresh
+     */
+    template <typename StructureManager>
+    inline TripletProperty_t<StructureManager> &
+    get_triplet_value(StructureManager & manager) const;
+
+    /**
+     * returns the property with cutoff functions values and derivatives,
+     * guaranteed to be fresh
+     */
+    template <typename StructureManager>
+    std::tuple<
+        TripletProperty_t<StructureManager> &,
+        TripletProperty_t<
+            StructureManager> &> inline get_triplet_derivative(StructureManager &
+                                                                   manager)
         const;
 
     const double & get_cutoff() const { return this->cutoff; }
 
    protected:
     template <typename StructureManager>
-    Property_t<StructureManager> &
-    get_property(StructureManager & manager,
-                 const Evaluation & evaluation) const;
+    PairProperty_t<StructureManager> &
+    get_pair_property(StructureManager & manager,
+                      const Evaluation & evaluation) const;
+
+    template <typename StructureManager>
+    TripletProperty_t<StructureManager> &
+    get_triplet_property(StructureManager & manager,
+                         const Evaluation & evaluation) const;
     InlCutoffFunctionType cut_fun_type;
     //! Main worker (raison d'être)
     template <InlCutoffFunctionType CutFunType, class StructureManager>
     inline void compute_helper(StructureManager & manager,
                                const Evaluation & evaluation) const;
+    /**
+     * use evaluated cutoff functions and fill triplet properties. Order is
+     * f_c(r_ij), f_c(r_jk), f_c(r_ki)
+     */
+    template <InlCutoffFunctionType CutFunType, class StructureManager>
+    inline void compute_triplet_helper(StructureManager & manager,
+                                       const Evaluation & evaluation) const;
+
     //! cutoff radii
     double cutoff;
   };
@@ -180,32 +226,151 @@ namespace rascal {
     }
   }
 
+  template <class StructureManager>
+  void
+  CutoffFunctionBase::compute_triplet(StructureManager & manager,
+                                      const Evaluation & evaluation) const {
+    switch (this->cut_fun_type) {
+    case InlCutoffFunctionType::Cosine: {
+      this->template compute_triplet_helper<InlCutoffFunctionType::Cosine>(
+          manager, evaluation);
+      break;
+    }
+    default:
+      throw std::runtime_error("Unknown cutoff function type");
+      break;
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template <InlCutoffFunctionType CutFunType, class StructureManager>
+  void CutoffFunctionBase::compute_triplet_helper(
+      StructureManager & manager, const Evaluation & evaluation) const {
+    // property we want to fill/update
+    auto & triplet_property{this->get_triplet_property(manager, evaluation)};
+    if (triplet_property.is_updated()) {
+      return;
+    }
+    auto & typed_this{dynamic_cast<const CutoffFunction<CutFunType> &>(*this)};
+    // (compute and) fetch preexisting cutoff funtion values for all pairs
+    auto && pair_cutoffs{this->get_pair_value(manager)};
+    // get the pairs in each triplet
+    auto && pairs{manager.template get_sub_clusters<PairOrder, TripletOrder>()};
+
+    // (compute and) fetch preexisting pair distances in all triplets
+    auto && triplet_distances{manager.get_triplet_distance()};
+
+    switch (evaluation) {
+    case Evaluation::Value: {
+      for (auto && atom : manager) {
+        for (auto && triplet : atom.triplets()) {
+          // fetch array to fill
+          auto & cutoffs{triplet_property[triplet]};
+
+          // reuse precalculated cutoff values
+          auto & pair_ij{pairs[triplet][0]};
+          auto & pair_ik{pairs[triplet][1]};
+          cutoffs(0) = pair_cutoffs[pair_ij];
+          cutoffs(2) = pair_cutoffs[pair_ik];
+
+          // compute value for missing pair (might not exist in neighbour list)
+          auto && dist_ki{triplet_distances(2)};
+          auto && cutoff_ki{typed_this.f_c(dist_ki)};
+          cutoffs(1) = cutoff_ki;
+        }
+      }
+      triplet_property.set_updated_status(true);
+      break;
+    }
+    case Evaluation::Derivative: {
+      auto && pair_cutoff_derivatives{this->get_pair_derivative(manager)};
+      // property we want to fill/update
+      auto & triplet_derivatives_property{
+          this->get_triplet_property(manager, evaluation)};
+      // create or fetch triplet_derivative property
+      for (auto && atom : manager) {
+        for (auto && triplet : atom.triplets()) {
+          // fetch arrays to fill
+          auto & cutoff_values{triplet_property[triplet]};
+          auto & cutoff_derivatives{triplet_derivatives_property[triplet]};
+
+          // reuse precalculated cutoff values
+          auto & pair_ij{pairs[triplet][0]};
+          auto & pair_ik{pairs[triplet][1]};
+
+          cutoff_values(0) = pair_cutoffs[pair_ij];
+          cutoff_values(2) = pair_cutoffs[pair_ik];
+
+          cutoff_derivatives(0) = pair_cutoff_derivatives[pair_ij];
+          cutoff_derivatives(2) = pair_cutoff_derivatives[pair_ik];
+
+          // compute value for missing pair (might not exist in neighbour list)
+          auto && dist_ki{triplet_distances(2)};
+          auto && cutoff_ki{typed_this.df_c(dist_ki)};
+          cutoff_values(1) = cutoff_ki[0];
+          cutoff_derivatives(1) = cutoff_ki[1];
+        }
+        break;
+      }
+      triplet_property.set_updated_status(true);
+      triplet_derivatives_property.set_updated_status(true);
+    }
+    default: {
+      throw std::runtime_error("unknown evaluation type");
+      break;
+    }
+    }
+  }
+
   /* ---------------------------------------------------------------------- */
   template <typename StructureManager>
-  auto CutoffFunctionBase::get_value(StructureManager & manager) const
-      -> Property_t<StructureManager> & {
+  auto CutoffFunctionBase::get_pair_value(StructureManager & manager) const
+      -> PairProperty_t<StructureManager> & {
     constexpr Evaluation EvalKind{Evaluation::Value};
     this->compute(manager, EvalKind);
-    return this->get_property(manager, EvalKind);
+    return this->get_pair_property(manager, EvalKind);
   };
 
   /* ---------------------------------------------------------------------- */
   template <typename StructureManager>
-  auto CutoffFunctionBase::get_derivative(StructureManager & manager) const
-      -> std::tuple<Property_t<StructureManager> &,
-                    Property_t<StructureManager> &> {
+  auto CutoffFunctionBase::get_pair_derivative(StructureManager & manager) const
+      -> std::tuple<PairProperty_t<StructureManager> &,
+                    PairProperty_t<StructureManager> &> {
     this->compute(manager, Evaluation::Derivative);
-    return std::tuple<Property_t<StructureManager> &,
-                      Property_t<StructureManager> &>{
-        this->get_property(manager, Evaluation::Value),
-        this->get_property(manager, Evaluation::Derivative)};
+    return std::tuple<PairProperty_t<StructureManager> &,
+                      PairProperty_t<StructureManager> &>{
+        this->get_pair_property(manager, Evaluation::Value),
+        this->get_pair_property(manager, Evaluation::Derivative)};
   };
 
   /* ---------------------------------------------------------------------- */
   template <typename StructureManager>
-  auto CutoffFunctionBase::get_property(StructureManager & manager,
+  auto CutoffFunctionBase::get_triplet_value(StructureManager & manager) const
+      -> TripletProperty_t<StructureManager> & {
+    constexpr Evaluation EvalKind{Evaluation::Value};
+    this->compute(manager, EvalKind);
+    return this->get_triplet_property(manager, EvalKind);
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <typename StructureManager>
+  auto
+  CutoffFunctionBase::get_triplet_derivative(StructureManager & manager) const
+      -> std::tuple<TripletProperty_t<StructureManager> &,
+                    TripletProperty_t<StructureManager> &> {
+    this->compute(manager, Evaluation::Derivative);
+    return std::tuple<TripletProperty_t<StructureManager> &,
+                      TripletProperty_t<StructureManager> &>{
+        this->get_triplet_property(manager, Evaluation::Value),
+        this->get_triplet_property(manager, Evaluation::Derivative)};
+  };
+
+  /* ---------------------------------------------------------------------- */
+  template <typename StructureManager>
+  auto
+  CutoffFunctionBase::get_pair_property(StructureManager & manager,
                                         const Evaluation & evaluation) const
-      -> Property_t<StructureManager> & {
+      -> PairProperty_t<StructureManager> & {
     // check whether the property already exists (assuming everyone computes
     // either values or both values and derivatives)
     const std::string value_identifier{this->get_identifier() + "_value"};
@@ -228,7 +393,42 @@ namespace rascal {
     constexpr bool Validate{false}, AllowCreation{true};
 
     auto & property{
-        *manager.template get_property<Property_t<StructureManager>>(
+        *manager.template get_property<PairProperty_t<StructureManager>>(
+            identifier, Validate, AllowCreation)};
+
+    return property;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  template <typename StructureManager>
+  auto
+  CutoffFunctionBase::get_triplet_property(StructureManager & manager,
+                                           const Evaluation & evaluation) const
+      -> TripletProperty_t<StructureManager> & {
+    // check whether the property already exists (assuming everyone computes
+    // either values or both values and derivatives)
+    const std::string value_identifier{this->get_identifier() +
+                                       "_triplet_value"};
+    const std::string derivative_identifier{this->get_identifier() +
+                                            "_triplet_derivative"};
+    auto & identifier{evaluation == Evaluation::Derivative
+                          ? derivative_identifier
+                          : value_identifier};
+
+    bool property_at_wrong_layer{
+        manager.is_property_in_stack(identifier) and
+        not manager.is_property_in_current_level(identifier)};
+    if (property_at_wrong_layer) {
+      // complain and die
+      throw std::runtime_error(
+          "cannot handle the situation where the property isn't registered "
+          "at the same stack layer as this cutoff function");
+    }
+
+    constexpr bool Validate{false}, AllowCreation{true};
+
+    auto & property{
+        *manager.template get_property<TripletProperty_t<StructureManager>>(
             identifier, Validate, AllowCreation)};
 
     return property;
@@ -239,31 +439,32 @@ namespace rascal {
   inline void
   CutoffFunctionBase::compute_helper(StructureManager & manager,
                                      const Evaluation & evaluation) const {
-    auto & typed_this{static_cast<const CutoffFunction<CutFunType> &>(*this)};
-    auto & property{this->get_property(manager, evaluation)};
+    auto & typed_this{dynamic_cast<const CutoffFunction<CutFunType> &>(*this)};
+    auto & property{this->get_pair_property(manager, evaluation)};
     if (property.is_updated()) {
       return;
     }
 
     property.resize();
+    auto && distances{manager.get_distance()};
 
     switch (evaluation) {
     case Evaluation::Value: {
       for (auto && atom : manager) {
         for (auto && pair : atom.pairs()) {
-          property[pair] = typed_this.f_c(manager.get_distance(pair));
+          property[pair] = typed_this.f_c(distances[pair]);
         }
       }
       property.set_updated_status(true);
       break;
     }
     case Evaluation::Derivative: {
-      auto & value_property{this->get_value(manager)};
+      auto & value_property{this->get_pair_value(manager)};
       value_property.resize();
 
       for (auto && atom : manager) {
         for (auto && pair : atom.pairs()) {
-          auto && tup{typed_this.df_c(manager.get_distance(pair))};
+          auto && tup{typed_this.df_c(distances[pair])};
           value_property[pair] = std::get<0>(tup);
           property[pair] = std::get<1>(tup);
         }

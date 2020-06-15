@@ -1,11 +1,11 @@
 /**
- * @file   calculator_behler_parinello_dense_impl.hh
+ * @file   calculator_behler_parrinello_dense_impl.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
  * @date   13 Sep 2019
  *
- * @brief  Implementation of CalculatorBehlerParinelloDense
+ * @brief  Implementation of CalculatorBehlerParrinelloDense
  *
  * Copyright © 2019 Till Junge
  *
@@ -25,16 +25,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_IMPL_HH_
-#define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_IMPL_HH_
+#ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_DENSE_IMPL_HH_
+#define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_DENSE_IMPL_HH_
 
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
-  CalculatorBehlerParinelloDense::CalculatorBehlerParinelloDense(
+  CalculatorBehlerParrinelloDense::CalculatorBehlerParrinelloDense(
       const Hypers_t & parameters)
       : CalculatorBase{} {
-    this->set_default_prefix("dense_behler_parinello_");
+    this->set_default_prefix("dense_behler_parrinello_");
     // simple check (just existence of keys)
     this->check_hyperparameters(this->reference_hypers, parameters);
     // true parameter checks
@@ -42,7 +42,7 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <class StructureManager>
-  void CalculatorBehlerParinelloDense::compute(StructureManager & manager) {
+  void CalculatorBehlerParrinelloDense::compute(StructureManager & manager) {
     for (auto && behler_feature : this->behler_features) {
       behler_feature->compute(manager);
     }
@@ -50,4 +50,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_IMPL_HH_
+#endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_DENSE_IMPL_HH_

@@ -5,7 +5,7 @@
  *
  * @date   18 Dec 2019
  *
- * @brief  Tests for the symmetry functions used in Behler-Parinello descriptors
+ * @brief  Tests for the symmetry functions used in Behler-Parrinello descriptors
  *
  * Copyright © 2019 Till Junge, Markus Stricker, LAMMM (EPFL), COSMO (EPFL)
  *

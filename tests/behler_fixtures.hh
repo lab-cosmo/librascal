@@ -5,7 +5,7 @@
  *
  * @date   18 Dec 2019
  *
- * @brief  common fixtures for testing Behler-Parinello descriptors
+ * @brief  common fixtures for testing Behler-Parrinello descriptors
  *
  * Copyright © 2019 Till Junge
  *

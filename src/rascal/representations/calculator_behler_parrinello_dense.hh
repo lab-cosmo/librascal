@@ -1,11 +1,11 @@
 /**
- * @file   calculator_behler_parinello_dense.hh
+ * @file   calculator_behler_parrinello_dense.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
  * @date   12 Sep 2019
  *
- * @brief  Implementation of a dense (i.e. non-sparse) Behler-Parinello-type
+ * @brief  Implementation of a dense (i.e. non-sparse) Behler-Parrinello-type
  * descriptor calculater (e.g., as would be normal in a single-species
  * calculation)
  *
@@ -29,12 +29,12 @@
 
 #include "behler_feature.hh"
 
-#ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_HH_
-#define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_HH_
+#ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_DENSE_HH_
+#define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_DENSE_HH_
 
 namespace rascal {
 
-  class CalculatorBehlerParinelloDense : public CalculatorBase {
+  class CalculatorBehlerParrinelloDense : public CalculatorBase {
    public:
     using Parent = CalculatorBase;
     using Hypers_t = typename Parent::Hypers_t;
@@ -43,29 +43,29 @@ namespace rascal {
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
 
     //! Default constructor
-    CalculatorBehlerParinelloDense() = delete;
+    CalculatorBehlerParrinelloDense() = delete;
 
     //! Constructor with input json
-    explicit CalculatorBehlerParinelloDense(const Hypers_t & parameters);
+    explicit CalculatorBehlerParrinelloDense(const Hypers_t & parameters);
 
     //! Copy constructor
-    CalculatorBehlerParinelloDense(
-        const CalculatorBehlerParinelloDense & other) = delete;
+    CalculatorBehlerParrinelloDense(
+        const CalculatorBehlerParrinelloDense & other) = delete;
 
     //! Move constructor
-    CalculatorBehlerParinelloDense(CalculatorBehlerParinelloDense && other) =
+    CalculatorBehlerParrinelloDense(CalculatorBehlerParrinelloDense && other) =
         default;
 
     //! Destructor
-    virtual ~CalculatorBehlerParinelloDense() = default;
+    virtual ~CalculatorBehlerParrinelloDense() = default;
 
     //! Copy assignment operator
-    CalculatorBehlerParinelloDense &
-    operator=(const CalculatorBehlerParinelloDense & other) = delete;
+    CalculatorBehlerParrinelloDense &
+    operator=(const CalculatorBehlerParrinelloDense & other) = delete;
 
     //! Move assignment operator
-    CalculatorBehlerParinelloDense &
-    operator=(CalculatorBehlerParinelloDense && other) = default;
+    CalculatorBehlerParrinelloDense &
+    operator=(CalculatorBehlerParrinelloDense && other) = default;
 
     template <class StructureManager>
     inline void compute(StructureManager & manager);
@@ -88,5 +88,5 @@ namespace rascal {
   }
 }  // namespace rascal
 
-#include "calculator_behler_parinello_dense_impl.hh"
-#endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_DENSE_HH_
+#include "calculator_behler_parrinello_dense_impl.hh"
+#endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_DENSE_HH_

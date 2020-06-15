@@ -1,3 +1,7 @@
+from rascal.representations import SphericalCovariants
+from rascal.utils import ostream_redirect
+import rascal
+import rascal.lib as lrl
 import argparse
 import ase
 from ase.io import read
@@ -7,10 +11,6 @@ import os
 import numpy as np
 
 sys.path.insert(0, '../build/')
-import rascal.lib as lrl
-import rascal
-from rascal.utils import ostream_redirect
-from rascal.representations import SphericalCovariants
 
 root = os.path.abspath('../')
 rascal_reference_path = os.path.join(root, 'reference_data/')
@@ -78,7 +78,7 @@ def dump_reference_json():
                           "max_angular": max_angular,
                           "gaussian_sigma_type": "Constant",
                           "gaussian_sigma_constant": gaussian_sigma,
-                          "cutoff_function_type": "CosineShifted",
+                          "cutoff_function_type": "ShiftedCosine",
                           "radial_basis": "GTO",
                           "normalize": True,
                           "soap_type": soap_type,

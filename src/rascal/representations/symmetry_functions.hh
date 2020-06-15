@@ -7,7 +7,7 @@
  * @date   17 Dec 2018
  *
  * @brief implementation of symmetry functions for neural nets (G-functions in
- * Behler-Parinello-speak)
+ * Behler-Parrinello-speak)
  *
  * Copyright © 2018 Till Junge, Markus Stricker COSMO (EPFL), LAMMM (EPFL)
  *
@@ -72,8 +72,28 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  class SymmetryFunctionBase {
+   public:
+    double f_sym(const double & /*dummy*/) const {
+      throw std::runtime_error("wrong order");
+    }
+    double f_sym(const double & /*dummy0*/, const double & /*dummy1*/,
+                 const double & /*dummy2*/, const double & /*dummy3*/) const {
+      throw std::runtime_error("wrong order");
+    }
+
+    std::tuple<double, double> df_sym(const double & /*dummy*/) const {
+      throw std::runtime_error("wrong order");
+    }
+    std::tuple<double, double, double, double>
+    df_sym(const double & /*dummy0*/, const double & /*dummy1*/,
+           const double & /*dummy2*/, const double & /*dummy3*/) const {
+      throw std::runtime_error("wrong order");
+    }
+  };
+  /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType FunType>
-  class SymmetryFunction {};
+  class SymmetryFunction : public SymmetryFunctionBase {};
 
   /* ---------------------------------------------------------------------- */
   std::ostream & operator<<(std::ostream & os,
@@ -90,15 +110,6 @@ namespace rascal {
     return os;
   }
 
-  /**
-   * returns the number of distances a cluster of order Order has. (Corresponds
-   * to the number of handshakes amongst Order people if everyone shakes
-   * everyone else's hand).
-   */
-  constexpr size_t nb_distances(const size_t & Order) {
-    return Order*(Order-1)/2;
-  }
-
   /* ---------------------------------------------------------------------- */
   /**
    * Radial symmetry function as proposed in Behler (2007) PRL 98, 146401; it
@@ -111,18 +122,24 @@ namespace rascal {
 
   std::string canary(const json & params, const std::string & name) {
     try {
-      std::cout <<params.at(name) << std::endl;
-    } catch ( json::exception & error) {
-      std::stringstream errmsg {};
+      std::cout << params.at(name) << std::endl;
+    } catch (json::exception & error) {
+      std::stringstream errmsg{};
       errmsg << "Can't access field '" << name << "' in json '" << params
              << "'";
       throw std::runtime_error(errmsg.str());
     }
     return "";
   }
+
   template <>
-  class SymmetryFunction<SymmetryFunctionType::Gaussian> {
+  class SymmetryFunction<SymmetryFunctionType::Gaussian>
+      : public SymmetryFunctionBase {
    public:
+    using Parent = SymmetryFunctionBase;
+    using Parent::df_sym;
+    using Parent::f_sym;
+
     static constexpr size_t Order{2};
 
     using Return_t = std::tuple<double, double>;
@@ -169,12 +186,18 @@ namespace rascal {
    * 2^(1-ζ) * (1 + λ * cos(ϑ))^ζ * exp(r_ij² + r_ik² + r_jk²)
    */
   template <>
-  class SymmetryFunction<SymmetryFunctionType::AngularNarrow> {
+  class SymmetryFunction<SymmetryFunctionType::AngularNarrow>
+      : public SymmetryFunctionBase {
    public:
     static constexpr size_t Order{3};
 
+    using Parent = SymmetryFunctionBase;
+    using Parent::df_sym;
+    using Parent::f_sym;
+
     // return type for each function value and 3 derivative values
-    using Return_t = std::tuple<double, double, double, double>;
+    using Return_t =
+        std::tuple<double, std::array<double, nb_distances(Order)>>;
     // usage?
     static constexpr bool DerivativeIsCollinear{false};
 
@@ -185,30 +208,56 @@ namespace rascal {
           eta{json_io::check_units(unit_style.distance(-2), params.at("eta"))},
           prefactor{math::pow(2., 1 - zeta)} {}
 
-    double f_sym(const double & cos_theta, const double & r_ij,
-                 const double & r_ik, const double & r_jk) const {
+    template <class Derived0, class Derived1, class Derived2>
+    double f_sym(const Eigen::MatrixBase<Derived0> & cos_theta,
+                 const Eigen::MatrixBase<Derived1> & distances,
+                 const Eigen::MatrixBase<Derived2> & cutoff_vals,
+                 const std::array<size_t, 3> & ordering = {0, 1, 2}) const {
+      static_assert(Derived1::SizeAtCompileTime == nb_distances(Order),
+                    "Distance array has wrong size");
+      static_assert(Derived2::SizeAtCompileTime == nb_distances(Order),
+                    "Cutoff function values array has wrong size");
       auto && angular_contrib{
-          math::pow(1. + this->lambda * cos_theta, this->zeta)};
-      auto && exp_contrib{
-          exp(-this->eta * (r_ij * r_ij + r_ik * r_ik + r_jk * r_jk))};
-      return this->prefactor * angular_contrib * exp_contrib;
+          math::pow(1. + this->lambda * cos_theta[ordering[0]], this->zeta)};
+      auto && exp_contrib{exp(-this->eta * distances.squaredNorm())};
+      return this->prefactor * angular_contrib * exp_contrib *
+             cutoff_vals.prod();
     }
 
-    Return_t df_sym(const double & cos_theta, const double & r_ij,
-                    const double & r_ik, const double & r_jk) const {
-      auto && angular_contrib{
-          math::pow(1. + this->lambda * cos_theta, this->zeta)};
-      auto && exp_contrib{
-          exp(-this->eta * (r_ij * r_ij + r_ik * r_ik + r_jk * r_jk))};
+    template <class Derived1, class Derived2, class Derived3>
+    Return_t
+    df_sym(const double & cos_theta,
+           const Eigen::MatrixBase<Derived1> & distances,
+           const Eigen::MatrixBase<Derived2> & cutoff_vals,
+           const Eigen::MatrixBase<Derived3> & cutoff_derivatives) const {
+      auto && lam_cos_theta_1{1. + this->lambda * cos_theta};
+      auto && angular_contrib{math::pow(lam_cos_theta_1, this->zeta)};
+      auto && exp_contrib{exp(-this->eta * distances.squaredNorm())};
       auto && fun_val{this->prefactor * angular_contrib * exp_contrib};
 
-      // helper for derivative
-      // auto && ψ_ij{-1/(r_ij * rik) * this->λ * this->ζ / ()}
+      // todo(jungestricker) order of distances, should be fine according to
+      // Singraber (2019) J Chem Theory Comput 15, 1827; the ordering of
+      // triplet distances in the argument here is {d_ij, d_jk, d_ki}, i.e. a
+      // circular ordering. But the equations are written as {r_1, r_2, r_3}
+      // which correspond to our r_1 -> r_ij, r_2 -> r_ki, r_3 -> r_jk
 
-      double dval_i{0};
-      double dval_j{0};
-      double dval_k{0};
-      return Return_t(fun_val, dval_i, dval_j, dval_k);
+      auto && r_ij{distances[0]};
+      auto && r_jk{distances[1]};
+      auto && r_ki{distances[2]};
+
+      auto && d_dr_ij{
+          -2 * this->eta * r_ij * fun_val +
+          this->zeta * (this->lambda / r_ki - this->lambda / r_ij * cos_theta) *
+              fun_val / lam_cos_theta_1};
+      auto && d_dr_ki{
+          -2 * this->eta * r_ki * fun_val +
+          this->zeta * (this->lambda / r_ij - this->lambda / r_ki * cos_theta) *
+              fun_val / lam_cos_theta_1};
+      auto && d_dr_jk{-this->lambda * r_jk * this->zeta * fun_val /
+                          (r_ij * r_ki * lam_cos_theta_1) -
+                      2 * this->eta * r_jk * fun_val};
+
+      return Return_t(fun_val, {d_dr_ij, d_dr_jk, d_dr_ki});
     }
 
    protected:
@@ -231,8 +280,13 @@ namespace rascal {
    * 2^(1-ζ) * (1 + λ * cos(ϑ))^ζ * exp(r_ij² + r_ik²)
    */
   template <>
-  class SymmetryFunction<SymmetryFunctionType::AngularWide> {
+  class SymmetryFunction<SymmetryFunctionType::AngularWide>
+      : public SymmetryFunctionBase {
    public:
+    using Parent = SymmetryFunctionBase;
+    using Parent::df_sym;
+    using Parent::f_sym;
+
     static constexpr int DistsPerTriplet{3};
     static constexpr size_t Order{3};
 
@@ -248,33 +302,37 @@ namespace rascal {
           eta{json_io::check_units(unit_style.distance(-2), params.at("eta"))},
           prefactor{math::pow(2., 1 - zeta)} {}
 
-    double f_sym(const double & cos_theta, const double & r_ij,
-                 const double & r_ik, const double & /*r_jk*/) const {
+    template <class Derived0, class Derived1, class Derived2>
+    double f_sym(const Eigen::MatrixBase<Derived0> & cos_theta,
+                 const Eigen::MatrixBase<Derived1> & distances,
+                 const Eigen::MatrixBase<Derived2> & cutoff_vals,
+                 const std::array<size_t, 3> & ordering = {0, 1, 2}) const {
       auto && angular_contrib{
-          math::pow(1. + this->lambda * cos_theta, this->zeta)};
-      auto && exp_contrib{exp(-this->eta * (r_ij * r_ij + r_ik * r_ik))};
+          math::pow(1. + this->lambda * cos_theta[ordering[0]], this->zeta)};
+      auto && r_ij{distances[ordering[0]]};
+      auto && r_ki{distances[ordering[2]]};
+      auto && exp_contrib{exp(-this->eta * (r_ij * r_ij + r_ki * r_ki))};
       return this->prefactor * angular_contrib * exp_contrib;
     }
 
     Return_t df_sym(const double & cos_theta, const double & r_ij,
-                    const double & r_ik, const double & r_jk) const {
-      auto && lam_cos_theta_1 {1. + this->lambda * cos_theta};
-      auto && angular_contrib{
-          math::pow(lam_cos_theta_1, this->zeta)};
+                    const double & r_ki, const double & r_jk) const {
+      auto && lam_cos_theta_1{1. + this->lambda * cos_theta};
+      auto && angular_contrib{math::pow(lam_cos_theta_1, this->zeta)};
       auto && r_ij2{r_ij * r_ij};
-      auto && r_ik2{r_ik * r_ik};
-      auto && exp_contrib{exp(-this->eta * (r_ij2 + r_ik2))};
+      auto && r_ki2{r_ki * r_ki};
+      auto && exp_contrib{exp(-this->eta * (r_ij2 + r_ki2))};
       auto && fun_val{this->prefactor * angular_contrib * exp_contrib};
 
       auto && d_dr_ij{-2 * this->eta * r_ij * fun_val +
-                      this->zeta * (this->lambda / r_ik - cos_theta / r_ij) *
+                      this->zeta * (this->lambda / r_ki - cos_theta / r_ij) *
                           fun_val / lam_cos_theta_1};
-      auto && d_dr_ik{-2 * this->eta * r_ik * fun_val +
-                      this->zeta * (this->lambda / r_ij - cos_theta / r_ik) *
+      auto && d_dr_ki{-2 * this->eta * r_ki * fun_val +
+                      this->zeta * (this->lambda / r_ij - cos_theta / r_ki) *
                           fun_val / lam_cos_theta_1};
       auto && d_dr_jk{-this->lambda * r_jk * this->zeta * fun_val /
-                      (r_ij * r_ik * lam_cos_theta_1)};
-      return Return_t(fun_val, {d_dr_ij, d_dr_ik, d_dr_jk});
+                      (r_ij * r_ki * lam_cos_theta_1)};
+      return Return_t(fun_val, {d_dr_ij, d_dr_jk, d_dr_ki});
     }
 
    protected:
@@ -287,6 +345,45 @@ namespace rascal {
 
   constexpr size_t SymmetryFunction<SymmetryFunctionType::AngularWide>::Order;
 
+  /**
+   * there are three angles in triplets, hence the magic number 3
+   */
+  template <class Manager>
+  const Property<double, TripletOrder, Manager, 3> &
+  get_cos_angles(Manager & manager) {
+    // 1) get or create
+    const std::string identifier{"cosines_of_angles"};
+    constexpr bool Validate{false}, AllowCreation{true};
+
+    // there are three angles in triplets
+    auto & property{
+        *manager
+             .template get_property<Property<double, TripletOrder, Manager, 3>>(
+                 identifier, Validate, AllowCreation)};
+
+    // 2) fresh?
+    //   a) all done
+    if (property.is_updated()) {
+      return property;
+    }
+    //   b) compute
+    auto & triplet_direction_vectors{manager.get_triplet_direction_vectors()};
+    for (auto && atom : manager) {
+      for (auto && trip : atom.triplets()) {
+        auto && vectors{triplet_direction_vectors[trip]};
+        auto && v_ij{vectors.col(0)};
+        auto && v_jk{vectors.col(1)};
+        auto && v_ki{vectors.col(2)};
+
+        property[trip](0) = v_ij.dot(-v_ki);
+        property[trip](1) = v_jk.dot(-v_ij);
+        property[trip](2) = v_ki.dot(-v_jk);
+      }
+    }
+
+    property.set_updated_status(true);
+    return property;
+  }
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_

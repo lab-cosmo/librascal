@@ -772,11 +772,16 @@ namespace rascal {
      * Creates or fetches a property containing triplet distances
      */
     template <bool HasDistances = traits::HasDistances,
-              typename std::enable_if_t<
-                  HasDistances and(traits::MaxOrder >= TripletOrder), int> = 0>
+              typename std::enable_if_t<HasDistances, int> = 0>
     decltype(auto) get_triplet_distance() {
       static_assert(HasDistances == traits::HasDistances,
                     "HasDistances is a SFINAE, do not touch.");
+      if (traits::MaxOrder<TripletOrder) {
+        std::stringstream err_msg{};
+        err_msg << "Can't give triplet distances, my Maxorder is "
+                << traits::MaxOrder << ".";
+        throw std::runtime_error(err_msg.str());
+      }
       return this->get_previous_manager()->get_triplet_distance();
     }
 
@@ -784,12 +789,16 @@ namespace rascal {
      * Creates or fetches a property containing triplet direction vectors
      */
     template <bool HasDirectionVectors = traits::HasDirectionVectors,
-              typename std::enable_if_t<HasDirectionVectors and
-                                            (traits::MaxOrder >= TripletOrder),
-                                        int> = 0>
+              typename std::enable_if_t<HasDirectionVectors> = 0>
     decltype(auto) get_triplet_direction_vectors() {
       static_assert(HasDirectionVectors == traits::HasDirectionVectors,
                     "HasDirectionVectors is a SFINAE, do not touch.");
+      if (traits::MaxOrder<TripletOrder) {
+        std::stringstream err_msg{};
+        err_msg << "Can't give triplet distances, my Maxorder is "
+                << traits::Maxorder << ".";
+        throw std::runtime_error(err_msg.str());
+      }
       return this->get_previous_manager()->get_triplet_direction_vectors();
     }
 

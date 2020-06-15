@@ -14,7 +14,7 @@ Pair distances
 SphericalInvariants
 *******************
 
-Behler-Parinello symmetry functions
+Behler-Parrinello symmetry functions
 ***********************************
 
 Based on [Behler2007]_

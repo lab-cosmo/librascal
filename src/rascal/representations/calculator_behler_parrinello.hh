@@ -1,11 +1,11 @@
 /**
- * @file   calculator_behler_parinello.hh
+ * @file   calculator_behler_parrinello.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  *
  * @date   10 Sep 2019
  *
- * @brief  Behler-Parinello implementation
+ * @brief  Behler-Parrinello implementation
  *
  * Copyright © 2019 Till Junge
  *
@@ -25,8 +25,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_HH_
-#define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_HH_
+#ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_HH_
+#define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_HH_
 
 #include "rascal/representations/behler_feature.hh"
 #include "rascal/representations/calculator_base.hh"
@@ -38,7 +38,7 @@
 
 namespace rascal {
 
-  class CalculatorBehlerParinello : public CalculatorBase {
+  class CalculatorBehlerParrinello : public CalculatorBase {
    public:
     using Parent = CalculatorBase;
     using Hypers_t = typename Parent::Hypers_t;
@@ -52,27 +52,27 @@ namespace rascal {
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
 
     //! Default constructor
-    CalculatorBehlerParinello() = delete;
+    CalculatorBehlerParrinello() = delete;
 
     //! Construct for a input parameter json
-    inline explicit CalculatorBehlerParinello(const Hypers_t & parameters);
+    inline explicit CalculatorBehlerParrinello(const Hypers_t & parameters);
 
     //! Copy constructor
-    CalculatorBehlerParinello(const CalculatorBehlerParinello & other) = delete;
+    CalculatorBehlerParrinello(const CalculatorBehlerParrinello & other) = delete;
 
     //! Move constructor
-    CalculatorBehlerParinello(CalculatorBehlerParinello && other) = default;
+    CalculatorBehlerParrinello(CalculatorBehlerParrinello && other) = default;
 
     //! Destructor
-    virtual ~CalculatorBehlerParinello() = default;
+    virtual ~CalculatorBehlerParrinello() = default;
 
     //! Copy assignment operator
-    CalculatorBehlerParinello &
-    operator=(const CalculatorBehlerParinello & other) = delete;
+    CalculatorBehlerParrinello &
+    operator=(const CalculatorBehlerParrinello & other) = delete;
 
     //! Move assignment operator
-    CalculatorBehlerParinello &
-    operator=(CalculatorBehlerParinello && other) = default;
+    CalculatorBehlerParrinello &
+    operator=(CalculatorBehlerParrinello && other) = default;
 
     //! Pure Virtual Function to set hyperparameters of the representation
     void set_hyperparameters(const Hypers_t & hyper) { this->set_name(hyper); }
@@ -97,5 +97,5 @@ namespace rascal {
   };
 }  // namespace rascal
 
-#include "calculator_behler_parinello_impl.hh"
-#endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_HH_
+#include "calculator_behler_parrinello_impl.hh"
+#endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_HH_

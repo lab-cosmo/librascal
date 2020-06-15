@@ -1,12 +1,12 @@
 /**
- * file   representation_manager_behler_parinello.hh
+ * file   representation_manager_behler_parrinello.hh
  *
  * @author Till Junge <till.junge@epfl.ch>
  * @author Markus Stricker <markus.stricker@epfl.ch>
  *
  * @date   13 Dec 2018
  *
- * @brief  Behler-Parinello implementation
+ * @brief  Behler-Parrinello implementation
  *
  * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -26,8 +26,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_HH_
-#define SRC_RASCAL_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_HH_
+#ifndef SRC_RASCAL_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARRINELLO_HH_
+#define SRC_RASCAL_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARRINELLO_HH_
 
 #include "cutoff_functions.hh"
 #include "representation_manager_base.hh"
@@ -43,7 +43,7 @@
 namespace rascal {
 
   template <class StructureManager>
-  class BehlerParinello : public RepresentationManagerBase {
+  class BehlerParrinello : public RepresentationManagerBase {
    public:
     static constexpr size_t MaxOrder{StructureManager::traits::MaxOrder};
     static constexpr size_t Dim{StructureManager::traits::Dim};
@@ -60,32 +60,32 @@ namespace rascal {
     using StoredStructure_t = AdaptorFilter<StructureManager, MaxOrder>;
 
     //! Default constructor
-    BehlerParinello() = delete;
+    BehlerParrinello() = delete;
 
     /**
      * Constructor with structure manager and json-formatted hyper parameters
      */
-    BehlerParinello(StructureManager & structure, const json & hypers);
+    BehlerParrinello(StructureManager & structure, const json & hypers);
 
     /**
      * Constructor with structure manager and json-formatted hyper parameters
      */
-    BehlerParinello(StructureManager & structure, const std::string & hypers);
+    BehlerParrinello(StructureManager & structure, const std::string & hypers);
 
     //! Copy constructor
-    BehlerParinello(const BehlerParinello & other) = delete;
+    BehlerParrinello(const BehlerParrinello & other) = delete;
 
     //! Move constructor
-    BehlerParinello(BehlerParinello && other) = default;
+    BehlerParrinello(BehlerParrinello && other) = default;
 
     //! Destructor
-    virtual ~BehlerParinello() = default;
+    virtual ~BehlerParrinello() = default;
 
     //! Copy assignment operator
-    BehlerParinello & operator=(const BehlerParinello & other);
+    BehlerParrinello & operator=(const BehlerParrinello & other);
 
     //! Move assignment operator
-    BehlerParinello & operator=(BehlerParinello && other) = default;
+    BehlerParrinello & operator=(BehlerParrinello && other) = default;
 
     /**
      * make sure data structures for the compute step are ready. The arguments
@@ -157,6 +157,6 @@ namespace rascal {
 
 }  // namespace rascal
 
-#include "representation_manager_behler_parinello_impl.hh"
+#include "representation_manager_behler_parrinello_impl.hh"
 
-#endif  // SRC_RASCAL_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARINELLO_HH_
+#endif  // SRC_RASCAL_REPRESENTATIONS_REPRESENTATION_MANAGER_BEHLER_PARRINELLO_HH_

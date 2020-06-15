@@ -1,13 +1,14 @@
 /**
- * @file   calculator_behler_parinello_impl.hh
+ * file   representation_manager_behler_parrinello.cc
  *
  * @author Till Junge <till.junge@epfl.ch>
+ * @author Markus Stricker <markus.stricker@epfl.ch>
  *
- * @date   10 Sep 2019
+ * @date   13 Dec 2018
  *
- * @brief  Implementation of CalculatorBehlerParinello
+ * @brief  implementation of Behler-Parrinello representation manager
  *
- * Copyright © 2019 Till Junge
+ * Copyright © 2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
  * rascal is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License as
@@ -17,26 +18,10 @@
  * rascal is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
+ * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with rascal; see the file COPYING. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
-#ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_IMPL_HH_
-#define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_IMPL_HH_
-
-namespace rascal {
-
-  /* ---------------------------------------------------------------------- */
-  CalculatorBehlerParinello::CalculatorBehlerParinello(
-      const Hypers_t & parameters) {
-    // Extract the options and hyperparameters
-    this->set_hyperparameters(parameters);
-  }
-
-}  // namespace rascal
-
-#endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARINELLO_IMPL_HH_

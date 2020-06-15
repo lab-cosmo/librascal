@@ -64,7 +64,7 @@ class SphericalInvariants(object):
     def __init__(self, interaction_cutoff, cutoff_smooth_width,
                  max_radial, max_angular, gaussian_sigma_type,
                  gaussian_sigma_constant=0., n_species=1,
-                 cutoff_function_type="CosineShifted",
+                 cutoff_function_type="ShiftedCosine",
                  soap_type="PowerSpectrum", inversion_symmetry=True,
                  radial_basis="GTO", normalize=True,
                  optimization_args={},
@@ -206,12 +206,12 @@ class SphericalInvariants(object):
                         * self.hypers['max_radial']**3
                         * int(1 + 2 * self.hypers['max_angular']
                               + 3 * self.hypers['max_angular']**2 / 2
-                            + self.hypers['max_angular']**3 / 2))
+                              + self.hypers['max_angular']**3 / 2))
             else:
                 return (self.hypers['n_species']**3
                         * self.hypers['max_radial']**3
                         * int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)
-                                     * (2 * (self.hypers['max_angular'] + 1) + 3) / 8.0)))
+                                       * (2 * (self.hypers['max_angular'] + 1) + 3) / 8.0)))
         else:
             raise ValueError('Only soap_type = RadialSpectrum || '
                              'PowerSpectrum || BiSpectrum '
