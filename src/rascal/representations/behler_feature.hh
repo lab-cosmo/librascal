@@ -37,7 +37,6 @@
 
 namespace rascal {
 
-
   /**
    * A BehlerFeature is a single G function with a single set of parameters
    */
@@ -119,9 +118,6 @@ namespace rascal {
     std::shared_ptr<CutoffFunctionBase> cut_fun;
   };
 
-
-  
-
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
@@ -136,7 +132,7 @@ namespace rascal {
 
     //! Default constructor
     BehlerPairFeature(std::shared_ptr<CutoffFunctionBase> cut_fun,
-                  const UnitStyle & unit_style, const json & raw_params)
+                      const UnitStyle & unit_style, const json & raw_params)
         : Parent(MySymFunType, cut_fun, SymmetryFunction_t::Order, raw_params),
           sym_fun{unit_style,
                   raw_params.at("params" + canary(raw_params, "params"))} {
@@ -197,9 +193,9 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     template <RepeatedSpecies RepSpecies, typename Permutation,
               class StructureManager>
-    void compute_helper(
-        StructureManager & manager, std::shared_ptr<PropertyBase> output,
-        std::shared_ptr<PropertyBase> output_derivatives) const;
+    void compute_helper(StructureManager & manager,
+                        std::shared_ptr<PropertyBase> output,
+                        std::shared_ptr<PropertyBase> output_derivatives) const;
 
    protected:
     SymmetryFunction<MySymFunType> sym_fun;
@@ -208,7 +204,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
-  constexpr size_t  BehlerPairFeature<MySymFunType, SymFunTypes...>::Order;
+  constexpr size_t BehlerPairFeature<MySymFunType, SymFunTypes...>::Order;
 
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType MySymFunType,
@@ -224,7 +220,7 @@ namespace rascal {
 
     //! Default constructor
     BehlerTripletFeature(std::shared_ptr<CutoffFunctionBase> cut_fun,
-                  const UnitStyle & unit_style, const json & raw_params)
+                         const UnitStyle & unit_style, const json & raw_params)
         : Parent(MySymFunType, cut_fun, SymmetryFunction_t::Order, raw_params),
           sym_fun{unit_style,
                   raw_params.at("params" + canary(raw_params, "params"))} {
@@ -258,7 +254,8 @@ namespace rascal {
     ~BehlerTripletFeature() = default;
 
     //! Copy assignment operator
-    BehlerTripletFeature & operator=(const BehlerTripletFeature & other) = delete;
+    BehlerTripletFeature &
+    operator=(const BehlerTripletFeature & other) = delete;
 
     //! Move assignment operator
     BehlerTripletFeature & operator=(BehlerTripletFeature && other) = default;
@@ -280,14 +277,14 @@ namespace rascal {
     template <RepeatedSpecies RepSpecies, typename Permutation,
               class StructureManager>
     void compute_helper(StructureManager & manager,
-                              std::shared_ptr<PropertyBase> output) const;
+                        std::shared_ptr<PropertyBase> output) const;
 
     /* ---------------------------------------------------------------------- */
     template <RepeatedSpecies RepSpecies, typename Permutation,
               class StructureManager>
-    void compute_helper(
-        StructureManager & manager, std::shared_ptr<PropertyBase> output,
-        std::shared_ptr<PropertyBase> output_derivatives) const;
+    void compute_helper(StructureManager & manager,
+                        std::shared_ptr<PropertyBase> output,
+                        std::shared_ptr<PropertyBase> output_derivatives) const;
 
    protected:
     SymmetryFunction<MySymFunType> sym_fun;
@@ -296,7 +293,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
-  constexpr size_t  BehlerTripletFeature<MySymFunType, SymFunTypes...>::Order;
+  constexpr size_t BehlerTripletFeature<MySymFunType, SymFunTypes...>::Order;
 
 }  // namespace rascal
 #include "behler_feature_impl.hh"

@@ -58,7 +58,8 @@ namespace rascal {
     inline explicit CalculatorBehlerParrinello(const Hypers_t & parameters);
 
     //! Copy constructor
-    CalculatorBehlerParrinello(const CalculatorBehlerParrinello & other) = delete;
+    CalculatorBehlerParrinello(const CalculatorBehlerParrinello & other) =
+        delete;
 
     //! Move constructor
     CalculatorBehlerParrinello(CalculatorBehlerParrinello && other) = default;

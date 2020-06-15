@@ -105,7 +105,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <class StructureManager>
   template <size_t Order>
-  void BehlerParrinello<StructureManager>::evaluate_pair_symmetry_function_group(
+  void
+  BehlerParrinello<StructureManager>::evaluate_pair_symmetry_function_group(
       std::vector<InputNodeContributionBase> & symmetry_funs) {
     for (auto && symmetry_fun : symmetry_funs) {
       this->evaluate_sym_fun<Permutation<PairOrder, 0, 1>>((symmetry_fun));

@@ -150,8 +150,7 @@ namespace rascal {
 
     auto throw_unknown_species_rep{[&manager, &G_vals, this]() {
       this->bf.template compute<RepeatedSpecies::FirstTwo,
-                                Permutation<Order, 0, 1>>(manager,
-                                                                    G_vals);
+                                Permutation<Order, 0, 1>>(manager, G_vals);
     }};
 
     BOOST_CHECK_THROW(throw_unknown_species_rep(), std::runtime_error);
@@ -174,12 +173,11 @@ namespace rascal {
     constexpr auto Order{Fix::BehlerFeature_t::SymmetryFunction_t::Order};
     using GVals_t =
         Property<double, AtomOrder,
-                 AdaptorMaxOrder<AdaptorStrict<StructureManagerLammps>>,
-                 nb_distances(Order)>;
+                 AdaptorMaxOrder<AdaptorStrict<StructureManagerLammps>>>;
     auto G_vals{std::make_shared<GVals_t>(manager)};
 
-    // Yes, the pairs in this manager do not have the correct species, but this
-    // doesn't interfere with testing the compute algo
+    // Yes, the triplets in this manager do not have the correct species, but
+    // this doesn't interfere with testing the compute algo
     Fix::bf.template compute<RepeatedSpecies::All, Permutation<Order, 0, 1, 2>>(
         manager, G_vals);
     Fix::bf.template compute<RepeatedSpecies::Not, Permutation<Order, 0, 1, 2>>(
@@ -190,7 +188,7 @@ namespace rascal {
                                 Permutation<Order, 2, 0, 1>>(manager, G_vals);
     }};
 
-    BOOST_CHECK_THROW(throw_unknown_species_rep(), std::runtime_error);
+    BOOST_CHECK_NO_THROW(throw_unknown_species_rep());
   }
 
   /**

@@ -776,7 +776,7 @@ namespace rascal {
     decltype(auto) get_triplet_distance() {
       static_assert(HasDistances == traits::HasDistances,
                     "HasDistances is a SFINAE, do not touch.");
-      if (traits::MaxOrder<TripletOrder) {
+      if (traits::MaxOrder < TripletOrder) {
         std::stringstream err_msg{};
         err_msg << "Can't give triplet distances, my Maxorder is "
                 << traits::MaxOrder << ".";
@@ -793,7 +793,7 @@ namespace rascal {
     decltype(auto) get_triplet_direction_vectors() {
       static_assert(HasDirectionVectors == traits::HasDirectionVectors,
                     "HasDirectionVectors is a SFINAE, do not touch.");
-      if (traits::MaxOrder<TripletOrder) {
+      if (traits::MaxOrder < TripletOrder) {
         std::stringstream err_msg{};
         err_msg << "Can't give triplet distances, my Maxorder is "
                 << traits::Maxorder << ".";
@@ -1196,7 +1196,7 @@ namespace rascal {
     size_t counter{0};
     for (auto && atom : manager) {
       auto & j_container{this->pairs.at(counter)};
-      auto && pair_clusters {atom.template get_clusters_of_order<PairOrder>()};
+      auto && pair_clusters{atom.template get_clusters_of_order<PairOrder>()};
       j_container.clear();
       ++counter;
       for (auto && pair : pair_clusters) {

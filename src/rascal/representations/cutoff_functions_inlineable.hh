@@ -131,13 +131,12 @@ namespace rascal {
      * returns the property with cutoff functions values and derivatives,
      * guaranteed to be fresh
      */
-    template <typename StructureManager>
+    template <typename StructManager>
     std::tuple<
-        TripletProperty_t<StructureManager> &,
+        TripletProperty_t<StructManager> &,
         TripletProperty_t<
-            StructureManager> &> inline get_triplet_derivative(StructureManager &
-                                                                   manager)
-        const;
+            StructManager> &> inline get_triplet_derivative(StructManager &
+                                                                manager) const;
 
     const double & get_cutoff() const { return this->cutoff; }
 

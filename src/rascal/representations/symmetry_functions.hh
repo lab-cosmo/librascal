@@ -74,20 +74,31 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   class SymmetryFunctionBase {
    public:
+    using PairReturn_t = std::tuple<double, double>;
+    using TripletReturn_t =
+        std::tuple<double, std::array<double, nb_distances(TripletOrder)>>;
+
     double f_sym(const double & /*dummy*/) const {
       throw std::runtime_error("wrong order");
     }
-    double f_sym(const double & /*dummy0*/, const double & /*dummy1*/,
-                 const double & /*dummy2*/, const double & /*dummy3*/) const {
+    template <class Derived0, class Derived1, class Derived2>
+    double f_sym(const Eigen::MatrixBase<Derived0> & /*cos_theta*/,
+                 const Eigen::MatrixBase<Derived1> & /*distances*/,
+                 const Eigen::MatrixBase<Derived2> & /*cutoff_vals*/,
+                 const std::array<size_t, 3> & /*ordering*/ = {0, 1, 2}) const {
       throw std::runtime_error("wrong order");
     }
 
-    std::tuple<double, double> df_sym(const double & /*dummy*/) const {
+    PairReturn_t df_sym(const double & /*dummy*/) const {
       throw std::runtime_error("wrong order");
     }
-    std::tuple<double, double, double, double>
-    df_sym(const double & /*dummy0*/, const double & /*dummy1*/,
-           const double & /*dummy2*/, const double & /*dummy3*/) const {
+    template <class Derived0, class Derived1, class Derived2, class Derived3>
+    TripletReturn_t
+    df_sym(const Eigen::MatrixBase<Derived0> & cos_theta,
+           const Eigen::MatrixBase<Derived1> & distances,
+           const Eigen::MatrixBase<Derived2> & cutoff_vals,
+           const Eigen::MatrixBase<Derived3> & cutoff_derivatives,
+           const std::array<size_t, 3> & ordering = {0, 1, 2}) const {
       throw std::runtime_error("wrong order");
     }
   };
@@ -142,7 +153,7 @@ namespace rascal {
 
     static constexpr size_t Order{2};
 
-    using Return_t = std::tuple<double, double>;
+    using Return_t = Parent::PairReturn_t;
     /**
      * usually, derivatives are aligned with the distance vector, in which case
      * a scalar return type is sufficient. (important for triplet-related
@@ -196,8 +207,7 @@ namespace rascal {
     using Parent::f_sym;
 
     // return type for each function value and 3 derivative values
-    using Return_t =
-        std::tuple<double, std::array<double, nb_distances(Order)>>;
+    using Return_t = Parent::TripletReturn_t;
     // usage?
     static constexpr bool DerivativeIsCollinear{false};
 
@@ -213,6 +223,8 @@ namespace rascal {
                  const Eigen::MatrixBase<Derived1> & distances,
                  const Eigen::MatrixBase<Derived2> & cutoff_vals,
                  const std::array<size_t, 3> & ordering = {0, 1, 2}) const {
+      static_assert(Derived0::SizeAtCompileTime == nb_distances(Order),
+                    "Distance cos_theta has wrong size");
       static_assert(Derived1::SizeAtCompileTime == nb_distances(Order),
                     "Distance array has wrong size");
       static_assert(Derived2::SizeAtCompileTime == nb_distances(Order),
@@ -224,12 +236,13 @@ namespace rascal {
              cutoff_vals.prod();
     }
 
-    template <class Derived1, class Derived2, class Derived3>
-    Return_t
-    df_sym(const double & cos_theta,
-           const Eigen::MatrixBase<Derived1> & distances,
-           const Eigen::MatrixBase<Derived2> & cutoff_vals,
-           const Eigen::MatrixBase<Derived3> & cutoff_derivatives) const {
+    template <class Derived0, class Derived1, class Derived2, class Derived3>
+    Return_t df_sym(const Eigen::MatrixBase<Derived0> & cos_thetas,
+                    const Eigen::MatrixBase<Derived1> & distances,
+                    const Eigen::MatrixBase<Derived2> & /*cutoff_vals*/,
+                    const Eigen::MatrixBase<Derived3> & /*cutoff_derivatives*/,
+                    const std::array<size_t, 3> & ordering = {0, 1, 2}) const {
+      auto && cos_theta{cos_thetas(0)};
       auto && lam_cos_theta_1{1. + this->lambda * cos_theta};
       auto && angular_contrib{math::pow(lam_cos_theta_1, this->zeta)};
       auto && exp_contrib{exp(-this->eta * distances.squaredNorm())};
@@ -241,21 +254,21 @@ namespace rascal {
       // circular ordering. But the equations are written as {r_1, r_2, r_3}
       // which correspond to our r_1 -> r_ij, r_2 -> r_ki, r_3 -> r_jk
 
-      auto && r_ij{distances[0]};
-      auto && r_jk{distances[1]};
-      auto && r_ki{distances[2]};
+      auto && r_ij{distances(ordering[0])};
+      auto && r_jk{distances(ordering[1])};
+      auto && r_ki{distances(ordering[2])};
 
-      auto && d_dr_ij{
+      double d_dr_ij{
           -2 * this->eta * r_ij * fun_val +
           this->zeta * (this->lambda / r_ki - this->lambda / r_ij * cos_theta) *
               fun_val / lam_cos_theta_1};
-      auto && d_dr_ki{
+      double d_dr_ki{
           -2 * this->eta * r_ki * fun_val +
           this->zeta * (this->lambda / r_ij - this->lambda / r_ki * cos_theta) *
               fun_val / lam_cos_theta_1};
-      auto && d_dr_jk{-this->lambda * r_jk * this->zeta * fun_val /
-                          (r_ij * r_ki * lam_cos_theta_1) -
-                      2 * this->eta * r_jk * fun_val};
+      double d_dr_jk{-this->lambda * r_jk * this->zeta * fun_val /
+                         (r_ij * r_ki * lam_cos_theta_1) -
+                     2 * this->eta * r_jk * fun_val};
 
       return Return_t(fun_val, {d_dr_ij, d_dr_jk, d_dr_ki});
     }
@@ -287,11 +300,10 @@ namespace rascal {
     using Parent::df_sym;
     using Parent::f_sym;
 
-    static constexpr int DistsPerTriplet{3};
     static constexpr size_t Order{3};
 
     // return type for each function value and 3 derivative values
-    using Return_t = std::tuple<double, std::array<double, DistsPerTriplet>>;
+    using Return_t = Parent::TripletReturn_t;
     // usage?
     static constexpr bool DerivativeIsCollinear{false};
 
@@ -305,7 +317,7 @@ namespace rascal {
     template <class Derived0, class Derived1, class Derived2>
     double f_sym(const Eigen::MatrixBase<Derived0> & cos_theta,
                  const Eigen::MatrixBase<Derived1> & distances,
-                 const Eigen::MatrixBase<Derived2> & cutoff_vals,
+                 const Eigen::MatrixBase<Derived2> & /*cutoff_vals*/,
                  const std::array<size_t, 3> & ordering = {0, 1, 2}) const {
       auto && angular_contrib{
           math::pow(1. + this->lambda * cos_theta[ordering[0]], this->zeta)};
@@ -315,12 +327,23 @@ namespace rascal {
       return this->prefactor * angular_contrib * exp_contrib;
     }
 
-    Return_t df_sym(const double & cos_theta, const double & r_ij,
-                    const double & r_ki, const double & r_jk) const {
+    template <class Derived0, class Derived1, class Derived2, class Derived3>
+    Return_t df_sym(const Eigen::MatrixBase<Derived0> & cos_thetas,
+                    const Eigen::MatrixBase<Derived1> & distances,
+                    const Eigen::MatrixBase<Derived2> & /*cutoff_vals*/,
+                    const Eigen::MatrixBase<Derived3> & /*cutoff_derivatives*/,
+                    const std::array<size_t, 3> & ordering = {0, 1, 2}) const {
+      auto && cos_theta{cos_thetas(ordering[0])};
       auto && lam_cos_theta_1{1. + this->lambda * cos_theta};
       auto && angular_contrib{math::pow(lam_cos_theta_1, this->zeta)};
+
+      auto && r_ij{distances(ordering[0])};
+      auto && r_jk{distances(ordering[1])};
+      auto && r_ki{distances(ordering[2])};
+
       auto && r_ij2{r_ij * r_ij};
       auto && r_ki2{r_ki * r_ki};
+
       auto && exp_contrib{exp(-this->eta * (r_ij2 + r_ki2))};
       auto && fun_val{this->prefactor * angular_contrib * exp_contrib};
 

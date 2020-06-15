@@ -5,7 +5,8 @@
  *
  * @date   18 Dec 2019
  *
- * @brief  Tests for the symmetry functions used in Behler-Parrinello descriptors
+ * @brief  Tests for the symmetry functions used in Behler-Parrinello
+ * descriptors
  *
  * Copyright © 2019 Till Junge, Markus Stricker, LAMMM (EPFL), COSMO (EPFL)
  *
@@ -55,8 +56,8 @@ namespace rascal {
   // Triplet related narrow symmetry functions which have 4 arguments:
   // cos_theta, r_ij, r_ik, r_jk
   using SymmetryFunctionsAngular_t =
-    boost::mpl::list<SymmetryFunFixture<SymmetryFunctionType::AngularNarrow>,
-                     SymmetryFunFixture<SymmetryFunctionType::AngularWide>>;
+      boost::mpl::list<SymmetryFunFixture<SymmetryFunctionType::AngularNarrow>,
+                       SymmetryFunFixture<SymmetryFunctionType::AngularWide>>;
 
   BOOST_AUTO_TEST_SUITE(symmetry_functions_behler);
 
@@ -92,15 +93,15 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(eval_test_angular, Fix,
                                    SymmetryFunctionsAngular_t, Fix) {
-    BOOST_CHECK_NO_THROW(this->sym_fun.f_sym(this->cos_theta, this->r_ij,
-                                             this->r_ik, this->r_jk));
-    BOOST_CHECK_NO_THROW(this->sym_fun.df_sym(this->cos_theta, this->r_ij,
-                                              this->r_ik, this->r_jk));
+    BOOST_CHECK_NO_THROW(
+        this->sym_fun.f_sym(this->cos_theta, this->dists, this->cutoffs));
+    BOOST_CHECK_NO_THROW(this->sym_fun.df_sym(
+        this->cos_theta, this->dists, this->cutoffs, this->cutoff_derivatives));
 
-    double f1{this->sym_fun.f_sym(this->cos_theta, this->r_ij, this->r_ik,
-                                  this->r_jk)};
-    double f2{std::get<0>(this->sym_fun.df_sym(this->cos_theta, this->r_ij,
-                                               this->r_ik, this->r_jk))};
+    double f1{this->sym_fun.f_sym(this->cos_theta, this->dists, this->cutoffs)};
+    double f2{std::get<0>(this->sym_fun.df_sym(this->cos_theta, this->dists,
+                                               this->cutoffs,
+                                               this->cutoff_derivatives))};
 
     BOOST_CHECK_EQUAL(f1, f2);
   }

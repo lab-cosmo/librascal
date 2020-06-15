@@ -340,7 +340,7 @@ namespace rascal {
 
     std::tuple<TripletDistance_t &, TripletDirVec_t &>
     calculate_triplet_distance_directions() {
-      using Ret_t =std::tuple<TripletDistance_t &, TripletDirVec_t &>;
+      using Ret_t = std::tuple<TripletDistance_t &, TripletDirVec_t &>;
       const std::string distance_identifier{"triplet_distances"};
       const std::string direction_identifier{
           "triplet_direction_vectors_(columns)"};
