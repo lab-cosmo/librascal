@@ -56,13 +56,6 @@ namespace rascal {
                         {"r_s", {{"value", 0.6}, {"unit", "Å"}}}}},
                       {"species", {"Mg", "Si"}},
                       {"r_cut", {{"value", this->r_cut}, {"unit", "Å"}}}};
-        // std::cout << retval.at("type").get<std::string>() << std::endl;
-        // std::cout << retval.at("index").get<int>() << std::endl;
-        // std::cout << retval.at("params").at("eta").at("value").get<double>()
-        //           << std::endl;
-        // std::cout << retval.at("params").at("r_s").at("value").get<double>()
-        //           << std::endl;
-        // std::cout << retval << std::endl;
         break;
       }
       case SymmetryFunctionType::AngularNarrow: {
@@ -75,18 +68,6 @@ namespace rascal {
                         {"lambda", {{"value", 0.6}, {"unit", "-"}}}}},
                       {"species", {"Mg", "Si", "Si"}},
                       {"r_cut", {{"value", this->r_cut}, {"unit", "Å"}}}};
-        // std::cout << "hallo" << std::endl;
-        // std::cout << retval << std::endl;
-
-        // std::cout << retval.at("type").get<std::string>() << std::endl;
-        // std::cout << retval.at("index").get<int>() << std::endl;
-        // std::cout << retval.at("params").at("eta").at("value").get<double>()
-        //           << std::endl;
-        // std::cout << retval.at("params").at("zeta").at("value").get<double>()
-        //           << std::endl;
-        // std::cout <<
-        // retval.at("params").at("lambda").at("value").get<double>()
-        //           << std::endl;
         break;
       }
       default:
@@ -99,7 +80,7 @@ namespace rascal {
     BehlerFeatureFixture() : raw_params(make_params()) {}
 
     using CutFun_t = CutoffFunction<InlCutoffFunctionType::Cosine>;
-    const double r_cut{1.1};
+    const double r_cut{1.2};
     const UnitStyle unit_style{units::metal};
     static constexpr auto SymFunType() { return MySymFunType; }
 
@@ -218,6 +199,7 @@ namespace rascal {
         Property<double, Order,
                  AdaptorStrict<AdaptorHalfList<StructureManagerLammps>>,
                  nb_distances(Order)>;
+
     // results without permutation
     auto G01_vals{std::make_shared<GVals_t>(manager)};
     // results with permutation
@@ -381,9 +363,11 @@ namespace rascal {
 
     // todo(jungestricker): this makes no sense for triplets - property should
     // be Atom, since it is in general not given that all pairs exist constexpr
-    // auto Order{SymmetryFunction<SymFunType()>::Order};
-    using dGVals_t = Property<double, AtomOrder,
-                              TripletManager_t>;  //???, nb_distances(Order)>;
+    const auto Order{SymmetryFunction<SymFunType()>::Order};
+    using dGVals_t =
+        Property<double, Order, TripletManager_t, nb_distances(Order)>;
+    using DerivativeCast_t =
+        Eigen::Map<Eigen::Matrix<double, nb_distances(Order), 1>>;
 
     /**
      * temporary comment (markus): triplets need to test for permutation: 012,
@@ -471,7 +455,7 @@ namespace rascal {
     this->bf.template compute<RepeatedSpecies::Not, Permutation<3, 2, 0, 1>>(
         manager, G201_vals);
     this->bf.template compute<RepeatedSpecies::All, Permutation<3, 0, 1, 2>>(
-        manager, G201_vals);
+        manager, GAAA_vals);
 
     this->bf.template compute<RepeatedSpecies::Not, Permutation<3, 0, 1, 2>>(
         manager, G012_vals2, dG012_derivatives);
@@ -494,10 +478,6 @@ namespace rascal {
                             .at("lambda")
                             .at("value")
                             .template get<double>()};
-    // const double r_s{this->raw_params.at("params")
-    //                      .at("r_s")
-    //                      .at("value")
-    //                      .template get<double>()};
 
     // calculate reference values, directly here
     G012_ref->resize();
@@ -630,24 +610,22 @@ namespace rascal {
         auto && dG_incr_k_jk{d_f_sym_k_jk * f_cut_val + f_sym_ki * d_f_cut_jk};
         auto && dG_incr_k_ki{d_f_sym_k_ki * f_cut_val + f_sym_ki * d_f_cut_ki};
 
-        dG012_ref_derivatives->operator[](atom_i) = dG_incr_i_ij;
-        dG012_ref_derivatives->operator[](atom_j) = dG_incr_i_jk;
-        dG012_ref_derivatives->operator[](atom_k) = dG_incr_i_ki;
+        std::array<double, 3> tmp{dG_incr_i_ij, dG_incr_i_jk, dG_incr_i_ki};
+        dG012_ref_derivatives->operator[](triplet) =
+            DerivativeCast_t{tmp.data()};
 
-        dG120_ref_derivatives->operator[](atom_i) = dG_incr_j_ij;
-        dG120_ref_derivatives->operator[](atom_j) = dG_incr_j_jk;
-        dG120_ref_derivatives->operator[](atom_k) = dG_incr_j_ki;
+        tmp = {dG_incr_j_ij, dG_incr_j_jk, dG_incr_j_ki};
+        dG120_ref_derivatives->operator[](triplet) =
+            DerivativeCast_t{tmp.data()};
+        tmp = {dG_incr_k_ij, dG_incr_k_jk, dG_incr_k_ki};
+        dG201_ref_derivatives->operator[](triplet) =
+            DerivativeCast_t{tmp.data()};
 
-        dG201_ref_derivatives->operator[](atom_i) = dG_incr_k_ij;
-        dG201_ref_derivatives->operator[](atom_j) = dG_incr_k_jk;
-        dG201_ref_derivatives->operator[](atom_k) = dG_incr_k_ki;
-
-        dGAAA_ref_derivatives->operator[](atom_i) =
-            dG_incr_i_ij + dG_incr_j_ij + dG_incr_k_ij;
-        dGAAA_ref_derivatives->operator[](atom_j) =
-            dG_incr_i_jk + dG_incr_j_jk + dG_incr_k_jk;
-        dGAAA_ref_derivatives->operator[](atom_k) =
-            dG_incr_i_ki + dG_incr_j_ki + dG_incr_k_ki;
+        tmp = {dG_incr_i_ij + dG_incr_j_ij + dG_incr_k_ij,
+               dG_incr_i_jk + dG_incr_j_jk + dG_incr_k_jk,
+               dG_incr_i_ki + dG_incr_j_ki + dG_incr_k_ki};
+        dGAAA_ref_derivatives->operator[](triplet) =
+            DerivativeCast_t{tmp.data()};
       }
     }
 
@@ -705,7 +683,7 @@ namespace rascal {
         (dGAAA_derivatives->eigen() - dGAAA_ref_derivatives->eigen()).norm() /
         dGAAA_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
-  }
+  }  // namespace rascal
 
   /**
    * todo(markus) same evaluation and permutation test as above but for angular

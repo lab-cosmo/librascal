@@ -311,6 +311,9 @@ namespace rascal {
     OutputDerivative_t & fun_derivatives{
         dynamic_cast<OutputDerivative_t &>(*output_derivatives)};
 
+    using DerivativeCast_t =
+        Eigen::Map<Eigen::Matrix<double, nb_distances(Order), 1>>;
+
     auto & triplet_distances{manager.get_triplet_distance()};
     auto & cos_angles{get_cos_angles(manager)};
 
@@ -342,8 +345,7 @@ namespace rascal {
           // auto && j_atom{manager[atom_cluster_indices(ordering[0])]};
           // auto && k_atom{manager[atom_cluster_indices(ordering[0])]};
           fun_vals[i_atom] += G_incr;
-          fun_derivatives[triplet] =
-            Eigen::Map<Eigen::Matrix<double, nb_distances(Order), 1>>{dG_incr.data()};
+          fun_derivatives[triplet] = DerivativeCast_t{dG_incr.data()};
         }
       }
     }

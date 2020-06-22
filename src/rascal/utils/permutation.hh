@@ -45,7 +45,7 @@ namespace rascal {
     OuterTwo    // the first and last atom in this cluster are of same species
   };
 
-  // // Used in test for iterating RepeatedSpecies
+  // // Proposed for usage in test for iterating RepeatedSpecies
   // static constexpr RepeatedSpecies AllRepSpecies[] = {
   //     RepeatedSpecies::Unknown,   RepeatedSpecies::Not,
   //     RepeatedSpecies::All,       RepeatedSpecies::FirstTwo,
