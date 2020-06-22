@@ -33,6 +33,7 @@
 #include "rascal/math/utils.hh"
 #include "rascal/structure_managers/property.hh"
 #include "rascal/utils/json_io.hh"
+#include "rascal/utils/permutation.hh"
 #include "rascal/utils/tuple_standardisation.hh"
 #include "rascal/utils/units.hh"
 #include "rascal/utils/utils.hh"
@@ -163,15 +164,16 @@ namespace rascal {
 
     // constructor
     SymmetryFunction(const UnitStyle & unit_style, const json & params)
-        : params{params}, eta{json_io::check_units(
-                              unit_style.distance(-2),
-                              params.at("eta" + canary(params, "eta")))},
+        : params{params}, eta{json_io::check_units(unit_style.distance(-2),
+                                                   params.at("eta"))},
           r_s{json_io::check_units(unit_style.distance(), params.at("r_s"))} {}
 
     double f_sym(const double & r_ij) const {
       auto && delta_r = r_ij - this->r_s;
       return exp(-this->eta * delta_r * delta_r);
     }
+
+    // todo(jungestricker) add full value
 
     Return_t df_sym(const double & r_ij) const {
       auto && delta_r{r_ij - this->r_s};
@@ -219,7 +221,7 @@ namespace rascal {
           prefactor{math::pow(2., 1 - zeta)} {}
 
     template <class Derived0, class Derived1, class Derived2>
-    double f_sym(const Eigen::MatrixBase<Derived0> & cos_theta,
+    double f_sym(const Eigen::MatrixBase<Derived0> & cos_thetas,
                  const Eigen::MatrixBase<Derived1> & distances,
                  const Eigen::MatrixBase<Derived2> & cutoff_vals,
                  const std::array<size_t, 3> & ordering = {0, 1, 2}) const {
@@ -229,46 +231,83 @@ namespace rascal {
                     "Distance array has wrong size");
       static_assert(Derived2::SizeAtCompileTime == nb_distances(Order),
                     "Cutoff function values array has wrong size");
+
+      auto && cos_theta{cos_thetas[ordering[0]]};
       auto && angular_contrib{
-          math::pow(1. + this->lambda * cos_theta[ordering[0]], this->zeta)};
+          math::pow(1. + this->lambda * cos_theta, this->zeta)};
       auto && exp_contrib{exp(-this->eta * distances.squaredNorm())};
+
       return this->prefactor * angular_contrib * exp_contrib *
              cutoff_vals.prod();
     }
 
     template <class Derived0, class Derived1, class Derived2, class Derived3>
+    // todo(strickerjunge) I think the return type needs to be changes here to
+    // only one value.
     Return_t df_sym(const Eigen::MatrixBase<Derived0> & cos_thetas,
                     const Eigen::MatrixBase<Derived1> & distances,
-                    const Eigen::MatrixBase<Derived2> & /*cutoff_vals*/,
-                    const Eigen::MatrixBase<Derived3> & /*cutoff_derivatives*/,
+                    const Eigen::MatrixBase<Derived2> & cutoff_vals,
+                    const Eigen::MatrixBase<Derived3> & cutoff_derivatives,
                     const std::array<size_t, 3> & ordering = {0, 1, 2}) const {
-      auto && cos_theta{cos_thetas(0)};
-      auto && lam_cos_theta_1{1. + this->lambda * cos_theta};
-      auto && angular_contrib{math::pow(lam_cos_theta_1, this->zeta)};
-      auto && exp_contrib{exp(-this->eta * distances.squaredNorm())};
-      auto && fun_val{this->prefactor * angular_contrib * exp_contrib};
+      /**
+       * calling the cos and exp factor f() and the cutoff value combination
+       * g(), the resulting derivative is g()'f() + g()f()', but given by the
+       * ordering.
+       */
 
-      // todo(jungestricker) order of distances, should be fine according to
-      // Singraber (2019) J Chem Theory Comput 15, 1827; the ordering of
-      // triplet distances in the argument here is {d_ij, d_jk, d_ki}, i.e. a
-      // circular ordering. But the equations are written as {r_1, r_2, r_3}
-      // which correspond to our r_1 -> r_ij, r_2 -> r_ki, r_3 -> r_jk
+      auto && f_cut_val{cutoff_vals.prod()};
+
+      auto && cos_theta{cos_thetas[ordering[0]]};
+      auto && lam_cos_theta_1{1. + this->lambda * cos_theta};
+      auto && angular_contrib{
+          math::pow(1. + this->lambda * cos_theta, this->zeta)};
+      auto && exp_contrib{exp(-this->eta * distances.squaredNorm())};
+
+      auto && f_sym_val{this->prefactor * angular_contrib * exp_contrib};
+
+      auto && fun_val{f_sym_val * f_cut_val};
+
+      // todo(strickerjunge) order of distances, should be fine according to
+      // Singraber (2019) J Chem Theory Comput 15, 1827; the ordering of triplet
+      // distances in the argument here is {d_ij, d_jk, d_ki}, i.e. a circular
+      // ordering. But the equations are written as {r_1, r_2, r_3} which
+      // correspond to our r_1 -> r_ij, r_2 -> r_ki, r_3 -> r_jk --- this is not
+      // correct any more
 
       auto && r_ij{distances(ordering[0])};
       auto && r_jk{distances(ordering[1])};
       auto && r_ki{distances(ordering[2])};
 
-      double d_dr_ij{
+      // todo(strickerjunge): this changes based on the ordering of the values
+      // and is not valid any more?
+      double d_f_sym_ij{
           -2 * this->eta * r_ij * fun_val +
           this->zeta * (this->lambda / r_ki - this->lambda / r_ij * cos_theta) *
               fun_val / lam_cos_theta_1};
-      double d_dr_ki{
+      double d_f_sym_ki{
           -2 * this->eta * r_ki * fun_val +
           this->zeta * (this->lambda / r_ij - this->lambda / r_ki * cos_theta) *
               fun_val / lam_cos_theta_1};
-      double d_dr_jk{-this->lambda * r_jk * this->zeta * fun_val /
-                         (r_ij * r_ki * lam_cos_theta_1) -
-                     2 * this->eta * r_jk * fun_val};
+      double d_f_sym_jk{-this->lambda * r_jk * this->zeta * fun_val /
+                            (r_ij * r_ki * lam_cos_theta_1) -
+                        2 * this->eta * r_jk * fun_val};
+
+      auto && cutoff_val_ij{cutoff_vals[0]};
+      auto && cutoff_val_jk{cutoff_vals[1]};
+      auto && cutoff_val_ki{cutoff_vals[2]};
+
+      auto && cutoff_derivative_ij{cutoff_derivatives[ordering[0]]};
+      auto && cutoff_derivative_ki{cutoff_derivatives[ordering[1]]};
+      auto && cutoff_derivative_jk{cutoff_derivatives[ordering[2]]};
+
+      double d_f_cut_ij{cutoff_derivative_ij * cutoff_val_jk * cutoff_val_ki};
+      double d_f_cut_ki{cutoff_derivative_ki * cutoff_val_ij * cutoff_val_jk};
+      double d_f_cut_jk{cutoff_derivative_jk * cutoff_val_ij * cutoff_val_ki};
+
+      // combine function value derivative and cutoff function derivative
+      auto && d_dr_ij{d_f_sym_ij * f_cut_val + f_sym_val * d_f_cut_ij};
+      auto && d_dr_ki{d_f_sym_ki * f_cut_val + f_sym_val * d_f_cut_ki};
+      auto && d_dr_jk{d_f_sym_jk * f_cut_val + f_sym_val * d_f_cut_jk};
 
       return Return_t(fun_val, {d_dr_ij, d_dr_jk, d_dr_ki});
     }
@@ -317,7 +356,7 @@ namespace rascal {
     template <class Derived0, class Derived1, class Derived2>
     double f_sym(const Eigen::MatrixBase<Derived0> & cos_theta,
                  const Eigen::MatrixBase<Derived1> & distances,
-                 const Eigen::MatrixBase<Derived2> & /*cutoff_vals*/,
+                 const Eigen::MatrixBase<Derived2> & cutoff_vals,
                  const std::array<size_t, 3> & ordering = {0, 1, 2}) const {
       auto && angular_contrib{
           math::pow(1. + this->lambda * cos_theta[ordering[0]], this->zeta)};
@@ -330,8 +369,8 @@ namespace rascal {
     template <class Derived0, class Derived1, class Derived2, class Derived3>
     Return_t df_sym(const Eigen::MatrixBase<Derived0> & cos_thetas,
                     const Eigen::MatrixBase<Derived1> & distances,
-                    const Eigen::MatrixBase<Derived2> & /*cutoff_vals*/,
-                    const Eigen::MatrixBase<Derived3> & /*cutoff_derivatives*/,
+                    const Eigen::MatrixBase<Derived2> & cutoff_vals,
+                    const Eigen::MatrixBase<Derived3> & cutoff_derivatives,
                     const std::array<size_t, 3> & ordering = {0, 1, 2}) const {
       auto && cos_theta{cos_thetas(ordering[0])};
       auto && lam_cos_theta_1{1. + this->lambda * cos_theta};
@@ -347,6 +386,8 @@ namespace rascal {
       auto && exp_contrib{exp(-this->eta * (r_ij2 + r_ki2))};
       auto && fun_val{this->prefactor * angular_contrib * exp_contrib};
 
+      auto && cutoff_val{cutoff_vals.prod()};
+
       auto && d_dr_ij{-2 * this->eta * r_ij * fun_val +
                       this->zeta * (this->lambda / r_ki - cos_theta / r_ij) *
                           fun_val / lam_cos_theta_1};
@@ -355,7 +396,19 @@ namespace rascal {
                           fun_val / lam_cos_theta_1};
       auto && d_dr_jk{-this->lambda * r_jk * this->zeta * fun_val /
                       (r_ij * r_ki * lam_cos_theta_1)};
-      return Return_t(fun_val, {d_dr_ij, d_dr_jk, d_dr_ki});
+
+      // differentiate by parts
+
+      // todo(jungestricker) add Permutation::apply_ordering here
+      // return Return_t(fun_val, Permutation<>::apply_ordering(
+      //                              {d_dr_ij, d_dr_jk, d_dr_ki}, ordering));
+
+      std::array<double, 3> ret_der;
+
+      ret_der[ordering[0]] = d_dr_ij;
+      ret_der[ordering[1]] = d_dr_jk;
+      ret_der[ordering[2]] = d_dr_ki;
+      return Return_t(fun_val, ret_der);
     }
 
    protected:

@@ -128,6 +128,9 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  // todo(jungestricker): outsource the calculation of multiplication of sf
+  // value and cutoff value to symmetry function for consistency with
+  // BehlerTripletFeature
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
   template <RepeatedSpecies RepSpecies, typename Permutation,
@@ -363,8 +366,7 @@ namespace rascal {
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
   void BehlerTripletFeature<MySymFunType, SymFunTypes...>::init(
-      const UnitStyle & /*units*/) {
-  }
+      const UnitStyle & /*units*/) {}
 
 }  // namespace rascal
 
