@@ -259,8 +259,7 @@ namespace rascal {
 
       auto && cos_theta{cos_thetas[ordering[0]]};
       auto && lam_cos_theta_1{1. + this->lambda * cos_theta};
-      auto && angular_contrib{
-          math::pow(1. + this->lambda * cos_theta, this->zeta)};
+      auto && angular_contrib{math::pow(lam_cos_theta_1, this->zeta)};
       auto && exp_contrib{exp(-this->eta * distances.squaredNorm())};
 
       auto && f_sym_val{this->prefactor * angular_contrib * exp_contrib};
@@ -281,16 +280,16 @@ namespace rascal {
       // todo(strickerjunge): this changes based on the ordering of the values
       // and is not valid any more?
       double d_f_sym_ij{
-          -2 * this->eta * r_ij * fun_val +
+          -2 * this->eta * r_ij * f_sym_val +
           this->zeta * (this->lambda / r_ki - this->lambda / r_ij * cos_theta) *
-              fun_val / lam_cos_theta_1};
+              f_sym_val / lam_cos_theta_1};
       double d_f_sym_ki{
-          -2 * this->eta * r_ki * fun_val +
+          -2 * this->eta * r_ki * f_sym_val +
           this->zeta * (this->lambda / r_ij - this->lambda / r_ki * cos_theta) *
-              fun_val / lam_cos_theta_1};
-      double d_f_sym_jk{-this->lambda * r_jk * this->zeta * fun_val /
+              f_sym_val / lam_cos_theta_1};
+      double d_f_sym_jk{-this->lambda * r_jk * this->zeta * f_sym_val /
                             (r_ij * r_ki * lam_cos_theta_1) -
-                        2 * this->eta * r_jk * fun_val};
+                        2 * this->eta * r_jk * f_sym_val};
 
       auto && cutoff_val_ij{cutoff_vals[0]};
       auto && cutoff_val_jk{cutoff_vals[1]};
@@ -363,7 +362,8 @@ namespace rascal {
       auto && r_ij{distances[ordering[0]]};
       auto && r_ki{distances[ordering[2]]};
       auto && exp_contrib{exp(-this->eta * (r_ij * r_ij + r_ki * r_ki))};
-      return this->prefactor * angular_contrib * exp_contrib;
+      return this->prefactor * angular_contrib * exp_contrib *
+             cutoff_vals.prod();
     }
 
     template <class Derived0, class Derived1, class Derived2, class Derived3>
@@ -379,6 +379,14 @@ namespace rascal {
       auto && r_ij{distances(ordering[0])};
       auto && r_jk{distances(ordering[1])};
       auto && r_ki{distances(ordering[2])};
+
+      auto && fc_ij{cutoff_vals(ordering[0])};
+      auto && fc_jk{cutoff_vals(ordering[1])};
+      auto && fc_ki{cutoff_vals(ordering[2])};
+
+      auto && dfc_ij{cutoff_derivatives(ordering[0])};
+      auto && dfc_jk{cutoff_derivatives(ordering[1])};
+      auto && dfc_ki{cutoff_derivatives(ordering[2])};
 
       auto && r_ij2{r_ij * r_ij};
       auto && r_ki2{r_ki * r_ki};
@@ -397,7 +405,10 @@ namespace rascal {
       auto && d_dr_jk{-this->lambda * r_jk * this->zeta * fun_val /
                       (r_ij * r_ki * lam_cos_theta_1)};
 
-      // differentiate by parts
+      // helpers for differentiation by parts for cutoff function
+      auto && d_f_cut_ij{dfc_ij * fc_jk * fc_ki};
+      auto && d_f_cut_jk{dfc_jk * fc_ki * fc_ij};
+      auto && d_f_cut_ki{dfc_ki * fc_ij * fc_jk};
 
       // todo(jungestricker) add Permutation::apply_ordering here
       // return Return_t(fun_val, Permutation<>::apply_ordering(
@@ -405,10 +416,10 @@ namespace rascal {
 
       std::array<double, 3> ret_der;
 
-      ret_der[ordering[0]] = d_dr_ij;
-      ret_der[ordering[1]] = d_dr_jk;
-      ret_der[ordering[2]] = d_dr_ki;
-      return Return_t(fun_val, ret_der);
+      ret_der[ordering[0]] = d_dr_ij * cutoff_val + fun_val * d_f_cut_ij;
+      ret_der[ordering[1]] = d_dr_jk * cutoff_val + fun_val * d_f_cut_jk;
+      ret_der[ordering[2]] = d_dr_ki * cutoff_val + fun_val * d_f_cut_ki;
+      return Return_t(fun_val * cutoff_val, ret_der);
     }
 
    protected:

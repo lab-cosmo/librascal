@@ -45,6 +45,12 @@ namespace rascal {
     OuterTwo    // the first and last atom in this cluster are of same species
   };
 
+  // // Used in test for iterating RepeatedSpecies
+  // static constexpr RepeatedSpecies AllRepSpecies[] = {
+  //     RepeatedSpecies::Unknown,   RepeatedSpecies::Not,
+  //     RepeatedSpecies::All,       RepeatedSpecies::FirstTwo,
+  //     RepeatedSpecies::SecondTwo, RepeatedSpecies::OuterTwo};
+
   constexpr size_t nb_triplet_orderings(const RepeatedSpecies rep) {
     switch (rep) {
     case RepeatedSpecies::Not: {
@@ -172,7 +178,19 @@ namespace rascal {
 
       return retval;
     }
-  };
+
+    constexpr static std::array<double, 3>
+    apply_ordering(std::array<double, 3> values,
+                   std::array<size_t, 3> ordering) {
+      std::array<double, 3> ret_val;
+      ret_val[0] = values[ordering[0]];
+      ret_val[1] = values[ordering[1]];
+      ret_val[2] = values[ordering[2]];
+      return ret_val;
+      //      std::array<double, 3> ret_val{} : ret_val[0] =
+      //      values[ordering[0]];
+    }
+  };  // Permutation
   template <size_t Size_, size_t First, size_t Second, size_t Third>
   constexpr size_t Permutation<Size_, First, Second, Third>::Size;
 

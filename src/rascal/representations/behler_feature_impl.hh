@@ -130,7 +130,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // todo(jungestricker): outsource the calculation of multiplication of sf
   // value and cutoff value to symmetry function for consistency with
-  // BehlerTripletFeature
+  // BehlerTripletFeature?!
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
   template <RepeatedSpecies RepSpecies, typename Permutation,
@@ -297,7 +297,7 @@ namespace rascal {
   void BehlerTripletFeature<MySymFunType, SymFunTypes...>::compute_helper(
       StructureManager & manager, std::shared_ptr<PropertyBase> output_values,
       std::shared_ptr<PropertyBase> output_derivatives) const {
-    auto && cutoff_tup{this->cut_fun->get_derivative(manager)};
+    auto && cutoff_tup{this->cut_fun->get_triplet_derivative(manager)};
     auto & cutoff_values{std::get<0>(cutoff_tup)};
     auto & cutoff_derivatives{std::get<1>(cutoff_tup)};
 
@@ -311,7 +311,8 @@ namespace rascal {
     OutputDerivative_t & fun_derivatives{
         dynamic_cast<OutputDerivative_t &>(*output_derivatives)};
 
-    auto & pair_distances{manager.get_distance()};
+    auto & triplet_distances{manager.get_triplet_distance()};
+    auto & cos_angles{get_cos_angles(manager)};
 
     auto & neigh_to_i_atom{
         manager
@@ -320,7 +321,34 @@ namespace rascal {
     fun_vals.resize();
     fun_derivatives.resize();
 
-    throw std::runtime_error("Not yet implemented");
+    auto orderings{Permutation::template get_triplet_orderings<RepSpecies>()};
+
+    for (auto && atom : manager) {
+      for (auto && triplet : atom.triplets()) {
+        auto && trip_cos{cos_angles[triplet]};
+        auto && trip_dist{triplet_distances[triplet]};
+        auto && trip_cutoffs{cutoff_values[triplet]};
+        auto && trip_cutoffs_derivatives{cutoff_derivatives[triplet]};
+
+        auto && atom_cluster_indices{neigh_to_i_atom[triplet]};
+
+        for (auto && ordering : orderings) {
+          auto && G_tup{this->sym_fun.df_sym(trip_cos, trip_dist, trip_cutoffs,
+                                             trip_cutoffs_derivatives,
+                                             ordering)};
+          auto && G_incr{std::get<0>(G_tup)};
+          auto && dG_incr{std::get<1>(G_tup)};
+          auto && i_atom{manager[atom_cluster_indices(ordering[0])]};
+          // auto && j_atom{manager[atom_cluster_indices(ordering[0])]};
+          // auto && k_atom{manager[atom_cluster_indices(ordering[0])]};
+          fun_vals[i_atom] += G_incr;
+          fun_derivatives[triplet] =
+            Eigen::Map<Eigen::Matrix<double, nb_distances(Order), 1>>{dG_incr.data()};
+        }
+      }
+    }
+
+    // throw std::runtime_error("Not yet implemented");
   }
 
   /* ---------------------------------------------------------------------- */
