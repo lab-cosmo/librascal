@@ -190,7 +190,7 @@ namespace rascal {
     static_assert(Permutation::Size == Order,
                   "Permutation size needs to equal cluster order");
 
-    auto & triplet_cutoffs{this->cut_fun->get_triplet_value(manager)};
+    auto && triplet_cutoffs{this->cut_fun->get_triplet_value(manager)};
 
     // eval
     using Output_t = Property<double, AtomOrder, StructureManager>;

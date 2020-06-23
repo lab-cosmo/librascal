@@ -237,8 +237,10 @@ namespace rascal {
           math::pow(1. + this->lambda * cos_theta, this->zeta)};
       auto && exp_contrib{exp(-this->eta * distances.squaredNorm())};
 
-      return this->prefactor * angular_contrib * exp_contrib *
-             cutoff_vals.prod();
+      auto && ret_val{this->prefactor * angular_contrib * exp_contrib *
+                      cutoff_vals.prod()};
+
+      return ret_val;
     }
 
     template <class Derived0, class Derived1, class Derived2, class Derived3>
@@ -453,6 +455,7 @@ namespace rascal {
     if (property.is_updated()) {
       return property;
     }
+    property.resize();
     //   b) compute
     auto & triplet_direction_vectors{manager.get_triplet_direction_vectors()};
     for (auto && atom : manager) {

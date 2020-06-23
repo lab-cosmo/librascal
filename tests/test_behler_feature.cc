@@ -80,7 +80,7 @@ namespace rascal {
     BehlerFeatureFixture() : raw_params(make_params()) {}
 
     using CutFun_t = CutoffFunction<InlCutoffFunctionType::Cosine>;
-    const double r_cut{1.2};
+    const double r_cut{1.42};
     const UnitStyle unit_style{units::metal};
     static constexpr auto SymFunType() { return MySymFunType; }
 
