@@ -250,7 +250,9 @@ namespace rascal {
     if (triplet_property.is_updated()) {
       return;
     }
-    auto & typed_this{dynamic_cast<const CutoffFunction<CutFunType> &>(*this)};
+    triplet_property.resize();
+
+    auto && typed_this{dynamic_cast<const CutoffFunction<CutFunType> &>(*this)};
     // (compute and) fetch preexisting cutoff funtion values for all pairs
     auto && pair_cutoffs{this->get_pair_value(manager)};
     // get the pairs in each triplet
@@ -264,16 +266,16 @@ namespace rascal {
       for (auto && atom : manager) {
         for (auto && triplet : atom.triplets()) {
           // fetch array to fill
-          auto & cutoffs{triplet_property[triplet]};
+          auto && cutoffs{triplet_property[triplet]};
 
           // reuse precalculated cutoff values
-          auto & pair_ij{pairs[triplet][0]};
-          auto & pair_ik{pairs[triplet][1]};
+          auto && pair_ij{pairs[triplet][0]};
+          auto && pair_ik{pairs[triplet][1]};
           cutoffs(0) = pair_cutoffs[pair_ij];
           cutoffs(2) = pair_cutoffs[pair_ik];
 
           // compute value for missing pair (might not exist in neighbour list)
-          auto && dist_ki{triplet_distances(2)};
+          auto && dist_ki{triplet_distances[triplet][2]};
           auto && cutoff_ki{typed_this.f_c(dist_ki)};
           cutoffs(1) = cutoff_ki;
         }
@@ -284,18 +286,18 @@ namespace rascal {
     case Evaluation::Derivative: {
       auto && pair_cutoff_derivatives{this->get_pair_derivative(manager)};
       // property we want to fill/update
-      auto & triplet_derivatives_property{
+      auto && triplet_derivatives_property{
           this->get_triplet_property(manager, evaluation)};
       // create or fetch triplet_derivative property
       for (auto && atom : manager) {
         for (auto && triplet : atom.triplets()) {
           // fetch arrays to fill
-          auto & cutoff_values{triplet_property[triplet]};
-          auto & cutoff_derivatives{triplet_derivatives_property[triplet]};
+          auto && cutoff_values{triplet_property[triplet]};
+          auto && cutoff_derivatives{triplet_derivatives_property[triplet]};
 
           // reuse precalculated cutoff values
-          auto & pair_ij{pairs[triplet][0]};
-          auto & pair_ik{pairs[triplet][1]};
+          auto && pair_ij{pairs[triplet][0]};
+          auto && pair_ik{pairs[triplet][1]};
 
           cutoff_values(0) = pair_cutoffs[pair_ij];
           cutoff_values(2) = pair_cutoffs[pair_ik];
@@ -347,7 +349,7 @@ namespace rascal {
   auto CutoffFunctionBase::get_triplet_value(StructureManager & manager) const
       -> TripletProperty_t<StructureManager> & {
     constexpr Evaluation EvalKind{Evaluation::Value};
-    this->compute(manager, EvalKind);
+    this->compute_triplet(manager, EvalKind);
     return this->get_triplet_property(manager, EvalKind);
   };
 
@@ -357,7 +359,7 @@ namespace rascal {
   CutoffFunctionBase::get_triplet_derivative(StructureManager & manager) const
       -> std::tuple<TripletProperty_t<StructureManager> &,
                     TripletProperty_t<StructureManager> &> {
-    this->compute(manager, Evaluation::Derivative);
+    this->compute_triplet(manager, Evaluation::Derivative);
     return std::tuple<TripletProperty_t<StructureManager> &,
                       TripletProperty_t<StructureManager> &>{
         this->get_triplet_property(manager, Evaluation::Value),
