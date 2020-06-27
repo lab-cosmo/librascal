@@ -44,7 +44,7 @@ def get_index_mappings_sample_per_species(managers, sps):
         for i_at, at in enumerate(man):
             types.append(at.atom_type)
             if at.atom_type in sps:
-                map_by_manager[sp][i_man][global_counter[at.atom_type]] = i_at
+                map_by_manager[at.atom_type][i_man][global_counter[at.atom_type]] = i_at
                 counter[at.atom_type] += 1
                 global_counter[at.atom_type] += 1
             else:
