@@ -1,5 +1,5 @@
 from .io import BaseIO
-
+from ..models import SparsePoints
 from .filter_utils import (get_index_mappings_sample_per_species,
                            convert_selected_global_index2perstructure_index_per_species,
                            get_index_mappings_sample,
