@@ -921,5 +921,14 @@ namespace rascal {
                                       AdaptorNeighbourList,
                                       AdaptorCenterContribution, AdaptorStrict>(
         m_nl);
+
+    BindAdaptorStack<StructureManagerCenters, AdaptorNeighbourList, AdaptorHalfList,
+                     AdaptorCenterContribution, AdaptorStrict>
+        adaptor_stack_3{m_nl, m_adp, m_internal, name_list};
+
+    bind_structure_manager_collection<StructureManagerCenters,
+                                      AdaptorNeighbourList, AdaptorHalfList,
+                                      AdaptorCenterContribution, AdaptorStrict>(
+        m_nl);
   }
 }  // namespace rascal
