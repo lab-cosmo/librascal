@@ -149,6 +149,9 @@ namespace rascal {
         ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
                           AdaptorStrict>;
     using ManagerCollection_2_t =
+        ManagerCollection<StructureManagerCenters, AdaptorNeighbourList, AdaptorHalfList,
+                          AdaptorCenterContribution, AdaptorStrict>;
+    using ManagerCollection_3_t =
         ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
                           AdaptorCenterContribution, AdaptorStrict>;
     // Defines the representation manager type for the particular structure
@@ -172,6 +175,7 @@ namespace rascal {
                                         SparsePoints_1_t>(sparse_kernel);
     auto sparse_points = add_sparse_points<SparsePoints_1_t>(mod, m_internal);
     bind_sparse_points_push_back<ManagerCollection_2_t, Calc1_t>(sparse_points);
+    bind_sparse_points_push_back<ManagerCollection_3_t, Calc1_t>(sparse_points);
     internal::bind_dict_representation(sparse_points);
   }
 }  // namespace rascal
