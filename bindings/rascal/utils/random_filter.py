@@ -95,7 +95,10 @@ class RandomFilter(BaseIO):
                 managers)
             Nfeat = np.max(list(feat_idx2coeff_idx.keys()))
             ids = np.arange(Nfeat)
-            np.random.shuffle(ids)
+            if n_select is not None:
+                np.random.shuffle(ids)
+            else:
+                n_select = Nfeat
             self.selected_feature_ids_global = ids
             self.selected_ids = {key: []
                                  for key in feat_idx2coeff_idx[0].keys()}
