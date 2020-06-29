@@ -72,9 +72,6 @@ class AtomsList(object):
     def __getitem__(self, key):
         return self.managers[key]
 
-    def __len__(self):
-        return len(self.managers)
-
     def get_subset(self, selected_ids):
         """Build a new AtomsList with only the selected atomic structures and
         corresponding neighborlist and representations (if present).

@@ -234,10 +234,12 @@ endif()
 include(black)
 # Add python files for autoformatting with black
 if(BLACK_FOUND)
-  # register the folders to apply black 
+  # register the folders to apply black
   black_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/scripts")
   black_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bindings")
   black_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests")
+  black_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/benchmarks")
+  black_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/profiles")
 endif()
 
 # Removes every file in the build folder except the external libraries to
