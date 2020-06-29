@@ -5,6 +5,7 @@ from copy import deepcopy
 from .io import (BaseIO, to_dict, from_dict, get_current_io_version,
                  get_supported_io_versions, dump_obj, load_obj)
 from .cur import CURFilter
+from .random_filter import RandomFilter
 from .scorer import get_score, print_score
 
 # function to redirect c++'s standard output to python's one
