@@ -112,8 +112,6 @@ class RandomFilter(BaseIO):
             # keep the global indices and ordering for ease of use
             self.selected_ids['selected_features_global_ids'] = selected_feature_ids.tolist(
             )
-            self.selected_ids['selected_features_global_ids_fps_ordering'] = selected_ids_sorting.tolist(
-            )
             self.selected_ids = dict(coefficient_subselection=self.selected_ids)
             return self.selected_ids
 
