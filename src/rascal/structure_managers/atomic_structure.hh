@@ -113,6 +113,13 @@ namespace rascal {
 
     size_t get_number_of_atoms() const { return positions.cols(); }
 
+    /**
+     * Move the i_atom^{th} atom by disp.
+     * @param i_atom the atom index to displace (zero based)
+     * @param disp the displacement vector
+     * @throw std::runtime_error When i_atom is larger than the number
+     *                           of atoms in the structure.
+     */
     template <typename Derived>
     void displace_position(const size_t & i_atom,
                            const Eigen::MatrixBase<Derived> & disp) {

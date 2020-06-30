@@ -47,15 +47,11 @@ namespace rascal {
     json structure_copy = manager_root->get_atomic_structure();
     auto atomic_structure =
         structure_copy.template get<AtomicStructure<ThreeD>>();
-    // displace the atom
     atomic_structure.displace_position(i_atom, disp);
     // make sure all atoms are in the unit cell
     atomic_structure.wrap();
-    // update the neighborlist
     manager->update(atomic_structure);
-    // compute the representation of the modified structure
     calculator.compute(manager);
-    // compute the kernel of the modified structure
     std::vector<std::remove_const_t<Manager>> managers{};
     managers.emplace_back(manager);
     math::Matrix_t KNM = kernel.compute(calculator, managers, sparse_points);
