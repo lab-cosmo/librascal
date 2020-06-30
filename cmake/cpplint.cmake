@@ -49,7 +49,7 @@
 # select files extensions to check
 
 # target to run cpplint.py for all configured sources
-set(CPPLINT_TARGET lint CACHE STRING "Name of C++ style checker target")
+set(CPPLINT_TARGET cpplint CACHE STRING "Name of C++ style checker target")
 
 mark_as_advanced(CPPLINT_TARGET)
 

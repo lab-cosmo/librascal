@@ -1,7 +1,9 @@
 
 set(BLACK_TARGET pretty-python CACHE STRING "Name of python autoformatter")
+set(BLACK_LINT_TARGET pylint CACHE STRING "Name of python autoformatter")
 
 mark_as_advanced(BLACK_TARGET)
+mark_as_advanced(BLACK_LINT_TARGET)
 
 # project root directory
 set(BLACK_PROJECT_ROOT ${PROJECT_SOURCE_DIR}
@@ -17,7 +19,23 @@ if(BLACK)
     message(STATUS "BLACK auto formatter: ${BLACK}")
     # common target to concatenate all BLACK.py targets
     add_custom_target(${BLACK_TARGET})
+    add_custom_target(${BLACK_LINT_TARGET})
     set(BLACK_FOUND TRUE)
+
+    # run black on python files that are at the root directory
+    set(ROOT_DIR_FILES "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
+    add_custom_target(black.setup
+        COMMAND ${BLACK} "-l 79" "-v" ${ROOT_DIR_FILES}
+        COMMENT "black: reformatting python source code"
+    )
+    add_custom_target(black.lint.setup
+        COMMAND ${BLACK} "--check" "-l 79" "-v" ${ROOT_DIR_FILES}
+        COMMENT "black: Checking python source code style"
+    )
+    add_dependencies(${BLACK_TARGET} black.setup)
+    add_dependencies(${BLACK_LINT_TARGET} black.lint.setup)
+
+
 else()
     message(STATUS "The optional black formater has not been found. "
       "For more information see"
@@ -41,15 +59,25 @@ function(black_add_subdirectory DIR)
     # create valid target name for this check
     string(REGEX REPLACE "/" "." TEST_NAME ${DIR})
     set(TARGET_NAME ${BLACK_TARGET}.${TEST_NAME})
+    set(LINT_TARGET_NAME lint.${BLACK_TARGET}.${TEST_NAME})
 
-    # perform black check
+    # perform black reformatting
     add_custom_target(${TARGET_NAME}
-        COMMAND ${BLACK} "-l 79"  ${LIST_OF_FILES}
+        COMMAND ${BLACK} "-l 79" "-v" ${LIST_OF_FILES}
         DEPENDS ${LIST_OF_FILES}
-        COMMENT "black: Checking source code style"
+        COMMENT "black: reformatting python source code"
+    )
+
+    # perform black reformatting
+    add_custom_target(${LINT_TARGET_NAME}
+        COMMAND ${BLACK} "--check" "-l 79" "-v" ${LIST_OF_FILES}
+        DEPENDS ${LIST_OF_FILES}
+        COMMENT "black: Checking python source code style"
     )
 
     # run this target, when `pretty-python` is
     add_dependencies(${BLACK_TARGET} ${TARGET_NAME})
+    # run this target, when `pylint` is
+    add_dependencies(${BLACK_LINT_TARGET} ${LINT_TARGET_NAME})
 
 endfunction()
