@@ -202,7 +202,7 @@ if(BUILD_DOC)
     add_subdirectory(docs)
 endif()
 
-# target to run cpplint.py for all configured sources
+# target to run linter for all configured sources
 set(LINT_TARGET lint CACHE STRING "Name of C++ and python style checker target")
 mark_as_advanced(LINT_TARGET)
 add_custom_target(${LINT_TARGET})
