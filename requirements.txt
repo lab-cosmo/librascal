@@ -1,4 +1,4 @@
-# python library 
+# python library
 numpy
 scipy
 jupyter
@@ -13,7 +13,7 @@ sphinx_rtd_theme
 nbsphinx
 # Developers tools - code formatting
 cpplint
-autopep8
+black
 # Developers tools - data generation scripts
 ase
 mpmath
