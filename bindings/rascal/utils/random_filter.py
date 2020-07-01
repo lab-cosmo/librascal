@@ -14,22 +14,27 @@ class RandomFilter(BaseIO):
     ----------
     representation : Calculator
         Representation calculator associated with the kernel
-    Nselect: int
+    Nselect: int or dict
         number of points to select. if act_on='sample per specie' then it should
         be a dictionary mapping atom type to the number of samples, e.g.
         Nselect = {1:200,6:100,8:50}.
+    Fselect: int or dict
+        fraction of points to select. If Nselect is provided, this argument
+        will be ignored.
+        If act_on='sample per specie' then it should
+        be a dictionary mapping atom type to the number of samples, e.g.
+        Nselect = {1:0.2,6:0.1,8:0.9}.
     act_on: string
         Select how to apply the selection. Can be either of 'sample',
         'sample per species','feature'.
-    starting_index: int
-        Index used to start the FPS selection with.
 
     """
 
-    def __init__(self, representation, Nselect, act_on='sample per species',
+    def __init__(self, representation, Nselect=None, Fselect=None, act_on='sample per species',
                  seed=10):
         self._representation = representation
         self.Nselect = Nselect
+        self.Fselect = Fselect
         modes = ['sample', 'sample per species', 'feature']
         if act_on in modes:
             self.act_on = act_on
@@ -53,8 +58,31 @@ class RandomFilter(BaseIO):
         return self
 
     def filter(self, managers, n_select=None):
-        if n_select is None:
+        if n_select is None and self.Nselect is not None:
             n_select = self.Nselect
+        elif n_select is None and self.Fselect is not None:
+            if self.act_on == 'sample per species':
+                numbers = []
+                for manager in managers:
+                    for at in manager:
+                        numbers.extend(at.atom_type)
+                counts = np.bincount(numbers)
+                n_select = {}
+                for sp,fraction in self.Fselect.items():
+                    n_select[sp] = int(fraction*counts[sp])
+            elif self.act_on == 'sample':
+                n_atoms = 0
+                for manager in managers:
+                    n_atoms += len(manager)
+                n_select = self.Fselect*n_atoms
+            elif self.act_on == 'feature':
+                feat_idx2coeff_idx = self._representation.get_feature_index_mapping(
+                managers)
+                n_feat = np.max(list(feat_idx2coeff_idx.keys()))
+                n_select = self.Fselect*n_feat
+        elif self.Nselect is None and self.Fselect is None:
+            n_select = None
+
         np.random.seed(self.seed)
 
         if self.act_on == 'sample per species':
@@ -99,6 +127,7 @@ class RandomFilter(BaseIO):
                 np.random.shuffle(ids)
             else:
                 n_select = Nfeat
+                
             self.selected_feature_ids_global = ids
             self.selected_ids = {key: []
                                  for key in feat_idx2coeff_idx[0].keys()}
