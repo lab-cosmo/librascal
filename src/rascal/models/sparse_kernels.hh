@@ -232,6 +232,7 @@ namespace rascal {
                          SparsePoints & sparse_points,
                          const std::string & representation_name,
                          const std::string & representation_grad_name) {
+        using Manager_t = typename StructureManagers::Manager_t;
         size_t n_centers{0};
         // find the total number of rows the matrix block should have
         for (const auto & manager : managers) {
@@ -239,55 +240,82 @@ namespace rascal {
         }
         size_t n_sparse_points{sparse_points.size()};
         math::Matrix_t KNM(n_centers, n_sparse_points);
-        KNM.setZero();
+        // KNM.setZero();
         size_t i_center{0};
         // loop over the structures
         for (auto & manager : managers) {
+          Property<double, 1, Manager_t, SpatialDims, Eigen::Dynamic> dKdr{
+              *manager, "no metadata", true};
+          dKdr.set_nb_col(n_sparse_points);
+          dKdr.resize();
+          dKdr.setZero();
           auto && prop_grad{*manager->template get_property<PropertyGradient_t>(
               representation_grad_name, true)};
-
+          std::map<int, std::set<int>> gradient_sum_counter{};
+          for (auto center : manager) {
+            std::set<int> count{};
+            gradient_sum_counter[center.get_atom_tag()] = count;
+          }
           if (this->zeta == 1) {
             // simpler version where the kernel derivative is one
             for (auto center : manager) {
+              int sp{center.get_atom_type()};
+              auto atom_i_tag = center.get_atom_tag();
               for (auto neigh : center.pairs_with_self_pair()) {
-                int sp{neigh.get_atom_type()};
-                KNM.block(i_center, 0, SpatialDims, n_sparse_points) +=
-                    sparse_points.dot_derivative(sp, prop_grad[neigh])
-                        .transpose();
+                auto atom_j = neigh.get_atom_j();
+                auto atom_j_tag = atom_j.get_atom_tag();
+                // prop_grad contains \grad_j X_i where j is a neighbor atom
+                // and i a center atom
+                // for computing the kernel gradient we only want the terms
+                // when j corresponds also to a central atom (so periodic
+                // images contributions are excluded unless only periodic
+                // images exist in the neighborhood then one of these is
+                // included)
+                if (gradient_sum_counter[atom_j_tag].count(atom_i_tag) == 0) {
+                  dKdr[atom_j] +=
+                      sparse_points.dot_derivative(sp, prop_grad[neigh])
+                          .transpose();
+                  gradient_sum_counter[atom_j_tag].insert(atom_i_tag);
+                }
               }
-              i_center += SpatialDims;
             }
           } else {
             auto && prop{*manager->template get_property<Property_t>(
                 representation_name, true)};
-            std::map<int, int> tag2index{};
-            int i_row{0};
-            // compute the gradient of the kernel w.r.t. the representation
-            // dk/dX without the pseudo point factor
-            math::Matrix_t rep(manager->size(), n_sparse_points);
+            // put together dk/dX, the pseudo points and dX/dr
             for (auto center : manager) {
               int sp{center.get_atom_type()};
-              int tag{center.get_atom_tag()};
-              tag2index[tag] = i_row;
-              rep.row(i_row) =
+              auto atom_i_tag = center.get_atom_tag();
+              // compute the gradient of the kernel w.r.t. the representation
+              // dk/dX without the pseudo point factor
+              Eigen::Matrix<double, 1, Eigen::Dynamic> rep =
                   this->zeta *
                   pow_zeta(sparse_points.dot(sp, prop[center]), this->zeta - 1)
                       .transpose();
-              i_row++;
-            }
-            // put together dk/dX, the pseudo points and dX/dr
-            for (auto center : manager) {
               for (auto neigh : center.pairs_with_self_pair()) {
-                int sp{neigh.get_atom_type()};
                 auto atom_j = neigh.get_atom_j();
-                int tag{atom_j.get_atom_tag()};
-                KNM.block(i_center, 0, SpatialDims, n_sparse_points) +=
-                    sparse_points.dot_derivative(sp, prop_grad[neigh])
-                        .transpose() *
-                    rep.row(tag2index[tag]).asDiagonal();
+                auto atom_j_tag = atom_j.get_atom_tag();
+                // prop_grad contains \grad_j X_i where j is a neighbor atom
+                // and i a center atom
+                // for computing the kernel gradient we only want the terms
+                // when j corresponds also to a central atom (so periodic
+                // images contributions are excluded unless only periodic
+                // images exist in the neighborhood then one of these is
+                // included)
+                if (gradient_sum_counter[atom_j_tag].count(atom_i_tag) == 0) {
+                  dKdr[atom_j] +=
+                      sparse_points.dot_derivative(sp, prop_grad[neigh])
+                          .transpose() *
+                      rep.asDiagonal();
+                  gradient_sum_counter[atom_j_tag].insert(atom_i_tag);
+                }
               }
-              i_center += SpatialDims;
             }
+          }
+          // copy the data to the kernel matrix
+          for (auto center : manager) {
+            KNM.block(i_center, 0, SpatialDims, n_sparse_points) = dKdr[center];
+            i_center += SpatialDims;
           }
         }
         return KNM;

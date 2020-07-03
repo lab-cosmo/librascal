@@ -173,7 +173,7 @@ namespace rascal {
           if (is_zero_ref(i_row, i_col) and is_zero_test(i_row, i_col)) {
             rel_diff(i_row, i_col) = 0.;
           } else if (not is_zero_ref(i_row, i_col)) {
-            rel_diff(i_row, i_col) /= reference(i_row, i_col);
+            rel_diff(i_row, i_col) /= std::abs(reference(i_row, i_col));
           }
         }
       }
@@ -211,7 +211,7 @@ namespace rascal {
       if (is_zero_ref and is_zero_test) {
         rel_diff = 0.;
       } else if (not is_zero_ref) {
-        rel_diff /= reference;
+        rel_diff /= std::abs(reference);
       }
 
       if (rel_diff > delta) {

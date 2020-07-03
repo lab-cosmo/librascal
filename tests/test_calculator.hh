@@ -427,7 +427,9 @@ namespace rascal {
         "reference_data/inputs/SiC_moissanite.json",
         "reference_data/inputs/SiCGe_wurtzite_like.json",
         "reference_data/inputs/SiC_moissanite_supercell.json",
-        "reference_data/inputs/methane.json"};
+        "reference_data/inputs/methane.json",
+        "reference_data/inputs/small_molecule.json",
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json"};
 
     const double cutoff{2.5};
     const double cutoff_skin{0.};
@@ -653,6 +655,11 @@ namespace rascal {
     std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
     std::vector<json> rep_hypers{{{"max_radial", 2},
                                   {"max_angular", 2},
+                                  {"normalize", false},
+                                  {"soap_type", "PowerSpectrum"},
+                                  {"compute_gradients", true}},
+                                 {{"max_radial", 2},
+                                  {"max_angular", 2},
                                   {"normalize", true},
                                   {"soap_type", "PowerSpectrum"},
                                   {"compute_gradients", true}}};
@@ -865,25 +872,50 @@ namespace rascal {
       auto && gradients_sparse{
           *structure_manager->template get_property<PropGrad_t>(
               representation.get_gradient_name())};
-
+      auto ii_pair = center.get_atom_ii();
+      auto & data_center{data_sparse[ii_pair]};
+      auto keys_center = gradients_sparse.get_keys(ii_pair);
       Key_t center_key{center.get_atom_type()};
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
+      size_t n_entries_center{n_entries_per_key * keys_center.size()};
       size_t n_entries_neighbours{0};
       // Count all the keys in the sparse gradient structure where the gradient
       // is nonzero (i.e. where the key has an entry in the structure)
-      for (auto neigh : center.pairs_with_self_pair()) {
+      for (auto neigh : center.pairs()) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
+        auto swapped_ref{std::move(swap_pair_ref(neigh))};
         n_entries_neighbours +=
-            (gradients_sparse[neigh].get_keys().size() * n_entries_per_key);
+            (gradients_sparse[swapped_ref].get_keys().size() *
+             n_entries_per_key);
       }
       // Packed array containing: The center coefficients (all species) and
       // the neighbour coefficients (only same species as center)
-      Eigen::ArrayXd data_pairs(n_entries_neighbours);
+      Eigen::ArrayXd data_pairs(n_entries_center + n_entries_neighbours);
 
       size_t result_idx{0};
-      for (auto neigh : center.pairs_with_self_pair()) {
-        auto atom_j = neigh.get_atom_j();
-        auto & data_neigh{data_sparse[atom_j]};
-        auto keys_neigh{gradients_sparse[neigh].get_keys()};
+      for (auto & key : keys_center) {
+        Eigen::Map<Eigen::RowVectorXd> data_flat(data_center[key].data(),
+                                                 n_entries_per_key);
+        data_pairs.segment(result_idx, n_entries_per_key) = data_flat;
+        result_idx += n_entries_per_key;
+      }
+      for (auto neigh : center.pairs()) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
+        auto & data_neigh{data_sparse[neigh]};
+        // The neighbour gradient (i =/= j) only contributes to certain species
+        // channels (keys), in the case of SOAP and SphExpn those keys
+        // containing the species of the center (the atom wrt the derivative is
+        // being taken)
+        // The nonzero gradient keys are already indicated in the sparse
+        // gradient structure
+        auto swapped_ref{std::move(swap_pair_ref(neigh))};
+        auto keys_neigh{gradients_sparse[swapped_ref].get_keys()};
         for (auto & key : keys_neigh) {
           Eigen::Map<Eigen::ArrayXd> data_flat(data_neigh[key].data(),
                                                n_entries_per_key);
@@ -911,30 +943,52 @@ namespace rascal {
       auto && gradients_sparse{
           *structure_manager->template get_property<PropGrad_t>(
               representation.get_gradient_name())};
-
+      auto ii_pair = center.get_atom_ii();
+      auto & gradients_center{gradients_sparse[ii_pair]};
+      auto keys_center = gradients_center.get_keys();
       size_t n_entries_per_key{static_cast<size_t>(data_sparse.get_nb_comp())};
+      size_t n_entries_center{n_entries_per_key * keys_center.size()};
       size_t n_entries_neighbours{0};
-      for (auto neigh : center.pairs_with_self_pair()) {
+      for (auto neigh : center.pairs()) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
+        auto swapped_ref{std::move(swap_pair_ref(neigh))};
         n_entries_neighbours +=
-            (gradients_sparse[neigh].get_keys().size() * n_entries_per_key);
+            (gradients_sparse[swapped_ref].get_keys().size() *
+             n_entries_per_key);
       }
       Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>
-          grad_coeffs_pairs(3, n_entries_neighbours);
+          grad_coeffs_pairs(3, n_entries_center + n_entries_neighbours);
       grad_coeffs_pairs.setZero();
 
       // Use the exact same iteration pattern as in f()  to guarantee that the
       // gradients appear in the same place as their corresponding data
       size_t result_idx{0};
-      for (auto neigh : center.pairs_with_self_pair()) {
-        auto atom_j = neigh.get_atom_j();
+      for (auto & key : keys_center) {
+        // Here the 'flattening' retains the 3 Cartesian dimensions as rows,
+        // since they vary the slowest within each key
+        Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
+            gradients_center[key].data(), 3, n_entries_per_key);
+        grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
+            grad_coeffs_flat;
+        result_idx += n_entries_per_key;
+      }
+      for (auto neigh : center.pairs()) {
+        if (this->structure_manager->is_ghost_atom(neigh)) {
+          // Don't compute gradient contributions onto ghost atoms
+          continue;
+        }
+        // We need grad_i c^{j} -- using just 'neigh' would give us
+        // grad_j c^{i}, hence the swap
+        auto neigh_swap{swap_pair_ref(neigh)};
+        auto & gradients_neigh{gradients_sparse[neigh_swap]};
         // The set of species keys should be the same for all images of i
-        auto & gradients_neigh{gradients_sparse[neigh]};
         auto keys_neigh{gradients_neigh.get_keys()};
         for (auto & key : keys_neigh) {
-          Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat_(
+          Eigen::Map<Matrix3Xd_RowMaj_t> grad_coeffs_flat(
               gradients_neigh[key].data(), 3, n_entries_per_key);
-          Matrix3Xd_RowMaj_t grad_coeffs_flat(3, n_entries_per_key);
-          grad_coeffs_flat = grad_coeffs_flat_;
           grad_coeffs_pairs.block(0, result_idx, 3, n_entries_per_key) =
               grad_coeffs_flat;
           result_idx += n_entries_per_key;
@@ -952,6 +1006,57 @@ namespace rascal {
     std::vector<size_t> n_neighbors{};
 
     void advance_center() { ++this->center_it; }
+
+    /**
+     * Swap a ClusterRef<order=2> (i, j) so it refers to (j, i) instead.
+     * Here we refer to atom_i as the center atom in the pair and atom_j
+     * as the neighboring atom in the pair that has been wrapped in the
+     * unit cell.
+     *
+     * @return std::vector of ClusterRefKeys or order 2 (pair keys) of all pairs
+     *         (j, i') where i' is either i or any of its periodic images within
+     *         the cutoff of j. The atom j, on the other hand, must be a real
+     *         atom (not a ghost or periodic image).
+     */
+    PairRefKey_t swap_pair_ref(const PairRef_t & pair_ref) {
+      // Get iterable atom_j from pair_ref
+      auto && atom_j_tag = pair_ref.get_internal_neighbour_atom_tag();
+      auto && atom_j_index =
+          this->structure_manager->get_atom_index(atom_j_tag);
+      auto atom_j_it = this->structure_manager->get_iterator_at(atom_j_index);
+      auto && atom_j{*atom_j_it};
+      // get the index of the center atom
+      size_t i_index{this->structure_manager->get_atom_index(pair_ref.front())};
+
+      // Find the (j, i) pair with j and i within the unit cell
+      std::vector<PairRefKey_t> pairs_ji;
+      for (auto new_pair : atom_j.pairs()) {
+        // make sure new_pair refers to atom within the unit cell
+        if (not this->structure_manager->is_ghost_atom(new_pair)) {
+          size_t i_trial_index{this->structure_manager->get_atom_index(
+              new_pair.get_internal_neighbour_atom_tag())};
+          // Is this the i (old center) atom ?
+          if (i_trial_index == i_index) {
+            pairs_ji.emplace_back(std::move(new_pair));
+          }
+        }
+      }
+      if (pairs_ji.size() == 0) {
+        std::stringstream err_str{};
+        err_str << "Didn't find any pairs for pair (i=" << pair_ref.front()
+                << ", j=" << pair_ref.back()
+                << "); access index for j = " << atom_j_tag;
+        throw std::range_error(err_str.str());
+      } else if (pairs_ji.size() > 1) {
+        std::stringstream err_str{};
+        err_str
+            << "Found more than one (j,i) pair within the unit cell for pair"
+            << " (i=" << pair_ref.front() << ", j=" << pair_ref.back()
+            << "); access index for j = " << atom_j_tag;
+        throw std::range_error(err_str.str());
+      }
+      return pairs_ji.front();
+    }
   };
 
   /**

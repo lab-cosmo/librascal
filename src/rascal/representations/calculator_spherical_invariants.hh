@@ -578,14 +578,14 @@ namespace rascal {
         std::shared_ptr<StructureManager> manager);
 
     /**
-     * Update the gradients \grad_i p^{k} to include normalization, N_i,
-     * resulting in \grad_i \tilde{p}^{k}.
+     * Update the gradients \grad_k p^{i} to include normalization, N_i,
+     * resulting in \grad_k \tilde{p}^{i}.
      * We have:
-     * \grad_i \tilde{p}^{k} = \grad_i p^{k} / N_k
-             - \tilde{p}^{k} [\tilde{p}^{k} \cdot \grad_i p^{k} / N_k],
+     * \grad_k \tilde{p}^{i} = \grad_k p^{i} / N_i
+             - \tilde{p}^{i} [\tilde{p}^{i} \cdot \grad_k p^{i} / N_i],
      * where $\cdot$ is a dot product between vectors.
      * Note that this expects the soap vectors to be normalized already, and
-     * the norm stored separately
+     * the norm stored separately.
      */
     template <class StructureManager, class SpectrumNorm>
     void update_gradients_for_normalization(
@@ -599,26 +599,33 @@ namespace rascal {
       // divide all gradients with the normalization factor N_i
       for (auto center : manager) {
         for (auto neigh : center.pairs_with_self_pair()) {
-          auto atom_j = neigh.get_atom_j();
-          soap_vector_gradients[neigh].multiply_elements_by(inv_norms[atom_j]);
+          soap_vector_gradients[neigh].multiply_elements_by(inv_norms[center]);
         }
       }
 
-      // \tilde{p}^{k} \cdot \grad_i p^{k} / N_k
+      // \tilde{p}^{i} \cdot \grad_k p^{i} / N_i
       Eigen::Vector3d soap_vector_dot_gradient{};
 
       // compute the dot product and update the gradients to be normalized
       for (auto center : manager) {
+        const int atom_i_tag{center.get_atom_tag()};
         for (auto neigh : center.pairs_with_self_pair()) {
-          auto atom_j = neigh.get_atom_j();
-          const auto & soap_vector = soap_vectors[atom_j];
+          auto && atom_j = neigh.get_atom_j();
+          const int atom_j_tag{atom_j.get_atom_tag()};
+          // const bool is_center_atom{manager->is_center_atom(neigh)};
+          // compute grad contribution only if the neighbour is _not_ an image
+          // of the center (because then it moves with the center)
+          if (atom_j_tag == atom_i_tag and manager->is_ghost_atom(neigh)) {
+            continue;
+          }
+          const auto & soap_vector = soap_vectors[center];
           auto & soap_vector_gradients_by_neigh = soap_vector_gradients[neigh];
           soap_vector_dot_gradient.setZero();
           // make sure to iterate over keys that are present in both soap_vector
           // and soap_vector_gradients_by_neigh
           const auto keys_grad = soap_vector_gradients_by_neigh.get_keys();
           const auto keys_intersect = soap_vector.intersection(keys_grad);
-          // compute \tilde{p}^{k} \cdot \grad_i p^{k} / N_k
+          // compute \tilde{p}^{i} \cdot \grad_k p^{i} / N_i
           for (const auto & key : keys_intersect) {
             auto soap_gradient_by_species_pair =
                 soap_vector_gradients_by_neigh[key];
@@ -635,7 +642,8 @@ namespace rascal {
 
           // Now update each species-pair-block using the dot-product just
           // computed
-          for (const auto & key : keys_intersect) {
+          // for (const auto & key : keys_grad) {
+          for (const auto & key : soap_vector.get_keys()) {
             auto soap_gradient_by_species_pair =
                 soap_vector_gradients_by_neigh[key];
             const auto & soap_vector_by_species_pair = soap_vector[key];
@@ -645,7 +653,7 @@ namespace rascal {
                 grad_component_size);
             ConstMapSoapFlat_t soap_vector_N(soap_vector_by_species_pair.data(),
                                              grad_component_size);
-            // compute \tilde{p}^{k} [\tilde{p}^{k} \cdot \grad_i p^{k} / N_k]
+            // compute \tilde{p}^{i} [\tilde{p}^{i} \cdot \grad_k p^{i} / N_i]
             // as an outer product
             soap_gradient_dim_N -=
                 soap_vector_dot_gradient * soap_vector_N.transpose();
@@ -798,46 +806,45 @@ namespace rascal {
 
       if (this->compute_gradients) {
         const int atom_i_tag{center.get_atom_tag()};
+        // c^{i}
+        auto & coefficients{expansions_coefficients[center]};
+        std::vector<Key_t> keys_coef{coefficients.get_keys()};
 
         // Sum the gradients wrt the neighbour atom position
-        // compute the \grad_i p^{k} coeffs where k is either i or j
+        // compute the \grad_k p^{i} coeffs where k is either i or j
         for (auto neigh : center.pairs_with_self_pair()) {
           auto && atom_j = neigh.get_atom_j();
           const int atom_j_tag{atom_j.get_atom_tag()};
-          const bool is_center_atom{manager->is_center_atom(neigh)};
+          // const bool is_center_atom{manager->is_center_atom(neigh)};
           // compute grad contribution only if the neighbour is _not_ an image
-          // of the center (because then it moves with the center) or is
-          // within the unit cell (so that coefficients[j] exists)
-          if (atom_j_tag == atom_i_tag and not is_center_atom) {
+          // of the center (because then it moves with the center)
+          if (atom_j_tag == atom_i_tag and manager->is_ghost_atom(neigh)) {
             continue;
           }
-          // c^{k}
-          auto & coefficients_j{expansions_coefficients[atom_j]};
-          std::vector<Key_t> keys_coef_j{coefficients_j.get_keys()};
-          // \grad_i c^{k}
+
+          // \grad_k c^{i}
           auto & grad_neigh_coefficients{
               expansions_coefficients_gradient[neigh]};
           std::vector<Key_t> keys_coef_grad_neigh{
               grad_neigh_coefficients.get_keys()};
-          // \grad_i p^{k}
+          // \grad_k p^{i}
           auto & soap_neigh_gradient{soap_vector_gradients[neigh]};
 
           std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
               grad_neigh_keys{};
-          // \grad_i p^{kab} = \grad_i c^{k a} c^{k b} + c^{k a} \grad_i c^{k b}
-          // by definition \grad_i c^{k a} is non zero for one key 'a' so
-          // either a == b and we compute one term with a factor of 2 or only
+          // \grad_k p^{iab} = \grad_k c^{i a} c^{i b} + c^{i a} \grad_k c^{i b}
+          // by definition \grad_k c^{i a} is non zero for one key 'a' for k!=i
+          // so either a == b and we compute one term with a factor of 2 or only
           // one of the two terms is non zero hence the swap of entry when
           // spair_type[0] > spair_type[1] == true
           for (const auto & coef_key_1 : keys_coef_grad_neigh) {
-            // \grad_i c^{k a}
+            // \grad_k c^{i a}
             const auto & grad_neigh_coefficients_1{
                 grad_neigh_coefficients[coef_key_1]};
 
-            for (const auto & coef_key_2 : keys_coef_j) {
-              // c^{k b}
-              const auto & expansion_coefficients_j_2{
-                  coefficients_j[coef_key_2]};
+            for (const auto & coef_key_2 : keys_coef) {
+              // c^{i b}
+              const auto & expansion_coefficients_2{coefficients[coef_key_2]};
               bool sorted{true}, equal{false};
               // make sure spair_type has sorted entries
               if (coef_key_1[0] > coef_key_2[0]) {
@@ -854,12 +861,12 @@ namespace rascal {
               }
 
               grad_neigh_keys.insert(spair_type);
-              // \grad_i p^{k ab}
+              // \grad_k p^{i ab}
               auto soap_neigh_gradient_by_species_pair{
                   soap_neigh_gradient[this->key_map[spair_type]]};
               const auto & coef_ids{coeff_indices_map[spair_type]};
 
-              // computes  \grad_i c^{k a}_{n_1} c^{k b}_{n_2}
+              // computes  \grad_k c^{i a}_{n_1} c^{i b}_{n_2}
               if (sorted or equal) {
                 for (size_t cartesian_idx{0}; cartesian_idx < 3;
                      ++cartesian_idx) {
@@ -875,7 +882,7 @@ namespace rascal {
                           coef_idx.n1 + cartesian_offset_n,
                           coef_idx.l_block_idx, 1,
                           coef_idx.l_block_size).array() *
-                       expansion_coefficients_j_2.block(
+                       expansion_coefficients_2.block(
                           coef_idx.n2, coef_idx.l_block_idx,
                           1,  coef_idx.l_block_size).array()).sum()
                       * coef_idx.l_factor;
@@ -884,7 +891,7 @@ namespace rascal {
                 }    // for cartesian_idx
               }      // if (sorted or equal)
 
-              // computes c^{k a}_{n_1} \grad_i c^{k b}_{n_2}
+              // computes c^{i a}_{n_1} \grad_k c^{i b}_{n_2}
               if (not sorted or equal) {
                 for (size_t cartesian_idx{0}; cartesian_idx < 3;
                      ++cartesian_idx) {
@@ -900,7 +907,7 @@ namespace rascal {
                             coef_idx.n2 + cartesian_offset_n,
                             coef_idx.l_block_idx,
                             1, coef_idx.l_block_size).array() *
-                       expansion_coefficients_j_2.block(
+                       expansion_coefficients_2.block(
                             coef_idx.n1, coef_idx.l_block_idx,
                             1, coef_idx.l_block_size).array()).sum()
                       * coef_idx.l_factor;
@@ -908,7 +915,7 @@ namespace rascal {
                   }  // for const auto& coef_idx : coef_ids
                 }    // for cartesian_idx
               }      // if (not sorted or equal)
-            }        // keys_coef_j
+            }        // keys_coef
           }          // keys_coef_grad_neigh
 
           // multiply with \sqrt(2) factor to account
@@ -1321,9 +1328,6 @@ namespace rascal {
             pair_list{};
         int center_type{center.get_atom_type()};
         Key_t pair_type{center_type, center_type};
-        // avoid checking the order in pair_type by ensuring it has already been
-        // done
-        internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
 
         pair_list.insert({is_sorted, pair_type});
         for (const auto & el1 : coefficients) {
@@ -1350,14 +1354,14 @@ namespace rascal {
         keys_list.emplace_back(pair_list);
         if (this->compute_gradients) {
           keys_list_grad.emplace_back(pair_list);
-
+          auto & coef = expansions_coefficients[center];
           // Neighbour gradients need a separate pair list because if the
           // species of j are not the same as either of the species for that
-          // SOAP entry, the gradient is zero. since we compute \grad_i p{j ab}
-          // we need the species present in the environment of c^{j}
+          // SOAP entry, the gradient is zero. since we compute \grad_j p{i ab}
+          // we need the species present in the environment of c^{i}
           for (auto neigh : center.pairs()) {
+            int neigh_type{neigh.get_atom_type()};
             auto atom_j = neigh.get_atom_j();
-            auto & coef_j = expansions_coefficients[atom_j];
             auto atom_j_tag = atom_j.get_atom_tag();
             std::set<internal::SortedKey<Key_t>, internal::CompareSortedKeyLess>
                 grad_pair_list{};
@@ -1366,13 +1370,13 @@ namespace rascal {
             if (atom_j_tag != atom_i_tag) {
               // list of keys present in the neighbor environment (contains
               // center_type by definition)
-              std::vector<Key_t> keys_j{coef_j.get_keys()};
+              std::vector<Key_t> keys_j{coef.get_keys()};
 
               for (const auto & neigh_1_type : keys_j) {
                 for (const auto & neigh_2_type : keys_j) {
                   if (neigh_1_type[0] <= neigh_2_type[0]) {
-                    if ((center_type == neigh_1_type[0]) or
-                        (center_type == neigh_2_type[0])) {
+                    if ((neigh_type == neigh_1_type[0]) or
+                        (neigh_type == neigh_2_type[0])) {
                       pair_type[0] = neigh_1_type[0];
                       pair_type[1] = neigh_2_type[0];
                       grad_pair_list.insert({is_sorted, pair_type});
@@ -1380,8 +1384,17 @@ namespace rascal {
                   }
                 }
               }
+              if (not this->normalize) {
+                keys_list_grad.emplace_back(grad_pair_list);
+              } else {
+                // the normalization: \grad_k \tilde{p}^{i} ~ \tilde{p}^{i}
+                // the keys for the gradient are the same as for the
+                // representation
+                keys_list_grad.emplace_back(pair_list);
+              }
+            } else {
+              keys_list_grad.emplace_back(grad_pair_list);
             }
-            keys_list_grad.emplace_back(grad_pair_list);
           }  // auto neigh : center.pairs()
         }    // if compute_gradients
 

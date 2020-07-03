@@ -6,5 +6,6 @@
       [1.0, 0.0, -1.0],
       [-1.0, 2.0, -1.0]
     ],
-    "verbosity": "NORMAL"
+    "verbosity": "NORMAL",
+    "fd_error_tol" : 3e-6
 }
