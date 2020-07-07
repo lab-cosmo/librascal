@@ -10,6 +10,26 @@ from numpy import linalg
 import scipy.sparse.linalg as sparselinalg
 
 
+def get_rank_svals(Svals, tol_ratio=None, max_size=None):
+    """Get the rank of a matrix from its singular values
+
+    Parameters:
+        Svals   The vector of singular values
+    Optional parameters:
+        tol_ratio   The cutoff for a singular value to be considered
+                    "zero" for the purposes of determining effective
+                    rank, as a ratio to the largest singular value in
+                    Svals
+                    Default is to use the NumPy criterion (eps*size)
+        max_size    Largest matrix dimension for determining singular
+                    value cutoff
+    """
+    if max_size is None:
+        max_size = max(Svals.shape)
+    if tol_ratio is None:
+        tol_ratio = np.finfo(Svals.dtype).eps * max_size
+    return np.sum(Svals > (np.max(Svals) * tol_ratio))
+
 def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10,
            use_sparse_svd=False, verbose=True):
     """ Apply CUR selection [1] to the input matrix.
@@ -49,11 +69,17 @@ def do_CUR(X, Nsel, act_on='sample', is_deterministic=False, seed=10,
     (24), 241730. https://doi.org/10.1063/1.5024611.
     """
     if use_sparse_svd:
-        U, _, VT = sparselinalg.svds(X, Nsel)
+        max_singular_vals = min(X.shape) - 1
+        num_singular_vals = min(max_singular_vals, Nsel)
+        U, Svals, VT = sparselinalg.svds(X, num_singular_vals)
     else:
-        U, _, VT = linalg.svd(X)
-        U = U[:, :Nsel]
-        VT = VT[:Nsel, :]
+        U, Svals, VT = linalg.svd(X)
+        # U = U[:, :Nsel]
+        # VT = VT[:Nsel, :]
+    X_rank = get_rank_svals(Svals, max_size=max(X.shape))
+    num_span_vectors = min(X_rank, Nsel)
+    U = U[:, :num_span_vectors]
+    VT = VT[:num_span_vectors, :]
     if ('sample' in act_on) and ('feature' in act_on):
         raise ValueError("Must supply either 'sample' or 'feature' in 'act_on'"
                          " string, not both")
