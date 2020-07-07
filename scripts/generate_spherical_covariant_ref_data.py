@@ -25,8 +25,7 @@ def get_feature_vector(hypers, frames):
         soap = SphericalCovariants(**hypers)
         soap_vectors = soap.transform(frames)
         print(
-            "Feature vector size: %.3fMB"
-            % (soap.get_num_coefficients() * 8.0 / 1.0e6)
+            "Feature vector size: %.3fMB" % (soap.get_num_coefficients() * 8.0 / 1.0e6)
         )
         feature_vector = soap_vectors.get_features(soap)
     return feature_vector
@@ -112,8 +111,7 @@ def dump_reference_json():
                 )
 
     with open(
-        os.path.join(root, dump_path, "spherical_covariants_reference.ubjson"),
-        "wb",
+        os.path.join(root, dump_path, "spherical_covariants_reference.ubjson"), "wb",
     ) as f:
         ubjson.dump(data, f)
 
@@ -140,12 +138,8 @@ def main(json_dump, save_kernel):
     }
 
     nstr = "2"  # number of structures
-    frames = read(
-        os.path.join(inputs_path, "water_rotations.xyz"), ":" + str(nstr)
-    )
-    species = set(
-        [atom for frame in frames for atom in frame.get_atomic_numbers()]
-    )
+    frames = read(os.path.join(inputs_path, "water_rotations.xyz"), ":" + str(nstr))
+    species = set([atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
     ncen = np.cumsum([len(frame) for frame in frames])[-1]
 
@@ -165,9 +159,7 @@ def main(json_dump, save_kernel):
             kernel[i, j] /= sqrtnorm[i] * sqrtnorm[j]
     if save_kernel is True:
         np.save(
-            os.path.join(
-                dump_path, "kernel_soap_example_lambda", str(lam), ".npy"
-            ),
+            os.path.join(dump_path, "kernel_soap_example_lambda", str(lam), ".npy"),
             kernel,
         )
 

@@ -351,9 +351,7 @@ def to_file(fn, obj, version=CURRENT_VERSION):
         _dump_npy(fn, data, class_name)
         dump_json(fn, data)
     else:
-        raise NotImplementedError(
-            "Unknown file extention: {}".format(file_extension)
-        )
+        raise NotImplementedError("Unknown file extention: {}".format(file_extension))
 
 
 def from_file(fn):
@@ -374,9 +372,7 @@ def from_file(fn):
             )
 
     else:
-        raise NotImplementedError(
-            "Unknown file extention: {}".format(file_extension)
-        )
+        raise NotImplementedError("Unknown file extention: {}".format(file_extension))
 
 
 def _dump_npy(fn, data, class_name):

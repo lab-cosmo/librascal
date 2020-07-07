@@ -22,11 +22,11 @@ if(BLACK)
     # run black on python files that are at the root directory
     set(ROOT_DIR_FILES "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
     add_custom_target(black.setup
-        COMMAND ${BLACK} "-l 79" "-v" ${ROOT_DIR_FILES}
+        COMMAND ${BLACK} "-l 88" "-v" ${ROOT_DIR_FILES}
         COMMENT "black: reformatting python source code"
     )
     add_custom_target(black.lint.setup
-        COMMAND ${BLACK} "--check" "-l 79" "-v" ${ROOT_DIR_FILES}
+        COMMAND ${BLACK} "--check" "-l 88" "-v" ${ROOT_DIR_FILES}
         COMMENT "black: Checking python source code style"
     )
     add_dependencies(${BLACK_TARGET} black.setup)
@@ -60,14 +60,14 @@ function(black_add_subdirectory DIR)
 
     # perform black reformatting
     add_custom_target(${TARGET_NAME}
-        COMMAND ${BLACK} "-l 79" "-v" ${LIST_OF_FILES}
+        COMMAND ${BLACK} "-l 88" "-v" ${LIST_OF_FILES}
         DEPENDS ${LIST_OF_FILES}
         COMMENT "black: reformatting python source code"
     )
 
     # perform black reformatting
     add_custom_target(${LINT_TARGET_NAME}
-        COMMAND ${BLACK} "--check" "-l 79" "-v" ${LIST_OF_FILES}
+        COMMAND ${BLACK} "--check" "-l 88" "-v" ${LIST_OF_FILES}
         DEPENDS ${LIST_OF_FILES}
         COMMENT "black: Checking python source code style"
     )

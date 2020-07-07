@@ -16,9 +16,7 @@ def get_power_spectrum_index_mapping(sp_pairs, n_max, l_max):
     for sp_pair, n1, n2, l in product(
         sp_pairs, range(n_max), range(n_max), range(l_max)
     ):
-        feat_idx2coeff_idx[i_feat] = dict(
-            a=sp_pair[0], b=sp_pair[1], n1=n1, n2=n2, l=l
-        )
+        feat_idx2coeff_idx[i_feat] = dict(a=sp_pair[0], b=sp_pair[1], n1=n1, n2=n2, l=l)
         i_feat += 1
     return feat_idx2coeff_idx
 
@@ -245,32 +243,24 @@ class SphericalInvariants(BaseIO):
                     # TODO(felix) remove this when there is a check for the
                     # distance for the usage of the interpolator in the
                     # RadialContribution
-                    print(
-                        "Warning: default parameter for spline range is used."
-                    )
+                    print("Warning: default parameter for spline range is used.")
                     spline_range = (0, interaction_cutoff)
                 optimization_args = {
                     "type": "Spline",
                     "accuracy": accuracy,
-                    "range": {
-                        "begin": spline_range[0],
-                        "end": spline_range[1],
-                    },
+                    "range": {"begin": spline_range[0], "end": spline_range[1],},
                 }
             elif optimization_args["type"] == "None":
                 optimization_args = dict({"type": "None"})
             else:
                 print(
-                    "Optimization type is not known. Switching to no"
-                    " optimization."
+                    "Optimization type is not known. Switching to no" " optimization."
                 )
                 optimization_args = dict({"type": "None"})
         else:
             optimization_args = dict({"type": "None"})
 
-        radial_contribution = dict(
-            type=radial_basis, optimization=optimization_args
-        )
+        radial_contribution = dict(type=radial_basis, optimization=optimization_args)
 
         self.update_hyperparameters(
             cutoff_function=cutoff_function,
@@ -317,9 +307,7 @@ class SphericalInvariants(BaseIO):
             "global_species",
             "coefficient_subselection",
         }
-        hypers_clean = {
-            key: hypers[key] for key in hypers if key in allowed_keys
-        }
+        hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
 
         self.hypers.update(hypers_clean)
         return
@@ -460,15 +448,11 @@ class SphericalInvariants(BaseIO):
             soap_type=self.hypers["soap_type"],
             inversion_symmetry=self.hypers["inversion_symmetry"],
             normalize=self.hypers["normalize"],
-            expansion_by_species_method=self.hypers[
-                "expansion_by_species_method"
-            ],
+            expansion_by_species_method=self.hypers["expansion_by_species_method"],
             global_species=self.hypers["global_species"],
             compute_gradients=self.hypers["compute_gradients"],
             gaussian_sigma_type=gaussian_density["type"],
-            gaussian_sigma_constant=gaussian_density["gaussian_sigma"][
-                "value"
-            ],
+            gaussian_sigma_constant=gaussian_density["gaussian_sigma"]["value"],
             cutoff_function_type=cutoff_function["type"],
             radial_basis=radial_contribution["type"],
             optimization_args=self.optimization_args,

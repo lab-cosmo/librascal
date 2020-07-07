@@ -138,10 +138,7 @@ def convert_selected_global_index2perstructure_index_per_species(
     selected_ids = [[] for ii in range(len(managers))]
     for sp in sps:
         ids = convert_selected_global_index2perstructure_index(
-            managers,
-            selected_ids_by_sp[sp],
-            strides_by_sp[sp],
-            map_by_manager[sp],
+            managers, selected_ids_by_sp[sp], strides_by_sp[sp], map_by_manager[sp],
         )
         for ii, selected_idx in zip(ids, selected_ids):
             selected_idx.extend(ii)

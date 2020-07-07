@@ -29,9 +29,7 @@ class AtomsList(object):
     -------
     """
 
-    def __init__(
-        self, frames, nl_options, start=None, length=None, managers=None
-    ):
+    def __init__(self, frames, nl_options, start=None, length=None, managers=None):
         self.nl_options = nl_options
         self._frames = frames
 
@@ -57,9 +55,7 @@ class AtomsList(object):
                 managers.add_structures(structures)
             except Exception as e:
                 raise RuntimeError(
-                    "Neighbourlist of structures failed "
-                    + "because: "
-                    + str(e)
+                    "Neighbourlist of structures failed " + "because: " + str(e)
                 )
             self.managers = managers
 
@@ -112,9 +108,7 @@ class AtomsList(object):
             X = self.managers.get_features(calculator._representation)
         else:
             keys_list = calculator.get_keys(species)
-            X = self.managers.get_features(
-                calculator._representation, keys_list
-            )
+            X = self.managers.get_features(calculator._representation, keys_list)
 
         return X
 
@@ -130,9 +124,7 @@ class AtomsList(object):
             returns a dictionary associating tuples of atomic numbers sorted
             alphabetically to the corresponding feature matrices
         """
-        return self.managers.get_features_by_species(
-            calculator._representation
-        )
+        return self.managers.get_features_by_species(calculator._representation)
 
 
 def get_neighbourlist(structure, options):
@@ -292,9 +284,7 @@ def mask_center_atoms_by_id(frame, id_select=None, id_blacklist=None):
     frame.arrays["center_atoms_mask"] = mask
 
 
-def mask_center_atoms_by_species(
-    frame, species_select=[], species_blacklist=[]
-):
+def mask_center_atoms_by_species(frame, species_select=[], species_blacklist=[]):
     """Mask the centers of an ASE atoms object, by atomic species
 
     Parameters
@@ -353,9 +343,7 @@ def mask_center_atoms_by_species(
     elif blacklist_is_int:
         id_blacklist = np.isin(frame.get_atomic_numbers(), species_blacklist)
     else:
-        raise ValueError(
-            "Species blacklist must be either all string or all int"
-        )
+        raise ValueError("Species blacklist must be either all string or all int")
     if "center_atoms_mask" not in frame.arrays:
         # add a default mask
         if species_select:

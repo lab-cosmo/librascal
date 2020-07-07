@@ -31,13 +31,7 @@ def dump_reference_json():
         for b in np.linspace(2, 10, 20):
             x, w = get_leggauss(order, a, b)
             data.append(
-                dict(
-                    a=a,
-                    b=b,
-                    order=order,
-                    points=x.tolist(),
-                    weights=w.tolist(),
-                )
+                dict(a=a, b=b, order=order, points=x.tolist(), weights=w.tolist(),)
             )
     print(len(data))
     with open(

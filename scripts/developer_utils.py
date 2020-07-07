@@ -19,6 +19,4 @@ if __name__ == "__main__":
         else:
             print("Command " + sys.argv[1] + " not known.")
     else:
-        print(
-            "Please provide an argument which functionality you want to use."
-        )
+        print("Please provide an argument which functionality you want to use.")

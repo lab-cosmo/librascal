@@ -78,9 +78,7 @@ def StructureCollectionFactory(nl_options):
     for opt in nl_options:
         full_name.insert(0, opt["name"])
         name = "_".join(full_name)
-        args.append(
-            dict(name=opt["name"], initialization_arguments=opt["args"])
-        )
+        args.append(dict(name=opt["name"], initialization_arguments=opt["args"]))
 
     if name not in _structure_collections:
         raise NameError(

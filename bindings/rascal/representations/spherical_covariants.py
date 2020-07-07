@@ -144,9 +144,7 @@ class SphericalCovariants(BaseIO):
             "radial_contribution",
             "cutoff_function_parameters",
         }
-        hypers_clean = {
-            key: hypers[key] for key in hypers if key in allowed_keys
-        }
+        hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
         self.hypers.update(hypers_clean)
         return
 
@@ -181,19 +179,12 @@ class SphericalCovariants(BaseIO):
                     np.ceil((self.hypers["max_angular"] + 1) ** 2 / 2.0)
                     - (1.0 + np.floor((self.hypers["lam"] - 1) / 2.0)) ** 2
                     - np.floor(
-                        (self.hypers["max_angular"] + 1 - self.hypers["lam"])
-                        ** 2
-                        / 2.0
+                        (self.hypers["max_angular"] + 1 - self.hypers["lam"]) ** 2 / 2.0
                     )
                     * (self.hypers["lam"] % 2)
                     - (
                         np.ceil(
-                            (
-                                self.hypers["max_angular"]
-                                + 1
-                                - self.hypers["lam"]
-                            )
-                            ** 2
+                            (self.hypers["max_angular"] + 1 - self.hypers["lam"]) ** 2
                             / 2.0
                         )
                         - (self.hypers["max_angular"] - self.hypers["lam"] + 1)
@@ -209,9 +200,7 @@ class SphericalCovariants(BaseIO):
                         + 4 * self.hypers["lam"] * self.hypers["max_angular"]
                     )
                 n_col *= 2 * self.hypers["lam"] + 1
-                return int(
-                    n_col * n_species ** 2 * self.hypers["max_radial"] ** 2
-                )
+                return int(n_col * n_species ** 2 * self.hypers["max_radial"] ** 2)
             else:
                 return (
                     n_species ** 2
@@ -222,18 +211,14 @@ class SphericalCovariants(BaseIO):
                             + self.hypers["lam"]
                             - 3 * self.hypers["lam"] ** 2
                             + 2 * self.hypers["max_angular"]
-                            + 4
-                            * self.hypers["lam"]
-                            * self.hypers["max_angular"]
+                            + 4 * self.hypers["lam"] * self.hypers["max_angular"]
                         )
                         / 2
                     )
                     * (2 * self.hypers["lam"] + 1)
                 )
         else:
-            raise ValueError(
-                "Only soap_type = LambdaSpectrum " "implemented for now"
-            )
+            raise ValueError("Only soap_type = LambdaSpectrum " "implemented for now")
 
     def get_keys(self, species):
         """
@@ -247,9 +232,7 @@ class SphericalCovariants(BaseIO):
                         continue
                     keys.append([sp1, sp2])
         else:
-            raise ValueError(
-                "Only soap_type = LambdaSpectrum " "implemented for now"
-            )
+            raise ValueError("Only soap_type = LambdaSpectrum " "implemented for now")
 
         return keys
 
@@ -267,9 +250,7 @@ class SphericalCovariants(BaseIO):
             inversion_symmetry=self.hypers["inversion_symmetry"],
             normalize=self.hypers["normalize"],
             gaussian_sigma_type=gaussian_density["type"],
-            gaussian_sigma_constant=gaussian_density["gaussian_sigma"][
-                "value"
-            ],
+            gaussian_sigma_constant=gaussian_density["gaussian_sigma"]["value"],
             lam=self.hypers["lam"],
             cutoff_function_type=cutoff_function["type"],
             radial_basis=radial_contribution["type"],

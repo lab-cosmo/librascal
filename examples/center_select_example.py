@@ -16,13 +16,9 @@ from rascal.neighbourlist.structure_manager import (
 )
 
 
-molecules = ase.io.read(
-    "../reference_data/inputs/small_molecules-1000.xyz", ":100"
-)
+molecules = ase.io.read("../reference_data/inputs/small_molecules-1000.xyz", ":100")
 n_centers = sum(mol.get_number_of_atoms() for mol in molecules)
-n_carbon_centers = sum(
-    np.sum(mol.get_atomic_numbers() == 6) for mol in molecules
-)
+n_carbon_centers = sum(np.sum(mol.get_atomic_numbers() == 6) for mol in molecules)
 print(
     "{:d} molecules, {:d} centres total, {:d} carbon centres".format(
         len(molecules), n_centers, n_carbon_centers

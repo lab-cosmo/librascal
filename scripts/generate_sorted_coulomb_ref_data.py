@@ -58,7 +58,5 @@ for fn in fns:
                 dict(feature_matrix=test.tolist(), hypers=copy(hypers))
             )
 
-with open(
-    os.path.join(root, dump_path, "sorted_coulomb_reference.ubjson"), "wb"
-) as f:
+with open(os.path.join(root, dump_path, "sorted_coulomb_reference.ubjson"), "wb") as f:
     ubjson.dump(data, f)

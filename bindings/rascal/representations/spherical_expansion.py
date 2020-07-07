@@ -142,31 +142,23 @@ class SphericalExpansion(BaseIO):
                     # TODO(felix) remove this when there is a check for the
                     # distance for the usage of the interpolator in the
                     # RadialContribution
-                    print(
-                        "Warning: default parameter for spline range is used."
-                    )
+                    print("Warning: default parameter for spline range is used.")
                     spline_range = (0, interaction_cutoff)
                 optimization_args = {
                     "type": "Spline",
                     "accuracy": accuracy,
-                    "range": {
-                        "begin": spline_range[0],
-                        "end": spline_range[1],
-                    },
+                    "range": {"begin": spline_range[0], "end": spline_range[1],},
                 }
             elif optimization_args["type"] == "None":
                 optimization_args = dict({"type": "None"})
             else:
                 print(
-                    "Optimization type is not known. Switching to no"
-                    " optimization."
+                    "Optimization type is not known. Switching to no" " optimization."
                 )
                 optimization_args = dict({"type": "None"})
         else:
             optimization_args = dict({"type": "None"})
-        radial_contribution = dict(
-            type=radial_basis, optimization=optimization_args
-        )
+        radial_contribution = dict(type=radial_basis, optimization=optimization_args)
 
         self.update_hyperparameters(
             cutoff_function=cutoff_function,
@@ -208,9 +200,7 @@ class SphericalExpansion(BaseIO):
             "expansion_by_species_method",
             "global_species",
         }
-        hypers_clean = {
-            key: hypers[key] for key in hypers if key in allowed_keys
-        }
+        hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
         self.hypers.update(hypers_clean)
 
     def transform(self, frames):
@@ -263,15 +253,11 @@ class SphericalExpansion(BaseIO):
             cutoff_smooth_width=cutoff_function["smooth_width"]["value"],
             max_radial=self.hypers["max_radial"],
             max_angular=self.hypers["max_angular"],
-            expansion_by_species_method=self.hypers[
-                "expansion_by_species_method"
-            ],
+            expansion_by_species_method=self.hypers["expansion_by_species_method"],
             global_species=self.hypers["global_species"],
             compute_gradients=self.hypers["compute_gradients"],
             gaussian_sigma_type=gaussian_density["type"],
-            gaussian_sigma_constant=gaussian_density["gaussian_sigma"][
-                "value"
-            ],
+            gaussian_sigma_constant=gaussian_density["gaussian_sigma"]["value"],
             cutoff_function_type=cutoff_function["type"],
             radial_basis=radial_contribution["type"],
             optimization_args=self.optimization_args,

@@ -92,16 +92,12 @@ class Kernel(BaseIO):
             # should be positive integer
             zeta = kwargs["zeta"]
             if not (zeta > 0 and isinstance(zeta, int)):
-                raise ValueError(
-                    "The given zeta has to be a positive integer."
-                )
+                raise ValueError("The given zeta has to be a positive integer.")
         elif name == "GAP" and "zeta" in kwargs:
             # should be positive integer
             zeta = kwargs["zeta"]
             if not (zeta > 0 and isinstance(zeta, int)):
-                raise ValueError(
-                    "The given zeta has to be a positive integer."
-                )
+                raise ValueError("The given zeta has to be a positive integer.")
         else:
             raise RuntimeError("Kernel name must be one of: Cosine, GAP.")
         hypers = dict(name=name, target_type=target_type)

@@ -52,9 +52,7 @@ class KRR(BaseIO):
 
     def _preprocess_input(self, managers, compute_gradients=False):
         """compute prediction kernel and total baseline contributions"""
-        kernel = self.kernel(
-            managers, self.X_train, (compute_gradients, False)
-        )
+        kernel = self.kernel(managers, self.X_train, (compute_gradients, False))
         Y0 = self._get_property_baseline(managers)
         return kernel, Y0
 

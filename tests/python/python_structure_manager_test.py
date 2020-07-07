@@ -101,13 +101,9 @@ class TestStructureManagerCenters(unittest.TestCase):
         ii = 0
         for center in manager:
             self.assertTrue(ii == center.atom_tag)
+            self.assertTrue(self.structure["atom_types"][ii] == center.atom_type)
             self.assertTrue(
-                self.structure["atom_types"][ii] == center.atom_type
-            )
-            self.assertTrue(
-                np.allclose(
-                    self.structure["positions"][:, ii], center.position
-                )
+                np.allclose(self.structure["positions"][:, ii], center.position)
             )
             ii += 1
 
@@ -145,13 +141,9 @@ class TestNL(unittest.TestCase):
         ii = 0
         for center in manager:
             self.assertTrue(ii == center.atom_tag)
+            self.assertTrue(self.structure["atom_types"][ii] == center.atom_type)
             self.assertTrue(
-                self.structure["atom_types"][ii] == center.atom_type
-            )
-            self.assertTrue(
-                np.allclose(
-                    self.structure["positions"][:, ii], center.position
-                )
+                np.allclose(self.structure["positions"][:, ii], center.position)
             )
             ii += 1
 
@@ -208,13 +200,9 @@ class TestNLStrict(unittest.TestCase):
         ii = 0
         for center in manager:
             self.assertTrue(ii == center.atom_tag)
+            self.assertTrue(self.structure["atom_types"][ii] == center.atom_type)
             self.assertTrue(
-                self.structure["atom_types"][ii] == center.atom_type
-            )
-            self.assertTrue(
-                np.allclose(
-                    self.structure["positions"][:, ii], center.position
-                )
+                np.allclose(self.structure["positions"][:, ii], center.position)
             )
             ii += 1
 
@@ -352,9 +340,7 @@ class CenterSelectTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             mask_center_atoms_by_species(self.frame, species_select=["C", 1])
         with self.assertRaises(ValueError):
-            mask_center_atoms_by_species(
-                self.frame, species_blacklist=["C", 1]
-            )
+            mask_center_atoms_by_species(self.frame, species_blacklist=["C", 1])
 
     def test_mask_species_and_id(self):
         mask_center_atoms_by_species(self.frame, species_select=["C"])

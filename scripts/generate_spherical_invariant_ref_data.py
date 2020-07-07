@@ -26,8 +26,7 @@ def get_feature_vector(hypers, frames):
         soap = SphericalInvariants(**hypers)
         soap_vectors = soap.transform(frames)
         print(
-            "Feature vector size: %.3fMB"
-            % (soap.get_num_coefficients() * 8.0 / 1.0e6)
+            "Feature vector size: %.3fMB" % (soap.get_num_coefficients() * 8.0 / 1.0e6)
         )
         feature_vector = soap_vectors.get_features(soap)
     return feature_vector
@@ -82,11 +81,7 @@ def dump_reference_json():
                 max_angular,
                 rad_basis,
             ) in product(
-                soap_types,
-                gaussian_sigmas,
-                max_radials,
-                max_angulars,
-                radial_basis,
+                soap_types, gaussian_sigmas, max_radials, max_angulars, radial_basis,
             ):
                 if "RadialSpectrum" == soap_type:
                     max_angular = 0
@@ -118,8 +113,7 @@ def dump_reference_json():
                 )
 
     with open(
-        os.path.join(root, dump_path, "spherical_invariants_reference.ubjson"),
-        "wb",
+        os.path.join(root, dump_path, "spherical_invariants_reference.ubjson"), "wb",
     ) as f:
         ubjson.dump(data, f)
 
@@ -146,12 +140,8 @@ def main(json_dump, save_kernel):
     lmax = test_hypers["max_angular"]
     nstr = "2"  # number of structures
 
-    frames = read(
-        os.path.join(inputs_path, "small_molecules-20.json"), ":" + str(nstr)
-    )
-    species = set(
-        [atom for frame in frames for atom in frame.get_atomic_numbers()]
-    )
+    frames = read(os.path.join(inputs_path, "small_molecules-20.json"), ":" + str(nstr))
+    species = set([atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
     # test_hypers["n_species"] = nspecies #not functional
     ncen = np.cumsum([len(frame) for frame in frames])[-1]
@@ -174,12 +164,8 @@ def main(json_dump, save_kernel):
 
     # ------------------------------------------nu=3-----------------------------#
 
-    frames = read(
-        os.path.join(inputs_path, "water_rotations.xyz"), ":" + str(nstr)
-    )
-    species = set(
-        [atom for frame in frames for atom in frame.get_atomic_numbers()]
-    )
+    frames = read(os.path.join(inputs_path, "water_rotations.xyz"), ":" + str(nstr))
+    species = set([atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
     ncen = np.cumsum([len(frame) for frame in frames])[-1]
     nmax = 9

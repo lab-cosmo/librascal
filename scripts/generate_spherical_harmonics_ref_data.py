@@ -102,9 +102,7 @@ def dump_reference_json():
 
             # calculation for negative m
             for m in range(-l, 0):
-                result = np.sqrt(2) * np.imag(
-                    sph_harm(np.abs(m), l, phi, theta)
-                )
+                result = np.sqrt(2) * np.imag(sph_harm(np.abs(m), l, phi, theta))
                 harmonics.append(float(result))
                 if verbose:
                     print(l, m, result)
@@ -145,8 +143,7 @@ def dump_reference_json():
     if verbose:
         print(len(data))
     with open(
-        os.path.join(root, dump_path, "spherical_harmonics_reference.ubjson"),
-        "wb",
+        os.path.join(root, dump_path, "spherical_harmonics_reference.ubjson"), "wb",
     ) as f:
         ubjson.dump(data, f)
 

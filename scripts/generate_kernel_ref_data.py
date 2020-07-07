@@ -36,9 +36,7 @@ def dump_reference_json():
     soap_types = ["RadialSpectrum", "PowerSpectrum"]
 
     fn = os.path.join(inputs_path, "small_molecules-20.json")
-    fn_to_write = os.path.join(
-        "reference_data", "inputs", "small_molecules-20.json"
-    )
+    fn_to_write = os.path.join("reference_data", "inputs", "small_molecules-20.json")
     start = 0
     length = 5
     representations = ["spherical_invariants"]
@@ -90,17 +88,14 @@ def dump_reference_json():
                                         soap = SphericalInvariants(**hypers)
                                         soap_vectors = soap.transform(frames)
                                         hypers_kernel = dict(
-                                            name=kernel_name,
-                                            target_type=target_type,
+                                            name=kernel_name, target_type=target_type,
                                         )
                                         hypers_kernel.update(**kwargs)
                                         kernel = Kernel(soap, **hypers_kernel)
                                         kk = kernel(soap_vectors)
                                         # x = get_spectrum(hypers, frames)
                                         for aa in soap.nl_options:
-                                            aa[
-                                                "initialization_arguments"
-                                            ] = aa["args"]
+                                            aa["initialization_arguments"] = aa["args"]
 
                                         data["rep_info"][representation_name][
                                             -1
@@ -108,18 +103,12 @@ def dump_reference_json():
                                             dict(
                                                 kernel_matrix=kk.tolist(),
                                                 hypers_rep=copy(soap.hypers),
-                                                hypers_manager=copy(
-                                                    soap.nl_options
-                                                ),
-                                                hypers_kernel=copy(
-                                                    hypers_kernel
-                                                ),
+                                                hypers_manager=copy(soap.nl_options),
+                                                hypers_kernel=copy(hypers_kernel),
                                             )
                                         )
 
-    with open(
-        os.path.join(root, dump_path, "kernel_reference.ubjson"), "wb"
-    ) as f:
+    with open(os.path.join(root, dump_path, "kernel_reference.ubjson"), "wb") as f:
         ubjson.dump(data, f)
 
 

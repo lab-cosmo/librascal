@@ -110,14 +110,11 @@ def dump_reference_json():
                 x = expansions.get_features(sph_expn)
                 x[np.abs(x) < 1e-300] = 0.0
                 data["rep_info"][-1].append(
-                    dict(
-                        feature_matrix=x.tolist(), hypers=copy(sph_expn.hypers)
-                    )
+                    dict(feature_matrix=x.tolist(), hypers=copy(sph_expn.hypers))
                 )
 
     with open(
-        os.path.join(root, dump_path, "spherical_expansion_reference.ubjson"),
-        "wb",
+        os.path.join(root, dump_path, "spherical_expansion_reference.ubjson"), "wb",
     ) as f:
         ubjson.dump(data, f)
 
@@ -141,12 +138,8 @@ def main(json_dump, save_kernel):
     lmax = test_hypers["max_angular"]
     nstr = "5"  # number of structures
 
-    frames = read(
-        os.path.join(inputs_path, "small_molecules-20.json"), ":" + str(nstr)
-    )
-    species = set(
-        [atom for frame in frames for atom in frame.get_atomic_numbers()]
-    )
+    frames = read(os.path.join(inputs_path, "small_molecules-20.json"), ":" + str(nstr))
+    species = set([atom for frame in frames for atom in frame.get_atomic_numbers()])
     nspecies = len(species)
     ncen = np.cumsum([len(frame) for frame in frames])[-1]
 

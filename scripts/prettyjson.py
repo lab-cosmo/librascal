@@ -19,7 +19,9 @@ def prettyjson(obj, indent=2, maxlinelength=80):
 
 def getsubitems(obj, itemkey, islast, maxlinelength, indent):
     items = []
-    is_inline = True  # at first, assume we can concatenate the inner tokens into one line
+    is_inline = (
+        True  # at first, assume we can concatenate the inner tokens into one line
+    )
 
     isdict = isinstance(obj, dict)
     islist = isinstance(obj, list)
@@ -33,9 +35,7 @@ def getsubitems(obj, itemkey, islast, maxlinelength, indent):
         # render basic type
         keyseparator = "" if itemkey == "" else ": "
         itemseparator = "" if islast else ","
-        items.append(
-            itemkey + keyseparator + basictype2str(obj) + itemseparator
-        )
+        items.append(itemkey + keyseparator + basictype2str(obj) + itemseparator)
 
     else:
         # render lists/dicts/tuples
@@ -130,9 +130,7 @@ def getsubitems(obj, itemkey, islast, maxlinelength, indent):
                         str += (
                             item + " "
                         )  # insert space between items, comma is already there
-                    subitems = [
-                        str.strip()
-                    ]  # wrap concatenated content in a new list
+                    subitems = [str.strip()]  # wrap concatenated content in a new list
                 else:
                     is_inline = False
 
@@ -149,9 +147,7 @@ def getsubitems(obj, itemkey, islast, maxlinelength, indent):
         # if inner tokens are rendered in multiple lines already, then the outer brackets remain in separate lines
         if not is_inline:
             items.append(opening)  # opening brackets
-            items.append(
-                subitems
-            )  # Append children to parent list as a nested list
+            items.append(subitems)  # Append children to parent list as a nested list
             items.append(closing)  # closing brackets
 
     return items, is_inline

@@ -49,21 +49,9 @@ input_files = [
 
 optimizations_args = [
     {"type": "None"},
-    {
-        "type": "Spline",
-        "accuracy": 1e-8,
-        "range": (0.0001, INTERACTION_CUTOFF),
-    },
-    {
-        "type": "Spline",
-        "accuracy": 1e-10,
-        "range": (0.0001, INTERACTION_CUTOFF),
-    },
-    {
-        "type": "Spline",
-        "accuracy": 1e-12,
-        "range": (0.0001, INTERACTION_CUTOFF),
-    },
+    {"type": "Spline", "accuracy": 1e-8, "range": (0.0001, INTERACTION_CUTOFF),},
+    {"type": "Spline", "accuracy": 1e-10, "range": (0.0001, INTERACTION_CUTOFF),},
+    {"type": "Spline", "accuracy": 1e-12, "range": (0.0001, INTERACTION_CUTOFF),},
 ]
 
 radial_bases = ["GTO", "DVR"]
@@ -74,9 +62,7 @@ def transform_representation(representation, frames, **kwargs):
     representation.transform(frames)
 
 
-def benchmark_spherical_representations(
-    frames, optimization_args, radial_basis
-):
+def benchmark_spherical_representations(frames, optimization_args, radial_basis):
     hypers = {
         "interaction_cutoff": INTERACTION_CUTOFF,
         "max_radial": 8,
@@ -123,9 +109,7 @@ if __name__ == "__main__":
         for radial_basis in radial_bases:
             for optimization_args in optimizations_args:
                 print(
-                    "Benchmark on file "
-                    + input_file
-                    + " for optimization_args",
+                    "Benchmark on file " + input_file + " for optimization_args",
                     optimization_args,
                     "with basis " + radial_basis,
                 )

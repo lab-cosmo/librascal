@@ -54,9 +54,7 @@ def cutoff_function_dict_switch(cutoff_function_type, **kwargs):
         )
     else:
         raise NotImplementedError(
-            "cutoff_function: "
-            + cutoff_function_type
-            + " has not been implemented."
+            "cutoff_function: " + cutoff_function_type + " has not been implemented."
         )
 
     return cutoff_function_dict

@@ -79,9 +79,7 @@ class SortedCoulombMatrix(BaseIO):
             "interaction_decay",
             "size",
         }
-        hypers_clean = {
-            key: hypers[key] for key in hypers if key in allowed_keys
-        }
+        hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
         self.hypers.update(hypers_clean)
 
     def transform(self, frames):

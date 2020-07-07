@@ -11,11 +11,7 @@ import numpy as np
 
 
 def fps(
-    feature_matrix,
-    n_select,
-    starting_index=None,
-    method="simple",
-    restart=None,
+    feature_matrix, n_select, starting_index=None, method="simple", restart=None,
 ):
     """
     Farthest Point Sampling [1] routine using librascal.
@@ -100,9 +96,7 @@ def fps(
             lmin_d2,
             voronoi_indices,
             voronoi_r2,
-        ) = sparsification.fps_voronoi(
-            feature_matrix, n_select, starting_index
-        )
+        ) = sparsification.fps_voronoi(feature_matrix, n_select, starting_index)
         return_dict["fps_voronoi_indices"] = voronoi_indices
         return_dict["fps_voronoi_r2"] = voronoi_r2
 
@@ -136,11 +130,7 @@ class FPSFilter(BaseIO):
     """
 
     def __init__(
-        self,
-        representation,
-        Nselect,
-        act_on="sample per species",
-        starting_index=0,
+        self, representation, Nselect, act_on="sample per species", starting_index=0,
     ):
         self._representation = representation
         self.Nselect = Nselect
@@ -218,18 +208,14 @@ class FPSFilter(BaseIO):
             for sp in sps:
                 print("Selecting species: {}".format(sp))
                 fps_out = fps(
-                    X_by_sp[sp],
-                    self.Nselect[sp],
-                    starting_index=self.starting_index,
+                    X_by_sp[sp], self.Nselect[sp], starting_index=self.starting_index,
                 )
                 self.selected_sample_ids_by_sp[sp] = fps_out["fps_indices"]
                 self.fps_minmax_d2_by_sp[sp] = fps_out["fps_minmax_d2"]
 
             return self
         elif self.act_on == "feature":
-            fps_out = fps(
-                X.T, self.Nselect, starting_index=self.starting_index
-            )
+            fps_out = fps(X.T, self.Nselect, starting_index=self.starting_index)
             self.selected_feature_ids_global = fps_out["fps_indices"]
             self.fps_minmax_d2 = fps_out["fps_minmax_d2"]
         elif self.act_on == "sample":
@@ -259,11 +245,7 @@ class FPSFilter(BaseIO):
                 for key, val in self.selected_sample_ids_by_sp.items()
             }
             self.selected_ids = convert_selected_global_index2perstructure_index_per_species(
-                managers,
-                selected_ids_by_sp,
-                strides_by_sp,
-                map_by_manager,
-                sps,
+                managers, selected_ids_by_sp, strides_by_sp, map_by_manager, sps,
             )
             # return self.selected_ids
             # build the pseudo points
@@ -289,9 +271,7 @@ class FPSFilter(BaseIO):
             feat_idx2coeff_idx = self._representation.get_feature_index_mapping(
                 managers
             )
-            self.selected_ids = {
-                key: [] for key in feat_idx2coeff_idx[0].keys()
-            }
+            self.selected_ids = {key: [] for key in feat_idx2coeff_idx[0].keys()}
             selected_ids_sorting = np.argsort(
                 self.selected_feature_ids_global[:n_select]
             )
@@ -309,9 +289,7 @@ class FPSFilter(BaseIO):
             self.selected_ids[
                 "selected_features_global_ids_fps_ordering"
             ] = selected_ids_sorting.tolist()
-            self.selected_ids = dict(
-                coefficient_subselection=self.selected_ids
-            )
+            self.selected_ids = dict(coefficient_subselection=self.selected_ids)
             return self.selected_ids
 
     def select_and_filter(self, managers):

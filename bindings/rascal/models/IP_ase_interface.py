@@ -29,9 +29,7 @@ class ASEMLCalculator(Calculator, BaseIO):
         self.representation = representation
         self.kwargs = kwargs
 
-    def calculate(
-        self, atoms=None, properties=["energy"], system_changes=all_changes
-    ):
+    def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         Calculator.calculate(self, atoms, properties, system_changes)
 
         X = [self.atoms]
@@ -45,9 +43,7 @@ class ASEMLCalculator(Calculator, BaseIO):
         self.results["forces"] = forces
 
     def _get_init_params(self):
-        init_params = dict(
-            model=self.model, representation=self.representation
-        )
+        init_params = dict(model=self.model, representation=self.representation)
         init_params.update(**self.kwargs)
         return init_params
 

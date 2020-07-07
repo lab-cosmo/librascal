@@ -19,9 +19,7 @@ if version is None:
     raise ValueError("Version number not found.")
 
 with open("./requirements_pip.txt", "r") as fp:
-    requirements = list(
-        filter(lambda x: "#" not in x, (line.strip() for line in fp))
-    )
+    requirements = list(filter(lambda x: "#" not in x, (line.strip() for line in fp)))
 
 setup(
     name="rascal",

@@ -35,9 +35,7 @@ class TestCosineKernel(unittest.TestCase):
         features = rep.transform([self.frame])
 
         for target_type in ["Atom", "Structure"]:
-            cosine_kernel = Kernel(
-                rep, name="Cosine", target_type=target_type, zeta=2
-            )
+            cosine_kernel = Kernel(rep, name="Cosine", target_type=target_type, zeta=2)
             cosine_kernel(features)
 
         # wrong name
@@ -62,9 +60,7 @@ class TestCosineKernel(unittest.TestCase):
         rep = SphericalInvariants(**self.hypers)
 
         for target_type in ["Atom", "Structure"]:
-            cosine_kernel = Kernel(
-                rep, name="Cosine", target_type=target_type, zeta=2
-            )
+            cosine_kernel = Kernel(rep, name="Cosine", target_type=target_type, zeta=2)
 
             cosine_kernel_dict = to_dict(cosine_kernel)
             cosine_kernel_copy = from_dict(cosine_kernel_dict)

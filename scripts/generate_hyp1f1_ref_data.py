@@ -45,9 +45,7 @@ def dump_reference_json():
                 der = float(a / b * hyp1f1(a + 1, b + 1, z))
                 data.append(dict(a=a, b=b, z=z, val=val, der=der))
     print(len(data))
-    with open(
-        os.path.join(root, dump_path, "hyp1f1_reference.ubjson"), "wb"
-    ) as f:
+    with open(os.path.join(root, dump_path, "hyp1f1_reference.ubjson"), "wb") as f:
         ubjson.dump(data, f)
 
 

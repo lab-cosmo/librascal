@@ -11,9 +11,7 @@ import numpy as np
 from scipy.sparse.linalg import svds
 
 
-def do_CUR(
-    X, Nsel, act_on="sample", is_deterministic=False, seed=10, verbose=True
-):
+def do_CUR(X, Nsel, act_on="sample", is_deterministic=False, seed=10, verbose=True):
     """ Apply CUR selection [1] of Nsel rows or columns of the
     given feature matrix X[n_samples, n_features].
 
@@ -41,10 +39,7 @@ def do_CUR(
             # Cp = np.linalg.pinv(C)
             # err = np.sqrt(np.sum((X - np.dot(np.dot(X, Cp), C))**2))
             err = np.sqrt(
-                np.sum(
-                    (X - np.dot(np.linalg.lstsq(C.T, X.T, rcond=None)[0].T, C))
-                    ** 2
-                )
+                np.sum((X - np.dot(np.linalg.lstsq(C.T, X.T, rcond=None)[0].T, C)) ** 2)
             )
 
         elif "feature" in act_on:
@@ -53,9 +48,7 @@ def do_CUR(
             # Cp = np.linalg.pinv(C)
             # err = np.sqrt(np.sum((X - np.dot(C, np.dot(Cp, X)))**2))
             err = np.sqrt(
-                np.sum(
-                    (X - np.dot(C, np.linalg.lstsq(C, X, rcond=None)[0])) ** 2
-                )
+                np.sum((X - np.dot(C, np.linalg.lstsq(C, X, rcond=None)[0])) ** 2)
             )
 
         print("Reconstruction RMSE={:.3e}".format(err))
@@ -211,11 +204,7 @@ class CURFilter(BaseIO):
                 for key, val in self.selected_sample_ids_by_sp.items()
             }
             self.selected_ids = convert_selected_global_index2perstructure_index_per_species(
-                managers,
-                selected_ids_by_sp,
-                strides_by_sp,
-                map_by_manager,
-                sps,
+                managers, selected_ids_by_sp, strides_by_sp, map_by_manager, sps,
             )
             # return self.selected_ids
             # build the pseudo points
@@ -239,9 +228,7 @@ class CURFilter(BaseIO):
             feat_idx2coeff_idx = self._representation.get_feature_index_mapping(
                 managers
             )
-            self.selected_ids = {
-                key: [] for key in feat_idx2coeff_idx[0].keys()
-            }
+            self.selected_ids = {key: [] for key in feat_idx2coeff_idx[0].keys()}
             selected_ids_sorting = np.argsort(
                 self.selected_feature_ids_global[:n_select]
             )
@@ -259,9 +246,7 @@ class CURFilter(BaseIO):
             self.selected_ids[
                 "selected_features_global_ids_fps_ordering"
             ] = selected_ids_sorting.tolist()
-            self.selected_ids = dict(
-                coefficient_subselection=self.selected_ids
-            )
+            self.selected_ids = dict(coefficient_subselection=self.selected_ids)
             return self.selected_ids
 
     def select_and_filter(self, managers):
