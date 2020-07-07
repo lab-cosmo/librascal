@@ -70,7 +70,7 @@ namespace rascal {
   }
 
   /**
-   * Compute numerical gradient of the kernel of a sparse GPR model
+   * Compute finite-difference gradient of the kernel of a sparse GPR model
    * w.r.t. atomic positions for an atomic structure.
    *
    * @see compute_numerical_kernel_gradients
@@ -101,7 +101,7 @@ namespace rascal {
   }
 
   /**
-   * Compute numerical gradient of the kernel of a sparse GPR model
+   * Compute finite-difference gradient of the kernel of a sparse GPR model
    * w.r.t. atomic positions for a collection of atomic structures
    * using centered finite differences.
    *
