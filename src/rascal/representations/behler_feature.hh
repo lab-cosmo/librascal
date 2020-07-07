@@ -90,7 +90,8 @@ namespace rascal {
               class StructureManager>
     inline void compute(StructureManager & manager,
                         std::shared_ptr<PropertyBase> output_values,
-                        std::shared_ptr<PropertyBase> output_derivatives) const;
+                        std::shared_ptr<PropertyBase> output_self_derivatives,
+                        std::shared_ptr<PropertyBase> output_other_derivatives) const;
 
     //! insert a parameter (sub-)json
     void add_params(const json & params) {
@@ -195,7 +196,8 @@ namespace rascal {
               class StructureManager>
     void compute_helper(StructureManager & manager,
                         std::shared_ptr<PropertyBase> output,
-                        std::shared_ptr<PropertyBase> output_derivatives) const;
+                        std::shared_ptr<PropertyBase> output_self_derivatives,
+                        std::shared_ptr<PropertyBase> output_other_derivatives) const;
 
    protected:
     SymmetryFunction<MySymFunType> sym_fun;
@@ -282,9 +284,10 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     template <RepeatedSpecies RepSpecies, typename Permutation,
               class StructureManager>
-    void compute_helper(StructureManager & manager,
-                        std::shared_ptr<PropertyBase> output,
-                        std::shared_ptr<PropertyBase> output_derivatives) const;
+    void compute_helper(
+        StructureManager & manager, std::shared_ptr<PropertyBase> output,
+        std::shared_ptr<PropertyBase> output_self_derivatives,
+        std::shared_ptr<PropertyBase> output_other_derivatives) const;
 
    protected:
     SymmetryFunction<MySymFunType> sym_fun;

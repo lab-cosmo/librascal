@@ -195,10 +195,14 @@ namespace rascal {
                  AdaptorStrict<AdaptorHalfList<StructureManagerLammps>>>;
 
     constexpr auto Order{SymmetryFunction<SymFunType()>::Order};
-    using dGVals_t =
-        Property<double, Order,
+    using dGSelfVals_t =
+        Property<double, AtomOrder,
                  AdaptorStrict<AdaptorHalfList<StructureManagerLammps>>,
-                 nb_distances(Order)>;
+                 ThreeD>;
+    using dGOtherVals_t =
+        Property<double, PairOrder,
+                 AdaptorStrict<AdaptorHalfList<StructureManagerLammps>>, ThreeD,
+                 2>;
 
     // results without permutation
     auto G01_vals{std::make_shared<GVals_t>(manager)};
@@ -215,11 +219,18 @@ namespace rascal {
     auto G11_vals2{std::make_shared<GVals_t>(manager)};
 
     // results with derivative without permutation
-    auto dG01_derivatives{std::make_shared<dGVals_t>(manager)};
+    auto dGSelf01_derivatives{std::make_shared<dGSelfVals_t>(manager)};
     // results with permutation
-    auto dG10_derivatives{std::make_shared<dGVals_t>(manager)};
+    auto dGSelf10_derivatives{std::make_shared<dGSelfVals_t>(manager)};
     // results with equal species
-    auto dG11_derivatives{std::make_shared<dGVals_t>(manager)};
+    auto dGSelf11_derivatives{std::make_shared<dGSelfVals_t>(manager)};
+
+    // results with derivative without permutation
+    auto dGOther01_derivatives{std::make_shared<dGOtherVals_t>(manager)};
+    // results with permutation
+    auto dGOther10_derivatives{std::make_shared<dGOtherVals_t>(manager)};
+    // results with equal species
+    auto dGOther11_derivatives{std::make_shared<dGOtherVals_t>(manager)};
 
     // manual without permutation
     auto G01_ref{std::make_shared<GVals_t>(manager)};
@@ -229,11 +240,18 @@ namespace rascal {
     auto G11_ref{std::make_shared<GVals_t>(manager)};
 
     // results with derivative without permutation
-    auto dG01_ref_derivatives{std::make_shared<dGVals_t>(manager)};
+    auto dGSelf01_ref_derivatives{std::make_shared<dGSelfVals_t>(manager)};
     // results with permutation
-    auto dG10_ref_derivatives{std::make_shared<dGVals_t>(manager)};
+    auto dGSelf10_ref_derivatives{std::make_shared<dGSelfVals_t>(manager)};
     // results with equal species
-    auto dG11_ref_derivatives{std::make_shared<dGVals_t>(manager)};
+    auto dGSelf11_ref_derivatives{std::make_shared<dGSelfVals_t>(manager)};
+
+    // results with derivative without permutation
+    auto dGOther01_ref_derivatives{std::make_shared<dGOtherVals_t>(manager)};
+    // results with permutation
+    auto dGOther10_ref_derivatives{std::make_shared<dGOtherVals_t>(manager)};
+    // results with equal species
+    auto dGOther11_ref_derivatives{std::make_shared<dGOtherVals_t>(manager)};
 
     // calculate all behler feature values: symmetry and cutoff function
     this->bf.template compute<RepeatedSpecies::Not, Permutation<2, 0, 1>>(
@@ -244,11 +262,11 @@ namespace rascal {
         manager, G11_vals);
 
     this->bf.template compute<RepeatedSpecies::Not, Permutation<2, 0, 1>>(
-        manager, G01_vals2, dG01_derivatives);
+        manager, G01_vals2, dGSelf01_derivatives, dGOther01_derivatives);
     this->bf.template compute<RepeatedSpecies::Not, Permutation<2, 1, 0>>(
-        manager, G10_vals2, dG10_derivatives);
+        manager, G10_vals2, dGSelf10_derivatives, dGOther10_derivatives);
     this->bf.template compute<RepeatedSpecies::All, Permutation<2, 1, 0>>(
-        manager, G11_vals2, dG11_derivatives);
+        manager, G11_vals2, dGSelf11_derivatives, dGOther11_derivatives);
 
     const double eta{this->raw_params.at("params")
                          .at("eta")
@@ -264,12 +282,18 @@ namespace rascal {
     G10_ref->resize();
     G11_ref->resize();
 
-    dG01_ref_derivatives->resize();
-    dG10_ref_derivatives->resize();
-    dG11_ref_derivatives->resize();
+    dGSelf01_ref_derivatives->resize();
+    dGSelf10_ref_derivatives->resize();
+    dGSelf11_ref_derivatives->resize();
+
+    dGOther01_ref_derivatives->resize();
+    dGOther10_ref_derivatives->resize();
+    dGOther11_ref_derivatives->resize();
+
     for (auto && atom : manager) {
       for (auto && pair : atom.pairs()) {
         double r_ij{manager.get_distance(pair)};
+        auto & dir_ij{manager.get_direction_vector(pair)};
         // '_c' for cutoff, '_s' for symmetry function
         double f_c{.5 * (std::cos(math::PI * r_ij / this->r_cut) + 1)};
         double f_s{std::exp(-eta * (r_ij - r_s) * (r_ij - r_s))};
@@ -284,11 +308,20 @@ namespace rascal {
 
         double df_s{-2 * eta * (r_ij - r_s) * f_s};
 
-        auto && dG_incr{df_s * f_c + f_s * df_c};
+        auto && dG_incr{(df_s * f_c + f_s * df_c) * dir_ij};
 
-        dG01_ref_derivatives->operator[](pair) = dG_incr;
-        dG10_ref_derivatives->operator[](pair) = dG_incr;
-        dG11_ref_derivatives->operator[](pair) = dG_incr;
+        dGSelf01_ref_derivatives->operator[](atom) += dG_incr;
+        dGSelf10_ref_derivatives->operator[](pair) -= dG_incr;
+
+        dGSelf11_ref_derivatives->operator[](atom) += dG_incr;
+        dGSelf11_ref_derivatives->operator[](pair) -= dG_incr;
+
+        dGOther01_ref_derivatives->operator[](pair).col(0) -= dG_incr;
+
+        dGOther10_ref_derivatives->operator[](pair).col(1) -= -dG_incr;
+
+        dGOther11_ref_derivatives->operator[](pair).col(0) -= dG_incr;
+        dGOther11_ref_derivatives->operator[](pair).col(1) -= -dG_incr;
       }
     }
 
@@ -362,12 +395,10 @@ namespace rascal {
     using GVals_t = Property<double, AtomOrder, TripletManager_t>;
 
     // todo(jungestricker): this makes no sense for triplets - property should
-    // be Atom, since it is in general not given that all pairs exist constexpr
-    const auto Order{SymmetryFunction<SymFunType()>::Order};
+    // be Atom, since it is in general not given that all pairs exist
+    constexpr auto Order{SymmetryFunction<SymFunType()>::Order};
     using dGVals_t =
-        Property<double, Order, TripletManager_t, nb_distances(Order)>;
-    using DerivativeCast_t =
-        Eigen::Map<Eigen::Matrix<double, nb_distances(Order), 1>>;
+        Property<double, PairOrder, TripletManager_t, nb_distances(Order)>;
 
     /**
      * temporary comment (markus): triplets need to test for permutation: 012,
@@ -445,7 +476,9 @@ namespace rascal {
     auto dG120_ref_derivatives{std::make_shared<dGVals_t>(manager)};
     auto dG201_ref_derivatives{std::make_shared<dGVals_t>(manager)};
     // results with equal species
-    auto dGAAA_ref_derivatives{std::make_shared<dGVals_t>(manager)};
+    auto dGAAA_ref_derivatives_i{std::make_shared<dGVals_t>(manager)};
+    auto dGAAA_ref_derivatives_j{std::make_shared<dGVals_t>(manager)};
+    auto dGAAA_ref_derivatives_k{std::make_shared<dGVals_t>(manager)};
 
     // calculate all behler feature values: symmetry and cutoff function
     this->bf.template compute<RepeatedSpecies::Not, Permutation<3, 0, 1, 2>>(
@@ -488,7 +521,9 @@ namespace rascal {
     dG012_ref_derivatives->resize();
     dG120_ref_derivatives->resize();
     dG201_ref_derivatives->resize();
-    dGAAA_ref_derivatives->resize();
+    dGAAA_ref_derivatives_i->resize();
+    dGAAA_ref_derivatives_j->resize();
+    dGAAA_ref_derivatives_k->resize();
 
     auto & triplet_distances{manager.get_triplet_distance()};
     auto & cos_angles{get_cos_angles(manager)};
@@ -610,22 +645,21 @@ namespace rascal {
         auto && dG_incr_k_jk{d_f_sym_k_jk * f_cut_val + f_sym_ki * d_f_cut_jk};
         auto && dG_incr_k_ki{d_f_sym_k_ki * f_cut_val + f_sym_ki * d_f_cut_ki};
 
-        std::array<double, 3> tmp{dG_incr_i_ij, dG_incr_i_jk, dG_incr_i_ki};
-        dG012_ref_derivatives->operator[](triplet) =
-            DerivativeCast_t{tmp.data()};
+        dG012_ref_derivatives->operator[](triplet) << dG_incr_i_ij,
+            dG_incr_i_jk, dG_incr_i_ki;
 
-        tmp = {dG_incr_j_ij, dG_incr_j_jk, dG_incr_j_ki};
-        dG120_ref_derivatives->operator[](triplet) =
-            DerivativeCast_t{tmp.data()};
-        tmp = {dG_incr_k_ij, dG_incr_k_jk, dG_incr_k_ki};
-        dG201_ref_derivatives->operator[](triplet) =
-            DerivativeCast_t{tmp.data()};
+        dG120_ref_derivatives->operator[](triplet) << dG_incr_j_ij,
+            dG_incr_j_jk, dG_incr_j_ki;
 
-        tmp = {dG_incr_i_ij + dG_incr_j_ij + dG_incr_k_ij,
-               dG_incr_i_jk + dG_incr_j_jk + dG_incr_k_jk,
-               dG_incr_i_ki + dG_incr_j_ki + dG_incr_k_ki};
-        dGAAA_ref_derivatives->operator[](triplet) =
-            DerivativeCast_t{tmp.data()};
+        dG201_ref_derivatives->operator[](triplet) << dG_incr_k_ij,
+            dG_incr_k_jk, dG_incr_k_ki;
+
+        dGAAA_ref_derivatives_i->operator[](triplet) << dG_incr_i_ij,
+            dG_incr_i_jk, dG_incr_i_ki;
+        dGAAA_ref_derivatives_j->operator[](triplet) << dG_incr_j_ij,
+            dG_incr_j_jk, dG_incr_j_ki;
+        dGAAA_ref_derivatives_k->operator[](triplet) << dG_incr_k_ij,
+            dG_incr_k_jk, dG_incr_k_ki;
       }
     }
 
@@ -644,6 +678,10 @@ namespace rascal {
 
     rel_error = (GAAA_vals->eigen() - GAAA_ref->eigen()).norm() /
                 GAAA_ref->eigen().norm();
+    std::cout << "GAAA_vals->eigen(): " << std::endl
+              << GAAA_vals->eigen() << std::endl;
+    std::cout << "GAAA_ref->eigen():  " << std::endl
+              << GAAA_ref->eigen() << std::endl;
     BOOST_CHECK_EQUAL(rel_error, 0);
 
     // Test eval of values when both values and derivatives are computed
@@ -680,8 +718,21 @@ namespace rascal {
     BOOST_CHECK_EQUAL(rel_error, 0);
 
     rel_error =
-        (dGAAA_derivatives->eigen() - dGAAA_ref_derivatives->eigen()).norm() /
-        dGAAA_ref_derivatives->eigen().norm();
+        (dGAAA_derivatives_i->eigen() - dGAAA_ref_derivatives_i->eigen())
+            .norm() /
+        dGAAA_ref_derivatives_i->eigen().norm();
+    BOOST_CHECK_EQUAL(rel_error, 0);
+
+    rel_error =
+        (dGAAA_derivatives_j->eigen() - dGAAA_ref_derivatives_j->eigen())
+            .norm() /
+        dGAAA_ref_derivatives_j->eigen().norm();
+    BOOST_CHECK_EQUAL(rel_error, 0);
+
+    rel_error =
+        (dGAAA_derivatives_k->eigen() - dGAAA_ref_derivatives_k->eigen())
+            .norm() /
+        dGAAA_ref_derivatives_k->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
   }  // namespace rascal
 

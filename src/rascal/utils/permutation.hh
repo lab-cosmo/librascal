@@ -26,6 +26,7 @@
  * Boston, MA 02111-1307, USA.
  *
  */
+#include <array>
 #include <type_traits>
 #ifndef SRC_RASCAL_UTILS_PERMUTATION_HH_
 #define SRC_RASCAL_UTILS_PERMUTATION_HH_
@@ -51,25 +52,27 @@ namespace rascal {
   //     RepeatedSpecies::All,       RepeatedSpecies::FirstTwo,
   //     RepeatedSpecies::SecondTwo, RepeatedSpecies::OuterTwo};
 
-  constexpr size_t nb_triplet_orderings(const RepeatedSpecies rep) {
+  constexpr size_t nb_triplet_orderings(const RepeatedSpecies rep,
+                                        const bool jk_indistinguishable) {
+    int weight{jk_indistinguishable ? 2 : 1};
     switch (rep) {
     case RepeatedSpecies::Not: {
-      return 1;
+      return 1 * weight;
       break;
     }
     case RepeatedSpecies::FirstTwo: {
       // fall-through
     }
     case RepeatedSpecies::OuterTwo: {
-      return 2;
+      return 2 * weight;
       break;
     }
     case RepeatedSpecies::SecondTwo: {
-      return 0;  // yes, this case has nothing to compute
+      return 0 * weight;  // yes, this case has nothing to compute
       break;
     }
     case RepeatedSpecies::All: {
-      return 3;
+      return 3 * weight;
       break;
     }
     default: {
@@ -123,52 +126,79 @@ namespace rascal {
       return manager.get_atom_index(cluster.get_atom_tag_list(third()));
     }
 
-    template <RepeatedSpecies RepSpecies>
-    constexpr static std::array<std::array<size_t, 3>,
-                                nb_triplet_orderings(RepSpecies)>
+    /**
+     * @tparam JK_Indistinguishable whether or not the sum of the evaluations of
+     * triplet ijk and triplet ikj equals twice the evaluation of ijk
+     */
+    template <RepeatedSpecies RepSpecies, bool JK_Indistinguishable>
+    constexpr static std::tuple<
+        std::array<std::tuple<std::array<size_t, 3>, std::array<bool, 3>>,
+                   nb_triplet_orderings(RepSpecies, JK_Indistinguishable)>,
+        int>
     get_triplet_orderings() {
-      std::array<std::array<size_t, 3>, nb_triplet_orderings(RepSpecies)>
+      std::tuple<
+          std::array<std::tuple<std::array<size_t, 3>, std::array<bool, 3>>,
+                     nb_triplet_orderings(RepSpecies, JK_Indistinguishable)>,
+          int>
           retval{};
+      auto && orderings{std::get<0>(retval)};
 
       switch (RepSpecies) {
       case RepeatedSpecies::Not: {
-        retval[0][0] = leading();
-        retval[0][1] = second();
-        retval[0][2] = third();
+        std::get<0>(orderings[0])[0] = leading();
+        std::get<0>(orderings[0])[1] = second();
+        std::get<0>(orderings[0])[2] = third();
+
+        std::get<1>(orderings[0]) = {leading() > second(), second() > third(),
+                                     third() > leading()};
         break;
       }
       case RepeatedSpecies::FirstTwo: {
-        retval[0][0] = leading();
-        retval[0][1] = second();
-        retval[0][2] = third();
+        std::get<0>(orderings[0])[0] = leading();
+        std::get<0>(orderings[0])[1] = second();
+        std::get<0>(orderings[0])[2] = third();
+        std::get<1>(orderings[0]) = {leading() > second(), second() > third(),
+                                     third() > leading()};
 
-        retval[1][0] = second();
-        retval[1][1] = leading();
-        retval[1][2] = third();
+        std::get<0>(orderings[1])[0] = second();
+        std::get<0>(orderings[1])[1] = leading();
+        std::get<0>(orderings[1])[2] = third();
+        std::get<1>(orderings[1]) = {second() > leading(),
+                                     leading() > third(), third() > second()};
         break;
       }
       case RepeatedSpecies::OuterTwo: {
-        retval[0][0] = leading();
-        retval[0][1] = second();
-        retval[0][2] = third();
+        std::get<0>(orderings[0])[0] = leading();
+        std::get<0>(orderings[0])[1] = second();
+        std::get<0>(orderings[0])[2] = third();
+        std::get<1>(orderings[0]) = {leading() > second(), second() > third(),
+                                     third() > leading()};
 
-        retval[1][0] = third();
-        retval[1][1] = second();
-        retval[1][2] = leading();
+        std::get<0>(orderings[1])[0] = third();
+        std::get<0>(orderings[1])[1] = second();
+        std::get<0>(orderings[1])[2] = leading();
+        std::get<1>(orderings[1]) = {third() > second(), second() > leading(),
+                                     leading() > third()};
         break;
       }
       case RepeatedSpecies::All: {
-        retval[0][0] = leading();
-        retval[0][1] = second();
-        retval[0][2] = third();
+        std::get<0>(orderings[0])[0] = leading();
+        std::get<0>(orderings[0])[1] = second();
+        std::get<0>(orderings[0])[2] = third();
+        std::get<1>(orderings[0]) = {leading() > second(), second() > third(),
+                                     third() > leading()};
 
-        retval[1][0] = second();
-        retval[1][1] = third();
-        retval[1][2] = leading();
+        std::get<0>(orderings[1])[0] = second();
+        std::get<0>(orderings[1])[1] = third();
+        std::get<0>(orderings[1])[2] = leading();
+        std::get<1>(orderings[1]) = {second() > third(), third() > leading(),
+                                     leading() > second()};
 
-        retval[1][0] = third();
-        retval[1][1] = leading();
-        retval[1][2] = second();
+        std::get<0>(orderings[2])[0] = third();
+        std::get<0>(orderings[2])[1] = leading();
+        std::get<0>(orderings[2])[2] = second();
+        std::get<1>(orderings[2]) = {third() > leading(), leading() > second(),
+                                     second() > third()};
         break;
       }
       default:
@@ -176,6 +206,9 @@ namespace rascal {
         break;
       }
 
+      std::get<1>(retval) = JK_Indistinguishable ? 2 : 1;
+      static_assert(JK_Indistinguishable,
+                    "not implemented for distinguishable j,k atoms");
       return retval;
     }
 
@@ -189,6 +222,31 @@ namespace rascal {
       return ret_val;
       //      std::array<double, 3> ret_val{} : ret_val[0] =
       //      values[ordering[0]];
+    }
+
+    /**
+     * returns and array of boolean indicating for each pair of this cluster
+     * whether it corresponds to a really existing pair in a minimal neighbour
+     * list (false) or to and inverted (e.g. ji, rather than ij) pair (true)
+     */
+    constexpr static std::array<bool, nb_distances(Size)> pair_inversion() {
+      std::array<bool, nb_distances(Size)> ret_val{};
+      switch (Size) {
+      case PairOrder: {
+        ret_val[0] = First > Second;  // 0,1 = 0 ; 1,0 = 1
+        break;
+      }
+      case TripletOrder: {
+        ret_val[0] = First > Second;  // true if first pair is 10, 21, or 20
+        ret_val[1] = Second > Third;  // true if second pair is 10, 21, or 20
+        ret_val[2] = Third > First;   // true if third pair is 10, 21, or 20
+        break;
+      }
+      default: {
+        break;
+      }
+      }
+      return ret_val;
     }
   };  // Permutation
   template <size_t Size_, size_t First, size_t Second, size_t Third>

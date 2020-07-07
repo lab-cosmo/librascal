@@ -284,7 +284,7 @@ namespace rascal {
       break;
     }
     case Evaluation::Derivative: {
-      auto && pair_cutoff_derivatives{this->get_pair_derivative(manager)};
+      auto && pair_cutoff_derivatives{std::get<1>(this->get_pair_derivative(manager))};
       // property we want to fill/update
       auto && triplet_derivatives_property{
           this->get_triplet_property(manager, evaluation)};
@@ -306,7 +306,7 @@ namespace rascal {
           cutoff_derivatives(2) = pair_cutoff_derivatives[pair_ik];
 
           // compute value for missing pair (might not exist in neighbour list)
-          auto && dist_ki{triplet_distances(2)};
+          auto && dist_ki{triplet_distances[triplet](2)};
           auto && cutoff_ki{typed_this.df_c(dist_ki)};
           cutoff_values(1) = cutoff_ki[0];
           cutoff_derivatives(1) = cutoff_ki[1];
@@ -315,6 +315,7 @@ namespace rascal {
       }
       triplet_property.set_updated_status(true);
       triplet_derivatives_property.set_updated_status(true);
+      break;
     }
     default: {
       throw std::runtime_error("unknown evaluation type");

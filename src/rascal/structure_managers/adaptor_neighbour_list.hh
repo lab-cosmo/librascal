@@ -474,13 +474,15 @@ namespace rascal {
      * radius or extends an existing neighbourlist to the next order
      */
     AdaptorNeighbourList(ImplementationPtr_t manager, double cutoff,
-                         double skin = 0.);
+                         double skin = 0., bool consider_ghost_neighs = false);
 
     AdaptorNeighbourList(ImplementationPtr_t manager,
                          const Hypers_t & adaptor_hypers)
         : AdaptorNeighbourList(
               manager, adaptor_hypers.at("cutoff").template get<double>(),
-              optional_argument_skin(adaptor_hypers)) {}
+              optional_argument("skin", adaptor_hypers, 0.),
+              optional_argument("consider_ghost_neighs", adaptor_hypers, false)) {
+    }
 
     //! Copy constructor
     AdaptorNeighbourList(const AdaptorNeighbourList & other) = delete;
@@ -498,12 +500,13 @@ namespace rascal {
     //! Move assignment operator
     AdaptorNeighbourList & operator=(AdaptorNeighbourList && other) = default;
 
-    double optional_argument_skin(const Hypers_t & adaptor_hypers) {
-      double skin{0.};
-      if (adaptor_hypers.find("skin") != adaptor_hypers.end()) {
-        skin = adaptor_hypers["skin"];
+    template <typename T>
+    double optional_argument(const std::string & name,
+                             const Hypers_t & adaptor_hypers, T default_val) {
+      if (adaptor_hypers.find(name) != adaptor_hypers.end()) {
+        default_val = adaptor_hypers[name];
       }
-      return skin;
+      return default_val;
     }
 
     /**
@@ -783,7 +786,8 @@ namespace rascal {
     //! ghost atom type
     std::vector<int> ghost_types{};
 
-   private:
+    //! whether or not to consider neighbours of ghosts
+    bool consider_ghost_neighs;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -791,10 +795,11 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorNeighbourList<ManagerImplementation>::AdaptorNeighbourList(
       std::shared_ptr<ManagerImplementation> manager, double cutoff,
-      double skin)
+      double skin, bool consider_ghost_neighs)
       : manager{std::move(manager)}, cutoff{cutoff}, skin2{skin * skin},
         atom_tag_list{}, atom_types{}, ghost_atom_tag_list{}, nb_neigh{},
-        neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0} {
+        neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0},
+        consider_ghost_neighs{consider_ghost_neighs} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
     if (this->skin2 > 0.) {
       throw std::runtime_error(
@@ -1090,9 +1095,29 @@ namespace rascal {
      * structure.
      */
     int nneigh{0};
-    for (auto && dummy : this->get_manager().only_ghosts()) {
-      std::ignore = dummy;
-      this->nb_neigh.push_back(nneigh);
+    if (not this->consider_ghost_neighs) {
+      for (auto && dummy : this->get_manager().only_ghosts()) {
+        std::ignore = dummy;
+        this->nb_neigh.push_back(nneigh);
+      }
+    } else {
+      for (auto && ghost : this->get_manager().only_ghosts()) {
+        int atom_tag = ghost.get_atom_tag();
+        int nneigh{0};
+
+        Vector_t pos = ghost.get_position();
+        Vector_t dpos = pos - mesh_min;
+        auto box_index = internal::get_box_index(dpos, cutoff);
+        internal::fill_neighbours_atom_tag(atom_tag, box_index, atom_id_cell,
+                                           current_j_atoms);
+
+        nneigh += current_j_atoms.size();
+        for (auto & j_atom_tag : current_j_atoms) {
+          this->neighbours_atom_tag.push_back(j_atom_tag);
+        }
+
+        this->nb_neigh.push_back(nneigh);
+      }
     }
   }
 

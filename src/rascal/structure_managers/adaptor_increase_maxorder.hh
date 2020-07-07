@@ -540,7 +540,7 @@ namespace rascal {
             if (IsCompactCluster) {
               throw std::runtime_error("Not implemented yet.");
             } else {
-              // only add strictly lexicographicaly ordered tags, e.g.
+              // only add strictly lexicographically ordered tags, e.g.
               // (1,2,2) or (1,5,3) are not valid and (1,3,5) is valid
               if (new_tag_list[traits::MaxOrder - 1] >
                   new_tag_list[traits::MaxOrder - 2]) {

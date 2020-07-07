@@ -208,6 +208,8 @@ namespace rascal {
     using Parent::df_sym;
     using Parent::f_sym;
 
+    constexpr static bool jk_are_indistinguishable() { return true; }
+
     // return type for each function value and 3 derivative values
     using Return_t = Parent::TripletReturn_t;
     // usage?
@@ -341,6 +343,8 @@ namespace rascal {
     using Parent::f_sym;
 
     static constexpr size_t Order{3};
+
+    constexpr static bool jk_are_indistinguishable() { return true; }
 
     // return type for each function value and 3 derivative values
     using Return_t = Parent::TripletReturn_t;

@@ -827,7 +827,7 @@ namespace rascal {
     template <size_t StoredOrder, size_t PropertyOrder>
     PropertyLookupKeys<StoredOrder, PropertyOrder, ManagerImplementation,
                        (StoredOrder == AtomOrder) ? PropertyOrder
-                                                  : PropertyOrder - 1> &
+                                                  : nb_distances(PropertyOrder)> &
     get_sub_clusters();
 
     class PairLookupDirectory {
@@ -837,6 +837,7 @@ namespace rascal {
 
      public:
       using PairCluster_t = ClusterRefKey<PairOrder, Layer()>;
+      enum class PairPresence { Forward, No, Backward };
 
       PairLookupDirectory() {
         if (traits::MaxOrder < PairOrder) {
@@ -856,6 +857,30 @@ namespace rascal {
                const ClusterRefKey<AtomOrder, CallerOrderJ> & atom_j) const {
         return this->pairs[atom_i.get_cluster_index(this->Layer())].at(
             atom_j.get_cluster_index(this->Layer()));
+      }
+
+      template <size_t CallerOrderI, size_t CallerOrderJ,
+                bool HasPairs = traits::MaxOrder >= PairOrder>
+      const std::enable_if_t<HasPairs, bool> &
+      has_pair(const ClusterRefKey<AtomOrder, CallerOrderI> & atom_i,
+               const ClusterRefKey<AtomOrder, CallerOrderJ> & atom_j) const {
+        auto && i_id{atom_i.get_cluster_index(this->Layer())};
+        auto && j_id{atom_j.get_cluster_index(this->Layer())};
+        return (i_id < this->pairs.size()) and
+               (this->pairs[i_id].count(j_id) == 1);
+      }
+
+      template <size_t CallerOrderI, size_t CallerOrderJ,
+                bool HasPairs = traits::MaxOrder >= PairOrder>
+      const std::enable_if_t<HasPairs, PairPresence> & has_pair_in_any_ordering(
+          const ClusterRefKey<AtomOrder, CallerOrderI> & atom_i,
+          const ClusterRefKey<AtomOrder, CallerOrderJ> & atom_j) const {
+        if (this->has_pair(atom_i, atom_j)) {
+          return PairPresence::Forward;
+        } else if (this->has_pair(atom_j, atom_i)) {
+          return PairPresence::Backward;
+        }
+        return PairPresence::No;
       }
 
       void update(StructureManager & manager);
@@ -1100,10 +1125,13 @@ namespace rascal {
   template <size_t StoredOrder, size_t PropertyOrder>
   PropertyLookupKeys<StoredOrder, PropertyOrder, ManagerImplementation,
                      (StoredOrder == AtomOrder) ? PropertyOrder
-                                                : PropertyOrder - 1> &
+                                                : nb_distances(PropertyOrder)> &
   StructureManager<ManagerImplementation>::get_sub_clusters() {
-    constexpr auto NbKeys{(StoredOrder == AtomOrder) ? PropertyOrder
-                                                     : PropertyOrder - 1};
+    static_assert(StoredOrder <= PairOrder,
+                  "Not implemented for sub-clusters of order higher than 2.");
+    constexpr auto NbKeys{(StoredOrder == AtomOrder)
+                              ? PropertyOrder
+                              : nb_distances(PropertyOrder)};
     using PropertyLookup_t = PropertyLookupKeys<StoredOrder, PropertyOrder,
                                                 ManagerImplementation, NbKeys>;
     // does the property exist at this level?
@@ -1166,14 +1194,23 @@ namespace rascal {
                 internal::fill_cluster_array(*this, atom_cluster_indices)};
             auto & entry{property[cluster]};
 
-            for (size_t i{0}; i < NbKeys; ++i) {
-              entry[i] =
-                  reverse_map.get_pair(atom_clusters[0], atom_clusters[i + 1]);
+            size_t counter{0};
+            for (size_t key_id{0}; key_id < NbKeys; ++key_id) {
+              auto lex_ij{
+                  [](auto && i, auto && j) -> std::array<int, PairOrder> {
+                    return i < j ? std::array<int, PairOrder>{i, j}
+                                 : std::array<int, PairOrder>{j, i};
+                  }(counter, (counter + 1) % NbKeys)};
+              auto && i{lex_ij[0]};
+              auto && j{lex_ij[1]};
+
+              entry[counter++] =
+                  reverse_map.get_pair(atom_clusters[i], atom_clusters[j]);
             }
           }
         }
+        break;
       }
-      break;
     }
     default: {
       throw std::runtime_error{"Not implemented for this storage order"};

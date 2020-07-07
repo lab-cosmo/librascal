@@ -121,10 +121,11 @@ namespace rascal {
             class StructureManager>
   void BehlerFeatureBase<SymFunTypes...>::compute(
       StructureManager & manager, std::shared_ptr<PropertyBase> prop,
-      std::shared_ptr<PropertyBase> prop_der) const {
+      std::shared_ptr<PropertyBase> prop_self_der,
+      std::shared_ptr<PropertyBase> prop_other_der) const {
     SymFunctionsVTable<SymFunTypes...>::template compute<RepSpecies,
                                                          Permutation>(
-        *this, manager, prop, prop_der);
+        *this, manager, prop, prop_self_der, prop_other_der);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -227,7 +228,8 @@ namespace rascal {
             class StructureManager>
   void BehlerPairFeature<MySymFunType, SymFunTypes...>::compute_helper(
       StructureManager & manager, std::shared_ptr<PropertyBase> output_values,
-      std::shared_ptr<PropertyBase> output_derivatives) const {
+      std::shared_ptr<PropertyBase> output_self_derivatives,
+      std::shared_ptr<PropertyBase> output_other_derivatives) const {
     auto && cutoff_tup{this->cut_fun->get_pair_derivative(manager)};
     auto & cutoff_values{std::get<0>(cutoff_tup)};
     auto & cutoff_derivatives{std::get<1>(cutoff_tup)};
@@ -237,19 +239,28 @@ namespace rascal {
     OutputVal_t & fun_vals{dynamic_cast<OutputVal_t &>(*output_values)};
 
     constexpr auto Order{SymmetryFunction_t::Order};
-    using OutputDerivative_t =
-        Property<double, Order, StructureManager, nb_distances(Order)>;
-    OutputDerivative_t & fun_derivatives{
-        dynamic_cast<OutputDerivative_t &>(*output_derivatives)};
+    using OutputSelfDerivative_t =
+        Property<double, AtomOrder, StructureManager, ThreeD>;
+    OutputSelfDerivative_t & fun_self_derivatives{
+        dynamic_cast<OutputSelfDerivative_t &>(*output_self_derivatives)};
+
+    using OutputOtherDerivative_t =
+        Property<double, PairOrder, StructureManager, ThreeD, 2>;
+    OutputOtherDerivative_t & fun_other_derivatives{
+        dynamic_cast<OutputOtherDerivative_t &>(*output_other_derivatives)};
 
     auto & pair_distances{manager.get_distance()};
+    auto & pair_direction_vectors{manager.get_direction_vector()};
 
     auto & neigh_to_i_atom{
         manager
             .template get_neighbours_to_i_atoms<SymmetryFunction_t::Order>()};
 
     fun_vals.resize();
-    fun_derivatives.resize();
+    fun_self_derivatives.resize();
+    fun_other_derivatives.resize();
+
+    auto && pair_inversion{Permutation::pair_inversion()[0]};
     for (auto && atom : manager) {
       for (auto && pair : atom.pairs()) {
         // compute the increment to the G function value
@@ -261,16 +272,20 @@ namespace rascal {
 
         auto && G_incr{sym_fun_value * cut_fun_value};
 
-        auto && dG_incr{(sym_fun_value * cut_fun_derivative +
-                         sym_fun_derivative * cut_fun_value)};
-
         auto && atom_cluster_indices{neigh_to_i_atom[pair]};
         auto && i_atom{manager[atom_cluster_indices(Permutation::leading())]};
 
-        fun_derivatives[pair] = dG_incr;
+        auto && dir_vec{pair_direction_vectors[pair] *
+                        (pair_inversion ? -1 : 1)};
+
+        auto && dG_incr{dir_vec * (sym_fun_value * cut_fun_derivative +
+                                   sym_fun_derivative * cut_fun_value)};
+
         switch (RepSpecies) {
         case RepeatedSpecies::Not: {
           fun_vals[i_atom] += G_incr;
+          fun_self_derivatives[i_atom] += dG_incr;
+          fun_other_derivatives[pair].col(pair_inversion) -= dG_incr;
           break;
         }
 
@@ -278,6 +293,12 @@ namespace rascal {
           fun_vals[i_atom] += G_incr;
           auto && j_atom{manager[atom_cluster_indices(Permutation::second())]};
           fun_vals[j_atom] += G_incr;
+
+          fun_self_derivatives[i_atom] += dG_incr;
+          fun_self_derivatives[j_atom] += -dG_incr;
+
+          fun_other_derivatives[pair].col(pair_inversion) -= dG_incr;
+          fun_other_derivatives[pair].col(not pair_inversion) -= -dG_incr;
           break;
         }
 
@@ -296,7 +317,10 @@ namespace rascal {
             class StructureManager>
   void BehlerTripletFeature<MySymFunType, SymFunTypes...>::compute_helper(
       StructureManager & manager, std::shared_ptr<PropertyBase> output_values,
-      std::shared_ptr<PropertyBase> output_derivatives) const {
+      std::shared_ptr<PropertyBase>
+          output_self_derivatives,  // vectorial atom-property
+      std::shared_ptr<PropertyBase> output_other_derivatives)
+      const {  // bi-vectorial pair-property (forwards and backwards)
     auto && cutoff_tup{this->cut_fun->get_triplet_derivative(manager)};
     auto & cutoff_values{std::get<0>(cutoff_tup)};
     auto & cutoff_derivatives{std::get<1>(cutoff_tup)};
@@ -305,16 +329,18 @@ namespace rascal {
     using OutputVal_t = Property<double, AtomOrder, StructureManager>;
     OutputVal_t & fun_vals{dynamic_cast<OutputVal_t &>(*output_values)};
 
-    constexpr auto Order{SymmetryFunction_t::Order};
-    using OutputDerivative_t =
-        Property<double, Order, StructureManager, nb_distances(Order)>;
-    OutputDerivative_t & fun_derivatives{
-        dynamic_cast<OutputDerivative_t &>(*output_derivatives)};
+    using OutputSelfDerivative_t =
+        Property<double, AtomOrder, StructureManager, ThreeD>;
+    OutputSelfDerivative_t & fun_self_derivatives{
+        dynamic_cast<OutputSelfDerivative_t &>(*output_self_derivatives)};
 
-    using DerivativeCast_t =
-        Eigen::Map<Eigen::Matrix<double, nb_distances(Order), 1>>;
+    using OutputOtherDerivative_t =
+        Property<double, PairOrder, StructureManager, ThreeD, 2>;
+    OutputOtherDerivative_t & fun_other_derivatives{
+        dynamic_cast<OutputOtherDerivative_t &>(*output_other_derivatives)};
 
     auto & triplet_distances{manager.get_triplet_distance()};
+    auto & direction_vectors{manager.get_direction_vector()};
     auto & cos_angles{get_cos_angles(manager)};
 
     auto & neigh_to_i_atom{
@@ -322,10 +348,18 @@ namespace rascal {
             .template get_neighbours_to_i_atoms<SymmetryFunction_t::Order>()};
 
     fun_vals.resize();
-    fun_derivatives.resize();
+    fun_self_derivatives.resize();
+    fun_other_derivatives.resize();
 
-    auto orderings{Permutation::template get_triplet_orderings<RepSpecies>()};
+    const auto ordering_weight{Permutation::template get_triplet_orderings<
+        RepSpecies,
+        SymmetryFunction<MySymFunType>::jk_are_indistinguishable()>()};
 
+    const auto & orderings{std::get<0>(ordering_weight)};
+    const auto & weight{std::get<1>(ordering_weight)};
+
+    auto && pairs_container{
+        manager.template get_sub_clusters<PairOrder, TripletOrder>()};
     for (auto && atom : manager) {
       for (auto && triplet : atom.triplets()) {
         auto && trip_cos{cos_angles[triplet]};
@@ -334,18 +368,42 @@ namespace rascal {
         auto && trip_cutoffs_derivatives{cutoff_derivatives[triplet]};
 
         auto && atom_cluster_indices{neigh_to_i_atom[triplet]};
+        // get the pairs in each triplet
 
-        for (auto && ordering : orderings) {
+        auto && triplet_pairs{pairs_container[triplet]};
+
+        for (auto && ordering_inversion : orderings) {
+          auto && ordering{std::get<0>(ordering_inversion)};
+          auto && inversion{std::get<1>(ordering_inversion)};
           auto && G_tup{this->sym_fun.df_sym(trip_cos, trip_dist, trip_cutoffs,
                                              trip_cutoffs_derivatives,
                                              ordering)};
           auto && G_incr{std::get<0>(G_tup)};
           auto && dG_incr{std::get<1>(G_tup)};
-          auto && i_atom{manager[atom_cluster_indices(ordering[0])]};
-          // auto && j_atom{manager[atom_cluster_indices(ordering[0])]};
-          // auto && k_atom{manager[atom_cluster_indices(ordering[0])]};
-          fun_vals[i_atom] += G_incr;
-          fun_derivatives[triplet] = DerivativeCast_t{dG_incr.data()};
+
+          using AtomClusterRef_t =
+              typename StructureManager::template ClusterRef<AtomOrder>;
+          std::array<AtomClusterRef_t, 3> atoms{
+              manager[atom_cluster_indices(ordering[0])],
+              manager[atom_cluster_indices(ordering[1])],
+              manager[atom_cluster_indices(ordering[2])]};
+
+          using PairClusterRef_t =
+              typename StructureManager::template ClusterRef<PairOrder>;
+          std::array<PairClusterRef_t, 3> pairs{triplet_pairs[ordering[0]],
+                                                triplet_pairs[ordering[1]],
+                                                triplet_pairs[ordering[2]]};
+
+          fun_vals[atoms[0]] += weight * G_incr;
+          for (int id{0}; id < pairs.size(); ++id) {
+            auto && dir_vec{direction_vectors[pairs[id]] *
+                            (inversion[id] ? -1 : 1)};
+            auto && dG_incr_vec{weight * dir_vec * dG_incr[ordering[id]]};
+            // contribution
+            fun_self_derivatives[atoms[id]] += dG_incr_vec;
+
+            fun_other_derivatives[pairs[id]].col(inversion[id]) -= dG_incr_vec;
+          }
         }
       }
     }
