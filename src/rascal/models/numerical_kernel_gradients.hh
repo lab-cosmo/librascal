@@ -36,6 +36,15 @@
 
 namespace rascal {
 
+  /**
+   * Compute the sparse kernel associated to an atomic structure
+   * displacing atom `i_atom` by `disp`.
+   *
+   * @see compute_numerical_kernel_gradients
+   * @param i_atom index of the atom to displace
+   * @param disp 3D vector used to displace the position of i_atom
+   *
+   */
   template <class KernelImpl, class Calculator, class Manager,
             class SparsePoints, typename Derived>
   math::Matrix_t compute_displaced_kernel(
@@ -60,6 +69,12 @@ namespace rascal {
     return KNM;
   }
 
+  /**
+   * Compute numerical gradient of the kernel of a sparse GPR model
+   * w.r.t. atomic positions for an atomic structure.
+   *
+   * @see compute_numerical_kernel_gradients
+   */
   template <class KernelImpl, class Calculator, class Manager,
             class SparsePoints>
   math::Matrix_t compute_numerical_kernel_gradient(
@@ -85,6 +100,18 @@ namespace rascal {
     return KNM;
   }
 
+  /**
+   * Compute numerical gradient of the kernel of a sparse GPR model
+   * w.r.t. atomic positions for a collection of atomic structures
+   * using centered finite differences.
+   *
+   * @param kernel a sparse kernel
+   * @param calculator a representation of the atomic neighborhood
+   * @param managers a collection of structure managers
+   * @param sparse_points basis points used in the sparse GPR model
+   * @param h_disp displacement used for the centered finite difference
+   *
+   */
   template <class KernelImpl, class Calculator, class Managers,
             class SparsePoints>
   math::Matrix_t compute_numerical_kernel_gradients(
