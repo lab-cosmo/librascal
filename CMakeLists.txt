@@ -203,8 +203,7 @@ if(BUILD_DOC)
 endif()
 
 # target to run linter for all configured sources
-set(LINT_TARGET lint CACHE STRING "Name of C++ and python style checker target")
-mark_as_advanced(LINT_TARGET)
+set(LINT_TARGET lint)
 add_custom_target(${LINT_TARGET})
 
 # Try to find optional cpp linter

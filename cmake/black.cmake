@@ -1,9 +1,6 @@
 
-set(BLACK_TARGET pretty-python CACHE STRING "Name of python autoformatter")
-set(BLACK_LINT_TARGET pylint CACHE STRING "Name of python autoformatter")
-
-mark_as_advanced(BLACK_TARGET)
-mark_as_advanced(BLACK_LINT_TARGET)
+set(BLACK_TARGET pretty-python)
+set(BLACK_LINT_TARGET pylint)
 
 # project root directory
 set(BLACK_PROJECT_ROOT ${PROJECT_SOURCE_DIR}
