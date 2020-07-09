@@ -71,8 +71,9 @@ namespace rascal {
 
   /**
    * Compute finite-difference gradient of the kernel of a sparse GPR model
-   * w.r.t. atomic positions for an atomic structure.
+   * w.r.t. atomic positions for a single atomic structure.
    *
+   * @param manager a structure manager
    * @see compute_numerical_kernel_gradients
    */
   template <class KernelImpl, class Calculator, class Manager,

@@ -114,7 +114,7 @@ We use ``pybind11`` to handle the generation of the python bindings. To make a n
 .. Note::
 
     To be able to use a particular structure manager stack in python, it also has to be binded. In the case a valid structure manager stack for your representation is not already binded, you will have to register it too in the :cpp:func:`add_structure_managers() <add_structure_managers>` function in ``bindings/bind_py_structure_manager.cc`` like in this example:
-    
+
     .. literalinclude:: ../../../bindings/bind_py_structure_manager.cc
         :language: c++
         :start-after: struc-man-bind-start
@@ -135,6 +135,12 @@ are the :cpp:class:`SphericalExpansion` and :cpp:class:`SphericalInvariants`
 the GTO and DVR radial basis.  Until we come up with a general, standard way of
 implementing gradients for any representation, please see those implementations
 for guidance.
+
+Alternativelly, the utility :cpp:func:`compute_numerical_kernel_gradients` can
+be used to compute the gradient of a the kernel for a particular representation
+w.r.t. the atomic positions using finite differences allowing to build kernel
+models with atomic forces when analytical gradients of the representation
+are missing.
 
 Once you've implemented the gradient -- or derivative -- of any function in
 libRascal, you must test that it actually corresponds to the gradient of the
