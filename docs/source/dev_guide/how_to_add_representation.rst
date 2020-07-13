@@ -136,7 +136,7 @@ the GTO and DVR radial basis.  Until we come up with a general, standard way of
 implementing gradients for any representation, please see those implementations
 for guidance.
 
-Alternativelly, the utility :cpp:func:`compute_numerical_kernel_gradients` can
+Alternatively, the utility :cpp:func:`compute_numerical_kernel_gradients` can
 be used to compute the gradient of a the kernel for a particular representation
 w.r.t. the atomic positions using finite differences allowing to build kernel
 models with atomic forces when analytical gradients of the representation
