@@ -44,7 +44,8 @@ def get_index_mappings_sample_per_species(managers, sps):
         for i_at, at in enumerate(man):
             types.append(at.atom_type)
             if at.atom_type in sps:
-                map_by_manager[at.atom_type][i_man][global_counter[at.atom_type]] = i_at
+                map_by_manager[at.atom_type][
+                                i_man][global_counter[at.atom_type]] = i_at
                 counter[at.atom_type] += 1
                 global_counter[at.atom_type] += 1
             else:
@@ -61,6 +62,7 @@ def get_index_mappings_sample_per_species(managers, sps):
         indices_by_sp[sp].append(ii)
 
     return strides_by_sp, global_counter, map_by_manager, indices_by_sp
+
 
 def get_index_mappings_sample(managers):
     '''Get various info from the structures about the center atom species and indexing.
@@ -99,6 +101,7 @@ def get_index_mappings_sample(managers):
     strides = np.cumsum(strides)
 
     return strides, global_counter, map_by_manager
+
 
 def convert_selected_global_index2perstructure_index_per_species(managers, selected_ids_by_sp,
                                 strides_by_sp, map_by_manager, sps):
@@ -139,6 +142,7 @@ def convert_selected_global_index2perstructure_index_per_species(managers, selec
     for ii in range(len(selected_ids)):
         selected_ids[ii] = list(np.sort(selected_ids[ii]))
     return selected_ids
+
 
 def convert_selected_global_index2perstructure_index(managers, selected_ids_global,
                                                         strides, map_by_manager):
