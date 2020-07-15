@@ -891,6 +891,10 @@ namespace rascal {
       Matrix_Ref compute_neighbour_derivative(
           const double /*distance*/,
           const ClusterRefKey<Order, Layer> & /*pair*/) {
+        return this->compute_neighbour_derivative();
+      }
+
+      Matrix_Ref compute_neighbour_derivative() {
         this->radial_neighbour_derivative =
             this->legendre_radial_factor.asDiagonal() *
             this->bessel.get_gradients().matrix();
