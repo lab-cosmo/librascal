@@ -867,7 +867,7 @@ namespace rascal {
         return this->compute_neighbour_contribution(distance, fac_a);
       }
 
-      inline Matrix_Ref compute_neighbour_contribution(const double distance,
+      Matrix_Ref compute_neighbour_contribution(const double distance,
                                                        const double fac_a) {
         using math::PI;
         using math::pow;

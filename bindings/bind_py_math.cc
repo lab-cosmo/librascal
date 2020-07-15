@@ -27,53 +27,107 @@
 
 #include "bind_py_math.hh"
 
-#include "rascal/math/spherical_harmonics.hh"
-#include "rascal/representations/calculator_spherical_expansion.hh"
 
 namespace rascal {
 
   void bind_sph(py::module & mod) {
+    using math::SphericalHarmonics;
     py::class_<SphericalHarmonics> sph(
         mod, "SphericalHarmonics");
-    sph.def("compute",
-              py::overload_cast<const Eigen::Ref<const Eigen::Vector3d> &>(&SphericalHarmonics::calc)
+    sph.def(py::init([](size_t max_angular, bool calculate_derivatives) {
+      auto sph_ = std::make_unique<SphericalHarmonics>(calculate_derivatives);
+      sph_->precompute(max_angular);
+      return sph_;
+    }));
+    sph.def(
+      "compute",
+      py::overload_cast<const Eigen::Ref<const Eigen::Vector3d> &>(&SphericalHarmonics::calc)
     );
-    sph.def("harmonics", &SphericalHarmonics::get_harmonics);
+    sph.def("harmonics", &SphericalHarmonics::get_harmonics,
+      "return vector([l_max+1]**2)");
     sph.def("harmonics_derivatives",
-            &SphericalHarmonics::get_harmonics_derivatives);
+            &SphericalHarmonics::get_harmonics_derivatives,
+      "return matrix(3, [l_max+1]**2)");
   }
 
   void bind_ri(py::module & mod) {
-    py::class_<RadialContribution<RadialBasisType::DVR>> ri_dvr(
+    using RadialContribution_t = internal::RadialContribution<internal::RadialBasisType::DVR>;
+
+    py::class_<RadialContribution_t> ri_dvr(
         mod, "RadialContributionDVR");
-    ri_dvr.def(
-      "",
-    );
+
     ri_dvr.def(py::init([](const py::dict & hyper) {
       // convert to json
       json hypers = hyper;
-      return std::make_unique<RadialContribution<RadialBasisType::DVR>>(hypers);
+      return std::make_unique<RadialContribution_t>(hypers);
     }));
 
-    ri_dvr.def("compute_center_contribution",
-              py::overload_cast<double>(&RadialContribution::template <RadialBasisType::DVR>::compute_center_contribution)
+    ri_dvr.def(
+      "compute_center_contribution",
+      [](RadialContribution_t & ri, const double fac_a) {
+        return ri.compute_center_contribution(fac_a);
+      }, "fac_a = 1 / (2*sigma^2) and returns a vector(n_max)"
     );
 
-    ri_dvr.def("compute_neighbour_contribution",
-              py::overload_cast<const double, const double>(&RadialContribution::template <RadialBasisType::DVR>::compute_neighbour_contribution)
+    ri_dvr.def(
+      "compute_neighbour_contribution",
+      [](RadialContribution_t & ri, const double distance, const double fac_a) {
+        return ri.compute_neighbour_contribution(distance, fac_a);
+      }, "fac_a = 1 / (2*sigma^2) and returns a matrix(n_max, l_max+1)"
     );
 
-    ri_dvr.def("compute_neighbour_derivative",
-              py::overload_cast<>(&RadialContribution::template <RadialBasisType::DVR>::compute_neighbour_derivative)
+    ri_dvr.def(
+      "compute_neighbour_derivative",
+      [](RadialContribution_t & ri) {
+        return ri.compute_neighbour_derivative();
+      }, "returns a matrix(n_max, l_max+1)"
+    );
+  }
+
+  void bind_fc(py::module & mod) {
+    using CutoffFunction_t = internal::CutoffFunction<internal::CutoffFunctionType::ShiftedCosine>;
+
+    py::class_<CutoffFunction_t> fc_c(mod, "CutoffFunctionShiftedCosine");
+    fc_c.def(
+      py::init([](const py::dict & hyper) {
+        // convert to json
+        json hypers = hyper;
+        return std::make_unique<CutoffFunction_t>(hypers);
+      }),
+      "hyper should be a dict(cutoff=dict(value=...), smooth_width=dict(value=...))"
+    ).def(
+      "f_c", py::vectorize(&CutoffFunction_t::f_c)
+    ).def(
+      "df_c", py::vectorize(&CutoffFunction_t::df_c), "df_c(r) / dr"
     );
 
+    using CutoffFunction_rs_t = internal::CutoffFunction<internal::CutoffFunctionType::RadialScaling>;
+
+    py::class_<CutoffFunction_rs_t> fc_rs(mod, "CutoffFunctionShiftedRadialScaling");
+    fc_rs.def(
+      py::init([](const py::dict & hyper) {
+        // convert to json
+        json hypers = hyper;
+        return std::make_unique<CutoffFunction_rs_t>(hypers);
+      }),
+      R"(hyper should be a
+           dict(cutoff=dict(value=XXX),
+                smooth_width=dict(value=XXX),
+                rate=dict(value=XXX),
+                exponent=dict(value=XXX),
+                scale=dict(value=XXX)))"
+    ).def(
+      "f_c", py::vectorize(&CutoffFunction_rs_t::f_c)
+    ).def(
+      "df_c", py::vectorize(&CutoffFunction_rs_t::df_c), "df_c(r) / dr"
+    );
 
   }
 
-  void math_binding(py::module & mod) {
-    py::module m_math = mod.def_submodule("math");
-    m_math.doc() = "Math Routines";
-    bind_sph(m_math);
-    bind_ri(m_math);
+
+  void add_math(py::module & mod) {
+    bind_sph(mod);
+    bind_ri(mod);
+    bind_fc(mod);
   }
 }  // namespace rascal

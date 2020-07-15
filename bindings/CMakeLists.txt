@@ -34,6 +34,7 @@ set(BINDING_SRCS
     bind_py_utils.cc
     bind_py_representation_calculator.cc
     bind_py_models.cc
+    bind_py_math.cc
 )
 
 

@@ -52,11 +52,14 @@ PYBIND11_MODULE(_rascal, mod) {
       " all methods which are used on the binding side, but are not meant to"
       " be used by the python user. It is also not part of the rascal library";
 
+  py::module m_math = mod.def_submodule("math");
+  m_math.doc() = "Math Routines";
+
   py::add_ostream_redirect(m_utl, "ostream_redirect");
 
   rascal::add_structure_managers(m_nl, m_internal);
   rascal::add_representation_calculators(m_repr, m_internal);
   rascal::utils_binding(m_utl);
   rascal::add_models(m_kernels, m_internal);
-  rascal::math_binding(mod);
+  rascal::add_math(m_math);
 }

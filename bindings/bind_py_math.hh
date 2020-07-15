@@ -28,10 +28,15 @@
 #ifndef BINDINGS_BIND_PY_MATH_HH_
 #define BINDINGS_BIND_PY_MATH_HH_
 
+#include <pybind11/numpy.h>
+
 #include "bind_include.hh"
 
+#include "rascal/math/spherical_harmonics.hh"
+#include "rascal/representations/calculator_spherical_expansion.hh"
+
 namespace rascal {
-  void math_binding(py::module &);
+  void add_math(py::module &);
 }
 
 #endif  // BINDINGS_BIND_PY_MATH_HH_
