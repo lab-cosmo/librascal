@@ -244,6 +244,12 @@ namespace rascal {
       this->values.resize(new_size);
     }
 
+    void setZero() {
+      for (auto & val : this->values) {
+        val = 0.;
+      }
+    }
+
     /**
      * Fill sequence, used for *_cluster_indices initialization
      * if consdier_ghost_atoms is true, ghost atoms also can have

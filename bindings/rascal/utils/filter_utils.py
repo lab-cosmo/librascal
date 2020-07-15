@@ -44,7 +44,8 @@ def get_index_mappings_sample_per_species(managers, sps):
         for i_at, at in enumerate(man):
             types.append(at.atom_type)
             if at.atom_type in sps:
-                map_by_manager[sp][i_man][global_counter[at.atom_type]] = i_at
+                map_by_manager[at.atom_type][
+                                i_man][global_counter[at.atom_type]] = i_at
                 counter[at.atom_type] += 1
                 global_counter[at.atom_type] += 1
             else:
@@ -185,3 +186,5 @@ def convert_selected_global_index2perstructure_index(managers, selected_ids_glob
     for ii in range(len(selected_ids)):
         selected_ids[ii] = list(np.sort(selected_ids[ii]).astype(int))
     return selected_ids
+
+

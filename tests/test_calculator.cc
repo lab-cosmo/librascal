@@ -344,19 +344,14 @@ namespace rascal {
     // the keys of the center contribution (1st center)
     std::vector<std::vector<int>> all_keys{{8, 8},   {8, 15},  {8, 20},
                                            {15, 15}, {15, 20}, {20, 20}};
-
+    // the list of keys for each neighbor (1st center)
     std::vector<std::vector<std::vector<int>>> neigh_keys{
-        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
-        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
-        {{8, 20}, {15, 20}, {20, 20}},
-        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
-        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
-        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
-        {{8, 20}, {15, 20}, {20, 20}},
-        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
-        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
-        {{8, 20}, {15, 20}, {20, 20}, {20, 24}},
-        {{8, 20}, {15, 20}, {20, 20}, {20, 24}}};
+        {{8, 15}, {15, 15}, {15, 20}}, {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 8}, {8, 15}, {8, 20}},    {{8, 8}, {8, 15}, {8, 20}},
+        {{8, 15}, {15, 15}, {15, 20}}};
 
     for (auto & manager : managers) {
       for (auto & hyper : hypers) {
@@ -370,8 +365,7 @@ namespace rascal {
             auto ii_pair = center.get_atom_ii();
             auto keys_grad_center = prop_grad.get_keys(ii_pair);
             if (verbose) {
-              std::cout << "Center " << center.get_atom_type()
-                        << " gradient keys: ";
+              std::cout << "Center gradient keys: ";
               for (auto key : keys_grad_center) {
                 std::cout << "{";
                 for (auto key_sp : key) {
@@ -384,12 +378,10 @@ namespace rascal {
 
             BOOST_TEST(keys_grad_center.size() == all_keys.size());
             for (size_t ii{0}; ii < keys_grad_center.size(); ii++) {
-              BOOST_TEST(keys_grad_center[ii].size() == all_keys[ii].size());
-              for (size_t jj{0}; jj < keys_grad_center[ii].size(); jj++) {
-                BOOST_TEST(keys_grad_center[ii] == all_keys[ii],
-                           boost::test_tools::per_element());
-              }
+              BOOST_TEST(keys_grad_center[ii] == all_keys[ii],
+                         boost::test_tools::per_element());
             }
+
             int i_neigh{0};
             for (auto neigh : center.pairs()) {
               auto neigh_type = neigh.get_atom_type();
@@ -405,12 +397,16 @@ namespace rascal {
                 }
                 std::cout << std::endl;
               }
-
-              BOOST_TEST(keys_neigh.size() == neigh_keys[i_neigh].size());
-              for (size_t ii{0}; ii < keys_neigh.size(); ii++) {
-                BOOST_TEST(keys_neigh[ii].size() == all_keys[ii].size());
-                for (size_t jj{0}; jj < keys_neigh[ii].size(); jj++) {
+              if (not hyper["normalize"]) {
+                BOOST_TEST(keys_neigh.size() == neigh_keys[i_neigh].size());
+                for (size_t ii{0}; ii < keys_neigh.size(); ii++) {
                   BOOST_TEST(keys_neigh[ii] == neigh_keys[i_neigh][ii],
+                             boost::test_tools::per_element());
+                }
+              } else {
+                BOOST_TEST(keys_neigh.size() == all_keys.size());
+                for (size_t ii{0}; ii < keys_neigh.size(); ii++) {
+                  BOOST_TEST(keys_neigh[ii] == all_keys[ii],
                              boost::test_tools::per_element());
                 }
               }
@@ -432,7 +428,7 @@ namespace rascal {
     auto & managers = Fix::managers;
     auto & representations = Fix::representations;
     auto & ref_data = Fix::ref_data;
-    const double delta{2e-6};
+    const double delta{3e-6};
     const double epsilon{1e-14};
     using Property_t = typename Fix::Property_t;
 
