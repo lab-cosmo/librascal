@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,6 +11,10 @@
   
 
   
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
   
     <link rel="shortcut icon" href="../_static/rascal.png"/>
   
@@ -19,7 +22,9 @@
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -34,10 +39,6 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="How to write a test" href="how_to_test.html" />
@@ -55,7 +56,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> Rascal
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> Rascal
           
 
           
@@ -82,6 +83,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -125,6 +127,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -163,7 +166,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="developer.html">Developer’s guide</a> &raquo;</li>
         
@@ -536,6 +539,11 @@ are the <code class="xref cpp cpp-class docutils literal notranslate"><span clas
 the GTO and DVR radial basis.  Until we come up with a general, standard way of
 implementing gradients for any representation, please see those implementations
 for guidance.</p>
+<p>Alternatively, the utility <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute_numerical_kernel_gradients()</span></code> can
+be used to compute the gradient of a the kernel for a particular representation
+w.r.t. the atomic positions using finite differences allowing to build kernel
+models with atomic forces when analytical gradients of the representation
+are missing.</p>
 <p>Once you’ve implemented the gradient – or derivative – of any function in
 libRascal, you must test that it actually corresponds to the gradient of the
 function that it purpots to be.  A finite-difference testing function is
@@ -573,12 +581,20 @@ Physical Review Letters, 108(5), 58301. <a class="reference external" href="http
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti,
 Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -589,7 +605,6 @@ Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,6 +11,10 @@
   
 
   
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
   
     <link rel="shortcut icon" href="../_static/rascal.png"/>
   
@@ -19,7 +22,9 @@
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -34,10 +39,6 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="References" href="../bibliography.html" />
@@ -55,7 +56,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> Rascal
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> Rascal
           
 
           
@@ -82,6 +83,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -119,6 +121,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -157,7 +160,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="index.html">API reference</a> &raquo;</li>
         
@@ -616,8 +619,8 @@ StructureManager is compatible with the representation <dl class="simple">
 <dl class="function">
 <dt id="_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t">
 <span class="target" id="classrascal_1_1CalculatorSphericalInvariants_1aac154ad550cad16fecba0e72249c884b"></span>template&lt;class <code class="sig-name descname">StructureManager</code>, class <code class="sig-name descname">SpectrumNorm</code>&gt;<br />void <code class="sig-name descname">update_gradients_for_normalization</code><span class="sig-paren">(</span>Property_t&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::StructureManager">StructureManager</a>&gt; &amp;<em>soap_vectors</em>, PropertyGradient_t&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::StructureManager">StructureManager</a>&gt; &amp;<em>soap_vector_gradients</em>, std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::StructureManager">StructureManager</a>&gt; <em>manager</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="rascal::CalculatorSphericalInvariants::update_gradients_for_normalization::SpectrumNorm">SpectrumNorm</a> &amp;<em>inv_norms</em>, <em class="property">const</em> size_t &amp;<em>grad_component_size</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I00EN6rascal29CalculatorSphericalInvariants34update_gradients_for_normalizationEvR10Property_tI16StructureManagerER18PropertyGradient_tI16StructureManagerENSt10shared_ptrI16StructureManagerEER12SpectrumNormRK6size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Update the gradients  p^{k} to include normalization, N_i, resulting in  {p}^{k}. We have:  {p}^{k} =  p^{k} / N_k<ul class="simple">
-<li><p>{p}^{k} [{p}^{k}   p^{k} / N_k], where $$ is a dot product between vectors. Note that this expects the soap vectors to be normalized already, and the norm stored separately </p></li>
+<dd><p>Update the gradients  p^{i} to include normalization, N_i, resulting in  {p}^{i}. We have:  {p}^{i} =  p^{i} / N_i<ul class="simple">
+<li><p>{p}^{i} [{p}^{i}   p^{i} / N_i], where $$ is a dot product between vectors. Note that this expects the soap vectors to be normalized already, and the norm stored separately. </p></li>
 </ul>
 </p>
 </dd></dl>
@@ -1068,6 +1071,11 @@ StructureManager is compatible with the representation <dl class="simple">
 
 <dl class="type">
 <dt>
+<em class="property">using </em><code class="sig-name descname">sparse_grad_fixtures</code> = boost::mpl::list&lt;SparseKernelGradFixture&gt;<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
 <em class="property">using </em><code class="sig-name descname">pair_fixtures</code> = boost::mpl::list&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal14ManagerFixtureE" title="rascal::ManagerFixture">ManagerFixture</a>&lt;<a class="reference internal" href="#_CPPv4N6rascal22StructureManagerLammpsE" title="rascal::StructureManagerLammps">StructureManagerLammps</a>&gt;&gt;<br /></dt>
 <dd></dd></dl>
 
@@ -1122,6 +1130,21 @@ template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title
 <dl class="function">
 <dt>
 template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal10KernelTypeE" title="rascal::internal::KernelType">KernelType</a> <code class="sig-name descname">Type</code>&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::KernelImpl&lt;<a class="reference internal" href="#_CPPv4I_N8internal10KernelTypeEEN6rascal20downcast_kernel_implENSt10shared_ptrIN8internal10KernelImplI4TypeEEEERNSt10shared_ptrIN8internal14KernelImplBaseEEE" title="rascal::downcast_kernel_impl::Type">Type</a>&gt;&gt; <code class="sig-name descname">downcast_kernel_impl</code><span class="sig-paren">(</span>std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal14KernelImplBaseE" title="rascal::internal::KernelImplBase">KernelImplBase</a>&gt; &amp;<em>kernel_impl</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">KernelImpl</code>, class <code class="sig-name descname">Calculator</code>, class <code class="sig-name descname">Manager</code>, class <code class="sig-name descname">SparsePoints</code>, typename <code class="sig-name descname">Derived</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute_displaced_kernel</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00000EN6rascal24compute_displaced_kernelEN4math8Matrix_tER10KernelImplR10CalculatorR7ManagerRK12SparsePointsRK6size_tRKN5Eigen10MatrixBaseI7DerivedEE" title="rascal::compute_displaced_kernel::KernelImpl">KernelImpl</a> &amp;<em>kernel</em>, <a class="reference internal" href="#_CPPv4I00000EN6rascal24compute_displaced_kernelEN4math8Matrix_tER10KernelImplR10CalculatorR7ManagerRK12SparsePointsRK6size_tRKN5Eigen10MatrixBaseI7DerivedEE" title="rascal::compute_displaced_kernel::Calculator">Calculator</a> &amp;<em>calculator</em>, <a class="reference internal" href="#_CPPv4I00000EN6rascal24compute_displaced_kernelEN4math8Matrix_tER10KernelImplR10CalculatorR7ManagerRK12SparsePointsRK6size_tRKN5Eigen10MatrixBaseI7DerivedEE" title="rascal::compute_displaced_kernel::Manager">Manager</a> &amp;<em>manager</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I00000EN6rascal24compute_displaced_kernelEN4math8Matrix_tER10KernelImplR10CalculatorR7ManagerRK12SparsePointsRK6size_tRKN5Eigen10MatrixBaseI7DerivedEE" title="rascal::compute_displaced_kernel::SparsePoints">SparsePoints</a> &amp;<em>sparse_points</em>, <em class="property">const</em> size_t &amp;<em>i_atom</em>, <em class="property">const</em> Eigen::MatrixBase&lt;<a class="reference internal" href="#_CPPv4I00000EN6rascal24compute_displaced_kernelEN4math8Matrix_tER10KernelImplR10CalculatorR7ManagerRK12SparsePointsRK6size_tRKN5Eigen10MatrixBaseI7DerivedEE" title="rascal::compute_displaced_kernel::Derived">Derived</a>&gt; &amp;<em>disp</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">KernelImpl</code>, class <code class="sig-name descname">Calculator</code>, class <code class="sig-name descname">Manager</code>, class <code class="sig-name descname">SparsePoints</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute_numerical_kernel_gradient</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0000EN6rascal33compute_numerical_kernel_gradientEN4math8Matrix_tER10KernelImplR10CalculatorR7ManagerRK12SparsePointsRKd" title="rascal::compute_numerical_kernel_gradient::KernelImpl">KernelImpl</a> &amp;<em>kernel</em>, <a class="reference internal" href="#_CPPv4I0000EN6rascal33compute_numerical_kernel_gradientEN4math8Matrix_tER10KernelImplR10CalculatorR7ManagerRK12SparsePointsRKd" title="rascal::compute_numerical_kernel_gradient::Calculator">Calculator</a> &amp;<em>calculator</em>, <a class="reference internal" href="#_CPPv4I0000EN6rascal33compute_numerical_kernel_gradientEN4math8Matrix_tER10KernelImplR10CalculatorR7ManagerRK12SparsePointsRKd" title="rascal::compute_numerical_kernel_gradient::Manager">Manager</a> &amp;<em>manager</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0000EN6rascal33compute_numerical_kernel_gradientEN4math8Matrix_tER10KernelImplR10CalculatorR7ManagerRK12SparsePointsRKd" title="rascal::compute_numerical_kernel_gradient::SparsePoints">SparsePoints</a> &amp;<em>sparse_points</em>, <em class="property">const</em> double &amp;<em>h_disp</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">KernelImpl</code>, class <code class="sig-name descname">Calculator</code>, class <code class="sig-name descname">Managers</code>, class <code class="sig-name descname">SparsePoints</code>&gt;<br /><a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t">Matrix_t</a> <code class="sig-name descname">compute_numerical_kernel_gradients</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0000EN6rascal34compute_numerical_kernel_gradientsEN4math8Matrix_tER10KernelImplR10CalculatorR8ManagersRK12SparsePointsd" title="rascal::compute_numerical_kernel_gradients::KernelImpl">KernelImpl</a> &amp;<em>kernel</em>, <a class="reference internal" href="#_CPPv4I0000EN6rascal34compute_numerical_kernel_gradientsEN4math8Matrix_tER10KernelImplR10CalculatorR8ManagersRK12SparsePointsd" title="rascal::compute_numerical_kernel_gradients::Calculator">Calculator</a> &amp;<em>calculator</em>, <a class="reference internal" href="#_CPPv4I0000EN6rascal34compute_numerical_kernel_gradientsEN4math8Matrix_tER10KernelImplR10CalculatorR8ManagersRK12SparsePointsd" title="rascal::compute_numerical_kernel_gradients::Managers">Managers</a> &amp;<em>managers</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0000EN6rascal34compute_numerical_kernel_gradientsEN4math8Matrix_tER10KernelImplR10CalculatorR8ManagersRK12SparsePointsd" title="rascal::compute_numerical_kernel_gradients::SparsePoints">SparsePoints</a> &amp;<em>sparse_points</em>, double <em>h_disp</em> = 1e-5<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -2002,6 +2025,11 @@ template&lt;class <code class="sig-name descname">ErrorMethod</code>&gt;<br /><e
 <dl class="function">
 <dt>
 <code class="sig-name descname">BOOST_AUTO_TEST_SUITE</code><span class="sig-paren">(</span>sparse_kernels_test<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>grad_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal20sparse_grad_fixturesE" title="rascal::sparse_grad_fixtures">sparse_grad_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -3247,6 +3275,11 @@ template&lt;int <code class="sig-name descname">Dim</code>&gt;<br /><em class="p
 <dl class="function">
 <dt>
 <code class="sig-name descname">AtomicStructure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;typename <code class="sig-name descname">Derived</code>&gt;<br />void <code class="sig-name descname">displace_position</code><span class="sig-paren">(</span><em class="property">const</em> size_t &amp;<em>i_atom</em>, <em class="property">const</em> Eigen::MatrixBase&lt;<a class="reference internal" href="#_CPPv4I0EN6rascal15AtomicStructure17displace_positionEvRK6size_tRKN5Eigen10MatrixBaseI7DerivedEE" title="rascal::AtomicStructure::displace_position::Derived">Derived</a>&gt; &amp;<em>disp</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -6226,7 +6259,7 @@ Eigen::ArrayXd <code class="sig-name descname">precompute_wigner_3js</code><span
 
 <dl class="function">
 <dt>
-template&lt;class <code class="sig-name descname">StructureManager</code>, class <code class="sig-name descname">ClusterRefCenter</code>&gt;<br />auto <code class="sig-name descname">find_periodic_images_pairs_in_environment</code><span class="sig-paren">(</span><em class="property">const</em> std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal8internal41find_periodic_images_pairs_in_environmentEDaRKNSt10shared_ptrI16StructureManagerEER16ClusterRefCenter" title="rascal::internal::find_periodic_images_pairs_in_environment::StructureManager">StructureManager</a>&gt; &amp;<em>manager</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal8internal41find_periodic_images_pairs_in_environmentEDaRKNSt10shared_ptrI16StructureManagerEER16ClusterRefCenter" title="rascal::internal::find_periodic_images_pairs_in_environment::ClusterRefCenter">ClusterRefCenter</a> &amp;<em>center</em><span class="sig-paren">)</span><br /></dt>
+template&lt;class <code class="sig-name descname">StructureManager</code>, class <code class="sig-name descname">ClusterRefCenter</code>&gt;<br />auto <code class="sig-name descname">find_periodic_images_pairs_in_environment</code><span class="sig-paren">(</span><em class="property">const</em> std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal8internal41find_periodic_images_pairs_in_environmentEDaRKNSt10shared_ptrI16StructureManagerEER16ClusterRefCenter" title="rascal::internal::find_periodic_images_pairs_in_environment::StructureManager">StructureManager</a>&gt;&amp;, <a class="reference internal" href="#_CPPv4I00EN6rascal8internal41find_periodic_images_pairs_in_environmentEDaRKNSt10shared_ptrI16StructureManagerEER16ClusterRefCenter" title="rascal::internal::find_periodic_images_pairs_in_environment::ClusterRefCenter">ClusterRefCenter</a> &amp;<em>center</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -8311,12 +8344,20 @@ std::tuple&lt;Eigen::ArrayXi, Eigen::ArrayXd, Eigen::ArrayXd, Eigen::ArrayXi, Ei
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti,
 Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -8327,7 +8368,6 @@ Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {
