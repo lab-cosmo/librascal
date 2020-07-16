@@ -105,12 +105,13 @@ endif()
 # set the name of the c++ libraries
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-  set(LIBRASCAL_NAME "rascal-dbg")
+  set(LIBRASCAL_NAME "rascal-dbg" CACHE PATH "librascal library name")
   set(WIGXJPF_NAME "wigxjpf-dbg")
 else()
-  set(LIBRASCAL_NAME "rascal")
+  set(LIBRASCAL_NAME "rascal" CACHE PATH "librascal library name")
   set(WIGXJPF_NAME "wigxjpfo")
 endif()
+
 
 add_external_package(wigxjpf VERSION 1.9 CONFIG)
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
