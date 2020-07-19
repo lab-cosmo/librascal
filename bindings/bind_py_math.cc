@@ -116,6 +116,10 @@ namespace rascal {
                 scale=dict(value=XXX)))")
         .def("f_c", py::vectorize(&CutoffFunction_rs_t::f_c))
         .def("df_c", py::vectorize(&CutoffFunction_rs_t::df_c), "df_c(r) / dr");
+        .def_property_readonly("cutoff",
+            [](CutoffFunction_rs_t & fc) {
+              return fc.cutoff;
+            });
   }
 
   void add_math(py::module & mod) {
