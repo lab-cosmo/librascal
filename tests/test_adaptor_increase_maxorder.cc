@@ -151,7 +151,7 @@ namespace rascal {
    * ``manager`` is a StructureManager with MaxOrder=2 and full neighbour list
    */
   BOOST_FIXTURE_TEST_CASE(pair_to_triplet_extension,
-                          ManagerFixture<StructureManagerLammps>) {
+                          ManagerFixture<StructureManagerLammpsFull>) {
     constexpr bool verbose{false};
 
     if (verbose) {

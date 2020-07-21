@@ -30,6 +30,8 @@
 
 #include "rascal/utils/for_each_at_order.hh"
 
+#include <type_traits>
+
 namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType... SymFunTypes>
@@ -64,6 +66,9 @@ namespace rascal {
               class StructureManager, class... PropertyPtr>
     static void compute(const BehlerFeatureBase & behler_feature,
                         StructureManager & manager, PropertyPtr... outputs) {
+      static_assert(StructureManager::traits::NeighbourListType ==
+                        AdaptorTraits::NeighbourListType::half,
+                    "Behlerfeature expects minimal neighbour lists");
       if (behler_feature.sym_fun_type == Head) {
         constexpr auto Order{SymmetryFunction<Head>::Order};
         using Feature_t =
@@ -88,6 +93,9 @@ namespace rascal {
               class StructureManager, class... PropertyPtr>
     static void compute(const BehlerFeatureBase & behler_feature,
                         StructureManager & manager, PropertyPtr... outputs) {
+      static_assert(StructureManager::traits::NeighbourListType ==
+                        AdaptorTraits::NeighbourListType::half,
+                    "Behlerfeature expects minimal neighbour lists");
       if (behler_feature.sym_fun_type == Head) {
         constexpr auto Order{SymmetryFunction<Head>::Order};
         using Feature_t =
@@ -110,6 +118,9 @@ namespace rascal {
             class StructureManager>
   void BehlerFeatureBase<SymFunTypes...>::compute(
       StructureManager & manager, std::shared_ptr<PropertyBase> prop) const {
+    static_assert(StructureManager::traits::NeighbourListType ==
+                      AdaptorTraits::NeighbourListType::half,
+                  "Behlerfeature expects minimal neighbour lists");
     SymFunctionsVTable<SymFunTypes...>::template compute<RepSpecies,
                                                          Permutation>(
         *this, manager, prop);
@@ -123,6 +134,9 @@ namespace rascal {
       StructureManager & manager, std::shared_ptr<PropertyBase> prop,
       std::shared_ptr<PropertyBase> prop_self_der,
       std::shared_ptr<PropertyBase> prop_other_der) const {
+    static_assert(StructureManager::traits::NeighbourListType ==
+                      AdaptorTraits::NeighbourListType::half,
+                  "Behlerfeature expects minimal neighbour lists");
     SymFunctionsVTable<SymFunTypes...>::template compute<RepSpecies,
                                                          Permutation>(
         *this, manager, prop, prop_self_der, prop_other_der);
@@ -203,7 +217,13 @@ namespace rascal {
     auto & neigh_to_i_atom{
         manager.template get_neighbours_to_i_atoms<TripletOrder>()};
 
-    auto orderings{Permutation::template get_triplet_orderings<RepSpecies>()};
+    const auto ordering_weight{Permutation::template get_triplet_orderings<
+        RepSpecies,
+        SymmetryFunction<MySymFunType>::jk_are_indistinguishable()>()};
+
+    const auto & orderings{std::get<0>(ordering_weight)};
+    const auto & weight{std::get<1>(ordering_weight)};
+
     for (auto && atom : manager) {
       for (auto && triplet : atom.triplets()) {
         auto && trip_dist{triplet_distances[triplet]};
@@ -211,11 +231,12 @@ namespace rascal {
         auto && trip_cos{cos_angles[triplet]};
         auto && atom_cluster_indices{neigh_to_i_atom[triplet]};
 
-        for (auto && ordering : orderings) {
+        for (auto && ordering_inversion : orderings) {
+          auto && ordering{std::get<0>(ordering_inversion)};
           auto && G_incr{
               this->sym_fun.f_sym(trip_cos, trip_dist, trip_cutoffs, ordering)};
           auto && i_atom{manager[atom_cluster_indices(ordering[0])]};
-          fun_vals[i_atom] += G_incr;
+          fun_vals[i_atom] += weight * G_incr;
         }
       }
     }
@@ -238,7 +259,6 @@ namespace rascal {
     using OutputVal_t = Property<double, AtomOrder, StructureManager>;
     OutputVal_t & fun_vals{dynamic_cast<OutputVal_t &>(*output_values)};
 
-    constexpr auto Order{SymmetryFunction_t::Order};
     using OutputSelfDerivative_t =
         Property<double, AtomOrder, StructureManager, ThreeD>;
     OutputSelfDerivative_t & fun_self_derivatives{
@@ -388,14 +408,14 @@ namespace rascal {
               manager[atom_cluster_indices(ordering[1])],
               manager[atom_cluster_indices(ordering[2])]};
 
-          using PairClusterRef_t =
-              typename StructureManager::template ClusterRef<PairOrder>;
-          std::array<PairClusterRef_t, 3> pairs{triplet_pairs[ordering[0]],
-                                                triplet_pairs[ordering[1]],
-                                                triplet_pairs[ordering[2]]};
+          using PairClusterRefKey_t =
+              std::remove_reference_t<decltype(triplet_pairs[ordering[0]])>;
+          std::array<PairClusterRefKey_t, 3> pairs{triplet_pairs[ordering[0]],
+                                                   triplet_pairs[ordering[1]],
+                                                   triplet_pairs[ordering[2]]};
 
           fun_vals[atoms[0]] += weight * G_incr;
-          for (int id{0}; id < pairs.size(); ++id) {
+          for (size_t id{0}; id < pairs.size(); ++id) {
             auto && dir_vec{direction_vectors[pairs[id]] *
                             (inversion[id] ? -1 : 1)};
             auto && dG_incr_vec{weight * dir_vec * dG_incr[ordering[id]]};

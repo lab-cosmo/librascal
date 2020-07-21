@@ -252,39 +252,41 @@ namespace rascal {
     }
     triplet_property.resize();
 
-    auto && typed_this{dynamic_cast<const CutoffFunction<CutFunType> &>(*this)};
     // (compute and) fetch preexisting cutoff funtion values for all pairs
     auto && pair_cutoffs{this->get_pair_value(manager)};
     // get the pairs in each triplet
-    auto && pairs{manager.template get_sub_clusters<PairOrder, TripletOrder>()};
 
-    // (compute and) fetch preexisting pair distances in all triplets
-    auto && triplet_distances{manager.get_triplet_distance()};
+    auto && pair_getter{[](auto && manager)-> decltype(auto) {
+      try {
+        return manager.template get_sub_clusters<PairOrder, TripletOrder>();
+      } catch (std::out_of_range &) {
+        std::stringstream error_message{};
+        error_message << "At least one triplet is non-compact. ";
+        throw std::runtime_error(error_message.str());
+      }
+    }};
 
+    auto && pairs{pair_getter(manager)};
+
+    constexpr int nb_pairs{nb_distances(TripletOrder)};
     switch (evaluation) {
     case Evaluation::Value: {
       for (auto && atom : manager) {
         for (auto && triplet : atom.triplets()) {
           // fetch array to fill
           auto && cutoffs{triplet_property[triplet]};
-
           // reuse precalculated cutoff values
-          auto && pair_ij{pairs[triplet][0]};
-          auto && pair_ik{pairs[triplet][1]};
-          cutoffs(0) = pair_cutoffs[pair_ij];
-          cutoffs(2) = pair_cutoffs[pair_ik];
-
-          // compute value for missing pair (might not exist in neighbour list)
-          auto && dist_ki{triplet_distances[triplet][2]};
-          auto && cutoff_ki{typed_this.f_c(dist_ki)};
-          cutoffs(1) = cutoff_ki;
+          for (int i{0}; i < nb_pairs; ++i) {
+            cutoffs(i) = pair_cutoffs[pairs[triplet][i]];
+          }
         }
       }
       triplet_property.set_updated_status(true);
       break;
     }
     case Evaluation::Derivative: {
-      auto && pair_cutoff_derivatives{std::get<1>(this->get_pair_derivative(manager))};
+      auto && pair_cutoff_derivatives{
+          std::get<1>(this->get_pair_derivative(manager))};
       // property we want to fill/update
       auto && triplet_derivatives_property{
           this->get_triplet_property(manager, evaluation)};
@@ -294,22 +296,11 @@ namespace rascal {
           // fetch arrays to fill
           auto && cutoff_values{triplet_property[triplet]};
           auto && cutoff_derivatives{triplet_derivatives_property[triplet]};
-
           // reuse precalculated cutoff values
-          auto && pair_ij{pairs[triplet][0]};
-          auto && pair_ik{pairs[triplet][1]};
-
-          cutoff_values(0) = pair_cutoffs[pair_ij];
-          cutoff_values(2) = pair_cutoffs[pair_ik];
-
-          cutoff_derivatives(0) = pair_cutoff_derivatives[pair_ij];
-          cutoff_derivatives(2) = pair_cutoff_derivatives[pair_ik];
-
-          // compute value for missing pair (might not exist in neighbour list)
-          auto && dist_ki{triplet_distances[triplet](2)};
-          auto && cutoff_ki{typed_this.df_c(dist_ki)};
-          cutoff_values(1) = cutoff_ki[0];
-          cutoff_derivatives(1) = cutoff_ki[1];
+          for (int i{0}; i < nb_pairs; ++i) {
+            cutoff_values(i) = pair_cutoffs[pairs[triplet][i]];
+            cutoff_derivatives(i) = pair_cutoff_derivatives[pairs[triplet][i]];
+          }
         }
         break;
       }

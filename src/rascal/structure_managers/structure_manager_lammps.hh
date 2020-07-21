@@ -35,6 +35,8 @@
 
 namespace rascal {
   //! forward declaration for traits
+  template <AdaptorTraits::NeighbourListType NeighbourListType =
+                AdaptorTraits::NeighbourListType::full>
   class StructureManagerLammps;
 
   /*
@@ -43,8 +45,8 @@ namespace rascal {
    * functionality the given StructureManager already contains to avoid
    * recomputation. See also the implementation of adaptors.
    */
-  template <>
-  struct StructureManager_traits<StructureManagerLammps> {
+  template <AdaptorTraits::NeighbourListType NeighbourListType_>
+  struct StructureManager_traits<StructureManagerLammps<NeighbourListType_>> {
     constexpr static int Dim{3};
     constexpr static size_t MaxOrder{2};
     constexpr static AdaptorTraits::Strict Strict{AdaptorTraits::Strict::no};
@@ -54,23 +56,27 @@ namespace rascal {
     constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0, 0>;
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
-        AdaptorTraits::NeighbourListType::half};
-    using PreviousManager_t = StructureManagerLammps;
+        NeighbourListType_};
+    using PreviousManager_t = StructureManagerLammps<NeighbourListType_>;
   };
 
   /* ---------------------------------------------------------------------- */
   //! Definition of the new StructureManagerLammps class.
+  template <AdaptorTraits::NeighbourListType NeighbourListType>
   class StructureManagerLammps
-      : public StructureManager<StructureManagerLammps>,
-        public std::enable_shared_from_this<StructureManagerLammps> {
+      : public StructureManager<StructureManagerLammps<NeighbourListType>>,
+        public std::enable_shared_from_this<
+            StructureManagerLammps<NeighbourListType>> {
    public:
-    using traits = StructureManager_traits<StructureManagerLammps>;
+    using traits =
+        StructureManager_traits<StructureManagerLammps<NeighbourListType>>;
     using PreviousManager_t = typename traits::PreviousManager_t;
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
-    using ManagerImplementation_t = StructureManagerLammps;
-    using ImplementationPtr_t = std::shared_ptr<StructureManagerLammps>;
+    using ManagerImplementation_t = StructureManagerLammps<NeighbourListType>;
+    using ImplementationPtr_t =
+        std::shared_ptr<StructureManagerLammps<NeighbourListType>>;
 
     //! Default constructor
     StructureManagerLammps() = default;
@@ -221,7 +227,7 @@ namespace rascal {
      * itself.
      */
     ImplementationPtr_t get_previous_manager_impl() {
-      return shared_from_this();
+      return this->shared_from_this();
     }
 
    protected:
@@ -264,12 +270,17 @@ namespace rascal {
     }
   };
 
+  using StructureManagerLammpsFull = StructureManagerLammps<AdaptorTraits::NeighbourListType::full>;
+  using StructureManagerLammpsMinimal =
+      StructureManagerLammps<AdaptorTraits::NeighbourListType::half>;
+
   /**
    * provided an atom, returns the cumulative numbers of pairs up to the first
    * pair in which the atom is the I atom this only works for atom
    */
+  template <AdaptorTraits::NeighbourListType NeighbourListType>
   template <size_t Order>
-  size_t StructureManagerLammps::get_offset_impl(
+  size_t StructureManagerLammps<NeighbourListType>::get_offset_impl(
       const std::array<size_t, Order> & counters) const {
     // The static assert with <= is necessary, because the template parameter
     // ``Order`` is one Order higher than the MaxOrder at the current level. The

@@ -921,7 +921,7 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(tests_without_reference_data);
 
   BOOST_FIXTURE_TEST_CASE(caller_layer_test,
-                          ManagerFixture<StructureManagerLammps>) {
+                          ManagerFixture<StructureManagerLammpsFull>) {
     bool verbose{false};
 
     double cutoff{1.1};  // one pair dist is sqrt{2}, the others are 1
@@ -997,7 +997,7 @@ namespace rascal {
 
     // strict is supposed to contain pairs 1 and 3
     auto & low_prop_typed{dynamic_cast<TypedProperty<
-        int, PairOrder, StructureManager<StructureManagerLammps>> &>(low_prop)};
+        int, PairOrder, StructureManager<StructureManagerLammpsFull>> &>(low_prop)};
     auto & high_prop_typed{dynamic_cast<TypedProperty<
         int, PairOrder,
         StructureManager<std::remove_reference_t<decltype(*strict)>>> &>(

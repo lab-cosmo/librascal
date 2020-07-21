@@ -826,8 +826,9 @@ namespace rascal {
      */
     template <size_t StoredOrder, size_t PropertyOrder>
     PropertyLookupKeys<StoredOrder, PropertyOrder, ManagerImplementation,
-                       (StoredOrder == AtomOrder) ? PropertyOrder
-                                                  : nb_distances(PropertyOrder)> &
+                       (StoredOrder == AtomOrder)
+                           ? PropertyOrder
+                           : nb_distances(PropertyOrder)> &
     get_sub_clusters();
 
     class PairLookupDirectory {
@@ -855,8 +856,14 @@ namespace rascal {
       const std::enable_if_t<HasPairs, PairCluster_t> &
       get_pair(const ClusterRefKey<AtomOrder, CallerOrderI> & atom_i,
                const ClusterRefKey<AtomOrder, CallerOrderJ> & atom_j) const {
-        return this->pairs[atom_i.get_cluster_index(this->Layer())].at(
-            atom_j.get_cluster_index(this->Layer()));
+        auto && atom_i_id{atom_i.get_cluster_index(this->Layer())};
+        auto && atom_j_id{atom_j.get_cluster_index(this->Layer())};
+        std::cout << std::endl << "id = " << atom_i_id << std::endl;
+        std::cout << "jd = " << atom_j_id << std::endl;
+        for (auto && key_val : this->pairs[atom_i_id]) {
+          std::cout << std::get<0>(key_val) << std::endl;
+        }
+        return this->pairs[atom_i_id].at(atom_j_id);
       }
 
       template <size_t CallerOrderI, size_t CallerOrderJ,
@@ -1194,13 +1201,12 @@ namespace rascal {
                 internal::fill_cluster_array(*this, atom_cluster_indices)};
             auto & entry{property[cluster]};
 
-            size_t counter{0};
+            int counter{0};
             for (size_t key_id{0}; key_id < NbKeys; ++key_id) {
-              auto lex_ij{
-                  [](auto && i, auto && j) -> std::array<int, PairOrder> {
-                    return i < j ? std::array<int, PairOrder>{i, j}
-                                 : std::array<int, PairOrder>{j, i};
-                  }(counter, (counter + 1) % NbKeys)};
+              auto lex_ij{[](int i, int j) -> std::array<int, PairOrder> {
+                return i < j ? std::array<int, PairOrder>{i, j}
+                             : std::array<int, PairOrder>{j, i};
+              }(counter, (counter + 1) % NbKeys)};
               auto && i{lex_ij[0]};
               auto && j{lex_ij[1]};
 
@@ -1235,12 +1241,12 @@ namespace rascal {
       auto & j_container{this->pairs.at(counter)};
       auto && pair_clusters{atom.template get_clusters_of_order<PairOrder>()};
       j_container.clear();
-      ++counter;
       for (auto && pair : pair_clusters) {
         auto && atom_cluster_indices{cluster_to_i_atom[pair]};
         auto && j_atom_cluster_id{atom_cluster_indices(1)};
         j_container[j_atom_cluster_id] = pair;
       }
+      ++counter;
     }
 
     this->is_updated_flag = true;

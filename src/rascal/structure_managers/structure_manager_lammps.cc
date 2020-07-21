@@ -33,10 +33,10 @@
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
-  void StructureManagerLammps::update_self(int inum, int tot_num, int * ilist,
-                                           int * numneigh, int ** firstneigh,
-                                           double ** x, double ** f, int * type,
-                                           double * eatom, double ** vatom) {
+  template <AdaptorTraits::NeighbourListType NeighbourListType>
+  void StructureManagerLammps<NeighbourListType>::update_self(
+      int inum, int tot_num, int * ilist, int * numneigh, int ** firstneigh,
+      double ** x, double ** f, int * type, double * eatom, double ** vatom) {
     // setting the class variables
     this->inum = inum;
     this->tot_num = tot_num;
@@ -77,7 +77,9 @@ namespace rascal {
    * Return the number of clusters of size cluster_size.  Can only handle
    * cluster_size 1 (atoms) and cluster_size 2 (pairs).
    */
-  size_t StructureManagerLammps::get_nb_clusters(int order) const {
+  template <AdaptorTraits::NeighbourListType NeighbourListType>
+  size_t
+  StructureManagerLammps<NeighbourListType>::get_nb_clusters(int order) const {
     switch (order) {
     case 1:
       return inum;
@@ -93,4 +95,8 @@ namespace rascal {
       throw std::runtime_error("Can only handle single atoms and pairs");
     }
   }
+
+  /* ---------------------------------------------------------------------- */
+  template class StructureManagerLammps<AdaptorTraits::NeighbourListType::full>;
+  template class StructureManagerLammps<AdaptorTraits::NeighbourListType::half>;
 }  // namespace rascal

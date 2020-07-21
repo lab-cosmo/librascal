@@ -40,7 +40,7 @@ namespace rascal {
   using Fixtures = boost::mpl::list<
       PairFixtureStrict<PairFixtureSimple<StructureManagerCenters>>,
       PairFixtureStrict<PairFixtureCenters>
-      // PairFixtureStrict<ManagerFixture<StructureManagerLammps>>
+      // PairFixtureStrict<ManagerFixture<StructureManagerLammpsFull>>
       >;
 
   using multiple_fixtures = boost::mpl::list<

@@ -53,12 +53,13 @@ namespace rascal {
 
   using Fixtures =
       boost::mpl::list<SpeciesManagerFixture<StructureManagerCenters, 1>,
-                       SpeciesManagerFixture<StructureManagerLammps, 2>>;
+                       SpeciesManagerFixture<StructureManagerLammpsFull,
+                                             2>>;
 
   using FixturesMax1 =
       boost::mpl::list<SpeciesManagerFixture<StructureManagerCenters, 1>>;
   using FixturesMax2 =
-      boost::mpl::list<SpeciesManagerFixture<StructureManagerLammps, 2>>;
+      boost::mpl::list<SpeciesManagerFixture<StructureManagerLammpsFull, 2>>;
   using FixturesMax3 = boost::mpl::list<>;
 
   /* ---------------------------------------------------------------------- */

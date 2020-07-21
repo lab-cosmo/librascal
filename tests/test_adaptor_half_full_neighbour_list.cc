@@ -44,7 +44,7 @@ namespace rascal {
    * a full neighbour list (MaxOrder=2).
    */
   BOOST_FIXTURE_TEST_CASE(constructor_test,
-                          ManagerFixture<StructureManagerLammps>) {
+                          ManagerFixture<StructureManagerLammpsFull>) {
     auto adaptor = make_adapted_manager<AdaptorHalfList>(manager);
     adaptor->update();
   }
@@ -58,7 +58,7 @@ namespace rascal {
    * MaxOrder=2 and a full neighbourlist.
    */
   BOOST_FIXTURE_TEST_CASE(iteration_and_distance_half_list,
-                          ManagerFixture<StructureManagerLammps>) {
+                          ManagerFixture<StructureManagerLammpsFull>) {
     constexpr bool verbose{false};
 
     double distance_sum_full{0.};
@@ -117,7 +117,7 @@ namespace rascal {
    * for the adaptions.
    */
   BOOST_FIXTURE_TEST_CASE(full_to_half_to_full_neighbour_list,
-                          ManagerFixture<StructureManagerLammps>) {
+                          ManagerFixture<StructureManagerLammpsFull>) {
     constexpr bool verbose{false};
 
     // variable for summation for test position differences

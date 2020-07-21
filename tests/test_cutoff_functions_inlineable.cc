@@ -74,7 +74,7 @@ namespace rascal {
   }
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(compute_test, Fix, CutoffFunctions_t, Fix) {
-    ManagerFixture<StructureManagerLammps> fixture{};
+    ManagerFixture<StructureManagerLammpsFull> fixture{};
     auto strict{
         make_adapted_manager<AdaptorStrict>(fixture.manager, this->r_cut)};
     strict->update();
@@ -83,7 +83,7 @@ namespace rascal {
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(compute_test_wrong_level, Fix,
                                    CutoffFunctions_t, Fix) {
-    ManagerFixture<StructureManagerLammps> fixture{};
+    ManagerFixture<StructureManagerLammpsFull> fixture{};
     auto strict{
         make_adapted_manager<AdaptorStrict>(fixture.manager, this->r_cut)};
     BOOST_CHECK(true);
@@ -99,7 +99,7 @@ namespace rascal {
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(compute_derivative_test, Fix,
                                    CutoffFunctions_t, Fix) {
-    ManagerFixture<StructureManagerLammps> fixture{};
+    ManagerFixture<StructureManagerLammpsFull> fixture{};
     auto strict{
         make_adapted_manager<AdaptorStrict>(fixture.manager, this->r_cut)};
     strict->update();

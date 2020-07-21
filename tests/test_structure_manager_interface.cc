@@ -40,7 +40,7 @@ namespace rascal {
   // a list of fixtures for all the different possible structure managers
   // and test the atom (Order=1) related interface.
   using fixtures = boost::mpl::list<ManagerFixture<StructureManagerCenters>,
-                                    ManagerFixture<StructureManagerLammps>,
+                                    ManagerFixture<StructureManagerLammpsFull>,
                                     ManagerFixtureFile<StructureManagerCenters>,
                                     // not templated single manager fixtures
                                     ManagerFixtureSimple>;
@@ -48,7 +48,7 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   // a list of fixtures for pair managers for testing pair related interface
   using pair_fixtures =
-      boost::mpl::list<ManagerFixture<StructureManagerLammps>>;
+      boost::mpl::list<ManagerFixture<StructureManagerLammpsFull>>;
 
   /* ---------------------------------------------------------------------- */
   // just checks that the structure managers can be constructed
