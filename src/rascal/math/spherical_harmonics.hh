@@ -182,6 +182,10 @@ namespace rascal {
         return this->harmonics_derivatives;
       }
 
+      const size_t& get_max_angular() const {
+        return this->max_angular;
+      }
+
      private:
       /**
        * Compute a set of normalized associated Legendre polynomials
