@@ -698,6 +698,13 @@ namespace rascal {
                                ManagerCollection_t>(manager_collection);
     bind_feature_matrix_getter<CalculatorSphericalCovariants,
                                ManagerCollection_t>(manager_collection);
+    manager_collection.def(
+        "get_features_gradient", &ManagerCollection_t::template get_features<CalculatorSphericalExpansion>,
+        py::call_guard<py::gil_scoped_release>());
+    manager_collection.def(
+        "get_features_gradient", &ManagerCollection_t::template get_features<CalculatorSphericalInvariants>,
+        py::call_guard<py::gil_scoped_release>());
+
     // bind some special getters
     bind_sparse_feature_matrix_getter<CalculatorSphericalExpansion,
                                       ManagerCollection_t>(manager_collection);
