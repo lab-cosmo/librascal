@@ -50,6 +50,7 @@ namespace rascal {
   class SparsePointsBlockSparse {
    public:
     using Key_t = typename CalculatorBase::Key_t;
+    using Keys_t = std::set<Key_t>;
     using Data_t = std::map<int, std::map<Key_t, std::vector<double>>>;
     using Indices_t = std::map<int, std::map<Key_t, std::vector<size_t>>>;
     using Counters_t = std::map<int, size_t>;
@@ -85,7 +86,7 @@ namespace rascal {
     //! list of possible center species for accessing [sp]
     std::set<int> center_species{};
     //! list of possible keys for accessing [key]
-    std::set<Key_t> keys{};
+    Keys_t keys{};
 
     SparsePointsBlockSparse() {
       for (int sp{1}; sp < MaxChemElements; ++sp) {
@@ -269,6 +270,106 @@ namespace rascal {
       }        // key
       return KNM_row;
     }
+
+    template <class Manager>
+    void dot_derivative(PropertyGradient_t<Manager> &
+                              representation_grad, std::shared_ptr<Manager> manager,
+                              Property<double, 1, Manager, ThreeD, Eigen::Dynamic> & dKdr) const {
+      bool do_block_by_key_dot{false};
+      if (representation_grad.are_keys_uniform()) {
+        do_block_by_key_dot = true;
+      }
+      std::cout << "do_block_by_key_dot: " << do_block_by_key_dot<<std::endl;
+
+      std::set<int> unique_species{};
+      for (auto center : manager) {
+          int a_sp{center.get_atom_type()};
+          unique_species.insert(a_sp);
+      }
+      // find shared central atom species
+      std::set<int> species_intersect{internal::set_intersection(unique_species,
+                            this->center_species)};
+
+      if (species_intersect.size() == 0) {
+        return ;
+      }
+      // find offsets alongs the sparse points direction
+      int offset{0};
+      std::map<int, int> offsets{};
+      for (const int & csp : this->center_species) {
+        if (species_intersect.count(csp)) {
+          offsets[csp] = offset;
+        }
+        offset += this->counters.at(csp);
+      }
+      // find shared keys
+      Keys_t rep_keys{representation_grad.get_keys()};
+      Keys_t keys_intersect{internal::set_intersection(rep_keys, this->keys)};
+
+      if (do_block_by_key_dot) {
+        auto rep_grads{representation_grad.get_raw_data_view_gradient()};
+        std::map<Key_t, std::array<int, 2>> col_infos{};
+        for (const Key_t & key : keys_intersect) {
+          col_infos[key] = representation_grad.get_col_info_by_key_gradient(key);
+          assert(static_cast<int>(this->inner_size) == col_infos[key][1]);
+        }
+        size_t i_row{0};
+        for (auto center : manager) {
+          auto a_sp{center.get_atom_type()};
+          offset = offsets[a_sp];
+          const auto & values_by_sp = this->values.at(a_sp);
+          const auto & indices_by_sp = this->indices.at(a_sp);
+          auto n_rows{center.pairs_with_self_pair().size()*ThreeD};
+          for (const Key_t & key : keys_intersect) {
+            const auto & indices_by_sp_key = indices_by_sp.at(key);
+            const auto & values_by_sp_key = values_by_sp.at(key);
+            auto spts = Eigen::Map<const math::Matrix_t>(
+              values_by_sp_key.data(),
+              static_cast<Eigen::Index>(indices_by_sp_key.size()),
+              static_cast<Eigen::Index>(this->inner_size));
+            assert(indices_by_sp_key.size() * this->inner_size ==
+                 values_by_sp_key.size());
+            const auto & col_info{col_infos[key]};
+
+            auto KNM_block = rep_grads.block(i_row, col_info[0], n_rows, col_info[1]) * spts.transpose();
+
+            int i_row_{0};
+            for (auto neigh : center.pairs_with_self_pair()) {
+              auto dKdr_row{dKdr[neigh.get_atom_j()]};
+              for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
+                dKdr_row.col(offset + indices_by_sp_key[i_col]) += KNM_block.block(i_row_, i_col, ThreeD, 1);
+              }  // M
+              i_row_ += ThreeD;
+            }    // neigh
+          }
+          i_row += n_rows;
+        } // center
+      } else {
+        for (auto center : manager) {
+          auto a_sp{center.get_atom_type()};
+          for (auto neigh : center.pairs_with_self_pair()) {
+            dKdr[neigh.get_atom_j()] += this->dot_derivative(a_sp, representation_grad[neigh]).transpose();
+          }
+        }
+      }
+    }
+
+    // mat.setZero();
+    //     auto center_it = B.get_manager().get_iterator_at(0);
+    //     auto center = *center_it;
+    //     // since the keys are uniform we can use the first element of the maps
+    //     auto B_keys = B.get_keys(center);
+    //     auto unique_keys = this->maps[0].intersection(B_keys);
+    //     const auto matA = this->get_raw_data_view();
+    //     const auto matB = B.get_raw_data_view();
+    //     for (const auto & key : unique_keys) {
+    //       SortedKey_t skey{key};
+    //       auto mA_info = this->get_block_info_by_key(skey);
+    //       auto mB_info = B.get_block_info_by_key(skey);
+    //       mat += matA.block(mA_info[0], mA_info[1], mA_info[2], mA_info[3]) *
+    //              matB.block(mB_info[0], mB_info[1], mB_info[2], mB_info[3])
+    //                  .transpose();
+    //     }
 
     /**
      * Fill the pseudo points container with features computed with calculator

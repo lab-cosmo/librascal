@@ -240,7 +240,7 @@ namespace rascal {
         }
         size_t n_sparse_points{sparse_points.size()};
         math::Matrix_t KNM(n_centers, n_sparse_points);
-        // KNM.setZero();
+
         size_t i_center{0};
         // loop over the structures
         for (auto & manager : managers) {
@@ -251,23 +251,10 @@ namespace rascal {
           dKdr.setZero();
           auto && prop_grad{*manager->template get_property<PropertyGradient_t>(
               representation_grad_name, true)};
-          std::map<int, std::set<int>> gradient_sum_counter{};
-          for (auto center : manager) {
-            std::set<int> count{};
-            gradient_sum_counter[center.get_atom_tag()] = count;
-          }
-          if (this->zeta == 1) {
-            // simpler version where the kernel derivative is one
-            for (auto center : manager) {
-              int sp{center.get_atom_type()};
-              // auto atom_i_tag = center.get_atom_tag();
-              for (auto neigh : center.pairs_with_self_pair()) {
-                auto atom_j = neigh.get_atom_j();
-                dKdr[atom_j] += sparse_points.dot_derivative(sp, prop_grad[neigh])
-                          .transpose();
-              }
-            }
-          } else {
+          // compute dX/dr * T 
+          sparse_points.dot_derivative(prop_grad, manager, dKdr);
+
+          if (this->zeta > 1) {
             auto && prop{*manager->template get_property<Property_t>(
                 representation_name, true)};
             // put together dk/dX, the pseudo points and dX/dr
@@ -281,10 +268,7 @@ namespace rascal {
                       .transpose();
               for (auto neigh : center.pairs_with_self_pair()) {
                 auto atom_j = neigh.get_atom_j();
-                dKdr[atom_j] +=
-                      sparse_points.dot_derivative(sp, prop_grad[neigh])
-                          .transpose() *
-                      rep.asDiagonal();
+                dKdr[atom_j] = dKdr[atom_j] * rep.asDiagonal();
               }
             }
           }

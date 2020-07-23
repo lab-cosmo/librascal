@@ -35,6 +35,7 @@
 #include <typeinfo>
 #include <utility>
 #include <vector>
+#include <set>
 
 namespace rascal {
   namespace internal {
@@ -331,6 +332,27 @@ namespace rascal {
         t.clear();
       }
     };
+
+    template<class Set_a, class Set_b>
+    auto set_intersection(const Set_a & keys_a,
+                                        const Set_b & keys_b) {
+      using value_type = typename Set_a::value_type;
+      static_assert(std::is_same<value_type,typename Set_b::value_type>::value,
+                    "Set type must be the same");
+      if (keys_a.empty() or keys_b.empty()) {
+        return std::set<value_type>();
+      }
+      std::set<value_type> set{keys_a.cbegin(), keys_a.cend()};
+      std::set<value_type> intersections;
+      for (const value_type & el : keys_b) {
+        if (set.erase(el) > 0) {
+          // if el exists in set, then 1 is returned and el is erased;
+          // otherwise, 0.
+          intersections.insert(el);
+        }
+      }
+      return intersections;
+    }
 
     /* ---------------------------------------------------------------------- */
 

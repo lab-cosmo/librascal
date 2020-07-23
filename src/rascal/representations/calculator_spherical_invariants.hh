@@ -1385,7 +1385,7 @@ namespace rascal {
                 }
               }
               if (not this->normalize) {
-                keys_list_grad.emplace_back(grad_pair_list);
+                keys_list_grad.emplace_back(pair_list);
               } else {
                 // the normalization: \grad_k \tilde{p}^{i} ~ \tilde{p}^{i}
                 // the keys for the gradient are the same as for the
@@ -1393,7 +1393,7 @@ namespace rascal {
                 keys_list_grad.emplace_back(pair_list);
               }
             } else {
-              keys_list_grad.emplace_back(grad_pair_list);
+              keys_list_grad.emplace_back(pair_list);
             }
           }  // auto neigh : center.pairs()
         }    // if compute_gradients
