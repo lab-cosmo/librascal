@@ -975,7 +975,8 @@ namespace rascal {
       return features;
     }
 
-    Matrix_t get_features_gradient(const int & i_center, const Keys_t & all_keys) {
+    Matrix_t get_features_gradient(const int & i_center,
+                                   const Keys_t & all_keys) {
       static_assert(Order_ == 2, "Gradients are a property of order 2.");
       using ConstMapSoapGradFlat_t = const Eigen::Map<
           const Eigen::Matrix<double, ThreeD, Eigen::Dynamic, Eigen::RowMajor>>;
@@ -995,7 +996,7 @@ namespace rascal {
       Matrix_t features =
           Matrix_t::Zero(n_pairs * ThreeD, inner_size * all_keys.size());
       int i_row_global{0};
-      for (size_t i_pair{i_neigh}; i_pair < i_neigh+n_pairs; i_pair++) {
+      for (size_t i_pair{i_neigh}; i_pair < i_neigh + n_pairs; i_pair++) {
         int i_feat{0};
         const auto & neigh_val = this->maps[i_pair];
         for (const auto & key : all_keys) {

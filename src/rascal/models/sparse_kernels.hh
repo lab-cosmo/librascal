@@ -266,11 +266,10 @@ namespace rascal {
             auto n_rows{center.pairs_with_self_pair().size() * ThreeD};
             const auto & spts_slice{spts_slices[a_sp]};
             math::Matrix_t dXdr =
-              prop_grad.get_features_gradient(i_center_, sparse_points.keys);
+                prop_grad.get_features_gradient(i_center_, sparse_points.keys);
             math::Matrix_t KNM_block =
-                dXdr *
-                spts.block(spts_slice[0], 0, spts_slice[1], n_features)
-                    .transpose();
+                dXdr * spts.block(spts_slice[0], 0, spts_slice[1], n_features)
+                           .transpose();
 
             if (this->zeta > 1) {
               // dk/dX without the pseudo point factor
