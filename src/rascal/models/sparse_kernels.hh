@@ -260,15 +260,15 @@ namespace rascal {
           // compute dX/dr * T
           // sparse_points.dot_derivative(prop_grad, manager, dKdr);
 
-          math::Matrix_t dXdr =
-              prop_grad.get_features_gradient(sparse_points.keys);
-          int i_row{0};
+          int i_row{0}, i_center_{0};
           for (auto center : manager) {
             auto a_sp{center.get_atom_type()};
             auto n_rows{center.pairs_with_self_pair().size() * ThreeD};
             const auto & spts_slice{spts_slices[a_sp]};
+            math::Matrix_t dXdr =
+              prop_grad.get_features_gradient(i_center_, sparse_points.keys);
             math::Matrix_t KNM_block =
-                dXdr.block(i_row, 0, n_rows, n_features) *
+                dXdr *
                 spts.block(spts_slice[0], 0, spts_slice[1], n_features)
                     .transpose();
 
@@ -290,6 +290,7 @@ namespace rascal {
               i_row_ += ThreeD;
             }
             i_row += n_rows;
+            i_center_++;
           }
 
           // copy the data to the kernel matrix
