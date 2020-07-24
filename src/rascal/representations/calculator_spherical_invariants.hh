@@ -1394,7 +1394,7 @@ namespace rascal {
               }
             } else {
               // keys_list_grad.emplace_back(grad_pair_list);
-              keys_list_grad.emplace_back(grad_pair_list);
+              keys_list_grad.emplace_back(pair_list);
             }
           }  // auto neigh : center.pairs()
         }    // if compute_gradients

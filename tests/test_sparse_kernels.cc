@@ -141,7 +141,7 @@ namespace rascal {
 
     const bool verbose{true};
     // relative error threshold
-    const double delta{5e-6};
+    const double delta{5e-5};
     // range of zero
     const double epsilon{1e-15};
 

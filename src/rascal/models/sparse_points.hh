@@ -286,7 +286,7 @@ namespace rascal {
         do_block_by_key_dot = true;
       }
       // do_block_by_key_dot = false;
-      // std::cout << "do_block_by_key_dot: " << do_block_by_key_dot<<std::endl;
+      std::cout << "do_block_by_key_dot: " << do_block_by_key_dot << std::endl;
 
       std::set<int> unique_species{};
       for (auto center : manager) {
@@ -319,22 +319,15 @@ namespace rascal {
       }
 
       if (do_block_by_key_dot) {
-        // std::map<Key_t, std::array<int, 2>> col_infos{};
-        // for (const Key_t & key : rep_keys) {
-        //   col_infos[key] =
-        //   representation_grad.get_col_info_by_key_gradient(key);
-        //   assert(static_cast<int>(this->inner_size) == col_infos[key][1]);
-        // }
         size_t i_row{0};
+        auto rep_grads = representation_grad.get_raw_data_view();
         for (auto center : manager) {
           auto a_sp{center.get_atom_type()};
           offset = offsets[a_sp];
           const auto & values_by_sp = this->values.at(a_sp);
           const auto & indices_by_sp = this->indices.at(a_sp);
-          auto n_rows{center.pairs_with_self_pair().size() * ThreeD};
+          auto n_rows{center.pairs_with_self_pair().size()};
           for (const Key_t & key : keys_intersect[a_sp]) {
-            auto rep_grads_key{
-                representation_grad.get_raw_data_view_gradient(key)};
             const auto & indices_by_sp_key = indices_by_sp.at(key);
             const auto & values_by_sp_key = values_by_sp.at(key);
             auto spts = Eigen::Map<const math::Matrix_t>(
@@ -344,21 +337,23 @@ namespace rascal {
             assert(indices_by_sp_key.size() * this->inner_size ==
                    values_by_sp_key.size());
             // const auto & col_info{col_infos[key]};
-
-            math::Matrix_t KNM_block =
-                rep_grads_key.block(i_row, 0, n_rows, this->inner_size) *
-                spts.transpose();
-
-            int i_row_{0};
-            for (auto neigh : center.pairs_with_self_pair()) {
-              auto dKdr_row{dKdr[neigh.get_atom_j()]};
-              for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
-                dKdr_row.col(offset + indices_by_sp_key[i_col]) +=
-                    KNM_block.block(i_row_, i_col, ThreeD, 1);
-              }  // M
-              i_row_ += ThreeD;
-            }  // neigh
-          }
+            int col_st{representation_grad.get_col_info_by_key_gradient(key)};
+            for (int i_der{0}; i_der < ThreeD; i_der++) {
+              math::Matrix_t KNM_block =
+                  rep_grads.block(i_row, col_st + i_der * this->inner_size,
+                                  n_rows, this->inner_size) *
+                  spts.transpose();
+              int i_row_{0};
+              for (auto neigh : center.pairs_with_self_pair()) {
+                auto dKdr_row{dKdr[neigh.get_atom_j()]};
+                for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
+                  dKdr_row(i_der, offset + indices_by_sp_key[i_col]) +=
+                      KNM_block(i_row_, i_col);
+                }  // M
+                i_row_++;
+              }  // neigh
+            }    // i_der
+          }      // key
           i_row += n_rows;
         }  // center
       } else {
