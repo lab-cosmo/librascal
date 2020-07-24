@@ -102,7 +102,7 @@ namespace rascal {
           (inner_size == other.inner_size) and                         // NOLINT
           (center_species == other.center_species) and                 // NOLINT
           (keys == other.keys) and                                     // NOLINT
-          (keys_sp == other.keys_sp)) {                                   // NOLINT
+          (keys_sp == other.keys_sp)) {                                // NOLINT
         return true;
       } else {
         return false;
@@ -191,7 +191,8 @@ namespace rascal {
         }
       }
 
-      Keys_t keys_intersect{internal::set_intersection(representation.get_keys(), this->keys_sp.at(sp))};
+      Keys_t keys_intersect{internal::set_intersection(
+          representation.get_keys(), this->keys_sp.at(sp))};
 
       for (const Key_t & key : keys_intersect) {
         if (representation.count(key)) {
@@ -238,18 +239,19 @@ namespace rascal {
         }
       }
 
-      Keys_t keys_intersect{internal::set_intersection(representation_grad.get_keys(), this->keys_sp.at(sp))};
+      Keys_t keys_intersect{internal::set_intersection(
+          representation_grad.get_keys(), this->keys_sp.at(sp))};
 
       for (const Key_t & key : keys_intersect) {
         // get the representation gradient features and shape it
         // assumes the gradient directions are the outermost index
         auto rep_grad_flat_by_key{representation_grad.flat(key)};
         Eigen::Map<const Eigen::Matrix<double, ThreeD, Eigen::Dynamic,
-                                      Eigen::RowMajor>>
+                                       Eigen::RowMajor>>
             rep_grad_by_key(rep_grad_flat_by_key.data(), ThreeD,
                             this->inner_size);
         assert(rep_grad_flat_by_key.size() ==
-              static_cast<int>(ThreeD * this->inner_size));
+               static_cast<int>(ThreeD * this->inner_size));
         const auto & indices_by_sp_key = indices_by_sp.at(key);
         // get the block of pseudo points features
         auto mat = Eigen::Map<const math::Matrix_t>(
@@ -257,7 +259,7 @@ namespace rascal {
             static_cast<Eigen::Index>(indices_by_sp_key.size()),
             static_cast<Eigen::Index>(this->inner_size));
         assert(indices_by_sp_key.size() * this->inner_size ==
-              values_by_sp.at(key).size());
+               values_by_sp.at(key).size());
         // compute the product between pseudo points and representation
         // gradient block
         ColVectorDer_t KNM_row_key(indices_by_sp_key.size(), ThreeD);
@@ -270,14 +272,15 @@ namespace rascal {
                 KNM_row_key(i_row, i_dim);
           }  // M
         }    // dim
-      }        // key
+      }      // key
       return KNM_row;
     }
 
     template <class Manager>
-    void dot_derivative(PropertyGradient_t<Manager> &
-                              representation_grad, std::shared_ptr<Manager> manager,
-                              Property<double, 1, Manager, ThreeD, Eigen::Dynamic> & dKdr) const {
+    void dot_derivative(
+        PropertyGradient_t<Manager> & representation_grad,
+        std::shared_ptr<Manager> manager,
+        Property<double, 1, Manager, ThreeD, Eigen::Dynamic> & dKdr) const {
       bool do_block_by_key_dot{false};
       if (representation_grad.are_keys_uniform()) {
         do_block_by_key_dot = true;
@@ -287,15 +290,15 @@ namespace rascal {
 
       std::set<int> unique_species{};
       for (auto center : manager) {
-          int a_sp{center.get_atom_type()};
-          unique_species.insert(a_sp);
+        int a_sp{center.get_atom_type()};
+        unique_species.insert(a_sp);
       }
       // find shared central atom species
-      std::set<int> species_intersect{internal::set_intersection(unique_species,
-                            this->center_species)};
+      std::set<int> species_intersect{
+          internal::set_intersection(unique_species, this->center_species)};
 
       if (species_intersect.size() == 0) {
-        return ;
+        return;
       }
       // find offsets alongs the sparse points direction
       int offset{0};
@@ -311,13 +314,15 @@ namespace rascal {
       Keys_t rep_keys{representation_grad.get_keys()};
       std::map<int, Keys_t> keys_intersect{};
       for (const int & sp : species_intersect) {
-        keys_intersect[sp] = internal::set_intersection(rep_keys, this->keys_sp.at(sp));
+        keys_intersect[sp] =
+            internal::set_intersection(rep_keys, this->keys_sp.at(sp));
       }
 
       if (do_block_by_key_dot) {
         // std::map<Key_t, std::array<int, 2>> col_infos{};
         // for (const Key_t & key : rep_keys) {
-        //   col_infos[key] = representation_grad.get_col_info_by_key_gradient(key);
+        //   col_infos[key] =
+        //   representation_grad.get_col_info_by_key_gradient(key);
         //   assert(static_cast<int>(this->inner_size) == col_infos[key][1]);
         // }
         size_t i_row{0};
@@ -326,40 +331,43 @@ namespace rascal {
           offset = offsets[a_sp];
           const auto & values_by_sp = this->values.at(a_sp);
           const auto & indices_by_sp = this->indices.at(a_sp);
-          auto n_rows{center.pairs_with_self_pair().size()*ThreeD};
+          auto n_rows{center.pairs_with_self_pair().size() * ThreeD};
           for (const Key_t & key : keys_intersect[a_sp]) {
             auto rep_grads_key{
-              representation_grad.get_raw_data_view_gradient(key)};
+                representation_grad.get_raw_data_view_gradient(key)};
             const auto & indices_by_sp_key = indices_by_sp.at(key);
             const auto & values_by_sp_key = values_by_sp.at(key);
             auto spts = Eigen::Map<const math::Matrix_t>(
-              values_by_sp_key.data(),
-              static_cast<Eigen::Index>(indices_by_sp_key.size()),
-              static_cast<Eigen::Index>(this->inner_size));
+                values_by_sp_key.data(),
+                static_cast<Eigen::Index>(indices_by_sp_key.size()),
+                static_cast<Eigen::Index>(this->inner_size));
             assert(indices_by_sp_key.size() * this->inner_size ==
-                 values_by_sp_key.size());
+                   values_by_sp_key.size());
             // const auto & col_info{col_infos[key]};
 
             math::Matrix_t KNM_block =
-                rep_grads_key.block(i_row, 0, n_rows, this->inner_size)
-              * spts.transpose();
+                rep_grads_key.block(i_row, 0, n_rows, this->inner_size) *
+                spts.transpose();
 
             int i_row_{0};
             for (auto neigh : center.pairs_with_self_pair()) {
               auto dKdr_row{dKdr[neigh.get_atom_j()]};
               for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
-                dKdr_row.col(offset + indices_by_sp_key[i_col]) += KNM_block.block(i_row_, i_col, ThreeD, 1);
+                dKdr_row.col(offset + indices_by_sp_key[i_col]) +=
+                    KNM_block.block(i_row_, i_col, ThreeD, 1);
               }  // M
               i_row_ += ThreeD;
-            }    // neigh
+            }  // neigh
           }
           i_row += n_rows;
-        } // center
+        }  // center
       } else {
         for (auto center : manager) {
           auto a_sp{center.get_atom_type()};
           for (auto neigh : center.pairs_with_self_pair()) {
-            dKdr[neigh.get_atom_j()] += this->dot_derivative(a_sp, representation_grad[neigh]).transpose();
+            dKdr[neigh.get_atom_j()] +=
+                this->dot_derivative(a_sp, representation_grad[neigh])
+                    .transpose();
           }
         }
       }
@@ -521,7 +529,8 @@ namespace rascal {
     sparse_points.inner_size = j.at("inner_size").get<size_t>();
     sparse_points.center_species = j.at("center_species").get<std::set<int>>();
     sparse_points.keys = j.at("keys").get<std::set<Key_t>>();
-    sparse_points.keys_sp = j.at("keys_sp").get<std::map<int, std::set<Key_t>>>();
+    sparse_points.keys_sp =
+        j.at("keys_sp").get<std::map<int, std::set<Key_t>>>();
   }
 
 }  // namespace rascal

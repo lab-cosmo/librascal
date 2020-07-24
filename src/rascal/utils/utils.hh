@@ -29,13 +29,13 @@
 #define SRC_RASCAL_UTILS_UTILS_HH_
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <tuple>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
 #include <vector>
-#include <set>
 
 namespace rascal {
   namespace internal {
@@ -333,11 +333,10 @@ namespace rascal {
       }
     };
 
-    template<class Set_a, class Set_b>
-    auto set_intersection(const Set_a & keys_a,
-                                        const Set_b & keys_b) {
+    template <class Set_a, class Set_b>
+    auto set_intersection(const Set_a & keys_a, const Set_b & keys_b) {
       using value_type = typename Set_a::value_type;
-      static_assert(std::is_same<value_type,typename Set_b::value_type>::value,
+      static_assert(std::is_same<value_type, typename Set_b::value_type>::value,
                     "Set type must be the same");
       if (keys_a.empty() or keys_b.empty()) {
         return std::set<value_type>();

@@ -242,7 +242,8 @@ namespace rascal {
         math::Matrix_t KNM(n_centers, n_sparse_points);
         math::Matrix_t spts{sparse_points.get_features()};
         const int n_features{static_cast<int>(spts.cols())};
-        std::map<int, std::array<int, 2>> spts_slices{sparse_points.get_blocks_info()};
+        std::map<int, std::array<int, 2>> spts_slices{
+            sparse_points.get_blocks_info()};
 
         size_t i_center{0};
         // loop over the structures
@@ -250,7 +251,7 @@ namespace rascal {
           Property<double, 1, Manager_t, SpatialDims, Eigen::Dynamic> dKdr{
               *manager, "no metadata", true};
           auto && prop{*manager->template get_property<Property_t>(
-                  representation_name, true)};
+              representation_name, true)};
           dKdr.set_nb_col(n_sparse_points);
           dKdr.resize();
           dKdr.setZero();
@@ -259,27 +260,32 @@ namespace rascal {
           // compute dX/dr * T
           // sparse_points.dot_derivative(prop_grad, manager, dKdr);
 
-          math::Matrix_t dXdr = prop_grad.get_features_gradient(sparse_points.keys);
+          math::Matrix_t dXdr =
+              prop_grad.get_features_gradient(sparse_points.keys);
           int i_row{0};
           for (auto center : manager) {
             auto a_sp{center.get_atom_type()};
-            auto n_rows{center.pairs_with_self_pair().size()*ThreeD};
+            auto n_rows{center.pairs_with_self_pair().size() * ThreeD};
             const auto & spts_slice{spts_slices[a_sp]};
-            math::Matrix_t KNM_block = dXdr.block(i_row, 0, n_rows, n_features) * spts.block(spts_slice[0], 0, spts_slice[1], n_features).transpose();
+            math::Matrix_t KNM_block =
+                dXdr.block(i_row, 0, n_rows, n_features) *
+                spts.block(spts_slice[0], 0, spts_slice[1], n_features)
+                    .transpose();
 
             if (this->zeta > 1) {
               // dk/dX without the pseudo point factor
               Eigen::Matrix<double, 1, Eigen::Dynamic> rep =
-                    this->zeta *
-                    pow_zeta(sparse_points.dot(a_sp, prop[center]), this->zeta - 1)
-                        .transpose();
-              KNM_block *= rep.segment(spts_slice[0], spts_slice[1]).asDiagonal();
+                  this->zeta * pow_zeta(sparse_points.dot(a_sp, prop[center]),
+                                        this->zeta - 1)
+                                   .transpose();
+              KNM_block *=
+                  rep.segment(spts_slice[0], spts_slice[1]).asDiagonal();
             }
 
             int i_row_{0};
             for (auto neigh : center.pairs_with_self_pair()) {
-              dKdr[neigh.get_atom_j()].block(0, spts_slice[0],
-                                          ThreeD, spts_slice[1]) +=
+              dKdr[neigh.get_atom_j()].block(0, spts_slice[0], ThreeD,
+                                             spts_slice[1]) +=
                   KNM_block.block(i_row_, 0, ThreeD, spts_slice[1]);
               i_row_ += ThreeD;
             }

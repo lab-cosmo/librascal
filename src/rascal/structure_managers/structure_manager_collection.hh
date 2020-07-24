@@ -303,7 +303,8 @@ namespace rascal {
 
     template <class Calculator>
     Matrix_t get_features_gradient(const Calculator & calculator) {
-      using PropGrad_t = typename Calculator::template PropertyGradient_t<Manager_t>;
+      using PropGrad_t =
+          typename Calculator::template PropertyGradient_t<Manager_t>;
       using Keys_t = typename PropGrad_t::Keys_t;
 
       auto property_name{this->get_calculator_name(calculator, true)};
@@ -311,7 +312,7 @@ namespace rascal {
       auto && property_ =
           *managers[0]->template get_property<PropGrad_t>(property_name);
       // assume inner_size is consistent for all managers
-      int inner_size{property_.get_nb_comp()/ThreeD};
+      int inner_size{property_.get_nb_comp() / ThreeD};
 
       Matrix_t features{};
 
@@ -332,8 +333,9 @@ namespace rascal {
       for (auto & manager : managers) {
         auto && property =
             *manager->template get_property<PropGrad_t>(property_name);
-        auto n_rows_manager = ThreeD*property.size();
-        features.block(i_row, 0, n_rows_manager, n_cols) = property.get_features_gradient(all_keys);
+        auto n_rows_manager = ThreeD * property.size();
+        features.block(i_row, 0, n_rows_manager, n_cols) =
+            property.get_features_gradient(all_keys);
         i_row += n_rows_manager;
       }
       return features;
@@ -406,7 +408,8 @@ namespace rascal {
 
     template <class Calculator>
     size_t get_number_of_elements_gradients(const Calculator & calculator) {
-      using PropGrad_t = typename Calculator::template PropertyGradient_t<Manager_t>;
+      using PropGrad_t =
+          typename Calculator::template PropertyGradient_t<Manager_t>;
 
       size_t n_elements{0};
 
@@ -415,7 +418,7 @@ namespace rascal {
       for (auto & manager : this->managers) {
         auto && property =
             *manager->template get_property<PropGrad_t>(property_name);
-        n_elements += ThreeD*property.get_nb_item();
+        n_elements += ThreeD * property.get_nb_item();
       }
       return n_elements;
     }

@@ -1036,21 +1036,23 @@ namespace rascal {
       std::array<int, 4> arr = {{0, view_start, n_row, n_col}};
       return arr;
     }
-    
+
     MatrixMapConst_Ref_t get_raw_data_view_gradient(const Key_t & key) const {
       SortedKey_t skey{key};
       return this->get_raw_data_view_gradient(skey);
     }
 
-    MatrixMapConst_Ref_t get_raw_data_view_gradient(const SortedKey_t & skey) const {
+    MatrixMapConst_Ref_t
+    get_raw_data_view_gradient(const SortedKey_t & skey) const {
       if (not this->are_keys_uniform()) {
         throw std::runtime_error("The raw data is not a dense matrix.");
       }
       auto && n_row = this->size();
       auto col_info = this->get_col_info_by_key_gradient(skey);
-      auto block_by_key = this->get_raw_data_view().block(0, col_info[0],
-                                                          n_row,col_info[1]);
-      return MatrixMapConst_Ref_t(block_by_key.data(), n_row*ThreeD, col_info[1]/ThreeD);
+      auto block_by_key =
+          this->get_raw_data_view().block(0, col_info[0], n_row, col_info[1]);
+      return MatrixMapConst_Ref_t(block_by_key.data(), n_row * ThreeD,
+                                  col_info[1] / ThreeD);
     }
 
     std::array<int, 2> get_col_info_by_key_gradient(const Key_t & key) const {
@@ -1058,7 +1060,8 @@ namespace rascal {
       return this->get_col_info_by_key_gradient(skey);
     }
 
-    std::array<int, 2> get_col_info_by_key_gradient(const SortedKey_t & skey) const {
+    std::array<int, 2>
+    get_col_info_by_key_gradient(const SortedKey_t & skey) const {
       if (not this->are_keys_uniform()) {
         throw std::runtime_error("The raw data is not a dense matrix.");
       }
