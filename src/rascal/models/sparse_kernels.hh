@@ -240,38 +240,52 @@ namespace rascal {
         }
         size_t n_sparse_points{sparse_points.size()};
         math::Matrix_t KNM(n_centers, n_sparse_points);
+        math::Matrix_t spts{sparse_points.get_features()};
+        const int n_features{static_cast<int>(spts.cols())};
+        std::map<int, std::array<int, 2>> spts_slices{sparse_points.get_blocks_info()};
 
         size_t i_center{0};
         // loop over the structures
         for (auto & manager : managers) {
           Property<double, 1, Manager_t, SpatialDims, Eigen::Dynamic> dKdr{
               *manager, "no metadata", true};
+          auto && prop{*manager->template get_property<Property_t>(
+                  representation_name, true)};
           dKdr.set_nb_col(n_sparse_points);
           dKdr.resize();
           dKdr.setZero();
           auto && prop_grad{*manager->template get_property<PropertyGradient_t>(
               representation_grad_name, true)};
-          // compute dX/dr * T 
-          sparse_points.dot_derivative(prop_grad, manager, dKdr);
+          // compute dX/dr * T
+          // sparse_points.dot_derivative(prop_grad, manager, dKdr);
 
-          if (this->zeta > 1) {
-            auto && prop{*manager->template get_property<Property_t>(
-                representation_name, true)};
-            // put together dk/dX, the pseudo points and dX/dr
-            for (auto center : manager) {
-              int sp{center.get_atom_type()};
-              // compute the gradient of the kernel w.r.t. the representation
+          math::Matrix_t dXdr = prop_grad.get_features_gradient(sparse_points.keys);
+          int i_row{0};
+          for (auto center : manager) {
+            auto a_sp{center.get_atom_type()};
+            auto n_rows{center.pairs_with_self_pair().size()*ThreeD};
+            const auto & spts_slice{spts_slices[a_sp]};
+            math::Matrix_t KNM_block = dXdr.block(i_row, 0, n_rows, n_features) * spts.block(spts_slice[0], 0, spts_slice[1], n_features).transpose();
+
+            if (this->zeta > 1) {
               // dk/dX without the pseudo point factor
               Eigen::Matrix<double, 1, Eigen::Dynamic> rep =
-                  this->zeta *
-                  pow_zeta(sparse_points.dot(sp, prop[center]), this->zeta - 1)
-                      .transpose();
-              for (auto neigh : center.pairs_with_self_pair()) {
-                auto atom_j = neigh.get_atom_j();
-                dKdr[atom_j] = dKdr[atom_j] * rep.asDiagonal();
-              }
+                    this->zeta *
+                    pow_zeta(sparse_points.dot(a_sp, prop[center]), this->zeta - 1)
+                        .transpose();
+              KNM_block *= rep.segment(spts_slice[0], spts_slice[1]).asDiagonal();
             }
+
+            int i_row_{0};
+            for (auto neigh : center.pairs_with_self_pair()) {
+              dKdr[neigh.get_atom_j()].block(0, spts_slice[0],
+                                          ThreeD, spts_slice[1]) +=
+                  KNM_block.block(i_row_, 0, ThreeD, spts_slice[1]);
+              i_row_ += ThreeD;
+            }
+            i_row += n_rows;
           }
+
           // copy the data to the kernel matrix
           for (auto center : manager) {
             KNM.block(i_center, 0, SpatialDims, n_sparse_points) = dKdr[center];
