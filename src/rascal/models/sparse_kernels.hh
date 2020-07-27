@@ -329,7 +329,8 @@ namespace rascal {
                 // copy subset of k_{z-1} * z that matches a_sp and key
                 math::Vector_t rep_{indices_by_sp_key.size()};
                 if (zeta > 1) {
-                  for (size_t i_col{0}; i_col < indices_by_sp_key.size(); i_col++) {
+                  for (size_t i_col{0}; i_col < indices_by_sp_key.size();
+                       i_col++) {
                     rep_(i_col) = rep(offset + indices_by_sp_key[i_col]);
                   }  // M
                 }
