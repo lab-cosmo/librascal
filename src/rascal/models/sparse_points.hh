@@ -276,96 +276,15 @@ namespace rascal {
       return KNM_row;
     }
 
-    template <class Manager>
-    void dot_derivative(
-        PropertyGradient_t<Manager> & representation_grad,
-        std::shared_ptr<Manager> manager,
-        Property<double, 1, Manager, ThreeD, Eigen::Dynamic> & dKdr) const {
-      bool do_block_by_key_dot{false};
-      if (representation_grad.are_keys_uniform()) {
-        do_block_by_key_dot = true;
-      }
-      // do_block_by_key_dot = false;
-      std::cout << "do_block_by_key_dot: " << do_block_by_key_dot << std::endl;
-
-      std::set<int> unique_species{};
-      for (auto center : manager) {
-        int a_sp{center.get_atom_type()};
-        unique_species.insert(a_sp);
-      }
-      // find shared central atom species
-      std::set<int> species_intersect{
-          internal::set_intersection(unique_species, this->center_species)};
-
-      if (species_intersect.size() == 0) {
-        return;
-      }
-      // find offsets alongs the sparse points direction
+    //! get offsets alongs the sparse points direction
+    std::map<int, int> get_offsets() const {
       int offset{0};
       std::map<int, int> offsets{};
-      for (const int & csp : this->center_species) {
-        if (species_intersect.count(csp)) {
-          offsets[csp] = offset;
-        }
+      for (const int & csp : this->species()) {
+        offsets[csp] = offset;
         offset += this->counters.at(csp);
       }
-      std::map<int, std::array<int, 2>> spts_slices{this->get_blocks_info()};
-      // find shared keys
-      Keys_t rep_keys{representation_grad.get_keys()};
-      std::map<int, Keys_t> keys_intersect{};
-      for (const int & sp : species_intersect) {
-        keys_intersect[sp] =
-            internal::set_intersection(rep_keys, this->keys_sp.at(sp));
-      }
-
-      if (do_block_by_key_dot) {
-        size_t i_row{0};
-        auto rep_grads = representation_grad.get_raw_data_view();
-        for (auto center : manager) {
-          auto a_sp{center.get_atom_type()};
-          offset = offsets[a_sp];
-          const auto & values_by_sp = this->values.at(a_sp);
-          const auto & indices_by_sp = this->indices.at(a_sp);
-          auto n_rows{center.pairs_with_self_pair().size()};
-          for (const Key_t & key : keys_intersect[a_sp]) {
-            const auto & indices_by_sp_key = indices_by_sp.at(key);
-            const auto & values_by_sp_key = values_by_sp.at(key);
-            auto spts = Eigen::Map<const math::Matrix_t>(
-                values_by_sp_key.data(),
-                static_cast<Eigen::Index>(indices_by_sp_key.size()),
-                static_cast<Eigen::Index>(this->inner_size));
-            assert(indices_by_sp_key.size() * this->inner_size ==
-                   values_by_sp_key.size());
-            // const auto & col_info{col_infos[key]};
-            int col_st{representation_grad.get_col_info_by_key_gradient(key)};
-            for (int i_der{0}; i_der < ThreeD; i_der++) {
-              math::Matrix_t KNM_block =
-                  rep_grads.block(i_row, col_st + i_der * this->inner_size,
-                                  n_rows, this->inner_size) *
-                  spts.transpose();
-              int i_row_{0};
-              for (auto neigh : center.pairs_with_self_pair()) {
-                auto dKdr_row{dKdr[neigh.get_atom_j()]};
-                for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
-                  dKdr_row(i_der, offset + indices_by_sp_key[i_col]) +=
-                      KNM_block(i_row_, i_col);
-                }  // M
-                i_row_++;
-              }  // neigh
-            }    // i_der
-          }      // key
-          i_row += n_rows;
-        }  // center
-      } else {
-        for (auto center : manager) {
-          auto a_sp{center.get_atom_type()};
-          for (auto neigh : center.pairs_with_self_pair()) {
-            dKdr[neigh.get_atom_j()] +=
-                this->dot_derivative(a_sp, representation_grad[neigh])
-                    .transpose();
-          }
-        }
-      }
+      return offsets;
     }
 
     /**
@@ -434,17 +353,6 @@ namespace rascal {
         }
       }
       ++counters_by_sp;
-    }
-
-    std::map<int, std::array<int, 2>> get_blocks_info() const {
-      std::map<int, std::array<int, 2>> spts_slices{};
-      int view_start{0};
-      for (const int & sp : this->species()) {
-        const int lg{static_cast<int>(this->counters.at(sp))};
-        spts_slices[sp] = {{view_start, lg}};
-        view_start += lg;
-      }
-      return spts_slices;
     }
 
     math::Matrix_t get_features() const {

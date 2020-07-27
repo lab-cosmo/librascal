@@ -165,11 +165,13 @@ namespace rascal {
                               input.at("n_structures").template get<int>());
       representation.compute(managers);
       sparse_points.push_back(representation, managers, selected_ids);
+      calculator_input["compute_gradients"] = false;
+      Representation_t representation_{calculator_input};
       // compute kernel gradients
       auto KNM_der{
           kernel.compute_derivative(representation, managers, sparse_points)};
       auto KNM_num_der{compute_numerical_kernel_gradients(
-          kernel_num, representation, managers, sparse_points,
+          kernel_num, representation_, managers, sparse_points,
           input.at("h").template get<double>())};
       auto diff = math::relative_error(KNM_der, KNM_num_der, delta, epsilon);
       int col_max{0}, row_max{0};
