@@ -301,6 +301,46 @@ namespace rascal {
       return features;
     }
 
+    template <class Calculator>
+    Matrix_t get_features_gradient(const Calculator & calculator) {
+      using PropGrad_t =
+          typename Calculator::template PropertyGradient_t<Manager_t>;
+      using Keys_t = typename PropGrad_t::Keys_t;
+
+      auto property_name{this->get_calculator_name(calculator, true)};
+
+      auto && property_ =
+          *managers[0]->template get_property<PropGrad_t>(property_name);
+      // assume inner_size is consistent for all managers
+      int inner_size{property_.get_nb_comp() / ThreeD};
+
+      Matrix_t features{};
+
+      auto n_rows{this->get_number_of_elements_gradients(calculator)};
+
+      Keys_t all_keys{};
+      for (auto & manager : managers) {
+        auto && property =
+            *manager->template get_property<PropGrad_t>(property_name);
+        auto keys = property.get_keys();
+        all_keys.insert(keys.begin(), keys.end());
+      }
+
+      size_t n_cols{all_keys.size() * inner_size};
+      features.resize(n_rows, n_cols);
+      features.setZero();
+      int i_row{0};
+      for (auto & manager : managers) {
+        auto && property =
+            *manager->template get_property<PropGrad_t>(property_name);
+        auto n_rows_manager = ThreeD * property.size();
+        features.block(i_row, 0, n_rows_manager, n_cols) =
+            property.get_features_gradient(all_keys);
+        i_row += n_rows_manager;
+      }
+      return features;
+    }
+
     /**
      * @param calculator a calculator
      * @param is_gradients wether to return the name associated with the
@@ -358,13 +398,28 @@ namespace rascal {
       size_t n_elements{0};
 
       auto property_name{this->get_calculator_name(calculator, is_gradients)};
-
       for (auto & manager : this->managers) {
         auto && property =
             *manager->template get_property<Prop_t>(property_name);
         n_elements += property.get_nb_item();
       }
+      return n_elements;
+    }
 
+    template <class Calculator>
+    size_t get_number_of_elements_gradients(const Calculator & calculator) {
+      using PropGrad_t =
+          typename Calculator::template PropertyGradient_t<Manager_t>;
+
+      size_t n_elements{0};
+
+      auto property_name{this->get_calculator_name(calculator, true)};
+
+      for (auto & manager : this->managers) {
+        auto && property =
+            *manager->template get_property<PropGrad_t>(property_name);
+        n_elements += ThreeD * property.get_nb_item();
+      }
       return n_elements;
     }
 
