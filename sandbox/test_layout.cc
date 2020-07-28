@@ -24,6 +24,9 @@ using VectorG_t = Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>;
 using VectorG_CRef = const typename Eigen::Ref<const VectorG_t>;
 using VectorG_CMap = const typename Eigen::Map<const VectorG_t>;
 
+using Vector3_CRef = const typename Eigen::Ref<const typename Eigen::Vector3d>;
+
+
 using Matrix_t =
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 using Matrix_CRef = const typename Eigen::Ref<const Matrix_t>;
@@ -32,6 +35,10 @@ using Matrix_CMap = const typename Eigen::Map<const Matrix_t>;
 using Tj3nm_t = typename Eigen::Tensor<double, 4, Eigen::RowMajor>;
 
 using Tj3nm_CMap_t = const typename Eigen::TensorMap<const Tj3nm_t>;
+
+using T3nm_t = typename Eigen::Tensor<double, 3, Eigen::RowMajor>;
+
+using T3nm_Map_t = typename Eigen::TensorMap<T3nm_t>;
 
 // TensorFixedSize<double, Sizes<>>
 
@@ -66,22 +73,49 @@ double std_dev(const Vector_t& vec) {
 struct FixedSizeBase {
   FixedSizeBase() = default;
 
-  virtual void compute(const Matrix_t & dIjn, const Matrix_t & Yjm,
-                const VectorG_t& rij,
-                Tj3nm_t & R3nm) {
+  virtual void compute(const Vector_CRef & dIjn, const Vector_CRef & Yjm,
+                const Vector3_CRef& rij, T3nm_Map_t & R3nm) {
     const auto n_max = dIjn.cols();
     const size_t m_max = Yjm.cols();
     auto inter = Matrix_t(n_max, m_max);
     for (int i_neigh{0}; i_neigh < dIjn.rows(); i_neigh++) {
-      for (int i_der{0}; i_neigh < 3; i_der++) {
-        Eigen::array<int, 4> offsets = {i_neigh, i_der, 0, 0};
+      for (int i_der{0}; i_der < 3; i_der++) {
+        Eigen::array<int, 4> offsets = {0, i_der, 0, 0};
         Eigen::array<int, 4> extents = {1, 1, n_max, m_max};
         inter = rij(i_neigh, i_der) * dIjn.row(i_neigh).transpose() * Yjm.row(i_neigh);
-        auto inter_ten = Tnm_CMap_t(inter.data(), n_max, m_max);
+        auto inter_ten = Tj3nm_CMap_t(inter.data(), 1, 1, n_max, m_max);
         R3nm.slice(offsets, extents) = inter_ten;
       }
     }
   }
+};
+
+template<int Nmax, int Mmax>
+struct FixedSize : public  FixedSizeBase {
+  FixedSize() = default;
+
+  using dIn_t = typename Eigen::Matrix<double, Nmax, 1>;
+  using dIn_CMap_t = const typename Eigen::Map<const dIn_t>;
+
+  using Ym_t = typename Eigen::Matrix<double, 1, Mmax>;
+  using Ym_CMap_t = const typename Eigen::Map<const Ym_t>;
+
+  // virtual void compute(const Matrix_t & dIjn, const Matrix_t & Yjm,
+  //               const VectorG_t& rij,
+  //               Tj3nm_t & R3nm) override {
+  //   const auto n_max = dIjn.cols();
+  //   const size_t m_max = Yjm.cols();
+  //   auto inter = Matrix_t(n_max, m_max);
+  //   for (int i_neigh{0}; i_neigh < dIjn.rows(); i_neigh++) {
+  //     for (int i_der{0}; i_der < 3; i_der++) {
+  //       Eigen::array<int, 4> offsets = {i_neigh, i_der, 0, 0};
+  //       Eigen::array<int, 4> extents = {1, 1, n_max, m_max};
+  //       inter = rij(i_neigh, i_der) * dIjn.row(i_neigh).transpose() * Yjm.row(i_neigh);
+  //       auto inter_ten = Tj3nm_CMap_t(inter.data(), 1, 1, n_max, m_max);
+  //       R3nm.slice(offsets, extents) = inter_ten;
+  //     }
+  //   }
+  // }
 };
 
 void compute_0(const std::vector<Matrix_t> & dIljn, const std::vector<Matrix_t> & Yljm,
@@ -106,13 +140,19 @@ void compute_0(const std::vector<Matrix_t> & dIljn, const std::vector<Matrix_t> 
 }
 
 void compute_1(const std::vector<Matrix_t> & dIljn, const std::vector<Matrix_t> & Yljm,
-                const VectorG_t& rij,  std::vector<Tj3nm_t> & Rl3nm) {
+                const VectorG_t& rij,  std::vector<Tj3nm_t> & Rlj3nm) {
   auto cmp = FixedSizeBase();
   for (size_t l{0}; l <dIljn.size(); l++) {
     auto & dIjn = dIljn[l];
     auto & Yjm = Yljm[l];
-    auto & R3nm = Rl3nm[l];
-    cmp.compute(dIjn, Yjm, rij, R3nm);
+    auto & Rj3nm = Rlj3nm[l];
+    const auto n_max = dIjn.cols();
+    const size_t m_max = Yjm.cols();
+    auto inter = Matrix_t(n_max, m_max);
+    for (int i_neigh{0}; i_neigh < dIjn.rows(); i_neigh++) {
+      T3nm_Map_t R3nm = T3nm_Map_t(&Rj3nm(i_neigh, 0, 0, 0), 3, n_max, m_max);
+      cmp.compute(dIjn.row(i_neigh), Yjm.row(i_neigh), rij.row(i_neigh), R3nm);
+    }
   }
 }
 
