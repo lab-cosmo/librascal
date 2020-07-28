@@ -31,8 +31,7 @@ using Matrix_CMap = const typename Eigen::Map<const Matrix_t>;
 
 using Tj3nm_t = typename Eigen::Tensor<double, 4, Eigen::RowMajor>;
 
-using Tnm_t = typename Eigen::Tensor<double, 2, Eigen::RowMajor>;
-using Tnm_CMap_t = const typename Eigen::TensorMap<const Tnm_t>;
+using Tj3nm_CMap_t = const typename Eigen::TensorMap<const Tj3nm_t>;
 
 // TensorFixedSize<double, Sizes<>>
 
@@ -95,11 +94,11 @@ void compute_0(const std::vector<Matrix_t> & dIljn, const std::vector<Matrix_t> 
     const size_t m_max = 2*l+1;
     auto inter = Matrix_t(n_max, m_max);
     for (int i_neigh{0}; i_neigh < dIjn.rows(); i_neigh++) {
-      for (int i_der{0}; i_neigh < 3; i_der++) {
+      for (int i_der{0}; i_der < 3; i_der++) {
         Eigen::array<int, 4> offsets = {i_neigh, i_der, 0, 0};
         Eigen::array<int, 4> extents = {1, 1, n_max, m_max};
         inter = rij(i_neigh, i_der) * dIjn.row(i_neigh).transpose() * Yjm.row(i_neigh);
-        auto inter_ten = Tnm_CMap_t(inter.data(), n_max, m_max);
+        auto inter_ten = Tj3nm_CMap_t(inter.data(), 1, 1, n_max, m_max);
         R3nm.slice(offsets, extents) = inter_ten;
       }
     }
