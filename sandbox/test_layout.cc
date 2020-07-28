@@ -39,6 +39,7 @@ using Tj3nm_CMap_t = const typename Eigen::TensorMap<const Tj3nm_t>;
 using T3nm_t = typename Eigen::Tensor<double, 3, Eigen::RowMajor>;
 
 using T3nm_Map_t = typename Eigen::TensorMap<T3nm_t>;
+using T3nm_CMap_t = const typename Eigen::TensorMap<const T3nm_t>;
 
 // TensorFixedSize<double, Sizes<>>
 
@@ -73,19 +74,17 @@ double std_dev(const Vector_t& vec) {
 struct FixedSizeBase {
   FixedSizeBase() = default;
 
-  virtual void compute(const Vector_CRef & dIjn, const Vector_CRef & Yjm,
+  virtual void compute(const Vector_CRef & dIn, const Vector_CRef & Ym,
                 const Vector3_CRef& rij, T3nm_Map_t & R3nm) {
-    const auto n_max = dIjn.cols();
-    const size_t m_max = Yjm.cols();
+    const auto n_max = dIn.size();
+    const size_t m_max = Ym.size();
     auto inter = Matrix_t(n_max, m_max);
-    for (int i_neigh{0}; i_neigh < dIjn.rows(); i_neigh++) {
-      for (int i_der{0}; i_der < 3; i_der++) {
-        Eigen::array<int, 4> offsets = {0, i_der, 0, 0};
-        Eigen::array<int, 4> extents = {1, 1, n_max, m_max};
-        inter = rij(i_neigh, i_der) * dIjn.row(i_neigh).transpose() * Yjm.row(i_neigh);
-        auto inter_ten = Tj3nm_CMap_t(inter.data(), 1, 1, n_max, m_max);
-        R3nm.slice(offsets, extents) = inter_ten;
-      }
+    for (int i_der{0}; i_der < 3; i_der++) {
+      Eigen::array<int, 3> offsets = {i_der, 0, 0};
+      Eigen::array<int, 3> extents = {1, n_max, m_max};
+      inter = rij(i_der) * dIn * Ym.transpose();
+      auto inter_ten = T3nm_CMap_t(inter.data(), 1, n_max, m_max);
+      R3nm.slice(offsets, extents) = inter_ten;
     }
   }
 };
