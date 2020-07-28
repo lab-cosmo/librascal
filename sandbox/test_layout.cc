@@ -64,6 +64,27 @@ double std_dev(const Vector_t& vec) {
   return std_dev;
 }
 
+struct FixedSizeBase {
+  FixedSizeBase() = default;
+
+  virtual void compute(const Matrix_t & dIjn, const Matrix_t & Yjm,
+                const VectorG_t& rij,
+                Tj3nm_t & R3nm) {
+    const auto n_max = dIjn.cols();
+    const size_t m_max = Yjm.cols();
+    auto inter = Matrix_t(n_max, m_max);
+    for (int i_neigh{0}; i_neigh < dIjn.rows(); i_neigh++) {
+      for (int i_der{0}; i_neigh < 3; i_der++) {
+        Eigen::array<int, 4> offsets = {i_neigh, i_der, 0, 0};
+        Eigen::array<int, 4> extents = {1, 1, n_max, m_max};
+        inter = rij(i_neigh, i_der) * dIjn.row(i_neigh).transpose() * Yjm.row(i_neigh);
+        auto inter_ten = Tnm_CMap_t(inter.data(), n_max, m_max);
+        R3nm.slice(offsets, extents) = inter_ten;
+      }
+    }
+  }
+};
+
 void compute_0(const std::vector<Matrix_t> & dIljn, const std::vector<Matrix_t> & Yljm,
                 const VectorG_t& rij,  std::vector<Tj3nm_t> & Rl3nm) {
   for (size_t l{0}; l <dIljn.size(); l++) {
@@ -82,6 +103,17 @@ void compute_0(const std::vector<Matrix_t> & dIljn, const std::vector<Matrix_t> 
         R3nm.slice(offsets, extents) = inter_ten;
       }
     }
+  }
+}
+
+void compute_1(const std::vector<Matrix_t> & dIljn, const std::vector<Matrix_t> & Yljm,
+                const VectorG_t& rij,  std::vector<Tj3nm_t> & Rl3nm) {
+  auto cmp = FixedSizeBase();
+  for (size_t l{0}; l <dIljn.size(); l++) {
+    auto & dIjn = dIljn[l];
+    auto & Yjm = Yljm[l];
+    auto & R3nm = Rl3nm[l];
+    cmp.compute(dIjn, Yjm, rij, R3nm);
   }
 }
 
@@ -115,22 +147,35 @@ int main(int argc, char * argv[]) {
   auto rij = VectorG_t::Random(n_neighbors, 3);
 
 
-  Vector_t elapsed{N_ITERATIONS};
+  Vector_t elapsed_0{N_ITERATIONS};
+  Vector_t elapsed_1{N_ITERATIONS};
   Timer timer{};
 
   for (int looper{0}; looper < N_ITERATIONS; looper++) {
     timer.reset();
     compute_0(dIljn, Yljm, rij, Rl3nm);
-    elapsed[looper] = timer.elapsed();
+    elapsed_0[looper] = timer.elapsed();
+  }
+
+  for (int looper{0}; looper < N_ITERATIONS; looper++) {
+    timer.reset();
+    compute_1(dIljn, Yljm, rij, Rl3nm);
+    elapsed_1[looper] = timer.elapsed();
   }
 
   json cmp0{};
-  cmp0["elapsed_mean"] = elapsed.mean();
-  cmp0["elapsed_std"] = std_dev(elapsed);
-  cmp0["elapsed"] = elapsed;
+  cmp0["elapsed_mean"] = elapsed_0.mean();
+  cmp0["elapsed_std"] = std_dev(elapsed_0);
+  cmp0["elapsed"] = elapsed_0;
+
+  json cmp1{};
+  cmp1["elapsed_mean"] = elapsed_1.mean();
+  cmp1["elapsed_std"] = std_dev(elapsed_1);
+  cmp1["elapsed"] = elapsed_1;
 
   json results{};
   results["compute_0"] = cmp0;
+  results["compute_1"] = cmp1;
   std::ofstream o(argv[2]);
   o << std::setw(2) << results << std::endl;
 }
