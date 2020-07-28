@@ -333,6 +333,11 @@ namespace rascal {
       }
     };
 
+    /**
+     * Find set intersection between 2 containers.
+     * @tparam Set_* std sequence container
+     * @return intersections set intersection between keys_a and keys_b
+     */
     template <class Set_a, class Set_b>
     auto set_intersection(const Set_a & keys_a, const Set_b & keys_b) {
       using value_type = typename Set_a::value_type;
