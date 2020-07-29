@@ -1,6 +1,6 @@
 {
     "n" : 10,
-    "l" : 10,
-    "n_neigh" : 3,
-    "N_ITERATIONS" : 50
+    "l" : 3,
+    "n_neigh" : 3000,
+    "N_ITERATIONS" : 100
 }
