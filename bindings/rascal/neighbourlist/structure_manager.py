@@ -175,7 +175,7 @@ def sanitize_non_periodic_structure(structure):
         if np.allclose(cell, np.zeros((3, 3))):
             pos = structure['positions']
             bounds = np.array([pos.min(axis=1), pos.max(axis=1)])
-            bounding_box_lengths = bounds[1] - bounds[0]
+            bounding_box_lengths = (bounds[1] - bounds[0])*1.05
             new_cell = np.diag(bounding_box_lengths)
             CoM = pos.mean(axis=1)
             disp = 0.5 * bounding_box_lengths - CoM
@@ -220,7 +220,7 @@ def unpack_ase(frame, wrap_pos=False):
     positions = frame.get_positions()
     numbers = frame.get_atomic_numbers()
     pbc = frame.get_pbc().astype(int)
-    
+
     if wrap_pos:
         positions = wrap_positions(positions, cell, frame.get_pbc(), eps=1e-11)
 

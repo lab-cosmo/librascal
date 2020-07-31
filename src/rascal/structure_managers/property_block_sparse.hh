@@ -1037,12 +1037,12 @@ namespace rascal {
       return arr;
     }
 
-    int get_col_info_by_key_gradient(const Key_t & key) const {
+    int get_gradient_col_by_key(const Key_t & key) const {
       SortedKey_t skey{key};
-      return this->get_col_info_by_key_gradient(skey);
+      return this->get_gradient_col_by_key(skey);
     }
 
-    int get_col_info_by_key_gradient(const SortedKey_t & skey) const {
+    int get_gradient_col_by_key(const SortedKey_t & skey) const {
       if (not this->are_keys_uniform()) {
         throw std::runtime_error("The raw data is not a dense matrix.");
       }
