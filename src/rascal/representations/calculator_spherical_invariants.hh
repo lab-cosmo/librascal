@@ -1393,7 +1393,8 @@ namespace rascal {
                 keys_list_grad.emplace_back(pair_list);
               }
             } else {
-              keys_list_grad.emplace_back(grad_pair_list);
+              // have zeros for grad w.r.t. periodic images of the center
+              keys_list_grad.emplace_back(pair_list);
             }
           }  // auto neigh : center.pairs()
         }    // if compute_gradients

@@ -59,57 +59,6 @@
 namespace rascal {
 
   namespace internal {
-
-    /**
-     * Utility to find the periodic images of the center atoms that are within
-     * the neighborhood of center i.
-     * In the case of having several periodic images of other centers in
-     * the environment of center i, we need to sum up
-     * of all these contributions, e.g. ij, ij', ij'' ... where
-     * j primes are periodic images of j. And assign this sum back to all
-     * of these terms hence this function.
-     */
-    template <class StructureManager, class ClusterRefCenter>
-    auto find_periodic_images_pairs_in_environment(
-        const std::shared_ptr<StructureManager> & /*manager*/,
-        ClusterRefCenter & center) {
-      static_assert(ClusterRefCenter::IsOrderOne,
-                    "Input cluster should be of Order == 1.");
-      constexpr static size_t ClusterLayer{
-          StructureManager::template cluster_layer_from_order<2>()};
-
-      // convenience object to associate every center j within the
-      // environment of center i to its corresponding pair ij and its
-      // periodic images.
-      std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
-          periodic_images_of_center{};
-      int atom_tag_i = center.get_atom_tag();
-      // find the periodic images of the same atoms
-      for (auto pair : center.pairs()) {
-        auto atom_j = pair.get_atom_j();
-        int atom_tag_j = atom_j.get_atom_tag();
-        if (atom_tag_j != atom_tag_i) {
-          periodic_images_of_center[atom_tag_j].emplace_back(
-              static_cast<ClusterRefKey<2, ClusterLayer>>(pair));
-        }
-      }
-
-      // remove centers that don't have periodic images in the environment
-      std::vector<int> tags_to_erase{};
-      for (const auto & el : periodic_images_of_center) {
-        const int atom_tag_j{el.first};
-        const auto & p_images = el.second;
-        if (p_images.size() < 2) {
-          tags_to_erase.emplace_back(atom_tag_j);
-        }
-      }
-      // has to be done in 2 steps because erase invalidates the iterator
-      for (const int & tag : tags_to_erase) {
-        periodic_images_of_center.erase(tag);
-      }
-      return periodic_images_of_center;
-    }
-
     /**
      * List of possible Radial basis that can be used by the spherical
      * expansion.
@@ -1727,8 +1676,6 @@ namespace rascal {
     using math::PI;
     using math::pow;
     constexpr bool ExcludeGhosts{true};
-    constexpr static size_t ClusterLayer{
-        StructureManager::template cluster_layer_from_order<2>()};
     const bool is_not_masked{manager->is_not_masked()};
     const bool compute_gradients{this->compute_gradients};
     if (not is_not_masked and compute_gradients) {
@@ -1978,44 +1925,6 @@ namespace rascal {
           }        // if (IsHalfNL)
         }          // if (compute_gradients)
       }            // for (neigh : center)
-
-      // In the case of having several periodic images of other centers in
-      // the environment of center i, we need to sum up
-      // of all these contributions, e.g. ij, ij', ij'' ... where
-      // j primes are periodic images of j. And assign this sum back to all
-      // of these terms.
-      if (not IsHalfNL) {
-        if (compute_gradients) {
-          // sum of d/dr_{j} C^{ij b}_{nlm} when center j has several periodic
-          // images of center i in its environment
-          auto dj_c_ij_sum = math::Matrix_t(n_row, n_col);
-
-          std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
-              periodic_images_of_center =
-                  internal::find_periodic_images_pairs_in_environment(manager,
-                                                                      center);
-          // for each center atoms with periodic images, sum up the
-          // contributions and assign the sum back to the terms
-          for (const auto & el : periodic_images_of_center) {
-            const auto & p_images = el.second;
-            // these terms have only one species key that is non zero
-            Key_t key{
-                expansions_coefficients_gradient[p_images.at(0)].get_keys().at(
-                    0)};
-            // initialize the sum with the first element
-            dj_c_ij_sum = expansions_coefficients_gradient[p_images[0]][key];
-            // accumulate the rest of the sum
-            for (auto image_it = p_images.begin() + 1, im_e = p_images.end();
-                 image_it != im_e; ++image_it) {
-              dj_c_ij_sum += expansions_coefficients_gradient[*image_it][key];
-            }
-            // assign the sum to all the corresponding gradient entries
-            for (const auto & p_image : el.second) {
-              expansions_coefficients_gradient[p_image][key] = dj_c_ij_sum;
-            }
-          }  // end of periodic images business
-        }    // if (compute_gradients)
-      }      // if (not IsHalfNL)
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
