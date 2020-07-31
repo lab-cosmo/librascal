@@ -4793,6 +4793,11 @@ template&lt;class <code class="sig-name descname">Val</code>&gt;<br />ColVectorD
 
 <dl class="function">
 <dt>
+std::map&lt;int, int&gt; <code class="sig-name descname">get_offsets</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 template&lt;class <code class="sig-name descname">ManagerCollection</code>&gt;<br />void <code class="sig-name descname">push_back</code><span class="sig-paren">(</span><em class="property">const</em> Calculator &amp;<em>calculator</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN6rascal23SparsePointsBlockSparse9push_backEvRK10CalculatorRK17ManagerCollectionRKNSt6vectorINSt6vectorIiEEEE" title="rascal::SparsePointsBlockSparse::push_back::ManagerCollection">ManagerCollection</a> &amp;<em>collection</em>, <em class="property">const</em> std::vector&lt;std::vector&lt;int&gt;&gt; &amp;<em>selected_center_indices</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -4826,7 +4831,12 @@ std::set&lt;int&gt; <code class="sig-name descname">center_species</code> = {}<b
 
 <dl class="member">
 <dt>
-std::set&lt;Key_t&gt; <code class="sig-name descname">keys</code> = {}<br /></dt>
+Keys_t <code class="sig-name descname">keys</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+std::map&lt;int, std::set&lt;Key_t&gt;&gt; <code class="sig-name descname">keys_sp</code> = {}<br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -6259,11 +6269,6 @@ Eigen::ArrayXd <code class="sig-name descname">precompute_wigner_3js</code><span
 
 <dl class="function">
 <dt>
-template&lt;class <code class="sig-name descname">StructureManager</code>, class <code class="sig-name descname">ClusterRefCenter</code>&gt;<br />auto <code class="sig-name descname">find_periodic_images_pairs_in_environment</code><span class="sig-paren">(</span><em class="property">const</em> std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4I00EN6rascal8internal41find_periodic_images_pairs_in_environmentEDaRKNSt10shared_ptrI16StructureManagerEER16ClusterRefCenter" title="rascal::internal::find_periodic_images_pairs_in_environment::StructureManager">StructureManager</a>&gt;&amp;, <a class="reference internal" href="#_CPPv4I00EN6rascal8internal41find_periodic_images_pairs_in_environmentEDaRKNSt10shared_ptrI16StructureManagerEER16ClusterRefCenter" title="rascal::internal::find_periodic_images_pairs_in_environment::ClusterRefCenter">ClusterRefCenter</a> &amp;<em>center</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
 <em class="property">constexpr</em> size_t <code class="sig-name descname">combine_to_radial_contribution_type</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal8internal15RadialBasisTypeE" title="rascal::internal::RadialBasisType">RadialBasisType</a> <em>basis_type</em>, <a class="reference internal" href="#_CPPv4N6rascal8internal18AtomicSmearingTypeE" title="rascal::internal::AtomicSmearingType">AtomicSmearingType</a> <em>smearing_type</em>, <a class="reference internal" href="#_CPPv4N6rascal8internal16OptimizationTypeE" title="rascal::internal::OptimizationType">OptimizationType</a> <em>opt_type</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -6440,6 +6445,11 @@ template&lt;typename <code class="sig-name descname">Func</code>, size_t... <cod
 <dl class="function">
 <dt>
 template&lt;typename <code class="sig-name descname">Func</code>, typename ...<code class="sig-name descname">Args</code>&gt;<br />void <code class="sig-name descname">for_each</code><span class="sig-paren">(</span>std::tuple&lt;<a class="reference internal" href="#_CPPv4I0DpEN6rascal8internal8for_eachEvRNSt5tupleIDp4ArgsEERR4Func" title="rascal::internal::for_each::Args">Args</a>...&gt; &amp;<em>tup</em>, <a class="reference internal" href="#_CPPv4I0DpEN6rascal8internal8for_eachEvRNSt5tupleIDp4ArgsEERR4Func" title="rascal::internal::for_each::Func">Func</a> &amp;&amp;<em>f</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Set_a</code>, class <code class="sig-name descname">Set_b</code>&gt;<br />auto <code class="sig-name descname">set_intersection</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I00EN6rascal8internal16set_intersectionEDaRK5Set_aRK5Set_b" title="rascal::internal::set_intersection::Set_a">Set_a</a> &amp;<em>keys_a</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I00EN6rascal8internal16set_intersectionEDaRK5Set_aRK5Set_b" title="rascal::internal::set_intersection::Set_b">Set_b</a> &amp;<em>keys_b</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">

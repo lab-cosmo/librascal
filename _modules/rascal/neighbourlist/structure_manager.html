@@ -170,6 +170,8 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
+<span class="kn">from</span> <span class="nn">ase.geometry</span> <span class="k">import</span> <span class="n">wrap_positions</span>
+
 <span class="kn">from</span> <span class="nn">..lib</span> <span class="k">import</span> <span class="n">neighbour_list</span>
 <span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="p">(</span><span class="n">NeighbourListFactory</span><span class="p">,</span> <span class="n">is_valid_structure</span><span class="p">,</span>
                    <span class="n">adapt_structure</span><span class="p">,</span> <span class="n">StructureCollectionFactory</span><span class="p">)</span>
@@ -339,7 +341,7 @@
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))):</span>
             <span class="n">pos</span> <span class="o">=</span> <span class="n">structure</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">]</span>
             <span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">pos</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">pos</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)])</span>
-            <span class="n">bounding_box_lengths</span> <span class="o">=</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">bounding_box_lengths</span> <span class="o">=</span> <span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="mf">1.05</span>
             <span class="n">new_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">bounding_box_lengths</span><span class="p">)</span>
             <span class="n">CoM</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">disp</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bounding_box_lengths</span> <span class="o">-</span> <span class="n">CoM</span>
@@ -361,7 +363,7 @@
     <span class="k">return</span> <span class="n">is_ase</span>
 
 
-<span class="k">def</span> <span class="nf">unpack_ase</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">unpack_ase</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">wrap_pos</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert ASE Atoms object to rascal&#39;s equivalent</span>
 
@@ -384,6 +386,9 @@
     <span class="n">positions</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span>
     <span class="n">numbers</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">()</span>
     <span class="n">pbc</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">get_pbc</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">wrap_pos</span><span class="p">:</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="n">wrap_positions</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">get_pbc</span><span class="p">(),</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-11</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="s2">&quot;center_atoms_mask&quot;</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
         <span class="n">center_atoms_mask</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s2">&quot;center_atoms_mask&quot;</span><span class="p">)</span>
