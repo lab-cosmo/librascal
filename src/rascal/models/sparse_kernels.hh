@@ -334,7 +334,7 @@ namespace rascal {
                     rep_(i_col) = rep(offset + indices_by_sp_key[i_col]);
                   }  // M
                 }
-                int col_st{prop_grad.get_col_info_by_key_gradient(key)};
+                int col_st{prop_grad.get_gradient_col_by_key(key)};
                 for (int i_der{0}; i_der < ThreeD; i_der++) {
                   KNM_block =
                       rep_grads.block(i_row, col_st + i_der * inner_size,
