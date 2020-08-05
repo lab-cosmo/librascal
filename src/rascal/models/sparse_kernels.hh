@@ -255,14 +255,14 @@ namespace rascal {
         // the stress terms are stored at the bottom of the KNM in a block
         size_t i_stress{n_centers};
         if (compute_stress) {
-          n_centers += 2*SpatialDims*managers.size();
+          n_centers += 2 * SpatialDims * managers.size();
         }
-        // loop over the upper triangular stress matrix is done with dK/dr_{x,y,z} in sequence
-        // so to fill the upper part u_ij has to follow the sequence {z,x,y}
-        // (second element of voigt_ids)
-        // and KNM is filled in the order {1, 2, 0}
-        // Voigt order is {xx ,yy, zz, yz, xz, xy}
-        const std::array<std::array<int, 2>, SpatialDims> voigt_ids = {1, 2, 2, 0, 0, 1};
+        // loop over the upper triangular stress matrix is done with
+        // dK/dr_{x,y,z} in sequence so to fill the upper part u_ij has to
+        // follow the sequence {z,x,y} (second element of voigt_ids) and KNM is
+        // filled in the order {1, 2, 0} Voigt order is {xx ,yy, zz, yz, xz, xy}
+        const std::array<std::array<int, 2>, SpatialDims> voigt_ids = {1, 2, 2,
+                                                                       0, 0, 1};
 
         const size_t n_sparse_points{sparse_points.size()};
         math::Matrix_t KNM(n_centers, n_sparse_points);
@@ -383,15 +383,19 @@ namespace rascal {
                       Eigen::Vector3d u_ij = r_i - neigh.get_position();
                       for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
                         // fill diagonal
-                        KNM(i_stress+i_der, offset + indices_by_sp_key[i_col]) += u_ij(i_der) * KNM_block(i_row_, i_col);
+                        KNM(i_stress + i_der,
+                            offset + indices_by_sp_key[i_col]) +=
+                            u_ij(i_der) * KNM_block(i_row_, i_col);
                         // fill upper diag
-                        KNM(i_stress+ThreeD+voigt[0], offset + indices_by_sp_key[i_col]) += u_ij(voigt[1]) * KNM_block(i_row_, i_col);
+                        KNM(i_stress + ThreeD + voigt[0],
+                            offset + indices_by_sp_key[i_col]) +=
+                            u_ij(voigt[1]) * KNM_block(i_row_, i_col);
                       }  // M
                       i_row_++;
-                    }    // neigh
-                  }  // if compute_stress
-                }    // i_der
-              }      // key
+                    }  // neigh
+                  }    // if compute_stress
+                }      // i_der
+              }        // key
               i_row += n_rows;
             }  // center
           } else {
@@ -399,13 +403,15 @@ namespace rascal {
               int a_sp{center.get_atom_type()};
               auto rep = dKdX[center];
               auto r_i = center.get_position();
-              auto km3_ii = sparse_points.dot_derivative(a_sp, prop_grad[center.get_atom_ii()]);
+              auto km3_ii = sparse_points.dot_derivative(
+                  a_sp, prop_grad[center.get_atom_ii()]);
               if (zeta > 1) {
                 km3_ii.transpose() *= rep.asDiagonal();
               }
               dKdr[center] += km3_ii;
               for (auto neigh : center.pairs()) {
-                auto km3_ji = sparse_points.dot_derivative(a_sp, prop_grad[neigh]);
+                auto km3_ji =
+                    sparse_points.dot_derivative(a_sp, prop_grad[neigh]);
                 if (zeta > 1) {
                   km3_ji.transpose() *= rep.asDiagonal();
                 }
@@ -415,9 +421,11 @@ namespace rascal {
                   for (int i_der{0}; i_der < ThreeD; i_der++) {
                     const auto & voigt = voigt_ids[i_der];
                     // fill diagonal
-                    KNM.row(i_stress+i_der) += u_ij(i_der) * km3_ji.col(i_der).transpose();
+                    KNM.row(i_stress + i_der) +=
+                        u_ij(i_der) * km3_ji.col(i_der).transpose();
                     // fill upper diag
-                    KNM.row(i_stress+ThreeD+voigt[0]) += u_ij(voigt[1]) * km3_ji.col(i_der).transpose();
+                    KNM.row(i_stress + ThreeD + voigt[0]) +=
+                        u_ij(voigt[1]) * km3_ji.col(i_der).transpose();
                   }
                 }
               }  // neigh

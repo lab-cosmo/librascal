@@ -170,8 +170,8 @@ namespace rascal {
       calculator_input["compute_gradients"] = false;
       Representation_t representation_{calculator_input};
       // compute kernel gradients
-      auto KNM_der{
-          kernel.compute_derivative(representation, managers, sparse_points, compute_stress)};
+      auto KNM_der{kernel.compute_derivative(representation, managers,
+                                             sparse_points, compute_stress)};
       auto KNM_num_der{compute_numerical_kernel_gradients(
           kernel_num, representation_, managers, sparse_points,
           input.at("h").template get<double>(), compute_stress)};
