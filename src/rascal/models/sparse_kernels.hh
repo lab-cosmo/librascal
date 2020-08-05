@@ -213,6 +213,15 @@ namespace rascal {
        * $$dk(X_j^c, T_m^b)/dX_{jp}^c =
        *   \delta_{cb} \zeta (\sum_n X_{jn}^c T_{mn}^b)^{\zeta-1}  T_{mp}^b$$
        *
+       * The kernel element associated to the stress tensor are computed as
+       * $$dk(X, T_m)/d\eta_{\alpha\beta} =
+       *    0.5 \sum_{i\inX} \sum_{j\inX_i} \mathbf{r}_{ij}
+       *                                        \otimes \grad_i k(X_j, T_m)$$
+       * where $\eta_{\alpha\beta}$ is the 3x3 deformation tensor.
+       * See https://aip.scitation.org/doi/full/10.1063/1.2214719 for more
+       * details with a short range potential.
+       * The elements are stored at the end of the returned matrix using the
+       * Voigt format (xx, yy, zz, zy, zx, yx) in the order of managers.
        *
        * @tparam StructureManagers should be an iterable over shared pointer
        *          of structure managers like ManagerCollection
@@ -221,6 +230,8 @@ namespace rascal {
        * structure managers
        * @param representation_name name under which the representation
        * gradient data has been registered in the elements of managers
+       * @param compute_stress the computed stresses are appended at the end of
+       * the kernel matrix
        * @return kernel matrix
        */
       template <class Property_t, class PropertyGradient_t,
@@ -231,7 +242,8 @@ namespace rascal {
       compute_derivative(StructureManagers & managers,
                          SparsePoints & sparse_points,
                          const std::string & representation_name,
-                         const std::string & representation_grad_name) {
+                         const std::string & representation_grad_name,
+                         const bool compute_stress) {
         using Manager_t = typename StructureManagers::Manager_t;
         using Keys_t = typename SparsePoints::Keys_t;
         using Key_t = typename SparsePoints::Key_t;
@@ -240,10 +252,21 @@ namespace rascal {
         for (const auto & manager : managers) {
           n_centers += manager->size() * SpatialDims;
         }
+        // the stress terms are stored at the bottom of the KNM in a block
+        size_t i_stress{n_centers};
+        if (compute_stress) {
+          n_centers += 2*SpatialDims*managers.size();
+        }
+        // loop over the upper triangular stress matrix is done with dK/dr_{x,y,z} in sequence
+        // so to fill the upper part u_ij has to follow the sequence {z,x,y}
+        // (second element of voigt_ids)
+        // and KNM is filled in the order {1, 2, 0}
+        // Voigt order is {xx ,yy, zz, yz, xz, xy}
+        const std::array<std::array<int, 2>, SpatialDims> voigt_ids = {1, 2, 2, 0, 0, 1};
+
         const size_t n_sparse_points{sparse_points.size()};
         math::Matrix_t KNM(n_centers, n_sparse_points);
         const size_t zeta{this->zeta};
-
         size_t i_center{0};
         // loop over the structures
         for (auto & manager : managers) {
@@ -313,6 +336,7 @@ namespace rascal {
               }
               auto rep = dKdX[center];
               const int offset = offsets.at(a_sp);
+              auto r_i = center.get_position();
               const auto & values_by_sp = sparse_points.values.at(a_sp);
               const auto & indices_by_sp = sparse_points.indices.at(a_sp);
               const size_t n_rows{center.pairs_with_self_pair().size()};
@@ -352,6 +376,19 @@ namespace rascal {
                     }  // M
                     i_row_++;
                   }  // neigh
+                  if (compute_stress) {
+                    const auto & voigt = voigt_ids[i_der];
+                    i_row_ = 0;
+                    for (auto neigh : center.pairs()) {
+                      Eigen::Vector3d u_ji = neigh.get_position() - r_i;
+                      for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
+                        // fill diagonal
+                        KNM(i_stress+i_der, offset + indices_by_sp_key[i_col]) += u_ji(i_der) * KNM_block(i_row_, i_col);
+                        // fill upper diag
+                        KNM(i_stress+ThreeD+voigt[0], offset + indices_by_sp_key[i_col]) += u_ji(voigt[1]) * KNM_block(i_row_, i_col);
+                      }  // M
+                    }    // neigh
+                  }  // if compute_stress
                 }    // i_der
               }      // key
               i_row += n_rows;
@@ -360,18 +397,31 @@ namespace rascal {
             for (auto center : manager) {
               int a_sp{center.get_atom_type()};
               auto rep = dKdX[center];
-              for (auto neigh : center.pairs_with_self_pair()) {
-                if (zeta == 1) {
-                  dKdr[neigh.get_atom_j()] +=
-                      sparse_points.dot_derivative(a_sp, prop_grad[neigh]);
-                } else {
-                  dKdr[neigh.get_atom_j()] +=
-                      rep.asDiagonal() *
-                      sparse_points.dot_derivative(a_sp, prop_grad[neigh]);
-                }
+              auto r_i = center.get_position();
+              auto km3_ii = sparse_points.dot_derivative(a_sp, prop_grad[center.get_atom_ii()]);
+              if (zeta > 1) {
+                km3_ii.transpose() *= rep.asDiagonal();
               }
-            }
-          }
+              dKdr[center] += km3_ii;
+              for (auto neigh : center.pairs()) {
+                auto km3_ji = sparse_points.dot_derivative(a_sp, prop_grad[neigh]);
+                if (zeta > 1) {
+                  km3_ji.transpose() *= rep.asDiagonal();
+                }
+                dKdr[neigh.get_atom_j()] += km3_ji;
+                if (compute_stress) {
+                  Eigen::Vector3d u_ji = neigh.get_position() - r_i;
+                  for (int i_der{0}; i_der < ThreeD; i_der++) {
+                    const auto & voigt = voigt_ids[i_der];
+                    // fill diagonal
+                    KNM.row(i_stress+i_der) += u_ji(i_der) * km3_ji.col(i_der).transpose();
+                    // fill upper diag
+                    KNM.row(i_stress+ThreeD+voigt[0]) += u_ji(voigt[1]) * km3_ji.col(i_der).transpose();
+                  }
+                }
+              }  // neigh
+            }    // center
+          }      // if do_block_by_key_dot
 
           // copy the data to the kernel matrix
           for (auto center : manager) {
@@ -379,7 +429,10 @@ namespace rascal {
                 dKdr[center].transpose();
             i_center += SpatialDims;
           }
-        }
+          // take into account the double counting for ij and ji
+          KNM.block(i_stress, 0, 2*SpatialDims, n_sparse_points) *= 0.5;
+          i_stress += SpatialDims*2;
+        }  // managers
         return KNM;
       }
     };
@@ -537,7 +590,8 @@ namespace rascal {
     template <class Calculator, class StructureManagers, class SparsePoints>
     math::Matrix_t compute_derivative(const Calculator & calculator,
                                       const StructureManagers & managers,
-                                      const SparsePoints & sparse_points) {
+                                      const SparsePoints & sparse_points,
+                                      const bool compute_stress) {
       using ManagerPtr_t = typename StructureManagers::value_type;
       using Manager_t = typename ManagerPtr_t::element_type;
       using Property_t = typename Calculator::template Property_t<Manager_t>;
@@ -558,7 +612,7 @@ namespace rascal {
         return kernel->template compute_derivative<
             Property_t, PropertyGradient_t, TargetType::Atom>(
             managers, sparse_points, representation_name,
-            representation_grad_name);
+            representation_grad_name, compute_stress);
       } else {
         throw std::logic_error(
             "Given kernel_type " +

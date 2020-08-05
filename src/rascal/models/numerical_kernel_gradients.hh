@@ -80,7 +80,7 @@ namespace rascal {
             class SparsePoints>
   math::Matrix_t compute_numerical_kernel_gradient(
       KernelImpl & kernel, Calculator & calculator, Manager & manager,
-      const SparsePoints & sparse_points, const double & h_disp) {
+      const SparsePoints & sparse_points, const double & h_disp, const bool compute_stress = false) {
     Eigen::Matrix3d disps = h_disp * Eigen::Matrix3d::Identity();
     size_t n_sparse_points{sparse_points.size()};
     math::Matrix_t KNM{manager->size() * ThreeD, n_sparse_points};
@@ -117,7 +117,7 @@ namespace rascal {
             class SparsePoints>
   math::Matrix_t compute_numerical_kernel_gradients(
       KernelImpl & kernel, Calculator & calculator, Managers & managers,
-      const SparsePoints & sparse_points, double h_disp = 1e-5) {
+      const SparsePoints & sparse_points, double h_disp = 1e-5, const bool compute_stress = false) {
     size_t n_centers{0};
     for (const auto & manager : managers) {
       n_centers += manager->size() * ThreeD;
