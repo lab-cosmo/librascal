@@ -380,13 +380,14 @@ namespace rascal {
                     const auto & voigt = voigt_ids[i_der];
                     i_row_ = 0;
                     for (auto neigh : center.pairs()) {
-                      Eigen::Vector3d u_ji = neigh.get_position() - r_i;
+                      Eigen::Vector3d u_ij = r_i - neigh.get_position();
                       for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
                         // fill diagonal
-                        KNM(i_stress+i_der, offset + indices_by_sp_key[i_col]) += u_ji(i_der) * KNM_block(i_row_, i_col);
+                        KNM(i_stress+i_der, offset + indices_by_sp_key[i_col]) += u_ij(i_der) * KNM_block(i_row_, i_col);
                         // fill upper diag
-                        KNM(i_stress+ThreeD+voigt[0], offset + indices_by_sp_key[i_col]) += u_ji(voigt[1]) * KNM_block(i_row_, i_col);
+                        KNM(i_stress+ThreeD+voigt[0], offset + indices_by_sp_key[i_col]) += u_ij(voigt[1]) * KNM_block(i_row_, i_col);
                       }  // M
+                      i_row_++;
                     }    // neigh
                   }  // if compute_stress
                 }    // i_der
@@ -410,13 +411,13 @@ namespace rascal {
                 }
                 dKdr[neigh.get_atom_j()] += km3_ji;
                 if (compute_stress) {
-                  Eigen::Vector3d u_ji = neigh.get_position() - r_i;
+                  Eigen::Vector3d u_ij = r_i - neigh.get_position();
                   for (int i_der{0}; i_der < ThreeD; i_der++) {
                     const auto & voigt = voigt_ids[i_der];
                     // fill diagonal
-                    KNM.row(i_stress+i_der) += u_ji(i_der) * km3_ji.col(i_der).transpose();
+                    KNM.row(i_stress+i_der) += u_ij(i_der) * km3_ji.col(i_der).transpose();
                     // fill upper diag
-                    KNM.row(i_stress+ThreeD+voigt[0]) += u_ji(voigt[1]) * km3_ji.col(i_der).transpose();
+                    KNM.row(i_stress+ThreeD+voigt[0]) += u_ij(voigt[1]) * km3_ji.col(i_der).transpose();
                   }
                 }
               }  // neigh
@@ -429,9 +430,11 @@ namespace rascal {
                 dKdr[center].transpose();
             i_center += SpatialDims;
           }
-          // take into account the double counting for ij and ji
-          KNM.block(i_stress, 0, 2*SpatialDims, n_sparse_points) *= 0.5;
-          i_stress += SpatialDims*2;
+          if (compute_stress) {
+            // take into account the double counting for ij and ji
+            KNM.block(i_stress, 0, 2 * SpatialDims, n_sparse_points) *= 0.5;
+            i_stress += SpatialDims * 2;
+          }
         }  // managers
         return KNM;
       }

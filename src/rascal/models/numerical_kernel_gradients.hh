@@ -122,6 +122,7 @@ namespace rascal {
     size_t i_atom{0};
     for (auto center : manager) {
       positions.row(i_atom) = center.get_position();
+      i_atom++;
     }
     for (i_atom = 0; i_atom < manager->size(); ++i_atom) {
       for (int i_der{0}; i_der < ThreeD; ++i_der) {
@@ -135,12 +136,14 @@ namespace rascal {
         math::Matrix_t dKdr_i = (KNM_p - KNM_m) / (2 * h_disp);
         const auto& voigt = voigt_ids[i_der];
         for (size_t j_atom{0}; j_atom < manager->size(); ++j_atom) {
-          Eigen::Vector3d u_ij = positions.row(i_atom) - positions.row(j_atom);
+          if (j_atom == i_atom) continue;
+          Eigen::Vector3d u_ij = positions.row(j_atom) - positions.row(i_atom);
           KNM.row(i_der) += u_ij(i_der) * dKdr_i.row(j_atom);
-          KNM.row(i_der+ThreeD+voigt[0]) += u_ij(voigt[1]) * dKdr_i.row(j_atom);
+          KNM.row(ThreeD+voigt[0]) += u_ij(voigt[1]) * dKdr_i.row(j_atom);
         }
       }
     }
+    KNM *= 0.5;
     return KNM;
   }
 
