@@ -80,7 +80,7 @@ namespace rascal {
             class SparsePoints>
   math::Matrix_t compute_numerical_kernel_gradient(
       KernelImpl & kernel, Calculator & calculator, Manager & manager,
-      const SparsePoints & sparse_points, const double & h_disp, const bool compute_stress = false) {
+      const SparsePoints & sparse_points, const double & h_disp) {
     Eigen::Matrix3d disps = h_disp * Eigen::Matrix3d::Identity();
     size_t n_sparse_points{sparse_points.size()};
     math::Matrix_t KNM{manager->size() * ThreeD, n_sparse_points};
@@ -96,6 +96,49 @@ namespace rascal {
                                      i_atom, -disps.row(i_der));
         KNM.row(i_atom * ThreeD + i_der) =
             (KNM_p - KNM_m).colwise().sum() / (2 * h_disp);
+      }
+    }
+    return KNM;
+  }
+
+  /**
+   * Compute finite-difference kernel elements associated with
+   * the stress of a sparse GPR model for a single atomic structure.
+   *
+   * @param manager a structure manager
+   * @see compute_numerical_kernel_gradients
+   */
+  template <class KernelImpl, class Calculator, class Manager,
+            class SparsePoints>
+  math::Matrix_t compute_numerical_kernel_stress(
+      KernelImpl & kernel, Calculator & calculator, Manager & manager,
+      const SparsePoints & sparse_points, const double & h_disp) {
+    Eigen::Matrix3d disps = h_disp * Eigen::Matrix3d::Identity();
+    const std::array<std::array<int, 2>, ThreeD> voigt_ids = {1, 2, 2, 0, 0, 1};
+    size_t n_sparse_points{sparse_points.size()};
+    math::Matrix_t KNM{6, n_sparse_points};
+    KNM.setZero();
+    math::Matrix_t positions(manager->size(), ThreeD);
+    size_t i_atom{0};
+    for (auto center : manager) {
+      positions.row(i_atom) = center.get_position();
+    }
+    for (i_atom = 0; i_atom < manager->size(); ++i_atom) {
+      for (int i_der{0}; i_der < ThreeD; ++i_der) {
+        // use centered finite difference to estimate gradient
+        math::Matrix_t KNM_p =
+            compute_displaced_kernel(kernel, calculator, manager, sparse_points,
+                                     i_atom, disps.row(i_der));
+        math::Matrix_t KNM_m =
+            compute_displaced_kernel(kernel, calculator, manager, sparse_points,
+                                     i_atom, -disps.row(i_der));
+        math::Matrix_t dKdr_i = (KNM_p - KNM_m) / (2 * h_disp);
+        const auto& voigt = voigt_ids[i_der];
+        for (size_t j_atom{0}; j_atom < manager->size(); ++j_atom) {
+          Eigen::Vector3d u_ij = positions.row(i_atom) - positions.row(j_atom);
+          KNM.row(i_der) += u_ij(i_der) * dKdr_i.row(j_atom);
+          KNM.row(i_der+ThreeD+voigt[0]) += u_ij(voigt[1]) * dKdr_i.row(j_atom);
+        }
       }
     }
     return KNM;
@@ -122,6 +165,9 @@ namespace rascal {
     for (const auto & manager : managers) {
       n_centers += manager->size() * ThreeD;
     }
+    if (compute_stress) {
+      n_centers += 6 * managers.size();
+    }
     size_t n_sparse_points{sparse_points.size()};
     math::Matrix_t KNM{n_centers, n_sparse_points};
     KNM.setZero();
@@ -132,6 +178,16 @@ namespace rascal {
                                             sparse_points, h_disp);
       i_centers += manager->size() * ThreeD;
     }
+
+    if (compute_stress) {
+      for (const auto & manager : managers) {
+        KNM.block(i_centers, 0, 6, n_sparse_points) =
+            compute_numerical_kernel_stress(kernel, calculator, manager,
+                                              sparse_points, h_disp);
+        i_centers += 6;
+      }
+    }
+
     return KNM;
   }
 }  // namespace rascal

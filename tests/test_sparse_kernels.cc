@@ -145,6 +145,8 @@ namespace rascal {
     // range of zero
     const double epsilon{1e-15};
 
+    const bool compute_stress{true};
+
     for (const auto & input : inputs) {
       // extract inputs
       std::string filename{input.at("filename").template get<std::string>()};
@@ -169,10 +171,10 @@ namespace rascal {
       Representation_t representation_{calculator_input};
       // compute kernel gradients
       auto KNM_der{
-          kernel.compute_derivative(representation, managers, sparse_points)};
+          kernel.compute_derivative(representation, managers, sparse_points, compute_stress)};
       auto KNM_num_der{compute_numerical_kernel_gradients(
           kernel_num, representation_, managers, sparse_points,
-          input.at("h").template get<double>())};
+          input.at("h").template get<double>(), compute_stress)};
       auto diff = math::relative_error(KNM_der, KNM_num_der, delta, epsilon);
       int col_max{0}, row_max{0};
       double max_rel_diff{diff.maxCoeff(&row_max, &col_max)};
