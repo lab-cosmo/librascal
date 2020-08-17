@@ -136,15 +136,19 @@ namespace rascal {
         math::Matrix_t dKdr_i = (KNM_p - KNM_m) / (2 * h_disp);
         const auto & voigt = voigt_ids[i_der];
         for (size_t j_atom{0}; j_atom < manager->size(); ++j_atom) {
-          if (j_atom == i_atom)
-            continue;
+          if (j_atom == i_atom) {continue;}
+
           Eigen::Vector3d u_ij = positions.row(j_atom) - positions.row(i_atom);
           KNM.row(i_der) += u_ij(i_der) * dKdr_i.row(j_atom);
           KNM.row(ThreeD + voigt[0]) += u_ij(voigt[1]) * dKdr_i.row(j_atom);
+          KNM.row(ThreeD + voigt[1]) += u_ij(voigt[0]) * dKdr_i.row(j_atom);
         }
       }
     }
     KNM *= 0.5;
+    KNM.row(ThreeD    ) *= 0.5;
+    KNM.row(ThreeD + 1) *= 0.5;
+    KNM.row(ThreeD + 2) *= 0.5;
     return KNM;
   }
 

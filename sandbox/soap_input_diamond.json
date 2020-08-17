@@ -1,7 +1,7 @@
 {
   "calculator" : {
     "max_radial": 3, "max_angular": 3, "soap_type": "PowerSpectrum", "normalize": true,
-    "expansion_by_species_method": "structure wise", "global_species": [], "compute_gradients": true,
+    "expansion_by_species_method": "structure wise", "global_species": [], "compute_gradients": false,
       "cutoff_function":
         {"type": "ShiftedCosine", "cutoff": {"value": 5, "unit": "AA"}, "smooth_width": {"value": 0.5, "unit": "AA"}},
       "gaussian_density":

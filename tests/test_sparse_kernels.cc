@@ -141,9 +141,10 @@ namespace rascal {
 
     const bool verbose{true};
     // relative error threshold
-    const double delta{5e-5};
+    // const double delta{5e-5};
+    const double delta{1e-3};
     // range of zero
-    const double epsilon{1e-15};
+    const double epsilon{1e-14};
 
     const bool compute_stress{true};
 

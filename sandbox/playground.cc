@@ -106,7 +106,6 @@ int main(int argc, char * argv[]) {
   }
 
   json input = json_io::load(argv[1]);
-
   std::string filename{input["filename"].get<std::string>()};
   json adaptors = input["adaptors"].get<json>();
   json calculator = input["calculator"].get<json>();
@@ -114,7 +113,7 @@ int main(int argc, char * argv[]) {
   ManagerCollection_t managers{adaptors};
   managers.add_structures(filename, 0, input["n_structures"].get<int>());
   Representation_t representation{calculator};
-  auto N_ITERATIONS{input["N_ITERATIONS"].get<int>()};
+  // auto N_ITERATIONS{input["N_ITERATIONS"].get<int>()};
   representation.compute(managers);
 
   SparsePointsBlockSparse<Representation_t> sparse_points{};
@@ -122,28 +121,33 @@ int main(int argc, char * argv[]) {
   auto selected_ids = input["selected_ids"].get<std::vector<std::vector<int>>>();
 
   sparse_points.push_back(representation, managers, selected_ids);
-  auto KNM_der{kernel.compute_derivative(representation, managers, sparse_points)};
-  math::Vector_t elapsed{N_ITERATIONS};
-  Timer timer{};
+  // auto KNM_der{kernel.compute_derivative(representation, managers, sparse_points)};
+  // math::Vector_t elapsed{N_ITERATIONS};
+  // Timer timer{};
 
-  for (int looper{0}; looper < N_ITERATIONS; looper++) {
-    timer.reset();
-    auto KNM_der_{kernel.compute_derivative(representation, managers, sparse_points)};
-    elapsed[looper] = timer.elapsed();
-    KNM_der_(0,0) = 1;
-  }
-  std::cout << elapsed.mean() << ", "<<std_dev(elapsed) << std::endl;
+  // for (int looper{0}; looper < N_ITERATIONS; looper++) {
+  //   timer.reset();
+  //   auto KNM_der_{kernel.compute_derivative(representation, managers, sparse_points)};
+  //   elapsed[looper] = timer.elapsed();
+  //   KNM_der_(0,0) = 1;
+  // }
+  // std::cout << elapsed.mean() << ", "<<std_dev(elapsed) << std::endl;
 
+  auto KNM_num_der{compute_numerical_kernel_gradients(
+          kernel, representation, managers, sparse_points,
+          input.at("h").template get<double>(), true)};
+  // std::cout << KNM_num_der << std::endl;
   json results{};
-  results["elapsed_mean"] = elapsed.mean();
-  results["elapsed_std"] = std_dev(elapsed);
-  results["elapsed"] = elapsed;
+  // results["elapsed_mean"] = elapsed.mean();
+  // results["elapsed_std"] = std_dev(elapsed);
+  // results["elapsed"] = elapsed;
+  results["KNM_num_der"] = KNM_num_der;
   std::ofstream o(argv[2]);
   o << std::setw(2) << results << std::endl;
 
   // make playground -j4 && sandbox/playground ../sandbox/soap_input_molecular_crystal.json ../sandbox/res_ref.json
   // clear && make -j4 test_sparse_kernels  && ctest -R "test_sparse_kernels*" -V
-  
+
   // auto KNM_num_der{compute_numerical_kernel_gradients(kernel, representation, managers, sparse_points, input["h"].get<double>())};
   // auto diff = math::relative_error(KNM_der, KNM_num_der);
 

@@ -324,7 +324,6 @@ namespace rascal {
             keys_intersect[sp] = internal::set_intersection(
                 rep_keys, sparse_points.keys_sp.at(sp));
           }
-
           // compute dX/dr * T * k_{z-1} * z
           if (do_block_by_key_dot) {
             size_t i_row{0};
@@ -337,6 +336,7 @@ namespace rascal {
               auto rep = dKdX[center];
               const int offset = offsets.at(a_sp);
               auto r_i = center.get_position();
+              // auto atom_tag_i = center.get_atom_tag();
               const auto & values_by_sp = sparse_points.values.at(a_sp);
               const auto & indices_by_sp = sparse_points.indices.at(a_sp);
               const size_t n_rows{center.pairs_with_self_pair().size()};
@@ -378,9 +378,12 @@ namespace rascal {
                   }  // neigh
                   if (compute_stress) {
                     const auto & voigt = voigt_ids[i_der];
-                    i_row_ = 0;
+                    i_row_ = 1;
                     for (auto neigh : center.pairs()) {
-                      Eigen::Vector3d u_ij = r_i - neigh.get_position();
+                      auto atom_j = neigh.get_atom_j();
+                      int atom_tag_j = atom_j.get_atom_tag();
+                      // if (atom_tag_i == atom_tag_j) {continue;}
+                      Eigen::Vector3d u_ij = r_i - manager->get_position(atom_tag_j);
                       for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
                         // fill diagonal
                         KNM(i_stress + i_der,
@@ -390,6 +393,9 @@ namespace rascal {
                         KNM(i_stress + ThreeD + voigt[0],
                             offset + indices_by_sp_key[i_col]) +=
                             u_ij(voigt[1]) * KNM_block(i_row_, i_col);
+                        KNM(i_stress + ThreeD + voigt[1],
+                            offset + indices_by_sp_key[i_col]) +=
+                            u_ij(voigt[0]) * KNM_block(i_row_, i_col);
                       }  // M
                       i_row_++;
                     }  // neigh
@@ -417,15 +423,18 @@ namespace rascal {
                 }
                 dKdr[neigh.get_atom_j()] += km3_ji;
                 if (compute_stress) {
-                  Eigen::Vector3d u_ij = r_i - neigh.get_position();
+                  auto atom_j = neigh.get_atom_j();
+                  Eigen::Vector3d u_ij = r_i - manager->get_position(atom_j.get_atom_tag());
                   for (int i_der{0}; i_der < ThreeD; i_der++) {
                     const auto & voigt = voigt_ids[i_der];
                     // fill diagonal
                     KNM.row(i_stress + i_der) +=
-                        u_ij(i_der) * km3_ji.col(i_der).transpose();
+                        u_ij(i_der) * km3_ji.transpose().row(i_der);
                     // fill upper diag
                     KNM.row(i_stress + ThreeD + voigt[0]) +=
-                        u_ij(voigt[1]) * km3_ji.col(i_der).transpose();
+                        u_ij(voigt[1]) * km3_ji.transpose().row(i_der);
+                    KNM.row(i_stress + ThreeD + voigt[1]) +=
+                        u_ij(voigt[0]) * km3_ji.transpose().row(i_der);
                   }
                 }
               }  // neigh
@@ -441,6 +450,8 @@ namespace rascal {
           if (compute_stress) {
             // take into account the double counting for ij and ji
             KNM.block(i_stress, 0, 2 * SpatialDims, n_sparse_points) *= 0.5;
+            // take into account the symmetrization of the stress tensor
+            KNM.block(i_stress+SpatialDims, 0, SpatialDims, n_sparse_points) *= 0.5;
             i_stress += SpatialDims * 2;
           }
         }  // managers
