@@ -41,8 +41,6 @@ using T3nm_t = typename Eigen::Tensor<double, 3, Eigen::RowMajor>;
 using T3nm_Map_t = typename Eigen::TensorMap<T3nm_t>;
 using T3nm_CMap_t = const typename Eigen::TensorMap<const T3nm_t>;
 
-// TensorFixedSize<double, Sizes<>>
-
 using namespace rascal;  // NOLINT
 
 
@@ -110,15 +108,6 @@ struct FixedSize : public  FixedSizeBase {
   using Ym_t = typename Eigen::Matrix<double, 1, Mmax, Eigen::RowMajor>;
   using Ym_CMap_t = const typename Eigen::Map<const Ym_t>;
 
-  // using Fn_t = typename Eigen::TensorFixedSize<double, Eigen::Sizes<Nmax>>;
-  // using Fn_CMap_t = const typename Eigen::TensorMap<const Fn_t>;
-
-  // using Fm_t = typename Eigen::TensorFixedSize<double, Eigen::Sizes<Mmax>>;
-  // using Fm_CMap_t = const typename Eigen::TensorMap<const Fm_t>;
-
-  // using F3_t = typename Eigen::TensorFixedSize<double, Eigen::Sizes<3>>;
-  // using F3_CMap_t = const typename Eigen::TensorMap<const F3_t>;
-
   using F3nm_t = typename Eigen::TensorFixedSize<double, Eigen::Sizes<3, Nmax, Mmax>, Eigen::RowMajor>;
   using F3nm_Map_t = typename Eigen::TensorMap<F3nm_t>;
 
@@ -180,6 +169,11 @@ struct FixedSizeHandler {
     holder.at(10).emplace_back(std::make_unique<FixedSize<10,5 >>());
     holder.at(10).emplace_back(std::make_unique<FixedSize<10,7 >>());
     holder.at(10).emplace_back(std::make_unique<FixedSize<10,9 >>());
+    holder.at(10).emplace_back(std::make_unique<FixedSize<10,11>>());
+    holder.at(10).emplace_back(std::make_unique<FixedSize<10,13>>());
+    holder.at(10).emplace_back(std::make_unique<FixedSize<10,15>>());
+    holder.at(10).emplace_back(std::make_unique<FixedSize<10,17>>());
+    holder.at(10).emplace_back(std::make_unique<FixedSize<10,19>>());
     holder.at(10).emplace_back(std::make_unique<FixedSizeBase>());
     holder.at(10).emplace_back(std::make_unique<FixedSizeBase>());
     holder.at(10).emplace_back(std::make_unique<FixedSizeBase>());
@@ -265,6 +259,30 @@ void compute_2(const std::vector<Matrix_t> & dIljn, const std::vector<Matrix_t> 
   }
 }
 
+
+void compute_ref(const Matrix_t & dIjln,
+                const  Matrix_t & Yjlm,
+                const VectorG_t& rij,  Tj3nm_t & Rj3nlm) {
+  const size_t l_max{static_cast<size_t>(std::sqrt(Yjlm.cols()))};
+  const size_t n_max{static_cast<size_t>(dIjln.cols() / l_max)};
+  Matrix_t pair_cont{n_max, l_max};
+  for (int i_neigh{0}; i_neigh < Yjlm.rows(); i_neigh++) {
+    for (int i_der{0}; i_der < 3; i_der++) {
+        for (size_t n{0}; n < n_max; n++) {
+        size_t l_block_idx{0};
+        for (size_t l{0}; l <l_max; l++) {
+          double ff{rij(i_neigh, i_der) * dIjln(i_neigh, l_max*n+l)};
+          size_t l_block_size{2 * l + 1};
+          for (size_t m{0}; m < l_block_size; m++) {
+            Rj3nlm(i_neigh, i_der, n, l_block_idx+m) =  ff * Yjlm(i_neigh, l_block_idx+m);
+          }
+          l_block_idx += l_block_size;
+        }
+      }
+    }
+  }
+}
+
 int main(int argc, char * argv[]) {
   if (argc < 2) {
     std::cerr << "Must provide setup json filename as argument";
@@ -297,6 +315,7 @@ int main(int argc, char * argv[]) {
   Vector_t elapsed_0{N_ITERATIONS};
   Vector_t elapsed_1{N_ITERATIONS};
   Vector_t elapsed_2{N_ITERATIONS};
+  Vector_t elapsed_ref{N_ITERATIONS};
   Timer timer{};
 
   for (int looper{0}; looper < N_ITERATIONS; looper++) {
@@ -320,15 +339,38 @@ int main(int argc, char * argv[]) {
     Rl3nm_2[0](0,0,0,0) = 0;
   }
 
+  Matrix_t Yjlm = Matrix_t::Constant(n_neighbors, l_max*l_max, 0.5);
+  Matrix_t dIjnl = Matrix_t::Constant(n_neighbors, l_max*n_max, 1.5);
+  Tj3nm_t Rj3nlm{n_neighbors, 3, n_max ,l_max*l_max};
+
+  for (int looper{0}; looper < N_ITERATIONS; looper++) {
+    timer.reset();
+    compute_ref(dIjnl, Yjlm, rij, Rj3nlm);
+    elapsed_ref[looper] = timer.elapsed();
+    Rj3nlm(0,0,0,0) = 0;
+  }
+
+
   auto diff01 = Eigen::Tensor<double, 0>();
   diff01.setZero();
   auto diff02 = Eigen::Tensor<double, 0>();
   diff02.setZero();
+  auto diff0ref = Eigen::Tensor<double, 0>();
+  diff0ref.setZero();
+  size_t l_block_idx{0};
   for (int l{0}; l <l_max; l++) {
+    size_t l_block_size{2 * l + 1};
     diff01 += (Rl3nm[l]-Rl3nm_1[l]).abs().maximum().eval();
     diff02 += (Rl3nm[l]-Rl3nm_2[l]).abs().maximum().eval();
+    Eigen::array<int, 4> offsets = {0, 0, 0, l_block_idx};
+    Eigen::array<int, 4> extents = {n_neighbors, 3, n_max, l_block_size};
+    diff0ref += (Rl3nm[l]-Rj3nlm.slice(offsets, extents)).abs().maximum().eval();
+    l_block_idx += l_block_size;
   }
-  std::cout << "diff01: " << diff01 << " diff02: " << diff02 <<std::endl;
+  std::cout << "diff01: " << diff01
+            << " diff02: " << diff02
+            << " diff0ref: " << diff0ref
+            <<std::endl;
 
   json cmp0{};
   cmp0["elapsed_mean"] = elapsed_0.mean();
@@ -345,10 +387,15 @@ int main(int argc, char * argv[]) {
   cmp2["elapsed_std"] = std_dev(elapsed_2);
   // cmp2["elapsed"] = elapsed_2;
 
+  json cmp_ref{};
+  cmp_ref["elapsed_mean"] = elapsed_ref.mean();
+  cmp_ref["elapsed_std"] = std_dev(elapsed_ref);
+
   json results{};
   results["compute_0"] = cmp0;
   results["compute_1"] = cmp1;
   results["compute_2"] = cmp2;
+  results["compute_ref"] = cmp_ref;
   std::ofstream o(argv[2]);
   o << std::setw(2) << results << std::endl;
 }
