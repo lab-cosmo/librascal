@@ -49,6 +49,8 @@ set(RASCAL_SOURCES
 
 add_library(${LIBRASCAL_NAME} ${RASCAL_SOURCES})
 
+target_include_directories(${LIBRASCAL_NAME} SYSTEM PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/rascal/external)
 target_include_directories(${LIBRASCAL_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(${LIBRASCAL_NAME} PRIVATE -Werror)
 

@@ -39,16 +39,22 @@ namespace rascal {
 
   /**
    * A BehlerFeature is a single G function with a single set of parameters
+   * @tparam CompatibilityMode Behler's and Singraber's implementations evaluate
+   * triplets where the j and k atom have the same species only once, despite
+   * using full neighbour lists. This is not a problem mathematically, but
+   * inconsistent with the mathematical description in the papers.
+   * CompatibilityMode = true replicates the inconsistent behaviour for
+   * convenience in comparisons.
    */
-  template <SymmetryFunctionType... SymFunTypes>
+  template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
   class BehlerFeatureBase {
    public:
     constexpr static int MaxBehlerOrder{3};
-
     using StdSpecies = TupleStandardisation<int, MaxBehlerOrder>;
 
     using Hypers_t = json;
 
+    constexpr static bool CompatibilityMode{CompatibilityMode_};
     //! Default constructor
     BehlerFeatureBase() = delete;
 
@@ -88,10 +94,11 @@ namespace rascal {
     //! Main worker (raison d'être) computes input node values and derivatives
     template <RepeatedSpecies RepSpecies, typename Permutation,
               class StructureManager>
-    inline void compute(StructureManager & manager,
-                        std::shared_ptr<PropertyBase> output_values,
-                        std::shared_ptr<PropertyBase> output_self_derivatives,
-                        std::shared_ptr<PropertyBase> output_other_derivatives) const;
+    inline void
+    compute(StructureManager & manager,
+            std::shared_ptr<PropertyBase> output_values,
+            std::shared_ptr<PropertyBase> output_self_derivatives,
+            std::shared_ptr<PropertyBase> output_other_derivatives) const;
 
     //! insert a parameter (sub-)json
     void add_params(const json & params) {
@@ -120,12 +127,22 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
+  template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
+  constexpr int
+      BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>::MaxBehlerOrder;
+  /* ---------------------------------------------------------------------- */
+  template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
+  constexpr bool
+      BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>::CompatibilityMode;
+
+  /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
-  class BehlerPairFeature final : public BehlerFeatureBase<SymFunTypes...> {
+  class BehlerPairFeature final : public BehlerFeatureBase<false, SymFunTypes...> {
    public:
     using SymmetryFunction_t = SymmetryFunction<MySymFunType>;
-    using Parent = BehlerFeatureBase<SymFunTypes...>;
+    // Pair features don't need a compatibility mode, see desctription above
+    using Parent = BehlerFeatureBase<false, SymFunTypes...>;
 
     static constexpr size_t Order{SymmetryFunction_t::Order};
     static_assert(Order == PairOrder,
@@ -194,10 +211,10 @@ namespace rascal {
     /* ---------------------------------------------------------------------- */
     template <RepeatedSpecies RepSpecies, typename Permutation,
               class StructureManager>
-    void compute_helper(StructureManager & manager,
-                        std::shared_ptr<PropertyBase> output,
-                        std::shared_ptr<PropertyBase> output_self_derivatives,
-                        std::shared_ptr<PropertyBase> output_other_derivatives) const;
+    void compute_helper(
+        StructureManager & manager, std::shared_ptr<PropertyBase> output,
+        std::shared_ptr<PropertyBase> output_self_derivatives,
+        std::shared_ptr<PropertyBase> output_other_derivatives) const;
 
    protected:
     SymmetryFunction<MySymFunType> sym_fun;
@@ -209,17 +226,17 @@ namespace rascal {
   constexpr size_t BehlerPairFeature<MySymFunType, SymFunTypes...>::Order;
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType MySymFunType,
+  template <bool CompatibilityMode, SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
-  class BehlerTripletFeature final : public BehlerFeatureBase<SymFunTypes...> {
+  class BehlerTripletFeature final
+      : public BehlerFeatureBase<CompatibilityMode, SymFunTypes...> {
    public:
     using SymmetryFunction_t = SymmetryFunction<MySymFunType>;
-    using Parent = BehlerFeatureBase<SymFunTypes...>;
+    using Parent = BehlerFeatureBase<CompatibilityMode, SymFunTypes...>;
 
     static constexpr size_t Order{SymmetryFunction_t::Order};
     static_assert(Order == TripletOrder,
                   "Should only be instantiated for triplet symmetry functions");
-
     //! Default constructor
     BehlerTripletFeature(std::shared_ptr<CutoffFunctionBase> cut_fun,
                          const UnitStyle & unit_style, const json & raw_params)
@@ -294,10 +311,10 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType MySymFunType,
+  template <bool CompatibilityMode_, SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
-  constexpr size_t BehlerTripletFeature<MySymFunType, SymFunTypes...>::Order;
-
+  constexpr size_t BehlerTripletFeature<CompatibilityMode_, MySymFunType,
+                                        SymFunTypes...>::Order;
 }  // namespace rascal
 #include "behler_feature_impl.hh"
 

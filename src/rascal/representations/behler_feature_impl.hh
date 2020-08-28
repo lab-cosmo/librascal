@@ -34,34 +34,41 @@
 
 namespace rascal {
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType... SymFunTypes>
+  template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
   template <SymmetryFunctionType... SymFunTypes_>
-  struct BehlerFeatureBase<SymFunTypes...>::SymFunctionsVTable {};
+  struct BehlerFeatureBase<CompatibilityMode_,
+                           SymFunTypes...>::SymFunctionsVTable {};
 
   /* ---------------------------------------------------------------------- */
-  template <size_t Order, SymmetryFunctionType Head,
+  template <bool CompatibilityMode, size_t Order, SymmetryFunctionType Head,
             SymmetryFunctionType... SymFunTypes>
   struct BehlerFeatureOrderSelector {};
+
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType Head, SymmetryFunctionType... SymFunTypes>
-  struct BehlerFeatureOrderSelector<PairOrder, Head, SymFunTypes...> {
+  struct BehlerFeatureOrderSelector<false, PairOrder, Head, SymFunTypes...> {
     using type = BehlerPairFeature<Head, SymFunTypes...>;
   };
+
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType Head, SymmetryFunctionType... SymFunTypes>
-  struct BehlerFeatureOrderSelector<TripletOrder, Head, SymFunTypes...> {
-    using type = BehlerTripletFeature<Head, SymFunTypes...>;
+  template <bool CompatibilityMode, SymmetryFunctionType Head,
+            SymmetryFunctionType... SymFunTypes>
+  struct BehlerFeatureOrderSelector<CompatibilityMode, TripletOrder, Head,
+                                    SymFunTypes...> {
+    using type = BehlerTripletFeature<CompatibilityMode, Head, SymFunTypes...>;
   };
 
-  template <size_t Order, SymmetryFunctionType Head,
+  template <bool CompatibilityMode, size_t Order, SymmetryFunctionType Head,
             SymmetryFunctionType... SymFunTypes>
   using BehlerFeatureOrderSelector_t =
-      typename BehlerFeatureOrderSelector<Order, Head, SymFunTypes...>::type;
+      typename BehlerFeatureOrderSelector<CompatibilityMode, Order, Head,
+                                          SymFunTypes...>::type;
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType... SymFunTypes>
+  template <bool CompatibilityMode, SymmetryFunctionType... SymFunTypes>
   template <SymmetryFunctionType Head, SymmetryFunctionType... Tail>
-  struct BehlerFeatureBase<SymFunTypes...>::SymFunctionsVTable<Head, Tail...> {
+  struct BehlerFeatureBase<CompatibilityMode,
+                           SymFunTypes...>::SymFunctionsVTable<Head, Tail...> {
     template <RepeatedSpecies RepSpecies, typename Permutation,
               class StructureManager, class... PropertyPtr>
     static void compute(const BehlerFeatureBase & behler_feature,
@@ -71,8 +78,8 @@ namespace rascal {
                     "Behlerfeature expects minimal neighbour lists");
       if (behler_feature.sym_fun_type == Head) {
         constexpr auto Order{SymmetryFunction<Head>::Order};
-        using Feature_t =
-            BehlerFeatureOrderSelector_t<Order, Head, SymFunTypes...>;
+        using Feature_t = BehlerFeatureOrderSelector_t<CompatibilityMode, Order,
+                                                       Head, SymFunTypes...>;
         auto & feature{dynamic_cast<const Feature_t &>(behler_feature)};
         feature.compute_helper(manager, outputs...);
       } else {
@@ -86,9 +93,10 @@ namespace rascal {
    * Recursion end: return the last remaining function call or throw a
    * runtime_error
    */
-  template <SymmetryFunctionType... SymFunTypes>
+  template <bool CompatibilityMode, SymmetryFunctionType... SymFunTypes>
   template <SymmetryFunctionType Head>
-  struct BehlerFeatureBase<SymFunTypes...>::SymFunctionsVTable<Head> {
+  struct BehlerFeatureBase<CompatibilityMode,
+                           SymFunTypes...>::SymFunctionsVTable<Head> {
     template <RepeatedSpecies RepSpecies, typename Permutation,
               class StructureManager, class... PropertyPtr>
     static void compute(const BehlerFeatureBase & behler_feature,
@@ -98,8 +106,8 @@ namespace rascal {
                     "Behlerfeature expects minimal neighbour lists");
       if (behler_feature.sym_fun_type == Head) {
         constexpr auto Order{SymmetryFunction<Head>::Order};
-        using Feature_t =
-            BehlerFeatureOrderSelector_t<Order, Head, SymFunTypes...>;
+        using Feature_t = BehlerFeatureOrderSelector_t<CompatibilityMode, Order,
+                                                       Head, SymFunTypes...>;
         auto & feature{dynamic_cast<const Feature_t &>(behler_feature)};
         feature.template compute_helper<RepSpecies, Permutation>(manager,
                                                                  outputs...);
@@ -113,10 +121,10 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType... SymFunTypes>
+  template <bool CompatibilityMode, SymmetryFunctionType... SymFunTypes>
   template <RepeatedSpecies RepSpecies, typename Permutation,
             class StructureManager>
-  void BehlerFeatureBase<SymFunTypes...>::compute(
+  void BehlerFeatureBase<CompatibilityMode, SymFunTypes...>::compute(
       StructureManager & manager, std::shared_ptr<PropertyBase> prop) const {
     static_assert(StructureManager::traits::NeighbourListType ==
                       AdaptorTraits::NeighbourListType::half,
@@ -127,10 +135,10 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType... SymFunTypes>
+  template <bool CompatibilityMode, SymmetryFunctionType... SymFunTypes>
   template <RepeatedSpecies RepSpecies, typename Permutation,
             class StructureManager>
-  void BehlerFeatureBase<SymFunTypes...>::compute(
+  void BehlerFeatureBase<CompatibilityMode, SymFunTypes...>::compute(
       StructureManager & manager, std::shared_ptr<PropertyBase> prop,
       std::shared_ptr<PropertyBase> prop_self_der,
       std::shared_ptr<PropertyBase> prop_other_der) const {
@@ -196,12 +204,13 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType MySymFunType,
+  template <bool CompatibilityMode, SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
   template <RepeatedSpecies RepSpecies, typename Permutation,
             class StructureManager>
-  void BehlerTripletFeature<MySymFunType, SymFunTypes...>::compute_helper(
-      StructureManager & manager, std::shared_ptr<PropertyBase> output) const {
+  void BehlerTripletFeature<CompatibilityMode, MySymFunType, SymFunTypes...>::
+      compute_helper(StructureManager & manager,
+                     std::shared_ptr<PropertyBase> output) const {
     static_assert(Permutation::Size == Order,
                   "Permutation size needs to equal cluster order");
 
@@ -217,9 +226,10 @@ namespace rascal {
     auto & neigh_to_i_atom{
         manager.template get_neighbours_to_i_atoms<TripletOrder>()};
 
+    constexpr bool jk_are_indistinguishable{
+        SymmetryFunction<MySymFunType>::jk_are_indistinguishable()};
     const auto ordering_weight{Permutation::template get_triplet_orderings<
-        RepSpecies,
-        SymmetryFunction<MySymFunType>::jk_are_indistinguishable()>()};
+        RepSpecies, jk_are_indistinguishable, CompatibilityMode>()};
 
     const auto & orderings{std::get<0>(ordering_weight)};
     const auto & weight{std::get<1>(ordering_weight)};
@@ -331,16 +341,17 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType MySymFunType,
+  template <bool CompatibilityMode, SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
   template <RepeatedSpecies RepSpecies, typename Permutation,
             class StructureManager>
-  void BehlerTripletFeature<MySymFunType, SymFunTypes...>::compute_helper(
-      StructureManager & manager, std::shared_ptr<PropertyBase> output_values,
-      std::shared_ptr<PropertyBase>
-          output_self_derivatives,  // vectorial atom-property
-      std::shared_ptr<PropertyBase> output_other_derivatives)
-      const {  // bi-vectorial pair-property (forwards and backwards)
+  void BehlerTripletFeature<CompatibilityMode, MySymFunType, SymFunTypes...>::
+      compute_helper(StructureManager & manager,
+                     std::shared_ptr<PropertyBase> output_values,
+                     std::shared_ptr<PropertyBase>
+                         output_self_derivatives,  // vectorial atom-property
+                     std::shared_ptr<PropertyBase> output_other_derivatives)
+          const {  // bi-vectorial pair-property (forwards and backwards)
     auto && cutoff_tup{this->cut_fun->get_triplet_derivative(manager)};
     auto & cutoff_values{std::get<0>(cutoff_tup)};
     auto & cutoff_derivatives{std::get<1>(cutoff_tup)};
@@ -372,8 +383,8 @@ namespace rascal {
     fun_other_derivatives.resize();
 
     const auto ordering_weight{Permutation::template get_triplet_orderings<
-        RepSpecies,
-        SymmetryFunction<MySymFunType>::jk_are_indistinguishable()>()};
+        RepSpecies, SymmetryFunction<MySymFunType>::jk_are_indistinguishable(),
+        CompatibilityMode>()};
 
     const auto & orderings{std::get<0>(ordering_weight)};
     const auto & weight{std::get<1>(ordering_weight)};
@@ -471,9 +482,10 @@ namespace rascal {
 
     // this->is_initialised = true;
   }
-  template <SymmetryFunctionType MySymFunType,
+  template <bool CompatibilityMode, SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
-  void BehlerTripletFeature<MySymFunType, SymFunTypes...>::init(
+  void
+  BehlerTripletFeature<CompatibilityMode, MySymFunType, SymFunTypes...>::init(
       const UnitStyle & /*units*/) {}
 
 }  // namespace rascal

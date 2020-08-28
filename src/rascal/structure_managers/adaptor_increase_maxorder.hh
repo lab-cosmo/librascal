@@ -364,13 +364,16 @@ namespace rascal {
 
       for (auto && atom : *this) {
         for (auto && trip : atom.triplets()) {
-          auto & pair_ij{clusters_from_manager[trip][0]};
-          auto & pair_ik{clusters_from_manager[trip][1]};
+          auto && triplet_clusters{clusters_from_manager[trip]};
+          auto & pair_ij{triplet_clusters[0]};
+          auto & pair_jk{triplet_clusters[1]};
+          auto & pair_ik{triplet_clusters[2]};
           auto && dists{triplet_distances[trip]};
           auto & d_ij{dists(0)};
           auto & d_jk{dists(1)};
           auto & d_ki{dists(2)};
           d_ij = distances[pair_ij];
+          d_jk = distances[pair_jk];
           d_ki = distances[pair_ik];
 
           auto && vectors{triplet_direction_vectors[trip]};
@@ -379,10 +382,9 @@ namespace rascal {
           auto && v_ki{vectors.col(2)};
 
           v_ij = direction_vectors[pair_ij];
+          v_jk = direction_vectors[pair_jk];
           v_ki = -direction_vectors[pair_ik];
-          auto && r_jk{-v_ki * d_ki - v_ij * d_ij};
-          d_jk = r_jk.norm();
-          v_jk = r_jk / d_jk;
+
         }
       }
 

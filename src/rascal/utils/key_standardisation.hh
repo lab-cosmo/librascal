@@ -33,6 +33,8 @@
 #include <array>
 #include <limits>
 
+using std::size_t;
+
 namespace rascal {
 
   template <typename T, size_t MaxOrder>

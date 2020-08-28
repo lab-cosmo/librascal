@@ -128,11 +128,11 @@ namespace rascal {
           (symmetry_fun));
 
       if (not this->legacy_behaviour) {
-        this->evaluate_sym_fun<Permutation<TripletOrder, 2, 1, 0>>(
+        this->evaluate_sym_fun<Permutation<TripletOrder, 0, 2, 1>>(
             (symmetry_fun));
         this->evaluate_sym_fun<Permutation<TripletOrder, 1, 0, 2>>(
             (symmetry_fun));
-        this->evaluate_sym_fun<Permutation<TripletOrder, 0, 2, 1>>(
+        this->evaluate_sym_fun<Permutation<TripletOrder, 2, 1, 0>>(
             (symmetry_fun));
       }
     }

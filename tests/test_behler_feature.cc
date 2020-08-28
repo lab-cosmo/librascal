@@ -89,8 +89,10 @@ namespace rascal {
         json{{"params", {}}, {"r_cut", {{"value", r_cut}, {"unit", "Å"}}}})};
     json raw_params;
     static constexpr auto Order{SymmetryFunction<MySymFunType>::Order};
+    static constexpr bool CompatibilityMode{Order == TripletOrder};
     using BehlerFeature_t =
-        BehlerFeatureOrderSelector_t<Order, MySymFunType, SymFunTypes...>;
+        BehlerFeatureOrderSelector_t<CompatibilityMode, Order, MySymFunType,
+                                     SymFunTypes...>;
     BehlerFeature_t bf{this->cut_fun, this->unit_style, this->raw_params};
   };
 
@@ -160,8 +162,10 @@ namespace rascal {
         std::make_shared<CutoffFunction<InlCutoffFunctionType::Cosine>>(
             unit_style, json{{"params", {}},
                              {"r_cut", {{"value", r_cut}, {"unit", "Å"}}}})};
+    static constexpr bool CompatibilityMode{true};
     using BehlerFeature_t =
-        BehlerFeatureOrderSelector_t<Order, SymmetryFunctionType::AngularNarrow,
+        BehlerFeatureOrderSelector_t<CompatibilityMode, Order,
+                                     SymmetryFunctionType::AngularNarrow,
                                      SymmetryFunctionType::AngularNarrow>;
     BehlerFeature_t bf{cut_fun, unit_style, params};
     BehlerFeatureFixture<SymmetryFunctionType::AngularNarrow,
@@ -226,15 +230,15 @@ namespace rascal {
         make_adapted_manager<AdaptorStrict>(manager_fix.manager, this->r_cut)};
     auto & manager{*manager_ptr};
     manager.update();
-    using GVals_t =
-        Property<double, AtomOrder, AdaptorStrict<StructureManagerLammpsMinimal>>;
+    using GVals_t = Property<double, AtomOrder,
+                             AdaptorStrict<StructureManagerLammpsMinimal>>;
 
     using dGSelfVals_t =
-        Property<double, AtomOrder, AdaptorStrict<StructureManagerLammpsMinimal>,
-                 ThreeD>;
+        Property<double, AtomOrder,
+                 AdaptorStrict<StructureManagerLammpsMinimal>, ThreeD>;
     using dGOtherVals_t =
-        Property<double, PairOrder, AdaptorStrict<StructureManagerLammpsMinimal>,
-                 ThreeD, 2>;
+        Property<double, PairOrder,
+                 AdaptorStrict<StructureManagerLammpsMinimal>, ThreeD, 2>;
 
     // results without permutation
     auto G01_vals{std::make_shared<GVals_t>(manager)};
@@ -440,15 +444,14 @@ namespace rascal {
     auto & manager{*triplet_manager_ptr};
     manager.update();
 
-    using TripletManager_t = AdaptorMaxOrder<
-        AdaptorStrict<StructureManagerLammpsMinimal>>;
+    using TripletManager_t =
+        AdaptorMaxOrder<AdaptorStrict<StructureManagerLammpsMinimal>>;
 
     using GVals_t = Property<double, AtomOrder, TripletManager_t>;
 
     using dGSelfVals_t = Property<double, AtomOrder, TripletManager_t, ThreeD>;
     using dGOtherVals_t =
         Property<double, PairOrder, TripletManager_t, ThreeD, 2>;
-
 
     // for (const auto RepSpecies : AllRepSpecies) {
     //   auto orderings{
@@ -519,19 +522,15 @@ namespace rascal {
 
     // results with derivative without permutation
     auto dGSelf012_ref_derivatives{std::make_shared<dGSelfVals_t>(manager)};
-    auto
-    dGOther012_ref_derivatives{std::make_shared<dGOtherVals_t>(manager)};
+    auto dGOther012_ref_derivatives{std::make_shared<dGOtherVals_t>(manager)};
     // results with permutation
     auto dGSelf120_ref_derivatives{std::make_shared<dGSelfVals_t>(manager)};
-    auto
-    dGOther120_ref_derivatives{std::make_shared<dGOtherVals_t>(manager)};
+    auto dGOther120_ref_derivatives{std::make_shared<dGOtherVals_t>(manager)};
     auto dGSelf201_ref_derivatives{std::make_shared<dGSelfVals_t>(manager)};
-    auto
-    dGOther201_ref_derivatives{std::make_shared<dGOtherVals_t>(manager)};
+    auto dGOther201_ref_derivatives{std::make_shared<dGOtherVals_t>(manager)};
     // results with equal species
     auto dGSelfAAA_ref_derivatives{std::make_shared<dGSelfVals_t>(manager)};
-    auto
-    dGOtherAAA_ref_derivatives{std::make_shared<dGOtherVals_t>(manager)};
+    auto dGOtherAAA_ref_derivatives{std::make_shared<dGOtherVals_t>(manager)};
 
     // calculate all behler feature values: symmetry and cutoff function
     this->bf.template compute<RepeatedSpecies::Not, Permutation<3, 0, 1, 2>>(
@@ -589,8 +588,12 @@ namespace rascal {
     auto && pairs_container{
         manager.template get_sub_clusters<PairOrder, TripletOrder>()};
 
+    auto loop_exec_counter{0};
     for (auto && atom : manager) {
       for (auto && triplet : atom.triplets()) {
+        // Test expects only one triplet, multiple execution               leads
+        // to wrong reference results
+        BOOST_CHECK_EQUAL(++loop_exec_counter, 1);
         auto && atom_cluster_indices{neigh_to_i_atom[triplet]};
 
         auto && trip_dist{triplet_distances[triplet]};
@@ -639,12 +642,12 @@ namespace rascal {
         auto && pair_jk{triplet_pairs[1]};
         auto && pair_ki{triplet_pairs[2]};
 
-        G012_ref->operator[](atom_i) += G_incr_i;
-        G120_ref->operator[](atom_j) += G_incr_j;
-        G201_ref->operator[](atom_k) += G_incr_k;
-        GAAA_ref->operator[](atom_i) += G_incr_i + G_incr_j + G_incr_k;
-        GAAA_ref->operator[](atom_j) += G_incr_i + G_incr_j + G_incr_k;
-        GAAA_ref->operator[](atom_k) += G_incr_i + G_incr_j + G_incr_k;
+        G012_ref->operator[](atom_i) = G_incr_i;
+        G120_ref->operator[](atom_j) = G_incr_j;
+        G201_ref->operator[](atom_k) = G_incr_k;
+        GAAA_ref->operator[](atom_i) = G_incr_i + G_incr_j + G_incr_k;
+        GAAA_ref->operator[](atom_j) = G_incr_i + G_incr_j + G_incr_k;
+        GAAA_ref->operator[](atom_k) = G_incr_i + G_incr_j + G_incr_k;
 
         double cutoff_der_ij{-.5 * (math::PI * r_ij / this->r_cut) *
                              std::sin(math::PI * r_ij / this->r_cut)};
@@ -661,13 +664,11 @@ namespace rascal {
         // atom 1
         double d_f_sym_i_ij{
             -2 * eta * r_ij * f_sym_i +
-            zeta * (lambda / r_ki - lambda / r_ij * cos_theta_ijk) * f_sym_i
-            /
+            zeta * (lambda / r_ki - lambda / r_ij * cos_theta_ijk) * f_sym_i /
                 lam_cos_theta_1_ijk};
         double d_f_sym_i_ki{
             -2 * eta * r_ki * f_sym_i +
-            zeta * (lambda / r_ij - lambda / r_ki * cos_theta_ijk) * f_sym_i
-            /
+            zeta * (lambda / r_ij - lambda / r_ki * cos_theta_ijk) * f_sym_i /
                 lam_cos_theta_1_ijk};
         double d_f_sym_i_jk{-lambda * r_jk * zeta * f_sym_i /
                                 (r_ij * r_ki * lam_cos_theta_1_ijk) -
@@ -677,13 +678,11 @@ namespace rascal {
         // atom 2
         double d_f_sym_j_jk{
             -2 * eta * r_jk * f_sym_j +
-            zeta * (lambda / r_ij - lambda / r_jk * cos_theta_jki) * f_sym_j
-            /
+            zeta * (lambda / r_ij - lambda / r_jk * cos_theta_jki) * f_sym_j /
                 lam_cos_theta_1_jki};
         double d_f_sym_j_ij{
             -2 * eta * r_ij * f_sym_j +
-            zeta * (lambda / r_jk - lambda / r_ij * cos_theta_jki) * f_sym_j
-            /
+            zeta * (lambda / r_jk - lambda / r_ij * cos_theta_jki) * f_sym_j /
                 lam_cos_theta_1_jki};
         double d_f_sym_j_ki{-lambda * r_ki * zeta * f_sym_j /
                                 (r_jk * r_ij * lam_cos_theta_1_jki) -
@@ -693,13 +692,11 @@ namespace rascal {
         // atom 3
         double d_f_sym_k_ki{
             -2 * eta * r_ki * f_sym_k +
-            zeta * (lambda / r_jk - lambda / r_ki * cos_theta_kij) * f_sym_k
-            /
+            zeta * (lambda / r_jk - lambda / r_ki * cos_theta_kij) * f_sym_k /
                 lam_cos_theta_1_kij};
         double d_f_sym_k_jk{
             -2 * eta * r_jk * f_sym_k +
-            zeta * (lambda / r_ki - lambda / r_jk * cos_theta_kij) * f_sym_k
-            /
+            zeta * (lambda / r_ki - lambda / r_jk * cos_theta_kij) * f_sym_k /
                 lam_cos_theta_1_kij};
         double d_f_sym_k_ij{-lambda * r_ij * zeta * f_sym_k /
                                 (r_ki * r_jk * lam_cos_theta_1_kij) -
@@ -710,32 +707,32 @@ namespace rascal {
         auto && dir_ki{triplet_directions[triplet].col(2)};
 
         // dG_i/d_direction
-        auto && dG_incr_i_ij{
-            (d_f_sym_i_ij * f_cut_val + f_sym_i * d_f_cut_ij) * dir_ij};
-        auto && dG_incr_i_jk{
-            (d_f_sym_i_jk * f_cut_val + f_sym_i * d_f_cut_jk) * dir_jk};
+        auto && dG_incr_i_ij{(d_f_sym_i_ij * f_cut_val + f_sym_i * d_f_cut_ij) *
+                             dir_ij};
+        auto && dG_incr_i_jk{(d_f_sym_i_jk * f_cut_val + f_sym_i * d_f_cut_jk) *
+                             dir_jk};
         auto && dG_incr_i_kj{-dG_incr_i_jk};
-        auto && dG_incr_i_ki{
-            (d_f_sym_i_ki * f_cut_val + f_sym_i * d_f_cut_ki) * dir_ki};
+        auto && dG_incr_i_ki{(d_f_sym_i_ki * f_cut_val + f_sym_i * d_f_cut_ki) *
+                             dir_ki};
         auto && dG_incr_i_ik{-dG_incr_i_ki};
         // dG_j/d_direction
-        auto && dG_incr_j_ij{
-            (d_f_sym_j_ij * f_cut_val + f_sym_j * d_f_cut_ij) * dir_ij};
+        auto && dG_incr_j_ij{(d_f_sym_j_ij * f_cut_val + f_sym_j * d_f_cut_ij) *
+                             dir_ij};
         auto && dG_incr_j_ji{-dG_incr_j_ij};
-        auto && dG_incr_j_jk{
-            (d_f_sym_j_jk * f_cut_val + f_sym_j * d_f_cut_jk) * dir_jk};
+        auto && dG_incr_j_jk{(d_f_sym_j_jk * f_cut_val + f_sym_j * d_f_cut_jk) *
+                             dir_jk};
 
-        auto && dG_incr_j_ki{
-            (d_f_sym_j_ki * f_cut_val + f_sym_j * d_f_cut_ki) * dir_ki};
+        auto && dG_incr_j_ki{(d_f_sym_j_ki * f_cut_val + f_sym_j * d_f_cut_ki) *
+                             dir_ki};
         auto && dG_incr_j_ik{-dG_incr_j_ki};
         // dG_k/d_direction
-        auto && dG_incr_k_ij{
-            (d_f_sym_k_ij * f_cut_val + f_sym_k * d_f_cut_ij) * dir_ij};
-        auto && dG_incr_k_jk{
-            (d_f_sym_k_jk * f_cut_val + f_sym_k * d_f_cut_jk) * dir_jk};
+        auto && dG_incr_k_ij{(d_f_sym_k_ij * f_cut_val + f_sym_k * d_f_cut_ij) *
+                             dir_ij};
+        auto && dG_incr_k_jk{(d_f_sym_k_jk * f_cut_val + f_sym_k * d_f_cut_jk) *
+                             dir_jk};
         auto && dG_incr_k_kj{-dG_incr_k_jk};
-        auto && dG_incr_k_ki{
-            (d_f_sym_k_ki * f_cut_val + f_sym_k * d_f_cut_ki) * dir_ki};
+        auto && dG_incr_k_ki{(d_f_sym_k_ki * f_cut_val + f_sym_k * d_f_cut_ki) *
+                             dir_ki};
         auto && dG_incr_k_ik{-dG_incr_k_ki};
 
         dGSelf012_ref_derivatives->operator[](atom_i) +=
@@ -760,7 +757,8 @@ namespace rascal {
             dG_incr_k_ik + dG_incr_k_jk;
 
         /* ------------------------------------------------------------------
-        */ dGSelfAAA_ref_derivatives->operator[](atom_i) +=
+         */
+        dGSelfAAA_ref_derivatives->operator[](atom_i) +=
             dG_incr_i_ij + dG_incr_i_ik;
         dGOtherAAA_ref_derivatives->operator[](pair_ij).col(0) -=
             dG_incr_i_ij + dG_incr_i_kj;
@@ -829,35 +827,35 @@ namespace rascal {
 
     // Test eval of derivatives
     rel_error =
-        (dGSelf012_derivatives->eigen() -
-        dGSelf012_ref_derivatives->eigen()).norm() /
+        (dGSelf012_derivatives->eigen() - dGSelf012_ref_derivatives->eigen())
+            .norm() /
         dGSelf012_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
     rel_error =
-        (dGOther012_derivatives->eigen() -
-        dGOther012_ref_derivatives->eigen()).norm() /
+        (dGOther012_derivatives->eigen() - dGOther012_ref_derivatives->eigen())
+            .norm() /
         dGOther012_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
 
     rel_error =
-        (dGSelf120_derivatives->eigen() -
-        dGSelf120_ref_derivatives->eigen()).norm() /
+        (dGSelf120_derivatives->eigen() - dGSelf120_ref_derivatives->eigen())
+            .norm() /
         dGSelf120_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
     rel_error =
-        (dGOther120_derivatives->eigen() -
-        dGOther120_ref_derivatives->eigen()).norm() /
+        (dGOther120_derivatives->eigen() - dGOther120_ref_derivatives->eigen())
+            .norm() /
         dGOther120_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
 
     rel_error =
-        (dGSelf201_derivatives->eigen() -
-        dGSelf201_ref_derivatives->eigen()).norm() /
+        (dGSelf201_derivatives->eigen() - dGSelf201_ref_derivatives->eigen())
+            .norm() /
         dGSelf201_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
     rel_error =
-        (dGOther201_derivatives->eigen() -
-        dGOther201_ref_derivatives->eigen()).norm() /
+        (dGOther201_derivatives->eigen() - dGOther201_ref_derivatives->eigen())
+            .norm() /
         dGOther201_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
 
@@ -867,13 +865,11 @@ namespace rascal {
         dGSelfAAA_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
     rel_error =
-        (dGOtherAAA_derivatives->eigen() -
-        dGOtherAAA_ref_derivatives->eigen())
+        (dGOtherAAA_derivatives->eigen() - dGOtherAAA_ref_derivatives->eigen())
             .norm() /
         dGOtherAAA_ref_derivatives->eigen().norm();
     BOOST_CHECK_EQUAL(rel_error, 0);
-
-   } 
+  }
 
   /**
    * todo(markus) same evaluation and permutation test as above but
