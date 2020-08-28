@@ -166,7 +166,8 @@ namespace rascal {
                                  ManagerCollection_1_t>(kernel);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
                                  ManagerCollection_2_t>(kernel);
-
+    bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
+                                 ManagerCollection_3_t>(kernel);
     // bind the sparse kernel and pseudo points class
     auto sparse_kernel = add_kernel<SparseKernel>(mod, m_internal);
     internal::bind_dict_representation(sparse_kernel);
