@@ -640,14 +640,14 @@ namespace rascal {
         auto && triplet_pairs{pairs_container[triplet]};
         auto && pair_ij{triplet_pairs[0]};
         auto && pair_jk{triplet_pairs[1]};
-        auto && pair_ki{triplet_pairs[2]};
+        auto && pair_ik{triplet_pairs[2]};
 
         G012_ref->operator[](atom_i) = G_incr_i;
         G120_ref->operator[](atom_j) = G_incr_j;
         G201_ref->operator[](atom_k) = G_incr_k;
-        GAAA_ref->operator[](atom_i) = G_incr_i + G_incr_j + G_incr_k;
-        GAAA_ref->operator[](atom_j) = G_incr_i + G_incr_j + G_incr_k;
-        GAAA_ref->operator[](atom_k) = G_incr_i + G_incr_j + G_incr_k;
+        GAAA_ref->operator[](atom_i) = G012_ref->operator[](atom_i);
+        GAAA_ref->operator[](atom_j) = G120_ref->operator[](atom_j);
+        GAAA_ref->operator[](atom_k) = G201_ref->operator[](atom_k);
 
         double cutoff_der_ij{-.5 * (math::PI * r_ij / this->r_cut) *
                              std::sin(math::PI * r_ij / this->r_cut)};
@@ -656,9 +656,11 @@ namespace rascal {
         double cutoff_der_ki{-.5 * (math::PI * r_ki / this->r_cut) *
                              std::sin(math::PI * r_ki / this->r_cut)};
 
-        double d_f_cut_ij{cutoff_der_ij * f_cut_jk * f_cut_ki};
-        double d_f_cut_jk{cutoff_der_jk * f_cut_ki * f_cut_ij};
-        double d_f_cut_ki{cutoff_der_ki * f_cut_ij * f_cut_jk};
+        // clang-format off
+        double d_f_cut_ij{cutoff_der_ij *      f_cut_jk *      f_cut_ki};
+        double d_f_cut_jk{     f_cut_ij * cutoff_der_jk *      f_cut_ki};
+        double d_f_cut_ki{     f_cut_ij *      f_cut_jk * cutoff_der_ki};
+        // clang-format on
 
         // components of derivatives for symmetry function centered on
         // atom 1
@@ -707,88 +709,91 @@ namespace rascal {
         auto && dir_ki{triplet_directions[triplet].col(2)};
 
         // dG_i/d_direction
-        auto && dG_incr_i_ij{(d_f_sym_i_ij * f_cut_val + f_sym_i * d_f_cut_ij) *
-                             dir_ij};
-        auto && dG_incr_i_jk{(d_f_sym_i_jk * f_cut_val + f_sym_i * d_f_cut_jk) *
-                             dir_jk};
-        auto && dG_incr_i_kj{-dG_incr_i_jk};
-        auto && dG_incr_i_ki{(d_f_sym_i_ki * f_cut_val + f_sym_i * d_f_cut_ki) *
-                             dir_ki};
-        auto && dG_incr_i_ik{-dG_incr_i_ki};
+        Eigen::Vector3d dG_incr_i_ij{
+            (d_f_sym_i_ij * f_cut_val + f_sym_i * d_f_cut_ij) * dir_ij};
+        Eigen::Vector3d dG_incr_i_ji{-dG_incr_i_ij};
+        Eigen::Vector3d dG_incr_i_jk{
+            (d_f_sym_i_jk * f_cut_val + f_sym_i * d_f_cut_jk) * dir_jk};
+        Eigen::Vector3d dG_incr_i_kj{-dG_incr_i_jk};
+        Eigen::Vector3d dG_incr_i_ki{
+            (d_f_sym_i_ki * f_cut_val + f_sym_i * d_f_cut_ki) * dir_ki};
+        Eigen::Vector3d dG_incr_i_ik{-dG_incr_i_ki};
         // dG_j/d_direction
-        auto && dG_incr_j_ij{(d_f_sym_j_ij * f_cut_val + f_sym_j * d_f_cut_ij) *
-                             dir_ij};
-        auto && dG_incr_j_ji{-dG_incr_j_ij};
-        auto && dG_incr_j_jk{(d_f_sym_j_jk * f_cut_val + f_sym_j * d_f_cut_jk) *
-                             dir_jk};
-
-        auto && dG_incr_j_ki{(d_f_sym_j_ki * f_cut_val + f_sym_j * d_f_cut_ki) *
-                             dir_ki};
-        auto && dG_incr_j_ik{-dG_incr_j_ki};
+        Eigen::Vector3d dG_incr_j_ij{
+            (d_f_sym_j_ij * f_cut_val + f_sym_j * d_f_cut_ij) * dir_ij};
+        Eigen::Vector3d dG_incr_j_ji{-dG_incr_j_ij};
+        Eigen::Vector3d dG_incr_j_jk{
+            (d_f_sym_j_jk * f_cut_val + f_sym_j * d_f_cut_jk) * dir_jk};
+        Eigen::Vector3d dG_incr_j_kj{-dG_incr_j_jk};
+        Eigen::Vector3d dG_incr_j_ki{
+            (d_f_sym_j_ki * f_cut_val + f_sym_j * d_f_cut_ki) * dir_ki};
+        Eigen::Vector3d dG_incr_j_ik{-dG_incr_j_ki};
         // dG_k/d_direction
-        auto && dG_incr_k_ij{(d_f_sym_k_ij * f_cut_val + f_sym_k * d_f_cut_ij) *
-                             dir_ij};
-        auto && dG_incr_k_jk{(d_f_sym_k_jk * f_cut_val + f_sym_k * d_f_cut_jk) *
-                             dir_jk};
-        auto && dG_incr_k_kj{-dG_incr_k_jk};
-        auto && dG_incr_k_ki{(d_f_sym_k_ki * f_cut_val + f_sym_k * d_f_cut_ki) *
-                             dir_ki};
-        auto && dG_incr_k_ik{-dG_incr_k_ki};
+        Eigen::Vector3d dG_incr_k_ij{
+            (d_f_sym_k_ij * f_cut_val + f_sym_k * d_f_cut_ij) * dir_ij};
+        Eigen::Vector3d dG_incr_k_ji{-dG_incr_k_ij};
+        Eigen::Vector3d dG_incr_k_jk{
+            (d_f_sym_k_jk * f_cut_val + f_sym_k * d_f_cut_jk) * dir_jk};
+        Eigen::Vector3d dG_incr_k_kj{-dG_incr_k_jk};
+        Eigen::Vector3d dG_incr_k_ki{
+            (d_f_sym_k_ki * f_cut_val + f_sym_k * d_f_cut_ki) * dir_ki};
+        Eigen::Vector3d dG_incr_k_ik{-dG_incr_k_ki};
 
         dGSelf012_ref_derivatives->operator[](atom_i) +=
             dG_incr_i_ij + dG_incr_i_ik;
-        dGOther012_ref_derivatives->operator[](pair_ij).col(0) -=
-            dG_incr_i_ij + dG_incr_i_kj;
-        dGOther012_ref_derivatives->operator[](pair_ki).col(1) -=
-            dG_incr_i_ik + dG_incr_i_jk;
+        dGOther012_ref_derivatives->operator[](pair_ij).col(1) += dG_incr_i_ji;
+        dGOther012_ref_derivatives->operator[](pair_jk).col(0) += dG_incr_i_jk;
+        dGOther012_ref_derivatives->operator[](pair_jk).col(1) += dG_incr_i_kj;
+        dGOther012_ref_derivatives->operator[](pair_ik).col(1) += dG_incr_i_ki;
 
         dGSelf120_ref_derivatives->operator[](atom_j) +=
             dG_incr_j_ji + dG_incr_j_jk;
-        dGOther120_ref_derivatives->operator[](pair_jk).col(0) -=
-            dG_incr_j_jk + dG_incr_j_ik;
-        dGOther120_ref_derivatives->operator[](pair_ij).col(1) -=
-            dG_incr_j_ji + dG_incr_j_ki;
+        dGOther120_ref_derivatives->operator[](pair_ij).col(0) += dG_incr_j_ij;
+        dGOther120_ref_derivatives->operator[](pair_jk).col(1) += dG_incr_j_kj;
+        dGOther120_ref_derivatives->operator[](pair_ik).col(0) += dG_incr_j_ik;
+        dGOther120_ref_derivatives->operator[](pair_ik).col(1) += dG_incr_j_ki;
 
         dGSelf201_ref_derivatives->operator[](atom_k) +=
-            -dG_incr_k_ki + dG_incr_k_kj;
-        dGOther201_ref_derivatives->operator[](pair_jk).col(1) -=
-            dG_incr_k_kj + dG_incr_k_ij;
-        dGOther201_ref_derivatives->operator[](pair_ki).col(0) -=
-            dG_incr_k_ik + dG_incr_k_jk;
+            dG_incr_k_ki + dG_incr_k_kj;
+        dGOther201_ref_derivatives->operator[](pair_ij).col(0) += dG_incr_k_ij;
+        dGOther201_ref_derivatives->operator[](pair_ij).col(1) += dG_incr_k_ji;
+        dGOther201_ref_derivatives->operator[](pair_jk).col(0) += dG_incr_k_jk;
+        dGOther201_ref_derivatives->operator[](pair_ik).col(0) += dG_incr_k_ik;
 
         /* ------------------------------------------------------------------
          */
         dGSelfAAA_ref_derivatives->operator[](atom_i) +=
             dG_incr_i_ij + dG_incr_i_ik;
-        dGOtherAAA_ref_derivatives->operator[](pair_ij).col(0) -=
-            dG_incr_i_ij + dG_incr_i_kj;
-        dGOtherAAA_ref_derivatives->operator[](pair_ki).col(1) -=
-            dG_incr_i_ik + dG_incr_i_jk;
+        dGOtherAAA_ref_derivatives->operator[](pair_ij).col(1) += dG_incr_i_ji;
+        dGOtherAAA_ref_derivatives->operator[](pair_jk).col(0) += dG_incr_i_jk;
+        dGOtherAAA_ref_derivatives->operator[](pair_jk).col(1) += dG_incr_i_kj;
+        dGOtherAAA_ref_derivatives->operator[](pair_ik).col(1) += dG_incr_i_ki;
 
         dGSelfAAA_ref_derivatives->operator[](atom_j) +=
             dG_incr_j_ji + dG_incr_j_jk;
-        dGOtherAAA_ref_derivatives->operator[](pair_jk).col(0) -=
-            dG_incr_j_jk + dG_incr_j_ik;
-        dGOtherAAA_ref_derivatives->operator[](pair_ij).col(1) -=
-            dG_incr_j_ji + dG_incr_j_ki;
+        dGOtherAAA_ref_derivatives->operator[](pair_ij).col(0) += dG_incr_j_ij;
+        dGOtherAAA_ref_derivatives->operator[](pair_jk).col(1) += dG_incr_j_kj;
+        dGOtherAAA_ref_derivatives->operator[](pair_ik).col(0) += dG_incr_j_ik;
+        dGOtherAAA_ref_derivatives->operator[](pair_ik).col(1) += dG_incr_j_ki;
 
         dGSelfAAA_ref_derivatives->operator[](atom_k) +=
-            -dG_incr_k_ki + dG_incr_k_kj;
-        dGOtherAAA_ref_derivatives->operator[](pair_jk).col(1) -=
-            dG_incr_k_kj + dG_incr_k_ij;
-        dGOtherAAA_ref_derivatives->operator[](pair_ki).col(0) -=
-            dG_incr_k_ik + dG_incr_k_jk;
+            dG_incr_k_ki + dG_incr_k_kj;
+        dGOtherAAA_ref_derivatives->operator[](pair_ij).col(0) += dG_incr_k_ij;
+        dGOtherAAA_ref_derivatives->operator[](pair_ij).col(1) += dG_incr_k_ji;
+        dGOtherAAA_ref_derivatives->operator[](pair_jk).col(0) += dG_incr_k_jk;
+        dGOtherAAA_ref_derivatives->operator[](pair_ik).col(0) += dG_incr_k_ik;
       }
     }
 
     // Test eval of just the values
-    std::cout << "G012_vals->eigen(): " << std::endl
-              << G012_vals->eigen() << std::endl;
-    std::cout << "G012_ref->eigen():  " << std::endl
-              << G012_ref->eigen() << std::endl;
-
     double rel_error{(G012_vals->eigen() - G012_ref->eigen()).norm() /
                      G012_ref->eigen().norm()};
+    if (rel_error != 0.) {
+      std::cout << "G012_vals->eigen(): " << std::endl
+                << G012_vals->eigen() << std::endl;
+      std::cout << "G012_ref->eigen():  " << std::endl
+                << G012_ref->eigen() << std::endl;
+    }
     BOOST_CHECK_EQUAL(rel_error, 0);
 
     rel_error = (G120_vals->eigen() - G120_ref->eigen()).norm() /
@@ -801,10 +806,12 @@ namespace rascal {
 
     rel_error = (GAAA_vals->eigen() - GAAA_ref->eigen()).norm() /
                 GAAA_ref->eigen().norm();
-    std::cout << "GAAA_vals->eigen(): " << std::endl
-              << GAAA_vals->eigen() << std::endl;
-    std::cout << "GAAA_ref->eigen():  " << std::endl
-              << GAAA_ref->eigen() << std::endl;
+    if (rel_error != 0.) {
+      std::cout << "GAAA_vals->eigen(): " << std::endl
+                << GAAA_vals->eigen() << std::endl;
+      std::cout << "GAAA_ref->eigen():  " << std::endl
+                << GAAA_ref->eigen() << std::endl;
+    }
     BOOST_CHECK_EQUAL(rel_error, 0);
 
     // Test eval of values when both values and derivatives are
@@ -830,17 +837,35 @@ namespace rascal {
         (dGSelf012_derivatives->eigen() - dGSelf012_ref_derivatives->eigen())
             .norm() /
         dGSelf012_ref_derivatives->eigen().norm();
+    if (rel_error != 0.) {
+      std::cout << "dGSelf012_derivatives->eigen(): " << std::endl
+                << dGSelf012_derivatives->eigen() << std::endl;
+      std::cout << "dGSelf012_ref_derivatives->eigen():  " << std::endl
+                << dGSelf012_ref_derivatives->eigen() << std::endl;
+    }
     BOOST_CHECK_EQUAL(rel_error, 0);
     rel_error =
         (dGOther012_derivatives->eigen() - dGOther012_ref_derivatives->eigen())
             .norm() /
         dGOther012_ref_derivatives->eigen().norm();
+    if (rel_error != 0.) {
+      std::cout << "dGOther012_derivatives->eigen(): " << std::endl
+                << dGOther012_derivatives->eigen() << std::endl;
+      std::cout << "dGOther012_ref_derivatives->eigen():  " << std::endl
+                << dGOther012_ref_derivatives->eigen() << std::endl;
+    }
     BOOST_CHECK_EQUAL(rel_error, 0);
 
     rel_error =
         (dGSelf120_derivatives->eigen() - dGSelf120_ref_derivatives->eigen())
             .norm() /
         dGSelf120_ref_derivatives->eigen().norm();
+    if (rel_error != 0.) {
+      std::cout << "dGOther120_derivatives->eigen(): " << std::endl
+                << dGOther120_derivatives->eigen() << std::endl;
+      std::cout << "dGOther120_ref_derivatives->eigen():  " << std::endl
+                << dGOther120_ref_derivatives->eigen() << std::endl;
+    }
     BOOST_CHECK_EQUAL(rel_error, 0);
     rel_error =
         (dGOther120_derivatives->eigen() - dGOther120_ref_derivatives->eigen())
@@ -857,17 +882,40 @@ namespace rascal {
         (dGOther201_derivatives->eigen() - dGOther201_ref_derivatives->eigen())
             .norm() /
         dGOther201_ref_derivatives->eigen().norm();
+    if (rel_error != 0.) {
+      std::cout << "dGOther201_derivatives->eigen(): " << std::endl
+                << dGOther201_derivatives->eigen() << std::endl;
+      std::cout << "dGOther201_ref_derivatives->eigen():  " << std::endl
+                << dGOther201_ref_derivatives->eigen() << std::endl;
+    }
     BOOST_CHECK_EQUAL(rel_error, 0);
 
     rel_error =
         (dGSelfAAA_derivatives->eigen() - dGSelfAAA_ref_derivatives->eigen())
             .norm() /
         dGSelfAAA_ref_derivatives->eigen().norm();
+    if (rel_error != 0.) {
+      std::cout << "dGSelfAAA_derivatives->eigen(): " << std::endl
+                << dGSelfAAA_derivatives->eigen() << std::endl;
+      std::cout << "dGSelfAAA_ref_derivatives->eigen():  " << std::endl
+                << dGSelfAAA_ref_derivatives->eigen() << std::endl;
+    }
     BOOST_CHECK_EQUAL(rel_error, 0);
     rel_error =
         (dGOtherAAA_derivatives->eigen() - dGOtherAAA_ref_derivatives->eigen())
             .norm() /
         dGOtherAAA_ref_derivatives->eigen().norm();
+    if (rel_error != 0.) {
+      std::cout << "dGOtherAAA_derivatives->eigen(): " << std::endl
+                << dGOtherAAA_derivatives->eigen() << std::endl;
+      std::cout << "dGOtherxxx_derivatives->eigen().sum(): " << std::endl
+                << dGOther012_derivatives->eigen() +
+                       dGOther120_derivatives->eigen() +
+                       dGOther201_derivatives->eigen()
+                << std::endl;
+      std::cout << "dGOtherAAA_ref_derivatives->eigen():  " << std::endl
+                << dGOtherAAA_ref_derivatives->eigen() << std::endl;
+    }
     BOOST_CHECK_EQUAL(rel_error, 0);
   }
 

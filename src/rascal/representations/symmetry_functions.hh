@@ -51,6 +51,16 @@ namespace rascal {
 
   enum class SymmetryFunctionType { Gaussian, AngularNarrow, AngularWide };
 
+  template <typename T, size_t Len>
+  inline std::array<T, Len>
+  ordered_array(const std::array<T, Len> vals,
+                const std::array<size_t, Len> ordering) {
+    std::array<T, Len> ret_val{};
+    for (size_t i{0}; i < Len; ++i) {
+      ret_val[ordering[i]] = vals[i];
+    }
+    return ret_val;
+  }
   /* ---------------------------------------------------------------------- */
   inline std::string get_name(SymmetryFunctionType fun_type) {
     switch (fun_type) {
@@ -259,9 +269,13 @@ namespace rascal {
        * ordering.
        */
 
+      auto && ij{ordering[0]};
+      auto && jk{ordering[1]};
+      auto && ki{ordering[2]};
+
       auto && f_cut_val{cutoff_vals.prod()};
 
-      auto && cos_theta{cos_thetas[ordering[0]]};
+      auto && cos_theta{cos_thetas[ij]};
       auto && lam_cos_theta_1{1. + this->lambda * cos_theta};
       auto && angular_contrib{math::pow(lam_cos_theta_1, this->zeta)};
       auto && exp_contrib{exp(-this->eta * distances.squaredNorm())};
@@ -277,42 +291,40 @@ namespace rascal {
       // correspond to our r_1 -> r_ij, r_2 -> r_ki, r_3 -> r_jk --- this is not
       // correct any more
 
-      auto && r_ij{distances(ordering[0])};
-      auto && r_jk{distances(ordering[1])};
-      auto && r_ki{distances(ordering[2])};
+      auto && r_ij{distances(ij)};
+      auto && r_jk{distances(jk)};
+      auto && r_ki{distances(ki)};
 
       // todo(strickerjunge): this changes based on the ordering of the values
       // and is not valid any more?
-      double d_f_sym_ij{
+      auto && d_f_sym_ij{
           -2 * this->eta * r_ij * f_sym_val +
           this->zeta * (this->lambda / r_ki - this->lambda / r_ij * cos_theta) *
               f_sym_val / lam_cos_theta_1};
-      double d_f_sym_ki{
+      auto && d_f_sym_ki{
           -2 * this->eta * r_ki * f_sym_val +
           this->zeta * (this->lambda / r_ij - this->lambda / r_ki * cos_theta) *
               f_sym_val / lam_cos_theta_1};
-      double d_f_sym_jk{-this->lambda * r_jk * this->zeta * f_sym_val /
-                            (r_ij * r_ki * lam_cos_theta_1) -
-                        2 * this->eta * r_jk * f_sym_val};
+      auto && d_f_sym_jk{-this->lambda * r_jk * this->zeta * f_sym_val /
+                             (r_ij * r_ki * lam_cos_theta_1) -
+                         2 * this->eta * r_jk * f_sym_val};
 
-      auto && cutoff_val_ij{cutoff_vals[0]};
-      auto && cutoff_val_jk{cutoff_vals[1]};
-      auto && cutoff_val_ki{cutoff_vals[2]};
-
-      auto && cutoff_derivative_ij{cutoff_derivatives[ordering[0]]};
-      auto && cutoff_derivative_ki{cutoff_derivatives[ordering[1]]};
-      auto && cutoff_derivative_jk{cutoff_derivatives[ordering[2]]};
-
-      double d_f_cut_ij{cutoff_derivative_ij * cutoff_val_jk * cutoff_val_ki};
-      double d_f_cut_ki{cutoff_derivative_ki * cutoff_val_ij * cutoff_val_jk};
-      double d_f_cut_jk{cutoff_derivative_jk * cutoff_val_ij * cutoff_val_ki};
+      auto && d_f_cut_ij{cutoff_derivatives[ij] * cutoff_vals[jk] *
+                         cutoff_vals[ki]};
+      auto && d_f_cut_jk{cutoff_vals[ij] * cutoff_derivatives[jk] *
+                         cutoff_vals[ki]};
+      auto && d_f_cut_ki{cutoff_vals[ij] * cutoff_vals[jk] *
+                         cutoff_derivatives[ki]};
 
       // combine function value derivative and cutoff function derivative
       auto && d_dr_ij{d_f_sym_ij * f_cut_val + f_sym_val * d_f_cut_ij};
       auto && d_dr_ki{d_f_sym_ki * f_cut_val + f_sym_val * d_f_cut_ki};
       auto && d_dr_jk{d_f_sym_jk * f_cut_val + f_sym_val * d_f_cut_jk};
 
-      return Return_t(fun_val, {d_dr_ij, d_dr_jk, d_dr_ki});
+      return Return_t(
+          fun_val,
+          ordered_array(std::array<double, 3>{d_dr_ij, d_dr_jk, d_dr_ki},
+                        ordering));
     }
 
    protected:

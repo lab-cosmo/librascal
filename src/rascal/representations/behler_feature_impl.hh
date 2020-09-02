@@ -412,12 +412,7 @@ namespace rascal {
           auto && G_incr{std::get<0>(G_tup)};
           auto && dG_incr{std::get<1>(G_tup)};
 
-          using AtomClusterRef_t =
-              typename StructureManager::template ClusterRef<AtomOrder>;
-          std::array<AtomClusterRef_t, 3> atoms{
-              manager[atom_cluster_indices(ordering[0])],
-              manager[atom_cluster_indices(ordering[1])],
-              manager[atom_cluster_indices(ordering[2])]};
+          auto && center{atom_cluster_indices(ordering[0])};
 
           using PairClusterRefKey_t =
               std::remove_reference_t<decltype(triplet_pairs[ordering[0]])>;
@@ -425,16 +420,44 @@ namespace rascal {
                                                    triplet_pairs[ordering[1]],
                                                    triplet_pairs[ordering[2]]};
 
-          fun_vals[atoms[0]] += weight * G_incr;
-          for (size_t id{0}; id < pairs.size(); ++id) {
-            auto && dir_vec{direction_vectors[pairs[id]] *
-                            (inversion[id] ? -1 : 1)};
-            auto && dG_incr_vec{weight * dir_vec * dG_incr[ordering[id]]};
-            // contribution
-            fun_self_derivatives[atoms[id]] += dG_incr_vec;
+          fun_vals[center] += weight * G_incr;
 
-            fun_other_derivatives[pairs[id]].col(inversion[id]) -= dG_incr_vec;
-          }
+          // direction vectors
+          Eigen::Vector3d dir_ij{direction_vectors[pairs[0]] *
+                                 (inversion[0] ? -1 : 1)};
+          Eigen::Vector3d dir_jk{direction_vectors[pairs[1]] *
+                                 (inversion[1] ? -1 : 1)};
+          Eigen::Vector3d dir_ki{direction_vectors[pairs[2]] *
+                                 (inversion[2] ? -1 : 1)};
+          // contributions
+          Eigen::Vector3d dG_incr_ij{weight * dir_ij * dG_incr[ordering[0]]};
+          Eigen::Vector3d dG_incr_jk{weight * dir_jk * dG_incr[ordering[1]]};
+          Eigen::Vector3d dG_incr_ki{weight * dir_ki * dG_incr[ordering[2]]};
+
+          fun_self_derivatives[center] += dG_incr_ij - dG_incr_ki;
+
+          /**
+           * Forward direction vectors between pairs are defined. When permuting
+           * a triplet, this direction can appear forwards or backwards,
+           * depending on the order of the pairs of a triplet. Here it is made
+           * sure that the respective derivatives are assigned correctly to
+           * either pair direction.
+           *
+           * Example:
+           * triplet 012 -> pair 01, pair 12, pair 20
+           *                forward  forward  backward
+           *
+           * now, with permutation
+           * triplet 120 -> pair 12, pair 20, pair 01
+           *                forward  backward  forward
+           */
+          auto && forward{[&inversion](auto && id) { return inversion[id]; }};
+          auto && backward{[&inversion](auto && id) { return not inversion[id]; }};
+
+          fun_other_derivatives[pairs[0]].col(backward(0)) += -dG_incr_ij;
+          fun_other_derivatives[pairs[1]].col(forward(1)) += dG_incr_jk;
+          fun_other_derivatives[pairs[1]].col(backward(1)) += -dG_incr_jk;
+          fun_other_derivatives[pairs[2]].col(forward(2)) += dG_incr_ki;
         }
       }
     }

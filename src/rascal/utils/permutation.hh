@@ -211,7 +211,7 @@ namespace rascal {
 
       // A triplet with species ABB (or BBB) represents the two triplets AB₁B₂
       // and AB₂B₁ (or BₓB₁B₂ and BₓB₂B₁). This may or may not be taken into
-      // account, depending on legacy mode
+      // account, depending on compatibility mode
       constexpr bool CountSameSpecies{JK_Indistinguishable and
                                       jk_are_same_species(RepSpecies) and
                                       (not CompatibilityMode)};
