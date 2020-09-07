@@ -27,17 +27,25 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "behler_feature.hh"
+#include "calculator_base.hh"
+#include "symmetry_functions.hh"
 
 #ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_DENSE_HH_
 #define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_DENSE_HH_
 
 namespace rascal {
+  //! forward declaration
+  template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
+  class BehlerFeatureBase;
 
+  template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
   class CalculatorBehlerParrinelloDense : public CalculatorBase {
    public:
     using Parent = CalculatorBase;
     using Hypers_t = typename Parent::Hypers_t;
+    using BehlerFeatureBase_t =
+        BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>;
+
     // type of the datastructure used to register the list of valid
     // hyperparameters
     using ReferenceHypers_t = Parent::ReferenceHypers_t;
@@ -78,15 +86,16 @@ namespace rascal {
      * provided input property (which is not necessarily attached to the
      * same structure manager)
      */
-    std::vector<std::unique_ptr<BehlerFeatureBase>> behler_features{};
+    std::vector<std::unique_ptr<BehlerFeatureBase_t>> behler_features{};
     /**
      * reference of the requiered hypers, these are used to check the parameters
      * for building the behler_features vector at construction
      */
-    const ReferenceHypers_t reference_hypers{
-        {"scaling", {}}, {"cutoff_function", {}}, {"symmetry_functions", {}}};
-  }
+    const ReferenceHypers_t reference_hypers{{"unit_style", {}},
+                                             {"scaling", {}},
+                                             {"cutoff_function", {}},
+                                             {"symmetry_functions", {}}};
+  };
 }  // namespace rascal
 
-#include "calculator_behler_parrinello_dense_impl.hh"
 #endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_DENSE_HH_

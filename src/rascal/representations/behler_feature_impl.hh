@@ -28,6 +28,7 @@
 #ifndef SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_
 #define SRC_RASCAL_REPRESENTATIONS_BEHLER_FEATURE_IMPL_HH_
 
+#include "rascal/structure_managers/structure_manager.hh"
 #include "rascal/utils/for_each_at_order.hh"
 
 #include <type_traits>
