@@ -270,7 +270,8 @@ namespace rascal {
     }
   };
 
-  using StructureManagerLammpsFull = StructureManagerLammps<AdaptorTraits::NeighbourListType::full>;
+  using StructureManagerLammpsFull =
+      StructureManagerLammps<AdaptorTraits::NeighbourListType::full>;
   using StructureManagerLammpsMinimal =
       StructureManagerLammps<AdaptorTraits::NeighbourListType::half>;
 

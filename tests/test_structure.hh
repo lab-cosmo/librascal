@@ -262,7 +262,8 @@ namespace rascal {
   template <>
   struct ManagerFixture<
       StructureManagerLammps<AdaptorTraits::NeighbourListType::full>> {
-    using Manager_t = StructureManagerLammps<AdaptorTraits::NeighbourListType::full>;
+    using Manager_t =
+        StructureManagerLammps<AdaptorTraits::NeighbourListType::full>;
     constexpr static int nb{3};
     constexpr static int dim{3};
     using ptr_t = double **;

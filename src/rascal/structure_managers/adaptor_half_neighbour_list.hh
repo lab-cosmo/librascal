@@ -338,7 +338,7 @@ namespace rascal {
       atom_cluster_indices.push_back(indices);
     }
 
-    for (auto && atom : this->manager) {
+    for (auto && atom : this->manager->with_ghosts()) {
       auto index_i{atom.get_atom_tag()};
 
       // neighbours per atom counter to correct for offsets

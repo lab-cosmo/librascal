@@ -274,11 +274,6 @@ namespace rascal {
     using tuple_order_2_with_ghosts = OrderTwoFixtureStacksTuple::type;
     using type = pack_into_list<
         tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type>::type;
-    // using type_with_ghosts = pack_into_list<tuple_with_ghosts>::type;
-    // using tuple_without_ghosts = OrderTwoFixtureStacksTuple<false>::type;
-    // using type_without_ghosts = pack_into_list<tuple_without_ghosts>::type;
-    // using tuple = tuple_cat<tuple_with_ghosts, tuple_without_ghosts>::type;
-    // using type = pack_into_list<tuple>::type;
   };
 
   struct OrderTwoPropertyBoostList {
@@ -306,11 +301,6 @@ namespace rascal {
     using tuple_with_ghosts =
         tuple_cat<tuple_order_2_with_ghosts, tuple_order_3>::type;
     using type = pack_into_list<tuple_with_ghosts>::type;
-
-    // using tuple_without_ghosts = OrderTwoFixtureStacksTuple<false>::type;
-    // using type_without_ghosts = pack_into_list<tuple_without_ghosts>::type;
-    // using tuple = tuple_cat<tuple_without_ghosts, tuple_with_ghosts>::type;
-    // using type = pack_into_list<tuple>::type;
   };
 
   struct OrderThreePropertyBoostList {

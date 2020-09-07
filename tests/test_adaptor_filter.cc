@@ -53,8 +53,9 @@ namespace rascal {
     Filter_t manager;
   };
 
-  using Fixtures = boost::mpl::list<FilterFixture<StructureManagerCenters, 1>,
-                                    FilterFixture<StructureManagerLammpsFull, 2>>;
+  using Fixtures =
+      boost::mpl::list<FilterFixture<StructureManagerCenters, 1>,
+                       FilterFixture<StructureManagerLammpsFull, 2>>;
 
   using FixturesMax1 =
       boost::mpl::list<FilterFixture<StructureManagerCenters, 1>>;

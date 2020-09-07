@@ -384,7 +384,6 @@ namespace rascal {
           v_ij = direction_vectors[pair_ij];
           v_jk = direction_vectors[pair_jk];
           v_ki = -direction_vectors[pair_ik];
-
         }
       }
 

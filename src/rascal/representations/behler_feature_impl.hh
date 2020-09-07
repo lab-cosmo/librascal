@@ -452,7 +452,8 @@ namespace rascal {
            *                forward  backward  forward
            */
           auto && forward{[&inversion](auto && id) { return inversion[id]; }};
-          auto && backward{[&inversion](auto && id) { return not inversion[id]; }};
+          auto && backward{
+              [&inversion](auto && id) { return not inversion[id]; }};
 
           fun_other_derivatives[pairs[0]].col(backward(0)) += -dG_incr_ij;
           fun_other_derivatives[pairs[1]].col(forward(1)) += dG_incr_jk;

@@ -138,7 +138,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
-  class BehlerPairFeature final : public BehlerFeatureBase<false, SymFunTypes...> {
+  class BehlerPairFeature final
+      : public BehlerFeatureBase<false, SymFunTypes...> {
    public:
     using SymmetryFunction_t = SymmetryFunction<MySymFunType>;
     // Pair features don't need a compatibility mode, see desctription above

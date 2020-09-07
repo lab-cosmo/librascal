@@ -481,8 +481,8 @@ namespace rascal {
         : AdaptorNeighbourList(
               manager, adaptor_hypers.at("cutoff").template get<double>(),
               optional_argument("skin", adaptor_hypers, 0.),
-              optional_argument("consider_ghost_neighs", adaptor_hypers, false)) {
-    }
+              optional_argument("consider_ghost_neighs", adaptor_hypers,
+                                false)) {}
 
     //! Copy constructor
     AdaptorNeighbourList(const AdaptorNeighbourList & other) = delete;

@@ -997,7 +997,8 @@ namespace rascal {
 
     // strict is supposed to contain pairs 1 and 3
     auto & low_prop_typed{dynamic_cast<TypedProperty<
-        int, PairOrder, StructureManager<StructureManagerLammpsFull>> &>(low_prop)};
+        int, PairOrder, StructureManager<StructureManagerLammpsFull>> &>(
+        low_prop)};
     auto & high_prop_typed{dynamic_cast<TypedProperty<
         int, PairOrder,
         StructureManager<std::remove_reference_t<decltype(*strict)>>> &>(
@@ -1057,7 +1058,7 @@ namespace rascal {
     using Key_t = std::array<AtomClusterRef_t, PairOrder>;
     std::map<Key_t, StoredRefKey_t> reverse_map{};
 
-    for (auto && atom : pair_manager) {
+    for (auto && atom : pair_manager->with_ghosts()) {
       for (auto && pair : atom.pairs()) {
         auto && atom_cluster_indices{pair_to_i_atom[pair]};
         auto && i_atom_id{atom_cluster_indices(0)};
@@ -1074,20 +1075,20 @@ namespace rascal {
 
     using Clusters =
         PropertyLookupKeys<PairOrder, TripletOrder,
-                           decltype(triplet_manager)::element_type, 2>;
+                           decltype(triplet_manager)::element_type, 3>;
 
     auto & clusters{triplet_manager->template create_property<Clusters>(
         "pair_cluster_indices")};
-
     clusters.resize();
+    std::cout << "clusters.size() = " << clusters.size() << std::endl;
 
-    auto & r_ij_r_ik_r_jk{triplet_manager->template create_property<Property<
+    auto & r_ij_r_jk_r_ik{triplet_manager->template create_property<Property<
         double, TripletOrder, decltype(triplet_manager)::element_type, 3>>(
-        "r_ij_r_ik_r_jk")};
-    r_ij_r_ik_r_jk.resize();
+        "r_ij_r_jk_r_ik")};
+    r_ij_r_jk_r_ik.resize();
 
     auto & distances{triplet_manager->get_distance()};
-    for (auto && atom : triplet_manager) {
+    for (auto && atom : triplet_manager->with_ghosts()) {
       for (auto && trip : atom.triplets()) {
         auto && atom_cluster_indices{trip_to_i_atom[trip]};
         auto && i_atom_id{atom_cluster_indices(0)};
@@ -1099,35 +1100,35 @@ namespace rascal {
         AtomClusterRef_t k_atom{triplet_manager->operator[](k_atom_id)};
 
         auto & p_ij{reverse_map[{i_atom, j_atom}]};
+        auto & p_jk{reverse_map[{j_atom, k_atom}]};
         auto & p_ik{reverse_map[{i_atom, k_atom}]};
 
         auto && pairs{clusters[trip]};
         pairs[0] = p_ij;
-        pairs[1] = p_ik;
+        pairs[1] = p_jk;
+        pairs[2] = p_ik;
 
-        auto && dists{r_ij_r_ik_r_jk[trip]};
+        auto && dists{r_ij_r_jk_r_ik[trip]};
         dists(0) = distances[p_ij];
-        dists(1) = distances[p_ik];
-        dists(2) = (triplet_manager->position(trip.get_atom_tag_list()[2]) -
-                    triplet_manager->position(trip.get_atom_tag_list()[1]))
-                       .norm();
+        dists(1) = distances[p_jk];
+        dists(2) = distances[p_ik];
       }
     }
 
     // constructing the reference distances
-    auto & r_ij_r_ik_r_jk_ref{
+    auto & r_ij_r_jk_r_ik_ref{
         triplet_manager->template create_property<Property<
             double, TripletOrder, decltype(triplet_manager)::element_type, 3>>(
-            "r_ij_r_ik_r_jk_ref")};
+            "r_ij_r_jk_r_ik_ref")};
     using Dists_t = Eigen::Matrix<double, 3, 1>;
-    Dists_t dists_ref{1.118033988749895, 1., 1.118033988749895};
-    r_ij_r_ik_r_jk_ref.push_back(dists_ref);
-    r_ij_r_ik_r_jk_ref.push_back(dists_ref);
+    Dists_t dists_ref{1.118033988749895, 1.118033988749895, 1.};
+    r_ij_r_jk_r_ik_ref.push_back(dists_ref);
+    r_ij_r_jk_r_ik_ref.push_back(dists_ref);
 
-    for (auto && atom : triplet_manager) {
+    for (auto && atom : triplet_manager->with_ghosts()) {
       for (auto && trip : atom.triplets()) {
-        auto && dist_ref = r_ij_r_ik_r_jk_ref[trip];
-        auto && dist = r_ij_r_ik_r_jk[trip];
+        auto && dist_ref = r_ij_r_jk_r_ik_ref[trip];
+        auto && dist = r_ij_r_jk_r_ik[trip];
         for (auto && i{0}; i < TripletOrder; ++i) {
           BOOST_CHECK_EQUAL(dist_ref[i], dist[i]);
         }
@@ -1137,11 +1138,13 @@ namespace rascal {
     auto & clusters_from_manager{
         triplet_manager->template get_sub_clusters<PairOrder, TripletOrder>()};
 
-    for (auto && atom : triplet_manager) {
+    for (auto && atom : triplet_manager->with_ghosts()) {
       for (auto && trip : atom.triplets()) {
-        constexpr int PairsPerTriplet{2};
+        constexpr int PairsPerTriplet{3};
         for (int i{0}; i < PairsPerTriplet; ++i) {
-          bool equal = (clusters[trip][i] == clusters_from_manager[trip][i]);
+          auto cl_i{clusters[trip][i]};
+          auto cl_m{clusters_from_manager[trip][i]};
+          bool equal = (cl_i == cl_m);
           BOOST_CHECK(equal);
         }
       }
