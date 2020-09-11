@@ -36,6 +36,52 @@ class SphericalExpansion(BaseIO):
         Specifies the atomic Gaussian widths, in the case where they're
         fixed.
 
+    cutoff_function_type : string
+        Choose the type of smooth cutoff function used to define the local
+        environment. Can be either 'ShiftedCosine' or 'RadialScaling'.
+
+        If 'ShiftedCosine', the functional form of the switching function is:
+
+        .. math::
+
+            sc(r) = \\begin{cases}
+            1 &r < r_c - sw,\\\\
+            0.5 + 0.5 \cos(\pi * (r - r_c + sw) / sw) &r_c - sw < r <= r_c, \\\\
+            0 &r_c < r,
+            \\end{cases}
+
+        where :math:`r_c` is the interaction_cutoff and :math:`sw` is the
+        cutoff_smooth_width.
+
+        If 'RadialScaling', the functional form of the switching function is
+        as expressed in equation 21 of https://doi.org/10.1039/c8cp05921g:
+
+        .. math::
+
+            rs(r) = sc(r) u(r),
+
+        where
+
+        .. math::
+
+            u(r) = \\begin{cases}
+            \\frac{1}{(r/r_0)^m} &\\text{if c=0,}\\\\
+            1 &\\text{if m=0,} \\\\
+            \\frac{c}{c+(r/r_0)^m} &\\text{else},
+            \\end{cases}
+
+        where :math:`c` is the rate, :math:`r_0` is the scale, :math:`m` is the
+        exponent.
+
+    radial_basis :  string
+        Specifies the type of radial basis R_n to be computed
+        ("GTO" for Gaussian typed orbitals and "DVR" discrete variable representation using Gaussian quadrature rule)
+
+    optimization_args : dict
+        Additional arguments for optimization.
+        Currently spline optimization for the radial basis function is available
+        Recommended settings if used {"Spline": {"accuracy": 1e-5}}
+
     expansion_by_species_method : string
         Specifies the how the species key of the invariant are set-up.
         Possible values: 'environment wise', 'user defined', 'structure wise'.
@@ -66,6 +112,22 @@ class SphericalExpansion(BaseIO):
         list of species to use to set-up the species key of the invariant. It
         should contain all the species present in the structure for which
         invariants will be computed
+
+    compute_gradients : bool
+        control the computation of the representation's gradients w.r.t. atomic
+        positions.
+
+    cutoff_function_parameters : dict
+        Additional parameters for the cutoff function.
+        if cutoff_function_type == 'RadialScaling' then it should have the form
+
+        .. code:: python
+
+            dict(rate=dict(value=..., unit='AA'),
+                 scale=dict(value=..., unit='AA'),
+                 exponent=dict(value=..., unit='AA'))
+
+        where :code:`...` should be replaced by the desired value.
 
     Methods
     -------
@@ -129,7 +191,7 @@ class SphericalExpansion(BaseIO):
                 if 'accuracy' in optimization_args:
                     accuracy = optimization_args['accuracy']
                 else:
-                    accuracy = 1e-8
+                    accuracy = 1e-5
                 if 'range' in optimization_args:
                     spline_range = optimization_args['range']
                 else:
