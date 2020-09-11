@@ -129,7 +129,7 @@ namespace rascal {
       //! Pure Virtual Function to set hyperparameters of the cutoff function
       virtual void set_hyperparameters(const Hypers_t &) = 0;
 
-      // TODO(felix) test is having these pure virtual changes performance
+      // TODO(felix) having these as pure virtual changes the performance of the tests
       //! Pure Virtual Function to evaluate the cutoff function
       // virtual double f_c(double distance) = 0;
       //! Pure Virtual Function to evaluate the derivative of the cutoff

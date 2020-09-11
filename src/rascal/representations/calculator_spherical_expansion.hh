@@ -293,11 +293,57 @@ namespace rascal {
       virtual void set_hyperparameters(const Hypers_t &) = 0;
 
       virtual void precompute() = 0;
-      // Can't make templated virtual member function... But these functions
-      // are expected
-      // virtual Vector_Ref compute_center_contribution() = 0;
-      // virtual Matrix_Ref compute_neighbour_contribution() = 0;
-      // virtual Matrix_Ref compute_neighbour_derivative() = 0;
+      //! define the contribution from the central atom to the expansion
+      template <AtomicSmearingType AST, size_t Order, size_t Layer>
+      Vector_Ref
+      compute_center_contribution(ClusterRefKey<Order, Layer> & /*center*/) {
+        throw std::runtime_error("This method is pure virtual and should be implemented in a derived class.");
+        return Vector_Ref(Vector_t::Zero());
+      }
+      //! define the contribution from a neighbour atom to the expansion
+      template <AtomicSmearingType AST, size_t Order, size_t Layer>
+      Matrix_Ref compute_neighbour_contribution(const double /*distance*/,
+                                     const ClusterRefKey<Order, Layer> & /*pair*/) {
+        throw std::runtime_error("This method is pure virtual and should be implemented in a derived class.");
+        return Matrix_Ref(Matrix_t::Zero());
+      }
+
+      /**
+       * Compute the radial derivative of the neighbour contribution
+       *
+       * Note that you _must_ call compute_neighbour_contribution() first to
+       * populate the relevant arrays!
+       *
+       * The derivative is taken with respect to the pair distance,
+       * \f$r_{ij}\f$.  In order to get the radial component of the gradient,
+       * remember to multiply by the direction vector
+       * \f$
+       *    \renewcommand{\vec}[1]{\mathbf{#1}}
+       *    \hat{\vec{r}_{ij}}
+       * \f$
+       * (and not the vector itself), since
+       * \f[
+       *    \let\grad\nabla
+       *    \grad_{\vec{r}_i} f(r_{ij}) =
+       *                    \frac{\dd f}{\dd r_{ij}}
+       *                    \frac{- \vec{r}_{ij}}{r_{ij}}
+       *                  = \frac{\dd f}{\dd r_{ij}} -\hat{\vec{r}_{ij}}.
+       * \f]
+       *
+       * so multiply by _negative_ \f$\hat{\vec{r}}_{ij}\f$ to get the radial
+       * component of the gradient wrt motion of the central atom
+       * (\f$\frac{d}{d\vec{r}_i}\f$).
+       *
+       * And finally, there is no compute_center_derivative() because that's
+       * just zero -- the center contribution doesn't vary w.r.t. motion of
+       * the central atom
+       */
+      template <size_t Order, size_t Layer>
+      Matrix_Ref compute_neighbour_derivative(
+          const double /*distance*/, const ClusterRefKey<Order, Layer> & /*pair*/) {
+        throw std::runtime_error("This method is pure virtual and should be implemented in a derived class");
+        return Matrix_Ref(Matrix_t::Zero());
+      }
     };
 
     template <RadialBasisType RBT>
@@ -560,36 +606,7 @@ namespace rascal {
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
-      /**
-       * Compute the radial derivative of the neighbour contribution
-       *
-       * Note that you _must_ call compute_neighbour_contribution() first to
-       * populate the relevant arrays!
-       *
-       * The derivative is taken with respect to the pair distance,
-       * \f$r_{ij}\f$.  In order to get the radial component of the gradient,
-       * remember to multiply by the direction vector
-       * \f$
-       *    \renewcommand{\vec}[1]{\mathbf{#1}}
-       *    \hat{\vec{r}_{ij}}
-       * \f$
-       * (and not the vector itself), since
-       * \f[
-       *    \let\grad\nabla
-       *    \grad_{\vec{r}_i} f(r_{ij}) =
-       *                    \frac{\dd f}{\dd r_{ij}}
-       *                    \frac{- \vec{r}_{ij}}{r_{ij}}
-       *                  = \frac{\dd f}{\dd r_{ij}} -\hat{\vec{r}_{ij}}.
-       * \f]
-       *
-       * so multiply by _negative_ \f$\hat{\vec{r}}_{ij}\f$ to get the radial
-       * component of the gradient wrt motion of the central atom
-       * (\f$\frac{d}{d\vec{r}_i}\f$).
-       *
-       * And finally, there is no compute_center_derivative() because that's
-       * just zero -- the center contribution doesn't vary w.r.t. motion of
-       * the central atom
-       */
+      //! Compute the radial derivative of the neighbour contribution
       template <size_t Order, size_t Layer>
       Matrix_Ref compute_neighbour_derivative(
           const double distance, const ClusterRefKey<Order, Layer> & /*pair*/) {
@@ -892,11 +909,7 @@ namespace rascal {
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
-      /**
-       * Compute the radial derivative of the neighbour contribution
-       * Assumes that gradients of bessel have already been computed in
-       * compute_neighbour_contribution
-       */
+      //! Compute the radial derivative of the neighbour contribution
       template <size_t Order, size_t Layer>
       Matrix_Ref compute_neighbour_derivative(
           const double /*distance*/,
