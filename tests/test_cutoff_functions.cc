@@ -118,7 +118,8 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-    * Test if the exponent is zero case (m = 0) is correctly identified in the radial scaling cutoff function
+   * Test if the exponent is zero case (m = 0) is correctly identified in the
+   * radial scaling cutoff function
    */
   BOOST_AUTO_TEST_CASE(radial_scaling_exponent_zero_test) {
     static const bool verbose{false};
@@ -166,7 +167,7 @@ namespace rascal {
 
       Cutoff_t cutoff(fc_hyper);
       BOOST_CHECK_EQUAL(cutoff.value(2), 1);
-      BOOST_CHECK_EQUAL(cutoff.grad(2),  0);
+      BOOST_CHECK_EQUAL(cutoff.grad(2), 0);
     }
   }
 

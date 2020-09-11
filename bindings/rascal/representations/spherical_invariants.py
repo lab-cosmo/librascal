@@ -236,7 +236,8 @@ class SphericalInvariants(BaseIO):
                     accuracy = optimization_args['accuracy']
                 else:
                     accuracy = 1e-5
-                    print('No accuracy for spline optimization was given. Switching to default accuracy {:.0e}.'.format(accuracy))
+                    print('No accuracy for spline optimization was given. Switching to default accuracy {:.0e}.'.format(
+                        accuracy))
                 optimization_args = {
                     'type': 'Spline', 'accuracy': accuracy}
             elif optimization_args['type'] == 'None':

@@ -297,14 +297,17 @@ namespace rascal {
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
       Vector_Ref
       compute_center_contribution(ClusterRefKey<Order, Layer> & /*center*/) {
-        throw std::runtime_error("This method is pure virtual and should be implemented in a derived class.");
+        throw std::runtime_error("This method is pure virtual and should be "
+                                 "implemented in a derived class.");
         return Vector_Ref(Vector_t::Zero());
       }
       //! define the contribution from a neighbour atom to the expansion
       template <AtomicSmearingType AST, size_t Order, size_t Layer>
-      Matrix_Ref compute_neighbour_contribution(const double /*distance*/,
-                                     const ClusterRefKey<Order, Layer> & /*pair*/) {
-        throw std::runtime_error("This method is pure virtual and should be implemented in a derived class.");
+      Matrix_Ref compute_neighbour_contribution(
+          const double /*distance*/,
+          const ClusterRefKey<Order, Layer> & /*pair*/) {
+        throw std::runtime_error("This method is pure virtual and should be "
+                                 "implemented in a derived class.");
         return Matrix_Ref(Matrix_t::Zero());
       }
 
@@ -340,8 +343,10 @@ namespace rascal {
        */
       template <size_t Order, size_t Layer>
       Matrix_Ref compute_neighbour_derivative(
-          const double /*distance*/, const ClusterRefKey<Order, Layer> & /*pair*/) {
-        throw std::runtime_error("This method is pure virtual and should be implemented in a derived class");
+          const double /*distance*/,
+          const ClusterRefKey<Order, Layer> & /*pair*/) {
+        throw std::runtime_error("This method is pure virtual and should be "
+                                 "implemented in a derived class");
         return Matrix_Ref(Matrix_t::Zero());
       }
     };
@@ -1042,7 +1047,8 @@ namespace rascal {
 
       // If we find a case where smarter parameters for x1 and x2 can be given
       explicit RadialContributionHandler(const Hypers_t & hypers,
-                                         const double range_begin, const double range_end,
+                                         const double range_begin,
+                                         const double range_end,
                                          const double accuracy)
           : Parent(hypers) {
         this->precompute();
@@ -1093,7 +1099,8 @@ namespace rascal {
             radial_contribution_hypers.at("optimization").template get<json>();
 
         double accuracy{this->get_interpolator_accuracy(optimization_hypers)};
-        // minimal distance such that it is still stable with the interpolated function
+        // minimal distance such that it is still stable with the interpolated
+        // function
         double range_begin{math::SPHERICAL_BESSEL_FUNCTION_FTOL};
         double range_end{this->get_cutoff(hypers)};
         this->init_interpolator(range_begin, range_end, accuracy);

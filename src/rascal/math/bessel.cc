@@ -30,7 +30,6 @@
 
 using namespace rascal::math;  // NOLINT
 
-
 void ModifiedSphericalBessel::precompute(
     size_t l_max, const Eigen::Ref<const Eigen::VectorXd> & x_v,
     bool compute_gradients) {
@@ -133,7 +132,7 @@ void ModifiedSphericalBessel::calc(double distance, double fac_a) {
 
   if (distance < SPHERICAL_BESSEL_FUNCTION_FTOL) {
     throw std::runtime_error(
-    "A too small distance was given to the spherical bessel function.");
+        "A too small distance was given to the spherical bessel function.");
   }
   if (this->order_max == 1) {
     // recursions are not valid for order_max==1 so direct computation

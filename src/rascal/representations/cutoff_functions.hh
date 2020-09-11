@@ -129,7 +129,8 @@ namespace rascal {
       //! Pure Virtual Function to set hyperparameters of the cutoff function
       virtual void set_hyperparameters(const Hypers_t &) = 0;
 
-      // TODO(felix) having these as pure virtual changes the performance of the tests
+      // TODO(felix) having these as pure virtual changes the performance of the
+      // tests
       //! Pure Virtual Function to evaluate the cutoff function
       // virtual double f_c(double distance) = 0;
       //! Pure Virtual Function to evaluate the derivative of the cutoff
@@ -229,7 +230,7 @@ namespace rascal {
 
       double value(double distance) {
         double factor{0.};
-        if (std::abs(this->rate) <= math::DBL_FTOL)  {
+        if (std::abs(this->rate) <= math::DBL_FTOL) {
           factor = 1. / math::pow(distance / this->scale, this->exponent);
         } else if (this->exponent == 0) {
           factor = 1.;

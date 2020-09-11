@@ -371,13 +371,9 @@ namespace rascal {
         {{"type", "GTO"}, {"optimization", {{"type", "None"}}}},
         {{"type", "DVR"}, {"optimization", {{"type", "None"}}}},
         {{"type", "GTO"},
-         {"optimization",
-          {{"type", "Spline"},
-           {"accuracy", 1e-12}}}},
+         {"optimization", {{"type", "Spline"}, {"accuracy", 1e-12}}}},
         {{"type", "DVR"},
-         {"optimization",
-          {{"type", "Spline"},
-           {"accuracy", 1e-5}}}}};
+         {"optimization", {{"type", "Spline"}, {"accuracy", 1e-5}}}}};
     std::vector<json> rep_hypers{
         {{"max_radial", 3}, {"max_angular", 2}, {"compute_gradients", true}},
         {{"max_radial", 3}, {"max_angular", 3}, {"compute_gradients", true}}};
