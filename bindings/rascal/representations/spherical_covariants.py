@@ -95,9 +95,9 @@ class SphericalCovariants(BaseIO):
 
         .. code:: python
 
-            dict(rate=dict(value=..., unit='AA'),
-                 scale=dict(value=..., unit='AA'),
-                 exponent=dict(value=..., unit='AA'))
+            dict(rate=...,
+                 scale=...,
+                 exponent=...)
 
         where :code:`...` should be replaced by the desired value.
 
