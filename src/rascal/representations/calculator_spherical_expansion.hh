@@ -1102,7 +1102,7 @@ namespace rascal {
         // minimal distance such that it is still stable with the interpolated
         // function
         double range_begin{math::SPHERICAL_BESSEL_FUNCTION_FTOL};
-        double range_end{this->get_cutoff(hypers)};
+        double range_end{this->interaction_cutoff};
         this->init_interpolator(range_begin, range_end, accuracy);
       }
 
@@ -1844,7 +1844,6 @@ namespace rascal {
         auto && harmonics{spherical_harmonics.get_harmonics()};
         auto && harmonics_gradients{
             spherical_harmonics.get_harmonics_derivatives()};
-
         auto && neighbour_contribution =
             radial_integral->template compute_neighbour_contribution(dist,
                                                                      neigh);

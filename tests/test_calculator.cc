@@ -54,6 +54,29 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(representation_test);
 
+  // the interaction cutoff is stored under different names for different
+  // representations
+  double extract_interaction_cutoff_from_representation_hyper(json hyper) {
+    double representation_cutoff{0};
+    if (hyper.find("cutoff_function") != hyper.end()) {
+      // spherical representations
+      representation_cutoff =
+          hyper.at("cutoff_function").at("cutoff").at("value");
+    } else if (hyper.find("interaction_cutoff") != hyper.end()) {
+      // coulomb representation
+      representation_cutoff = hyper.at("interaction_cutoff");
+    } else {
+      std::stringstream err_str{};
+      err_str << "interaction cutoff of not found in representation "
+              << "hyperparameters. "
+              << "Please check representation hyperparameters: "
+              << std::endl << hyper << std::endl;
+      throw std::runtime_error(err_str.str());
+    }
+    return representation_cutoff;
+  }
+
+
   /* ---------------------------------------------------------------------- */
   /**
    * Test the row norm sorting
@@ -149,6 +172,9 @@ namespace rascal {
     int manager_i{0};
     for (auto & manager : managers) {
       for (auto & hyper : representation_hypers) {
+        double representation_cutoff{
+            extract_interaction_cutoff_from_representation_hyper(hyper)};
+        if (manager->get_cutoff() == representation_cutoff) {
         representations.emplace_back(hyper);
         representations.back().compute(manager);
         ManagerCollection_t collection{};
@@ -164,6 +190,7 @@ namespace rascal {
 
         auto diff_rep{math::relative_error(feat_prop, feat_col)};
         BOOST_CHECK_LE(diff_rep.maxCoeff(), 6e-12);
+        }
       }
       manager_i++;
     }
@@ -231,12 +258,16 @@ namespace rascal {
       atomic_structure.center_atoms_mask[i_atom1] = true;
       manager->update(atomic_structure);
       for (auto & hyper : hypers) {
+        double representation_cutoff{
+            extract_interaction_cutoff_from_representation_hyper(hyper)};
+        if (manager->get_cutoff() == representation_cutoff) {
         representations.emplace_back(hyper);
         std::string property_name{representations.back().get_name()};
         representations.back().compute(manager);
         auto prop{manager->template get_property<Property_t>(
             representations.back().get_name(), true)};
         BOOST_CHECK_EQUAL(prop->get_nb_item(), 1);
+        }
       }
     }
   }
@@ -272,6 +303,9 @@ namespace rascal {
     for (int i_manager{0}; i_manager < n_manager; i_manager += 2) {
       for (auto & hyper : hypers) {
         auto & manager = managers[i_manager];
+        double representation_cutoff{
+            extract_interaction_cutoff_from_representation_hyper(hyper)};
+        if (manager->get_cutoff() == representation_cutoff) {
         auto & manager_no_center = managers[i_manager + 1];
         auto center_atoms_mask =
             extract_underlying_manager<0>(manager_no_center)
@@ -317,6 +351,7 @@ namespace rascal {
             }
             i_no_center++;
           }
+        }
         }
       }
     }
