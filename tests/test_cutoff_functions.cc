@@ -117,6 +117,60 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
+  /**
+    * Test if the exponent is zero case (m = 0) is correctly identified in the radial scaling cutoff function
+   */
+  BOOST_AUTO_TEST_CASE(radial_scaling_exponent_zero_test) {
+    static const bool verbose{false};
+    std::vector<json> fc_hypers{
+        R"({
+        "type": "RadialScaling",
+        "cutoff": {"value": 3, "unit": "AA"},
+        "smooth_width": {"value": 0.5, "unit": "AA"},
+        "rate": {"value": 1, "unit": "AA"},
+        "scale": {"value": 1, "unit": "AA"} ,
+        "exponent": {"value": 0, "unit": ""}
+      })"_json,
+        R"({
+        "type": "RadialScaling",
+        "cutoff": {"value": 3, "unit": "AA"},
+        "smooth_width": {"value": 0.5, "unit": "AA"},
+        "rate": {"value": 0, "unit": "AA"},
+        "scale": {"value": 0, "unit": "AA"} ,
+        "exponent": {"value": 0, "unit": ""}
+      })"_json,
+        R"({
+        "type": "RadialScaling",
+        "cutoff": {"value": 3, "unit": "AA"},
+        "smooth_width": {"value": 0.5, "unit": "AA"},
+        "rate": {"value": 0, "unit": "AA"},
+        "scale": {"value": 1, "unit": "AA"} ,
+        "exponent": {"value": 0, "unit": ""}
+      })"_json,
+        R"({
+        "type": "RadialScaling",
+        "cutoff": {"value": 3, "unit": "AA"},
+        "smooth_width": {"value": 0.5, "unit": "AA"},
+        "rate": {"value": 1, "unit": "AA"},
+        "scale": {"value": 0, "unit": "AA"} ,
+        "exponent": {"value": 0, "unit": ""}
+      })"_json,
+    };
+    using Cutoff_t =
+        internal::CutoffFunction<internal::CutoffFunctionType::RadialScaling>;
+
+    for (auto & fc_hyper : fc_hypers) {
+      if (verbose) {
+        std::cout << fc_hyper.dump(2) << std::endl;
+      }
+
+      Cutoff_t cutoff(fc_hyper);
+      BOOST_CHECK_EQUAL(cutoff.value(2), 1);
+      BOOST_CHECK_EQUAL(cutoff.grad(2),  0);
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
   BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal

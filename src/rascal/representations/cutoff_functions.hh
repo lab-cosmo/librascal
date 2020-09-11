@@ -229,28 +229,28 @@ namespace rascal {
 
       double value(double distance) {
         double factor{0.};
-        if (this->rate > math::DBL_FTOL) {
-          factor = this->rate / (this->rate + math::pow(distance / this->scale,
-                                                        this->exponent));
+        if (std::abs(this->rate) <= math::DBL_FTOL)  {
+          factor = 1. / math::pow(distance / this->scale, this->exponent);
         } else if (this->exponent == 0) {
           factor = 1.;
         } else {
-          factor = 1. / math::pow(distance / this->scale, this->exponent);
+          factor = this->rate / (this->rate + math::pow(distance / this->scale,
+                                                        this->exponent));
         }
         return factor;
       }
 
       double grad(double distance) {
         double factor{0.};
-        if (this->rate > math::DBL_FTOL) {
-          double ff{math::pow(distance / this->scale, this->exponent)};
-          factor = -this->rate * this->exponent * ff / distance /
-                   math::pow(this->rate + ff, 2_size_t);
+        if (std::abs(this->rate) <= math::DBL_FTOL) {
+          factor = -this->exponent / distance /
+                   math::pow(distance / this->scale, this->exponent);
         } else if (this->exponent == 0) {
           factor = 0.;
         } else {
-          factor = -this->exponent / distance /
-                   math::pow(distance / this->scale, this->exponent);
+          double ff{math::pow(distance / this->scale, this->exponent)};
+          factor = -this->rate * this->exponent * ff / distance /
+                   math::pow(this->rate + ff, 2_size_t);
         }
         return factor;
       }
