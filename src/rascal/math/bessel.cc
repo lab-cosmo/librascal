@@ -27,7 +27,9 @@
  */
 
 #include "rascal/math/bessel.hh"
+
 using namespace rascal::math;  // NOLINT
+
 
 void ModifiedSphericalBessel::precompute(
     size_t l_max, const Eigen::Ref<const Eigen::VectorXd> & x_v,
@@ -129,6 +131,12 @@ void ModifiedSphericalBessel::calc(double distance, double fac_a) {
   this->bessel_arg = (2. * fac_a * distance) * this->x_v;
   this->bessel_arg_i = this->bessel_arg.inverse();
 
+  if (distance < SPHERICAL_BESSEL_FUNCTION_FTOL) {
+    std::cerr << "Warning: A too small distance was given to the spherical bessel function. "
+            << "Continuing by setting distance to minimal possible value stored in SPHERICAL_BESSEL_FUNCTION_FTOL."
+            << std::endl;
+    distance = SPHERICAL_BESSEL_FUNCTION_FTOL;
+  }
   if (this->order_max == 1) {
     // recursions are not valid for order_max==1 so direct computation
     // i_0(z) = sinh(z) / z

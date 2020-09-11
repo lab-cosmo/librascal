@@ -1029,11 +1029,11 @@ namespace rascal {
 
       // If we find a case where smarter parameters for x1 and x2 can be given
       explicit RadialContributionHandler(const Hypers_t & hypers,
-                                         const double x1, const double x2,
+                                         const double range_begin, const double range_end,
                                          const double accuracy)
           : Parent(hypers) {
         this->precompute();
-        this->init_interpolator(x1, x2, accuracy);
+        this->init_interpolator(range_begin, range_end, accuracy);
       }
       // Returns the precomputed center contribution
       template <size_t Order, size_t Layer>
@@ -1045,8 +1045,6 @@ namespace rascal {
       Matrix_Ref
       compute_neighbour_contribution(const double distance,
                                      const ClusterRefKey<Order, Layer> &) {
-        // TODO(alex) TODO(felix) include an check that the distance is within
-        // the (x1,x2) range of the interpolator
         this->radial_integral_neighbour = this->intp->interpolate(distance);
         return Matrix_Ref(this->radial_integral_neighbour);
       }
@@ -1082,8 +1080,9 @@ namespace rascal {
             radial_contribution_hypers.at("optimization").template get<json>();
 
         double accuracy{this->get_interpolator_accuracy(optimization_hypers)};
-        double range_begin{this->get_range_begin(optimization_hypers)};
-        double range_end{this->get_range_end(optimization_hypers)};
+        // minimal distance such that it is still stable with the interpolated function
+        double range_begin{math::SPHERICAL_BESSEL_FUNCTION_FTOL};
+        double range_end{this->get_cutoff(hypers)};
         this->init_interpolator(range_begin, range_end, accuracy);
       }
 
@@ -1100,29 +1099,6 @@ namespace rascal {
         int rows{static_cast<int>(result.rows())};
         this->intp = std::make_unique<Interpolator_t>(
             func, range_begin, range_end, accuracy, cols, rows);
-      }
-
-      double get_range_begin(const Hypers_t & optimization_hypers) {
-        if (optimization_hypers.find("range") != optimization_hypers.end()) {
-          return optimization_hypers.at("range")
-              .at("begin")
-              .template get<double>();
-        }
-        // default range begin
-        return 0.;
-      }
-
-      double get_range_end(const Hypers_t & optimization_hypers) {
-        if (optimization_hypers.find("range") != optimization_hypers.end()) {
-          return optimization_hypers.at("range")
-              .at("end")
-              .template get<double>();
-        }
-        throw std::logic_error(
-            "Interpolator option is on but no range end for interpolation is "
-            "given in the json hyperparameter. Interpolator cannot be "
-            "initialized.");
-        return 0;
       }
 
       double get_interpolator_accuracy(const Hypers_t & optimization_hypers) {
@@ -1344,7 +1320,7 @@ namespace rascal {
           std::runtime_error("Wrongly configured optimization. Please name an "
                              "optimization type.");
         }
-      } else {  // Default false (don't use interpolator)
+      } else {  // Default case (don't use interpolator)
         this->optimization_type = OptimizationType::None;
       }
 

@@ -102,6 +102,11 @@ class SphericalInvariants(BaseIO):
         Whether to normalize so that the kernel between identical environments
         is 1.  Default and highly recommended: True.
 
+    optimization_args : dict
+        Additional arguments for optimization.
+        Currently spline optimization for the radial basis function is available
+        Recommended settings if used {"Spline": {"accuracy": 1e-5}}
+
     expansion_by_species_method : string
         Specifies the how the species key of the invariant are set-up.
         Possible values: 'environment wise', 'user defined', 'structure wise'.
@@ -230,18 +235,10 @@ class SphericalInvariants(BaseIO):
                 if 'accuracy' in optimization_args:
                     accuracy = optimization_args['accuracy']
                 else:
-                    accuracy = 1e-8
-                if 'range' in optimization_args:
-                    spline_range = optimization_args['range']
-                else:
-                    # TODO(felix) remove this when there is a check for the
-                    # distance for the usage of the interpolator in the
-                    # RadialContribution
-                    print("Warning: default parameter for spline range is used.")
-                    spline_range = (0, interaction_cutoff)
+                    accuracy = 1e-5
+                    print('No accuracy for spline optimization was given. Switching to default accuracy {:.0e}.'.format(accuracy))
                 optimization_args = {
-                    'type': 'Spline', 'accuracy': accuracy, 'range': {
-                        'begin': spline_range[0], 'end': spline_range[1]}}
+                    'type': 'Spline', 'accuracy': accuracy}
             elif optimization_args['type'] == 'None':
                 optimization_args = dict({'type': 'None'})
             else:

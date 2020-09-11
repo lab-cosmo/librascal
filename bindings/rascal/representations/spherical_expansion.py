@@ -192,17 +192,9 @@ class SphericalExpansion(BaseIO):
                     accuracy = optimization_args['accuracy']
                 else:
                     accuracy = 1e-5
-                if 'range' in optimization_args:
-                    spline_range = optimization_args['range']
-                else:
-                    # TODO(felix) remove this when there is a check for the
-                    # distance for the usage of the interpolator in the
-                    # RadialContribution
-                    print("Warning: default parameter for spline range is used.")
-                    spline_range = (0, interaction_cutoff)
+                    print('No accuracy for spline optimization was given. Switching to default accuracy {:.0e}.'.format(accuracy))
                 optimization_args = {
-                    'type': 'Spline', 'accuracy': accuracy, 'range': {
-                        'begin': spline_range[0], 'end': spline_range[1]}}
+                    'type': 'Spline', 'accuracy': accuracy}
             elif optimization_args['type'] == 'None':
                 optimization_args = dict({'type': 'None'})
             else:

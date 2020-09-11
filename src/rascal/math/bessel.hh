@@ -38,6 +38,8 @@
 
 namespace rascal {
   namespace math {
+    // Minimal value which can be evaluated with the spherical bessel function
+    constexpr double SPHERICAL_BESSEL_FUNCTION_FTOL = 1e-7;
 
     /**
      * Computes the modified spherical bessel function of the first kind (MBSF)
