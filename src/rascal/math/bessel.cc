@@ -132,10 +132,8 @@ void ModifiedSphericalBessel::calc(double distance, double fac_a) {
   this->bessel_arg_i = this->bessel_arg.inverse();
 
   if (distance < SPHERICAL_BESSEL_FUNCTION_FTOL) {
-    std::cerr << "Warning: A too small distance was given to the spherical bessel function. "
-            << "Continuing by setting distance to minimal possible value stored in SPHERICAL_BESSEL_FUNCTION_FTOL."
-            << std::endl;
-    distance = SPHERICAL_BESSEL_FUNCTION_FTOL;
+    throw std::runtime_error(
+    "A too small distance was given to the spherical bessel function.");
   }
   if (this->order_max == 1) {
     // recursions are not valid for order_max==1 so direct computation
