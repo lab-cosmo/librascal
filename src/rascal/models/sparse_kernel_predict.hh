@@ -25,12 +25,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_MODELS_SPARSE_KERNELS_PREDICT_HH_
-#define SRC_RASCAL_MODELS_SPARSE_KERNELS_PREDICT_HH_
+#ifndef SRC_RASCAL_MODELS_SPARSE_KERNEL_PREDICT_HH_
+#define SRC_RASCAL_MODELS_SPARSE_KERNEL_PREDICT_HH_
 
 #include "rascal/math/utils.hh"
 #include "rascal/models/kernels.hh"
 #include "rascal/models/sparse_kernels.hh"
+#include "rascal/structure_managers/property_block_sparse.hh"
 #include "rascal/structure_managers/structure_manager_collection.hh"
 #include "rascal/utils/json_io.hh"
 
@@ -187,15 +188,14 @@ namespace rascal {
    * @param sparse_points a SparsePoints* class
    * @param managers a ManagerCollection or similar collection of
    * structure managers
-   * @return
+   * @return name used to register the forces in the managers
    */
   template <class Calculator, class StructureManagers, class SparsePoints>
-  void compute_forces(const Calculator & calculator, SparseKernel & kernel,
-                      StructureManagers & managers,
-                      SparsePoints & sparse_points, math::Vector_t & weights) {
+  std::string
+  compute_forces(const Calculator & calculator, SparseKernel & kernel,
+                 StructureManagers & managers, SparsePoints & sparse_points,
+                 math::Vector_t & weights) {
     using Manager_t = typename StructureManagers::Manager_t;
-    // using Keys_t = typename SparsePoints::Keys_t;
-    // using Key_t = typename SparsePoints::Key_t;
     using Property_t = typename Calculator::template Property_t<Manager_t>;
     using PropertyGradient_t =
         typename Calculator::template PropertyGradient_t<Manager_t>;
@@ -207,13 +207,16 @@ namespace rascal {
       n_centers += manager->size();
     }
 
-    // Hash<math::Vector_t, double> hasher{};
+    internal::Hash<math::Vector_t, double> hasher{};
     auto kernel_type_str = kernel.parameters.at("name").get<std::string>();
     // std::string fij_name = representation_grad_name+std::string(" partial
-    // gradients ") + std::string(hasher(weights));
-    std::string fij_name =
-        representation_grad_name + std::string(" partial gradients ");
-    std::string force_name = representation_grad_name + std::string(" forces");
+    // gradients ") + std::string();
+    std::string weight_hash = std::to_string(hasher(weights));
+    std::string fij_name = representation_grad_name +
+                           std::string(" partial gradients; weight_hash:") +
+                           weight_hash;
+    std::string force_name = representation_grad_name +
+                             std::string(" forces; weight_hash:") + weight_hash;
 
     // size_t i_center{0};
     for (const auto & manager : managers) {
@@ -240,6 +243,7 @@ namespace rascal {
         }
       }
     }  // center
+    return force_name;
   }
 }  // namespace rascal
-#endif  // SRC_RASCAL_MODELS_SPARSE_KERNELS_PREDICT_HH_
+#endif  // SRC_RASCAL_MODELS_SPARSE_KERNEL_PREDICT_HH_

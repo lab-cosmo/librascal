@@ -194,10 +194,10 @@ namespace rascal {
       // test that prediction routine and predictions with kernel are equal
       math::Vector_t weights{sparse_points.size()};
       weights.setConstant(1.);
-      std::string force_name =
-          representation.get_gradient_name() + std::string(" forces");
+
       math::Matrix_t forces_k = KNM_der * weights.transpose();
-      compute_forces(representation, kernel, managers, sparse_points, weights);
+      std::string force_name = compute_forces(representation, kernel, managers,
+                                              sparse_points, weights);
       size_t i_center{0};
       for (auto manager : managers) {
         auto && forces{*manager->template get_property<
