@@ -46,6 +46,7 @@ set(RASCAL_SOURCES
     rascal/structure_managers/structure_manager_centers.cc
     rascal/representations/calculator_base.cc
     rascal/representations/calculator_behler_parrinello_dense.cc
+    rascal/representations/cutoff_functions_inlineable.cc
 )
 
 add_library(${LIBRASCAL_NAME} ${RASCAL_SOURCES})

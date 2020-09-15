@@ -65,6 +65,13 @@ namespace rascal {
         : sym_fun_type{sym_fun_type}, order{order},
           raw_params{raw_params}, cut_fun{cut_fun} {}
 
+    /**
+     * factory function for unique ptr from json
+     */
+    inline static std::unique_ptr<BehlerFeatureBase>
+    make_unique(std::shared_ptr<CutoffFunctionBase> cut_fun,
+                const UnitStyle & unit_style, const Hypers_t & parameters);
+
     //! Copy constructor
     BehlerFeatureBase(const BehlerFeatureBase & other);
 
@@ -136,14 +143,15 @@ namespace rascal {
       BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>::CompatibilityMode;
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType MySymFunType,
+  template <bool CompatibilityMode_, SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
   class BehlerPairFeature final
-      : public BehlerFeatureBase<false, SymFunTypes...> {
+      : public BehlerFeatureBase<CompatibilityMode_, SymFunTypes...> {
    public:
     using SymmetryFunction_t = SymmetryFunction<MySymFunType>;
     // Pair features don't need a compatibility mode, see desctription above
-    using Parent = BehlerFeatureBase<false, SymFunTypes...>;
+    using Parent = BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>;
+    using Hypers_t = typename Parent::Hypers_t;
 
     static constexpr size_t Order{SymmetryFunction_t::Order};
     static_assert(Order == PairOrder,
@@ -151,14 +159,15 @@ namespace rascal {
 
     //! Default constructor
     BehlerPairFeature(std::shared_ptr<CutoffFunctionBase> cut_fun,
-                      const UnitStyle & unit_style, const json & raw_params)
+                      const UnitStyle & unit_style, const Hypers_t & raw_params)
         : Parent(MySymFunType, cut_fun, SymmetryFunction_t::Order, raw_params),
           sym_fun{unit_style,
                   raw_params.at("params" + canary(raw_params, "params"))} {
-      if (raw_params.at("type").get<std::string>() != get_name(MySymFunType)) {
+      if (raw_params.at("type").template get<std::string>() !=
+          get_name(MySymFunType)) {
         std::stringstream err{};
         err << "params for symmetry function of type '"
-            << raw_params.at("type").get<std::string>()
+            << raw_params.at("type").template get<std::string>()
             << "' provided to initialise a symmetry function of type '"
             << get_name(MySymFunType);
         throw std::runtime_error(err.str());
@@ -170,7 +179,7 @@ namespace rascal {
         err << "Mismatch: the provided cutoff function has a cuttoff radius of "
             << cut_fun->get_cutoff()
             << " but the parameters prescribe a cutoff radius of "
-            << raw_params.at("r_cut").at("value").get<double>();
+            << raw_params.at("r_cut").at("value").template get<double>();
         throw std::runtime_error(err.str());
       }
     }
@@ -222,9 +231,10 @@ namespace rascal {
   };
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType MySymFunType,
+  template <bool CompatibilityMode_, SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
-  constexpr size_t BehlerPairFeature<MySymFunType, SymFunTypes...>::Order;
+  constexpr size_t BehlerPairFeature<CompatibilityMode_, MySymFunType,
+                                     SymFunTypes...>::Order;
 
   /* ---------------------------------------------------------------------- */
   template <bool CompatibilityMode, SymmetryFunctionType MySymFunType,
@@ -234,20 +244,23 @@ namespace rascal {
    public:
     using SymmetryFunction_t = SymmetryFunction<MySymFunType>;
     using Parent = BehlerFeatureBase<CompatibilityMode, SymFunTypes...>;
+    using Hypers_t = typename Parent::Hypers_t;
 
     static constexpr size_t Order{SymmetryFunction_t::Order};
     static_assert(Order == TripletOrder,
                   "Should only be instantiated for triplet symmetry functions");
     //! Default constructor
     BehlerTripletFeature(std::shared_ptr<CutoffFunctionBase> cut_fun,
-                         const UnitStyle & unit_style, const json & raw_params)
+                         const UnitStyle & unit_style,
+                         const Hypers_t & raw_params)
         : Parent(MySymFunType, cut_fun, SymmetryFunction_t::Order, raw_params),
           sym_fun{unit_style,
                   raw_params.at("params" + canary(raw_params, "params"))} {
-      if (raw_params.at("type").get<std::string>() != get_name(MySymFunType)) {
+      if (raw_params.at("type").template get<std::string>() !=
+          get_name(MySymFunType)) {
         std::stringstream err{};
         err << "params for symmetry function of type '"
-            << raw_params.at("type").get<std::string>()
+            << raw_params.at("type").template get<std::string>()
             << "' provided to initialise a symmetry function of type '"
             << get_name(MySymFunType);
         throw std::runtime_error(err.str());
@@ -259,7 +272,7 @@ namespace rascal {
         err << "Mismatch: the provided cutoff function has a cuttoff radius of "
             << cut_fun->get_cutoff()
             << " but the parameters prescribe a cutoff radius of "
-            << raw_params.at("r_cut").at("value").get<double>();
+            << raw_params.at("r_cut").at("value").template get<double>();
         throw std::runtime_error(err.str());
       }
     }
@@ -316,6 +329,32 @@ namespace rascal {
             SymmetryFunctionType... SymFunTypes>
   constexpr size_t BehlerTripletFeature<CompatibilityMode_, MySymFunType,
                                         SymFunTypes...>::Order;
+
+  /* ---------------------------------------------------------------------- */
+  template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
+  std::unique_ptr<BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>>
+  BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>::make_unique(
+      std::shared_ptr<CutoffFunctionBase> cut_fun, const UnitStyle & unit_style,
+      const Hypers_t & parameters) {
+    auto && sym_fun_label{parameters.at("type").get<std::string>()};
+    if (sym_fun_label == "Gaussian") {
+      return std::make_unique<BehlerPairFeature<
+          CompatibilityMode_, SymmetryFunctionType::Gaussian, SymFunTypes...>>(
+          cut_fun, unit_style, parameters);
+    } else if (sym_fun_label == "AngularNarrow") {
+      return std::make_unique<BehlerTripletFeature<
+          CompatibilityMode_, SymmetryFunctionType::AngularNarrow,
+          SymFunTypes...>>(cut_fun, unit_style, parameters);
+    } else if (sym_fun_label == "AngularWide") {
+      return std::make_unique<BehlerTripletFeature<
+          CompatibilityMode_, SymmetryFunctionType::AngularWide,
+          SymFunTypes...>>(cut_fun, unit_style, parameters);
+    } else {
+      throw std::runtime_error("Unknown symmetry function type '" +
+                               sym_fun_label + "'");
+    }
+  }
+
 }  // namespace rascal
 #include "behler_feature_impl.hh"
 

@@ -41,33 +41,19 @@ namespace rascal {
     // simple check (just existence of keys)
     this->check_hyperparameters(this->reference_hypers, parameters);
     // true parameter checks
-    auto unit_style{[&parameters]() {
-      auto unit_style_label{parameters.at("unit_style").get<std::string>()};
-      if (unit_style_label == "metal") {
-        return units::metal;
-      } else {
-        throw std::runtime_error("unable to handle unit style '" +
-                                 unit_style_label + "'.");
-      }
-    }()};
+    auto unit_style{UnitStyle::make(parameters.at("unit_style"))};
     // 1)  create shared_ptr to cutoff_function
-    auto cut_fun{[&parameters, &unit_style]() {
-      auto cut_fun_label{
-          parameters.at("cutoff_function").at(name).get<std::string>()};
-      if (cut_fun_label == "Cosine") {
-        return std::make_shared<CutoffFunction<InlCutoffFunctionType::Cosine>>(
-            unit_style, parameters.at("cutoff_function"));
-      } else if (false /*there is no other cutoff function for the moment*/) {
-      } else {
-        throw std::runtime_error("unable to handle "
-                                 "cutoff_function style '" +
-                                 cut_fun_label + "'.");
-      }
-    }()};
+    auto cut_fun{CutoffFunctionBase::make_shared(
+        unit_style, parameters.at("cutoff_function"))};
 
     // 2) iterate through sym_function_params and fill vector of
     // behlerfeatures
-  }  
+    for (auto && sym_fun_params : parameters.at("symmetry_functions")) {
+      this->behler_features.push_back(std::move(
+          BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>::make_unique(
+              cut_fun, unit_style, sym_fun_params)));
+    }
+  }
 
   /* ---------------------------------------------------------------------- */
   template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>

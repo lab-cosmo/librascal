@@ -78,6 +78,12 @@ namespace rascal {
 
     using Hypers_t = CalculatorBase::Hypers_t;
 
+    /**
+     * Factory function to create shared ptrs to a cutoff function from json
+     */
+    static std::shared_ptr<CutoffFunctionBase>
+    make_shared(const units::UnitStyle & unit_style, Hypers_t hypers);
+
     //! Main worker (raison d'être). Evaluates cutoff function for all pairs
     template <class StructureManager>
     inline void compute(StructureManager & manager,

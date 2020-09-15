@@ -51,6 +51,19 @@ namespace rascal {
           _dipole{dipole}, _electric_field{electric_field}, _density{density} {}
 
     /* ---------------------------------------------------------------------- */
+    UnitStyle UnitStyle::make(const json & hypers) {
+      auto unit_style_label{hypers.get<std::string>()};
+      if (unit_style_label == "metal") {
+        return units::metal;
+      } else if (unit_style_label == "electron") {
+        return units::electron;
+      } else {
+        throw std::runtime_error("unable to handle unit style '" +
+                                 unit_style_label + "'.");
+      }
+    }
+
+    /* ---------------------------------------------------------------------- */
     const std::string UnitStyle::mass(int numerator, int denominator) const {
       return this->format(this->_mass, numerator, denominator);
     }

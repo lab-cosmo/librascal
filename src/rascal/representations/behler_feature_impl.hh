@@ -46,9 +46,11 @@ namespace rascal {
   struct BehlerFeatureOrderSelector {};
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType Head, SymmetryFunctionType... SymFunTypes>
-  struct BehlerFeatureOrderSelector<false, PairOrder, Head, SymFunTypes...> {
-    using type = BehlerPairFeature<Head, SymFunTypes...>;
+  template <bool CompatibilityMode, SymmetryFunctionType Head,
+            SymmetryFunctionType... SymFunTypes>
+  struct BehlerFeatureOrderSelector<CompatibilityMode, PairOrder, Head,
+                                    SymFunTypes...> {
+    using type = BehlerPairFeature<CompatibilityMode, Head, SymFunTypes...>;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -155,12 +157,13 @@ namespace rascal {
   // todo(jungestricker): outsource the calculation of multiplication of sf
   // value and cutoff value to symmetry function for consistency with
   // BehlerTripletFeature?!
-  template <SymmetryFunctionType MySymFunType,
+  template <bool CompatibilityMode_, SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
   template <RepeatedSpecies RepSpecies, typename Permutation,
             class StructureManager>
-  void BehlerPairFeature<MySymFunType, SymFunTypes...>::compute_helper(
-      StructureManager & manager, std::shared_ptr<PropertyBase> output) const {
+  void BehlerPairFeature<CompatibilityMode_, MySymFunType, SymFunTypes...>::
+      compute_helper(StructureManager & manager,
+                     std::shared_ptr<PropertyBase> output) const {
     static_assert(Permutation::Size == Order,
                   "Permutation size needs to equal cluster order");
     auto & cutoffs{this->cut_fun->get_pair_value(manager)};
@@ -254,14 +257,16 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType MySymFunType,
+  template <bool CompatibilityMode, SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
   template <RepeatedSpecies RepSpecies, typename Permutation,
             class StructureManager>
-  void BehlerPairFeature<MySymFunType, SymFunTypes...>::compute_helper(
-      StructureManager & manager, std::shared_ptr<PropertyBase> output_values,
-      std::shared_ptr<PropertyBase> output_self_derivatives,
-      std::shared_ptr<PropertyBase> output_other_derivatives) const {
+  void BehlerPairFeature<CompatibilityMode, MySymFunType, SymFunTypes...>::
+      compute_helper(
+          StructureManager & manager,
+          std::shared_ptr<PropertyBase> output_values,
+          std::shared_ptr<PropertyBase> output_self_derivatives,
+          std::shared_ptr<PropertyBase> output_other_derivatives) const {
     auto && cutoff_tup{this->cut_fun->get_pair_derivative(manager)};
     auto & cutoff_values{std::get<0>(cutoff_tup)};
     auto & cutoff_derivatives{std::get<1>(cutoff_tup)};
@@ -468,9 +473,9 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  template <SymmetryFunctionType MySymFunType,
+  template <bool CompatibilityMode, SymmetryFunctionType MySymFunType,
             SymmetryFunctionType... SymFunTypes>
-  void BehlerPairFeature<MySymFunType, SymFunTypes...>::init(
+  void BehlerPairFeature<CompatibilityMode, MySymFunType, SymFunTypes...>::init(
       const UnitStyle & /*units*/) {
     // if (this->is_initialised) {
     //   throw std::runtime_error("double initialisation");

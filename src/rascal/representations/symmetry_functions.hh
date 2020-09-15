@@ -50,6 +50,11 @@ namespace rascal {
   using units::UnitStyle;
 
   enum class SymmetryFunctionType { Gaussian, AngularNarrow, AngularWide };
+  constexpr static std::array<SymmetryFunctionType, 1>
+      PairSymmetryFunctionTypes{SymmetryFunctionType::Gaussian};
+  constexpr static std::array<SymmetryFunctionType, 2>
+      TripletSymmetryFunctionTypes{SymmetryFunctionType::AngularNarrow,
+                                   SymmetryFunctionType::AngularWide};
 
   template <typename T, size_t Len>
   inline std::array<T, Len>
@@ -89,6 +94,11 @@ namespace rascal {
     using TripletReturn_t =
         std::tuple<double, std::array<double, nb_distances(TripletOrder)>>;
 
+    /* ---------------------------------------------------------------------- */
+    inline static std::unique_ptr<SymmetryFunctionBase>
+    make_unique(const UnitStyle & unit_style, const json & parameters);
+
+    /* ---------------------------------------------------------------------- */
     double f_sym(const double & /*dummy*/) const {
       throw std::runtime_error("wrong order");
     }
@@ -490,6 +500,27 @@ namespace rascal {
     property.set_updated_status(true);
     return property;
   }
+
+  /* ---------------------------------------------------------------------- */
+  inline static std::unique_ptr<SymmetryFunctionBase>
+  make_unique(const UnitStyle & unit_style, const json & parameters) {
+    auto sym_fun_label{parameters.at("name").get<std::string>()};
+    if (sym_fun_label == "Gaussian") {
+      return std::make_unique<SymmetryFunction<SymmetryFunctionType::Gaussian>>(
+          unit_style, parameters);
+    } else if (sym_fun_label == "AngularNarrow") {
+      return std::make_unique<
+          SymmetryFunction<SymmetryFunctionType::AngularNarrow>>(unit_style,
+                                                                 parameters);
+    } else if (sym_fun_label == "AngularWide") {
+      return std::make_unique<
+          SymmetryFunction<SymmetryFunctionType::AngularWide>>(unit_style,
+                                                               parameters);
+    } else {
+      throw std::runtime_error("undefined symmetry function type");
+    }
+  }
+
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_SYMMETRY_FUNCTIONS_HH_

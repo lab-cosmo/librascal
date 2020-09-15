@@ -28,8 +28,12 @@
 #ifndef SRC_RASCAL_UTILS_UNITS_HH_
 #define SRC_RASCAL_UTILS_UNITS_HH_
 
+#include <json.hpp>
+
 #include <map>
 #include <string>
+// For convenience
+using json = nlohmann::json;
 
 namespace rascal {
 
@@ -50,6 +54,11 @@ namespace rascal {
                 const std::string & charge, const std::string & dipole,
                 const std::string & electric_field,
                 const std::string & density);
+
+      /**
+       * factory function from json
+       */
+      static UnitStyle make(const json & hypers);
 
       //! copy constructor
       UnitStyle(const UnitStyle & other) = default;
