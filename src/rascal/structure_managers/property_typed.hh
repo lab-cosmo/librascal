@@ -342,6 +342,14 @@ namespace rascal {
       return features;
     }
 
+    const Eigen::Map<const Matrix_t> view() {
+      auto nb_centers{this->get_nb_item()};
+      auto nb_features{this->get_nb_comp()};
+      const Eigen::Map<const Matrix_t> features(this->values.data(), nb_centers,
+                                                nb_features);
+      return features;
+    }
+
    protected:
     std::string type_id;
     std::vector<T> values{};  //!< storage for properties

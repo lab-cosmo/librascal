@@ -1,4 +1,5 @@
 from ..utils import BaseIO
+from ..lib import compute_forces
 
 import numpy as np
 
@@ -74,11 +75,16 @@ class KRR(BaseIO):
         np.array
             predictions
         """
-        KNM, Y0 = self._preprocess_input(managers, compute_gradients)
+
         if compute_gradients is False:
+            KNM, Y0 = self._preprocess_input(managers, compute_gradients)
             return Y0 + np.dot(KNM, self.weights).reshape((-1))
         else:
-            return np.dot(KNM, self.weights).reshape((-1, 3))
+            rep = self.kernel._representation
+            gradients = -compute_forces(rep, self.kernel._kernel, managers.managers, self.X_train._sparse_points, self.weights.reshape((1, -1)))
+
+            return gradients
+
 
     def get_weights(self):
         return self.weights
