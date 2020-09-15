@@ -133,6 +133,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(grad_test, Fix, sparse_grad_fixtures, Fix) {
     // using Manager_t = typename Fix::Manager_t;
     using ManagerCollection_t = typename Fix::ManagerCollection_t;
+    using Manager_t = typename ManagerCollection_t::Manager_t;
     using Representation_t = typename Fix::Representation_t;
     using Kernel_t = typename Fix::Kernel_t;
     using SparsePoints_t = typename Fix::SparsePoints_t;
@@ -143,7 +144,7 @@ namespace rascal {
     // relative error threshold
     const double delta{5e-5};
     // range of zero
-    const double epsilon{1e-15};
+    const double epsilon{1e-14};
 
     for (const auto & input : inputs) {
       // extract inputs
@@ -167,6 +168,7 @@ namespace rascal {
       sparse_points.push_back(representation, managers, selected_ids);
       calculator_input["compute_gradients"] = false;
       Representation_t representation_{calculator_input};
+
       // compute kernel gradients
       auto KNM_der{
           kernel.compute_derivative(representation, managers, sparse_points)};
@@ -188,6 +190,27 @@ namespace rascal {
         std::cout << "============================" << std::endl;
         std::cout << KNM_num_der.row(row_max) << std::endl;
         std::cout << "============================" << std::endl;
+      }
+      // test that prediction routine and predictions with kernel are equal
+      math::Vector_t weights{sparse_points.size()};
+      weights.setConstant(1.);
+      std::string force_name =
+          representation.get_gradient_name() + std::string(" forces");
+      math::Matrix_t forces_k = KNM_der * weights.transpose();
+      compute_forces(representation, kernel, managers, sparse_points, weights);
+      size_t i_center{0};
+      for (auto manager : managers) {
+        auto && forces{*manager->template get_property<
+            Property<double, 1, Manager_t, 1, ThreeD>>(force_name, true)};
+        math::Matrix_t ff = Eigen::Map<const math::Matrix_t>(
+            forces.view().data(), manager->size() * ThreeD, 1);
+        math::Matrix_t ff_r =
+            -forces_k.block(i_center, 0, manager->size() * ThreeD, 1);
+        math::Matrix_t force_diff =
+            math::relative_error(ff, ff_r, delta, epsilon);
+        double forces_max_rel_diff{force_diff.maxCoeff(&row_max, &col_max)};
+        BOOST_TEST(forces_max_rel_diff < delta);
+        i_center += manager->size() * ThreeD;
       }
     }
   }
