@@ -140,6 +140,7 @@ namespace rascal {
       // \sum_n \alpha_n^{scaled} T_n
       SparsePoints sparse_point_scaled{sparse_points.dot(a_sp, weights_scaled)};
       const size_t n_neigh{center.pairs_with_self_pair().size()};
+      // sparse_point_scaled \dot dX_i/dr_j
       if (do_block_by_key_dot) {
         auto rep_grads = prop_grad.get_raw_data_view();
         const auto & values_by_sp = sparse_point_scaled.values.at(a_sp);
