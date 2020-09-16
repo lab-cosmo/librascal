@@ -181,8 +181,9 @@ namespace rascal {
         ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
                           AdaptorStrict>;
     using ManagerCollection_2_t =
-        ManagerCollection<StructureManagerCenters, AdaptorNeighbourList, AdaptorHalfList,
-                          AdaptorCenterContribution, AdaptorStrict>;
+        ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
+                          AdaptorHalfList, AdaptorCenterContribution,
+                          AdaptorStrict>;
     using ManagerCollection_3_t =
         ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
                           AdaptorCenterContribution, AdaptorStrict>;
