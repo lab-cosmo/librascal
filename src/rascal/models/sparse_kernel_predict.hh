@@ -198,10 +198,11 @@ namespace rascal {
    * @return name used to register the forces in the managers
    */
   template <class Calculator, class StructureManagers, class SparsePoints>
-  std::string
-  compute_sparse_kernel_forces(const Calculator & calculator, SparseKernel & kernel,
-                 StructureManagers & managers, SparsePoints & sparse_points,
-                 math::Vector_t & weights) {
+  std::string compute_sparse_kernel_forces(const Calculator & calculator,
+                                           SparseKernel & kernel,
+                                           StructureManagers & managers,
+                                           SparsePoints & sparse_points,
+                                           math::Vector_t & weights) {
     using Manager_t = typename StructureManagers::Manager_t;
     using Property_t = typename Calculator::template Property_t<Manager_t>;
     using PropertyGradient_t =

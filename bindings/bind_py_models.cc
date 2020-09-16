@@ -142,8 +142,8 @@ namespace rascal {
         [](const Calculator & calculator, SparseKernel & kernel,
            ManagerCollection & managers, SparsePoints & sparse_points,
            math::Vector_t & weights) {
-          std::string force_name = compute_sparse_kernel_forces(calculator, kernel, managers,
-                                                  sparse_points, weights);
+          std::string force_name = compute_sparse_kernel_forces(
+              calculator, kernel, managers, sparse_points, weights);
           size_t n_centers{0};
           // find the total number of forces
           for (const auto & manager : managers) {
