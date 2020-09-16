@@ -47,7 +47,7 @@ namespace rascal {
    * the weights of the model.
    *
    * The partial forces are attached to the input manager in a Property of
-   * Order 2 with the name 'representation_grad_name+" partial forces"'
+   * Order 2.
    * partial forces [N_{neighbor}, 3]
    *
    * @tparam StructureManagers should be an iterable over shared pointer
@@ -55,6 +55,14 @@ namespace rascal {
    * @param sparse_points a SparsePoints* class
    * @param managers a ManagerCollection or similar collection of
    * structure managers
+   * @param zeta exponent of the GAP kernel
+   * @param weights of the GAP model
+   * @param representation_name name used to get the representation in the
+   * managers
+   * @param representation_grad_name name used to get representation gradient
+   * the in the managers
+   * @param fij_name name used to get/register the partial gradients in the
+   * managers
    * @return
    */
   template <class Property_t, class PropertyGradient_t, class StructureManager,
@@ -69,20 +77,18 @@ namespace rascal {
     using Manager_t = typename StructureManager::element_type;
     using Keys_t = typename SparsePoints::Keys_t;
     using Key_t = typename SparsePoints::Key_t;
-    // using Array_t = Eigen::Array<double, Eigen::Dynamic, 1>;
+
     auto && prop{
         *manager->template get_property<Property_t>(representation_name, true)};
     auto && prop_grad{*manager->template get_property<PropertyGradient_t>(
         representation_grad_name, true)};
 
-    // const size_t n_sparse_points{sparse_points.size()};
     const int inner_size{prop.get_nb_comp()};
 
     bool do_block_by_key_dot{false};
     if (prop_grad.are_keys_uniform()) {
       do_block_by_key_dot = true;
     }
-    //    do_block_by_key_dot = false;
 
     std::set<int> unique_species{};
     for (auto center : manager) {
@@ -107,7 +113,7 @@ namespace rascal {
         *manager
              ->template get_property<Property<double, 2, Manager_t, 1, ThreeD>>(
                  fij_name, true, true)};
-    // don't recompute the partial forces if already registered
+    // don't recompute the partial forces if already up to date
     if (f_ij.is_updated()) {
       return;
     }
@@ -136,7 +142,6 @@ namespace rascal {
       const size_t n_neigh{center.pairs_with_self_pair().size()};
       if (do_block_by_key_dot) {
         auto rep_grads = prop_grad.get_raw_data_view();
-        // const int offset = offsets.at(a_sp);
         const auto & values_by_sp = sparse_point_scaled.values.at(a_sp);
 
         for (const Key_t & key : keys_intersect.at(a_sp)) {
@@ -172,15 +177,16 @@ namespace rascal {
 
   /**
    * Compute the gradients of a structure w.r.t atomic positions
-   * using the GAP model (see
+   * using a sparse GPR model. Only GAP model is implemented at the moment (see
    * @ref SparseKernelImpl<internal::SparseKernelType::GAP>::compute_derivative)
    *
    * The point of this function is to provide a faster prediction routine
-   * compared to computing the kernel element and then multiplying them with
+   * compared to computing the kernel elements and then multiplying them with
    * the weights of the model.
    *
    * The forces are attached to the input manager in a Property of
-   * Order 1 with the name 'representation_grad_name+" forces"'
+   * Order 1 with the name
+   * 'representation_grad_name+" forces; weight_hash:"+weight_hash'
    * forces [N_{atoms}, 3]
    *
    * @tparam StructureManagers should be an iterable over shared pointer
@@ -188,11 +194,12 @@ namespace rascal {
    * @param sparse_points a SparsePoints* class
    * @param managers a ManagerCollection or similar collection of
    * structure managers
+   * @param weights regression weights of the sparse GPR model
    * @return name used to register the forces in the managers
    */
   template <class Calculator, class StructureManagers, class SparsePoints>
   std::string
-  compute_forces(const Calculator & calculator, SparseKernel & kernel,
+  compute_sparse_kernel_forces(const Calculator & calculator, SparseKernel & kernel,
                  StructureManagers & managers, SparsePoints & sparse_points,
                  math::Vector_t & weights) {
     using Manager_t = typename StructureManagers::Manager_t;
@@ -209,8 +216,6 @@ namespace rascal {
 
     internal::Hash<math::Vector_t, double> hasher{};
     auto kernel_type_str = kernel.parameters.at("name").get<std::string>();
-    // std::string fij_name = representation_grad_name+std::string(" partial
-    // gradients ") + std::string();
     std::string weight_hash = std::to_string(hasher(weights));
     std::string fij_name = representation_grad_name +
                            std::string(" partial gradients; weight_hash:") +
@@ -218,7 +223,6 @@ namespace rascal {
     std::string force_name = representation_grad_name +
                              std::string(" forces; weight_hash:") + weight_hash;
 
-    // size_t i_center{0};
     for (const auto & manager : managers) {
       if (kernel_type_str == "GAP") {
         const auto zeta = kernel.parameters.at("zeta").get<size_t>();
@@ -237,7 +241,7 @@ namespace rascal {
       auto && f_ij{*manager->template get_property<
           Property<double, 2, Manager_t, 1, ThreeD>>(fij_name, true)};
       for (auto center : manager) {
-        // accumulate gradients onto forces
+        // accumulate partial gradients onto forces
         for (auto neigh : center.pairs_with_self_pair()) {
           forces[neigh.get_atom_j()] -= f_ij[neigh];
         }

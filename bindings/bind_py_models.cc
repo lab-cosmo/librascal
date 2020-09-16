@@ -138,11 +138,11 @@ namespace rascal {
   void bind_compute_forces(py::module & mod, py::module & /*m_internal*/) {
     using Manager_t = typename ManagerCollection::Manager_t;
     mod.def(
-        "compute_forces",
+        "compute_sparse_kernel_forces",
         [](const Calculator & calculator, SparseKernel & kernel,
            ManagerCollection & managers, SparsePoints & sparse_points,
            math::Vector_t & weights) {
-          std::string force_name = compute_forces(calculator, kernel, managers,
+          std::string force_name = compute_sparse_kernel_forces(calculator, kernel, managers,
                                                   sparse_points, weights);
           size_t n_centers{0};
           // find the total number of forces

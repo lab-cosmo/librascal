@@ -196,7 +196,7 @@ namespace rascal {
       weights.setConstant(1.);
 
       math::Matrix_t forces_k = KNM_der * weights.transpose();
-      std::string force_name = compute_forces(representation, kernel, managers,
+      std::string force_name = compute_sparse_kernel_forces(representation, kernel, managers,
                                               sparse_points, weights);
       size_t i_center{0};
       for (auto manager : managers) {
