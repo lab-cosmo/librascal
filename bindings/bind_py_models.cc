@@ -216,7 +216,7 @@ namespace rascal {
 
     internal::bind_dict_representation(sparse_points);
 
-    bind_compute_forces<ManagerCollection_2_t, Calc1_t, SparsePoints_1_t>(
+    bind_compute_forces<ManagerCollection_3_t, Calc1_t, SparsePoints_1_t>(
         mod, m_internal);
   }
 }  // namespace rascal
