@@ -131,9 +131,12 @@ void ModifiedSphericalBessel::calc(double distance, double fac_a) {
   this->bessel_arg_i = this->bessel_arg.inverse();
 
   if (distance < SPHERICAL_BESSEL_FUNCTION_FTOL) {
-    throw std::runtime_error(
-        "A too small distance was given to the spherical bessel function.");
+    this->bessel_values.setZero();
+    // 0th order approximation
+    this->bessel_values.col(0) = Eigen::exp(-this->x_v.square()*fac_a);
+    this->set_small_bessel_values_to_zero();
   }
+
   if (this->order_max == 1) {
     // recursions are not valid for order_max==1 so direct computation
     // i_0(z) = sinh(z) / z
@@ -164,18 +167,7 @@ void ModifiedSphericalBessel::calc(double distance, double fac_a) {
     }
   }
   assert(this->bessel_values.isFinite().all());
-
-  // Set small values to 0 because the recursion looses accuracy for very
-  // small values. Also on the python side it avoids some unexpected
-  // interpretation of values that are strictly speaking outside of the
-  // range of double precision
-  this->bessel_values = this->bessel_values.unaryExpr([](double d) {
-    if (d < 1e-100) {
-      return 0.;
-    } else {
-      return d;
-    }
-  });
+  this->set_small_bessel_values_to_zero();
 
   // compute gradients
   if (this->compute_gradients) {
@@ -183,3 +175,14 @@ void ModifiedSphericalBessel::calc(double distance, double fac_a) {
     assert(this->bessel_gradients.isFinite().all());
   }
 }
+
+void ModifiedSphericalBessel::set_small_bessel_values_to_zero() {
+  this->bessel_values = this->bessel_values.unaryExpr([](double d) {
+    if (d < 1e-100) {
+      return 0.;
+    } else {
+      return d;
+    }
+  });
+}
+

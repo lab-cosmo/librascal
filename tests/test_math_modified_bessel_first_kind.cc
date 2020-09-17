@@ -34,7 +34,7 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(MathBesselFirstKindTests);
 
   /* ----------------------------------------------------------------------
-   */
+  */
   /**
    * Check the implementation of the modified bessel function of the first
    * kind against mpmath v1.1.0
@@ -61,54 +61,66 @@ namespace rascal {
         }
       }
 
+      // The absolute or relative error has to lie below the threshold.
+      double threshold{0};
+      // The error increases for r_ij values coming close to 0
+      // Since we do not care about the accuracy for r_ij in the range [0, 0.5]
+      // as much as for larger r_ij, we can set the threshold
+      // to a larger value to pass the tests
+      if (rij < 0.5) {
+        threshold = 2e-5;
+      } else {
+        threshold = 1e-10;
+      }
+      // below considered as zero
+      const double epsilon{1e-14};
+
       for (size_t i_x{0}; i_x < xs.size(); ++i_x) {
         for (size_t order{0}; order < max_order; ++order) {
-          double rel_error{0.};
-          if (ref_vals[i_x][order] > 0) {
-            rel_error = std::abs(vals(i_x, order) - ref_vals[i_x][order]) /
-                        ref_vals[i_x][order];
-          } else {
-            rel_error = ref_vals[i_x][order];
+          // checks if absolute or relative error lies below the threshold
+          double absolute_error{
+            std::abs(ref_vals[i_x][order] - vals(i_x, order))};
+          double relative_error{
+            math::relative_error(ref_vals[i_x][order],
+                vals(i_x, order), threshold, epsilon, false)};
+          bool below_threshold{ (absolute_error < threshold) ||
+            (relative_error < threshold) };
+          if (not(below_threshold)) {
+            std::cout << " order=" << order << " x=" << xs[i_x]
+              << " alpha=" << alpha << " rij=" << rij
+              << " ref=" << ref_vals[i_x][order]
+              << " val=" << vals(i_x, order)
+              << " absoulte_error=" << absolute_error
+              << " relative_error=" << relative_error << std::endl;
           }
 
-          // the MBSFs are set to 0 if < 1e-100 so no point checking with
-          // the reference then. Note the MBSFs are very accurate when < 1e-200
-          if (ref_vals[i_x][order] > 1e-90 and vals(i_x, order) > 1e-90) {
-            if ((rel_error > 1e3 * math::DBL_FTOL) and this->verbose) {
-              std::cout << " order=" << order << " x=" << xs[i_x]
-                        << " alpha=" << alpha << " rij=" << rij
-                        << " diff=" << rel_error
-                        << " ref=" << ref_vals[i_x][order]
-                        << " val=" << vals(i_x, order) << std::endl;
-            }
-
-            BOOST_CHECK_LE(rel_error, 1e3 * math::DBL_FTOL);
-          }
-        }
+          BOOST_CHECK(below_threshold);
+          //}
       }
     }
   }
+}
 
-  BOOST_AUTO_TEST_CASE(MBFs_gradient_test) {
-    // use same range as in the reference test
-    std::vector<size_t> max_angulars{{0, 20}};
-    std::vector<double> alphas{{0.6, 3.5, 8.5, 20, 30, 50}};
-    Eigen::ArrayXd xs = Eigen::ArrayXd::LinSpaced(20, 0.005, 10);
+BOOST_AUTO_TEST_CASE(MBFs_gradient_test) {
+  // use same range as in the reference test
+  std::vector<size_t> max_angulars{{0, 20}};
+  std::vector<double> alphas{{0.6, 3.5, 8.5, 20, 30, 50}};
+  Eigen::ArrayXd xs = Eigen::ArrayXd::LinSpaced(20, 0.005, 10);
 
-    GradientTestFixture fix{
-        "reference_data/tests_only/mbfs_derivative_test.json"};
+  GradientTestFixture fix{
+    "reference_data/tests_only/mbfs_derivative_test.json"};
 
-    for (const auto & max_angular : max_angulars) {
-      for (const auto & alpha : alphas) {
-        ModifiedBesselFirstKindGradientsProvider mbf_calculator{xs, alpha,
-                                                                max_angular};
-        test_gradients(mbf_calculator, fix);
-      }
+  for (const auto & max_angular : max_angulars) {
+    for (const auto & alpha : alphas) {
+      ModifiedBesselFirstKindGradientsProvider mbf_calculator{xs, alpha,
+        max_angular};
+      test_gradients(mbf_calculator, fix);
     }
   }
+}
 
-  /* ----------------------------------------------------------------------
-   */
-  BOOST_AUTO_TEST_SUITE_END();
+/* ----------------------------------------------------------------------
+*/
+BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal
