@@ -187,7 +187,6 @@ namespace rascal {
        */
       void set_small_bessel_values_to_zero();
 
-
       Eigen::ArrayXXd bessel_values{};
       Eigen::ArrayXXd bessel_gradients{};
 

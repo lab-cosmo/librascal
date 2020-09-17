@@ -34,7 +34,7 @@ namespace rascal {
   BOOST_AUTO_TEST_SUITE(MathBesselFirstKindTests);
 
   /* ----------------------------------------------------------------------
-  */
+   */
   /**
    * Check the implementation of the modified bessel function of the first
    * kind against mpmath v1.1.0
@@ -79,48 +79,48 @@ namespace rascal {
         for (size_t order{0}; order < max_order; ++order) {
           // checks if absolute or relative error lies below the threshold
           double absolute_error{
-            std::abs(ref_vals[i_x][order] - vals(i_x, order))};
+              std::abs(ref_vals[i_x][order] - vals(i_x, order))};
           double relative_error{
-            math::relative_error(ref_vals[i_x][order],
-                vals(i_x, order), threshold, epsilon, false)};
-          bool below_threshold{ (absolute_error < threshold) ||
-            (relative_error < threshold) };
+              math::relative_error(ref_vals[i_x][order], vals(i_x, order),
+                                   threshold, epsilon, false)};
+          bool below_threshold{(absolute_error < threshold) ||
+                               (relative_error < threshold)};
           if (not(below_threshold)) {
             std::cout << " order=" << order << " x=" << xs[i_x]
-              << " alpha=" << alpha << " rij=" << rij
-              << " ref=" << ref_vals[i_x][order]
-              << " val=" << vals(i_x, order)
-              << " absoulte_error=" << absolute_error
-              << " relative_error=" << relative_error << std::endl;
+                      << " alpha=" << alpha << " rij=" << rij
+                      << " ref=" << ref_vals[i_x][order]
+                      << " val=" << vals(i_x, order)
+                      << " absoulte_error=" << absolute_error
+                      << " relative_error=" << relative_error << std::endl;
           }
 
           BOOST_CHECK(below_threshold);
           //}
+        }
       }
     }
   }
-}
 
-BOOST_AUTO_TEST_CASE(MBFs_gradient_test) {
-  // use same range as in the reference test
-  std::vector<size_t> max_angulars{{0, 20}};
-  std::vector<double> alphas{{0.6, 3.5, 8.5, 20, 30, 50}};
-  Eigen::ArrayXd xs = Eigen::ArrayXd::LinSpaced(20, 0.005, 10);
+  BOOST_AUTO_TEST_CASE(MBFs_gradient_test) {
+    // use same range as in the reference test
+    std::vector<size_t> max_angulars{{0, 20}};
+    std::vector<double> alphas{{0.6, 3.5, 8.5, 20, 30, 50}};
+    Eigen::ArrayXd xs = Eigen::ArrayXd::LinSpaced(20, 0.005, 10);
 
-  GradientTestFixture fix{
-    "reference_data/tests_only/mbfs_derivative_test.json"};
+    GradientTestFixture fix{
+        "reference_data/tests_only/mbfs_derivative_test.json"};
 
-  for (const auto & max_angular : max_angulars) {
-    for (const auto & alpha : alphas) {
-      ModifiedBesselFirstKindGradientsProvider mbf_calculator{xs, alpha,
-        max_angular};
-      test_gradients(mbf_calculator, fix);
+    for (const auto & max_angular : max_angulars) {
+      for (const auto & alpha : alphas) {
+        ModifiedBesselFirstKindGradientsProvider mbf_calculator{xs, alpha,
+                                                                max_angular};
+        test_gradients(mbf_calculator, fix);
+      }
     }
   }
-}
 
-/* ----------------------------------------------------------------------
-*/
-BOOST_AUTO_TEST_SUITE_END();
+  /* ----------------------------------------------------------------------
+   */
+  BOOST_AUTO_TEST_SUITE_END();
 
 }  // namespace rascal

@@ -133,7 +133,7 @@ void ModifiedSphericalBessel::calc(double distance, double fac_a) {
   if (distance < SPHERICAL_BESSEL_FUNCTION_FTOL) {
     this->bessel_values.setZero();
     // 0th order approximation
-    this->bessel_values.col(0) = Eigen::exp(-this->x_v.square()*fac_a);
+    this->bessel_values.col(0) = Eigen::exp(-this->x_v.square() * fac_a);
     this->set_small_bessel_values_to_zero();
   }
 
@@ -185,4 +185,3 @@ void ModifiedSphericalBessel::set_small_bessel_values_to_zero() {
     }
   });
 }
-
