@@ -78,7 +78,7 @@ class SphericalCovariants(BaseIO):
 
     radial_basis :  string
         Specifies the type of radial basis R_n to be computed
-        ("GTO" for Gaussian typed orbitals and "DVR" discrete variable representation using Gaussian quadrature rule)
+        ("GTO" for Gaussian typed orbitals and "DVR" discrete variable representation using Gauss-Legendre quadrature rule)
 
     soap_type : string
         Specifies the type of representation to be computed.
