@@ -425,7 +425,6 @@ namespace rascal {
         }
 
         Key_t sparsified_type{0, 0};
-        // there are 118 atomic elements atm
         for (int sp1{0}; sp1 < MaxChemElements; sp1++) {
           for (int sp2{0}; sp2 < MaxChemElements; sp2++) {
             if (sp1 <= sp2) {
@@ -456,7 +455,6 @@ namespace rascal {
           }
         }
         internal::Sorted<true> is_sorted{};
-        // there are 118 atomic elements atm
         for (int sp1{0}; sp1 < MaxChemElements; sp1++) {
           for (int sp2{0}; sp2 < MaxChemElements; sp2++) {
             if (sp1 <= sp2) {
