@@ -8,7 +8,6 @@ from copy import deepcopy
 
 
 class SphericalExpansion(BaseIO):
-
     """
     Computes the spherical expansion of the neighbour density [soap]
 

@@ -96,7 +96,8 @@ class SphericalInvariants(BaseIO):
 
     radial_basis :  string
         Specifies the type of radial basis R_n to be computed
-        ("GTO" for Gaussian typed orbitals and "DVR" discrete variable representation using Gaussian quadrature rule)
+        ("GTO" for Gaussian typed orbitals and "DVR" discrete variable
+        representation using Gaussian-Legendre quadrature rule)
 
     normalize : boolean
         Whether to normalize so that the kernel between identical environments
