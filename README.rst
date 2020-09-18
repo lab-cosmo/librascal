@@ -163,12 +163,12 @@ You can also run the tests with Valgrind (a memory-error checker) by passing
 ``-DRASCAL_TESTS_USE_VALGRIND=ON`` to ``cmake``.
 
 In addition to testing the behaviour of the code, the test suite also check
-for formatting compliance with the clang-format and autopep8 packages (these
-dependencies are optional). To install these dependencies on Ubuntu:
+for formatting compliance with clang-format 8.0 or higher and autopep8 packages
+(these dependencies are optional). To install these dependencies on Ubuntu:
 
 .. code:: shell
 
-   sudo apt-get install clang-format
+   sudo apt-get install clang-format-8
    pip3 install autopep8
 
 Build Type
