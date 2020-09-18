@@ -8,7 +8,6 @@ from copy import deepcopy
 
 
 class SphericalExpansion(BaseIO):
-
     """
     Computes the spherical expansion of the neighbour density [soap]
 
@@ -35,6 +34,52 @@ class SphericalExpansion(BaseIO):
     gaussian_sigma_constant : float
         Specifies the atomic Gaussian widths, in the case where they're
         fixed.
+
+    cutoff_function_type : string
+        Choose the type of smooth cutoff function used to define the local
+        environment. Can be either 'ShiftedCosine' or 'RadialScaling'.
+
+        If 'ShiftedCosine', the functional form of the switching function is:
+
+        .. math::
+
+            sc(r) = \\begin{cases}
+            1 &r < r_c - sw,\\\\
+            0.5 + 0.5 \cos(\pi * (r - r_c + sw) / sw) &r_c - sw < r <= r_c, \\\\
+            0 &r_c < r,
+            \\end{cases}
+
+        where :math:`r_c` is the interaction_cutoff and :math:`sw` is the
+        cutoff_smooth_width.
+
+        If 'RadialScaling', the functional form of the switching function is
+        as expressed in equation 21 of https://doi.org/10.1039/c8cp05921g:
+
+        .. math::
+
+            rs(r) = sc(r) u(r),
+
+        where
+
+        .. math::
+
+            u(r) = \\begin{cases}
+            \\frac{1}{(r/r_0)^m} &\\text{if c=0,}\\\\
+            1 &\\text{if m=0,} \\\\
+            \\frac{c}{c+(r/r_0)^m} &\\text{else},
+            \\end{cases}
+
+        where :math:`c` is the rate, :math:`r_0` is the scale, :math:`m` is the
+        exponent.
+
+    radial_basis :  string
+        Specifies the type of radial basis R_n to be computed
+        ("GTO" for Gaussian typed orbitals and "DVR" discrete variable representation using Gaussian quadrature rule)
+
+    optimization_args : dict
+        Additional arguments for optimization.
+        Currently spline optimization for the radial basis function is available
+        Recommended settings if used {"Spline": {"accuracy": 1e-5}}
 
     expansion_by_species_method : string
         Specifies the how the species key of the invariant are set-up.
@@ -66,6 +111,22 @@ class SphericalExpansion(BaseIO):
         list of species to use to set-up the species key of the invariant. It
         should contain all the species present in the structure for which
         invariants will be computed
+
+    compute_gradients : bool
+        control the computation of the representation's gradients w.r.t. atomic
+        positions.
+
+    cutoff_function_parameters : dict
+        Additional parameters for the cutoff function.
+        if cutoff_function_type == 'RadialScaling' then it should have the form
+
+        .. code:: python
+
+            dict(rate=...,
+                 scale=...,
+                 exponent=...)
+
+        where :code:`...` should be replaced by the desired value.
 
     Methods
     -------
@@ -129,18 +190,11 @@ class SphericalExpansion(BaseIO):
                 if 'accuracy' in optimization_args:
                     accuracy = optimization_args['accuracy']
                 else:
-                    accuracy = 1e-8
-                if 'range' in optimization_args:
-                    spline_range = optimization_args['range']
-                else:
-                    # TODO(felix) remove this when there is a check for the
-                    # distance for the usage of the interpolator in the
-                    # RadialContribution
-                    print("Warning: default parameter for spline range is used.")
-                    spline_range = (0, interaction_cutoff)
+                    accuracy = 1e-5
+                    print('No accuracy for spline optimization was given. Switching to default accuracy {:.0e}.'.format(
+                        accuracy))
                 optimization_args = {
-                    'type': 'Spline', 'accuracy': accuracy, 'range': {
-                        'begin': spline_range[0], 'end': spline_range[1]}}
+                    'type': 'Spline', 'accuracy': accuracy}
             elif optimization_args['type'] == 'None':
                 optimization_args = dict({'type': 'None'})
             else:
