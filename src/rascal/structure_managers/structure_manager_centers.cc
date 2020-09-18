@@ -83,6 +83,14 @@ namespace rascal {
 
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     atom_cluster_indices.fill_sequence();
+
+    if ((this->atoms_object.atom_types.array() >= MaxChemElements).any() or
+        (this->atoms_object.atom_types.array() < 0).any()) {
+      std::stringstream err_str{};
+      err_str << "atom types (or atomic numbers) should be in the range [0, "
+              << MaxChemElements << "].";
+      throw std::runtime_error(err_str.str());
+    }
   }
 
   /* ---------------------------------------------------------------------- */
