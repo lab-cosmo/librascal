@@ -135,6 +135,10 @@ void ModifiedSphericalBessel::calc(double distance, double fac_a) {
     // 0th order approximation
     this->bessel_values.col(0) = Eigen::exp(-this->x_v.square() * fac_a);
     this->set_small_bessel_values_to_zero();
+    if (compute_gradients) {
+      this->bessel_gradients.setZero();
+    }
+    return;
   }
 
   if (this->order_max == 1) {
