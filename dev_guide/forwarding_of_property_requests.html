@@ -257,12 +257,12 @@
 <span class="cm"> */</span>
 
 <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Impl</span><span class="o">&gt;</span>
-<span class="k">struct</span> <span class="n">traits</span><span class="p">;</span>
+<span class="k">struct</span> <span class="nc">traits</span><span class="p">;</span>
 
 <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Impl</span><span class="o">&gt;</span>
 <span class="k">class</span> <span class="nc">Interface</span> <span class="p">{</span>
  <span class="k">public</span><span class="o">:</span>
-  <span class="k">typedef</span> <span class="k">typename</span> <span class="n">traits</span><span class="o">&lt;</span><span class="n">Impl</span><span class="o">&gt;::</span><span class="n">underlying_manager_t</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
+  <span class="k">typedef</span> <span class="k">typename</span> <span class="nc">traits</span><span class="o">&lt;</span><span class="n">Impl</span><span class="o">&gt;::</span><span class="n">underlying_manager_t</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
   <span class="n">Interface</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
 
   <span class="kt">int</span> <span class="nf">get_id</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">implementation</span><span class="p">().</span><span class="n">get_id</span><span class="p">();</span> <span class="p">}</span>
@@ -296,7 +296,7 @@
 <span class="k">class</span> <span class="nc">RootImplementation</span><span class="p">;</span>
 
 <span class="k">template</span> <span class="o">&lt;&gt;</span>
-<span class="k">struct</span> <span class="n">traits</span><span class="o">&lt;</span><span class="n">RootImplementation</span><span class="o">&gt;</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">traits</span><span class="o">&lt;</span><span class="n">RootImplementation</span><span class="o">&gt;</span> <span class="p">{</span>
   <span class="k">typedef</span> <span class="n">RootImplementation</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
 <span class="p">};</span>
 
@@ -306,7 +306,7 @@
       <span class="k">public</span> <span class="n">std</span><span class="o">::</span><span class="n">enable_shared_from_this</span><span class="o">&lt;</span><span class="n">RootImplementation</span><span class="o">&gt;</span> <span class="p">{</span>
  <span class="k">public</span><span class="o">:</span>
   <span class="k">using</span> <span class="n">this_traits</span> <span class="o">=</span> <span class="n">traits</span><span class="o">&lt;</span><span class="n">RootImplementation</span><span class="o">&gt;</span><span class="p">;</span>
-  <span class="k">typedef</span> <span class="k">typename</span> <span class="n">this_traits</span><span class="o">::</span><span class="n">underlying_manager_t</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
+  <span class="k">typedef</span> <span class="k">typename</span> <span class="nc">this_traits</span><span class="o">::</span><span class="n">underlying_manager_t</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
   <span class="n">RootImplementation</span><span class="p">(</span><span class="kt">int</span> <span class="n">id</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">has_property</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">this</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">=</span> <span class="n">id</span><span class="p">;</span>
     <span class="k">this</span><span class="o">-&gt;</span><span class="n">has_property</span> <span class="o">=</span> <span class="n">has_property</span><span class="p">;</span>
@@ -319,7 +319,7 @@
     <span class="c1">// this line wrongly first created a new instance and then wrapped it in a</span>
     <span class="c1">// shared ptr instead of only wrapping this in a shared ptr return</span>
     <span class="c1">// std::make_shared&lt;underlying_manager_t&gt;(*this);</span>
-    <span class="k">return</span> <span class="n">shared_from_this</span><span class="p">();</span>
+    <span class="k">return</span> <span class="nf">shared_from_this</span><span class="p">();</span>
   <span class="p">}</span>
 <span class="p">};</span>
 
@@ -327,7 +327,7 @@
 <span class="k">class</span> <span class="nc">AdaptorImplementation</span><span class="p">;</span>
 
 <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Impl</span><span class="o">&gt;</span>
-<span class="k">struct</span> <span class="n">traits</span><span class="o">&lt;</span><span class="n">AdaptorImplementation</span><span class="o">&lt;</span><span class="n">Impl</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">traits</span><span class="o">&lt;</span><span class="n">AdaptorImplementation</span><span class="o">&lt;</span><span class="n">Impl</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
   <span class="k">typedef</span> <span class="n">Impl</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
 <span class="p">};</span>
 
@@ -335,7 +335,7 @@
 <span class="k">class</span> <span class="nc">AdaptorImplementation</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Interface</span><span class="o">&lt;</span><span class="n">AdaptorImplementation</span><span class="o">&lt;</span><span class="n">Impl</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
  <span class="k">public</span><span class="o">:</span>
   <span class="k">using</span> <span class="n">this_traits</span> <span class="o">=</span> <span class="n">traits</span><span class="o">&lt;</span><span class="n">AdaptorImplementation</span><span class="o">&gt;</span><span class="p">;</span>
-  <span class="k">typedef</span> <span class="k">typename</span> <span class="n">this_traits</span><span class="o">::</span><span class="n">underlying_manager_t</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
+  <span class="k">typedef</span> <span class="k">typename</span> <span class="nc">this_traits</span><span class="o">::</span><span class="n">underlying_manager_t</span> <span class="n">underlying_manager_t</span><span class="p">;</span>
   <span class="n">AdaptorImplementation</span><span class="p">(</span><span class="kt">int</span> <span class="n">id</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Impl</span><span class="o">&gt;</span> <span class="n">underlying_manager</span><span class="p">,</span>
                         <span class="kt">bool</span> <span class="n">has_property</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">this</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">=</span> <span class="n">id</span><span class="p">;</span>

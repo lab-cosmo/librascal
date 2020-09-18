@@ -166,11 +166,11 @@
   <h1>Source code for rascal.representations.spherical_covariants</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">json</span>
 
-<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">CalculatorFactory</span><span class="p">,</span> <span class="n">cutoff_function_dict_switch</span>
-<span class="kn">from</span> <span class="nn">..neighbourlist</span> <span class="k">import</span> <span class="n">AtomsList</span>
+<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">CalculatorFactory</span><span class="p">,</span> <span class="n">cutoff_function_dict_switch</span>
+<span class="kn">from</span> <span class="nn">..neighbourlist</span> <span class="kn">import</span> <span class="n">AtomsList</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">BaseIO</span>
-<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">BaseIO</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 
 
 <div class="viewcode-block" id="SphericalCovariants"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SphericalCovariants">[docs]</a><span class="k">class</span> <span class="nc">SphericalCovariants</span><span class="p">(</span><span class="n">BaseIO</span><span class="p">):</span>
@@ -178,7 +178,7 @@
 <span class="sd">    Computes a SphericalCovariants representation, i.e. lambda spectrum.</span>
 
 <span class="sd">    Attributes</span>
-<span class="sd">    ---------------</span>
+<span class="sd">    ----------</span>
 <span class="sd">    interaction_cutoff : float</span>
 <span class="sd">        Maximum pairwise distance for atoms to be considered in</span>
 <span class="sd">        expansion</span>
@@ -201,14 +201,73 @@
 <span class="sd">        Specifies the atomic Gaussian widths, in the case where they&#39;re</span>
 <span class="sd">        fixed.</span>
 
+<span class="sd">    cutoff_function_type : string</span>
+<span class="sd">        Choose the type of smooth cutoff function used to define the local</span>
+<span class="sd">        environment. Can be either &#39;ShiftedCosine&#39; or &#39;RadialScaling&#39;.</span>
+
+<span class="sd">        If &#39;ShiftedCosine&#39;, the functional form of the switching function is:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            sc(r) = \\begin{cases}</span>
+<span class="sd">            1 &amp;r &lt; r_c - sw,\\\\</span>
+<span class="sd">            0.5 + 0.5 \cos(\pi * (r - r_c + sw) / sw) &amp;r_c - sw &lt; r &lt;= r_c, \\\\</span>
+<span class="sd">            0 &amp;r_c &lt; r,</span>
+<span class="sd">            \\end{cases}</span>
+
+<span class="sd">        where :math:`r_c` is the interaction_cutoff and :math:`sw` is the</span>
+<span class="sd">        cutoff_smooth_width.</span>
+
+<span class="sd">        If &#39;RadialScaling&#39;, the functional form of the switching function is</span>
+<span class="sd">        as expressed in equation 21 of https://doi.org/10.1039/c8cp05921g:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            rs(r) = sc(r) u(r),</span>
+
+<span class="sd">        where</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            u(r) = \\begin{cases}</span>
+<span class="sd">            \\frac{1}{(r/r_0)^m} &amp;\\text{if c=0,}\\\\</span>
+<span class="sd">            1 &amp;\\text{if m=0,} \\\\</span>
+<span class="sd">            \\frac{c}{c+(r/r_0)^m} &amp;\\text{else},</span>
+<span class="sd">            \\end{cases}</span>
+
+<span class="sd">        where :math:`c` is the rate, :math:`r_0` is the scale, :math:`m` is the</span>
+<span class="sd">        exponent.</span>
+
+<span class="sd">    normalize : boolean</span>
+<span class="sd">        Whether to normalize so that the kernel between identical environments</span>
+<span class="sd">        is 1.  Default and highly recommended: True.</span>
+
+<span class="sd">    radial_basis :  string</span>
+<span class="sd">        Specifies the type of radial basis R_n to be computed</span>
+<span class="sd">        (&quot;GTO&quot; for Gaussian typed orbitals and &quot;DVR&quot; discrete variable</span>
+<span class="sd">        representation using Gauss-Legendre quadrature rule)</span>
+
 <span class="sd">    soap_type : string</span>
 <span class="sd">        Specifies the type of representation to be computed.</span>
 
-<span class="sd">    inversion_symmetry : Boolean</span>
+<span class="sd">    inversion_symmetry : boolean</span>
 <span class="sd">        Specifies whether inversion invariance should be enforced.</span>
 
 <span class="sd">    lam : int</span>
 <span class="sd">        Order of the lambda spectrum.</span>
+
+<span class="sd">    cutoff_function_parameters : dict</span>
+<span class="sd">        Additional parameters for the cutoff function.</span>
+<span class="sd">        if cutoff_function_type == &#39;RadialScaling&#39; then it should have the form</span>
+
+<span class="sd">        .. code:: python</span>
+
+<span class="sd">            dict(rate=...,</span>
+<span class="sd">                 scale=...,</span>
+<span class="sd">                 exponent=...)</span>
+
+<span class="sd">        where :code:`...` should be replaced by the desired value.</span>
+
 
 <span class="sd">    Methods</span>
 <span class="sd">    -------</span>
@@ -223,11 +282,12 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction_cutoff</span><span class="p">,</span> <span class="n">cutoff_smooth_width</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction_cutoff</span><span class="p">,</span> <span class="n">cutoff_smooth_width</span><span class="p">,</span>
                  <span class="n">max_radial</span><span class="p">,</span> <span class="n">max_angular</span><span class="p">,</span> <span class="n">gaussian_sigma_type</span><span class="p">,</span>
                  <span class="n">gaussian_sigma_constant</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
                  <span class="n">cutoff_function_type</span><span class="o">=</span><span class="s2">&quot;ShiftedCosine&quot;</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">radial_basis</span><span class="o">=</span><span class="s2">&quot;GTO&quot;</span><span class="p">,</span>
+                 <span class="n">optimization_args</span><span class="o">=</span><span class="p">{},</span>
                  <span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;LambdaSpectrum&quot;</span><span class="p">,</span> <span class="n">inversion_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">lam</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                  <span class="n">cutoff_function_parameters</span><span class="o">=</span><span class="nb">dict</span><span class="p">()):</span>
@@ -261,8 +321,28 @@
                 <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;AA&#39;</span>
             <span class="p">),</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimization_args</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">optimization_args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;type&#39;</span> <span class="ow">in</span> <span class="n">optimization_args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Spline&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;accuracy&#39;</span> <span class="ow">in</span> <span class="n">optimization_args</span><span class="p">:</span>
+                    <span class="n">accuracy</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">accuracy</span> <span class="o">=</span> <span class="mf">1e-5</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No accuracy for spline optimization was given. Switching to default accuracy </span><span class="si">{:.0e}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">accuracy</span><span class="p">))</span>
+                <span class="n">optimization_args</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Spline&#39;</span><span class="p">,</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="n">accuracy</span><span class="p">}</span>
+            <span class="k">elif</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
+                <span class="n">optimization_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;None&#39;</span><span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Optimization type is not known. Switching to no&#39;</span>
+                      <span class="s1">&#39; optimization.&#39;</span><span class="p">)</span>
+                <span class="n">optimization_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;None&#39;</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">optimization_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;None&#39;</span><span class="p">})</span>
         <span class="n">radial_contribution</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="nb">type</span><span class="o">=</span><span class="n">radial_basis</span><span class="p">,</span>
+            <span class="n">optimization</span><span class="o">=</span><span class="n">optimization_args</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">update_hyperparameters</span><span class="p">(</span><span class="n">cutoff_function</span><span class="o">=</span><span class="n">cutoff_function</span><span class="p">,</span>

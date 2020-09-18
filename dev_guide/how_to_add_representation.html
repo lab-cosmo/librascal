@@ -249,16 +249,16 @@ These hyperparameters can:</p>
  <span class="k">public</span><span class="o">:</span>
   <span class="k">using</span> <span class="n">Parent</span> <span class="o">=</span> <span class="n">CalculatorBase</span><span class="p">;</span>
   <span class="c1">// type of the hyperparameters</span>
-  <span class="k">using</span> <span class="n">Hypers_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">Parent</span><span class="o">::</span><span class="n">Hypers_t</span><span class="p">;</span>
+  <span class="k">using</span> <span class="n">Hypers_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="nc">Parent</span><span class="o">::</span><span class="n">Hypers_t</span><span class="p">;</span>
   <span class="c1">// numeric type for the representation features</span>
-  <span class="k">using</span> <span class="n">Precision_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">Parent</span><span class="o">::</span><span class="n">Precision_t</span><span class="p">;</span>
+  <span class="k">using</span> <span class="n">Precision_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="nc">Parent</span><span class="o">::</span><span class="n">Precision_t</span><span class="p">;</span>
   <span class="c1">// type of the data structure for the representation feaures</span>
   <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">StructureManager</span><span class="o">&gt;</span>
   <span class="k">using</span> <span class="n">Property_t</span> <span class="o">=</span>
       <span class="n">Property</span><span class="o">&lt;</span><span class="n">Precision_t</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">StructureManager</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Dynamic</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span>
   <span class="c1">// short hand type to help the iteration over the structure manager</span>
   <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">StructureManager</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">Order</span><span class="o">&gt;</span>
-  <span class="k">using</span> <span class="n">ClusterRef_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">StructureManager</span><span class="o">::</span><span class="k">template</span> <span class="n">ClusterRef</span><span class="o">&lt;</span><span class="n">Order</span><span class="o">&gt;</span><span class="p">;</span>
+  <span class="k">using</span> <span class="n">ClusterRef_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="nc">StructureManager</span><span class="o">::</span><span class="k">template</span> <span class="n">ClusterRef</span><span class="o">&lt;</span><span class="n">Order</span><span class="o">&gt;</span><span class="p">;</span>
   <span class="c1">// type of the datastructure used to register the list of valid</span>
   <span class="c1">// hyperparameters</span>
   <span class="k">using</span> <span class="n">ReferenceHypers_t</span> <span class="o">=</span> <span class="n">Parent</span><span class="o">::</span><span class="n">ReferenceHypers_t</span><span class="p">;</span>
@@ -371,12 +371,12 @@ These hyperparameters can:</p>
 <span class="c1">// Empty general template class implementing the determination of the</span>
 <span class="c1">// sorting order for the coulomb matrix. It should never be instantiated.</span>
 <span class="k">template</span> <span class="o">&lt;</span><span class="n">CMSortAlgorithm</span> <span class="n">Method</span><span class="o">&gt;</span>
-<span class="k">struct</span> <span class="n">SortCoulomMatrix</span> <span class="p">{};</span>
+<span class="k">struct</span> <span class="nc">SortCoulomMatrix</span> <span class="p">{};</span>
 </pre></div>
 </div>
 <p>The specific implementation of the two options is done in with template specialization</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;&gt;</span>
-<span class="k">struct</span> <span class="n">SortCoulomMatrix</span><span class="o">&lt;</span><span class="n">CMSortAlgorithm</span><span class="o">::</span><span class="n">Distance</span><span class="o">&gt;</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">SortCoulomMatrix</span><span class="o">&lt;</span><span class="n">CMSortAlgorithm</span><span class="o">::</span><span class="n">Distance</span><span class="o">&gt;</span> <span class="p">{</span>
   <span class="cm">/**</span>
 <span class="cm">   * Sort the coulomb matrix using the distance to the central atom</span>
 <span class="cm">   * as reference order.</span>
@@ -413,7 +413,7 @@ These hyperparameters can:</p>
 <span class="p">};</span>
 
 <span class="k">template</span> <span class="o">&lt;&gt;</span>
-<span class="k">struct</span> <span class="n">SortCoulomMatrix</span><span class="o">&lt;</span><span class="n">CMSortAlgorithm</span><span class="o">::</span><span class="n">RowNorm</span><span class="o">&gt;</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">SortCoulomMatrix</span><span class="o">&lt;</span><span class="n">CMSortAlgorithm</span><span class="o">::</span><span class="n">RowNorm</span><span class="o">&gt;</span> <span class="p">{</span>
   <span class="cm">/**</span>
 <span class="cm">   * Sort the coulomb matrix using the distance to the central atom</span>
 <span class="cm">   * as reference order.</span>
@@ -499,7 +499,7 @@ These hyperparameters can:</p>
 <span class="k">using</span> <span class="n">TypeHolder_t</span> <span class="o">=</span>
     <span class="n">StructureManagerTypeHolder</span><span class="o">&lt;</span><span class="n">StructureManagerCenters</span><span class="p">,</span>
                                <span class="n">AdaptorNeighbourList</span><span class="p">,</span> <span class="n">AdaptorStrict</span><span class="o">&gt;</span><span class="p">;</span>
-<span class="k">using</span> <span class="n">ManagerList_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">TypeHolder_t</span><span class="o">::</span><span class="n">type_list</span><span class="p">;</span>
+<span class="k">using</span> <span class="n">ManagerList_t</span> <span class="o">=</span> <span class="k">typename</span> <span class="nc">TypeHolder_t</span><span class="o">::</span><span class="n">type_list</span><span class="p">;</span>
 <span class="c1">// using Manager_t = typename TypeHolder_t::type;</span>
 <span class="c1">// StructureManagerCenters,AdaptorNeighbourList, AdaptorStrict</span>
 <span class="c1">// Defines the representation manager type for the particular structure</span>

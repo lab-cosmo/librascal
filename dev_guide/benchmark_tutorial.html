@@ -227,13 +227,13 @@ interpolator</p>
 <span class="cm"> * are needed for the `SphericalRepresentationBFixture` we give them dummy</span>
 <span class="cm"> * values.</span>
 <span class="cm"> */</span>
-<span class="k">struct</span> <span class="nl">SphericalDataset</span> <span class="p">:</span> <span class="k">public</span> <span class="n">BaseInterpolatorDataset</span> <span class="p">{</span>
-  <span class="k">using</span> <span class="n">SupportedFunc</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">BaseInterpolatorDataset</span><span class="o">::</span><span class="n">SupportedFunc</span><span class="p">;</span>
-  <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="nf">data</span><span class="p">()</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">SphericalDataset</span> <span class="o">:</span> <span class="k">public</span> <span class="n">BaseInterpolatorDataset</span> <span class="p">{</span>
+  <span class="k">using</span> <span class="n">SupportedFunc</span> <span class="o">=</span> <span class="k">typename</span> <span class="nc">BaseInterpolatorDataset</span><span class="o">::</span><span class="n">SupportedFunc</span><span class="p">;</span>
+  <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="n">data</span><span class="p">()</span> <span class="p">{</span>
     <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
         <span class="p">{</span><span class="s">&quot;nbs_iterations&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">0</span><span class="p">}},</span>             <span class="c1">// dummy</span>
         <span class="p">{</span><span class="s">&quot;ranges&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)}},</span>  <span class="c1">// dummy</span>
-        <span class="p">{</span><span class="s">&quot;log_error_bounds&quot;</span><span class="p">,</span> <span class="p">{</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mi">12</span><span class="p">}},</span>
+        <span class="p">{</span><span class="s">&quot;log_error_bounds&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">-8</span><span class="p">,</span> <span class="mi">-10</span><span class="p">,</span> <span class="mi">-12</span><span class="p">}},</span>
         <span class="p">{</span><span class="s">&quot;func_names&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">SupportedVecFunc</span><span class="o">::</span><span class="n">Dummy</span><span class="p">}},</span>  <span class="c1">// dummy</span>
         <span class="p">{</span><span class="s">&quot;radial_angular&quot;</span><span class="p">,</span>
          <span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">)}},</span>
@@ -329,7 +329,7 @@ core featuers of google benchmarks and our own added functionalities in the
 <span class="cm">   * Structure holding the data, the data is created inside a static function,</span>
 <span class="cm">   * because non primitives cannot be static as member variable.</span>
 <span class="cm">   */</span>
-  <span class="k">struct</span> <span class="n">SampleData</span> <span class="p">{</span>
+  <span class="k">struct</span> <span class="nc">SampleData</span> <span class="p">{</span>
     <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="n">data</span><span class="p">()</span> <span class="p">{</span>
       <span class="k">static</span> <span class="n">json</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{{</span><span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}},</span>
                           <span class="p">{</span><span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;crystal.json&quot;</span><span class="p">,</span> <span class="s">&quot;cube.json&quot;</span><span class="p">}}};</span>
@@ -346,7 +346,7 @@ core featuers of google benchmarks and our own added functionalities in the
 <span class="cm">   * deterministic order, therefore a map has to be built, mapping the json</span>
 <span class="cm">   * keys to the correct position when accesing the json with an index.</span>
 <span class="cm">   */</span>
-  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Dataset</span><span class="o">&gt;</span>
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Dataset</span><span class="o">&gt;</span>
   <span class="k">class</span> <span class="nc">MyBFixture</span> <span class="o">:</span> <span class="k">public</span> <span class="n">BaseBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span> <span class="p">{</span>
    <span class="k">public</span><span class="o">:</span>
     <span class="k">using</span> <span class="n">Parent</span> <span class="o">=</span> <span class="n">BaseBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span><span class="p">;</span>

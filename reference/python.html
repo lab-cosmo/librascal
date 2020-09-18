@@ -452,10 +452,44 @@ fixed.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.cutoff_function_type">
+<code class="sig-name descname">cutoff_function_type</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.cutoff_function_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Choose the type of smooth cutoff function used to define the local
+environment. Can be either ‘ShiftedCosine’ or ‘RadialScaling’.</p>
+<p>If ‘ShiftedCosine’, the functional form of the switching function is:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}sc(r) = \begin{cases}
+1 &amp;r &lt; r_c - sw,\\
+0.5 + 0.5 \cos(\pi * (r - r_c + sw) / sw) &amp;r_c - sw &lt; r &lt;= r_c, \\
+0 &amp;r_c &lt; r,
+\end{cases}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(r_c\)</span> is the interaction_cutoff and <span class="math notranslate nohighlight">\(sw\)</span> is the
+cutoff_smooth_width.</p>
+<p>If ‘RadialScaling’, the functional form of the switching function is
+as expressed in equation 21 of <a class="reference external" href="https://doi.org/10.1039/c8cp05921g">https://doi.org/10.1039/c8cp05921g</a>:</p>
+<div class="math notranslate nohighlight">
+\[rs(r) = sc(r) u(r),\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}u(r) = \begin{cases}
+\frac{1}{(r/r_0)^m} &amp;\text{if c=0,}\\
+1 &amp;\text{if m=0,} \\
+\frac{c}{c+(r/r_0)^m} &amp;\text{else},
+\end{cases}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(c\)</span> is the rate, <span class="math notranslate nohighlight">\(r_0\)</span> is the scale, <span class="math notranslate nohighlight">\(m\)</span> is the
+exponent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rascal.representations.SphericalInvariants.soap_type">
 <code class="sig-name descname">soap_type</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.soap_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specifies the type of representation to be computed
-(power spectrum etc.).</p>
+(“RadialSpectrum”, “PowerSpectrum” and “BiSpectrum”).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>string</p>
@@ -470,7 +504,20 @@ fixed.</p>
 (Only relevant for BiSpectrum.)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Boolean</p>
+<dd class="field-odd"><p>boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.radial_basis">
+<code class="sig-name descname">radial_basis</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.radial_basis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the type of radial basis R_n to be computed
+(“GTO” for Gaussian typed orbitals and “DVR” discrete variable
+representation using Gaussian-Legendre quadrature rule)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>string</p>
 </dd>
 </dl>
 </dd></dl>
@@ -483,6 +530,19 @@ is 1.  Default and highly recommended: True.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalInvariants.optimization_args">
+<code class="sig-name descname">optimization_args</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.optimization_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional arguments for optimization.
+Currently spline optimization for the radial basis function is available
+Recommended settings if used {“Spline”: {“accuracy”: 1e-5}}</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -545,47 +605,13 @@ positions.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rascal.representations.SphericalInvariants.cutoff_function_type">
-<code class="sig-name descname">cutoff_function_type</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.cutoff_function_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>Choose the type of smooth cutoff function used to define the local
-environment. Can be either ‘ShiftedCosine’ or ‘RadialScaling’.</p>
-<p>If ‘ShiftedCosine’, the functional form of the switching function is:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}sc(r) = \begin{cases}
-1 &amp;r &lt; r_c - sw,\\
-0.5 + 0.5 \cos(\pi * (r - r_c + sw) / sw) &amp;r_c - sw &lt; r &lt;= r_c, \\
-0 &amp;r_c &lt; r,
-\end{cases}\end{split}\]</div>
-<p>where <span class="math notranslate nohighlight">\(r_c\)</span> is the interaction_cutoff and <span class="math notranslate nohighlight">\(sw\)</span> is the
-cutoff_smooth_width.</p>
-<p>If ‘RadialScaling’, the functional form of the switching function is
-as expressed in equation 21 of <a class="reference external" href="https://doi.org/10.1039/c8cp05921g">https://doi.org/10.1039/c8cp05921g</a>:</p>
-<div class="math notranslate nohighlight">
-\[rs(r) = sc(r) u(r),\]</div>
-<p>where</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}u(r) = \begin{cases}
-\frac{1}{(r/r_0)^m} &amp;\text{if c=0,}\\
-1 &amp;\text{if m=0,} \\
-\frac{c}{c+(r/r_0)^m} &amp;\text{else},
-\end{cases}\end{split}\]</div>
-<p>where <span class="math notranslate nohighlight">\(c\)</span> is the rate, <span class="math notranslate nohighlight">\(r_0\)</span> is the scale, <span class="math notranslate nohighlight">\(m\)</span> is the
-exponent.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>string</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
 <dt id="rascal.representations.SphericalInvariants.cutoff_function_parameters">
 <code class="sig-name descname">cutoff_function_parameters</code><a class="headerlink" href="#rascal.representations.SphericalInvariants.cutoff_function_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Additional parameters for the cutoff function.
 if cutoff_function_type == ‘RadialScaling’ then it should have the form</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">dict</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">value</span><span class="o">=...</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;AA&#39;</span><span class="p">),</span>
-     <span class="n">scale</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">value</span><span class="o">=...</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;AA&#39;</span><span class="p">),</span>
-     <span class="n">exponent</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">value</span><span class="o">=...</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;AA&#39;</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">dict</span><span class="p">(</span><span class="n">rate</span><span class="o">=...</span><span class="p">,</span>
+     <span class="n">scale</span><span class="o">=...</span><span class="p">,</span>
+     <span class="n">exponent</span><span class="o">=...</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>where <code class="code docutils literal notranslate"><span class="pre">...</span></code> should be replaced by the desired value.</p>
@@ -670,7 +696,7 @@ environments”, Phys. Rev. B. 87(18), p. 184115
 
 <dl class="class">
 <dt id="rascal.representations.SphericalCovariants">
-<em class="property">class </em><code class="sig-prename descclassname">rascal.representations.</code><code class="sig-name descname">SphericalCovariants</code><span class="sig-paren">(</span><em class="sig-param">interaction_cutoff</em>, <em class="sig-param">cutoff_smooth_width</em>, <em class="sig-param">max_radial</em>, <em class="sig-param">max_angular</em>, <em class="sig-param">gaussian_sigma_type</em>, <em class="sig-param">gaussian_sigma_constant=0.3</em>, <em class="sig-param">cutoff_function_type='ShiftedCosine'</em>, <em class="sig-param">normalize=True</em>, <em class="sig-param">radial_basis='GTO'</em>, <em class="sig-param">soap_type='LambdaSpectrum'</em>, <em class="sig-param">inversion_symmetry=True</em>, <em class="sig-param">lam=0</em>, <em class="sig-param">cutoff_function_parameters={}</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_covariants.html#SphericalCovariants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalCovariants" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">rascal.representations.</code><code class="sig-name descname">SphericalCovariants</code><span class="sig-paren">(</span><em class="sig-param">interaction_cutoff</em>, <em class="sig-param">cutoff_smooth_width</em>, <em class="sig-param">max_radial</em>, <em class="sig-param">max_angular</em>, <em class="sig-param">gaussian_sigma_type</em>, <em class="sig-param">gaussian_sigma_constant=0.3</em>, <em class="sig-param">cutoff_function_type='ShiftedCosine'</em>, <em class="sig-param">normalize=True</em>, <em class="sig-param">radial_basis='GTO'</em>, <em class="sig-param">optimization_args={}</em>, <em class="sig-param">soap_type='LambdaSpectrum'</em>, <em class="sig-param">inversion_symmetry=True</em>, <em class="sig-param">lam=0</em>, <em class="sig-param">cutoff_function_parameters={}</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_covariants.html#SphericalCovariants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.representations.SphericalCovariants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a SphericalCovariants representation, i.e. lambda spectrum.</p>
 <dl class="attribute">
 <dt id="rascal.representations.SphericalCovariants.interaction_cutoff">
@@ -743,6 +769,65 @@ fixed.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.cutoff_function_type">
+<code class="sig-name descname">cutoff_function_type</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.cutoff_function_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Choose the type of smooth cutoff function used to define the local
+environment. Can be either ‘ShiftedCosine’ or ‘RadialScaling’.</p>
+<p>If ‘ShiftedCosine’, the functional form of the switching function is:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}sc(r) = \begin{cases}
+1 &amp;r &lt; r_c - sw,\\
+0.5 + 0.5 \cos(\pi * (r - r_c + sw) / sw) &amp;r_c - sw &lt; r &lt;= r_c, \\
+0 &amp;r_c &lt; r,
+\end{cases}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(r_c\)</span> is the interaction_cutoff and <span class="math notranslate nohighlight">\(sw\)</span> is the
+cutoff_smooth_width.</p>
+<p>If ‘RadialScaling’, the functional form of the switching function is
+as expressed in equation 21 of <a class="reference external" href="https://doi.org/10.1039/c8cp05921g">https://doi.org/10.1039/c8cp05921g</a>:</p>
+<div class="math notranslate nohighlight">
+\[rs(r) = sc(r) u(r),\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}u(r) = \begin{cases}
+\frac{1}{(r/r_0)^m} &amp;\text{if c=0,}\\
+1 &amp;\text{if m=0,} \\
+\frac{c}{c+(r/r_0)^m} &amp;\text{else},
+\end{cases}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(c\)</span> is the rate, <span class="math notranslate nohighlight">\(r_0\)</span> is the scale, <span class="math notranslate nohighlight">\(m\)</span> is the
+exponent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.normalize">
+<code class="sig-name descname">normalize</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to normalize so that the kernel between identical environments
+is 1.  Default and highly recommended: True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.radial_basis">
+<code class="sig-name descname">radial_basis</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.radial_basis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies the type of radial basis R_n to be computed
+(“GTO” for Gaussian typed orbitals and “DVR” discrete variable
+representation using Gauss-Legendre quadrature rule)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rascal.representations.SphericalCovariants.soap_type">
 <code class="sig-name descname">soap_type</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.soap_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specifies the type of representation to be computed.</p>
@@ -759,7 +844,7 @@ fixed.</p>
 <dd><p>Specifies whether inversion invariance should be enforced.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Boolean</p>
+<dd class="field-odd"><p>boolean</p>
 </dd>
 </dl>
 </dd></dl>
@@ -771,6 +856,24 @@ fixed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.representations.SphericalCovariants.cutoff_function_parameters">
+<code class="sig-name descname">cutoff_function_parameters</code><a class="headerlink" href="#rascal.representations.SphericalCovariants.cutoff_function_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional parameters for the cutoff function.
+if cutoff_function_type == ‘RadialScaling’ then it should have the form</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">dict</span><span class="p">(</span><span class="n">rate</span><span class="o">=...</span><span class="p">,</span>
+     <span class="n">scale</span><span class="o">=...</span><span class="p">,</span>
+     <span class="n">exponent</span><span class="o">=...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="code docutils literal notranslate"><span class="pre">...</span></code> should be replaced by the desired value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>

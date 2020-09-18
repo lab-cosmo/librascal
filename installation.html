@@ -351,9 +351,9 @@ ctest -V
 <p>You can also run the tests with Valgrind (a memory-error checker) by passing
 <code class="docutils literal notranslate"><span class="pre">-DRASCAL_TESTS_USE_VALGRIND=ON</span></code> to <code class="docutils literal notranslate"><span class="pre">cmake</span></code>.</p>
 <p>In addition to testing the behaviour of the code, the test suite also check
-for formatting compliance with the clang-format and autopep8 packages (these
-dependencies are optional). To install these dependencies on Ubuntu:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo apt-get install clang-format
+for formatting compliance with clang-format 8.0 or higher and autopep8 packages
+(these dependencies are optional). To install these dependencies on Ubuntu:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo apt-get install clang-format-8
 pip3 install autopep8
 </pre></div>
 </div>

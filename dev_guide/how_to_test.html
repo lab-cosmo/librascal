@@ -303,7 +303,7 @@
   <span class="c1">// *default constructor*, i.e., without parameters) initialises the</span>
   <span class="c1">//structure)</span>
   <span class="k">template</span> <span class="o">&lt;</span><span class="kt">int</span> <span class="n">Dim</span><span class="o">&gt;</span>
-  <span class="k">struct</span> <span class="n">DemoTestFixture</span> <span class="p">{</span>
+  <span class="k">struct</span> <span class="nc">DemoTestFixture</span> <span class="p">{</span>
 
     <span class="k">static</span> <span class="k">constexpr</span> <span class="kt">int</span> <span class="n">dim</span><span class="p">(){</span><span class="k">return</span> <span class="n">Dim</span><span class="p">;}</span>
 
@@ -339,7 +339,7 @@
 </div>
 <p>The basic unit test tool in Python’s <code class="docutils literal notranslate"><span class="pre">unittest</span></code> module is the <code class="docutils literal notranslate"><span class="pre">unittest.TestCase</span></code> class. New test cases need to inherit from it, define a test case initialisation method <code class="docutils literal notranslate"><span class="pre">setUp(self)</span></code> and one or more test methods <code class="docutils literal notranslate"><span class="pre">test_*(self)</span></code>. Say we create a new test case to test the distance matrix calculation function <code class="docutils literal notranslate"><span class="pre">cdist</span></code>:</p>
 <div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">unittest</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">python_import_rascal</span> <span class="kn">import</span> <span class="n">_rascal</span> <span class="k">as</span> <span class="n">pt</span>
 
 <span class="k">class</span> <span class="nc">TestCdist</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
@@ -392,11 +392,11 @@ use the classes RepresentationCalculatorGradientProvider (to provide the functio
 and its gradient) and RepresentationCalculatorGradientFixture (to assist in
 iterating over the atoms of the structure).  An example of its usage is shown
 below, excerpted from <code class="file docutils literal notranslate"><span class="pre">tests/test_calculator.cc</span></code>:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">RepresentationCalculatorGradientProvider</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Fix</span><span class="o">::</span><span class="n">Representation_t</span><span class="p">,</span>
-                                         <span class="k">typename</span> <span class="n">Fix</span><span class="o">::</span><span class="n">Manager_t</span><span class="o">&gt;</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">RepresentationCalculatorGradientProvider</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Fix</span><span class="o">::</span><span class="n">Representation_t</span><span class="p">,</span>
+                                         <span class="k">typename</span> <span class="nc">Fix</span><span class="o">::</span><span class="n">Manager_t</span><span class="o">&gt;</span>
     <span class="n">provider</span><span class="p">(</span><span class="n">representations</span><span class="p">.</span><span class="n">back</span><span class="p">(),</span> <span class="n">manager</span><span class="p">,</span> <span class="n">structures</span><span class="p">.</span><span class="n">back</span><span class="p">());</span>
-<span class="n">RepresentationCalculatorGradientFixture</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Fix</span><span class="o">::</span><span class="n">Representation_t</span><span class="p">,</span>
-                                        <span class="k">typename</span> <span class="n">Fix</span><span class="o">::</span><span class="n">Manager_t</span><span class="o">&gt;</span>
+<span class="n">RepresentationCalculatorGradientFixture</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Fix</span><span class="o">::</span><span class="n">Representation_t</span><span class="p">,</span>
+                                        <span class="k">typename</span> <span class="nc">Fix</span><span class="o">::</span><span class="n">Manager_t</span><span class="o">&gt;</span>
     <span class="n">grad_fix</span><span class="p">(</span><span class="s">&quot;reference_data/tests_only/&quot;</span>
              <span class="s">&quot;spherical_expansion_gradient_test.json&quot;</span><span class="p">,</span>
              <span class="n">manager</span><span class="p">,</span> <span class="n">provider</span><span class="p">);</span>

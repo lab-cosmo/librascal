@@ -165,14 +165,14 @@
             
   <h1>Source code for rascal.representations.spherical_invariants</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">product</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
 <span class="kn">import</span> <span class="nn">ase</span>
 
-<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">CalculatorFactory</span><span class="p">,</span> <span class="n">cutoff_function_dict_switch</span>
-<span class="kn">from</span> <span class="nn">..neighbourlist</span> <span class="k">import</span> <span class="n">AtomsList</span>
+<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">CalculatorFactory</span><span class="p">,</span> <span class="n">cutoff_function_dict_switch</span>
+<span class="kn">from</span> <span class="nn">..neighbourlist</span> <span class="kn">import</span> <span class="n">AtomsList</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">BaseIO</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">BaseIO</span>
 
 
 <span class="k">def</span> <span class="nf">get_power_spectrum_index_mapping</span><span class="p">(</span><span class="n">sp_pairs</span><span class="p">,</span> <span class="n">n_max</span><span class="p">,</span> <span class="n">l_max</span><span class="p">):</span>
@@ -215,53 +215,6 @@
 <span class="sd">        Specifies the atomic Gaussian widths, in the case where they&#39;re</span>
 <span class="sd">        fixed.</span>
 
-<span class="sd">    soap_type : string</span>
-<span class="sd">        Specifies the type of representation to be computed</span>
-<span class="sd">        (power spectrum etc.).</span>
-
-<span class="sd">    inversion_symmetry : Boolean</span>
-<span class="sd">        Specifies whether inversion invariance should be enforced.</span>
-<span class="sd">        (Only relevant for BiSpectrum.)</span>
-
-<span class="sd">    normalize : boolean</span>
-<span class="sd">        Whether to normalize so that the kernel between identical environments</span>
-<span class="sd">        is 1.  Default and highly recommended: True.</span>
-
-<span class="sd">    expansion_by_species_method : string</span>
-<span class="sd">        Specifies the how the species key of the invariant are set-up.</span>
-<span class="sd">        Possible values: &#39;environment wise&#39;, &#39;user defined&#39;, &#39;structure wise&#39;.</span>
-<span class="sd">        The descriptor is computed for each atomic enviroment and it is indexed</span>
-<span class="sd">        using tuples of atomic species that are present within the environment.</span>
-<span class="sd">        This index is by definition sparse since a species tuple will be non</span>
-<span class="sd">        zero only if the atomic species are present inside the environment.</span>
-<span class="sd">        &#39;environment wise&#39; means that each environmental representation</span>
-<span class="sd">        will only contain the minimal set of species tuples needed by each</span>
-<span class="sd">        atomic environment.</span>
-<span class="sd">        &#39;structure wise&#39; means that within a structure the species tuples</span>
-<span class="sd">        will be the same for each environment coefficients.</span>
-<span class="sd">        &#39;user defined&#39; uses global_species to set-up the species tuples.</span>
-
-<span class="sd">        These different settings correspond to different trade-off between</span>
-<span class="sd">        the memory efficiency of the invariants and the computational</span>
-<span class="sd">        efficiency of the kernel computation.</span>
-<span class="sd">        When computing a kernel using &#39;environment wise&#39; setting does not allow</span>
-<span class="sd">        for efficent matrix matrix multiplications which is ensured when</span>
-<span class="sd">        &#39;user defined&#39; is used. &#39;structure wise&#39; is a balance between the</span>
-<span class="sd">        memory footprint and the use of matrix matrix products.</span>
-
-<span class="sd">        Note that the sparsity of the gradient coefficients and their use to</span>
-<span class="sd">        build kernels does not allow for clear efficiency gains so their</span>
-<span class="sd">        sparsity is kept irrespective of expansion_by_species_method.</span>
-
-<span class="sd">    global_species : list</span>
-<span class="sd">        list of species to use to set-up the species key of the invariant. It</span>
-<span class="sd">        should contain all the species present in the structure for which</span>
-<span class="sd">        invariants will be computed</span>
-
-<span class="sd">    compute_gradients : bool</span>
-<span class="sd">        control the computation of the representation&#39;s gradients w.r.t. atomic</span>
-<span class="sd">        positions.</span>
-
 <span class="sd">    cutoff_function_type : string</span>
 <span class="sd">        Choose the type of smooth cutoff function used to define the local</span>
 <span class="sd">        environment. Can be either &#39;ShiftedCosine&#39; or &#39;RadialScaling&#39;.</span>
@@ -299,15 +252,72 @@
 <span class="sd">        where :math:`c` is the rate, :math:`r_0` is the scale, :math:`m` is the</span>
 <span class="sd">        exponent.</span>
 
+<span class="sd">    soap_type : string</span>
+<span class="sd">        Specifies the type of representation to be computed</span>
+<span class="sd">        (&quot;RadialSpectrum&quot;, &quot;PowerSpectrum&quot; and &quot;BiSpectrum&quot;).</span>
+
+<span class="sd">    inversion_symmetry : boolean</span>
+<span class="sd">        Specifies whether inversion invariance should be enforced.</span>
+<span class="sd">        (Only relevant for BiSpectrum.)</span>
+
+<span class="sd">    radial_basis :  string</span>
+<span class="sd">        Specifies the type of radial basis R_n to be computed</span>
+<span class="sd">        (&quot;GTO&quot; for Gaussian typed orbitals and &quot;DVR&quot; discrete variable</span>
+<span class="sd">        representation using Gaussian-Legendre quadrature rule)</span>
+
+<span class="sd">    normalize : boolean</span>
+<span class="sd">        Whether to normalize so that the kernel between identical environments</span>
+<span class="sd">        is 1.  Default and highly recommended: True.</span>
+
+<span class="sd">    optimization_args : dict</span>
+<span class="sd">        Additional arguments for optimization.</span>
+<span class="sd">        Currently spline optimization for the radial basis function is available</span>
+<span class="sd">        Recommended settings if used {&quot;Spline&quot;: {&quot;accuracy&quot;: 1e-5}}</span>
+
+<span class="sd">    expansion_by_species_method : string</span>
+<span class="sd">        Specifies the how the species key of the invariant are set-up.</span>
+<span class="sd">        Possible values: &#39;environment wise&#39;, &#39;user defined&#39;, &#39;structure wise&#39;.</span>
+<span class="sd">        The descriptor is computed for each atomic enviroment and it is indexed</span>
+<span class="sd">        using tuples of atomic species that are present within the environment.</span>
+<span class="sd">        This index is by definition sparse since a species tuple will be non</span>
+<span class="sd">        zero only if the atomic species are present inside the environment.</span>
+<span class="sd">        &#39;environment wise&#39; means that each environmental representation</span>
+<span class="sd">        will only contain the minimal set of species tuples needed by each</span>
+<span class="sd">        atomic environment.</span>
+<span class="sd">        &#39;structure wise&#39; means that within a structure the species tuples</span>
+<span class="sd">        will be the same for each environment coefficients.</span>
+<span class="sd">        &#39;user defined&#39; uses global_species to set-up the species tuples.</span>
+
+<span class="sd">        These different settings correspond to different trade-off between</span>
+<span class="sd">        the memory efficiency of the invariants and the computational</span>
+<span class="sd">        efficiency of the kernel computation.</span>
+<span class="sd">        When computing a kernel using &#39;environment wise&#39; setting does not allow</span>
+<span class="sd">        for efficent matrix matrix multiplications which is ensured when</span>
+<span class="sd">        &#39;user defined&#39; is used. &#39;structure wise&#39; is a balance between the</span>
+<span class="sd">        memory footprint and the use of matrix matrix products.</span>
+
+<span class="sd">        Note that the sparsity of the gradient coefficients and their use to</span>
+<span class="sd">        build kernels does not allow for clear efficiency gains so their</span>
+<span class="sd">        sparsity is kept irrespective of expansion_by_species_method.</span>
+
+<span class="sd">    global_species : list</span>
+<span class="sd">        list of species to use to set-up the species key of the invariant. It</span>
+<span class="sd">        should contain all the species present in the structure for which</span>
+<span class="sd">        invariants will be computed</span>
+
+<span class="sd">    compute_gradients : bool</span>
+<span class="sd">        control the computation of the representation&#39;s gradients w.r.t. atomic</span>
+<span class="sd">        positions.</span>
+
 <span class="sd">    cutoff_function_parameters : dict</span>
 <span class="sd">        Additional parameters for the cutoff function.</span>
 <span class="sd">        if cutoff_function_type == &#39;RadialScaling&#39; then it should have the form</span>
 
 <span class="sd">        .. code:: python</span>
 
-<span class="sd">            dict(rate=dict(value=..., unit=&#39;AA&#39;),</span>
-<span class="sd">                 scale=dict(value=..., unit=&#39;AA&#39;),</span>
-<span class="sd">                 exponent=dict(value=..., unit=&#39;AA&#39;))</span>
+<span class="sd">            dict(rate=...,</span>
+<span class="sd">                 scale=...,</span>
+<span class="sd">                 exponent=...)</span>
 
 <span class="sd">        where :code:`...` should be replaced by the desired value.</span>
 
@@ -335,7 +345,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction_cutoff</span><span class="p">,</span> <span class="n">cutoff_smooth_width</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction_cutoff</span><span class="p">,</span> <span class="n">cutoff_smooth_width</span><span class="p">,</span>
                  <span class="n">max_radial</span><span class="p">,</span> <span class="n">max_angular</span><span class="p">,</span> <span class="n">gaussian_sigma_type</span><span class="p">,</span>
                  <span class="n">gaussian_sigma_constant</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
                  <span class="n">cutoff_function_type</span><span class="o">=</span><span class="s2">&quot;ShiftedCosine&quot;</span><span class="p">,</span>
@@ -392,18 +402,11 @@
                 <span class="k">if</span> <span class="s1">&#39;accuracy&#39;</span> <span class="ow">in</span> <span class="n">optimization_args</span><span class="p">:</span>
                     <span class="n">accuracy</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">accuracy</span> <span class="o">=</span> <span class="mf">1e-8</span>
-                <span class="k">if</span> <span class="s1">&#39;range&#39;</span> <span class="ow">in</span> <span class="n">optimization_args</span><span class="p">:</span>
-                    <span class="n">spline_range</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s1">&#39;range&#39;</span><span class="p">]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># TODO(felix) remove this when there is a check for the</span>
-                    <span class="c1"># distance for the usage of the interpolator in the</span>
-                    <span class="c1"># RadialContribution</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: default parameter for spline range is used.&quot;</span><span class="p">)</span>
-                    <span class="n">spline_range</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">interaction_cutoff</span><span class="p">)</span>
+                    <span class="n">accuracy</span> <span class="o">=</span> <span class="mf">1e-5</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No accuracy for spline optimization was given. Switching to default accuracy </span><span class="si">{:.0e}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">accuracy</span><span class="p">))</span>
                 <span class="n">optimization_args</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Spline&#39;</span><span class="p">,</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="n">accuracy</span><span class="p">,</span> <span class="s1">&#39;range&#39;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s1">&#39;begin&#39;</span><span class="p">:</span> <span class="n">spline_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="n">spline_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]}}</span>
+                    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Spline&#39;</span><span class="p">,</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="n">accuracy</span><span class="p">}</span>
             <span class="k">elif</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
                 <span class="n">optimization_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;None&#39;</span><span class="p">})</span>
             <span class="k">else</span><span class="p">:</span>
