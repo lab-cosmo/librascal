@@ -46,9 +46,9 @@ namespace rascal {
    * compared to computing the kernel element and then multiplying them with
    * the weights of the model.
    *
-   * The partial forces are attached to the input manager in a Property of
+   * The partial gradients are attached to the input manager in a Property of
    * Order 2.
-   * partial forces [N_{neighbor}, 3]
+   * partial gradients [N_{neighbor}, 3]
    *
    * @tparam StructureManagers should be an iterable over shared pointer
    *          of structure managers like ManagerCollection
@@ -61,7 +61,7 @@ namespace rascal {
    * managers
    * @param representation_grad_name name used to get representation gradient
    * the in the managers
-   * @param fij_name name used to get/register the partial gradients in the
+   * @param djfi_name name used to get/register the partial gradients in the
    * managers
    * @return
    */
@@ -73,7 +73,7 @@ namespace rascal {
                                 math::Vector_t & weights, const size_t zeta,
                                 const std::string & representation_name,
                                 const std::string & representation_grad_name,
-                                const std::string & fij_name) {
+                                const std::string & djfi_name) {
     using Manager_t = typename StructureManager::element_type;
     using Keys_t = typename SparsePoints::Keys_t;
     using Key_t = typename SparsePoints::Key_t;
@@ -108,18 +108,18 @@ namespace rascal {
           internal::set_intersection(rep_keys, sparse_points.keys_sp.at(sp));
     }
 
-    // attach partial forces array to manager
-    auto && f_ij{
+    // attach partial gradients array to manager
+    auto && djfi{
         *manager
              ->template get_property<Property<double, 2, Manager_t, 1, ThreeD>>(
-                 fij_name, true, true)};
-    // don't recompute the partial forces if already up to date
-    if (f_ij.is_updated()) {
+                 djfi_name, true, true)};
+    // don't recompute the partial gradients if already up to date
+    if (djfi.is_updated()) {
       return;
     }
 
-    f_ij.resize();
-    f_ij.setZero();
+    djfi.resize();
+    djfi.setZero();
 
     if (species_intersect.empty()) {
       return;
@@ -161,7 +161,7 @@ namespace rascal {
 
             int i_row_{0};
             for (auto neigh : center.pairs_with_self_pair()) {
-              f_ij[neigh](i_der) += fij_block(i_row_);
+              djfi[neigh](i_der) += fij_block(i_row_);
               i_row_++;
             }  // neigh
           }    // i_der
@@ -169,7 +169,7 @@ namespace rascal {
         i_row += n_neigh;
       } else {
         for (auto neigh : center.pairs_with_self_pair()) {
-          f_ij[neigh] =
+          djfi[neigh] =
               sparse_point_scaled.dot_derivative(a_sp, prop_grad[neigh]);
         }
       }
@@ -185,10 +185,10 @@ namespace rascal {
    * compared to computing the kernel elements and then multiplying them with
    * the weights of the model.
    *
-   * The forces are attached to the input manager in a Property of
+   * The gradients are attached to the input manager in a Property of
    * Order 1 with the name
-   * 'representation_grad_name+" forces; weight_hash:"+weight_hash'
-   * forces [N_{atoms}, 3]
+   * 'representation_grad_name+" gradients; weight_hash:"+weight_hash'
+   * gradients [N_{atoms}, 3]
    *
    * @tparam StructureManagers should be an iterable over shared pointer
    *          of structure managers like ManagerCollection
@@ -196,10 +196,10 @@ namespace rascal {
    * @param managers a ManagerCollection or similar collection of
    * structure managers
    * @param weights regression weights of the sparse GPR model
-   * @return name used to register the forces in the managers
+   * @return name used to register the gradients in the managers
    */
   template <class Calculator, class StructureManagers, class SparsePoints>
-  std::string compute_sparse_kernel_forces(const Calculator & calculator,
+  std::string compute_sparse_kernel_gradients(const Calculator & calculator,
                                            SparseKernel & kernel,
                                            StructureManagers & managers,
                                            SparsePoints & sparse_points,
@@ -211,7 +211,7 @@ namespace rascal {
     auto && representation_name{calculator.get_name()};
     const auto representation_grad_name{calculator.get_gradient_name()};
     size_t n_centers{0};
-    // find the total number of forces
+    // find the total number of gradients
     for (const auto & manager : managers) {
       n_centers += manager->size();
     }
@@ -219,11 +219,11 @@ namespace rascal {
     internal::Hash<math::Vector_t, double> hasher{};
     auto kernel_type_str = kernel.parameters.at("name").get<std::string>();
     std::string weight_hash = std::to_string(hasher(weights));
-    std::string fij_name = representation_grad_name +
+    std::string djfi_name = representation_grad_name +
                            std::string(" partial gradients; weight_hash:") +
                            weight_hash;
-    std::string force_name = representation_grad_name +
-                             std::string(" forces; weight_hash:") + weight_hash;
+    std::string gradient_name = representation_grad_name +
+                             std::string(" gradients; weight_hash:") + weight_hash;
 
     for (const auto & manager : managers) {
       if (kernel_type_str == "GAP") {
@@ -231,25 +231,25 @@ namespace rascal {
 
         compute_partial_gradients_gap<Property_t, PropertyGradient_t>(
             manager, sparse_points, weights, zeta, representation_name,
-            representation_grad_name, fij_name);
+            representation_grad_name, djfi_name);
       }
 
-      auto && forces{*manager->template get_property<
-          Property<double, 1, Manager_t, 1, ThreeD>>(force_name, true, true,
+      auto && gradients{*manager->template get_property<
+          Property<double, 1, Manager_t, 1, ThreeD>>(gradient_name, true, true,
                                                      true)};
-      forces.resize();
-      forces.setZero();
+      gradients.resize();
+      gradients.setZero();
 
-      auto && f_ij{*manager->template get_property<
-          Property<double, 2, Manager_t, 1, ThreeD>>(fij_name, true)};
+      auto && djfi{*manager->template get_property<
+          Property<double, 2, Manager_t, 1, ThreeD>>(djfi_name, true)};
       for (auto center : manager) {
-        // accumulate partial gradients onto forces
+        // accumulate partial gradients onto gradients
         for (auto neigh : center.pairs_with_self_pair()) {
-          forces[neigh.get_atom_j()] -= f_ij[neigh];
+          gradients[neigh.get_atom_j()] += djfi[neigh];
         }
       }
     }  // center
-    return force_name;
+    return gradient_name;
   }
 }  // namespace rascal
 #endif  // SRC_RASCAL_MODELS_SPARSE_KERNEL_PREDICT_HH_

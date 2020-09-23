@@ -195,21 +195,21 @@ namespace rascal {
       math::Vector_t weights{sparse_points.size()};
       weights.setConstant(1.);
 
-      math::Matrix_t forces_k = KNM_der * weights.transpose();
-      std::string force_name = compute_sparse_kernel_forces(
+      math::Matrix_t gradients_k = KNM_der * weights.transpose();
+      std::string force_name = compute_sparse_kernel_gradients(
           representation, kernel, managers, sparse_points, weights);
       size_t i_center{0};
       for (auto manager : managers) {
-        auto && forces{*manager->template get_property<
+        auto && gradients{*manager->template get_property<
             Property<double, 1, Manager_t, 1, ThreeD>>(force_name, true)};
         math::Matrix_t ff = Eigen::Map<const math::Matrix_t>(
-            forces.view().data(), manager->size() * ThreeD, 1);
+            gradients.view().data(), manager->size() * ThreeD, 1);
         math::Matrix_t ff_r =
-            -forces_k.block(i_center, 0, manager->size() * ThreeD, 1);
+            gradients_k.block(i_center, 0, manager->size() * ThreeD, 1);
         math::Matrix_t force_diff =
             math::relative_error(ff, ff_r, delta, epsilon);
-        double forces_max_rel_diff{force_diff.maxCoeff(&row_max, &col_max)};
-        BOOST_TEST(forces_max_rel_diff < delta);
+        double gradients_max_rel_diff{force_diff.maxCoeff(&row_max, &col_max)};
+        BOOST_TEST(gradients_max_rel_diff < delta);
         i_center += manager->size() * ThreeD;
       }
     }
