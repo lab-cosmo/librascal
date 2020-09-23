@@ -65,7 +65,7 @@ namespace rascal {
     std::cout << "update" << std::endl;
     return KNM;
   }
-      
+
   /**
    * Compute the sparse kernel associated to an atomic structure
    * displacing atom `i_atom` by `disp`.
@@ -196,7 +196,7 @@ namespace rascal {
 
     //KNM /= atomic_structure.get_volume();
     // TODO(alex) check this
-    KNM *= -0.5;
+    // KNM *= -0.5;
     //KNM.row(ThreeD    ) *= 0.5;
     //KNM.row(ThreeD + 1) *= 0.5;
     //KNM.row(ThreeD + 2) *= 0.5;
