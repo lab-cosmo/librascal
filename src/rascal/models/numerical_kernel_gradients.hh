@@ -36,6 +36,29 @@
 
 namespace rascal {
 
+  template <class KernelImpl, class Calculator, class Manager,
+            class SparsePoints>
+  math::Matrix_t compute_kernel_for_displaced_lattice_cell(
+      KernelImpl & kernel, Calculator & calculator, Manager & manager,
+      const SparsePoints & sparse_points, const int & voigt_0, const int & voigt_1,
+      const double & h_disp) {
+    // get a copy of the atomic_structure object
+    auto manager_root = extract_underlying_manager<0>(manager);
+    json structure_copy = manager_root->get_atomic_structure();
+    auto atomic_structure =
+        structure_copy.template get<AtomicStructure<ThreeD>>();
+    atomic_structure.displace_strain_tensor(voigt_0, voigt_1, h_disp);
+    // make sure all atoms are in the unit cell
+    manager->update(atomic_structure);
+    calculator.compute(manager);
+    std::vector<std::remove_const_t<Manager>> managers{};
+    managers.emplace_back(manager);
+    math::Matrix_t KNM = kernel.compute(calculator, managers, sparse_points);
+    // reset neighborlist to the original structure
+    manager->update(structure_copy.template get<AtomicStructure<ThreeD>>());
+    return KNM;
+  }
+      
   /**
    * Compute the sparse kernel associated to an atomic structure
    * displacing atom `i_atom` by `disp`.
@@ -113,8 +136,9 @@ namespace rascal {
   math::Matrix_t compute_numerical_kernel_stress(
       KernelImpl & kernel, Calculator & calculator, Manager & manager,
       const SparsePoints & sparse_points, const double & h_disp) {
-    Eigen::Matrix3d disps = h_disp * Eigen::Matrix3d::Identity();
-    const std::array<std::array<int, 2>, ThreeD> voigt_ids = {1, 2, 2, 0, 0, 1};
+    //Eigen::Matrix3d disps = h_disp * Eigen::Matrix3d::Identity();
+    //const std::array<std::array<int, 2>, ThreeD> voigt_ids = {1,2, 2,0, 0,1};
+    const std::array<std::array<int, 2>, 6> voigt_ids = {0,0, 1,1, 2,2, 1,2, 0,2, 0,1};
     size_t n_sparse_points{sparse_points.size()};
     math::Matrix_t KNM{6, n_sparse_points};
     KNM.setZero();
@@ -124,31 +148,50 @@ namespace rascal {
       positions.row(i_atom) = center.get_position();
       i_atom++;
     }
-    for (i_atom = 0; i_atom < manager->size(); ++i_atom) {
-      for (int i_der{0}; i_der < ThreeD; ++i_der) {
-        // use centered finite difference to estimate gradient
-        math::Matrix_t KNM_p =
-            compute_displaced_kernel(kernel, calculator, manager, sparse_points,
-                                     i_atom, disps.row(i_der));
-        math::Matrix_t KNM_m =
-            compute_displaced_kernel(kernel, calculator, manager, sparse_points,
-                                     i_atom, -disps.row(i_der));
-        math::Matrix_t dKdr_i = (KNM_p - KNM_m) / (2 * h_disp);
-        const auto & voigt = voigt_ids[i_der];
-        for (size_t j_atom{0}; j_atom < manager->size(); ++j_atom) {
-          if (j_atom == i_atom) {continue;}
+    for (int i_der{0}; i_der < 6; ++i_der) {
+      // use centered finite difference to estimate gradient
+      //math::Matrix_t KNM_p =
+      //    compute_displaced_kernel(kernel, calculator, manager, sparse_points,
+      //                             i_atom, disps.row(i_der));
+      //math::Matrix_t KNM_m =
+      //    compute_displaced_kernel(kernel, calculator, manager, sparse_points,
+      //                             i_atom, -disps.row(i_der));
+      const auto & voigt = voigt_ids[i_der];
+      math::Matrix_t KNM_p =
+          compute_kernel_for_displaced_lattice_cell(kernel, calculator, manager, sparse_points,
+                                   voigt[0], voigt[1], h_disp);
+      math::Matrix_t KNM_m =
+          compute_kernel_for_displaced_lattice_cell(kernel, calculator, manager, sparse_points,
+                                   voigt[0], voigt[1], -h_disp);
+      KNM.row(i_der) = ((KNM_p - KNM_m) / (2 * h_disp)).colwise().sum();
 
-          Eigen::Vector3d u_ij = positions.row(j_atom) - positions.row(i_atom);
-          KNM.row(i_der) += u_ij(i_der) * dKdr_i.row(j_atom);
-          KNM.row(ThreeD + voigt[0]) += u_ij(voigt[1]) * dKdr_i.row(j_atom);
-          KNM.row(ThreeD + voigt[1]) += u_ij(voigt[0]) * dKdr_i.row(j_atom);
-        }
-      }
+    //for (i_atom = 0; i_atom < manager->size(); ++i_atom) {
+    //  //for (int i_der{0}; i_der < ThreeD; ++i_der) {
+    //    for (size_t j_atom{0}; j_atom < manager->size(); ++j_atom) {
+    //      if (j_atom == i_atom) {continue;}
+
+    //      Eigen::Vector3d u_ij = positions.row(j_atom) - positions.row(i_atom);
+    //      KNM.row(i_der) += u_ij(voigt[0]) * dKdr_i.row(j_atom);
+    //      //KNM.row(i_der) += u_ij(voigt[1]) * dKdr_i.row(j_atom);
+
+    //      //KNM.row(i_der) += u_ij(i_der) * dKdr_i.row(j_atom);
+    //      //KNM.row(ThreeD + voigt[0]) += u_ij(voigt[1]) * dKdr_i.row(j_atom);
+    //      //KNM.row(ThreeD + voigt[1]) += u_ij(voigt[0]) * dKdr_i.row(j_atom);
+    //    }
+    //  }
+    //}
     }
-    KNM *= 0.5;
-    KNM.row(ThreeD    ) *= 0.5;
-    KNM.row(ThreeD + 1) *= 0.5;
-    KNM.row(ThreeD + 2) *= 0.5;
+
+    auto manager_root = extract_underlying_manager<0>(manager);
+    json structure_copy = manager_root->get_atomic_structure();
+    auto atomic_structure =
+        structure_copy.template get<AtomicStructure<ThreeD>>();
+
+    //KNM /= atomic_structure.get_volume();
+    //KNM *= -0.5;
+    //KNM.row(ThreeD    ) *= 0.5;
+    //KNM.row(ThreeD + 1) *= 0.5;
+    //KNM.row(ThreeD + 2) *= 0.5;
     return KNM;
   }
 
