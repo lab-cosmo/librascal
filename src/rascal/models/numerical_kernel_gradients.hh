@@ -48,14 +48,21 @@ namespace rascal {
     auto atomic_structure =
         structure_copy.template get<AtomicStructure<ThreeD>>();
     atomic_structure.displace_strain_tensor(voigt_0, voigt_1, h_disp);
+    std::cout << "finished"  << std::endl;
     // make sure all atoms are in the unit cell
     manager->update(atomic_structure);
+    std::cout << "update" << std::endl;
     calculator.compute(manager);
+    std::cout << "compute" << std::endl;
     std::vector<std::remove_const_t<Manager>> managers{};
+    std::cout << "remove" << std::endl;
     managers.emplace_back(manager);
+    std::cout << "emplace_back" << std::endl;
     math::Matrix_t KNM = kernel.compute(calculator, managers, sparse_points);
+    std::cout << "compute" << std::endl;
     // reset neighborlist to the original structure
     manager->update(structure_copy.template get<AtomicStructure<ThreeD>>());
+    std::cout << "update" << std::endl;
     return KNM;
   }
       
@@ -188,7 +195,8 @@ namespace rascal {
         structure_copy.template get<AtomicStructure<ThreeD>>();
 
     //KNM /= atomic_structure.get_volume();
-    //KNM *= -0.5;
+    // TODO(alex) check this
+    KNM *= -0.5;
     //KNM.row(ThreeD    ) *= 0.5;
     //KNM.row(ThreeD + 1) *= 0.5;
     //KNM.row(ThreeD + 2) *= 0.5;
