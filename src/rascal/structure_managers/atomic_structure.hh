@@ -163,7 +163,7 @@ namespace rascal {
       //this->cell.row(voigt_alpha) += h_disp*this->cell.row(voigt_beta);
       
       // shift = np.eye(3)
-      Eigen::Matrix3d shift = h_disp * Eigen::Matrix3d::Identity(); 
+      Eigen::Matrix3d shift = Eigen::Matrix3d::Identity();
       // shift[voigt_ids[i][0], voigt_ids[i][1]] += h
       shift(voigt_alpha, voigt_beta) += h_disp;
       std::cout << "shift\n" << shift << std::endl;
