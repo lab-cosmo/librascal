@@ -161,23 +161,19 @@ namespace rascal {
     void displace_strain_tensor(const int & voigt_alpha, const int & voigt_beta, const double & h_disp) {
       //this->positions.row(voigt_alpha) += h_disp*this->positions.row(voigt_beta);
       //this->cell.row(voigt_alpha) += h_disp*this->cell.row(voigt_beta);
-      
+
       // shift = np.eye(3)
       Eigen::Matrix3d shift = Eigen::Matrix3d::Identity();
       // shift[voigt_ids[i][0], voigt_ids[i][1]] += h
       shift(voigt_alpha, voigt_beta) += h_disp;
-      std::cout << "shift\n" << shift << std::endl;
       // displaced_cell = np.dot(original_cell, shift)
       // atoms.set_cell( displaced_cell)
       auto original_cell{this->cell};
       this->cell = this->cell * shift;
-      std::cout << "this->cell\n" << this->cell << std::endl;
 
       //M = np.linalg.solve(original_cell, displaced_cell)
       //atoms.positions = np.dot(original_positions.T, M)
-      std::cout << "this->positions\n" << this->positions << std::endl;
       this->positions = (original_cell.inverse() * this->cell) * this->positions;
-      std::cout << "this->positions\n" << this->positions << std::endl;
       return;
     }
 

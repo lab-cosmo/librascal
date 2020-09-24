@@ -266,6 +266,7 @@ namespace rascal {
 
         const size_t n_sparse_points{sparse_points.size()};
         math::Matrix_t KNM(n_centers, n_sparse_points);
+        KNM.setZero();
         const size_t zeta{this->zeta};
         size_t i_center{0};
         // loop over the structures
@@ -302,7 +303,7 @@ namespace rascal {
           if (prop_grad.are_keys_uniform()) {
             do_block_by_key_dot = true;
           }
-          // do_block_by_key_dot = false;
+          do_block_by_key_dot = false;
 
           std::set<int> unique_species{};
           for (auto center : manager) {
