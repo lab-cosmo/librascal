@@ -134,6 +134,16 @@ namespace rascal {
         py::call_guard<py::gil_scoped_release>());
   }
 
+  //! register the population mechanism of the pseudo points class
+  template <class KernelImpl, class Calculator, class Managers,
+            class SparsePoints>
+  void bind_compute_numerical_kernel_gradients(py::module & mod) {
+    mod.def(
+        "compute_numerical_kernel_gradients",
+        &compute_numerical_kernel_gradients<KernelImpl, Calculator, Managers, SparsePoints>,
+        py::call_guard<py::gil_scoped_release>());
+  }
+
   /**
    * Function to bind the representation managers to python
    *
@@ -173,5 +183,8 @@ namespace rascal {
     auto sparse_points = add_sparse_points<SparsePoints_1_t>(mod, m_internal);
     bind_sparse_points_push_back<ManagerCollection_2_t, Calc1_t>(sparse_points);
     internal::bind_dict_representation(sparse_points);
+
+    bind_compute_numerical_kernel_gradients<SparseKernel, Calc1_t, ManagerCollection_1_t, SparsePoints_1_t>(mod);
+    bind_compute_numerical_kernel_gradients<SparseKernel, Calc1_t, ManagerCollection_2_t, SparsePoints_1_t>(mod);
   }
 }  // namespace rascal

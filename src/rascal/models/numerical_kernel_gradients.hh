@@ -150,12 +150,6 @@ namespace rascal {
     }
     for (int i_der{0}; i_der < 6; ++i_der) {
       // use centered finite difference to estimate gradient
-      //math::Matrix_t KNM_p =
-      //    compute_displaced_kernel(kernel, calculator, manager, sparse_points,
-      //                             i_atom, disps.row(i_der));
-      //math::Matrix_t KNM_m =
-      //    compute_displaced_kernel(kernel, calculator, manager, sparse_points,
-      //                             i_atom, -disps.row(i_der));
       const auto & voigt = voigt_ids[i_der];
       math::Matrix_t KNM_p =
           compute_kernel_for_displaced_lattice_cell(kernel, calculator, manager, sparse_points,
@@ -164,35 +158,14 @@ namespace rascal {
           compute_kernel_for_displaced_lattice_cell(kernel, calculator, manager, sparse_points,
                                    voigt[0], voigt[1], -h_disp);
       KNM.row(i_der) = ((KNM_p - KNM_m) / (2 * h_disp)).colwise().sum();
-
-    //for (i_atom = 0; i_atom < manager->size(); ++i_atom) {
-    //  //for (int i_der{0}; i_der < ThreeD; ++i_der) {
-    //    for (size_t j_atom{0}; j_atom < manager->size(); ++j_atom) {
-    //      if (j_atom == i_atom) {continue;}
-
-    //      Eigen::Vector3d u_ij = positions.row(j_atom) - positions.row(i_atom);
-    //      KNM.row(i_der) += u_ij(voigt[0]) * dKdr_i.row(j_atom);
-    //      //KNM.row(i_der) += u_ij(voigt[1]) * dKdr_i.row(j_atom);
-
-    //      //KNM.row(i_der) += u_ij(i_der) * dKdr_i.row(j_atom);
-    //      //KNM.row(ThreeD + voigt[0]) += u_ij(voigt[1]) * dKdr_i.row(j_atom);
-    //      //KNM.row(ThreeD + voigt[1]) += u_ij(voigt[0]) * dKdr_i.row(j_atom);
-    //    }
-    //  }
-    //}
     }
 
     auto manager_root = extract_underlying_manager<0>(manager);
     json structure_copy = manager_root->get_atomic_structure();
     auto atomic_structure =
         structure_copy.template get<AtomicStructure<ThreeD>>();
-
+    //TODO(alex) uncomment and modify analytical expression accordingly
     //KNM /= atomic_structure.get_volume();
-    // TODO(alex) check this
-    // KNM *= -0.5;
-    //KNM.row(ThreeD    ) *= 0.5;
-    //KNM.row(ThreeD + 1) *= 0.5;
-    //KNM.row(ThreeD + 2) *= 0.5;
     return KNM;
   }
 
