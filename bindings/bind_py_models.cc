@@ -184,7 +184,6 @@ namespace rascal {
     bind_sparse_points_push_back<ManagerCollection_2_t, Calc1_t>(sparse_points);
     internal::bind_dict_representation(sparse_points);
 
-    bind_compute_numerical_kernel_gradients<SparseKernel, Calc1_t, ManagerCollection_1_t, SparsePoints_1_t>(mod);
     bind_compute_numerical_kernel_gradients<SparseKernel, Calc1_t, ManagerCollection_2_t, SparsePoints_1_t>(mod);
   }
 }  // namespace rascal
