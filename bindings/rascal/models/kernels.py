@@ -1,4 +1,5 @@
 from ..utils import BaseIO
+from ..lib._rascal.models.kernels import compute_numerical_kernel_gradients as _compute_numerical_kernel_gradients
 from ..lib._rascal.models.kernels import Kernel as Kernelcpp
 from ..lib._rascal.models.kernels import SparseKernel as SparseKernelcpp
 from ..neighbourlist import AtomsList
@@ -9,6 +10,8 @@ import json
 
 import numpy as np
 
+def compute_numerical_kernel_gradients(kernel, calculator, managers, sparse_points, h_disp, compute_stress=True):
+    return _compute_numerical_kernel_gradients(kernel._kernel, calculator._representation, managers.managers, sparse_points._sparse_points, h_disp, compute_stress)
 
 class Kernel(BaseIO):
 
