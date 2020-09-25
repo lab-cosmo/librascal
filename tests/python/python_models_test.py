@@ -147,8 +147,9 @@ class TestNumericalKernel(unittest.TestCase):
                             / (2*h_disp), axis=0 )
 
                 absolute_error = np.abs(python_site_stress-cpp_site_stress)
-                relative_error = np.abs((python_site_stress-cpp_site_stress)/cpp_site_stress)
-                relative_error[np.isnan(relative_error)] = 0
+                relative_error = (python_site_stress-cpp_site_stress)
+                relative_error[cpp_site_stress != 0] /= cpp_site_stress[cpp_site_stress != 0]
+                relative_error = np.abs(relative_error)
                 # change to logic or elementwise
                 passes_test = ( np.all(absolute_error < self.treshold) or
                         np.all(relative_error< self.treshold) )
