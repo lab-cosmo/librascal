@@ -169,12 +169,11 @@ namespace rascal {
       // displaced_cell = np.dot(original_cell, shift)
       // atoms.set_cell( displaced_cell)
       auto original_cell{this->cell};
-      this->cell = this->cell * shift;
+      this->cell = (this->cell.transpose() * shift).transpose();
 
       //M = np.linalg.solve(original_cell, displaced_cell)
       //atoms.positions = np.dot(original_positions.T, M)
-      this->positions = (original_cell.inverse() * this->cell) * this->positions;
-      return;
+      this->positions = ( this->positions.transpose()*(original_cell.transpose().inverse() * this->cell.transpose()) ).transpose();
     }
 
     Positions_t get_scaled_positions() {
