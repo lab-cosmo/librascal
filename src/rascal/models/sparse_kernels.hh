@@ -303,7 +303,6 @@ namespace rascal {
           if (prop_grad.are_keys_uniform()) {
             do_block_by_key_dot = true;
           }
-          do_block_by_key_dot = false;
 
           std::set<int> unique_species{};
           for (auto center : manager) {
