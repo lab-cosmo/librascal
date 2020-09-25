@@ -32,7 +32,7 @@ class TestNumericalKernel(unittest.TestCase):
         self.verbose = True
         self.calc = LennardJones()
         self.treshold = 1e-8
-        self.kernel_input_filename = 'reference_data/tests_only/sparse_kernel_inputs.json'
+        self.kernel_input_filename = 'reference_data/tests_only/numerical_gradient_stress_kernel_inputs.json'
 
         self.voigt_ids = [ (0,0), (1,1), (2,2), (1,2), (0,2), (0,1)]
 
@@ -165,19 +165,6 @@ class TestNumericalKernel(unittest.TestCase):
                     print("relative_error:\n", relative_error)
 
                 self.assertTrue(passes_test)
-
-        #rep = SphericalInvariants(**self.hypers)
-        #features = rep.transform([self.frame])
-        #for target_type in ["Atom", "Structure"]:
-        #    cosine_kernel = Kernel(
-        #        rep, name="Cosine", target_type=target_type, zeta=2)
-        #    cosine_kernel(features)
-
-        ## wrong name
-        #with self.assertRaises(RuntimeError):
-        #    Kernel(rep, name="WrongName", target_type="Structure", zeta=2)
-        #with self.assertRaises(RuntimeError):
-        #    Kernel(rep, name="cosine", target_type="Structure", zeta=2)
 
 class TestCosineKernel(unittest.TestCase):
     def setUp(self):
