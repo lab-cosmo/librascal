@@ -87,7 +87,7 @@ class SphericalCovariants(BaseIO):
     inversion_symmetry : boolean
         Specifies whether inversion invariance should be enforced.
 
-    lam : int
+    covariant_lambda : int
         Order of the lambda spectrum.
 
     cutoff_function_parameters : dict
@@ -123,7 +123,7 @@ class SphericalCovariants(BaseIO):
                  radial_basis="GTO",
                  optimization_args={},
                  soap_type="LambdaSpectrum", inversion_symmetry=True,
-                 lam=0,
+                 covariant_lambda=0,
                  cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
@@ -137,7 +137,7 @@ class SphericalCovariants(BaseIO):
             soap_type=soap_type,
             normalize=normalize,
             inversion_symmetry=inversion_symmetry,
-            lam=lam)
+            covariant_lambda=covariant_lambda)
 
         self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
 
@@ -203,7 +203,7 @@ class SphericalCovariants(BaseIO):
         allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
                         'max_radial', 'max_angular', 'gaussian_sigma_type',
                         'gaussian_sigma_constant', 'soap_type',
-                        'inversion_symmetry', 'lam', 'cutoff_function',
+                        'inversion_symmetry', 'covariant_lambda', 'cutoff_function',
                         'normalize', 'gaussian_density', 'radial_contribution',
                         'cutoff_function_parameters'}
         hypers_clean = {key: hypers[key] for key in hypers
@@ -239,39 +239,39 @@ class SphericalCovariants(BaseIO):
         if self.hypers['soap_type'] == 'LambdaSpectrum':
             if self.hypers['inversion_symmetry']:
                 n_col = (np.ceil((self.hypers['max_angular'] + 1)**2 / 2.0) -
-                         (1.0 + np.floor((self.hypers['lam'] - 1) / 2.0))**2 -
+                         (1.0 + np.floor((self.hypers['covariant_lambda'] - 1) / 2.0))**2 -
                          np.floor((self.hypers['max_angular'] + 1 -
-                                   self.hypers['lam'])**2 / 2.0) *
-                         (self.hypers['lam'] % 2) -
+                                   self.hypers['lcovariant_lambd'])**2 / 2.0) *
+                         (self.hypers['covariant_lambda'] % 2) -
                          (np.ceil((self.hypers['max_angular'] + 1 -
-                                   self.hypers['lam'])**2 / 2.0) -
+                                   self.hypers['covariant_lambda'])**2 / 2.0) -
                           (self.hypers['max_angular'] -
-                             self.hypers['lam'] + 1)) *
-                         (1.0 - self.hypers['lam'] % 2))
-                if (self.hypers['lam'] % 2 == 1):
-                    n_col = -n_col + 0.5 * (2.0 + self.hypers['lam'] -
-                                            3 * self.hypers['lam']**2 +
+                             self.hypers['covariant_lambda'] + 1)) *
+                         (1.0 - self.hypers['covariant_lambda'] % 2))
+                if (self.hypers['covariant_lambda'] % 2 == 1):
+                    n_col = -n_col + 0.5 * (2.0 + self.hypers['covariant_lambda'] -
+                                            3 * self.hypers['covariant_lambda']**2 +
                                             2 * self.hypers['max_angular'] +
-                                            4 * self.hypers['lam'] *
+                                            4 * self.hypers['covariant_lambda'] *
                                             self.hypers['max_angular'])
-                n_col *= (2 * self.hypers['lam'] + 1)
+                n_col *= (2 * self.hypers['covariant_lambda'] + 1)
                 return int(n_col * n_species**2 *
                            self.hypers['max_radial']**2)
             else:
                 return (n_species**2 *
                         self.hypers['max_radial']**2
                         * int((2 +
-                               self.hypers['lam']
+                               self.hypers['covariant_lambda']
                                - 3
-                               * self.hypers['lam']**2
+                               * self.hypers['covariant_lambda']**2
                                + 2
                                * self.hypers['max_angular']
                                + 4
-                               * self.hypers['lam']
+                               * self.hypers['covariant_lambda']
                                * self.hypers['max_angular']) /
                               2)
                         * (2
-                           * self.hypers['lam']
+                           * self.hypers['covariant_lambda']
                            + 1))
         else:
             raise ValueError('Only soap_type = LambdaSpectrum '
@@ -309,7 +309,7 @@ class SphericalCovariants(BaseIO):
             normalize=self.hypers['normalize'],
             gaussian_sigma_type=gaussian_density['type'],
             gaussian_sigma_constant=gaussian_density['gaussian_sigma']['value'],
-            lam=self.hypers['lam'],
+            covariant_lambda=self.hypers['covariant_lambda'],
             cutoff_function_type=cutoff_function['type'],
             radial_basis=radial_contribution['type'],
             cutoff_function_parameters=self.cutoff_function_parameters,
