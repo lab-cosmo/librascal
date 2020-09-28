@@ -7,14 +7,15 @@ import os
 import numpy as np
 
 sys.path.insert(0, '../build/')
-import rascal.lib as lrl
 import rascal
+import rascal.lib as lrl
 from rascal.utils import ostream_redirect
 from rascal.representations import SphericalCovariants
 
 root = os.path.abspath('../')
 rascal_reference_path = os.path.join(root, 'reference_data/')
 inputs_path = os.path.join(rascal_reference_path, "inputs")
+read_inputs_path = os.path.join('reference_data/', "inputs")
 dump_path = os.path.join('reference_data/', "tests_only")
 
 #############################################################################
@@ -52,8 +53,8 @@ def dump_reference_json():
         os.path.join(inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
-        os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
-        os.path.join(dump_path, "small_molecule.json"),
+        os.path.join(read_inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(read_inputs_path, "small_molecule.json"),
     ]
 
     data = dict(filenames=fns_to_write,
@@ -99,46 +100,6 @@ def dump_reference_json():
 
 
 def main(json_dump, save_kernel):
-
-    nmax = 9
-    lmax = 5
-    lam = 2
-
-    test_hypers = {"interaction_cutoff": 3.0,
-                   "cutoff_smooth_width": 0.0,
-                   "max_radial": nmax,
-                   "max_angular": lmax,
-                   "gaussian_sigma_type": "Constant",
-                   "gaussian_sigma_constant": 0.3,
-                   "soap_type": "LambdaSpectrum",
-                   "covariant_lambda": lam,
-                   "inversion_symmetry": True}
-
-    nstr = '2'  # number of structures
-    frames = read(os.path.join(
-        inputs_path, 'water_rotations.xyz'), ':' + str(nstr))
-    species = set(
-        [atom for frame in frames for atom in frame.get_atomic_numbers()])
-    nspecies = len(species)
-    ncen = np.cumsum([len(frame) for frame in frames])[-1]
-
-    x = get_feature_vector(test_hypers, frames)
-    x0 = x.shape[0]
-    x = x.reshape((x0, 3, -1, (2 * lam + 1), nmax**2))
-    x = x.transpose((0, 3, 1, 2, 4))
-    x = x.reshape((x0 * (2 * lam + 1), -1))
-    kernel = np.dot(x, x.T)
-    kernel = kernel.reshape((x0, (2 * lam + 1), x0, (2 * lam + 1)))
-    kernel = kernel.transpose((0, 2, 1, 3))
-    sqrtnorm = np.zeros((x0))
-    for i in range(x0):
-        sqrtnorm[i] = np.sqrt(np.linalg.norm(kernel[i, i]))
-    for i in range(x0):
-        for j in range(x0):
-            kernel[i, j] /= sqrtnorm[i] * sqrtnorm[j]
-    if save_kernel is True:
-        np.save(os.path.join(dump_path, 'kernel_soap_example_lambda',
-                             str(lam), '.npy'), kernel)
 
 #-------------------dump json reference data------------------------#
 
