@@ -200,10 +200,10 @@ namespace rascal {
    */
   template <class Calculator, class StructureManagers, class SparsePoints>
   std::string compute_sparse_kernel_gradients(const Calculator & calculator,
-                                           SparseKernel & kernel,
-                                           StructureManagers & managers,
-                                           SparsePoints & sparse_points,
-                                           math::Vector_t & weights) {
+                                              SparseKernel & kernel,
+                                              StructureManagers & managers,
+                                              SparsePoints & sparse_points,
+                                              math::Vector_t & weights) {
     using Manager_t = typename StructureManagers::Manager_t;
     using Property_t = typename Calculator::template Property_t<Manager_t>;
     using PropertyGradient_t =
@@ -220,10 +220,11 @@ namespace rascal {
     auto kernel_type_str = kernel.parameters.at("name").get<std::string>();
     std::string weight_hash = std::to_string(hasher(weights));
     std::string djfi_name = representation_grad_name +
-                           std::string(" partial gradients; weight_hash:") +
-                           weight_hash;
+                            std::string(" partial gradients; weight_hash:") +
+                            weight_hash;
     std::string gradient_name = representation_grad_name +
-                             std::string(" gradients; weight_hash:") + weight_hash;
+                                std::string(" gradients; weight_hash:") +
+                                weight_hash;
 
     for (const auto & manager : managers) {
       if (kernel_type_str == "GAP") {
