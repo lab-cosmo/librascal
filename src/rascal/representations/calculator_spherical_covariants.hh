@@ -220,7 +220,7 @@ namespace rascal {
       this->max_radial = hypers.at("max_radial").get<size_t>();
       this->max_angular = hypers.at("max_angular").get<size_t>();
       auto soap_type = hypers.at("soap_type").get<std::string>();
-      this->lambda = hypers.at("lam").get<size_t>();
+      this->lambda = hypers.at("covariant_lambda").get<size_t>();
       this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
       this->normalize = hypers.at("normalize").get<bool>();
 
