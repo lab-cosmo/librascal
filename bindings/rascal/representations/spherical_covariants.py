@@ -241,7 +241,7 @@ class SphericalCovariants(BaseIO):
                 n_col = (np.ceil((self.hypers['max_angular'] + 1)**2 / 2.0) -
                          (1.0 + np.floor((self.hypers['covariant_lambda'] - 1) / 2.0))**2 -
                          np.floor((self.hypers['max_angular'] + 1 -
-                                   self.hypers['lcovariant_lambd'])**2 / 2.0) *
+                                   self.hypers['covariant_lambda'])**2 / 2.0) *
                          (self.hypers['covariant_lambda'] % 2) -
                          (np.ceil((self.hypers['max_angular'] + 1 -
                                    self.hypers['covariant_lambda'])**2 / 2.0) -
