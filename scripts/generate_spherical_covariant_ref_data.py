@@ -101,20 +101,17 @@ def dump_reference_json():
                     "normalize": True,
                     "soap_type": soap_type,
                     "inversion_symmetry": inversion_symmetry,
-                    "lam": Lambda,
+                    "covariant_lambda": Lambda,
                 }
                 soap = SphericalCovariants(**hypers)
                 soap_vectors = soap.transform(frames)
                 x = soap_vectors.get_features(soap)
-                x[np.abs(x) < 1e-300] = 0.0
-                data["rep_info"][-1].append(
-                    dict(feature_matrix=x.tolist(), hypers=copy(soap.hypers))
-                )
+                x[np.abs(x) < 1e-300] = 0.
+                data['rep_info'][-1].append(dict(feature_matrix=x.tolist(),
+                                                 hypers=copy(soap.hypers)))
 
-    with open(
-        os.path.join(root, dump_path, "spherical_covariants_reference.ubjson"),
-        "wb",
-    ) as f:
+    with open(os.path.join(root, dump_path, "spherical_covariants_reference.ubjson"),
+              'wb') as f:
         ubjson.dump(data, f)
 
 
@@ -135,7 +132,7 @@ def main(json_dump, save_kernel):
         "gaussian_sigma_type": "Constant",
         "gaussian_sigma_constant": 0.3,
         "soap_type": "LambdaSpectrum",
-        "lam": lam,
+        "covariant_lambda": lam,
         "inversion_symmetry": True,
     }
 
