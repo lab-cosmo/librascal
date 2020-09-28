@@ -87,7 +87,7 @@ def dump_reference_json():
     print(fn_out)
     with open(fn_out, 'w') as f:
         sparsification_inputs_pretty = prettyjson(sparsification_inputs,
-                                                    indent=2, maxlinelength=80)
+                                                  indent=2, maxlinelength=80)
         f.write(sparsification_inputs_pretty)
 
 ##########################################################################################

@@ -12,6 +12,7 @@ CURRENT_VERSION = BETA_VERSION
 
 MAX_RECURSION_DEPTH = 20
 
+
 def dump_obj(fn, instance, version=CURRENT_VERSION):
     """Save a python object that inherits from the BaseIO class
 
@@ -258,9 +259,10 @@ def to_dict(obj, version=CURRENT_VERSION, recursion_depth=0):
     obj has to inherit from BaseIO."""
     if recursion_depth >= MAX_RECURSION_DEPTH:
         raise ValueError(
-          "The object to be serialized to dict contains more than {}".format(MAX_RECURSION_DEPTH)
-         + " levels of nested objects suggesting there is a circular reference."
-         + " Objects containing a reference to themselves are not supported.")
+            "The object to be serialized to dict contains more than {}".format(
+                MAX_RECURSION_DEPTH)
+            + " levels of nested objects suggesting there is a circular reference."
+            + " Objects containing a reference to themselves are not supported.")
     else:
         recursion_depth += 1
 
