@@ -106,7 +106,7 @@ class SphericalInvariants(BaseIO):
     optimization_args : dict
         Additional arguments for optimization.
         Currently spline optimization for the radial basis function is available
-        Recommended settings if used {"Spline": {"accuracy": 1e-5}}
+        Recommended settings if used {"type":"Spline", "accuracy": 1e-5}
 
     expansion_by_species_method : string
         Specifies the how the species key of the invariant are set-up.

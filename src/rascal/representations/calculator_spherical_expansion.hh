@@ -575,6 +575,16 @@ namespace rascal {
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
+      void finalize_radial_integral() {
+        this->radial_integral_neighbour = this->ortho_norm_matrix.transpose() *
+                                          this->radial_integral_neighbour;
+      }
+
+      void finalize_radial_integral_center() {
+        this->radial_integral_center =
+            this->ortho_norm_matrix.transpose() * this->radial_integral_center;
+      }
+
       template <typename Coeffs>
       void finalize_coefficients(Coeffs & coefficients) const {
         coefficients.lhs_dot(this->ortho_norm_matrix);
@@ -685,13 +695,18 @@ namespace rascal {
       // \sigma_n = (r_\text{cut}-\delta r_\text{cut})
       // \max(\sqrt{n},1)/n_\text{max}
       Vector_t radial_sigmas{};
-      // b = 1 / (2*\sigma_n^2)
+      // b_n = 1 / (2*\sigma_n^2)
       Vector_t fac_b{};
       Matrix_t a_b_l_n{};
       Vector_t distance_fac_a_l{};
+      //! constant factors of the GTO basis
+      //! N_n=sqrt(2/\Gamma(n+3/2)) b_n^{3+2n}/4
       Vector_t radial_norm_factors{};
       Vector_t radial_n_factors{};
+      //! S_{nn'}^{-1/2}, orthonormalization matrix of the GTO basis
       Matrix_t radial_ortho_matrix{};
+      //! combination of radial_ortho_matrix and radial_norm_factors
+      //! not symmetric
       Matrix_t ortho_norm_matrix{};
     };
 
@@ -865,6 +880,10 @@ namespace rascal {
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
+      void finalize_radial_integral_center() {}
+
+      void finalize_radial_integral() {}
+
       template <typename Coeffs>
       void finalize_coefficients(Coeffs & /*coefficients*/) const {}
 
@@ -1016,6 +1035,21 @@ namespace rascal {
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
 
+      /*
+       * Overwriting the finalization function to empty one, since the
+       * finalization happens now in the interpolator
+       */
+      template <typename Coeffs>
+      void finalize_coefficients(Coeffs & /*coefficients*/) {}
+
+      /*
+       * Overwriting the finalization function of the derivative to empty one,
+       * since the finalization happens now in the interpolator
+       */
+      template <int NDims, typename Coeffs, typename Center>
+      void finalize_coefficients_der(Coeffs & /*coefficients_gradient*/,
+                                     Center & /*center*/) const {}
+
      protected:
       void precompute() override {
         this->precompute_fac_a();
@@ -1030,7 +1064,9 @@ namespace rascal {
       // Should be invoked only after the a-factor has been precomputed
       void precompute_center_contribution() {
         Parent::compute_center_contribution(this->fac_a);
+        Parent::finalize_radial_integral_center();
       }
+
       void init_interpolator(const Hypers_t & hypers) {
         auto radial_contribution_hypers =
             hypers.at("radial_contribution").template get<json>();
@@ -1051,6 +1087,7 @@ namespace rascal {
         std::function<Matrix_t(double)> func{
             [&](const double distance) mutable {
               Parent::compute_neighbour_contribution(distance, this->fac_a);
+              Parent::finalize_radial_integral();
               return this->radial_integral_neighbour;
             }};
         Matrix_t result = func(range_begin);
