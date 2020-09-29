@@ -78,7 +78,18 @@ namespace rascal {
     operator=(CalculatorBehlerParrinelloDense && other) = default;
 
     template <class StructureManager>
-    inline void compute(StructureManager & manager);
+    void compute(StructureManager & manager) {
+      for (auto && behler_feature : this->behler_features) {
+        auto && values{behler_feature->fetch_or_create_value()};
+        auto && self_derivatives{
+            behler_feature->fetch_or_create_self_derivatives()};
+        auto && other_derivatives{
+            behler_feature->fetch_or_create_other_derivatives()};
+
+        behler_feature->compute(manager, values, self_derivatives,
+                                other_derivatives);
+      }
+    }
 
    protected:
     /**
@@ -89,6 +100,7 @@ namespace rascal {
      * same structure manager)
      */
     std::vector<std::unique_ptr<BehlerFeatureBase_t>> behler_features{};
+
     std::string cutoff_function_type;
     /**
      * reference of the requiered hypers, these are used to check the parameters

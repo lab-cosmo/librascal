@@ -68,17 +68,6 @@ namespace rascal {
   }
 
   /* ---------------------------------------------------------------------- */
-  template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
-  template <class StructureManager>
-  void
-  CalculatorBehlerParrinelloDense<CompatibilityMode_, SymFunTypes...>::compute(
-      StructureManager & manager) {
-    for (auto && behler_feature : this->behler_features) {
-      behler_feature->compute(manager);
-    }
-  }
-
-  /* ---------------------------------------------------------------------- */
   template class CalculatorBehlerParrinelloDense<
       true, SymmetryFunctionType::Gaussian, SymmetryFunctionType::AngularNarrow,
       SymmetryFunctionType::AngularWide>;

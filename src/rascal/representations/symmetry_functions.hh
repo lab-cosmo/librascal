@@ -122,6 +122,8 @@ namespace rascal {
            const std::array<size_t, 3> & ordering = {0, 1, 2}) const {
       throw std::runtime_error("wrong order");
     }
+
+    virtual std::string get_identifier() const = 0;
   };
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType FunType>
@@ -199,6 +201,14 @@ namespace rascal {
       auto && delta_r{r_ij - this->r_s};
       auto && fun_val{exp(-this->eta * delta_r * delta_r)};
       return Return_t(fun_val, -2. * this->eta * delta_r * fun_val);
+    }
+
+    std::string get_identifier() const final {
+      std::stringstream name_stream{};
+      name_stream << "Gaussian"
+                  << "_η_" << json_io::get_quantity(this->params, "eta")
+                  << "_rₛ_" << json_io::get_quantity(this->params, "r_s");
+      return name_stream.str();
     }
 
    protected:
@@ -337,6 +347,15 @@ namespace rascal {
                         ordering));
     }
 
+    std::string get_identifier() const final {
+      std::stringstream name_stream{};
+      name_stream << "AngularNarrow"
+                  << "_ζ_" << json_io::get_quantity(this->params, "zeta")
+                  << "_λ_" << json_io::get_quantity(this->params, "lambda")
+                  << "_η_" << json_io::get_quantity(this->params, "eta");
+      return name_stream.str();
+    }
+
    protected:
     const json params;
     double zeta;
@@ -448,6 +467,15 @@ namespace rascal {
       ret_der[ordering[1]] = d_dr_jk * cutoff_val + fun_val * d_f_cut_jk;
       ret_der[ordering[2]] = d_dr_ki * cutoff_val + fun_val * d_f_cut_ki;
       return Return_t(fun_val * cutoff_val, ret_der);
+    }
+
+    std::string get_identifier() const final {
+      std::stringstream name_stream{};
+      name_stream << "AngularWide"
+                  << "_ζ_" << json_io::get_quantity(this->params, "zeta")
+                  << "_λ_" << json_io::get_quantity(this->params, "lambda")
+                  << "_η_" << json_io::get_quantity(this->params, "eta");
+      return name_stream.str();
     }
 
    protected:

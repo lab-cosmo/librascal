@@ -120,7 +120,18 @@ namespace rascal {
       this->raw_params.push_back(params);
     }
 
+    /**
+     * returns a string fully qualifying the feature
+     */
+    std::string get_identifier() const {
+      std::stringstream name_stream{};
+      name_stream << "Behlerfeature_cutfun_" << this->cut_fun->get_identifier()
+                  << "_symfun_" << this->get_sym_fun_identifier();
+      return name_stream.str();
+    }
+
    protected:
+    virtual std::string get_sym_fun_identifier() const = 0;
     template <SymmetryFunctionType... FunTypes_>
     struct SymFunctionsVTable;
 
@@ -234,6 +245,9 @@ namespace rascal {
         std::shared_ptr<PropertyBase> output_other_derivatives) const;
 
    protected:
+    std::string get_sym_fun_identifier() const final {
+      return this->sym_fun.get_identifier();
+    }
     SymmetryFunction<MySymFunType> sym_fun;
   };
 
@@ -330,6 +344,9 @@ namespace rascal {
         std::shared_ptr<PropertyBase> output_other_derivatives) const;
 
    protected:
+    std::string get_sym_fun_identifier() const final {
+      return this->sym_fun.get_identifier();
+    }
     SymmetryFunction<MySymFunType> sym_fun;
   };
 
