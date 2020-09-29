@@ -290,6 +290,27 @@
 </dd></dl>
 
 </div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="member">
+<dt id="_CPPv4N6rascal8internal18RadialContribution19radial_norm_factorsE">
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a0541d66d40e99cbb437237d95ab5a3dc"></span><a class="reference internal" href="#_CPPv4N6rascal8Vector_tE" title="rascal::Vector_t">Vector_t</a> <code class="sig-name descname">radial_norm_factors</code> = {}<a class="headerlink" href="#_CPPv4N6rascal8internal18RadialContribution19radial_norm_factorsE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>constant factors of the GTO basis N_n=sqrt(2/(n+3/2)) b_n^{3+2n}/4 </p>
+</dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N6rascal8internal18RadialContribution19radial_ortho_matrixE">
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1aa2dc6e7fcd21a4970f70f166e8b91805"></span><a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a> <code class="sig-name descname">radial_ortho_matrix</code> = {}<a class="headerlink" href="#_CPPv4N6rascal8internal18RadialContribution19radial_ortho_matrixE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>S_{nn’}^{-1/2}, orthonormalization matrix of the GTO basis. </p>
+</dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N6rascal8internal18RadialContribution17ortho_norm_matrixE">
+<span class="target" id="structrascal_1_1internal_1_1RadialContribution_3_01RadialBasisType_1_1GTO_01_4_1a1796b418e6c7025b70de1377f1efab55"></span><a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a> <code class="sig-name descname">ortho_norm_matrix</code> = {}<a class="headerlink" href="#_CPPv4N6rascal8internal18RadialContribution17ortho_norm_matrixE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>combination of radial_ortho_matrix and radial_norm_factors not symmetric </p>
+</dd></dl>
+
+</div>
 </dd></dl>
 
 <dl class="class">
@@ -7181,6 +7202,24 @@ void <code class="sig-name descname">precompute_radial_sigmas</code><span class=
 <dl class="function">
 <dt>
 void <code class="sig-name descname">precompute_radial_overlap</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="member">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal8Vector_tE" title="rascal::Vector_t">Vector_t</a> <code class="sig-name descname">radial_norm_factors</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a> <code class="sig-name descname">radial_ortho_matrix</code> = {}<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt>
+<a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a> <code class="sig-name descname">ortho_norm_matrix</code> = {}<br /></dt>
 <dd></dd></dl>
 
 </div>
