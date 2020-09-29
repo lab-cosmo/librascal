@@ -105,12 +105,15 @@ namespace rascal {
               continue;
             }
           }
-          for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
-            int m1s{static_cast<int>(m1 - l1)};
-            for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
-              int m2s{static_cast<int>(m2 - l2)};
-              for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
-                int m3s{static_cast<int>(m3 - l3)};
+
+          // NB: the order of this loop MATTERS because it mirrors the
+          // order of evaluation of the covariants further down
+          for (size_t m3{0}; m3 < 2 * l3 + 1; m3++) {
+            int m3s{static_cast<int>(m3 - l3)};
+            for (size_t m1{0}; m1 < 2 * l1 + 1; m1++) {
+              int m1s{static_cast<int>(m1 - l1)};
+              for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
+                int m2s{static_cast<int>(m2 - l2)};
                 if ((m1s + m2s + m3s != 0) && (m1s + m2s - m3s != 0)) {
                   continue;
                 }
@@ -456,6 +459,7 @@ namespace rascal {
                         size_t lm1{pow(l1, 2_size_t) + m1};
                         for (size_t m2{0}; m2 < 2 * l2 + 1; m2++) {
                           int m2s{static_cast<int>(m2 - l2)};
+
                           if ((m1s + m2s + m3s != 0) &&
                               (m1s + m2s - m3s != 0)) {
                             continue;

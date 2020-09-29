@@ -52,8 +52,8 @@ def dump_reference_json():
         os.path.join(inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
-        os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
-        os.path.join(dump_path, "small_molecule.json"),
+        os.path.join(inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(inputs_path, "small_molecule.json"),
     ]
 
     data = dict(filenames=fns_to_write,
