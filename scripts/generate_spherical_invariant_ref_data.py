@@ -15,6 +15,7 @@ import rascal.lib as lrl
 root = os.path.abspath('../')
 rascal_reference_path = os.path.join(root, 'reference_data/')
 inputs_path = os.path.join(rascal_reference_path, "inputs")
+read_inputs_path = os.path.join('reference_data/', "inputs")
 dump_path = os.path.join('reference_data/', "tests_only")
 
 ############################################################################
@@ -53,8 +54,8 @@ def dump_reference_json():
         os.path.join(inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
-        os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
-        os.path.join(dump_path, "small_molecule.json"),
+        os.path.join(read_inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(read_inputs_path, "small_molecule.json"),
     ]
 
     data = dict(filenames=fns_to_write,
