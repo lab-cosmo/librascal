@@ -34,8 +34,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   std::shared_ptr<CutoffFunctionBase>
   CutoffFunctionBase::make_shared(const units::UnitStyle & unit_style,
-                                  Hypers_t hypers) {
-    auto cut_fun_label{hypers.at("name").get<std::string>()};
+                                  const Hypers_t & hypers) {
+    auto cut_fun_label{json_io::get<std::string>(hypers, "type")};
     if (cut_fun_label == "Cosine") {
       return std::make_shared<CutoffFunction<InlCutoffFunctionType::Cosine>>(
           unit_style, hypers);
@@ -45,6 +45,30 @@ namespace rascal {
                                "cutoff_function style '" +
                                cut_fun_label + "'.");
     }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  std::string
+  CutoffFunctionBase::identifier(const units::UnitStyle & unit_style,
+                                 const Hypers_t & hypers) {
+    auto cut_fun_label{json_io::get<std::string>(hypers, "type")};
+    if (cut_fun_label == "Cosine") {
+      return CutoffFunction<InlCutoffFunctionType::Cosine>::identifier(
+          unit_style, hypers);
+    } else if (false /*there is no other cutoff function for the moment*/) {
+    } else {
+      throw std::runtime_error("unable to handle "
+                               "cutoff_function style '" +
+                               cut_fun_label + "'.");
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  std::string CutoffFunction<InlCutoffFunctionType::Cosine>::identifier(
+      const units::UnitStyle & unit_style, const Hypers_t & hypers) {
+    return make_identifier(json_io::check_units(unit_style.distance(),
+                                                json_io::get(hypers, "r_cut")),
+                           unit_style);
   }
 
 }  // namespace rascal

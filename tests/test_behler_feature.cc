@@ -55,7 +55,8 @@ namespace rascal {
                        {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
                         {"r_s", {{"value", 0.6}, {"unit", "Å"}}}}},
                       {"species", {"Mg", "Si"}},
-                      {"r_cut", {{"value", this->r_cut}, {"unit", "Å"}}}};
+                      {"cutoff_function",
+                       {{"r_cut", {{"value", this->r_cut}, {"unit", "Å"}}}}}};
         break;
       }
       case SymmetryFunctionType::AngularNarrow: {
@@ -67,7 +68,8 @@ namespace rascal {
                         {"zeta", {{"value", 0.6}, {"unit", "-"}}},
                         {"lambda", {{"value", 0.6}, {"unit", "-"}}}}},
                       {"species", {"Mg", "Si", "Si"}},
-                      {"r_cut", {{"value", this->r_cut}, {"unit", "Å"}}}};
+                      {"cutoff_function",
+                       {{"r_cut", {{"value", this->r_cut}, {"unit", "Å"}}}}}};
         break;
       }
       default:
@@ -148,15 +150,16 @@ namespace rascal {
   BOOST_AUTO_TEST_CASE(TripFeaturetest) {
     const double r_cut{1.42};
     static constexpr auto Order{TripletOrder};
-    json params{{"type", "AngularNarrow"},
-                {"index", 1},
-                {"unit", "eV"},
-                {"params",
-                 {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
-                  {"zeta", {{"value", 0.6}, {"unit", "-"}}},
-                  {"lambda", {{"value", 0.6}, {"unit", "-"}}}}},
-                {"species", {"Mg", "Si", "Si"}},
-                {"r_cut", {{"value", r_cut}, {"unit", "Å"}}}};
+    json params{
+        {"type", "AngularNarrow"},
+        {"index", 1},
+        {"unit", "eV"},
+        {"params",
+         {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
+          {"zeta", {{"value", 0.6}, {"unit", "-"}}},
+          {"lambda", {{"value", 0.6}, {"unit", "-"}}}}},
+        {"species", {"Mg", "Si", "Si"}},
+        {"cutoff_function", {{"r_cut", {{"value", r_cut}, {"unit", "Å"}}}}}};
     const UnitStyle unit_style{units::metal};
     std::shared_ptr<CutoffFunction<InlCutoffFunctionType::Cosine>> cut_fun{
         std::make_shared<CutoffFunction<InlCutoffFunctionType::Cosine>>(

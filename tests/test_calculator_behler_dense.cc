@@ -36,20 +36,39 @@
 
 #include "rascal/representations/calculator_behler_parrinello_dense.hh"
 #include "rascal/utils/json_io.hh"
+#include "rascal/utils/units.hh"
 
 #include "behler_fixtures.hh"
 #include "test_structure.hh"
 
 #include <boost/test/unit_test.hpp>
 
+#include <boost/mpl/list.hpp>
+
 #include <vector>
 
 namespace rascal {
 
   struct CalculatorBehlerParinelloDenseFixture {
-    CalculatorBehlerParinelloDenseFixture() : raw_params{json_io::load(filename)} {}
-    std::string filename {};
+    CalculatorBehlerParinelloDenseFixture()
+      : raw_params(json_io::load(filename)) {}
+    std::string filename{
+        "reference_data/tests_only/parrinello_dense_hypers.json"};
     json raw_params;
-  }
+  };
 
-}  // rascal
+  using BPCalculators = boost::mpl::list<CalculatorBehlerParinelloDenseFixture>;
+
+  BOOST_AUTO_TEST_SUITE(dense_behler_parrinello_tests);
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(constructor_test, Fix, BPCalculators, Fix){
+    auto unit_params(json_io::get(
+        json_io::get(this->raw_params, "general_description"), "unit_style"));
+    auto unit_style{units::UnitStyle::make(unit_params)};
+    CalculatorBehlerParrinelloDenseStd calc_BP{
+        json_io::get(this->raw_params, "input_layer"), unit_style};
+  };
+
+  BOOST_AUTO_TEST_SUITE_END();
+
+}  // namespace rascal

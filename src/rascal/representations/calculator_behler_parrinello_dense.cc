@@ -30,25 +30,37 @@
 #include "behler_feature.hh"
 #include "cutoff_functions_inlineable.hh"
 
+#include <map>
+
 namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
   CalculatorBehlerParrinelloDense<CompatibilityMode_, SymFunTypes...>::
-      CalculatorBehlerParrinelloDense(const Hypers_t & parameters)
-      : CalculatorBase{} {
+      CalculatorBehlerParrinelloDense(const Hypers_t & parameters,
+                                      const UnitStyle & unit_style)
+
+        : CalculatorBase{}, cutoff_function_type{json_io::get<std::string>(
+                              parameters, "cutoff_function_type")} {
     this->set_default_prefix("dense_behler_parrinello_");
     // simple check (just existence of keys)
     this->check_hyperparameters(this->reference_hypers, parameters);
-    // true parameter checks
-    auto unit_style{UnitStyle::make(parameters.at("unit_style"))};
     // 1)  create shared_ptr to cutoff_function
-    auto cut_fun{CutoffFunctionBase::make_shared(
-        unit_style, parameters.at("cutoff_function"))};
+    std::string cut_fun_type{json_io::get<std::string>(
+                              parameters, "cutoff_function_type")};
 
     // 2) iterate through sym_function_params and fill vector of
     // behlerfeatures
-    for (auto && sym_fun_params : parameters.at("symmetry_functions")) {
+    std::map<std::string, std::shared_ptr<CutoffFunctionBase>> cut_funs;
+    for (auto && sym_fun_params :
+         json_io::get(parameters, "symmetry_functions")) {
+      auto && cut_fun_params{json_io::get(sym_fun_params, "cutoff_function")};
+      auto && cut_fun{cut_funs[CutoffFunctionBase::identifier(
+          unit_style, cut_fun_params)]};
+
+      if (cut_fun == nullptr) {
+        cut_fun = CutoffFunctionBase::make_shared(unit_style, cut_fun_params);
+      }
       this->behler_features.push_back(std::move(
           BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>::make_unique(
               cut_fun, unit_style, sym_fun_params)));
@@ -70,5 +82,9 @@ namespace rascal {
   template class CalculatorBehlerParrinelloDense<
       true, SymmetryFunctionType::Gaussian, SymmetryFunctionType::AngularNarrow,
       SymmetryFunctionType::AngularWide>;
+
+  template class CalculatorBehlerParrinelloDense<
+      true, SymmetryFunctionType::Gaussian,
+      SymmetryFunctionType::AngularNarrow>;
 
 }  // namespace rascal

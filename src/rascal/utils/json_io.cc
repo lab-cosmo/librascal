@@ -86,11 +86,46 @@ namespace rascal {
     }
 
     /* ---------------------------------------------------------------------- */
+    std::string get_quantity(const json & params,
+                             const std::string & field_name) {
+      try {
+        auto && quant{get(params, field_name)};
+        std::stringstream retval{};
+        retval << get<double>(quant, "value") << " "
+               << get<std::string>(quant, "unit");
+        return retval.str();
+      } catch (const nlohmann::json::exception & error) {
+        std::stringstream error_msg{};
+        error_msg << "Can't extract quantity '" << field_name
+                  << "' form the following json:" << std::endl
+                  << params << std::endl
+                  << "Caught error '" << error.what() << "'.";
+        throw std::runtime_error{error_msg.str()};
+      }
+    }
+
+    /* ---------------------------------------------------------------------- */
+    json get(const json & params, const std::string & field_name) {
+      try {
+        return params.at(field_name);
+      } catch (const nlohmann::json::exception & error) {
+        std::stringstream error_msg{};
+        error_msg << "Can't extract field '" << field_name
+                  << "' form the following json:" << std::endl
+                  << params << std::endl
+                  << "Caught error '" << error.what() << "'.";
+        std::cout << error_msg.str();
+        static_cast<double*>(nullptr)[0] = 2.;
+        throw std::runtime_error{error_msg.str()};
+      }
+    }
+
+    /* ---------------------------------------------------------------------- */
     double check_units(const std::string & expected_unit,
                        const json & parameter) {
-      if (not(expected_unit == parameter.at("unit").get<std::string>())) {
+      if (not(expected_unit == get<std::string>(parameter, "unit"))) {
         std::stringstream error{};
-        error << "unit '" << parameter.at("unit").get<std::string>()
+        error << "unit '" << get<std::string>(parameter, "unit")
               << "' differs from the expected unit '" << expected_unit << "'.";
         throw std::runtime_error(error.str());
       }

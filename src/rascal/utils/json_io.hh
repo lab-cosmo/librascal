@@ -41,6 +41,10 @@
 
 #include <fstream>
 
+#include <typeinfo>
+
+#include <iostream>
+
 // For convenience
 using json = nlohmann::json;
 
@@ -348,6 +352,27 @@ namespace rascal {
      */
     double check_units(const std::string & expected_unit,
                        const json & parameter);
+
+    json get(const json & params, const std::string & field_name);
+
+    std::string get_quantity(const json & params,
+                             const std::string & field_name);
+
+    template <typename T>
+    T get(const json & params, const std::string & field_name) {
+      auto && value{get(params, field_name)};
+      try {
+        return value.get<T>();
+      } catch (const nlohmann::json::exception & error) {
+        std::stringstream error_msg{};
+        error_msg << " could not extract a value of type '" << typeid(T).name()
+                  << "' with field name '" << field_name << "' from the json '"
+                  << params << "', caught exception '" << error.what() << "'.";
+        std::cout << error_msg.str();
+        std::cout << static_cast<double&>(*static_cast<double*>(nullptr));
+        throw std::runtime_error(error_msg.str());
+      }
+    }
   }  // namespace json_io
 }  // namespace rascal
 

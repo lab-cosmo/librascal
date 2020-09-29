@@ -27,6 +27,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "behler_feature.hh"
 #include "calculator_base.hh"
 #include "symmetry_functions.hh"
 
@@ -34,9 +35,9 @@
 #define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_DENSE_HH_
 
 namespace rascal {
-  //! forward declaration
-  template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
-  class BehlerFeatureBase;
+  // //! forward declaration
+  // template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
+  // class BehlerFeatureBase;
 
   template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
   class CalculatorBehlerParrinelloDense : public CalculatorBase {
@@ -54,7 +55,8 @@ namespace rascal {
     CalculatorBehlerParrinelloDense() = delete;
 
     //! Constructor with input json
-    explicit CalculatorBehlerParrinelloDense(const Hypers_t & parameters);
+    explicit CalculatorBehlerParrinelloDense(const Hypers_t & parameters,
+                                             const UnitStyle & unit_style);
 
     //! Copy constructor
     CalculatorBehlerParrinelloDense(
@@ -87,15 +89,23 @@ namespace rascal {
      * same structure manager)
      */
     std::vector<std::unique_ptr<BehlerFeatureBase_t>> behler_features{};
+    std::string cutoff_function_type;
     /**
      * reference of the requiered hypers, these are used to check the parameters
      * for building the behler_features vector at construction
      */
-    const ReferenceHypers_t reference_hypers{{"unit_style", {}},
-                                             {"scaling", {}},
-                                             {"cutoff_function", {}},
+    const ReferenceHypers_t reference_hypers{{"scaling", {}},
+                                             {"cutoff_function_type", {}},
                                              {"symmetry_functions", {}}};
   };
+
+  /**
+   * Default set of symmetry functions, this is meant to replicate n2p2
+   */
+
+  using CalculatorBehlerParrinelloDenseStd =
+      CalculatorBehlerParrinelloDense<true, SymmetryFunctionType::Gaussian,
+                                      SymmetryFunctionType::AngularNarrow>;
 }  // namespace rascal
 
 #endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_BEHLER_PARRINELLO_DENSE_HH_

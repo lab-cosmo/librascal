@@ -109,7 +109,7 @@ namespace rascal {
 
     //! insert a parameter (sub-)json
     void add_params(const json & params) {
-      const auto & type{params.at("type").get<std::string>()};
+      const auto & type{json_io::get<std::string>(params, "type")};
       if (type != get_name(this->sym_fun_type)) {
         std::stringstream error{};
         error << "Parameter set for function type '" << type
@@ -162,24 +162,31 @@ namespace rascal {
                       const UnitStyle & unit_style, const Hypers_t & raw_params)
         : Parent(MySymFunType, cut_fun, SymmetryFunction_t::Order, raw_params),
           sym_fun{unit_style,
-                  raw_params.at("params" + canary(raw_params, "params"))} {
-      if (raw_params.at("type").template get<std::string>() !=
+                  json_io::get(raw_params,
+                               "params" + canary(raw_params, "params"))} {
+      if (json_io::get<std::string>(raw_params, "type") !=
           get_name(MySymFunType)) {
         std::stringstream err{};
         err << "params for symmetry function of type '"
-            << raw_params.at("type").template get<std::string>()
+            << json_io::get<std::string>(raw_params, "type")
             << "' provided to initialise a symmetry function of type '"
             << get_name(MySymFunType);
         throw std::runtime_error(err.str());
       }
 
       if (cut_fun->get_cutoff() !=
-          json_io::check_units(unit_style.distance(), raw_params.at("r_cut"))) {
+          json_io::check_units(
+              unit_style.distance(),
+              json_io::get(json_io::get(raw_params, "cutoff_function"),
+                           "r_cut"))) {
         std::stringstream err{};
         err << "Mismatch: the provided cutoff function has a cuttoff radius of "
             << cut_fun->get_cutoff()
             << " but the parameters prescribe a cutoff radius of "
-            << raw_params.at("r_cut").at("value").template get<double>();
+            << json_io::get<double>(
+                   json_io::get(json_io::get(raw_params, "cutoff_function"),
+                                "r_cut"),
+                   "value");
         throw std::runtime_error(err.str());
       }
     }
@@ -254,25 +261,27 @@ namespace rascal {
                          const UnitStyle & unit_style,
                          const Hypers_t & raw_params)
         : Parent(MySymFunType, cut_fun, SymmetryFunction_t::Order, raw_params),
-          sym_fun{unit_style,
-                  raw_params.at("params" + canary(raw_params, "params"))} {
-      if (raw_params.at("type").template get<std::string>() !=
+          sym_fun{unit_style, json_io::get(raw_params, "params")} {
+      if (json_io::get<std::string>(raw_params, "type") !=
           get_name(MySymFunType)) {
         std::stringstream err{};
         err << "params for symmetry function of type '"
-            << raw_params.at("type").template get<std::string>()
+            << json_io::get<std::string>(raw_params, "type")
             << "' provided to initialise a symmetry function of type '"
             << get_name(MySymFunType);
         throw std::runtime_error(err.str());
       }
 
       if (cut_fun->get_cutoff() !=
-          json_io::check_units(unit_style.distance(), raw_params.at("r_cut"))) {
+          json_io::check_units(
+              unit_style.distance(),
+              json_io::get(json_io::get(raw_params, "cutoff_function"),
+                           "r_cut"))) {
         std::stringstream err{};
         err << "Mismatch: the provided cutoff function has a cuttoff radius of "
             << cut_fun->get_cutoff()
             << " but the parameters prescribe a cutoff radius of "
-            << raw_params.at("r_cut").at("value").template get<double>();
+            << json_io::get_quantity(raw_params, "r_cut");
         throw std::runtime_error(err.str());
       }
     }
@@ -336,7 +345,7 @@ namespace rascal {
   BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>::make_unique(
       std::shared_ptr<CutoffFunctionBase> cut_fun, const UnitStyle & unit_style,
       const Hypers_t & parameters) {
-    auto && sym_fun_label{parameters.at("type").get<std::string>()};
+    auto && sym_fun_label{json_io::get<std::string>(parameters, "type")};
     if (sym_fun_label == "Gaussian") {
       return std::make_unique<BehlerPairFeature<
           CompatibilityMode_, SymmetryFunctionType::Gaussian, SymFunTypes...>>(

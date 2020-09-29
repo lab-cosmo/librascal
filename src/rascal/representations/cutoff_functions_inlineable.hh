@@ -82,7 +82,13 @@ namespace rascal {
      * Factory function to create shared ptrs to a cutoff function from json
      */
     static std::shared_ptr<CutoffFunctionBase>
-    make_shared(const units::UnitStyle & unit_style, Hypers_t hypers);
+    make_shared(const units::UnitStyle & unit_style, const Hypers_t & hypers);
+
+    /**
+     * returns the identifier that an instance defined by hypers would have
+     */
+    static std::string identifier(const units::UnitStyle & unit_style,
+                                  const Hypers_t & hypers);
 
     //! Main worker (raison d'être). Evaluates cutoff function for all pairs
     template <class StructureManager>
@@ -187,8 +193,9 @@ namespace rascal {
                             const Hypers_t & hypers)
         : Parent{InlCutoffFunctionType::Cosine,
                  json_io::check_units(unit_style.distance(),
-                                      hypers.at("r_cut"))},
-          hypers{hypers}, identifier{this->make_identifier(unit_style)} {}
+                                      json_io::get(hypers, "r_cut"))},
+          hypers{hypers}, my_identifier{this->make_identifier(this->cutoff,
+                                                              unit_style)} {}
 
     inline double f_c(const double & distance) const {
       assert(distance <= this->cutoff);
@@ -202,18 +209,21 @@ namespace rascal {
               -.5 * scaled_dist * std::sin(scaled_dist)};
     }
 
-    const std::string & get_identifier() const { return this->identifier; }
+    const std::string & get_identifier() const { return this->my_identifier; }
+    static std::string identifier(const units::UnitStyle & unit_style,
+                                  const Hypers_t & hypers);
 
    protected:
-    std::string make_identifier(const units::UnitStyle & unit_style) {
+    static std::string make_identifier(const double & cutoff,
+                                       const units::UnitStyle & unit_style) {
       std::stringstream id{};
       id.precision(14);
-      id << "Cosine_" << this->cutoff << '_' << unit_style.distance();
+      id << "Cosine_" << cutoff << '_' << unit_style.distance();
       return id.str();
     }
     //! keep the hypers
     const Hypers_t hypers;
-    const std::string identifier;
+    const std::string my_identifier;
   };
 
   template <class StructureManager>
@@ -262,7 +272,7 @@ namespace rascal {
     auto && pair_cutoffs{this->get_pair_value(manager)};
     // get the pairs in each triplet
 
-    auto && pair_getter{[](auto && manager)-> decltype(auto) {
+    auto && pair_getter{[](auto && manager) -> decltype(auto) {
       try {
         return manager.template get_sub_clusters<PairOrder, TripletOrder>();
       } catch (std::out_of_range &) {
