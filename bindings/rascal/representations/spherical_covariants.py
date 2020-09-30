@@ -11,7 +11,7 @@ class SphericalCovariants(BaseIO):
     """
     Computes a SphericalCovariants representation, i.e. lambda spectrum.
 
-    Hyperparameters
+    Attributes
     ---------------
     interaction_cutoff : float
         Maximum pairwise distance for atoms to be considered in
@@ -136,12 +136,12 @@ class SphericalCovariants(BaseIO):
 
         Parameters
         ----------
-        frames : list(ase.Atoms)
+        frames : list(ase.Atoms) or AtomsList
             List of atomic structures.
 
         Returns
         -------
-
+           AtomsList : Object containing the representation
 
         """
         if not isinstance(frames, AtomsList):

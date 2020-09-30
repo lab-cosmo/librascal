@@ -1,6 +1,6 @@
+from ..utils import BaseIO
 from ..lib._rascal.models import kernels
 from ..neighbourlist import AtomsList
-from ..utils import BaseIO
 
 # names of existing pseudo points implementation on the pybinding side.
 _sparse_points = {}

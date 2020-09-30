@@ -12,7 +12,7 @@ class SphericalExpansion(BaseIO):
     """
     Computes the spherical expansion of the neighbour density [soap]
 
-    Hyperparameters
+    Attributes
     ----------
     interaction_cutoff : float
         Maximum pairwise distance for atoms to be considered in
@@ -198,13 +198,12 @@ class SphericalExpansion(BaseIO):
 
         Parameters
         ----------
-        frames : list(ase.Atoms)
+        frames : list(ase.Atoms) or AtomsList
             List of atomic structures.
 
         Returns
         -------
-
-            Object containing the representation
+           AtomsList : Object containing the representation
 
         """
         if not isinstance(frames, AtomsList):

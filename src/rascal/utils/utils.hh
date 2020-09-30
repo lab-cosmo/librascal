@@ -29,6 +29,7 @@
 #define SRC_RASCAL_UTILS_UTILS_HH_
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -332,6 +333,31 @@ namespace rascal {
       }
     };
 
+    /**
+     * Find set intersection between 2 containers.
+     * @tparam Set_* std sequence container
+     * @return intersections set intersection between keys_a and keys_b
+     */
+    template <class Set_a, class Set_b>
+    auto set_intersection(const Set_a & keys_a, const Set_b & keys_b) {
+      using value_type = typename Set_a::value_type;
+      static_assert(std::is_same<value_type, typename Set_b::value_type>::value,
+                    "Set type must be the same");
+      if (keys_a.empty() or keys_b.empty()) {
+        return std::set<value_type>();
+      }
+      std::set<value_type> set{keys_a.cbegin(), keys_a.cend()};
+      std::set<value_type> intersections;
+      for (const value_type & el : keys_b) {
+        if (set.erase(el) > 0) {
+          // if el exists in set, then 1 is returned and el is erased;
+          // otherwise, 0.
+          intersections.insert(el);
+        }
+      }
+      return intersections;
+    }
+
     /* ---------------------------------------------------------------------- */
 
     //! Get the demangled name of a c++ type, as returned by
@@ -370,6 +396,7 @@ namespace rascal {
   constexpr int PairOrder{2};
   constexpr int TripletOrder{3};
   constexpr int QuadrupletOrder{4};
+  constexpr int MaxChemElements{130};
 
 }  // namespace rascal
 

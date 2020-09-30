@@ -59,67 +59,6 @@
 namespace rascal {
 
   namespace internal {
-
-    /**
-     * Utility to find the periodic images of the center atoms that are within
-     * the neighborhood of center i.
-     * In the case of having several periodic images of other centers in
-     * the environment of center i, we need to sum up
-     * of all these contributions, e.g. ij, ij', ij'' ... where
-     * j primes are periodic images of j. And assign this sum back to all
-     * of these terms hence this function.
-     */
-    template <class StructureManager, class ClusterRefCenter>
-    auto find_periodic_images_pairs_in_environment(
-        const std::shared_ptr<StructureManager> & manager,
-        ClusterRefCenter & center) {
-      static_assert(ClusterRefCenter::IsOrderOne,
-                    "Input cluster should be of Order == 1.");
-      constexpr static size_t ClusterLayer{
-          StructureManager::template cluster_layer_from_order<2>()};
-
-      // convenience object to associate every center j within the
-      // environment of center i to its corresponding pair ij and its
-      // periodic images.
-      std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
-          periodic_images_of_center{};
-
-      // find all center atoms within the environment of i
-      for (auto pair : center.pairs()) {
-        auto atom_j = pair.get_atom_j();
-        int atom_tag_j = atom_j.get_atom_tag();
-        if (not manager->is_ghost_atom(pair)) {
-          periodic_images_of_center[atom_tag_j].emplace_back(
-              static_cast<ClusterRefKey<2, ClusterLayer>>(pair));
-        }
-      }
-      // find the periodic images of the found center atoms
-      for (auto pair : center.pairs()) {
-        auto atom_j = pair.get_atom_j();
-        int atom_tag_j = atom_j.get_atom_tag();
-        if (periodic_images_of_center.count(atom_tag_j) and
-            manager->is_ghost_atom(pair)) {
-          periodic_images_of_center[atom_tag_j].emplace_back(
-              std::move(static_cast<ClusterRefKey<2, ClusterLayer>>(pair)));
-        }
-      }
-
-      // remove centers that don't have periodic images in the environment
-      std::vector<int> tags_to_erase{};
-      for (const auto & el : periodic_images_of_center) {
-        const int atom_tag_j{el.first};
-        const auto & p_images = el.second;
-        if (p_images.size() < 2) {
-          tags_to_erase.emplace_back(atom_tag_j);
-        }
-      }
-      // has to be done in 2 steps because erase invalidates the iterator
-      for (const int & tag : tags_to_erase) {
-        periodic_images_of_center.erase(tag);
-      }
-      return periodic_images_of_center;
-    }
-
     /**
      * List of possible Radial basis that can be used by the spherical
      * expansion.
@@ -1737,8 +1676,6 @@ namespace rascal {
     using math::PI;
     using math::pow;
     constexpr bool ExcludeGhosts{true};
-    constexpr static size_t ClusterLayer{
-        StructureManager::template cluster_layer_from_order<2>()};
     const bool is_not_masked{manager->is_not_masked()};
     const bool compute_gradients{this->compute_gradients};
     if (not is_not_masked and compute_gradients) {
@@ -1895,7 +1832,7 @@ namespace rascal {
         // (the periodic images move with the center, so their contribution to
         // the center gradient is zero)
         if (compute_gradients and (atom_j_tag != atom_i_tag)) {  // NOLINT
-          // \grad_i c^j
+          // \grad_j c^i
           auto & coefficients_neigh_gradient =
               expansions_coefficients_gradient[neigh];
 
@@ -1909,9 +1846,9 @@ namespace rascal {
           // grad_i c^{ib}
           auto && gradient_center_by_type{
               coefficients_center_gradient[neigh_type]};
-          // grad_i c^{ja}
+          // grad_j c^{ib}
           auto && gradient_neigh_by_type{
-              coefficients_neigh_gradient[center_type]};
+              coefficients_neigh_gradient[neigh_type]};
 
           // clang-format off
           // d/dr_{ij} (c_{ij} f_c{r_{ij}})
@@ -1924,19 +1861,10 @@ namespace rascal {
           for (int cartesian_idx{0}; cartesian_idx < ThreeD;
                  ++cartesian_idx) {
             l_block_idx = 0;
-            double parity{-1.};  // account for (-1)^{l+1}
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                 ++angular_l) {
               size_t l_block_size{2 * angular_l + 1};
               pair_gradient_contribution.resize(this->max_radial, l_block_size);
-              /*
-               pair_gradient_contribution_p1.col(angular_l)
-                * harmonics.segment(l_block_idx, l_block_size)
-               should be precomputed like pair_gradient_contribution_p1
-
-               the memory layout of pair_gradient_contribution_p1.col(angular_l)
-               is not the best one considering the access.
-               */
               pair_gradient_contribution =
                 pair_gradient_contribution_p1.col(angular_l)
                 * harmonics.segment(l_block_idx, l_block_size)
@@ -1949,23 +1877,21 @@ namespace rascal {
 
               // Each Cartesian gradient component occupies a contiguous block
               // (row-major storage)
-              // grad_i c^{ib} = - \sum_{j} grad_j c^{ij}
+              // grad_i c^{ib} = - \sum_{j} grad_j c^{ijb}
               gradient_center_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
                   max_radial, l_block_size) -= pair_gradient_contribution;
-              // grad_i c^{ja} = (-1)^{l+1} grad_j c^{ij}
+              // grad_j c^{ib} =  grad_j c^{ijb}
               gradient_neigh_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
-                  max_radial, l_block_size) = parity *
-                    pair_gradient_contribution;
+                  max_radial, l_block_size) = pair_gradient_contribution;
               l_block_idx += l_block_size;
-              parity *= -1.;
               // clang-format on
             }  // for (angular_l)
           }    // for cartesian_idx
 
           // half list branch for accumulating parts of grad_j c^{j} using
-          // grad_j c^{ji a} = - grad_i c^{ji a}
+          // grad_j c^{ji a} = (-1)^l grad_j c^{ij b}
           if (IsHalfNL) {
             if (is_center_atom) {
               // grad_j c^{j}
@@ -1975,46 +1901,30 @@ namespace rascal {
               auto gradient_neigh_center_by_type =
                   coefficients_neigh_center_gradient[center_type];
 
-              gradient_neigh_center_by_type -= gradient_neigh_by_type;
-            }  // if (is_center_atom)
-          }    // if (IsHalfNL)
-        }      // if (compute_gradients)
-      }        // for (neigh : center)
+              for (int cartesian_idx{0}; cartesian_idx < ThreeD;
+                   ++cartesian_idx) {
+                l_block_idx = 0;
+                double parity{1};
+                for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+                     ++angular_l) {
+                  size_t l_block_size{2 * angular_l + 1};
+                  // clang-format off
+                  gradient_neigh_center_by_type.block(
+                      cartesian_idx * max_radial, l_block_idx,
+                      max_radial, l_block_size) += parity *
+                                  gradient_neigh_by_type.block(
+                                    cartesian_idx * max_radial, l_block_idx,
+                                    max_radial, l_block_size);
 
-      // In the case of having several periodic images of other centers in
-      // the environment of center i, we need to sum up
-      // of all these contributions, e.g. ij, ij', ij'' ... where
-      // j primes are periodic images of j. And assign this sum back to all
-      // of these terms.
-      if (not IsHalfNL) {
-        if (compute_gradients) {
-          // sum of d/dr_{i} C^{ji}_{nlm} when center j has several periodic
-          // images of center i in its environment
-          auto di_c_ji_sum = math::Matrix_t(n_row, n_col);
-
-          std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
-              periodic_images_of_center =
-                  internal::find_periodic_images_pairs_in_environment(manager,
-                                                                      center);
-          // for each center atoms with periodic images, sum up the
-          // contributions and assign the sum back to the terms
-          for (const auto & el : periodic_images_of_center) {
-            const auto & p_images = el.second;
-            // these terms have only one species key that is non zero
-            Key_t key{
-                expansions_coefficients_gradient[p_images.at(0)].get_keys().at(
-                    0)};
-            di_c_ji_sum = expansions_coefficients_gradient[p_images[0]][key];
-            for (auto image_it = p_images.begin() + 1, im_e = p_images.end();
-                 image_it != im_e; ++image_it) {
-              di_c_ji_sum += expansions_coefficients_gradient[*image_it][key];
-            }
-            for (const auto & p_image : el.second) {
-              expansions_coefficients_gradient[p_image][key] = di_c_ji_sum;
-            }
-          }  // end of periodic images business
-        }    // if (compute_gradients)
-      }      // if (not IsHalfNL)
+                  l_block_idx += l_block_size;
+                  parity *= -1.;
+                  // clang-format on
+                }  // for (angular_l)
+              }    // for cartesian_idx
+            }      // if (is_center_atom)
+          }        // if (IsHalfNL)
+        }          // if (compute_gradients)
+      }            // for (neigh : center)
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
@@ -2072,7 +1982,8 @@ namespace rascal {
           auto && atom_j = neigh.get_atom_j();
           auto atom_j_tag = atom_j.get_atom_tag();
           if (atom_j_tag != atom_i_tag) {
-            keys_list_grad[i_grad].insert(center_type);
+            Key_t neigh_type{neigh.get_atom_type()};
+            keys_list_grad[i_grad].insert(neigh_type);
           }
           i_grad++;
         }
@@ -2110,7 +2021,7 @@ namespace rascal {
     std::vector<std::set<Key_t>> keys_list{};
     std::vector<std::set<Key_t>> keys_list_grad{};
     for (auto center : manager) {
-      Key_t center_type{center.get_atom_type()};
+      // Key_t center_type{center.get_atom_type()};
       auto atom_i_tag = center.get_atom_tag();
       keys_list.emplace_back(keys);
       if (this->compute_gradients) {
@@ -2120,7 +2031,8 @@ namespace rascal {
           auto atom_j_tag = atom_j.get_atom_tag();
           std::set<Key_t> neigh_types{};
           if (atom_j_tag != atom_i_tag) {
-            neigh_types.insert(center_type);
+            Key_t neigh_type{neigh.get_atom_type()};
+            neigh_types.insert(neigh_type);
           }
           keys_list_grad.emplace_back(neigh_types);
         }
@@ -2170,7 +2082,7 @@ namespace rascal {
 
     // build the species list
     for (auto center : manager) {
-      Key_t center_type{center.get_atom_type()};
+      // Key_t center_type{center.get_atom_type()};
       keys_list.emplace_back(this->global_species);
       if (this->compute_gradients) {
         keys_list_grad.emplace_back(this->global_species);
@@ -2180,7 +2092,8 @@ namespace rascal {
           auto atom_j_tag = atom_j.get_atom_tag();
           std::set<Key_t> neigh_types{};
           if (atom_j_tag != atom_i_tag) {
-            neigh_types.insert(center_type);
+            Key_t neigh_type{neigh.get_atom_type()};
+            neigh_types.insert(neigh_type);
           }
           keys_list_grad.emplace_back(neigh_types);
         }
