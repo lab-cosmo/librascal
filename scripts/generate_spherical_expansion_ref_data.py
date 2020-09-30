@@ -15,6 +15,7 @@ import rascal.lib as lrl
 root = os.path.abspath('../')
 rascal_reference_path = os.path.join(root, 'reference_data/')
 inputs_path = os.path.join(rascal_reference_path, "inputs")
+read_inputs_path = os.path.join('reference_data/', "inputs")
 dump_path = os.path.join('reference_data/', "tests_only")
 
 ###############################################################################
@@ -43,9 +44,9 @@ def dump_reference_json():
 
     cutoffs = [2, 3]
     gaussian_sigmas = [0.2, 0.5]
-    max_radials = [4, 10]
-    max_angulars = [3, 6]
-    cutoff_smooth_widths = [0., 1.]
+    max_radials = [4]
+    max_angulars = [3]
+    cutoff_smooth_widths = [1.]
     radial_basis = ["GTO", "DVR"]
     cutoff_function_types = ['ShiftedCosine', 'RadialScaling']
     fns = [
@@ -54,10 +55,13 @@ def dump_reference_json():
         os.path.join(inputs_path, "small_molecule.json")
     ]
     fns_to_write = [
-        os.path.join(dump_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
-        os.path.join(dump_path, "small_molecule.json"),
+        os.path.join(read_inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+        os.path.join(read_inputs_path, "small_molecule.json"),
     ]
-
+    optimization_args = [
+        {'type':'None','accuracy':1e-8},
+        {'type':'Spline','accuracy':1e-8}
+    ]
     data = dict(filenames=fns_to_write,
                 cutoffs=cutoffs,
                 gaussian_sigmas=gaussian_sigmas,
@@ -69,9 +73,9 @@ def dump_reference_json():
             data['rep_info'].append([])
             for (gaussian_sigma, max_radial, max_angular,
                  cutoff_smooth_width, rad_basis,
-                 cutoff_function_type) in product(
+                 cutoff_function_type,opt_args) in product(
                     gaussian_sigmas, max_radials, max_angulars,
-                    cutoff_smooth_widths, radial_basis, cutoff_function_types):
+                    cutoff_smooth_widths, radial_basis, cutoff_function_types,optimization_args):
                 frames = read(fn)
                 if cutoff_function_type == 'RadialScaling':
                     cutoff_function_parameters = dict(
@@ -91,7 +95,9 @@ def dump_reference_json():
                           'cutoff_function_parameters': cutoff_function_parameters,
                           "gaussian_sigma_constant":
                           gaussian_sigma,
-                          "radial_basis": rad_basis}
+                          "radial_basis": rad_basis,
+                          "optimization_args":opt_args,
+                          }
 
                 sph_expn = SphericalExpansion(**hypers)
                 expansions = sph_expn.transform(frames)
