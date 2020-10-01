@@ -303,7 +303,7 @@ namespace rascal {
           if (prop_grad.are_keys_uniform()) {
             do_block_by_key_dot = true;
           }
-
+          do_block_by_key_dot = false;
           std::set<int> unique_species{};
           for (auto center : manager) {
             unique_species.insert(center.get_atom_type());
@@ -406,15 +406,21 @@ namespace rascal {
             for (auto center : manager) {
               int a_sp{center.get_atom_type()};
               auto rep = dKdX[center];
-              auto r_i = center.get_position();
-              auto atom_tag_i = center.get_atom_tag();
-              auto km3_ii = sparse_points.dot_derivative(
-                  a_sp, prop_grad[center.get_atom_ii()]);
-              if (zeta > 1) {
-                km3_ii.transpose() *= rep.asDiagonal();
-              }
-              dKdr[center] += km3_ii;
-              for (auto neigh : center.pairs()) {
+              // auto r_i = center.get_position();
+              auto atom_i_tag = center.get_atom_tag();
+              // auto km3_ii = sparse_points.dot_derivative(
+              //     a_sp, prop_grad[center.get_atom_ii()]);
+              // if (zeta > 1) {
+              //   km3_ii.transpose() *= rep.asDiagonal();
+              // }
+              // dKdr[center] += km3_ii;
+              for (auto neigh : center.pairs_with_self_pair()) {
+                auto atom_j = neigh.get_atom_j();
+                auto atom_j_tag = atom_j.get_atom_tag();
+                if (atom_j_tag == atom_i_tag and
+                          manager->is_ghost_atom(neigh)) {
+                  continue;
+                }
                 auto km3_ji =
                     sparse_points.dot_derivative(a_sp, prop_grad[neigh]);
                 if (zeta > 1) {
@@ -422,9 +428,7 @@ namespace rascal {
                 }
                 dKdr[neigh.get_atom_j()] += km3_ji;
                 if (compute_stress) {
-                  auto atom_j = neigh.get_atom_j();
-                  if (atom_tag_i == atom_j.get_atom_tag()) {continue;}
-                  Eigen::Vector3d u_ij = neigh.get_position() - r_i;
+                  Eigen::Vector3d u_ij = neigh.get_position();
                   for (int i_der{0}; i_der < ThreeD; i_der++) {
                     const auto & voigt = voigt_ids[i_der];
                     // fill diagonal
