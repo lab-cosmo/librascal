@@ -202,7 +202,8 @@ namespace rascal {
   /**
    * Test the analytical kernel gradients against numerical kernel gradients.
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(grad_stress_test, Fix, sparse_grad_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(grad_stress_test, Fix, sparse_grad_fixtures,
+                                   Fix) {
     // using Manager_t = typename Fix::Manager_t;
     using ManagerCollection_t = typename Fix::ManagerCollection_t;
     using Representation_t = typename Fix::Representation_t;
@@ -264,9 +265,12 @@ namespace rascal {
         std::cout << "============================" << std::endl;
         std::cout << KNM_num_der.row(row_max) << std::endl;
         std::cout << "============================" << std::endl;
-        std::cout << KNM_der.block(KNM_der.rows()-6, 0 , 6, KNM_der.cols()) << std::endl;
+        std::cout << KNM_der.block(KNM_der.rows() - 6, 0, 6, KNM_der.cols())
+                  << std::endl;
         std::cout << "============================" << std::endl;
-        std::cout << KNM_num_der.block(KNM_num_der.rows()-6, 0 , 6, KNM_num_der.cols()) << std::endl;
+        std::cout << KNM_num_der.block(KNM_num_der.rows() - 6, 0, 6,
+                                       KNM_num_der.cols())
+                  << std::endl;
       }
     }
   }

@@ -1984,8 +1984,8 @@ namespace rascal {
           // auto && atom_j = neigh.get_atom_j();
           // auto atom_j_tag = atom_j.get_atom_tag();
           // if (atom_j_tag != atom_i_tag) {
-            Key_t neigh_type{neigh.get_atom_type()};
-            keys_list_grad[i_grad].insert(neigh_type);
+          Key_t neigh_type{neigh.get_atom_type()};
+          keys_list_grad[i_grad].insert(neigh_type);
           // }
           i_grad++;
         }
@@ -2033,8 +2033,8 @@ namespace rascal {
           // auto atom_j_tag = atom_j.get_atom_tag();
           std::set<Key_t> neigh_types{};
           // if (atom_j_tag != atom_i_tag) {
-            Key_t neigh_type{neigh.get_atom_type()};
-            neigh_types.insert(neigh_type);
+          Key_t neigh_type{neigh.get_atom_type()};
+          neigh_types.insert(neigh_type);
           // }
           keys_list_grad.emplace_back(neigh_types);
         }
@@ -2094,8 +2094,8 @@ namespace rascal {
           // auto atom_j_tag = atom_j.get_atom_tag();
           std::set<Key_t> neigh_types{};
           // if (atom_j_tag != atom_i_tag) {
-            Key_t neigh_type{neigh.get_atom_type()};
-            neigh_types.insert(neigh_type);
+          Key_t neigh_type{neigh.get_atom_type()};
+          neigh_types.insert(neigh_type);
           // }
           keys_list_grad.emplace_back(neigh_types);
         }

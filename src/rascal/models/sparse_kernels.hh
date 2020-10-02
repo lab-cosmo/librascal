@@ -383,7 +383,9 @@ namespace rascal {
                     for (auto neigh : center.pairs()) {
                       auto atom_j = neigh.get_atom_j();
                       int atom_tag_j = atom_j.get_atom_tag();
-                      if (atom_tag_i == atom_tag_j) {continue;}
+                      if (atom_tag_i == atom_tag_j) {
+                        continue;
+                      }
                       Eigen::Vector3d u_ij = neigh.get_position() - r_i;
                       for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
                         // fill diagonal
