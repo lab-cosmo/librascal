@@ -407,7 +407,7 @@ namespace rascal {
               int a_sp{center.get_atom_type()};
               auto rep = dKdX[center];
               // auto r_i = center.get_position();
-              auto atom_i_tag = center.get_atom_tag();
+              // auto atom_i_tag = center.get_atom_tag();
               // auto km3_ii = sparse_points.dot_derivative(
               //     a_sp, prop_grad[center.get_atom_ii()]);
               // if (zeta > 1) {
@@ -415,12 +415,12 @@ namespace rascal {
               // }
               // dKdr[center] += km3_ii;
               for (auto neigh : center.pairs_with_self_pair()) {
-                auto atom_j = neigh.get_atom_j();
-                auto atom_j_tag = atom_j.get_atom_tag();
-                if (atom_j_tag == atom_i_tag and
-                          manager->is_ghost_atom(neigh)) {
-                  continue;
-                }
+                // auto atom_j = neigh.get_atom_j();
+                // auto atom_j_tag = atom_j.get_atom_tag();
+                // if (atom_j_tag == atom_i_tag and
+                //           manager->is_ghost_atom(neigh)) {
+                //   continue;
+                // }
                 auto km3_ji =
                     sparse_points.dot_derivative(a_sp, prop_grad[neigh]);
                 if (zeta > 1) {
