@@ -303,7 +303,7 @@ namespace rascal {
           if (prop_grad.are_keys_uniform()) {
             do_block_by_key_dot = true;
           }
-          do_block_by_key_dot = false;
+
           std::set<int> unique_species{};
           for (auto center : manager) {
             unique_species.insert(center.get_atom_type());
@@ -336,8 +336,6 @@ namespace rascal {
               }
               auto rep = dKdX[center];
               const int offset = offsets.at(a_sp);
-              auto r_i = center.get_position();
-              auto atom_tag_i = center.get_atom_tag();
               const auto & values_by_sp = sparse_points.values.at(a_sp);
               const auto & indices_by_sp = sparse_points.indices.at(a_sp);
               const size_t n_rows{center.pairs_with_self_pair().size()};
@@ -379,14 +377,9 @@ namespace rascal {
                   }  // neigh
                   if (compute_stress) {
                     const auto & voigt = voigt_ids[i_der];
-                    i_row_ = 1;
-                    for (auto neigh : center.pairs()) {
-                      auto atom_j = neigh.get_atom_j();
-                      int atom_tag_j = atom_j.get_atom_tag();
-                      if (atom_tag_i == atom_tag_j) {
-                        continue;
-                      }
-                      Eigen::Vector3d u_ij = neigh.get_position() - r_i;
+                    i_row_ = 0;
+                    for (auto neigh : center.pairs_with_self_pair()) {
+                      Eigen::Vector3d u_ij = neigh.get_position();
                       for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
                         // fill diagonal
                         KNM(i_stress + i_der,
@@ -408,21 +401,7 @@ namespace rascal {
             for (auto center : manager) {
               int a_sp{center.get_atom_type()};
               auto rep = dKdX[center];
-              // auto r_i = center.get_position();
-              // auto atom_i_tag = center.get_atom_tag();
-              // auto km3_ii = sparse_points.dot_derivative(
-              //     a_sp, prop_grad[center.get_atom_ii()]);
-              // if (zeta > 1) {
-              //   km3_ii.transpose() *= rep.asDiagonal();
-              // }
-              // dKdr[center] += km3_ii;
               for (auto neigh : center.pairs_with_self_pair()) {
-                // auto atom_j = neigh.get_atom_j();
-                // auto atom_j_tag = atom_j.get_atom_tag();
-                // if (atom_j_tag == atom_i_tag and
-                //           manager->is_ghost_atom(neigh)) {
-                //   continue;
-                // }
                 auto km3_ji =
                     sparse_points.dot_derivative(a_sp, prop_grad[neigh]);
                 if (zeta > 1) {
