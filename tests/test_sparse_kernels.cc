@@ -215,7 +215,7 @@ namespace rascal {
     const bool verbose{true};
     // relative error threshold
     // const double delta{5e-5};
-    const double delta{1e-3};
+    const double delta{5e-3};
     // range of zero
     const double epsilon{1e-14};
 
@@ -249,7 +249,10 @@ namespace rascal {
       auto KNM_num_der{compute_numerical_kernel_gradients(
           kernel_num, representation_, managers, sparse_points,
           input.at("h").template get<double>(), compute_stress)};
-      auto diff = math::relative_error(KNM_der, KNM_num_der, delta, epsilon);
+      math::Matrix_t KNM_stress{KNM_der.block(KNM_der.rows() - 6, 0, 6, KNM_der.cols())};
+      math::Matrix_t KNM_stress_num{KNM_num_der.block(KNM_num_der.rows() - 6, 0, 6,
+                                       KNM_num_der.cols())};
+      auto diff = math::relative_error(KNM_stress, KNM_stress_num, delta, epsilon);
       int col_max{0}, row_max{0};
       double max_rel_diff{diff.maxCoeff(&row_max, &col_max)};
       BOOST_TEST(max_rel_diff < delta);
@@ -261,15 +264,14 @@ namespace rascal {
         std::cout << "============================" << std::endl;
         std::cout << diff.row(row_max) << std::endl;
         std::cout << "============================" << std::endl;
-        std::cout << KNM_der.row(row_max) << std::endl;
+        std::cout << KNM_stress.row(row_max) << std::endl;
         std::cout << "============================" << std::endl;
-        std::cout << KNM_num_der.row(row_max) << std::endl;
+        std::cout << KNM_stress_num.row(row_max) << std::endl;
         std::cout << "============================" << std::endl;
-        std::cout << KNM_der.block(KNM_der.rows() - 6, 0, 6, KNM_der.cols())
+        std::cout << KNM_stress
                   << std::endl;
         std::cout << "============================" << std::endl;
-        std::cout << KNM_num_der.block(KNM_num_der.rows() - 6, 0, 6,
-                                       KNM_num_der.cols())
+        std::cout << KNM_stress_num
                   << std::endl;
       }
     }
