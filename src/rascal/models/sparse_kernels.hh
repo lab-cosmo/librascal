@@ -431,6 +431,12 @@ namespace rascal {
             i_center += SpatialDims;
           }
           if (compute_stress) {
+            auto manager_root = extract_underlying_manager<0>(manager);
+            json structure_copy = manager_root->get_atomic_structure();
+            auto atomic_structure =
+                structure_copy.template get<AtomicStructure<ThreeD>>();
+            KNM.block(i_stress, 0, 6, KNM.cols()) /=
+                atomic_structure.get_volume();
             i_stress += SpatialDims * 2;
           }
         }  // managers

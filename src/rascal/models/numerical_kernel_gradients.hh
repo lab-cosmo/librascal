@@ -165,8 +165,7 @@ namespace rascal {
     json structure_copy = manager_root->get_atomic_structure();
     auto atomic_structure =
         structure_copy.template get<AtomicStructure<ThreeD>>();
-    // TODO(alex) uncomment and modify analytical expression accordingly
-    // KNM /= atomic_structure.get_volume();
+    KNM /= atomic_structure.get_volume();
     return KNM;
   }
 
