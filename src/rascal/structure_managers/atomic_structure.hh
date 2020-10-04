@@ -154,27 +154,20 @@ namespace rascal {
                        2 * c_abg[0] * c_abg[1] * c_abg[2]);
     }
 
-    void displace_strain_tensor(const int & voigt_alpha, const int & voigt_beta,
+    /**
+     * displacement of strain tensor in alpha beta direction 
+     * where alpha and beta can be one of the integeres{0, 1, 2}
+     * corresponding to the directions {x, y, z}
+     */
+    void displace_strain_tensor(const int & alpha_direction, const int & beta_direction,
                                 const double & h_disp) {
-      // this->positions.row(voigt_alpha) +=
-      // h_disp*this->positions.row(voigt_beta); this->cell.row(voigt_alpha) +=
-      // h_disp*this->cell.row(voigt_beta);
-
-      // shift = np.eye(3)
       Eigen::Matrix3d shift = Eigen::Matrix3d::Identity();
-      // shift[voigt_ids[i][0], voigt_ids[i][1]] += h
-      shift(voigt_alpha, voigt_beta) += h_disp;
-      // displaced_cell = np.dot(original_cell, shift)
-      // atoms.set_cell( displaced_cell)
+      shift(alpha_direction, beta_direction) += h_disp;
       auto original_cell{this->cell};
-      this->cell = (this->cell.transpose() * shift).transpose();
+      this->cell = shift.transpose() * this->cell;
 
-      // M = np.linalg.solve(original_cell, displaced_cell)
-      // atoms.positions = np.dot(original_positions.T, M)
       this->positions =
-          (this->positions.transpose() *
-           (original_cell.transpose().inverse() * this->cell.transpose()))
-              .transpose();
+           this->cell * original_cell.inverse() * this->positions;
     }
 
     Positions_t get_scaled_positions() {
