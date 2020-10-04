@@ -1,6 +1,12 @@
 import json
 import numpy as np
 
+# mimics relative error function in the src/rascal/math/utils.hh
+def compute_relative_error(reference_values, test_values,
+        epsilon=np.finfo(np.double).resolution):
+    relative_error = test_values-reference_values
+    relative_error[np.abs(reference_values) < epsilon] /= reference_values[np.abs(reference_values) < epsilon]
+    return np.abs(relative_error)
 
 def intersection(X, Y=None):
     if Y is None:

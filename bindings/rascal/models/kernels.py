@@ -10,9 +10,6 @@ import json
 
 import numpy as np
 
-def compute_numerical_kernel_gradients(kernel, calculator, managers, sparse_points, h_disp, compute_stress=True):
-    return _compute_numerical_kernel_gradients(kernel._kernel, calculator._representation, managers.managers, sparse_points._sparse_points, h_disp, compute_stress)
-
 class Kernel(BaseIO):
 
     """
@@ -159,3 +156,7 @@ class Kernel(BaseIO):
             raise NotImplementedError(
                 'The configuration: {} is not implemented for kernel {} in {} mode.'.format(
                     grad, self.name, self.kernel_type))
+
+def compute_numerical_kernel_gradients(kernel, calculator, managers, sparse_points, h_disp, compute_stress=True):
+    """This function is used for testing the numerical kernel gradient"""
+    return _compute_numerical_kernel_gradients(kernel._kernel, calculator._representation, managers.managers, sparse_points._sparse_points, h_disp, compute_stress)

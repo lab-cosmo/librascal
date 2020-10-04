@@ -12,7 +12,7 @@ from python_representation_calculator_test import (
 )
 
 from python_models_test import (
-    TestNumericalKernel,
+    TestNumericalKernelGradient,
     TestCosineKernel
 )
 

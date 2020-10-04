@@ -2,7 +2,7 @@ from rascal.representations import SphericalInvariants
 from rascal.models import Kernel, SparsePoints
 from rascal.models.kernels import compute_numerical_kernel_gradients
 from rascal.utils import from_dict, to_dict
-from test_utils import load_json_frame, BoxList, Box
+from test_utils import load_json_frame, BoxList, Box, compute_relative_error
 from ase.calculators.lj import LennardJones
 import ase.io
 import unittest
@@ -23,27 +23,27 @@ def displace_strain_tensor(frame, alpha_index, beta_index, h_disp):
     frame.positions = np.dot(frame.positions, M)
     return frame
 
-class TestNumericalKernel(unittest.TestCase):
+class TestNumericalKernelGradient(unittest.TestCase):
     def setUp(self):
         """
         builds the test case. Test the order=1 structure manager implementation
         against a triclinic crystal.
         """
-        self.verbose = True
         self.calc = LennardJones()
-        self.treshold = 1e-8
-        self.kernel_input_filename = 'reference_data/tests_only/numerical_gradient_stress_kernel_inputs.json'
+        self.error_threshold = 1e-8
+        # test file contains a reduced selection of 
+        self.kernel_input_filename = 'reference_data/tests_only/sparse_kernel_stress_inputs.json'
+        # only some inputs are selected from the test inputs to reduce test time
+        self.selected_test_indices = [0,1]
+        self.matrix_indices_in_voigt_notation = [ (0,0), (1,1), (2,2), (1,2), (0,2), (0,1)]
 
-        self.voigt_ids = [ (0,0), (1,1), (2,2), (1,2), (0,2), (0,1)]
-
-    def test_displace_strain_tensor(self):
-        """ Tests if displace_strain_tensor functions works properly, by
-        checking if the stress tensor can be computed properly for Lennard Jones
-        energy calculations with ase"""
+    def test_numerical_stress(self):
+        """ Tests if the numerical stress tensor on python site matches the one
+        from ase library."""
 
         with open(self.kernel_input_filename, 'r') as f:
             kernel_inputs = json.load(f)
-
+        kernel_inputs = [kernel_inputs[i] for i in self.selected_test_indices]
         for kernel_input in kernel_inputs:
             structures_filename = kernel_input["filename"]
             frames = ase.io.read(structures_filename,
@@ -52,45 +52,45 @@ class TestNumericalKernel(unittest.TestCase):
 
             for frame in frames:
                 frame.calc = self.calc
-                numerical_stress = np.zeros(6)
-                for i in range(6):
-                    frame_displaced_plus  = displace_strain_tensor(
-                            copy.deepcopy(frame), self.voigt_ids[i][0], 
-                            self.voigt_ids[i][1], h_disp)
-                    frame_displaced_minus = displace_strain_tensor(
-                            copy.deepcopy(frame), self.voigt_ids[i][0],
-                            self.voigt_ids[i][1], -h_disp)
-                    e_plus  = frame_displaced_plus.get_total_energy()
-                    e_minus = frame_displaced_minus.get_total_energy()
-                    numerical_stress[i] = (e_plus - e_minus) / (2*h_disp)
-                numerical_stress /= frame.get_volume()
-                analytical_stress = frame.get_stress()
 
-                absolute_error = np.abs(numerical_stress-analytical_stress)
-                relative_error = np.abs((numerical_stress-analytical_stress)/analytical_stress)
-                passes_test = ( np.all(absolute_error < self.treshold) or
-                        np.all(relative_error< self.treshold) )
-                if (self.verbose and not(passes_test)):
+                ase_numerical_stress = self.calc.calculate_numerical_stress(frame, d=h_disp, voigt=True)
+
+                def compute_numerical_stress():
+                    numerical_stress = np.zeros(6)
+                    for i in range(6):
+                        frame_displaced_plus  = displace_strain_tensor(
+                                copy.deepcopy(frame), self.matrix_indices_in_voigt_notation[i][0], 
+                                self.matrix_indices_in_voigt_notation[i][1], h_disp)
+                        frame_displaced_minus = displace_strain_tensor(
+                                copy.deepcopy(frame), self.matrix_indices_in_voigt_notation[i][0],
+                                self.matrix_indices_in_voigt_notation[i][1], -h_disp)
+                        e_plus  = frame_displaced_plus.get_total_energy()
+                        e_minus = frame_displaced_minus.get_total_energy()
+                        numerical_stress[i] = (e_plus - e_minus) / (2*h_disp)
+                    return numerical_stress / frame.get_volume()
+                numerical_stress = compute_numerical_stress()
+
+                relative_error = compute_relative_error(ase_numerical_stress,
+                        numerical_stress)
+                passes_test = np.all(relative_error < self.error_threshold)
+                if (not(passes_test)):
                     print("structures_filename:", structures_filename)
                     print("structure index:", frame.index)
                     print()
-                    print("numerical_stress:",numerical_stress)
-                    print("analytical_stress:",analytical_stress)
-                    print()
-                    print("absolute_error:", absolute_error)
                     print("relative_error:", relative_error)
-
+                    print()
+                    print("ase_numerical_stress:", ase_numerical_stress)
+                    print("numerical_stress:", numerical_stress)
                 self.assertTrue(passes_test)
 
-    def test_numerical_stress_gradient(self):
-        """ Tests if numerical stress gradient on the c++ site agrees with the
-        one on the python site. The python site numerical stress gradient is
-        verified with Lennard Jones energy calculations by the
-        `test_displace_strain_tensor` test. """
+    def test_numerical_kernel_stress(self):
+        """ Tests if the numerical kernel stress on the python site matches the one
+        on the cpp site."""
 
         with open(self.kernel_input_filename, 'r') as f:
             kernel_inputs = json.load(f)
 
+        kernel_inputs = [kernel_inputs[i] for i in self.selected_test_indices]
         for kernel_input in kernel_inputs:
             structures_filename = kernel_input["filename"]
             frames = ase.io.read(structures_filename,
@@ -99,9 +99,10 @@ class TestNumericalKernel(unittest.TestCase):
 
             selected_ids = kernel_input["selected_ids"]
             hypers = kernel_input["calculator"]
-            # TODO(alex) the cutoff function is a bit hard coded
+            # TODO(alex) the cutoff function is kind of hard coded
             #            a general function transformation c++ parameters to
             #            python would be more suitable here
+            #            future work
             calculator = SphericalInvariants(
                     soap_type=hypers["soap_type"],
                     radial_basis=hypers["radial_contribution"]["type"],
@@ -126,43 +127,41 @@ class TestNumericalKernel(unittest.TestCase):
                 sparse_points = SparsePoints(calculator)
                 sparse_points.extend(managers, [selected_id])
 
+                # the binded cpp function
                 cpp_site_stress = compute_numerical_kernel_gradients(kernel,
                         calculator, managers, sparse_points, h_disp, True)[-6:]
-                python_site_stress = np.zeros( (6, len(selected_id)) )
 
-                for i in range(6):
-                    frame_displaced_plus = displace_strain_tensor(
-                            copy.deepcopy(frame), self.voigt_ids[i][0],
-                            self.voigt_ids[i][1], h_disp)
-                    managers = calculator.transform([frame_displaced_plus])
-                    kernel_plus = kernel(managers, sparse_points)
+                def compute_numerical_kernel_gradient_on_python_site():
+                    python_site_stress = np.zeros( (6, len(selected_id)) )
+                    for i in range(6):
+                        frame_displaced_plus = displace_strain_tensor(
+                                copy.deepcopy(frame), self.matrix_indices_in_voigt_notation[i][0],
+                                self.matrix_indices_in_voigt_notation[i][1], h_disp)
+                        managers = calculator.transform([frame_displaced_plus])
+                        kernel_plus = kernel(managers, sparse_points)
 
-                    frame_displaced_minus = displace_strain_tensor(
-                            copy.deepcopy(frame), self.voigt_ids[i][0],
-                            self.voigt_ids[i][1], -h_disp)
-                    managers = calculator.transform([frame_displaced_minus])
-                    kernel_minus = kernel(managers, sparse_points)
+                        frame_displaced_minus = displace_strain_tensor(
+                                copy.deepcopy(frame), self.matrix_indices_in_voigt_notation[i][0],
+                                self.matrix_indices_in_voigt_notation[i][1], -h_disp)
+                        managers = calculator.transform([frame_displaced_minus])
+                        kernel_minus = kernel(managers, sparse_points)
 
-                    python_site_stress[i] = np.sum( (kernel_plus - kernel_minus)
-                            / (2*h_disp), axis=0 )
+                        python_site_stress[i] = np.sum( (kernel_plus - kernel_minus)
+                                / (2*h_disp), axis=0 )
+                    return python_site_stress / frame.get_volume()
+                python_site_stress = compute_numerical_kernel_gradient_on_python_site()
 
-                absolute_error = np.abs(python_site_stress-cpp_site_stress)
-                relative_error = (python_site_stress-cpp_site_stress)
-                relative_error[cpp_site_stress != 0] /= cpp_site_stress[cpp_site_stress != 0]
-                relative_error = np.abs(relative_error)
-                # change to logic or elementwise
-                passes_test = ( np.all(absolute_error < self.treshold) or
-                        np.all(relative_error< self.treshold) )
-                if (self.verbose and not(passes_test)):
+                relative_error = compute_relative_error(python_site_stress, cpp_site_stress)
+                passes_test = np.all(relative_error < self.error_threshold)
+                if (not(passes_test)):
                     np.set_printoptions(suppress=True)
                     print("structures_filename:", structures_filename)
                     print("structure index:", j)
                     print()
+                    print("relative_error:\n", relative_error)
+                    print()
                     print("python_site_stress:\n",python_site_stress)
                     print("cpp_site_stress:\n",cpp_site_stress)
-                    print()
-                    print("absolute_error:\n", absolute_error)
-                    print("relative_error:\n", relative_error)
 
                 self.assertTrue(passes_test)
 
