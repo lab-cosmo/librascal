@@ -43,23 +43,27 @@ namespace rascal {
 
     /**
      * Implementation of the sparse kernel used in GAP. The kernel between
-     * local environments $X_i^a$ and $X_j^b$ with central atom types $a$ and
-     * $b$ is:
+     * local environments \f$X_i^a\f$ and \f$X_j^b\f$ with central atom types
+     * \f$a\f$ and \f$b\f$ is:
      *
-     * $$k(X_i^a, X_j^b) = \delta_{ab} k(X_i, X_j),$$
+     * @f[
+     *    k(X_i^a, X_j^b) = \delta_{ab} k(X_i, X_j),
+     * @f]
      *
-     * where $k(X_i, X_j)$ is the cosine kernel. When building a model for
+     * where \f$k(X_i, X_j)\f$ is the cosine kernel. When building a model for
      * properties associated with the structure we assume that the training
      * will be done on the property itself (not divided by the number of
      * atoms).
      *
-     * It is particularly designed to build the $K_{MM}$ and $K_{NM}$ matrices
-     * needed by the sparse kernel formulation where the kernel matrix is given
-     * by:
+     * It is particularly designed to build the \f$K_{MM}\f$ and \f$K_{NM}\f$
+     * matrices needed by the sparse kernel formulation where the kernel matrix
+     * is given by:
      *
-     * $$K = K_{MM} + K_{MN} \Lambda^{-2} K_{NM}$$
+     * @f[
+     *   K = K_{MM} + K_{MN} \Lambda^{-2} K_{NM}
+     * @f]
      *
-     * with $\Lambda$ the regularization matrix.
+     * with \f$\Lambda\f$ the regularization matrix.
      */
     template <>
     struct SparseKernelImpl<internal::SparseKernelType::GAP> : KernelImplBase {
@@ -168,8 +172,8 @@ namespace rascal {
         for (const auto & manager : managers) {
           n_centersA += manager->size();
         }
-        size_t n_sparse_points{sparse_points.size()};
-        math::Matrix_t KNM(n_centersA, n_sparse_points);
+        size_t nb_sparse_points{sparse_points.size()};
+        math::Matrix_t KNM(n_centersA, nb_sparse_points);
         size_t ii_A{0};
         for (auto & manager : managers) {
           auto && propA{*manager->template get_property<Property_t>(
@@ -186,52 +190,69 @@ namespace rascal {
       }
 
       /**
-       * Compute the kernel between the representation gradients of structure(s)
-       * and a set of pseudo points.
-       * The derivative of the kernel of environment $X_j^c$ with respect to
-       * the position of $r_i$ atom $i$ of type $c$ and the pseudo point T_m^b
-       * is:
+       * This documentation contains specific information for the GAP
+       * implementation See
+       * [SparseKernel::compute_derivative](./cpp.html#_CPPv4I000EN6rascal12SparseKernel18compute_derivativeEN4math8Matrix_tERK10CalculatorRK17StructureManagersRK12SparsePointsKb)
+       * for general kernel gradient derivation.
        *
-       * $$dk(X_j^c, T_m^b)/dr_i =
-       *              \sum_{p} dk(X_j^c, T_m^b)/dX_{jp}^c dX_j^c/dr_i$$,
+       * The storage of the kernel forces would scale with indices \f$m\f$ x
+       * \f$i\f$ x \f$j\f$, but we don't need to store individual neighbour
+       * contributions and can therefore contract over all neighbors of a
+       * particular center. This routine returns the already contracted kernel
+       * derivative for center \f$X_i\f$
        *
-       * where $p$ is an index running over all the representation elements.
-       * This object has the dimension of the number of neighbors (so quite
-       * large) but to compute forces we only need the contraction over all
-       * neighbors of a particular center so this routine return the already
-       * contracted kernel derivative for center $X_i^a$:
+       * @f[
+       *      \sum_{j \in A_i} \vec{\nabla}_i k(X_j, T_m)
+       * @f]
        *
-       * $$dk(X_i^a, T_m^b)/dr_i =
-       *            \sum_{(c,j) \in X_i^a} dk(X_j^c, T_m^b)/dr_i$$,
+       * so the resulting matrix has the shape of the number of centers (index
+       * \f$i\f$) times 3 (three Cartesian dimensions) times the number of
+       * sparse points (index \f$m\f$). The number of centers and Cartesian
+       * dimensions are merged to one dimension, such that the x, y, z spatial
+       * dimensions appear in successive order in the row dimension.
        *
-       * so the resulting matrix has the dimension of the number of centers
-       * times 3 (the three cartesian dimensions) and the number of sparse
-       * points.
+       * The derivative of the kernel of environment \f$X_j\f$ with respect to
+       * the position of \f$\mathbf{r}_i\f$ atom \f$i\f$ and the sparse point
+       * \f$T_m\f$ is obtained by the chain rule
        *
-       * For the GAP kernel we have:
+       * @f[
+       *      \vec{\nabla}_i k(X_j, T_m) = \frac{ \partial k(X_j, T_m) }{
+       * \partial \mathbf{r}_i } = \frac{ \partial k(X_j, T_m) }{ \partial X_{j}
+       * } \cdot \frac{ \partial X_j }{ \partial \mathbf{r}_i },
+       * @f]
        *
-       * $$dk(X_j^c, T_m^b)/dX_{jp}^c =
-       *   \delta_{cb} \zeta (\sum_n X_{jn}^c T_{mn}^b)^{\zeta-1}  T_{mp}^b$$
+       * where \f$\cdot\f$ corresponds to the contraction of the chain rule.
+       * For the derivative of the GAP kernel we have:
        *
-       * The kernel element associated to the stress tensor are computed as
-       * $$dk(X, T_m)/d\eta_{\alpha\beta} =
-       *    0.5 \sum_{i\inX} \sum_{j\inX_i} \mathbf{r}_{ij}
-       *                                        \otimes \grad_i k(X_j, T_m)$$
-       * where $\eta_{\alpha\beta}$ is the 3x3 deformation tensor.
+       * @f[
+       *      \frac{ \partial k(X_{j}, T_m) }{ \partial X_{j}} =
+       *        \zeta (\sum_n X_{jn} T_{mn})^{\zeta-1}  T_m
+       * @f]
+       *
+       * Besides that, the stress tensor in the kernel formulation is computed
+       * by also using the chain rule and contracting over the number of atoms
+       * dimension as
+       *
+       * @f[
+       *      \frac{ \partial k(X_j, T_m) }{ \partial\eta_{\alpha\beta} } =
+       *          \sum_{i\in A} \sum_{j\in i}
+       *          \mathbf{r}_{j} \otimes \vec{\nabla}_j k(X_i, T_m).
+       * @f]
+       *
        * See https://aip.scitation.org/doi/full/10.1063/1.2214719 for more
        * details with a short range potential.
        * The elements are stored at the end of the returned matrix using the
        * Voigt format (xx, yy, zz, zy, zx, yx) in the order of managers.
        *
        * @tparam StructureManagers should be an iterable over shared pointer
-       *          of structure managers like ManagerCollection
+       *         of structure managers like ManagerCollection
        * @param sparse_points a SparsePoints* class
        * @param managers a ManagerCollection or similar collection of
-       * structure managers
+       *        structure managers
        * @param representation_name name under which the representation
-       * gradient data has been registered in the elements of managers
+       *        gradient data has been registered in the elements of managers
        * @param compute_stress the computed stresses are appended at the end of
-       * the kernel matrix
+       *        the kernel matrix
        * @return kernel matrix
        */
       template <class Property_t, class PropertyGradient_t,
@@ -247,60 +268,72 @@ namespace rascal {
         using Manager_t = typename StructureManagers::Manager_t;
         using Keys_t = typename SparsePoints::Keys_t;
         using Key_t = typename SparsePoints::Key_t;
-        size_t n_centers{0};
+        // the nb of rows of the kernel matrix consist of:
+        // - 3*nb_centers rows for each center for each spatial_dim
+        // - 6 rows at the end for the stress tensor in voigt notation if
+        //   `compute_stress` is true
+        size_t nb_kernel_gradient_rows{0};
         // find the total number of rows the matrix block should have
         for (const auto & manager : managers) {
-          n_centers += manager->size() * SpatialDims;
+          nb_kernel_gradient_rows += manager->size() * SpatialDims;
         }
         // the stress terms are stored at the bottom of the KNM in a block
-        size_t i_stress{n_centers};
+        size_t row_idx_stress{nb_kernel_gradient_rows};
         if (compute_stress) {
-          n_centers += 2 * SpatialDims * managers.size();
+          nb_kernel_gradient_rows += 2 * SpatialDims * managers.size();
         }
-        // loop over the upper triangular stress matrix is done with
-        // dK/dr_{x,y,z} in sequence so to fill the upper part u_ij has to
-        // follow the sequence {z,x,y} (second element of voigt_ids) and KNM is
-        // filled in the order {1, 2, 0} Voigt order is {xx ,yy, zz, yz, xz, xy}
-        const std::array<std::array<int, 2>, SpatialDims> voigt_ids = 
-                                                    {{{1, 2}, {2, 0}, {0, 1}}};
+        // Voigt order is xx, yy, zz, yz, xz, xy. To compute xx, yy, zz
+        // and yz, xz, xy in one loop over the three spatial dimensions
+        // dK/dr_{x,y,z}, we fill the off-diagonals yz, xz, xy by computing
+        // xz, yx, zy exploiting the symmetry of the stress tensor
+        // thus yx=xy and zx=xz
+        // array accessed by voigt_idx and returns spatial_dim_idx
+        const std::array<std::array<int, 2>, SpatialDims>
+            voigt_id_to_spatial_dim = {{         // voigt_idx,  spatial_dim_idx
+                                      {4, 2},    //    xz,            z
+                                      {5, 0},    //    xy,            x
+                                      {3, 1}}};  //    yz,            y
 
-        const size_t n_sparse_points{sparse_points.size()};
-        math::Matrix_t KNM(n_centers, n_sparse_points);
-        KNM.setZero();
+        const size_t nb_sparse_points{sparse_points.size()};
+        math::Matrix_t KNM_der(nb_kernel_gradient_rows, nb_sparse_points);
+        KNM_der.setZero();
         const size_t zeta{this->zeta};
-        size_t i_center{0};
+        size_t idx_center{0};
         // loop over the structures
         for (auto & manager : managers) {
-          auto && prop{*manager->template get_property<Property_t>(
+          auto && prop_repr{*manager->template get_property<Property_t>(
               representation_name, true)};
-          auto && prop_grad{*manager->template get_property<PropertyGradient_t>(
-              representation_grad_name, true)};
-          // this is col major hence dim order
-          Property<double, 1, Manager_t, Eigen::Dynamic, SpatialDims> dKdr{
-              *manager, "no metadata", true};
-          dKdr.set_nb_row(n_sparse_points);
-          dKdr.resize();
-          dKdr.setZero();
+          auto && prop_repr_grad{
+              *manager->template get_property<PropertyGradient_t>(
+                  representation_grad_name, true)};
+          // dk/dr_i this is col major hence dim order
+          Property<double, 1, Manager_t, Eigen::Dynamic, SpatialDims> dkdr{
+              *manager, "dkdr", true};
+          dkdr.set_nb_row(nb_sparse_points);
+          dkdr.resize();
+          dkdr.setZero();
 
-          // dk/dX without the pseudo point factor
-          Property<double, 1, Manager_t, Eigen::Dynamic, 1> dKdX{
-              *manager, "no metadata", true};
-          dKdX.set_nb_row(n_sparse_points);
-          dKdX.resize();
+          // dk/dX without spares point factor T
+          Property<double, 1, Manager_t, Eigen::Dynamic, 1> dkdX_missing_T{
+              *manager, "dkdX without sparse point factor T", true};
+          dkdX_missing_T.set_nb_row(nb_sparse_points);
+          dkdX_missing_T.resize();
           if (zeta > 1) {
-            dKdX.setZero();
+            dkdX_missing_T.setZero();
+            // zeta * (X * T)**(zeta-1)
             for (auto center : manager) {
-              int a_sp{center.get_atom_type()};
-              dKdX[center] =
+              int a_species{center.get_atom_type()};
+              dkdX_missing_T[center] =
                   zeta *
-                  pow_zeta(sparse_points.dot(a_sp, prop[center]), zeta - 1);
+                  pow_zeta(sparse_points.dot(a_species, prop_repr[center]),
+                           zeta - 1);
             }
           }
-
-          const int inner_size{prop.get_nb_comp()};
+          //
+          const int block_size{prop_repr.get_nb_comp()};
 
           bool do_block_by_key_dot{false};
-          if (prop_grad.are_keys_uniform()) {
+          if (prop_repr_grad.are_keys_uniform()) {
             do_block_by_key_dot = true;
           }
 
@@ -314,110 +347,127 @@ namespace rascal {
               unique_species, sparse_points.species())};
 
           if (species_intersect.size() == 0) {
-            return KNM;
+            return KNM_der;
           }
 
-          // find offsets alongs the sparse points direction
+          // find offsets alongs the sparse points spatial_dim
           std::map<int, int> offsets{sparse_points.get_offsets()};
-          Keys_t rep_keys{prop_grad.get_keys()};
+          Keys_t repr_keys{prop_repr_grad.get_keys()};
           std::map<int, Keys_t> keys_intersect{};
-          for (const int & sp : species_intersect) {
-            keys_intersect[sp] = internal::set_intersection(
-                rep_keys, sparse_points.keys_sp.at(sp));
+          for (const int & species : species_intersect) {
+            keys_intersect[species] = internal::set_intersection(
+                repr_keys, sparse_points.keys_sp.at(species));
           }
-          // compute dX/dr * T * k_{z-1} * z
+          // compute dX/dr * T * k_{zeta-1} * zeta
           if (do_block_by_key_dot) {
-            size_t i_row{0};
-            auto rep_grads = prop_grad.get_raw_data_view();
+            size_t idx_row{0};
+            auto repr_grads = prop_repr_grad.get_raw_data_view();
             for (auto center : manager) {
-              int a_sp{center.get_atom_type()};
-              if (species_intersect.count(a_sp) == 0) {
+              int a_species{center.get_atom_type()};
+              if (species_intersect.count(a_species) == 0) {
                 continue;
               }
-              auto rep = dKdX[center];
-              const int offset = offsets.at(a_sp);
-              const auto & values_by_sp = sparse_points.values.at(a_sp);
-              const auto & indices_by_sp = sparse_points.indices.at(a_sp);
-              const size_t n_rows{center.pairs_with_self_pair().size()};
-              for (const Key_t & key : keys_intersect.at(a_sp)) {
+              auto dkdX_i_missing_T = dkdX_missing_T[center];
+              const int offset = offsets.at(a_species);
+              const auto & values_by_sp = sparse_points.values.at(a_species);
+              const auto & indices_by_sp = sparse_points.indices.at(a_species);
+              const size_t nb_rows{center.pairs_with_self_pair().size()};
+              for (const Key_t & key : keys_intersect.at(a_species)) {
                 const auto & indices_by_sp_key = indices_by_sp.at(key);
                 const auto & values_by_sp_key = values_by_sp.at(key);
-                auto spts = Eigen::Map<const math::Matrix_t>(
+                auto sparse_points_block = Eigen::Map<const math::Matrix_t>(
                     values_by_sp_key.data(),
                     static_cast<Eigen::Index>(indices_by_sp_key.size()),
-                    static_cast<Eigen::Index>(inner_size));
-                assert(indices_by_sp_key.size() * inner_size ==
+                    static_cast<Eigen::Index>(block_size));
+                assert(indices_by_sp_key.size() * block_size ==
                        values_by_sp_key.size());
-                math::Matrix_t KNM_block(n_rows, indices_by_sp_key.size());
-                // copy subset of k_{z-1} * z that matches a_sp and key
-                math::Vector_t rep_{indices_by_sp_key.size()};
+                math::Matrix_t KNM_der_block(nb_rows, indices_by_sp_key.size());
+                // copy subset of k_{zeta-1} * zeta that matches a_species and
+                // key
+                math::Vector_t dkdX_i_missing_T_a_species_block{
+                    indices_by_sp_key.size()};
                 if (zeta > 1) {
-                  for (size_t i_col{0}; i_col < indices_by_sp_key.size();
-                       i_col++) {
-                    rep_(i_col) = rep(offset + indices_by_sp_key[i_col]);
-                  }  // M
+                  for (size_t idx_col{0}; idx_col < indices_by_sp_key.size();
+                       idx_col++) {
+                    dkdX_i_missing_T_a_species_block(idx_col) =
+                        dkdX_i_missing_T(offset + indices_by_sp_key[idx_col]);
+                  }  // sparse points
                 }
-                int col_st{prop_grad.get_gradient_col_by_key(key)};
-                for (int i_der{0}; i_der < ThreeD; i_der++) {
-                  KNM_block =
-                      rep_grads.block(i_row, col_st + i_der * inner_size,
-                                      n_rows, inner_size) *
-                      spts.transpose();
+                int block_start_col_idx{
+                    prop_repr_grad.get_gradient_col_by_key(key)};
+                for (int idx_spatial_dim{0}; idx_spatial_dim < SpatialDims;
+                     idx_spatial_dim++) {
+                  // dX/dr * T
+                  KNM_der_block =
+                      repr_grads.block(idx_row,
+                                       block_start_col_idx +
+                                           idx_spatial_dim * block_size,
+                                       nb_rows, block_size) *
+                      sparse_points_block.transpose();
+                  // * zeta * (X * T)**(zeta-1)
                   if (zeta > 1) {
-                    KNM_block *= rep_.asDiagonal();
+                    KNM_der_block *=
+                        dkdX_i_missing_T_a_species_block.asDiagonal();
                   }
-                  int i_row_{0};
+                  int idx_neigh{0};
                   for (auto neigh : center.pairs_with_self_pair()) {
-                    auto dKdr_row{dKdr[neigh.get_atom_j()]};
-                    for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
-                      dKdr_row(offset + indices_by_sp_key[i_col], i_der) +=
-                          KNM_block(i_row_, i_col);
-                    }  // M
-                    i_row_++;
+                    auto dkdr_ji{dkdr[neigh.get_atom_j()]};
+                    for (int idx_col{0}; idx_col < KNM_der_block.cols();
+                         idx_col++) {
+                      dkdr_ji(offset + indices_by_sp_key[idx_col],
+                              idx_spatial_dim) +=
+                          KNM_der_block(idx_neigh, idx_col);
+                    }  // sparse points
+                    idx_neigh++;
                   }  // neigh
                   if (compute_stress) {
-                    const auto & voigt = voigt_ids[i_der];
-                    i_row_ = 0;
+                    const auto & voigt =
+                        voigt_id_to_spatial_dim[idx_spatial_dim];
+                    idx_neigh = 0;
                     for (auto neigh : center.pairs_with_self_pair()) {
-                      Eigen::Vector3d u_ij = neigh.get_position();
-                      for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
-                        // fill diagonal
-                        KNM(i_stress + i_der,
-                            offset + indices_by_sp_key[i_col]) +=
-                            u_ij(i_der) * KNM_block(i_row_, i_col);
-                        // fill upper diag
-                        KNM(i_stress + ThreeD + voigt[0],
-                            offset + indices_by_sp_key[i_col]) +=
-                            u_ij(voigt[1]) * KNM_block(i_row_, i_col);
-                      }  // M
-                      i_row_++;
+                      Eigen::Vector3d r_j = neigh.get_position();
+                      for (int idx_col{0}; idx_col < KNM_der_block.cols();
+                           idx_col++) {
+                        // computes in order xx, yy, zz
+                        KNM_der(row_idx_stress + idx_spatial_dim,
+                                offset + indices_by_sp_key[idx_col]) +=
+                            r_j(idx_spatial_dim) *
+                            KNM_der_block(idx_neigh, idx_col);
+                        // computes in order xz, xy, yz
+                        KNM_der(row_idx_stress + voigt[0],
+                                offset + indices_by_sp_key[idx_col]) +=
+                            r_j(voigt[1]) * KNM_der_block(idx_neigh, idx_col);
+                      }  // sparse points
+                      idx_neigh++;
                     }  // neigh
                   }    // if compute_stress
-                }      // i_der
+                }      // idx_spatial_dim
               }        // key
-              i_row += n_rows;
+              idx_row += nb_rows;
             }  // center
           } else {
             for (auto center : manager) {
-              int a_sp{center.get_atom_type()};
-              auto rep = dKdX[center];
+              int a_species{center.get_atom_type()};
+              auto dkdX_i_missing_T = dkdX_missing_T[center];
               for (auto neigh : center.pairs_with_self_pair()) {
-                auto km3_ji =
-                    sparse_points.dot_derivative(a_sp, prop_grad[neigh]);
+                // T * dX/dr
+                auto T_times_dXdr = sparse_points.dot_derivative(
+                    a_species, prop_repr_grad[neigh]);
+                // * zeta * (X * T)**(zeta-1)
                 if (zeta > 1) {
-                  km3_ji.transpose() *= rep.asDiagonal();
+                  T_times_dXdr.transpose() *= dkdX_i_missing_T.asDiagonal();
                 }
-                dKdr[neigh.get_atom_j()] += km3_ji;
+                dkdr[neigh.get_atom_j()] += T_times_dXdr;
                 if (compute_stress) {
-                  Eigen::Vector3d u_ij = neigh.get_position();
-                  for (int i_der{0}; i_der < ThreeD; i_der++) {
-                    const auto & voigt = voigt_ids[i_der];
-                    // fill diagonal
-                    KNM.row(i_stress + i_der) +=
-                        u_ij(i_der) * km3_ji.transpose().row(i_der);
-                    // fill upper diag
-                    KNM.row(i_stress + ThreeD + voigt[0]) +=
-                        u_ij(voigt[1]) * km3_ji.transpose().row(i_der);
+                  Eigen::Vector3d r_j = neigh.get_position();
+                  for (int i_der{0}; i_der < SpatialDims; i_der++) {
+                    const auto & voigt = voigt_id_to_spatial_dim[i_der];
+                    // computes in order xx, yy, zz
+                    KNM_der.row(row_idx_stress + i_der) +=
+                        r_j(i_der) * T_times_dXdr.transpose().row(i_der);
+                    // computes in order xz, xy, yz
+                    KNM_der.row(row_idx_stress + voigt[0]) +=
+                        r_j(voigt[1]) * T_times_dXdr.transpose().row(i_der);
                   }
                 }
               }  // neigh
@@ -426,21 +476,24 @@ namespace rascal {
 
           // copy the data to the kernel matrix
           for (auto center : manager) {
-            KNM.block(i_center, 0, SpatialDims, n_sparse_points) =
-                dKdr[center].transpose();
-            i_center += SpatialDims;
+            KNM_der.block(idx_center, 0, SpatialDims, nb_sparse_points) =
+                dkdr[center].transpose();
+            idx_center += SpatialDims;
           }
           if (compute_stress) {
+            // TODO(alex) when we established how we deal with
+            // `get_atomic_structure` method for other root managers
+            // replace this part
             auto manager_root = extract_underlying_manager<0>(manager);
             json structure_copy = manager_root->get_atomic_structure();
             auto atomic_structure =
-                structure_copy.template get<AtomicStructure<ThreeD>>();
-            KNM.block(i_stress, 0, 6, KNM.cols()) /=
+                structure_copy.template get<AtomicStructure<SpatialDims>>();
+            KNM_der.block(row_idx_stress, 0, 6, KNM_der.cols()) /=
                 atomic_structure.get_volume();
-            i_stress += SpatialDims * 2;
+            row_idx_stress += SpatialDims * 2;
           }
         }  // managers
-        return KNM;
+        return KNM_der;
       }
     };
   }  // namespace internal
@@ -506,7 +559,7 @@ namespace rascal {
       this->parameters = std::move(other.parameters);
     }
 
-    /*
+    /**
      * The root compute kernel function. It computes the kernel between 2 set of
      * structures for a given representation specified by the calculator.
      *
@@ -582,17 +635,59 @@ namespace rascal {
       }
     }
 
-    /*
+    /**
      * The root compute kernel function. It computes the kernel between the
      * representation gradients of a set of structures with the set of pseudo
      * points.
+     * The energy is defined as a sum of atomic contributions
+     * @f[
+     *      E(A) = \sum_{i \in A} \epsilon_{a_i}(X_i),
+     * @f]
+     *
+     * where \f$\epsilon_{a_i}\f$ is an atomic energy function for atoms of
+     * type \f$a_i\f$ modeled with a GPR model with sparse points \f$T_m\f$
+     *
+     * @f[
+     *      \epsilon_{a_i} (X_i) =
+     *        \sum_m \alpha_m \delta_{b_m a_i} k(X_i,T_m),
+     * @f]
+     *
+     * where \f$b_m\f$ is the atom type associated with the sparse point
+     * \f$T_m\f$. To summarize our model, the energy is given by
+     *
+     * @f[
+     *      E(A) = \sum_m \alpha_m \sum_{i \in A} \delta_{b_m a_i} k(X_i,T_m),
+     * @f]
+     *
+     *
+     * thus the forces with respect to the position of atom \f$i\f$ is in the
+     kernel formulation
+     *
+     * @f[
+     *      \vec{\nabla}_i E = \sum_m \alpha_m \sum_{i \in A} \delta_{b_m a_i}
+     \sum_{j \in i} \vec{\nabla}_i k(X_j,T_m),
+     * @f]
+     *
+     * and the virial stress
+     *
+     * @f[
+     *      \frac{ \partial E }{ \partial\eta_{\alpha\beta} } =
+     *            \sum_m  \alpha_m \sum_{i \in A}  \delta_{b_m a_i}
+     *            \frac{ \partial k(X_i, T_m) }{ \partial\eta_{\alpha\beta} },
+     * @f]
+     *
+     * where \f$\eta_{\alpha\beta}\f$ correspond to the 3x3 deformation (strain)
+     tensor
+     * in the \f$\alpha\beta \in \{xx, yy, zz, yz, xz, xy\}\f$ spatial
+     dimensions (following Voigt convention).
+
      *
      * @param calculator the calculator which has been used to calculate
-     * the representation on the two managers
-     * has been registered in the elements of managers and managers_b
+     *        the representation on the two managers
+     *        has been registered in the elements of managers and managers_b
      * @param sparse_points class of pseudo points
      * @param managers_b a ManagerCollection or similar collection of
-     * structure managers
+     *        structure managers
      */
     template <class Calculator, class StructureManagers, class SparsePoints>
     math::Matrix_t compute_derivative(const Calculator & calculator,
