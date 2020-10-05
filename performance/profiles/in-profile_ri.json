@@ -1,0 +1,24 @@
+{
+  "name": "molecular_crystals",
+  "filename": "../../reference_data/inputs/molecular_crystal.json",
+  "calculator": {
+    "max_radial": 10,
+    "max_angular": 10,
+    "expansion_by_species_method": "environment wise",
+    "global_species": [],
+    "compute_gradients": false,
+    "cutoff_function": {"type": "ShiftedCosine", "cutoff": {"value": 6, "unit": "AA"}, "smooth_width": {"value": 0.5, "unit": "AA"}},
+    "gaussian_density": {"type": "Constant", "gaussian_sigma": {"value": 0.3, "unit": "A"}},
+    "radial_contribution": {"type": "GTO", "optimization": {"type": "Spline", "accuracy": 1e-08}}
+  },
+  "nl_type": "Full",
+  "adaptors": [
+    {"initialization_arguments": {"cutoff": 6}, "name": "neighbourlist"},
+    {"initialization_arguments": {}, "name": "centercontribution"},
+    {"initialization_arguments": {"cutoff": 6}, "name": "strict"}
+  ],
+  "seed": 10,
+  "N_ITERATIONS": 5000,
+  "start_structure": 0,
+  "n_structures": 1
+}
