@@ -608,16 +608,7 @@ namespace rascal {
 
       // compute the dot product and update the gradients to be normalized
       for (auto center : manager) {
-        const int atom_i_tag{center.get_atom_tag()};
         for (auto neigh : center.pairs_with_self_pair()) {
-          auto && atom_j = neigh.get_atom_j();
-          const int atom_j_tag{atom_j.get_atom_tag()};
-          // const bool is_center_atom{manager->is_center_atom(neigh)};
-          // compute grad contribution only if the neighbour is _not_ an image
-          // of the center (because then it moves with the center)
-          if (atom_j_tag == atom_i_tag and manager->is_ghost_atom(neigh)) {
-            continue;
-          }
           const auto & soap_vector = soap_vectors[center];
           auto & soap_vector_gradients_by_neigh = soap_vector_gradients[neigh];
           soap_vector_dot_gradient.setZero();
@@ -805,7 +796,7 @@ namespace rascal {
       }
 
       if (this->compute_gradients) {
-        const int atom_i_tag{center.get_atom_tag()};
+        // const int atom_i_tag{center.get_atom_tag()};
         // c^{i}
         auto & coefficients{expansions_coefficients[center]};
         std::vector<Key_t> keys_coef{coefficients.get_keys()};
@@ -813,14 +804,15 @@ namespace rascal {
         // Sum the gradients wrt the neighbour atom position
         // compute the \grad_k p^{i} coeffs where k is either i or j
         for (auto neigh : center.pairs_with_self_pair()) {
-          auto && atom_j = neigh.get_atom_j();
-          const int atom_j_tag{atom_j.get_atom_tag()};
-          // const bool is_center_atom{manager->is_center_atom(neigh)};
-          // compute grad contribution only if the neighbour is _not_ an image
-          // of the center (because then it moves with the center)
-          if (atom_j_tag == atom_i_tag and manager->is_ghost_atom(neigh)) {
-            continue;
-          }
+          // auto && atom_j = neigh.get_atom_j();
+          // const int atom_j_tag{atom_j.get_atom_tag()};
+          // // const bool is_center_atom{manager->is_center_atom(neigh)};
+          // // compute grad contribution only if the neighbour is _not_ an
+          // image
+          // // of the center (because then it moves with the center)
+          // if (atom_j_tag == atom_i_tag and manager->is_ghost_atom(neigh)) {
+          //   continue;
+          // }
 
           // \grad_k c^{i}
           auto & grad_neigh_coefficients{
