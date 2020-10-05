@@ -36,18 +36,23 @@
 
 namespace rascal {
 
+  /*
+   * displacement of strain tensor in alpha beta spatial dimensions
+   * where alpha and beta can be one of the integers {0, 1, 2}
+   * corresponding to the spatial dimensions {x, y, z}
+   */
   template <class KernelImpl, class Calculator, class Manager,
             class SparsePoints>
-  math::Matrix_t compute_kernel_for_displaced_lattice_cell(
+  math::Matrix_t compute_kernel_for_displaced_strain_tensor(
       KernelImpl & kernel, Calculator & calculator, Manager & manager,
-      const SparsePoints & sparse_points, const int & voigt_0,
-      const int & voigt_1, const double & h_disp) {
+      const SparsePoints & sparse_points, const int & alpha_spatial_dim,
+      const int & beta_spatial_dim, const double & h_disp) {
     // get a copy of the atomic_structure object
     auto manager_root = extract_underlying_manager<0>(manager);
     json structure_copy = manager_root->get_atomic_structure();
     auto atomic_structure =
         structure_copy.template get<AtomicStructure<ThreeD>>();
-    atomic_structure.displace_strain_tensor(voigt_0, voigt_1, h_disp);
+    atomic_structure.displace_strain_tensor(alpha_spatial_dim, beta_spatial_dim, h_disp);
     // make sure all atoms are in the unit cell
     manager->update(atomic_structure);
     calculator.compute(manager);
@@ -136,10 +141,13 @@ namespace rascal {
   math::Matrix_t compute_numerical_kernel_stress(
       KernelImpl & kernel, Calculator & calculator, Manager & manager,
       const SparsePoints & sparse_points, const double & h_disp) {
-    // Eigen::Matrix3d disps = h_disp * Eigen::Matrix3d::Identity();
-    // const std::array<std::array<int, 2>, ThreeD> voigt_ids = {1,2, 2,0, 0,1};
-    const std::array<std::array<int, 2>, 6> voigt_ids = {0, 0, 1, 1, 2, 2,
-                                                         1, 2, 0, 2, 0, 1};
+    const std::array<std::array<int, 2>, 6> voigt_to_matrix_notation = {
+      0, 0,
+      1, 1,
+      2, 2,
+      1, 2,
+      0, 2,
+      0, 1};
     size_t n_sparse_points{sparse_points.size()};
     math::Matrix_t KNM{6, n_sparse_points};
     KNM.setZero();
@@ -151,12 +159,12 @@ namespace rascal {
     }
     for (int i_der{0}; i_der < 6; ++i_der) {
       // use centered finite difference to estimate gradient
-      const auto & voigt = voigt_ids[i_der];
-      math::Matrix_t KNM_p = compute_kernel_for_displaced_lattice_cell(
-          kernel, calculator, manager, sparse_points, voigt[0], voigt[1],
+      const auto & matrix_idx = voigt_to_matrix_notation[i_der];
+      math::Matrix_t KNM_p = compute_kernel_for_displaced_strain_tensor(
+          kernel, calculator, manager, sparse_points, matrix_idx[0], matrix_idx[1],
           h_disp);
-      math::Matrix_t KNM_m = compute_kernel_for_displaced_lattice_cell(
-          kernel, calculator, manager, sparse_points, voigt[0], voigt[1],
+      math::Matrix_t KNM_m = compute_kernel_for_displaced_strain_tensor(
+          kernel, calculator, manager, sparse_points, matrix_idx[0], matrix_idx[1],
           -h_disp);
       KNM.row(i_der) = ((KNM_p - KNM_m) / (2 * h_disp)).colwise().sum();
     }

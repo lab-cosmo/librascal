@@ -155,14 +155,14 @@ namespace rascal {
     }
 
     /**
-     * displacement of strain tensor in alpha beta direction 
-     * where alpha and beta can be one of the integeres{0, 1, 2}
-     * corresponding to the directions {x, y, z}
+     * displacement of strain tensor in alpha beta spatial dimensions
+     * where alpha and beta can be one of the integers {0, 1, 2}
+     * corresponding to the spatial dimensions {x, y, z}
      */
-    void displace_strain_tensor(const int & alpha_direction, const int & beta_direction,
+    void displace_strain_tensor(const int & alpha_spatial_dim, const int & beta_spatial_dim,
                                 const double & h_disp) {
       Eigen::Matrix3d shift = Eigen::Matrix3d::Identity();
-      shift(alpha_direction, beta_direction) += h_disp;
+      shift(alpha_spatial_dim, beta_spatial_dim) += h_disp;
       auto original_cell{this->cell};
       this->cell = shift.transpose() * this->cell;
 
