@@ -43,8 +43,8 @@ namespace rascal {
 
     /**
      * Implementation of the sparse kernel used in GAP. The kernel between
-     * local environments \f$X_i^a\f$ and \f$X_j^b\f$ with central atom types \f$a\f$ and
-     * \f$b\f$ is:
+     * local environments \f$X_i^a\f$ and \f$X_j^b\f$ with central atom types
+     * \f$a\f$ and \f$b\f$ is:
      *
      * @f[
      *    k(X_i^a, X_j^b) = \delta_{ab} k(X_i, X_j),
@@ -55,9 +55,9 @@ namespace rascal {
      * will be done on the property itself (not divided by the number of
      * atoms).
      *
-     * It is particularly designed to build the \f$K_{MM}\f$ and \f$K_{NM}\f$ matrices
-     * needed by the sparse kernel formulation where the kernel matrix is given
-     * by:
+     * It is particularly designed to build the \f$K_{MM}\f$ and \f$K_{NM}\f$
+     * matrices needed by the sparse kernel formulation where the kernel matrix
+     * is given by:
      *
      * @f[
      *   K = K_{MM} + K_{MN} \Lambda^{-2} K_{NM}
@@ -190,47 +190,52 @@ namespace rascal {
       }
 
       /**
-       * This documentation contains specific information for the GAP implementation
-       * See [SparseKernel::compute_derivative](./cpp.html#_CPPv4I000EN6rascal12SparseKernel18compute_derivativeEN4math8Matrix_tERK10CalculatorRK17StructureManagersRK12SparsePointsKb)
+       * This documentation contains specific information for the GAP
+       * implementation See
+       * [SparseKernel::compute_derivative](./cpp.html#_CPPv4I000EN6rascal12SparseKernel18compute_derivativeEN4math8Matrix_tERK10CalculatorRK17StructureManagersRK12SparsePointsKb)
        * for general kernel gradient derivation.
-       * 
-       * The storage of the kernel forces would scale with indices \f$m\f$ x \f$i\f$ x \f$j\f$,
-       * but we don't need to store individual neighbour contributions and can
-       * therefore contract over all neighbors of a particular center.
-       * This routine returns the already contracted kernel derivative for center \f$X_i\f$
-       * 
+       *
+       * The storage of the kernel forces would scale with indices \f$m\f$ x
+       * \f$i\f$ x \f$j\f$, but we don't need to store individual neighbour
+       * contributions and can therefore contract over all neighbors of a
+       * particular center. This routine returns the already contracted kernel
+       * derivative for center \f$X_i\f$
+       *
        * @f[
        *      \sum_{j \in A_i} \vec{\nabla}_i k(X_j, T_m)
        * @f]
-       * 
-       * so the resulting matrix has the shape of the number of centers (index \f$i\f$)
-       * times 3 (three Cartesian dimensions) times the number of sparse points (index \f$m\f$).
-       * The number of centers and Cartesian dimensions are merged to one dimension,
-       * such that the x, y, z spatial dimensions appear in successive order in the row dimension.
-       * 
+       *
+       * so the resulting matrix has the shape of the number of centers (index
+       * \f$i\f$) times 3 (three Cartesian dimensions) times the number of
+       * sparse points (index \f$m\f$). The number of centers and Cartesian
+       * dimensions are merged to one dimension, such that the x, y, z spatial
+       * dimensions appear in successive order in the row dimension.
+       *
        * The derivative of the kernel of environment \f$X_j\f$ with respect to
-       * the position of \f$\mathbf{r}_i\f$ atom \f$i\f$ and the sparse point \f$T_m\f$
-       * is obtained by the chain rule
-       * 
+       * the position of \f$\mathbf{r}_i\f$ atom \f$i\f$ and the sparse point
+       * \f$T_m\f$ is obtained by the chain rule
+       *
        * @f[
-       *      \vec{\nabla}_i k(X_j, T_m) = \frac{ \partial k(X_j, T_m) }{ \partial \mathbf{r}_i } =
-       *        \frac{ \partial k(X_j, T_m) }{ \partial X_{j} } \cdot
-       *         \frac{ \partial X_j }{ \partial \mathbf{r}_i },
+       *      \vec{\nabla}_i k(X_j, T_m) = \frac{ \partial k(X_j, T_m) }{
+       * \partial \mathbf{r}_i } = \frac{ \partial k(X_j, T_m) }{ \partial X_{j}
+       * } \cdot \frac{ \partial X_j }{ \partial \mathbf{r}_i },
        * @f]
        *
        * where \f$\cdot\f$ corresponds to the contraction of the chain rule.
        * For the derivative of the GAP kernel we have:
-       *                                                                                            
+       *
        * @f[
        *      \frac{ \partial k(X_{j}, T_m) }{ \partial X_{j}} =
        *        \zeta (\sum_n X_{jn} T_{mn})^{\zeta-1}  T_m
        * @f]
        *
-       * Besides that, the stress tensor in the kernel formulation is computed by also using the chain rule and contracting over the number of atoms dimension as
-      *
+       * Besides that, the stress tensor in the kernel formulation is computed
+       * by also using the chain rule and contracting over the number of atoms
+       * dimension as
+       *
        * @f[
        *      \frac{ \partial k(X_j, T_m) }{ \partial\eta_{\alpha\beta} } =
-       *          \sum_{i\in A} \sum_{j\in i} 
+       *          \sum_{i\in A} \sum_{j\in i}
        *          \mathbf{r}_{j} \otimes \vec{\nabla}_j k(X_i, T_m).
        * @f]
        *
@@ -280,14 +285,14 @@ namespace rascal {
         // Voigt order is xx, yy, zz, yz, xz, xy. To compute xx, yy, zz
         // and yz, xz, xy in one loop over the three spatial dimensions
         // dK/dr_{x,y,z}, we fill the off-diagonals yz, xz, xy by computing
-        // xz, yx, zy exploiting the symmetry of the stress tensor 
+        // xz, yx, zy exploiting the symmetry of the stress tensor
         // thus yx=xy and zx=xz
         // array accessed by voigt_idx and returns spatial_dim_idx
-        const std::array<std::array<int, 2>, SpatialDims> voigt_id_to_spatial_dim = {
-                 // voigt_idx,  spatial_dim_idx
-          4, 2,  //    xz,            z
-          5, 0,  //    xy,            x
-          3, 1}; //    yz,            y
+        const std::array<std::array<int, 2>, SpatialDims>
+            voigt_id_to_spatial_dim = {        // voigt_idx,  spatial_dim_idx
+                                       4, 2,   //    xz,            z
+                                       5, 0,   //    xy,            x
+                                       3, 1};  //    yz,            y
 
         const size_t nb_sparse_points{sparse_points.size()};
         math::Matrix_t KNM_der(nb_kernel_gradient_rows, nb_sparse_points);
@@ -298,8 +303,9 @@ namespace rascal {
         for (auto & manager : managers) {
           auto && prop_repr{*manager->template get_property<Property_t>(
               representation_name, true)};
-          auto && prop_repr_grad{*manager->template get_property<PropertyGradient_t>(
-              representation_grad_name, true)};
+          auto && prop_repr_grad{
+              *manager->template get_property<PropertyGradient_t>(
+                  representation_grad_name, true)};
           // dk/dr_i this is col major hence dim order
           Property<double, 1, Manager_t, Eigen::Dynamic, SpatialDims> dkdr{
               *manager, "dkdr", true};
@@ -319,10 +325,11 @@ namespace rascal {
               int a_species{center.get_atom_type()};
               dkdX_missing_T[center] =
                   zeta *
-                  pow_zeta(sparse_points.dot(a_species, prop_repr[center]), zeta - 1);
+                  pow_zeta(sparse_points.dot(a_species, prop_repr[center]),
+                           zeta - 1);
             }
           }
-          // 
+          //
           const int block_size{prop_repr.get_nb_comp()};
 
           bool do_block_by_key_dot{false};
@@ -375,47 +382,60 @@ namespace rascal {
                 assert(indices_by_sp_key.size() * block_size ==
                        values_by_sp_key.size());
                 math::Matrix_t KNM_der_block(nb_rows, indices_by_sp_key.size());
-                // copy subset of k_{zeta-1} * zeta that matches a_species and key
-                math::Vector_t dkdX_i_missing_T_a_species_block{indices_by_sp_key.size()};
+                // copy subset of k_{zeta-1} * zeta that matches a_species and
+                // key
+                math::Vector_t dkdX_i_missing_T_a_species_block{
+                    indices_by_sp_key.size()};
                 if (zeta > 1) {
                   for (size_t idx_col{0}; idx_col < indices_by_sp_key.size();
                        idx_col++) {
-                    dkdX_i_missing_T_a_species_block(idx_col) = dkdX_i_missing_T(offset + indices_by_sp_key[idx_col]);
+                    dkdX_i_missing_T_a_species_block(idx_col) =
+                        dkdX_i_missing_T(offset + indices_by_sp_key[idx_col]);
                   }  // sparse points
                 }
-                int block_start_col_idx{prop_repr_grad.get_gradient_col_by_key(key)};
-                for (int idx_spatial_dim{0}; idx_spatial_dim < SpatialDims; idx_spatial_dim++) {
+                int block_start_col_idx{
+                    prop_repr_grad.get_gradient_col_by_key(key)};
+                for (int idx_spatial_dim{0}; idx_spatial_dim < SpatialDims;
+                     idx_spatial_dim++) {
                   // dX/dr * T
                   KNM_der_block =
-                      repr_grads.block(idx_row, block_start_col_idx + idx_spatial_dim * block_size,
-                                      nb_rows, block_size) *
+                      repr_grads.block(idx_row,
+                                       block_start_col_idx +
+                                           idx_spatial_dim * block_size,
+                                       nb_rows, block_size) *
                       sparse_points_block.transpose();
                   // * zeta * (X * T)**(zeta-1)
                   if (zeta > 1) {
-                    KNM_der_block *= dkdX_i_missing_T_a_species_block.asDiagonal();
+                    KNM_der_block *=
+                        dkdX_i_missing_T_a_species_block.asDiagonal();
                   }
                   int idx_neigh{0};
                   for (auto neigh : center.pairs_with_self_pair()) {
                     auto dkdr_ji{dkdr[neigh.get_atom_j()]};
-                    for (int idx_col{0}; idx_col < KNM_der_block.cols(); idx_col++) {
-                      dkdr_ji(offset + indices_by_sp_key[idx_col], idx_spatial_dim) +=
+                    for (int idx_col{0}; idx_col < KNM_der_block.cols();
+                         idx_col++) {
+                      dkdr_ji(offset + indices_by_sp_key[idx_col],
+                              idx_spatial_dim) +=
                           KNM_der_block(idx_neigh, idx_col);
                     }  // sparse points
                     idx_neigh++;
                   }  // neigh
                   if (compute_stress) {
-                    const auto & voigt = voigt_id_to_spatial_dim[idx_spatial_dim];
+                    const auto & voigt =
+                        voigt_id_to_spatial_dim[idx_spatial_dim];
                     idx_neigh = 0;
                     for (auto neigh : center.pairs_with_self_pair()) {
                       Eigen::Vector3d r_j = neigh.get_position();
-                      for (int idx_col{0}; idx_col < KNM_der_block.cols(); idx_col++) {
+                      for (int idx_col{0}; idx_col < KNM_der_block.cols();
+                           idx_col++) {
                         // computes in order xx, yy, zz
                         KNM_der(row_idx_stress + idx_spatial_dim,
-                            offset + indices_by_sp_key[idx_col]) +=
-                            r_j(idx_spatial_dim) * KNM_der_block(idx_neigh, idx_col);
+                                offset + indices_by_sp_key[idx_col]) +=
+                            r_j(idx_spatial_dim) *
+                            KNM_der_block(idx_neigh, idx_col);
                         // computes in order xz, xy, yz
                         KNM_der(row_idx_stress + voigt[0],
-                            offset + indices_by_sp_key[idx_col]) +=
+                                offset + indices_by_sp_key[idx_col]) +=
                             r_j(voigt[1]) * KNM_der_block(idx_neigh, idx_col);
                       }  // sparse points
                       idx_neigh++;
@@ -431,8 +451,8 @@ namespace rascal {
               auto dkdX_i_missing_T = dkdX_missing_T[center];
               for (auto neigh : center.pairs_with_self_pair()) {
                 // T * dX/dr
-                auto km3_ji =
-                    sparse_points.dot_derivative(a_species, prop_repr_grad[neigh]);
+                auto km3_ji = sparse_points.dot_derivative(
+                    a_species, prop_repr_grad[neigh]);
                 // * zeta * (X * T)**(zeta-1)
                 if (zeta > 1) {
                   km3_ji.transpose() *= dkdX_i_missing_T.asDiagonal();
@@ -461,7 +481,7 @@ namespace rascal {
             idx_center += SpatialDims;
           }
           if (compute_stress) {
-            // TODO(alex) when we established how we deal with 
+            // TODO(alex) when we established how we deal with
             // `get_atomic_structure` method for other root managers
             // replace this part
             auto manager_root = extract_underlying_manager<0>(manager);
@@ -625,14 +645,14 @@ namespace rascal {
      * @f]
      *
      * where \f$\epsilon_{a_i}\f$ is an atomic energy function for atoms of
-     * type \f$a_i\f$ modeled with a GPR model with sparse points \f$T_m\f$ 
+     * type \f$a_i\f$ modeled with a GPR model with sparse points \f$T_m\f$
      *
      * @f[
      *      \epsilon_{a_i} (X_i) =
      *        \sum_m \alpha_m \delta_{b_m a_i} k(X_i,T_m),
      * @f]
      *
-     * where \f$b_m\f$ is the atom type associated with the sparse point 
+     * where \f$b_m\f$ is the atom type associated with the sparse point
      * \f$T_m\f$. To summarize our model, the energy is given by
      *
      * @f[
@@ -640,22 +660,26 @@ namespace rascal {
      * @f]
      *
      *
-     * thus the forces with respect to the position of atom \f$i\f$ is in the kernel formulation
+     * thus the forces with respect to the position of atom \f$i\f$ is in the
+     kernel formulation
      *
      * @f[
-     *      \vec{\nabla}_i E = \sum_m \alpha_m \sum_{i \in A} \delta_{b_m a_i} \sum_{j \in i} \vec{\nabla}_i k(X_j,T_m),
+     *      \vec{\nabla}_i E = \sum_m \alpha_m \sum_{i \in A} \delta_{b_m a_i}
+     \sum_{j \in i} \vec{\nabla}_i k(X_j,T_m),
      * @f]
      *
      * and the virial stress
      *
      * @f[
-     *      \frac{ \partial E }{ \partial\eta_{\alpha\beta} } = 
+     *      \frac{ \partial E }{ \partial\eta_{\alpha\beta} } =
      *            \sum_m  \alpha_m \sum_{i \in A}  \delta_{b_m a_i}
      *            \frac{ \partial k(X_i, T_m) }{ \partial\eta_{\alpha\beta} },
      * @f]
      *
-     * where \f$\eta_{\alpha\beta}\f$ correspond to the 3x3 deformation (strain) tensor
-     * in the \f$\alpha\beta \in \{xx, yy, zz, yz, xz, xy\}\f$ spatial dimensions (following Voigt convention).
+     * where \f$\eta_{\alpha\beta}\f$ correspond to the 3x3 deformation (strain)
+     tensor
+     * in the \f$\alpha\beta \in \{xx, yy, zz, yz, xz, xy\}\f$ spatial
+     dimensions (following Voigt convention).
 
      *
      * @param calculator the calculator which has been used to calculate

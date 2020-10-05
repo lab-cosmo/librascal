@@ -52,7 +52,8 @@ namespace rascal {
     json structure_copy = manager_root->get_atomic_structure();
     auto atomic_structure =
         structure_copy.template get<AtomicStructure<ThreeD>>();
-    atomic_structure.displace_strain_tensor(alpha_spatial_dim, beta_spatial_dim, h_disp);
+    atomic_structure.displace_strain_tensor(alpha_spatial_dim, beta_spatial_dim,
+                                            h_disp);
     // make sure all atoms are in the unit cell
     manager->update(atomic_structure);
     calculator.compute(manager);
@@ -142,12 +143,7 @@ namespace rascal {
       KernelImpl & kernel, Calculator & calculator, Manager & manager,
       const SparsePoints & sparse_points, const double & h_disp) {
     const std::array<std::array<int, 2>, 6> voigt_to_matrix_notation = {
-      0, 0,
-      1, 1,
-      2, 2,
-      1, 2,
-      0, 2,
-      0, 1};
+        0, 0, 1, 1, 2, 2, 1, 2, 0, 2, 0, 1};
     size_t n_sparse_points{sparse_points.size()};
     math::Matrix_t KNM{6, n_sparse_points};
     KNM.setZero();
@@ -161,11 +157,11 @@ namespace rascal {
       // use centered finite difference to estimate gradient
       const auto & matrix_idx = voigt_to_matrix_notation[i_der];
       math::Matrix_t KNM_p = compute_kernel_for_displaced_strain_tensor(
-          kernel, calculator, manager, sparse_points, matrix_idx[0], matrix_idx[1],
-          h_disp);
+          kernel, calculator, manager, sparse_points, matrix_idx[0],
+          matrix_idx[1], h_disp);
       math::Matrix_t KNM_m = compute_kernel_for_displaced_strain_tensor(
-          kernel, calculator, manager, sparse_points, matrix_idx[0], matrix_idx[1],
-          -h_disp);
+          kernel, calculator, manager, sparse_points, matrix_idx[0],
+          matrix_idx[1], -h_disp);
       KNM.row(i_der) = ((KNM_p - KNM_m) / (2 * h_disp)).colwise().sum();
     }
 
