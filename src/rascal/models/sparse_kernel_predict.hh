@@ -44,7 +44,9 @@ namespace rascal {
    *
    * The point of this function is to provide a faster prediction routine
    * compared to computing the kernel element and then multiplying them with
-   * the weights of the model.
+   * the weights of the model. This routine scaling is O(MD+N_{neighbor}D)
+   * compared to O(N_{neighbor}MD) where M is the number of sparse points and
+   * D is the number of features.
    *
    * The partial gradients are attached to the input manager in a Property of
    * Order 2.
@@ -99,8 +101,6 @@ namespace rascal {
     std::set<int> species_intersect{
         internal::set_intersection(unique_species, sparse_points.species())};
 
-    // find offsets alongs the sparse points direction
-    std::map<int, int> offsets{sparse_points.get_offsets()};
     Keys_t rep_keys{prop_grad.get_keys()};
     std::map<int, Keys_t> keys_intersect{};
     for (const int & sp : species_intersect) {
