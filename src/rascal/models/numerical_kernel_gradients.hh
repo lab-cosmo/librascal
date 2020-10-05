@@ -143,12 +143,12 @@ namespace rascal {
       KernelImpl & kernel, Calculator & calculator, Manager & manager,
       const SparsePoints & sparse_points, const double & h_disp) {
     const std::array<std::array<int, 2>, 6> voigt_to_matrix_notation = {{
-      {0, 0}, // xx NOLINT
-      {1, 1}, // yy NOLINT
-      {2, 2}, // zz NOLINT
-      {1, 2}, // yz NOLINT
-      {0, 2}, // xz NOLINT
-      {0, 1}}};// xy NOLINT
+      {{0, 0}}, // xx NOLINT
+      {{1, 1}}, // yy NOLINT
+      {{2, 2}}, // zz NOLINT
+      {{1, 2}}, // yz NOLINT
+      {{0, 2}}, // xz NOLINT
+      {{0, 1}}}};// xy NOLINT
     size_t n_sparse_points{sparse_points.size()};
     math::Matrix_t KNM{6, n_sparse_points};
     KNM.setZero();

@@ -289,10 +289,10 @@ namespace rascal {
         // thus yx=xy and zx=xz
         // array accessed by voigt_idx and returns spatial_dim_idx
         const std::array<std::array<int, 2>, SpatialDims>
-            voigt_id_to_spatial_dim = {{         // voigt_idx,  spatial_dim_idx
-                                      {4, 2},    //    xz,            z
-                                      {5, 0},    //    xy,            x
-                                      {3, 1}}};  //    yz,            y
+            voigt_id_to_spatial_dim = {{           // voigt_idx,  spatial_dim_idx
+                                      {{4, 2}},    //    xz,            z
+                                      {{5, 0}},    //    xy,            x
+                                      {{3, 1}}}};  //    yz,            y
 
         const size_t nb_sparse_points{sparse_points.size()};
         math::Matrix_t KNM_der(nb_kernel_gradient_rows, nb_sparse_points);
