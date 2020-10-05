@@ -174,14 +174,16 @@ namespace rascal {
     ColVector_t
     dot(const int & sp,
         internal::InternallySortedKeyMap<Key_t, Val> & representation) const {
-      const auto & values_by_sp = this->values.at(sp);
-      const auto & indices_by_sp = this->indices.at(sp);
       ColVector_t KNM_row(this->size());
       KNM_row.setZero();
       if (this->center_species.count(sp) == 0) {
         // the type of the central atom is not in the pseudo points
         return KNM_row;
       }
+
+      const auto & values_by_sp = this->values.at(sp);
+      const auto & indices_by_sp = this->indices.at(sp);
+
       int offset{0};
       for (const int & csp : this->center_species) {
         if (csp == sp) {
@@ -222,14 +224,15 @@ namespace rascal {
     ColVectorDer_t dot_derivative(const int & sp,
                                   internal::InternallySortedKeyMap<Key_t, Val> &
                                       representation_grad) const {
-      const auto & values_by_sp = this->values.at(sp);
-      const auto & indices_by_sp = this->indices.at(sp);
       ColVectorDer_t KNM_row(this->size(), ThreeD);
       KNM_row.setZero();
       if (this->center_species.count(sp) == 0) {
         // the type of the central atom is not in the pseudo points
         return KNM_row;
       }
+      const auto & values_by_sp = this->values.at(sp);
+      const auto & indices_by_sp = this->indices.at(sp);
+
       int offset{0};
       for (const int & csp : this->center_species) {
         if (csp == sp) {
