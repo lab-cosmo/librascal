@@ -1105,7 +1105,7 @@ namespace rascal {
        *
        * @pre x is in range [x1,x2]
        */
-      Eigen::Map<Matrix_t> interpolate(double x) {
+      Matrix_t interpolate(double x) {
         return Eigen::Map<Matrix_t>(this->interpolate_to_vector(x).data(),
                                     this->rows, this->cols);
       }
@@ -1119,7 +1119,7 @@ namespace rascal {
        *
        * @pre x is in range [x1,x2]
        */
-      Eigen::Map<Matrix_t> interpolate_derivative(double x) {
+      Matrix_t interpolate_derivative(double x) {
         return Eigen::Map<Matrix_t>(
             this->interpolate_to_vector_derivative(x).data(), this->rows,
             this->cols);
