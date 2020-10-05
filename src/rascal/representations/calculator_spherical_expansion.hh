@@ -336,8 +336,7 @@ namespace rascal {
 
       using Parent = RadialContributionBase;
       using Hypers_t = typename Parent::Hypers_t;
-      // using Matrix_t = typename Parent::Matrix_t;
-      using Matrix_t = Eigen::MatrixXd;
+      using Matrix_t = typename Parent::Matrix_t;
       using Vector_t = typename Parent::Vector_t;
       using Matrix_Ref = typename Parent::Matrix_Ref;
       using Vector_Ref = typename Parent::Vector_Ref;
