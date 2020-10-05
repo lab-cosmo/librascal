@@ -201,7 +201,7 @@ class SphericalInvariants(BaseIO):
             global_species=global_species,
             compute_gradients=compute_gradients,
             coefficient_subselection=coefficient_subselection)
-
+        self.coefficient_subselection = deepcopy(coefficient_subselection)
         if self.hypers['coefficient_subselection'] is None:
             del self.hypers['coefficient_subselection']
 
@@ -419,6 +419,7 @@ class SphericalInvariants(BaseIO):
             radial_basis=radial_contribution['type'],
             optimization_args=self.optimization_args,
             cutoff_function_parameters=self.cutoff_function_parameters,
+            coefficient_subselection=self.coefficient_subselection,
         )
         return init_params
 

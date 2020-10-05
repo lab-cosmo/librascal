@@ -79,5 +79,8 @@ class SparsePoints(BaseIO):
     def size(self):
         return self._sparse_points.size()
 
+    def __len__(self):
+        return self.size()
+
     def get_features(self):
         return self._sparse_points.get_features()
