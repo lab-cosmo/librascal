@@ -205,8 +205,8 @@ namespace rascal {
     using SparsePoints_t = typename Fix::SparsePoints_t;
 
     json inputs{};
-    inputs = json_io::load(
-        "reference_data/tests_only/sparse_kernel_inputs.json");
+    inputs =
+        json_io::load("reference_data/tests_only/sparse_kernel_inputs.json");
 
     const bool verbose{true};
     // relative error threshold
