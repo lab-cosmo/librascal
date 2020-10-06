@@ -54,6 +54,28 @@ namespace rascal {
 
   BOOST_AUTO_TEST_SUITE(representation_test);
 
+  // the interaction cutoff is stored under different names for different
+  // representations
+  double extract_interaction_cutoff_from_representation_hyper(json hyper) {
+    double representation_cutoff{0};
+    if (hyper.find("cutoff_function") != hyper.end()) {
+      // spherical representations
+      representation_cutoff =
+          hyper.at("cutoff_function").at("cutoff").at("value");
+    } else if (hyper.find("interaction_cutoff") != hyper.end()) {
+      // coulomb representation
+      representation_cutoff = hyper.at("interaction_cutoff");
+    } else {
+      std::stringstream err_str{};
+      err_str << "interaction cutoff of not found in representation "
+              << "hyperparameters. "
+              << "Please check representation hyperparameters: " << std::endl
+              << hyper << std::endl;
+      throw std::runtime_error(err_str.str());
+    }
+    return representation_cutoff;
+  }
+
   /* ---------------------------------------------------------------------- */
   /**
    * Test the row norm sorting
@@ -149,21 +171,25 @@ namespace rascal {
     int manager_i{0};
     for (auto & manager : managers) {
       for (auto & hyper : representation_hypers) {
-        representations.emplace_back(hyper);
-        representations.back().compute(manager);
-        ManagerCollection_t collection{};
-        auto & prop = *manager->template get_property<Property_t>(
-            representations.back().get_name(), true);
-        math::Matrix_t feat_prop = prop.get_features();
-        collection.add_structure(manager);
-        math::Matrix_t feat_col =
-            collection.get_features(representations.back());
+        double representation_cutoff{
+            extract_interaction_cutoff_from_representation_hyper(hyper)};
+        if (manager->get_cutoff() == representation_cutoff) {
+          representations.emplace_back(hyper);
+          representations.back().compute(manager);
+          ManagerCollection_t collection{};
+          auto & prop = *manager->template get_property<Property_t>(
+              representations.back().get_name(), true);
+          math::Matrix_t feat_prop = prop.get_features();
+          collection.add_structure(manager);
+          math::Matrix_t feat_col =
+              collection.get_features(representations.back());
 
-        BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
-        BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
+          BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
+          BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
 
-        auto diff_rep{math::relative_error(feat_prop, feat_col)};
-        BOOST_CHECK_LE(diff_rep.maxCoeff(), 6e-12);
+          auto diff_rep{math::relative_error(feat_prop, feat_col)};
+          BOOST_CHECK_LE(diff_rep.maxCoeff(), 6e-12);
+        }
       }
       manager_i++;
     }
@@ -231,12 +257,16 @@ namespace rascal {
       atomic_structure.center_atoms_mask[i_atom1] = true;
       manager->update(atomic_structure);
       for (auto & hyper : hypers) {
-        representations.emplace_back(hyper);
-        std::string property_name{representations.back().get_name()};
-        representations.back().compute(manager);
-        auto prop{manager->template get_property<Property_t>(
-            representations.back().get_name(), true)};
-        BOOST_CHECK_EQUAL(prop->get_nb_item(), 1);
+        double representation_cutoff{
+            extract_interaction_cutoff_from_representation_hyper(hyper)};
+        if (manager->get_cutoff() == representation_cutoff) {
+          representations.emplace_back(hyper);
+          std::string property_name{representations.back().get_name()};
+          representations.back().compute(manager);
+          auto prop{manager->template get_property<Property_t>(
+              representations.back().get_name(), true)};
+          BOOST_CHECK_EQUAL(prop->get_nb_item(), 1);
+        }
       }
     }
   }
@@ -272,50 +302,54 @@ namespace rascal {
     for (int i_manager{0}; i_manager < n_manager; i_manager += 2) {
       for (auto & hyper : hypers) {
         auto & manager = managers[i_manager];
-        auto & manager_no_center = managers[i_manager + 1];
-        auto center_atoms_mask =
-            extract_underlying_manager<0>(manager_no_center)
-                ->get_center_atoms_mask();
+        double representation_cutoff{
+            extract_interaction_cutoff_from_representation_hyper(hyper)};
+        if (manager->get_cutoff() == representation_cutoff) {
+          auto & manager_no_center = managers[i_manager + 1];
+          auto center_atoms_mask =
+              extract_underlying_manager<0>(manager_no_center)
+                  ->get_center_atoms_mask();
 
-        if (verbose) {
-          std::cout << "center_atoms_mask: " << center_atoms_mask.transpose()
-                    << std::endl;
-        }
+          if (verbose) {
+            std::cout << "center_atoms_mask: " << center_atoms_mask.transpose()
+                      << std::endl;
+          }
 
-        Representation_t representation{hyper};
-        representation.compute(manager);
-        representation.compute(manager_no_center);
+          Representation_t representation{hyper};
+          representation.compute(manager);
+          representation.compute(manager_no_center);
 
-        auto & prop = *manager->template get_property<Property_t>(
-            representation.get_name(), true);
-        math::Matrix_t rep_full = prop.get_features();
+          auto & prop = *manager->template get_property<Property_t>(
+              representation.get_name(), true);
+          math::Matrix_t rep_full = prop.get_features();
 
-        auto & prop_no_center =
-            *manager_no_center->template get_property<Property_t>(
-                representation.get_name(), true);
-        math::Matrix_t rep_no_center = prop_no_center.get_features();
+          auto & prop_no_center =
+              *manager_no_center->template get_property<Property_t>(
+                  representation.get_name(), true);
+          math::Matrix_t rep_no_center = prop_no_center.get_features();
 
-        BOOST_CHECK_EQUAL(rep_full.cols(), rep_no_center.cols());
-        BOOST_CHECK_EQUAL(center_atoms_mask.count(), rep_no_center.rows());
+          BOOST_CHECK_EQUAL(rep_full.cols(), rep_no_center.cols());
+          BOOST_CHECK_EQUAL(center_atoms_mask.count(), rep_no_center.rows());
 
-        if (verbose) {
-          std::cout << "rep dim: " << rep_no_center.rows() << ", "
-                    << rep_no_center.cols() << std::endl;
-        }
+          if (verbose) {
+            std::cout << "rep dim: " << rep_no_center.rows() << ", "
+                      << rep_no_center.cols() << std::endl;
+          }
 
-        size_t i_no_center{0};
-        for (size_t i_center{0}; i_center < manager_no_center->size();
-             ++i_center) {
-          if (center_atoms_mask(i_center)) {
-            auto row_full = rep_full.row(i_center);
-            auto row_no_center = rep_no_center.row(i_no_center);
-            auto diff = (row_full - row_no_center).norm();
-            BOOST_CHECK_LE(diff, math::DBL_FTOL);
-            if (verbose) {
-              std::cout << "Center idx: " << i_center << " Diff: " << diff
-                        << std::endl;
+          size_t i_no_center{0};
+          for (size_t i_center{0}; i_center < manager_no_center->size();
+               ++i_center) {
+            if (center_atoms_mask(i_center)) {
+              auto row_full = rep_full.row(i_center);
+              auto row_no_center = rep_no_center.row(i_no_center);
+              auto diff = (row_full - row_no_center).norm();
+              BOOST_CHECK_LE(diff, math::DBL_FTOL);
+              if (verbose) {
+                std::cout << "Center idx: " << i_center << " Diff: " << diff
+                          << std::endl;
+              }
+              i_no_center++;
             }
-            i_no_center++;
           }
         }
       }

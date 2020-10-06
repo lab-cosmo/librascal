@@ -91,7 +91,7 @@ namespace rascal {
     std::map<int, std::set<Key_t>> keys_sp{};
 
     SparsePointsBlockSparse() {
-      for (int sp{1}; sp < MaxChemElements; ++sp) {
+      for (int sp{0}; sp < MaxChemElements; ++sp) {
         counters[sp] = 0;
       }
     }
