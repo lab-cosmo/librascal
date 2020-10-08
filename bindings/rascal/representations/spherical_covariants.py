@@ -12,7 +12,7 @@ class SphericalCovariants(BaseIO):
     Computes a SphericalCovariants representation, i.e. lambda spectrum.
 
     Attributes
-    ---------------
+    ----------
     interaction_cutoff : float
         Maximum pairwise distance for atoms to be considered in
         expansion
@@ -35,14 +35,73 @@ class SphericalCovariants(BaseIO):
         Specifies the atomic Gaussian widths, in the case where they're
         fixed.
 
+    cutoff_function_type : string
+        Choose the type of smooth cutoff function used to define the local
+        environment. Can be either 'ShiftedCosine' or 'RadialScaling'.
+
+        If 'ShiftedCosine', the functional form of the switching function is:
+
+        .. math::
+
+            sc(r) = \\begin{cases}
+            1 &r < r_c - sw,\\\\
+            0.5 + 0.5 \cos(\pi * (r - r_c + sw) / sw) &r_c - sw < r <= r_c, \\\\
+            0 &r_c < r,
+            \\end{cases}
+
+        where :math:`r_c` is the interaction_cutoff and :math:`sw` is the
+        cutoff_smooth_width.
+
+        If 'RadialScaling', the functional form of the switching function is
+        as expressed in equation 21 of https://doi.org/10.1039/c8cp05921g:
+
+        .. math::
+
+            rs(r) = sc(r) u(r),
+
+        where
+
+        .. math::
+
+            u(r) = \\begin{cases}
+            \\frac{1}{(r/r_0)^m} &\\text{if c=0,}\\\\
+            1 &\\text{if m=0,} \\\\
+            \\frac{c}{c+(r/r_0)^m} &\\text{else},
+            \\end{cases}
+
+        where :math:`c` is the rate, :math:`r_0` is the scale, :math:`m` is the
+        exponent.
+
+    normalize : boolean
+        Whether to normalize so that the kernel between identical environments
+        is 1.  Default and highly recommended: True.
+
+    radial_basis :  string
+        Specifies the type of radial basis R_n to be computed
+        ("GTO" for Gaussian typed orbitals and "DVR" discrete variable
+        representation using Gauss-Legendre quadrature rule)
+
     soap_type : string
         Specifies the type of representation to be computed.
 
-    inversion_symmetry : Boolean
+    inversion_symmetry : boolean
         Specifies whether inversion invariance should be enforced.
 
     lam : int
         Order of the lambda spectrum.
+
+    cutoff_function_parameters : dict
+        Additional parameters for the cutoff function.
+        if cutoff_function_type == 'RadialScaling' then it should have the form
+
+        .. code:: python
+
+            dict(rate=...,
+                 scale=...,
+                 exponent=...)
+
+        where :code:`...` should be replaced by the desired value.
+
 
     Methods
     -------
@@ -57,22 +116,15 @@ class SphericalCovariants(BaseIO):
 
     """
 
-    def __init__(
-        self,
-        interaction_cutoff,
-        cutoff_smooth_width,
-        max_radial,
-        max_angular,
-        gaussian_sigma_type,
-        gaussian_sigma_constant=0.3,
-        cutoff_function_type="ShiftedCosine",
-        normalize=True,
-        radial_basis="GTO",
-        soap_type="LambdaSpectrum",
-        inversion_symmetry=True,
-        lam=0,
-        cutoff_function_parameters=dict(),
-    ):
+    def __init__(self, interaction_cutoff, cutoff_smooth_width,
+                 max_radial, max_angular, gaussian_sigma_type,
+                 gaussian_sigma_constant=0.3,
+                 cutoff_function_type="ShiftedCosine", normalize=True,
+                 radial_basis="GTO",
+                 optimization_args={},
+                 soap_type="LambdaSpectrum", inversion_symmetry=True,
+                 lam=0,
+                 cutoff_function_parameters=dict()):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -101,7 +153,33 @@ class SphericalCovariants(BaseIO):
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
-            gaussian_sigma=dict(value=gaussian_sigma_constant, unit="AA"),
+            gaussian_sigma=dict(
+                value=gaussian_sigma_constant,
+                unit='AA'
+            ),
+        )
+        self.optimization_args = deepcopy(optimization_args)
+        if 'type' in optimization_args:
+            if optimization_args['type'] == 'Spline':
+                if 'accuracy' in optimization_args:
+                    accuracy = optimization_args['accuracy']
+                else:
+                    accuracy = 1e-5
+                    print('No accuracy for spline optimization was given. Switching to default accuracy {:.0e}.'.format(
+                        accuracy))
+                optimization_args = {
+                    'type': 'Spline', 'accuracy': accuracy}
+            elif optimization_args['type'] == 'None':
+                optimization_args = dict({'type': 'None'})
+            else:
+                print('Optimization type is not known. Switching to no'
+                      ' optimization.')
+                optimization_args = dict({'type': 'None'})
+        else:
+            optimization_args = dict({'type': 'None'})
+        radial_contribution = dict(
+            type=radial_basis,
+            optimization=optimization_args
         )
         radial_contribution = dict(type=radial_basis,)
 

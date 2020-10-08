@@ -152,7 +152,8 @@ namespace rascal {
     Matrix_t relative_error(const Eigen::MatrixBase<Derived> & reference,
                             const Eigen::MatrixBase<Derived> & test,
                             const double & delta = 1e-10,
-                            const double & epsilon = DBL_FTOL) {
+                            const double & epsilon = DBL_FTOL,
+                            const bool & verbose = true) {
       if (reference.rows() != test.rows()) {
         std::stringstream err_str{};
         err_str << "reference.rows() != test.rows(): '" << reference.rows()
@@ -173,18 +174,20 @@ namespace rascal {
           if (is_zero_ref(i_row, i_col) and is_zero_test(i_row, i_col)) {
             rel_diff(i_row, i_col) = 0.;
           } else if (not is_zero_ref(i_row, i_col)) {
-            rel_diff(i_row, i_col) /= reference(i_row, i_col);
+            rel_diff(i_row, i_col) /= std::abs(reference(i_row, i_col));
           }
         }
       }
       int maxRow{0}, maxCol{0};
       double max_diff = rel_diff.maxCoeff(&maxRow, &maxCol);
       if (max_diff > delta) {
-        std::cout << "Max diff in relative_error at (" << maxRow << ", "
-                  << maxCol << ") "
-                  << "diff: " << rel_diff(maxRow, maxCol)
-                  << " ref: " << reference(maxRow, maxCol)
-                  << " test: " << test(maxRow, maxCol) << std::endl;
+        if (verbose) {
+          std::cout << "Max diff in relative_error at (" << maxRow << ", "
+                    << maxCol << ") "
+                    << "diff: " << rel_diff(maxRow, maxCol)
+                    << " ref: " << reference(maxRow, maxCol)
+                    << " test: " << test(maxRow, maxCol) << std::endl;
+        }
       }
 
       return rel_diff;
@@ -204,20 +207,23 @@ namespace rascal {
      */
     inline double relative_error(const double & reference, const double & test,
                                  const double & delta = 1e-10,
-                                 const double & epsilon = DBL_FTOL) {
+                                 const double & epsilon = DBL_FTOL,
+                                 const bool & verbose = true) {
       double rel_diff{std::abs(reference - test)};
       bool is_zero_ref{std::abs(reference) < epsilon};
       bool is_zero_test{std::abs(test) < epsilon};
       if (is_zero_ref and is_zero_test) {
         rel_diff = 0.;
       } else if (not is_zero_ref) {
-        rel_diff /= reference;
+        rel_diff /= std::abs(reference);
       }
 
       if (rel_diff > delta) {
-        std::cout << "Error relative to reference "
-                  << "diff: " << rel_diff << " ref: " << reference
-                  << " test: " << test << std::endl;
+        if (verbose) {
+          std::cout << "Error relative to reference "
+                    << "diff: " << rel_diff << " ref: " << reference
+                    << " test: " << test << std::endl;
+        }
       }
 
       return rel_diff;

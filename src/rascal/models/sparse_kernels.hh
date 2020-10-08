@@ -232,62 +232,152 @@ namespace rascal {
                          SparsePoints & sparse_points,
                          const std::string & representation_name,
                          const std::string & representation_grad_name) {
+        using Manager_t = typename StructureManagers::Manager_t;
+        using Keys_t = typename SparsePoints::Keys_t;
+        using Key_t = typename SparsePoints::Key_t;
         size_t n_centers{0};
         // find the total number of rows the matrix block should have
         for (const auto & manager : managers) {
           n_centers += manager->size() * SpatialDims;
         }
-        size_t n_sparse_points{sparse_points.size()};
+        const size_t n_sparse_points{sparse_points.size()};
         math::Matrix_t KNM(n_centers, n_sparse_points);
-        KNM.setZero();
+        const size_t zeta{this->zeta};
+
         size_t i_center{0};
         // loop over the structures
         for (auto & manager : managers) {
+          auto && prop{*manager->template get_property<Property_t>(
+              representation_name, true)};
           auto && prop_grad{*manager->template get_property<PropertyGradient_t>(
               representation_grad_name, true)};
+          // this is col major hence dim order
+          Property<double, 1, Manager_t, Eigen::Dynamic, SpatialDims> dKdr{
+              *manager, "no metadata", true};
+          dKdr.set_nb_row(n_sparse_points);
+          dKdr.resize();
+          dKdr.setZero();
 
-          if (this->zeta == 1) {
-            // simpler version where the kernel derivative is one
+          // dk/dX without the pseudo point factor
+          Property<double, 1, Manager_t, Eigen::Dynamic, 1> dKdX{
+              *manager, "no metadata", true};
+          dKdX.set_nb_row(n_sparse_points);
+          dKdX.resize();
+          if (zeta > 1) {
+            dKdX.setZero();
             for (auto center : manager) {
-              for (auto neigh : center.pairs_with_self_pair()) {
-                int sp{neigh.get_atom_type()};
-                KNM.block(i_center, 0, SpatialDims, n_sparse_points) +=
-                    sparse_points.dot_derivative(sp, prop_grad[neigh])
-                        .transpose();
-              }
-              i_center += SpatialDims;
+              int a_sp{center.get_atom_type()};
+              dKdX[center] =
+                  zeta *
+                  pow_zeta(sparse_points.dot(a_sp, prop[center]), zeta - 1);
             }
+          }
+
+          const int inner_size{prop.get_nb_comp()};
+
+          bool do_block_by_key_dot{false};
+          if (prop_grad.are_keys_uniform()) {
+            do_block_by_key_dot = true;
+          }
+
+          std::set<int> unique_species{};
+          for (auto center : manager) {
+            unique_species.insert(center.get_atom_type());
+          }
+
+          // find shared central atom species
+          std::set<int> species_intersect{internal::set_intersection(
+              unique_species, sparse_points.species())};
+
+          if (species_intersect.size() == 0) {
+            return KNM;
+          }
+
+          // find offsets alongs the sparse points direction
+          std::map<int, int> offsets{sparse_points.get_offsets()};
+          Keys_t rep_keys{prop_grad.get_keys()};
+          std::map<int, Keys_t> keys_intersect{};
+          for (const int & sp : species_intersect) {
+            keys_intersect[sp] = internal::set_intersection(
+                rep_keys, sparse_points.keys_sp.at(sp));
+          }
+
+          // compute dX/dr * T * k_{z-1} * z
+          if (do_block_by_key_dot) {
+            size_t i_row{0};
+            auto rep_grads = prop_grad.get_raw_data_view();
+            for (auto center : manager) {
+              int a_sp{center.get_atom_type()};
+              if (species_intersect.count(a_sp) == 0) {
+                continue;
+              }
+              auto rep = dKdX[center];
+              const int offset = offsets.at(a_sp);
+              const auto & values_by_sp = sparse_points.values.at(a_sp);
+              const auto & indices_by_sp = sparse_points.indices.at(a_sp);
+              const size_t n_rows{center.pairs_with_self_pair().size()};
+              for (const Key_t & key : keys_intersect.at(a_sp)) {
+                const auto & indices_by_sp_key = indices_by_sp.at(key);
+                const auto & values_by_sp_key = values_by_sp.at(key);
+                auto spts = Eigen::Map<const math::Matrix_t>(
+                    values_by_sp_key.data(),
+                    static_cast<Eigen::Index>(indices_by_sp_key.size()),
+                    static_cast<Eigen::Index>(inner_size));
+                assert(indices_by_sp_key.size() * inner_size ==
+                       values_by_sp_key.size());
+                math::Matrix_t KNM_block(n_rows, indices_by_sp_key.size());
+                // copy subset of k_{z-1} * z that matches a_sp and key
+                math::Vector_t rep_{indices_by_sp_key.size()};
+                if (zeta > 1) {
+                  for (size_t i_col{0}; i_col < indices_by_sp_key.size();
+                       i_col++) {
+                    rep_(i_col) = rep(offset + indices_by_sp_key[i_col]);
+                  }  // M
+                }
+                int col_st{prop_grad.get_gradient_col_by_key(key)};
+                for (int i_der{0}; i_der < ThreeD; i_der++) {
+                  KNM_block =
+                      rep_grads.block(i_row, col_st + i_der * inner_size,
+                                      n_rows, inner_size) *
+                      spts.transpose();
+                  if (zeta > 1) {
+                    KNM_block *= rep_.asDiagonal();
+                  }
+                  int i_row_{0};
+                  for (auto neigh : center.pairs_with_self_pair()) {
+                    auto dKdr_row{dKdr[neigh.get_atom_j()]};
+                    for (int i_col{0}; i_col < KNM_block.cols(); i_col++) {
+                      dKdr_row(offset + indices_by_sp_key[i_col], i_der) +=
+                          KNM_block(i_row_, i_col);
+                    }  // M
+                    i_row_++;
+                  }  // neigh
+                }    // i_der
+              }      // key
+              i_row += n_rows;
+            }  // center
           } else {
-            auto && prop{*manager->template get_property<Property_t>(
-                representation_name, true)};
-            std::map<int, int> tag2index{};
-            int i_row{0};
-            // compute the gradient of the kernel w.r.t. the representation
-            // dk/dX without the pseudo point factor
-            math::Matrix_t rep(manager->size(), n_sparse_points);
             for (auto center : manager) {
-              int sp{center.get_atom_type()};
-              int tag{center.get_atom_tag()};
-              tag2index[tag] = i_row;
-              rep.row(i_row) =
-                  this->zeta *
-                  pow_zeta(sparse_points.dot(sp, prop[center]), this->zeta - 1)
-                      .transpose();
-              i_row++;
-            }
-            // put together dk/dX, the pseudo points and dX/dr
-            for (auto center : manager) {
+              int a_sp{center.get_atom_type()};
+              auto rep = dKdX[center];
               for (auto neigh : center.pairs_with_self_pair()) {
-                int sp{neigh.get_atom_type()};
-                auto atom_j = neigh.get_atom_j();
-                int tag{atom_j.get_atom_tag()};
-                KNM.block(i_center, 0, SpatialDims, n_sparse_points) +=
-                    sparse_points.dot_derivative(sp, prop_grad[neigh])
-                        .transpose() *
-                    rep.row(tag2index[tag]).asDiagonal();
+                if (zeta == 1) {
+                  dKdr[neigh.get_atom_j()] +=
+                      sparse_points.dot_derivative(a_sp, prop_grad[neigh]);
+                } else {
+                  dKdr[neigh.get_atom_j()] +=
+                      rep.asDiagonal() *
+                      sparse_points.dot_derivative(a_sp, prop_grad[neigh]);
+                }
               }
-              i_center += SpatialDims;
             }
+          }
+
+          // copy the data to the kernel matrix
+          for (auto center : manager) {
+            KNM.block(i_center, 0, SpatialDims, n_sparse_points) =
+                dKdr[center].transpose();
+            i_center += SpatialDims;
           }
         }
         return KNM;

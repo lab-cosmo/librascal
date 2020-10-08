@@ -59,67 +59,6 @@
 namespace rascal {
 
   namespace internal {
-
-    /**
-     * Utility to find the periodic images of the center atoms that are within
-     * the neighborhood of center i.
-     * In the case of having several periodic images of other centers in
-     * the environment of center i, we need to sum up
-     * of all these contributions, e.g. ij, ij', ij'' ... where
-     * j primes are periodic images of j. And assign this sum back to all
-     * of these terms hence this function.
-     */
-    template <class StructureManager, class ClusterRefCenter>
-    auto find_periodic_images_pairs_in_environment(
-        const std::shared_ptr<StructureManager> & manager,
-        ClusterRefCenter & center) {
-      static_assert(ClusterRefCenter::IsOrderOne,
-                    "Input cluster should be of Order == 1.");
-      constexpr static size_t ClusterLayer{
-          StructureManager::template cluster_layer_from_order<2>()};
-
-      // convenience object to associate every center j within the
-      // environment of center i to its corresponding pair ij and its
-      // periodic images.
-      std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
-          periodic_images_of_center{};
-
-      // find all center atoms within the environment of i
-      for (auto pair : center.pairs()) {
-        auto atom_j = pair.get_atom_j();
-        int atom_tag_j = atom_j.get_atom_tag();
-        if (not manager->is_ghost_atom(pair)) {
-          periodic_images_of_center[atom_tag_j].emplace_back(
-              static_cast<ClusterRefKey<2, ClusterLayer>>(pair));
-        }
-      }
-      // find the periodic images of the found center atoms
-      for (auto pair : center.pairs()) {
-        auto atom_j = pair.get_atom_j();
-        int atom_tag_j = atom_j.get_atom_tag();
-        if (periodic_images_of_center.count(atom_tag_j) and
-            manager->is_ghost_atom(pair)) {
-          periodic_images_of_center[atom_tag_j].emplace_back(
-              std::move(static_cast<ClusterRefKey<2, ClusterLayer>>(pair)));
-        }
-      }
-
-      // remove centers that don't have periodic images in the environment
-      std::vector<int> tags_to_erase{};
-      for (const auto & el : periodic_images_of_center) {
-        const int atom_tag_j{el.first};
-        const auto & p_images = el.second;
-        if (p_images.size() < 2) {
-          tags_to_erase.emplace_back(atom_tag_j);
-        }
-      }
-      // has to be done in 2 steps because erase invalidates the iterator
-      for (const int & tag : tags_to_erase) {
-        periodic_images_of_center.erase(tag);
-      }
-      return periodic_images_of_center;
-    }
-
     /**
      * List of possible Radial basis that can be used by the spherical
      * expansion.
@@ -293,11 +232,62 @@ namespace rascal {
       virtual void set_hyperparameters(const Hypers_t &) = 0;
 
       virtual void precompute() = 0;
-      // Can't make templated virtual member function... But these functions
-      // are expected
-      // virtual Vector_Ref compute_center_contribution() = 0;
-      // virtual Matrix_Ref compute_neighbour_contribution() = 0;
-      // virtual Matrix_Ref compute_neighbour_derivative() = 0;
+      //! define the contribution from the central atom to the expansion
+      template <AtomicSmearingType AST, size_t Order, size_t Layer>
+      Vector_Ref
+      compute_center_contribution(ClusterRefKey<Order, Layer> & /*center*/) {
+        throw std::runtime_error("This method is pure virtual and should be "
+                                 "implemented in a derived class.");
+        return Vector_Ref(Vector_t::Zero());
+      }
+      //! define the contribution from a neighbour atom to the expansion
+      template <AtomicSmearingType AST, size_t Order, size_t Layer>
+      Matrix_Ref compute_neighbour_contribution(
+          const double /*distance*/,
+          const ClusterRefKey<Order, Layer> & /*pair*/) {
+        throw std::runtime_error("This method is pure virtual and should be "
+                                 "implemented in a derived class.");
+        return Matrix_Ref(Matrix_t::Zero());
+      }
+
+      /**
+       * Compute the radial derivative of the neighbour contribution
+       *
+       * Note that you _must_ call compute_neighbour_contribution() first to
+       * populate the relevant arrays!
+       *
+       * The derivative is taken with respect to the pair distance,
+       * \f$r_{ij}\f$.  In order to get the radial component of the gradient,
+       * remember to multiply by the direction vector
+       * \f$
+       *    \renewcommand{\vec}[1]{\mathbf{#1}}
+       *    \hat{\vec{r}_{ij}}
+       * \f$
+       * (and not the vector itself), since
+       * \f[
+       *    \let\grad\nabla
+       *    \grad_{\vec{r}_i} f(r_{ij}) =
+       *                    \frac{\dd f}{\dd r_{ij}}
+       *                    \frac{- \vec{r}_{ij}}{r_{ij}}
+       *                  = \frac{\dd f}{\dd r_{ij}} -\hat{\vec{r}_{ij}}.
+       * \f]
+       *
+       * so multiply by _negative_ \f$\hat{\vec{r}}_{ij}\f$ to get the radial
+       * component of the gradient wrt motion of the central atom
+       * (\f$\frac{d}{d\vec{r}_i}\f$).
+       *
+       * And finally, there is no compute_center_derivative() because that's
+       * just zero -- the center contribution doesn't vary w.r.t. motion of
+       * the central atom
+       */
+      template <size_t Order, size_t Layer>
+      Matrix_Ref compute_neighbour_derivative(
+          const double /*distance*/,
+          const ClusterRefKey<Order, Layer> & /*pair*/) {
+        throw std::runtime_error("This method is pure virtual and should be "
+                                 "implemented in a derived class");
+        return Matrix_Ref(Matrix_t::Zero());
+      }
     };
 
     template <RadialBasisType RBT>
@@ -346,8 +336,7 @@ namespace rascal {
 
       using Parent = RadialContributionBase;
       using Hypers_t = typename Parent::Hypers_t;
-      // using Matrix_t = typename Parent::Matrix_t;
-      using Matrix_t = Eigen::MatrixXd;
+      using Matrix_t = typename Parent::Matrix_t;
       using Vector_t = typename Parent::Vector_t;
       using Matrix_Ref = typename Parent::Matrix_Ref;
       using Vector_Ref = typename Parent::Vector_Ref;
@@ -560,36 +549,7 @@ namespace rascal {
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
-      /**
-       * Compute the radial derivative of the neighbour contribution
-       *
-       * Note that you _must_ call compute_neighbour_contribution() first to
-       * populate the relevant arrays!
-       *
-       * The derivative is taken with respect to the pair distance,
-       * \f$r_{ij}\f$.  In order to get the radial component of the gradient,
-       * remember to multiply by the direction vector
-       * \f$
-       *    \renewcommand{\vec}[1]{\mathbf{#1}}
-       *    \hat{\vec{r}_{ij}}
-       * \f$
-       * (and not the vector itself), since
-       * \f[
-       *    \let\grad\nabla
-       *    \grad_{\vec{r}_i} f(r_{ij}) =
-       *                    \frac{\dd f}{\dd r_{ij}}
-       *                    \frac{- \vec{r}_{ij}}{r_{ij}}
-       *                  = \frac{\dd f}{\dd r_{ij}} -\hat{\vec{r}_{ij}}.
-       * \f]
-       *
-       * so multiply by _negative_ \f$\hat{\vec{r}}_{ij}\f$ to get the radial
-       * component of the gradient wrt motion of the central atom
-       * (\f$\frac{d}{d\vec{r}_i}\f$).
-       *
-       * And finally, there is no compute_center_derivative() because that's
-       * just zero -- the center contribution doesn't vary w.r.t. motion of
-       * the central atom
-       */
+      //! Compute the radial derivative of the neighbour contribution
       template <size_t Order, size_t Layer>
       Matrix_Ref compute_neighbour_derivative(
           const double distance, const ClusterRefKey<Order, Layer> & /*pair*/) {
@@ -612,6 +572,16 @@ namespace rascal {
             this->radial_integral_neighbour * proportional_factors.asDiagonal();
 
         return Matrix_Ref(this->radial_neighbour_derivative);
+      }
+
+      void finalize_radial_integral() {
+        this->radial_integral_neighbour = this->ortho_norm_matrix.transpose() *
+                                          this->radial_integral_neighbour;
+      }
+
+      void finalize_radial_integral_center() {
+        this->radial_integral_center =
+            this->ortho_norm_matrix.transpose() * this->radial_integral_center;
       }
 
       template <typename Coeffs>
@@ -724,13 +694,18 @@ namespace rascal {
       // \sigma_n = (r_\text{cut}-\delta r_\text{cut})
       // \max(\sqrt{n},1)/n_\text{max}
       Vector_t radial_sigmas{};
-      // b = 1 / (2*\sigma_n^2)
+      // b_n = 1 / (2*\sigma_n^2)
       Vector_t fac_b{};
       Matrix_t a_b_l_n{};
       Vector_t distance_fac_a_l{};
+      //! constant factors of the GTO basis
+      //! N_n=sqrt(2/\Gamma(n+3/2)) b_n^{3+2n}/4
       Vector_t radial_norm_factors{};
       Vector_t radial_n_factors{};
+      //! S_{nn'}^{-1/2}, orthonormalization matrix of the GTO basis
       Matrix_t radial_ortho_matrix{};
+      //! combination of radial_ortho_matrix and radial_norm_factors
+      //! not symmetric
       Matrix_t ortho_norm_matrix{};
     };
 
@@ -892,11 +867,7 @@ namespace rascal {
         return Matrix_Ref(this->radial_integral_neighbour);
       }
 
-      /**
-       * Compute the radial derivative of the neighbour contribution
-       * Assumes that gradients of bessel have already been computed in
-       * compute_neighbour_contribution
-       */
+      //! Compute the radial derivative of the neighbour contribution
       template <size_t Order, size_t Layer>
       Matrix_Ref compute_neighbour_derivative(
           const double /*distance*/,
@@ -907,6 +878,10 @@ namespace rascal {
 
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
+
+      void finalize_radial_integral_center() {}
+
+      void finalize_radial_integral() {}
 
       template <typename Coeffs>
       void finalize_coefficients(Coeffs & /*coefficients*/) const {}
@@ -1029,11 +1004,12 @@ namespace rascal {
 
       // If we find a case where smarter parameters for x1 and x2 can be given
       explicit RadialContributionHandler(const Hypers_t & hypers,
-                                         const double x1, const double x2,
+                                         const double range_begin,
+                                         const double range_end,
                                          const double accuracy)
           : Parent(hypers) {
         this->precompute();
-        this->init_interpolator(x1, x2, accuracy);
+        this->init_interpolator(range_begin, range_end, accuracy);
       }
       // Returns the precomputed center contribution
       template <size_t Order, size_t Layer>
@@ -1045,8 +1021,6 @@ namespace rascal {
       Matrix_Ref
       compute_neighbour_contribution(const double distance,
                                      const ClusterRefKey<Order, Layer> &) {
-        // TODO(alex) TODO(felix) include an check that the distance is within
-        // the (x1,x2) range of the interpolator
         this->radial_integral_neighbour = this->intp->interpolate(distance);
         return Matrix_Ref(this->radial_integral_neighbour);
       }
@@ -1059,6 +1033,21 @@ namespace rascal {
             this->intp->interpolate_derivative(distance);
         return Matrix_Ref(this->radial_neighbour_derivative);
       }
+
+      /*
+       * Overwriting the finalization function to empty one, since the
+       * finalization happens now in the interpolator
+       */
+      template <typename Coeffs>
+      void finalize_coefficients(Coeffs & /*coefficients*/) {}
+
+      /*
+       * Overwriting the finalization function of the derivative to empty one,
+       * since the finalization happens now in the interpolator
+       */
+      template <int NDims, typename Coeffs, typename Center>
+      void finalize_coefficients_der(Coeffs & /*coefficients_gradient*/,
+                                     Center & /*center*/) const {}
 
      protected:
       void precompute() override {
@@ -1074,7 +1063,9 @@ namespace rascal {
       // Should be invoked only after the a-factor has been precomputed
       void precompute_center_contribution() {
         Parent::compute_center_contribution(this->fac_a);
+        Parent::finalize_radial_integral_center();
       }
+
       void init_interpolator(const Hypers_t & hypers) {
         auto radial_contribution_hypers =
             hypers.at("radial_contribution").template get<json>();
@@ -1082,8 +1073,10 @@ namespace rascal {
             radial_contribution_hypers.at("optimization").template get<json>();
 
         double accuracy{this->get_interpolator_accuracy(optimization_hypers)};
-        double range_begin{this->get_range_begin(optimization_hypers)};
-        double range_end{this->get_range_end(optimization_hypers)};
+        // minimal distance such that it is still stable with the interpolated
+        // function
+        double range_begin{math::SPHERICAL_BESSEL_FUNCTION_FTOL};
+        double range_end{this->interaction_cutoff};
         this->init_interpolator(range_begin, range_end, accuracy);
       }
 
@@ -1093,6 +1086,7 @@ namespace rascal {
         std::function<Matrix_t(double)> func{
             [&](const double distance) mutable {
               Parent::compute_neighbour_contribution(distance, this->fac_a);
+              Parent::finalize_radial_integral();
               return this->radial_integral_neighbour;
             }};
         Matrix_t result = func(range_begin);
@@ -1100,29 +1094,6 @@ namespace rascal {
         int rows{static_cast<int>(result.rows())};
         this->intp = std::make_unique<Interpolator_t>(
             func, range_begin, range_end, accuracy, cols, rows);
-      }
-
-      double get_range_begin(const Hypers_t & optimization_hypers) {
-        if (optimization_hypers.find("range") != optimization_hypers.end()) {
-          return optimization_hypers.at("range")
-              .at("begin")
-              .template get<double>();
-        }
-        // default range begin
-        return 0.;
-      }
-
-      double get_range_end(const Hypers_t & optimization_hypers) {
-        if (optimization_hypers.find("range") != optimization_hypers.end()) {
-          return optimization_hypers.at("range")
-              .at("end")
-              .template get<double>();
-        }
-        throw std::logic_error(
-            "Interpolator option is on but no range end for interpolation is "
-            "given in the json hyperparameter. Interpolator cannot be "
-            "initialized.");
-        return 0;
       }
 
       double get_interpolator_accuracy(const Hypers_t & optimization_hypers) {
@@ -1344,7 +1315,7 @@ namespace rascal {
           std::runtime_error("Wrongly configured optimization. Please name an "
                              "optimization type.");
         }
-      } else {  // Default false (don't use interpolator)
+      } else {  // Default case (don't use interpolator)
         this->optimization_type = OptimizationType::None;
       }
 
@@ -1737,8 +1708,6 @@ namespace rascal {
     using math::PI;
     using math::pow;
     constexpr bool ExcludeGhosts{true};
-    constexpr static size_t ClusterLayer{
-        StructureManager::template cluster_layer_from_order<2>()};
     const bool is_not_masked{manager->is_not_masked()};
     const bool compute_gradients{this->compute_gradients};
     if (not is_not_masked and compute_gradients) {
@@ -1848,7 +1817,6 @@ namespace rascal {
         auto && harmonics{spherical_harmonics.get_harmonics()};
         auto && harmonics_gradients{
             spherical_harmonics.get_harmonics_derivatives()};
-
         auto && neighbour_contribution =
             radial_integral->template compute_neighbour_contribution(dist,
                                                                      neigh);
@@ -1895,7 +1863,7 @@ namespace rascal {
         // (the periodic images move with the center, so their contribution to
         // the center gradient is zero)
         if (compute_gradients and (atom_j_tag != atom_i_tag)) {  // NOLINT
-          // \grad_i c^j
+          // \grad_j c^i
           auto & coefficients_neigh_gradient =
               expansions_coefficients_gradient[neigh];
 
@@ -1909,9 +1877,9 @@ namespace rascal {
           // grad_i c^{ib}
           auto && gradient_center_by_type{
               coefficients_center_gradient[neigh_type]};
-          // grad_i c^{ja}
+          // grad_j c^{ib}
           auto && gradient_neigh_by_type{
-              coefficients_neigh_gradient[center_type]};
+              coefficients_neigh_gradient[neigh_type]};
 
           // clang-format off
           // d/dr_{ij} (c_{ij} f_c{r_{ij}})
@@ -1924,19 +1892,10 @@ namespace rascal {
           for (int cartesian_idx{0}; cartesian_idx < ThreeD;
                  ++cartesian_idx) {
             l_block_idx = 0;
-            double parity{-1.};  // account for (-1)^{l+1}
             for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                 ++angular_l) {
               size_t l_block_size{2 * angular_l + 1};
               pair_gradient_contribution.resize(this->max_radial, l_block_size);
-              /*
-               pair_gradient_contribution_p1.col(angular_l)
-                * harmonics.segment(l_block_idx, l_block_size)
-               should be precomputed like pair_gradient_contribution_p1
-
-               the memory layout of pair_gradient_contribution_p1.col(angular_l)
-               is not the best one considering the access.
-               */
               pair_gradient_contribution =
                 pair_gradient_contribution_p1.col(angular_l)
                 * harmonics.segment(l_block_idx, l_block_size)
@@ -1949,23 +1908,21 @@ namespace rascal {
 
               // Each Cartesian gradient component occupies a contiguous block
               // (row-major storage)
-              // grad_i c^{ib} = - \sum_{j} grad_j c^{ij}
+              // grad_i c^{ib} = - \sum_{j} grad_j c^{ijb}
               gradient_center_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
                   max_radial, l_block_size) -= pair_gradient_contribution;
-              // grad_i c^{ja} = (-1)^{l+1} grad_j c^{ij}
+              // grad_j c^{ib} =  grad_j c^{ijb}
               gradient_neigh_by_type.block(
                   cartesian_idx * max_radial, l_block_idx,
-                  max_radial, l_block_size) = parity *
-                    pair_gradient_contribution;
+                  max_radial, l_block_size) = pair_gradient_contribution;
               l_block_idx += l_block_size;
-              parity *= -1.;
               // clang-format on
             }  // for (angular_l)
           }    // for cartesian_idx
 
           // half list branch for accumulating parts of grad_j c^{j} using
-          // grad_j c^{ji a} = - grad_i c^{ji a}
+          // grad_j c^{ji a} = (-1)^l grad_j c^{ij b}
           if (IsHalfNL) {
             if (is_center_atom) {
               // grad_j c^{j}
@@ -1975,46 +1932,30 @@ namespace rascal {
               auto gradient_neigh_center_by_type =
                   coefficients_neigh_center_gradient[center_type];
 
-              gradient_neigh_center_by_type -= gradient_neigh_by_type;
-            }  // if (is_center_atom)
-          }    // if (IsHalfNL)
-        }      // if (compute_gradients)
-      }        // for (neigh : center)
+              for (int cartesian_idx{0}; cartesian_idx < ThreeD;
+                   ++cartesian_idx) {
+                l_block_idx = 0;
+                double parity{1};
+                for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+                     ++angular_l) {
+                  size_t l_block_size{2 * angular_l + 1};
+                  // clang-format off
+                  gradient_neigh_center_by_type.block(
+                      cartesian_idx * max_radial, l_block_idx,
+                      max_radial, l_block_size) += parity *
+                                  gradient_neigh_by_type.block(
+                                    cartesian_idx * max_radial, l_block_idx,
+                                    max_radial, l_block_size);
 
-      // In the case of having several periodic images of other centers in
-      // the environment of center i, we need to sum up
-      // of all these contributions, e.g. ij, ij', ij'' ... where
-      // j primes are periodic images of j. And assign this sum back to all
-      // of these terms.
-      if (not IsHalfNL) {
-        if (compute_gradients) {
-          // sum of d/dr_{i} C^{ji}_{nlm} when center j has several periodic
-          // images of center i in its environment
-          auto di_c_ji_sum = math::Matrix_t(n_row, n_col);
-
-          std::map<int, std::vector<ClusterRefKey<2, ClusterLayer>>>
-              periodic_images_of_center =
-                  internal::find_periodic_images_pairs_in_environment(manager,
-                                                                      center);
-          // for each center atoms with periodic images, sum up the
-          // contributions and assign the sum back to the terms
-          for (const auto & el : periodic_images_of_center) {
-            const auto & p_images = el.second;
-            // these terms have only one species key that is non zero
-            Key_t key{
-                expansions_coefficients_gradient[p_images.at(0)].get_keys().at(
-                    0)};
-            di_c_ji_sum = expansions_coefficients_gradient[p_images[0]][key];
-            for (auto image_it = p_images.begin() + 1, im_e = p_images.end();
-                 image_it != im_e; ++image_it) {
-              di_c_ji_sum += expansions_coefficients_gradient[*image_it][key];
-            }
-            for (const auto & p_image : el.second) {
-              expansions_coefficients_gradient[p_image][key] = di_c_ji_sum;
-            }
-          }  // end of periodic images business
-        }    // if (compute_gradients)
-      }      // if (not IsHalfNL)
+                  l_block_idx += l_block_size;
+                  parity *= -1.;
+                  // clang-format on
+                }  // for (angular_l)
+              }    // for cartesian_idx
+            }      // if (is_center_atom)
+          }        // if (IsHalfNL)
+        }          // if (compute_gradients)
+      }            // for (neigh : center)
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
@@ -2072,7 +2013,8 @@ namespace rascal {
           auto && atom_j = neigh.get_atom_j();
           auto atom_j_tag = atom_j.get_atom_tag();
           if (atom_j_tag != atom_i_tag) {
-            keys_list_grad[i_grad].insert(center_type);
+            Key_t neigh_type{neigh.get_atom_type()};
+            keys_list_grad[i_grad].insert(neigh_type);
           }
           i_grad++;
         }
@@ -2110,7 +2052,7 @@ namespace rascal {
     std::vector<std::set<Key_t>> keys_list{};
     std::vector<std::set<Key_t>> keys_list_grad{};
     for (auto center : manager) {
-      Key_t center_type{center.get_atom_type()};
+      // Key_t center_type{center.get_atom_type()};
       auto atom_i_tag = center.get_atom_tag();
       keys_list.emplace_back(keys);
       if (this->compute_gradients) {
@@ -2120,7 +2062,8 @@ namespace rascal {
           auto atom_j_tag = atom_j.get_atom_tag();
           std::set<Key_t> neigh_types{};
           if (atom_j_tag != atom_i_tag) {
-            neigh_types.insert(center_type);
+            Key_t neigh_type{neigh.get_atom_type()};
+            neigh_types.insert(neigh_type);
           }
           keys_list_grad.emplace_back(neigh_types);
         }
@@ -2170,7 +2113,7 @@ namespace rascal {
 
     // build the species list
     for (auto center : manager) {
-      Key_t center_type{center.get_atom_type()};
+      // Key_t center_type{center.get_atom_type()};
       keys_list.emplace_back(this->global_species);
       if (this->compute_gradients) {
         keys_list_grad.emplace_back(this->global_species);
@@ -2180,7 +2123,8 @@ namespace rascal {
           auto atom_j_tag = atom_j.get_atom_tag();
           std::set<Key_t> neigh_types{};
           if (atom_j_tag != atom_i_tag) {
-            neigh_types.insert(center_type);
+            Key_t neigh_type{neigh.get_atom_type()};
+            neigh_types.insert(neigh_type);
           }
           keys_list_grad.emplace_back(neigh_types);
         }

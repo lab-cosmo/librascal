@@ -76,15 +76,25 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Check that the atom in unit cell check is properly done
+   * Check that the atom in unit cell check is properly done and that the
+   * atomic number values range check is properly done.
    */
   BOOST_FIXTURE_TEST_CASE(atom_bound_test,
                           ManagerFixture<StructureManagerCenters>) {
     int i_manager{0};
     for (auto & manager : this->managers) {
       auto & structure = this->structures[i_manager];
+
+      // check atom_types range check is working
+      structure.atom_types(0) = 250;
+      BOOST_CHECK_THROW(manager->update(structure), std::runtime_error);
+      structure.atom_types(0) = -1;
+      BOOST_CHECK_THROW(manager->update(structure), std::runtime_error);
+      structure.atom_types(0) = 1;
+
       structure.positions.col(0) << -0.5, -0.5, -0.5;
       BOOST_CHECK_THROW(manager->update(structure), std::runtime_error);
+
       ++i_manager;
     }
   }

@@ -1,6 +1,7 @@
 from ..utils import BaseIO
 from ase.calculators.calculator import Calculator, all_changes
 from copy import deepcopy
+from ..neighbourlist.structure_manager import AtomsList, unpack_ase
 
 
 class ASEMLCalculator(Calculator, BaseIO):
@@ -28,19 +29,30 @@ class ASEMLCalculator(Calculator, BaseIO):
         self.model = model
         self.representation = representation
         self.kwargs = kwargs
+        self.manager = None
 
-    def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
+    def calculate(self, atoms=None, properties=['energy', 'forces'],
+                  system_changes=all_changes):
         Calculator.calculate(self, atoms, properties, system_changes)
 
-        X = [self.atoms]
-        managers = self.representation.transform(X)
+        if self.manager is None:
+            # happens at the begining of the MD run
+            at = self.atoms.copy()
+            at.wrap(eps=1e-11)
+            self.manager = [at]
+        elif isinstance(self.manager, AtomsList):
+            structure = unpack_ase(self.atoms, wrap_pos=True)
+            structure.pop('center_atoms_mask')
+            self.manager[0].update(**structure)
 
-        energy = self.model.predict(managers)
-        forces = -self.model.predict(managers, compute_gradients=True)
+        self.manager = self.representation.transform(self.manager)
 
-        self.results["energy"] = energy
-        self.results["free_energy"] = energy
-        self.results["forces"] = forces
+        energy = self.model.predict(self.manager)
+        self.results['energy'] = energy
+        self.results['free_energy'] = energy
+
+        forces = -self.model.predict(self.manager, compute_gradients=True)
+        self.results['forces'] = forces
 
     def _get_init_params(self):
         init_params = dict(model=self.model, representation=self.representation)
@@ -48,6 +60,7 @@ class ASEMLCalculator(Calculator, BaseIO):
         return init_params
 
     def _set_data(self, data):
+        self.manager = None
         super()._set_data(data)
 
     def _get_data(self):

@@ -44,8 +44,12 @@ def dump_reference_json():
         alphas = np.linspace(0.6, 50, 10)
         # looks at rc up to 10
         xns = np.linspace(0.005, 10, 15)
+        # to test values around the bessel tolerance
+        xns = np.hstack( (1e-6,1e-5, xns) )
         # atoms should not be much closer than this
         rijs = np.linspace(0.5, 10, 15)
+        # to test values around the bessel tolerance
+        rijs = np.hstack( (1e-6,1e-5, rijs) )
 
         for alpha in alphas:
             for rij in rijs:

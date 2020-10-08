@@ -1037,6 +1037,20 @@ namespace rascal {
       return arr;
     }
 
+    int get_gradient_col_by_key(const Key_t & key) const {
+      SortedKey_t skey{key};
+      return this->get_gradient_col_by_key(skey);
+    }
+
+    int get_gradient_col_by_key(const SortedKey_t & skey) const {
+      if (not this->are_keys_uniform()) {
+        throw std::runtime_error("The raw data is not a dense matrix.");
+      }
+      // since the keys are uniform we can use the first element of the map
+      auto && view_start = this->maps[0].get_location_by_key(skey);
+      return view_start;
+    }
+
     double sum() const { return this->values.sum(); }
 
     double l1_norm() const {

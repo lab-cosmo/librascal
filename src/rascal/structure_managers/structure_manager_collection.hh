@@ -358,13 +358,11 @@ namespace rascal {
       size_t n_elements{0};
 
       auto property_name{this->get_calculator_name(calculator, is_gradients)};
-
       for (auto & manager : this->managers) {
         auto && property =
             *manager->template get_property<Prop_t>(property_name);
         n_elements += property.get_nb_item();
       }
-
       return n_elements;
     }
 
