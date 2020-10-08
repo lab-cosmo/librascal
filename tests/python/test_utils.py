@@ -71,7 +71,11 @@ class BoxList(object):
         l2 = np.linalg.norm(b2_c)
         l3 = np.linalg.norm(b3_c)
         face_dist_c = np.array(
-            [1 / l1 if l1 > 0 else 1, 1 / l2 if l2 > 0 else 1, 1 / l3 if l3 > 0 else 1,]
+            [
+                1 / l1 if l1 > 0 else 1,
+                1 / l2 if l2 > 0 else 1,
+                1 / l3 if l3 > 0 else 1,
+            ]
         )
 
         # We use a minimum bin size of 3 A

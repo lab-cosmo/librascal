@@ -116,15 +116,23 @@ class SphericalCovariants(BaseIO):
 
     """
 
-    def __init__(self, interaction_cutoff, cutoff_smooth_width,
-                 max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=0.3,
-                 cutoff_function_type="ShiftedCosine", normalize=True,
-                 radial_basis="GTO",
-                 optimization_args={},
-                 soap_type="LambdaSpectrum", inversion_symmetry=True,
-                 lam=0,
-                 cutoff_function_parameters=dict()):
+    def __init__(
+        self,
+        interaction_cutoff,
+        cutoff_smooth_width,
+        max_radial,
+        max_angular,
+        gaussian_sigma_type,
+        gaussian_sigma_constant=0.3,
+        cutoff_function_type="ShiftedCosine",
+        normalize=True,
+        radial_basis="GTO",
+        optimization_args={},
+        soap_type="LambdaSpectrum",
+        inversion_symmetry=True,
+        lam=0,
+        cutoff_function_parameters=dict(),
+    ):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
@@ -153,35 +161,34 @@ class SphericalCovariants(BaseIO):
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
-            gaussian_sigma=dict(
-                value=gaussian_sigma_constant,
-                unit='AA'
-            ),
+            gaussian_sigma=dict(value=gaussian_sigma_constant, unit="AA"),
         )
         self.optimization_args = deepcopy(optimization_args)
-        if 'type' in optimization_args:
-            if optimization_args['type'] == 'Spline':
-                if 'accuracy' in optimization_args:
-                    accuracy = optimization_args['accuracy']
+        if "type" in optimization_args:
+            if optimization_args["type"] == "Spline":
+                if "accuracy" in optimization_args:
+                    accuracy = optimization_args["accuracy"]
                 else:
                     accuracy = 1e-5
-                    print('No accuracy for spline optimization was given. Switching to default accuracy {:.0e}.'.format(
-                        accuracy))
-                optimization_args = {
-                    'type': 'Spline', 'accuracy': accuracy}
-            elif optimization_args['type'] == 'None':
-                optimization_args = dict({'type': 'None'})
+                    print(
+                        "No accuracy for spline optimization was given. Switching to default accuracy {:.0e}.".format(
+                            accuracy
+                        )
+                    )
+                optimization_args = {"type": "Spline", "accuracy": accuracy}
+            elif optimization_args["type"] == "None":
+                optimization_args = dict({"type": "None"})
             else:
-                print('Optimization type is not known. Switching to no'
-                      ' optimization.')
-                optimization_args = dict({'type': 'None'})
+                print(
+                    "Optimization type is not known. Switching to no" " optimization."
+                )
+                optimization_args = dict({"type": "None"})
         else:
-            optimization_args = dict({'type': 'None'})
+            optimization_args = dict({"type": "None"})
+        radial_contribution = dict(type=radial_basis, optimization=optimization_args)
         radial_contribution = dict(
             type=radial_basis,
-            optimization=optimization_args
         )
-        radial_contribution = dict(type=radial_basis,)
 
         self.update_hyperparameters(
             cutoff_function=cutoff_function,

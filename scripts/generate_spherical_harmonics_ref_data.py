@@ -143,7 +143,8 @@ def dump_reference_json():
     if verbose:
         print(len(data))
     with open(
-        os.path.join(root, dump_path, "spherical_harmonics_reference.ubjson"), "wb",
+        os.path.join(root, dump_path, "spherical_harmonics_reference.ubjson"),
+        "wb",
     ) as f:
         ubjson.dump(data, f)
 

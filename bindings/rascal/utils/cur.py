@@ -12,7 +12,7 @@ from scipy.sparse.linalg import svds
 
 
 def do_CUR(X, Nsel, act_on="sample", is_deterministic=False, seed=10, verbose=True):
-    """ Apply CUR selection [1] of Nsel rows or columns of the
+    """Apply CUR selection [1] of Nsel rows or columns of the
     given feature matrix X[n_samples, n_features].
 
     .. [1] Mahoney, M. W., & Drineas, P. (2009). CUR matrix decompositions for
@@ -203,8 +203,14 @@ class CURFilter(BaseIO):
                 key: np.sort(val[: n_select[key]])
                 for key, val in self.selected_sample_ids_by_sp.items()
             }
-            self.selected_ids = convert_selected_global_index2perstructure_index_per_species(
-                managers, selected_ids_by_sp, strides_by_sp, map_by_manager, sps,
+            self.selected_ids = (
+                convert_selected_global_index2perstructure_index_per_species(
+                    managers,
+                    selected_ids_by_sp,
+                    strides_by_sp,
+                    map_by_manager,
+                    sps,
+                )
             )
             # return self.selected_ids
             # build the pseudo points

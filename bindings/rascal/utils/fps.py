@@ -11,7 +11,11 @@ import numpy as np
 
 
 def fps(
-    feature_matrix, n_select, starting_index=None, method="simple", restart=None,
+    feature_matrix,
+    n_select,
+    starting_index=None,
+    method="simple",
+    restart=None,
 ):
     """
     Farthest Point Sampling [1] routine using librascal.
@@ -130,7 +134,11 @@ class FPSFilter(BaseIO):
     """
 
     def __init__(
-        self, representation, Nselect, act_on="sample per species", starting_index=0,
+        self,
+        representation,
+        Nselect,
+        act_on="sample per species",
+        starting_index=0,
     ):
         self._representation = representation
         self.Nselect = Nselect
@@ -208,7 +216,9 @@ class FPSFilter(BaseIO):
             for sp in sps:
                 print("Selecting species: {}".format(sp))
                 fps_out = fps(
-                    X_by_sp[sp], self.Nselect[sp], starting_index=self.starting_index,
+                    X_by_sp[sp],
+                    self.Nselect[sp],
+                    starting_index=self.starting_index,
                 )
                 self.selected_sample_ids_by_sp[sp] = fps_out["fps_indices"]
                 self.fps_minmax_d2_by_sp[sp] = fps_out["fps_minmax_d2"]
@@ -244,8 +254,14 @@ class FPSFilter(BaseIO):
                 key: np.sort(val[: n_select[key]])
                 for key, val in self.selected_sample_ids_by_sp.items()
             }
-            self.selected_ids = convert_selected_global_index2perstructure_index_per_species(
-                managers, selected_ids_by_sp, strides_by_sp, map_by_manager, sps,
+            self.selected_ids = (
+                convert_selected_global_index2perstructure_index_per_species(
+                    managers,
+                    selected_ids_by_sp,
+                    strides_by_sp,
+                    map_by_manager,
+                    sps,
+                )
             )
             # return self.selected_ids
             # build the pseudo points

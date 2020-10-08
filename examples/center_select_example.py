@@ -26,7 +26,12 @@ print(
 )
 
 for molecule in molecules:
-    mask_center_atoms_by_species(molecule, species_select=["C",])
+    mask_center_atoms_by_species(
+        molecule,
+        species_select=[
+            "C",
+        ],
+    )
     # Also works by atomic number
     # mask_center_atoms_by_species(molecule, species_select=[6,])
 

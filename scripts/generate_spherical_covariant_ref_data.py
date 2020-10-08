@@ -15,8 +15,8 @@ from rascal.representations import SphericalCovariants
 root = os.path.abspath("../")
 rascal_reference_path = os.path.join(root, "reference_data/")
 inputs_path = os.path.join(rascal_reference_path, "inputs")
-read_inputs_path = os.path.join('reference_data/', "inputs")
-dump_path = os.path.join('reference_data/', "tests_only")
+read_inputs_path = os.path.join("reference_data/", "inputs")
+dump_path = os.path.join("reference_data/", "tests_only")
 
 #############################################################################
 
@@ -112,7 +112,8 @@ def dump_reference_json():
                 )
 
     with open(
-        os.path.join(root, dump_path, "spherical_covariants_reference.ubjson"), "wb",
+        os.path.join(root, dump_path, "spherical_covariants_reference.ubjson"),
+        "wb",
     ) as f:
         ubjson.dump(data, f)
 

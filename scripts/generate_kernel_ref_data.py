@@ -88,7 +88,8 @@ def dump_reference_json():
                                         soap = SphericalInvariants(**hypers)
                                         soap_vectors = soap.transform(frames)
                                         hypers_kernel = dict(
-                                            name=kernel_name, target_type=target_type,
+                                            name=kernel_name,
+                                            target_type=target_type,
                                         )
                                         hypers_kernel.update(**kwargs)
                                         kernel = Kernel(soap, **hypers_kernel)

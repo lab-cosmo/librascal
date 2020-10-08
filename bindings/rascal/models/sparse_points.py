@@ -75,7 +75,9 @@ class SparsePoints(BaseIO):
             )
         else:
             self._sparse_points.extend(
-                self.representation._representation, atoms_list, selected_indices,
+                self.representation._representation,
+                atoms_list,
+                selected_indices,
             )
 
     def size(self):

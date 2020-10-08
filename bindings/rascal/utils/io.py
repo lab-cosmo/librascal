@@ -253,7 +253,7 @@ class BaseIO(ABC):
         return dict()
 
     def __deepcopy__(self, memo=None):
-        """ Overrides deepcopy default behaviour with custom serialization
+        """Overrides deepcopy default behaviour with custom serialization
         instead of using pickle."""
         return from_dict(to_dict(self))
 

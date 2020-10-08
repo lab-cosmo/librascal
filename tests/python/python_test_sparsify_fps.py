@@ -14,22 +14,22 @@ def is_sorted(a):
 class TestFPS(unittest.TestCase):
     def setUp(self):
         """
-          Sets up a random feature matrix with 10000 points and
-          dimensionality 100
+        Sets up a random feature matrix with 10000 points and
+        dimensionality 100
         """
         np.random.seed(1234)
         self.x = np.random.normal(size=(10000, 100))
 
     def fps_return_match(self, r1, r2):
         """
-          Check if return values match.
+        Check if return values match.
         """
         for key in ["fps_indices", "fps_minmax_d2", "fps_hausdorff_d2"]:
             self.assertTrue(np.allclose(r1[key], r2[key]))
 
     def test_simple_fps(self):
         """
-          Just runs a small FPS run and see if the results make sense.
+        Just runs a small FPS run and see if the results make sense.
         """
 
         r_fps = fps(self.x, 100, 0, method="simple")
@@ -41,8 +41,8 @@ class TestFPS(unittest.TestCase):
 
     def test_voronoi_fps(self):
         """
-          Just runs a small FPS run with voronoi method
-          and see if the results make sense.
+        Just runs a small FPS run with voronoi method
+        and see if the results make sense.
         """
 
         r_fps = fps(self.x, 100, 0, method="voronoi")
@@ -56,7 +56,7 @@ class TestFPS(unittest.TestCase):
 
     def test_fps_consistency(self):
         """
-          Checks if different FPS methods give consistent results.
+        Checks if different FPS methods give consistent results.
         """
 
         ref = fps(self.x, 100, 0, method="simple")
@@ -66,7 +66,7 @@ class TestFPS(unittest.TestCase):
 
     def test_fps_restart(self):
         """
-          Checks if FPS restart works as intended.
+        Checks if FPS restart works as intended.
         """
 
         # This is the reference selection
@@ -98,7 +98,11 @@ class TestFPS(unittest.TestCase):
         r_fps = fps(self.x, 50, 0, method="simple")
         xx = np.concatenate((self.x[r_fps["fps_indices"]], self.x))
         r_fps = fps(
-            xx, 100, 0, method="simple", restart={"fps_indices": np.asarray(range(50))},
+            xx,
+            100,
+            0,
+            method="simple",
+            restart={"fps_indices": np.asarray(range(50))},
         )
         self.assertTrue(
             np.array_equal(r_fps["fps_indices"][:50], np.asarray(range(50)))

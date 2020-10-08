@@ -49,9 +49,21 @@ input_files = [
 
 optimizations_args = [
     {"type": "None"},
-    {"type": "Spline", "accuracy": 1e-8, "range": (0.0001, INTERACTION_CUTOFF),},
-    {"type": "Spline", "accuracy": 1e-10, "range": (0.0001, INTERACTION_CUTOFF),},
-    {"type": "Spline", "accuracy": 1e-12, "range": (0.0001, INTERACTION_CUTOFF),},
+    {
+        "type": "Spline",
+        "accuracy": 1e-8,
+        "range": (0.0001, INTERACTION_CUTOFF),
+    },
+    {
+        "type": "Spline",
+        "accuracy": 1e-10,
+        "range": (0.0001, INTERACTION_CUTOFF),
+    },
+    {
+        "type": "Spline",
+        "accuracy": 1e-12,
+        "range": (0.0001, INTERACTION_CUTOFF),
+    },
 ]
 
 radial_bases = ["GTO", "DVR"]
