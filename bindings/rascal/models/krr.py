@@ -81,13 +81,15 @@ class KRR(BaseIO):
             return Y0 + np.dot(KNM, self.weights).reshape((-1))
         else:
             rep = self.kernel._representation
-            gradients = compute_sparse_kernel_gradients(rep,
-                        self.kernel._kernel, managers.managers,
-                        self.X_train._sparse_points,
-                        self.weights.reshape((1, -1)))
+            gradients = compute_sparse_kernel_gradients(
+                rep,
+                self.kernel._kernel,
+                managers.managers,
+                self.X_train._sparse_points,
+                self.weights.reshape((1, -1)),
+            )
 
             return gradients
-
 
     def get_weights(self):
         return self.weights
