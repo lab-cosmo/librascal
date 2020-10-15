@@ -1,13 +1,13 @@
 from multiprocessing.dummy import Pool as ThreadPool
 
 
-def FactoryPool(method='thread', n_workers=1, disable_pbar=False):
+def FactoryPool(method="thread", n_workers=1, disable_pbar=False):
     if n_workers < 2:
         pool = SerialPool()
-    elif method == 'thread':
+    elif method == "thread":
         pool = ThreadPool(n_workers)
     else:
-        raise NameError('Worker pool {} is not implemented'.format(method))
+        raise NameError("Worker pool {} is not implemented".format(method))
     return pool
 
 

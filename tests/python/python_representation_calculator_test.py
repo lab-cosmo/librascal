@@ -1,5 +1,8 @@
-from rascal.representations import (SortedCoulombMatrix, SphericalExpansion,
-                                    SphericalInvariants)
+from rascal.representations import (
+    SortedCoulombMatrix,
+    SphericalExpansion,
+    SphericalInvariants,
+)
 from rascal.utils import from_dict, to_dict
 from test_utils import load_json_frame, BoxList, Box, dot
 import unittest
@@ -9,7 +12,7 @@ import os
 import json
 from copy import copy
 
-rascal_reference_path = 'reference_data'
+rascal_reference_path = "reference_data"
 inputs_path = os.path.join(rascal_reference_path, "inputs")
 dump_path = os.path.join(rascal_reference_path, "tests_only")
 
@@ -21,12 +24,17 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         against a triclinic crystal.
         """
 
-        fn = os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json')
+        fn = os.path.join(inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json")
         self.frame = load_json_frame(fn)
 
-        self.hypers = dict(cutoff=3., sorting_algorithm='row_norm',
-                           size=50, central_decay=0.5,
-                           interaction_cutoff=3, interaction_decay=-1)
+        self.hypers = dict(
+            cutoff=3.0,
+            sorting_algorithm="row_norm",
+            size=50,
+            central_decay=0.5,
+            interaction_cutoff=3,
+            interaction_decay=-1,
+        )
 
     def test_representation_transform(self):
 
@@ -56,18 +64,20 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         """
 
         fns = [
-            os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json'),
-            os.path.join(inputs_path, 'SiC_moissanite_supercell.json'),
-            os.path.join(inputs_path, 'methane.json'),
+            os.path.join(inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+            os.path.join(inputs_path, "SiC_moissanite_supercell.json"),
+            os.path.join(inputs_path, "methane.json"),
         ]
         self.frames = [load_json_frame(fn) for fn in fns]
 
-        self.hypers = {"interaction_cutoff": 6.0,
-                       "cutoff_smooth_width": 1.0,
-                       "max_radial": 10,
-                       "max_angular": 8,
-                       "gaussian_sigma_type": "Constant",
-                       "gaussian_sigma_constant": 0.5}
+        self.hypers = {
+            "interaction_cutoff": 6.0,
+            "cutoff_smooth_width": 1.0,
+            "max_radial": 10,
+            "max_angular": 8,
+            "gaussian_sigma_type": "Constant",
+            "gaussian_sigma_constant": 0.5,
+        }
 
     def test_representation_transform(self):
 
@@ -97,25 +107,26 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         """
 
         fns = [
-            os.path.join(inputs_path, 'CaCrP2O7_mvc-11955_symmetrized.json'),
-            os.path.join(inputs_path, 'SiC_moissanite_supercell.json'),
-            os.path.join(inputs_path, 'methane.json'),
+            os.path.join(inputs_path, "CaCrP2O7_mvc-11955_symmetrized.json"),
+            os.path.join(inputs_path, "SiC_moissanite_supercell.json"),
+            os.path.join(inputs_path, "methane.json"),
         ]
         self.frames = [load_json_frame(fn) for fn in fns]
 
         global_species = []
         for frame in self.frames:
-            global_species.extend(frame['atom_types'])
+            global_species.extend(frame["atom_types"])
         self.global_species = list(np.unique(global_species))
 
-        self.hypers = dict(soap_type="PowerSpectrum",
-                           interaction_cutoff=3.5,
-                           max_radial=6,
-                           max_angular=6,
-                           gaussian_sigma_constant=0.4,
-                           gaussian_sigma_type="Constant",
-                           cutoff_smooth_width=0.5,
-                           )
+        self.hypers = dict(
+            soap_type="PowerSpectrum",
+            interaction_cutoff=3.5,
+            max_radial=6,
+            max_angular=6,
+            gaussian_sigma_constant=0.4,
+            gaussian_sigma_type="Constant",
+            cutoff_smooth_width=0.5,
+        )
 
     def test_representation_transform(self):
 

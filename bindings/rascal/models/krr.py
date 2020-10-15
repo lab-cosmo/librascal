@@ -33,12 +33,12 @@ class KRR(BaseIO):
 
     def _get_property_baseline(self, managers):
         """build total baseline contribution for each prediction"""
-        if self.target_type == 'Structure':
+        if self.target_type == "Structure":
             Y0 = np.zeros(len(managers))
             for i_manager, manager in enumerate(managers):
                 for center in manager:
                     Y0[i_manager] += self.self_contributions[center.atom_type]
-        elif self.target_type == 'Atom':
+        elif self.target_type == "Atom":
             n_centers = 0
             for manager in managers:
                 n_centers += len(manager)
@@ -84,9 +84,12 @@ class KRR(BaseIO):
         return self.weights
 
     def _get_init_params(self):
-        init_params = dict(weights=self.weights, kernel=self.kernel,
-                           X_train=self.X_train,
-                           self_contributions=self.self_contributions)
+        init_params = dict(
+            weights=self.weights,
+            kernel=self.kernel,
+            X_train=self.X_train,
+            self_contributions=self.self_contributions,
+        )
         return init_params
 
     def _set_data(self, data):
@@ -99,8 +102,17 @@ class KRR(BaseIO):
         return self.kernel._rep
 
 
-def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train,
-                    self_contributions, grad_train=None, lambdas=None, jitter=1e-8):
+def train_gap_model(
+    kernel,
+    managers,
+    KNM_,
+    X_pseudo,
+    y_train,
+    self_contributions,
+    grad_train=None,
+    lambdas=None,
+    jitter=1e-8,
+):
     """
     Defines the procedure to train a GAP model [1]:
     .. math::
@@ -191,7 +203,7 @@ def train_gap_model(kernel, managers, KNM_, X_pseudo, y_train,
     delta = np.std(Y)
     # lambdas[0] is provided per atom hence the '* np.sqrt(Natoms)'
     # the first n_centers rows of KNM are expected to refer to the
-    # property
+    #  property
     KNM[:n_centers] /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
     Y /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
 
