@@ -136,7 +136,8 @@ def train_gap_model(
     .. math::
         y_{a_i(A_i) = \sum_m^{M} \alpha_m \delta_{b_m a_i} k(A_i,T_m),
     where :math:`k(\cdot,\cdot)` is a kernel function, :math:`\alpha_m` are the
-    weights of the model and :math:`b_m is the atom type associated with the sparse point :math:`T_m`.
+    weights of the model and :math:`b_m is the atom type associated with the
+    sparse point :math:`T_m`.
     Hence a kernel element for the target property :math:`Y(A)` is given by:
     .. math::
         KNM_{Am} = \sum_{i \in A} \delta_{b_m a_i} k(A_i,T_m)
