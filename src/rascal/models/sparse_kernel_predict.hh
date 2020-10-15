@@ -39,7 +39,7 @@ namespace rascal {
 
   /**
    * Compute the partial gradients of a structure w.r.t atomic positions
-   * using the GAP model (see
+   * using the SOAP-GAP model (see
    * @ref SparseKernelImpl<internal::SparseKernelType::GAP>::compute_derivative)
    *
    * The point of this function is to provide a faster prediction routine
@@ -58,13 +58,13 @@ namespace rascal {
    * @param managers a ManagerCollection or similar collection of
    * structure managers
    * @param zeta exponent of the GAP kernel
-   * @param weights of the GAP model
+   * @param weights of the SOAP-GAP model
    * @param representation_name name used to get the representation in the
    * managers
    * @param representation_grad_name name used to get representation gradient
    * the in the managers
-   * @param djfi_name name used to get/register the partial gradients in the
-   * managers
+   * @param pair_grad_atom_i_r_j_name name used to get/register the partial
+   * gradients in the managers
    * @return
    */
   template <class Property_t, class PropertyGradient_t, class StructureManager,
@@ -75,7 +75,7 @@ namespace rascal {
                                 math::Vector_t & weights, const size_t zeta,
                                 const std::string & representation_name,
                                 const std::string & representation_grad_name,
-                                const std::string & djfi_name) {
+                                const std::string & pair_grad_atom_i_r_j_name) {
     using Manager_t = typename StructureManager::element_type;
     using Keys_t = typename SparsePoints::Keys_t;
     using Key_t = typename SparsePoints::Key_t;
@@ -109,17 +109,17 @@ namespace rascal {
     }
 
     // attach partial gradients array to manager
-    auto && djfi{
+    auto && pair_grad_atom_i_r_j{
         *manager
              ->template get_property<Property<double, 2, Manager_t, 1, ThreeD>>(
-                 djfi_name, true, true)};
+                 pair_grad_atom_i_r_j_name, true, true)};
     // don't recompute the partial gradients if already up to date
-    if (djfi.is_updated()) {
+    if (pair_grad_atom_i_r_j.is_updated()) {
       return;
     }
 
-    djfi.resize();
-    djfi.setZero();
+    pair_grad_atom_i_r_j.resize();
+    pair_grad_atom_i_r_j.setZero();
 
     if (species_intersect.empty()) {
       return;
@@ -129,7 +129,9 @@ namespace rascal {
     size_t i_row{0};
     for (auto center : manager) {
       const int a_sp{center.get_atom_type()};
-      // \alpha_n^{scaled} = \alpha_n * [z* (X_j \dot T_n)^{z-1}]
+      // compute contraction of the model weights with the gradient of the
+      // kernel with respect to the representation in 2 steps
+      // 1. \alpha_n^{scaled} = \alpha_n * [z* (X_j \dot T_n)^{z-1}]
       weights_scaled =
           (weights.array() *
            (zeta *
@@ -137,10 +139,11 @@ namespace rascal {
                .transpose()
                .array())
               .matrix();
-      // \sum_n \alpha_n^{scaled} T_n
+      // 2. \sum_n \alpha_n^{scaled} T_n
       SparsePoints sparse_point_scaled{sparse_points.dot(a_sp, weights_scaled)};
       const size_t n_neigh{center.pairs_with_self_pair().size()};
-      // sparse_point_scaled \dot dX_i/dr_j
+      // contract weights&kernel_grad with the gradient of the representation
+      // w.r.t. atoms positions, namely sparse_point_scaled \dot dX_i/dr_j
       if (do_block_by_key_dot) {
         auto rep_grads = prop_grad.get_raw_data_view();
         const auto & values_by_sp = sparse_point_scaled.values.at(a_sp);
@@ -161,7 +164,7 @@ namespace rascal {
 
             int i_row_{0};
             for (auto neigh : center.pairs_with_self_pair()) {
-              djfi[neigh](i_der) += fij_block(i_row_);
+              pair_grad_atom_i_r_j[neigh](i_der) += fij_block(i_row_);
               i_row_++;
             }  // neigh
           }    // i_der
@@ -169,7 +172,7 @@ namespace rascal {
         i_row += n_neigh;
       } else {
         for (auto neigh : center.pairs_with_self_pair()) {
-          djfi[neigh] =
+          pair_grad_atom_i_r_j[neigh] =
               sparse_point_scaled.dot_derivative(a_sp, prop_grad[neigh]);
         }
       }
@@ -178,7 +181,8 @@ namespace rascal {
 
   /**
    * Compute the gradients of a structure w.r.t atomic positions
-   * using a sparse GPR model. Only GAP model is implemented at the moment (see
+   * using a sparse GPR model. Only SOAP-GAP model is implemented at the moment
+   * (see
    * @ref SparseKernelImpl<internal::SparseKernelType::GAP>::compute_derivative)
    *
    * The point of this function is to provide a faster prediction routine
@@ -219,9 +223,9 @@ namespace rascal {
     internal::Hash<math::Vector_t, double> hasher{};
     auto kernel_type_str = kernel.parameters.at("name").get<std::string>();
     std::string weight_hash = std::to_string(hasher(weights));
-    std::string djfi_name = representation_grad_name +
-                            std::string(" partial gradients; weight_hash:") +
-                            weight_hash;
+    std::string pair_grad_atom_i_r_j_name =
+        representation_grad_name +
+        std::string(" partial gradients; weight_hash:") + weight_hash;
     std::string gradient_name = representation_grad_name +
                                 std::string(" gradients; weight_hash:") +
                                 weight_hash;
@@ -232,7 +236,7 @@ namespace rascal {
 
         compute_partial_gradients_gap<Property_t, PropertyGradient_t>(
             manager, sparse_points, weights, zeta, representation_name,
-            representation_grad_name, djfi_name);
+            representation_grad_name, pair_grad_atom_i_r_j_name);
       }
 
       auto && gradients{*manager->template get_property<
@@ -241,12 +245,13 @@ namespace rascal {
       gradients.resize();
       gradients.setZero();
 
-      auto && djfi{*manager->template get_property<
-          Property<double, 2, Manager_t, 1, ThreeD>>(djfi_name, true)};
+      auto && pair_grad_atom_i_r_j{*manager->template get_property<
+          Property<double, 2, Manager_t, 1, ThreeD>>(pair_grad_atom_i_r_j_name,
+                                                     true)};
       for (auto center : manager) {
         // accumulate partial gradients onto gradients
         for (auto neigh : center.pairs_with_self_pair()) {
-          gradients[neigh.get_atom_j()] += djfi[neigh];
+          gradients[neigh.get_atom_j()] += pair_grad_atom_i_r_j[neigh];
         }
       }
     }  // center
