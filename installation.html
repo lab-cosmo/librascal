@@ -351,10 +351,10 @@ ctest -V
 <p>You can also run the tests with Valgrind (a memory-error checker) by passing
 <code class="docutils literal notranslate"><span class="pre">-DRASCAL_TESTS_USE_VALGRIND=ON</span></code> to <code class="docutils literal notranslate"><span class="pre">cmake</span></code>.</p>
 <p>In addition to testing the behaviour of the code, the test suite also check
-for formatting compliance with clang-format 8.0 or higher and autopep8 packages
+for formatting compliance with clang-format 8.0 or higher and black packages
 (these dependencies are optional). To install these dependencies on Ubuntu:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo apt-get install clang-format-8
-pip3 install autopep8
+pip3 install black
 </pre></div>
 </div>
 </div>
@@ -427,13 +427,13 @@ rm -fr -- !<span class="o">(</span>external<span class="p">|</span>third-party<s
 <h4>Automatic code formatting<a class="headerlink" href="#automatic-code-formatting" title="Permalink to this headline">¶</a></h4>
 <p>To help developers conform their contribution to the coding
 convention, the formatting of new functionalities can be automated
-using clang-format (for the c++ files) and autopep8 (for the
+using clang-format (for the c++ files) and black (for the
 python files). The .clang-format and .pycodestyle files define
 common settings to be used.</p>
 <p>To enable these functionalities (optional) you can install these
 tools with:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo apt-get install clang-format
-pip install autopep8
+pip install black
 </pre></div>
 </div>
 <p>The automatic formating of the c++ and python files can be

@@ -173,8 +173,12 @@
 <span class="kn">from</span> <span class="nn">ase.geometry</span> <span class="kn">import</span> <span class="n">wrap_positions</span>
 
 <span class="kn">from</span> <span class="nn">..lib</span> <span class="kn">import</span> <span class="n">neighbour_list</span>
-<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="p">(</span><span class="n">NeighbourListFactory</span><span class="p">,</span> <span class="n">is_valid_structure</span><span class="p">,</span>
-                   <span class="n">adapt_structure</span><span class="p">,</span> <span class="n">StructureCollectionFactory</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">NeighbourListFactory</span><span class="p">,</span>
+    <span class="n">is_valid_structure</span><span class="p">,</span>
+    <span class="n">adapt_structure</span><span class="p">,</span>
+    <span class="n">StructureCollectionFactory</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">AtomsList</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -218,8 +222,9 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">managers</span><span class="o">.</span><span class="n">add_structures</span><span class="p">(</span><span class="n">structures</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Neighbourlist of structures failed &quot;</span>
-                                   <span class="o">+</span> <span class="s2">&quot;because: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;Neighbourlist of structures failed &quot;</span> <span class="o">+</span> <span class="s2">&quot;because: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">managers</span> <span class="o">=</span> <span class="n">managers</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -230,9 +235,6 @@
 
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selected_ids</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Build a new AtomsList with only the selected atomic structures and</span>
@@ -248,8 +250,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">selected_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">selected_ids</span><span class="p">))</span>
         <span class="n">new_managers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_subset</span><span class="p">(</span><span class="n">selected_ids</span><span class="p">)</span>
-        <span class="n">new_atom_list</span> <span class="o">=</span> <span class="n">AtomsList</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_frames</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">selected_ids</span><span class="p">],</span>
-                                  <span class="bp">self</span><span class="o">.</span><span class="n">nl_options</span><span class="p">,</span> <span class="n">managers</span><span class="o">=</span><span class="n">new_managers</span><span class="p">)</span>
+        <span class="n">new_atom_list</span> <span class="o">=</span> <span class="n">AtomsList</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_frames</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">selected_ids</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nl_options</span><span class="p">,</span>
+            <span class="n">managers</span><span class="o">=</span><span class="n">new_managers</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="n">new_atom_list</span>
 
     <span class="k">def</span> <span class="nf">get_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculator</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -268,12 +273,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">species</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span>
-                <span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span><span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">keys_list</span> <span class="o">=</span> <span class="n">calculator</span><span class="o">.</span><span class="n">get_keys</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span>
-                <span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">,</span> <span class="n">keys_list</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_features</span><span class="p">(</span><span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">,</span> <span class="n">keys_list</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">X</span>
 
@@ -289,8 +292,7 @@
 <span class="sd">            returns a dictionary associating tuples of atomic numbers sorted</span>
 <span class="sd">            alphabetically to the corresponding feature matrices</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_features_by_species</span><span class="p">(</span>
-            <span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_features_by_species</span><span class="p">(</span><span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">get_neighbourlist</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
@@ -311,7 +313,8 @@
                 <span class="n">structure</span> <span class="o">=</span> <span class="n">unpack_ase</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                    <span class="s1">&#39;Cannot convert structure of type </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">frame</span><span class="p">)))</span>
+                    <span class="s2">&quot;Cannot convert structure of type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">frame</span><span class="p">))</span>
+                <span class="p">)</span>
         <span class="n">structure</span> <span class="o">=</span> <span class="n">sanitize_non_periodic_structure</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span>
         <span class="n">structure_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">**</span><span class="n">structure</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">structure_list</span>
@@ -336,29 +339,29 @@
 <span class="sd">        cell and positions have been modified if structure is not periodic</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">structure</span><span class="p">[</span><span class="s1">&#39;pbc&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="n">cell</span> <span class="o">=</span> <span class="n">structure</span><span class="p">[</span><span class="s1">&#39;cell&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">structure</span><span class="p">[</span><span class="s2">&quot;pbc&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="n">structure</span><span class="p">[</span><span class="s2">&quot;cell&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))):</span>
-            <span class="n">pos</span> <span class="o">=</span> <span class="n">structure</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">]</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">structure</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">]</span>
             <span class="n">bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">pos</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">pos</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)])</span>
-            <span class="n">bounding_box_lengths</span> <span class="o">=</span> <span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="mf">1.05</span>
+            <span class="n">bounding_box_lengths</span> <span class="o">=</span> <span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1.05</span>
             <span class="n">new_cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">bounding_box_lengths</span><span class="p">)</span>
             <span class="n">CoM</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">disp</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bounding_box_lengths</span> <span class="o">-</span> <span class="n">CoM</span>
             <span class="n">new_pos</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">disp</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
-            <span class="n">structure</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_pos</span>
+            <span class="n">structure</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_pos</span>
     <span class="k">return</span> <span class="n">structure</span>
 
 
 <span class="k">def</span> <span class="nf">is_ase_Atoms</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
     <span class="n">is_ase</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="s1">&#39;get_cell&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="s2">&quot;get_cell&quot;</span><span class="p">):</span>
         <span class="n">is_ase</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="s1">&#39;get_positions&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="s2">&quot;get_positions&quot;</span><span class="p">):</span>
         <span class="n">is_ase</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="s1">&#39;get_atomic_numbers&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="s2">&quot;get_atomic_numbers&quot;</span><span class="p">):</span>
         <span class="n">is_ase</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="s1">&#39;get_pbc&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="s2">&quot;get_pbc&quot;</span><span class="p">):</span>
         <span class="n">is_ase</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">return</span> <span class="n">is_ase</span>
 
@@ -395,9 +398,13 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">center_atoms_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">numbers</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">adapt_structure</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="n">cell</span><span class="p">,</span> <span class="n">positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
-                           <span class="n">atom_types</span><span class="o">=</span><span class="n">numbers</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="n">pbc</span><span class="p">,</span>
-                           <span class="n">center_atoms_mask</span><span class="o">=</span><span class="n">center_atoms_mask</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">adapt_structure</span><span class="p">(</span>
+        <span class="n">cell</span><span class="o">=</span><span class="n">cell</span><span class="p">,</span>
+        <span class="n">positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
+        <span class="n">atom_types</span><span class="o">=</span><span class="n">numbers</span><span class="p">,</span>
+        <span class="n">pbc</span><span class="o">=</span><span class="n">pbc</span><span class="p">,</span>
+        <span class="n">center_atoms_mask</span><span class="o">=</span><span class="n">center_atoms_mask</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="mask_center_atoms_by_id"><a class="viewcode-back" href="../../../reference/python.html#rascal.neighbourlist.structure_manager.mask_center_atoms_by_id">[docs]</a><span class="k">def</span> <span class="nf">mask_center_atoms_by_id</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">id_select</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">id_blacklist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -433,23 +440,22 @@
 <span class="sd">    `mask_center_atoms_by_species` to allow mixed species/id-based</span>
 <span class="sd">    masking.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="s1">&#39;center_atoms_mask&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">&quot;center_atoms_mask&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
         <span class="c1"># add a default mask</span>
         <span class="k">if</span> <span class="n">id_select</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;bool&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;bool&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;center_atoms_mask&#39;</span><span class="p">]</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s2">&quot;center_atoms_mask&quot;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">id_select</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">mask</span><span class="p">[</span><span class="n">id_select</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">if</span> <span class="n">id_blacklist</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">mask</span><span class="p">[</span><span class="n">id_blacklist</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;center_atoms_mask&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span></div>
+    <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s2">&quot;center_atoms_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span></div>
 
 
-<div class="viewcode-block" id="mask_center_atoms_by_species"><a class="viewcode-back" href="../../../reference/python.html#rascal.neighbourlist.structure_manager.mask_center_atoms_by_species">[docs]</a><span class="k">def</span> <span class="nf">mask_center_atoms_by_species</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">species_select</span><span class="o">=</span><span class="p">[],</span>
-                                 <span class="n">species_blacklist</span><span class="o">=</span><span class="p">[]):</span>
+<div class="viewcode-block" id="mask_center_atoms_by_species"><a class="viewcode-back" href="../../../reference/python.html#rascal.neighbourlist.structure_manager.mask_center_atoms_by_species">[docs]</a><span class="k">def</span> <span class="nf">mask_center_atoms_by_species</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">species_select</span><span class="o">=</span><span class="p">[],</span> <span class="n">species_blacklist</span><span class="o">=</span><span class="p">[]):</span>
     <span class="sd">&quot;&quot;&quot;Mask the centers of an ASE atoms object, by atomic species</span>
 
 <span class="sd">    Parameters</span>
@@ -485,16 +491,18 @@
 <span class="sd">    This logic allows this function to be combined with</span>
 <span class="sd">    `mask_center_atoms_by_id` to allow mixed species/id-based masking.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">select_is_str</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">and_</span><span class="p">,</span>
-                           <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="n">species_select</span><span class="p">),</span>
-                           <span class="kc">True</span><span class="p">)</span>
-    <span class="n">select_is_int</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">and_</span><span class="p">,</span>
-                           <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">species_select</span><span class="p">),</span>
-                           <span class="kc">True</span><span class="p">)</span>
+    <span class="n">select_is_str</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
+        <span class="n">and_</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="n">species_select</span><span class="p">),</span> <span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">select_is_int</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
+        <span class="n">and_</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">species_select</span><span class="p">),</span> <span class="kc">True</span>
+    <span class="p">)</span>
     <span class="n">blacklist_is_str</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
-        <span class="n">and_</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="n">species_blacklist</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">and_</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="n">species_blacklist</span><span class="p">),</span> <span class="kc">True</span>
+    <span class="p">)</span>
     <span class="n">blacklist_is_int</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
-        <span class="n">and_</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">species_blacklist</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">and_</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">species_blacklist</span><span class="p">),</span> <span class="kc">True</span>
+    <span class="p">)</span>
     <span class="k">if</span> <span class="n">select_is_str</span><span class="p">:</span>
         <span class="n">id_select</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">(),</span> <span class="n">species_select</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">select_is_int</span><span class="p">:</span>
@@ -506,20 +514,19 @@
     <span class="k">elif</span> <span class="n">blacklist_is_int</span><span class="p">:</span>
         <span class="n">id_blacklist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">(),</span> <span class="n">species_blacklist</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;Species blacklist must be either all string or all int&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="s1">&#39;center_atoms_mask&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Species blacklist must be either all string or all int&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;center_atoms_mask&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span>
         <span class="c1"># add a default mask</span>
         <span class="k">if</span> <span class="n">species_select</span><span class="p">:</span>
-            <span class="n">old_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+            <span class="n">old_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;bool&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">old_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+            <span class="n">old_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;bool&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">old_mask</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;center_atoms_mask&#39;</span><span class="p">]</span>
+        <span class="n">old_mask</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s2">&quot;center_atoms_mask&quot;</span><span class="p">]</span>
     <span class="c1"># Python&#39;s &quot;bitwise&quot; operators do per-element logical operations in NumPy</span>
     <span class="c1"># see for instance https://docs.scipy.org/doc/numpy/reference/ufuncs.html#comparison-functions</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">old_mask</span> <span class="o">|</span> <span class="n">id_select</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">id_blacklist</span>
-    <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;center_atoms_mask&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span></div>
+    <span class="n">frame</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s2">&quot;center_atoms_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span></div>
 </pre></div>
 
            </div>

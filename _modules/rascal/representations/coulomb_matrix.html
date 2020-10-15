@@ -204,9 +204,16 @@
 <span class="sd">        Physical Review Letters, 108(5), 58301. https://doi.org/10.1103/PhysRevLett.108.058301</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">sorting_algorithm</span><span class="o">=</span><span class="s1">&#39;row_norm&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-                 <span class="n">central_decay</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">interaction_cutoff</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">interaction_decay</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;sortedcoulomb&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cutoff</span><span class="p">,</span>
+        <span class="n">sorting_algorithm</span><span class="o">=</span><span class="s2">&quot;row_norm&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">central_decay</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">interaction_cutoff</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">interaction_decay</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;sortedcoulomb&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_hyperparameters</span><span class="p">(</span>
@@ -219,9 +226,9 @@
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">nl_options</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;centers&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">()),</span>
-            <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;neighbourlist&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">)),</span>
-            <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;strict&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">))</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;centers&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">()),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;neighbourlist&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">)),</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;strict&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">)),</span>
         <span class="p">]</span>
 
 <div class="viewcode-block" id="SortedCoulombMatrix.update_hyperparameters"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SortedCoulombMatrix.update_hyperparameters">[docs]</a>    <span class="k">def</span> <span class="nf">update_hyperparameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">hypers</span><span class="p">):</span>
@@ -230,10 +237,15 @@
 <span class="sd">        Also updates the internal json-like representation</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">allowed_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;sorting_algorithm&#39;</span><span class="p">,</span> <span class="s1">&#39;central_cutoff&#39;</span><span class="p">,</span> <span class="s1">&#39;central_decay&#39;</span><span class="p">,</span>
-                        <span class="s1">&#39;interaction_cutoff&#39;</span><span class="p">,</span> <span class="s1">&#39;interaction_decay&#39;</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">}</span>
-        <span class="n">hypers_clean</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">hypers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hypers</span>
-                        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">allowed_keys</span><span class="p">}</span>
+        <span class="n">allowed_keys</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;sorting_algorithm&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;central_cutoff&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;central_decay&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;interaction_cutoff&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;interaction_decay&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;size&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">hypers_clean</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">hypers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">hypers</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">allowed_keys</span><span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">hypers_clean</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SortedCoulombMatrix.transform"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SortedCoulombMatrix.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frames</span><span class="p">):</span>
@@ -274,12 +286,12 @@
 
     <span class="k">def</span> <span class="nf">_get_init_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">init_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-            <span class="n">cutoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;central_cutoff&#39;</span><span class="p">],</span>
-            <span class="n">sorting_algorithm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;sorting_algorithm&#39;</span><span class="p">],</span>
-            <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">],</span>
-            <span class="n">central_decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;central_decay&#39;</span><span class="p">],</span>
-            <span class="n">interaction_cutoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;interaction_cutoff&#39;</span><span class="p">],</span>
-            <span class="n">interaction_decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;interaction_decay&#39;</span><span class="p">]</span>
+            <span class="n">cutoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;central_cutoff&quot;</span><span class="p">],</span>
+            <span class="n">sorting_algorithm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;sorting_algorithm&quot;</span><span class="p">],</span>
+            <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">],</span>
+            <span class="n">central_decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;central_decay&quot;</span><span class="p">],</span>
+            <span class="n">interaction_cutoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;interaction_cutoff&quot;</span><span class="p">],</span>
+            <span class="n">interaction_decay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;interaction_decay&quot;</span><span class="p">],</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">init_params</span>
 
