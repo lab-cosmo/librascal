@@ -135,10 +135,10 @@ class SphericalInvariants(BaseIO):
         build kernels does not allow for clear efficiency gains so their
         sparsity is kept irrespective of expansion_by_species_method.
 
-    global_species : list
-        list of species to use to set-up the species key of the invariant. It
-        should contain all the species present in the structure for which
-        invariants will be computed
+    global_species : list of int
+        list of species (specified with their atomic number) to use to set-up 
+        the species key of the invariant. It should contain all the species 
+        present in the structure for which invariants will be computed
 
     compute_gradients : bool
         control the computation of the representation's gradients w.r.t. atomic
