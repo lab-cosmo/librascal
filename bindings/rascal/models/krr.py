@@ -1,4 +1,5 @@
 from ..utils import BaseIO
+from ..lib import compute_sparse_kernel_gradients
 
 import numpy as np
 
@@ -74,11 +75,21 @@ class KRR(BaseIO):
         np.array
             predictions
         """
-        KNM, Y0 = self._preprocess_input(managers, compute_gradients)
+
         if compute_gradients is False:
+            KNM, Y0 = self._preprocess_input(managers, compute_gradients)
             return Y0 + np.dot(KNM, self.weights).reshape((-1))
         else:
-            return np.dot(KNM, self.weights).reshape((-1, 3))
+            rep = self.kernel._representation
+            gradients = compute_sparse_kernel_gradients(
+                rep,
+                self.kernel._kernel,
+                managers.managers,
+                self.X_train._sparse_points,
+                self.weights.reshape((1, -1)),
+            )
+
+            return gradients
 
     def get_weights(self):
         return self.weights
@@ -114,20 +125,25 @@ def train_gap_model(
     jitter=1e-8,
 ):
     """
-    Defines the procedure to train a GAP model [1]:
+    Defines the procedure to train a SOAP-GAP model [1]:
     .. math::
-        Y(X) = \sum_{(i,a)\in X} y_a(X_i^a),
-    where :math:`Y(X)` is the predicted property function associated with the
-    atomic structure :math:`X$, :math:`i` and :math:`a` are the index and
-    species of the atoms in structure :math:`X` and :math:`y_a(X_i^a)` is the
+        Y(A) = \sum_{i \in A} y_{a_i}(X_i),
+    where :math:`Y(A)` is the predicted property function associated with the
+    atomic structure :math:`A$, :math:`i` and :math:`a_i` are the index and
+    species of the atoms in structure :math:`X` and :math:`y_a(A_i)` is the
     atom centered model that depends on the central atomic species.
     The individual predictions are given by:
     .. math::
-        y_a(X_i) = \sum_m \alpha_m k(T_m^a, X_i^a),
+        y_{a_i(A_i) = \sum_m^{M} \alpha_m \delta_{b_m a_i} k(A_i,T_m),
     where :math:`k(\cdot,\cdot)` is a kernel function, :math:`\alpha_m` are the
-    weights of the model and :math:`T_m` are the M pseudo points used to train
-    the model.
-
+    weights of the model and :math:`b_m is the atom type associated with the
+    sparse point :math:`T_m`.
+    Hence a kernel element for the target property :math:`Y(A)` is given by:
+    .. math::
+        KNM_{Am} = \sum_{i \in A} \delta_{b_m a_i} k(A_i,T_m)
+    and for :math:`\vec{\nabla}_iY(A)`:
+    .. math::
+       KNM_{A_{i}m} = \delta_{b_m a_i} \sum_{j \in A_i} \vec{\nabla}_i k(A_j,T_m)
     The training is given by:
     .. math::
         \bm{\alpha} =  K^{-1} \bm{Y},
@@ -136,7 +152,7 @@ def train_gap_model(
         K = K_{MM} + K_{MN} \Lambda^{-2} K_{NM},
     :math:`\bm{Y}=K_{MN} \Lambda^{-2} \bm{y}$, :math:`\bm{y}` the training
     targets and :math:`\Lambda` the regularization matrix.
-    The regularization matrix is chossen to be diagonal:
+    The regularization matrix is chosen to be diagonal:
     .. math::
         \Lambda^{-1}_{nn} = \delta_{nn} * lambdas[0] / \sigma_{\bm{y}} * np.sqrt(Natoms)
     for the targets and

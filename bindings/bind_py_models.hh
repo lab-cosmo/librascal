@@ -33,6 +33,7 @@
 #include "bind_py_structure_manager.hh"
 
 #include "rascal/models/kernels.hh"
+#include "rascal/models/sparse_kernel_predict.hh"
 #include "rascal/models/sparse_kernels.hh"
 #include "rascal/models/sparse_points.hh"
 

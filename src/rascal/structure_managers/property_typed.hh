@@ -341,6 +341,14 @@ namespace rascal {
       this->fill_dense_feature_matrix(features);
       return features;
     }
+    //! get a const view of the underlying matrix [N_{entries}, N_{comp}]
+    const Eigen::Map<const Matrix_t> view() {
+      auto nb_centers{this->get_nb_item()};
+      auto nb_features{this->get_nb_comp()};
+      const Eigen::Map<const Matrix_t> features(this->values.data(), nb_centers,
+                                                nb_features);
+      return features;
+    }
 
    protected:
     std::string type_id;
