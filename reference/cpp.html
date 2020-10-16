@@ -1164,6 +1164,16 @@ template&lt;class <code class="sig-name descname">KernelImpl</code>, class <code
 
 <dl class="function">
 <dt>
+template&lt;class <code class="sig-name descname">Property_t</code>, class <code class="sig-name descname">PropertyGradient_t</code>, class <code class="sig-name descname">StructureManager</code>, class <code class="sig-name descname">SparsePoints</code>&gt;<br />void <code class="sig-name descname">compute_partial_gradients_gap</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0000EN6rascal29compute_partial_gradients_gapEvR16StructureManagerR12SparsePointsRN4math8Vector_tEK6size_tRKNSt6stringERKNSt6stringERKNSt6stringE" title="rascal::compute_partial_gradients_gap::StructureManager">StructureManager</a> &amp;<em>manager</em>, <a class="reference internal" href="#_CPPv4I0000EN6rascal29compute_partial_gradients_gapEvR16StructureManagerR12SparsePointsRN4math8Vector_tEK6size_tRKNSt6stringERKNSt6stringERKNSt6stringE" title="rascal::compute_partial_gradients_gap::SparsePoints">SparsePoints</a> &amp;<em>sparse_points</em>, <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> &amp;<em>weights</em>, <em class="property">const</em> size_t <em>zeta</em>, <em class="property">const</em> std::string &amp;<em>representation_name</em>, <em class="property">const</em> std::string &amp;<em>representation_grad_name</em>, <em class="property">const</em> std::string &amp;<em>pair_grad_atom_i_r_j_name</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">Calculator</code>, class <code class="sig-name descname">StructureManagers</code>, class <code class="sig-name descname">SparsePoints</code>&gt;<br />std::string <code class="sig-name descname">compute_sparse_kernel_gradients</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I000EN6rascal31compute_sparse_kernel_gradientsENSt6stringERK10CalculatorR12SparseKernelR17StructureManagersR12SparsePointsRN4math8Vector_tE" title="rascal::compute_sparse_kernel_gradients::Calculator">Calculator</a> &amp;<em>calculator</em>, <a class="reference internal" href="#_CPPv4N6rascal12SparseKernelE" title="rascal::SparseKernel">SparseKernel</a> &amp;<em>kernel</em>, <a class="reference internal" href="#_CPPv4I000EN6rascal31compute_sparse_kernel_gradientsENSt6stringERK10CalculatorR12SparseKernelR17StructureManagersR12SparsePointsRN4math8Vector_tE" title="rascal::compute_sparse_kernel_gradients::StructureManagers">StructureManagers</a> &amp;<em>managers</em>, <a class="reference internal" href="#_CPPv4I000EN6rascal31compute_sparse_kernel_gradientsENSt6stringERK10CalculatorR12SparseKernelR17StructureManagersR12SparsePointsRN4math8Vector_tE" title="rascal::compute_sparse_kernel_gradients::SparsePoints">SparsePoints</a> &amp;<em>sparse_points</em>, <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> &amp;<em>weights</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 template&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal16SparseKernelTypeE" title="rascal::internal::SparseKernelType">SparseKernelType</a> <code class="sig-name descname">Type</code>, class <code class="sig-name descname">Hypers</code>&gt;<br />std::shared_ptr&lt;<a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::<a class="reference internal" href="#_CPPv4N6rascal8internal14KernelImplBaseE" title="rascal::internal::KernelImplBase">KernelImplBase</a>&gt; <code class="sig-name descname">make_sparse_kernel_impl</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I_N8internal16SparseKernelTypeE0EN6rascal23make_sparse_kernel_implENSt10shared_ptrIN8internal14KernelImplBaseEEERK6Hypers" title="rascal::make_sparse_kernel_impl::Hypers">Hypers</a> &amp;<em>hypers</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -2190,6 +2200,11 @@ template&lt;class <code class="sig-name descname">SparsePoints</code>&gt;<br /><
 <dl class="function">
 <dt>
 template&lt;class <code class="sig-name descname">ManagerCollection</code>, class <code class="sig-name descname">Calculator</code>, class <code class="sig-name descname">SparsePoints</code>&gt;<br />void <code class="sig-name descname">bind_sparse_points_push_back</code><span class="sig-paren">(</span>py::class_&lt;<a class="reference internal" href="#_CPPv4I000EN6rascal28bind_sparse_points_push_backEvRN2py6class_I12SparsePointsEE" title="rascal::bind_sparse_points_push_back::SparsePoints">SparsePoints</a>&gt; &amp;<em>sparse_points</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;class <code class="sig-name descname">ManagerCollection</code>, class <code class="sig-name descname">Calculator</code>, class <code class="sig-name descname">SparsePoints</code>&gt;<br />void <code class="sig-name descname">bind_compute_gradients</code><span class="sig-paren">(</span>py::module &amp;<em>mod</em>, py::module&amp;<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -4783,6 +4798,16 @@ template&lt;class <code class="sig-name descname">Calculator</code>&gt;<br /><em
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt>
+<code class="sig-name descname">SparsePointsBlockSparse</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal23SparsePointsBlockSparse23SparsePointsBlockSparseERK23SparsePointsBlockSparse" title="rascal::SparsePointsBlockSparse::SparsePointsBlockSparse">SparsePointsBlockSparse</a> &amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">SparsePointsBlockSparse</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N6rascal23SparsePointsBlockSparse23SparsePointsBlockSparseERK23SparsePointsBlockSparse" title="rascal::SparsePointsBlockSparse::SparsePointsBlockSparse">SparsePointsBlockSparse</a> &amp;&amp;<em>other</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 size_t <code class="sig-name descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
@@ -4809,6 +4834,11 @@ std::vector&lt;int&gt; <code class="sig-name descname">species_by_points</code><
 <dl class="function">
 <dt>
 template&lt;class <code class="sig-name descname">Val</code>&gt;<br />ColVector_t <code class="sig-name descname">dot</code><span class="sig-paren">(</span><em class="property">const</em> int &amp;<em>sp</em>, <a class="reference internal" href="#_CPPv4N6rascal8internalE" title="rascal::internal">internal</a>::InternallySortedKeyMap&lt;Key_t, <a class="reference internal" href="#_CPPv4I0ENK6rascal23SparsePointsBlockSparse3dotE11ColVector_tRKiRN8internal22InternallySortedKeyMapI5Key_t3ValEE" title="rascal::SparsePointsBlockSparse::dot::Val">Val</a>&gt; &amp;<em>representation</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+SparsePointsBlockSparse&lt;Calculator&gt; <code class="sig-name descname">dot</code><span class="sig-paren">(</span><em class="property">const</em> int &amp;<em>sp</em>, <a class="reference internal" href="#_CPPv4N6rascal4mathE" title="rascal::math">math</a>::<a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t">Vector_t</a> &amp;<em>vec</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -5956,6 +5986,11 @@ size_t <code class="sig-name descname">get_nb_item</code><span class="sig-paren"
 <dl class="function">
 <dt>
 reference <code class="sig-name descname">back</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">const</em> Eigen::Map&lt;<em class="property">const</em> <a class="reference internal" href="#_CPPv4N6rascal8Matrix_tE" title="rascal::Matrix_t">Matrix_t</a>&gt; <code class="sig-name descname">view</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -7632,7 +7667,7 @@ std::vector&lt;std::vector&lt;double&gt;&gt; <code class="sig-name descname">pos
 
 <dl class="type">
 <dt>
-<em class="property">using </em><code class="sig-name descname">Vector_t</code> = Eigen::Matrix&lt;double, 1, Eigen::Dynamic, Eigen::RowMajor&gt;<br /></dt>
+<em class="property">using </em><code class="sig-name descname">Vector_t</code> = Eigen::Matrix&lt;double, 1, Eigen::Dynamic&gt;<br /></dt>
 <dd></dd></dl>
 
 <dl class="type">
