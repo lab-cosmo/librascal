@@ -1,4 +1,4 @@
-# python library 
+# python library
 numpy
 scipy
 jupyter
@@ -14,7 +14,7 @@ nbsphinx
 pygments>=2.4.1
 # Developers tools - code formatting
 cpplint
-autopep8
+black
 # Developers tools - data generation scripts
 ase
 mpmath

@@ -135,30 +135,30 @@ namespace rascal {
   }
 
   template <class ManagerCollection, class Calculator, class SparsePoints>
-  void bind_compute_forces(py::module & mod, py::module & /*m_internal*/) {
+  void bind_compute_gradients(py::module & mod, py::module & /*m_internal*/) {
     using Manager_t = typename ManagerCollection::Manager_t;
     mod.def(
-        "compute_forces",
+        "compute_sparse_kernel_gradients",
         [](const Calculator & calculator, SparseKernel & kernel,
            ManagerCollection & managers, SparsePoints & sparse_points,
            math::Vector_t & weights) {
-          std::string force_name = compute_forces(calculator, kernel, managers,
-                                                  sparse_points, weights);
+          std::string force_name = compute_sparse_kernel_gradients(
+              calculator, kernel, managers, sparse_points, weights);
           size_t n_centers{0};
-          // find the total number of forces
+          // find the total number of gradients
           for (const auto & manager : managers) {
             n_centers += manager->size();
           }
-          math::Matrix_t forces_global{n_centers, ThreeD};
+          math::Matrix_t gradients_global{n_centers, ThreeD};
           size_t i_center{0};
           for (const auto & manager : managers) {
-            auto && forces{*manager->template get_property<
+            auto && gradients{*manager->template get_property<
                 Property<double, 1, Manager_t, 1, ThreeD>>(force_name, true)};
-            forces_global.block(i_center, 0, manager->size(), ThreeD) =
-                forces.view();
+            gradients_global.block(i_center, 0, manager->size(), ThreeD) =
+                gradients.view();
             i_center += manager->size();
           }
-          return forces_global;
+          return gradients_global;
         },
         py::call_guard<py::gil_scoped_release>());
   }
@@ -217,7 +217,7 @@ namespace rascal {
 
     internal::bind_dict_representation(sparse_points);
 
-    bind_compute_forces<ManagerCollection_3_t, Calc1_t, SparsePoints_1_t>(
+    bind_compute_gradients<ManagerCollection_3_t, Calc1_t, SparsePoints_1_t>(
         mod, m_internal);
   }
 }  // namespace rascal

@@ -77,23 +77,27 @@ class Kernel(BaseIO):
 
     """
 
-    def __init__(self, representation, name='Cosine', kernel_type='Full',
-                 target_type='Structure', **kwargs):
+    def __init__(
+        self,
+        representation,
+        name="Cosine",
+        kernel_type="Full",
+        target_type="Structure",
+        **kwargs
+    ):
         # This case cannot be handled by the c++ side because c++ cannot deduce the
         # type from arguments inside a json, so it has to be casted in the c++
         # side. Therefore zeta has to be checked here.
-        if (name == 'Cosine' and 'zeta' in kwargs):
+        if name == "Cosine" and "zeta" in kwargs:
             # should be positive integer
-            zeta = kwargs['zeta']
-            if not(zeta > 0 and isinstance(zeta, int)):
-                raise ValueError(
-                    "The given zeta has to be a positive integer.")
-        elif (name == 'GAP' and 'zeta' in kwargs):
+            zeta = kwargs["zeta"]
+            if not (zeta > 0 and isinstance(zeta, int)):
+                raise ValueError("The given zeta has to be a positive integer.")
+        elif name == "GAP" and "zeta" in kwargs:
             # should be positive integer
-            zeta = kwargs['zeta']
-            if not(zeta > 0 and isinstance(zeta, int)):
-                raise ValueError(
-                    "The given zeta has to be a positive integer.")
+            zeta = kwargs["zeta"]
+            if not (zeta > 0 and isinstance(zeta, int)):
+                raise ValueError("The given zeta has to be a positive integer.")
         else:
             raise RuntimeError("Kernel name must be one of: Cosine, GAP.")
         hypers = dict(name=name, target_type=target_type)
@@ -104,16 +108,18 @@ class Kernel(BaseIO):
         self._kwargs = kwargs
         self.kernel_type = kernel_type
         self.target_type = target_type
-        if 'Sparse' in kernel_type:
+        if "Sparse" in kernel_type:
             self._kernel = SparseKernelcpp(hypers)
         else:
             self._kernel = Kernelcpp(hypers)
 
     def _get_init_params(self):
-        init_params = dict(representation=self._rep,
-                           name=self.name,
-                           kernel_type=self.kernel_type,
-                           target_type=self.target_type)
+        init_params = dict(
+            representation=self._rep,
+            name=self.name,
+            kernel_type=self.kernel_type,
+            target_type=self.target_type,
+        )
         init_params.update(**self._kwargs)
         return init_params
 
@@ -128,14 +134,14 @@ class Kernel(BaseIO):
             X = X.managers
         if Y is None and grad == (False, False):
             # compute a kernel between features and themselves
-            if self.kernel_type == 'Full':
+            if self.kernel_type == "Full":
                 return self._kernel.compute(self._representation, X)
-            elif self.kernel_type == 'Sparse':
+            elif self.kernel_type == "Sparse":
                 if isinstance(X, SparsePoints):
                     X = X._sparse_points
                 # compute the KMM matrix
                 return self._kernel.compute(X)
-        elif grad == (True, False) and 'Sparse' in self.kernel_type:
+        elif grad == (True, False) and "Sparse" in self.kernel_type:
             if isinstance(Y, SparsePoints):
                 Y = Y._sparse_points
             # compute the block of the KNM matrix corresponding to forces
@@ -151,5 +157,7 @@ class Kernel(BaseIO):
             return self._kernel.compute(self._representation, X, Y)
         else:
             raise NotImplementedError(
-                'The configuration: {} is not implemented for kernel {} in {} mode.'.format(
-                    grad, self.name, self.kernel_type))
+                "The configuration: {} is not implemented for kernel {} in {} mode.".format(
+                    grad, self.name, self.kernel_type
+                )
+            )
