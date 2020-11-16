@@ -46,12 +46,12 @@ class SparsePoints(BaseIO):
 
     def __init__(self, representation):
         self.representation = representation
-        if 'SphericalInvariants' in str(representation):
+        if "SphericalInvariants" in str(representation):
             self._sparse_points = _sparse_points[
-                'SparsePointsBlockSparse_SphericalInvariants']()
+                "SparsePointsBlockSparse_SphericalInvariants"
+            ]()
         else:
-            raise ValueError(
-                'No pseudo point is appropiate for ' + str(representation))
+            raise ValueError("No pseudo point is appropiate for " + str(representation))
 
     def _get_init_params(self):
         init_params = dict(representation=self.representation)
@@ -59,8 +59,7 @@ class SparsePoints(BaseIO):
 
     def _set_data(self, data):
         super()._set_data(data)
-        self._sparse_points = self._sparse_points.from_dict(
-            data['sparse_points'])
+        self._sparse_points = self._sparse_points.from_dict(data["sparse_points"])
 
     def _get_data(self):
         data = super()._get_data()
@@ -70,11 +69,16 @@ class SparsePoints(BaseIO):
     def extend(self, atoms_list, selected_indices):
         if isinstance(atoms_list, AtomsList):
             self._sparse_points.extend(
-                self.representation._representation, atoms_list.managers,
-                selected_indices)
+                self.representation._representation,
+                atoms_list.managers,
+                selected_indices,
+            )
         else:
             self._sparse_points.extend(
-                self.representation._representation, atoms_list, selected_indices)
+                self.representation._representation,
+                atoms_list,
+                selected_indices,
+            )
 
     def size(self):
         return self._sparse_points.size()

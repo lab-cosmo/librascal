@@ -71,7 +71,7 @@ namespace rascal {
     using Matrix_t =
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     using MatrixX2_t = Eigen::Matrix<double, Eigen::Dynamic, 2>;
-    using Vector_t = Eigen::Matrix<double, 1, Eigen::Dynamic, Eigen::RowMajor>;
+    using Vector_t = Eigen::Matrix<double, 1, Eigen::Dynamic>;
 
     using Matrix_Ref = typename Eigen::Ref<const Matrix_t>;
     using MatrixX2_Ref = typename Eigen::Ref<const MatrixX2_t>;

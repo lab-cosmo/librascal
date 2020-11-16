@@ -34,6 +34,7 @@
 
 #include "rascal/models/kernels.hh"
 #include "rascal/models/numerical_kernel_gradients.hh"
+#include "rascal/models/sparse_kernel_predict.hh"
 #include "rascal/models/sparse_kernels.hh"
 #include "rascal/models/sparse_points.hh"
 
