@@ -460,7 +460,7 @@ namespace rascal {
                   T_times_dXdr.transpose() *= dkdX_i_missing_T.asDiagonal();
                 }
                 dkdr[neigh.get_atom_j()] += T_times_dXdr;
-                if (compute_stress) {
+                if (compute_neg_stress) {
                   Eigen::Vector3d r_ji = r_i - neigh.get_position();
                   for (int i_der{0}; i_der < SpatialDims; i_der++) {
                     const auto & voigt = voigt_id_to_spatial_dim[i_der];
