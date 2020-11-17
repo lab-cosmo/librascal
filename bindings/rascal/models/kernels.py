@@ -1,5 +1,7 @@
 from ..utils import BaseIO
-from ..lib._rascal.models import compute_numerical_kernel_gradients as _compute_numerical_kernel_gradients
+from ..lib._rascal.models import (
+    compute_numerical_kernel_gradients as _compute_numerical_kernel_gradients,
+)
 from ..lib._rascal.models.kernels import Kernel as Kernelcpp
 from ..lib._rascal.models.kernels import SparseKernel as SparseKernelcpp
 from ..neighbourlist import AtomsList
@@ -9,6 +11,7 @@ import json
 
 
 import numpy as np
+
 
 class Kernel(BaseIO):
 
@@ -148,7 +151,9 @@ class Kernel(BaseIO):
             if isinstance(Y, SparsePoints):
                 Y = Y._sparse_points
             # compute the block of the KNM matrix corresponding to forces
-            return self._kernel.compute_derivative(self._representation, X, Y, compute_stress)
+            return self._kernel.compute_derivative(
+                self._representation, X, Y, compute_stress
+            )
         elif grad == (False, False):
             # compute the kernel between two sets of features
             if isinstance(Y, AtomsList):
@@ -165,6 +170,16 @@ class Kernel(BaseIO):
                 )
             )
 
-def compute_numerical_kernel_gradients(kernel, calculator, managers, sparse_points, h_disp, compute_stress=True):
+
+def compute_numerical_kernel_gradients(
+    kernel, calculator, managers, sparse_points, h_disp, compute_stress=True
+):
     """This function is used for testing the numerical kernel gradient"""
-    return _compute_numerical_kernel_gradients(kernel._kernel, calculator._representation, managers.managers, sparse_points._sparse_points, h_disp, compute_stress)
+    return _compute_numerical_kernel_gradients(
+        kernel._kernel,
+        calculator._representation,
+        managers.managers,
+        sparse_points._sparse_points,
+        h_disp,
+        compute_stress,
+    )
