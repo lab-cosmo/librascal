@@ -313,7 +313,7 @@ namespace rascal {
           dkdr.resize();
           dkdr.setZero();
 
-          // dk/dX without spares point factor T
+          // dk/dX without sparse point factor T
           Property<double, 1, Manager_t, Eigen::Dynamic, 1> dkdX_missing_T{
               *manager, "dkdX without sparse point factor T", true};
           dkdX_missing_T.set_nb_row(nb_sparse_points);
@@ -350,7 +350,7 @@ namespace rascal {
             return KNM_der;
           }
 
-          // find offsets alongs the sparse points spatial_dim
+          // find offsets along the sparse points spatial_dim
           std::map<int, int> offsets{sparse_points.get_offsets()};
           Keys_t repr_keys{prop_repr_grad.get_keys()};
           std::map<int, Keys_t> keys_intersect{};
