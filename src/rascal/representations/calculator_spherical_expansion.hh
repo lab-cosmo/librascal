@@ -1996,7 +1996,6 @@ namespace rascal {
     i_center = 0;
     for (auto center : manager) {
       Key_t center_type{center.get_atom_type()};
-      // auto atom_i_tag = center.get_atom_tag();
 
       for (auto neigh : center.pairs()) {
         keys_list[i_center].insert({neigh.get_atom_type()});
@@ -2012,12 +2011,8 @@ namespace rascal {
                                       keys_list[i_center].end());
         i_grad++;
         for (auto neigh : center.pairs()) {
-          // auto && atom_j = neigh.get_atom_j();
-          // auto atom_j_tag = atom_j.get_atom_tag();
-          // if (atom_j_tag != atom_i_tag) {
           Key_t neigh_type{neigh.get_atom_type()};
           keys_list_grad[i_grad].insert(neigh_type);
-          // }
           i_grad++;
         }
       }  // if (compute_gradients)
@@ -2054,19 +2049,13 @@ namespace rascal {
     std::vector<std::set<Key_t>> keys_list{};
     std::vector<std::set<Key_t>> keys_list_grad{};
     for (auto center : manager) {
-      // Key_t center_type{center.get_atom_type()};
-      // auto atom_i_tag = center.get_atom_tag();
       keys_list.emplace_back(keys);
       if (this->compute_gradients) {
         keys_list_grad.emplace_back(keys);
         for (auto neigh : center.pairs()) {
-          // auto && atom_j = neigh.get_atom_j();
-          // auto atom_j_tag = atom_j.get_atom_tag();
           std::set<Key_t> neigh_types{};
-          // if (atom_j_tag != atom_i_tag) {
           Key_t neigh_type{neigh.get_atom_type()};
           neigh_types.insert(neigh_type);
-          // }
           keys_list_grad.emplace_back(neigh_types);
         }
       }
@@ -2115,19 +2104,13 @@ namespace rascal {
 
     // build the species list
     for (auto center : manager) {
-      // Key_t center_type{center.get_atom_type()};
       keys_list.emplace_back(this->global_species);
       if (this->compute_gradients) {
         keys_list_grad.emplace_back(this->global_species);
-        // auto atom_i_tag = center.get_atom_tag();
         for (auto neigh : center.pairs()) {
-          // auto && atom_j = neigh.get_atom_j();
-          // auto atom_j_tag = atom_j.get_atom_tag();
           std::set<Key_t> neigh_types{};
-          // if (atom_j_tag != atom_i_tag) {
           Key_t neigh_type{neigh.get_atom_type()};
           neigh_types.insert(neigh_type);
-          // }
           keys_list_grad.emplace_back(neigh_types);
         }
       }

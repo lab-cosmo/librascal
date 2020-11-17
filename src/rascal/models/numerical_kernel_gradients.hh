@@ -132,7 +132,7 @@ namespace rascal {
 
   /**
    * Compute finite-difference kernel elements associated with
-   * the stress of a sparse GPR model for a single atomic structure.
+   * the negative stress of a sparse GPR model for a single atomic structure.
    *
    * @param manager a structure manager
    * @see compute_numerical_kernel_gradients
@@ -174,7 +174,7 @@ namespace rascal {
     json structure_copy = manager_root->get_atomic_structure();
     auto atomic_structure =
         structure_copy.template get<AtomicStructure<ThreeD>>();
-    KNM /= atomic_structure.get_volume();
+    KNM /= -atomic_structure.get_volume();
     return KNM;
   }
 

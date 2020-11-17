@@ -128,6 +128,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(grad_test, Fix, sparse_grad_fixtures, Fix) {
     using ManagerCollection_t = typename Fix::ManagerCollection_t;
+    using Manager_t = typename ManagerCollection_t::Manager_t;
     using Representation_t = typename Fix::Representation_t;
     using Kernel_t = typename Fix::Kernel_t;
     using SparsePoints_t = typename Fix::SparsePoints_t;
@@ -191,16 +192,37 @@ namespace rascal {
         std::cout << "============================" << std::endl;
         std::cout << KNM_num_der << std::endl;
       }
+
+      // test that prediction routine and predictions with kernel are equal
+      math::Vector_t weights{sparse_points.size()};
+      weights.setConstant(1.);
+
+      math::Matrix_t gradients_k = KNM_der * weights.transpose();
+      std::string force_name = compute_sparse_kernel_gradients(
+          representation, kernel, managers, sparse_points, weights);
+      size_t i_center{0};
+      for (auto manager : managers) {
+        auto && gradients{*manager->template get_property<
+            Property<double, 1, Manager_t, 1, ThreeD>>(force_name, true)};
+        math::Matrix_t ff = Eigen::Map<const math::Matrix_t>(
+            gradients.view().data(), manager->size() * ThreeD, 1);
+        math::Matrix_t ff_r =
+            gradients_k.block(i_center, 0, manager->size() * ThreeD, 1);
+        math::Matrix_t force_diff =
+            math::relative_error(ff, ff_r, delta, epsilon);
+        double gradients_max_rel_diff{force_diff.maxCoeff(&row_max, &col_max)};
+        BOOST_TEST(gradients_max_rel_diff < delta);
+        i_center += manager->size() * ThreeD;
+      }
     }
   }
 
   /**
-   * Test the analytical kernel gradients against numerical kernel gradients.
+   * Test the analytical kernel stress against numerical kernel stress.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(grad_stress_test, Fix, sparse_grad_fixtures,
                                    Fix) {
     using ManagerCollection_t = typename Fix::ManagerCollection_t;
-    using Manager_t = typename ManagerCollection_t::Manager_t;
     using Representation_t = typename Fix::Representation_t;
     using Kernel_t = typename Fix::Kernel_t;
     using SparsePoints_t = typename Fix::SparsePoints_t;
@@ -269,27 +291,6 @@ namespace rascal {
         std::cout << KNM_stress << std::endl;
         std::cout << "============================" << std::endl;
         std::cout << KNM_stress_num << std::endl;
-      }
-      // test that prediction routine and predictions with kernel are equal
-      math::Vector_t weights{sparse_points.size()};
-      weights.setConstant(1.);
-
-      math::Matrix_t gradients_k = KNM_der * weights.transpose();
-      std::string force_name = compute_sparse_kernel_gradients(
-          representation, kernel, managers, sparse_points, weights);
-      size_t i_center{0};
-      for (auto manager : managers) {
-        auto && gradients{*manager->template get_property<
-            Property<double, 1, Manager_t, 1, ThreeD>>(force_name, true)};
-        math::Matrix_t ff = Eigen::Map<const math::Matrix_t>(
-            gradients.view().data(), manager->size() * ThreeD, 1);
-        math::Matrix_t ff_r =
-            gradients_k.block(i_center, 0, manager->size() * ThreeD, 1);
-        math::Matrix_t force_diff =
-            math::relative_error(ff, ff_r, delta, epsilon);
-        double gradients_max_rel_diff{force_diff.maxCoeff(&row_max, &col_max)};
-        BOOST_TEST(gradients_max_rel_diff < delta);
-        i_center += manager->size() * ThreeD;
       }
     }
   }

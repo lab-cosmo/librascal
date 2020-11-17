@@ -62,7 +62,7 @@ class Kernel(BaseIO):
                corresponds to the gradient of the 1st argument of the kernel
                w.r.t. the atomic positions.
 
-        compute_stress : if gradients are computed and True then compute also the
+        compute_neg_stress : if gradients are computed and True then compute also the
                          kernel associated with the stress in Voigt format.
 
         Returns
@@ -135,7 +135,7 @@ class Kernel(BaseIO):
     def _get_data(self):
         return super()._get_data()
 
-    def __call__(self, X, Y=None, grad=(False, False), compute_stress=False):
+    def __call__(self, X, Y=None, grad=(False, False), compute_neg_stress=False):
         if isinstance(X, AtomsList):
             X = X.managers
         if Y is None and grad == (False, False):
@@ -152,7 +152,7 @@ class Kernel(BaseIO):
                 Y = Y._sparse_points
             # compute the block of the KNM matrix corresponding to forces
             return self._kernel.compute_derivative(
-                self._representation, X, Y, compute_stress
+                self._representation, X, Y, compute_neg_stress
             )
         elif grad == (False, False):
             # compute the kernel between two sets of features
@@ -172,7 +172,7 @@ class Kernel(BaseIO):
 
 
 def compute_numerical_kernel_gradients(
-    kernel, calculator, managers, sparse_points, h_disp, compute_stress=True
+    kernel, calculator, managers, sparse_points, h_disp, compute_neg_stress=True
 ):
     """This function is used for testing the numerical kernel gradient"""
     return _compute_numerical_kernel_gradients(
@@ -181,5 +181,5 @@ def compute_numerical_kernel_gradients(
         managers.managers,
         sparse_points._sparse_points,
         h_disp,
-        compute_stress,
+        compute_neg_stress,
     )

@@ -802,16 +802,6 @@ namespace rascal {
         // Sum the gradients wrt the neighbour atom position
         // compute the \grad_k p^{i} coeffs where k is either i or j
         for (auto neigh : center.pairs_with_self_pair()) {
-          // auto && atom_j = neigh.get_atom_j();
-          // const int atom_j_tag{atom_j.get_atom_tag()};
-          // // const bool is_center_atom{manager->is_center_atom(neigh)};
-          // // compute grad contribution only if the neighbour is _not_ an
-          // image
-          // // of the center (because then it moves with the center)
-          // if (atom_j_tag == atom_i_tag and manager->is_ghost_atom(neigh)) {
-          //   continue;
-          // }
-
           // \grad_k c^{i}
           auto & grad_neigh_coefficients{
               expansions_coefficients_gradient[neigh]};
