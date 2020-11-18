@@ -1,5 +1,5 @@
 from ..utils import BaseIO
-from ..lib import compute_sparse_kernel_gradients
+from ..lib import compute_sparse_kernel_gradients, compute_sparse_kernel_neg_stress
 
 import numpy as np
 
@@ -51,33 +51,47 @@ class KRR(BaseIO):
                     i_center += 1
         return Y0
 
-    def _preprocess_input(
-        self, managers, compute_gradients=False, compute_neg_stress=False
-    ):
-        """compute prediction kernel and total baseline contributions"""
-        kernel = self.kernel(
-            managers, self.X_train, (compute_gradients, False), compute_neg_stress
-        )
-        Y0 = self._get_property_baseline(managers)
-        return kernel, Y0
-
-    def predict(self, managers, compute_gradients=False, compute_neg_stress=False):
-        """Predict properties associated with the atomic structures in managers
-        or their derivative w.r.t. atomic positions (if compute_gradients==True).
+    def predict(self, managers, KNM=None):
+        """Predict properties associated with the atomic structures in managers.
 
         Parameters
         ----------
         managers : AtomsList
             list of atomic structures with already computed features compatible
             with representation in kernel
-        compute_gradients : bool, optional
-            predict the gradients of the property w.r.t atomic positions,
-            by default False
-        compute_neg_stress: bool, optional
-            when gradients are predicted the elements of the stress tensor can also
-            be predicted. They are at the end of the forces predictions in the
-            order of managers and using the Voigt format (only 6 unique elements).
-            The negative stres is computed.
+        KNM : np.array, optional
+            precomputed sparse kernel matrix
+
+        Returns
+        -------
+        np.array
+            predictions
+        """
+        if KNM is not None:
+            kernel = self.kernel(managers, self.X_train, (False, False))
+        else:
+            if len(managers) != KNM.shape[0]:
+                raise ValueError(
+                    "KNM size mismatch {}!={}".format(len(managers), KNM.shape[0])
+                )
+            elif self.X_train.size() != KNM.shape[1]:
+                raise ValueError(
+                    "KNM size mismatch {}!={}".format(self.X_train.size(), KNM.shape[1])
+                )
+            kernel = KNM
+        Y0 = self._get_property_baseline(managers)
+        return Y0 + np.dot(kernel, self.weights).reshape((-1))
+
+    def predict_forces(self, managers, KNM=None):
+        """Predict negative gradients w.r.t atomic positions, e.g. forces, associated with the atomic structures in managers.
+
+        Parameters
+        ----------
+        managers : AtomsList
+            list of atomic structures with already computed features compatible
+            with representation in kernel
+        KNM : np.array, optional
+            precomputed sparse kernel matrix
 
         Returns
         -------
@@ -85,10 +99,7 @@ class KRR(BaseIO):
             predictions
         """
 
-        if compute_gradients is False:
-            KNM, Y0 = self._preprocess_input(managers, compute_gradients)
-            return Y0 + np.dot(KNM, self.weights).reshape((-1))
-        else:
+        if KNM is not None:
             rep = self.kernel._representation
             gradients = compute_sparse_kernel_gradients(
                 rep,
@@ -97,8 +108,60 @@ class KRR(BaseIO):
                 self.X_train._sparse_points,
                 self.weights.reshape((1, -1)),
             )
+        else:
+            n_atoms = 0
+            for manager in managers:
+                n_atoms += len(manager)
+            if 3 * n_atoms != KNM.shape[0]:
+                raise ValueError(
+                    "KNM size mismatch {}!={}".format(3 * n_atoms, KNM.shape[0])
+                )
+            elif self.X_train.size() != KNM.shape[1]:
+                raise ValueError(
+                    "KNM size mismatch {}!={}".format(self.X_train.size(), KNM.shape[1])
+                )
+            gradients = np.dot(KNM, self.weights).reshape((-1, 3))
 
-            return gradients
+        return -gradients
+
+    def predict_stress(self, managers, KNM=None):
+        """Predict gradients w.r.t cell parameters, e.g. stress, associated with the atomic structures in managers.
+        The stress is returned using the Voigt order: xx, yy, zz, yz, xz, xy.
+
+        Parameters
+        ----------
+        managers : AtomsList
+            list of atomic structures with already computed features compatible
+            with representation in kernel
+        KNM : np.array, optional
+            precomputed sparse kernel matrix
+
+        Returns
+        -------
+        np.array
+            predictions
+        """
+        if KNM is not None:
+            rep = self.kernel._representation
+            neg_stress = compute_sparse_kernel_neg_stress(
+                rep,
+                self.kernel._kernel,
+                managers.managers,
+                self.X_train._sparse_points,
+                self.weights.reshape((1, -1)),
+            )
+        else:
+            if 6 * len(managers) != KNM.shape[0]:
+                raise ValueError(
+                    "KNM size mismatch {}!={}".format(6 * len(managers), KNM.shape[0])
+                )
+            elif self.X_train.size() != KNM.shape[1]:
+                raise ValueError(
+                    "KNM size mismatch {}!={}".format(self.X_train.size(), KNM.shape[1])
+                )
+            neg_stress = np.dot(KNM, self.weights).reshape((len(managers), 6))
+
+        return -neg_stress
 
     def get_weights(self):
         return self.weights
