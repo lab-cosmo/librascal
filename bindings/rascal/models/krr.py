@@ -99,7 +99,9 @@ class KRR(BaseIO):
             predictions
         """
         if self.kernel.kernel_type != "Sparse":
-            raise NotImplementedError("force prediction only implemented for kernels with kernel_type=='Sparse'")
+            raise NotImplementedError(
+                "force prediction only implemented for kernels with kernel_type=='Sparse'"
+            )
         if KNM is not None:
             rep = self.kernel._representation
             gradients = compute_sparse_kernel_gradients(
@@ -143,7 +145,9 @@ class KRR(BaseIO):
             predictions
         """
         if self.kernel.kernel_type != "Sparse":
-            raise NotImplementedError("stress prediction only implemented for kernels with kernel_type=='Sparse'")
+            raise NotImplementedError(
+                "stress prediction only implemented for kernels with kernel_type=='Sparse'"
+            )
 
         if KNM is not None:
             rep = self.kernel._representation
