@@ -54,9 +54,10 @@ class ASEMLCalculator(Calculator, BaseIO):
         energy = self.model.predict(self.manager)
         self.results["energy"] = energy
         self.results["free_energy"] = energy
-
-        self.results["forces"] = self.model.predict_forces(self.manager)
-        self.results["stress"] = self.model.predict_stress(self.manager)
+        if "forces" in properties:
+            self.results["forces"] = self.model.predict_forces(self.manager)
+        if "stress" in properties:
+            self.results["stress"] = self.model.predict_stress(self.manager).flatten()
 
     def _get_init_params(self):
         init_params = dict(model=self.model, representation=self.representation)
