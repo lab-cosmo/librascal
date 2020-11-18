@@ -223,6 +223,7 @@ namespace rascal {
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(grad_stress_test, Fix, sparse_grad_fixtures,
                                    Fix) {
     using ManagerCollection_t = typename Fix::ManagerCollection_t;
+    using Manager_t = typename ManagerCollection_t::Manager_t;
     using Representation_t = typename Fix::Representation_t;
     using Kernel_t = typename Fix::Kernel_t;
     using SparsePoints_t = typename Fix::SparsePoints_t;
@@ -267,10 +268,12 @@ namespace rascal {
       auto KNM_num_der{compute_numerical_kernel_gradients(
           kernel_num, representation_, managers, sparse_points,
           input.at("h").template get<double>(), compute_stress)};
+
+      int n_stress_rows{static_cast<int>(managers.size() * 6)};
       math::Matrix_t KNM_stress{
-          KNM_der.block(KNM_der.rows() - 6, 0, 6, KNM_der.cols())};
+          KNM_der.block(KNM_der.rows() - n_stress_rows, 0, n_stress_rows, KNM_der.cols())};
       math::Matrix_t KNM_stress_num{
-          KNM_num_der.block(KNM_num_der.rows() - 6, 0, 6, KNM_num_der.cols())};
+          KNM_num_der.block(KNM_num_der.rows() - n_stress_rows, 0, n_stress_rows, KNM_num_der.cols())};
       auto diff =
           math::relative_error(KNM_stress, KNM_stress_num, delta, epsilon);
       int col_max{0}, row_max{0};
@@ -291,6 +294,29 @@ namespace rascal {
         std::cout << KNM_stress << std::endl;
         std::cout << "============================" << std::endl;
         std::cout << KNM_stress_num << std::endl;
+      }
+
+
+      // test that prediction routine and predictions with kernel are equal
+      math::Vector_t weights{sparse_points.size()};
+      weights.setConstant(1.);
+
+      math::Matrix_t neg_stress_k = KNM_stress * weights.transpose();
+      std::string neg_stress_name = compute_sparse_kernel_stress(
+          representation, kernel, managers, sparse_points, weights);
+      size_t i_center{0};
+      for (auto manager : managers) {
+        auto && neg_stress{*manager->template get_property<
+            Property<double, 0, Manager_t, 6>>(neg_stress_name, true)};
+        math::Matrix_t ff = Eigen::Map<const math::Matrix_t>(
+            neg_stress.view().data(), 6, 1);
+        math::Matrix_t ff_r =
+            neg_stress_k.block(i_center, 0, 6, 1);
+        math::Matrix_t neg_stress_diff =
+            math::relative_error(ff, ff_r, delta, epsilon);
+        double gradients_max_rel_diff{neg_stress_diff.maxCoeff(&row_max, &col_max)};
+        BOOST_TEST(gradients_max_rel_diff < delta);
+        i_center += 6;
       }
     }
   }

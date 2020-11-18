@@ -305,6 +305,13 @@ namespace rascal {
                               this->get_nb_row(), this->get_nb_col());
     }
 
+    //! Direct accessor for property of order == 0
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 0), int> = 0>
+    T & operator()(int i_row, int i_col=0) {
+      return Value_t::get_ref(this->values[0], this->get_nb_row(),
+                              this->get_nb_col())(i_row, i_col);
+    }
+
     void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features) const {
       size_t n_center{this->get_nb_item()};
       auto n_cols{this->get_nb_comp()};
