@@ -307,7 +307,7 @@ namespace rascal {
 
     //! Direct accessor for property of order == 0
     template <size_t Order__ = Order, std::enable_if_t<(Order__ == 0), int> = 0>
-    T & operator()(int i_row, int i_col=0) {
+    T & operator()(int i_row, int i_col = 0) {
       return Value_t::get_ref(this->values[0], this->get_nb_row(),
                               this->get_nb_col())(i_row, i_col);
     }

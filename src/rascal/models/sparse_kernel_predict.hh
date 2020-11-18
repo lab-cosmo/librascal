@@ -270,8 +270,8 @@ namespace rascal {
    *
    * The gradients are attached to the input manager in a Property of
    * Order 1 with the name
-   * 'representation_grad_name+" gradients; weight_hash:"+weight_hash'
-   * gradients [N_{atoms}, 3]
+   * 'representation_grad_name+" negative stress; weight_hash:"+weight_hash'
+   * gradients [2*n_managers, 3]
    *
    * @tparam StructureManagers should be an iterable over shared pointer
    *          of structure managers like ManagerCollection
@@ -282,11 +282,11 @@ namespace rascal {
    * @return name used to register the gradients in the managers
    */
   template <class Calculator, class StructureManagers, class SparsePoints>
-  std::string compute_sparse_kernel_stress(const Calculator & calculator,
-                                              SparseKernel & kernel,
-                                              StructureManagers & managers,
-                                              SparsePoints & sparse_points,
-                                              math::Vector_t & weights) {
+  std::string compute_sparse_kernel_neg_stress(const Calculator & calculator,
+                                               SparseKernel & kernel,
+                                               StructureManagers & managers,
+                                               SparsePoints & sparse_points,
+                                               math::Vector_t & weights) {
     using Manager_t = typename StructureManagers::Manager_t;
     using Property_t = typename Calculator::template Property_t<Manager_t>;
     using PropertyGradient_t =
@@ -305,11 +305,11 @@ namespace rascal {
     // xz, yx, zy exploiting the symmetry of the stress tensor
     // thus yx=xy and zx=xz
     // array accessed by voigt_idx and returns spatial_dim_idx
-    const std::array<std::array<int, 2>, ThreeD>
-        voigt_id_to_spatial_dim = {{// voigt_idx,  spatial_dim_idx
-                                    {{4, 2}},    //    xz,            z
-                                    {{5, 0}},    //    xy,            x
-                                    {{3, 1}}}};  //    yz,            y
+    const std::array<std::array<int, 2>, ThreeD> voigt_id_to_spatial_dim = {
+        {             // voigt_idx,  spatial_dim_idx
+         {{4, 2}},    //    xz,            z
+         {{5, 0}},    //    xy,            x
+         {{3, 1}}}};  //    yz,            y
 
     internal::Hash<math::Vector_t, double> hasher{};
     auto kernel_type_str = kernel.parameters.at("name").get<std::string>();
@@ -317,9 +317,9 @@ namespace rascal {
     std::string pair_grad_atom_i_r_j_name =
         representation_grad_name +
         std::string(" partial gradients; weight_hash:") + weight_hash;
-    std::string neg_stress_name = representation_grad_name +
-                                std::string(" negative stress; weight_hash:") +
-                                weight_hash;
+    std::string neg_stress_name =
+        representation_grad_name +
+        std::string(" negative stress; weight_hash:") + weight_hash;
 
     for (const auto & manager : managers) {
       if (kernel_type_str == "GAP") {
@@ -330,9 +330,9 @@ namespace rascal {
             representation_grad_name, pair_grad_atom_i_r_j_name);
       }
 
-      auto && neg_stress{*manager->template get_property<
-          Property<double, 0, Manager_t, 6>>(neg_stress_name, true, true,
-                                                     true)};
+      auto && neg_stress{
+          *manager->template get_property<Property<double, 0, Manager_t, 6>>(
+              neg_stress_name, true, true, true)};
       neg_stress.resize();
       neg_stress.setZero();
 
@@ -346,8 +346,10 @@ namespace rascal {
           Eigen::Vector3d r_ji = r_i - neigh.get_position();
           for (int i_der{0}; i_der < ThreeD; i_der++) {
             const auto & voigt = voigt_id_to_spatial_dim[i_der];
-            neg_stress(i_der) += r_ji(i_der) * pair_grad_atom_i_r_j[neigh](i_der);
-            neg_stress(voigt[0]) += r_ji(voigt[1]) * pair_grad_atom_i_r_j[neigh](i_der);
+            neg_stress(i_der) +=
+                r_ji(i_der) * pair_grad_atom_i_r_j[neigh](i_der);
+            neg_stress(voigt[0]) +=
+                r_ji(voigt[1]) * pair_grad_atom_i_r_j[neigh](i_der);
           }
         }
       }
