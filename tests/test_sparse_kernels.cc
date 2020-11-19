@@ -115,12 +115,8 @@ namespace rascal {
     using Prop_t = typename Representation_t::template Property_t<Manager_t>;
     using PropGrad_t =
         typename Representation_t::template PropertyGradient_t<Manager_t>;
-    json inputs{};
 
-    SparseKernelGradFixture() {
-      this->inputs =
-          json_io::load("reference_data/tests_only/sparse_kernel_inputs.json");
-    }
+    SparseKernelGradFixture() {}
 
     ~SparseKernelGradFixture() = default;
   };
@@ -131,20 +127,21 @@ namespace rascal {
    * Test the analytical kernel gradients against numerical kernel gradients.
    */
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(grad_test, Fix, sparse_grad_fixtures, Fix) {
-    // using Manager_t = typename Fix::Manager_t;
     using ManagerCollection_t = typename Fix::ManagerCollection_t;
     using Manager_t = typename ManagerCollection_t::Manager_t;
     using Representation_t = typename Fix::Representation_t;
     using Kernel_t = typename Fix::Kernel_t;
     using SparsePoints_t = typename Fix::SparsePoints_t;
-
-    const auto & inputs = Fix::inputs;
+    json inputs{};
+    inputs =
+        json_io::load("reference_data/tests_only/sparse_kernel_inputs.json");
 
     const bool verbose{true};
     // relative error threshold
-    const double delta{5e-5};
+    const double delta{1e-3};
     // range of zero
     const double epsilon{1e-14};
+    const bool compute_stress{false};
 
     for (const auto & input : inputs) {
       // extract inputs
@@ -170,11 +167,11 @@ namespace rascal {
       Representation_t representation_{calculator_input};
 
       // compute kernel gradients
-      auto KNM_der{
-          kernel.compute_derivative(representation, managers, sparse_points)};
+      auto KNM_der{kernel.compute_derivative(representation, managers,
+                                             sparse_points, compute_stress)};
       auto KNM_num_der{compute_numerical_kernel_gradients(
           kernel_num, representation_, managers, sparse_points,
-          input.at("h").template get<double>())};
+          input.at("h").template get<double>(), compute_stress)};
       auto diff = math::relative_error(KNM_der, KNM_num_der, delta, epsilon);
       int col_max{0}, row_max{0};
       double max_rel_diff{diff.maxCoeff(&row_max, &col_max)};
@@ -184,13 +181,18 @@ namespace rascal {
         std::cout << adaptors_input.dump() << std::endl;
         std::cout << calculator_input.dump() << std::endl;
         std::cout << kernel_input.dump() << std::endl;
+        std::cout << "============================" << std::endl;
         std::cout << diff.row(row_max) << std::endl;
         std::cout << "============================" << std::endl;
         std::cout << KNM_der.row(row_max) << std::endl;
         std::cout << "============================" << std::endl;
         std::cout << KNM_num_der.row(row_max) << std::endl;
         std::cout << "============================" << std::endl;
+        std::cout << KNM_der << std::endl;
+        std::cout << "============================" << std::endl;
+        std::cout << KNM_num_der << std::endl;
       }
+
       // test that prediction routine and predictions with kernel are equal
       math::Vector_t weights{sparse_points.size()};
       weights.setConstant(1.);
@@ -211,6 +213,111 @@ namespace rascal {
         double gradients_max_rel_diff{force_diff.maxCoeff(&row_max, &col_max)};
         BOOST_TEST(gradients_max_rel_diff < delta);
         i_center += manager->size() * ThreeD;
+      }
+    }
+  }
+
+  /**
+   * Test the analytical kernel stress against numerical kernel stress.
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(grad_stress_test, Fix, sparse_grad_fixtures,
+                                   Fix) {
+    using ManagerCollection_t = typename Fix::ManagerCollection_t;
+    using Manager_t = typename ManagerCollection_t::Manager_t;
+    using Representation_t = typename Fix::Representation_t;
+    using Kernel_t = typename Fix::Kernel_t;
+    using SparsePoints_t = typename Fix::SparsePoints_t;
+
+    json inputs{};
+    inputs =
+        json_io::load("reference_data/tests_only/sparse_kernel_inputs.json");
+
+    const bool verbose{true};
+    // relative error threshold
+    const double delta{6e-3};
+    // range of zero
+    const double epsilon{1e-11};
+
+    const bool compute_stress{true};
+
+    for (const auto & input : inputs) {
+      // extract inputs
+      std::string filename{input.at("filename").template get<std::string>()};
+      json adaptors_input = input.at("adaptors").template get<json>();
+      json calculator_input = input.at("calculator").template get<json>();
+      json kernel_input = input.at("kernel").template get<json>();
+      auto selected_ids = input.at("selected_ids")
+                              .template get<std::vector<std::vector<int>>>();
+      // initialize classes
+      Kernel_t kernel{kernel_input};
+      kernel_input.at("target_type") = "Atom";
+      Kernel_t kernel_num{kernel_input};
+      ManagerCollection_t managers{adaptors_input};
+      SparsePoints_t sparse_points{};
+      Representation_t representation{calculator_input};
+      // load structures, compute representation and fill sparse points
+      managers.add_structures(filename, 0,
+                              input.at("n_structures").template get<int>());
+      representation.compute(managers);
+      sparse_points.push_back(representation, managers, selected_ids);
+      calculator_input["compute_gradients"] = false;
+      Representation_t representation_{calculator_input};
+      // compute kernel gradients
+      auto KNM_der{kernel.compute_derivative(representation, managers,
+                                             sparse_points, compute_stress)};
+      auto KNM_num_der{compute_numerical_kernel_gradients(
+          kernel_num, representation_, managers, sparse_points,
+          input.at("h").template get<double>(), compute_stress)};
+
+      int n_stress_rows{static_cast<int>(managers.size() * 6)};
+      math::Matrix_t KNM_stress{KNM_der.block(KNM_der.rows() - n_stress_rows, 0,
+                                              n_stress_rows, KNM_der.cols())};
+      math::Matrix_t KNM_stress_num{
+          KNM_num_der.block(KNM_num_der.rows() - n_stress_rows, 0,
+                            n_stress_rows, KNM_num_der.cols())};
+      auto diff =
+          math::relative_error(KNM_stress, KNM_stress_num, delta, epsilon);
+      int col_max{0}, row_max{0};
+      double max_rel_diff{diff.maxCoeff(&row_max, &col_max)};
+      BOOST_TEST(max_rel_diff < delta);
+      if (verbose and max_rel_diff > delta) {
+        std::cout << filename << std::endl;
+        std::cout << adaptors_input.dump() << std::endl;
+        std::cout << calculator_input.dump() << std::endl;
+        std::cout << kernel_input.dump() << std::endl;
+        std::cout << "============================" << std::endl;
+        std::cout << diff.row(row_max) << std::endl;
+        std::cout << "============================" << std::endl;
+        std::cout << KNM_stress.row(row_max) << std::endl;
+        std::cout << "============================" << std::endl;
+        std::cout << KNM_stress_num.row(row_max) << std::endl;
+        std::cout << "============================" << std::endl;
+        std::cout << KNM_stress << std::endl;
+        std::cout << "============================" << std::endl;
+        std::cout << KNM_stress_num << std::endl;
+      }
+
+      // test that prediction routine and predictions with kernel are equal
+      math::Vector_t weights{sparse_points.size()};
+      weights.setConstant(1.);
+
+      math::Matrix_t neg_stress_k = KNM_stress * weights.transpose();
+      std::string neg_stress_name = compute_sparse_kernel_neg_stress(
+          representation, kernel, managers, sparse_points, weights);
+      size_t i_center{0};
+      for (auto manager : managers) {
+        auto && neg_stress{
+            *manager->template get_property<Property<double, 0, Manager_t, 6>>(
+                neg_stress_name, true)};
+        math::Matrix_t ff =
+            Eigen::Map<const math::Matrix_t>(neg_stress.view().data(), 6, 1);
+        math::Matrix_t ff_r = neg_stress_k.block(i_center, 0, 6, 1);
+        math::Matrix_t neg_stress_diff =
+            math::relative_error(ff, ff_r, delta, epsilon);
+        double gradients_max_rel_diff{
+            neg_stress_diff.maxCoeff(&row_max, &col_max)};
+        BOOST_TEST(gradients_max_rel_diff < delta);
+        i_center += 6;
       }
     }
   }

@@ -136,8 +136,8 @@ class SphericalInvariants(BaseIO):
         sparsity is kept irrespective of expansion_by_species_method.
 
     global_species : list of int
-        list of species (specified with their atomic number) to use to set-up 
-        the species key of the invariant. It should contain all the species 
+        list of species (specified with their atomic number) to use to set-up
+        the species key of the invariant. It should contain all the species
         present in the structure for which invariants will be computed
 
     compute_gradients : bool
@@ -461,6 +461,10 @@ class SphericalInvariants(BaseIO):
             optimization_args=self.optimization_args,
             cutoff_function_parameters=self.cutoff_function_parameters,
         )
+        if "coefficient_subselection" in self.hypers:
+            init_params["coefficient_subselection"] = self.hypers[
+                "coefficient_subselection"
+            ]
         return init_params
 
     def _set_data(self, data):

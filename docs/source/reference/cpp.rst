@@ -37,6 +37,32 @@ Spherical Covariants
     :project: rascal
     :members:
 
+Kernels
+~~~~~~~
+
+Kernel
+^^^^^^
+ .. doxygenclass:: rascal::Kernel
+    :project: rascal
+    :members: 
+    
+ .. doxygenstruct:: rascal::internal::KernelImpl< internal::KernelType::Cosine >
+    :project: rascal
+    :members:
+    
+
+SparseKernel
+^^^^^^^^^^^^
+
+ .. doxygenclass:: rascal::SparseKernel
+    :project: rascal
+    :members: 
+
+
+ .. doxygenstruct:: rascal::internal::SparseKernelImpl< internal::SparseKernelType::GAP >
+    :project: rascal
+    :members:
+
 Math utilities (namespace :cpp:class:`rascal::math`)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

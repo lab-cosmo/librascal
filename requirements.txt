@@ -14,7 +14,7 @@ nbsphinx
 pygments>=2.4.1
 # Developers tools - code formatting
 cpplint
-black
+black==20.8b1 
 # Developers tools - data generation scripts
 ase
 mpmath
