@@ -177,6 +177,7 @@ namespace rascal {
         }
       }
     }  // center
+    pair_grad_atom_i_r_j.set_updated_status(true);
   }
 
   /**
@@ -191,8 +192,8 @@ namespace rascal {
    *
    * The gradients are attached to the input manager in a Property of
    * Order 1 with the name
-   * 'representation_grad_name+" gradients; weight_hash:"+weight_hash'
-   * gradients [N_{atoms}, 3]
+   * '"kernel: "+kernel_type+" ; "+representation_grad_name+" gradients;
+   * weight_hash:"+weight_hash' gradients [N_{atoms}, 3]
    *
    * @tparam StructureManagers should be an iterable over shared pointer
    *          of structure managers like ManagerCollection
@@ -224,9 +225,11 @@ namespace rascal {
     auto kernel_type_str = kernel.parameters.at("name").get<std::string>();
     std::string weight_hash = std::to_string(hasher(weights));
     std::string pair_grad_atom_i_r_j_name =
+        std::string("kernel: ") + kernel_type_str + std::string(" ; ") +
         representation_grad_name +
         std::string(" partial gradients; weight_hash:") + weight_hash;
-    std::string gradient_name = representation_grad_name +
+    std::string gradient_name = std::string("kernel: ") + kernel_type_str +
+                                std::string(" ; ") + representation_grad_name +
                                 std::string(" gradients; weight_hash:") +
                                 weight_hash;
 
@@ -242,6 +245,9 @@ namespace rascal {
       auto && gradients{*manager->template get_property<
           Property<double, 1, Manager_t, 1, ThreeD>>(gradient_name, true, true,
                                                      true)};
+      if (gradients.is_updated()) {
+        continue;
+      }
       gradients.resize();
       gradients.setZero();
 
@@ -254,7 +260,8 @@ namespace rascal {
           gradients[neigh.get_atom_j()] += pair_grad_atom_i_r_j[neigh];
         }
       }
-    }  // center
+      gradients.set_updated_status(true);
+    }  // manager
     return gradient_name;
   }
 
@@ -270,8 +277,8 @@ namespace rascal {
    *
    * The gradients are attached to the input manager in a Property of
    * Order 1 with the name
-   * 'representation_grad_name+" negative stress; weight_hash:"+weight_hash'
-   * gradients [2*n_managers, 3]
+   * '"kernel: "+kernel_type+" ; "+representation_grad_name+" negative stress;
+   * weight_hash:"+weight_hash' gradients [2*n_managers, 3]
    *
    * @tparam StructureManagers should be an iterable over shared pointer
    *          of structure managers like ManagerCollection
@@ -315,9 +322,11 @@ namespace rascal {
     auto kernel_type_str = kernel.parameters.at("name").get<std::string>();
     std::string weight_hash = std::to_string(hasher(weights));
     std::string pair_grad_atom_i_r_j_name =
+        std::string("kernel: ") + kernel_type_str + std::string(" ; ") +
         representation_grad_name +
         std::string(" partial gradients; weight_hash:") + weight_hash;
     std::string neg_stress_name =
+        std::string("kernel: ") + kernel_type_str + std::string(" ; ") +
         representation_grad_name +
         std::string(" negative stress; weight_hash:") + weight_hash;
 
@@ -333,6 +342,10 @@ namespace rascal {
       auto && neg_stress{
           *manager->template get_property<Property<double, 0, Manager_t, 6>>(
               neg_stress_name, true, true, true)};
+      if (neg_stress.is_updated()) {
+        continue;
+      }
+
       neg_stress.resize();
       neg_stress.setZero();
 
@@ -358,7 +371,8 @@ namespace rascal {
       auto atomic_structure =
           structure_copy.template get<AtomicStructure<ThreeD>>();
       neg_stress[0] /= atomic_structure.get_volume();
-    }  // center
+      neg_stress.set_updated_status(true);
+    }  // manager
     return neg_stress_name;
   }
 }  // namespace rascal
