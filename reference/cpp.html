@@ -1929,6 +1929,11 @@ template&lt;class <code class="sig-name descname">ErrorMethod</code>&gt;<br /><e
 
 <dl class="function">
 <dt>
+<code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>structure_dynamic_property_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal29atom_vector_property_fixturesE" title="rascal::atom_vector_property_fixtures">atom_vector_property_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
 <code class="sig-name descname">BOOST_FIXTURE_TEST_CASE_TEMPLATE</code><span class="sig-paren">(</span>fill_sequence_test, Fix, <a class="reference internal" href="#_CPPv4N6rascal29atom_vector_property_fixturesE" title="rascal::atom_vector_property_fixtures">atom_vector_property_fixtures</a>, Fix<span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -5960,7 +5965,12 @@ void <code class="sig-name descname">fill_sequence</code><span class="sig-paren"
 
 <dl class="function">
 <dt>
-size_t <code class="sig-name descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+template&lt;size_t <code class="sig-name descname">Order__</code> = Order, std::enable_if_t&lt;(<a class="reference internal" href="#_CPPv4I_6size_t_NSt11enable_if_tIXeq7Order__L0EEiEEENK6rascal13TypedProperty4sizeE6size_tv" title="rascal::TypedProperty::size::Order__">Order__</a> == 0), int&gt; = 0&gt;<br />size_t <code class="sig-name descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="sig-name descname">template&lt;size_t Order__ = Order, std::enable_if_t&lt;(Order__ &gt; 0&gt;size_t rascal::TypedProperty::size() const</code></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -5970,12 +5980,17 @@ void <code class="sig-name descname">clear</code><span class="sig-paren">(</span
 
 <dl class="function">
 <dt>
-template&lt;size_t <code class="sig-name descname">CallerLayer</code>&gt;<br />reference <code class="sig-name descname">operator[]</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;Order, <a class="reference internal" href="#_CPPv4I_6size_tEN6rascal13TypedPropertyixE9referenceRK13ClusterRefKeyI5Order11CallerLayerE" title="rascal::TypedProperty::operator[]::CallerLayer">CallerLayer</a>&gt; &amp;<em>id</em><span class="sig-paren">)</span><br /></dt>
+template&lt;size_t <code class="sig-name descname">CallerLayer</code>, size_t <code class="sig-name descname">Order__</code> = Order&gt;<br />std::enable_if_t&lt;(<a class="reference internal" href="#_CPPv4I_6size_t_6size_tEN6rascal13TypedPropertyixENSt11enable_if_tIXgt7Order__L0EE9referenceEERK13ClusterRefKeyI5Order11CallerLayerE" title="rascal::TypedProperty::operator[]::Order__">Order__</a> &gt; 0), reference&gt; <code class="sig-name descname">operator[]</code><span class="sig-paren">(</span><em class="property">const</em> ClusterRefKey&lt;Order, <a class="reference internal" href="#_CPPv4I_6size_t_6size_tEN6rascal13TypedPropertyixENSt11enable_if_tIXgt7Order__L0EE9referenceEERK13ClusterRefKeyI5Order11CallerLayerE" title="rascal::TypedProperty::operator[]::CallerLayer">CallerLayer</a>&gt; &amp;<em>id</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt>
 reference <code class="sig-name descname">operator[]</code><span class="sig-paren">(</span>size_t <em>index</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;size_t <code class="sig-name descname">Order__</code> = Order, std::enable_if_t&lt;(<a class="reference internal" href="#_CPPv4I_6size_t_NSt11enable_if_tIXeq7Order__L0EEiEEEN6rascal13TypedPropertyclER1Tii" title="rascal::TypedProperty::operator()::Order__">Order__</a> == 0), int&gt; = 0&gt;<br />T &amp;<code class="sig-name descname">operator()</code><span class="sig-paren">(</span>int <em>i_row</em>, int <em>i_col</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
