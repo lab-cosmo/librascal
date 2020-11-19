@@ -4,6 +4,7 @@ from ..lib import compute_sparse_kernel_gradients, compute_sparse_kernel_neg_str
 import numpy as np
 import ase
 
+
 class KRR(BaseIO):
     """Kernel Ridge Regression model. Only supports sparse GPR
     training for the moment.
