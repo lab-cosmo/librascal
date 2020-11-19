@@ -45,41 +45,15 @@ class Kernel(BaseIO):
         or 'Sparse' (computing GAP [2] like kernel for sparse kernel methods like
         Subset of Regressors)
 
-    Methods
-    -------
-    __call__(X, Y=None, grad=(False, False), compute_virial=False)
-        Compute the kernel.
+    .. [1] Joaquin Quiñonero-Candela, Carl Edward Rasmussen;
+            A Unifying View of Sparse Approximate Gaussian Process Regression,
+            6(Dec):1939--1959, 2005.
+            http://www.jmlr.org/papers/v6/quinonero-candela05a.html
 
-        Parameters
-        ----------
-        X : AtomList or ManagerCollection (C++ class)
-            Container of atomic structures.
-
-        Y : AtomList, ManagerCollection or SparsePoints* (C++ class).
-
-        grad : tuple specifying if the kernel should be computed using gradient
-               of the representation w.r.t. the atomic positions, e.g. (True, False)
-               corresponds to the gradient of the 1st argument of the kernel
-               w.r.t. the atomic positions.
-
-        compute_neg_stress : if gradients are computed and True then compute also the
-                         kernel associated with the stress in Voigt format.
-
-        Returns
-        -------
-        kernel_matrix: ndarray
-
-
-
-        .. [1] Joaquin Quiñonero-Candela, Carl Edward Rasmussen;
-                A Unifying View of Sparse Approximate Gaussian Process Regression,
-                6(Dec):1939--1959, 2005.
-                http://www.jmlr.org/papers/v6/quinonero-candela05a.html
-
-        .. [2] Ceriotti, M., Willatt, M. J., & Csányi, G. (2018).
-        Machine Learning of Atomic-Scale Properties Based on Physical Principles.
-        In Handbook of Materials Modeling (pp. 1–27). Springer, Cham.
-        https://doi.org/10.1007/978-3-319-42913-7_68-1
+    .. [2] Ceriotti, M., Willatt, M. J., & Csányi, G. (2018).
+    Machine Learning of Atomic-Scale Properties Based on Physical Principles.
+    In Handbook of Materials Modeling (pp. 1–27). Springer, Cham.
+    https://doi.org/10.1007/978-3-319-42913-7_68-1
 
     """
 
@@ -136,6 +110,29 @@ class Kernel(BaseIO):
         return super()._get_data()
 
     def __call__(self, X, Y=None, grad=(False, False), compute_neg_stress=False):
+        """
+        Compute the kernel.
+
+        Parameters
+        ----------
+            X : AtomList or ManagerCollection (C++ class)
+                Container of atomic structures.
+
+            Y : AtomList, ManagerCollection or SparsePoints* (C++ class).
+
+            grad : tuple specifying if the kernel should be computed using
+                gradient
+                of the representation w.r.t. the atomic positions, e.g. (True,
+                False) corresponds to the gradient of the 1st argument of the
+                kernel w.r.t. the atomic positions.
+
+            compute_neg_stress : if gradients are computed and True then compute
+                also the kernel associated with the stress in Voigt format.
+
+        Returns
+        -------
+            kernel_matrix: ndarray
+        """
         if isinstance(X, AtomsList):
             X = X.managers
         if Y is None and grad == (False, False):
