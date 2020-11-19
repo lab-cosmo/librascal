@@ -165,6 +165,9 @@
             
   <h1>Source code for rascal.models.kernels</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">BaseIO</span>
+<span class="kn">from</span> <span class="nn">..lib._rascal.models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">compute_numerical_kernel_gradients</span> <span class="k">as</span> <span class="n">_compute_numerical_kernel_gradients</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">..lib._rascal.models.kernels</span> <span class="kn">import</span> <span class="n">Kernel</span> <span class="k">as</span> <span class="n">Kernelcpp</span>
 <span class="kn">from</span> <span class="nn">..lib._rascal.models.kernels</span> <span class="kn">import</span> <span class="n">SparseKernel</span> <span class="k">as</span> <span class="n">SparseKernelcpp</span>
 <span class="kn">from</span> <span class="nn">..neighbourlist</span> <span class="kn">import</span> <span class="n">AtomsList</span>
@@ -208,38 +211,15 @@
 <span class="sd">        or &#39;Sparse&#39; (computing GAP [2] like kernel for sparse kernel methods like</span>
 <span class="sd">        Subset of Regressors)</span>
 
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    __call__(X, Y=None, grad=(False, False))</span>
-<span class="sd">        Compute the kernel.</span>
+<span class="sd">    .. [1] Joaquin Quiñonero-Candela, Carl Edward Rasmussen;</span>
+<span class="sd">            A Unifying View of Sparse Approximate Gaussian Process Regression,</span>
+<span class="sd">            6(Dec):1939--1959, 2005.</span>
+<span class="sd">            http://www.jmlr.org/papers/v6/quinonero-candela05a.html</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        X : AtomList or ManagerCollection (C++ class)</span>
-<span class="sd">            Container of atomic structures.</span>
-
-<span class="sd">        Y : AtomList, ManagerCollection or SparsePoints* (C++ class).</span>
-
-<span class="sd">        grad : tuple specifying if the kernel should be computed using gradient</span>
-<span class="sd">               of the representation w.r.t. the atomic positions, e.g. (True, False)</span>
-<span class="sd">               corresponds to the gradient of the 1st argument of the kernel</span>
-<span class="sd">               w.r.t. the atomic positions.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        kernel_matrix: ndarray</span>
-
-
-
-<span class="sd">        .. [1] Joaquin Quiñonero-Candela, Carl Edward Rasmussen;</span>
-<span class="sd">                A Unifying View of Sparse Approximate Gaussian Process Regression,</span>
-<span class="sd">                6(Dec):1939--1959, 2005.</span>
-<span class="sd">                http://www.jmlr.org/papers/v6/quinonero-candela05a.html</span>
-
-<span class="sd">        .. [2] Ceriotti, M., Willatt, M. J., &amp; Csányi, G. (2018).</span>
-<span class="sd">        Machine Learning of Atomic-Scale Properties Based on Physical Principles.</span>
-<span class="sd">        In Handbook of Materials Modeling (pp. 1–27). Springer, Cham.</span>
-<span class="sd">        https://doi.org/10.1007/978-3-319-42913-7_68-1</span>
+<span class="sd">    .. [2] Ceriotti, M., Willatt, M. J., &amp; Csányi, G. (2018).</span>
+<span class="sd">    Machine Learning of Atomic-Scale Properties Based on Physical Principles.</span>
+<span class="sd">    In Handbook of Materials Modeling (pp. 1–27). Springer, Cham.</span>
+<span class="sd">    https://doi.org/10.1007/978-3-319-42913-7_68-1</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -295,7 +275,30 @@
     <span class="k">def</span> <span class="nf">_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_get_data</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Kernel.__call__"><a class="viewcode-back" href="../../../reference/python.html#rascal.models.Kernel.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">)):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span> <span class="n">compute_neg_stress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the kernel.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            X : AtomList or ManagerCollection (C++ class)</span>
+<span class="sd">                Container of atomic structures.</span>
+
+<span class="sd">            Y : AtomList, ManagerCollection or SparsePoints* (C++ class).</span>
+
+<span class="sd">            grad : tuple specifying if the kernel should be computed using</span>
+<span class="sd">                gradient</span>
+<span class="sd">                of the representation w.r.t. the atomic positions, e.g. (True,</span>
+<span class="sd">                False) corresponds to the gradient of the 1st argument of the</span>
+<span class="sd">                kernel w.r.t. the atomic positions.</span>
+
+<span class="sd">            compute_neg_stress : if gradients are computed and True then compute</span>
+<span class="sd">                also the kernel associated with the stress in Voigt format.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            kernel_matrix: ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">AtomsList</span><span class="p">):</span>
             <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">managers</span>
         <span class="k">if</span> <span class="n">Y</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">grad</span> <span class="o">==</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
@@ -311,7 +314,9 @@
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">SparsePoints</span><span class="p">):</span>
                 <span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">_sparse_points</span>
             <span class="c1"># compute the block of the KNM matrix corresponding to forces</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span><span class="o">.</span><span class="n">compute_derivative</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_representation</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel</span><span class="o">.</span><span class="n">compute_derivative</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_representation</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">compute_neg_stress</span>
+            <span class="p">)</span>
         <span class="k">elif</span> <span class="n">grad</span> <span class="o">==</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
             <span class="c1"># compute the kernel between two sets of features</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">AtomsList</span><span class="p">):</span>
@@ -326,7 +331,21 @@
                 <span class="s2">&quot;The configuration: </span><span class="si">{}</span><span class="s2"> is not implemented for kernel </span><span class="si">{}</span><span class="s2"> in </span><span class="si">{}</span><span class="s2"> mode.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="n">grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_type</span>
                 <span class="p">)</span>
-            <span class="p">)</span></div></div>
+            <span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">compute_numerical_kernel_gradients</span><span class="p">(</span>
+    <span class="n">kernel</span><span class="p">,</span> <span class="n">calculator</span><span class="p">,</span> <span class="n">managers</span><span class="p">,</span> <span class="n">sparse_points</span><span class="p">,</span> <span class="n">h_disp</span><span class="p">,</span> <span class="n">compute_neg_stress</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This function is used for testing the numerical kernel gradient&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_compute_numerical_kernel_gradients</span><span class="p">(</span>
+        <span class="n">kernel</span><span class="o">.</span><span class="n">_kernel</span><span class="p">,</span>
+        <span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">,</span>
+        <span class="n">managers</span><span class="o">.</span><span class="n">managers</span><span class="p">,</span>
+        <span class="n">sparse_points</span><span class="o">.</span><span class="n">_sparse_points</span><span class="p">,</span>
+        <span class="n">h_disp</span><span class="p">,</span>
+        <span class="n">compute_neg_stress</span><span class="p">,</span>
+    <span class="p">)</span>
 </pre></div>
 
            </div>

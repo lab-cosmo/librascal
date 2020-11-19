@@ -956,47 +956,16 @@ atoms in a structure), which is the default</p></li>
 <li><p><strong>kernel_type</strong> (<em>string</em>) – Type of kernel method, either ‘Full’ (computing exact covariance matrix)
 or ‘Sparse’ (computing GAP [2] like kernel for sparse kernel methods like
 Subset of Regressors)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="method">
-<dt id="rascal.models.Kernel.__call__">
-<code class="sig-name descname">__call__</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">Y=None</em>, <em class="sig-param">grad=(False</em>, <em class="sig-param">False)</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/models/kernels.html#Kernel.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.models.Kernel.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the kernel.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>X</strong> (<em>AtomList</em><em> or </em><em>ManagerCollection</em><em> (</em><em>C++ class</em><em>)</em>) – Container of atomic structures.</p></li>
-<li><p><strong>Y</strong> (<em>AtomList</em><em>, </em><em>ManagerCollection</em><em> or </em><em>SparsePoints*</em><em> (</em><em>C++ class</em><em>)</em><em></em>) – </p></li>
-<li><p><strong>grad</strong> (<em>tuple specifying if the kernel should be computed using gradient</em>) – of the representation w.r.t. the atomic positions, e.g. (True, False)
-corresponds to the gradient of the 1st argument of the kernel
-w.r.t. the atomic positions.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>kernel_matrix</strong></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><p>ndarray</p>
-<dl class="footnote brackets">
-<dt class="label" id="id2"><span class="brackets">1</span></dt>
-<dd><p>Joaquin Quiñonero-Candela, Carl Edward Rasmussen;
-A Unifying View of Sparse Approximate Gaussian Process Regression,
+<li><p><strong>[</strong><strong>1</strong><strong>] </strong><strong>Joaquin Quiñonero-Candela</strong><strong>, </strong><strong>Carl Edward Rasmussen;</strong> (<em>.</em>) – A Unifying View of Sparse Approximate Gaussian Process Regression,
 6(Dec):1939–1959, 2005.
-<a class="reference external" href="http://www.jmlr.org/papers/v6/quinonero-candela05a.html">http://www.jmlr.org/papers/v6/quinonero-candela05a.html</a></p>
-</dd>
-<dt class="label" id="id3"><span class="brackets">2</span></dt>
-<dd><p>Ceriotti, M., Willatt, M. J., &amp; Csányi, G. (2018).</p>
-</dd>
-</dl>
-<p>Machine Learning of Atomic-Scale Properties Based on Physical Principles.
-In Handbook of Materials Modeling (pp. 1–27). Springer, Cham.
-<a class="reference external" href="https://doi.org/10.1007/978-3-319-42913-7_68-1">https://doi.org/10.1007/978-3-319-42913-7_68-1</a></p>
-</p>
+<a class="reference external" href="http://www.jmlr.org/papers/v6/quinonero-candela05a.html">http://www.jmlr.org/papers/v6/quinonero-candela05a.html</a></p></li>
+<li><p><strong>[</strong><strong>2</strong><strong>] </strong><strong>Ceriotti</strong><strong>, </strong><strong>M.</strong><strong>, </strong><strong>Willatt</strong><strong>, </strong><strong>M. J.</strong><strong>, </strong><strong>&amp; Csányi</strong><strong>, </strong><strong>G.</strong><strong> (</strong><strong>2018</strong><strong>)</strong><strong></strong> (<em>.</em>) – </p></li>
+<li><p><strong>Learning of Atomic-Scale Properties Based on Physical Principles.</strong> (<em>Machine</em>) – </p></li>
+<li><p><strong>Handbook of Materials Modeling</strong><strong> (</strong><strong>pp. 1–27</strong><strong>)</strong><strong> Springer</strong><strong>, </strong><strong>Cham.</strong> (<em>In</em>) – </p></li>
+<li><p><strong>https</strong> (<em>//doi.org/10.1007/978-3-319-42913-7_68-1</em>) – </p></li>
+</ul>
 </dd>
 </dl>
-</dd></dl>
-
 </dd></dl>
 
 </div>
