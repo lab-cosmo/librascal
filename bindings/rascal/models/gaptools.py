@@ -7,14 +7,14 @@ import ase.io
 import numpy as np
 
 from rascal import representations, utils
-from rascal import models # Must happen after 'import rascal.utils'; see #294
+from rascal import models  # Must happen after 'import rascal.utils'; see #294
 
 WORKDIR = os.getcwd()
 
 
 def calculate_representation(
-        geoms, rep_parameters,
-        rep_class=representations.SphericalInvariants, auto_wrap=True):
+    geoms, rep_parameters, rep_class=representations.SphericalInvariants, auto_wrap=True
+):
     """Calculate SOAP vectors without sparsification
 
     Parameters:
@@ -38,16 +38,22 @@ def calculate_representation(
     """
     rep = rep_class(**rep_parameters)
     if auto_wrap:
-       for geom in geoms:
-           geom.wrap(eps=1E-10)
+        for geom in geoms:
+            geom.wrap(eps=1e-10)
     soaps = rep.transform(geoms)
     return rep, soaps
 
+
 # TODO also support feature sparsification (this just does env. sparsification
 #      for now)
-def calculate_and_sparsify(geoms, rep_parameters, n_sparse,
-                           rep_class=representations.SphericalInvariants,
-                           auto_wrap=True, selection_type='CUR'):
+def calculate_and_sparsify(
+    geoms,
+    rep_parameters,
+    n_sparse,
+    rep_class=representations.SphericalInvariants,
+    auto_wrap=True,
+    selection_type="CUR",
+):
     """Calculate SOAP vectors and sparsify
 
     Parameters:
@@ -79,24 +85,27 @@ def calculate_and_sparsify(geoms, rep_parameters, n_sparse,
     """
     rep = rep_class(**rep_parameters)
     if auto_wrap:
-       for geom in geoms:
-           geom.wrap(eps=1E-10)
+        for geom in geoms:
+            geom.wrap(eps=1e-10)
     soaps = rep.transform(geoms)
-    if selection_type.upper() == 'CUR':
-        compressor = utils.CURFilter(
-                rep, n_sparse, act_on='sample per species')
-    elif selection_type.upper() == 'FPS':
+    if selection_type.upper() == "CUR":
+        compressor = utils.CURFilter(rep, n_sparse, act_on="sample per species")
+    elif selection_type.upper() == "FPS":
         # TODO random starting index? by default?
-        compressor = utils.FPSFilter(
-                rep, n_sparse, act_on='sample per species')
+        compressor = utils.FPSFilter(rep, n_sparse, act_on="sample per species")
     sparse_points_cur = compressor.select_and_filter(soaps)
-    utils.dump_obj(os.path.join(WORKDIR, 'sparsepoints.json'),
-                   sparse_points_cur)
+    utils.dump_obj(os.path.join(WORKDIR, "sparsepoints.json"), sparse_points_cur)
     return rep, soaps, sparse_points_cur
 
 
-def compute_kernels(rep, soaps, sparse_points, soap_power=2,
-                    do_gradients=True, compute_sparse_kernel=True):
+def compute_kernels(
+    rep,
+    soaps,
+    sparse_points,
+    soap_power=2,
+    do_gradients=True,
+    compute_sparse_kernel=True,
+):
     """Compute the kernels necessary for a GAP fit
 
     Parameters:
@@ -129,23 +138,21 @@ def compute_kernels(rep, soaps, sparse_points, soap_power=2,
     kernel, if requested).
     """
     kernel = models.Kernel(
-            rep, name='GAP', zeta=soap_power,
-            target_type='Structure', kernel_type='Sparse')
+        rep, name="GAP", zeta=soap_power, target_type="Structure", kernel_type="Sparse"
+    )
     if compute_sparse_kernel:
         kernel_sparse = kernel(sparse_points)
-        np.save(os.path.join(WORKDIR, 'K_MM'), kernel_sparse)
+        np.save(os.path.join(WORKDIR, "K_MM"), kernel_sparse)
     else:
         kernel_sparse = np.array([])
     kernel_sparse_full = kernel(soaps, sparse_points)
-    #TODO make kernel name configurable so we don't overwrite training
+    # TODO make kernel name configurable so we don't overwrite training
     #     kernels with possible future test kernels
-    np.save(os.path.join(WORKDIR, 'K_NM_E'), kernel_sparse_full)
+    np.save(os.path.join(WORKDIR, "K_NM_E"), kernel_sparse_full)
     if do_gradients:
-        kernel_sparse_full_grads = kernel(soaps, sparse_points,
-                                          grad=(True, False))
-        np.save(os.path.join(WORKDIR, 'K_NM_F'), kernel_sparse_full_grads)
-        return (kernel, kernel_sparse,
-                kernel_sparse_full, kernel_sparse_full_grads)
+        kernel_sparse_full_grads = kernel(soaps, sparse_points, grad=(True, False))
+        np.save(os.path.join(WORKDIR, "K_NM_F"), kernel_sparse_full_grads)
+        return (kernel, kernel_sparse, kernel_sparse_full, kernel_sparse_full_grads)
     else:
         return kernel, kernel_sparse, kernel_sparse_full
 
@@ -157,16 +164,25 @@ def _get_energy_baseline(geom, atom_contributions):
     the 'atom_contributions' dictionary says how much energy to assign
     to an atom of each species.
     """
-    e0 = 0.
+    e0 = 0.0
     for species, e0_value in atom_contributions.items():
         e0 += e0_value * np.sum(geom.get_atomic_numbers() == species)
     return e0
 
-#TODO also make energies optional
-def fit_gap_simple(geoms, kernel_sparse, energies, kernel_energies_sparse,
-                   energy_regularizer_peratom, energy_atom_contributions,
-                   forces=None, kernel_gradients_sparse=None,
-                   force_regularizer=None, rcond=None):
+
+# TODO also make energies optional
+def fit_gap_simple(
+    geoms,
+    kernel_sparse,
+    energies,
+    kernel_energies_sparse,
+    energy_regularizer_peratom,
+    energy_atom_contributions,
+    forces=None,
+    kernel_gradients_sparse=None,
+    force_regularizer=None,
+    rcond=None,
+):
     """
     Fit a GAP model to total energies and optionally forces
 
@@ -219,19 +235,23 @@ def fit_gap_simple(geoms, kernel_sparse, energies, kernel_energies_sparse,
 
     Returns the weights (1-D array, size M) that define the fit.
     """
-    e0_all = np.array([_get_energy_baseline(geom, energy_atom_contributions)
-                       for geom in geoms])
+    e0_all = np.array(
+        [_get_energy_baseline(geom, energy_atom_contributions) for geom in geoms]
+    )
     energies_shifted = energies - e0_all
     natoms_list = np.array([len(geom) for geom in geoms])
     energy_regularizer = energy_regularizer_peratom * np.sqrt(natoms_list)
-    kernel_energies_norm = (kernel_energies_sparse
-                            / energy_regularizer[:,np.newaxis])
+    kernel_energies_norm = kernel_energies_sparse / energy_regularizer[:, np.newaxis]
     if forces is not None:
         gradients = -1 * forces
         kernel_gradients_norm = kernel_gradients_sparse / force_regularizer
         K_NM = np.vstack((kernel_energies_norm, kernel_gradients_norm))
-        Y = np.concatenate((energies_shifted / energy_regularizer,
-                            gradients.flatten() / force_regularizer))
+        Y = np.concatenate(
+            (
+                energies_shifted / energy_regularizer,
+                gradients.flatten() / force_regularizer,
+            )
+        )
     else:
         K_NM = kernel_energies_norm
         Y = energies_shifted / energy_regularizer
@@ -240,8 +260,9 @@ def fit_gap_simple(geoms, kernel_sparse, energies, kernel_energies_sparse,
     return weights
 
 
-def load_potential(model_in, rep_parameters,
-                   rep_class=representations.SphericalInvariants):
+def load_potential(
+    model_in, rep_parameters, rep_class=representations.SphericalInvariants
+):
     """Load a previously fitted model as an ASE Calculator
 
     Parameters:
@@ -263,4 +284,3 @@ def load_potential(model_in, rep_parameters,
         model = utils.load_obj(model_in)
     rep = rep_class(**rep_parameters)
     return models.IP_ase_interface.ASEMLCalculator(model, rep)
-
