@@ -1,5 +1,6 @@
 {
     "structure_filename": "yourfile.xyz",
+    "structure_subset": ":50",
     "soap_hypers": {
         "soap_type": "PowerSpectrum",
         "interaction_cutoff": 5.5,

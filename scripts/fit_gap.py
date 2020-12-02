@@ -12,7 +12,7 @@ from rascal.models import gaptools
 from tqdm import tqdm
 
 
-WORKDIR = "rascaltest"
+WORKDIR = "potential_default"
 
 
 # TODO do_gradients is assumed; make a version without forces
@@ -21,7 +21,8 @@ WORKDIR = "rascaltest"
 #      consider offloading it to something like argparse
 def fit_save_model(parameters):
     WORKDIR = parameters['working_directory']
-    source_geoms = ase.io.read(parameters['structure_filename'], ':')
+    geom_subset = parameters.get('structure_subset', ':')
+    source_geoms = ase.io.read(parameters['structure_filename'], geom_subset)
     rep, soaps, sparse_points = gaptools.calculate_and_sparsify(
         tqdm(source_geoms), parameters['soap_hypers'], parameters['n_sparse'])
     (kobj, kernel_sparse,
