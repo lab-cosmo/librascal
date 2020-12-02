@@ -1,4 +1,4 @@
-# python library 
+# python library
 numpy
 scipy
 jupyter
@@ -11,9 +11,10 @@ sphinx==2.1.2
 breathe==4.13.1
 sphinx_rtd_theme
 nbsphinx
+pygments>=2.4.1
 # Developers tools - code formatting
 cpplint
-autopep8
+black==20.8b1 
 # Developers tools - data generation scripts
 ase
 mpmath

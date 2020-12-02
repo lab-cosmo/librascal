@@ -51,14 +51,17 @@ namespace rascal {
      * https://stackoverflow.com/questions/20511347/a-good-hash-function-for-a-vector
      * // NOLINT
      */
-    template <class KeyType>
+    template <class KeyType, typename T = int>
     struct Hash {
       using result_type = size_t;
       using argument_type = KeyType;
       result_type operator()(argument_type const & vec) const {
-        result_type seed{vec.size()};
-        for (const auto & i : vec) {
-          seed ^= i + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        result_type size{static_cast<result_type>(vec.size())};
+        result_type seed{size};
+        std::hash<T> hasher{};
+        for (result_type idx{0}; idx < size; idx++) {
+          seed ^=
+              hasher(vec[idx]) + 0x9e3779b97f4a7c15 + (seed << 6) + (seed >> 2);
         }
         return seed;
       }

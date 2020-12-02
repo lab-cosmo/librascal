@@ -91,10 +91,16 @@ namespace rascal {
     std::map<int, std::set<Key_t>> keys_sp{};
 
     SparsePointsBlockSparse() {
-      for (int sp{1}; sp < MaxChemElements; ++sp) {
+      for (int sp{0}; sp < MaxChemElements; ++sp) {
         counters[sp] = 0;
       }
     }
+
+    //! Copy constructor
+    SparsePointsBlockSparse(const SparsePointsBlockSparse & other) = default;
+
+    //! Move constructor
+    SparsePointsBlockSparse(SparsePointsBlockSparse && other) = default;
 
     bool operator==(const SparsePointsBlockSparse<Calculator> & other) const {
       if ((values == other.values) and (indices == other.indices) and  // NOLINT
@@ -164,7 +170,7 @@ namespace rascal {
     }
 
     using ColVector_t = Eigen::Matrix<double, Eigen::Dynamic, 1>;
-
+    using Array_t = Eigen::Array<double, Eigen::Dynamic, 1>;
     /**
      * Compute the dot product between the pseudo points associated with type
      * sp with the representation associated with a center.
@@ -174,14 +180,16 @@ namespace rascal {
     ColVector_t
     dot(const int & sp,
         internal::InternallySortedKeyMap<Key_t, Val> & representation) const {
-      const auto & values_by_sp = this->values.at(sp);
-      const auto & indices_by_sp = this->indices.at(sp);
       ColVector_t KNM_row(this->size());
       KNM_row.setZero();
       if (this->center_species.count(sp) == 0) {
         // the type of the central atom is not in the pseudo points
         return KNM_row;
       }
+
+      const auto & values_by_sp = this->values.at(sp);
+      const auto & indices_by_sp = this->indices.at(sp);
+
       int offset{0};
       for (const int & csp : this->center_species) {
         if (csp == sp) {
@@ -211,6 +219,58 @@ namespace rascal {
       return KNM_row;
     }
 
+    /**
+     * Compute the dot product between the pseudo points Mxd with a vector vec
+     * of dimension M.
+     * vec is only has a subset that is non zero and it can be identified with
+     * sp.
+     * @return a sparse point with one row
+     */
+    SparsePointsBlockSparse<Calculator> dot(const int & sp,
+                                            math::Vector_t & vec) const {
+      const auto & values_by_sp = this->values.at(sp);
+      const auto & indices_by_sp = this->indices.at(sp);
+      int n_feature{
+          static_cast<int>(this->keys_sp.at(sp).size() * this->inner_size)};
+      Array_t result(n_feature);
+      result.setZero();
+      internal::InternallySortedKeyMap<Key_t, math::Matrix_t> res_map(result);
+      res_map.resize_view(this->keys_sp.at(sp), 1, this->inner_size, 0);
+      SparsePointsBlockSparse out{};
+      if (this->center_species.count(sp) == 0) {
+        // the type of the central atom is not in the pseudo points
+        out.push_back(res_map, sp);
+        return out;
+      }
+      int offset{0};
+      // int length{0};
+      for (const int & csp : this->center_species) {
+        if (csp == sp) {
+          break;
+        } else {
+          offset += this->counters.at(csp);
+        }
+      }
+
+      for (const Key_t & key : this->keys_sp.at(sp)) {
+        auto res_map_by_key = res_map.at(key);
+        const auto & indices_by_sp_key = indices_by_sp.at(key);
+        math::Vector_t vec_subset(indices_by_sp_key.size());
+        for (size_t i_col{0}; i_col < indices_by_sp_key.size(); i_col++) {
+          vec_subset(i_col) = vec(offset + indices_by_sp_key[i_col]);
+        }
+        auto mat = Eigen::Map<const math::Matrix_t>(
+            values_by_sp.at(key).data(),
+            static_cast<Eigen::Index>(indices_by_sp_key.size()),
+            static_cast<Eigen::Index>(this->inner_size));
+
+        res_map_by_key = vec_subset * mat;
+      }
+
+      out.push_back(res_map, sp);
+      return out;
+    }
+
     using ColVectorDer_t =
         Eigen::Matrix<double, Eigen::Dynamic, ThreeD, Eigen::ColMajor>;
     /**
@@ -222,14 +282,15 @@ namespace rascal {
     ColVectorDer_t dot_derivative(const int & sp,
                                   internal::InternallySortedKeyMap<Key_t, Val> &
                                       representation_grad) const {
-      const auto & values_by_sp = this->values.at(sp);
-      const auto & indices_by_sp = this->indices.at(sp);
       ColVectorDer_t KNM_row(this->size(), ThreeD);
       KNM_row.setZero();
       if (this->center_species.count(sp) == 0) {
         // the type of the central atom is not in the pseudo points
         return KNM_row;
       }
+      const auto & values_by_sp = this->values.at(sp);
+      const auto & indices_by_sp = this->indices.at(sp);
+
       int offset{0};
       for (const int & csp : this->center_species) {
         if (csp == sp) {
