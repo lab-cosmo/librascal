@@ -7,7 +7,7 @@ import ase.io
 import numpy as np
 
 from rascal import representations, utils
-from rascal import models # Must happen after 'import rascal.utils'; see #273
+from rascal import models # Must happen after 'import rascal.utils'; see #294
 
 WORKDIR = os.getcwd()
 
@@ -43,12 +43,12 @@ def calculate_representation(
     soaps = rep.transform(geoms)
     return rep, soaps
 
-
-#TODO support FPS as well as CUR selection
+# TODO also support feature sparsification (this just does env. sparsification
+#      for now)
 def calculate_and_sparsify(geoms, rep_parameters, n_sparse,
                            rep_class=representations.SphericalInvariants,
-                           auto_wrap=True):
-    """Calculate SOAP vectors and sparsify using CUR
+                           auto_wrap=True, selection_type='CUR'):
+    """Calculate SOAP vectors and sparsify
 
     Parameters:
         geoms       List of Atoms objects to transform
@@ -69,6 +69,10 @@ def calculate_and_sparsify(geoms, rep_parameters, n_sparse,
                     non-periodic require special handling -- do not use
                     this option!  Manually pad the cell and shift the
                     positions instead.
+        selection_type
+                    Which selection algorithm to use. 'CUR' and 'FPS'
+                    are supported (see the documentation in rascal.utils
+                    for details on each method), default CUR.
 
     Returns the Representation object, the SOAP vectors, and the sparse
     points, in a 3-tuple.
@@ -78,9 +82,14 @@ def calculate_and_sparsify(geoms, rep_parameters, n_sparse,
        for geom in geoms:
            geom.wrap(eps=1E-10)
     soaps = rep.transform(geoms)
-    compressor = utils.CURFilter(
-            rep, n_sparse, act_on='sample per species')
-    sparse_points_cur = compressor.fit_transform(soaps)
+    if selection_type.upper() == 'CUR':
+        compressor = utils.CURFilter(
+                rep, n_sparse, act_on='sample per species')
+    elif selection_type.upper() == 'FPS':
+        # TODO random starting index? by default?
+        compressor = utils.FPSFilter(
+                rep, n_sparse, act_on='sample per species')
+    sparse_points_cur = compressor.select_and_filter(soaps)
     utils.dump_obj(os.path.join(WORKDIR, 'sparsepoints.json'),
                    sparse_points_cur)
     return rep, soaps, sparse_points_cur
