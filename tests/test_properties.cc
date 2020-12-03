@@ -145,6 +145,54 @@ namespace rascal {
       std::cout << " finished." << std::endl;
     }
   }
+
+  /**
+   *  Test property of order 0 for initialization, access, and direct access.
+   */
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(structure_dynamic_property_test, Fix,
+                                   atom_vector_property_fixtures, Fix) {
+    auto && property = Fix::structure_dynamic_property;
+    property.resize();
+    property.setZero();
+    // check that basic initialization works
+    for (int i_col{0}; i_col < property.get_nb_col(); ++i_col) {
+      for (int i_row{0}; i_row < property.get_nb_row(); ++i_row) {
+        BOOST_CHECK(property(i_row, i_col) == 0);
+        property(i_row, i_col) = static_cast<double>(i_row * i_col);
+      }
+    }
+    // check direct access to the property values
+    for (int i_col{0}; i_col < property.get_nb_col(); ++i_col) {
+      for (int i_row{0}; i_row < property.get_nb_row(); ++i_row) {
+        BOOST_CHECK(property(i_row, i_col) ==
+                    static_cast<double>(i_row * i_col));
+      }
+    }
+
+    property.set_shape(3, 6);
+    property.resize();
+    double counter{0};
+    for (int i_col{0}; i_col < property.get_nb_col(); ++i_col) {
+      for (int i_row{0}; i_row < property.get_nb_row(); ++i_row) {
+        property(i_row, i_col) = counter;
+        counter++;
+      }
+    }
+    // 3 different ways to get the underlying data from property
+    auto && values_0 = property[0];
+    auto && values_1 = property.back();
+    auto && values_2 = property.view();
+    counter = 0;
+    for (int i_col{0}; i_col < property.get_nb_col(); ++i_col) {
+      for (int i_row{0}; i_row < property.get_nb_row(); ++i_row) {
+        BOOST_CHECK(values_0(i_row, i_col) == counter);
+        BOOST_CHECK(values_1(i_row, i_col) == counter);
+        BOOST_CHECK(values_2(0, counter) == counter);
+        counter++;
+      }
+    }
+  }
+
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(fill_sequence_test, Fix,
                                    atom_vector_property_fixtures, Fix) {
     Fix::atom_scalar_property.fill_sequence();

@@ -134,6 +134,16 @@ namespace rascal {
         py::call_guard<py::gil_scoped_release>());
   }
 
+  //! register the population mechanism of the pseudo points class
+  template <class KernelImpl, class Calculator, class Managers,
+            class SparsePoints>
+  void bind_compute_numerical_kernel_gradients(py::module & mod) {
+    mod.def("compute_numerical_kernel_gradients",
+            &compute_numerical_kernel_gradients<KernelImpl, Calculator,
+                                                Managers, SparsePoints>,
+            py::call_guard<py::gil_scoped_release>());
+  }
+
   template <class ManagerCollection, class Calculator, class SparsePoints>
   void bind_compute_gradients(py::module & mod, py::module & /*m_internal*/) {
     using Manager_t = typename ManagerCollection::Manager_t;
@@ -159,6 +169,29 @@ namespace rascal {
             i_center += manager->size();
           }
           return gradients_global;
+        },
+        py::call_guard<py::gil_scoped_release>());
+
+    mod.def(
+        "compute_sparse_kernel_neg_stress",
+        [](const Calculator & calculator, SparseKernel & kernel,
+           ManagerCollection & managers, SparsePoints & sparse_points,
+           math::Vector_t & weights) {
+          std::string neg_stress_name = compute_sparse_kernel_neg_stress(
+              calculator, kernel, managers, sparse_points, weights);
+          math::Matrix_t neg_stress_global{managers.size(), 6};
+          size_t i_manager{0};
+          for (const auto & manager : managers) {
+            auto && neg_stress{
+                *manager
+                     ->template get_property<Property<double, 0, Manager_t, 6>>(
+                         neg_stress_name, true)};
+            neg_stress_global.block(i_manager, 0, 1, 6) =
+                Eigen::Map<const math::Matrix_t>(neg_stress.view().data(), 1,
+                                                 6);
+            i_manager++;
+          }
+          return neg_stress_global;
         },
         py::call_guard<py::gil_scoped_release>());
   }
@@ -219,5 +252,7 @@ namespace rascal {
 
     bind_compute_gradients<ManagerCollection_3_t, Calc1_t, SparsePoints_1_t>(
         mod, m_internal);
+    bind_compute_numerical_kernel_gradients<
+        SparseKernel, Calc1_t, ManagerCollection_2_t, SparsePoints_1_t>(mod);
   }
 }  // namespace rascal

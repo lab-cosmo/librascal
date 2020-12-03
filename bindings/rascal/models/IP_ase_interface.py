@@ -16,7 +16,7 @@ class ASEMLCalculator(Calculator, BaseIO):
         a representation calculator of rascal compatible with the trained model
     """
 
-    implemented_properties = ["energy", "forces"]
+    implemented_properties = ["energy", "forces", "stress"]
     "Properties calculator can handle (energy, forces, ...)"
 
     default_parameters = {}
@@ -32,7 +32,10 @@ class ASEMLCalculator(Calculator, BaseIO):
         self.manager = None
 
     def calculate(
-        self, atoms=None, properties=["energy", "forces"], system_changes=all_changes
+        self,
+        atoms=None,
+        properties=["energy", "forces", "stress"],
+        system_changes=all_changes,
     ):
         Calculator.calculate(self, atoms, properties, system_changes)
 
@@ -51,9 +54,10 @@ class ASEMLCalculator(Calculator, BaseIO):
         energy = self.model.predict(self.manager)
         self.results["energy"] = energy
         self.results["free_energy"] = energy
-
-        forces = -self.model.predict(self.manager, compute_gradients=True)
-        self.results["forces"] = forces
+        if "forces" in properties:
+            self.results["forces"] = self.model.predict_forces(self.manager)
+        if "stress" in properties:
+            self.results["stress"] = self.model.predict_stress(self.manager).flatten()
 
     def _get_init_params(self):
         init_params = dict(model=self.model, representation=self.representation)

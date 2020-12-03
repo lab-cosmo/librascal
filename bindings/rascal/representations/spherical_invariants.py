@@ -462,6 +462,10 @@ class SphericalInvariants(BaseIO):
             cutoff_function_parameters=self.cutoff_function_parameters,
             coefficient_subselection=self.coefficient_subselection,
         )
+        if "coefficient_subselection" in self.hypers:
+            init_params["coefficient_subselection"] = self.hypers[
+                "coefficient_subselection"
+            ]
         return init_params
 
     def _set_data(self, data):
