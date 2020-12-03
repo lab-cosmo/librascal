@@ -1966,6 +1966,7 @@ namespace rascal {
             expansions_coefficients_gradient, center);
       }
     }  // for (center : manager)
+    spherical_exp.set_updated_status(true);
   }    // compute()
 
   template <class StructureManager>

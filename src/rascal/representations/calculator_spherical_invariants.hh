@@ -928,6 +928,7 @@ namespace rascal {
           soap_vectors, soap_vector_gradients, manager, soap_vector_norm_inv,
           grad_component_size);
     }  // if normalize and compute_gradients
+    soap_vectors.set_updated_status(true);
   }    // compute_powerspectrum()
 
   template <
