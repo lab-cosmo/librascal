@@ -44,10 +44,14 @@ def fit_save_model(parameters):
             # Convert to int because otherwise it's a numpy type
             # (which doesn't play well with json)
             all_species = set(int(sp) for sp in all_species)
-        energy_baseline = {species: energy_baseline_in for species in all_species}
-    energy_delta = parameters.get("energy_delta", 1.0)
-    energy_regularizer = parameters["energy_regularizer"] / energy_delta
-    force_regularizer = parameters["force_regularizer"] / energy_delta
+        energy_baseline = {species: energy_baseline_in
+                           for species in all_species}
+
+    # Regularizers, fit and save model
+    energy_delta = parameters.get('energy_delta', 1.)
+    energy_regularizer = parameters['energy_regularizer'] / energy_delta
+    force_regularizer = parameters['force_regularizer'] / energy_delta
+    output_filename = parameters.get('output_filename', 'gap_model.json')
     weights = gaptools.fit_gap_simple(
         source_geoms,
         kernel_sparse,
@@ -59,10 +63,10 @@ def fit_save_model(parameters):
         kernel_forces,
         force_regularizer,
     )
-    np.save(os.path.join(WORKDIR, "weights"), weights)
+    # No longer needed, I think, because it's included in the KRR model
+    #np.save(os.path.join(WORKDIR, 'weights'), weights)
     model = rascal.models.KRR(weights, kobj, sparse_points, energy_baseline)
-    rascal.utils.dump_obj(os.path.join(WORKDIR, "gap_model.json"), model)
-
+    rascal.utils.dump_obj(os.path.join(WORKDIR, output_filename), model)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

@@ -28,6 +28,7 @@
     "energy_parameter_name": "energy",
     "force_parameter_name": "forces",
     "working_directory": "gapfit_example",
+    "output_filename": "gap_model.json",
     "warning.memory_required": "lots",
     "warning.time_required": "not too long"
 }
