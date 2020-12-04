@@ -32,6 +32,7 @@ def fit_save_model(parameters):
     if use_forces:
         fparam_name = parameters["force_parameter_name"]
         forces = np.array([geom.arrays[fparam_name] for geom in source_geoms])
+        parameters['soap_hypers']['compute_gradients'] = True
     rep, soaps, sparse_points = gaptools.calculate_and_sparsify(
         tqdm(source_geoms), parameters["soap_hypers"], parameters["n_sparse"]
     )

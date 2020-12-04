@@ -84,9 +84,6 @@ def calculate_and_sparsify(
     Returns the Representation object, the SOAP vectors, and the sparse
     points, in a 3-tuple.
     """
-    # Don't need to compute gradients to sparsify -- compute them later
-    # in the kernel step
-    rep_parameters['compute_gradients'] = False
     rep = rep_class(**rep_parameters)
     if auto_wrap:
         for geom in geoms:
@@ -97,9 +94,9 @@ def calculate_and_sparsify(
     elif selection_type.upper() == "FPS":
         # TODO random starting index? by default?
         compressor = utils.FPSFilter(rep, n_sparse, act_on="sample per species")
-    sparse_points_cur = compressor.select_and_filter(soaps)
-    utils.dump_obj(os.path.join(WORKDIR, "sparsepoints.json"), sparse_points_cur)
-    return rep, soaps, sparse_points_cur
+    sparse_points = compressor.select_and_filter(soaps)
+    utils.dump_obj(os.path.join(WORKDIR, "sparsepoints.json"), sparse_points)
+    return rep, soaps, sparse_points
 
 
 def compute_kernels(
