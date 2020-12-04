@@ -84,6 +84,9 @@ def calculate_and_sparsify(
     Returns the Representation object, the SOAP vectors, and the sparse
     points, in a 3-tuple.
     """
+    # Don't need to compute gradients to sparsify -- compute them later
+    # in the kernel step
+    rep_parameters['compute_gradients'] = False
     rep = rep_class(**rep_parameters)
     if auto_wrap:
         for geom in geoms:
