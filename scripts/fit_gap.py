@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import collections
 import os
 import sys
