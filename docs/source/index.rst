@@ -58,7 +58,7 @@ Contents
    :maxdepth: 2
 
    installation
-   tutorials/tutorials
+   tutorials/index
    whitepaper
    SOAP
    representation/representations
