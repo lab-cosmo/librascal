@@ -24,6 +24,8 @@ class IPICalculator(BaseIO):
     nolabel = True
 
     def __init__(self, model, representation, **kwargs):
+        """ TODO: get in the name of the model, and do all of the initialization stuff that is needed. 
+        If atomic info is needed, it will have to be read in here, e.g. given a reference xyz file.  """
         super(ASEMLCalculator, self).__init__(**kwargs)
         self.model = model
         self.representation = representation
@@ -36,6 +38,7 @@ class IPICalculator(BaseIO):
         properties=["energy", "forces", "stress"],
         system_changes=all_changes,
     ):
+        """ TODO: read in atomic positions and cell. Update, compute energy forces stress and return them in whatever format """
         Calculator.calculate(self, atoms, properties, system_changes)
 
         if self.manager is None:
