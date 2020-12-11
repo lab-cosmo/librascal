@@ -1,4 +1,6 @@
-from ..utils import BaseIO
+import ase.io
+
+from ..utils import BaseIO, load_obj
 from copy import deepcopy
 from ..neighbourlist.structure_manager import AtomsList, unpack_ase
 
@@ -23,13 +25,21 @@ class IPICalculator(BaseIO):
 
     nolabel = True
 
-    def __init__(self, model, representation, **kwargs):
-        """ TODO: get in the name of the model, and do all of the initialization stuff that is needed. 
-        If atomic info is needed, it will have to be read in here, e.g. given a reference xyz file.  """
-        super(ASEMLCalculator, self).__init__(**kwargs)
-        self.model = model
-        self.representation = representation
-        self.kwargs = kwargs
+    def __init__(self, model_json, structure_template):
+        """Initialize a model from i-PI
+
+        Parameters:
+            model_json  Filename for a JSON file defining the potential
+            structure_template
+                        Filename for an ASE-compatible Atoms object, used
+                        only to initialize atom types and numbers
+        """
+        super(IPICalculator, self).__init__()
+        self.model_filename = model_json
+        self.model = load_obj(model_json)
+        self.representation = self.model.get_representation_calculator()
+        self.template_filename = structure_template
+        self.atoms_template = ase.io.read(structure_template)
         self.manager = None
 
     def calculate(
@@ -38,7 +48,8 @@ class IPICalculator(BaseIO):
         properties=["energy", "forces", "stress"],
         system_changes=all_changes,
     ):
-        """ TODO: read in atomic positions and cell. Update, compute energy forces stress and return them in whatever format """
+        """ TODO: read in atomic positions and cell. Update, compute energy
+        forces stress and return them in whatever format """
         Calculator.calculate(self, atoms, properties, system_changes)
 
         if self.manager is None:
@@ -62,8 +73,10 @@ class IPICalculator(BaseIO):
             self.results["stress"] = self.model.predict_stress(self.manager).flatten()
 
     def _get_init_params(self):
-        init_params = dict(model=self.model, representation=self.representation)
-        init_params.update(**self.kwargs)
+        init_params = dict(
+            model_json=self.model_filename,
+            structure_template=self.template_filename
+        )
         return init_params
 
     def _set_data(self, data):
