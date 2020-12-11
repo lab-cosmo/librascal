@@ -25,6 +25,7 @@ RUN apt-get update && \
     apt-get install -y \
         gcc-5 g++-5 \
         gcc-9 g++-9 \
+        gcc-10 g++-10 \
         clang-4.0 \
         clang-9 \
         clang-format-9
