@@ -1,4 +1,5 @@
 import ase.io
+import ase.units
 
 from ..utils import BaseIO, load_obj
 from copy import deepcopy
@@ -20,9 +21,11 @@ class IPICalculator(BaseIO):
     implemented_properties = ["energy", "forces", "stress"]
     "Properties calculator can handle (energy, forces, ...)"
 
+    # I don't think this is needed...
     default_parameters = {}
     "Default parameters"
 
+    # Is this something required by ASE...? If so, take it out.
     nolabel = True
 
     def __init__(self, model_json, structure_template):
@@ -42,16 +45,27 @@ class IPICalculator(BaseIO):
         self.atoms_template = ase.io.read(structure_template)
         self.manager = None
 
-    def calculate(
-        self,
-        atoms=None,
-        properties=["energy", "forces", "stress"],
-        system_changes=all_changes,
-    ):
-        """ TODO: read in atomic positions and cell. Update, compute energy
-        forces stress and return them in whatever format """
-        Calculator.calculate(self, atoms, properties, system_changes)
+    def calculate(self, positions, cell_tuple):
+        """Calculate energies and forces from i-PI update
 
+        positions   Atomic positions, in atomic units (Bohr)
+        cell_tuple  Unit cell (and inverse cell), in atomic units
+
+        WARNING positions and cell are passed in atomic units.  ASE uses
+        eV and Å, so we're using that in librascal by default.
+        """
+
+        # Update ASE Atoms object (probably unnecessary to use ASE as
+        # intermediary, maybe we can just use the internal format...)
+
+        # The ASE cell convention is transposed from the i-PI convention,
+        # which adheres to the usual "cell vectors are columns" convention
+        cell_ase = cell_tuple[0].T * ase.units.Bohr
+        self.atoms.set_cell(cell_ase)
+        positions_ase = positions.reshape((-1, 3)) * ase.units.Bohr
+        self.atoms.set_positions(positions_ase)
+
+        # Convert from ASE to librascal
         if self.manager is None:
             #  happens at the begining of the MD run
             at = self.atoms.copy()
@@ -62,15 +76,17 @@ class IPICalculator(BaseIO):
             structure.pop("center_atoms_mask")
             self.manager[0].update(**structure)
 
+        # Compute representations and evaluate model
         self.manager = self.representation.transform(self.manager)
-
-        energy = self.model.predict(self.manager)
-        self.results["energy"] = energy
-        self.results["free_energy"] = energy
-        if "forces" in properties:
-            self.results["forces"] = self.model.predict_forces(self.manager)
-        if "stress" in properties:
-            self.results["stress"] = self.model.predict_stress(self.manager).flatten()
+        energy = self.model.predict(self.manager) / ase.units.Hartree
+        # TODO make sure these are in the format i-PI expects!
+        forces = (self.model.predict_forces(self.manager).flatten()
+                  / ase.units.Hartree * ase.units.Bohr)
+        # TODO virial or pressure (per volume)?  Assuming pressure...
+        # TODO convert from Voigt order to matrix, and from cell gradients
+        #      (energy units...?) to pressure (divide by volume)
+        stress = self.model.predict_stress(self.manager).flatten()
+        return energy, forces, stress
 
     def _get_init_params(self):
         init_params = dict(
