@@ -1,5 +1,6 @@
 from .io import BaseIO
 from ..lib import sparsification
+from ..models.sparse_points import SparsePoints
 
 from .filter_utils import (
     get_index_mappings_sample_per_species,
@@ -236,7 +237,6 @@ class FPSFilter(BaseIO):
             raise NotImplementedError("method: {}".format(self.act_on))
 
     def filter(self, managers, n_select=None):
-        from ..models import SparsePoints
 
         if n_select is None:
             n_select = self.Nselect

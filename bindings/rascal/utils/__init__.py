@@ -1,7 +1,3 @@
-from .fps import fps, FPSFilter
-from ..lib._rascal.utils import ostream_redirect
-from ..lib import utils
-from copy import deepcopy
 from .io import (
     BaseIO,
     to_dict,
@@ -11,6 +7,10 @@ from .io import (
     dump_obj,
     load_obj,
 )
+from .fps import fps, FPSFilter
+from ..lib._rascal.utils import ostream_redirect
+from ..lib import utils
+from copy import deepcopy
 from .cur import CURFilter
 from .scorer import get_score, print_score
 
