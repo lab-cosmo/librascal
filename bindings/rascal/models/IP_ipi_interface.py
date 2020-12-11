@@ -42,8 +42,16 @@ class IPICalculator(BaseIO):
         self.model = load_obj(model_json)
         self.representation = self.model.get_representation_calculator()
         self.template_filename = structure_template
-        self.atoms_template = ase.io.read(structure_template)
+        self.atoms = ase.io.read(structure_template)
         self.manager = None
+        self.matrix_indices_in_voigt_notation = [
+            (0, 0),
+            (1, 1),
+            (2, 2),
+            (1, 2),
+            (0, 2),
+            (0, 1),
+        ]
 
     def calculate(self, positions, cell_tuple):
         """Calculate energies and forces from i-PI update
@@ -79,14 +87,14 @@ class IPICalculator(BaseIO):
         # Compute representations and evaluate model
         self.manager = self.representation.transform(self.manager)
         energy = self.model.predict(self.manager) / ase.units.Hartree
-        # TODO make sure these are in the format i-PI expects!
         forces = (self.model.predict_forces(self.manager).flatten()
                   / ase.units.Hartree * ase.units.Bohr)
-        # TODO virial or pressure (per volume)?  Assuming pressure...
-        # TODO convert from Voigt order to matrix, and from cell gradients
-        #      (energy units...?) to pressure (divide by volume)
-        stress = self.model.predict_stress(self.manager).flatten()
-        return energy, forces, stress
+        # TODO figure out virial sign convention
+        stress_voigt = self.model.predict_stress(self.manager)
+        virial_voigt_ipi = stress_voigt * self.atoms.get_volume() / ase.units.Hartree
+        virial_ipi = np.zeros((3, 3))
+        virial_ipi[self.matrix_indices_in_voigt_notation] = virial_voigt_ipi
+        return energy, forces, virial_ipi
 
     def _get_init_params(self):
         init_params = dict(
