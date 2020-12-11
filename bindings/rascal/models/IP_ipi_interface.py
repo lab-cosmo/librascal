@@ -1,5 +1,6 @@
 import ase.io
 import ase.units
+import numpy as np
 
 from ..utils import BaseIO, load_obj
 from copy import deepcopy
@@ -43,6 +44,9 @@ class IPICalculator(BaseIO):
         self.representation = self.model.get_representation_calculator()
         self.template_filename = structure_template
         self.atoms = ase.io.read(structure_template)
+        # Assume PBC is on
+        # TODO how does i-PI tell us that we're running a non-periodic simulation?
+        self.atoms.pbc = True
         self.manager = None
         self.matrix_indices_in_voigt_notation = [
             (0, 0),
@@ -93,7 +97,7 @@ class IPICalculator(BaseIO):
         stress_voigt = self.model.predict_stress(self.manager)
         virial_voigt_ipi = stress_voigt * self.atoms.get_volume() / ase.units.Hartree
         virial_ipi = np.zeros((3, 3))
-        virial_ipi[self.matrix_indices_in_voigt_notation] = virial_voigt_ipi
+        virial_ipi[tuple(zip(*self.matrix_indices_in_voigt_notation))] = virial_voigt_ipi
         return energy, forces, virial_ipi
 
     def _get_init_params(self):
