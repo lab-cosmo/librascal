@@ -91,19 +91,26 @@ class IPICalculator(BaseIO):
         # Compute representations and evaluate model
         self.manager = self.representation.transform(self.manager)
         energy = self.model.predict(self.manager) / ase.units.Hartree
-        forces = (self.model.predict_forces(self.manager).flatten()
-                  / ase.units.Hartree * ase.units.Bohr)
+        forces = (
+            self.model.predict_forces(self.manager).flatten()
+            / ase.units.Hartree
+            * ase.units.Bohr
+        )
         # TODO figure out virial sign convention
+        # It _seems_ that the librascal convention is the opposite of what
+        # i-pi expects, from numerical experiments, but it would be nice to
+        # get verification.
         stress_voigt = self.model.predict_stress(self.manager)
         virial_voigt_ipi = stress_voigt * self.atoms.get_volume() / ase.units.Hartree
         virial_ipi = np.zeros((3, 3))
-        virial_ipi[tuple(zip(*self.matrix_indices_in_voigt_notation))] = virial_voigt_ipi
-        return energy, forces, virial_ipi
+        virial_ipi[
+            tuple(zip(*self.matrix_indices_in_voigt_notation))
+        ] = virial_voigt_ipi
+        return energy, forces, -1 * virial_ipi
 
     def _get_init_params(self):
         init_params = dict(
-            model_json=self.model_filename,
-            structure_template=self.template_filename
+            model_json=self.model_filename, structure_template=self.template_filename
         )
         return init_params
 
