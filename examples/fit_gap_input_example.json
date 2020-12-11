@@ -1,5 +1,8 @@
 {
+    "description": "Example fit of a SOAP-GAP model with energies and forces from an XYZ file",
     "structure_filename": "yourfile.xyz",
+    "units": {"energy": "eV",
+              "length": "AA"},
     "structure_subset": ":50",
     "soap_hypers": {
         "soap_type": "PowerSpectrum",

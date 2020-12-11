@@ -23,15 +23,38 @@ class KRR(BaseIO):
     self_contributions : dictionary
         map atomic number to the property baseline, e.g. isolated atoms
         energies when the model has been trained on total energies.
+
+    description : string
+        User-defined string used to describe the model for future reference
+
+    units : dict
+        Energy and length units used by the model (default: eV and Å (aka AA),
+        same as used in ASE)
     """
 
-    def __init__(self, weights, kernel, X_train, self_contributions):
+    def __init__(
+        self,
+        weights,
+        kernel,
+        X_train,
+        self_contributions,
+        description="KRR potential model",
+        units=None,
+    ):
         # Weights of the krr model
         self.weights = weights
         self.kernel = kernel
         self.X_train = X_train
         self.self_contributions = self_contributions
         self.target_type = kernel.target_type
+        self.description = description
+        if units is None:
+            units = dict()
+        if "energy" not in units:
+            units["energy"] = "eV"
+        if "length" not in units:
+            units["length"] = "AA"
+        self.units = units
 
     def _get_property_baseline(self, managers):
         """build total baseline contribution for each prediction"""
@@ -186,6 +209,8 @@ class KRR(BaseIO):
             kernel=self.kernel,
             X_train=self.X_train,
             self_contributions=self.self_contributions,
+            description=self.description,
+            units=self.units.copy(),
         )
         return init_params
 
