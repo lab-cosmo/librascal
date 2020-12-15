@@ -5,7 +5,7 @@ version: 2
 # indicated by the CC/CXX environment variables.
 default_job: &default_job
   docker:
-    - image: cosmoepfl/rascal-ci:3
+    - image: cosmoepfl/rascal-ci:4
   steps:
     - checkout
     - run:
