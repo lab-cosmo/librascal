@@ -5,7 +5,7 @@ version: 2
 # indicated by the CC/CXX environment variables.
 default_job: &default_job
   docker:
-    - image: cosmoepfl/rascal-ci:4
+    - image: cosmoepfl/rascal-ci:5
   steps:
     - checkout
     - run:
@@ -69,8 +69,8 @@ jobs:
     <<: *default_job
   valgrind:
     environment:
-      CC: gcc-9
-      CXX: g++-9
+      CC: gcc-10
+      CXX: g++-10
       CMAKE_EXTRA: -DRASCAL_TESTS_USE_VALGRIND=ON -DTYPE_ARCHITECTURE=core2
     <<: *default_job
 
@@ -188,8 +188,8 @@ workflows:
       - valgrind
       - coverage
       - gcc-5
-      - gcc-10-debug
       - gcc-10
+      - gcc-10-debug
       - clang-4
       - clang-9
       - clang-9-debug
