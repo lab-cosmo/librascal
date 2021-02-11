@@ -1,8 +1,13 @@
-from ..utils import BaseIO
+from ..utils import BaseIO, is_notebook
 from ..lib import compute_sparse_kernel_gradients, compute_sparse_kernel_neg_stress
 
 import numpy as np
 import ase
+
+if is_notebook():
+    from tqdm.notebook import tqdm
+else:
+    from tqdm import tqdm
 
 
 class KRR(BaseIO):
@@ -199,11 +204,43 @@ class KRR(BaseIO):
         return self.kernel._rep
 
 
+def get_strides(frames):
+    Nstructures = len(frames)
+    Ngrad_stride = [0]
+    Ngrads = 0
+    for frame in frames:
+        n_at = len(frame)
+        Ngrad_stride.append(n_at * 3)
+        Ngrads += n_at * 3
+    Ngrad_stride = np.cumsum(Ngrad_stride) + Nstructures
+    return Nstructures, Ngrads, Ngrad_stride
+
+
+def compute(i_frame, frame, representation, X_sparse, kernel):
+    feat = representation.transform([frame])
+    en_row = kernel(feat, X_sparse)
+    grad_rows = kernel(feat, X_sparse, grad=(True, False))
+    return en_row, grad_rows
+
+
+def compute_KNM(frames, X_sparse, kernel, soap):
+    Nstructures, Ngrads, Ngrad_stride = get_strides(frames)
+    KNM = np.zeros((Nstructures + Ngrads, X_sparse.size()))
+    pbar = tqdm(frames, desc="compute KNM", leave=False)
+    for i_frame, frame in enumerate(frames):
+        en_row, grad_rows = compute(i_frame, frame, soap, X_sparse, kernel)
+        KNM[Ngrad_stride[i_frame] : Ngrad_stride[i_frame + 1]] = grad_rows
+        KNM[i_frame] = en_row
+        pbar.update()
+    pbar.close()
+    return KNM
+
+
 def train_gap_model(
     kernel,
-    managers,
+    frames,
     KNM_,
-    X_pseudo,
+    X_sparse,
     y_train,
     self_contributions,
     grad_train=None,
@@ -253,15 +290,15 @@ def train_gap_model(
     kernel : Kernel
         SparseKernel to compute KMM and initialize the model. It was used to
         build KNM_.
-    managers : AtomsList
-        Training structures with features (and gradients)
+    frames : list(ase.Atoms)
+        Training structures
     KNM_ : np.array
         kernel matrix to use in the training, typically computed with:
-        KNM = kernel(managers, X_pseudo)
-        KNM_down = kernel(managers, X_pseudo, grad=(True, False))
+        KNM = kernel(managers, X_sparse)
+        KNM_down = kernel(managers, X_sparse, grad=(True, False))
         KNM = np.vstack([KNM, KNM_down])
         when training with derivatives.
-    X_pseudo : SparsePoints
+    X_sparse : SparsePoints
         basis samples to use in the model's interpolation
     y_train : np.array
         reference property
@@ -291,16 +328,16 @@ def train_gap_model(
         In Handbook of Materials Modeling (pp. 1–27). Springer, Cham.
         https://doi.org/10.1007/978-3-319-42913-7_68-1
     """
-    KMM = kernel(X_pseudo)
+    KMM = kernel(X_sparse)
     Y = y_train.reshape((-1, 1)).copy()
     KNM = KNM_.copy()
     n_centers = Y.shape[0]
     Natoms = np.zeros(n_centers)
     Y0 = np.zeros((n_centers, 1))
-    for iframe, manager in enumerate(managers):
-        Natoms[iframe] = len(manager)
-        for center in manager:
-            Y0[iframe] += self_contributions[center.atom_type]
+    for iframe, frame in enumerate(frames):
+        Natoms[iframe] = len(frame)
+        for sp in frame.get_atomic_numbers():
+            Y0[iframe] += self_contributions[sp]
     Y = Y - Y0
     delta = np.std(Y)
     # lambdas[0] is provided per atom hence the '* np.sqrt(Natoms)'
@@ -320,7 +357,7 @@ def train_gap_model(
     K = KMM + np.dot(KNM.T, KNM)
     Y = np.dot(KNM.T, Y)
     weights = np.linalg.lstsq(K, Y, rcond=None)[0]
-    model = KRR(weights, kernel, X_pseudo, self_contributions)
+    model = KRR(weights, kernel, X_sparse, self_contributions)
 
     # avoid memory clogging
     del K, KMM
