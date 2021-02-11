@@ -8,7 +8,7 @@ from ..neighbourlist.structure_manager import AtomsList, unpack_ase
 
 
 class IPICalculator(BaseIO):
-    """Wrapper class to use a rascal model as an interatomic potential in ASE
+    """Wrapper class to use a rascal model as an interatomic potential in i-PI
 
     Parameters
     ----------
@@ -22,11 +22,9 @@ class IPICalculator(BaseIO):
     implemented_properties = ["energy", "forces", "stress"]
     "Properties calculator can handle (energy, forces, ...)"
 
-    # I don't think this is needed...
     default_parameters = {}
     "Default parameters"
 
-    # Is this something required by ASE...? If so, take it out.
     nolabel = True
 
     def __init__(self, model_json, structure_template):
@@ -44,8 +42,7 @@ class IPICalculator(BaseIO):
         self.representation = self.model.get_representation_calculator()
         self.template_filename = structure_template
         self.atoms = ase.io.read(structure_template)
-        # Assume PBC is on
-        # TODO how does i-PI tell us that we're running a non-periodic simulation?
+        # Assume PBC is on, since i-PI always has a cell defined.
         self.atoms.pbc = True
         self.manager = None
         self.matrix_indices_in_voigt_notation = [
