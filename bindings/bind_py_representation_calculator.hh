@@ -35,6 +35,7 @@
 #include "rascal/representations/calculator_sorted_coulomb.hh"
 #include "rascal/representations/calculator_spherical_covariants.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
+#include "rascal/representations/calculator_spherical_expansion_kspace.hh"
 #include "rascal/representations/calculator_spherical_invariants.hh"
 
 namespace rascal {

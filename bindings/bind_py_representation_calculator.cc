@@ -140,6 +140,11 @@ namespace rascal {
     auto rep_lambda_soap =
         add_representation_calculator<Calc4_t>(mod, m_internal);
     bind_compute_function_helper<ManagerList_1_t>(rep_lambda_soap);
+
+    using Calc5_t = CalculatorKspaceSphericalExpansion;
+    auto rep_spherical_expansion_kspace =
+        add_representation_calculator<Calc5_t>(mod, m_internal);
+    bind_compute_function_helper<ManagerList_1_t>(rep_spherical_expansion_kspace);
   }
 
 }  // namespace rascal
