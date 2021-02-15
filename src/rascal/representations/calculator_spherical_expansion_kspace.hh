@@ -62,149 +62,6 @@ namespace rascal {
   namespace internal {
 
     /**
-    * List of possible Radial basis that can be used by the spherical
-    * expansion.
-    */
-    //enum class RadialBasisType { GTO, DVR, End_ };
-
-    /**
-     * List of possible atomic smearing for the definition of the atomic
-     * density. If not specified, the gaussian type smearing is implided.
-     */
-    //enum class AtomicSmearingType { Constant, PerSpecies, Radial, End_ };
-
-    /**
-     * List of possible usages of interpolator. Currently only full usage
-     * or no usage is allowed, but a hybrid could be added in the future.
-     */
-    //enum class OptimizationType { None, Interpolator, End_ };
-
-    /**
-     * Combines radial contribution parameters to one unique value.
-     */
-    //constexpr size_t
-    //combine_to_radial_contribution_type(RadialBasisType basis_type,
-    //                                    AtomicSmearingType smearing_type,
-    //                                    OptimizationType opt_type) {
-    //  return internal::combine_enums(basis_type, smearing_type, opt_type);
-    //}
-
-    /**
-     * Base class for the specification of the atomic smearing.
-     */
-    //struct AtomicSmearingSpecificationBase {
-    //  //! Constructor
-    //  AtomicSmearingSpecificationBase() = default;
-    //  //! Destructor
-    //  virtual ~AtomicSmearingSpecificationBase() = default;
-    //  //! Copy constructor
-    //  AtomicSmearingSpecificationBase(
-    //      const AtomicSmearingSpecificationBase & other) = delete;
-    //  //! Move constructor
-    //  AtomicSmearingSpecificationBase(
-    //      AtomicSmearingSpecificationBase && other) = default;
-    //  //! Copy assignment operator
-    //  AtomicSmearingSpecificationBase &
-    //  operator=(const AtomicSmearingSpecificationBase & other) = delete;
-    //  //! Move assignment operator
-    //  AtomicSmearingSpecificationBase &
-    //  operator=(AtomicSmearingSpecificationBase && other) = default;
-//
-//      using Hypers_t = CalculatorBase::Hypers_t;
-//    };
-
-    /**
-     * Specification to hold the parameter for the atomic smearing function,
-     * currently only Gaussians are supported.
-     *
-     * This is \f$\sigma\f$ in the definition
-     * \f$f(r) = A \exp{\frac{-r^2}{2 \sigma^2}}\f$.
-     * The width may depend both on the atomic species of the neighbour as well
-     * as the distance.
-     *
-     * Note that this function is template-specialized by Gaussian sigma type
-     * (constant, per-species, or radially dependent).
-     *
-     * @param pair Atom pair defining the neighbour, as e.g. returned by
-     *             iteration over neighbours of a centre
-     *
-     * @throw logic_error if the requested sigma type has not been implemented
-     *
-     */
-//    template <AtomicSmearingType SigmaType>
-//    struct AtomicSmearingSpecification {};
-//
-//    template <>
-//    struct AtomicSmearingSpecification<AtomicSmearingType::Constant>
-//        : AtomicSmearingSpecificationBase {
-//      using Hypers_t = typename AtomicSmearingSpecificationBase::Hypers_t;
-//      explicit AtomicSmearingSpecification(const Hypers_t & hypers) {
-//        this->constant_gaussian_sigma =
-//            hypers.at("gaussian_sigma").at("value").get<double>();
-//        if (this->constant_gaussian_sigma < 5e-2) {
-//          std::stringstream err_str{};
-//          err_str << "Constant gaussian sigma is too small: "
-//                  << this->constant_gaussian_sigma << " < 5e-2";
-//          throw std::runtime_error(err_str.str());
-//        }
-//      }
-//      template <size_t Order, size_t Layer>
-//      double
-//      get_gaussian_sigma(const ClusterRefKey<Order, Layer> & /* pair */) {
-//        return this->constant_gaussian_sigma;
-//      }
-//      double get_gaussian_sigma() { return this->constant_gaussian_sigma; }
-//      double constant_gaussian_sigma{0.};
-//    };
-//
-//    /** Per-species template specialization of the above */
-//
-//    template <>
-//    struct AtomicSmearingSpecification<AtomicSmearingType::PerSpecies>
-//        : AtomicSmearingSpecificationBase {
-//      using Hypers_t = typename AtomicSmearingSpecificationBase::Hypers_t;
-//      explicit AtomicSmearingSpecification(const Hypers_t & /* hypers */) {}
-//      template <size_t Order, size_t Layer>
-//      double
-//      get_gaussian_sigma(const ClusterRefKey<Order, Layer> & /* pair */) {
-//        throw std::logic_error("Requested a sigma type that has not yet "
-//                               "been implemented");
-//        return -1;
-//      }
-//    };
-//
-//    /** Radially-dependent template specialization of the above */
-//    template <>
-//    struct AtomicSmearingSpecification<AtomicSmearingType::Radial>
-//        : AtomicSmearingSpecificationBase {
-//      using Hypers_t = typename AtomicSmearingSpecificationBase::Hypers_t;
-//      explicit AtomicSmearingSpecification(const Hypers_t & /* hypers */) {}
-//      template <size_t Order, size_t Layer>
-//      double
-//      get_gaussian_sigma(const ClusterRefKey<Order, Layer> & /* pair */) {
-//        throw std::logic_error("Requested a sigma type that has not yet "
-//                               "been implemented");
-//        return -1;
-//      }
-//    };
-//
-//    //! Utility to make shared pointer and cast to base class
-//    template <AtomicSmearingType Type, class Hypers>
-//    auto make_atomic_smearing(const Hypers & sigma_hypers) {
-//      return std::static_pointer_cast<AtomicSmearingSpecificationBase>(
-//          std::make_shared<AtomicSmearingSpecification<Type>>(sigma_hypers));
-//    }
-//
-//    //! Utility to cast base to child class
-//    template <AtomicSmearingType Type>
-//    auto downcast_atomic_smearing(
-//        const std::shared_ptr<AtomicSmearingSpecificationBase> &
-//            atomic_smearing) {
-//      return std::static_pointer_cast<AtomicSmearingSpecification<Type>>(
-//          atomic_smearing);
-//    }
-
-    /**
      * Base class to define the radial contribution to the spherical expansion
      */
     struct RadialContributionKspaceBase {
@@ -247,24 +104,6 @@ namespace rascal {
     /**
      * Implementation of the radial contribution for Gaussian Type Orbitals
      * radial basis functions and gaussian smearing of the atom density.
-     *
-     * @f[
-     *      R^{GTO}_{n}(r) = \mathcal{N}_n\ r^{n} \exp[-br^2]
-     * @f]
-     *
-     * @f{gather*}
-     *      \newcommand{\dd}{\mathrm{d}\,}
-     *      \mathcal{N}_n^2 = \frac{2}{\sigma_n^{2n + 3}\Gamma(n + 3/2)}\\
-     *      \sigma_n = (r_\text{cut}-\delta r_\text{cut})
-     *      \max(\sqrt{n},1)/n_\text{max}\\
-     *      b=\frac{1}{2\sigma_n}\\
-     *      \int_0^\infty R^{GTO}_{n}(r) R^{GTO}_{n^\prime}(r)
-     *      \dd{r}= 2 \left(\frac{1}{2 \sigma_{n}^2}+
-     *      \frac{1}{2 \sigma_{n^\prime}^2} \right)^{-\frac{1}{2}
-     *      (3+n+n^\prime)} \Gamma(\frac{3+n+n^\prime}{2})
-     * @f}
-     *
-     * See [the theory page](../SOAP.html#gto-like-radial-basis) for more
      * details.
      */
     template <>
@@ -2133,4 +1972,4 @@ namespace nlohmann {
   };
 }  // namespace nlohmann
 
-#endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
+#endif  // SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_KSPACE_HH_

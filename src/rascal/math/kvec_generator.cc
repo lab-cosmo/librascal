@@ -110,9 +110,9 @@ void Kvectors::precompute(Matrix_t basisvecs,
       if (normsq <= kcutsq) // Point inside sphere
       {
           kval(nk) = sqrt(normsq);
-          kvec(0, nk) = kx;
-          kvec(1, nk) = ky;
-          kvec(2, nk) = kz;
+          kvec(nk, 0) = kx;
+          kvec(nk, 1) = ky;
+          kvec(nk, 2) = kz;
           nk += 1;
       }
   }
@@ -137,9 +137,9 @@ void Kvectors::precompute(Matrix_t basisvecs,
           if (normsq <= kcutsq) // Point inside sphere
           {
               kval(nk) = sqrt(normsq);
-              kvec(0, nk) = kx;
-              kvec(1, nk) = ky;
-              kvec(2, nk) = kz;
+              kvec(nk, 0) = kx;
+              kvec(nk, 1) = ky;
+              kvec(nk, 2) = kz;
               nk += 1;
           }
       }
@@ -168,9 +168,9 @@ void Kvectors::precompute(Matrix_t basisvecs,
               if (normsq <= kcutsq) // Point inside sphere
               {
                   kval(nk) = sqrt(normsq);
-                  kvec(0, nk) = kx;
-                  kvec(1, nk) = ky;
-      	          kvec(2, nk) = kz;
+                  kvec(nk, 0) = kx;
+                  kvec(nk, 1) = ky;
+      	          kvec(nk, 2) = kz;
                   nk += 1;
               }
           }
