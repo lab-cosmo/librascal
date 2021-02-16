@@ -1,5 +1,5 @@
 /**
- * @file   rascal/representations/calculator_spherical_expansion_kspace.hh
+ * @file   rascal/representations/scattering_factors.hh
  *
  * @author Max Veit <max.veit@epfl.ch>
  * @author Felix Musil <felix.musil@epfl.ch>
@@ -28,8 +28,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef SRC_RASCAL_REPRESENTATIONS_GEOMETRIC_KSPACE_FACTORS_HH_
-#define SRC_RASCAL_REPRESENTATIONS_GEOMETRIC_KSPACE_FACTORS_HH_
+#ifndef SRC_RASCAL_REPRESENTATIONS_SCATTERING_FACTORS_HH_
+#define SRC_RASCAL_REPRESENTATIONS_SCATTERING_FACTORS_HH_
 
 #include "rascal/math/hyp1f1.hh"
 #include "rascal/math/interpolator.hh"
@@ -298,7 +298,7 @@ namespace rascal {
 
       std::shared_ptr<AtomicSmearingSpecificationBase> atomic_smearing{};
       AtomicSmearingType atomic_smearing_type{};
-      math::Hyp1f1SphericalExpansion hyp1f1_calculator{true, 1e-13, 200};
+      math::Hyp1f1 hyp1f1_calculator{true, 1e-13, 200};
       // data member used to store the contributions to the expansion
       Matrix_t radial_integral_neighbour{};
 
@@ -495,4 +495,4 @@ namespace rascal {
 
 }  // namespace rascal
 
-#endif  // SRC_RASCAL_REPRESENTATIONS_GEOMETRIC_KSPACE_FACTORS_HH_
+#endif  // SRC_RASCAL_REPRESENTATIONS_SCATTERING_FACTORS_HH_
