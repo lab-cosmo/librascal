@@ -69,23 +69,6 @@ namespace rascal {
         radial_integral);
   }
 
-  template <internal::RadialBasisType RBT, internal::AtomicSmearingType AST,
-            internal::OptimizationType OT, class Hypers>
-  auto make_radial_integral_kspace_handler(const Hypers & basis_hypers) {
-    return std::static_pointer_cast<internal::RadialContributionKspaceBase>(
-        std::make_shared<internal::RadialContributionKspaceHandler<RBT, AST, OT>>(
-            basis_hypers));
-  }
-
-  template <internal::RadialBasisType RBT, internal::AtomicSmearingType AST,
-            internal::OptimizationType OT>
-  auto downcast_radial_integral_handler(
-      const std::shared_ptr<internal::RadialContributionKspaceBase> &
-          radial_integral) {
-    return std::static_pointer_cast<
-        internal::RadialContributionKspaceHandler<RBT, AST, OT>>(radial_integral);
-  }
-
   /**
    * Handles the expansion of an environment in a spherical and radial basis.
    *
@@ -134,9 +117,7 @@ namespace rascal {
      *                    specified in the structure
      */
     void set_hyperparameters(const Hypers_t & hypers) override {
-      using internal::AtomicSmearingType;
       using internal::CutoffFunctionType;
-      using internal::OptimizationType;
       using internal::RadialBasisType;
       this->hypers = hypers;
 
@@ -192,24 +173,6 @@ namespace rascal {
       // expansion. the atomic smearing is an integral part of the
       // radial contribution
       auto smearing_hypers = hypers.at("gaussian_density").get<json>();
-      auto smearing_type = smearing_hypers.at("type").get<std::string>();
-
-      if (smearing_type == "Constant") {
-        this->atomic_smearing_type = AtomicSmearingType::Constant;
-      } else if (smearing_type == "PerSpecies") {
-        throw std::logic_error("Requested Smearing type \'PerSpecies\'"
-                               "\' has not been implemented.  Must be one of"
-                               ": \'Constant\'.");
-      } else if (smearing_type == "Radial") {
-        throw std::logic_error("Requested Smearing type \'Radial\'"
-                               "\' has not been implemented.  Must be one of"
-                               ": \'Constant\'.");
-      } else {
-        throw std::logic_error("Requested Smearing type \'" + smearing_type +
-                               "\' is unknown.  Must be one of" +
-                               ": \'Constant\'.");
-      }
-
       auto radial_contribution_hypers =
           hypers.at("radial_contribution").get<json>();
       auto radial_contribution_type =
@@ -221,7 +184,6 @@ namespace rascal {
       if (radial_contribution_type == "GTO") {
         auto rc_shared = std::make_shared<
             internal::RadialContributionKspace<RadialBasisType::GTO>>(hypers);
-        this->atomic_smearing_type = rc_shared->atomic_smearing_type;
         this->radial_integral = rc_shared;
         this->radial_integral_type = RadialBasisType::GTO;
       } else {
@@ -229,54 +191,6 @@ namespace rascal {
                                radial_contribution_type +
                                "\' has not been implemented.  Must be one of" +
                                ": \'GTO\'. ");
-      }
-
-      if (radial_contribution_hypers.find("optimization") !=
-          radial_contribution_hypers.end()) {
-        auto optimization_hypers =
-            radial_contribution_hypers.at("optimization").get<json>();
-        if (optimization_hypers.find("type") != optimization_hypers.end()) {
-          auto intp_type_name{
-              optimization_hypers.at("type").get<std::string>()};
-          if (intp_type_name == "Spline") {
-            this->optimization_type = OptimizationType::Interpolator;
-          } else {
-            std::runtime_error("Wrongly configured optimization type. Remove "
-                               "optimization flag or use as type \'Spline\'.");
-          }
-        } else {
-          std::runtime_error("Wrongly configured optimization. Please name an "
-                             "optimization type.");
-        }
-      } else {  // Default false (don't use interpolator)
-        this->optimization_type = OptimizationType::None;
-      }
-
-      switch (internal::combine_to_radial_contribution_type(
-          this->radial_integral_type, this->atomic_smearing_type,
-          this->optimization_type)) {
-      case internal::combine_to_radial_contribution_type(
-          RadialBasisType::GTO, AtomicSmearingType::Constant,
-          OptimizationType::None): {
-        auto rc_shared = std::make_shared<internal::RadialContributionKspaceHandler<
-            RadialBasisType::GTO, AtomicSmearingType::Constant,
-            OptimizationType::None>>(hypers);
-        this->radial_integral = rc_shared;
-        break;
-      }
-      case internal::combine_to_radial_contribution_type(
-          RadialBasisType::GTO, AtomicSmearingType::Constant,
-          OptimizationType::Interpolator): {
-        auto rc_shared = std::make_shared<internal::RadialContributionKspaceHandler<
-            RadialBasisType::GTO, AtomicSmearingType::Constant,
-            OptimizationType::Interpolator>>(hypers);
-        this->radial_integral = rc_shared;
-        break;
-      }
-      default:
-        throw std::logic_error(
-            "The desired combination of parameters can not be handled.");
-        break;
       }
 
       auto fc_hypers = hypers.at("cutoff_function").get<json>();
@@ -308,9 +222,7 @@ namespace rascal {
           (this->interpolator_accuracy == other.interpolator_accuracy) and
           (this->max_radial == other.max_radial) and
           (this->max_angular == other.max_angular) and
-          (this->atomic_smearing_type == other.atomic_smearing_type) and
           (this->radial_integral_type == other.radial_integral_type) and
-          (this->optimization_type == other.optimization_type) and
           (this->cutoff_function_type == other.cutoff_function_type)};
       return is_equal;
     }
@@ -350,16 +262,13 @@ namespace rascal {
         : CalculatorBase{std::move(other)}, interaction_cutoff{std::move(
                                                 other.interaction_cutoff)},
           cutoff_smooth_width{std::move(other.cutoff_smooth_width)},
-          interpolator_accuracy{std::move(other.interpolator_accuracy)},
           max_radial{std::move(other.max_radial)}, max_angular{std::move(
                                                        other.max_angular)},
           compute_gradients{std::move(other.compute_gradients)},
           expansion_by_species{std::move(other.expansion_by_species)},
           global_species{std::move(other.global_species)},
-          atomic_smearing_type{std::move(other.atomic_smearing_type)},
           radial_integral{std::move(other.radial_integral)},
           radial_integral_type{std::move(other.radial_integral_type)},
-          optimization_type{std::move(other.optimization_type)},
           cutoff_function{std::move(other.cutoff_function)},
           cutoff_function_type{std::move(other.cutoff_function_type)},
           spherical_harmonics{std::move(other.spherical_harmonics)} {}
@@ -395,33 +304,30 @@ namespace rascal {
     template <
         internal::CutoffFunctionType FcType,
         internal::RadialBasisType RadialType,
-        internal::AtomicSmearingType SmearingType,
-        internal::OptimizationType OptType, class StructureManager,
+        class StructureManager,
         std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
                          int> = 0>
     void compute_loop(StructureManager & managers) {
       for (auto & manager : managers) {
-        this->compute_impl<FcType, RadialType, SmearingType, OptType>(manager);
+        this->compute_impl<FcType, RadialType>(manager);
       }
     }
 
     //! single manager case
     template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
-              internal::AtomicSmearingType SmearingType,
-              internal::OptimizationType OptType, class StructureManager,
+              class StructureManager,
               std::enable_if_t<
                   not(internal::is_proper_iterator<StructureManager>::value),
                   int> = 0>
     void compute_loop(StructureManager & manager) {
-      this->compute_impl<FcType, RadialType, SmearingType, OptType>(manager);
+      this->compute_impl<FcType, RadialType>(manager);
     }
 
     //! Compute the spherical exansion given several options
     template <internal::CutoffFunctionType FcType,
               internal::RadialBasisType RadialType,
-              internal::AtomicSmearingType SmearingType,
-              internal::OptimizationType OptType, class StructureManager>
+              class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
    protected:
@@ -452,12 +358,8 @@ namespace rascal {
     //! user defined species appearing in the expansion indexing
     std::set<Key_t> global_species{};
 
-    internal::AtomicSmearingType atomic_smearing_type{};
-
     std::shared_ptr<internal::RadialContributionKspaceBase> radial_integral{};
     internal::RadialBasisType radial_integral_type{};
-
-    internal::OptimizationType optimization_type{};
 
     std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
     internal::CutoffFunctionType cutoff_function_type{};
@@ -548,46 +450,8 @@ namespace rascal {
   void CalculatorKspaceSphericalExpansion::compute_by_radial_contribution(
       StructureManager & managers) {
     // specialize based on the type of radial contribution
-    using internal::AtomicSmearingType;
-    using internal::OptimizationType;
     using internal::RadialBasisType;
 
-    switch (internal::combine_to_radial_contribution_type(
-        this->radial_integral_type, this->atomic_smearing_type,
-        this->optimization_type)) {
-    case internal::combine_to_radial_contribution_type(
-        RadialBasisType::GTO, AtomicSmearingType::Constant,
-        OptimizationType::None): {
-      this->compute_loop<FcType, RadialBasisType::GTO,
-                         AtomicSmearingType::Constant, OptimizationType::None>(
-          managers);
-      break;
-    }
-    case internal::combine_to_radial_contribution_type(
-        RadialBasisType::GTO, AtomicSmearingType::Constant,
-        OptimizationType::Interpolator): {
-      this->compute_loop<FcType, RadialBasisType::GTO,
-                         AtomicSmearingType::Constant,
-                         OptimizationType::Interpolator>(managers);
-      break;
-    }
-    default:
-      // The control flow really should never reach here.  In this case, any
-      // "invalid combination of parameters" should have already been handled at
-      // the parameter processing stage where the user can be notified in a
-      // helpful way.  But in case we do get here, provide the necessary
-      // information to debug this problem.
-      std::basic_ostringstream<char> err_message;
-      err_message << "Invalid combination of atomic smearing and radial basis ";
-      err_message << "type encountered (This is a bug.  Debug info for ";
-      err_message << "developers: "
-                  << "radial_integral_type == ";
-      err_message << static_cast<int>(this->radial_integral_type);
-      err_message << ", atomic_smearing_type == ";
-      err_message << static_cast<int>(this->atomic_smearing_type);
-      err_message << ")" << std::endl;
-      throw std::logic_error(err_message.str());
-    }
   }  // namespace rascal
 
   /**
@@ -595,8 +459,7 @@ namespace rascal {
    */
   template <internal::CutoffFunctionType FcType,
             internal::RadialBasisType RadialType,
-            internal::AtomicSmearingType SmearingType,
-            internal::OptimizationType OptType, class StructureManager>
+            class StructureManager>
   void CalculatorKspaceSphericalExpansion::compute_impl(
       std::shared_ptr<StructureManager> manager) {
     using Prop_t = Property_t<StructureManager>;
@@ -658,7 +521,7 @@ namespace rascal {
     auto cutoff_function{
         downcast_cutoff_function<FcType>(this->cutoff_function)};
     auto radial_integral{
-        downcast_radial_integral_handler<RadialType, SmearingType, OptType>(
+        downcast_radial_integral_handler<RadialType>(
             this->radial_integral)};
 
     auto n_row{this->max_radial};
