@@ -101,8 +101,6 @@ namespace rascal {
       explicit RadialContributionKspace(const Hypers_t & hypers) {
         this->set_hyperparameters(hypers);
         this->precompute();
-        //this->compute_radial_integral();
-	//this->hyp1f1_calculator();
       }
       // Destructor
       virtual ~RadialContributionKspace() = default;
@@ -129,12 +127,6 @@ namespace rascal {
 	this->hypers = hypers;
         this->max_radial = hypers.at("max_radial");
         this->max_angular = hypers.at("max_angular");
-        // Gradient?
-        if (hypers.find("compute_gradients") != hypers.end()) {
-          this->compute_gradients = hypers.at("compute_gradients").get<bool>();
-        } else {  
-          this->compute_gradients = false;
-        }
 
         // Initialize size of the member arrays
         this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
@@ -143,8 +135,6 @@ namespace rascal {
         this->radial_sigmas.resize(this->max_radial, 1);
         this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
         this->radial_integral.resize(this->max_radial, this->max_angular + 1);
-        this->radial_integral_neighbour.resize(this->max_radial,
-                                               this->max_angular + 1);
 
         // find the cutoff radius of the representation
         auto fc_hypers = hypers.at("cutoff_function").get<json>();
@@ -254,16 +244,11 @@ namespace rascal {
                this->radial_ortho_matrix;
       }
 
-      // data member used to store the contributions to the expansion
-      Matrix_t radial_integral_neighbour{};
-
       Hypers_t hypers{};
       // some usefull parameters
       double interaction_cutoff{};
       size_t max_radial{};
       size_t max_angular{};
-      double kval;
-      bool compute_gradients{};
 
       // \sigma_n = (r_\text{cut}-\delta r_\text{cut}) \max(\sqrt{n},1)/n_\text{max}
       Vector_t radial_sigmas{};
