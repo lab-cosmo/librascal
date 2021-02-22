@@ -446,14 +446,6 @@ namespace rascal {
     }
   }
 
-  template <internal::CutoffFunctionType FcType, class StructureManager>
-  void CalculatorKspaceSphericalExpansion::compute_by_radial_contribution(
-      StructureManager & managers) {
-    // specialize based on the type of radial contribution
-    using internal::RadialBasisType;
-
-  }  // namespace rascal
-
   /**
    * Compute the spherical expansion
    */
