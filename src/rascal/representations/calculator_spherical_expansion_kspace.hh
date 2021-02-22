@@ -553,6 +553,13 @@ namespace rascal {
     // coeff C^{ij}_{nlm}
     auto c_ij_nlm = math::Matrix_t(n_row, n_col);
 
+    
+//    for (auto center : manager) {
+//        this->spherical_harmonics.calc(kvers);
+//        auto && harmonics{spherical_harmonics.get_harmonics()};
+
+    
+    // Start the accumulation 
     for (auto center : manager) {
       // c^{i}
       auto & coefficients_center = expansions_coefficients[center];
@@ -562,7 +569,6 @@ namespace rascal {
       auto atom_i_tag = center.get_atom_tag();
       Key_t center_type{center.get_atom_type()};
 
-      // Start the accumulation 
       for (auto neigh : center.pairs()) {
         auto atom_j = neigh.get_atom_j();
         const int atom_j_tag = atom_j.get_atom_tag();

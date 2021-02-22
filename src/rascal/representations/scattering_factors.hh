@@ -32,7 +32,6 @@
 #define SRC_RASCAL_REPRESENTATIONS_SCATTERING_FACTORS_HH_
 
 #include "rascal/math/hyp1f1.hh"
-#include "rascal/math/interpolator.hh"
 #include "rascal/math/spherical_harmonics.hh"
 #include "rascal/math/kvec_generator.hh"
 #include "rascal/math/utils.hh"
@@ -143,26 +142,30 @@ namespace rascal {
       }
 
       void precompute() override {
-	// function for calculation of radial prefactors
+	// compute of radial prefactors
         this->precompute_radial_prefactors();
-	// function for calculation of radial overlap
-        this->precompute_radial_overlap();
-	// Normalize orthogonalization matrix
+	// compute orthogonalization matrix
+        this->precompute_radial_ortho_matrix();
+	// add normalization factors to orthogonalization matrix
         this->ortho_norm_matrix = this->radial_norm_factors.asDiagonal() * this->radial_ortho_matrix;
       }
 
-      /** Compute common prefactors for the radial Gaussian basis functions */
+      /** Function to compute common prefactors for the radial integral */
       void precompute_radial_prefactors() {
+
         using math::pow;
-        // Precompute common prefactors
+
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
+          // sigmas of radial functions 
           this->radial_sigmas[radial_n] =
               std::max(std::sqrt(static_cast<double>(radial_n)), 1.0) *
               this->interaction_cutoff / static_cast<double>(this->max_radial);
+	  // normalization factors
           this->radial_norm_factors(radial_n) =
               std::sqrt(2.0 / (std::tgamma(1.5 + radial_n) *
                         pow(this->radial_sigmas[radial_n], 3 + 2 * radial_n)));
           for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
+	     // radial nl-dependent factors  
              this->radial_nl_factors(radial_n,angular_l) =
 		 pow(2.0,0.5*(radial_n - angular_l - 1)) 
                  * pow(this->radial_sigmas[radial_n], 3 + radial_n + angular_l)
@@ -171,15 +174,14 @@ namespace rascal {
         }
       }
 
-      /**
-       * Compute the radial overlap matrix for later orthogonalization.
-       * @throw runtime_error if the overlap matrix cannot be diagonalized.
-       */
-      void precompute_radial_overlap() {
+      /** Function to compute the normalized orthogonalization matrix */
+      void precompute_radial_ortho_matrix() {
+
         using math::pow;
         using std::sqrt;
         using std::tgamma;
 
+	// normalized overlap between primitive radial functions
         Matrix_t overlap(this->max_radial, this->max_radial);
         for (size_t radial_n1{0}; radial_n1 < this->max_radial; radial_n1++) {
           for (size_t radial_n2{0}; radial_n2 < this->max_radial; radial_n2++) {
@@ -190,9 +192,8 @@ namespace rascal {
                 (pow(this->radial_sigmas[radial_n1], radial_n1) *
                  pow(this->radial_sigmas[radial_n2], radial_n2)) *
                 tgamma(0.5 * (3.0 + radial_n1 + radial_n2)) /
-                (pow(this->radial_sigmas[radial_n1] *
-                         this->radial_sigmas[radial_n2],
-                     1.5) *
+                (pow(this->radial_sigmas[radial_n1] 
+		     * this->radial_sigmas[radial_n2] , 1.5) *
                  sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2)));
           }
         }
@@ -205,13 +206,16 @@ namespace rascal {
         Matrix_t eigenvalues = eigensolver.eigenvalues();
         Eigen::ArrayXd eigs_invsqrt = eigenvalues.array().rsqrt();
         Matrix_t unitary = eigensolver.eigenvectors();
+	// orthogonalization matrix
         this->radial_ortho_matrix =
             unitary * eigs_invsqrt.matrix().asDiagonal() * unitary.adjoint();
       }
 
-      // Compute the radial integral I_{nl}(k)
+      // Compute the radial integral I_{nl}(kval)
       Matrix_Ref compute_radial_integral(const double kval) {
         
+        using math::pow;
+	
 	double fac_a;
         double fac_b;
         double fac_c;
@@ -234,14 +238,10 @@ namespace rascal {
 
       }
 
+      // Function to normalize and orthogonalize radial projections
       template <typename Coeffs>
       void finalize_coefficients(Coeffs & coefficients) const {
         coefficients.lhs_dot(this->ortho_norm_matrix);
-      }
-
-      Matrix_t get_radial_orthonormalization_matrix() const {
-        return this->radial_norm_factors.asDiagonal() *
-               this->radial_ortho_matrix;
       }
 
       Hypers_t hypers{};
@@ -250,7 +250,6 @@ namespace rascal {
       size_t max_radial{};
       size_t max_angular{};
 
-      // \sigma_n = (r_\text{cut}-\delta r_\text{cut}) \max(\sqrt{n},1)/n_\text{max}
       Vector_t radial_sigmas{};
       Vector_t radial_norm_factors{};
       Vector_t radial_nl_factors{};
