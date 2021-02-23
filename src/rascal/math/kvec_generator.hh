@@ -38,9 +38,9 @@ namespace rascal {
       /*
        * Construct a Kvectors class 
        */
-	Kvectors(int n) : nk(0), kval(Vector_t::Zero(n)), kvec(Matrix_t::Zero(n,3)){
+      explicit Kvectors(int n) : nk(0), kval(Vector_t::Zero(n)), kvec(Matrix_t::Zero(n,3)){
         }
-      void precompute(Matrix_t basisvectors, double kcut);
+      void precompute(int n1max, int n2max, int n3max, Matrix_t basisvectors, double kcut);
       int nk; //number of k-vectors
       Vector_t kval; //k-vectors modulii
       Matrix_t kvec; //k-vectors

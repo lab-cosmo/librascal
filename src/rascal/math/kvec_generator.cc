@@ -32,8 +32,9 @@
 
 using namespace rascal::math;  // NOLINT
 
-void Kvectors::precompute(Matrix_t basisvecs,
-				double kcut) {
+void Kvectors::precompute(int n1max, int n2max, int n3max, 
+		          Matrix_t basisvecs,
+			  double kcut) {
  
   /*  INPUTS
     *   - basisvecs[3][3]: matrix containing the three basis vectors b1, b2, b3 of a 3D lattice, stored in the format b1 = basisvecs[0], b2=basisvecs[1] etc.
@@ -47,36 +48,6 @@ void Kvectors::precompute(Matrix_t basisvecs,
     *     More specifically, all points within the sphere are selected which are in the hemisphere
     *     lying in the b1-direction from the plane spanned by b2 and b3 that cuts the sphere in half.
   */
-
-  /* PREPARATION:
-    Determine the optimal bounds n1max, n2max, n3max that define the search space box
-    Roughly speaking, our goal will then be to find all vectors k = n1*b1 + n2*b2 + n3*b3,
-    where 0<n1<=n1max, abs(n2)<=n2max, abs(n3)<=n3max with some special care at the boundaries.
-    The derivation of the formulae is found in a supporting document.
-  */
-
-  // Compute the matrix M_ij = b_i * b_j, the representation matrix of the inner product in index space. 
-  double M11 = basisvecs(0,0) * basisvecs(0,0) + basisvecs(0,1) * basisvecs(0,1) + basisvecs(0,2) * basisvecs(0,2);
-  double M22 = basisvecs(1,0) * basisvecs(1,0) + basisvecs(1,1) * basisvecs(1,1) + basisvecs(1,2) * basisvecs(1,2);
-  double M33 = basisvecs(2,0) * basisvecs(2,0) + basisvecs(2,1) * basisvecs(2,1) + basisvecs(2,2) * basisvecs(2,2);
-  double M12 = basisvecs(0,0) * basisvecs(1,0) + basisvecs(0,1) * basisvecs(1,1) + basisvecs(0,2) * basisvecs(1,2);
-  double M13 = basisvecs(0,0) * basisvecs(2,0) + basisvecs(0,1) * basisvecs(2,1) + basisvecs(0,2) * basisvecs(2,2);
-  double M23 = basisvecs(1,0) * basisvecs(2,0) + basisvecs(1,1) * basisvecs(2,1) + basisvecs(1,2) * basisvecs(2,2);
-
-  // Get the optimal boundaries for the search space box (formula from supporting information)
-  double Mbar = M11 * M22 * M33 - (M11 * M23 * M23 + M22 * M13 * M13 + M33 * M12 * M12) + 2 * M12 * M13 * M23;
-  int n1max = floor(sqrt((M22 * M33 - M23 * M23) / Mbar) * kcut);
-  int n2max = floor(sqrt((M11 * M33 - M13 * M13) / Mbar) * kcut);
-  int n3max = floor(sqrt((M11 * M22 - M12 * M12) / Mbar) * kcut);
-
-  // Total number of points that will be checked 
-  int numtot = n3max + n2max * (2 * n3max + 1) + n1max * (2 * n2max + 1) * (2 * n3max + 1); 
-  
-  // Initialize outputs 
-  Kvectors kv(numtot);  
-  //this->nk=0;
-  //this->kval = Vector_t::Zero(numtot);
-  //this->kvec = Matrix_t::Zero(3,numtot);
 
   // Auxiliary variables
   double kcutsq = kcut*kcut; // Computing the squared norm is faster than the norm
@@ -177,10 +148,4 @@ void Kvectors::precompute(Matrix_t basisvecs,
       }
   }
 
-
-  // Console output to check code (DELETE THIS AFTER TESTING PHASE)
-  double succratio = ((double)(nk)) / numtot;
-  std::cout << "Total number of points = " << numtot << "\n";
-  std::cout << "Ratio of successful points = " << succratio << "\n";
-  std::cout << "Ideal success ratio of circle = " << 3.1415 / 6 << "\n";
 }
