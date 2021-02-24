@@ -483,6 +483,7 @@ namespace rascal {
     auto manager_root = extract_underlying_manager<0>(manager);
     auto cell_length = manager_root->get_cell_length();
     auto cell = manager_root->get_cell();
+    const double volume = cell.determinant();
 
     // Radius of the sphere in reciprocal space defining the maximum spatial resolution
     // pi/sigma was shown to be enough to converge the density field in TENSOAP
@@ -521,12 +522,12 @@ namespace rascal {
 
     // Compute k-vectors on a semisphere
     k_vectors.precompute(n1max,n2max,n3max,bvecs,kcut);
-    int nk = k_vectors.nk; // number of k-vectors
-    Vector_t kval = k_vectors.kval; // k-moduli
-    Matrix_t kvec = k_vectors.kvec; // k-vectors
+    int n_k = k_vectors.nk; // number of k-vectors
+    Vector_t k_val = k_vectors.kval; // k-moduli
+    Matrix_t k_vec = k_vectors.kvec; // k-vectors
 
-    // Console output to check code (DELETE THIS AFTER TESTING PHASE)
-    double succratio = ((double)(nk)) / numtot;
+    // Console output to check code (TODO: DELETE THIS AFTER TESTING PHASE)
+    double succratio = ((double)(n_k)) / numtot;
     std::cout << "Total number of points = " << numtot << "\n";
     std::cout << "Ratio of successful points = " << succratio << "\n";
     std::cout << "Ideal success ratio of circle = " << 3.1415 / 6 << "\n";
@@ -596,15 +597,35 @@ namespace rascal {
       throw std::runtime_error("should not arrive here");
     }
 
-    // coeff C^{ij}_{nlm}
+    // pairwise coefficients C^{ij}_{nlm}
     auto c_ij_nlm = math::Matrix_t(n_row, n_col);
 
+    // Fourier components of a Gaussian charge 
+    auto G_k = math::Vector_t(n_k); 
     
-    // compute harmonics at k-directions 
-    for (int ik{0}; ik < nk; ++ik) {
-      Vector_t kvers = kvec(ik)/kval(ik);
-      this->spherical_harmonics.calc(kvers);
+    // Spherical harmonics matrix N_k * (l_max+1)^2
+    auto Y_lm = math::Matrix_t(n_k,pow(this->max_angular+1, 2)); 
+    
+    // Radial integrals N_k * (n_max*(l_max+1))
+    auto I_nl = math::Matrix_t(n_k,this->max_radial*(this->max_angular+1)); 
+    
+    // compute system-independent stuff
+    for (int ik{0}; ik < n_k; ++ik) {
+   
+      // Fourier charge at k_val
+      G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) ) / volume;
+
+      // Harmonics at k_dir
+      Vector_t k_dir = k_vec(ik)/k_val(ik);
+      this->spherical_harmonics.calc(k_dir);
       auto && harmonics{spherical_harmonics.get_harmonics()};
+      Y_lm(ik) = harmonics;
+
+      // Radial integral at k_val
+      Matrix_t radint = radial_integral(k_val(ik));
+      Eigen::Map<Matrix_t> flatrad(radint.data(), radint.size());
+      I_nl(ik) = flatrad;
+
     }
     
     // Start the accumulation 
