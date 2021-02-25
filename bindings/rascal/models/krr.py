@@ -4,10 +4,13 @@ from ..lib import compute_sparse_kernel_gradients, compute_sparse_kernel_neg_str
 import numpy as np
 import ase
 
-if is_notebook():
-    from tqdm.notebook import tqdm
-else:
-    from tqdm import tqdm
+try:
+    if is_notebook():
+        from tqdm.notebook import tqdm
+    else:
+        from tqdm import tqdm
+except ImportError:
+    from ..utils.misc import tqdm_nop as tqdm
 
 
 class KRR(BaseIO):
