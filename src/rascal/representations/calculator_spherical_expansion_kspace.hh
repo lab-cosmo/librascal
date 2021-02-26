@@ -483,6 +483,7 @@ namespace rascal {
     auto manager_root = extract_underlying_manager<0>(manager);
     auto cell_length = manager_root->get_cell_length();
     auto cell = manager_root->get_cell();
+    auto coords = manager_root->get_positions();
     const double volume = cell.determinant();
 
     // Radius of the sphere in reciprocal space defining the maximum spatial resolution
@@ -520,7 +521,7 @@ namespace rascal {
     // Initialize k-vectors generation
     math::Kvectors k_vectors(numtot);
 
-    // Compute k-vectors on a semisphere
+    // Compute k-vectors on a semisphere in the space spanned by n1,n2,n3 
     k_vectors.precompute(n1max,n2max,n3max,bvecs,kcut);
     int n_k = k_vectors.nk; // number of k-vectors
     Vector_t k_val = k_vectors.kval; // k-moduli
@@ -606,14 +607,14 @@ namespace rascal {
     // Spherical harmonics matrix N_k * (l_max+1)^2
     auto Y_lm = math::Matrix_t(n_k,pow(this->max_angular+1, 2)); 
     
-    // Radial integrals N_k * (n_max*(l_max+1))
+//    // Radial integrals N_k * (n_max*(l_max+1))
     auto I_nl = math::Matrix_t(n_k,this->max_radial*(this->max_angular+1)); 
     
     // compute system-independent stuff
     for (int ik{0}; ik < n_k; ++ik) {
    
       // Fourier charge at k_val
-      G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) ) / volume;
+      G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) ) / pow(k_val(ik),2);
 
       // Harmonics at k_dir
       Vector_t k_dir = k_vec(ik)/k_val(ik);
@@ -622,9 +623,9 @@ namespace rascal {
       Y_lm(ik) = harmonics;
 
       // Radial integral at k_val
-      Matrix_t radint = radial_integral(k_val(ik));
-      Eigen::Map<Matrix_t> flatrad(radint.data(), radint.size());
-      I_nl(ik) = flatrad;
+      Matrix_t radint = radial_integral(k_val(ik)); // n_max * (l_max+1)
+      Eigen::Map<Matrix_t> flatrad(radint.data(), radint.size()); // flatten 
+      I_nl(ik) = flatrad; 
 
     }
     
@@ -638,8 +639,24 @@ namespace rascal {
       auto atom_i_tag = center.get_atom_tag();
       Key_t center_type{center.get_atom_type()};
 
-//      // loop over k-vectors
-//      for (size_t ik{0}; ik < this->nk; ++ik) {
+      // loop over k-vectors
+      for (size_t ik{0}; ik < n_k; ++ik) {
+ 
+        // Start the accumulation with the central atom contribution
+        //Matrix_t radint = radial_integral(k_val(ik)); // n_max * (l_max+1)
+	Vector_t Ylm = Y_lm(ik);
+        int nl_idx{0};
+        for (size_t radial_n{0}; radial_n < max_radial; ++radial_n) {
+          int l_block_idx{0};
+          for (size_t angular_l{0}; angular_l < max_angular; ++angular_l) {
+	    coefficients_center[center_type](radial_n).segment(l_block_idx,2*angular_l+1) += 
+		I_nl(ik,nl_idx) * 
+		Ylm.segment(l_block_idx,2*angular_l+1) * 
+		G_k(ik) * 16.0 * pow(PI,2) / volume; 
+            l_block_idx += 2*angular_l+1;
+            nl_idx += 1;
+          }
+	}
 
 	// loop over neighbours      
         for (auto neigh : center.pairs()) {
@@ -654,16 +671,20 @@ namespace rascal {
           double f_c{cutoff_function->f_c(dist)};
           auto coefficients_center_by_type{coefficients_center[neigh_type]};
 
-//          // compute the coefficients
-          size_t l_block_idx{0};
-//          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-//               ++angular_l) {
-//            size_t l_block_size{2 * angular_l + 1};
-//            c_ij_nlm.block(0, l_block_idx, max_radial, l_block_size) =
-//                radial_integral(this->kval).col(angular_l) *
-//                harmonics.segment(l_block_idx, l_block_size);
-//            l_block_idx += l_block_size;
-//          }
+          // compute the coefficients
+	  Vector_t Ylm = Y_lm(ik);
+          int nl_idx = 0;
+          for (size_t radial_n{0}; radial_n < max_radial; ++radial_n) {
+            int l_block_idx = 0;
+            for (size_t angular_l{0}; angular_l < max_angular; ++angular_l) {
+	      c_ij_nlm.block(radial_n,l_block_idx,radial_n,2*angular_l+1) += 
+	  	I_nl(ik,nl_idx) * 
+	  	Ylm.segment(l_block_idx,2*angular_l+1) * 
+	  	G_k(ik) * 16.0 * pow(PI,2) / volume; 
+              l_block_idx += 2*angular_l+1;
+              nl_idx += 1;
+            }
+	  }
           c_ij_nlm *= f_c;
           coefficients_center_by_type += c_ij_nlm;
 
@@ -673,7 +694,7 @@ namespace rascal {
             if (is_center_atom) {
               auto & coefficients_neigh{expansions_coefficients[atom_j]};
               auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
-              l_block_idx = 0;
+              int l_block_idx = 0;
               double parity{1.};
               for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                    ++angular_l) {
@@ -766,7 +787,7 @@ namespace rascal {
 //          }          // if (compute_gradients)
         }            // for (neigh : center)
       
-//      }            // for (k-vectors)
+      }            // for (k-vectors)
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
