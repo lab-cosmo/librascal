@@ -611,7 +611,7 @@ namespace rascal {
     // Radial integrals N_k * (n_max*(l_max+1))
     auto I_nl = math::Matrix_t(n_k,this->max_radial*(this->max_angular+1)); 
     
-    // Spherical harmonics matrix N_k * (l_max+1)^2
+    // Trigonometric matrices N_k * N_atoms 
     auto cos_ki = math::Matrix_t(n_k,natoms); 
     auto sin_ki = math::Matrix_t(n_k,natoms); 
     
@@ -632,6 +632,7 @@ namespace rascal {
       Eigen::Map<Matrix_t> flatrad(radint.data(), radint.size()); // flatten 
       I_nl(ik) = flatrad;
 
+      // Trigonometric functions
       for (int iat{0}; iat < natoms; ++iat) {
 	double arg = coords(iat,0) * k_vec(ik,0) 
 		   + coords(iat,1) * k_vec(ik,1) 
@@ -663,6 +664,7 @@ namespace rascal {
         for (size_t radial_n{0}; radial_n < max_radial; ++radial_n) {
           int l_block_idx{0};
           for (size_t angular_l{0}; angular_l < max_angular; ++angular_l) {
+            // l odd contributions vanish by k-symmetry for central atom
             if (angular_l%2==0) {
 	      coefficients_center[center_type](radial_n).segment(l_block_idx,2*angular_l+1) += 
 	          I_nl(ik,nl_idx) * Ylm.segment(l_block_idx,2*angular_l+1) * 
@@ -677,6 +679,7 @@ namespace rascal {
         for (auto neigh : manager) {
           
           auto jat = manager->get_atom_index(neigh);
+	  // accumulate for atoms different from the central
 	  if (jat != iat) {
 	    auto atom_j_tag = neigh.get_atom_tag();
             Key_t neigh_type{neigh.get_atom_type()};
@@ -690,9 +693,11 @@ namespace rascal {
               for (size_t angular_l{0}; angular_l < max_angular; ++angular_l) {
 	        const double phase_factor;
                 if (angular_l%2==0) {
+	         // real phase factor for l even
 	         phase_factor = pow(-1.0,angular_l/2) 
 	             * (cos_ki(ik,jat)*cos_ki(ik,iat) + sin_ki(ik,jat)*sin_ki(ik,iat));
                 } else {
+	         // real phase factor for l odd 
 	         phase_factor = - pow(-1.0,(angular_l+1)/2) 
 	             * (sin_ki(ik,jat)*cos_ki(ik,iat) - cos_ki(ik,jat)*sin_ki(ik,iat));
 	        } 
