@@ -484,6 +484,7 @@ namespace rascal {
     auto cell_length = manager_root->get_cell_length();
     auto cell = manager_root->get_cell();
     auto coords = manager_root->get_positions();
+    int natoms = coords.rows();
     const double volume = cell.determinant();
 
     // Radius of the sphere in reciprocal space defining the maximum spatial resolution
@@ -607,10 +608,14 @@ namespace rascal {
     // Spherical harmonics matrix N_k * (l_max+1)^2
     auto Y_lm = math::Matrix_t(n_k,pow(this->max_angular+1, 2)); 
     
-//    // Radial integrals N_k * (n_max*(l_max+1))
+    // Radial integrals N_k * (n_max*(l_max+1))
     auto I_nl = math::Matrix_t(n_k,this->max_radial*(this->max_angular+1)); 
     
-    // compute system-independent stuff
+    // Spherical harmonics matrix N_k * (l_max+1)^2
+    auto cos_ki = math::Matrix_t(n_k,natoms); 
+    auto sin_ki = math::Matrix_t(n_k,natoms); 
+    
+    // precompute quantities needed 
     for (int ik{0}; ik < n_k; ++ik) {
    
       // Fourier charge at k_val
@@ -625,12 +630,22 @@ namespace rascal {
       // Radial integral at k_val
       Matrix_t radint = radial_integral(k_val(ik)); // n_max * (l_max+1)
       Eigen::Map<Matrix_t> flatrad(radint.data(), radint.size()); // flatten 
-      I_nl(ik) = flatrad; 
+      I_nl(ik) = flatrad;
+
+      for (int iat{0}; iat < natoms; ++iat) {
+	double arg = coords(iat,0) * k_vec(ik,0) 
+		   + coords(iat,1) * k_vec(ik,1) 
+		   + coords(iat,2) * k_vec(ik,2);
+        cos_ki(ik,iat) = std::cos(arg); 
+        sin_ki(ik,iat) = std::sin(arg); 
+      } 
 
     }
     
-    // Start the accumulation 
+    // Start the accumulation
     for (auto center : manager) {
+
+      auto iat = manager->get_atom_index(center);
       // c^{i}
       auto & coefficients_center = expansions_coefficients[center];
       // \grad_i c^{i}
@@ -641,73 +656,76 @@ namespace rascal {
 
       // loop over k-vectors
       for (size_t ik{0}; ik < n_k; ++ik) {
- 
+        
         // Start the accumulation with the central atom contribution
-        //Matrix_t radint = radial_integral(k_val(ik)); // n_max * (l_max+1)
 	Vector_t Ylm = Y_lm(ik);
         int nl_idx{0};
         for (size_t radial_n{0}; radial_n < max_radial; ++radial_n) {
           int l_block_idx{0};
           for (size_t angular_l{0}; angular_l < max_angular; ++angular_l) {
-	    coefficients_center[center_type](radial_n).segment(l_block_idx,2*angular_l+1) += 
-		I_nl(ik,nl_idx) * 
-		Ylm.segment(l_block_idx,2*angular_l+1) * 
-		G_k(ik) * 16.0 * pow(PI,2) / volume; 
-            l_block_idx += 2*angular_l+1;
-            nl_idx += 1;
-          }
-	}
-
-	// loop over neighbours      
-        for (auto neigh : center.pairs()) {
-          auto atom_j = neigh.get_atom_j();
-          const int atom_j_tag = atom_j.get_atom_tag();
-          const bool is_center_atom{manager->is_center_atom(neigh)};
-
-          const double & dist{manager->get_distance(neigh)};
-          const auto direction{manager->get_direction_vector(neigh)};
-          Key_t neigh_type{neigh.get_atom_type()};
-
-          double f_c{cutoff_function->f_c(dist)};
-          auto coefficients_center_by_type{coefficients_center[neigh_type]};
-
-          // compute the coefficients
-	  Vector_t Ylm = Y_lm(ik);
-          int nl_idx = 0;
-          for (size_t radial_n{0}; radial_n < max_radial; ++radial_n) {
-            int l_block_idx = 0;
-            for (size_t angular_l{0}; angular_l < max_angular; ++angular_l) {
-	      c_ij_nlm.block(radial_n,l_block_idx,radial_n,2*angular_l+1) += 
-	  	I_nl(ik,nl_idx) * 
-	  	Ylm.segment(l_block_idx,2*angular_l+1) * 
-	  	G_k(ik) * 16.0 * pow(PI,2) / volume; 
+            if (angular_l%2==0) {
+	      coefficients_center[center_type](radial_n).segment(l_block_idx,2*angular_l+1) += 
+	          I_nl(ik,nl_idx) * Ylm.segment(l_block_idx,2*angular_l+1) * 
+	          G_k(ik) * 16.0 * pow(PI,2) / volume; 
               l_block_idx += 2*angular_l+1;
               nl_idx += 1;
             }
-	  }
-          c_ij_nlm *= f_c;
-          coefficients_center_by_type += c_ij_nlm;
-
-          // half list branch for c^{ji} terms using
-          // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
-          if (IsHalfNL) {
-            if (is_center_atom) {
-              auto & coefficients_neigh{expansions_coefficients[atom_j]};
-              auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
-              int l_block_idx = 0;
-              double parity{1.};
-              for (size_t angular_l{0}; angular_l < this->max_angular + 1;
-                   ++angular_l) {
-                size_t l_block_size{2 * angular_l + 1};
-                coefficients_neigh_by_type.block(0, l_block_idx, max_radial,
-                                                 l_block_size) +=
-                    parity *
-                    c_ij_nlm.block(0, l_block_idx, max_radial, l_block_size);
-                l_block_idx += l_block_size;
-                parity *= -1.;
-              }
-            }
           }
+	}
+
+	// loop over atoms over the entire system using centers idx once again      
+        for (auto neigh : manager) {
+          
+          auto jat = manager->get_atom_index(neigh);
+	  if (jat != iat) {
+	    auto atom_j_tag = neigh.get_atom_tag();
+            Key_t neigh_type{neigh.get_atom_type()};
+            auto coefficients_center_by_type{coefficients_center[neigh_type]};
+
+            // compute the coefficients
+	    Vector_t Ylm = Y_lm(ik);
+            int nl_idx = 0;
+            for (size_t radial_n{0}; radial_n < max_radial; ++radial_n) {
+              int l_block_idx = 0;
+              for (size_t angular_l{0}; angular_l < max_angular; ++angular_l) {
+	        const double phase_factor;
+                if (angular_l%2==0) {
+	         phase_factor = pow(-1.0,angular_l/2) 
+	             * (cos_ki(ik,jat)*cos_ki(ik,iat) + sin_ki(ik,jat)*sin_ki(ik,iat));
+                } else {
+	         phase_factor = - pow(-1.0,(angular_l+1)/2) 
+	             * (sin_ki(ik,jat)*cos_ki(ik,iat) - cos_ki(ik,jat)*sin_ki(ik,iat));
+	        } 
+	        c_ij_nlm.block(radial_n,l_block_idx,radial_n,2*angular_l+1) += 
+	          I_nl(ik,nl_idx) * Ylm.segment(l_block_idx,2*angular_l+1) * 
+	          G_k(ik) * 16.0 * pow(PI,2) / volume * phase_factor; 
+                l_block_idx += 2*angular_l+1;
+                nl_idx += 1;
+              }
+	    }
+            coefficients_center_by_type += c_ij_nlm;
+	  }
+
+//          // half list branch for c^{ji} terms using
+//          // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
+//          if (IsHalfNL) {
+//            if (is_center_atom) {
+//              auto & coefficients_neigh{expansions_coefficients[atom_j]};
+//              auto coefficients_neigh_by_type{coefficients_neigh[center_type]};
+//              int l_block_idx = 0;
+//              double parity{1.};
+//              for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+//                   ++angular_l) {
+//                size_t l_block_size{2 * angular_l + 1};
+//                coefficients_neigh_by_type.block(0, l_block_idx, max_radial,
+//                                                 l_block_size) +=
+//                    parity *
+//                    c_ij_nlm.block(0, l_block_idx, max_radial, l_block_size);
+//                l_block_idx += l_block_size;
+//                parity *= -1.;
+//              }
+//            }
+//          }
 
 //          // compute the gradients of the coefficients with respect to atoms positions
 //          // but only if the neighbour is not an image of the center!
