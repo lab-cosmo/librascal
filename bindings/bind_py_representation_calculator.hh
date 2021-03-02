@@ -37,6 +37,7 @@
 #include "rascal/representations/calculator_spherical_expansion.hh"
 #include "rascal/representations/calculator_spherical_expansion_kspace.hh"
 #include "rascal/representations/calculator_spherical_invariants.hh"
+#include "rascal/representations/calculator_spherical_invariants_kspace.hh"
 
 namespace rascal {
   void add_representation_calculators(py::module &, py::module &);
