@@ -62,7 +62,7 @@ namespace rascal {
   }
 
   template <internal::RadialBasisType Type>
-  auto downcast_radial_integral(
+  auto downcast_radial_integral_kspace(
       const std::shared_ptr<internal::RadialContributionKspaceBase> &
           radial_integral) {
     return std::static_pointer_cast<internal::RadialContributionKspace<Type>>(
@@ -117,7 +117,6 @@ namespace rascal {
      *                    specified in the structure
      */
     void set_hyperparameters(const Hypers_t & hypers) override {
-      using internal::CutoffFunctionType;
       using internal::RadialBasisType;
       this->hypers = hypers;
 
@@ -196,23 +195,9 @@ namespace rascal {
       }
 
       auto fc_hypers = hypers.at("cutoff_function").get<json>();
-      auto fc_type = fc_hypers.at("type").get<std::string>();
+      // auto fc_type = fc_hypers.at("type").get<std::string>();
       this->interaction_cutoff = fc_hypers.at("cutoff").at("value");
-      this->cutoff_smooth_width = fc_hypers.at("smooth_width").at("value");
-      if (fc_type == "ShiftedCosine") {
-        this->cutoff_function_type = CutoffFunctionType::ShiftedCosine;
-        this->cutoff_function =
-            make_cutoff_function<CutoffFunctionType::ShiftedCosine>(fc_hypers);
-      } else if (fc_type == "RadialScaling") {
-        this->cutoff_function_type = CutoffFunctionType::RadialScaling;
-        this->cutoff_function =
-            make_cutoff_function<CutoffFunctionType::RadialScaling>(fc_hypers);
-      } else {
-        throw std::logic_error("Requested cutoff function type \'" + fc_type +
-                               "\' has not been implemented.  Must be one of" +
-                               ": \'ShiftedCosine\' or 'RadialScaling'.");
-      }
-
+      //this->cutoff_smooth_width = fc_hypers.at("smooth_width").at("value");
       this->set_name(hypers);
     }
 
@@ -220,12 +205,11 @@ namespace rascal {
       bool is_equal{
           (this->does_gradients() == other.does_gradients()) and
           (this->interaction_cutoff == other.interaction_cutoff) and
-          (this->cutoff_smooth_width == other.cutoff_smooth_width) and
           (this->interpolator_accuracy == other.interpolator_accuracy) and
           (this->max_radial == other.max_radial) and
           (this->max_angular == other.max_angular) and
           (this->radial_integral_type == other.radial_integral_type) and
-          (this->cutoff_function_type == other.cutoff_function_type)};
+          (this->smearing == other.smearing)};
       return is_equal;
     }
 
@@ -263,7 +247,7 @@ namespace rascal {
     CalculatorKspaceSphericalExpansion(CalculatorKspaceSphericalExpansion && other) noexcept
         : CalculatorBase{std::move(other)}, interaction_cutoff{std::move(
                                                 other.interaction_cutoff)},
-          cutoff_smooth_width{std::move(other.cutoff_smooth_width)},
+          smearing{std::move(other.smearing)},
           max_radial{std::move(other.max_radial)}, max_angular{std::move(
                                                        other.max_angular)},
           compute_gradients{std::move(other.compute_gradients)},
@@ -271,8 +255,6 @@ namespace rascal {
           global_species{std::move(other.global_species)},
           radial_integral{std::move(other.radial_integral)},
           radial_integral_type{std::move(other.radial_integral_type)},
-          cutoff_function{std::move(other.cutoff_function)},
-          cutoff_function_type{std::move(other.cutoff_function_type)},
           spherical_harmonics{std::move(other.spherical_harmonics)} {}
 
     //! Destructor
@@ -295,53 +277,43 @@ namespace rascal {
     template <class StructureManager>
     void compute(StructureManager & managers);
 
-    //! choose the RadialBasisType and AtomicSmearingType from the hypers
-    template <internal::CutoffFunctionType FcType, class StructureManager>
-    void compute_by_radial_contribution(StructureManager & managers);
-
     /**
      * loop over a collection of manangers if it is an iterator.
      * Or just call compute_impl() if it's a single manager (see below)
      */
     template <
-        internal::CutoffFunctionType FcType,
         internal::RadialBasisType RadialType,
         class StructureManager,
         std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
                          int> = 0>
     void compute_loop(StructureManager & managers) {
       for (auto & manager : managers) {
-        this->compute_impl<FcType, RadialType>(manager);
+        this->compute_impl<RadialType>(manager);
       }
     }
 
     //! single manager case
-    template <internal::CutoffFunctionType FcType,
-              internal::RadialBasisType RadialType,
+    template <internal::RadialBasisType RadialType,
               class StructureManager,
               std::enable_if_t<
                   not(internal::is_proper_iterator<StructureManager>::value),
                   int> = 0>
     void compute_loop(StructureManager & manager) {
-      this->compute_impl<FcType, RadialType>(manager);
+      this->compute_impl<RadialType>(manager);
     }
 
     //! Compute the spherical exansion given several options
-    template <internal::CutoffFunctionType FcType,
-              internal::RadialBasisType RadialType,
+    template <internal::RadialBasisType RadialType,
               class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
    protected:
-    //! cutoff radius r_c defining the size of the atom centered environment
+    //! cutoff radius r_c defining the radius around the atom for expanding the potential
     double interaction_cutoff{};
-    //! size of the transition region r_t spanning [r_c-r_t, r_c] in which the
-    //! contributions to the environment expansion go to zero smoothly
-    double cutoff_smooth_width{};
     //! defines the maximal mean error allowed to the interpolator when fitting
     //! the reference
     double interpolator_accuracy{};
-    //! smearing 
+    //! smearing
     double smearing{};
     //! number of radial basis function to use in the expansion
     size_t max_radial{};
@@ -364,9 +336,6 @@ namespace rascal {
 
     std::shared_ptr<internal::RadialContributionKspaceBase> radial_integral{};
     internal::RadialBasisType radial_integral_type{};
-
-    std::shared_ptr<internal::CutoffFunctionBase> cutoff_function{};
-    internal::CutoffFunctionType cutoff_function_type{};
 
 //    math::Kvectors k_vectors{};
     math::SphericalHarmonics spherical_harmonics{};
@@ -425,37 +394,30 @@ namespace rascal {
   // compute classes template construction
   template <class StructureManager>
   void CalculatorKspaceSphericalExpansion::compute(StructureManager & managers) {
-    // specialize based on the cutoff function
-    using internal::CutoffFunctionType;
-
-    switch (this->cutoff_function_type) {
-    case CutoffFunctionType::ShiftedCosine:
-      this->compute_by_radial_contribution<CutoffFunctionType::ShiftedCosine>(
-          managers);
-      break;
-    case CutoffFunctionType::RadialScaling:
-      this->compute_by_radial_contribution<CutoffFunctionType::RadialScaling>(
-          managers);
-      break;
-    default:
-      // The control flow really should never reach here.  But just in case,
-      // provide the necessary information to debug this problem.
-      std::basic_ostringstream<char> err_message;
-      err_message << "Invalid cutoff function type encountered ";
-      err_message << "(This is a bug.  Debug info for developers: ";
-      err_message << "cutoff_function_type == ";
-      err_message << static_cast<int>(this->cutoff_function_type);
-      err_message << ")" << std::endl;
-      throw std::logic_error(err_message.str());
-      break;
-    }
+    // We don't specialize on cutoff function anymore, just radial contribution
+    // (and not even that, really, since we only implement GTO)
+    using internal::RadialBasisType;
+    switch(this->radial_integral_type) {
+        case RadialBasisType::GTO: {
+            this->compute_loop<RadialBasisType::GTO>(managers);
+            break;
+        }
+        default:
+          // The control flow really should never reach here...
+          std::basic_ostringstream<char> err_message;
+          err_message << "Invalid radial basis type encountered ";
+          err_message << "(This is a bug.  Debug info for developers: "
+                      << "radial_integral_type == ";
+          err_message << static_cast<int>(this->radial_integral_type);
+          err_message << ")" << std::endl;
+          throw std::logic_error(err_message.str());
+        }
   }
 
   /**
    * Compute the spherical expansion
    */
-  template <internal::CutoffFunctionType FcType,
-            internal::RadialBasisType RadialType,
+  template <internal::RadialBasisType RadialType,
             class StructureManager>
   void CalculatorKspaceSphericalExpansion::compute_impl(
       std::shared_ptr<StructureManager> manager) {
@@ -567,10 +529,8 @@ namespace rascal {
     }
 
     // downcast cutoff and radial contributions so they are functional
-    auto cutoff_function{
-        downcast_cutoff_function<FcType>(this->cutoff_function)};
     auto radial_integral{
-        downcast_radial_integral_handler<RadialType>(
+        downcast_radial_integral_kspace<RadialType>(
             this->radial_integral)};
 
     auto n_row{this->max_radial};
