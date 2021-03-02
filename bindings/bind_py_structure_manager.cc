@@ -511,7 +511,7 @@ namespace rascal {
               *managers[0]->template get_property<Prop_t>(property_name);
 
           int inner_size{property_.get_nb_comp()};
-          auto n_rows{managers.get_number_of_elements(calculator, false)};
+          auto n_rows{managers.template get_number_of_elements<Prop_t>(property_name)};
 
           // holder for the feature matrices to put in feature_dict
           math::Matrix_t features{};
@@ -596,7 +596,7 @@ namespace rascal {
 
           math::Matrix_t features{};
 
-          auto n_rows{managers.get_number_of_elements(calculator, false)};
+          auto n_rows{managers.template get_number_of_elements<Prop_t>(property_name)};
           size_t n_cols{all_keys.size() * inner_size};
           features.resize(n_rows, n_cols);
           features.setZero();
@@ -616,6 +616,94 @@ namespace rascal {
         R"(Get the dense feature matrix associated with the calculator and
         the collection of structures (managers) using the list of keys
         provided. Only applicable when Calculator uses BlockSparseProperty.)");
+    manager_collection.def(
+        "get_features_gradient",
+        [](ManagerCollection_t & managers, const Calculator & calculator,
+           py::list & all_keys_l) {
+          using Manager_t = typename ManagerCollection_t::Manager_t;
+          using Prop_t = typename Calculator::template PropertyGradient_t<Manager_t>;
+          using Keys_t = typename Prop_t::Keys_t;
+          if (managers.size() == 0) {
+            throw std::runtime_error(
+                R"(There are no structure to get features from)");
+          }
+          Keys_t all_keys;
+          if (all_keys_l.size() > 0) {
+            // convert the list of keys from python in to the proper type
+            for (py::handle key_l : all_keys_l) {
+              auto key = py::cast<std::vector<int>>(key_l);
+              all_keys.insert(key);
+            }
+          } else {
+            // empty all_keys_l means that we use the keys from the managers
+            for (auto key_l : managers.get_keys(calculator)) {
+              all_keys.insert(key_l);
+            }
+          }
+
+
+          auto property_name{managers.get_calculator_name(calculator, true)};
+
+          const auto & property_ =
+              *managers[0]->template get_property<Prop_t>(property_name);
+          // assume inner_size is consistent for all managers
+          int inner_size{property_.get_nb_comp() / ThreeD};
+
+          math::Matrix_t features{};
+          auto n_rows{ThreeD * managers.template get_number_of_elements<Prop_t>(property_name)};
+          size_t n_cols{all_keys.size() * inner_size};
+          features.resize(n_rows, n_cols);
+          features.setZero();
+
+          int i_row{0};
+          for (auto & manager : managers) {
+            const auto & property =
+                *manager->template get_property<Prop_t>(property_name);
+            auto n_rows_manager = property.size() * ThreeD;
+            property.fill_dense_feature_matrix_gradient(
+                features.block(i_row, 0, n_rows_manager, n_cols), all_keys);
+            i_row += n_rows_manager;
+          }
+
+          return features;
+        },
+        R"(Get the dense feature matrix associated with the calculator and
+        the collection of structures (managers) using the list of keys
+        provided. Only applicable when Calculator uses BlockSparseProperty.)");
+    manager_collection.def(
+        "get_ij",
+        [](ManagerCollection_t & managers) {
+          if (managers.size() == 0) {
+            throw std::runtime_error(
+                R"(There are no structure to get features from)");
+          }
+          auto n_rows{0};
+          for (auto & manager : managers) {
+            for (auto center : manager) {
+              for (auto pair : center.pairs_with_self_pair()) {
+                n_rows++;
+              }
+            }
+          }
+
+          Eigen::Matrix<int, Eigen::Dynamic, 2> ij_mat{};
+          ij_mat.resize(n_rows, 2);
+          ij_mat.setZero();
+          int i_row{0}, i_center{0};
+          for (auto & manager : managers) {
+            for (auto center : manager) {
+              for (auto pair : center.pairs_with_self_pair()) {
+                ij_mat(i_row, 0) = i_center + center.get_atom_tag();
+                ij_mat(i_row, 1) = i_center + pair.get_atom_j().get_atom_tag();
+                i_row++;
+              }
+            }
+            i_center += static_cast<int>(manager->size());
+          }
+
+          return ij_mat;
+        },
+        R"()");
   }
 
   template <typename Manager, template <class> class... Adaptor>
@@ -798,8 +886,8 @@ namespace rascal {
   void bind_cluster_refs(py::module & m_internal) {
     add_cluster_refs<1, 0, 6>::static_for(m_internal);
     add_cluster_refs<2, 0, 6>::static_for(m_internal);
-    add_cluster_refs<3, 0, 6>::static_for(m_internal);
-    add_cluster_refs<4, 0, 6>::static_for(m_internal);
+    // add_cluster_refs<3, 0, 6>::static_for(m_internal);
+    // add_cluster_refs<4, 0, 6>::static_for(m_internal);
   }
 
   template <typename T>
