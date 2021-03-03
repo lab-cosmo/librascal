@@ -511,7 +511,8 @@ namespace rascal {
               *managers[0]->template get_property<Prop_t>(property_name);
 
           int inner_size{property_.get_nb_comp()};
-          auto n_rows{managers.template get_number_of_elements<Prop_t>(property_name)};
+          auto n_rows{
+              managers.template get_number_of_elements<Prop_t>(property_name)};
 
           // holder for the feature matrices to put in feature_dict
           math::Matrix_t features{};
@@ -596,7 +597,8 @@ namespace rascal {
 
           math::Matrix_t features{};
 
-          auto n_rows{managers.template get_number_of_elements<Prop_t>(property_name)};
+          auto n_rows{
+              managers.template get_number_of_elements<Prop_t>(property_name)};
           size_t n_cols{all_keys.size() * inner_size};
           features.resize(n_rows, n_cols);
           features.setZero();
@@ -621,7 +623,8 @@ namespace rascal {
         [](ManagerCollection_t & managers, const Calculator & calculator,
            py::list & all_keys_l) {
           using Manager_t = typename ManagerCollection_t::Manager_t;
-          using Prop_t = typename Calculator::template PropertyGradient_t<Manager_t>;
+          using Prop_t =
+              typename Calculator::template PropertyGradient_t<Manager_t>;
           using Keys_t = typename Prop_t::Keys_t;
           if (managers.size() == 0) {
             throw std::runtime_error(
@@ -641,7 +644,6 @@ namespace rascal {
             }
           }
 
-
           auto property_name{managers.get_calculator_name(calculator, true)};
 
           const auto & property_ =
@@ -650,7 +652,8 @@ namespace rascal {
           int inner_size{property_.get_nb_comp() / ThreeD};
 
           math::Matrix_t features{};
-          auto n_rows{ThreeD * managers.template get_number_of_elements<Prop_t>(property_name)};
+          auto n_rows{ThreeD * managers.template get_number_of_elements<Prop_t>(
+                                   property_name)};
           size_t n_cols{all_keys.size() * inner_size};
           features.resize(n_rows, n_cols);
           features.setZero();

@@ -959,7 +959,7 @@ namespace rascal {
      *
      */
     void fill_dense_feature_matrix_gradient(Eigen::Ref<Matrix_t> features,
-                                   const Keys_t & all_keys) const {
+                                            const Keys_t & all_keys) const {
       static_assert(Order_ == 2, "Gradients are a property of order 2.");
       using ConstMapSoapGradFlat_t = const Eigen::Map<
           const Eigen::Matrix<double, ThreeD, Eigen::Dynamic, Eigen::RowMajor>>;
@@ -976,7 +976,8 @@ namespace rascal {
                                                       ThreeD, inner_size);
             // for (int i_der{0}; i_der < ThreeD; i_der++) {
             //   for (int ii_feat{0}; ii_feat < inner_size; ++ii_feat) {
-            //     features(i_row_global+i_der, i_feat + ii_feat) = neigh_key_val_flat(i_der, ii_feat);
+            //     features(i_row_global+i_der, i_feat + ii_feat) =
+            //     neigh_key_val_flat(i_der, ii_feat);
             //   }
             // }
             features.block(i_row_global, i_feat, ThreeD, inner_size) =

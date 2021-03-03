@@ -133,7 +133,9 @@ class AtomsList(object):
             X = self.managers.get_features_gradient(calculator._representation, [])
         else:
             keys_list = calculator.get_keys(species)
-            X = self.managers.get_features_gradient(calculator._representation, keys_list)
+            X = self.managers.get_features_gradient(
+                calculator._representation, keys_list
+            )
 
         return X
 
@@ -153,7 +155,8 @@ class AtomsList(object):
 
     def get_ij(self):
         return self.managers.get_ij()
-        
+
+
 def get_neighbourlist(structure, options):
     manager = NeighbourListFactory(options)
     manager.update(**structure)
