@@ -3,8 +3,8 @@ from rascal.representations import (
     SphericalExpansion,
     SphericalInvariants,
 )
-from rascal.utils import from_dict, to_dict
-from rascal.models import Kernel, SparsePoints, FPSFilter
+from rascal.utils import from_dict, to_dict, FPSFilter
+from rascal.models import Kernel, SparsePoints
 from test_utils import load_json_frame, BoxList, Box, dot
 import unittest
 import numpy as np
@@ -122,8 +122,8 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         self.hypers = dict(
             soap_type="PowerSpectrum",
             interaction_cutoff=3.5,
-            max_radial=3,
-            max_angular=2,
+            max_radial=2,
+            max_angular=1,
             gaussian_sigma_constant=0.4,
             gaussian_sigma_type="Constant",
             cutoff_smooth_width=0.5,
@@ -170,7 +170,7 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
 
         features = rep.transform(self.frames)
 
-        n_sparses = {1: 1, 6: 1, 8: 1, 14: 1, 15: 1, 20: 1}
+        n_sparses = {1: 1, 6: 1, 8: 1, 14: 1, 15: 1, 20: 1, 24: 1}
 
         compressor = FPSFilter(rep, n_sparses, act_on="sample per species")
         X_pseudo = compressor.select_and_filter(features)
@@ -196,8 +196,9 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         X = features.get_features(rep).reshape((n_atoms, n_feat))
         KNM = np.zeros((len(self.frames), n_sparse))
         ii = 0
-        for iff, frame in enumerate(self.frames):
-            for sp in frame.get_atomic_numbers():
+        for iff, frame in enumerate(features):
+            for at in frame:
+                sp = at.atom_type
                 KNM[iff, masks[sp]] += np.dot(X[ii], xs[masks[sp]].T)
                 ii += 1
         self.assertTrue(np.allclose(KNM_ref, KNM))
