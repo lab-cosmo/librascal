@@ -32,6 +32,7 @@
 #define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_KSPACE_HH_
 
 #include "rascal/math/spherical_harmonics.hh"
+#include "rascal/math/kvec_generator.hh"
 #include "rascal/math/utils.hh"
 #include "rascal/representations/calculator_base.hh"
 #include "rascal/representations/cutoff_functions.hh"
@@ -668,9 +669,6 @@ namespace rascal {
 	         phase_factor = - pow(-1.0,(angular_l+1)/2) 
 	             * (sin_ki(ik,jat)*cos_ki(ik,iat) - cos_ki(ik,jat)*sin_ki(ik,iat));
 	        } 
-	        //c_ij_nlm.block(radial_n,l_block_idx,radial_n,2*angular_l+1) +=
-	        //  I_nl(ik,nl_idx) * Ylm.segment(l_block_idx,2*angular_l+1) * 
-	        //  G_k(ik) * 16.0 * pow(PI,2) / volume * phase_factor; 
 	        int size_m = 2*angular_l+1;
 	        for (int mval{0}; mval < size_m; ++mval) {
 	          c_ij_nlm(radial_n,l_block_idx+mval) +=

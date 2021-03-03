@@ -32,8 +32,6 @@
 #define SRC_RASCAL_REPRESENTATIONS_SCATTERING_FACTORS_HH_
 
 #include "rascal/math/hyp1f1.hh"
-#include "rascal/math/spherical_harmonics.hh"
-#include "rascal/math/kvec_generator.hh"
 #include "rascal/math/utils.hh"
 #include "rascal/representations/calculator_base.hh"
 #include "rascal/representations/cutoff_functions.hh"

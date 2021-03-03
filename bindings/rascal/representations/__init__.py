@@ -2,3 +2,5 @@ from .coulomb_matrix import SortedCoulombMatrix
 from .spherical_expansion import SphericalExpansion
 from .spherical_invariants import SphericalInvariants
 from .spherical_covariants import SphericalCovariants
+from .spherical_expansion_kspace import SphericalExpansionKspace
+from .spherical_invariants_kspace import SphericalInvariantsKspace
