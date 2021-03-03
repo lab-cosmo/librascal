@@ -94,7 +94,7 @@ class SphericalExpansionKspace(BaseIO):
         class documentation
         """
 
-        self.name = 'sphericalexpansionkspace'
+        self.name = 'kspacesphericalexpansion'
         self.hypers = dict()
 
         if global_species is None:

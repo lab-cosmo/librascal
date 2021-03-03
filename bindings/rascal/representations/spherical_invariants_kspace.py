@@ -186,7 +186,7 @@ class SphericalInvariantsKspace(BaseIO):
         Required arguments are all the hyperparameters named in the
         class documentation
         """
-        self.name = 'sphericalinvariantskspace'
+        self.name = 'kspacesphericalinvariants'
         self.hypers = dict()
         if global_species is None:
             global_species = []
