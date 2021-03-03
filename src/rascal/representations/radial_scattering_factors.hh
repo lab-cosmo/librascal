@@ -133,7 +133,7 @@ namespace rascal {
         this->radial_norm_factors.resize(this->max_radial, 1);
         this->radial_sigmas.resize(this->max_radial, 1);
         this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
-        this->radial_integral.resize(this->max_radial, this->max_angular + 1);
+        this->radial_integral.resize(this->max_radial*(this->max_angular + 1));
 
         // find the cutoff radius of the representation
         auto fc_hypers = hypers.at("cutoff_function").get<json>();
@@ -212,7 +212,7 @@ namespace rascal {
       }
 
       // Compute the radial integral I_{nl}(kval)
-      Matrix_Ref compute_radial_integral(const double kval) {
+      Vector_Ref compute_radial_integral(const double kval) {
         
         using math::pow;
 	
@@ -220,6 +220,7 @@ namespace rascal {
         double fac_b;
         double fac_c;
 
+	int nl_idx{0};
 	for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
           for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
 
@@ -227,14 +228,15 @@ namespace rascal {
 	    fac_b = 1.5 + angular_l;
 	    fac_c = - 0.5 * pow( kval * this->radial_sigmas[radial_n] , 2); 
             math::Hyp1f1 hyp1f1_calculator(fac_a,fac_b);
-            this->radial_integral(radial_n,angular_l) = 
+            this->radial_integral(nl_idx) = 
 		    this->radial_nl_factors(radial_n,angular_l) 
                          * hyp1f1_calculator.calc(fac_c);
+	    nl_idx += 1;
 
           }
         }
 
-        return Matrix_Ref(this->radial_integral);
+        return Vector_Ref(this->radial_integral);
 
       }
 
@@ -255,7 +257,7 @@ namespace rascal {
       Vector_t radial_nl_factors{};
       Matrix_t radial_ortho_matrix{};
       Matrix_t ortho_norm_matrix{};
-      Matrix_t radial_integral{};
+      Vector_t radial_integral{};
 
     };
 

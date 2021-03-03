@@ -127,6 +127,7 @@ namespace rascal {
     using ManagerList_1_t = typename StructureManagerTypeHolder<
         StructureManagerCenters, AdaptorNeighbourList,
         AdaptorCenterContribution, AdaptorStrict>::type_list;
+
     using Calc2_t = CalculatorSphericalExpansion;
     auto rep_spherical_expansion =
         add_representation_calculator<Calc2_t>(mod, m_internal);
