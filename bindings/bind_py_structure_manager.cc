@@ -670,60 +670,7 @@ namespace rascal {
         R"(Get the dense feature matrix associated with the calculator and
         the collection of structures (managers) using the list of keys
         provided. Only applicable when Calculator uses BlockSparseProperty.)");
-    manager_collection.def(
-        "get_features_gradient",
-        [](ManagerCollection_t & managers, const Calculator & calculator,
-           py::list & all_keys_l) {
-          using Manager_t = typename ManagerCollection_t::Manager_t;
-          using Prop_t = typename Calculator::template Property_t<Manager_t>;
-          using PropGrad_t = typename Calculator::template PropertyGradient_t<Manager_t>;
-          using Keys_t = typename Prop_t::Keys_t;
-          if (managers.size() == 0) {
-            throw std::runtime_error(
-                R"(There are no structure to get features from)");
-          }
-          Keys_t all_keys;
-          if (all_keys_l.size() > 0) {
-            // convert the list of keys from python in to the proper type
-            for (py::handle key_l : all_keys_l) {
-              auto key = py::cast<std::vector<int>>(key_l);
-              all_keys.insert(key);
-            }
-          } else {
-            // empty all_keys_l means that we use the keys from the managers
-            for (auto key_l : managers.get_keys(calculator)) {
-              all_keys.insert(key_l);
-            }
-          }
 
-          auto property_name{managers.get_calculator_name(calculator, false)};
-          auto property_grad_name{managers.get_calculator_name(calculator, true)};
-
-          const auto & property_ =
-              *managers[0]->template get_property<Prop_t>(property_name);
-          // assume inner_size is consistent for all managers
-          int inner_size{property_.get_nb_comp()};
-
-          math::Matrix_t features{};
-          int n_rows{0};
-          for (auto & manager : managers) {
-            n_rows += ThreeD * manager->size() + 1;
-          }
-          size_t n_cols{all_keys.size() * inner_size};
-          features.resize(n_rows, n_cols);
-          features.setZero();
-
-          int i_row{0};
-          for (auto & manager : managers) {
-            const auto & property =
-                *manager->template get_property<Prop_t>(property_name);
-            
-            i_row++;
-          }
-
-          return features;
-        },
-        R"(Get the dense feature matrix associated . Only applicable when Calculator uses BlockSparseProperty.)");
     manager_collection.def(
         "get_ij",
         [](ManagerCollection_t & managers) {
