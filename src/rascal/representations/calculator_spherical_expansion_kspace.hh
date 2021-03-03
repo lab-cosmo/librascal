@@ -565,7 +565,7 @@ namespace rascal {
     auto G_k = math::Vector_t(n_k); 
     
     // Spherical harmonics matrix N_k * (l_max+1)^2
-    auto Y_lm = math::Matrix_t(n_k,pow(this->max_angular+1, 2)); 
+    auto Y_lm = math::Matrix_t(n_k, math::pow(this->max_angular + 1, 2_size_t)); 
     
     // Radial integrals N_k * (n_max*(l_max+1))
     auto I_nl = math::Matrix_t(n_k,this->max_radial*(this->max_angular+1)); 
