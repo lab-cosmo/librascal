@@ -492,6 +492,7 @@ namespace rascal {
 
     // Console output to check code (TODO: DELETE THIS AFTER TESTING PHASE)
     double succratio = ((double)(n_k)) / numtot;
+    std::cout << "Number of k-vectors = " << n_k << "\n";
     std::cout << "Total number of points = " << numtot << "\n";
     std::cout << "Ratio of successful points = " << succratio << "\n";
     std::cout << "Ideal success ratio of circle = " << 3.1415 / 6 << "\n";
