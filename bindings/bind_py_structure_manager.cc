@@ -698,12 +698,21 @@ namespace rascal {
                                ManagerCollection_t>(manager_collection);
     bind_feature_matrix_getter<CalculatorSphericalCovariants,
                                ManagerCollection_t>(manager_collection);
+    bind_feature_matrix_getter<CalculatorKspaceSphericalExpansion,
+                               ManagerCollection_t>(manager_collection);
+    bind_feature_matrix_getter<CalculatorKspaceSphericalInvariants,
+                               ManagerCollection_t>(manager_collection);
+
     // bind some special getters
     bind_sparse_feature_matrix_getter<CalculatorSphericalExpansion,
                                       ManagerCollection_t>(manager_collection);
     bind_sparse_feature_matrix_getter<CalculatorSphericalInvariants,
                                       ManagerCollection_t>(manager_collection);
     bind_sparse_feature_matrix_getter<CalculatorSphericalCovariants,
+                                      ManagerCollection_t>(manager_collection);
+    bind_sparse_feature_matrix_getter<CalculatorKspaceSphericalExpansion,
+                                      ManagerCollection_t>(manager_collection);
+    bind_sparse_feature_matrix_getter<CalculatorKspaceSphericalInvariants,
                                       ManagerCollection_t>(manager_collection);
   }
 
