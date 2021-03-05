@@ -707,6 +707,70 @@ namespace rascal {
         },
         R"(Get informations necessary to the computation of gradients. It has as many rows as the number gradients and they correspond to the index of the central atom, the neighbor atom and their atomic species.
         np.array with shape (n_neighbor+n_atoms, 4))");
+    manager_collection.def(
+        "get_direction_vectors",
+        [](ManagerCollection_t & managers) {
+          if (managers.size() == 0) {
+            throw std::runtime_error(
+                R"(There are no structure to get features from)");
+          }
+          auto n_neighbors{0};
+          for (auto & manager : managers) {
+            n_neighbors += manager->get_nb_clusters(2);
+          }
+
+          Eigen::Matrix<double, Eigen::Dynamic, 3> rij_mat{};
+          rij_mat.resize(n_neighbors, 3);
+          rij_mat.setZero();
+          int i_row{0};
+          for (auto & manager : managers) {
+            for (auto center : manager) {
+              for (auto pair : center.pairs_with_self_pair()) {
+                rij_mat.row(i_row) = manager->get_direction_vector(pair);
+                i_row++;
+              }
+            }
+          }
+
+          return rij_mat;
+        },
+        R"(Get the direction vectors from the central atoms to their neighbors.
+        The zeros vectors correspond to the central atom to itself so that this
+        matrix matches the shape of the array returned by
+        `get_neighbors_for_gradient`.
+        np.array with shape (n_neighbor+n_atoms, 3))");
+    manager_collection.def(
+        "get_distances",
+        [](ManagerCollection_t & managers) {
+          if (managers.size() == 0) {
+            throw std::runtime_error(
+                R"(There are no structure to get features from)");
+          }
+          auto n_neighbors{0};
+          for (auto & manager : managers) {
+            n_neighbors += manager->get_nb_clusters(2);
+          }
+
+          Eigen::Matrix<double, Eigen::Dynamic, 1> rij_mat{};
+          rij_mat.resize(n_neighbors, 1);
+          rij_mat.setZero();
+          int i_row{0};
+          for (auto & manager : managers) {
+            for (auto center : manager) {
+              for (auto pair : center.pairs_with_self_pair()) {
+                rij_mat(i_row, 0) = manager->get_distance(pair);
+                i_row++;
+              }
+            }
+          }
+
+          return rij_mat;
+        },
+        R"(Get the distance from the central atoms to their neighbors.
+        The zeros vectors correspond to the central atom to itself so that this
+        matrix matches the shape of the array returned by
+        `get_neighbors_for_gradient`.
+        np.array with shape (n_neighbor+n_atoms, 3))");
   }
 
   template <typename Manager, template <class> class... Adaptor>

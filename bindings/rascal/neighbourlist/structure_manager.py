@@ -160,13 +160,31 @@ class AtomsList(object):
         """
         Returns
         -------
-        ij : np.array of size (3*(n_neighbor+n_atom), 4)
+        ij : np.array of size (n_neighbor+n_atom, 4)
             Get informations necessary to the computation of gradients returned
             by `get_features_gradient`. It has as many rows as as the number
             gradients and each columns correspond to the index of the central
             atom, the neighbor atom and their atomic species.
         """
         return self.managers.get_neighbors_for_gradient()
+
+    def get_direction_vectors(self):
+        """
+        Returns
+        -------
+        direction_vector : np.array of size (n_neighbor+n_atom, 3)
+            Get the direction vectors from the atoms to their neighbors.
+        """
+        return self.managers.get_direction_vectors()
+
+    def get_distances(self):
+        """
+        Returns
+        -------
+        distance : np.array of size (n_neighbor+n_atom, 4)
+            Get the distances from the atoms to their neighbors.
+        """
+        return self.managers.get_distances()
 
 
 def get_neighbourlist(structure, options):
