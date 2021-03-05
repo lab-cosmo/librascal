@@ -126,7 +126,10 @@ class AtomsList(object):
         Returns
         -------
         dX_dr : ndarray of size (3*(n_neighbor+n_atom), n_features)
-            returns the gradient of representation with respect to the atomic positions that have been computed with the calculator as a dense matrix.
+            returns the gradient of representation with respect to the atomic
+            positions that have been computed with the calculator as a dense
+            matrix. The method `get_neighbors_for_gradient` provides the
+            necessary information for operating on the dX_dr matrix.
         """
 
         if species is None:
@@ -153,7 +156,7 @@ class AtomsList(object):
         """
         return self.managers.get_features_by_species(calculator._representation)
 
-    def get_ij(self):
+    def get_neighbors_for_gradient(self):
         """
         Returns
         -------
@@ -163,7 +166,7 @@ class AtomsList(object):
             gradients and each columns correspond to the index of the central
             atom, the neighbor atom and their atomic species.
         """
-        return self.managers.get_ij()
+        return self.managers.get_neighbors_for_gradient()
 
 
 def get_neighbourlist(structure, options):

@@ -974,12 +974,6 @@ namespace rascal {
             const auto & neigh_key_val = neigh_val[key];
             ConstMapSoapGradFlat_t neigh_key_val_flat(neigh_key_val.data(),
                                                       ThreeD, inner_size);
-            // for (int i_der{0}; i_der < ThreeD; i_der++) {
-            //   for (int ii_feat{0}; ii_feat < inner_size; ++ii_feat) {
-            //     features(i_row_global+i_der, i_feat + ii_feat) =
-            //     neigh_key_val_flat(i_der, ii_feat);
-            //   }
-            // }
             features.block(i_row_global, i_feat, ThreeD, inner_size) =
                 neigh_key_val_flat;
           }

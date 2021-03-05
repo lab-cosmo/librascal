@@ -188,7 +188,7 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
             rep, name="GAP", zeta=zeta, target_type="Structure", kernel_type="Sparse"
         )
 
-        ij = features.get_ij()
+        ij = features.get_neighbors_for_gradient()
         n_atoms = len(np.unique(ij[:, 0]))
         n_neigh = ij.shape[0]
 

@@ -675,7 +675,7 @@ namespace rascal {
         provided. Only applicable when Calculator uses BlockSparseProperty.)");
 
     manager_collection.def(
-        "get_ij",
+        "get_neighbors_for_gradient",
         [](ManagerCollection_t & managers) {
           if (managers.size() == 0) {
             throw std::runtime_error(
@@ -885,12 +885,11 @@ namespace rascal {
     bind_update_unpacked<Manager_t>(manager);
   }
 
-  //! Bind the ClusterRef up to order 4 and from Layer 0 to 6
+  //! Bind the ClusterRef up to order 3 and from Layer 0 to 6
   void bind_cluster_refs(py::module & m_internal) {
     add_cluster_refs<1, 0, 6>::static_for(m_internal);
     add_cluster_refs<2, 0, 6>::static_for(m_internal);
-    // add_cluster_refs<3, 0, 6>::static_for(m_internal);
-    // add_cluster_refs<4, 0, 6>::static_for(m_internal);
+    add_cluster_refs<3, 0, 6>::static_for(m_internal);
   }
 
   template <typename T>
