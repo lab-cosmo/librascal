@@ -227,7 +227,7 @@ namespace rascal {
 	    fac_b = 1.5 + angular_l;
 	    fac_c = - 0.5 * pow( kval * this->radial_sigmas[radial_n] , 2); 
             math::Hyp1f1 hyp1f1_calculator(fac_a,fac_b);
-            this->radial_integral(nl_idx) = 
+            this->radial_integral(nl_idx) = pow(kval,angular_l) * 
 		    this->radial_nl_factors(radial_n,angular_l) 
                          * hyp1f1_calculator.calc(fac_c);
 	    nl_idx += 1;

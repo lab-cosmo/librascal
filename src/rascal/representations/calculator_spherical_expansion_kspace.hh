@@ -580,7 +580,7 @@ namespace rascal {
     for (int ik{0}; ik < n_k; ++ik) {
    
       // Fourier charge at k_val
-      G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) ) / pow(k_val(ik),2);
+      G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) ) ;/// pow(k_val(ik),2);
 
       // Harmonics at k_dir
       Eigen::Vector3d k_dir;
@@ -615,7 +615,7 @@ namespace rascal {
     for (auto center : manager) {
 
       auto atom_i_tag = center.get_atom_tag();
-      size_t iat = manager->get_atom_index(atom_i_tag);
+      size_t iat = manager->get_atom_index(atom_i_tag); 
       // c^{i}
       auto & coefficients_center = expansions_coefficients[center];
       // \grad_i c^{i}
