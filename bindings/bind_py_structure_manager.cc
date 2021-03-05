@@ -685,6 +685,7 @@ namespace rascal {
           for (auto & manager : managers) {
             for (auto center : manager) {
               for (auto pair : center.pairs_with_self_pair()) {
+                (void)pair;
                 n_rows++;
               }
             }
