@@ -686,7 +686,6 @@ namespace rascal {
             n_neighbors += manager->get_nb_clusters(2);
           }
 
-
           Eigen::Matrix<int, Eigen::Dynamic, 4> ij_mat{};
           ij_mat.resize(n_neighbors, 4);
           ij_mat.setZero();
