@@ -681,18 +681,14 @@ namespace rascal {
             throw std::runtime_error(
                 R"(There are no structure to get features from)");
           }
-          auto n_rows{0};
+          auto n_neighbors{0};
           for (auto & manager : managers) {
-            for (auto center : manager) {
-              for (auto pair : center.pairs_with_self_pair()) {
-                (void)pair;
-                n_rows++;
-              }
-            }
+            n_neighbors += manager->get_nb_clusters(2);
           }
 
+
           Eigen::Matrix<int, Eigen::Dynamic, 4> ij_mat{};
-          ij_mat.resize(n_rows, 4);
+          ij_mat.resize(n_neighbors, 4);
           ij_mat.setZero();
           int i_row{0}, i_center{0};
           for (auto & manager : managers) {
