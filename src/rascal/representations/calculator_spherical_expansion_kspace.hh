@@ -567,10 +567,10 @@ namespace rascal {
     auto G_k = math::Vector_t(n_k); 
     
     // Spherical harmonics matrix N_k * (l_max+1)^2
-    auto Y_lm = math::Matrix_t(n_k, math::pow(this->max_angular + 1, 2_size_t)); 
+    auto Y_lm = math::Matrix_t(n_k, n_col); 
     
     // Radial integrals N_k * (n_max*(l_max+1))
-    auto I_nl = math::Matrix_t(n_k,this->max_radial*(this->max_angular+1)); 
+    auto I_nl = math::Matrix_t(n_k, this->max_radial*(this->max_angular+1)); 
     
     // Trigonometric matrices N_k * N_atoms 
     auto cos_ki = math::Matrix_t(n_k,natoms); 
@@ -581,6 +581,7 @@ namespace rascal {
    
       // Fourier charge at k_val
       G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) ) ;/// pow(k_val(ik),2);
+      //std::cout << -0.5 * pow(this->smearing*k_val(ik) , 2) << "\n";
 
       // Harmonics at k_dir
       Eigen::Vector3d k_dir;
@@ -589,7 +590,7 @@ namespace rascal {
       k_dir(2) = k_vec(ik,2)/k_val(ik);
       this->spherical_harmonics.calc(k_dir);
       auto && harmonics{spherical_harmonics.get_harmonics()};
-      for (int lm{0}; lm < pow(this->max_angular+1,2); ++lm) {
+      for (size_t lm{0}; lm < n_col; ++lm) {
         Y_lm(ik,lm) = harmonics(lm);
       }
 
@@ -632,16 +633,16 @@ namespace rascal {
           int l_block_idx{0};
           for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
             // l odd contributions vanish by k-symmetry for central atom
+	    int size_m = 2*angular_l+1;
             if (angular_l%2==0) {
-	      int size_m = 2*angular_l+1;
 	      for (int mval{0}; mval < size_m; ++mval) {
 	        coefficients_center[center_type](radial_n,l_block_idx+mval) += 
 	          I_nl(ik,nl_idx) * Y_lm(ik,l_block_idx+mval) * G_k(ik) 
 		  * 16.0 * pow(PI,2) / volume; 
 	      }
-              l_block_idx += 2*angular_l+1;
-              nl_idx += 1;
             }
+            l_block_idx += size_m;
+            nl_idx += 1;
           }
 	}
 
@@ -653,7 +654,7 @@ namespace rascal {
 	  // accumulate for atoms different from the central
 	  if (jat != iat) {
             Key_t neigh_type{neigh.get_atom_type()};
-            auto coefficients_center_by_type{coefficients_center[neigh_type]};
+	    auto coefficients_center_by_type{coefficients_center[neigh_type]};
 
             // compute the coefficients
             int nl_idx = 0;
@@ -672,15 +673,16 @@ namespace rascal {
 	        } 
 	        int size_m = 2*angular_l+1;
 	        for (int mval{0}; mval < size_m; ++mval) {
-	          c_ij_nlm(radial_n,l_block_idx+mval) +=
+	          //coefficients_center[neigh_type](radial_n,l_block_idx+mval) += 
+	          c_ij_nlm(radial_n,l_block_idx+mval) += 
                     I_nl(ik,nl_idx) * Y_lm(ik,l_block_idx+mval) * G_k(ik)
                     * phase_factor * 16.0 * pow(PI,2) / volume;	
                 }
-                l_block_idx += 2*angular_l+1;
+                l_block_idx += size_m;
                 nl_idx += 1;
               }
 	    }
-            coefficients_center_by_type += c_ij_nlm;
+	    coefficients_center_by_type += c_ij_nlm;
 	  }
 
 //          // half list branch for c^{ji} terms using
