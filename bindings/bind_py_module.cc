@@ -41,9 +41,6 @@ PYBIND11_MODULE(_rascal, mod) {
   py::module m_models = mod.def_submodule("models");
   m_models.doc() = "Collection of models";
 
-  py::module m_kernels = m_models.def_submodule("kernels");
-  m_kernels.doc() = "Collection of Kernels";
-
   py::module m_utl = mod.def_submodule("utils");
   py::module m_internal = mod.def_submodule("_internal");
   m_internal.doc() =
@@ -60,6 +57,6 @@ PYBIND11_MODULE(_rascal, mod) {
   rascal::add_structure_managers(m_nl, m_internal);
   rascal::add_representation_calculators(m_repr, m_internal);
   rascal::utils_binding(m_utl);
-  rascal::add_models(m_kernels, m_internal);
+  rascal::add_models(m_models, m_internal);
   rascal::add_math(m_math);
 }

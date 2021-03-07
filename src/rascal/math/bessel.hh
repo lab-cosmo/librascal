@@ -38,6 +38,8 @@
 
 namespace rascal {
   namespace math {
+    // Minimal value which can be evaluated with the spherical bessel function
+    constexpr double SPHERICAL_BESSEL_FUNCTION_FTOL = 1e-5;
 
     /**
      * Computes the modified spherical bessel function of the first kind (MBSF)
@@ -176,6 +178,14 @@ namespace rascal {
        * order
        */
       void gradient_recursion(double distance, double fac_a);
+
+      /**
+       * Set small values to 0 because the recursion looses accuracy for very
+       * small values. Also on the python side it avoids some unexpected
+       * interpretation of values that are strictly speaking outside of the
+       * range of double precision
+       */
+      void set_small_bessel_values_to_zero();
 
       Eigen::ArrayXXd bessel_values{};
       Eigen::ArrayXXd bessel_gradients{};

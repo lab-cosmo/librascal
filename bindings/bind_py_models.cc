@@ -134,6 +134,68 @@ namespace rascal {
         py::call_guard<py::gil_scoped_release>());
   }
 
+  //! register the population mechanism of the pseudo points class
+  template <class KernelImpl, class Calculator, class Managers,
+            class SparsePoints>
+  void bind_compute_numerical_kernel_gradients(py::module & mod) {
+    mod.def("compute_numerical_kernel_gradients",
+            &compute_numerical_kernel_gradients<KernelImpl, Calculator,
+                                                Managers, SparsePoints>,
+            py::call_guard<py::gil_scoped_release>());
+  }
+
+  template <class ManagerCollection, class Calculator, class SparsePoints>
+  void bind_compute_gradients(py::module & mod, py::module & /*m_internal*/) {
+    using Manager_t = typename ManagerCollection::Manager_t;
+    mod.def(
+        "compute_sparse_kernel_gradients",
+        [](const Calculator & calculator, SparseKernel & kernel,
+           ManagerCollection & managers, SparsePoints & sparse_points,
+           math::Vector_t & weights) {
+          std::string force_name = compute_sparse_kernel_gradients(
+              calculator, kernel, managers, sparse_points, weights);
+          size_t n_centers{0};
+          // find the total number of gradients
+          for (const auto & manager : managers) {
+            n_centers += manager->size();
+          }
+          math::Matrix_t gradients_global{n_centers, ThreeD};
+          size_t i_center{0};
+          for (const auto & manager : managers) {
+            auto && gradients{*manager->template get_property<
+                Property<double, 1, Manager_t, 1, ThreeD>>(force_name, true)};
+            gradients_global.block(i_center, 0, manager->size(), ThreeD) =
+                gradients.view();
+            i_center += manager->size();
+          }
+          return gradients_global;
+        },
+        py::call_guard<py::gil_scoped_release>());
+
+    mod.def(
+        "compute_sparse_kernel_neg_stress",
+        [](const Calculator & calculator, SparseKernel & kernel,
+           ManagerCollection & managers, SparsePoints & sparse_points,
+           math::Vector_t & weights) {
+          std::string neg_stress_name = compute_sparse_kernel_neg_stress(
+              calculator, kernel, managers, sparse_points, weights);
+          math::Matrix_t neg_stress_global{managers.size(), 6};
+          size_t i_manager{0};
+          for (const auto & manager : managers) {
+            auto && neg_stress{
+                *manager
+                     ->template get_property<Property<double, 0, Manager_t, 6>>(
+                         neg_stress_name, true)};
+            neg_stress_global.block(i_manager, 0, 1, 6) =
+                Eigen::Map<const math::Matrix_t>(neg_stress.view().data(), 1,
+                                                 6);
+            i_manager++;
+          }
+          return neg_stress_global;
+        },
+        py::call_guard<py::gil_scoped_release>());
+  }
+
   /**
    * Function to bind the representation managers to python
    *
@@ -144,14 +206,14 @@ namespace rascal {
    *
    */
   void add_models(py::module & mod, py::module & m_internal) {
+    py::module m_kernels = mod.def_submodule("kernels");
+    m_kernels.doc() = "Collection of Kernels";
+
     // Defines a particular structure manager type
     using ManagerCollection_1_t =
         ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
                           AdaptorStrict>;
     using ManagerCollection_2_t =
-        ManagerCollection<StructureManagerCenters, AdaptorNeighbourList, AdaptorHalfList,
-                          AdaptorCenterContribution, AdaptorStrict>;
-    using ManagerCollection_3_t =
         ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
                           AdaptorCenterContribution, AdaptorStrict>;
     // Defines the representation manager type for the particular structure
@@ -160,28 +222,28 @@ namespace rascal {
     using SparsePoints_1_t = SparsePointsBlockSparse<Calc1_t>;
 
     // Bind the interface of this representation manager
-    auto kernel = add_kernel<Kernel>(mod, m_internal);
+    auto kernel = add_kernel<Kernel>(m_kernels, m_internal);
     internal::bind_dict_representation(kernel);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
                                  ManagerCollection_1_t>(kernel);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
                                  ManagerCollection_2_t>(kernel);
-    bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
-                                 ManagerCollection_3_t>(kernel);
     // bind the sparse kernel and pseudo points class
-    auto sparse_kernel = add_kernel<SparseKernel>(mod, m_internal);
+    auto sparse_kernel = add_kernel<SparseKernel>(m_kernels, m_internal);
     internal::bind_dict_representation(sparse_kernel);
     bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
                                         Calc1_t, ManagerCollection_2_t,
                                         SparsePoints_1_t>(sparse_kernel);
-    bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
-                                        Calc1_t, ManagerCollection_3_t,
-                                        SparsePoints_1_t>(sparse_kernel);
 
-    auto sparse_points = add_sparse_points<SparsePoints_1_t>(mod, m_internal);
+    auto sparse_points =
+        add_sparse_points<SparsePoints_1_t>(m_kernels, m_internal);
     bind_sparse_points_push_back<ManagerCollection_2_t, Calc1_t>(sparse_points);
-    bind_sparse_points_push_back<ManagerCollection_3_t, Calc1_t>(sparse_points);
 
     internal::bind_dict_representation(sparse_points);
+
+    bind_compute_gradients<ManagerCollection_2_t, Calc1_t, SparsePoints_1_t>(
+        mod, m_internal);
+    bind_compute_numerical_kernel_gradients<
+        SparseKernel, Calc1_t, ManagerCollection_2_t, SparsePoints_1_t>(mod);
   }
 }  // namespace rascal

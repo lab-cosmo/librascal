@@ -45,10 +45,9 @@ namespace rascal {
     sph.def("harmonics_derivatives",
             &SphericalHarmonics::get_harmonics_derivatives,
             "return matrix(3, [l_max+1]**2)")
-        .def_property_readonly("l_max",
-            [](SphericalHarmonics & sph) {
-              return sph.get_max_angular();
-            });
+        .def_property_readonly("l_max", [](SphericalHarmonics & sph) {
+          return sph.get_max_angular();
+        });
   }
 
   void bind_ri(py::module & mod) {
@@ -85,19 +84,15 @@ namespace rascal {
         },
         "returns a matrix(n_max, l_max+1)");
 
-    ri_dvr.def_property_readonly("n_max",
-            [](RadialContribution_t & ri) {
-              return ri.max_radial;
-            })
-          .def_property_readonly("l_max",
-            [](RadialContribution_t & ri) {
-              return ri.max_angular;
-            })
-          .def_property_readonly("fac_a",
-            [](RadialContribution_t & ri) {
-              double fac_a{0.5 / pow(ri.smearing, 2_size_t)};
-              return fac_a;
-            });
+    ri_dvr
+        .def_property_readonly(
+            "n_max", [](RadialContribution_t & ri) { return ri.max_radial; })
+        .def_property_readonly(
+            "l_max", [](RadialContribution_t & ri) { return ri.max_angular; })
+        .def_property_readonly("fac_a", [](RadialContribution_t & ri) {
+          double fac_a{0.5 / pow(ri.smearing, 2_size_t)};
+          return fac_a;
+        });
   }
 
   void bind_fc(py::module & mod) {
@@ -115,9 +110,7 @@ namespace rascal {
         .def("f_c", py::vectorize(&CutoffFunction_t::f_c))
         .def("df_c", py::vectorize(&CutoffFunction_t::df_c), "df_c(r) / dr")
         .def_property_readonly("cutoff",
-            [](CutoffFunction_t & fc) {
-              return fc.cutoff;
-            });
+                               [](CutoffFunction_t & fc) { return fc.cutoff; });
 
     using CutoffFunction_rs_t =
         internal::CutoffFunction<internal::CutoffFunctionType::RadialScaling>;
@@ -138,10 +131,8 @@ namespace rascal {
                 scale=dict(value=XXX)))")
         .def("f_c", py::vectorize(&CutoffFunction_rs_t::f_c))
         .def("df_c", py::vectorize(&CutoffFunction_rs_t::df_c), "df_c(r) / dr")
-        .def_property_readonly("cutoff",
-            [](CutoffFunction_rs_t & fc) {
-              return fc.cutoff;
-            });
+        .def_property_readonly(
+            "cutoff", [](CutoffFunction_rs_t & fc) { return fc.cutoff; });
   }
 
   void add_math(py::module & mod) {

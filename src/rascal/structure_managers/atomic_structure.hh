@@ -77,6 +77,7 @@ namespace rascal {
 
     using ArrayB_t = Eigen::Array<bool, Eigen::Dynamic, 1>;
     using ConstArrayBool_ref = const Eigen::Ref<const ArrayB_t>;
+    using Vec_t = Eigen::Matrix<double, Dim, 1>;
 
     template <typename T>
     using ArrayConstRef_t =
@@ -130,6 +131,43 @@ namespace rascal {
         throw std::runtime_error(err_str.str());
       }
       this->positions.col(i_atom) += disp;
+    }
+
+    //! quick dirty copy paste of different elements to compute volume
+    double get_volume() {
+      auto cell_vectors{cell};
+      Vec_t cell_lengths = Vec_t::Ones();
+      cell_lengths = this->cell.colwise().norm();
+      Vec_t cell_angles = Vec_t::Ones();
+      cell_angles[0] = std::acos(cell_vectors.col(1).dot(cell_vectors.col(2)) /
+                                 cell_lengths[1] / cell_lengths[2]);
+      cell_angles[1] = std::acos(cell_vectors.col(0).dot(cell_vectors.col(2)) /
+                                 cell_lengths[0] / cell_lengths[2]);
+      cell_angles[2] = std::acos(cell_vectors.col(1).dot(cell_vectors.col(0)) /
+                                 cell_lengths[1] / cell_lengths[0]);
+      Vec_t c_abg = cell_angles.array().cos();
+
+      //! Cell volume
+      return cell_lengths[0] * cell_lengths[1] * cell_lengths[2] *
+             std::sqrt(1 - c_abg[0] * c_abg[0] - c_abg[1] * c_abg[1] -
+                       c_abg[2] * c_abg[2] +
+                       2 * c_abg[0] * c_abg[1] * c_abg[2]);
+    }
+
+    /**
+     * displacement of strain tensor in alpha beta spatial dimensions
+     * where alpha and beta can be one of the integers {0, 1, 2}
+     * corresponding to the spatial dimensions {x, y, z}
+     */
+    void displace_strain_tensor(const int & alpha_spatial_dim,
+                                const int & beta_spatial_dim,
+                                const double & h_disp) {
+      Eigen::Matrix3d shift = Eigen::Matrix3d::Identity();
+      shift(alpha_spatial_dim, beta_spatial_dim) += h_disp;
+      auto original_cell{this->cell};
+      this->cell = shift.transpose() * this->cell;
+
+      this->positions = this->cell * original_cell.inverse() * this->positions;
     }
 
     Positions_t get_scaled_positions() {

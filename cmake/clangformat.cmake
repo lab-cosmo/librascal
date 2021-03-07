@@ -48,9 +48,7 @@
 # The style is customized in the /.clang-format file in project root
 
 # target to run cpplint.py for all configured sources
-set(CLANG_FORMAT_TARGET pretty-cpp CACHE STRING "Name of C++ autoformatter")
-
-mark_as_advanced(CLANG_FORMAT_TARGET)
+set(CLANG_FORMAT_TARGET pretty-cpp)
 
 # project root directory
 set(CLANG_FORMAT_PROJECT_ROOT

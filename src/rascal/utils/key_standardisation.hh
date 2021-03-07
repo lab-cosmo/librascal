@@ -35,6 +35,8 @@
 
 namespace rascal {
 
+  using std::size_t;
+
   template <typename T, size_t MaxOrder>
   class KeyStandardisation {
     static_assert(std::is_arithmetic<T>::value,

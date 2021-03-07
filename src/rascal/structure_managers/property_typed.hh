@@ -152,6 +152,12 @@ namespace rascal {
    * one only wants the `size` and that it the default optiont. But e.g. for
    * `cluster_indices` the size needs to include space for the number of atoms
    * plus ghosts.
+   *
+   * Special cases exist for Order=0 properties which are related to the
+   * structure. Unlike higher orders, it does not support multiple
+   * layers, therefore its layer is set to 0. The underlying data can be
+   * directly accessed with operator() for individual elements, operator[0]
+   * to get a Map<Matrix> and .view() to get a Map<const Matrix>.
    */
   template <typename T, size_t Order_, class Manager>
   class TypedProperty : public PropertyBase {
@@ -170,6 +176,7 @@ namespace rascal {
     constexpr static size_t Order{Order_};
     constexpr static bool IsOrderOne{Order == 1};
 
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ >= 1), int> = 0>
     TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
                   std::string metadata = "no metadata",
                   bool exclude_ghosts = false)
@@ -178,6 +185,18 @@ namespace rascal {
                  nb_col,
                  Order,
                  manager.template cluster_layer_from_order<Order>(),
+                 metadata},
+          type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
+
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 0), int> = 0>
+    TypedProperty(Manager_t & manager, Dim_t nb_row, Dim_t nb_col = 1,
+                  std::string metadata = "no metadata",
+                  bool exclude_ghosts = false)
+        : Parent{static_cast<StructureManagerBase &>(manager),
+                 nb_row,
+                 nb_col,
+                 Order,
+                 0,
                  metadata},
           type_id{typeid(Self_t).name()}, exclude_ghosts{exclude_ghosts} {}
 
@@ -272,7 +291,16 @@ namespace rascal {
     }
 
     //! Returns the size of one component
-    size_t size() const { return this->values.size() / this->get_nb_comp(); }
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 0), int> = 0>
+    size_t size() const {
+      return 1;
+    }
+
+    //! Returns the size of one component
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ > 0), int> = 0>
+    size_t size() const {
+      return this->values.size() / this->get_nb_comp();
+    }
 
     /**
      * shortens the vector so that the manager can push_back into it (capacity
@@ -282,8 +310,9 @@ namespace rascal {
 
     /* ---------------------------------------------------------------------- */
     //! Property accessor by cluster ref
-    template <size_t CallerLayer>
-    reference operator[](const ClusterRefKey<Order, CallerLayer> & id) {
+    template <size_t CallerLayer, size_t Order__ = Order>
+    std::enable_if_t<(Order__ > 0), reference>  // NOLINT
+    operator[](const ClusterRefKey<Order, CallerLayer> & id) {
       // You are trying to access a property that does not exist at this depth
       // in the adaptor stack.
       assert(static_cast<int>(CallerLayer) >= this->get_property_layer());
@@ -303,6 +332,13 @@ namespace rascal {
     reference operator[](size_t index) {
       return Value_t::get_ref(this->values[index * this->get_nb_comp()],
                               this->get_nb_row(), this->get_nb_col());
+    }
+
+    //! Direct accessor for property of order == 0
+    template <size_t Order__ = Order, std::enable_if_t<(Order__ == 0), int> = 0>
+    T & operator()(int i_row, int i_col = 0) {
+      return Value_t::get_ref(this->values[0], this->get_nb_row(),
+                              this->get_nb_col())(i_row, i_col);
     }
 
     void fill_dense_feature_matrix(Eigen::Ref<Matrix_t> features) const {
@@ -339,6 +375,14 @@ namespace rascal {
       auto nb_features{this->get_nb_comp()};
       Matrix_t features(nb_centers, nb_features);
       this->fill_dense_feature_matrix(features);
+      return features;
+    }
+    //! get a const view of the underlying matrix [N_{entries}, N_{comp}]
+    const Eigen::Map<const Matrix_t> view() {
+      auto nb_centers{this->get_nb_item()};
+      auto nb_features{this->get_nb_comp()};
+      const Eigen::Map<const Matrix_t> features(this->values.data(), nb_centers,
+                                                nb_features);
       return features;
     }
 

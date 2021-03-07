@@ -27,6 +27,7 @@
  */
 
 #include "rascal/math/bessel.hh"
+
 using namespace rascal::math;  // NOLINT
 
 void ModifiedSphericalBessel::precompute(
@@ -129,6 +130,17 @@ void ModifiedSphericalBessel::calc(double distance, double fac_a) {
   this->bessel_arg = (2. * fac_a * distance) * this->x_v;
   this->bessel_arg_i = this->bessel_arg.inverse();
 
+  if (distance < SPHERICAL_BESSEL_FUNCTION_FTOL) {
+    this->bessel_values.setZero();
+    // 0th order approximation
+    this->bessel_values.col(0) = Eigen::exp(-this->x_v.square() * fac_a);
+    this->set_small_bessel_values_to_zero();
+    if (compute_gradients) {
+      this->bessel_gradients.setZero();
+    }
+    return;
+  }
+
   if (this->order_max == 1) {
     // recursions are not valid for order_max==1 so direct computation
     // i_0(z) = sinh(z) / z
@@ -159,11 +171,16 @@ void ModifiedSphericalBessel::calc(double distance, double fac_a) {
     }
   }
   assert(this->bessel_values.isFinite().all());
+  this->set_small_bessel_values_to_zero();
 
-  // Set small values to 0 because the recursion looses accuracy for very
-  // small values. Also on the python side it avoids some unexpected
-  // interpretation of values that are strictly speaking outside of the
-  // range of double precision
+  // compute gradients
+  if (this->compute_gradients) {
+    this->gradient_recursion(distance, fac_a);
+    assert(this->bessel_gradients.isFinite().all());
+  }
+}
+
+void ModifiedSphericalBessel::set_small_bessel_values_to_zero() {
   this->bessel_values = this->bessel_values.unaryExpr([](double d) {
     if (d < 1e-100) {
       return 0.;
@@ -171,10 +188,4 @@ void ModifiedSphericalBessel::calc(double distance, double fac_a) {
       return d;
     }
   });
-
-  // compute gradients
-  if (this->compute_gradients) {
-    this->gradient_recursion(distance, fac_a);
-    assert(this->bessel_gradients.isFinite().all());
-  }
 }

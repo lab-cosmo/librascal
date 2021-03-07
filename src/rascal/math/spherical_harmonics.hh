@@ -182,9 +182,7 @@ namespace rascal {
         return this->harmonics_derivatives;
       }
 
-      size_t get_max_angular() const {
-        return this->max_angular;
-      }
+      size_t get_max_angular() const { return this->max_angular; }
 
      private:
       /**

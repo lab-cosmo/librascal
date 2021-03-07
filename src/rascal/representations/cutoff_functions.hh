@@ -129,7 +129,8 @@ namespace rascal {
       //! Pure Virtual Function to set hyperparameters of the cutoff function
       virtual void set_hyperparameters(const Hypers_t &) = 0;
 
-      // TODO(felix) test is having these pure virtual changes performance
+      // TODO(felix) having these as pure virtual changes the performance of the
+      // tests
       //! Pure Virtual Function to evaluate the cutoff function
       // virtual double f_c(double distance) = 0;
       //! Pure Virtual Function to evaluate the derivative of the cutoff
@@ -229,28 +230,28 @@ namespace rascal {
 
       double value(double distance) {
         double factor{0.};
-        if (this->rate > math::DBL_FTOL) {
-          factor = this->rate / (this->rate + math::pow(distance / this->scale,
-                                                        this->exponent));
+        if (std::abs(this->rate) <= math::DBL_FTOL) {
+          factor = 1. / math::pow(distance / this->scale, this->exponent);
         } else if (this->exponent == 0) {
           factor = 1.;
         } else {
-          factor = 1. / math::pow(distance / this->scale, this->exponent);
+          factor = this->rate / (this->rate + math::pow(distance / this->scale,
+                                                        this->exponent));
         }
         return factor;
       }
 
       double grad(double distance) {
         double factor{0.};
-        if (this->rate > math::DBL_FTOL) {
-          double ff{math::pow(distance / this->scale, this->exponent)};
-          factor = -this->rate * this->exponent * ff / distance /
-                   math::pow(this->rate + ff, 2_size_t);
+        if (std::abs(this->rate) <= math::DBL_FTOL) {
+          factor = -this->exponent / distance /
+                   math::pow(distance / this->scale, this->exponent);
         } else if (this->exponent == 0) {
           factor = 0.;
         } else {
-          factor = -this->exponent / distance /
-                   math::pow(distance / this->scale, this->exponent);
+          double ff{math::pow(distance / this->scale, this->exponent)};
+          factor = -this->rate * this->exponent * ff / distance /
+                   math::pow(this->rate + ff, 2_size_t);
         }
         return factor;
       }
