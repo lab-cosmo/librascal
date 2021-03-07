@@ -691,9 +691,9 @@ namespace rascal {
           int i_center{0}, i_frame{0};
           for (auto & manager : managers) {
             for (auto center : manager) {
-              ij_mat(i_row, 0) = i_frame;
-              ij_mat(i_row, 1) = i_center;
-              ij_mat(i_row, 2) = center.get_atom_type();
+              ij_mat(i_center, 0) = i_frame;
+              ij_mat(i_center, 1) = i_center;
+              ij_mat(i_center, 2) = center.get_atom_type();
               i_center++;
             }
             i_frame++;
