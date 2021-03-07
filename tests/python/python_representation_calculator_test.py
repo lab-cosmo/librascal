@@ -208,7 +208,7 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         X_der = features.get_features_gradient(rep).reshape((n_neigh, 3, n_feat))
 
         KNM = np.zeros((n_atoms, 3, n_sparse))
-        for ii, (i, j, i_sp, j_sp) in enumerate(ij):
+        for ii, (i_frame, i, j, i_sp, j_sp) in enumerate(ij):
             sp = i_sp
             KNM[j, 0, masks[sp]] += np.dot(X_der[ii, 0], xs[masks[sp]].T)
             KNM[j, 1, masks[sp]] += np.dot(X_der[ii, 1], xs[masks[sp]].T)
