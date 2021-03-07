@@ -627,32 +627,32 @@ namespace rascal {
       // loop over k-vectors
       for (int ik{0}; ik < n_k; ++ik) {
         
-//        // Start the accumulation with the central atom contribution
-//        int nl_idx{0};
-//        for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
-//          int l_block_idx{0};
-//          for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
-//            // l odd contributions vanish by k-symmetry for central atom
-//	    int size_m = 2*angular_l+1;
-//            if (angular_l%2==0) {
-//	      for (int mval{0}; mval < size_m; ++mval) {
-//	        coefficients_center[center_type](radial_n,l_block_idx+mval) += 
-//	          I_nl(ik,nl_idx) * Y_lm(ik,l_block_idx+mval) * G_k(ik) 
-//		  * 16.0 * pow(PI,2) / volume; 
-//	      }
-//            }
-//            l_block_idx += size_m;
-//            nl_idx += 1;
-//          }
-//	}
-//
+        // Start the accumulation with the central atom contribution
+        int nl_idx{0};
+        for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
+          int l_block_idx{0};
+          for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
+            // l odd contributions vanish by k-symmetry for central atom
+	    int size_m = 2*angular_l+1;
+            if (angular_l%2==0) {
+	      for (int mval{0}; mval < size_m; ++mval) {
+	        coefficients_center[center_type](radial_n,l_block_idx+mval) += 
+	          I_nl(ik,nl_idx) * Y_lm(ik,l_block_idx+mval) * G_k(ik) 
+		  * 16.0 * pow(PI,2) / volume; 
+	      }
+            }
+            l_block_idx += size_m;
+            nl_idx += 1;
+          }
+	}
+
 	// loop over atoms over the entire system using centers idx once again      
         for (auto neigh : manager) {
           
 	  auto atom_j_tag = neigh.get_atom_tag();
           size_t jat = manager->get_atom_index(atom_j_tag);
 	  // accumulate for atoms different from the central
-//	  if (jat != iat) {
+	  if (jat != iat) {
             Key_t neigh_type{neigh.get_atom_type()};
 //	    auto coefficients_center_by_type{coefficients_center[neigh_type]};
 
@@ -683,7 +683,7 @@ namespace rascal {
               }
 	    }
 //	    coefficients_center_by_type += c_ij_nlm;
-//	  }
+	  }
 
 //          // half list branch for c^{ji} terms using
 //          // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
