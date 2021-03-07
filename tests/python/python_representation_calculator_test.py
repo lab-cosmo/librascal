@@ -189,7 +189,7 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         )
 
         ij = features.get_neighbors_for_gradient()
-        n_atoms = len(np.unique(ij[:, 0]))
+        n_atoms = len(np.unique(ij[:, 1]))
         n_neigh = ij.shape[0]
 
         KNM_ref = kernel(features, X_pseudo, (False, False))
