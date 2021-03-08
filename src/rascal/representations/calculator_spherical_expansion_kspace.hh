@@ -561,9 +561,6 @@ namespace rascal {
       throw std::runtime_error("should not arrive here");
     }
 
-//    // pairwise coefficients C^{ij}_{nlm}
-//    auto c_ij_nlm = math::Matrix_t(n_row, n_col);
-
     // Fourier components of a Gaussian charge 
     auto G_k = math::Vector_t(n_k); 
     

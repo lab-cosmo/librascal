@@ -128,7 +128,7 @@ namespace rascal {
         // Initialize size of the member arrays
         this->radial_ortho_matrix.resize(this->max_radial, this->max_radial);
         this->ortho_norm_matrix.resize(this->max_radial, this->max_radial);
-        this->radial_norm_factors.resize(this->max_radial, 1);
+        this->radial_norm_factors.resize(this->max_radial);
         this->radial_sigmas.resize(this->max_radial, 1);
         this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
         this->radial_integral.resize(this->max_radial*(this->max_angular + 1));
@@ -145,7 +145,8 @@ namespace rascal {
 	// compute orthogonalization matrix
         this->precompute_radial_ortho_matrix();
 	// add normalization factors to orthogonalization matrix
-        this->ortho_norm_matrix = this->radial_norm_factors.asDiagonal() * this->radial_ortho_matrix;
+        //this->ortho_norm_matrix = this->radial_norm_factors.asDiagonal() * this->radial_ortho_matrix;
+        this->ortho_norm_matrix = this->radial_ortho_matrix;
       }
 
       /** Function to compute common prefactors for the radial integral */
@@ -166,8 +167,9 @@ namespace rascal {
 	     // radial nl-dependent factors  
              this->radial_nl_factors(radial_n,angular_l) = 
 		 pow(2.0,0.5*(static_cast<int>(radial_n) - static_cast<int>(angular_l) - 1))  
-                 * pow(this->radial_sigmas[radial_n], 3 + radial_n + angular_l)
-                 * std::tgamma(0.5 * (3.0 + radial_n + angular_l)) / std::tgamma(1.5+angular_l);
+                 * pow(this->radial_sigmas[radial_n], 3 + static_cast<double>(radial_n) + static_cast<double>(angular_l))
+                 * std::tgamma(0.5 * (3.0 + static_cast<double>(radial_n) + static_cast<double>(angular_l))) 
+		 / std::tgamma(1.5+static_cast<double>(angular_l));
           }
         }
       }
@@ -231,8 +233,8 @@ namespace rascal {
             fac_a = 0.5 * (3.0 + radial_n + angular_l);
             fac_b = 1.5 + angular_l;
             math::Hyp1f1 hyp1f1_calculator(fac_b-fac_a,fac_b);
-            this->radial_integral(nl_idx) = pow(kval,angular_l) * 
-        	    this->radial_nl_factors(radial_n,angular_l) 
+            this->radial_integral(nl_idx) = pow(kval,static_cast<double>(angular_l)) * 
+        	    this->radial_nl_factors(radial_n,angular_l) * this->radial_norm_factors(radial_n) 
                       * expfac * hyp1f1_calculator.calc(-fac_c);
             nl_idx += 1;
         

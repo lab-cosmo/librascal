@@ -101,11 +101,11 @@ void Kvectors::precompute(int n1max, int n2max, int n3max,
       // Update current vector for new n2 value
       // We subtract (n3max+1)*b3 s.t. we only have to add b3 at each iteration
       // to get the correct vector
-      kx = n2 * basisvecs(1,0) - n3max * basisvecs(2,0);
-      ky = n2 * basisvecs(1,1) - n3max * basisvecs(2,1);
-      kz = n2 * basisvecs(1,2) - n3max * basisvecs(2,2);
+      kx = n2 * basisvecs(1,0) - (n3max-1) * basisvecs(2,0);
+      ky = n2 * basisvecs(1,1) - (n3max-1) * basisvecs(2,1);
+      kz = n2 * basisvecs(1,2) - (n3max-1) * basisvecs(2,2);
 
-      for (int n3 = 0; n3 <= 2*n3max; ++n3)
+      for (int n3 = 0; n3 <= 2*n3max+1; ++n3)
       {
           // Update the current grid point
           kx += basisvecs(2,0);
@@ -126,17 +126,17 @@ void Kvectors::precompute(int n1max, int n2max, int n3max,
   // Step 3: Find all remaining points of the form (n1>0, n2, n3)
   for (int n1 = 1; n1 <= n1max; ++n1)
   {
-      for (int n2 = 0; n2 <= 2*n2max; ++n2)
+      for (int n2 = 0; n2 <= 2*n2max+1; ++n2)
       {
           nn2 = n2 - n2max;
           // Update current vector for new n2 value
           // We subtract (n3max+1)*b3 s.t. we only have to add b3 at each iteration
           // to get the correct vector
-          kx = n1 * basisvecs(0,0) + nn2 * basisvecs(1,0) - n3max * basisvecs(2,0);
-          ky = n1 * basisvecs(0,1) + nn2 * basisvecs(1,1) - n3max * basisvecs(2,1);
-          kz = n1 * basisvecs(0,2) + nn2 * basisvecs(1,2) - n3max * basisvecs(2,2);
+          kx = n1 * basisvecs(0,0) + (nn2-1) * basisvecs(1,0) - (n3max-1) * basisvecs(2,0);
+          ky = n1 * basisvecs(0,1) + (nn2-1) * basisvecs(1,1) - (n3max-1) * basisvecs(2,1);
+          kz = n1 * basisvecs(0,2) + (nn2-1) * basisvecs(1,2) - (n3max-1) * basisvecs(2,2);
 
-          for (int n3 = 0; n3 <= 2*n3max; ++n3)
+          for (int n3 = 0; n3 <= 2*n3max+1; ++n3)
           {
               // Update the current grid point
               kx += basisvecs(2,0);
