@@ -48,6 +48,33 @@ namespace rascal {
         .def_property_readonly("l_max", [](SphericalHarmonics & sph) {
           return sph.get_max_angular();
         });
+    sph.def(
+        "compute_all",
+        [](SphericalHarmonics & sph,
+            Eigen::Ref<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>> direction_vectors) {
+      int n_rows{static_cast<int>(direction_vectors.rows())};
+      int l_max{static_cast<int>(sph.get_max_angular())};
+      int n_feat{(l_max + 1) * (l_max + 1)};
+      auto SPH = math::Matrix_t(n_rows, n_feat);
+      auto dSPH_dr = math::Matrix_t(ThreeD * n_rows, n_feat);
+      auto zz = math::Matrix_t::Zero(1, n_feat);
+      auto zzz = math::Matrix_t::Zero(3, n_feat);
+      for (int i_row{0}; i_row < n_rows; i_row++) {
+        if (direction_vectors.row(i_row).squaredNorm() > 1e-14) {
+          sph.calc(direction_vectors.row(i_row), true);
+          SPH.row(i_row) = sph.get_harmonics();
+          dSPH_dr.block(i_row * ThreeD, 0, ThreeD, n_feat) =
+              sph.get_harmonics_derivatives();
+        } else {
+          SPH.row(i_row) = zz;
+          SPH(i_row, 0) = 0.5 / math::SQRT_PI;
+          dSPH_dr.block(i_row * ThreeD, 0, ThreeD, n_feat) = zzz;
+        }
+      }
+      return std::make_tuple(SPH, dSPH_dr);
+        }, py::return_value_policy::take_ownership,
+        "Compute spherical harmonics and it's derivatives up to l_max
+        (included) for all the direction vectors.");
   }
 
   void bind_ri(py::module & mod) {
