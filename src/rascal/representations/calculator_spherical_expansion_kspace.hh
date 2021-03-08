@@ -561,8 +561,8 @@ namespace rascal {
       throw std::runtime_error("should not arrive here");
     }
 
-    // pairwise coefficients C^{ij}_{nlm}
-    auto c_ij_nlm = math::Matrix_t(n_row, n_col);
+//    // pairwise coefficients C^{ij}_{nlm}
+//    auto c_ij_nlm = math::Matrix_t(n_row, n_col);
 
     // Fourier components of a Gaussian charge 
     auto G_k = math::Vector_t(n_k); 
@@ -584,14 +584,18 @@ namespace rascal {
       G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) ) ;/// pow(k_val(ik),2);
 
       // Harmonics at k_dir
-      Eigen::Vector3d k_dir;
-      k_dir(0) = k_vec(ik,0)/k_val(ik);
-      k_dir(1) = k_vec(ik,1)/k_val(ik);
-      k_dir(2) = k_vec(ik,2)/k_val(ik);
-      this->spherical_harmonics.calc(k_dir);
-      auto && harmonics{spherical_harmonics.get_harmonics()};
-      for (size_t lm{0}; lm < n_col; ++lm) {
-        Y_lm(ik,lm) = harmonics(lm);
+      if (k_val(ik)!=0.0){
+        Eigen::Vector3d k_dir;
+        k_dir(0) = k_vec(ik,0)/k_val(ik);
+        k_dir(1) = k_vec(ik,1)/k_val(ik);
+        k_dir(2) = k_vec(ik,2)/k_val(ik);
+        this->spherical_harmonics.calc(k_dir);
+        auto && harmonics{spherical_harmonics.get_harmonics()};
+        for (size_t lm{0}; lm < n_col; ++lm) {
+          Y_lm(ik,lm) = harmonics(lm);
+        }
+      } else {
+	Y_lm(ik,0) = 0.5/std::sqrt(4*PI); 
       }
 
       // Radial integral at k_val
@@ -646,7 +650,7 @@ namespace rascal {
           }
 	}
 
-	// loop over atoms over the entire system using centers idx once again      
+        // loop over atoms over the entire system using centers idx once again      
         for (auto neigh : manager) {
           
 	  auto atom_j_tag = neigh.get_atom_tag();
@@ -654,7 +658,6 @@ namespace rascal {
 	  // accumulate for atoms different from the central
 	  if (jat != iat) {
             Key_t neigh_type{neigh.get_atom_type()};
-//	    auto coefficients_center_by_type{coefficients_center[neigh_type]};
 
             // compute the coefficients
             int nl_idx = 0;
@@ -668,12 +671,11 @@ namespace rascal {
 	             * (cos_ki(ik,jat)*cos_ki(ik,iat) + sin_ki(ik,jat)*sin_ki(ik,iat));
                 } else {
 	         // real phase factor for l odd 
-	         phase_factor = - pow(-1.0,(angular_l+1)/2) 
+	         phase_factor = -pow(-1.0,(angular_l+1)/2) 
 	             * (sin_ki(ik,jat)*cos_ki(ik,iat) - cos_ki(ik,jat)*sin_ki(ik,iat));
 	        } 
 	        int size_m = 2*angular_l+1;
 	        for (int mval{0}; mval < size_m; ++mval) {
-	          //c_ij_nlm(radial_n,l_block_idx+mval) = 
 	          coefficients_center[neigh_type](radial_n,l_block_idx+mval) += 
                     I_nl(ik,nl_idx) * Y_lm(ik,l_block_idx+mval) * G_k(ik)
                     * phase_factor * 16.0 * pow(PI,2) / volume;	
@@ -682,7 +684,6 @@ namespace rascal {
                 nl_idx += 1;
               }
 	    }
-//	    coefficients_center_by_type += c_ij_nlm;
 	  }
 
 //          // half list branch for c^{ji} terms using

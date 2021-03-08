@@ -220,26 +220,26 @@ namespace rascal {
         double fac_c;
         double expfac;
 
-	int nl_idx{0};
-	for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
-	  
+        int nl_idx{0};
+        for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
+          
           fac_c = -0.5 * pow( kval * this->radial_sigmas[radial_n] , 2); 
           expfac = std::exp(fac_c);
-	  
-	  for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
+          
+          for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
 
             fac_a = 0.5 * (3.0 + radial_n + angular_l);
-	    fac_b = 1.5 + angular_l;
+            fac_b = 1.5 + angular_l;
             math::Hyp1f1 hyp1f1_calculator(fac_b-fac_a,fac_b);
             this->radial_integral(nl_idx) = pow(kval,angular_l) * 
-		    this->radial_nl_factors(radial_n,angular_l) 
+        	    this->radial_nl_factors(radial_n,angular_l) 
                       * expfac * hyp1f1_calculator.calc(-fac_c);
-	    nl_idx += 1;
-
-          }
+            nl_idx += 1;
+        
+	  }
         }
-
-        return Vector_Ref(this->radial_integral);
+        
+	return Vector_Ref(this->radial_integral);
 
       }
 

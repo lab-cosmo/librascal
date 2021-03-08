@@ -66,6 +66,13 @@ void Kvectors::precompute(int n1max, int n2max, int n3max,
     in reverse order (order of increasing complexity of code)
   */
 
+  // Step 0: origin (0,0,0)
+  kval(nk) = 0.0;
+  kvec(nk, 0) = 0.0;
+  kvec(nk, 1) = 0.0;
+  kvec(nk, 2) = 0.0;
+  nk += 1;
+
   // Step 1: Find all points of the form (0, 0, n3>0)
   // Initialize current grid point 
   kx = 0;
