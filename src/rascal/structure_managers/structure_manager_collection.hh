@@ -294,7 +294,7 @@ namespace rascal {
 
       Matrix_t features{};
 
-      auto n_rows{this->get_number_of_elements(calculator, false)};
+      auto n_rows{this->template get_number_of_elements<Prop_t>(property_name)};
 
       FeatureMatrixHelper<Prop_t>::apply(this->managers, property_name,
                                          features, n_rows, inner_size);
@@ -350,14 +350,9 @@ namespace rascal {
      * @return the number of rows of the feature matrix, i.e. the number of
      * samples
      */
-    template <class Calculator>
-    size_t get_number_of_elements(const Calculator & calculator,
-                                  bool is_gradients = false) {
-      using Prop_t = typename Calculator::template Property_t<Manager_t>;
-
+    template <class Prop_t>
+    size_t get_number_of_elements(const std::string & property_name) {
       size_t n_elements{0};
-
-      auto property_name{this->get_calculator_name(calculator, is_gradients)};
       for (auto & manager : this->managers) {
         auto && property =
             *manager->template get_property<Prop_t>(property_name);

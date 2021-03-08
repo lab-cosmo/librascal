@@ -114,6 +114,34 @@ class AtomsList(object):
 
         return X
 
+    def get_features_gradient(self, calculator, species=None):
+        """
+        Parameters
+        -------
+        calculator : Calculator (an object owning a _representation object)
+
+        species :  list of atomic number to use for building the dense feature
+        matrix computed with calculators of name Spherical*
+
+        Returns
+        -------
+        dX_dr : ndarray of size (3*(n_neighbor+n_atom), n_features)
+            returns the gradient of representation with respect to the atomic
+            positions that have been computed with the calculator as a dense
+            matrix. The method `get_neighbors_for_gradient` provides the
+            necessary information for operating on the dX_dr matrix.
+        """
+
+        if species is None:
+            X = self.managers.get_features_gradient(calculator._representation, [])
+        else:
+            keys_list = calculator.get_keys(species)
+            X = self.managers.get_features_gradient(
+                calculator._representation, keys_list
+            )
+
+        return X
+
     def get_features_by_species(self, calculator):
         """
         Parameters
@@ -127,6 +155,48 @@ class AtomsList(object):
             alphabetically to the corresponding feature matrices
         """
         return self.managers.get_features_by_species(calculator._representation)
+
+    def get_neighbors_for_gradient(self):
+        """
+        Returns
+        -------
+        ij : np.array of size (n_neighbor+n_atom, 5)
+            Get informations necessary to the computation of gradients returned
+            by `get_features_gradient`. It has as many rows as as the number
+            gradients and each columns correspond to the index of the atomic
+            structure, central atom, the neighbor atom and their atomic species.
+        """
+        return self.managers.get_neighbors_for_gradient()
+
+    def get_atoms_for_predictions(self):
+        """
+        Returns
+        -------
+        ij : np.array of size (n_atoms, 3)
+            Get informations necessary to the computation of predictions using
+            the representation from `get_features`. It has as many rows as the
+            number representations and they correspond to the index of the
+            structure, the central atom and its atomic species.
+        """
+        return self.managers.get_atoms_for_predictions()
+
+    def get_direction_vectors(self):
+        """
+        Returns
+        -------
+        direction_vector : np.array of size (n_neighbor+n_atom, 3)
+            Get the direction vectors from the atoms to their neighbors.
+        """
+        return self.managers.get_direction_vectors()
+
+    def get_distances(self):
+        """
+        Returns
+        -------
+        distance : np.array of size (n_neighbor+n_atom, 4)
+            Get the distances from the atoms to their neighbors.
+        """
+        return self.managers.get_distances()
 
 
 def get_neighbourlist(structure, options):
