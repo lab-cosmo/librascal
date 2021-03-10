@@ -1,6 +1,6 @@
 import ase.io
-
-from rascal.neighbourlist import get_neighbourlist
+from ase.build import molecule
+from rascal.neighbourlist import get_neighbourlist, AtomsList
 from rascal.neighbourlist.structure_manager import (
     mask_center_atoms_by_species,
     mask_center_atoms_by_id,
@@ -242,6 +242,71 @@ class TestNLStrict(unittest.TestCase):
                     np.argsort(ref_dists),
                     np.argsort(dists),
                 )
+
+
+class TestNLExportInfo(unittest.TestCase):
+    def setUp(self):
+        """Test that informations are consistently exported for a water
+        molecule.
+        """
+        self.neighbors_for_gradient = np.array(
+            [
+                [0, 0, 0, 8, 8],
+                [0, 0, 2, 8, 1],
+                [0, 0, 1, 8, 1],
+                [0, 1, 1, 1, 1],
+                [0, 1, 0, 1, 8],
+                [0, 2, 2, 1, 1],
+                [0, 2, 0, 1, 8],
+            ],
+            dtype=np.int32,
+        )
+        self.atoms_for_predictions = np.array(
+            [[0, 0, 8], [0, 1, 1], [0, 2, 1]], dtype=np.int32
+        )
+        self.distances = np.array(
+            [0.0, 0.96856502, 0.96856502, 0.0, 0.96856502, 0.0, 0.96856502]
+        )
+        self.direction_vectors = np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [0.0, -0.78801008, -0.61566233],
+                [0.0, 0.78801008, -0.61566233],
+                [0.0, 0.0, 0.0],
+                [0.0, -0.78801008, 0.61566233],
+                [0.0, 0.0, 0.0],
+                [0.0, 0.78801008, 0.61566233],
+            ]
+        )
+        self.atoms = molecule("H2O")
+        self.atoms.center(vacuum=1.0)
+        interaction_cutoff = 1.5
+        self.nl_options = [
+            dict(name="centers", args=dict()),
+            dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
+            dict(name="centercontribution", args=dict()),
+            dict(name="strict", args=dict(cutoff=interaction_cutoff)),
+        ]
+
+    def test_get_neighbors_for_gradient(self):
+        manager = AtomsList(self.atoms, self.nl_options)
+        ij = manager.get_neighbors_for_gradient()
+        self.assertTrue(np.allclose(ij, self.neighbors_for_gradient))
+
+    def test_get_atoms_for_predictions(self):
+        manager = AtomsList(self.atoms, self.nl_options)
+        ii = manager.get_atoms_for_predictions()
+        self.assertTrue(np.allclose(ii, self.atoms_for_predictions))
+
+    def test_get_direction_vectors(self):
+        manager = AtomsList(self.atoms, self.nl_options)
+        dir_vecs = manager.get_direction_vectors()
+        self.assertTrue(np.allclose(dir_vecs, self.direction_vectors))
+
+    def test_get_distances(self):
+        manager = AtomsList(self.atoms, self.nl_options)
+        distances = manager.get_distances()
+        self.assertTrue(np.allclose(distances, self.distances))
 
 
 class CenterSelectTest(unittest.TestCase):
