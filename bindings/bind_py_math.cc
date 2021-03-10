@@ -73,8 +73,10 @@ namespace rascal {
       }
       return std::make_tuple(SPH, dSPH_dr);
         }, py::return_value_policy::take_ownership,
-        "Compute spherical harmonics and it's derivatives up to l_max
-        (included) for all the direction vectors.");
+        R"(Compute spherical harmonics and it's derivatives up to l_max
+        (included) for all the direction vectors which should have a shape
+        (-1, 3).
+        return np.array SPH and dSPH_dr)");
   }
 
   void bind_ri(py::module & mod) {
