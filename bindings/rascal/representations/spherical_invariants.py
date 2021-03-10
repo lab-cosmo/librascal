@@ -205,7 +205,6 @@ class SphericalInvariants(BaseIO):
         Required arguments are all the hyperparameters named in the
         class documentation
         """
-        super(SphericalInvariants, self).__init__()
         self.name = "sphericalinvariants"
         self.hypers = dict()
         if global_species is None:

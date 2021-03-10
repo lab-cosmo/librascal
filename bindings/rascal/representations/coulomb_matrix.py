@@ -47,7 +47,6 @@ class SortedCoulombMatrix(BaseIO):
         interaction_cutoff=10,
         interaction_decay=-1,
     ):
-        super(SortedCoulombMatrix, self).__init__()
         self.name = "sortedcoulomb"
         self.size = size
         self.hypers = dict()

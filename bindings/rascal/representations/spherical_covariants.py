@@ -138,7 +138,6 @@ class SphericalCovariants(BaseIO):
         Required arguments are all the hyperparameters named in the
         class documentation
         """
-        super(SphericalCovariants, self).__init__()
         self.name = "sphericalcovariants"
         self.hypers = dict()
         self.update_hyperparameters(

@@ -140,7 +140,6 @@ class FPSFilter(BaseIO):
         act_on="sample per species",
         starting_index=0,
     ):
-        super(FPSFilter, self).__init__()
         self._representation = representation
         self.Nselect = Nselect
         self.starting_index = starting_index

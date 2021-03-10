@@ -55,12 +55,12 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         rep_copy_dict = to_dict(rep_copy)
 
         self.assertTrue(rep_dict == rep_copy_dict)
+
     def test_pickle(self):
         rep = SortedCoulombMatrix(**self.hypers)
-        serialized =  pickle.dumps(rep)
-        rep_ =  pickle.loads(serialized)
+        serialized = pickle.dumps(rep)
+        rep_ = pickle.loads(serialized)
         self.assertTrue(to_dict(rep) == to_dict(rep_))
-
 
 
 class TestSphericalExpansionRepresentation(unittest.TestCase):
@@ -104,10 +104,11 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         rep_copy_dict = to_dict(rep_copy)
 
         self.assertTrue(rep_dict == rep_copy_dict)
+
     def test_pickle(self):
         rep = SphericalExpansion(**self.hypers)
-        serialized =  pickle.dumps(rep)
-        rep_ =  pickle.loads(serialized)
+        serialized = pickle.dumps(rep)
+        rep_ = pickle.loads(serialized)
         self.assertTrue(to_dict(rep) == to_dict(rep_))
 
 
@@ -182,6 +183,6 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
 
     def test_pickle(self):
         rep = SphericalInvariants(**self.hypers)
-        serialized =  pickle.dumps(rep)
-        rep_ =  pickle.loads(serialized)
+        serialized = pickle.dumps(rep)
+        rep_ = pickle.loads(serialized)
         self.assertTrue(to_dict(rep) == to_dict(rep_))

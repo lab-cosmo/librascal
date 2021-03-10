@@ -264,9 +264,9 @@ class TestCosineKernel(unittest.TestCase):
 
     def test_pickle(self):
         rep = SphericalInvariants(**self.hypers)
-        cosine_kernel = Kernel(rep, name="Cosine", target_type=target_type, zeta=2)
-        serialized =  pickle.dumps(cosine_kernel)
-        cosine_kernel_ =  pickle.loads(serialized)
+        cosine_kernel = Kernel(rep, name="Cosine", target_type="Structure", zeta=2)
+        serialized = pickle.dumps(cosine_kernel)
+        cosine_kernel_ = pickle.loads(serialized)
         self.assertTrue(to_dict(cosine_kernel) == to_dict(cosine_kernel_))
 
     def test_serialization(self):
