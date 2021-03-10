@@ -9,12 +9,12 @@ import sys
 import ase.io
 import numpy as np
 
-sys.path.insert(0,'/local/scratch/source/librascal/build/')
+sys.path.insert(0,'/ssd/scratch/khugueni/librascal/build/')
 from rascal.representations import SphericalInvariants
 from rascal.representations import SphericalInvariantsKspace
 
 #molecules = ase.io.read('/local/scratch/source/librascal/examples/test_lode/water_10angs.xyz',":")
-molecules = ase.io.read('/local/scratch/source/librascal/examples/test_lode/water_20angs.xyz',":")
+molecules = ase.io.read('/ssd/scratch/khugueni/librascal/examples/test_lode/water_20angs.xyz',":")
 #molecules = ase.io.read('/local/scratch/source/librascal/examples/test_lode/water_50angs.xyz',":")
 #molecules = ase.io.read('/local/scratch/source/librascal/examples/test_lode/water_100angs.xyz',":")
 hypers = {'interaction_cutoff': 4.0,
