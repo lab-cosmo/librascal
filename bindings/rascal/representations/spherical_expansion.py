@@ -161,7 +161,6 @@ class SphericalExpansion(BaseIO):
         Required arguments are all the hyperparameters named in the
         class documentation
         """
-
         self.name = "sphericalexpansion"
         self.hypers = dict()
 
