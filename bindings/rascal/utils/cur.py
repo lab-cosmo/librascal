@@ -91,6 +91,7 @@ class CURFilter(BaseIO):
         is_deterministic=True,
         seed=10,
     ):
+        super(CURFilter, self).__init__()
         self._representation = representation
         self.Nselect = Nselect
         modes = ["sample", "sample per species", "feature"]

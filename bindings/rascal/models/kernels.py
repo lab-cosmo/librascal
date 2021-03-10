@@ -65,6 +65,7 @@ class Kernel(BaseIO):
         target_type="Structure",
         **kwargs
     ):
+        super(Kernel, self).__init__()
         # This case cannot be handled by the c++ side because c++ cannot deduce the
         # type from arguments inside a json, so it has to be casted in the c++
         # side. Therefore zeta has to be checked here.
