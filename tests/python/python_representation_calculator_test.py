@@ -11,6 +11,7 @@ import sys
 import os
 import json
 from copy import copy
+import pickle
 
 rascal_reference_path = "reference_data"
 inputs_path = os.path.join(rascal_reference_path, "inputs")
@@ -54,6 +55,12 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
         rep_copy_dict = to_dict(rep_copy)
 
         self.assertTrue(rep_dict == rep_copy_dict)
+    def test_pickle(self):
+        rep = SortedCoulombMatrix(**self.hypers)
+        serialized =  pickle.dumps(rep)
+        rep_ =  pickle.loads(serialized)
+        self.assertTrue(to_dict(rep) == to_dict(rep_))
+
 
 
 class TestSphericalExpansionRepresentation(unittest.TestCase):
@@ -97,6 +104,11 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
         rep_copy_dict = to_dict(rep_copy)
 
         self.assertTrue(rep_dict == rep_copy_dict)
+    def test_pickle(self):
+        rep = SphericalExpansion(**self.hypers)
+        serialized =  pickle.dumps(rep)
+        rep_ =  pickle.loads(serialized)
+        self.assertTrue(to_dict(rep) == to_dict(rep_))
 
 
 class TestSphericalInvariantsRepresentation(unittest.TestCase):
@@ -167,3 +179,9 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         rep_copy_dict = to_dict(rep_copy)
 
         self.assertTrue(rep_dict == rep_copy_dict)
+
+    def test_pickle(self):
+        rep = SphericalInvariants(**self.hypers)
+        serialized =  pickle.dumps(rep)
+        rep_ =  pickle.loads(serialized)
+        self.assertTrue(to_dict(rep) == to_dict(rep_))
