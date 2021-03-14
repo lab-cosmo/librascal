@@ -290,12 +290,12 @@ class TestNLExportInfo(unittest.TestCase):
 
     def test_get_neighbors_for_gradient(self):
         manager = AtomsList(self.atoms, self.nl_options)
-        ij = manager.get_neighbors_for_gradient()
+        ij = manager.get_gradients_info()
         self.assertTrue(np.allclose(ij, self.neighbors_for_gradient))
 
     def test_get_atoms_for_predictions(self):
         manager = AtomsList(self.atoms, self.nl_options)
-        ii = manager.get_atoms_for_predictions()
+        ii = manager.get_representation_info()
         self.assertTrue(np.allclose(ii, self.atoms_for_predictions))
 
     def test_get_direction_vectors(self):

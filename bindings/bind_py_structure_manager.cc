@@ -674,7 +674,7 @@ namespace rascal {
         the collection of structures (managers) using the list of keys
         provided. Only applicable when Calculator uses BlockSparseProperty.)");
     manager_collection.def(
-        "get_atoms_for_predictions",
+        "get_representation_info",
         [](ManagerCollection_t & managers) {
           if (managers.size() == 0) {
             throw std::runtime_error(
@@ -706,7 +706,7 @@ namespace rascal {
         np.array with shape (n_atoms, 3))");
 
     manager_collection.def(
-        "get_neighbors_for_gradient",
+        "get_gradients_info",
         [](ManagerCollection_t & managers) {
           if (managers.size() == 0) {
             throw std::runtime_error(
@@ -774,7 +774,7 @@ namespace rascal {
         R"(Get the direction vectors from the central atoms to their neighbors.
         The zeros vectors correspond to the central atom to itself so that this
         matrix matches the shape of the array returned by
-        `get_neighbors_for_gradient`.
+        `get_gradients_info`.
         np.array with shape (n_neighbor+n_atoms, 3))");
     manager_collection.def(
         "get_distances",
@@ -806,7 +806,7 @@ namespace rascal {
         R"(Get the distance from the central atoms to their neighbors.
         The zeros vectors correspond to the central atom to itself so that this
         matrix matches the shape of the array returned by
-        `get_neighbors_for_gradient`.
+        `get_gradients_info`.
         np.array with shape (n_neighbor+n_atoms, 3))");
   }
 
