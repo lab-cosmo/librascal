@@ -9,6 +9,8 @@ This list is incomplete. You can help by *expanding it*!
 Atoms and cells
 ===============
 
+.. autofunction:: rascal.neighbourlist.structure_manager.AtomsList
+
 .. autofunction:: rascal.neighbourlist.structure_manager.mask_center_atoms_by_id
 
 .. autofunction:: rascal.neighbourlist.structure_manager.mask_center_atoms_by_species

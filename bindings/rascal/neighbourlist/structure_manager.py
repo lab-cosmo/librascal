@@ -17,21 +17,43 @@ from .base import (
 
 class AtomsList(object):
     """
-    A wrapper class for a stack of managers precompiled on the C++ side of the
-    form Strict->NeighbourList->Center.  A container for atoms/centers/atomic
-    environments.
+    A container for the neighbourlist and representation data associated with a list of atomic structures.
+
+    This is a wrapper class for the `StructureManagerCollection` that have between precompiled on the C++ side.
 
     Attributes
     ----------
     nl_options : dict
         Parameters for each layer of the wrapped structure manager. Parameters
         can be specified for these layers: center, neighbourlist and strict.
+    managers : StructureManagerCollection
+        C++ object from rascal that holds the neighbourlist and the data associated with representations.
 
-    Methods
-    -------
     """
 
     def __init__(self, frames, nl_options, start=None, length=None, managers=None):
+        """Build a new AtomsList with only the selected atomic structures and
+        corresponding neighborlist and representations (if present).
+
+        Parameters
+        -------
+        frames :
+            list of atomic structures.
+        nl_options : dict
+            Parameters for each layer of the wrapped structure manager. For
+            example to initialize a neighbourlist for computing `SphericalInvariants` representation using a linked cell algorithm
+        .. code:: python
+            nl_options = [
+            dict(name="centers", args=dict()),
+            dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
+            dict(name="centercontribution", args=dict()),
+            dict(name="strict", args=dict(cutoff=interaction_cutoff)),
+            ]
+
+        managers : `StructureManagerCollection`
+            Take directly a `StructureManagerCollection` without recomputing
+            anything.
+        """
         self.nl_options = nl_options
         self._frames = frames
 
