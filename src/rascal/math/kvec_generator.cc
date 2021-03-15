@@ -27,7 +27,6 @@
  */
 
 #include "rascal/math/kvec_generator.hh"
-
 #include <iostream>
 
 using namespace rascal::math;  // NOLINT
@@ -73,6 +72,14 @@ void Kvectors::precompute(int n1max, int n2max, int n3max,
   kvec(nk, 2) = 0.0;
   nk += 1;
 
+  // Define basis vectors to make them easier to use in the future
+  /*Vector_t b1 = basisvecs.row(0);
+  Vector_t b2 = basisvecs.row(1);
+  Vector_t b3 = basisvecs.row(2);
+  Vector_t gridpt(0,0,0);
+*/
+
+	
   // Step 1: Find all points of the form (0, 0, n3>0)
   // Initialize current grid point 
   kx = 0;
