@@ -186,23 +186,45 @@
 <span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">AtomsList</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomsList"><a class="viewcode-back" href="../../../reference/python.html#rascal.neighbourlist.structure_manager.AtomsList">[docs]</a><span class="k">class</span> <span class="nc">AtomsList</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A wrapper class for a stack of managers precompiled on the C++ side of the</span>
-<span class="sd">    form Strict-&gt;NeighbourList-&gt;Center.  A container for atoms/centers/atomic</span>
-<span class="sd">    environments.</span>
+<span class="sd">    A container for the neighbourlist and representation data associated with a list of atomic structures.</span>
+
+<span class="sd">    This is a wrapper class for the `StructureManagerCollection` that have between precompiled on the C++ side.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    nl_options : dict</span>
 <span class="sd">        Parameters for each layer of the wrapped structure manager. Parameters</span>
 <span class="sd">        can be specified for these layers: center, neighbourlist and strict.</span>
+<span class="sd">    managers : StructureManagerCollection</span>
+<span class="sd">        C++ object from rascal that holds the neighbourlist and the data associated with representations.</span>
 
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frames</span><span class="p">,</span> <span class="n">nl_options</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">managers</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build a new AtomsList with only the selected atomic structures and</span>
+<span class="sd">        corresponding neighborlist and representations (if present).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -------</span>
+<span class="sd">        frames :</span>
+<span class="sd">            list of atomic structures.</span>
+<span class="sd">        nl_options : dict</span>
+<span class="sd">            Parameters for each layer of the wrapped structure manager. For</span>
+<span class="sd">            example to initialize a neighbourlist for computing `SphericalInvariants` representation using a linked cell algorithm</span>
+<span class="sd">        .. code:: python</span>
+<span class="sd">            nl_options = [</span>
+<span class="sd">            dict(name=&quot;centers&quot;, args=dict()),</span>
+<span class="sd">            dict(name=&quot;neighbourlist&quot;, args=dict(cutoff=interaction_cutoff)),</span>
+<span class="sd">            dict(name=&quot;centercontribution&quot;, args=dict()),</span>
+<span class="sd">            dict(name=&quot;strict&quot;, args=dict(cutoff=interaction_cutoff)),</span>
+<span class="sd">            ]</span>
+
+<span class="sd">        managers : `StructureManagerCollection`</span>
+<span class="sd">            Take directly a `StructureManagerCollection` without recomputing</span>
+<span class="sd">            anything.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nl_options</span> <span class="o">=</span> <span class="n">nl_options</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_frames</span> <span class="o">=</span> <span class="n">frames</span>
 
@@ -285,6 +307,34 @@
 
         <span class="k">return</span> <span class="n">X</span>
 
+    <span class="k">def</span> <span class="nf">get_features_gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculator</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        -------</span>
+<span class="sd">        calculator : Calculator (an object owning a _representation object)</span>
+
+<span class="sd">        species :  list of atomic number to use for building the dense feature</span>
+<span class="sd">        matrix computed with calculators of name Spherical*</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dX_dr : ndarray of size (3*(n_neighbor+n_atom), n_features)</span>
+<span class="sd">            returns the gradient of representation with respect to the atomic</span>
+<span class="sd">            positions that have been computed with the calculator as a dense</span>
+<span class="sd">            matrix. The method `get_gradients_info` provides the</span>
+<span class="sd">            necessary information for operating on the dX_dr matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">species</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_features_gradient</span><span class="p">(</span><span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">keys_list</span> <span class="o">=</span> <span class="n">calculator</span><span class="o">.</span><span class="n">get_keys</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_features_gradient</span><span class="p">(</span>
+                <span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">,</span> <span class="n">keys_list</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">X</span>
+
     <span class="k">def</span> <span class="nf">get_features_by_species</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculator</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
@@ -298,6 +348,48 @@
 <span class="sd">            alphabetically to the corresponding feature matrices</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_features_by_species</span><span class="p">(</span><span class="n">calculator</span><span class="o">.</span><span class="n">_representation</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_gradients_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ij : np.array of size (n_neighbor+n_atom, 5)</span>
+<span class="sd">            Get informations necessary to the computation of gradients returned</span>
+<span class="sd">            by `get_features_gradient`. It has as many rows as as the number</span>
+<span class="sd">            gradients and each columns correspond to the index of the atomic</span>
+<span class="sd">            structure, central atom, the neighbor atom and their atomic species.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_gradients_info</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_representation_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ij : np.array of size (n_atoms, 3)</span>
+<span class="sd">            Get informations necessary to the computation of predictions using</span>
+<span class="sd">            the representation from `get_features`. It has as many rows as the</span>
+<span class="sd">            number representations and they correspond to the index of the</span>
+<span class="sd">            structure, the central atom and its atomic species.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_representation_info</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_direction_vectors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        direction_vector : np.array of size (n_neighbor+n_atom, 3)</span>
+<span class="sd">            Get the direction vectors from the atoms to their neighbors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_direction_vectors</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        distance : np.array of size (n_neighbor+n_atom, 4)</span>
+<span class="sd">            Get the distances from the atoms to their neighbors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">managers</span><span class="o">.</span><span class="n">get_distances</span><span class="p">()</span></div>
 
 
 <span class="k">def</span> <span class="nf">get_neighbourlist</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>

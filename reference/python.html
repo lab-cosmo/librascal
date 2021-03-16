@@ -213,6 +213,36 @@
 <p>This list is incomplete. You can help by <em>expanding it</em>!</p>
 <div class="section" id="atoms-and-cells">
 <h2>Atoms and cells<a class="headerlink" href="#atoms-and-cells" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="rascal.neighbourlist.structure_manager.AtomsList">
+<em class="property">class </em><code class="sig-prename descclassname">rascal.neighbourlist.structure_manager.</code><code class="sig-name descname">AtomsList</code><span class="sig-paren">(</span><em class="sig-param">frames</em>, <em class="sig-param">nl_options</em>, <em class="sig-param">start=None</em>, <em class="sig-param">length=None</em>, <em class="sig-param">managers=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/neighbourlist/structure_manager.html#AtomsList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.neighbourlist.structure_manager.AtomsList" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container for the neighbourlist and representation data associated with a list of atomic structures.</p>
+<p>This is a wrapper class for the <cite>StructureManagerCollection</cite> that have between precompiled on the C++ side.</p>
+<dl class="attribute">
+<dt id="rascal.neighbourlist.structure_manager.AtomsList.nl_options">
+<code class="sig-name descname">nl_options</code><a class="headerlink" href="#rascal.neighbourlist.structure_manager.AtomsList.nl_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters for each layer of the wrapped structure manager. Parameters
+can be specified for these layers: center, neighbourlist and strict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rascal.neighbourlist.structure_manager.AtomsList.managers">
+<code class="sig-name descname">managers</code><a class="headerlink" href="#rascal.neighbourlist.structure_manager.AtomsList.managers" title="Permalink to this definition">¶</a></dt>
+<dd><p>C++ object from rascal that holds the neighbourlist and the data associated with representations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>StructureManagerCollection</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="function">
 <dt id="rascal.neighbourlist.structure_manager.mask_center_atoms_by_id">
 <code class="sig-prename descclassname">rascal.neighbourlist.structure_manager.</code><code class="sig-name descname">mask_center_atoms_by_id</code><span class="sig-paren">(</span><em class="sig-param">frame</em>, <em class="sig-param">id_select=None</em>, <em class="sig-param">id_blacklist=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/neighbourlist/structure_manager.html#mask_center_atoms_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rascal.neighbourlist.structure_manager.mask_center_atoms_by_id" title="Permalink to this definition">¶</a></dt>
@@ -362,7 +392,7 @@ Physical Review Letters, 108(5), 58301. <a class="reference external" href="http
 <dd><p>Compute the representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>) or </em><em>AtomsList</em>) – List of atomic structures.</p>
+<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>) or </em><a class="reference internal" href="#rascal.neighbourlist.structure_manager.AtomsList" title="rascal.neighbourlist.structure_manager.AtomsList"><em>AtomsList</em></a>) – List of atomic structures.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>AtomsList</strong></p>
@@ -679,7 +709,7 @@ environments”, Phys. Rev. B. 87(18), p. 184115
 <dd><p>Compute the representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>) or </em><em>AtomsList</em>) – List of atomic structures.</p>
+<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>) or </em><a class="reference internal" href="#rascal.neighbourlist.structure_manager.AtomsList" title="rascal.neighbourlist.structure_manager.AtomsList"><em>AtomsList</em></a>) – List of atomic structures.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>AtomsList</strong></p>
@@ -916,7 +946,7 @@ Atomistic Systems. Physical Review Letters, 120(3), 036002.
 <dd><p>Compute the representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>) or </em><em>AtomsList</em>) – List of atomic structures.</p>
+<dd class="field-odd"><p><strong>frames</strong> (<em>list</em><em>(</em><em>ase.Atoms</em><em>) or </em><a class="reference internal" href="#rascal.neighbourlist.structure_manager.AtomsList" title="rascal.neighbourlist.structure_manager.AtomsList"><em>AtomsList</em></a>) – List of atomic structures.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>AtomsList</strong></p>
