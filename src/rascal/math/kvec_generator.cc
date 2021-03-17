@@ -71,11 +71,31 @@ using namespace rascal::math;  // NOLINT
  *      changes in the cell to ensure continuity of the
  *      ML descriptors.
 */
-void Kvectors::precompute(size_t n1max, size_t n2max, size_t n3max,
-  Matrix_t basisvecs, double kcut) {
+
+
+
+void Kvectors::precompute() {
   // PREPARATION
+  // Generate optimal bounds for search space box 
+  Eigen::Matrix3d bvecs = this->basisvecs;
+  double kcut = this -> kcutoff;
+  Matrix_t M = bvecs * bvecs.transpose(); // = inner product matrix M_ij = b_i * b_j
+  double detM = M(0,0)*M(1,1)*M(2,2)+2*M(0,1)*M(1,2)*M(2,0);
+  detM -= M(0,0)*M(1,2)*M(1,2);
+  detM -= M(1,1)*M(0,2)*M(0,2);
+  detM -= M(2,2)*M(0,1)*M(0,1);
+
+  size_t n1max = floor(sqrt( (M(1,1)*M(2,2) - M(1,2)*M(1,2)) / detM) * kcut);
+  size_t n2max = floor(sqrt( (M(0,0)*M(2,2) - M(0,2)*M(0,2)) / detM) * kcut);
+  size_t n3max = floor(sqrt( (M(0,0)*M(1,1) - M(0,1)*M(0,1)) / detM) * kcut);
   
-  std::cout << "hello world" << "\n";
+  this->n1_max = n1max;
+  this->n2_max = n2max;
+  this->n3_max = n3max;
+
+// Total number of points that will be checked (used for initialization)
+  size_t numtot = 1+ n3max + n2max * (2 * n3max + 1) + n1max * (2 * n2max + 1) * (2 * n3max + 1);
+ 
   // Auxiliary variables
   double kcutsq = kcut*kcut; // use squared norm for tests
   double normsq; // Store the current squared norm
@@ -91,10 +111,10 @@ void Kvectors::precompute(size_t n1max, size_t n2max, size_t n3max,
   //Eigen::RowVector3i kvec_ind(0,0,0);
 
   // Initialize arrays in which to store results
-  const int numtot = 1+ n3max + n2max * (2 * n3max + 1) + n1max * (2 * n2max + 1) * (2 * n3max + 1);
   kvecs.resize(numtot,3);
   kvecnorms.resize(numtot);
-/* EXECUTION::w
+  
+  /* EXECUTION::w
 
     Begin loops to find the points within the search box
 	contained in the sphere. In order to avoid double counting
@@ -106,8 +126,6 @@ void Kvectors::precompute(size_t n1max, size_t n2max, size_t n3max,
     in reverse order (order of increasing complexity of code)
   */
 
-  std::cout << "hello world" << "\n";
-
   // Step 0: Include the origin for comparison with real space
   // version of SOAP (optional)
   //kvecindices.row(0) = kvec_ind;
@@ -115,7 +133,6 @@ void Kvectors::precompute(size_t n1max, size_t n2max, size_t n3max,
   kvecnorms(0) = 0.;
   numvectors += 1;
  
-  std::cout << "hello world" << "\n";
   // Step 1: Find all points of the form (0, 0, n3>0)
   for (size_t n3 = 1; n3 <= n3max; ++n3)
   {
@@ -186,13 +203,7 @@ void Kvectors::precompute(size_t n1max, size_t n2max, size_t n3max,
 
 
   // Final adjustments: Get rid of the empty components
-  std::cout << "Final adjustments" << "\n";
-  //kvec.conservativeResize(nk,3);
-  //kval.conservativeResize(nk);
   kvecs.conservativeResize(numvectors,3);
   kvecnorms.conservativeResize(numvectors);
-
 }
-
-
 

@@ -54,26 +54,38 @@ namespace rascal {
 	  
 
     public:
-      /*
-       * Construct a Kvectors class 
-       */
-      //explicit Kvectors(size_t n) : nk(0), kval(Vector_t::Zero(n)), kvec(Matrix_t::Zero(n,3)){}
-      explicit Kvectors(size_t n){this->n1_max=n;}
 
-      explicit Kvectors(double cutoff, Eigen::Matrix3d basisvectors) 
+      // Constructors and related functions
+      
+      /** Constructor taking cutoff and cell as input
+       * As default state, the user can provide the real space
+       * cell vectors, from which the reciprocal cell is computed.
+       * By setting is_reciprocal_cell to be true, the reciprocal
+       * cell can alternatively be passed to the class directly.
+      */ 
+      explicit Kvectors(double cutoff, Eigen::Matrix3d basisvectors,
+        bool is_reciprocal_cell = false) 
       {
         this->kcutoff = cutoff;
-        this->basisvecs = basisvectors;
+        
+        if (not is_reciprocal_cell) { // real space cell is given
+          // Create reciprocal cell from real space cell
+          Eigen::Matrix3d tcell = basisvectors.transpose();
+          double twopi = 2.0*M_PI;
+          this->basisvecs = twopi * tcell.inverse();
+        }
+        else { // cell of reciprocal space is already given
+          this->basisvecs = basisvectors;
+        }
+
+        this->precompute();
       } 
-      void precompute(size_t n1max, size_t n2max, size_t n3max, Matrix_t basisvectors, double kcut);
-      //size_t nk; //number of k-vectors
-      //Vector_t kval; //k-vectors modulii
-      //Matrix_t kvec; //k-vectors
-      //void precompute2();
-      //size_t nk; //number of k-vectors
-     
-    
-	
+      
+      // Generate kvectors from cutoff and cell
+      void precompute();
+
+
+
       // FUNCTIONS FOR USER
 
       /** Get number of vectors found within cutoff radius
@@ -107,6 +119,14 @@ namespace rascal {
 
       // FUNCTIONS FOR DEVELOPERS
 
+
+
+
+      // OUTDATED METHODS
+
+      //explicit Kvectors(size_t n) : nk(0), kval(Vector_t::Zero(n)), kvec(Matrix_t::Zero(n,3)){}
+      //void precompute(size_t n1max, size_t n2max, size_t n3max, Matrix_t basisvectors, double kcut);
+      
     };
   }  // namespace math
 }  // namespace rascal
