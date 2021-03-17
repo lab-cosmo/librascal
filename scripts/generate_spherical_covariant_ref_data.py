@@ -101,7 +101,7 @@ def dump_reference_json():
                     "normalize": True,
                     "soap_type": soap_type,
                     "inversion_symmetry": inversion_symmetry,
-                    "lam": Lambda,
+                    "covariant_lambda": Lambda,
                 }
                 soap = SphericalCovariants(**hypers)
                 soap_vectors = soap.transform(frames)
@@ -112,8 +112,7 @@ def dump_reference_json():
                 )
 
     with open(
-        os.path.join(root, dump_path, "spherical_covariants_reference.ubjson"),
-        "wb",
+        os.path.join(root, dump_path, "spherical_covariants_reference.ubjson"), "wb"
     ) as f:
         ubjson.dump(data, f)
 
@@ -135,7 +134,7 @@ def main(json_dump, save_kernel):
         "gaussian_sigma_type": "Constant",
         "gaussian_sigma_constant": 0.3,
         "soap_type": "LambdaSpectrum",
-        "lam": lam,
+        "covariant_lambda": lam,
         "inversion_symmetry": True,
     }
 
