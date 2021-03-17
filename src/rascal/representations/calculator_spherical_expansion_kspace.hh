@@ -481,10 +481,12 @@ namespace rascal {
     // Radius of the sphere in reciprocal space defining the maximum spatial resolution
     // pi/sigma was shown to be enough to converge the density field in TENSOAP
     double kcut = 2.0*PI/(this->smearing);
-    
+	//double kcut = 1.8; // only use this to test toy model
+
     // get cell vectors in reciprocal space
     Matrix_t tcell = cell.transpose();
     Matrix_t bvecs = 2.0*PI * tcell.inverse();
+	//std::cout << "Reciprocal space basis = " << "\n" << bvecs << "\n";
 
     /* SEARCH SPACE BOX
     Determine the optimal bounds n1max, n2max, n3max that define the search space box.
@@ -501,9 +503,11 @@ namespace rascal {
 	size_t n1max = floor(sqrt( (M(1,1)*M(2,2) - M(1,2)*M(1,2)) / detM) * kcut);
     size_t n2max = floor(sqrt( (M(0,0)*M(2,2) - M(0,2)*M(0,2)) / detM) * kcut);
     size_t n3max = floor(sqrt( (M(0,0)*M(1,1) - M(0,1)*M(0,1)) / detM) * kcut);
-	
+    //std::cout << "(n1max,n2max,n3max) = (" << n1max << ", " << n2max << ", " << n3max << ") \n";
+
     // Total number of points that will be checked (used for initialization)
-    size_t numtot = n3max + n2max * (2 * n3max + 1) + n1max * (2 * n2max + 1) * (2 * n3max + 1);
+    size_t numtot = 1+ n3max + n2max * (2 * n3max + 1) + n1max * (2 * n2max + 1) * (2 * n3max + 1);
+	//std::cout << "numtot = " << numtot << "\n";
 
     // Generate k-vectors:
     math::Kvectors k_vectors(numtot); // initialization
@@ -522,7 +526,7 @@ namespace rascal {
     std::cout << "Total number of points in search space box = " << numtot << "\n";
     std::cout << "Ratio of successful points     = " << succratio << "\n";
     std::cout << "Ideal ratio for circle (cont.) = " << 3.1415 / 6 << "\n\n";
-
+	std::cout << "The found kvectors are:" << "\n" << k_vec << "\n";
 
 	/*
 		----------------------------------------------------------------------------------

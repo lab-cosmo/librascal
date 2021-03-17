@@ -31,9 +31,49 @@
 
 using namespace rascal::math;  // NOLINT
 
-void Kvectors::precompute(int n1max, int n2max, int n3max, 
-		          Matrix_t basisvecs,
-			  double kcut) {
+
+/*
+  -----------------------------------------------------------
+  Declare some simple functions that return stored properties
+  -----------------------------------------------------------
+*/
+
+// Number of found wave vectors inside cutoff (without double counting)
+size_t Kvectors::GetGridPointNumber() const
+{
+  return numstored;
+}
+
+// Number of found wave vectors including pairs delated by inversion (+k and -k)
+// assuming that the origin was excluded to begin with
+size_t Kvectors::GetFullGridPointNumber() const
+{
+  return 2*numstored;
+}
+
+// Return wave vectors 
+Matrix_t Kvectors::GetGrid() const
+{
+  return kvecs;
+}
+
+// Return indices of wave vectors in terms of the reciprocal basis vectors
+Matrix_t Kvectors::GetGridIndices() const
+{
+  return kvecindices;
+}
+
+// Return array containing the norms of the wave vectors
+Vector_t Kvectors::GetGridNorms() const
+{
+  return kvecnorms;
+}
+
+
+
+// Compute the wave vectors
+void Kvectors::precompute(size_t n1max, size_t n2max, size_t n3max,
+  Matrix_t basisvecs, double kcut) {
  
   /*  INPUTS
     *   - basisvecs[3][3]: matrix containing the three basis vectors b1, b2, b3 of a 3D lattice, stored in the format b1 = basisvecs[0], b2=basisvecs[1] etc.
@@ -50,9 +90,7 @@ void Kvectors::precompute(int n1max, int n2max, int n3max,
 
   // Auxiliary variables
   double kcutsq = kcut*kcut; // Computing the squared norm is faster than the norm
-  double kx, ky, kz; // Components of the current grid point
   double normsq; // Store the current squared norm
-  int nn2;
 
   /* EXECUTION:
     Begin loops to find the points within the search box contained in the sphere
@@ -65,101 +103,102 @@ void Kvectors::precompute(int n1max, int n2max, int n3max,
     in reverse order (order of increasing complexity of code)
   */
 
-  // Step 0: origin (0,0,0)
-  kval(nk) = 0.0;
-  kvec(nk, 0) = 0.0;
-  kvec(nk, 1) = 0.0;
-  kvec(nk, 2) = 0.0;
-  nk += 1;
 
   // Define basis vectors to make them easier to use in the future
-  /*Vector_t b1 = basisvecs.row(0);
-  Vector_t b2 = basisvecs.row(1);
-  Vector_t b3 = basisvecs.row(2);
-  Vector_t gridpt(0,0,0);
-*/
+  Eigen::RowVector3d b1 = basisvecs.row(0);
+  Eigen::RowVector3d b2 = basisvecs.row(1);
+  Eigen::RowVector3d b3 = basisvecs.row(2);
+  
 
-	
+  // Initialize current grid point
+  // Include the origin for comparison with real space version of SOAP
+  Eigen::RowVector3d kvec_new(0,0,0);
+  kvec.row(0) = kvec_new;
+  nk += 1;
+ 
+  std::cout << "Current wave vector = " << kvec_new << "\n";
+
   // Step 1: Find all points of the form (0, 0, n3>0)
-  // Initialize current grid point 
-  kx = 0;
-  ky = 0;
-  kz = 0;
-  for (int n3 = 1; n3 <= n3max; ++n3)
+  for (size_t n3 = 1; n3 <= n3max; ++n3)
   {
-      // Update the current grid point
-      kx += basisvecs(2,0);
-      ky += basisvecs(2,1);
-      kz += basisvecs(2,2);
-      normsq = kx*kx + ky*ky + kz*kz;
-      if (normsq <= kcutsq) // Point inside sphere
-      {
-          kval(nk) = sqrt(normsq);
-          kvec(nk, 0) = kx;
-          kvec(nk, 1) = ky;
-          kvec(nk, 2) = kz;
-          nk += 1;
-      }
+    // Update the current grid point
+    kvec_new += b3;
+	normsq = kvec_new.dot(kvec_new);
+	std::cout << "Current indices = (0, 0, " << n3 << ") \n";
+	std::cout << "Current wave vector = " << kvec_new << "\n";
+    if (normsq <= kcutsq) // Point inside sphere
+    {
+      kval(nk) = sqrt(normsq);
+	  kvec.row(nk) = kvec_new;
+      nk += 1;
+    }
   }
 
+
+
   // Step 2: Find all points of the form (0, n2>0, n3)
-  for (int n2 = 1; n2 <= n2max; ++n2)
+  for (size_t n2 = 1; n2 <= n2max; ++n2)
   {
+    // Update current vector for new n2 value
+    // We subtract (n3max+1)*b3 s.t. we only have to add b3 at each iteration
+    // to get the correct vector
+	kvec_new = n2 * b2 - (n3max+1) * b3;
+
+    for (size_t n3 = 0; n3 < 2*n3max+1; ++n3)
+    {
+      // Update the current grid point
+      kvec_new += b3;
+	  std::cout << "Current indices = (0, " << n2 << ", " << n3 << ") \n";
+	  std::cout << "Current wave vector = " << kvec_new << "\n";
+      normsq = kvec_new.dot(kvec_new);
+      if (normsq <= kcutsq) // Point inside sphere
+      {
+        kval(nk) = sqrt(normsq);
+        kvec.row(nk) = kvec_new;
+        nk += 1;
+      }
+
+    } // end loop over n3
+  } // end loop over n2
+
+
+
+  // Step 3: Find all remaining points of the form (n1>0, n2, n3)
+  for (size_t n1 = 1; n1 <= n1max; ++n1)
+  {
+    for (size_t n2 = 0; n2 < 2*n2max+1; ++n2)
+    {
       // Update current vector for new n2 value
       // We subtract (n3max+1)*b3 s.t. we only have to add b3 at each iteration
       // to get the correct vector
-      kx = n2 * basisvecs(1,0) - (n3max-1) * basisvecs(2,0);
-      ky = n2 * basisvecs(1,1) - (n3max-1) * basisvecs(2,1);
-      kz = n2 * basisvecs(1,2) - (n3max-1) * basisvecs(2,2);
+      kvec_new = n1*b1 + n2*b2 - n2max*b2 - (n3max+1)*b3;
+      for (size_t n3 = 0; n3 < 2*n3max+1; ++n3)
+        {
+        // Update the current grid point
+        kvec_new += b3;
+	    std::cout << "Current indices = (" << n1 << ", " << n2 << ", " << n3 << ") \n";
+	    std::cout << "Current wave vector = " << kvec_new << "\n";
+        normsq = kvec_new.dot(kvec_new);
+        if (normsq <= kcutsq) // Point inside sphere
+        {
+          kval(nk) = sqrt(normsq);
+          kvec.row(nk) = kvec_new;
+		  nk += 1;
+        }
 
-      for (int n3 = 0; n3 <= 2*n3max+1; ++n3)
-      {
-          // Update the current grid point
-          kx += basisvecs(2,0);
-          ky += basisvecs(2,1);
-          kz += basisvecs(2,2);
-          double normsq = kx*kx + ky*ky + kz*kz;
-          if (normsq <= kcutsq) // Point inside sphere
-          {
-              kval(nk) = sqrt(normsq);
-              kvec(nk, 0) = kx;
-              kvec(nk, 1) = ky;
-              kvec(nk, 2) = kz;
-              nk += 1;
-          }
-      }
-  }
+      } // end loop over n3
+    } // end loop over n2
+  } // end loop over n1
 
-  // Step 3: Find all remaining points of the form (n1>0, n2, n3)
-  for (int n1 = 1; n1 <= n1max; ++n1)
-  {
-      for (int n2 = 0; n2 <= 2*n2max+1; ++n2)
-      {
-          nn2 = n2 - n2max;
-          // Update current vector for new n2 value
-          // We subtract (n3max+1)*b3 s.t. we only have to add b3 at each iteration
-          // to get the correct vector
-          kx = n1 * basisvecs(0,0) + (nn2-1) * basisvecs(1,0) - (n3max-1) * basisvecs(2,0);
-          ky = n1 * basisvecs(0,1) + (nn2-1) * basisvecs(1,1) - (n3max-1) * basisvecs(2,1);
-          kz = n1 * basisvecs(0,2) + (nn2-1) * basisvecs(1,2) - (n3max-1) * basisvecs(2,2);
 
-          for (int n3 = 0; n3 <= 2*n3max+1; ++n3)
-          {
-              // Update the current grid point
-              kx += basisvecs(2,0);
-              ky += basisvecs(2,1);
-              kz += basisvecs(2,2);
-              double normsq = kx*kx + ky*ky + kz*kz;
-              if (normsq <= kcutsq) // Point inside sphere
-              {
-                  kval(nk) = sqrt(normsq);
-                  kvec(nk, 0) = kx;
-                  kvec(nk, 1) = ky;
-      	          kvec(nk, 2) = kz;
-                  nk += 1;
-              }
-          }
-      }
-  }
+  // Final adjustments
+  std::cout << "Final adjustments" << "\n";
+  //kvec.conservativeResize(nk+1,3);
+  //kval.conservativeResize(nk+1);
 
 }
+
+
+
+
+

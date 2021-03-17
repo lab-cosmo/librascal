@@ -38,12 +38,36 @@ namespace rascal {
       /*
        * Construct a Kvectors class 
        */
-      explicit Kvectors(int n) : nk(0), kval(Vector_t::Zero(n)), kvec(Matrix_t::Zero(n,3)){
+      explicit Kvectors(size_t n) : nk(0), kval(Vector_t::Zero(n)), kvec(Matrix_t::Zero(n,3)){
         }
-      void precompute(int n1max, int n2max, int n3max, Matrix_t basisvectors, double kcut);
-      int nk; //number of k-vectors
+      void precompute(size_t n1max, size_t n2max, size_t n3max, Matrix_t basisvectors, double kcut);
+      size_t nk; //number of k-vectors
       Vector_t kval; //k-vectors modulii
       Matrix_t kvec; //k-vectors
+      
+	  // FUnctions for user
+      size_t GetGridPointNumber() const; // Get number of grid points stored (e.g. to loop over them)
+      size_t GetFullGridPointNumber() const; // Get full number of grid points = twice the above
+      Matrix_t GetGrid() const;
+      Matrix_t GetGridIndices() const;
+      Vector_t GetGridNorms() const;
+
+
+	  private:
+        double rad=0;
+		Matrix_t basisvecs = Matrix_t::Zero(3,3);
+
+		size_t numstored=0;
+		Matrix_t kvecs=Matrix_t::Zero(2,3);
+		Matrix_t kvecindices = Matrix_t::Zero(2,3);
+		Vector_t kvecnorms = Vector_t::Zero(1);
+
+		// Auxiliary variables for development
+		double detM=0;
+		size_t n1_max=0;
+		size_t n2_max=0;
+		size_t n3_max=0;
+
     };
   }  // namespace math
 }  // namespace rascal
