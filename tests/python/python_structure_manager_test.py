@@ -190,7 +190,6 @@ class TestNLsanitation(unittest.TestCase):
             _ = AtomsList(frame, self.nl_options)
 
 
-
 class TestNLStrict(unittest.TestCase):
     def setUp(self):
         """

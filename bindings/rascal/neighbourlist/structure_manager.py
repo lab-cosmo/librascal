@@ -260,13 +260,16 @@ def convert_to_structure_list(frames):
 
 
 def convert_structure_to_ase(structure):
-    """Convert a structure as per is_valid_structure into an ASE Atoms object
-    """
+    """Convert a structure as per is_valid_structure into an ASE Atoms object"""
     from ase import Atoms
-    return Atoms(positions=structure['positions'].T,
-                    cell=structure['cell'].T,
-               numbers=structure['atom_types'].flatten(),
-               pbc = np.array(structure['pbc'].flatten(), dtype=bool))
+
+    return Atoms(
+        positions=structure["positions"].T,
+        cell=structure["cell"].T,
+        numbers=structure["atom_types"].flatten(),
+        pbc=np.array(structure["pbc"].flatten(), dtype=bool),
+    )
+
 
 def sanitize_non_periodic_structure(structure):
     """
@@ -299,6 +302,7 @@ def sanitize_non_periodic_structure(structure):
         structure["cell"] = np.array(new_cell.T, order="F")
     return structure
 
+
 def wrap_structure(structure, tol=1e-11):
     """
     Wrap the atoms inside the unit cell for periodic structure. This a wrapper
@@ -314,12 +318,13 @@ def wrap_structure(structure, tol=1e-11):
     a valid structure as per is_valid_structure
         cell and positions have been modified if structure is not periodic
     """
-    positions = structure['positions'].T
-    cell = structure['cell'].T
-    pbc = np.array(structure['pbc'], dtype=bool).flatten()
+    positions = structure["positions"].T
+    cell = structure["cell"].T
+    pbc = np.array(structure["pbc"], dtype=bool).flatten()
     positions = wrap_positions(positions, cell, pbc, eps=tol)
-    structure['positions'] = np.array(positions.T, order="F")
+    structure["positions"] = np.array(positions.T, order="F")
     return structure
+
 
 def is_ase_Atoms(frame):
     is_ase = True
