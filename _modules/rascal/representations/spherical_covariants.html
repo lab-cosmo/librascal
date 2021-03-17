@@ -258,7 +258,7 @@
 <span class="sd">    inversion_symmetry : boolean</span>
 <span class="sd">        Specifies whether inversion invariance should be enforced.</span>
 
-<span class="sd">    lam : int</span>
+<span class="sd">    covariant_lambda : int</span>
 <span class="sd">        Order of the lambda spectrum.</span>
 
 <span class="sd">    cutoff_function_parameters : dict</span>
@@ -301,7 +301,7 @@
         <span class="n">optimization_args</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;LambdaSpectrum&quot;</span><span class="p">,</span>
         <span class="n">inversion_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">lam</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">covariant_lambda</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">cutoff_function_parameters</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Construct a SphericalExpansion representation</span>
@@ -317,7 +317,7 @@
             <span class="n">soap_type</span><span class="o">=</span><span class="n">soap_type</span><span class="p">,</span>
             <span class="n">normalize</span><span class="o">=</span><span class="n">normalize</span><span class="p">,</span>
             <span class="n">inversion_symmetry</span><span class="o">=</span><span class="n">inversion_symmetry</span><span class="p">,</span>
-            <span class="n">lam</span><span class="o">=</span><span class="n">lam</span><span class="p">,</span>
+            <span class="n">covariant_lambda</span><span class="o">=</span><span class="n">covariant_lambda</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">cutoff_function_parameters</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">cutoff_function_parameters</span><span class="p">)</span>
@@ -357,9 +357,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">optimization_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">})</span>
         <span class="n">radial_contribution</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">radial_basis</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="n">optimization_args</span><span class="p">)</span>
-        <span class="n">radial_contribution</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-            <span class="nb">type</span><span class="o">=</span><span class="n">radial_basis</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="n">radial_contribution</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">radial_basis</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="n">optimization_args</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">update_hyperparameters</span><span class="p">(</span>
             <span class="n">cutoff_function</span><span class="o">=</span><span class="n">cutoff_function</span><span class="p">,</span>
@@ -393,7 +391,7 @@
             <span class="s2">&quot;gaussian_sigma_constant&quot;</span><span class="p">,</span>
             <span class="s2">&quot;soap_type&quot;</span><span class="p">,</span>
             <span class="s2">&quot;inversion_symmetry&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;lam&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;covariant_lambda&quot;</span><span class="p">,</span>
             <span class="s2">&quot;cutoff_function&quot;</span><span class="p">,</span>
             <span class="s2">&quot;normalize&quot;</span><span class="p">,</span>
             <span class="s2">&quot;gaussian_density&quot;</span><span class="p">,</span>
@@ -433,29 +431,46 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;inversion_symmetry&quot;</span><span class="p">]:</span>
                 <span class="n">n_col</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
-                    <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+                    <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
                     <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span>
-                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mf">2.0</span>
+                        <span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span>
+                            <span class="o">+</span> <span class="mi">1</span>
+                            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span>
+                        <span class="p">)</span>
+                        <span class="o">**</span> <span class="mi">2</span>
+                        <span class="o">/</span> <span class="mf">2.0</span>
                     <span class="p">)</span>
-                    <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
                     <span class="o">-</span> <span class="p">(</span>
                         <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
-                            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+                            <span class="p">(</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span>
+                                <span class="o">+</span> <span class="mi">1</span>
+                                <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span>
+                            <span class="p">)</span>
+                            <span class="o">**</span> <span class="mi">2</span>
                             <span class="o">/</span> <span class="mf">2.0</span>
                         <span class="p">)</span>
-                        <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="o">-</span> <span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span>
+                            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span>
+                            <span class="o">+</span> <span class="mi">1</span>
+                        <span class="p">)</span>
                     <span class="p">)</span>
-                    <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
                 <span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">n_col</span> <span class="o">=</span> <span class="o">-</span><span class="n">n_col</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
                         <span class="mf">2.0</span>
-                        <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span>
-                        <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+                        <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span>
+                        <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
                         <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span>
-                        <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span>
+                        <span class="o">+</span> <span class="mi">4</span>
+                        <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span>
+                        <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span>
                     <span class="p">)</span>
-                <span class="n">n_col</span> <span class="o">*=</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">n_col</span> <span class="o">*=</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
                 <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_col</span> <span class="o">*</span> <span class="n">n_species</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_radial&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">(</span>
@@ -464,14 +479,16 @@
                     <span class="o">*</span> <span class="nb">int</span><span class="p">(</span>
                         <span class="p">(</span>
                             <span class="mi">2</span>
-                            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span>
-                            <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+                            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span>
+                            <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
                             <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span>
-                            <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span>
+                            <span class="o">+</span> <span class="mi">4</span>
+                            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span>
+                            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span>
                         <span class="p">)</span>
                         <span class="o">/</span> <span class="mi">2</span>
                     <span class="p">)</span>
-                    <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only soap_type = LambdaSpectrum &quot;</span> <span class="s2">&quot;implemented for now&quot;</span><span class="p">)</span></div>
@@ -507,7 +524,7 @@
             <span class="n">normalize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;normalize&quot;</span><span class="p">],</span>
             <span class="n">gaussian_sigma_type</span><span class="o">=</span><span class="n">gaussian_density</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span>
             <span class="n">gaussian_sigma_constant</span><span class="o">=</span><span class="n">gaussian_density</span><span class="p">[</span><span class="s2">&quot;gaussian_sigma&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">],</span>
-            <span class="n">lam</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;lam&quot;</span><span class="p">],</span>
+            <span class="n">lam</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">],</span>
             <span class="n">cutoff_function_type</span><span class="o">=</span><span class="n">cutoff_function</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span>
             <span class="n">radial_basis</span><span class="o">=</span><span class="n">radial_contribution</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span>
             <span class="n">cutoff_function_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff_function_parameters</span><span class="p">,</span>
