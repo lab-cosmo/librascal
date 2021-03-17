@@ -146,7 +146,8 @@ class SphericalCovariants(BaseIO):
             soap_type=soap_type,
             normalize=normalize,
             inversion_symmetry=inversion_symmetry,
-            covariant_lambda=covariant_lambda)
+            covariant_lambda=covariant_lambda,
+        )
 
         self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
 
@@ -185,10 +186,7 @@ class SphericalCovariants(BaseIO):
         else:
             optimization_args = dict({"type": "None"})
         radial_contribution = dict(type=radial_basis, optimization=optimization_args)
-        radial_contribution = dict(
-            type=radial_basis,
-            optimization=optimization_args
-        )
+        radial_contribution = dict(type=radial_basis, optimization=optimization_args)
 
         self.update_hyperparameters(
             cutoff_function=cutoff_function,
@@ -258,43 +256,69 @@ class SphericalCovariants(BaseIO):
         (this is the descriptor size per atomic centre)
 
         """
-        if self.hypers['soap_type'] == 'LambdaSpectrum':
-            if self.hypers['inversion_symmetry']:
-                n_col = (np.ceil((self.hypers['max_angular'] + 1)**2 / 2.0) -
-                         (1.0 + np.floor((self.hypers['covariant_lambda'] - 1) / 2.0))**2 -
-                         np.floor((self.hypers['max_angular'] + 1 -
-                                   self.hypers['covariant_lambda'])**2 / 2.0) *
-                         (self.hypers['covariant_lambda'] % 2) -
-                         (np.ceil((self.hypers['max_angular'] + 1 -
-                                   self.hypers['covariant_lambda'])**2 / 2.0) -
-                          (self.hypers['max_angular'] -
-                             self.hypers['covariant_lambda'] + 1)) *
-                         (1.0 - self.hypers['covariant_lambda'] % 2))
-                if (self.hypers['covariant_lambda'] % 2 == 1):
-                    n_col = -n_col + 0.5 * (2.0 + self.hypers['covariant_lambda'] -
-                                            3 * self.hypers['covariant_lambda']**2 +
-                                            2 * self.hypers['max_angular'] +
-                                            4 * self.hypers['covariant_lambda'] *
-                                            self.hypers['max_angular'])
-                n_col *= (2 * self.hypers['covariant_lambda'] + 1)
-                return int(n_col * n_species**2 *
-                           self.hypers['max_radial']**2)
+        if self.hypers["soap_type"] == "LambdaSpectrum":
+            if self.hypers["inversion_symmetry"]:
+                n_col = (
+                    np.ceil((self.hypers["max_angular"] + 1) ** 2 / 2.0)
+                    - (1.0 + np.floor((self.hypers["covariant_lambda"] - 1) / 2.0)) ** 2
+                    - np.floor(
+                        (
+                            self.hypers["max_angular"]
+                            + 1
+                            - self.hypers["covariant_lambda"]
+                        )
+                        ** 2
+                        / 2.0
+                    )
+                    * (self.hypers["covariant_lambda"] % 2)
+                    - (
+                        np.ceil(
+                            (
+                                self.hypers["max_angular"]
+                                + 1
+                                - self.hypers["covariant_lambda"]
+                            )
+                            ** 2
+                            / 2.0
+                        )
+                        - (
+                            self.hypers["max_angular"]
+                            - self.hypers["covariant_lambda"]
+                            + 1
+                        )
+                    )
+                    * (1.0 - self.hypers["covariant_lambda"] % 2)
+                )
+                if self.hypers["covariant_lambda"] % 2 == 1:
+                    n_col = -n_col + 0.5 * (
+                        2.0
+                        + self.hypers["covariant_lambda"]
+                        - 3 * self.hypers["covariant_lambda"] ** 2
+                        + 2 * self.hypers["max_angular"]
+                        + 4
+                        * self.hypers["covariant_lambda"]
+                        * self.hypers["max_angular"]
+                    )
+                n_col *= 2 * self.hypers["covariant_lambda"] + 1
+                return int(n_col * n_species ** 2 * self.hypers["max_radial"] ** 2)
             else:
-                return (n_species**2 *
-                        self.hypers['max_radial']**2
-                        * int((2 +
-                               self.hypers['covariant_lambda']
-                               - 3
-                               * self.hypers['covariant_lambda']**2
-                               + 2
-                               * self.hypers['max_angular']
-                               + 4
-                               * self.hypers['covariant_lambda']
-                               * self.hypers['max_angular']) /
-                              2)
-                        * (2
-                           * self.hypers['covariant_lambda']
-                           + 1))
+                return (
+                    n_species ** 2
+                    * self.hypers["max_radial"] ** 2
+                    * int(
+                        (
+                            2
+                            + self.hypers["covariant_lambda"]
+                            - 3 * self.hypers["covariant_lambda"] ** 2
+                            + 2 * self.hypers["max_angular"]
+                            + 4
+                            * self.hypers["covariant_lambda"]
+                            * self.hypers["max_angular"]
+                        )
+                        / 2
+                    )
+                    * (2 * self.hypers["covariant_lambda"] + 1)
+                )
         else:
             raise ValueError("Only soap_type = LambdaSpectrum " "implemented for now")
 
