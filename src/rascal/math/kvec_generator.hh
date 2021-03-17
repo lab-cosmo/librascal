@@ -34,42 +34,82 @@
 namespace rascal {
   namespace math {
     class Kvectors {
-     public:
+    private:
+      // Quantities that will be provided by the user upon initialization
+      double kcutoff{}; // cutoff radius
+      Eigen::Matrix3d basisvecs{};// matrix containing the three basis vectors of the cell
+
+      // Quantities that will be computed and be used in further steps (e.g. for LODE)
+      size_t numvectors=0; //
+      Matrix_t kvecs{};
+      //Eigen::Matrix_Xi kvecindices{};
+      Vector_t kvecnorms{};
+
+      // Auxiliary variables for internal use
+	  double detM{};
+      size_t n1_max{};
+      size_t n2_max{};
+      size_t n3_max{};
+
+	  
+
+    public:
       /*
        * Construct a Kvectors class 
        */
-      explicit Kvectors(size_t n) : nk(0), kval(Vector_t::Zero(n)), kvec(Matrix_t::Zero(n,3)){
-        }
+      //explicit Kvectors(size_t n) : nk(0), kval(Vector_t::Zero(n)), kvec(Matrix_t::Zero(n,3)){}
+      explicit Kvectors(size_t n){this->n1_max=n;}
+
+      explicit Kvectors(double cutoff, Eigen::Matrix3d basisvectors) 
+      {
+        this->kcutoff = cutoff;
+        this->basisvecs = basisvectors;
+      } 
       void precompute(size_t n1max, size_t n2max, size_t n3max, Matrix_t basisvectors, double kcut);
-      size_t nk; //number of k-vectors
-      Vector_t kval; //k-vectors modulii
-      Matrix_t kvec; //k-vectors
-      
-	  // FUnctions for user
-      size_t GetGridPointNumber() const; // Get number of grid points stored (e.g. to loop over them)
-      size_t GetFullGridPointNumber() const; // Get full number of grid points = twice the above
-      Matrix_t GetGrid() const;
-      Matrix_t GetGridIndices() const;
-      Vector_t GetGridNorms() const;
+      //size_t nk; //number of k-vectors
+      //Vector_t kval; //k-vectors modulii
+      //Matrix_t kvec; //k-vectors
+      //void precompute2();
+      //size_t nk; //number of k-vectors
+     
+    
+	
+      // FUNCTIONS FOR USER
+
+      /** Get number of vectors found within cutoff radius
+       * without double counting pair related by inversion
+      */
+      size_t get_numvectors() const {
+        return this->numvectors;
+      };
+
+      /** Get number of vectors found within cutoff radius
+       * counting pairs related by inversion separately
+      */
+      size_t get_numvectors_all() const {
+        return 2*this->numvectors-1;
+      };
+
+      /** Get matrix containing all vectors within cutoff radius
+       * without double counting, where row(i)= i-th vector 
+      */
+      Matrix_t get_kvectors() const {
+        return this->kvecs;
+      };
+
+      /** Get vector containing the norm of all vectors
+      */
+      Vector_t get_norms() const {
+        return this->kvecnorms;
+      };
 
 
-	  private:
-        double rad=0;
-		Matrix_t basisvecs = Matrix_t::Zero(3,3);
 
-		size_t numstored=0;
-		Matrix_t kvecs=Matrix_t::Zero(2,3);
-		Matrix_t kvecindices = Matrix_t::Zero(2,3);
-		Vector_t kvecnorms = Vector_t::Zero(1);
-
-		// Auxiliary variables for development
-		double detM=0;
-		size_t n1_max=0;
-		size_t n2_max=0;
-		size_t n3_max=0;
+      // FUNCTIONS FOR DEVELOPERS
 
     };
   }  // namespace math
 }  // namespace rascal
 
 #endif  
+

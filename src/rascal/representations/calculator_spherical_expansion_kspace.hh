@@ -480,12 +480,12 @@ namespace rascal {
 
     // Radius of the sphere in reciprocal space defining the maximum spatial resolution
     // pi/sigma was shown to be enough to converge the density field in TENSOAP
-    double kcut = 2.0*PI/(this->smearing);
-	//double kcut = 1.8; // only use this to test toy model
+    // double kcut = 2.0*PI/(this->smearing);
+	double kcut = 1.5; // only use this to test toy model
 
     // get cell vectors in reciprocal space
-    Matrix_t tcell = cell.transpose();
-    Matrix_t bvecs = 2.0*PI * tcell.inverse();
+    Eigen::Matrix3d tcell = cell.transpose();
+    Eigen::Matrix3d bvecs = 2.0*PI * tcell.inverse();
 	//std::cout << "Reciprocal space basis = " << "\n" << bvecs << "\n";
 
     /* SEARCH SPACE BOX
@@ -510,11 +510,12 @@ namespace rascal {
 	//std::cout << "numtot = " << numtot << "\n";
 
     // Generate k-vectors:
-    math::Kvectors k_vectors(numtot); // initialization
+    //math::Kvectors k_vectors(n1max, n2max, n3max); // initialization
+    math::Kvectors k_vectors(kcut, bvecs); // initialization
 	k_vectors.precompute(n1max,n2max,n3max,bvecs,kcut);
-    size_t n_k = k_vectors.nk; // number of k-vectors
-    Matrix_t k_vec = k_vectors.kvec; // k-vectors
-    Vector_t k_val = k_vectors.kval; // norms of the vectors 
+    size_t n_k = k_vectors.get_numvectors(); // number of k-vectors
+    Matrix_t k_vec = k_vectors.get_kvectors(); // k-vectors
+    Vector_t k_val = k_vectors.get_norms(); // norms of the vectors 
 
 	// Predicted number of points based on continuous approximation for reference
 	size_t numpred = round(2.0*PI/3.0 * kcut*kcut*kcut / sqrt(detM));    
