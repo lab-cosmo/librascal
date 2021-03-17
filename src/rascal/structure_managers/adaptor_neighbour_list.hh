@@ -356,13 +356,14 @@ namespace rascal {
     template <int Dim>
     bool position_in_bounds(const Eigen::Matrix<double, Dim, 1> & min,
                             const Eigen::Matrix<double, Dim, 1> & max,
-                            const Eigen::Matrix<double, Dim, 1> & pos) {
+                            const Eigen::Matrix<double, Dim, 1> & pos,
+                            const double epsilon = 1e-4) {
       auto pos_lower = pos.array() - min.array();
       auto pos_greater = pos.array() - max.array();
 
       // check if shifted position inside maximum mesh positions
-      auto f_lt = (pos_lower.array() > 0.).all();
-      auto f_gt = (pos_greater.array() < 0.).all();
+      auto f_lt = (pos_lower.array() > epsilon).all();
+      auto f_gt = (pos_greater.array() < -epsilon).all();
 
       if (f_lt and f_gt) {
         return true;
@@ -403,12 +404,12 @@ namespace rascal {
       //! brackets operator
       std::vector<int> & operator[](const std::array<int, Dim> & ccoord) {
         for (int i = 0; i < static_cast<int>(Dim); ++i) {
-          if (not(ccoord[i] < this->nboxes[i] - 1) and
-              (ccoord[i] >= 1)) {  // NOLINT
+          // we make sure not to bin atoms in the outer layer of boxes needed
+          // by the stencil
+          if (ccoord[i] >= this->nboxes[i] - 1 or (ccoord[i] <= 0)) {  // NOLINT
             std::stringstream error{};
-            error << "Error: At least one atom is outside the unit cell. This "
-                     "adaptor expects atoms to be folded into the original "
-                     "unit cell. ccoord = ("
+            error << "Error: this atom does not fall in one of the linked cell "
+                  << "bin. It might have not been wrapped properly. ccoord = ("
                   << ccoord[0] << ", " << ccoord[1] << ", " << ccoord[2]
                   << "), nboxes = (" << nboxes[0] << ", " << nboxes[1] << ", "
                   << nboxes[2] << ")";
@@ -937,19 +938,23 @@ namespace rascal {
       // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
       mesh_min[i] = min_coord - 2. * cutoff;
 
-      // outer mesh, including one layer of emtpy cells
-      double lmesh{max_coord - mesh_min[i] + 2 * cutoff};
+      // outer mesh, including one layer of emtpy cells in each direction
+      double lmesh{max_coord - min_coord + 4. * cutoff};
       // number of Linked Cell in each directions
       double n{std::ceil(lmesh / cutoff)};
       mesh_max[i] = mesh_min[i] + n * cutoff;
       nboxes_per_dim[i] = static_cast<int>(n);
 
       // positions min/max for ghost atoms -> this is the actual bounding box
-      ghost_min[i] = mesh_min[i] + cutoff;
-      double lghost{lmesh - 2 * cutoff};
+      ghost_min[i] = min_coord - cutoff;
+      double lghost{max_coord - min_coord + 2 * cutoff};
       double n_ghost_boxes{std::ceil(lghost / cutoff)};
       ghost_max[i] = n_ghost_boxes * cutoff + ghost_min[i];
     }
+
+    // numerical tolerance when determining if a ghost atom falls into the
+    // the range that should be considered for binning
+    double bound_tol{1e-4};
 
     // Periodicity related multipliers. Now the mesh coordinates are calculated
     // in units of cell vectors. m_min and m_max give the number of repetitions
@@ -959,8 +964,8 @@ namespace rascal {
     Eigen::Matrix<double, dim, ncorners> xpos{};
     std::array<double, 2 * dim> mesh_bounds{};
     for (auto i{0}; i < dim; ++i) {
-      mesh_bounds[i] = mesh_min[i];
-      mesh_bounds[i + dim] = mesh_max[i];
+      mesh_bounds[i] = ghost_min[i] - bound_tol;
+      mesh_bounds[i + dim] = ghost_max[i] + bound_tol;
     }
 
     // Get the mesh bounds to solve for the multiplicators
@@ -979,7 +984,8 @@ namespace rascal {
     // find max and min multipliers for cell vectors
     for (auto i{0}; i < dim; ++i) {
       m_min[i] = std::floor(xmin(i));
-      m_max[i] = std::ceil(xmax(i));
+      // remove 1 because the original cell is already included
+      m_max[i] = std::ceil(xmax(i)) - 1;
     }
 
     std::array<int, dim> periodic_max{};
@@ -1039,8 +1045,8 @@ namespace rascal {
         //! assumption: this assumes atoms were inside the cell initially
         if (not(p_image.array() == 0).all()) {
           Vector_t pos_ghost{pos + cell * p_image.template cast<double>()};
-          auto flag_inside =
-              internal::position_in_bounds(ghost_min, ghost_max, pos_ghost);
+          auto flag_inside = internal::position_in_bounds(ghost_min, ghost_max,
+                                                          pos_ghost, bound_tol);
 
           if (flag_inside) {
             // next atom tag is size, since start is at index = 0
