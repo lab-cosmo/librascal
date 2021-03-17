@@ -45,11 +45,12 @@ namespace rascal {
       //Eigen::Matrix_Xi kvecindices{};
       Vector_t kvecnorms{};
 
-      // Auxiliary variables for internal use
+      // Auxiliary variables for developers/testing:
 	  double detM{};
-      size_t n1_max{};
-      size_t n2_max{};
-      size_t n3_max{};
+      size_t numtot{};
+      size_t n1max{};
+      size_t n2max{};
+      size_t n3max{};
 
 	  
 
@@ -71,8 +72,7 @@ namespace rascal {
         if (not is_reciprocal_cell) { // real space cell is given
           // Create reciprocal cell from real space cell
           Eigen::Matrix3d tcell = basisvectors.transpose();
-          double twopi = 2.0*M_PI;
-          this->basisvecs = twopi * tcell.inverse();
+          this->basisvecs = 2.0 * M_PI * tcell.inverse();
         }
         else { // cell of reciprocal space is already given
           this->basisvecs = basisvectors;
@@ -117,7 +117,29 @@ namespace rascal {
 
 
 
-      // FUNCTIONS FOR DEVELOPERS
+      // FUNCTIONS FOR DEVELOPERS / TESTING PHASE
+      void print_analysis() const {
+	    // Estimated number of points based on continuous
+        //approximation for reference
+        double kcut = this->kcutoff;
+        size_t numest = round(2.0*M_PI/3.0 * kcut*kcut*kcut
+          / sqrt(this->detM));    
+        double succratio = ((double)(this->numvectors))
+          / ((double)(this->numtot));
+        std::cout << "Number of found k-vectors inside sphere = "
+          << this->numvectors << "\n";
+        std::cout << "Estimated number from cont. approx.     = "
+          << numest << "\n";
+        std::cout << "Total number of pts in search space box = "
+          << this->numtot << "\n";
+        std::cout << "Ratio of successful points     = " 
+          << succratio << "\n";
+        std::cout << "Ideal ratio for circle (cont.) = "
+          << M_PI / 6. << "\n";
+        std::cout << "Dimensions of optimal search space box: \n"
+          << "(n1max,n2max,n3max) = (" << this->n1max << ", "
+          << this->n2max << ", " << this->n3max << ")\n\n"; 
+      };
 
 
 

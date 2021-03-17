@@ -76,25 +76,41 @@ using namespace rascal::math;  // NOLINT
 
 void Kvectors::precompute() {
   // PREPARATION
-  // Generate optimal bounds for search space box 
-  Eigen::Matrix3d bvecs = this->basisvecs;
-  double kcut = this -> kcutoff;
-  Matrix_t M = bvecs * bvecs.transpose(); // = inner product matrix M_ij = b_i * b_j
+  
+  // SEARCH SPACE BOX
+  // Determine the optimal bounds n1max, n2max, n3max that
+  // define the search space box. Roughly speaking, our
+  // goal will then be to find all vectors
+  // k = n1*b1 + n2*b2 + n3*b3, 
+  // where |n1|<n1max, |n2|<n2max etc., whose norm is
+  // smaller than kcut. In practice, only half of the
+  // k-vectors are returned up to the identification
+  //k2 = -k1, since such pairs can be grouped together in
+  // the remaining part.
+  
+  // Define some shortcuts
+  const Eigen::Matrix3d bvecs = this->basisvecs;
+  const double kcut = this->kcutoff;
+  
+  // Generate inner product matrix M_ij = b_i * b_j
+  const Matrix_t M = bvecs * bvecs.transpose(); 
   double detM = M(0,0)*M(1,1)*M(2,2)+2*M(0,1)*M(1,2)*M(2,0);
   detM -= M(0,0)*M(1,2)*M(1,2);
   detM -= M(1,1)*M(0,2)*M(0,2);
   detM -= M(2,2)*M(0,1)*M(0,1);
+  this->detM = detM;
 
   size_t n1max = floor(sqrt( (M(1,1)*M(2,2) - M(1,2)*M(1,2)) / detM) * kcut);
   size_t n2max = floor(sqrt( (M(0,0)*M(2,2) - M(0,2)*M(0,2)) / detM) * kcut);
   size_t n3max = floor(sqrt( (M(0,0)*M(1,1) - M(0,1)*M(0,1)) / detM) * kcut);
   
-  this->n1_max = n1max;
-  this->n2_max = n2max;
-  this->n3_max = n3max;
+  this->n1max = n1max;
+  this->n2max = n2max;
+  this->n3max = n3max;
 
-// Total number of points that will be checked (used for initialization)
+  // Total number of points that will be checked (used for initialization)
   size_t numtot = 1+ n3max + n2max * (2 * n3max + 1) + n1max * (2 * n2max + 1) * (2 * n3max + 1);
+  this-> numtot = numtot;
  
   // Auxiliary variables
   double kcutsq = kcut*kcut; // use squared norm for tests

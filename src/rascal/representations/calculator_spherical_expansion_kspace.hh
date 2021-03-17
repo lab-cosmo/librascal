@@ -480,49 +480,16 @@ namespace rascal {
 
     // Radius of the sphere in reciprocal space defining the maximum spatial resolution
     // pi/sigma was shown to be enough to converge the density field in TENSOAP
-    // double kcut = 2.0*PI/(this->smearing);
-	double kcut = 1.5; // only use this to test toy model
-
-    // get cell vectors in reciprocal space
-
-    /* SEARCH SPACE BOX
-    Determine the optimal bounds n1max, n2max, n3max that define the search space box.
-    Roughly speaking, our goal will then be to find all vectors k = n1*b1 + n2*b2 + n3*b3,
-    where |n1|<n1max, |n2|<n2max etc. whose norm is smaller than kcut.
-	In practice, only half of the k-vectors are returned up to the identification k2 = -k1,
-	since such pairs can be grouped together in the remaining part.
-	The details of the used formulae is found in the supporting document.
-	*/
-	
-	// Generate optimal bounds for search space box 
-	//Matrix_t M = bvecs * bvecs.transpose(); // = inner product matrix M_ij = b_i * b_j
-	//double detM = M.determinant();
-	//size_t n1max = floor(sqrt( (M(1,1)*M(2,2) - M(1,2)*M(1,2)) / detM) * kcut);
-    //size_t n2max = floor(sqrt( (M(0,0)*M(2,2) - M(0,2)*M(0,2)) / detM) * kcut);
-    //size_t n3max = floor(sqrt( (M(0,0)*M(1,1) - M(0,1)*M(0,1)) / detM) * kcut);
-    //std::cout << "(n1max,n2max,n3max) = (" << n1max << ", " << n2max << ", " << n3max << ") \n";
-
-    // Total number of points that will be checked (used for initialization)
-    //size_t numtot = 1+ n3max + n2max * (2 * n3max + 1) + n1max * (2 * n2max + 1) * (2 * n3max + 1);
-	//std::cout << "numtot = " << numtot << "\n";
+    double kcut = 2.0*PI/(this->smearing);
+	// double kcut = 1.5; // only use this to test toy model
 
     // Generate k-vectors:
     math::Kvectors k_vectors(kcut, cell); // initialization
     size_t n_k = k_vectors.get_numvectors(); // number of k-vectors
     Matrix_t k_vec = k_vectors.get_kvectors(); // k-vectors
     Vector_t k_val = k_vectors.get_norms(); // norms of the vectors 
-
-	// Predicted number of points based on continuous approximation for reference
-	//size_t numpred = round(2.0*PI/3.0 * kcut*kcut*kcut / sqrt(detM));    
+	k_vectors.print_analysis();
 	
-	// Console output to check code TODO: delete this after testing phase
-    // double succratio = ((double)(n_k)) / numtot;
-    std::cout << "Number of found k-vectors inside sphere    = " << n_k << "\n";
-	//std::cout << "Predicted number (based on cont. approx.)  = " << numpred << "\n";
-    //std::cout << "Total number of points in search space box = " << numtot << "\n";
-    //std::cout << "Ratio of successful points     = " << succratio << "\n";
-    //std::cout << "Ideal ratio for circle (cont.) = " << 3.1415 / 6 << "\n\n";
-	//std::cout << "The found kvectors are:" << "\n" << k_vec << "\n";
 
 	/*
 		----------------------------------------------------------------------------------
