@@ -877,21 +877,26 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Builds full neighbour list. Triclinicity is accounted for. The general idea
-   * is to anchor a mesh at the origin of the supplied cell (assuming it is at
-   * the origin). Then the mesh is extended into space until it is as big as the
-   * maximum cell coordinate plus one cutoff in each direction. This mesh has
-   * boxes of size ``cutoff``.
-   * All atoms are expected to be inside the unit cell.
+   * Build a neighbor list using a linked cell algorithm for finite cutoff
+   * interaction computations of lenght \f$r_c\f$. There is no restriction
+   * regarding the type of lattice and periodic boundary conditions.
+   * To do so we build a cubic box that contains the unit cell and one
+   * \f$r_c\f$ in each directions. The length of the box is a multiple of
+   * \f$r_c\f$ and it is partitioned into cubic bins of size \f$r_c\f$. The
+   * resulting mesh encompass the unit cell and its surrounding up to \f$2
+   * r_c\f$ in each directions so that atoms can be binned in it. The
+   * additional layer of bins is kept empty so that the connectivity assignment
+   * criteria of the linked cell, i.e. atoms belonging to neighbor bins are
+   * neighbors, can be applied uniformly (latter referred are stencil).
+   * note(felix): the mesh going up to \f$2 r_c\f$ is probably not really
+   *  necessary for the connectivity assignment and \f$r_c\f$ would work too.
    *
-   * Depending on the periodicity of the mesh, ghost
-   * atoms are added by shifting all i-atoms by the cell vectors corresponding
-   * to the desired periodicity. All i-atoms and the ghost atoms are then sorted
-   * into the respective boxes of the cartesian mesh and a stencil anchored at
-   * the box of the i-atoms is used to build the atom neighbourhoods from the 9
-   * (2d) or 27 (3d) boxes, which is checked for the neighbourhood. Correct
-   * periodicity is ensured by the placement of the ghost atoms. The resulting
-   * neighbourlist is full and not strict.
+   * Atoms are assumed to be inside the unit cell (otherwise it will throw an
+   * error) and they are binned. Then depending on the periodicity of the
+   * system, the periodic images or ghost atoms that fall within the bounds of
+   * the mesh are also binned.
+   * Then each binned atoms is assigned its neighbor depending on the bin's
+   * connectivity criteria (in 3d the 27 nearest bins).
    */
   template <class ManagerImplementation>
   void AdaptorNeighbourList<ManagerImplementation>::make_full_neighbour_list() {
@@ -954,7 +959,8 @@ namespace rascal {
 
     // numerical tolerance when determining if a ghost atom falls into the
     // the range that should be considered for binning
-    double bound_tol{1e-4};
+    double max_box_lenght{(ghost_max - ghost_min).maxCoeff()};
+    double bound_tol{max_box_lenght * 1e-8};
 
     // Periodicity related multipliers. Now the mesh coordinates are calculated
     // in units of cell vectors. m_min and m_max give the number of repetitions
