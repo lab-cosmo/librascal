@@ -273,6 +273,7 @@ def convert_structure_to_ase(structure):
         pbc=np.array(structure["pbc"].flatten(), dtype=bool),
     )
 
+
 def sanitize_non_periodic_ase(frame):
     """
     Rascal expects a unit cell that contains all the atoms even if the
@@ -301,6 +302,7 @@ def sanitize_non_periodic_ase(frame):
         frame.set_cell(new_cell)
         frame.center()
     return frame
+
 
 def sanitize_non_periodic_structure(structure):
     """
