@@ -194,13 +194,13 @@ namespace rascal {
     std::vector<json> rep_hypers{{{"max_radial", 1},
                                   {"max_angular", 2},
                                   {"soap_type", "LambdaSpectrum"},
-                                  {"lam", 2},
+                                  {"covariant_lambda", 2},
                                   {"inversion_symmetry", true},
                                   {"normalize", true}},
                                  {{"max_radial", 2},
                                   {"max_angular", 2},
                                   {"soap_type", "LambdaSpectrum"},
-                                  {"lam", 2},
+                                  {"covariant_lambda", 2},
                                   {"inversion_symmetry", false},
                                   {"normalize", true}}};
   };

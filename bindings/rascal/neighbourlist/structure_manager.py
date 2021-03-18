@@ -17,21 +17,43 @@ from .base import (
 
 class AtomsList(object):
     """
-    A wrapper class for a stack of managers precompiled on the C++ side of the
-    form Strict->NeighbourList->Center.  A container for atoms/centers/atomic
-    environments.
+    A container for the neighbourlist and representation data associated with a list of atomic structures.
+
+    This is a wrapper class for the `StructureManagerCollection` that have between precompiled on the C++ side.
 
     Attributes
     ----------
     nl_options : dict
         Parameters for each layer of the wrapped structure manager. Parameters
         can be specified for these layers: center, neighbourlist and strict.
+    managers : StructureManagerCollection
+        C++ object from rascal that holds the neighbourlist and the data associated with representations.
 
-    Methods
-    -------
     """
 
     def __init__(self, frames, nl_options, start=None, length=None, managers=None):
+        """Build a new AtomsList with only the selected atomic structures and
+        corresponding neighborlist and representations (if present).
+
+        Parameters
+        -------
+        frames :
+            list of atomic structures.
+        nl_options : dict
+            Parameters for each layer of the wrapped structure manager. For
+            example to initialize a neighbourlist for computing `SphericalInvariants` representation using a linked cell algorithm
+        .. code:: python
+            nl_options = [
+            dict(name="centers", args=dict()),
+            dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
+            dict(name="centercontribution", args=dict()),
+            dict(name="strict", args=dict(cutoff=interaction_cutoff)),
+            ]
+
+        managers : `StructureManagerCollection`
+            Take directly a `StructureManagerCollection` without recomputing
+            anything.
+        """
         self.nl_options = nl_options
         self._frames = frames
 
@@ -114,6 +136,34 @@ class AtomsList(object):
 
         return X
 
+    def get_features_gradient(self, calculator, species=None):
+        """
+        Parameters
+        -------
+        calculator : Calculator (an object owning a _representation object)
+
+        species :  list of atomic number to use for building the dense feature
+        matrix computed with calculators of name Spherical*
+
+        Returns
+        -------
+        dX_dr : ndarray of size (3*(n_neighbor+n_atom), n_features)
+            returns the gradient of representation with respect to the atomic
+            positions that have been computed with the calculator as a dense
+            matrix. The method `get_gradients_info` provides the
+            necessary information for operating on the dX_dr matrix.
+        """
+
+        if species is None:
+            X = self.managers.get_features_gradient(calculator._representation, [])
+        else:
+            keys_list = calculator.get_keys(species)
+            X = self.managers.get_features_gradient(
+                calculator._representation, keys_list
+            )
+
+        return X
+
     def get_features_by_species(self, calculator):
         """
         Parameters
@@ -127,6 +177,48 @@ class AtomsList(object):
             alphabetically to the corresponding feature matrices
         """
         return self.managers.get_features_by_species(calculator._representation)
+
+    def get_gradients_info(self):
+        """
+        Returns
+        -------
+        ij : np.array of size (n_neighbor+n_atom, 5)
+            Get informations necessary to the computation of gradients returned
+            by `get_features_gradient`. It has as many rows as as the number
+            gradients and each columns correspond to the index of the atomic
+            structure, central atom, the neighbor atom and their atomic species.
+        """
+        return self.managers.get_gradients_info()
+
+    def get_representation_info(self):
+        """
+        Returns
+        -------
+        ij : np.array of size (n_atoms, 3)
+            Get informations necessary to the computation of predictions using
+            the representation from `get_features`. It has as many rows as the
+            number representations and they correspond to the index of the
+            structure, the central atom and its atomic species.
+        """
+        return self.managers.get_representation_info()
+
+    def get_direction_vectors(self):
+        """
+        Returns
+        -------
+        direction_vector : np.array of size (n_neighbor+n_atom, 3)
+            Get the direction vectors from the atoms to their neighbors.
+        """
+        return self.managers.get_direction_vectors()
+
+    def get_distances(self):
+        """
+        Returns
+        -------
+        distance : np.array of size (n_neighbor+n_atom, 4)
+            Get the distances from the atoms to their neighbors.
+        """
+        return self.managers.get_distances()
 
 
 def get_neighbourlist(structure, options):
