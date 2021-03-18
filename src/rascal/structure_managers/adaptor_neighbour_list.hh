@@ -881,7 +881,7 @@ namespace rascal {
    * interaction computations of lenght \f$r_c\f$. There is no restriction
    * regarding the type of lattice and periodic boundary conditions (triclinic
    * lattices and mixed periodicity are handled by design).
-   * 
+   *
    * To do so we build a cubic box that contains the unit cell and one
    * \f$r_c\f$ in each directions. The length of the box is a multiple of
    * \f$r_c\f$ and it is partitioned into cubic bins of size \f$r_c\f$. The
