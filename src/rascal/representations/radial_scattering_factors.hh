@@ -236,10 +236,12 @@ namespace rascal {
             this->radial_integral(nl_idx) = pow(kval,static_cast<double>(angular_l)) * 
         	    this->radial_nl_factors(radial_n,angular_l) * this->radial_norm_factors(radial_n) 
                       * expfac * hyp1f1_calculator.calc(-fac_c);
+	    //std::cout << kval << " " << radial_n << " " << angular_l << " " << radial_integral(nl_idx) << "\n";
             nl_idx += 1;
         
 	  }
         }
+	//std::abort();
         
 	return Vector_Ref(this->radial_integral);
 
@@ -259,7 +261,7 @@ namespace rascal {
 
       Vector_t radial_sigmas{};
       Vector_t radial_norm_factors{};
-      Vector_t radial_nl_factors{};
+      Matrix_t radial_nl_factors{};
       Matrix_t radial_ortho_matrix{};
       Matrix_t ortho_norm_matrix{};
       Vector_t radial_integral{};

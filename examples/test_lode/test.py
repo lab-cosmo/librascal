@@ -1,22 +1,14 @@
 #!/usr/bin/env python
-"""Example for selecting centres by species
-
-This computes the SphericalInvariants on a small-molecule test set, selecting
-only carbon centres
-"""
 
 import sys
 import ase.io
 import numpy as np
 
-sys.path.insert(0,'/ssd/scratch/khugueni/librascal/build/')
+sys.path.insert(0,'/local/scratch/source/librascal/build/')
 from rascal.representations import SphericalInvariants
 from rascal.representations import SphericalInvariantsKspace
 
-#molecules = ase.io.read('/local/scratch/source/librascal/examples/test_lode/water_10angs.xyz',":")
-molecules = ase.io.read('/ssd/scratch/khugueni/librascal/examples/test_lode/water_20angs.xyz',":")
-#molecules = ase.io.read('/local/scratch/source/librascal/examples/test_lode/water_50angs.xyz',":")
-#molecules = ase.io.read('/local/scratch/source/librascal/examples/test_lode/water_100angs.xyz',":")
+molecules = ase.io.read('/local/scratch/source/librascal/examples/test_lode/water_20angs.xyz',":")
 hypers = {'interaction_cutoff': 4.0,
           'cutoff_smooth_width': 0.0,
           'max_radial': 8,

@@ -565,33 +565,32 @@ namespace rascal {
     }
 
 
-	/*
-		----------------------------------------------------------------------------------
-		PRECOMPUTE LODE PARAMETERS FROM k-VECTORS:
-		
-		Start computing the quantities required by SOAP and/or LODE that depend 
-		on the wave vectors (and therefore the system cell) but NOT on the atomic 
-		positions. 
-		More specifically, these are:
-		- the Fourier transformed atomic density G_k = FT[g](\vec{k})
-			note that in order to get the actual LODE representation, this is multiplied
-			by the Fourier transformed potential as well, so G_k = FT[g]*FT[V]
-		- the spherical harmonics Y_lm evaluated at the k-vectors, i.e. Y_lm(\hat{k})
-		- the projection of the plane wave basis onto the radial basis I_nl(k)
-		----------------------------------------------------------------------------------	
-	*/
+    /*
+    	----------------------------------------------------------------------------------
+    	PRECOMPUTE LODE PARAMETERS FROM k-VECTORS:
+    	
+    	Start computing the quantities required by SOAP and/or LODE that depend 
+    	on the wave vectors (and therefore the system cell) but NOT on the atomic 
+    	positions. 
+    	More specifically, these are:
+    	- the Fourier transformed atomic density G_k = FT[g](\vec{k})
+    		note that in order to get the actual LODE representation, this is multiplied
+    		by the Fourier transformed potential as well, so G_k = FT[g]*FT[V]
+    	- the spherical harmonics Y_lm evaluated at the k-vectors, i.e. Y_lm(\hat{k})
+    	- the projection of the plane wave basis onto the radial basis I_nl(k)
+    	----------------------------------------------------------------------------------	
+    */
 
 
-	// Initialize arrays
+    // Initialize arrays
     auto G_k = math::Vector_t(n_k); // Fourier components of a Gaussian charge 
     auto Y_lm = math::Matrix_t(n_k, n_col); // Spherical harmonics matrix (N_k, (l_max+1)^2)
-	size_t nl_size = this->max_radial*(this->max_angular+1); // n_max * (l_max + 1) 
+    size_t nl_size = this->max_radial*(this->max_angular+1); // n_max * (l_max + 1) 
     auto I_nl = math::Matrix_t(n_k, nl_size); // Radial integrals N_k
 
 
     // Precompute the three above quantities for each k-vector  
-    for (size_t ik{0}; ik < n_k; ++ik)
-	{
+    for (size_t ik{0}; ik < n_k; ++ik) {
       // Fourier charge at |k|=k_val (multiply by 1/k^2 for LODE) 
       G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) ) ;//;
 
@@ -604,7 +603,7 @@ namespace rascal {
           Y_lm(ik,lm) = harmonics(lm);
         }
       } else {
-		Y_lm(ik,0) = 0.5/std::sqrt(4*PI); // divide by 2 since the k=0 term is not counted twice
+	Y_lm(ik,0) = 0.5/std::sqrt(4*PI); // divide by 2 since the k=0 term is not counted twice
       }
 
       // Radial integral at k_val
@@ -612,34 +611,33 @@ namespace rascal {
       for (size_t nl{0}; nl < nl_size; ++nl){
         I_nl(ik,nl) = radint(nl);
       }
-	}
+    }
 
 
 
-	/*
-		|--------------------------------------------------------------------------------|
-		|--------------------------------------------------------------------------------|
-		|              START THE STEPS DEPENDENT ON THE ATOMIC POSITIONS                 |
-		|--------------------------------------------------------------------------------|
-		|--------------------------------------------------------------------------------|
-	*/
+    /*
+	|--------------------------------------------------------------------------------|
+	|--------------------------------------------------------------------------------|
+	|              START THE STEPS DEPENDENT ON THE ATOMIC POSITIONS                 |
+	|--------------------------------------------------------------------------------|
+	|--------------------------------------------------------------------------------|
+    */
 	
 	
-	// Define the basic quantities coming from the atomic positions
-	auto tcoords = manager_root->get_positions();
+    // Define the basic quantities coming from the atomic positions
+    auto tcoords = manager_root->get_positions();
     Matrix_t coords = tcoords.transpose();
     size_t natoms = coords.rows();
 
 
     // Precompute trigonometric expressions sin(vec{k} * vec{r}), cos(vec{k} * vec{r})
-	// for all k-vectors and all atomic positions 
-    
+    // for all k-vectors and all atomic positions 
     // Initialization of matrices in which to store results
-	auto cos_ki = math::Matrix_t(n_k,natoms); 
+    auto cos_ki = math::Matrix_t(n_k,natoms); 
     auto sin_ki = math::Matrix_t(n_k,natoms); 
     for (size_t ik{0}; ik < n_k; ++ik) {
       for (size_t iat{0}; iat < natoms; ++iat) {
-			double arg = coords(iat,0) * k_vec(ik,0) 
+	double arg = coords(iat,0) * k_vec(ik,0) 
 		   + coords(iat,1) * k_vec(ik,1) 
 		   + coords(iat,2) * k_vec(ik,2);
         cos_ki(ik,iat) = std::cos(arg); 
@@ -648,23 +646,23 @@ namespace rascal {
 
     }
     
-	/*
-		----------------------------------------------------------------------------------
-		COMPLETE EVALUATION OF SPHERICAL EXPANSION:
-		
-		All the preparations have been done: this final part combines all of the
-		previous results to compute the quantities <anlm|V_i>, the spherical expansion
-		coefficients. These will then be used in spherical_invariants to produce 
-		quantities invariant under rotations.
+    /*
+	----------------------------------------------------------------------------------
+	COMPLETE EVALUATION OF SPHERICAL EXPANSION:
+	
+	All the preparations have been done: this final part combines all of the
+	previous results to compute the quantities <anlm|V_i>, the spherical expansion
+	coefficients. These will then be used in spherical_invariants to produce 
+	quantities invariant under rotations.
 
-		This is an O(N^2) implementation in which the two (discrete) Fourier transforms
-		are evaluated directly following the definition. 
-		In the future, we plan to implement an O(NlogN) version of the code.
-		----------------------------------------------------------------------------------	
-	*/
+	This is an O(N^2) implementation in which the two (discrete) Fourier transforms
+	are evaluated directly following the definition. 
+	In the future, we plan to implement an O(NlogN) version of the code.
+	----------------------------------------------------------------------------------	
+    */
     
 	
-	// Start the accumulation
+    // Start the accumulation
     for (auto center : manager) {
 
       auto atom_i_tag = center.get_atom_tag();
@@ -687,17 +685,16 @@ namespace rascal {
             // l odd contributions vanish by k-symmetry for central atom
 	        size_t size_m = 2*angular_l+1;
             if (angular_l%2==0) {
-	      	  for (size_t mval{0}; mval < size_m; ++mval) {
+	      for (size_t mval{0}; mval < size_m; ++mval) {
 	            coefficients_center[center_type](radial_n,l_block_idx+mval) += 
 	            I_nl(ik,nl_idx) * Y_lm(ik,l_block_idx+mval) * G_k(ik) 
-		        * 16.0 * pow(PI,2) / volume; 
-	          }
+	            * 16.0 * pow(PI,2) / volume; 
+	      }
             }
             l_block_idx += size_m;
             nl_idx += 1;
-
           } // end of loop over l=0,1,...,lmax
-	    } // end of loop over n=0,1,...,nmax
+        } // end of loop over n=0,1,...,nmax
 
       // loop over atoms over the entire system using centers idx once again      
       for (auto neigh : manager) {
