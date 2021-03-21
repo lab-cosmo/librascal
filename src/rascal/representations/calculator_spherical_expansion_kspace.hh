@@ -460,36 +460,6 @@ namespace rascal {
     auto cell = manager_root->get_cell();
     const double volume = cell.determinant();
 	
-	
-	/*
-		----------------------------------------------------------------------------------
-		K-VECTORS GRID:
-		
-		Generate the k-space vectors required for the (discrete) Fourier transform
-		using the Kvectors class (defined in ../math)
-		The class requires:
-		- a cutoff defining the radius of the sphere
-		- the basis vectors of the reciprocal lattice in row major format
-		- the indices (n1max, n2max, n3max) defining the search space box
-
-		During development, we also print some useful quantities to evaluate
-		the behavior of the code
-		----------------------------------------------------------------------------------	
-	*/
-
-
-    // Radius of the sphere in reciprocal space defining the maximum spatial resolution
-    // pi/sigma was shown to be enough to converge the density field in TENSOAP
-    double kcut = 2.0*PI/(this->smearing);
-	// double kcut = 1.5; // only use this to test toy model
-
-    // Generate k-vectors:
-    math::Kvectors k_vectors(kcut, cell); // initialization
-    size_t n_k = k_vectors.get_numvectors(); // number of k-vectors
-    Matrix_t k_vec = k_vectors.get_kvectors(); // k-vectors
-    Vector_t k_val = k_vectors.get_norms(); // norms of the vectors 
-	k_vectors.print_analysis();
-	
 
 	/*
 		----------------------------------------------------------------------------------
@@ -563,38 +533,65 @@ namespace rascal {
     } else {
       throw std::runtime_error("should not arrive here");
     }
+	
+	
+    /*
+      -------------------------------------------------------------------
+      GENERATE K-VECTORS GRID:
 
+      Generate the k-space vectors required for the (discrete)
+      Fourier transform using the Kvectors class (see ../math)
+      The class requires:
+      - a cutoff defining the radius of the sphere
+      - the basis vectors of the real space lattice in row
+        major format, i.e. a1=cell.row(0), a2=, a3= ...
+      -------------------------------------------------------------------
+	*/
+
+    // Radius of the sphere in reciprocal space defining the
+    // maximum spatial resolution
+    double kcut = 2.0*PI/(this->smearing);
+    math::Kvectors k_vectors(kcut, cell); // initialization
+    size_t n_k = k_vectors.get_numvectors(); // number of k-vectors
+    Matrix_t k_vec = k_vectors.get_kvectors(); // k-vectors
+    Vector_t k_val = k_vectors.get_norms(); // norms of the vectors
+    // k_vectors.print_analysis(); // evaluate performance metrics
 
     /*
-    	----------------------------------------------------------------------------------
-    	PRECOMPUTE LODE PARAMETERS FROM k-VECTORS:
-    	
-    	Start computing the quantities required by SOAP and/or LODE that depend 
-    	on the wave vectors (and therefore the system cell) but NOT on the atomic 
-    	positions. 
-    	More specifically, these are:
-    	- the Fourier transformed atomic density G_k = FT[g](\vec{k})
-    		note that in order to get the actual LODE representation, this is multiplied
-    		by the Fourier transformed potential as well, so G_k = FT[g]*FT[V]
-    	- the spherical harmonics Y_lm evaluated at the k-vectors, i.e. Y_lm(\hat{k})
-    	- the projection of the plane wave basis onto the radial basis I_nl(k)
-    	----------------------------------------------------------------------------------	
+      -------------------------------------------------------------------
+      PRECOMPUTE LODE PARAMETERS FROM k-VECTORS:
+
+      Start computing the quantities required by SOAP and/or
+      LODE that depend on the wave vectors (and therefore the
+      system cell) but NOT on the atomic positions.
+      More specifically, these are:
+      - the Fourier transformed atomic density:
+        G_k = FT[g](\vec{k})
+        note that in order to get the LODE representation,
+        this is multiplied by the Fourier transformed potential
+        as well, so G_k = FT[g]*FT[V]
+      - the spherical harmonics Y_lm evaluated at the k-vectors
+        Y_lm(\hat{k})
+      - the projection of the plane wave basis onto the
+        primitive (normalized) radial basis
+        I_nl(k) = (R_n(r), j_l(kr))
+    	----------------------------------------------------------------	
     */
 
-
     // Initialize arrays
-    auto G_k = math::Vector_t(n_k); // Fourier components of a Gaussian charge 
-    auto Y_lm = math::Matrix_t(n_k, n_col); // Spherical harmonics matrix (N_k, (l_max+1)^2)
-    size_t nl_size = this->max_radial*(this->max_angular+1); // n_max * (l_max + 1) 
-    auto I_nl = math::Matrix_t(n_k, nl_size); // Radial integrals N_k
-
+    auto G_k = math::Vector_t(n_k); // Fourier components
+    // Spherical harmonics of shape (N_k, (l_max+1)^2)
+    auto Y_lm = math::Matrix_t(n_k, n_col);
+    // Radial integrals of shape (N_k, n_max * (l_max + 1)=nl_size) 
+    size_t nl_size = this->max_radial*(this->max_angular+1);
+    auto I_nl = math::Matrix_t(n_k, nl_size);
 
     // Precompute the three above quantities for each k-vector  
     for (size_t ik{0}; ik < n_k; ++ik) {
       // Fourier charge at |k|=k_val (multiply by 1/k^2 for LODE) 
       G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) ) ;//;
 
-      // Spherical harmonics at k_dir
+      // Spherical harmonics at hat{k}=vec{k}/k
       if (k_val(ik)!=0.0){
         Eigen::Vector3d k_dir = k_vec.row(ik)/k_val(ik);
         this->spherical_harmonics.calc(k_dir);
@@ -603,32 +600,32 @@ namespace rascal {
           Y_lm(ik,lm) = harmonics(lm);
         }
       } else {
-	Y_lm(ik,0) = 0.5/std::sqrt(4*PI); // divide by 2 since the k=0 term is not counted twice
+        // For k=0, only Y_00=1/sqrt(4pi) is defined. We divide this
+        // by 2 since the k=0 term is not counted twice later on.
+        Y_lm(ik,0) = 0.5/std::sqrt(4*PI);
       }
 
-      // Radial integral at k_val
-      auto && radint = radial_integral->compute_radial_integral(k_val(ik)); // n_max * (l_max+1)
-      for (size_t nl{0}; nl < nl_size; ++nl){
+      // Radial integral between primitive radial function and 
+      // spherical Bessel function (R_n(r), j_l(kr)) up to global 
+      // factor of sqrt(pi) (irrelevant due to final normalization)
+      auto && radint = radial_integral->compute_radial_integral(k_val(ik));
+      for (size_t nl{0}; nl < nl_size; ++nl){  
         I_nl(ik,nl) = radint(nl);
       }
-    }
-
-
+    } // end of loop over k vectors
 
     /*
-	|--------------------------------------------------------------------------------|
-	|--------------------------------------------------------------------------------|
-	|              START THE STEPS DEPENDENT ON THE ATOMIC POSITIONS                 |
-	|--------------------------------------------------------------------------------|
-	|--------------------------------------------------------------------------------|
+      -------------------------------------------------------------------
+      -------------------------------------------------------------------
+      ----------START STEPS DEPENDENT ON ATOMIC POSITIONS----------------
+      -------------------------------------------------------------------
+      -------------------------------------------------------------------
     */
-	
 	
     // Define the basic quantities coming from the atomic positions
     auto tcoords = manager_root->get_positions();
     Matrix_t coords = tcoords.transpose();
     size_t natoms = coords.rows();
-
 
     // Precompute trigonometric expressions sin(vec{k} * vec{r}), cos(vec{k} * vec{r})
     // for all k-vectors and all atomic positions 
@@ -637,13 +634,12 @@ namespace rascal {
     auto sin_ki = math::Matrix_t(n_k,natoms); 
     for (size_t ik{0}; ik < n_k; ++ik) {
       for (size_t iat{0}; iat < natoms; ++iat) {
-	double arg = coords(iat,0) * k_vec(ik,0) 
+        double arg = coords(iat,0) * k_vec(ik,0) 
 		   + coords(iat,1) * k_vec(ik,1) 
 		   + coords(iat,2) * k_vec(ik,2);
         cos_ki(ik,iat) = std::cos(arg); 
         sin_ki(ik,iat) = std::sin(arg); 
       } 
-
     }
     
     /*
@@ -660,11 +656,10 @@ namespace rascal {
 	In the future, we plan to implement an O(NlogN) version of the code.
 	----------------------------------------------------------------------------------	
     */
-    
-	
-    // Start the accumulation
+    	
+    // Start the accumulation: loop over all center atoms
     for (auto center : manager) {
-
+      // Preparations:
       auto atom_i_tag = center.get_atom_tag();
       size_t iat = manager->get_atom_index(atom_i_tag); 
       // c^{i}
@@ -675,66 +670,62 @@ namespace rascal {
       Key_t center_type{center.get_atom_type()};
 
       // loop over k-vectors
-      for (size_t ik{0}; ik < n_k; ++ik) {
-        
+      for (size_t ik{0}; ik < n_k; ++ik) { 
         // Start the accumulation with the central atom contribution
         size_t nl_idx{0};
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
           size_t l_block_idx{0};
-          for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
+          for (size_t ang_l{0}; ang_l < this->max_angular+1; ++ang_l) {
             // l odd contributions vanish by k-symmetry for central atom
-	        size_t size_m = 2*angular_l+1;
-            if (angular_l%2==0) {
-	      for (size_t mval{0}; mval < size_m; ++mval) {
-	            coefficients_center[center_type](radial_n,l_block_idx+mval) += 
-	            I_nl(ik,nl_idx) * Y_lm(ik,l_block_idx+mval) * G_k(ik) 
-	            * 16.0 * pow(PI,2) / volume; 
-	      }
+            size_t size_m = 2*ang_l+1;
+            if (ang_l%2==0) {
+	          for (size_t mval{0}; mval < size_m; ++mval) {
+                coefficients_center[center_type](radial_n,l_block_idx+mval) += 
+                I_nl(ik,nl_idx) * Y_lm(ik,l_block_idx+mval) * G_k(ik) 
+                * 16.0 * pow(PI,2) / volume; 
+              }
             }
             l_block_idx += size_m;
             nl_idx += 1;
           } // end of loop over l=0,1,...,lmax
-        } // end of loop over n=0,1,...,nmax
-
-      // loop over atoms over the entire system using centers idx once again      
-      for (auto neigh : manager) {
-        auto atom_j_tag = neigh.get_atom_tag();
-        size_t jat = manager->get_atom_index(atom_j_tag);
-	    // accumulate for atoms different from the central
-	    if (jat != iat) {
-      	  Key_t neigh_type{neigh.get_atom_type()};
-  
+        } // end of loop over n=0,1,...,nmax-1
+      
+        // loop over atoms over the entire system using centers idx once again      
+        for (auto neigh : manager) {
+          auto atom_j_tag = neigh.get_atom_tag();
+          size_t jat = manager->get_atom_index(atom_j_tag);
+	      // accumulate for atoms different from the central
+          if (jat != iat) {
+            Key_t neigh_type{neigh.get_atom_type()};
+          
           // compute the coefficients
-          size_t nl_idx = 0; // index running over quantum numbers (n,l)
-
+          size_t nl_idx = 0; // index running over all pairs (n,l)
           for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
             size_t l_block_idx = 0;
 
-            for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
-	          double phase_factor;
-              if (angular_l%2==0) {
-	            // real phase factor for l even
-	             phase_factor = pow(-1.0,angular_l/2) 
-	               * (cos_ki(ik,jat)*cos_ki(ik,iat) + sin_ki(ik,jat)*sin_ki(ik,iat));
+            for (size_t ang_l{0}; ang_l < this->max_angular+1; ++ang_l) {
+              double phase_factor;
+              if (ang_l%2==0) {
+                // real phase factor for l even
+                phase_factor = pow(-1.0,ang_l/2) 
+                  * (cos_ki(ik,jat)*cos_ki(ik,iat) + sin_ki(ik,jat)*sin_ki(ik,iat));
               } else {
-	            // real phase factor for l odd 
-	            phase_factor = -pow(-1.0,(angular_l+1)/2) 
-	               * (sin_ki(ik,jat)*cos_ki(ik,iat) - cos_ki(ik,jat)*sin_ki(ik,iat));
-	          } 
-	          size_t size_m = 2*angular_l+1;
+                // real phase factor for l odd 
+                phase_factor = -pow(-1.0,(ang_l+1)/2) 
+                   * (sin_ki(ik,jat)*cos_ki(ik,iat) - cos_ki(ik,jat)*sin_ki(ik,iat));
+              } 
+              size_t size_m = 2*ang_l+1;
 	          for (size_t mval{0}; mval < size_m; ++mval) {
-	            coefficients_center[neigh_type](radial_n,l_block_idx+mval) += 
+                coefficients_center[neigh_type](radial_n,l_block_idx+mval) += 
                       I_nl(ik,nl_idx) * Y_lm(ik,l_block_idx+mval) * G_k(ik)
                       * phase_factor * 16.0 * pow(PI,2) / volume;	
               }
               l_block_idx += size_m;
               nl_idx += 1;
 
-          } // loop over l=0,1,2,...,lmax
-
-	    } // loop over n=0,1,2,...,nmax
-
-	  } // loop over neighbors 
+            } // loop over l=0,1,2,...,lmax
+          } // loop over n=0,1,2,...,nmax
+        } // loop over neighbors 
 
 	  // Note that we still need to terminate the loop over center atoms and k-vectors
 	  // This is done further down, below the part that will implement the gradients
