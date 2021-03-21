@@ -444,22 +444,19 @@ namespace rascal {
     }
 
 
-
-
-	/*
-		|--------------------------------------------------------------------------------|
-		|--------------------------------------------------------------------------------|
-		|          START THE CELL DEPENDENT STEPS OF THE WHOLE COMPUTATION               |
-		|--------------------------------------------------------------------------------|
-		|--------------------------------------------------------------------------------|
-	*/
+    /*
+      -------------------------------------------------------------------
+      -------------------------------------------------------------------
+      ----------START STEPS DEPENDENT ON CELL BUT NOT ON POSITIONS ------
+      -------------------------------------------------------------------
+      -------------------------------------------------------------------
+    */
 
 	// Define cell and some of the cell dependent parameters
     auto manager_root = extract_underlying_manager<0>(manager);
     auto cell_length = manager_root->get_cell_length();
     auto cell = manager_root->get_cell();
-    const double volume = cell.determinant();
-	
+    const double volume = cell.determinant();	
 
 	/*
 		----------------------------------------------------------------------------------
@@ -634,9 +631,7 @@ namespace rascal {
     auto sin_ki = math::Matrix_t(n_k,natoms); 
     for (size_t ik{0}; ik < n_k; ++ik) {
       for (size_t iat{0}; iat < natoms; ++iat) {
-        double arg = coords(iat,0) * k_vec(ik,0) 
-		   + coords(iat,1) * k_vec(ik,1) 
-		   + coords(iat,2) * k_vec(ik,2);
+        double arg = coords.row(iat).dot(k_vec.row(ik));
         cos_ki(ik,iat) = std::cos(arg); 
         sin_ki(ik,iat) = std::sin(arg); 
       } 
@@ -690,7 +685,10 @@ namespace rascal {
           } // end of loop over l=0,1,...,lmax
         } // end of loop over n=0,1,...,nmax-1
       
-        // loop over atoms over the entire system using centers idx once again      
+        // loop over atoms over the entire system using centers idx once again
+        // @vmax This is the loop over neighbor atoms:
+        //       Since we sum over all atoms for LODE, we replaced
+        //       for (auto neigh : center.pairs()) with this loop: 
         for (auto neigh : manager) {
           auto atom_j_tag = neigh.get_atom_tag();
           size_t jat = manager->get_atom_index(atom_j_tag);
@@ -698,34 +696,34 @@ namespace rascal {
           if (jat != iat) {
             Key_t neigh_type{neigh.get_atom_type()};
           
-          // compute the coefficients
-          size_t nl_idx = 0; // index running over all pairs (n,l)
-          for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
-            size_t l_block_idx = 0;
+            // compute the coefficients
+            size_t nl_idx = 0; // index running over all pairs (n,l)
+            for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
+              size_t l_block_idx = 0;
 
-            for (size_t ang_l{0}; ang_l < this->max_angular+1; ++ang_l) {
-              double phase_factor;
-              if (ang_l%2==0) {
-                // real phase factor for l even
-                phase_factor = pow(-1.0,ang_l/2) 
-                  * (cos_ki(ik,jat)*cos_ki(ik,iat) + sin_ki(ik,jat)*sin_ki(ik,iat));
-              } else {
-                // real phase factor for l odd 
-                phase_factor = -pow(-1.0,(ang_l+1)/2) 
-                   * (sin_ki(ik,jat)*cos_ki(ik,iat) - cos_ki(ik,jat)*sin_ki(ik,iat));
-              } 
-              size_t size_m = 2*ang_l+1;
-	          for (size_t mval{0}; mval < size_m; ++mval) {
-                coefficients_center[neigh_type](radial_n,l_block_idx+mval) += 
-                      I_nl(ik,nl_idx) * Y_lm(ik,l_block_idx+mval) * G_k(ik)
-                      * phase_factor * 16.0 * pow(PI,2) / volume;	
-              }
-              l_block_idx += size_m;
-              nl_idx += 1;
+              for (size_t ang_l{0}; ang_l < this->max_angular+1; ++ang_l) {
+                double phase_factor;
+                if (ang_l%2==0) {
+                  // real phase factor for l even
+                  phase_factor = pow(-1.0,ang_l/2) 
+                    * (cos_ki(ik,jat)*cos_ki(ik,iat) + sin_ki(ik,jat)*sin_ki(ik,iat));
+                } else {
+                  // real phase factor for l odd 
+                  phase_factor = -pow(-1.0,(ang_l+1)/2) 
+                     * (sin_ki(ik,jat)*cos_ki(ik,iat) - cos_ki(ik,jat)*sin_ki(ik,iat));
+                } 
+                size_t size_m = 2*ang_l+1;
+	            for (size_t mval{0}; mval < size_m; ++mval) {
+                  coefficients_center[neigh_type](radial_n,l_block_idx+mval) += 
+                        I_nl(ik,nl_idx) * Y_lm(ik,l_block_idx+mval) * G_k(ik)
+                        * phase_factor * 16.0 * pow(PI,2) / volume;	
+                }
+                l_block_idx += size_m;
+                nl_idx += 1;
 
-            } // loop over l=0,1,2,...,lmax
-          } // loop over n=0,1,2,...,nmax
-        } // loop over neighbors 
+              } // loop over l=0,1,2,...,lmax
+            } // loop over n=0,1,2,...,nmax
+          } // endif iat != jat 
 
 	  // Note that we still need to terminate the loop over center atoms and k-vectors
 	  // This is done further down, below the part that will implement the gradients
@@ -828,9 +826,9 @@ namespace rascal {
 //              }      // if (is_center_atom)
 //            }        // if (IsHalfNL)
 //          }          // if (compute_gradients)
-        }            // for (neigh : center)
-      
-      }            // for (k-vectors)
+
+        } // end loop over neighbors
+      } // end loop over k-vectors
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
@@ -838,8 +836,8 @@ namespace rascal {
       //  radial_integral->template finalize_coefficients_der<ThreeD>(
       //      expansions_coefficients_gradient, center);
       // }
-    }  // for (center : manager)
-  }    // compute()
+    } // end loop over center atoms
+  } // compute()
 
 
   // STRUCTURE MANAGER STUFF BELOW
