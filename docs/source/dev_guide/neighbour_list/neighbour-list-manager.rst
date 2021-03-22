@@ -1,7 +1,7 @@
 .. _neighbour-list-manager:
 
 Neighbour List Manager
-=====================
+======================
 
 Librascal provides a user friendly, flexible and efficient infrastructure to build neighbour list meeting the specific needs of many represenations of atomic neighbourhood.
 A neighbour list in librascal manages and/or builds all the data relevant to the atomic structure it refers to, e.g. the atomic structure (positions, atomic types, cell, periodic boundary conditions), the distances between a central atom and its neighbours, the representations associated to the atomic structure...
