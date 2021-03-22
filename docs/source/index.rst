@@ -58,7 +58,6 @@ Contents
    :maxdepth: 2
 
    installation
-   tutorials/tutorials
    user_guide/user_guide
    whitepaper
    SOAP
