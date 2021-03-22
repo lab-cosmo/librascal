@@ -59,12 +59,9 @@ Contents
 
    installation
    tutorials/tutorials
+   user_guide/user_guide
    whitepaper
    SOAP
-   representation/representations
-   models/models
-   io/io
-   neighbour_list/neighbour-list-manager
    dev_guide/developer
    reference/index
    bibliography
