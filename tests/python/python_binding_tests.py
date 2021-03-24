@@ -14,12 +14,10 @@ from python_representation_calculator_test import (
     TestSphericalExpansionRepresentation,
     TestSphericalInvariantsRepresentation,
 )
-
 from python_models_test import TestNumericalKernelGradient, TestCosineKernel
-
 from python_math_test import TestMath
-
 from python_test_sparsify_fps import TestFPS
+from md_calculator_test import TestGenericMD
 
 
 class SimpleCheck(unittest.TestCase):
