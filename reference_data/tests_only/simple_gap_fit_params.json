@@ -1,0 +1,35 @@
+{
+    "description": "Simple fit of methane dimer energies, just for testing",
+    "structure_filename": "../inputs/methane_dimer_sample.xyz",
+    "units": {"energy": "eV",
+              "length": "AA"},
+    "structure_subset": ":100",
+    "soap_hypers": {
+        "soap_type": "PowerSpectrum",
+        "interaction_cutoff": 7.5,
+        "cutoff_smooth_width": 0.5,
+        "cutoff_function_type": "RadialScaling",
+        "cutoff_function_parameters": {
+            "rate": 1,
+            "scale": 4.5,
+            "exponent": 4
+        },
+        "max_radial": 4,
+        "max_angular": 2,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.5,
+        "radial_basis": "GTO",
+        "normalize": true,
+        "compute_gradients": true
+    },
+    "n_sparse": {"1": 20, "6": 10},
+    "soap_power": 2,
+    "atom_energy_baseline": 0,
+    "energy_delta": 1.0,
+    "energy_regularizer": 0.01,
+    "force_regularizer": 0.1,
+    "energy_parameter_name": "energy",
+    "force_parameter_name": "force",
+    "working_directory": "simple_gap_model",
+    "output_filename": "simple_gap_model.json"
+}
