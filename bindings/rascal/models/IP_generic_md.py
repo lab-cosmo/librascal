@@ -16,7 +16,7 @@ class GenericMDCalculator(BaseIO):
     """
 
     def __init__(self, model_json, structure_template, assume_pbc=True):
-        """Initialize a model and structure tempalte
+        """Initialize a model and structure template
 
         Parameters
         ----------
@@ -32,7 +32,7 @@ class GenericMDCalculator(BaseIO):
         self.model = load_obj(model_json)
         self.representation = self.model.get_representation_calculator()
         self.template_filename = structure_template
-        self.atoms = ase.io.read(structure_template)
+        self.atoms = ase.io.read(structure_template, 0)
         if assume_pbc:
             self.atoms.pbc = True
         self.manager = None
