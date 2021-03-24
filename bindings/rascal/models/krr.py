@@ -232,7 +232,17 @@ class KRR(BaseIO):
         return self.kernel._rep
 
 
-def get_strides(frames):
+# TODO(max, felix) I think this belongs in utils; it's not KRR-specific
+def get_grad_strides(frames):
+    """Get strides for total-energy/gradient kernels of the given structures
+
+    Parameters:
+        frames  List of structures each indicating the number of atoms
+
+    Returns: (1) the number of structures, (2) the number of gradient entries
+    (== 3 * the total number of atoms), and (3) strides for assigning the
+    gradient entries for each structure
+    """
     Nstructures = len(frames)
     Ngrad_stride = [0]
     Ngrads = 0
@@ -244,7 +254,19 @@ def get_strides(frames):
     return Nstructures, Ngrads, Ngrad_stride
 
 
-def compute(i_frame, frame, representation, X_sparse, kernel):
+def compute_kernel_single(i_frame, frame, representation, X_sparse, kernel):
+    """Compute kernel of the (new) structure against the sparse points
+
+    Parameters:
+        i_frame     frame index (ignored???)
+        frame       New structure to compute kernel for
+        representation
+                    RepresentationCalculator to use for the structures
+        X_sparse    Sparse points to compute kernels against
+        kernel      Kernel object to use
+
+    Return both the kernel and the gradient of the kernel
+    """
     feat = representation.transform([frame])
     en_row = kernel(feat, X_sparse)
     grad_rows = kernel(feat, X_sparse, grad=(True, False))
@@ -252,11 +274,24 @@ def compute(i_frame, frame, representation, X_sparse, kernel):
 
 
 def compute_KNM(frames, X_sparse, kernel, soap):
-    Nstructures, Ngrads, Ngrad_stride = get_strides(frames)
+    """Compute kernel of the (new) structure against the sparse points
+
+    Parameters:
+        frame       New structure to compute kernel for
+        representation
+                    RepresentationCalculator to use for the structures
+        X_sparse    Sparse points to compute kernels against
+        kernel      Kernel object to use
+
+    Return the kernel stacked with the gradient of the kernel
+    """
+    Nstructures, Ngrads, Ngrad_stride = get_grad_strides(frames)
     KNM = np.zeros((Nstructures + Ngrads, X_sparse.size()))
     pbar = tqdm(frames, desc="compute KNM", leave=False)
     for i_frame, frame in enumerate(frames):
-        en_row, grad_rows = compute(i_frame, frame, soap, X_sparse, kernel)
+        en_row, grad_rows = compute_kernel_single(
+            i_frame, frame, soap, X_sparse, kernel
+        )
         KNM[Ngrad_stride[i_frame] : Ngrad_stride[i_frame + 1]] = grad_rows
         KNM[i_frame] = en_row
         pbar.update()

@@ -34,3 +34,6 @@ class tqdm_nop:
 
     def update(self):
         pass
+
+    def close(self):
+        pass
