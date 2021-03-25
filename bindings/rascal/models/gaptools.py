@@ -6,9 +6,7 @@ import os
 import ase.io
 import numpy as np
 
-from rascal import utils
-from rascal import representations
-from rascal import models  # Must happen after 'import rascal.utils'; see #294
+from rascal import models, representations, utils
 
 WORKDIR = os.getcwd()
 

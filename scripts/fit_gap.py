@@ -25,7 +25,10 @@ WORKDIR = "potential_default"
 def fit_save_model(parameters):
 
     # Source data and kernels
-    WORKDIR = parameters["working_directory"]
+    global WORKDIR
+    WORKDIR = parameters.get("working_directory", WORKDIR)
+    gaptools.WORKDIR = WORKDIR
+    os.makedirs(WORKDIR, exist_ok=True) # Works from Python 3.2 onward
     geom_subset = parameters.get("structure_subset", ":")
     source_geoms = ase.io.read(parameters["structure_filename"], geom_subset)
     eparam_name = parameters.get("energy_parameter_name", "energy")
@@ -80,8 +83,7 @@ def fit_save_model(parameters):
         kernel_forces,
         force_regularizer,
     )
-    # No longer needed, I think, because it's included in the KRR model
-    # np.save(os.path.join(WORKDIR, 'weights'), weights)
+    np.save(os.path.join(WORKDIR, 'weights'), weights)
     model_description = parameters.get("description", "")
     if model_description:
         if model_description.endswith("."):
@@ -101,7 +103,7 @@ def fit_save_model(parameters):
         description=model_description,
         units=units,
     )
-    rascal.utils.dump_obj(os.path.join(WORKDIR, output_filename), model)
+    rascal.utils.dump_obj(output_filename, model)
 
 
 if __name__ == "__main__":
