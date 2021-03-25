@@ -556,7 +556,7 @@ namespace rascal {
     Matrix_t k_vec = k_vectors.get_kvectors();
     // standard norms of the vectors
     Vector_t k_val = k_vectors.get_norms();
-    k_vectors.print_analysis();
+    // k_vectors.print_analysis();
 
     /*
       -------------------------------------------------------------------
@@ -614,6 +614,22 @@ namespace rascal {
         I_nl(ik,nl) = radint(nl);
       }
     } // end of loop over k vectors
+
+    // Test radial scattering function
+    size_t ntest{501};
+    double kstep{kcut/(ntest-1)};
+    for (size_t ik{0}; ik<ntest; ik++) {
+      double kval{kstep * ik};
+      std::cout << "k="<<kval<<"\n";
+      auto && radint = radial_integral->compute_radial_integral(kval);
+      for (size_t nl{0}; nl < nl_size; ++nl){  
+        double Inl_test{radint(nl)};
+        size_t nrad{nl / (this->max_angular+1)};
+        size_t lang{nl % (this->max_angular+1)};
+        std::cout << "I_{"<<nrad<<lang<<"} = " << Inl_test << "\n";
+      }
+      std::cout << "\n";
+    } 
 
     /*
       -------------------------------------------------------------------
