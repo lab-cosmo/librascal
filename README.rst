@@ -92,11 +92,11 @@ The following packages are required for building some optional features:
 +==================+=============+====================+
 | Documentation    | pandoc      | (latest)           |
 +------------------+-------------+--------------------+
-|                  | sphinx      | 2.1.2              |
+|                  | sphinx      | 2.1.2 or later     |
 +------------------+-------------+--------------------+
-|                  | breathe     | 4.13.1             |
+|                  | breathe     | 4.14.1 or later    |
 +------------------+-------------+--------------------+
-|                  | nbsphinx    | (latest)           |
+|                  | nbsphinx    | 0.8.1 or later     |
 +------------------+-------------+--------------------+
 
 Compiling
