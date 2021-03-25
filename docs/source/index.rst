@@ -59,6 +59,7 @@ Contents
 
    installation
    user_guide/user_guide
+   examples/examples
    whitepaper
    SOAP
    dev_guide/developer
