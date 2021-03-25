@@ -3,14 +3,17 @@ from rascal.representations import (
     SphericalExpansion,
     SphericalInvariants,
 )
-from rascal.utils import from_dict, to_dict
+from rascal.utils import from_dict, to_dict, FPSFilter
+from rascal.models import Kernel
+from rascal.models.sparse_points import SparsePoints
 from test_utils import load_json_frame, BoxList, Box, dot
 import unittest
 import numpy as np
 import sys
 import os
 import json
-from copy import copy
+from copy import copy, deepcopy
+import pickle
 
 rascal_reference_path = "reference_data"
 inputs_path = os.path.join(rascal_reference_path, "inputs")
@@ -55,6 +58,12 @@ class TestSortedCoulombRepresentation(unittest.TestCase):
 
         self.assertTrue(rep_dict == rep_copy_dict)
 
+    def test_pickle(self):
+        rep = SortedCoulombMatrix(**self.hypers)
+        serialized = pickle.dumps(rep)
+        rep_ = pickle.loads(serialized)
+        self.assertTrue(to_dict(rep) == to_dict(rep_))
+
 
 class TestSphericalExpansionRepresentation(unittest.TestCase):
     def setUp(self):
@@ -98,6 +107,12 @@ class TestSphericalExpansionRepresentation(unittest.TestCase):
 
         self.assertTrue(rep_dict == rep_copy_dict)
 
+    def test_pickle(self):
+        rep = SphericalExpansion(**self.hypers)
+        serialized = pickle.dumps(rep)
+        rep_ = pickle.loads(serialized)
+        self.assertTrue(to_dict(rep) == to_dict(rep_))
+
 
 class TestSphericalInvariantsRepresentation(unittest.TestCase):
     def setUp(self):
@@ -121,8 +136,8 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         self.hypers = dict(
             soap_type="PowerSpectrum",
             interaction_cutoff=3.5,
-            max_radial=6,
-            max_angular=6,
+            max_radial=2,
+            max_angular=1,
             gaussian_sigma_constant=0.4,
             gaussian_sigma_type="Constant",
             cutoff_smooth_width=0.5,
@@ -157,6 +172,66 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         kk = dot(X_t, X_t)
         self.assertTrue(np.allclose(kk, kk_ref))
 
+    def test_representation_gradient(self):
+        """
+        Test the get_features and get_features_gradient functions by computing
+        the linear sparse kernel matrix and check that the exported features
+        lead to the same kernel matrix as the reference method.
+        """
+        hypers = deepcopy(self.hypers)
+        hypers["compute_gradients"] = True
+        rep = SphericalInvariants(**hypers)
+
+        features = rep.transform(self.frames)
+
+        n_sparses = {1: 1, 6: 1, 8: 1, 14: 1, 15: 1, 20: 1, 24: 1}
+
+        compressor = FPSFilter(rep, n_sparses, act_on="sample per species")
+        X_pseudo = compressor.select_and_filter(features)
+
+        xs = X_pseudo.get_features()
+        n_sparse, n_feat = xs.shape
+        masks = {sp: np.zeros(n_sparse, dtype=bool) for sp in n_sparses}
+        ii = 0
+        for sp, mask in masks.items():
+            mask[ii : ii + n_sparses[sp]] = 1
+            ii = ii + n_sparses[sp]
+
+        zeta = 1
+        kernel = Kernel(
+            rep, name="GAP", zeta=zeta, target_type="Structure", kernel_type="Sparse"
+        )
+
+        ij = features.get_gradients_info()
+        n_atoms = len(np.unique(ij[:, 1]))
+        n_neigh = ij.shape[0]
+
+        KNM_ref = kernel(features, X_pseudo, (False, False))
+        X = features.get_features(rep).reshape((n_atoms, n_feat))
+        KNM = np.zeros((len(self.frames), n_sparse))
+        ii = 0
+        for iff, frame in enumerate(features):
+            for at in frame:
+                sp = at.atom_type
+                KNM[iff, masks[sp]] += np.dot(X[ii], xs[masks[sp]].T)
+                ii += 1
+        self.assertTrue(np.allclose(KNM_ref, KNM))
+
+        KNM_ref = kernel(features, X_pseudo, (True, False))
+
+        X_der = features.get_features_gradient(rep).reshape((n_neigh, 3, n_feat))
+
+        KNM = np.zeros((n_atoms, 3, n_sparse))
+        for ii, (i_frame, i, j, i_sp, j_sp) in enumerate(ij):
+            sp = i_sp
+            KNM[j, 0, masks[sp]] += np.dot(X_der[ii, 0], xs[masks[sp]].T)
+            KNM[j, 1, masks[sp]] += np.dot(X_der[ii, 1], xs[masks[sp]].T)
+            KNM[j, 2, masks[sp]] += np.dot(X_der[ii, 2], xs[masks[sp]].T)
+
+        KNM = KNM.reshape((-1, n_sparse))
+
+        self.assertTrue(np.allclose(KNM_ref, KNM))
+
     def test_serialization(self):
         rep = SphericalInvariants(**self.hypers)
 
@@ -167,3 +242,9 @@ class TestSphericalInvariantsRepresentation(unittest.TestCase):
         rep_copy_dict = to_dict(rep_copy)
 
         self.assertTrue(rep_dict == rep_copy_dict)
+
+    def test_pickle(self):
+        rep = SphericalInvariants(**self.hypers)
+        serialized = pickle.dumps(rep)
+        rep_ = pickle.loads(serialized)
+        self.assertTrue(to_dict(rep) == to_dict(rep_))

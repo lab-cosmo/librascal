@@ -1,5 +1,6 @@
 from rascal.representations import SphericalInvariants
-from rascal.models import Kernel, SparsePoints
+from rascal.models import Kernel
+from rascal.models.sparse_points import SparsePoints
 from rascal.models.kernels import compute_numerical_kernel_gradients
 from rascal.utils import from_dict, to_dict
 from test_utils import load_json_frame, BoxList, Box, compute_relative_error
@@ -10,6 +11,7 @@ import numpy as np
 import sys
 import copy
 import json
+import pickle
 
 
 def displace_strain_tensor(frame, alpha_index, beta_index, h_disp):
@@ -260,6 +262,13 @@ class TestCosineKernel(unittest.TestCase):
             Kernel(rep, name="Cosine", target_type="Structure", zeta=2.5)
         with self.assertRaises(ValueError):
             Kernel(rep, name="Cosine", target_type="Structure", zeta=-2)
+
+    def test_pickle(self):
+        rep = SphericalInvariants(**self.hypers)
+        cosine_kernel = Kernel(rep, name="Cosine", target_type="Structure", zeta=2)
+        serialized = pickle.dumps(cosine_kernel)
+        cosine_kernel_ = pickle.loads(serialized)
+        self.assertTrue(to_dict(cosine_kernel) == to_dict(cosine_kernel_))
 
     def test_serialization(self):
         rep = SphericalInvariants(**self.hypers)

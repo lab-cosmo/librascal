@@ -257,6 +257,15 @@ class BaseIO(ABC):
         instead of using pickle."""
         return from_dict(to_dict(self))
 
+    def __setstate__(self, state):
+        """Overrides default pickling behaviour passing through the dict representation."""
+        obj = from_dict(state)
+        self.__dict__.update(obj.__dict__)
+
+    def __getstate__(self):
+        """Overrides default pickling behaviour passing through the dict representation."""
+        return to_dict(self)
+
 
 def _get_state(obj):
     if isinstance(obj, BaseIO):
