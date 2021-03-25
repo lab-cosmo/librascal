@@ -37,7 +37,7 @@ such as `ipyparallel <https://ipyparallel.readthedocs.io/en/latest/>`_.
 LAMMPS (under construction)
 ---------------------------
 
-`LAMMPS <https://lammps.sandia.gov/>` is one of the most widely used MD codes
+`LAMMPS <https://lammps.sandia.gov/>`_ is one of the most widely used MD codes
 and supports a wide array of energy and force models (including several machine
 learning potentials), as well as parallel MD via spatial domain decomposition.
 An interface to LAMMPS is currently in the works; stay tuned for more!
