@@ -94,11 +94,6 @@ class GenericMDCalculator:
         (volume-normalized) and are defined as the gradients of the
         energy with respect to the cell parameters.
         """
-        # Update ASE Atoms object (we only use ASE to handle any
-        # re-wrapping of the atoms that needs to take place)
-        self.atoms.set_cell(cell_matrix)
-        self.atoms.set_positions(positions)
-
         # Quick consistency checks
         if positions.shape != (len(self.atoms), 3):
             raise ValueError(
@@ -106,6 +101,11 @@ class GenericMDCalculator:
             )
         if cell_matrix.shape != (3, 3):
             raise ValueError("Improper shape of cell info (expected 3x3 matrix)")
+
+        # Update ASE Atoms object (we only use ASE to handle any
+        # re-wrapping of the atoms that needs to take place)
+        self.atoms.set_cell(cell_matrix)
+        self.atoms.set_positions(positions)
 
         # Convert from ASE to librascal
         if self.manager is None:
