@@ -5,7 +5,7 @@ from ..utils import BaseIO, load_obj
 from ..neighbourlist.structure_manager import AtomsList, unpack_ase
 
 
-class GenericMDCalculator(BaseIO):
+class GenericMDCalculator:
 
     """Generic MD driver for a librascal model
 
@@ -127,16 +127,3 @@ class GenericMDCalculator(BaseIO):
         # Symmetrize the stress matrix (replicate upper-diagonal entries)
         stress_matrix += np.triu(stress_matrix).T
         return energy, forces, stress_matrix
-
-    def _get_init_params(self):
-        init_params = dict(
-            model_json=self.model_filename, structure_template=self.template_filename
-        )
-        return init_params
-
-    def _set_data(self, data):
-        self.manager = None
-        super()._set_data(data)
-
-    def _get_data(self):
-        return super()._get_data()
