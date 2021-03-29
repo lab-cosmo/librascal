@@ -15,8 +15,8 @@ class TestGenericMD(unittest.TestCase):
     def setUp(self):
         self.calculator = GenericMDCalculator(
             "reference_data/tests_only/simple_gap_model.json",
+            True,
             "reference_data/inputs/methane_dimer_sample.xyz",
-            assume_pbc=False,
         )
         self.test_structure = ase.io.read(
             "reference_data/inputs/methane_dimer_sample.xyz"
@@ -44,6 +44,32 @@ class TestGenericMD(unittest.TestCase):
         self.assertTrue(np.allclose(forces, new_forces))
         self.assertTrue(np.allclose(stress, new_stress))
 
+    def test_atomic_number_init(self):
+        atomic_numbers = ase.io.read(
+            "reference_data/inputs/methane_dimer_sample.xyz", 0
+        ).get_atomic_numbers()
+        newcalc = GenericMDCalculator(
+            "reference_data/tests_only/simple_gap_model.json",
+            True,
+            atomic_numbers=atomic_numbers,
+        )
+        energy, forces, stress = self.calculator.calculate(
+            self.test_positions, self.test_cell
+        )
+        new_energy, new_forces, new_stress = newcalc.calculate(
+            self.test_positions, self.test_cell
+        )
+        self.assertTrue(np.allclose(energy, new_energy))
+        self.assertTrue(np.allclose(forces, new_forces))
+        self.assertTrue(np.allclose(stress, new_stress))
+        self.assertRaisesRegex(
+            ValueError,
+            "Must specify one of 'structure_template' or 'atomic_numbers'",
+            GenericMDCalculator,
+            "reference_data/tests_only/simple_gap_model.json",
+            True,
+        )
+
     def test_positions_update(self):
         energy, forces, stress = self.calculator.calculate(
             self.test_positions, self.test_cell
@@ -69,5 +95,48 @@ class TestGenericMD(unittest.TestCase):
         self.assertFalse(np.allclose(forces, new_forces))
         self.assertFalse(np.allclose(stress, new_stress))
 
-    #TODO test non-periodic
-    #TODO test wrong # atoms, cell shape
+    def test_warn_periodic(self):
+        self.assertRaisesRegex(
+            ValueError,
+            "Structure template PBC flags.*incompatible",
+            GenericMDCalculator,
+            "reference_data/tests_only/simple_gap_model.json",
+            False,
+            "reference_data/inputs/methane_dimer_sample.xyz",
+        )
+        mecalc = GenericMDCalculator(
+            "reference_data/tests_only/simple_gap_model.json",
+            False,
+            "reference_data/inputs/methane.xyz",
+        )
+        self.assertRaisesRegex(
+            ValueError,
+            "Structure template PBC flags.*incompatible",
+            GenericMDCalculator,
+            "reference_data/tests_only/simple_gap_model.json",
+            True,
+            "reference_data/inputs/methane.xyz",
+        )
+
+    def test_warn_natoms(self):
+        self.assertRaisesRegex(
+            ValueError,
+            "Improper shape of positions",
+            self.calculator.calculate,
+            self.test_positions[:5, :],
+            self.test_cell,
+        )
+        self.assertRaisesRegex(
+            ValueError,
+            "Improper shape of positions",
+            self.calculator.calculate,
+            self.test_positions[:, 0],
+            self.test_cell,
+        )
+        self.assertRaisesRegex(
+            ValueError,
+            r"Improper shape of cell info \(expected 3x3 matrix\)",
+            self.calculator.calculate,
+            self.test_positions,
+            self.test_cell.flat[:6],
+        )
