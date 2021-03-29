@@ -1,3 +1,4 @@
+"""Generic calculator-style interface for MD"""
 import ase.io
 import numpy as np
 

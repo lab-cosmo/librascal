@@ -1,3 +1,12 @@
+"""Kernel ridge regression: Model class and utilities
+
+Public classes:
+    Kernel  Kernel Ridge Regression model (sparse GPR only).
+
+Public functions:
+    compute_kernel_single   Compute GAP kernel of a single structure
+    compute_KNM             Compute GAP kernel of a set of structures
+"""
 from ..utils import BaseIO, is_notebook
 from ..lib import compute_sparse_kernel_gradients, compute_sparse_kernel_neg_stress
 
@@ -233,15 +242,26 @@ class KRR(BaseIO):
 
 
 # TODO(max, felix) I think this belongs in utils; it's not KRR-specific
-def get_grad_strides(frames):
+def _get_kernel_strides(frames):
     """Get strides for total-energy/gradient kernels of the given structures
 
-    Parameters:
-        frames  List of structures each indicating the number of atoms
+    Parameters
+    ----------
+    frames
+        List of structures each indicating the number of atoms
 
-    Returns: (1) the number of structures, (2) the number of gradient entries
-    (== 3 * the total number of atoms), and (3) strides for assigning the
-    gradient entries for each structure
+    This assumes the final kernel will be stored in GAP energy-force
+    format, i.e.  Nstructures rows for total-energy (summed) kernels and
+    3*Natoms_total rows for gradients w.r.t. atomic positions.
+
+    Returns
+    -------
+    (1)
+        the number of structures
+    (2)
+        the number of gradient entries (== 3 * the total number of atoms)
+    (3)
+        strides for assigning the gradient entries for each structure
     """
     Nstructures = len(frames)
     Ngrad_stride = [0]
@@ -255,17 +275,27 @@ def get_grad_strides(frames):
 
 
 def compute_kernel_single(i_frame, frame, representation, X_sparse, kernel):
-    """Compute kernel of the (new) structure against the sparse points
+    """Compute GAP kernel of the (new) structure against the sparse points
 
-    Parameters:
-        i_frame     frame index (ignored???)
-        frame       New structure to compute kernel for
-        representation
-                    RepresentationCalculator to use for the structures
-        X_sparse    Sparse points to compute kernels against
-        kernel      Kernel object to use
+    Parameters
+    ----------
+    i_frame
+        frame index (ignored???)
+    frame
+        New structure to compute kernel for
+    representation
+        RepresentationCalculator to use for the structures
+    X_sparse
+        Sparse points to compute kernels against
+    kernel
+        Kernel object to use
 
-    Return both the kernel and the gradient of the kernel
+    Returns
+    -------
+    en_row
+        Energy kernel row
+    grad_rows
+        Gradient of the kernel
     """
     feat = representation.transform([frame])
     en_row = kernel(feat, X_sparse)
@@ -274,18 +304,25 @@ def compute_kernel_single(i_frame, frame, representation, X_sparse, kernel):
 
 
 def compute_KNM(frames, X_sparse, kernel, soap):
-    """Compute kernel of the (new) structure against the sparse points
+    """Compute GAP kernel of the (new) structures against the sparse points
 
-    Parameters:
-        frame       New structure to compute kernel for
-        representation
-                    RepresentationCalculator to use for the structures
-        X_sparse    Sparse points to compute kernels against
-        kernel      Kernel object to use
+    Parameters
+    ----------
+    frames
+        New structures to compute kernel for
+    representation
+        RepresentationCalculator to use for the structures
+    X_sparse
+        Sparse points to compute kernels against
+    kernel
+        Kernel object to use
 
-    Return the kernel stacked with the gradient of the kernel
+    Returns
+    -------
+    K_NM: np.array
+        Summed total-energy kernel stacked with the atom-position gradient of the kernel
     """
-    Nstructures, Ngrads, Ngrad_stride = get_grad_strides(frames)
+    Nstructures, Ngrads, Ngrad_stride = _get_kernel_strides(frames)
     KNM = np.zeros((Nstructures + Ngrads, X_sparse.size()))
     pbar = tqdm(frames, desc="compute KNM", leave=False)
     for i_frame, frame in enumerate(frames):
