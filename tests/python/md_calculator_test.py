@@ -68,3 +68,6 @@ class TestGenericMD(unittest.TestCase):
         self.assertNotEqual(energy, new_energy)
         self.assertFalse(np.allclose(forces, new_forces))
         self.assertFalse(np.allclose(stress, new_stress))
+
+    #TODO test non-periodic
+    #TODO test wrong # atoms, cell shape
