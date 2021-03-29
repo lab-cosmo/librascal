@@ -5,7 +5,7 @@ import unittest
 import ase.io
 import numpy as np
 
-from rascal.models.IP_generic_md import GenericMDCalculator
+from rascal.models.genericmd import GenericMDCalculator
 
 
 class TestGenericMD(unittest.TestCase):
