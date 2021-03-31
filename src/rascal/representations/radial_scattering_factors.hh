@@ -155,7 +155,7 @@ namespace rascal {
         using math::pow;
 
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
-          // sigmas of radial functions 
+          // sigmas of radial functions
           this->radial_sigmas[radial_n] =
               std::max(std::sqrt(static_cast<double>(radial_n)), 1.0) *
               this->interaction_cutoff / static_cast<double>(this->max_radial);
@@ -164,11 +164,11 @@ namespace rascal {
               std::sqrt(2.0 / (std::tgamma(1.5 + radial_n) *
                         pow(this->radial_sigmas[radial_n], 3 + 2 * radial_n)));
           for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
-	     // radial nl-dependent factors  
-             this->radial_nl_factors(radial_n,angular_l) = 
-		 pow(2.0,0.5*(static_cast<int>(radial_n) - static_cast<int>(angular_l) - 1))  
+	     // radial nl-dependent factors
+             this->radial_nl_factors(radial_n,angular_l) =
+		 pow(2.0,0.5*(static_cast<int>(radial_n) - static_cast<int>(angular_l) - 1))
                  * pow(this->radial_sigmas[radial_n], 3 + static_cast<double>(radial_n) + static_cast<double>(angular_l))
-                 * std::tgamma(0.5 * (3.0 + static_cast<double>(radial_n) + static_cast<double>(angular_l))) 
+                 * std::tgamma(0.5 * (3.0 + static_cast<double>(radial_n) + static_cast<double>(angular_l)))
 		 / std::tgamma(1.5+static_cast<double>(angular_l));
           }
         }
@@ -192,7 +192,7 @@ namespace rascal {
                 (pow(this->radial_sigmas[radial_n1], radial_n1) *
                  pow(this->radial_sigmas[radial_n2], radial_n2)) *
                 tgamma(0.5 * (3.0 + radial_n1 + radial_n2)) /
-                (pow(this->radial_sigmas[radial_n1] 
+                (pow(this->radial_sigmas[radial_n1]
 		     * this->radial_sigmas[radial_n2] , 1.5) *
                  sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2)));
           }
@@ -213,10 +213,10 @@ namespace rascal {
 
       // Compute the radial integral I_{nl}(kval)
       Vector_Ref compute_radial_integral(const double kval) {
-       
-	//precompute_radial_prefactors(); 
+
+	//precompute_radial_prefactors();
         using math::pow;
-	
+
 	double fac_a;
         double fac_b;
         double fac_c;
@@ -224,25 +224,25 @@ namespace rascal {
 
         int nl_idx{0};
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
-          
-          fac_c = -0.5 * pow( kval * this->radial_sigmas[radial_n] , 2); 
+
+          fac_c = -0.5 * pow( kval * this->radial_sigmas[radial_n] , 2);
           expfac = std::exp(fac_c);
-          
+
           for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
 
             fac_a = 0.5 * (3.0 + radial_n + angular_l);
             fac_b = 1.5 + angular_l;
-            math::Hyp1f1 hyp1f1_calculator(fac_b-fac_a,fac_b);
-            this->radial_integral(nl_idx) = pow(kval,static_cast<double>(angular_l)) * 
-        	    this->radial_nl_factors(radial_n,angular_l) * this->radial_norm_factors(radial_n) 
-                      * expfac * hyp1f1_calculator.calc(-fac_c);
+            math::Hyp1f1 hyp1f1_calculator(fac_a,fac_b);
+            this->radial_integral(nl_idx) = pow(kval,static_cast<double>(angular_l)) *
+        	    this->radial_nl_factors(radial_n,angular_l) * this->radial_norm_factors(radial_n)
+                      * expfac * hyp1f1_calculator.calc(fac_c);
 	    //std::cout << kval << " " << radial_n << " " << angular_l << " " << radial_integral(nl_idx) << "\n";
             nl_idx += 1;
-        
+
 	  }
         }
 	//std::abort();
-        
+
 	return Vector_Ref(this->radial_integral);
 
       }
