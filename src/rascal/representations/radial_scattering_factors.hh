@@ -62,9 +62,11 @@ namespace rascal {
       //! Destructor
       virtual ~RadialContributionKspaceBase() = default;
       //! Copy constructor
-      RadialContributionKspaceBase(const RadialContributionKspaceBase & other) = delete;
+      RadialContributionKspaceBase(const RadialContributionKspaceBase & other) =
+          delete;
       //! Move constructor
-      RadialContributionKspaceBase(RadialContributionKspaceBase && other) = default;
+      RadialContributionKspaceBase(RadialContributionKspaceBase && other) =
+          default;
       //! Copy assignment operator
       RadialContributionKspaceBase &
       operator=(const RadialContributionKspaceBase & other) = delete;
@@ -93,7 +95,8 @@ namespace rascal {
      * radial basis functions and gaussian smearing of the atom density.
      */
     template <>
-    struct RadialContributionKspace<RadialBasisType::GTO> : RadialContributionKspaceBase {
+    struct RadialContributionKspace<RadialBasisType::GTO>
+        : RadialContributionKspaceBase {
       // Constructor
       explicit RadialContributionKspace(const Hypers_t & hypers) {
         this->set_hyperparameters(hypers);
@@ -106,9 +109,11 @@ namespace rascal {
       // Move constructor
       RadialContributionKspace(RadialContributionKspace && other) = default;
       // Copy assignment operator
-      RadialContributionKspace & operator=(const RadialContributionKspace & other) = delete;
+      RadialContributionKspace &
+      operator=(const RadialContributionKspace & other) = delete;
       // Move assignment operator
-      RadialContributionKspace & operator=(RadialContributionKspace && other) = default;
+      RadialContributionKspace &
+      operator=(RadialContributionKspace && other) = default;
 
       using Parent = RadialContributionKspaceBase;
       using Hypers_t = typename Parent::Hypers_t;
@@ -121,7 +126,7 @@ namespace rascal {
        * Set hyperparameters by overriding them from input ones.
        */
       void set_hyperparameters(const Hypers_t & hypers) override {
-	this->hypers = hypers;
+        this->hypers = hypers;
         this->max_radial = hypers.at("max_radial");
         this->max_angular = hypers.at("max_angular");
 
@@ -131,27 +136,28 @@ namespace rascal {
         this->radial_norm_factors.resize(this->max_radial);
         this->radial_sigmas.resize(this->max_radial, 1);
         this->radial_nl_factors.resize(this->max_radial, this->max_angular + 1);
-        this->radial_integral.resize(this->max_radial*(this->max_angular + 1));
+        this->radial_integral.resize(this->max_radial *
+                                     (this->max_angular + 1));
 
         // find the cutoff radius of the representation
         auto fc_hypers = hypers.at("cutoff_function").get<json>();
-        this->interaction_cutoff = fc_hypers.at("cutoff").at("value").get<double>();
-
+        this->interaction_cutoff =
+            fc_hypers.at("cutoff").at("value").get<double>();
       }
 
       void precompute() override {
-	// compute of radial prefactors
+        // compute of radial prefactors
         this->precompute_radial_prefactors();
-	// compute orthogonalization matrix
+        // compute orthogonalization matrix
         this->precompute_radial_ortho_matrix();
-	// add normalization factors to orthogonalization matrix
-        //this->ortho_norm_matrix = this->radial_norm_factors.asDiagonal() * this->radial_ortho_matrix;
+        // add normalization factors to orthogonalization matrix
+        // this->ortho_norm_matrix = this->radial_norm_factors.asDiagonal() *
+        // this->radial_ortho_matrix;
         this->ortho_norm_matrix = this->radial_ortho_matrix;
       }
 
       /** Function to compute common prefactors for the radial integral */
       void precompute_radial_prefactors() {
-
         using math::pow;
 
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
@@ -159,29 +165,33 @@ namespace rascal {
           this->radial_sigmas[radial_n] =
               std::max(std::sqrt(static_cast<double>(radial_n)), 1.0) *
               this->interaction_cutoff / static_cast<double>(this->max_radial);
-	  // normalization factors
-          this->radial_norm_factors(radial_n) =
-              std::sqrt(2.0 / (std::tgamma(1.5 + radial_n) *
-                        pow(this->radial_sigmas[radial_n], 3 + 2 * radial_n)));
-          for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
-	     // radial nl-dependent factors
-             this->radial_nl_factors(radial_n,angular_l) =
-		 pow(2.0,0.5*(static_cast<int>(radial_n) - static_cast<int>(angular_l) - 1))
-                 * pow(this->radial_sigmas[radial_n], 3 + static_cast<double>(radial_n) + static_cast<double>(angular_l))
-                 * std::tgamma(0.5 * (3.0 + static_cast<double>(radial_n) + static_cast<double>(angular_l)))
-		 / std::tgamma(1.5+static_cast<double>(angular_l));
+          // normalization factors
+          this->radial_norm_factors(radial_n) = std::sqrt(
+              2.0 / (std::tgamma(1.5 + radial_n) *
+                     pow(this->radial_sigmas[radial_n], 3 + 2 * radial_n)));
+          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+               ++angular_l) {
+            // radial nl-dependent factors
+            this->radial_nl_factors(radial_n, angular_l) =
+                pow(2.0, 0.5 * (static_cast<int>(radial_n) -
+                                static_cast<int>(angular_l) - 1)) *
+                pow(this->radial_sigmas[radial_n],
+                    3 + static_cast<double>(radial_n) +
+                        static_cast<double>(angular_l)) *
+                std::tgamma(0.5 * (3.0 + static_cast<double>(radial_n) +
+                                   static_cast<double>(angular_l))) /
+                std::tgamma(1.5 + static_cast<double>(angular_l));
           }
         }
       }
 
       /** Function to compute the normalized orthogonalization matrix */
       void precompute_radial_ortho_matrix() {
-
         using math::pow;
         using std::sqrt;
         using std::tgamma;
 
-	// normalized overlap between primitive radial functions
+        // normalized overlap between primitive radial functions
         Matrix_t overlap(this->max_radial, this->max_radial);
         for (size_t radial_n1{0}; radial_n1 < this->max_radial; radial_n1++) {
           for (size_t radial_n2{0}; radial_n2 < this->max_radial; radial_n2++) {
@@ -192,8 +202,9 @@ namespace rascal {
                 (pow(this->radial_sigmas[radial_n1], radial_n1) *
                  pow(this->radial_sigmas[radial_n2], radial_n2)) *
                 tgamma(0.5 * (3.0 + radial_n1 + radial_n2)) /
-                (pow(this->radial_sigmas[radial_n1]
-		     * this->radial_sigmas[radial_n2] , 1.5) *
+                (pow(this->radial_sigmas[radial_n1] *
+                         this->radial_sigmas[radial_n2],
+                     1.5) *
                  sqrt(tgamma(1.5 + radial_n1) * tgamma(1.5 + radial_n2)));
           }
         }
@@ -206,45 +217,44 @@ namespace rascal {
         Matrix_t eigenvalues = eigensolver.eigenvalues();
         Eigen::ArrayXd eigs_invsqrt = eigenvalues.array().rsqrt();
         Matrix_t unitary = eigensolver.eigenvectors();
-	// orthogonalization matrix
+        // orthogonalization matrix
         this->radial_ortho_matrix =
             unitary * eigs_invsqrt.matrix().asDiagonal() * unitary.adjoint();
       }
 
       // Compute the radial integral I_{nl}(kval)
       Vector_Ref compute_radial_integral(const double kval) {
-
-	//precompute_radial_prefactors();
+        // precompute_radial_prefactors();
         using math::pow;
 
-	double fac_a;
+        double fac_a;
         double fac_b;
         double fac_c;
         double expfac;
 
         int nl_idx{0};
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
-
-          fac_c = -0.5 * pow( kval * this->radial_sigmas[radial_n] , 2);
+          fac_c = -0.5 * pow(kval * this->radial_sigmas[radial_n], 2);
           expfac = std::exp(fac_c);
 
-          for (size_t angular_l{0}; angular_l < this->max_angular+1; ++angular_l) {
-
+          for (size_t angular_l{0}; angular_l < this->max_angular + 1;
+               ++angular_l) {
             fac_a = 0.5 * (3.0 + radial_n + angular_l);
             fac_b = 1.5 + angular_l;
-            math::Hyp1f1 hyp1f1_calculator(fac_a,fac_b);
-            this->radial_integral(nl_idx) = pow(kval,static_cast<double>(angular_l)) *
-        	    this->radial_nl_factors(radial_n,angular_l) * this->radial_norm_factors(radial_n)
-                      * expfac * hyp1f1_calculator.calc(fac_c);
-	    //std::cout << kval << " " << radial_n << " " << angular_l << " " << radial_integral(nl_idx) << "\n";
+            math::Hyp1f1 hyp1f1_calculator(fac_a, fac_b);
+            this->radial_integral(nl_idx) =
+                pow(kval, static_cast<double>(angular_l)) *
+                this->radial_nl_factors(radial_n, angular_l) *
+                this->radial_norm_factors(radial_n) * expfac *
+                hyp1f1_calculator.calc(fac_c);
+            // std::cout << kval << " " << radial_n << " " << angular_l << " "
+            // << radial_integral(nl_idx) << "\n";
             nl_idx += 1;
-
-	  }
+          }
         }
-	//std::abort();
+        // std::abort();
 
-	return Vector_Ref(this->radial_integral);
-
+        return Vector_Ref(this->radial_integral);
       }
 
       // Function to normalize and orthogonalize radial projections
@@ -265,7 +275,6 @@ namespace rascal {
       Matrix_t radial_ortho_matrix{};
       Matrix_t ortho_norm_matrix{};
       Vector_t radial_integral{};
-
     };
 
   }  // namespace internal

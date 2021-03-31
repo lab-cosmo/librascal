@@ -169,7 +169,7 @@ namespace rascal {
       }
       assert(std::isfinite(result));
       if (k * math::DBL_FTOL * abssum <= epsilon * std::abs(result)) {
-          return result;
+        return result;
       } else {
         std::stringstream error{};
         error << "hyp1f1 series expansion: a=" << std::to_string(a)
@@ -204,7 +204,10 @@ namespace rascal {
        * Find the largest z for which the 2 definitions agree within tolerance
        * using bisection.
        */
-      double find_switching_point(double z_init, double tolerance, internal::Hyp1f1Series & hyp1f1_series, internal::Hyp1f1Asymptotic & hyp1f1_asymptotic);
+      double
+      find_switching_point(double z_init, double tolerance,
+                           internal::Hyp1f1Series & hyp1f1_series,
+                           internal::Hyp1f1Asymptotic & hyp1f1_asymptotic);
 
      public:
       Hyp1f1(double a, double b, size_t mmax = 500, double tolerance = 1e-13);
@@ -224,7 +227,7 @@ namespace rascal {
           if (not derivative) {
             res = hyp1f1(this->a, this->b, z);
           } else {
-            res = this->a / this->b * hyp1f1(this->a+1, this->b+1, z);
+            res = this->a / this->b * hyp1f1(this->a + 1, this->b + 1, z);
           }
         }
 
@@ -249,8 +252,6 @@ namespace rascal {
        */
       double calc(double z, double z2, double ez2, bool derivative = false);
     };
-
-
 
     /**
      * Computes 1F1 and its derivative with respect to z for a range of a and b

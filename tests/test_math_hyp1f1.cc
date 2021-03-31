@@ -59,27 +59,28 @@ namespace rascal {
       }
       BOOST_CHECK_LE(rel_error, 15 * math::DBL_FTOL);
 
-     // check if the analytical derivatives are consistent with the
-     // mpmath reference relative_error
-     double rel_der_error{math::relative_error(hyp1f1_der_ref, der, delta)};
-     if (rel_der_error > 15 * math::DBL_FTOL and this->verbose) {
-       std::cout << "Derivative a=" << a << " b=" << b << " z=" << z
-                 << " ref=" << hyp1f1_der_ref << " impl=" << der
-                 << " rel_err=" << rel_der_error << std::endl;
-     }
-     BOOST_CHECK_LE(rel_der_error, 15 * math::DBL_FTOL);
+      // check if the analytical derivatives are consistent with the
+      // mpmath reference relative_error
+      double rel_der_error{math::relative_error(hyp1f1_der_ref, der, delta)};
+      if (rel_der_error > 15 * math::DBL_FTOL and this->verbose) {
+        std::cout << "Derivative a=" << a << " b=" << b << " z=" << z
+                  << " ref=" << hyp1f1_der_ref << " impl=" << der
+                  << " rel_err=" << rel_der_error << std::endl;
+      }
+      BOOST_CHECK_LE(rel_der_error, 15 * math::DBL_FTOL);
 
-     // check if the numerical derivatives are consistent with the
-     // analytical ones
-     double der_consistency_rel_error{math::relative_error(hyp1f1_num_der, der, delta)};
-     if (der_consistency_rel_error > 1e5 * math::DBL_FTOL and this->verbose) {
-       std::cout << "Derivative consistency a=" << a << " b=" << b
-                 << " z=" << z << " num_der=" << hyp1f1_num_der
-                 << " impl=" << der
-                 << " rel_diff=" << der_consistency_rel_error << std::endl;
-     }
+      // check if the numerical derivatives are consistent with the
+      // analytical ones
+      double der_consistency_rel_error{
+          math::relative_error(hyp1f1_num_der, der, delta)};
+      if (der_consistency_rel_error > 1e5 * math::DBL_FTOL and this->verbose) {
+        std::cout << "Derivative consistency a=" << a << " b=" << b
+                  << " z=" << z << " num_der=" << hyp1f1_num_der
+                  << " impl=" << der
+                  << " rel_diff=" << der_consistency_rel_error << std::endl;
+      }
 
-     BOOST_CHECK_LE(der_consistency_rel_error, 2e6 * math::DBL_FTOL);
+      BOOST_CHECK_LE(der_consistency_rel_error, 2e6 * math::DBL_FTOL);
     }
   }
 

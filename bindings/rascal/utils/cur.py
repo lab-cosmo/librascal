@@ -184,7 +184,7 @@ class CURFilter(BaseIO):
             selected_ids_global = np.sort(self.selected_sample_ids[:n_select])
             strides, _, map_by_manager = get_index_mappings_sample(managers)
             self.selected_ids = convert_selected_global_index2perstructure_index(managers,
-                                                                            selected_ids_global, strides, map_by_manager)
+                                                                                 selected_ids_global, strides, map_by_manager)
             return self.selected_ids
             # # build the pseudo points
             # pseudo_points = SparsePoints(self._representation)

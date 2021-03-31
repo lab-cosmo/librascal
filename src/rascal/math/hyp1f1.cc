@@ -153,8 +153,6 @@ double Hyp1f1Series::sum(double z, const Eigen::VectorXd & coefficient,
   return res;
 }
 
-
-
 Hyp1f1Asymptotic::Hyp1f1Asymptotic(double a, double b, size_t mmax,
                                    double tolerance)
     : a{a}, b{b}, prefac{std::tgamma(b) / std::tgamma(a)}, tolerance{tolerance},
@@ -224,8 +222,7 @@ double Hyp1f1Asymptotic::calc(double z, bool derivative, int n_terms) {
 
 double Hyp1f1Asymptotic::calc_neg(double z, bool derivative, int n_terms) {
   auto fac{this->z_power_a_b(z)};
-  double result{this->prefac * fac *
-                this->hyp2f0(z, derivative, n_terms)};
+  double result{this->prefac * fac * this->hyp2f0(z, derivative, n_terms)};
   if (std::isnan(result)) {
     result = DOVERFLOW;
   }
@@ -282,31 +279,29 @@ double Hyp1f1Asymptotic::sum(double z, const Eigen::VectorXd & coefficient,
 }
 
 Hyp1f1::Hyp1f1(double a, double b, size_t mmax, double tolerance)
-    : hyp1f1_series{a, b, mmax, tolerance},
-      hyp1f1_asymptotic{a, b, mmax, tolerance},
-      hyp1f1_series_neg{b-a, b, mmax, tolerance},
-      hyp1f1_asymptotic_neg{b-a, b, mmax, tolerance}, a{a}, b{b}, tolerance{
-                                                                tolerance} {
-  
-
+    : hyp1f1_series{a, b, mmax, tolerance}, hyp1f1_asymptotic{a, b, mmax,
+                                                              tolerance},
+      hyp1f1_series_neg{b - a, b, mmax, tolerance},
+      hyp1f1_asymptotic_neg{b - a, b, mmax, tolerance}, a{a}, b{b},
+      tolerance{tolerance} {
   // now we try to determine what is the switching point between
   // power series and asymptotic expansion. basically we choose
   // the method that requires fewer terms for a chosen target accuracy.
   // the asymptotic expansion tends to blow up at the switching point.
   if (std::abs(1 - b / a) > DBL_FTOL) {
     this->z_asympt = this->find_switching_point(this->z_asympt, tolerance,
-                              this->hyp1f1_series,
-                              this->hyp1f1_asymptotic);
+                                                this->hyp1f1_series,
+                                                this->hyp1f1_asymptotic);
     // fix the number of terms needed for the numerical derivative
     // with nterms_s and nterms_a
     this->hyp1f1_series.calc(this->z_asympt);
     this->hyp1f1_asymptotic.calc(this->z_asympt);
   }
 
-  if (std::abs(1 - b / (b-a)) > DBL_FTOL) {
-    this->z_asympt_neg = this->find_switching_point(this->z_asympt_neg, tolerance,
-                              this->hyp1f1_series_neg,
-                              this->hyp1f1_asymptotic_neg);
+  if (std::abs(1 - b / (b - a)) > DBL_FTOL) {
+    this->z_asympt_neg = this->find_switching_point(
+        this->z_asympt_neg, tolerance, this->hyp1f1_series_neg,
+        this->hyp1f1_asymptotic_neg);
     // fix the number of terms needed for the numerical derivative
     // with nterms_s and nterms_a
     this->hyp1f1_series_neg.calc(this->z_asympt_neg);
@@ -314,7 +309,10 @@ Hyp1f1::Hyp1f1(double a, double b, size_t mmax, double tolerance)
   }
 }
 
-double Hyp1f1::find_switching_point(double z_asympt, double tolerance, internal::Hyp1f1Series & hyp1f1_series, internal::Hyp1f1Asymptotic & hyp1f1_asymptotic) {
+double
+Hyp1f1::find_switching_point(double z_asympt, double tolerance,
+                             internal::Hyp1f1Series & hyp1f1_series,
+                             internal::Hyp1f1Asymptotic & hyp1f1_asymptotic) {
   int max_it{100};
   int i_it{0};
   double z_below{z_asympt}, z_above{z_asympt};
@@ -325,9 +323,7 @@ double Hyp1f1::find_switching_point(double z_asympt, double tolerance, internal:
   // brackets the switching point
   if (std::fabs(1 - h1f1_s / h1f1_a) > tolerance) {
     i_it = 0;
-    while (std::fabs(1 - h1f1_s / h1f1_a) >
-               100 * tolerance and
-           i_it < max_it) {
+    while (std::fabs(1 - h1f1_s / h1f1_a) > 100 * tolerance and i_it < max_it) {
       z_asympt *= 1.5;
       h1f1_s = hyp1f1_series.calc(z_asympt);
       h1f1_a = hyp1f1_asymptotic.calc(z_asympt);
@@ -336,9 +332,7 @@ double Hyp1f1::find_switching_point(double z_asympt, double tolerance, internal:
     z_above = z_asympt;
   } else {
     i_it = 0;
-    while (std::fabs(1 - h1f1_s / h1f1_a) <
-               100 * tolerance and
-           i_it < max_it) {
+    while (std::fabs(1 - h1f1_s / h1f1_a) < 100 * tolerance and i_it < max_it) {
       z_asympt *= 0.5;
       h1f1_s = hyp1f1_series.calc(z_asympt);
       h1f1_a = hyp1f1_asymptotic.calc(z_asympt);
@@ -369,7 +363,7 @@ double Hyp1f1::find_switching_point(double z_asympt, double tolerance, internal:
 double Hyp1f1::calc_numerical_derivative(double z, double h) {
   if (z < 0.) {
     double fzp{hyp1f1(this->a, this->b, z + h)};
-    double fzm{hyp1f1(this->a, this->b,z - h)};
+    double fzm{hyp1f1(this->a, this->b, z - h)};
     return (fzp - fzm) / (2 * h);
   } else if (z > this->z_asympt) {
     double fzp{this->hyp1f1_asymptotic.calc(z + h)};
