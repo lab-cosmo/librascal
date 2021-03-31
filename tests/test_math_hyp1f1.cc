@@ -46,41 +46,40 @@ namespace rascal {
       math::Hyp1f1 func{a, b, 200, 1e-15};
       double val{func.calc(z)};
       double der{func.calc(z, true)};
-
+      double delta{3e-8};
       double h{1e-5};
       double hyp1f1_num_der{func.calc_numerical_derivative(z, h)};
 
       // check if hyp1f1 is consistent with the
       // mpmath reference
-      double rel_error{std::abs((hyp1f1_ref - val) / hyp1f1_ref)};
+      double rel_error{math::relative_error(hyp1f1_ref, val, delta)};
       if (rel_error > 15 * math::DBL_FTOL and this->verbose) {
         std::cout << " a=" << a << " b=" << b << " z=" << z
                   << " ref=" << hyp1f1_ref << " impl=" << val << std::endl;
       }
       BOOST_CHECK_LE(rel_error, 15 * math::DBL_FTOL);
 
-      // check if the analytical derivatives are consistent with the
-      // mpmath reference
-      double rel_der_error{std::abs((hyp1f1_der_ref - der) / hyp1f1_der_ref)};
-      if (rel_der_error > 15 * math::DBL_FTOL and this->verbose) {
-        std::cout << "Derivative a=" << a << " b=" << b << " z=" << z
-                  << " ref=" << hyp1f1_der_ref << " impl=" << der
-                  << " rel_err=" << rel_der_error << std::endl;
-      }
-      BOOST_CHECK_LE(rel_der_error, 15 * math::DBL_FTOL);
+     // check if the analytical derivatives are consistent with the
+     // mpmath reference relative_error
+     double rel_der_error{math::relative_error(hyp1f1_der_ref, der, delta)};
+     if (rel_der_error > 15 * math::DBL_FTOL and this->verbose) {
+       std::cout << "Derivative a=" << a << " b=" << b << " z=" << z
+                 << " ref=" << hyp1f1_der_ref << " impl=" << der
+                 << " rel_err=" << rel_der_error << std::endl;
+     }
+     BOOST_CHECK_LE(rel_der_error, 15 * math::DBL_FTOL);
 
-      // check if the numerical derivatives are consistent with the
-      // analytical ones
-      double der_consistency_rel_error{
-          std::abs((hyp1f1_num_der - der) / hyp1f1_num_der)};
-      if (der_consistency_rel_error > 1e5 * math::DBL_FTOL and this->verbose) {
-        std::cout << "Derivative consistency a=" << a << " b=" << b
-                  << " z=" << z << " num_der=" << hyp1f1_num_der
-                  << " impl=" << der
-                  << " rel_diff=" << der_consistency_rel_error << std::endl;
-      }
+     // check if the numerical derivatives are consistent with the
+     // analytical ones
+     double der_consistency_rel_error{math::relative_error(hyp1f1_num_der, der, delta)};
+     if (der_consistency_rel_error > 1e5 * math::DBL_FTOL and this->verbose) {
+       std::cout << "Derivative consistency a=" << a << " b=" << b
+                 << " z=" << z << " num_der=" << hyp1f1_num_der
+                 << " impl=" << der
+                 << " rel_diff=" << der_consistency_rel_error << std::endl;
+     }
 
-      BOOST_CHECK_LE(der_consistency_rel_error, 2e6 * math::DBL_FTOL);
+     BOOST_CHECK_LE(der_consistency_rel_error, 2e6 * math::DBL_FTOL);
     }
   }
 
