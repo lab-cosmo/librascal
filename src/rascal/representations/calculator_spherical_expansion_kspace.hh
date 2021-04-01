@@ -660,20 +660,22 @@ namespace rascal {
     }
     
     /*
-	----------------------------------------------------------------------------------
-	COMPLETE EVALUATION OF SPHERICAL EXPANSION:
-	
-	All the preparations have been done: this final part combines all of the
-	previous results to compute the quantities <anlm|V_i>, the spherical expansion
-	coefficients. These will then be used in spherical_invariants to produce 
-	quantities invariant under rotations.
+    -----------------------------------------------------------------
+    COMPLETE EVALUATION OF SPHERICAL EXPANSION:
 
-	This is an O(N^2) implementation in which the two (discrete) Fourier transforms
-	are evaluated directly following the definition. 
-	In the future, we plan to implement an O(NlogN) version of the code.
-	----------------------------------------------------------------------------------	
+    All the preparations have been done: this final part combines all
+    of the previous results to compute the quantities <anlm|V_i>, the
+    spherical expansion coefficients. These will then be used in
+    calculate_spherical_invariants to produce quantities invariant
+    under rotations.
+
+    This is an O(N^2) implementation in which the two (discrete)
+    Fourier transforms are evaluated directly following the
+    definition. In the future, we plan to implement an O(NlogN)
+    version of the code.
+    -----------------------------------------------------------------
     */
-    	
+    // Global prefactor in expansion coefficients from Fourier transform
     double global_factor = 16.0 * pow(PI,2) / volume;
     // Start the accumulation: loop over all center atoms
     for (auto center : manager) {
@@ -697,14 +699,20 @@ namespace rascal {
 	          for (size_t mval{0}; mval < size_m; ++mval) {
                 coefficients_center[center_type](radial_n,l_block_idx+mval) += 
                 I_nl(ik,nl_idx) * Y_lm(ik,l_block_idx+mval) * G_k(ik) 
-                * 16.0 * pow(PI,2) / volume; 
+                * global_factor; 
               }
             }
             l_block_idx += size_m;
             nl_idx += 1;
           } // end of loop over l=0,1,...,lmax
         } // end of loop over n=0,1,...,nmax-1
-      
+
+        // Initialize some variables that will be updated in each loop
+        double fourier_real{};
+        double fourier_imag{};
+        double phase_factor{};
+        double nlmk_factor{};
+
         // Start adding up terms for all "neighbor" atoms
         for (auto neigh : manager) {
           // Initialize index and type of new atom and only execute code
@@ -720,12 +728,10 @@ namespace rascal {
           
           // Get real and imaginary parts of the Fourier factor
           // exp(-k*r_ij) that will help us define the phase factor   
-          double fourier_real = cos_ki(ik,jat)*cos_ki(ik,iat)
+          fourier_real = cos_ki(ik,jat)*cos_ki(ik,iat)
             + sin_ki(ik,jat)*sin_ki(ik,iat);
-          double fourier_imag = sin_ki(ik,jat)*cos_ki(ik,iat)
+          fourier_imag = sin_ki(ik,jat)*cos_ki(ik,iat)
             - cos_ki(ik,jat)*sin_ki(ik,iat);
-          double phase_factor{};
-          double nlmk_factor{};
  
           // index running over all pairs (n,l), so (0,0)=0, (0,1)=1, etc.
           size_t nl_idx{0};
