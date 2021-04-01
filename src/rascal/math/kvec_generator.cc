@@ -27,18 +27,16 @@
  */
 
 #include "rascal/math/kvec_generator.hh"
+
 #include <iostream>
 
 using namespace rascal::math;  // NOLINT
-
 
 /*
   -----------------------------------------------------------
   Declare some simple functions that return stored properties
   -----------------------------------------------------------
 */
-
-
 
 /** Class for finding and storing all reciprocal space vectors
  * of a lattice whose length is smaller than a cutoff.
@@ -70,52 +68,54 @@ using namespace rascal::math;  // NOLINT
  *      Use this option during NpT simulations for small
  *      changes in the cell to ensure continuity of the
  *      ML descriptors.
-*/
-
-
+ */
 
 void Kvectors::precompute() {
   // PREPARATION
-  
+
   // SEARCH SPACE BOX
   // Determine the optimal bounds n1max, n2max, n3max that
   // define the search space box. Roughly speaking, our
   // goal will then be to find all vectors
-  // k = n1*b1 + n2*b2 + n3*b3, 
+  // k = n1*b1 + n2*b2 + n3*b3,
   // where |n1|<n1max, |n2|<n2max etc., whose norm is
   // smaller than kcut. In practice, only half of the
   // k-vectors are returned up to the identification
-  //k2 = -k1, since such pairs can be grouped together in
+  // k2 = -k1, since such pairs can be grouped together in
   // the remaining part.
-  
+
   // Define some shortcuts
   const Eigen::Matrix3d bvecs = this->basisvecs;
   const double kcut = this->kcutoff;
-  
+
   // Generate inner product matrix M_ij = b_i * b_j
-  const Matrix_t M = bvecs * bvecs.transpose(); 
-  double detM = M(0,0)*M(1,1)*M(2,2)+2*M(0,1)*M(1,2)*M(2,0);
-  detM -= M(0,0)*M(1,2)*M(1,2);
-  detM -= M(1,1)*M(0,2)*M(0,2);
-  detM -= M(2,2)*M(0,1)*M(0,1);
+  const Matrix_t M = bvecs * bvecs.transpose();
+  double detM = M(0, 0) * M(1, 1) * M(2, 2) + 2 * M(0, 1) * M(1, 2) * M(2, 0);
+  detM -= M(0, 0) * M(1, 2) * M(1, 2);
+  detM -= M(1, 1) * M(0, 2) * M(0, 2);
+  detM -= M(2, 2) * M(0, 1) * M(0, 1);
   this->detM = detM;
 
-  size_t n1max = floor(sqrt( (M(1,1)*M(2,2) - M(1,2)*M(1,2)) / detM) * kcut);
-  size_t n2max = floor(sqrt( (M(0,0)*M(2,2) - M(0,2)*M(0,2)) / detM) * kcut);
-  size_t n3max = floor(sqrt( (M(0,0)*M(1,1) - M(0,1)*M(0,1)) / detM) * kcut);
-  
+  size_t n1max =
+      floor(sqrt((M(1, 1) * M(2, 2) - M(1, 2) * M(1, 2)) / detM) * kcut);
+  size_t n2max =
+      floor(sqrt((M(0, 0) * M(2, 2) - M(0, 2) * M(0, 2)) / detM) * kcut);
+  size_t n3max =
+      floor(sqrt((M(0, 0) * M(1, 1) - M(0, 1) * M(0, 1)) / detM) * kcut);
+
   this->n1max = n1max;
   this->n2max = n2max;
   this->n3max = n3max;
 
   // Total number of points that will be checked (used for initialization)
-  size_t numtot = 1+ n3max + n2max * (2 * n3max + 1) + n1max * (2 * n2max + 1) * (2 * n3max + 1);
-  this-> numtot = numtot;
- 
+  size_t numtot = 1 + n3max + n2max * (2 * n3max + 1) +
+                  n1max * (2 * n2max + 1) * (2 * n3max + 1);
+  this->numtot = numtot;
+
   // Auxiliary variables
-  double kcutsq = kcut*kcut; // use squared norm for tests
-  double normsq; // Store the current squared norm
-  
+  double kcutsq = kcut * kcut;  // use squared norm for tests
+  double normsq;                // Store the current squared norm
+
   // Store basis vectors for increased readability
   // and ease of use
   Eigen::RowVector3d b1 = basisvecs.row(0);
@@ -123,19 +123,19 @@ void Kvectors::precompute() {
   Eigen::RowVector3d b3 = basisvecs.row(2);
 
   // Initialize current grid point
-  Eigen::RowVector3d kvec_new(0,0,0);
-  //Eigen::RowVector3i kvec_ind(0,0,0);
+  Eigen::RowVector3d kvec_new(0, 0, 0);
+  // Eigen::RowVector3i kvec_ind(0,0,0);
 
   // Initialize arrays in which to store results
-  kvecs.resize(numtot,3);
+  kvecs.resize(numtot, 3);
   kvecnorms.resize(numtot);
-  
+
   /* EXECUTION::w
 
     Begin loops to find the points within the search box
-	contained in the sphere. In order to avoid double counting
-	pairs of points related by k2=-k1, the loops are chosen
-	carefully, and separated into parts dealing with the cases
+        contained in the sphere. In order to avoid double counting
+        pairs of points related by k2=-k1, the loops are chosen
+        carefully, and separated into parts dealing with the cases
     - n1>0
     - n1=0, n2>0
     - n1=0, n2=0, n3>0
@@ -144,82 +144,71 @@ void Kvectors::precompute() {
 
   // Step 0: Include the origin for comparison with real space
   // version of SOAP (optional)
-  //kvecindices.row(0) = kvec_ind;
+  // kvecindices.row(0) = kvec_ind;
   kvecs.row(0) = kvec_new;
   kvecnorms(0) = 0.;
   numvectors += 1;
- 
+
   // Step 1: Find all points of the form (0, 0, n3>0)
-  for (size_t n3 = 1; n3 <= n3max; ++n3)
-  {
+  for (size_t n3 = 1; n3 <= n3max; ++n3) {
     // Update the current grid point
     kvec_new += b3;
-	normsq = kvec_new.dot(kvec_new);
-    
-	if (normsq <= kcutsq) // Point inside sphere
+    normsq = kvec_new.dot(kvec_new);
+
+    if (normsq <= kcutsq)  // Point inside sphere
     {
       kvecs.row(numvectors) = kvec_new;
       kvecnorms(numvectors) = sqrt(normsq);
       numvectors += 1;
     }
-  } // end loop over n3
-
+  }  // end loop over n3
 
   // Step 2: Find all points of the form (0, n2>0, n3)
-  for (size_t n2 = 1; n2 <= n2max; ++n2)
-  {
+  for (size_t n2 = 1; n2 <= n2max; ++n2) {
     // Update current vector for new n2 value
     // We subtract (n3max+1)*b3 s.t. we only have to add b3
-	// at each iteration to get the correct vector
-	kvec_new = n2 * b2 - (n3max+1) * b3;
+    // at each iteration to get the correct vector
+    kvec_new = n2 * b2 - (n3max + 1) * b3;
 
-    for (size_t n3 = 0; n3 < 2*n3max+1; ++n3)
-    {
+    for (size_t n3 = 0; n3 < 2 * n3max + 1; ++n3) {
       // Update the current grid point
       kvec_new += b3;
       normsq = kvec_new.dot(kvec_new);
-      
-	  if (normsq <= kcutsq) // Point inside sphere
+
+      if (normsq <= kcutsq)  // Point inside sphere
       {
         kvecs.row(numvectors) = kvec_new;
         kvecnorms(numvectors) = sqrt(normsq);
         numvectors += 1;
       }
 
-    } // end loop over n3
-  } // end loop over n2
-
-
+    }  // end loop over n3
+  }    // end loop over n2
 
   // Step 3: Find all remaining points of the form (n1>0, n2, n3)
-  for (size_t n1 = 1; n1 <= n1max; ++n1)
-  {
-    for (size_t n2 = 0; n2 < 2*n2max+1; ++n2)
-    {
+  for (size_t n1 = 1; n1 <= n1max; ++n1) {
+    for (size_t n2 = 0; n2 < 2 * n2max + 1; ++n2) {
       // Update current vector for new n2 value
       // We subtract (n3max+1)*b3 s.t. we only have to add b3
-	  // at each iteration to get the desired vector
-      kvec_new = n1*b1 + n2*b2 - n2max*b2 - (n3max+1)*b3;
-      for (size_t n3 = 0; n3 < 2*n3max+1; ++n3)
-        {
+      // at each iteration to get the desired vector
+      kvec_new = n1 * b1 + n2 * b2 - n2max * b2 - (n3max + 1) * b3;
+      for (size_t n3 = 0; n3 < 2 * n3max + 1; ++n3) {
         // Update the current grid point
         kvec_new += b3;
         normsq = kvec_new.dot(kvec_new);
 
-        if (normsq <= kcutsq) // Point inside sphere
+        if (normsq <= kcutsq)  // Point inside sphere
         {
           kvecs.row(numvectors) = kvec_new;
           kvecnorms(numvectors) = sqrt(normsq);
           numvectors += 1;
         }
 
-      } // end loop over n3
-    } // end loop over n2
-  } // end loop over n1
-
+      }  // end loop over n3
+    }    // end loop over n2
+  }      // end loop over n1
 
   // Final adjustments: Get rid of the empty components
-  kvecs.conservativeResize(numvectors,3);
+  kvecs.conservativeResize(numvectors, 3);
   kvecnorms.conservativeResize(numvectors);
 }
-

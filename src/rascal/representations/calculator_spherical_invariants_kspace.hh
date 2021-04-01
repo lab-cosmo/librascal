@@ -92,8 +92,8 @@ namespace rascal {
     }
 
     //! Copy constructor
-    CalculatorKspaceSphericalInvariants(const CalculatorKspaceSphericalInvariants & other) =
-        delete;
+    CalculatorKspaceSphericalInvariants(
+        const CalculatorKspaceSphericalInvariants & other) = delete;
 
     //! Move constructor
     CalculatorKspaceSphericalInvariants(
@@ -429,7 +429,8 @@ namespace rascal {
      * Or just call compute_impl
      */
     template <
-        internal::SphericalInvariantsKspaceType BodyOrder, class StructureManager,
+        internal::SphericalInvariantsKspaceType BodyOrder,
+        class StructureManager,
         std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
                          int> = 0>
     void compute_loop(StructureManager & managers) {
@@ -439,38 +440,40 @@ namespace rascal {
     }
 
     //! single manager case
-    template <
-        internal::SphericalInvariantsKspaceType BodyOrder, class StructureManager,
-        std::enable_if_t<
-            not(internal::is_proper_iterator<StructureManager>::value), int> =
-            0>
+    template <internal::SphericalInvariantsKspaceType BodyOrder,
+              class StructureManager,
+              std::enable_if_t<
+                  not(internal::is_proper_iterator<StructureManager>::value),
+                  int> = 0>
     void compute_loop(StructureManager & manager) {
       this->compute_impl<BodyOrder>(manager);
     }
 
     //! compute representation @f$ \nu == 1 @f$
-    template <
-        internal::SphericalInvariantsKspaceType BodyOrder,
-        std::enable_if_t<BodyOrder ==
-                             internal::SphericalInvariantsKspaceType::RadialSpectrum,
-                         int> = 0,
-        class StructureManager>
+    template <internal::SphericalInvariantsKspaceType BodyOrder,
+              std::enable_if_t<
+                  BodyOrder ==
+                      internal::SphericalInvariantsKspaceType::RadialSpectrum,
+                  int> = 0,
+              class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
     //! compute representation @f$ \nu == 2 @f$
-    template <internal::SphericalInvariantsKspaceType BodyOrder,
-              std::enable_if_t<
-                  BodyOrder == internal::SphericalInvariantsKspaceType::PowerSpectrum,
-                  int> = 0,
-              class StructureManager>
+    template <
+        internal::SphericalInvariantsKspaceType BodyOrder,
+        std::enable_if_t<
+            BodyOrder == internal::SphericalInvariantsKspaceType::PowerSpectrum,
+            int> = 0,
+        class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
     //! compute representation @f$ \nu == 3 @f$
-    template <internal::SphericalInvariantsKspaceType BodyOrder,
-              std::enable_if_t<
-                  BodyOrder == internal::SphericalInvariantsKspaceType::BiSpectrum,
-                  int> = 0,
-              class StructureManager>
+    template <
+        internal::SphericalInvariantsKspaceType BodyOrder,
+        std::enable_if_t<
+            BodyOrder == internal::SphericalInvariantsKspaceType::BiSpectrum,
+            int> = 0,
+        class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
     //! initialize the soap vectors with only the keys needed for each center
@@ -599,14 +602,17 @@ namespace rascal {
   };
 
   template <class StructureManager>
-  void CalculatorKspaceSphericalInvariants::compute(StructureManager & managers) {
+  void
+  CalculatorKspaceSphericalInvariants::compute(StructureManager & managers) {
     using internal::SphericalInvariantsKspaceType;
     switch (this->type) {
     case SphericalInvariantsKspaceType::RadialSpectrum:
-      this->compute_loop<SphericalInvariantsKspaceType::RadialSpectrum>(managers);
+      this->compute_loop<SphericalInvariantsKspaceType::RadialSpectrum>(
+          managers);
       break;
     case SphericalInvariantsKspaceType::PowerSpectrum:
-      this->compute_loop<SphericalInvariantsKspaceType::PowerSpectrum>(managers);
+      this->compute_loop<SphericalInvariantsKspaceType::PowerSpectrum>(
+          managers);
       break;
     case SphericalInvariantsKspaceType::BiSpectrum:
       this->compute_loop<SphericalInvariantsKspaceType::BiSpectrum>(managers);
@@ -620,12 +626,13 @@ namespace rascal {
   template <
       internal::SphericalInvariantsKspaceType BodyOrder,
       std::enable_if_t<
-          BodyOrder == internal::SphericalInvariantsKspaceType::PowerSpectrum, int>,
+          BodyOrder == internal::SphericalInvariantsKspaceType::PowerSpectrum,
+          int>,
       class StructureManager>
   void CalculatorKspaceSphericalInvariants::compute_impl(
       std::shared_ptr<StructureManager> manager) {
-    using PropExp_t =
-        typename CalculatorKspaceSphericalExpansion::Property_t<StructureManager>;
+    using PropExp_t = typename CalculatorKspaceSphericalExpansion::Property_t<
+        StructureManager>;
     using PropGradExp_t =
         typename CalculatorKspaceSphericalExpansion::PropertyGradient_t<
             StructureManager>;
@@ -869,12 +876,13 @@ namespace rascal {
   template <
       internal::SphericalInvariantsKspaceType BodyOrder,
       std::enable_if_t<
-          BodyOrder == internal::SphericalInvariantsKspaceType::RadialSpectrum, int>,
+          BodyOrder == internal::SphericalInvariantsKspaceType::RadialSpectrum,
+          int>,
       class StructureManager>
   void CalculatorKspaceSphericalInvariants::compute_impl(
       std::shared_ptr<StructureManager> manager) {
-    using PropExp_t =
-        typename CalculatorKspaceSphericalExpansion::Property_t<StructureManager>;
+    using PropExp_t = typename CalculatorKspaceSphericalExpansion::Property_t<
+        StructureManager>;
     using PropGradExp_t =
         typename CalculatorKspaceSphericalExpansion::PropertyGradient_t<
             StructureManager>;
@@ -948,13 +956,14 @@ namespace rascal {
 
   template <
       internal::SphericalInvariantsKspaceType BodyOrder,
-      std::enable_if_t<
-          BodyOrder == internal::SphericalInvariantsKspaceType::BiSpectrum, int>,
+      std::enable_if_t<BodyOrder ==
+                           internal::SphericalInvariantsKspaceType::BiSpectrum,
+                       int>,
       class StructureManager>
   void CalculatorKspaceSphericalInvariants::compute_impl(
       std::shared_ptr<StructureManager> manager) {
-    using PropExp_t =
-        typename CalculatorKspaceSphericalExpansion::Property_t<StructureManager>;
+    using PropExp_t = typename CalculatorKspaceSphericalExpansion::Property_t<
+        StructureManager>;
     using Prop_t = Property_t<StructureManager>;
     using internal::SphericalInvariantsKspaceType;
     using math::pow;
@@ -1130,10 +1139,10 @@ namespace rascal {
   }    // end function
 
   template <class StructureManager, class Invariants, class ExpansionCoeff>
-  void
-  CalculatorKspaceSphericalInvariants::initialize_per_center_bispectrum_soap_vectors(
-      Invariants & soap_vectors, ExpansionCoeff & expansions_coefficients,
-      std::shared_ptr<StructureManager> manager) {
+  void CalculatorKspaceSphericalInvariants::
+      initialize_per_center_bispectrum_soap_vectors(
+          Invariants & soap_vectors, ExpansionCoeff & expansions_coefficients,
+          std::shared_ptr<StructureManager> manager) {
     size_t n_row{math::pow(this->max_radial, 3_size_t)};
     size_t n_col{0};
     double max_ang{static_cast<double>(this->max_angular)};
@@ -1391,7 +1400,8 @@ namespace nlohmann {
    */
   template <>
   struct adl_serializer<rascal::CalculatorKspaceSphericalInvariants> {
-    static rascal::CalculatorKspaceSphericalInvariants from_json(const json & j) {
+    static rascal::CalculatorKspaceSphericalInvariants
+    from_json(const json & j) {
       return rascal::CalculatorKspaceSphericalInvariants{j};
     }
 

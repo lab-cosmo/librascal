@@ -34,124 +34,103 @@
 namespace rascal {
   namespace math {
     class Kvectors {
-    private:
+     private:
       // Quantities that will be provided by the user upon initialization
-      double kcutoff{}; // cutoff radius
-      Eigen::Matrix3d basisvecs{};// matrix containing the three basis vectors of the cell
+      double kcutoff{};  // cutoff radius
+      Eigen::Matrix3d
+          basisvecs{};  // matrix containing the three basis vectors of the cell
 
-      // Quantities that will be computed and be used in further steps (e.g. for LODE)
-      size_t numvectors=0; //
+      // Quantities that will be computed and be used in further steps (e.g. for
+      // LODE)
+      size_t numvectors = 0;  //
       Matrix_t kvecs{};
-      //Eigen::Matrix_Xi kvecindices{};
+      // Eigen::Matrix_Xi kvecindices{};
       Vector_t kvecnorms{};
 
       // Auxiliary variables for developers/testing:
-	  double detM{};
+      double detM{};
       size_t numtot{};
       size_t n1max{};
       size_t n2max{};
       size_t n3max{};
 
-	  
-
-    public:
-
+     public:
       // Constructors and related functions
-      
+
       /** Constructor taking cutoff and cell as input
        * As default state, the user can provide the real space
        * cell vectors, from which the reciprocal cell is computed.
        * By setting is_reciprocal_cell to be true, the reciprocal
        * cell can alternatively be passed to the class directly.
-      */ 
+       */
       explicit Kvectors(double cutoff, Eigen::Matrix3d basisvectors,
-        bool is_reciprocal_cell = false) 
-      {
+                        bool is_reciprocal_cell = false) {
         this->kcutoff = cutoff;
-        
-        if (not is_reciprocal_cell) { // real space cell is given
+
+        if (not is_reciprocal_cell) {  // real space cell is given
           // Create reciprocal cell from real space cell
           Eigen::Matrix3d tcell = basisvectors.transpose();
           this->basisvecs = 2.0 * M_PI * tcell.inverse();
-        }
-        else { // cell of reciprocal space is already given
+        } else {  // cell of reciprocal space is already given
           this->basisvecs = basisvectors;
         }
 
         this->precompute();
-      } 
-      
+      }
+
       // Generate kvectors from cutoff and cell
       void precompute();
-
-
 
       // FUNCTIONS FOR USER
 
       /** Get number of vectors found within cutoff radius
        * without double counting pair related by inversion
-      */
-      size_t get_numvectors() const {
-        return this->numvectors;
-      };
+       */
+      size_t get_numvectors() const { return this->numvectors; };
 
       /** Get number of vectors found within cutoff radius
        * counting pairs related by inversion separately
-      */
-      size_t get_numvectors_all() const {
-        return 2*this->numvectors-1;
-      };
+       */
+      size_t get_numvectors_all() const { return 2 * this->numvectors - 1; };
 
       /** Get matrix containing all vectors within cutoff radius
-       * without double counting, where row(i)= i-th vector 
-      */
-      Matrix_t get_kvectors() const {
-        return this->kvecs;
-      };
+       * without double counting, where row(i)= i-th vector
+       */
+      Matrix_t get_kvectors() const { return this->kvecs; };
 
       /** Get vector containing the norm of all vectors
-      */
-      Vector_t get_norms() const {
-        return this->kvecnorms;
-      };
-
-
+       */
+      Vector_t get_norms() const { return this->kvecnorms; };
 
       // FUNCTIONS FOR DEVELOPERS / TESTING PHASE
       void print_analysis() const {
-	    // Estimated number of points based on continuous
-        //approximation for reference
+        // Estimated number of points based on continuous
+        // approximation for reference
         double kcut = this->kcutoff;
-        size_t numest = round(2.0*M_PI/3.0 * kcut*kcut*kcut
-          / sqrt(this->detM));    
-        double succratio = ((double)(this->numvectors))
-          / ((double)(this->numtot));
+        size_t numest =
+            round(2.0 * M_PI / 3.0 * kcut * kcut * kcut / sqrt(this->detM));
+        double succratio =
+            ((double)(this->numvectors)) / ((double)(this->numtot));
         std::cout << "Number of found k-vectors inside sphere = "
-          << this->numvectors << "\n";
-        std::cout << "Estimated number from cont. approx.     = "
-          << numest << "\n";
+                  << this->numvectors << "\n";
+        std::cout << "Estimated number from cont. approx.     = " << numest
+                  << "\n";
         std::cout << "Total number of pts in search space box = "
-          << this->numtot << "\n";
-        std::cout << "Ratio of successful points     = " 
-          << succratio << "\n";
-        std::cout << "Ideal ratio for circle (cont.) = "
-          << M_PI / 6. << "\n";
+                  << this->numtot << "\n";
+        std::cout << "Ratio of successful points     = " << succratio << "\n";
+        std::cout << "Ideal ratio for circle (cont.) = " << M_PI / 6. << "\n";
         std::cout << "Dimensions of optimal search space box: \n"
-          << "(n1max,n2max,n3max) = (" << this->n1max << ", "
-          << this->n2max << ", " << this->n3max << ")\n\n"; 
+                  << "(n1max,n2max,n3max) = (" << this->n1max << ", "
+                  << this->n2max << ", " << this->n3max << ")\n\n";
       };
-
-
-
 
       // OUTDATED METHODS
 
-      //explicit Kvectors(size_t n) : nk(0), kval(Vector_t::Zero(n)), kvec(Matrix_t::Zero(n,3)){}
-      //void precompute(size_t n1max, size_t n2max, size_t n3max, Matrix_t basisvectors, double kcut);
-      
+      // explicit Kvectors(size_t n) : nk(0), kval(Vector_t::Zero(n)),
+      // kvec(Matrix_t::Zero(n,3)){} void precompute(size_t n1max, size_t n2max,
+      // size_t n3max, Matrix_t basisvectors, double kcut);
     };
   }  // namespace math
 }  // namespace rascal
 
-#endif  
-
+#endif

@@ -6,7 +6,7 @@ import numpy as np
 import queue
 
 # Register Calculators
-_representations_list = ["sortedcoulomb", "sphericalexpansion", 
+_representations_list = ["sortedcoulomb", "sphericalexpansion",
                          "sphericalinvariants", "sphericalcovariants",
                          "kspacesphericalexpansion", "kspacesphericalinvariants"]
 _representations = {}

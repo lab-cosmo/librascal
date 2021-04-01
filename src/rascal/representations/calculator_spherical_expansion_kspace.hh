@@ -31,8 +31,8 @@
 #ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_KSPACE_HH_
 #define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_KSPACE_HH_
 
-#include "rascal/math/spherical_harmonics.hh"
 #include "rascal/math/kvec_generator.hh"
+#include "rascal/math/spherical_harmonics.hh"
 #include "rascal/math/utils.hh"
 #include "rascal/representations/calculator_base.hh"
 #include "rascal/representations/cutoff_functions.hh"
@@ -59,7 +59,8 @@ namespace rascal {
   template <internal::RadialBasisType Type, class Hypers>
   auto make_radial_integral_kspace(const Hypers & basis_hypers) {
     return std::static_pointer_cast<internal::RadialContributionKspaceBase>(
-        std::make_shared<internal::RadialContributionKspace<Type>>(basis_hypers));
+        std::make_shared<internal::RadialContributionKspace<Type>>(
+            basis_hypers));
   }
 
   template <internal::RadialBasisType Type>
@@ -125,7 +126,8 @@ namespace rascal {
       this->max_angular = hypers.at("max_angular").get<size_t>();
 
       auto smearing_hypers = hypers.at("gaussian_density").get<json>();
-      this->smearing = smearing_hypers.at("gaussian_sigma").at("value").get<double>();
+      this->smearing =
+          smearing_hypers.at("gaussian_sigma").at("value").get<double>();
 
       if (hypers.count("compute_gradients")) {
         this->compute_gradients = hypers.at("compute_gradients").get<bool>();
@@ -192,16 +194,15 @@ namespace rascal {
         this->radial_integral = rc_shared;
         this->radial_integral_type = RadialBasisType::GTO;
       } else {
-        throw std::logic_error("Requested Radial contribution type \'" +
-                               radial_contribution_type +
-                               "\' has not been implemented.  Must be one of" +
-                               ": \'GTO\'. ");
+        throw std::logic_error(
+            "Requested Radial contribution type \'" + radial_contribution_type +
+            "\' has not been implemented.  Must be one of" + ": \'GTO\'. ");
       }
 
       auto fc_hypers = hypers.at("cutoff_function").get<json>();
       // auto fc_type = fc_hypers.at("type").get<std::string>();
       this->interaction_cutoff = fc_hypers.at("cutoff").at("value");
-      //this->cutoff_smooth_width = fc_hypers.at("smooth_width").at("value");
+      // this->cutoff_smooth_width = fc_hypers.at("smooth_width").at("value");
       this->set_name(hypers);
     }
 
@@ -244,11 +245,12 @@ namespace rascal {
     }
 
     //! Copy constructor
-    CalculatorKspaceSphericalExpansion(const CalculatorKspaceSphericalExpansion & other) =
-        delete;
+    CalculatorKspaceSphericalExpansion(
+        const CalculatorKspaceSphericalExpansion & other) = delete;
 
     //! Move constructor
-    CalculatorKspaceSphericalExpansion(CalculatorKspaceSphericalExpansion && other) noexcept
+    CalculatorKspaceSphericalExpansion(
+        CalculatorKspaceSphericalExpansion && other) noexcept
         : CalculatorBase{std::move(other)}, interaction_cutoff{std::move(
                                                 other.interaction_cutoff)},
           smearing{std::move(other.smearing)},
@@ -286,8 +288,7 @@ namespace rascal {
      * Or just call compute_impl() if it's a single manager (see below)
      */
     template <
-        internal::RadialBasisType RadialType,
-        class StructureManager,
+        internal::RadialBasisType RadialType, class StructureManager,
         std::enable_if_t<internal::is_proper_iterator<StructureManager>::value,
                          int> = 0>
     void compute_loop(StructureManager & managers) {
@@ -297,8 +298,7 @@ namespace rascal {
     }
 
     //! single manager case
-    template <internal::RadialBasisType RadialType,
-              class StructureManager,
+    template <internal::RadialBasisType RadialType, class StructureManager,
               std::enable_if_t<
                   not(internal::is_proper_iterator<StructureManager>::value),
                   int> = 0>
@@ -307,12 +307,12 @@ namespace rascal {
     }
 
     //! Compute the spherical exansion given several options
-    template <internal::RadialBasisType RadialType,
-              class StructureManager>
+    template <internal::RadialBasisType RadialType, class StructureManager>
     void compute_impl(std::shared_ptr<StructureManager> manager);
 
    protected:
-    //! cutoff radius r_c defining the radius around the atom for expanding the potential
+    //! cutoff radius r_c defining the radius around the atom for expanding the
+    //! potential
     double interaction_cutoff{};
     //! defines the maximal mean error allowed to the interpolator when fitting
     //! the reference
@@ -396,32 +396,32 @@ namespace rascal {
 
   // compute classes template construction
   template <class StructureManager>
-  void CalculatorKspaceSphericalExpansion::compute(StructureManager & managers) {
+  void
+  CalculatorKspaceSphericalExpansion::compute(StructureManager & managers) {
     // We don't specialize on cutoff function anymore, just radial contribution
     // (and not even that, really, since we only implement GTO)
     using internal::RadialBasisType;
-    switch(this->radial_integral_type) {
-        case RadialBasisType::GTO: {
-            this->compute_loop<RadialBasisType::GTO>(managers);
-            break;
-        }
-        default:
-          // The control flow really should never reach here...
-          std::basic_ostringstream<char> err_message;
-          err_message << "Invalid radial basis type encountered ";
-          err_message << "(This is a bug.  Debug info for developers: "
-                      << "radial_integral_type == ";
-          err_message << static_cast<int>(this->radial_integral_type);
-          err_message << ")" << std::endl;
-          throw std::logic_error(err_message.str());
-        }
+    switch (this->radial_integral_type) {
+    case RadialBasisType::GTO: {
+      this->compute_loop<RadialBasisType::GTO>(managers);
+      break;
+    }
+    default:
+      // The control flow really should never reach here...
+      std::basic_ostringstream<char> err_message;
+      err_message << "Invalid radial basis type encountered ";
+      err_message << "(This is a bug.  Debug info for developers: "
+                  << "radial_integral_type == ";
+      err_message << static_cast<int>(this->radial_integral_type);
+      err_message << ")" << std::endl;
+      throw std::logic_error(err_message.str());
+    }
   }
 
   /**
    * Compute the spherical expansion
    */
-  template <internal::RadialBasisType RadialType,
-            class StructureManager>
+  template <internal::RadialBasisType RadialType, class StructureManager>
   void CalculatorKspaceSphericalExpansion::compute_impl(
       std::shared_ptr<StructureManager> manager) {
     using Prop_t = Property_t<StructureManager>;
@@ -446,7 +446,6 @@ namespace rascal {
       throw std::runtime_error(err_str.str());
     }
 
-
     /*
       -------------------------------------------------------------------
       -------------------------------------------------------------------
@@ -455,12 +454,21 @@ namespace rascal {
       -------------------------------------------------------------------
     */
 
-	// Define cell and some of the cell dependent parameters
+    // Define cell and some of the cell dependent parameters
     auto manager_root = extract_underlying_manager<0>(manager);
     auto cell_length = manager_root->get_cell_length();
     auto cell = manager_root->get_cell();
-    const double volume = cell.determinant();	
+    const double volume = cell.determinant();
 
+    /*
+            ----------------------------------------------------------------------------------
+            DO SOME PREPARATION ???:
+
+            Does a lot of small checks and auxiliary definitions.
+            For some of the steps, not exactly sure what they are doing.
+            ----------------------------------------------------------------------------------
+
+    */
 
     // Initialize some of the required parameters
     // @memo: since we always work with periodic boundary conditions
@@ -504,8 +512,7 @@ namespace rascal {
 
     // downcast cutoff and radial contributions so they are functional
     auto radial_integral{
-        downcast_radial_integral_kspace<RadialType>(
-            this->radial_integral)};
+        downcast_radial_integral_kspace<RadialType>(this->radial_integral)};
 
     auto n_row{this->max_radial};
     // to store linearly all l,m components with
@@ -532,8 +539,7 @@ namespace rascal {
     } else {
       throw std::runtime_error("should not arrive here");
     }
-	
-	
+
     /*
       -------------------------------------------------------------------
       GENERATE K-VECTORS GRID:
@@ -545,7 +551,7 @@ namespace rascal {
       - the basis vectors of the real space lattice in row
         major format, i.e. a1=cell.row(0), a2=, a3= ...
       -------------------------------------------------------------------
-	*/
+        */
 
     // Radius of the sphere in reciprocal space defining the
     // maximum spatial resolution
@@ -578,18 +584,19 @@ namespace rascal {
       - the projection of the plane wave basis onto the
         primitive (normalized) radial basis
         I_nl(k) = (R_n(r), j_l(kr))
-    	----------------------------------------------------------------	
+        ----------------------------------------------------------------
     */
 
     // Initialize arrays
-    auto G_k{math::Vector_t(n_k)}; // Fourier components
+    // Fourier components of potential / density
+    auto G_k{math::Vector_t(n_k)};
     // Spherical harmonics of shape (N_k, (l_max+1)^2)
     auto Y_lm{math::Matrix_t(n_k, n_col)};
     // Radial integrals of shape (N_k, n_max * (l_max + 1)=nl_size) 
     size_t nl_size{this->max_radial*(this->max_angular+1)};
     auto I_nl{math::Matrix_t(n_k, nl_size)};
 
-    // Precompute the three above quantities for each k-vector  
+    // Precompute the three above quantities for each k-vector
     for (size_t ik{0}; ik < n_k; ++ik) {
       // Fourier charge at |k|=k_val (multiply by 1/k^2 for LODE) 
       G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) );
@@ -600,22 +607,22 @@ namespace rascal {
         this->spherical_harmonics.calc(k_dir);
         auto && harmonics{spherical_harmonics.get_harmonics()};
         for (size_t lm{0}; lm < n_col; ++lm) {
-          Y_lm(ik,lm) = harmonics(lm);
+          Y_lm(ik, lm) = harmonics(lm);
         }
       } else {
         // For k=0, only Y_00=1/sqrt(4pi) is defined. We divide this
         // by 2 since the k=0 term is not counted twice later on.
-        Y_lm(ik,0) = 0.5/std::sqrt(4*PI);
+        Y_lm(ik, 0) = 0.5 / std::sqrt(4 * PI);
       }
 
-      // Radial integral between primitive radial function and 
-      // spherical Bessel function (R_n(r), j_l(kr)) up to global 
+      // Radial integral between primitive radial function and
+      // spherical Bessel function (R_n(r), j_l(kr)) up to global
       // factor of sqrt(pi) (irrelevant due to final normalization)
       auto && radint = radial_integral->compute_radial_integral(k_val(ik));
-      for (size_t nl{0}; nl < nl_size; ++nl){  
-        I_nl(ik,nl) = radint(nl);
+      for (size_t nl{0}; nl < nl_size; ++nl) {
+        I_nl(ik, nl) = radint(nl);
       }
-    } // end of loop over k vectors
+    }  // end of loop over k vectors
 
     /* Test radial scattering function @memo delete after testing phase
     size_t ntest{501};
@@ -640,7 +647,7 @@ namespace rascal {
       -------------------------------------------------------------------
       -------------------------------------------------------------------
     */
-	
+
     // Define the basic quantities coming from the atomic positions
     auto tcoords{manager_root->get_positions()};
     Matrix_t coords{tcoords.transpose()};
@@ -658,7 +665,7 @@ namespace rascal {
         sin_ki(ik,iat) = std::sin(trigarg); 
       } 
     }
-    
+
     /*
     -----------------------------------------------------------------
     COMPLETE EVALUATION OF SPHERICAL EXPANSION:
@@ -687,12 +694,12 @@ namespace rascal {
       Key_t center_type{center.get_atom_type()};
 
       // loop over k-vectors
-      for (size_t ik{0}; ik < n_k; ++ik) { 
+      for (size_t ik{0}; ik < n_k; ++ik) {
         // Start the accumulation with the central atom contribution
         size_t nl_idx{0};
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
           size_t l_block_idx{0};
-          for (size_t ang_l{0}; ang_l < this->max_angular+1; ++ang_l) {
+          for (size_t ang_l{0}; ang_l < this->max_angular + 1; ++ang_l) {
             // l odd contributions vanish by k-symmetry for central atom
             size_t size_m{2*ang_l+1};
             if (ang_l%2==0) {
@@ -782,17 +789,17 @@ namespace rascal {
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
-      //if (compute_gradients) {
+      // if (compute_gradients) {
       //  radial_integral->template finalize_coefficients_der<ThreeD>(
       //      expansions_coefficients_gradient, center);
       //}
     } // for (center : manager)
   } // compute()
 
-
   // STRUCTURE MANAGER STUFF BELOW
   template <class StructureManager>
-  void CalculatorKspaceSphericalExpansion::initialize_expansion_environment_wise(
+  void
+  CalculatorKspaceSphericalExpansion::initialize_expansion_environment_wise(
       std::shared_ptr<StructureManager> & manager,
       Property_t<StructureManager> & expansions_coefficients,
       PropertyGradient_t<StructureManager> & expansions_coefficients_gradient) {
@@ -907,7 +914,8 @@ namespace rascal {
   }
 
   template <class StructureManager>
-  void CalculatorKspaceSphericalExpansion::initialize_expansion_with_global_species(
+  void
+  CalculatorKspaceSphericalExpansion::initialize_expansion_with_global_species(
       std::shared_ptr<StructureManager> & manager,
       Property_t<StructureManager> & expansions_coefficients,
       PropertyGradient_t<StructureManager> & expansions_coefficients_gradient) {
@@ -976,7 +984,8 @@ namespace nlohmann {
    */
   template <>
   struct adl_serializer<rascal::CalculatorKspaceSphericalExpansion> {
-    static rascal::CalculatorKspaceSphericalExpansion from_json(const json & j) {
+    static rascal::CalculatorKspaceSphericalExpansion
+    from_json(const json & j) {
       return rascal::CalculatorKspaceSphericalExpansion{j};
     }
 

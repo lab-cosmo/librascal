@@ -136,6 +136,8 @@ namespace rascal {
         //! Computes 1F1
         double calc(double z, bool derivative = false, int n_terms = -1);
 
+        double calc_neg(double z, bool derivative = false, int n_terms = -1);
+
         //! computes hyp2f0 with arg1 = b-a and arg2 = 1-a arg3 = 1 / z
         double hyp2f0(double z, bool derivative, int n_terms);
 
@@ -143,6 +145,56 @@ namespace rascal {
                    int n_terms);
       };
     }  // namespace internal
+
+
+    inline double hyp1f1_sum(double a, double b, double z) {
+      double epsilon{1e-6};
+      int k{0};
+      double term{1.};
+      double result{1.};
+      double abssum{result};
+
+      for (; k < 1000; k++) {
+        term *= (a + k) * z / (b + k) / (k + 1);
+        abssum += std::abs(term);
+        result += term;
+        if (std::abs(term) <= math::DBL_FTOL * std::abs(result)) {
+          break;
+        }
+      }
+      assert(std::isfinite(result));
+      if (k * math::DBL_FTOL * abssum <= epsilon * std::abs(result)) {
+        return result;
+      } else {
+        std::stringstream error{};
+        error << "hyp1f1 series expansion: a=" << std::to_string(a)
+              << " b=" << std::to_string(b) << " z=" << std::to_string(z)
+              << std::endl;
+        throw std::overflow_error(error.str());
+      }
+    }
+
+    inline double hyp1f1(double a, double b, double x) {
+      double res{0.};
+      double z{x};
+      if (x < 0.) {
+        a = b-a;
+        z = -x;
+      }
+      if (std::abs(1 - b / a) < math::DBL_FTOL) {
+        res = std::exp(z);
+      } else if (std::abs(a - b - 1) < math::DBL_FTOL) {
+        res = (1 + z / b) * std::exp(z);
+      } else {
+        res = hyp1f1_sum(a,b,z);
+      }
+      
+      if (x < 0.) {
+        res *= std::exp(-z);
+      }
+      assert(std::isfinite(res));
+      return res;
+    }
 
     /**
      * Computes the confluent hypergeometric function \f${}_1F_1(a,b,z)\f$ for
@@ -158,24 +210,21 @@ namespace rascal {
      private:
       internal::Hyp1f1Series hyp1f1_series;
       internal::Hyp1f1Asymptotic hyp1f1_asymptotic;
+      internal::Hyp1f1Series hyp1f1_series_neg;
+      internal::Hyp1f1Asymptotic hyp1f1_asymptotic_neg;
       double a, b;
       double tolerance;
 
-      double z_asympt{1.};
-
-      double h1f1_a{0}, h1f1_s{0};
-      double z_above{0.}, z_below{0.};
-
-      void update_switching_point() {
-        this->h1f1_s = this->hyp1f1_series.calc(this->z_asympt);
-        this->h1f1_a = this->hyp1f1_asymptotic.calc(this->z_asympt);
-      }
+      double z_asympt{1.}, z_asympt_neg{1.};
 
       /**
        * Find the largest z for which the 2 definitions agree within tolerance
        * using bisection.
        */
-      void find_switching_point();
+      double
+      find_switching_point(double z_init, double tolerance,
+                           internal::Hyp1f1Series & hyp1f1_series,
+                           internal::Hyp1f1Asymptotic & hyp1f1_asymptotic);
 
      public:
       Hyp1f1(double a, double b, size_t mmax = 500, double tolerance = 1e-13);
@@ -185,11 +234,20 @@ namespace rascal {
       //! Compute @f${}_1F_1(a,b,z)@f$
       double calc(double z, bool derivative = false) {
         double res{};
-        if (z > this->z_asympt) {
-          res = this->hyp1f1_asymptotic.calc(z, derivative);
+        if (z >= 0.) {
+          if (z > this->z_asympt) {
+            res = this->hyp1f1_asymptotic.calc(z, derivative);
+          } else {
+            res = this->hyp1f1_series.calc(z, derivative);
+          }
         } else {
-          res = this->hyp1f1_series.calc(z, derivative);
+          if (not derivative) {
+            res = hyp1f1(this->a, this->b, z);
+          } else {
+            res = this->a / this->b * hyp1f1(this->a + 1, this->b + 1, z);
+          }
         }
+
         assert(std::isfinite(res));
         return res;
       }
