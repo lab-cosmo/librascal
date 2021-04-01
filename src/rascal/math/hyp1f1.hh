@@ -146,14 +146,9 @@ namespace rascal {
       };
     }  // namespace internal
 
-    inline double hyp1f1(double a, double b, double z) {
-      if (std::abs(1 - b / a) < math::DBL_FTOL) {
-        return std::exp(z);
-      } else if (std::abs(a - b - 1) < math::DBL_FTOL) {
-        return (1 + z / b) * std::exp(z);
-      }
 
-      double epsilon{1e-7};
+    inline double hyp1f1_sum(double a, double b, double z) {
+      double epsilon{1e-6};
       int k{0};
       double term{1.};
       double result{1.};
@@ -177,6 +172,28 @@ namespace rascal {
               << std::endl;
         throw std::overflow_error(error.str());
       }
+    }
+
+    inline double hyp1f1(double a, double b, double x) {
+      double res{0.};
+      double z{x};
+      if (x < 0.) {
+        a = b-a;
+        z = -x;
+      }
+      if (std::abs(1 - b / a) < math::DBL_FTOL) {
+        res = std::exp(z);
+      } else if (std::abs(a - b - 1) < math::DBL_FTOL) {
+        res = (1 + z / b) * std::exp(z);
+      } else {
+        res = hyp1f1_sum(a,b,z);
+      }
+      
+      if (x < 0.) {
+        res *= std::exp(-z);
+      }
+      assert(std::isfinite(res));
+      return res;
     }
 
     /**
