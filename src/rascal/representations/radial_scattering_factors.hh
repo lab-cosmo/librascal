@@ -230,12 +230,10 @@ namespace rascal {
         double fac_a;
         double fac_b;
         double fac_c;
-        double expfac;
 
         int nl_idx{0};
         for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
           fac_c = -0.5 * pow(kval * this->radial_sigmas[radial_n], 2);
-          expfac = std::exp(fac_c);
 
           for (size_t angular_l{0}; angular_l < this->max_angular + 1;
                ++angular_l) {
@@ -245,7 +243,7 @@ namespace rascal {
             this->radial_integral(nl_idx) =
                 pow(kval, static_cast<double>(angular_l)) *
                 this->radial_nl_factors(radial_n, angular_l) *
-                this->radial_norm_factors(radial_n) * expfac *
+                this->radial_norm_factors(radial_n) * 
                 hyp1f1_calculator.calc(fac_c);
             // std::cout << kval << " " << radial_n << " " << angular_l << " "
             // << radial_integral(nl_idx) << "\n";
