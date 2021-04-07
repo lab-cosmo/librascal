@@ -172,14 +172,11 @@ namespace rascal {
     //! Returns number of clusters of the original manager
     size_t get_size() const { return this->n_centers; }
 
+    size_t get_size_with_ghosts() const { return this->get_size(); }
 
     //! Returns position of an atom with index atom_tag
     Vector_ref get_position(size_t atom_tag) {
-      if (atom_tag < this->n_centers) {
-        return this->manager->get_position(atom_tag);
-      } else {
-        return this->get_ghost_position(atom_tag - this->n_centers);
-      }
+      return Vector_ref(&this->positions[atom_tag*traits::Dim]);
     }
 
     //! Returns position of the given atom object (useful for users)
@@ -228,6 +225,7 @@ namespace rascal {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
 
+
     //! Returns the number of neighbours of a given atom at a given TargetOrder
     //! Returns the number of pairs of a given center
     template <size_t TargetOrder, size_t Order, size_t Layer>
@@ -251,37 +249,8 @@ namespace rascal {
 
     size_t get_n_update() const { return this->n_update; }
 
-    size_t get_skin2() const { return this->skin2; }
-
    protected:
     /* ---------------------------------------------------------------------- */
-    /**
-     * This function, including the storage of ghost atom positions is
-     * necessary, because the underlying manager is not known at this
-     * layer. Therefore we can not add positions to the existing array, but have
-     * to add positions to a ghost array. This also means, that the get_position
-     * function will need to branch, depending on the atom_tag > n_centers and
-     * offset with n_ghosts to access ghost positions.
-     */
-
-    /**
-     * Function for adding existing i-atoms and ghost atoms additionally. This
-     * is needed, because ghost atoms are also included in the buildup of the
-     * pair list.
-     */
-    void add_ghost_atom(int atom_tag, const Vector_t & position,
-                        int atom_type) {
-      // first add it to the list of atoms
-      this->atom_tag_list.push_back(atom_tag);
-      this->atom_types.push_back(atom_type);
-      // add it to the ghost atom container
-      this->ghost_atom_tag_list.push_back(atom_tag);
-      this->ghost_types.push_back(atom_type);
-      for (auto dim{0}; dim < traits::Dim; ++dim) {
-        this->ghost_positions.push_back(position(dim));
-      }
-      this->n_ghosts++;
-    }
 
     //! Extends the list containing the number of neighbours with a 0
     void add_entry_number_of_neighbours() { this->nb_neigh.push_back(0); }
@@ -306,26 +275,13 @@ namespace rascal {
     //! pointer to underlying structure manager
     ImplementationPtr_t manager;
 
-    //! Cutoff radius for neighbour list
-    const double cutoff;
-    /**
-     * If no atom has moved more than the skin-distance since the
-     * last call to the update method, then the linked cell neighbor list can
-     * be reused. This will save some expensive rebuilds of the list, but
-     * extra neighbors outside the cutoff will be considered.
-     *
-     * use squared skin to avoid computing the sqrt of the squared norm
-     * between the two .
-     */
-    const double skin2;
-
-    //! stores i-atom and ghost atom tags
+    //! stores i-atom tags
     std::vector<int> atom_tag_list{};
 
     std::vector<int> atom_types{};
 
-    //! Stores additional atom tags of current Order (only ghost atoms)
-    std::vector<int> ghost_atom_tag_list{};
+    // //! Stores additional atom tags of current Order (only ghost atoms)
+    // std::vector<int> ghost_atom_tag_list{};
 
     //! Stores the number of neighbours for every atom
     std::vector<size_t> nb_neigh{};
@@ -338,7 +294,6 @@ namespace rascal {
      * index in a list in sequence of atoms.  List of atom tags which have a
      * correpsonding cluster index of order 1.  If ghost atoms have been added
      * they have their own new index.
-     *
      */
     std::vector<size_t> atom_index_from_atom_tag_list{};
 
@@ -351,11 +306,6 @@ namespace rascal {
 
     //! number of i atoms, i.e. centers from underlying manager
     size_t n_centers;
-    /**
-     * number of ghost atoms (given by periodicity) filled during full
-     * neighbourlist build
-     */
-    size_t n_ghosts;
 
     //! counts the number of time the neighbour list has been updated
     size_t n_update{0};
@@ -366,11 +316,11 @@ namespace rascal {
      */
     bool need_update{true};
 
-    //! ghost atom positions
-    std::vector<double> ghost_positions{};
+    //! atom positions
+    std::vector<double> positions{};
 
-    //! ghost atom type
-    std::vector<int> ghost_types{};
+    // //! atom type
+    // std::vector<int> atom_types{};
 
    private:
   };
@@ -379,16 +329,11 @@ namespace rascal {
   //! Constructor of the pair list manager
   template <class ManagerImplementation>
   AdaptorKspace<ManagerImplementation>::AdaptorKspace(
-      std::shared_ptr<ManagerImplementation> manager, double cutoff,
-      double skin)
-      : manager{std::move(manager)}, cutoff{cutoff}, skin2{skin * skin},
-        atom_tag_list{}, atom_types{}, ghost_atom_tag_list{}, nb_neigh{},
-        neighbours_atom_tag{}, offsets{}, n_centers{0}, n_ghosts{0} {
+      std::shared_ptr<ManagerImplementation> manager)
+      : manager{std::move(manager)},
+        atom_tag_list{}, atom_types{}, nb_neigh{},
+        neighbours_atom_tag{}, offsets{}, n_centers{0} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
-    if (this->skin2 > 0.) {
-      throw std::runtime_error(
-          "The verlet list is not functional for the moment, keep skin == 0");
-    }
   }
 
   /* ---------------------------------------------------------------------- */
@@ -405,12 +350,7 @@ namespace rascal {
       // manager centers.
       auto && atomic_structure{this->manager->get_atomic_structure()};
       // if the structure has not changed by more than skin**2
-      if (not atomic_structure.is_similar(std::forward<Args>(arguments)...,
-                                          this->skin2)) {
-        this->need_update = true;
-      } else {
-        this->need_update = false;
-      }
+      this->need_update = true;
     }
     this->manager->update(std::forward<Args>(arguments)...);
   }
@@ -433,12 +373,10 @@ namespace rascal {
       // initialize necessary data structure
       this->atom_tag_list.clear();
       this->atom_types.clear();
-      this->ghost_atom_tag_list.clear();
       this->nb_neigh.clear();
       this->neighbours_atom_tag.clear();
       this->offsets.clear();
-      this->ghost_positions.clear();
-      this->ghost_types.clear();
+      this->positions.clear();
       this->atom_index_from_atom_tag_list.clear();
       // actual call for building the neighbour list
       this->make_full_neighbour_list();
@@ -486,215 +424,156 @@ namespace rascal {
 
     // short hands for parameters and inputs
     constexpr auto dim{traits::Dim};
-    const auto & cell{this->manager->get_cell()};
-    const double & cutoff{this->cutoff};
 
-    // minimum/maximum coordinate of mesh for neighbour list, it is larger by
-    // one cell to be able to provide a neighbour list also over ghost atoms;
-    // depends on cell triclinicity and cutoff, coordinates of the mesh are
-    // relative to the origin of the given cell.
-    // ghost_min/max is used for placing ghost atoms within the given 'skin'.
-    Vector_t mesh_min{Vector_t::Zero()};
-    Vector_t mesh_max{Vector_t::Zero()};
-    Vector_t ghost_min{Vector_t::Zero()};
-    Vector_t ghost_max{Vector_t::Zero()};
-
-    // max and min multipliers for number of cells in mesh per dimension in
-    // units of cell vectors to be filled from max/min mesh positions and used
-    // to construct ghost positions
-    std::array<int, dim> m_min{};
-    std::array<int, dim> m_max{};
-
-    // Mesh related stuff for neighbour boxes. Calculate min and max of the mesh
-    // in cartesian coordinates and relative to the cell origin.  mesh_min is
-    // the origin of the mesh; mesh_max is the maximum coordinate of the mesh;
-
-    // nboxes_per_dim is the number of mesh boxes in each dimension, not to be
-    // confused with the number of cells to ensure periodicity
-    std::array<int, dim> nboxes_per_dim{};
-    // vector for storing the tags of atoms contained in each box
-    std::vector<std::vector<int>> atoms_in_box{};
-    for (auto i{0}; i < dim; ++i) {
-      // min and max coordinates of cell corners in Cartesian space
-      double min_coord{0.0};
-      double max_coord{0.0};
-      for (int col{0}; col < cell.cols(); ++col) {
-        min_coord += cell(i, col) * static_cast<double>(cell(i, col) < 0.);
-        max_coord += cell(i, col) * static_cast<double>(cell(i, col) > 0.);
-      }
-      // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
-      mesh_min[i] = min_coord - 2. * cutoff;
-
-      // outer mesh, including one layer of emtpy cells in each direction
-      double lmesh{max_coord - min_coord + 4. * cutoff};
-      // number of Linked Cell in each directions
-      double n{std::ceil(lmesh / cutoff)};
-      mesh_max[i] = mesh_min[i] + n * cutoff;
-      nboxes_per_dim[i] = static_cast<int>(n);
-
-      // positions min/max for ghost atoms -> this is the actual bounding box
-      ghost_min[i] = min_coord - cutoff;
-      double lghost{max_coord - min_coord + 2 * cutoff};
-      double n_ghost_boxes{std::ceil(lghost / cutoff)};
-      ghost_max[i] = n_ghost_boxes * cutoff + ghost_min[i];
-    }
-
-    // numerical tolerance when determining if a ghost atom falls into the
-    // the range that should be considered for binning
-    double max_box_lenght{(ghost_max - ghost_min).maxCoeff()};
-    double bound_tol{max_box_lenght * 1e-8};
-
-    // Periodicity related multipliers. Now the mesh coordinates are calculated
-    // in units of cell vectors. m_min and m_max give the number of repetitions
-    // of the cell in each cell vector direction
-    //! we should be probably projecting in scaled coords ghost_min/max
-    constexpr int ncorners = internal::ipow(2, dim);
-    Eigen::Matrix<double, dim, ncorners> xpos{};
-    std::array<double, 2 * dim> mesh_bounds{};
-    for (auto i{0}; i < dim; ++i) {
-      mesh_bounds[i] = ghost_min[i] - bound_tol;
-      mesh_bounds[i + dim] = ghost_max[i] + bound_tol;
-    }
-
-    // Get the mesh bounds to solve for the multiplicators
-    int n{0};
-    for (auto && coord : internal::MeshBounds<dim>{mesh_bounds}) {
-      xpos.col(n) = Eigen::Map<Eigen::Matrix<double, dim, 1>>(coord.data());
-      n++;
-    }
-
-    // solve inverse problem for all multipliers
-    auto cell_inv{cell.inverse().eval()};
-    auto multiplicator{cell_inv * xpos.eval()};
-    auto xmin = multiplicator.rowwise().minCoeff().eval();
-    auto xmax = multiplicator.rowwise().maxCoeff().eval();
-
-    // find max and min multipliers for cell vectors
-    for (auto i{0}; i < dim; ++i) {
-      m_min[i] = std::floor(xmin(i));
-      // remove 1 because the original cell is already included
-      m_max[i] = std::ceil(xmax(i)) - 1;
-    }
-
-    std::array<int, dim> periodic_max{};
-    std::array<int, dim> periodic_min{};
-    std::array<int, dim> repetitions{};
     auto periodicity = this->manager->get_periodic_boundary_conditions();
     size_t ntot{1};
 
     // calculate number of actual repetitions of cell, depending on periodicity
     for (auto i{0}; i < dim; ++i) {
-      if (periodicity[i]) {
-        periodic_max[i] = m_max[i];
-        periodic_min[i] = m_min[i];
-      } else {
-        periodic_max[i] = 0;
-        periodic_min[i] = 0;
-      }
-      auto nrep_in_dim = -periodic_min[i] + periodic_max[i] + 1;
-      repetitions[i] = nrep_in_dim;
-      ntot *= nrep_in_dim;
-    }
-
-    // Before generating periodic replicas atoms (also termed ghost atoms), all
-    // existing center atoms are added to the list of current atoms to start the
-    // full list of current i-atoms to have them all contiguously at the
-    // beginning of the list.
-    for (size_t atom_tag{0}; atom_tag < this->manager->get_size(); ++atom_tag) {
-      auto atom_type = this->manager->get_atom_type(atom_tag);
-      auto atom_index = this->manager->get_atom_index(atom_tag);
-      this->atom_tag_list.push_back(atom_tag);
-      this->atom_types.push_back(atom_type);
-      this->atom_index_from_atom_tag_list.push_back(atom_index);
-    }
-
-    // And before generating periodic replicas (termed ghost atoms), previous
-    // ghost atoms are added to the list of ghost atoms with their associated
-    // data.
-    for (size_t atom_tag{this->manager->get_size()};
-         atom_tag < this->manager->get_size_with_ghosts(); ++atom_tag) {
-      auto pos = this->manager->get_position(atom_tag);
-      auto atom_type = this->manager->get_atom_type(atom_tag);
-      auto new_atom_tag{this->n_centers + this->n_ghosts};
-      this->add_ghost_atom(new_atom_tag, pos, atom_type);
-      size_t atom_index = this->manager->get_atom_index(atom_tag);
-      this->atom_index_from_atom_tag_list.push_back(atom_index);
-    }
-
-    // generate ghost atom tags and positions
-    for (size_t atom_tag{0}; atom_tag < this->manager->get_size_with_ghosts();
-         ++atom_tag) {
-      auto pos = this->manager->get_position(atom_tag);
-      auto atom_type = this->manager->get_atom_type(atom_tag);
-
-      for (auto && p_image :
-           internal::PeriodicImages<dim>{periodic_min, repetitions, ntot}) {
-        // exclude the original unit cell
-        //! assumption: this assumes atoms were inside the cell initially
-        if (not(p_image.array() == 0).all()) {
-          Vector_t pos_ghost{pos + cell * p_image.template cast<double>()};
-          auto flag_inside = internal::position_in_bounds(ghost_min, ghost_max,
-                                                          pos_ghost, bound_tol);
-
-          if (flag_inside) {
-            // next atom tag is size, since start is at index = 0
-            auto new_atom_tag{this->n_centers + this->n_ghosts};
-            this->add_ghost_atom(new_atom_tag, pos_ghost, atom_type);
-            // adds origin atom cluster_index if true
-            // adds ghost atom cluster index if false
-            size_t atom_index = this->manager->get_atom_index(atom_tag);
-            this->atom_index_from_atom_tag_list.push_back(atom_index);
-          }
-        }
+      if (not periodicity[i]) {
+        throw std::runtime_error(
+                R"(The structure should be fully periodic.)");
       }
     }
+    size_t n_atoms{this->get_manager().size()};
 
-    // neighbour boxes
-    internal::IndexContainer<dim> atom_id_cell{nboxes_per_dim};
-
-    // sorting the atoms and ghosts inside the cell into boxes
-    auto n_potential_neighbours{this->n_centers + this->n_ghosts};
-    for (size_t atom_tag{0}; atom_tag < n_potential_neighbours; ++atom_tag) {
-      auto pos = this->get_position(atom_tag);
-      Vector_t dpos = pos - mesh_min;
-      auto idx = internal::get_box_index(dpos, cutoff);
-      atom_id_cell[idx].push_back(atom_tag);
-    }
-
-    // go through all atoms and/or ghosts to build neighbour list, depending on
-    // the runtime decision flag
-    std::vector<int> current_j_atoms{};
     for (auto center : this->get_manager()) {
       int atom_tag = center.get_atom_tag();
+      int atom_type = center.get_atom_type();
+      auto atom_index = this->manager->get_atom_index(atom_tag);
       int nneigh{0};
 
       Vector_t pos = center.get_position();
-      Vector_t dpos = pos - mesh_min;
-      auto box_index = internal::get_box_index(dpos, cutoff);
-      internal::fill_neighbours_atom_tag(atom_tag, box_index, atom_id_cell,
-                                         current_j_atoms);
 
-      nneigh += current_j_atoms.size();
-      for (auto & j_atom_tag : current_j_atoms) {
-        this->neighbours_atom_tag.push_back(j_atom_tag);
+      this->atom_tag_list.push_back(atom_tag);
+      this->atom_types.push_back(atom_type);
+      this->atom_index_from_atom_tag_list.push_back(atom_index);
+      for (auto i_dim{0}; i_dim < traits::Dim; ++i_dim) {
+        this->positions.push_back(pos(i_dim));
+      }
+
+      nneigh += n_atoms;
+      for (auto center_j : this->get_manager()) {
+        int atom_tag_j = center_j.get_atom_tag();
+        int atom_type_j = center_j.get_atom_type();
+        auto atom_index_j = this->manager->get_atom_index(atom_tag_j);
+        Vector_t pos_j = center_j.get_position();
+
+        this->atom_tag_list.push_back(atom_tag_j);
+        this->atom_types.push_back(atom_type_j);
+        this->atom_index_from_atom_tag_list.push_back(atom_index_j);
+        this->neighbours_atom_tag.push_back(atom_tag_j);
+        for (auto i_dim{0}; i_dim < traits::Dim; ++i_dim) {
+          this->positions.push_back(pos_j(i_dim));
+        }
       }
 
       this->nb_neigh.push_back(nneigh);
     }
 
-    /**
-     * All the ghost atom neighbours have to be added explicitly as zero. This
-     * is done after adding the neighbours of centers because ghost atoms are
-     * listed after the center atoms in the respective data
-     * structures. Technically ghost atoms can not have any neighbour, i.e. not
-     * even '0'. It should be _nothing_. But that is not possible with our data
-     * structure.
-     */
-    int nneigh{0};
-    for (auto && dummy : this->get_manager().only_ghosts()) {
-      std::ignore = dummy;
-      this->nb_neigh.push_back(nneigh);
-    }
+
+    // // Before generating periodic replicas atoms (also termed ghost atoms), all
+    // // existing center atoms are added to the list of current atoms to start the
+    // // full list of current i-atoms to have them all contiguously at the
+    // // beginning of the list.
+    // for (size_t atom_tag{0}; atom_tag < this->manager->get_size(); ++atom_tag) {
+    //   auto atom_type = this->manager->get_atom_type(atom_tag);
+    //   auto atom_index = this->manager->get_atom_index(atom_tag);
+    //   this->atom_tag_list.push_back(atom_tag);
+    //   this->atom_types.push_back(atom_type);
+    //   this->atom_index_from_atom_tag_list.push_back(atom_index);
+    // }
+
+    // for (size_t atom_tag_i{0}; atom_tag_i < this->manager->get_size(); ++atom_tag_i) {
+    //   for (size_t atom_tag_j{0}; atom_tag_j < this->manager->get_size(); ++atom_tag_j) {
+    //     int nneigh{0};
+
+    //   Vector_t pos = center.get_position();
+    //   Vector_t dpos = pos - mesh_min;
+    //   auto box_index = internal::get_box_index(dpos, cutoff);
+    //   internal::fill_neighbours_atom_tag(atom_tag, box_index, atom_id_cell,
+    //                                      current_j_atoms);
+
+    //   nneigh += current_j_atoms.size();
+    //   for (auto & j_atom_tag : current_j_atoms) {
+    //     this->neighbours_atom_tag.push_back(j_atom_tag);
+    //   }
+    //   }
+    // }
+
+
+    // // this->atom_tag_list.push_back(atom_tag);
+    // //   this->atom_types.push_back(atom_type);
+    // //   // add it to the ghost atom container
+    // //   this->ghost_atom_tag_list.push_back(atom_tag);
+    // //   this->ghost_types.push_back(atom_type);
+    // //   for (auto dim{0}; dim < traits::Dim; ++dim) {
+    // //     this->ghost_positions.push_back(position(dim));
+    // //   }
+
+    // // generate ghost atom tags and positions
+    // for (size_t atom_tag{0}; atom_tag < this->manager->get_size_with_ghosts();
+    //      ++atom_tag) {
+    //   auto pos = this->manager->get_position(atom_tag);
+    //   auto atom_type = this->manager->get_atom_type(atom_tag);
+
+    //   for (auto && p_image :
+    //        internal::PeriodicImages<dim>{periodic_min, repetitions, ntot}) {
+    //     // exclude the original unit cell
+    //     //! assumption: this assumes atoms were inside the cell initially
+    //     if (not(p_image.array() == 0).all()) {
+    //       Vector_t pos_ghost{pos + cell * p_image.template cast<double>()};
+    //       auto flag_inside = internal::position_in_bounds(ghost_min, ghost_max,
+    //                                                       pos_ghost, bound_tol);
+
+    //       if (flag_inside) {
+    //         // next atom tag is size, since start is at index = 0
+    //         auto new_atom_tag{this->n_centers + this->n_ghosts};
+    //         this->add_ghost_atom(new_atom_tag, pos_ghost, atom_type);
+    //         // adds origin atom cluster_index if true
+    //         // adds ghost atom cluster index if false
+    //         size_t atom_index = this->manager->get_atom_index(atom_tag);
+    //         this->atom_index_from_atom_tag_list.push_back(atom_index);
+    //       }
+    //     }
+    //   }
+    // }
+
+
+    // // go through all atoms and/or ghosts to build neighbour list, depending on
+    // // the runtime decision flag
+    // std::vector<int> current_j_atoms{};
+    // for (auto center : this->get_manager()) {
+    //   int atom_tag = center.get_atom_tag();
+    //   int nneigh{0};
+
+    //   Vector_t pos = center.get_position();
+    //   Vector_t dpos = pos - mesh_min;
+    //   auto box_index = internal::get_box_index(dpos, cutoff);
+    //   internal::fill_neighbours_atom_tag(atom_tag, box_index, atom_id_cell,
+    //                                      current_j_atoms);
+
+    //   nneigh += current_j_atoms.size();
+    //   for (auto & j_atom_tag : current_j_atoms) {
+    //     this->neighbours_atom_tag.push_back(j_atom_tag);
+    //   }
+
+    //   this->nb_neigh.push_back(nneigh);
+    // }
+
+    // /**
+    //  * All the ghost atom neighbours have to be added explicitly as zero. This
+    //  * is done after adding the neighbours of centers because ghost atoms are
+    //  * listed after the center atoms in the respective data
+    //  * structures. Technically ghost atoms can not have any neighbour, i.e. not
+    //  * even '0'. It should be _nothing_. But that is not possible with our data
+    //  * structure.
+    //  */
+    // int nneigh{0};
+    // for (auto && dummy : this->get_manager().only_ghosts()) {
+    //   std::ignore = dummy;
+    //   this->nb_neigh.push_back(nneigh);
+    // }
   }
 
   /* ---------------------------------------------------------------------- */
