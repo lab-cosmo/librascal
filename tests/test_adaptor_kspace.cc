@@ -45,8 +45,7 @@ namespace rascal {
    */
   BOOST_FIXTURE_TEST_CASE(get_atom_j_test,
                           ManagerFixture<StructureManagerCenters>) {
-    auto pair_manager{
-        make_adapted_manager<AdaptorKspace>(manager)};
+    auto pair_manager{make_adapted_manager<AdaptorKspace>(manager)};
 
     constexpr bool verbose{false};
 
@@ -107,11 +106,11 @@ namespace rascal {
   }
 
   /**
-   * Check that atom tags are properly ordered and that atom_j is consistent with
-   * the neighbor.
+   * Check that atom tags are properly ordered and that atom_j is consistent
+   * with the neighbor.
    */
-  BOOST_FIXTURE_TEST_CASE_TEMPLATE(test_idx_consistency, Fix,
-                                   multiple_fixtures, Fix) {
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(test_idx_consistency, Fix, multiple_fixtures,
+                                   Fix) {
     auto & managers = Fix::managers;
 
     for (auto & pair_manager : managers) {
@@ -174,7 +173,6 @@ namespace rascal {
       }
     }
   }
-
 
   BOOST_AUTO_TEST_SUITE_END();
 }  // namespace rascal

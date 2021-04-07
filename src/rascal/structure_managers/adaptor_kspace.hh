@@ -106,7 +106,7 @@ namespace rascal {
      * Constructs a full neighbourhood list from a given manager and cut-off
      * radius or extends an existing neighbourlist to the next order
      */
-    AdaptorKspace(ImplementationPtr_t manager);
+    explicit AdaptorKspace(ImplementationPtr_t manager);
 
     AdaptorKspace(ImplementationPtr_t manager,
                   const Hypers_t & /*adaptor_hypers*/)
