@@ -435,10 +435,10 @@ namespace rascal {
                 R"(The structure should be fully periodic.)");
       }
     }
-    size_t n_atoms{this->get_manager().size()};
-
-    for (auto center : this->get_manager()) {
-      int atom_tag = center.get_atom_tag();
+    size_t n_atoms{this->manager->size()-1};
+    int atom_tag{0};
+    for (auto center : this->manager) {
+      // int atom_tag = center.get_atom_tag();
       int atom_type = center.get_atom_type();
       auto atom_index = this->manager->get_atom_index(atom_tag);
       int nneigh{0};
@@ -451,21 +451,30 @@ namespace rascal {
       for (auto i_dim{0}; i_dim < traits::Dim; ++i_dim) {
         this->positions.push_back(pos(i_dim));
       }
+      atom_tag++;
+    }
 
+    for (auto center : this->manager) {
+      int atom_tag_i = center.get_atom_tag();
+      auto atom_index = this->manager->get_atom_index(atom_tag_i);
+      int nneigh{0};
       nneigh += n_atoms;
-      for (auto center_j : this->get_manager()) {
+      for (auto center_j : this->manager) {
         int atom_tag_j = center_j.get_atom_tag();
         int atom_type_j = center_j.get_atom_type();
         auto atom_index_j = this->manager->get_atom_index(atom_tag_j);
         Vector_t pos_j = center_j.get_position();
-
-        this->atom_tag_list.push_back(atom_tag_j);
+        if (atom_index == atom_index_j) {
+          continue;
+        }
+        this->atom_tag_list.push_back(atom_tag);
         this->atom_types.push_back(atom_type_j);
         this->atom_index_from_atom_tag_list.push_back(atom_index_j);
-        this->neighbours_atom_tag.push_back(atom_tag_j);
+        this->neighbours_atom_tag.push_back(atom_tag);
         for (auto i_dim{0}; i_dim < traits::Dim; ++i_dim) {
           this->positions.push_back(pos_j(i_dim));
         }
+        atom_tag++;
       }
 
       this->nb_neigh.push_back(nneigh);
