@@ -70,9 +70,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Adaptor that increases the MaxOrder of an existing StructureManager. This
-   * means, if the manager does not have a neighbourlist, it is created, if it
-   * exists, triplets, quadruplets, etc. lists are created.
+   * Adaptor that transforms a ManagerImplementation of order 1 into a neighbor
+   * list with pairs. The neighbors are all of the atoms present and periodic
+   * images are not considered.
    */
   template <class ManagerImplementation>
   class AdaptorKspace
@@ -386,28 +386,9 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Build a neighbor list using a linked cell algorithm for finite cutoff
-   * interaction computations of lenght \f$r_c\f$. There is no restriction
-   * regarding the type of lattice and periodic boundary conditions (triclinic
-   * lattices and mixed periodicity are handled by design).
-   *
-   * To do so we build a cubic box that contains the unit cell and one
-   * \f$r_c\f$ in each directions. The length of the box is a multiple of
-   * \f$r_c\f$ and it is partitioned into cubic bins of size \f$r_c\f$. The
-   * resulting mesh encompass the unit cell and its surrounding up to \f$2
-   * r_c\f$ in each directions so that atoms can be binned in it. The
-   * additional layer of bins is kept empty so that the connectivity assignment
-   * criteria of the linked cell, i.e. atoms belonging to neighbor bins are
-   * neighbors, can be applied uniformly (latter referred are stencil).
-   * note(felix): the mesh going up to \f$2 r_c\f$ is probably not really
-   *  necessary for the connectivity assignment and \f$r_c\f$ would work too.
-   *
-   * Atoms are assumed to be inside the unit cell (otherwise it will throw an
-   * error) and they are binned. Then depending on the periodicity of the
-   * system, the periodic images or ghost atoms that fall within the bounds of
-   * the mesh are also binned.
-   * Then each binned atoms is assigned its neighbor depending on the bin's
-   * connectivity criteria (in 3d the 27 nearest bins).
+   * Build a neighbor list for which every atoms is a neighbor.
+   * No cutoff distance is used and only the original atoms are considered, i.e.
+   * periodic images are not considered.
    */
   template <class ManagerImplementation>
   void AdaptorKspace<ManagerImplementation>::make_full_neighbour_list() {
@@ -416,15 +397,6 @@ namespace rascal {
     // short hands for parameters and inputs
     constexpr auto dim{traits::Dim};
 
-    auto periodicity = this->manager->get_periodic_boundary_conditions();
-
-    // calculate number of actual repetitions of cell, depending on periodicity
-    for (auto i{0}; i < dim; ++i) {
-      if (not periodicity[i]) {
-        throw std::runtime_error(R"(The structure should be fully periodic.)");
-      }
-    }
-    size_t n_atoms{this->manager->size() - 1};
     int atom_tag{0};
     for (auto center : this->manager) {
       int atom_type = center.get_atom_type();
@@ -441,11 +413,12 @@ namespace rascal {
       atom_tag++;
     }
 
+    size_t n_neigh{this->manager->size() - 1};
     for (auto center : this->manager) {
       int atom_tag_i = center.get_atom_tag();
       auto atom_index = this->manager->get_atom_index(atom_tag_i);
       int nneigh{0};
-      nneigh += n_atoms;
+      nneigh += n_neigh;
       for (auto center_j : this->manager) {
         int atom_tag_j = center_j.get_atom_tag();
         int atom_type_j = center_j.get_atom_type();
@@ -466,119 +439,6 @@ namespace rascal {
 
       this->nb_neigh.push_back(nneigh);
     }
-
-    // // Before generating periodic replicas atoms (also termed ghost atoms),
-    // all
-    // // existing center atoms are added to the list of current atoms to start
-    // the
-    // // full list of current i-atoms to have them all contiguously at the
-    // // beginning of the list.
-    // for (size_t atom_tag{0}; atom_tag < this->manager->get_size();
-    // ++atom_tag) {
-    //   auto atom_type = this->manager->get_atom_type(atom_tag);
-    //   auto atom_index = this->manager->get_atom_index(atom_tag);
-    //   this->atom_tag_list.push_back(atom_tag);
-    //   this->atom_types.push_back(atom_type);
-    //   this->atom_index_from_atom_tag_list.push_back(atom_index);
-    // }
-
-    // for (size_t atom_tag_i{0}; atom_tag_i < this->manager->get_size();
-    // ++atom_tag_i) {
-    //   for (size_t atom_tag_j{0}; atom_tag_j < this->manager->get_size();
-    //   ++atom_tag_j) {
-    //     int nneigh{0};
-
-    //   Vector_t pos = center.get_position();
-    //   Vector_t dpos = pos - mesh_min;
-    //   auto box_index = internal::get_box_index(dpos, cutoff);
-    //   internal::fill_neighbours_atom_tag(atom_tag, box_index, atom_id_cell,
-    //                                      current_j_atoms);
-
-    //   nneigh += current_j_atoms.size();
-    //   for (auto & j_atom_tag : current_j_atoms) {
-    //     this->neighbours_atom_tag.push_back(j_atom_tag);
-    //   }
-    //   }
-    // }
-
-    // // this->atom_tag_list.push_back(atom_tag);
-    // //   this->atom_types.push_back(atom_type);
-    // //   // add it to the ghost atom container
-    // //   this->ghost_atom_tag_list.push_back(atom_tag);
-    // //   this->ghost_types.push_back(atom_type);
-    // //   for (auto dim{0}; dim < traits::Dim; ++dim) {
-    // //     this->ghost_positions.push_back(position(dim));
-    // //   }
-
-    // // generate ghost atom tags and positions
-    // for (size_t atom_tag{0}; atom_tag <
-    // this->manager->get_size_with_ghosts();
-    //      ++atom_tag) {
-    //   auto pos = this->manager->get_position(atom_tag);
-    //   auto atom_type = this->manager->get_atom_type(atom_tag);
-
-    //   for (auto && p_image :
-    //        internal::PeriodicImages<dim>{periodic_min, repetitions, ntot}) {
-    //     // exclude the original unit cell
-    //     //! assumption: this assumes atoms were inside the cell initially
-    //     if (not(p_image.array() == 0).all()) {
-    //       Vector_t pos_ghost{pos + cell * p_image.template cast<double>()};
-    //       auto flag_inside = internal::position_in_bounds(ghost_min,
-    //       ghost_max,
-    //                                                       pos_ghost,
-    //                                                       bound_tol);
-
-    //       if (flag_inside) {
-    //         // next atom tag is size, since start is at index = 0
-    //         auto new_atom_tag{this->n_centers + this->n_ghosts};
-    //         this->add_ghost_atom(new_atom_tag, pos_ghost, atom_type);
-    //         // adds origin atom cluster_index if true
-    //         // adds ghost atom cluster index if false
-    //         size_t atom_index = this->manager->get_atom_index(atom_tag);
-    //         this->atom_index_from_atom_tag_list.push_back(atom_index);
-    //       }
-    //     }
-    //   }
-    // }
-
-    // // go through all atoms and/or ghosts to build neighbour list, depending
-    // on
-    // // the runtime decision flag
-    // std::vector<int> current_j_atoms{};
-    // for (auto center : this->get_manager()) {
-    //   int atom_tag = center.get_atom_tag();
-    //   int nneigh{0};
-
-    //   Vector_t pos = center.get_position();
-    //   Vector_t dpos = pos - mesh_min;
-    //   auto box_index = internal::get_box_index(dpos, cutoff);
-    //   internal::fill_neighbours_atom_tag(atom_tag, box_index, atom_id_cell,
-    //                                      current_j_atoms);
-
-    //   nneigh += current_j_atoms.size();
-    //   for (auto & j_atom_tag : current_j_atoms) {
-    //     this->neighbours_atom_tag.push_back(j_atom_tag);
-    //   }
-
-    //   this->nb_neigh.push_back(nneigh);
-    // }
-
-    // /**
-    //  * All the ghost atom neighbours have to be added explicitly as zero.
-    //  This
-    //  * is done after adding the neighbours of centers because ghost atoms are
-    //  * listed after the center atoms in the respective data
-    //  * structures. Technically ghost atoms can not have any neighbour, i.e.
-    //  not
-    //  * even '0'. It should be _nothing_. But that is not possible with our
-    //  data
-    //  * structure.
-    //  */
-    // int nneigh{0};
-    // for (auto && dummy : this->get_manager().only_ghosts()) {
-    //   std::ignore = dummy;
-    //   this->nb_neigh.push_back(nneigh);
-    // }
   }
 
   /* ---------------------------------------------------------------------- */
