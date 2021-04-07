@@ -188,15 +188,13 @@ namespace rascal {
 
   struct MultipleStructureManagerKspaceFixture {
     using ManagerTypeHolder_t =
-        StructureManagerTypeHolder<StructureManagerCenters,
-                                   AdaptorKspace>;
+        StructureManagerTypeHolder<StructureManagerCenters, AdaptorKspace>;
     MultipleStructureManagerKspaceFixture() {
       for (auto && filename : this->filenames) {
         json parameters;
         json structure{{"filename", filename}};
         json adaptors;
-        json ad1{{"name", "AdaptorKspace"},
-                  {"initialization_arguments", {}}};
+        json ad1{{"name", "AdaptorKspace"}, {"initialization_arguments", {}}};
         adaptors.push_back(ad1);
 
         parameters["structure"] = structure;
@@ -211,7 +209,6 @@ namespace rascal {
     const std::vector<std::string> filenames{
         "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/inputs/simple_cubic_8.json",
-        "reference_data/inputs/small_molecule.json",
         "reference_data/inputs/linked_cell_break_0.json"};
 
     json factory_args{};

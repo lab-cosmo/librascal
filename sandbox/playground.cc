@@ -43,6 +43,7 @@
 #include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/structure_managers/structure_manager_centers.hh"
 #include "rascal/structure_managers/structure_manager_collection.hh"
+#include "rascal/structure_managers/adaptor_kspace.hh"
 
 #include <cmath>
 #include <functional>
@@ -59,8 +60,7 @@
 using namespace rascal;  // NOLINT
 
 using ManagerTypeHolder_t = StructureManagerTypeHolder<
-                      StructureManagerCenters, AdaptorNeighbourList,
-                          AdaptorCenterContribution, AdaptorStrict>;
+                      StructureManagerCenters, AdaptorKspace>;
 
 using Manager_t = typename ManagerTypeHolder_t::type;
 using Representation_t = CalculatorSphericalInvariants;
@@ -113,8 +113,37 @@ int main(int argc, char * argv[]) {
   SparseKernel kernel{input["kernel"]};
 
   ManagerCollection_t managers{adaptors};
-  
-  // managers.add_structures(filename, 0, input["n_structures"].get<int>());
+
+  managers.add_structures(filename, 0, input["n_structures"].get<int>());
+
+  for (auto manager : managers) {
+    std::cout << "Nb neigh: " << manager->get_nb_clusters(2) << std::endl;
+    for (auto center : manager) {
+      int atom_tag = center.get_atom_tag();
+      int atom_type = center.get_atom_type();
+      auto pos = center.get_position();
+      std::cout << "tag: " <<atom_tag
+                << " type: " << atom_type
+                << " pos: " << pos.transpose()
+                << std::endl;
+    }
+
+    std::cout << std::endl;
+    for (auto center : manager) {
+      for (auto neigh : center.pairs()) {
+        int atom_tag = neigh.get_atom_tag();
+        int atom_type = neigh.get_atom_type();
+        auto pos = neigh.get_position();
+        auto atom_j = neigh.get_atom_j();
+        std::cout << "tag: " <<atom_tag
+                << " type: " << atom_type
+                << " atom_j: " << atom_j.get_atom_tag()
+                << " pos: " << pos.transpose()
+                << std::endl;
+      }
+    }
+
+  }
   // Representation_t representation{calculator};
   // auto N_ITERATIONS{input["N_ITERATIONS"].get<int>()};
   // representation.compute(managers);

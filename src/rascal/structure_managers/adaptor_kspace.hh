@@ -109,7 +109,7 @@ namespace rascal {
     AdaptorKspace(ImplementationPtr_t manager);
 
     AdaptorKspace(ImplementationPtr_t manager,
-                         const Hypers_t & adaptor_hypers)
+                  const Hypers_t & /*adaptor_hypers*/)
         : AdaptorKspace(manager) {}
 
     //! Copy constructor
@@ -122,8 +122,7 @@ namespace rascal {
     virtual ~AdaptorKspace() = default;
 
     //! Copy assignment operator
-    AdaptorKspace &
-    operator=(const AdaptorKspace & other) = delete;
+    AdaptorKspace & operator=(const AdaptorKspace & other) = delete;
 
     //! Move assignment operator
     AdaptorKspace & operator=(AdaptorKspace && other) = default;
@@ -138,7 +137,6 @@ namespace rascal {
     //! Updates the underlying manager as well as the adaptor
     template <class... Args>
     void update(Args &&... arguments);
-
 
     /**
      * Returns the linear indices of the clusters (whose atom tags are stored
@@ -176,7 +174,7 @@ namespace rascal {
 
     //! Returns position of an atom with index atom_tag
     Vector_ref get_position(size_t atom_tag) {
-      return Vector_ref(&this->positions[atom_tag*traits::Dim]);
+      return Vector_ref(&this->positions[atom_tag * traits::Dim]);
     }
 
     //! Returns position of the given atom object (useful for users)
@@ -224,7 +222,6 @@ namespace rascal {
     size_t get_atom_index(const int atom_tag) const {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
-
 
     //! Returns the number of neighbours of a given atom at a given TargetOrder
     //! Returns the number of pairs of a given center
@@ -330,8 +327,7 @@ namespace rascal {
   template <class ManagerImplementation>
   AdaptorKspace<ManagerImplementation>::AdaptorKspace(
       std::shared_ptr<ManagerImplementation> manager)
-      : manager{std::move(manager)},
-        atom_tag_list{}, atom_types{}, nb_neigh{},
+      : manager{std::move(manager)}, atom_tag_list{}, atom_types{}, nb_neigh{},
         neighbours_atom_tag{}, offsets{}, n_centers{0} {
     static_assert(not(traits::MaxOrder < 1), "No atom list in manager");
   }
@@ -343,13 +339,8 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   template <class... Args>
-  void
-  AdaptorKspace<ManagerImplementation>::update(Args &&... arguments) {
+  void AdaptorKspace<ManagerImplementation>::update(Args &&... arguments) {
     if (sizeof...(arguments) > 0) {
-      // TODO(felix) should not have to assume that the underlying manager is
-      // manager centers.
-      auto && atomic_structure{this->manager->get_atomic_structure()};
-      // if the structure has not changed by more than skin**2
       this->need_update = true;
     }
     this->manager->update(std::forward<Args>(arguments)...);
@@ -426,22 +417,18 @@ namespace rascal {
     constexpr auto dim{traits::Dim};
 
     auto periodicity = this->manager->get_periodic_boundary_conditions();
-    size_t ntot{1};
 
     // calculate number of actual repetitions of cell, depending on periodicity
     for (auto i{0}; i < dim; ++i) {
       if (not periodicity[i]) {
-        throw std::runtime_error(
-                R"(The structure should be fully periodic.)");
+        throw std::runtime_error(R"(The structure should be fully periodic.)");
       }
     }
-    size_t n_atoms{this->manager->size()-1};
+    size_t n_atoms{this->manager->size() - 1};
     int atom_tag{0};
     for (auto center : this->manager) {
-      // int atom_tag = center.get_atom_tag();
       int atom_type = center.get_atom_type();
       auto atom_index = this->manager->get_atom_index(atom_tag);
-      int nneigh{0};
 
       Vector_t pos = center.get_position();
 
@@ -480,12 +467,14 @@ namespace rascal {
       this->nb_neigh.push_back(nneigh);
     }
 
-
-    // // Before generating periodic replicas atoms (also termed ghost atoms), all
-    // // existing center atoms are added to the list of current atoms to start the
+    // // Before generating periodic replicas atoms (also termed ghost atoms),
+    // all
+    // // existing center atoms are added to the list of current atoms to start
+    // the
     // // full list of current i-atoms to have them all contiguously at the
     // // beginning of the list.
-    // for (size_t atom_tag{0}; atom_tag < this->manager->get_size(); ++atom_tag) {
+    // for (size_t atom_tag{0}; atom_tag < this->manager->get_size();
+    // ++atom_tag) {
     //   auto atom_type = this->manager->get_atom_type(atom_tag);
     //   auto atom_index = this->manager->get_atom_index(atom_tag);
     //   this->atom_tag_list.push_back(atom_tag);
@@ -493,8 +482,10 @@ namespace rascal {
     //   this->atom_index_from_atom_tag_list.push_back(atom_index);
     // }
 
-    // for (size_t atom_tag_i{0}; atom_tag_i < this->manager->get_size(); ++atom_tag_i) {
-    //   for (size_t atom_tag_j{0}; atom_tag_j < this->manager->get_size(); ++atom_tag_j) {
+    // for (size_t atom_tag_i{0}; atom_tag_i < this->manager->get_size();
+    // ++atom_tag_i) {
+    //   for (size_t atom_tag_j{0}; atom_tag_j < this->manager->get_size();
+    //   ++atom_tag_j) {
     //     int nneigh{0};
 
     //   Vector_t pos = center.get_position();
@@ -510,7 +501,6 @@ namespace rascal {
     //   }
     // }
 
-
     // // this->atom_tag_list.push_back(atom_tag);
     // //   this->atom_types.push_back(atom_type);
     // //   // add it to the ghost atom container
@@ -521,7 +511,8 @@ namespace rascal {
     // //   }
 
     // // generate ghost atom tags and positions
-    // for (size_t atom_tag{0}; atom_tag < this->manager->get_size_with_ghosts();
+    // for (size_t atom_tag{0}; atom_tag <
+    // this->manager->get_size_with_ghosts();
     //      ++atom_tag) {
     //   auto pos = this->manager->get_position(atom_tag);
     //   auto atom_type = this->manager->get_atom_type(atom_tag);
@@ -532,8 +523,10 @@ namespace rascal {
     //     //! assumption: this assumes atoms were inside the cell initially
     //     if (not(p_image.array() == 0).all()) {
     //       Vector_t pos_ghost{pos + cell * p_image.template cast<double>()};
-    //       auto flag_inside = internal::position_in_bounds(ghost_min, ghost_max,
-    //                                                       pos_ghost, bound_tol);
+    //       auto flag_inside = internal::position_in_bounds(ghost_min,
+    //       ghost_max,
+    //                                                       pos_ghost,
+    //                                                       bound_tol);
 
     //       if (flag_inside) {
     //         // next atom tag is size, since start is at index = 0
@@ -548,8 +541,8 @@ namespace rascal {
     //   }
     // }
 
-
-    // // go through all atoms and/or ghosts to build neighbour list, depending on
+    // // go through all atoms and/or ghosts to build neighbour list, depending
+    // on
     // // the runtime decision flag
     // std::vector<int> current_j_atoms{};
     // for (auto center : this->get_manager()) {
@@ -571,11 +564,14 @@ namespace rascal {
     // }
 
     // /**
-    //  * All the ghost atom neighbours have to be added explicitly as zero. This
+    //  * All the ghost atom neighbours have to be added explicitly as zero.
+    //  This
     //  * is done after adding the neighbours of centers because ghost atoms are
     //  * listed after the center atoms in the respective data
-    //  * structures. Technically ghost atoms can not have any neighbour, i.e. not
-    //  * even '0'. It should be _nothing_. But that is not possible with our data
+    //  * structures. Technically ghost atoms can not have any neighbour, i.e.
+    //  not
+    //  * even '0'. It should be _nothing_. But that is not possible with our
+    //  data
     //  * structure.
     //  */
     // int nneigh{0};
