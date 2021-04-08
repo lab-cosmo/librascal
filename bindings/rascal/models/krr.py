@@ -4,22 +4,14 @@ Public classes:
     Kernel  Kernel Ridge Regression model (sparse GPR only).
 
 Public functions:
-    compute_kernel_single   Compute GAP kernel of a single structure
     compute_KNM             Compute GAP kernel of a set of structures
+    train_gap_model         Train a GAP model given a kernel matrix and sparse points
 """
-from ..utils import BaseIO, is_notebook
+from ..utils import BaseIO
 from ..lib import compute_sparse_kernel_gradients, compute_sparse_kernel_neg_stress
 
 import numpy as np
 import ase
-
-try:
-    if is_notebook():
-        from tqdm.notebook import tqdm
-    else:
-        from tqdm import tqdm
-except ImportError:
-    from ..utils.misc import tqdm_nop as tqdm
 
 
 class KRR(BaseIO):
@@ -241,7 +233,6 @@ class KRR(BaseIO):
         return self.kernel._rep
 
 
-# TODO(max, felix) I think this belongs in utils; it's not KRR-specific
 def _get_kernel_strides(frames):
     """Get strides for total-energy/gradient kernels of the given structures
 
@@ -256,11 +247,11 @@ def _get_kernel_strides(frames):
 
     Returns
     -------
-    (1)
+    int
         the number of structures
-    (2)
+    int
         the number of gradient entries (== 3 * the total number of atoms)
-    (3)
+    np.array(int)
         strides for assigning the gradient entries for each structure
     """
     Nstructures = len(frames)
@@ -274,7 +265,7 @@ def _get_kernel_strides(frames):
     return Nstructures, Ngrads, Ngrad_stride
 
 
-def compute_kernel_single(i_frame, frame, representation, X_sparse, kernel):
+def _compute_kernel_single(i_frame, frame, representation, X_sparse, kernel):
     """Compute GAP kernel of the (new) structure against the sparse points
 
     Parameters
@@ -321,18 +312,38 @@ def compute_KNM(frames, X_sparse, kernel, soap):
     -------
     K_NM: np.array
         Summed total-energy kernel stacked with the atom-position gradient of the kernel
+
+    Notes
+    -----
+    This function can take quite a long time to run.  To get a progress bar,
+    you can wrap the `frames` parameter in a [tqdm]_ object like this:
+
+    .. code-block:: python
+
+        from tqdm.notebook import tqdm # for Jupyter
+        #from tqdm import tqdm # on the command line
+        K_NM = compute_KNM(
+            tqdm(frames, desc="compute KNM", leave=False),
+            X_sparse,
+            kernel,
+            soap
+        )
+
+    .. [tqdm] https://github.com/tqdm/tqdm
     """
-    Nstructures, Ngrads, Ngrad_stride = _get_kernel_strides(frames)
+    # If frames has been wrapped in a tqdm, use the underlying iterable
+    # so as not to "use up" the progress bar prematurely
+    if hasattr(frames, "iterable"):
+        Nstructures, Ngrads, Ngrad_stride = _get_kernel_strides(frames.iterable)
+    else:
+        Nstructures, Ngrads, Ngrad_stride = _get_kernel_strides(frames)
     KNM = np.zeros((Nstructures + Ngrads, X_sparse.size()))
-    pbar = tqdm(frames, desc="compute KNM", leave=False)
     for i_frame, frame in enumerate(frames):
-        en_row, grad_rows = compute_kernel_single(
+        en_row, grad_rows = _compute_kernel_single(
             i_frame, frame, soap, X_sparse, kernel
         )
         KNM[Ngrad_stride[i_frame] : Ngrad_stride[i_frame + 1]] = grad_rows
         KNM[i_frame] = en_row
-        pbar.update()
-    pbar.close()
     return KNM
 
 
