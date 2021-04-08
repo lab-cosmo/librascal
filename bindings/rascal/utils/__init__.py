@@ -7,7 +7,6 @@ from .io import (
     dump_obj,
     load_obj,
 )
-from .misc import is_notebook
 
 # Warning potential dependency loop: FPS imports models, which imports KRR,
 # which imports this file again

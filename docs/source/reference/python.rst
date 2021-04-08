@@ -37,8 +37,6 @@ Models
 
 .. autofunction:: rascal.models.compute_KNM
 
-.. autofunction:: rascal.models.krr.compute_kernel_single
-
 IO
 ===
 
