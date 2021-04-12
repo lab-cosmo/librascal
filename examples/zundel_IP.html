@@ -1,0 +1,1045 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>A Gaussian approximation potential (GAP) for the Zundel cation &mdash; Rascal 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../_static/rascal.png"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Goals &amp; Design" href="../whitepaper.html" />
+    <link rel="prev" title="Examples" href="examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Rascal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/user_guide.html">User’s Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">A Gaussian approximation potential (GAP) for the Zundel cation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Getting-started">Getting started</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Importing-all-the-necessary-Librascal-modules">Importing all the necessary Librascal modules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Build-the-GAP-model">Build the GAP model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Assessment-of-the-model">Assessment of the model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MD-simulations">MD simulations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../whitepaper.html">Goals &amp; Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../SOAP.html">SOAP Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_guide/developer.html">Developer’s guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">Bibliography</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rascal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="examples.html">Examples</a> &raquo;</li>
+        
+      <li>A Gaussian approximation potential (GAP) for the Zundel cation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/examples/zundel_IP.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="A-Gaussian-approximation-potential-(GAP)-for-the-Zundel-cation">
+<h1>A Gaussian approximation potential (GAP) for the Zundel cation<a class="headerlink" href="#A-Gaussian-approximation-potential-(GAP)-for-the-Zundel-cation" title="Permalink to this headline">¶</a></h1>
+<p>The present notebook is meant to give you an overview of the main ingredients that you need to build an interatomic potential with <code class="docutils literal notranslate"><span class="pre">librascal</span></code> and use it in connection with i-Pi (<a class="reference external" href="https://github.com/cosmo-epfl/i-pi">https://github.com/cosmo-epfl/i-pi</a>) to generate molecular dynamics (MD) trajectories of the system of interest. We will start from building a GAP model for Zundel cations (<span class="math notranslate nohighlight">\(H_5O_2+\)</span>), using a training set obtained via Bowman PES sampling, calculate its RMSE on a test set to check its performance and run a short
+NVT simulation at <span class="math notranslate nohighlight">\(\text{T} = 250\,\text{K}\)</span>.</p>
+<p>The mathematical framework that we are going to use is the kernel-GAP fitting method, using both total energies and atomic forces as target properties. Basically the GAP-model total energy of a zundel molecule is computed using the following expression:</p>
+<div class="math notranslate nohighlight">
+\[E = E_0 + \sum_i \sum_{s=1}^M \alpha_s K(\bf{d_i} , \bf{d_s} )\]</div>
+<p>where <span class="math notranslate nohighlight">\(E_0\)</span> represents an energy baseline (given usually by the sum of atomic self-contributions), <span class="math notranslate nohighlight">\(\bf{d_i}\)</span> (<span class="math notranslate nohighlight">\(i = 1, \dots, N_{atoms}\)</span>) are the set of (normalized SOAP) descriptors describing an environment centred around atom <span class="math notranslate nohighlight">\(i\)</span>, <span class="math notranslate nohighlight">\(\bf{d_s}\)</span> the set of descriptors corresponding to the environments of the sparse set (of size <span class="math notranslate nohighlight">\(M\)</span>) and K a kernel matrix that describes the similarity of two different atomic environments. In our application, the kernel is just
+the dot product, raised to some integer power <span class="math notranslate nohighlight">\(\zeta\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[K(\bf{d_i} , \bf{d_s} ) \propto \left| \bf{d_i} \cdot \bf{d_s} \right|^{\zeta}\]</div>
+<p>Finally <span class="math notranslate nohighlight">\(\alpha_s\)</span> represents the weights of each sparse environment, to be determined using Kernel-Ridge Regression (KRR). For extensive details on the SOAP GAP-model fitting procedure and interesting physical applications, we invite the reader to refer to the book chapter [1]. Details on the implementation in <code class="docutils literal notranslate"><span class="pre">librascal</span></code> are instead given in the companion publication [2].</p>
+<p>[1]: M. Ceriotti, M.J. Willatt, and G. Csányi, in Handbook of Materials Modeling (Springer International Publishing, Cham, 2018), pp. 1–27. <a class="reference external" href="https://doi.org/10.1007/978-3-319-42913-7_68-1">https://doi.org/10.1007/978-3-319-42913-7_68-1</a></p>
+<p>[2]: F. Musil, M. Veit, A. Goscinski, G. Fraux, M.J. Willatt, M. Stricker, T. Junge, and M. Ceriotti, J. Chem. Phys. 154, 114109 (2021). <a class="reference external" href="https://doi.org/10.1063/5.0044689">https://doi.org/10.1063/5.0044689</a></p>
+<div class="section" id="Getting-started">
+<h2>Getting started<a class="headerlink" href="#Getting-started" title="Permalink to this headline">¶</a></h2>
+<p>In order to be able to fit a potential with <code class="docutils literal notranslate"><span class="pre">librascal</span></code> (the model evaluator) and interface it with i-Pi (the MD engine) we first need to have both softwares available and correctly installed. For <code class="docutils literal notranslate"><span class="pre">librascal</span></code>, the following should suffice:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/cosmo-epfl/librascal.git
+</pre></div>
+</div>
+<p>For i-PI, you need to use a special branch (at least, until <a class="reference external" href="https://github.com/i-pi/i-pi/pull/171">PR #171</a> is merged):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/cosmo-epfl/i-pi.git@feat/librascal
+</pre></div>
+</div>
+<p>If these steps don’t work, try looking at the <code class="docutils literal notranslate"><span class="pre">README.rst</span></code> files of the respective repositories for further instructions.</p>
+<div class="section" id="Importing-all-the-necessary-Librascal-modules">
+<h3>Importing all the necessary Librascal modules<a class="headerlink" href="#Importing-all-the-necessary-Librascal-modules" title="Permalink to this headline">¶</a></h3>
+<p>Let us start from the import of all the necessary modules and classes. In <code class="docutils literal notranslate"><span class="pre">librascal</span></code>, these are:</p>
+<ol class="arabic simple">
+<li><p>the SOAP descriptors of a structure, by means of the <code class="docutils literal notranslate"><span class="pre">SphericalInvariants</span></code> class;</p></li>
+<li><p>the kernels between a set of environments and the sparse set (the <code class="docutils literal notranslate"><span class="pre">Kernel</span></code> class);</p></li>
+<li><p>the GAP model itself, which is saved as an object of the <code class="docutils literal notranslate"><span class="pre">KRR</span></code> class. The predict method of the same class will allow us to give predictions to new unseen structures.</p></li>
+</ol>
+<p>NOTE: it is assumed that the input format for the training set and the test set is an ASE-compatible (e.g. extended-XYZ) file, which is then converted into an array of ASE Atoms objects, each one corresponding to a specific structure. <code class="docutils literal notranslate"><span class="pre">librascal</span></code> uses these frames to compute the representations and predict the properties of new structures. In this example on zundel cations, the target energies to build the model with are reported in the <code class="docutils literal notranslate"><span class="pre">zundel_energies.txt</span></code> file, while the atomic forces are
+additional columns of the xyz.</p>
+<p>Alternatively, global target properties can be reported in the header line following the ASE format.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pylab</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">rascal</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">import</span> <span class="nn">ase</span>
+<span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">write</span>
+<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">make_supercell</span>
+<span class="kn">from</span> <span class="nn">ase.visualize</span> <span class="kn">import</span> <span class="n">view</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="c1"># If installed -- not essential, though</span>
+<span class="kn">from</span> <span class="nn">tqdm.notebook</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">rascal.models</span> <span class="kn">import</span> <span class="n">Kernel</span><span class="p">,</span> <span class="n">sparse_points</span><span class="p">,</span> <span class="n">train_gap_model</span><span class="p">,</span> <span class="n">KRR</span><span class="p">,</span> <span class="n">compute_KNM</span>
+<span class="kn">from</span> <span class="nn">rascal.representations</span> <span class="kn">import</span> <span class="n">SphericalInvariants</span>
+<span class="kn">from</span> <span class="nn">rascal.neighbourlist</span> <span class="kn">import</span> <span class="n">AtomsList</span>
+<span class="kn">from</span> <span class="nn">rascal.utils</span> <span class="kn">import</span> <span class="n">from_dict</span><span class="p">,</span> <span class="n">to_dict</span><span class="p">,</span> <span class="n">CURFilter</span><span class="p">,</span> <span class="n">dump_obj</span><span class="p">,</span> <span class="n">load_obj</span>
+</pre></div>
+</div>
+</div>
+<p>In the snippets below we extract the relevant properties for each ASE frame. We load the total potential energies and we use the <code class="docutils literal notranslate"><span class="pre">ASE.Atoms.arrays</span></code> methods to get the atomic forces. For more information on how to use ASE-related methods, check the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html">ASE Atoms documentation</a>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Load the first N structures of the zundel dataset</span>
+<span class="n">N_dataset</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">frames</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s1">&#39;zundel_dataset.xyz&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s1">&#39;:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">N_dataset</span><span class="p">))</span>
+<span class="n">energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;zundel_energies.txt&#39;</span><span class="p">)[:</span><span class="n">N_dataset</span><span class="p">]</span>
+
+<span class="c1">#Keys of the arrays dictionary</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">frames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">arrays</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+dict_keys([&#39;numbers&#39;, &#39;positions&#39;, &#39;forces&#39;])
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">extract_forces</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span><span class="n">array_key</span><span class="o">=</span><span class="s1">&#39;zeros&#39;</span><span class="p">):</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">array_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">array_key</span> <span class="o">==</span> <span class="s1">&#39;zeros&#39;</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="n">array_key</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">f</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Build-the-GAP-model">
+<h2>Build the GAP model<a class="headerlink" href="#Build-the-GAP-model" title="Permalink to this headline">¶</a></h2>
+<p>The preliminary step towards building a GAP model is defining a training and a test set. The training set is built by random selection of <span class="math notranslate nohighlight">\(800\)</span> of the available structures, while the remaining <span class="math notranslate nohighlight">\(200\)</span> will represent the test set. At this point, we also extract the distinct atomic species present in our system, define the atomic baseline energy and extract the information regarding energies and forces in the train and test set structures, which we will need later on.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Number of structures to train the model with</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">800</span>
+
+<span class="n">global_species</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+    <span class="n">global_species</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">())</span>
+<span class="n">global_species</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">global_species</span><span class="p">)</span>
+
+<span class="c1"># Select randomly n structures for training the model</span>
+<span class="n">ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">N_dataset</span><span class="p">))</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+
+<span class="n">train_ids</span> <span class="o">=</span> <span class="n">ids</span><span class="p">[:</span><span class="n">n</span><span class="p">]</span>
+<span class="n">frames_train</span> <span class="o">=</span> <span class="p">[</span><span class="n">frames</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">[:</span><span class="n">n</span><span class="p">]]</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span><span class="n">energies</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">[:</span><span class="n">n</span><span class="p">]]</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">f_train</span> <span class="o">=</span> <span class="n">extract_forces</span><span class="p">(</span><span class="n">frames_train</span><span class="p">,</span> <span class="s1">&#39;forces&#39;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">extract_forces</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="s1">&#39;forces&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Atomic energy baseline</span>
+<span class="n">atom_energy_baseline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">frames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_global_number_of_atoms</span><span class="p">())</span>
+<span class="n">energy_baseline</span> <span class="o">=</span> <span class="p">{</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">(</span><span class="n">species</span><span class="p">):</span> <span class="n">atom_energy_baseline</span> <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">global_species</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>Now we proceed with the actual calculation of the SOAP vectors of our training set. We need to specify an hyperparameters dictionary, which <code class="docutils literal notranslate"><span class="pre">librascal</span></code> uses to compute the structural features. The meaning of each hyperparameter and how to correctly set them is reported in <cite>the ``SphericalInvariants`</cite> documentation &lt;<a class="reference external" href="https://cosmo-epfl.github.io/librascal/reference/python.html#rascal.representations.SphericalInvariants">https://cosmo-epfl.github.io/librascal/reference/python.html#rascal.representations.SphericalInvariants</a>&gt;`__. These hyperparameters can be used as default values, but a careful
+optimization of the interaction cutoff might be required in the case the material under investigation might present some mid- or long-range order.</p>
+<p>For the actual calculation of the SOAP features, we first create an object of the <code class="docutils literal notranslate"><span class="pre">SphericalInvariants</span></code> class, defined by its hyperparameters. The methods that we then need to use are <code class="docutils literal notranslate"><span class="pre">transform()}</span></code>, which yields a second object called the <code class="docutils literal notranslate"><span class="pre">manager</span></code> containing the representation, while <code class="docutils literal notranslate"><span class="pre">get_features()</span></code> converts it into an <span class="math notranslate nohighlight">\(NxM\)</span> matrix, <span class="math notranslate nohighlight">\(N\)</span> being the number of atomic environments in the training set and M the number of features per each environment.</p>
+<p>At this point, the <code class="docutils literal notranslate"><span class="pre">compute_gradients</span></code> hyper should be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>. For now, we will only use the SOAP representations (no gradients!) of the training set structures to select a sparse set using the CUR decomposition. Setting it to <code class="docutils literal notranslate"><span class="pre">True</span></code> would require Librascal to compute all the gradients of the SOAP representation w.r.t. atomic coordinates, thus making the structural managers unnecessarily memory expensive. We will instead compute later on the gradients of the sparse kernels using
+the <code class="docutils literal notranslate"><span class="pre">compute_KNM</span></code> method when we fit the GAP model.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># define the parameters of the spherical expansion</span>
+<span class="n">hypers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;PowerSpectrum&quot;</span><span class="p">,</span>
+              <span class="n">interaction_cutoff</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+              <span class="n">max_radial</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+              <span class="n">max_angular</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+              <span class="n">gaussian_sigma_constant</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+              <span class="n">gaussian_sigma_type</span><span class="o">=</span><span class="s2">&quot;Constant&quot;</span><span class="p">,</span>
+              <span class="n">cutoff_function_type</span><span class="o">=</span><span class="s2">&quot;RadialScaling&quot;</span><span class="p">,</span>
+              <span class="n">cutoff_smooth_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+              <span class="n">cutoff_function_parameters</span><span class="o">=</span>
+                    <span class="nb">dict</span><span class="p">(</span>
+                            <span class="n">rate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                            <span class="n">scale</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span>
+                            <span class="n">exponent</span><span class="o">=</span><span class="mi">4</span>
+                        <span class="p">),</span>
+              <span class="n">radial_basis</span><span class="o">=</span><span class="s2">&quot;GTO&quot;</span><span class="p">,</span>
+              <span class="n">optimization_args</span><span class="o">=</span>
+                    <span class="nb">dict</span><span class="p">(</span>
+                            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;Spline&quot;</span><span class="p">,</span>
+                            <span class="n">accuracy</span><span class="o">=</span><span class="mf">1.0e-05</span>
+                        <span class="p">),</span>
+              <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+              <span class="n">compute_gradients</span><span class="o">=</span><span class="kc">False</span>
+              <span class="p">)</span>
+
+
+<span class="n">soap</span> <span class="o">=</span> <span class="n">SphericalInvariants</span><span class="p">(</span><span class="o">**</span><span class="n">hypers</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The following snippet computes the descriptors and the managers for each frame, which will represent the expensive part of the calculation, in terms of memory usage.</p>
+<p>NOTE: the <code class="docutils literal notranslate"><span class="pre">librascal</span></code> structure manager only works if the atoms have been wrapped within the cell provided in the input file using e.g. <code class="docutils literal notranslate"><span class="pre">ase.Atoms.wrap()</span></code>, or one of the structure preprocessors provided in <code class="docutils literal notranslate"><span class="pre">rascal.neighbourlist.structure_manager</span></code> module (useful especially for non-periodic structures).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">managers</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">frames_train</span><span class="p">):</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="mf">1e-18</span><span class="p">)</span>
+
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+<span class="n">managers</span> <span class="o">=</span> <span class="n">soap</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">frames_train</span><span class="p">)</span>
+<span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Execution: &quot;</span><span class="p">,</span> <span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "94339c23f47e4080afd5a9dc25eecfa3", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Execution:  0.20978784561157227 s
+</pre></div></div>
+</div>
+<p>At this point, we can define the <strong>sparse set</strong>, i.e. the set of (ideally) “maximally diverse” environments that will be used as basis points of the kernel ridge regression (KRR, mostly equivalent to GAP) model. We can choose the number of sparse environments in <code class="docutils literal notranslate"><span class="pre">librascal</span></code> per each atomic species, by defining a dictionary containing (atomic number, number of environments) pairs. The CURFilter class then selects out the most “representative” environments according to the representation that we
+provide as the input object and by applying the CUR decomposition [3].</p>
+<p>[3]: 1 M.W. Mahoney and P. Drineas, PNAS 106, 697 (2009). <a class="reference external" href="https://doi.org/10.1073/pnas.0803205106">https://doi.org/10.1073/pnas.0803205106</a></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># select the sparse points for the sparse kernel method with CUR on the whole training set</span>
+<span class="n">n_sparse</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span><span class="mi">250</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">125</span><span class="p">}</span>
+<span class="n">compressor</span> <span class="o">=</span> <span class="n">CURFilter</span><span class="p">(</span><span class="n">soap</span><span class="p">,</span> <span class="n">n_sparse</span><span class="p">,</span> <span class="n">act_on</span><span class="o">=</span><span class="s1">&#39;sample per species&#39;</span><span class="p">)</span>
+<span class="n">X_sparse</span> <span class="o">=</span> <span class="n">compressor</span><span class="o">.</span><span class="n">select_and_filter</span><span class="p">(</span><span class="n">managers</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The number of pseudo points selected by central atom species is: {1: 250, 8: 125}
+Selecting species: 1
+Reconstruction RMSE=1.157e-02
+Selecting species: 8
+Reconstruction RMSE=1.020e-02
+</pre></div></div>
+</div>
+<p>As shown in eq. <span class="math notranslate nohighlight">\((1)\)</span>, in order to fit a GAP potential we need to compute the kernels of all the training structure descriptors and the sparse set, as well as the gradients w.r.t. the atomic positions, if we wish to fit the atomic forces. We do so by using another key structure of librascal: the <code class="docutils literal notranslate"><span class="pre">Kernel</span></code> class. We first build a kernel object containing the representation (SOAP), which we then use to compute the sparse kernel matrix <span class="math notranslate nohighlight">\(K_{NM}\)</span> between the training set and the sparse
+set and its gradients using the <code class="docutils literal notranslate"><span class="pre">compute_KNM</span></code> method.</p>
+<p>Finally, we group everything together to build the GAP model, which basically uses the kernel matrices to regress the weights <span class="math notranslate nohighlight">\(\{\alpha_s\}_{s=1}^M\)</span> on each sparse environment. The <code class="docutils literal notranslate"><span class="pre">lambdas</span></code> are the regularization parameters of the KRR (for both energies and forces), while <code class="docutils literal notranslate"><span class="pre">jitter</span></code> is a small parameter that enables its numerical convergence.</p>
+<p>The output is a KRR object, which we can save as .json file for future use. For this last bit we use the <code class="docutils literal notranslate"><span class="pre">dump_obj</span></code> method (part of the <code class="docutils literal notranslate"><span class="pre">rascal.utils.io</span></code> module).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">zeta</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+<span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;compute_gradients&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">soap</span> <span class="o">=</span> <span class="n">SphericalInvariants</span><span class="p">(</span><span class="o">**</span><span class="n">hypers</span><span class="p">)</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">Kernel</span><span class="p">(</span><span class="n">soap</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GAP&#39;</span><span class="p">,</span> <span class="n">zeta</span><span class="o">=</span><span class="n">zeta</span><span class="p">,</span> <span class="n">target_type</span><span class="o">=</span><span class="s1">&#39;Structure&#39;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s1">&#39;Sparse&#39;</span><span class="p">)</span>
+
+<span class="n">KNM</span> <span class="o">=</span> <span class="n">compute_KNM</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">frames_train</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Computing kernel matrix&quot;</span><span class="p">),</span> <span class="n">X_sparse</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">soap</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">train_gap_model</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="n">frames_train</span><span class="p">,</span> <span class="n">KNM</span><span class="p">,</span> <span class="n">X_sparse</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">energy_baseline</span><span class="p">,</span>
+                        <span class="n">grad_train</span><span class="o">=-</span><span class="n">f_train</span><span class="p">,</span> <span class="n">lambdas</span><span class="o">=</span><span class="p">[</span><span class="mf">1e-12</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">],</span> <span class="n">jitter</span><span class="o">=</span><span class="mf">1e-13</span><span class="p">)</span>
+
+<span class="c1"># save the model to a file in json format for future use</span>
+<span class="n">dump_obj</span><span class="p">(</span><span class="s1">&#39;zundel_model.json&#39;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s1">&#39;Structure_indices.txt&#39;</span><span class="p">,</span> <span class="n">ids</span><span class="p">)</span>
+<span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Execution: &quot;</span><span class="p">,</span> <span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "9a9de27d88974f0aa9d05d696d88d947", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Execution:  6.271355152130127 s
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Assessment-of-the-model">
+<h2>Assessment of the model<a class="headerlink" href="#Assessment-of-the-model" title="Permalink to this headline">¶</a></h2>
+<p>To perform a basic assessment of the model we have fitted, we need to predict the properties (energies and forces) of a test set. In the calculation of the model that we have fitted previously, we have randomly splitted the original dataset in a training set of 800 structures and a test set of another 200. So first we load the model and the indices corresponding to the shuffled dataset: the first 800 of those will correspond to the training set, the last 200 to the test set.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">800</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">load_obj</span><span class="p">(</span><span class="s1">&#39;zundel_model.json&#39;</span><span class="p">)</span>
+<span class="n">ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;Structure_indices.txt&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">train_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">[:</span><span class="n">n</span><span class="p">]]</span>
+<span class="n">test_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">[</span><span class="n">n</span><span class="p">:]]</span>
+
+<span class="n">frames_train</span> <span class="o">=</span> <span class="p">[</span><span class="n">frames</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">train_ids</span><span class="p">]</span>
+<span class="n">frames_test</span> <span class="o">=</span> <span class="p">[</span><span class="n">frames</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">test_ids</span><span class="p">]</span>
+
+<span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span><span class="n">energies</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">train_ids</span><span class="p">]</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="p">[</span><span class="n">energies</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">test_ids</span><span class="p">]</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_test</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Let us now compute the predictions on the test set, using the <code class="docutils literal notranslate"><span class="pre">predict()</span></code> and <code class="docutils literal notranslate"><span class="pre">predict_forces()</span></code> methods of the <code class="docutils literal notranslate"><span class="pre">KRR</span></code> class. At this point we need to compute the SOAP representation of the test set structures. It is important to stress however that this will not cause any issue regarding memory usage, because all we need is the predictions, so we can compute the managers of the test set structures one by one and calculate the predictions right away. Instead for the GAP fitting we need to
+store ALL the structure managers of the training set to perform the regression (which causes a large RAM usage).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># make predictions on the test set</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">f_pred</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">frames_test</span><span class="p">):</span>
+    <span class="n">positions</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">positions</span><span class="o">+</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="mf">1e-18</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">soap</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">y_pred</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+    <span class="n">f_pred</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict_forces</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">f_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">f_pred</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "d95171bb78cf4a45ab483625cbc05f97", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">f_test</span> <span class="o">=</span> <span class="n">extract_forces</span><span class="p">(</span><span class="n">frames_test</span><span class="p">,</span> <span class="s1">&#39;forces&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Let us now compute the overall performance of the model. This is done by calculation of the Root-Mean-Square Error (RMSE), i.e. the standard deviation of the residuals according to the standard formula:</p>
+<div class="math notranslate nohighlight">
+\[\text{RMSE} = \sqrt{\frac{1}{n_{\text{test}}}\sum_i (y_{\text{pred}}^{i} - y_{\text{test}}^{i})^2}\]</div>
+<p>which we can compare to the standard deviation of the test set itself to quantify how much the model captures the energy variations in the test set. The <span class="math notranslate nohighlight">\(\% \text{RMSE}\)</span> of our model is about <span class="math notranslate nohighlight">\(5 \%\)</span> of the training set STD, which is sufficiently accurate to run MD safely.</p>
+<p>Finally we plot a “correlation plot”, to observe how well the predictions on the test set correlate with the reference DFT-computed energies.</p>
+<p>NOTE: by just repeating this procedure and fitting potentials with increasing training set size, one can also construct the learning curve of the GAP.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">rascal.utils</span> <span class="kn">import</span> <span class="n">get_score</span>
+
+<span class="n">score</span> <span class="o">=</span> <span class="n">get_score</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>
+<span class="n">RMSE</span> <span class="o">=</span> <span class="n">score</span><span class="p">[</span><span class="s1">&#39;RMSE&#39;</span><span class="p">]</span>
+<span class="n">sigma_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y_test</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RMSE = &quot;</span><span class="p">,</span> <span class="n">RMSE</span><span class="o">*</span><span class="mf">1000.0</span><span class="p">,</span> <span class="s2">&quot;meV&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sigma test set = &quot;</span><span class="p">,</span> <span class="n">sigma_test</span><span class="p">,</span> <span class="s2">&quot; eV&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;%RMSE = &quot;</span><span class="p">,</span> <span class="n">RMSE</span><span class="o">/</span><span class="n">sigma_test</span><span class="o">*</span><span class="mf">100.0</span><span class="p">,</span> <span class="s2">&quot; %&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+RMSE =  18.55387904272729 meV
+Sigma test set =  0.274800153468654  eV
+%RMSE =  6.7517717179309  %
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s1">&#39;black&#39;</span><span class="p">)</span>
+<span class="n">lims</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">y_pred</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">y_test</span><span class="p">)]),</span>  <span class="c1"># min of both axes</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y_pred</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y_test</span><span class="p">)]),</span>  <span class="c1"># max of both axes</span>
+<span class="p">]</span>
+
+<span class="c1"># now plot both limits against eachother</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lims</span><span class="p">,</span> <span class="n">lims</span><span class="p">,</span> <span class="s1">&#39;k-&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;correlation plot&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;predicted energies [eV]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;reference energies [eV]&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Text(0, 0.5, &#39;reference energies [eV]&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_zundel_IP_32_1.png" src="../_images/examples_zundel_IP_32_1.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">frames</span> <span class="o">=</span> <span class="p">[]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="MD-simulations">
+<h2>MD simulations<a class="headerlink" href="#MD-simulations" title="Permalink to this headline">¶</a></h2>
+<p>Now we are going to use the fitted model to perform a simple NVT simulation at <span class="math notranslate nohighlight">\(\text{T} = 250\,\)</span>K using the i-Pi interface with librascal. For that we will use a communication socket run by i-Pi, which basically outputs a structure produced by the MD and gives it in input to Librascal. This will in turn return energies, forces and stresses by means of the <code class="docutils literal notranslate"><span class="pre">GenericMDCalculator</span></code> class of Librascal.</p>
+<p>The job itself will generate a parent process (i-Pi) which contains information of the ensemble, the step needed for the time-integration, the thermostat characteristics, and all other trajectory-related infos. All these information are initially stored in an input.xml file as specified in the i-Pi documentation at <a class="reference external" href="https://github.com/cosmo-epfl/i-pi">https://github.com/cosmo-epfl/i-pi</a> and given as inputs to i-Pi. The Librascal calculator is then launched as a child process and exchanges information with the MD driver.</p>
+<p>The Librascal driver in i-Pi needs some input parameters, that can be given directly in the command line when the driver is called. To check the needed information, just use the –help option when calling it, as shown below.</p>
+<p>NOTE: in what follows, it is assumed that your i-Pi and Librascal folders lie in a common directory. Check and modify the path below when defining IPI if this is not the case.</p>
+<p>Check the .xml file in this folder to quickly read the relevant information about the MD settings. Importantly, the <code class="docutils literal notranslate"><span class="pre">&lt;properties&gt;</span></code> tag gives you information about the physical properties that are printed out by i-PI. This simulation gives as output a .out file containing the time-evolution of all the relevant physical quantities, while the .xc.xyz file contains the full trajectory, which you can later visualize with VMD. The file <code class="docutils literal notranslate"><span class="pre">h5o2+.xyz</span></code> is both used by i-PI as a starting configuration
+of the trajectory and by Librascal as a template to load information about chemical species and number of atoms per species of the system.</p>
+<p>As the simulation evolves you can plot some interesting physical properties, for instance the MD kinetic energy, the total potential energy and the pressure, and check for thermalization.</p>
+<p>An example script is provided to launch a MD simulation with i-Pi and the model that has just been fitted <code class="docutils literal notranslate"><span class="pre">zundel_model.json</span></code> (note that you may need to edit some variables in the script, or set <code class="docutils literal notranslate"><span class="pre">$PATH</span></code> and <code class="docutils literal notranslate"><span class="pre">$PYTHONPATH</span></code> appropriately, in order to make it work on your system):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash ./run.sh
+</pre></div>
+</div>
+<p>and the simulation can be monitored with the following cell.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">#Plotting the results of the simulations</span>
+<span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;zundel.out&#39;</span><span class="p">,</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+<span class="n">lines</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()[</span><span class="mi">13</span><span class="p">:]</span>
+
+<span class="n">Nframes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nframes</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nframes</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">KE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nframes</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">PE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nframes</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">Pressure</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nframes</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+    <span class="n">steps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">time</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">KE</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">4</span><span class="p">])</span>
+    <span class="n">PE</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">5</span><span class="p">])</span>
+    <span class="n">Pressure</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">6</span><span class="p">])</span>
+    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="n">f</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;T = 250 K&#39;</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="p">(</span><span class="n">KE</span> <span class="o">-</span> <span class="n">KE</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\Delta PE$&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="p">(</span><span class="n">PE</span> <span class="o">-</span> <span class="n">PE</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\Delta KE$&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span> <span class="s1">&#39;Energy [eV]&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">ncol</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;expand&#39;</span><span class="p">,</span> <span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">},</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;lower center&quot;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">Pressure</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;red&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span> <span class="s1">&#39;MD Pressure [bar]&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span> <span class="s1">&#39;time [ps]&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[Text(0.5, 0, &#39;time [ps]&#39;)]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_zundel_IP_38_1.png" src="../_images/examples_zundel_IP_38_1.png" />
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../whitepaper.html" class="btn btn-neutral float-right" title="Goals &amp; Design" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti,
+Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -31,12 +31,11 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -44,7 +43,7 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Forwarding of property requests" href="forwarding_of_property_requests.html" />
+    <link rel="next" title="Neighbour List Manager" href="neighbour_list/neighbour-list-manager.html" />
     <link rel="prev" title="How to add a new representation" href="how_to_add_representation.html" /> 
 </head>
 
@@ -96,12 +95,10 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/user_guide.html">User’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whitepaper.html">Goals &amp; Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../SOAP.html">SOAP Theory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../representation/representations.html">Representations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../models/models.html">Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../io/io.html">Saving and Loading in Librascal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../neighbour_list/neighbour-list-manager.html">Neighbour List Manager</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="developer.html">Developer’s guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="how_to_contribute.html">How to contribute</a></li>
 <li class="toctree-l2"><a class="reference internal" href="how_to_misc.html">How to edit the documentation</a></li>
@@ -119,6 +116,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#running-the-tests">Running the tests</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-valgrind-to-check-for-memory-errors">Using Valgrind to check for memory errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="neighbour_list/neighbour-list-manager.html">Neighbour List Manager</a></li>
 <li class="toctree-l2"><a class="reference internal" href="forwarding_of_property_requests.html">Forwarding of property requests</a></li>
 <li class="toctree-l2"><a class="reference internal" href="coding-convention.html">Coding Convention</a></li>
 <li class="toctree-l2"><a class="reference internal" href="review_process.html">Review process</a></li>
@@ -127,7 +125,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">Bibliography</a></li>
 </ul>
 
             
@@ -257,7 +255,7 @@
 <span class="p">}</span> <span class="c1">// rascal</span>
 </pre></div>
 </div>
-<p>Any test case in such a file will be added to <em>Rascal</em>’ main test suite. It is recommended to group test cases that logically belong together in sub test suites using the <code class="docutils literal notranslate"><span class="pre">BOOST_AUTO_TEST_SUITE</span></code> macro. Imagine we write a new sub-suite called <code class="docutils literal notranslate"><span class="pre">tutorial_test</span></code></p>
+<p>Any test case in such a file will be added to <em>Rascal</em>' main test suite. It is recommended to group test cases that logically belong together in sub test suites using the <code class="docutils literal notranslate"><span class="pre">BOOST_AUTO_TEST_SUITE</span></code> macro. Imagine we write a new sub-suite called <code class="docutils literal notranslate"><span class="pre">tutorial_test</span></code></p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;tests.hh&quot;</span><span class="cp"></span>
 
 <span class="k">namespace</span> <span class="n">rascal</span> <span class="p">{</span>
@@ -415,54 +413,54 @@ below, excerpted from <code class="file docutils literal notranslate"><span clas
 </div>
 <p>where <code class="xref cpp cpp-var docutils literal notranslate"><span class="pre">representations.back()</span></code> is a
 <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">RepresentationCalculator</span></code>,
-<code class="xref cpp cpp-var docutils literal notranslate"><span class="pre">manager</span></code> is a <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">StructureManager</span></code>, and
-<code class="xref cpp cpp-var docutils literal notranslate"><span class="pre">structures.back()</span></code> is the <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">AtomicStructure</span></code> associated with
+<code class="xref cpp cpp-var docutils literal notranslate"><span class="pre">manager</span></code> is a <a class="reference internal" href="../reference/cpp.html#_CPPv4I0EN6rascal16StructureManagerE" title="rascal::StructureManager"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">StructureManager</span></code></a>, and
+<code class="xref cpp cpp-var docutils literal notranslate"><span class="pre">structures.back()</span></code> is the <a class="reference internal" href="../reference/cpp.html#_CPPv4I_iEN6rascal15AtomicStructureE" title="rascal::AtomicStructure"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">AtomicStructure</span></code></a> associated with
 that manager.</p>
 <p>A more detailed documentation of these two classes follows:</p>
-<dl class="class">
+<dl class="cpp class">
 <dt id="_CPPv4I00EN6rascal6rascal40RepresentationCalculatorGradientProviderE">
-<span class="target" id="classrascal_1_1RepresentationCalculatorGradientProvider"></span>template&lt;typename <code class="sig-name descname">Calculator</code>, class <code class="sig-name descname">StructureManager</code>&gt;<br /><em class="property">class </em><code class="sig-name descname">RepresentationCalculatorGradientProvider</code><a class="headerlink" href="#_CPPv4I00EN6rascal6rascal40RepresentationCalculatorGradientProviderE" title="Permalink to this definition">¶</a><br /></dt>
+<span class="pre">template&lt;</span><span class="pre">typename</span> <code class="sig-name descname"><span class="pre">Calculator</span></code><span class="pre">,</span> <span class="pre">class</span> <code class="sig-name descname"><span class="pre">StructureManager</span></code><span class="pre">&gt;</span><br /><span class="target" id="classrascal_1_1RepresentationCalculatorGradientProvider"></span><em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">RepresentationCalculatorGradientProvider</span></code><a class="headerlink" href="#_CPPv4I00EN6rascal6rascal40RepresentationCalculatorGradientProviderE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Gradient provider specialized to testing the gradient of a Calculator</p>
 <p>The gradient is tested center-by-center, by iterating over each center and doing finite displacements on its position. This iteration should normally be done by the <a class="reference internal" href="#classrascal_1_1RepresentationCalculatorGradientFixture"><span class="std std-ref">RepresentationCalculatorGradientFixture</span></a> class.</p>
 <p>In the case of periodic structures, the gradient is accumulated only onto <em>real</em> atoms, but the motion of all <em>images</em> of the “moving” atom (the one with respect to which the gradient is being taken) is taken into account.</p>
 <p>Initialize with a Calculator, a StructureManager, and an AtomicStructure representing the original structure (before modifying with finite-difference displacements). The gradient of the representation with respect to the center position can then be tested, as usual, with <a class="reference internal" href="#namespacerascal_1ad71f0429eaaaa417ce3cc942c67b7d3d"><span class="std std-ref">test_gradients()</span></a> (defined in test_math.hh). </p>
 </dd></dl>
 
-<dl class="class">
+<dl class="cpp class">
 <dt id="_CPPv4I00EN6rascal6rascal39RepresentationCalculatorGradientFixtureE">
-<span class="target" id="classrascal_1_1RepresentationCalculatorGradientFixture"></span>template&lt;typename <code class="sig-name descname">Calculator</code>, class <code class="sig-name descname">StructureManager</code>&gt;<br /><em class="property">class </em><code class="sig-name descname">RepresentationCalculatorGradientFixture</code> : <em class="property">public</em> rascal::<a class="reference internal" href="#_CPPv4N6rascal6rascal19GradientTestFixtureE" title="rascal::rascal::GradientTestFixture">GradientTestFixture</a><a class="headerlink" href="#_CPPv4I00EN6rascal6rascal39RepresentationCalculatorGradientFixtureE" title="Permalink to this definition">¶</a><br /></dt>
+<span class="pre">template&lt;</span><span class="pre">typename</span> <code class="sig-name descname"><span class="pre">Calculator</span></code><span class="pre">,</span> <span class="pre">class</span> <code class="sig-name descname"><span class="pre">StructureManager</span></code><span class="pre">&gt;</span><br /><span class="target" id="classrascal_1_1RepresentationCalculatorGradientFixture"></span><em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rascal</span><code class="sig-prename descclassname"><span class="pre">::</span></code></code><code class="sig-name descname"><span class="pre">RepresentationCalculatorGradientFixture</span></code> <span class="pre">:</span> <em class="property"><span class="pre">public</span></em> <span class="pre">rascal</span><span class="pre">::</span><a class="reference internal" href="#_CPPv4N6rascal6rascal19GradientTestFixtureE" title="rascal::rascal::GradientTestFixture"><span class="pre">GradientTestFixture</span></a><a class="headerlink" href="#_CPPv4I00EN6rascal6rascal39RepresentationCalculatorGradientFixtureE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Test fixture holding the gradient calculator and structure manager</p>
 <p>Holds data (function values, gradient directions, verbosity) and iterates through the list of centers </p>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Public Functions</p>
-<dl class="function">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
 <dt id="_CPPv4N6rascal6rascal39RepresentationCalculatorGradientFixture39RepresentationCalculatorGradientFixtureENSt6stringENSt10shared_ptrI16StructureManagerEER10Provider_t">
-<span class="target" id="classrascal_1_1RepresentationCalculatorGradientFixture_1a0b6a081d4a8e5e2a9967672a1fabaf8d"></span><code class="sig-name descname">RepresentationCalculatorGradientFixture</code><span class="sig-paren">(</span>std::string <em>filename</em>, std::shared_ptr&lt;StructureManager&gt; <em>structure</em>, Provider_t &amp;<em>calc</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal6rascal39RepresentationCalculatorGradientFixture39RepresentationCalculatorGradientFixtureENSt6stringENSt10shared_ptrI16StructureManagerEER10Provider_t" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="classrascal_1_1RepresentationCalculatorGradientFixture_1a0b6a081d4a8e5e2a9967672a1fabaf8d"></span><em class="property"><span class="pre">inline</span></em> <code class="sig-name descname"><span class="pre">RepresentationCalculatorGradientFixture</span></code><span class="sig-paren">(</span><span class="pre">std</span><span class="pre">::</span><span class="pre">string</span> <em><span class="pre">filename</span></em>, <span class="pre">std</span><span class="pre">::</span><span class="pre">shared_ptr</span><span class="pre">&lt;</span><a class="reference internal" href="#_CPPv4I00EN6rascal6rascal39RepresentationCalculatorGradientFixtureE" title="rascal::rascal::RepresentationCalculatorGradientFixture::StructureManager"><span class="pre">StructureManager</span></a><span class="pre">&gt;</span> <em><span class="pre">structure</span></em>, <span class="pre">Provider_t</span> <span class="pre">&amp;</span><em><span class="pre">calc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal6rascal39RepresentationCalculatorGradientFixture39RepresentationCalculatorGradientFixtureENSt6stringENSt10shared_ptrI16StructureManagerEER10Provider_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Initialize a gradient test fixture</p>
-<p><dl class="simple">
-<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code>: JSON file holding gradient test parameters, format documented in <a class="reference internal" href="#classrascal_1_1GradientTestFixture"><span class="std std-ref">GradientTestFixture</span></a></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">structure</span></code>: StructureManager on which to test</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">calc</span></code>: RepresentationCalculator whose gradient is being tested </p></li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – JSON file holding gradient test parameters, format documented in <a class="reference internal" href="#classrascal_1_1GradientTestFixture"><span class="std std-ref">GradientTestFixture</span></a></p></li>
+<li><p><strong>structure</strong> – StructureManager on which to test</p></li>
+<li><p><strong>calc</strong> – RepresentationCalculator whose gradient is being tested </p></li>
 </ul>
 </dd>
 </dl>
-</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="cpp function">
 <dt id="_CPPv4N6rascal6rascal39RepresentationCalculatorGradientFixture14advance_centerEv">
-<span class="target" id="classrascal_1_1RepresentationCalculatorGradientFixture_1a204f003e273d314e65b1d2005a84b44c"></span>void <code class="sig-name descname">advance_center</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal6rascal39RepresentationCalculatorGradientFixture14advance_centerEv" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="classrascal_1_1RepresentationCalculatorGradientFixture_1a204f003e273d314e65b1d2005a84b44c"></span><em class="property"><span class="pre">inline</span></em> <span class="pre">void</span> <code class="sig-name descname"><span class="pre">advance_center</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal6rascal39RepresentationCalculatorGradientFixture14advance_centerEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Go to the next center in the structure</p>
 <p>Not (yet) implemented as iterator because that overcomplicates things </p>
 </dd></dl>
 
 </div>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Public Members</p>
-<dl class="member">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
 <dt id="_CPPv4N6rascal6rascal39RepresentationCalculatorGradientFixture12fd_error_tolE">
-<span class="target" id="classrascal_1_1RepresentationCalculatorGradientFixture_1a8c73948b5aa4b743925cb7802fe2afc2"></span>double <code class="sig-name descname">fd_error_tol</code> = {1E-4}<a class="headerlink" href="#_CPPv4N6rascal6rascal39RepresentationCalculatorGradientFixture12fd_error_tolE" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="classrascal_1_1RepresentationCalculatorGradientFixture_1a8c73948b5aa4b743925cb7802fe2afc2"></span><span class="pre">double</span> <code class="sig-name descname"><span class="pre">fd_error_tol</span></code> <span class="pre">=</span> <span class="pre">{</span><span class="pre">1E-4</span><span class="pre">}</span><a class="headerlink" href="#_CPPv4N6rascal6rascal39RepresentationCalculatorGradientFixture12fd_error_tolE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Increased error tolerance because some representations have quite large finite-difference truncation errors (and possibly numerical issues for very small displacements) </p>
 </dd></dl>
 
@@ -472,67 +470,72 @@ that manager.</p>
 <p>For testing the gradient of arbitrary functions <span class="math notranslate nohighlight">\(f: \mathbb{R}^m
 \rightarrow \mathbb{R}^n\)</span>, the function <a class="reference internal" href="../reference/cpp.html#_CPPv4I00EN6rascal14test_gradientsEv18FunctionProvider_t13TestFixture_t" title="rascal::test_gradients"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">test_gradients()</span></code></a> is
 provided:</p>
-<dl class="function">
+<dl class="cpp function">
 <dt id="_CPPv4I00EN6rascal6rascal14test_gradientsEv18FunctionProvider_t13TestFixture_t">
-<span class="target" id="namespacerascal_1ad71f0429eaaaa417ce3cc942c67b7d3d"></span>template&lt;typename <code class="sig-name descname">FunctionProvider_t</code>, typename <code class="sig-name descname">TestFixture_t</code>&gt;<br />void <code class="sig-prename descclassname">rascal<code class="sig-prename descclassname">::</code></code><code class="sig-name descname">test_gradients</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00EN6rascal6rascal14test_gradientsEv18FunctionProvider_t13TestFixture_t" title="rascal::rascal::test_gradients::FunctionProvider_t">FunctionProvider_t</a> <em>function_calculator</em>, <a class="reference internal" href="#_CPPv4I00EN6rascal6rascal14test_gradientsEv18FunctionProvider_t13TestFixture_t" title="rascal::rascal::test_gradients::TestFixture_t">TestFixture_t</a> <em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I00EN6rascal6rascal14test_gradientsEv18FunctionProvider_t13TestFixture_t" title="Permalink to this definition">¶</a><br /></dt>
+<span class="pre">template&lt;</span><span class="pre">typename</span> <code class="sig-name descname"><span class="pre">FunctionProvider_t</span></code><span class="pre">,</span> <span class="pre">typename</span> <code class="sig-name descname"><span class="pre">TestFixture_t</span></code><span class="pre">&gt;</span><br /><span class="target" id="namespacerascal_1ad71f0429eaaaa417ce3cc942c67b7d3d"></span><span class="pre">void</span> <code class="sig-prename descclassname"><span class="pre">rascal</span><code class="sig-prename descclassname"><span class="pre">::</span></code></code><code class="sig-name descname"><span class="pre">test_gradients</span></code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00EN6rascal6rascal14test_gradientsEv18FunctionProvider_t13TestFixture_t" title="rascal::rascal::test_gradients::FunctionProvider_t"><span class="pre">FunctionProvider_t</span></a> <em><span class="pre">function_calculator</span></em>, <a class="reference internal" href="#_CPPv4I00EN6rascal6rascal14test_gradientsEv18FunctionProvider_t13TestFixture_t" title="rascal::rascal::test_gradients::TestFixture_t"><span class="pre">TestFixture_t</span></a> <em><span class="pre">params</span></em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I00EN6rascal6rascal14test_gradientsEv18FunctionProvider_t13TestFixture_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Numerically verify that a given function and its gradient are consistent</p>
 <p><p>The function_calculator object may be of any type, as long as it provides two functions, f() and grad_f(), to calculate the function and its gradient (derivative for functions with one input, Jacobian for functions with multiple outputs - the output dimension is expected to correspond to columns). Both functions must accept an Eigen::Vector, corresponding to the function input, of dimension determined in the data file (read by </p>
-<a class="reference internal" href="#classrascal_1_1GradientTestFixture"><span class="std std-ref">GradientTestFixture</span></a>). This function additionally guarantees that f() will be called before grad_f() with the same input.<dl class="simple">
-<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">function_calculator</span></code>: An object that provides both the function and its gradient</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">params</span></code>: Test fixture object, e.g a <a class="reference internal" href="#classrascal_1_1GradientTestFixture"><span class="std std-ref">GradientTestFixture</span></a> or something providing the same information (i.e. function_inputs, displacement_directions, n_arguments, and verbosity)</p></li>
+<a class="reference internal" href="#classrascal_1_1GradientTestFixture"><span class="std std-ref">GradientTestFixture</span></a>). This function additionally guarantees that f() will be called before grad_f() with the same input.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the functions f() and grad_f() are designed to accept fixed-size vectors (i.e. if the size of the argument is known at compile time), be sure to define, in the FunctionProvider class, a <code class="docutils literal notranslate"><span class="pre">constexpr</span> <span class="pre">static</span> <span class="pre">size_t</span> <span class="pre">n_arguments</span></code> member with the size of the argument vector. This will ensure that the gradient tester uses the corresponding fixed-size Eigen vectors/matrices as inputs. </p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>function_calculator</strong> – An object that provides both the function and its gradient</p></li>
+<li><p><strong>params</strong> – Test fixture object, e.g a <a class="reference internal" href="#classrascal_1_1GradientTestFixture"><span class="std std-ref">GradientTestFixture</span></a> or something providing the same information (i.e. function_inputs, displacement_directions, n_arguments, and verbosity)</p></li>
 </ul>
 </dd>
 </dl>
-</p>
-<p><dl class="simple">
-<dt><strong>Note</strong></dt><dd><p>If the functions f() and grad_f() are designed to accept fixed-size vectors (i.e. if the size of the argument is known at compile time), be sure to define, in the FunctionProvider class, a <code class="docutils literal notranslate"><span class="pre">constexpr</span> <span class="pre">static</span> <span class="pre">size_t</span> <span class="pre">n_arguments</span></code> member with the size of the argument vector. This will ensure that the gradient tester uses the corresponding fixed-size Eigen vectors/matrices as inputs. </p>
-</dd>
-</dl>
-</p>
 </dd></dl>
 
 <p>An example generalized gradient test fixture is provided by
 <a class="reference internal" href="../reference/cpp.html#_CPPv4N6rascal19GradientTestFixtureE" title="rascal::GradientTestFixture"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">GradientTestFixture</span></code></a>:</p>
-<dl class="class">
+<dl class="cpp class">
 <dt id="_CPPv4N6rascal6rascal19GradientTestFixtureE">
-<span class="target" id="classrascal_1_1GradientTestFixture"></span><em class="property">class </em><code class="sig-name descname">GradientTestFixture</code><a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixtureE" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="classrascal_1_1GradientTestFixture"></span><em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">rascal</span><code class="sig-prename descclassname"><span class="pre">::</span></code></code><code class="sig-name descname"><span class="pre">GradientTestFixture</span></code><a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixtureE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Fixture for testing the gradient of a real function of N real arguments</p>
 <p>(Verifies that the gradient is the same as the converged value of the finite-difference approximation along the given directions)</p>
 <p>Parameters should be provided in a JSON input file, as follows:</p>
-<p><dl class="simple">
-<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">function_inputs</span></code>: List of vectors of function arguments at which to test the gradient</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">direction_mode</span></code>: How the finite-difference directions are specified; options are “Cartesian” (once along each independent argument), “Random” (exactly what it says on the tin), and “Provided” (given in input file, see below)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">displacement_directions</span></code>: List of vectors along which to displace the inputs, in case “direction_mode” is “Provided”.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">verbosity</span></code>: Level of verbosity to use when printing test info, as string (“NORMAL”, “INFO”, or “DEBUG”) </p></li>
-</ul>
+<p><dl class="field-list simple">
+<dt class="field-odd">param function_inputs</dt>
+<dd class="field-odd"><p>List of vectors of function arguments at which to test the gradient</p>
+</dd>
+<dt class="field-even">param direction_mode</dt>
+<dd class="field-even"><p>How the finite-difference directions are specified; options are “Cartesian” (once along each independent argument), “Random” (exactly what it says on the tin), and “Provided” (given in input file, see below)</p>
+</dd>
+<dt class="field-odd">param displacement_directions</dt>
+<dd class="field-odd"><p>List of vectors along which to displace the inputs, in case “direction_mode” is “Provided”.</p>
+</dd>
+<dt class="field-even">param verbosity</dt>
+<dd class="field-even"><p>Level of verbosity to use when printing test info, as string (“NORMAL”, “INFO”, or “DEBUG”) </p>
 </dd>
 </dl>
 </p>
 <p>Subclassed by <a class="reference internal" href="#classrascal_1_1RepresentationCalculatorGradientFixture"><span class="std std-ref">rascal::RepresentationCalculatorGradientFixture&lt; Calculator, StructureManager &gt;</span></a></p>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Public Types</p>
-<dl class="enum">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-types">Public Types</p>
+<dl class="cpp enum">
 <dt id="_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValueE">
-<span class="target" id="classrascal_1_1GradientTestFixture_1a2461ac0eb169ff614982e6a3f880b1cf"></span><em class="property">enum </em><code class="sig-name descname">VerbosityValue</code><a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValueE" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="classrascal_1_1GradientTestFixture_1a2461ac0eb169ff614982e6a3f880b1cf"></span><em class="property"><span class="pre">enum</span> </em><code class="sig-name descname"><span class="pre">VerbosityValue</span></code><a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValueE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Levels of verbosity for the gradient test </p>
 <p><em>Values:</em></p>
-<dl class="enumerator">
-<dt id="_CPPv4N6rascal6rascal19GradientTestFixture6NORMALE">
-<span class="target" id="classrascal_1_1GradientTestFixture_1a2461ac0eb169ff614982e6a3f880b1cfa1e23852820b9154316c7c06e2b7ba051"></span><code class="sig-name descname">NORMAL</code> = 0<a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixture6NORMALE" title="Permalink to this definition">¶</a><br /></dt>
+<dl class="cpp enumerator">
+<dt id="_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValue6NORMALE">
+<span class="target" id="classrascal_1_1GradientTestFixture_1a2461ac0eb169ff614982e6a3f880b1cfa1e23852820b9154316c7c06e2b7ba051"></span><em class="property"><span class="pre">enumerator</span> </em><code class="sig-name descname"><span class="pre">NORMAL</span></code><a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValue6NORMALE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Print nothing </p>
 </dd></dl>
 
-<dl class="enumerator">
-<dt id="_CPPv4N6rascal6rascal19GradientTestFixture4INFOE">
-<span class="target" id="classrascal_1_1GradientTestFixture_1a2461ac0eb169ff614982e6a3f880b1cfa551b723eafd6a31d444fcb2f5920fbd3"></span><code class="sig-name descname">INFO</code> = 10<a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixture4INFOE" title="Permalink to this definition">¶</a><br /></dt>
+<dl class="cpp enumerator">
+<dt id="_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValue4INFOE">
+<span class="target" id="classrascal_1_1GradientTestFixture_1a2461ac0eb169ff614982e6a3f880b1cfa551b723eafd6a31d444fcb2f5920fbd3"></span><em class="property"><span class="pre">enumerator</span> </em><code class="sig-name descname"><span class="pre">INFO</span></code><a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValue4INFOE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Print one line of info for each gradient step </p>
 </dd></dl>
 
-<dl class="enumerator">
-<dt id="_CPPv4N6rascal6rascal19GradientTestFixture5DEBUGE">
-<span class="target" id="classrascal_1_1GradientTestFixture_1a2461ac0eb169ff614982e6a3f880b1cfadc30ec20708ef7b0f641ef78b7880a15"></span><code class="sig-name descname">DEBUG</code> = 20<a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixture5DEBUGE" title="Permalink to this definition">¶</a><br /></dt>
+<dl class="cpp enumerator">
+<dt id="_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValue5DEBUGE">
+<span class="target" id="classrascal_1_1GradientTestFixture_1a2461ac0eb169ff614982e6a3f880b1cfadc30ec20708ef7b0f641ef78b7880a15"></span><em class="property"><span class="pre">enumerator</span> </em><code class="sig-name descname"><span class="pre">DEBUG</span></code><a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValue5DEBUGE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Print as much as possible </p>
 </dd></dl>
 
@@ -540,10 +543,10 @@ provided:</p>
 
 </div>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Public Members</p>
-<dl class="member">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
 <dt id="_CPPv4N6rascal6rascal19GradientTestFixture12fd_error_tolE">
-<span class="target" id="classrascal_1_1GradientTestFixture_1a0a64d8d81bb9ae4419c22d0e8588adea"></span>double <code class="sig-name descname">fd_error_tol</code> = {1E-6}<a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixture12fd_error_tolE" title="Permalink to this definition">¶</a><br /></dt>
+<span class="target" id="classrascal_1_1GradientTestFixture_1a0a64d8d81bb9ae4419c22d0e8588adea"></span><span class="pre">double</span> <code class="sig-name descname"><span class="pre">fd_error_tol</span></code> <span class="pre">=</span> <span class="pre">{</span><span class="pre">1E-6</span><span class="pre">}</span><a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixture12fd_error_tolE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>The error of the finite-difference against the analytical derivatives isn’t going to be arbitrarily small, due to the interaction of finite-difference and finite precision effects. The default here reflects this, while allowing different tests to change it  keeping in mind that the automated test is really more intended to be a sanity check on the implementation than a rigorous convergence test. </p>
 </dd></dl>
 
@@ -577,7 +580,7 @@ will execute all C++ tests with Valgrind.</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="forwarding_of_property_requests.html" class="btn btn-neutral float-right" title="Forwarding of property requests" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="neighbour_list/neighbour-list-manager.html" class="btn btn-neutral float-right" title="Neighbour List Manager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="how_to_add_representation.html" class="btn btn-neutral float-left" title="How to add a new representation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

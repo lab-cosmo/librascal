@@ -1,0 +1,690 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>rascal.models.krr &mdash; Rascal 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/rascal.png"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Rascal
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/user_guide.html">User’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../whitepaper.html">Goals &amp; Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../SOAP.html">SOAP Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev_guide/developer.html">Developer’s guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../bibliography.html">Bibliography</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Rascal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>rascal.models.krr</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for rascal.models.krr</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Kernel ridge regression: Model class and utilities</span>
+
+<span class="sd">Public classes:</span>
+<span class="sd">    Kernel  Kernel Ridge Regression model (sparse GPR only).</span>
+
+<span class="sd">Public functions:</span>
+<span class="sd">    compute_KNM             Compute GAP kernel of a set of structures</span>
+<span class="sd">    train_gap_model         Train a GAP model given a kernel matrix and sparse points</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">BaseIO</span>
+<span class="kn">from</span> <span class="nn">..lib</span> <span class="kn">import</span> <span class="n">compute_sparse_kernel_gradients</span><span class="p">,</span> <span class="n">compute_sparse_kernel_neg_stress</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">ase</span>
+
+
+<div class="viewcode-block" id="KRR"><a class="viewcode-back" href="../../../reference/python.html#rascal.models.KRR">[docs]</a><span class="k">class</span> <span class="nc">KRR</span><span class="p">(</span><span class="n">BaseIO</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Kernel Ridge Regression model. Only supports sparse GPR</span>
+<span class="sd">    training for the moment.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    weights : np.array</span>
+<span class="sd">        weights of the model</span>
+
+<span class="sd">    kernel : Kernel</span>
+<span class="sd">        kernel class used to train the model</span>
+
+<span class="sd">    X_train : SparsePoints</span>
+<span class="sd">        reference samples used for the training</span>
+
+<span class="sd">    self_contributions : dictionary</span>
+<span class="sd">        map atomic number to the property baseline, e.g. isolated atoms</span>
+<span class="sd">        energies when the model has been trained on total energies.</span>
+
+<span class="sd">    description : string</span>
+<span class="sd">        User-defined string used to describe the model for future reference</span>
+
+<span class="sd">    units : dict</span>
+<span class="sd">        Energy and length units used by the model (default: eV and Å (aka AA),</span>
+<span class="sd">        same as used in ASE)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">weights</span><span class="p">,</span>
+        <span class="n">kernel</span><span class="p">,</span>
+        <span class="n">X_train</span><span class="p">,</span>
+        <span class="n">self_contributions</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;KRR potential model&quot;</span><span class="p">,</span>
+        <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># Weights of the krr model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X_train</span> <span class="o">=</span> <span class="n">X_train</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">self_contributions</span> <span class="o">=</span> <span class="n">self_contributions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_type</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">target_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;energy&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">units</span><span class="p">:</span>
+            <span class="n">units</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;eV&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;length&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">units</span><span class="p">:</span>
+            <span class="n">units</span><span class="p">[</span><span class="s2">&quot;length&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;AA&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">units</span>
+
+    <span class="k">def</span> <span class="nf">_get_property_baseline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">managers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;build total baseline contribution for each prediction&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_type</span> <span class="o">==</span> <span class="s2">&quot;Structure&quot;</span><span class="p">:</span>
+            <span class="n">Y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">managers</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i_manager</span><span class="p">,</span> <span class="n">manager</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">managers</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">):</span>
+                    <span class="n">numbers</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="n">numbers</span><span class="p">:</span>
+                        <span class="n">Y0</span><span class="p">[</span><span class="n">i_manager</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">self_contributions</span><span class="p">[</span><span class="n">sp</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">manager</span><span class="p">:</span>
+                        <span class="n">Y0</span><span class="p">[</span><span class="n">i_manager</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">self_contributions</span><span class="p">[</span><span class="n">at</span><span class="o">.</span><span class="n">atom_type</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_type</span> <span class="o">==</span> <span class="s2">&quot;Atom&quot;</span><span class="p">:</span>
+            <span class="n">n_centers</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">manager</span> <span class="ow">in</span> <span class="n">managers</span><span class="p">:</span>
+                <span class="n">n_centers</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">manager</span><span class="p">)</span>
+            <span class="n">Y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_centers</span><span class="p">)</span>
+            <span class="n">i_center</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">manager</span> <span class="ow">in</span> <span class="n">managers</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">center</span> <span class="ow">in</span> <span class="n">manager</span><span class="p">:</span>
+                    <span class="n">Y0</span><span class="p">[</span><span class="n">i_center</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">self_contributions</span><span class="p">[</span><span class="n">center</span><span class="o">.</span><span class="n">atom_type</span><span class="p">]</span>
+                    <span class="n">i_center</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">Y0</span>
+
+<div class="viewcode-block" id="KRR.predict"><a class="viewcode-back" href="../../../reference/python.html#rascal.models.KRR.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">managers</span><span class="p">,</span> <span class="n">KNM</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Predict properties associated with the atomic structures in managers.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        managers : AtomsList</span>
+<span class="sd">            list of atomic structures with already computed features compatible</span>
+<span class="sd">            with representation in kernel</span>
+<span class="sd">        KNM : np.array, optional</span>
+<span class="sd">            precomputed sparse kernel matrix</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.array</span>
+<span class="sd">            predictions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">KNM</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">managers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">X_train</span><span class="p">,</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">managers</span><span class="p">)</span> <span class="o">!=</span> <span class="n">KNM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;KNM size mismatch </span><span class="si">{}</span><span class="s2">!=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">managers</span><span class="p">),</span> <span class="n">KNM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">X_train</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">!=</span> <span class="n">KNM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;KNM size mismatch </span><span class="si">{}</span><span class="s2">!=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X_train</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">KNM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="p">)</span>
+            <span class="n">kernel</span> <span class="o">=</span> <span class="n">KNM</span>
+        <span class="n">Y0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_property_baseline</span><span class="p">(</span><span class="n">managers</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Y0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="KRR.predict_forces"><a class="viewcode-back" href="../../../reference/python.html#rascal.models.KRR.predict_forces">[docs]</a>    <span class="k">def</span> <span class="nf">predict_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">managers</span><span class="p">,</span> <span class="n">KNM</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Predict negative gradients w.r.t atomic positions, e.g. forces, associated with the atomic structures in managers.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        managers : AtomsList</span>
+<span class="sd">            list of atomic structures with already computed features compatible</span>
+<span class="sd">            with representation in kernel</span>
+<span class="sd">        KNM : np.array, optional</span>
+<span class="sd">            precomputed sparse kernel matrix</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.array</span>
+<span class="sd">            predictions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">kernel_type</span> <span class="o">!=</span> <span class="s2">&quot;Sparse&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;force prediction only implemented for kernels with kernel_type==&#39;Sparse&#39;&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">KNM</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">_representation</span>
+            <span class="n">gradients</span> <span class="o">=</span> <span class="n">compute_sparse_kernel_gradients</span><span class="p">(</span>
+                <span class="n">rep</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">_kernel</span><span class="p">,</span>
+                <span class="n">managers</span><span class="o">.</span><span class="n">managers</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">X_train</span><span class="o">.</span><span class="n">_sparse_points</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_atoms</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">manager</span> <span class="ow">in</span> <span class="n">managers</span><span class="p">:</span>
+                <span class="n">n_atoms</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">manager</span><span class="p">)</span>
+            <span class="k">if</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n_atoms</span> <span class="o">!=</span> <span class="n">KNM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;KNM size mismatch </span><span class="si">{}</span><span class="s2">!=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">KNM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">X_train</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">!=</span> <span class="n">KNM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;KNM size mismatch </span><span class="si">{}</span><span class="s2">!=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X_train</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">KNM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="p">)</span>
+            <span class="n">gradients</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">KNM</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="o">-</span><span class="n">gradients</span></div>
+
+<div class="viewcode-block" id="KRR.predict_stress"><a class="viewcode-back" href="../../../reference/python.html#rascal.models.KRR.predict_stress">[docs]</a>    <span class="k">def</span> <span class="nf">predict_stress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">managers</span><span class="p">,</span> <span class="n">KNM</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Predict gradients w.r.t cell parameters, e.g. stress, associated with the atomic structures in managers.</span>
+<span class="sd">        The stress is returned using the Voigt order: xx, yy, zz, yz, xz, xy.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        managers : AtomsList</span>
+<span class="sd">            list of atomic structures with already computed features compatible</span>
+<span class="sd">            with representation in kernel</span>
+<span class="sd">        KNM : np.array, optional</span>
+<span class="sd">            precomputed sparse kernel matrix</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.array</span>
+<span class="sd">            predictions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">kernel_type</span> <span class="o">!=</span> <span class="s2">&quot;Sparse&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;stress prediction only implemented for kernels with kernel_type==&#39;Sparse&#39;&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">KNM</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">_representation</span>
+            <span class="n">neg_stress</span> <span class="o">=</span> <span class="n">compute_sparse_kernel_neg_stress</span><span class="p">(</span>
+                <span class="n">rep</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">_kernel</span><span class="p">,</span>
+                <span class="n">managers</span><span class="o">.</span><span class="n">managers</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">X_train</span><span class="o">.</span><span class="n">_sparse_points</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="mi">6</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">managers</span><span class="p">)</span> <span class="o">!=</span> <span class="n">KNM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;KNM size mismatch </span><span class="si">{}</span><span class="s2">!=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">6</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">managers</span><span class="p">),</span> <span class="n">KNM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">X_train</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">!=</span> <span class="n">KNM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;KNM size mismatch </span><span class="si">{}</span><span class="s2">!=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X_train</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">KNM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="p">)</span>
+            <span class="n">neg_stress</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">KNM</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">managers</span><span class="p">),</span> <span class="mi">6</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="o">-</span><span class="n">neg_stress</span></div>
+
+    <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span>
+
+    <span class="k">def</span> <span class="nf">_get_init_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">init_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span>
+            <span class="n">kernel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span>
+            <span class="n">X_train</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">X_train</span><span class="p">,</span>
+            <span class="n">self_contributions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">self_contributions</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">init_params</span>
+
+    <span class="k">def</span> <span class="nf">_set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_set_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_get_data</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_representation_calculator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">_rep</span></div>
+
+
+<span class="k">def</span> <span class="nf">_get_kernel_strides</span><span class="p">(</span><span class="n">frames</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get strides for total-energy/gradient kernels of the given structures</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    frames</span>
+<span class="sd">        List of structures each indicating the number of atoms</span>
+
+<span class="sd">    This assumes the final kernel will be stored in GAP energy-force</span>
+<span class="sd">    format, i.e.  Nstructures rows for total-energy (summed) kernels and</span>
+<span class="sd">    3*Natoms_total rows for gradients w.r.t. atomic positions.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        the number of structures</span>
+<span class="sd">    int</span>
+<span class="sd">        the number of gradient entries (== 3 * the total number of atoms)</span>
+<span class="sd">    np.array(int)</span>
+<span class="sd">        strides for assigning the gradient entries for each structure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Nstructures</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
+    <span class="n">Ngrad_stride</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">Ngrads</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+        <span class="n">n_at</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        <span class="n">Ngrad_stride</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_at</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">Ngrads</span> <span class="o">+=</span> <span class="n">n_at</span> <span class="o">*</span> <span class="mi">3</span>
+    <span class="n">Ngrad_stride</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">Ngrad_stride</span><span class="p">)</span> <span class="o">+</span> <span class="n">Nstructures</span>
+    <span class="k">return</span> <span class="n">Nstructures</span><span class="p">,</span> <span class="n">Ngrads</span><span class="p">,</span> <span class="n">Ngrad_stride</span>
+
+
+<span class="k">def</span> <span class="nf">_compute_kernel_single</span><span class="p">(</span><span class="n">i_frame</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">representation</span><span class="p">,</span> <span class="n">X_sparse</span><span class="p">,</span> <span class="n">kernel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute GAP kernel of the (new) structure against the sparse points</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    i_frame</span>
+<span class="sd">        frame index (ignored???)</span>
+<span class="sd">    frame</span>
+<span class="sd">        New structure to compute kernel for</span>
+<span class="sd">    representation</span>
+<span class="sd">        RepresentationCalculator to use for the structures</span>
+<span class="sd">    X_sparse</span>
+<span class="sd">        Sparse points to compute kernels against</span>
+<span class="sd">    kernel</span>
+<span class="sd">        Kernel object to use</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    en_row</span>
+<span class="sd">        Energy kernel row</span>
+<span class="sd">    grad_rows</span>
+<span class="sd">        Gradient of the kernel</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">feat</span> <span class="o">=</span> <span class="n">representation</span><span class="o">.</span><span class="n">transform</span><span class="p">([</span><span class="n">frame</span><span class="p">])</span>
+    <span class="n">en_row</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="n">X_sparse</span><span class="p">)</span>
+    <span class="n">grad_rows</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="n">X_sparse</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">en_row</span><span class="p">,</span> <span class="n">grad_rows</span>
+
+
+<div class="viewcode-block" id="compute_KNM"><a class="viewcode-back" href="../../../reference/python.html#rascal.models.compute_KNM">[docs]</a><span class="k">def</span> <span class="nf">compute_KNM</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">X_sparse</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">soap</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute GAP kernel of the (new) structures against the sparse points</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    frames</span>
+<span class="sd">        New structures to compute kernel for</span>
+<span class="sd">    representation</span>
+<span class="sd">        RepresentationCalculator to use for the structures</span>
+<span class="sd">    X_sparse</span>
+<span class="sd">        Sparse points to compute kernels against</span>
+<span class="sd">    kernel</span>
+<span class="sd">        Kernel object to use</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    K_NM: np.array</span>
+<span class="sd">        Summed total-energy kernel stacked with the atom-position gradient of the kernel</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function can take quite a long time to run.  To get a progress bar,</span>
+<span class="sd">    you can wrap the `frames` parameter in a [tqdm]_ object like this:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        from tqdm.notebook import tqdm # for Jupyter</span>
+<span class="sd">        #from tqdm import tqdm # on the command line</span>
+<span class="sd">        K_NM = compute_KNM(</span>
+<span class="sd">            tqdm(frames, desc=&quot;compute KNM&quot;, leave=False),</span>
+<span class="sd">            X_sparse,</span>
+<span class="sd">            kernel,</span>
+<span class="sd">            soap</span>
+<span class="sd">        )</span>
+
+<span class="sd">    .. [tqdm] https://github.com/tqdm/tqdm</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># If frames has been wrapped in a tqdm, use the underlying iterable</span>
+    <span class="c1"># so as not to &quot;use up&quot; the progress bar prematurely</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="s2">&quot;iterable&quot;</span><span class="p">):</span>
+        <span class="n">Nstructures</span><span class="p">,</span> <span class="n">Ngrads</span><span class="p">,</span> <span class="n">Ngrad_stride</span> <span class="o">=</span> <span class="n">_get_kernel_strides</span><span class="p">(</span><span class="n">frames</span><span class="o">.</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Nstructures</span><span class="p">,</span> <span class="n">Ngrads</span><span class="p">,</span> <span class="n">Ngrad_stride</span> <span class="o">=</span> <span class="n">_get_kernel_strides</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
+    <span class="n">KNM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">Nstructures</span> <span class="o">+</span> <span class="n">Ngrads</span><span class="p">,</span> <span class="n">X_sparse</span><span class="o">.</span><span class="n">size</span><span class="p">()))</span>
+    <span class="k">for</span> <span class="n">i_frame</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frames</span><span class="p">):</span>
+        <span class="n">en_row</span><span class="p">,</span> <span class="n">grad_rows</span> <span class="o">=</span> <span class="n">_compute_kernel_single</span><span class="p">(</span>
+            <span class="n">i_frame</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">soap</span><span class="p">,</span> <span class="n">X_sparse</span><span class="p">,</span> <span class="n">kernel</span>
+        <span class="p">)</span>
+        <span class="n">KNM</span><span class="p">[</span><span class="n">Ngrad_stride</span><span class="p">[</span><span class="n">i_frame</span><span class="p">]</span> <span class="p">:</span> <span class="n">Ngrad_stride</span><span class="p">[</span><span class="n">i_frame</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">grad_rows</span>
+        <span class="n">KNM</span><span class="p">[</span><span class="n">i_frame</span><span class="p">]</span> <span class="o">=</span> <span class="n">en_row</span>
+    <span class="k">return</span> <span class="n">KNM</span></div>
+
+
+<span class="k">def</span> <span class="nf">train_gap_model</span><span class="p">(</span>
+    <span class="n">kernel</span><span class="p">,</span>
+    <span class="n">frames</span><span class="p">,</span>
+    <span class="n">KNM_</span><span class="p">,</span>
+    <span class="n">X_sparse</span><span class="p">,</span>
+    <span class="n">y_train</span><span class="p">,</span>
+    <span class="n">self_contributions</span><span class="p">,</span>
+    <span class="n">grad_train</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">lambdas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">jitter</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defines the procedure to train a SOAP-GAP model [1]:</span>
+<span class="sd">    .. math::</span>
+<span class="sd">        Y(A) = \sum_{i \in A} y_{a_i}(X_i),</span>
+<span class="sd">    where :math:`Y(A)` is the predicted property function associated with the</span>
+<span class="sd">    atomic structure :math:`A$, :math:`i` and :math:`a_i` are the index and</span>
+<span class="sd">    species of the atoms in structure :math:`X` and :math:`y_a(A_i)` is the</span>
+<span class="sd">    atom centered model that depends on the central atomic species.</span>
+<span class="sd">    The individual predictions are given by:</span>
+<span class="sd">    .. math::</span>
+<span class="sd">        y_{a_i(A_i) = \sum_m^{M} \alpha_m \delta_{b_m a_i} k(A_i,T_m),</span>
+<span class="sd">    where :math:`k(\cdot,\cdot)` is a kernel function, :math:`\alpha_m` are the</span>
+<span class="sd">    weights of the model and :math:`b_m is the atom type associated with the</span>
+<span class="sd">    sparse point :math:`T_m`.</span>
+<span class="sd">    Hence a kernel element for the target property :math:`Y(A)` is given by:</span>
+<span class="sd">    .. math::</span>
+<span class="sd">        KNM_{Am} = \sum_{i \in A} \delta_{b_m a_i} k(A_i,T_m)</span>
+<span class="sd">    and for :math:`\vec{\nabla}_iY(A)`:</span>
+<span class="sd">    .. math::</span>
+<span class="sd">       KNM_{A_{i}m} = \delta_{b_m a_i} \sum_{j \in A_i} \vec{\nabla}_i k(A_j,T_m)</span>
+<span class="sd">    The training is given by:</span>
+<span class="sd">    .. math::</span>
+<span class="sd">        \bm{\alpha} =  K^{-1} \bm{Y},</span>
+<span class="sd">    where :math:`K` is given by:</span>
+<span class="sd">    .. math::</span>
+<span class="sd">        K = K_{MM} + K_{MN} \Lambda^{-2} K_{NM},</span>
+<span class="sd">    :math:`\bm{Y}=K_{MN} \Lambda^{-2} \bm{y}$, :math:`\bm{y}` the training</span>
+<span class="sd">    targets and :math:`\Lambda` the regularization matrix.</span>
+<span class="sd">    The regularization matrix is chosen to be diagonal:</span>
+<span class="sd">    .. math::</span>
+<span class="sd">        \Lambda^{-1}_{nn} = \delta_{nn} * lambdas[0] / \sigma_{\bm{y}} * np.sqrt(Natoms)</span>
+<span class="sd">    for the targets and</span>
+<span class="sd">    .. math::</span>
+<span class="sd">        \Lambda^{-1}_{nn} = \delta_{nn} * lambdas[1] / \sigma_{\bm{y}},</span>
+<span class="sd">    for the derivatives of the targets w.r.t. the atomic positions and</span>
+<span class="sd">    :math:`\sigma_{\bm{y}}` is the standard deviation of the target property</span>
+<span class="sd">    (not derivatives).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    kernel : Kernel</span>
+<span class="sd">        SparseKernel to compute KMM and initialize the model. It was used to</span>
+<span class="sd">        build KNM_.</span>
+<span class="sd">    frames : list(ase.Atoms)</span>
+<span class="sd">        Training structures</span>
+<span class="sd">    KNM_ : np.array</span>
+<span class="sd">        kernel matrix to use in the training, typically computed with:</span>
+<span class="sd">        KNM = kernel(managers, X_sparse)</span>
+<span class="sd">        KNM_down = kernel(managers, X_sparse, grad=(True, False))</span>
+<span class="sd">        KNM = np.vstack([KNM, KNM_down])</span>
+<span class="sd">        when training with derivatives.</span>
+<span class="sd">    X_sparse : SparsePoints</span>
+<span class="sd">        basis samples to use in the model&#39;s interpolation</span>
+<span class="sd">    y_train : np.array</span>
+<span class="sd">        reference property</span>
+<span class="sd">    self_contributions : dictionary</span>
+<span class="sd">        map atomic number to the property baseline, e.g. training on</span>
+<span class="sd">        total energies is not very recommended so one would provide</span>
+<span class="sd">        the corresponding isolated atom energies so that the model</span>
+<span class="sd">        can be trained on the corresponding formation energies and</span>
+<span class="sd">        still predict total energies.</span>
+<span class="sd">    grad_train : np.array, optional</span>
+<span class="sd">        derivatives of y_train w.r.t. to the atomic motion, e.g.</span>
+<span class="sd">        minus interatomic forces, by default None</span>
+<span class="sd">    lambdas : list/tuple, optional</span>
+<span class="sd">        regularisation parameter for the training, i.e. lambdas[0] -&gt; property</span>
+<span class="sd">        and lambdas[1] -&gt; gradients of the property, by default None</span>
+<span class="sd">    jitter : double, optional</span>
+<span class="sd">        small jitter for the numerical stability of solving the linear system,</span>
+<span class="sd">        by default 1e-8</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    KRR</span>
+<span class="sd">        a trained model that can predict the property and its gradients</span>
+
+<span class="sd">    .. [1] Ceriotti, M., Willatt, M. J., &amp; Csányi, G. (2018).</span>
+<span class="sd">        Machine Learning of Atomic-Scale Properties Based on Physical Principles.</span>
+<span class="sd">        In Handbook of Materials Modeling (pp. 1–27). Springer, Cham.</span>
+<span class="sd">        https://doi.org/10.1007/978-3-319-42913-7_68-1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">KMM</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">X_sparse</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">KNM</span> <span class="o">=</span> <span class="n">KNM_</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">n_centers</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">Natoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_centers</span><span class="p">)</span>
+    <span class="n">Y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_centers</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">iframe</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frames</span><span class="p">):</span>
+        <span class="n">Natoms</span><span class="p">[</span><span class="n">iframe</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">():</span>
+            <span class="n">Y0</span><span class="p">[</span><span class="n">iframe</span><span class="p">]</span> <span class="o">+=</span> <span class="n">self_contributions</span><span class="p">[</span><span class="n">sp</span><span class="p">]</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span> <span class="o">-</span> <span class="n">Y0</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+    <span class="c1"># lambdas[0] is provided per atom hence the &#39;* np.sqrt(Natoms)&#39;</span>
+    <span class="c1"># the first n_centers rows of KNM are expected to refer to the</span>
+    <span class="c1">#  property</span>
+    <span class="n">KNM</span><span class="p">[:</span><span class="n">n_centers</span><span class="p">]</span> <span class="o">/=</span> <span class="n">lambdas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Natoms</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">Y</span> <span class="o">/=</span> <span class="n">lambdas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Natoms</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">grad_train</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">KNM</span><span class="p">[</span><span class="n">n_centers</span><span class="p">:]</span> <span class="o">/=</span> <span class="n">lambdas</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">delta</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">grad_train</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">F</span> <span class="o">/=</span> <span class="n">lambdas</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">delta</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">Y</span><span class="p">,</span> <span class="n">F</span><span class="p">])</span>
+
+    <span class="n">KMM</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">diag_indices_from</span><span class="p">(</span><span class="n">KMM</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">jitter</span>
+
+    <span class="n">K</span> <span class="o">=</span> <span class="n">KMM</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">KNM</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">KNM</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">KNM</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">KRR</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">X_sparse</span><span class="p">,</span> <span class="n">self_contributions</span><span class="p">)</span>
+
+    <span class="c1"># avoid memory clogging</span>
+    <span class="k">del</span> <span class="n">K</span><span class="p">,</span> <span class="n">KMM</span>
+    <span class="n">K</span><span class="p">,</span> <span class="n">KMM</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+
+    <span class="k">return</span> <span class="n">model</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2019, Chiheb Ben Mahmoud, Michele Ceriotti, Federico Giberti,
+Klim Goldshtein, Till Junge, Markus Stricker, Félix Musil, Max Veit.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

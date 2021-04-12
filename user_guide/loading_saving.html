@@ -31,21 +31,18 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Neighbour List Manager" href="../neighbour_list/neighbour-list-manager.html" />
-    <link rel="prev" title="Models" href="../models/models.html" /> 
+    <link rel="next" title="Running MD Simulations with a Librascal Model" href="running_md.html" />
+    <link rel="prev" title="Fitting a Model with Librascal" href="model_fitting.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -96,15 +93,21 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="user_guide.html">User’s Guide</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="user_guide.html#contents">Contents</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="model_fitting.html">Fitting a Model with Librascal</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Saving and Loading in Librascal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running_md.html">Running MD Simulations with a Librascal Model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../whitepaper.html">Goals &amp; Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../SOAP.html">SOAP Theory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../representation/representations.html">Representations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../models/models.html">Models</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Saving and Loading in Librascal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../neighbour_list/neighbour-list-manager.html">Neighbour List Manager</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dev_guide/developer.html">Developer’s guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bibliography.html">Bibliography</a></li>
 </ul>
 
             
@@ -153,13 +156,15 @@
     
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
+          <li><a href="user_guide.html">User’s Guide</a> &raquo;</li>
+        
       <li>Saving and Loading in Librascal</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/io/io.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/user_guide/loading_saving.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -203,7 +208,7 @@ their computed representation and trained machine learning models.
 Many tools already exist for reading atomic srtuctures in python and c++ so we rely on
 <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/io/io.html">ASE</a> on the python side and
 support the ASE <cite>.json</cite> atomic structure file format on the c++ side
-(<code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">AtomicStructure</span></code>). An example is available
+(<a class="reference internal" href="../reference/cpp.html#_CPPv4I_iEN6rascal15AtomicStructureE" title="rascal::AtomicStructure"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">AtomicStructure</span></code></a>). An example is available
 in <cite>json_structure.cc</cite> and <cite>spherical_invariants_example.cc</cite>.
 At the moment we do not support saving representations in native Librascal format
 but on the python side they can be converted to numpy arrays with the <cite>get_features()</cite>
@@ -226,8 +231,8 @@ An example is available in the <cite>MLIP_example.ipynb</cite> jupyter notebook.
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="../neighbour_list/neighbour-list-manager.html" class="btn btn-neutral float-right" title="Neighbour List Manager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="../models/models.html" class="btn btn-neutral float-left" title="Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="running_md.html" class="btn btn-neutral float-right" title="Running MD Simulations with a Librascal Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="model_fitting.html" class="btn btn-neutral float-left" title="Fitting a Model with Librascal" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

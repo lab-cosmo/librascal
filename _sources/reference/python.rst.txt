@@ -32,6 +32,11 @@ Models
 .. autoclass:: rascal.models.Kernel
    :members:
 
+.. autoclass:: rascal.models.KRR
+   :members:
+
+.. autofunction:: rascal.models.compute_KNM
+
 IO
 ===
 

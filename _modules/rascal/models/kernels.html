@@ -31,13 +31,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../../_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -94,15 +91,13 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/user_guide.html">User’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../whitepaper.html">Goals &amp; Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../SOAP.html">SOAP Theory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../representation/representations.html">Representations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../models/models.html">Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../io/io.html">Saving and Loading in Librascal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../neighbour_list/neighbour-list-manager.html">Neighbour List Manager</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../dev_guide/developer.html">Developer’s guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../bibliography.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../bibliography.html">Bibliography</a></li>
 </ul>
 
             
@@ -187,14 +182,7 @@
 <div class="viewcode-block" id="Kernel"><a class="viewcode-back" href="../../../reference/python.html#rascal.models.Kernel">[docs]</a><span class="k">class</span> <span class="nc">Kernel</span><span class="p">(</span><span class="n">BaseIO</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes the kernel for a given representation. In the following</span>
-<span class="sd">    we refer to the training samples with &#39;N&#39; and, in the case of</span>
-<span class="sd">    sparse kernels [1], we refer to the pseudo points with &#39;M&#39;. So a</span>
-<span class="sd">    kernel between the training samples and the pseudo points is</span>
-<span class="sd">    &#39;KNM&#39;. For more information on sparse kernels see</span>
-<span class="sd">    :meth:`rascal.models.krr.train_gap_model`.</span>
-
-<span class="sd">    Initialize the kernel with the given parameters</span>
+<span class="sd">    Initialize the kernel with the given representation and parameters</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -213,8 +201,17 @@
 
 <span class="sd">    kernel_type : string</span>
 <span class="sd">        Type of kernel method, either &#39;Full&#39; (computing exact covariance matrix)</span>
-<span class="sd">        or &#39;Sparse&#39; (computing GAP [2] like kernel for sparse kernel methods like</span>
+<span class="sd">        or &#39;Sparse&#39; (computing GAP [2]_ like kernel for sparse kernel methods like</span>
 <span class="sd">        Subset of Regressors)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    In the following</span>
+<span class="sd">    we refer to the training samples with &#39;N&#39; and, in the case of</span>
+<span class="sd">    sparse kernels [1]_, we refer to the pseudo points with &#39;M&#39;. So a</span>
+<span class="sd">    kernel between the training samples and the pseudo points is</span>
+<span class="sd">    &#39;KNM&#39;. For more information on sparse kernels see</span>
+<span class="sd">    :meth:`rascal.models.krr.train_gap_model`.</span>
 
 <span class="sd">    .. [1] Joaquin Quiñonero-Candela, Carl Edward Rasmussen;</span>
 <span class="sd">            A Unifying View of Sparse Approximate Gaussian Process Regression,</span>

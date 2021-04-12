@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
@@ -32,13 +31,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -95,15 +91,13 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/user_guide.html">User’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="whitepaper.html">Goals &amp; Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="SOAP.html">SOAP Theory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="representation/representations.html">Representations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="models/models.html">Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="io/io.html">Saving and Loading in Librascal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="neighbour_list/neighbour-list-manager.html">Neighbour List Manager</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dev_guide/developer.html">Developer’s guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference/index.html">API reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="bibliography.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
 </ul>
 
             
@@ -179,13 +173,13 @@
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#G"><strong>G</strong></a>
- | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
@@ -216,6 +210,8 @@
       <li><a href="reference/python.html#rascal.representations.SphericalInvariants.coefficient_subselection">coefficient_subselection (rascal.representations.SphericalInvariants attribute)</a>
 </li>
       <li><a href="reference/python.html#rascal.representations.SphericalInvariants.compute_gradients">compute_gradients (rascal.representations.SphericalInvariants attribute)</a>
+</li>
+      <li><a href="reference/python.html#rascal.models.compute_KNM">compute_KNM() (in module rascal.models)</a>
 </li>
       <li><a href="reference/python.html#rascal.representations.SphericalCovariants.covariant_lambda">covariant_lambda (rascal.representations.SphericalCovariants attribute)</a>
 </li>
@@ -294,14 +290,6 @@
   </ul></td>
 </tr></table>
 
-<h2 id="H">H</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/cpp.html#_CPPv4N6Hyp1f14calcEdddb">Hyp1f1::calc (C++ function)</a>
-</li>
-  </ul></td>
-</tr></table>
-
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -330,6 +318,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/python.html#rascal.models.Kernel">Kernel (class in rascal.models)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/python.html#rascal.models.KRR">KRR (class in rascal.models)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -392,6 +384,20 @@
   </ul></td>
 </tr></table>
 
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/python.html#rascal.models.KRR.predict">predict() (rascal.models.KRR method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/python.html#rascal.models.KRR.predict_forces">predict_forces() (rascal.models.KRR method)</a>
+</li>
+      <li><a href="reference/python.html#rascal.models.KRR.predict_stress">predict_stress() (rascal.models.KRR method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -409,7 +415,7 @@
 </li>
       <li><a href="reference/cpp.html#_CPPv4I_N8internal23SphericalCovariantsTypeE_NSt11enable_if_tIXeq4TypeN8internal23SphericalCovariantsType14LambdaSpectrumEEiEE0EN6rascal29CalculatorSphericalCovariants12compute_implEvNSt10shared_ptrI16StructureManagerEE">rascal::CalculatorSphericalCovariants::compute_impl (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4I_N8internal23SphericalCovariantsTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal29CalculatorSphericalCovariants12compute_loopEvR16StructureManager">rascal::CalculatorSphericalCovariants::compute_loop (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I_N8internal23SphericalCovariantsTypeE0_NSt11enable_if_tIXnot(internal::is_proper_iterator< StructureManager >::value)EiEEEN6rascal29CalculatorSphericalCovariants12compute_loopEvR16StructureManager">[1]</a>
+      <li><a href="reference/cpp.html#_CPPv4I_N8internal23SphericalCovariantsTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal29CalculatorSphericalCovariants12compute_loopEvR16StructureManager">rascal::CalculatorSphericalCovariants::compute_loop (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I_N8internal23SphericalCovariantsTypeE0_NSt11enable_if_tIXntN8internal18is_proper_iteratorI16StructureManagerE5valueEEiEEEN6rascal29CalculatorSphericalCovariants12compute_loopEvR16StructureManager">[1]</a>
 </li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal29CalculatorSphericalCovariantsaSERK29CalculatorSphericalCovariants">rascal::CalculatorSphericalCovariants::operator= (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal29CalculatorSphericalCovariantsaSERR29CalculatorSphericalCovariants">[1]</a>
 </li>
@@ -427,7 +433,7 @@
 </li>
       <li><a href="reference/cpp.html#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0EN6rascal28CalculatorSphericalExpansion12compute_implEvNSt10shared_ptrI16StructureManagerEE">rascal::CalculatorSphericalExpansion::compute_impl (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager">rascal::CalculatorSphericalExpansion::compute_loop (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIXnot(internal::is_proper_iterator< StructureManager >::value)EiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager">[1]</a>
+      <li><a href="reference/cpp.html#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager">rascal::CalculatorSphericalExpansion::compute_loop (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I_N8internal18CutoffFunctionTypeE_N8internal15RadialBasisTypeE_N8internal18AtomicSmearingTypeE_N8internal16OptimizationTypeE0_NSt11enable_if_tIXntN8internal18is_proper_iteratorI16StructureManagerE5valueEEiEEEN6rascal28CalculatorSphericalExpansion12compute_loopEvR16StructureManager">[1]</a>
 </li>
       <li><a href="reference/cpp.html#_CPPv4NK6rascal28CalculatorSphericalExpansion14does_gradientsEv">rascal::CalculatorSphericalExpansion::does_gradients (C++ function)</a>
 </li>
@@ -449,7 +455,7 @@
 </li>
       <li><a href="reference/cpp.html#_CPPv4I_N8internal23SphericalInvariantsTypeE_NSt11enable_if_tIXeq9BodyOrderN8internal23SphericalInvariantsType10BiSpectrumEEiEE0EN6rascal29CalculatorSphericalInvariants12compute_implEvNSt10shared_ptrI16StructureManagerEE">rascal::CalculatorSphericalInvariants::compute_impl (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I_N8internal23SphericalInvariantsTypeE_NSt11enable_if_tIXeq9BodyOrderN8internal23SphericalInvariantsType13PowerSpectrumEEiEE0EN6rascal29CalculatorSphericalInvariants12compute_implEvNSt10shared_ptrI16StructureManagerEE">[1]</a>, <a href="reference/cpp.html#_CPPv4I_N8internal23SphericalInvariantsTypeE_NSt11enable_if_tIXeq9BodyOrderN8internal23SphericalInvariantsType14RadialSpectrumEEiEE0EN6rascal29CalculatorSphericalInvariants12compute_implEvNSt10shared_ptrI16StructureManagerEE">[2]</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4I_N8internal23SphericalInvariantsTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal29CalculatorSphericalInvariants12compute_loopEvR16StructureManager">rascal::CalculatorSphericalInvariants::compute_loop (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I_N8internal23SphericalInvariantsTypeE0_NSt11enable_if_tIXnot(internal::is_proper_iterator< StructureManager >::value)EiEEEN6rascal29CalculatorSphericalInvariants12compute_loopEvR16StructureManager">[1]</a>
+      <li><a href="reference/cpp.html#_CPPv4I_N8internal23SphericalInvariantsTypeE0_NSt11enable_if_tIN8internal18is_proper_iteratorI16StructureManagerE5valueEiEEEN6rascal29CalculatorSphericalInvariants12compute_loopEvR16StructureManager">rascal::CalculatorSphericalInvariants::compute_loop (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I_N8internal23SphericalInvariantsTypeE0_NSt11enable_if_tIXntN8internal18is_proper_iteratorI16StructureManagerE5valueEEiEEEN6rascal29CalculatorSphericalInvariants12compute_loopEvR16StructureManager">[1]</a>
 </li>
       <li><a href="reference/cpp.html#_CPPv4NK6rascal29CalculatorSphericalInvariants14does_gradientsEv">rascal::CalculatorSphericalInvariants::does_gradients (C++ function)</a>
 </li>
@@ -461,6 +467,8 @@
 </li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal29CalculatorSphericalInvariantsaSERK29CalculatorSphericalInvariants">rascal::CalculatorSphericalInvariants::operator= (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal29CalculatorSphericalInvariantsaSERR29CalculatorSphericalInvariants">[1]</a>
 </li>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal29CalculatorSphericalInvariants23PowerSpectrumCoeffIndexE">rascal::CalculatorSphericalInvariants::PowerSpectrumCoeffIndex (C++ struct)</a>
+</li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal29CalculatorSphericalInvariants19set_hyperparametersERK8Hypers_t">rascal::CalculatorSphericalInvariants::set_hyperparameters (C++ function)</a>
 </li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal29CalculatorSphericalInvariants33set_hyperparameters_powerspectrumERK8Hypers_t">rascal::CalculatorSphericalInvariants::set_hyperparameters_powerspectrum (C++ function)</a>
@@ -471,51 +479,59 @@
 </li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal29CalculatorSphericalInvariantsD0Ev">rascal::CalculatorSphericalInvariants::~CalculatorSphericalInvariants (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE0EN6rascal8internal10KernelImpl7computeEN4math8Matrix_tERK17StructureManagersRK17StructureManagersRKNSt6stringE">rascal::internal::KernelImpl::compute (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE0EN6rascal8internal10KernelImpl7computeEN4math8Matrix_tERK17StructureManagersRKNSt6stringE">[1]</a>, <a href="reference/cpp.html#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType9StructureEEiEE0EN6rascal8internal10KernelImpl7computeEN4math8Matrix_tER17StructureManagersR17StructureManagersRKNSt6stringE">[2]</a>, <a href="reference/cpp.html#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType9StructureEEiEE0EN6rascal8internal10KernelImpl7computeEN4math8Matrix_tER17StructureManagersRKNSt6stringE">[3]</a>
+      <li><a href="reference/cpp.html#_CPPv4IEN6rascal8internal10KernelImplIN8internal10KernelType6CosineEEE">rascal::internal::KernelImpl&lt;internal::KernelType::Cosine&gt; (C++ struct)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal10KernelImpl4zetaE">rascal::internal::KernelImpl::zeta (C++ member)</a>
+      <li><a href="reference/cpp.html#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE0EN6rascal8internal10KernelImplIN8internal10KernelType6CosineEE7computeEN4math8Matrix_tERK17StructureManagersRK17StructureManagersRKNSt6stringE">rascal::internal::KernelImpl&lt;internal::KernelType::Cosine&gt;::compute (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE0EN6rascal8internal10KernelImplIN8internal10KernelType6CosineEE7computeEN4math8Matrix_tERK17StructureManagersRKNSt6stringE">[1]</a>, <a href="reference/cpp.html#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType9StructureEEiEE0EN6rascal8internal10KernelImplIN8internal10KernelType6CosineEE7computeEN4math8Matrix_tER17StructureManagersR17StructureManagersRKNSt6stringE">[2]</a>, <a href="reference/cpp.html#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType9StructureEEiEE0EN6rascal8internal10KernelImplIN8internal10KernelType6CosineEE7computeEN4math8Matrix_tER17StructureManagersRKNSt6stringE">[3]</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4IEN6rascal8internal10KernelImplIN8internal10KernelType6CosineEEE">rascal::internal::KernelImpl&lt;internal::KernelType::Cosine&gt; (C++ class)</a>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal10KernelImplIN8internal10KernelType6CosineEE4zetaE">rascal::internal::KernelImpl&lt;internal::KernelType::Cosine&gt;::zeta (C++ member)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE">rascal::internal::RadialContribution::compute_center_contribution (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContribution27compute_center_contributionEKd">[1]</a>, <a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContribution27compute_center_contributionEd">[2]</a>
+      <li><a href="reference/cpp.html#_CPPv4IEN6rascal8internal18RadialContributionIN15RadialBasisType3DVREEE">rascal::internal::RadialContribution&lt;RadialBasisType::DVR&gt; (C++ struct)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4I_18AtomicSmearingTypeEN6rascal8internal18RadialContribution20compute_contributionE8Matrix_tKdKd">rascal::internal::RadialContribution::compute_contribution (C++ function)</a>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3DVREE27compute_center_contributionEKd">rascal::internal::RadialContribution&lt;RadialBasisType::DVR&gt;::compute_center_contribution (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">rascal::internal::RadialContribution::compute_neighbour_contribution (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContribution30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">[1]</a>
+      <li><a href="reference/cpp.html#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContributionIN15RadialBasisType3DVREE30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">rascal::internal::RadialContribution&lt;RadialBasisType::DVR&gt;::compute_neighbour_contribution (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">rascal::internal::RadialContribution::compute_neighbour_derivative (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContribution28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">[1]</a>
+      <li><a href="reference/cpp.html#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContributionIN15RadialBasisType3DVREE28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">rascal::internal::RadialContribution&lt;RadialBasisType::DVR&gt;::compute_neighbour_derivative (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionaSERK18RadialContribution">rascal::internal::RadialContribution::operator= (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionaSERR18RadialContribution">[1]</a>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3DVREEaSERK18RadialContribution">rascal::internal::RadialContribution&lt;RadialBasisType::DVR&gt;::operator= (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3DVREEaSERR18RadialContribution">[1]</a>
+</li>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3DVREE18RadialContributionERK18RadialContribution">rascal::internal::RadialContribution&lt;RadialBasisType::DVR&gt;::RadialContribution (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3DVREE18RadialContributionERK8Hypers_t">[1]</a>, <a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3DVREE18RadialContributionERR18RadialContribution">[2]</a>
+</li>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3DVREE19set_hyperparametersERK8Hypers_t">rascal::internal::RadialContribution&lt;RadialBasisType::DVR&gt;::set_hyperparameters (C++ function)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContribution17ortho_norm_matrixE">rascal::internal::RadialContribution::ortho_norm_matrix (C++ member)</a>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3DVREED0Ev">rascal::internal::RadialContribution&lt;RadialBasisType::DVR&gt;::~RadialContribution (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContribution25precompute_radial_overlapEv">rascal::internal::RadialContribution::precompute_radial_overlap (C++ function)</a>
+      <li><a href="reference/cpp.html#_CPPv4IEN6rascal8internal18RadialContributionIN15RadialBasisType3GTOEEE">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt; (C++ struct)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContribution24precompute_radial_sigmasEv">rascal::internal::RadialContribution::precompute_radial_sigmas (C++ function)</a>
+      <li><a href="reference/cpp.html#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerE">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::compute_center_contribution (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE27compute_center_contributionEd">[1]</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContribution19radial_norm_factorsE">rascal::internal::RadialContribution::radial_norm_factors (C++ member)</a>
+      <li><a href="reference/cpp.html#_CPPv4I_18AtomicSmearingTypeEN6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE20compute_contributionE8Matrix_tKdKd">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::compute_contribution (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContribution19radial_ortho_matrixE">rascal::internal::RadialContribution::radial_ortho_matrix (C++ member)</a>
+      <li><a href="reference/cpp.html#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::compute_neighbour_contribution (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContribution18RadialContributionERK18RadialContribution">rascal::internal::RadialContribution::RadialContribution (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContribution18RadialContributionERK8Hypers_t">[1]</a>, <a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContribution18RadialContributionERR18RadialContribution">[2]</a>
+      <li><a href="reference/cpp.html#_CPPv4I_6size_t_6size_tEN6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE28compute_neighbour_derivativeE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::compute_neighbour_derivative (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContribution19set_hyperparametersERK8Hypers_t">rascal::internal::RadialContribution::set_hyperparameters (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContribution19set_hyperparametersERK8Hypers_t">[1]</a>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE17ortho_norm_matrixE">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::ortho_norm_matrix (C++ member)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionD0Ev">rascal::internal::RadialContribution::~RadialContribution (C++ function)</a>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE25precompute_radial_overlapEv">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::precompute_radial_overlap (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4IEN6rascal8internal18RadialContributionIN15RadialBasisType3DVREEE">rascal::internal::RadialContribution&lt;RadialBasisType::DVR&gt; (C++ class)</a>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE24precompute_radial_sigmasEv">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::precompute_radial_sigmas (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4IEN6rascal8internal18RadialContributionIN15RadialBasisType3GTOEEE">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt; (C++ class)</a>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE19radial_norm_factorsE">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::radial_norm_factors (C++ member)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4I0EN6rascal8internal16SparseKernelImpl7computeEN4math8Matrix_tER12SparsePoints">rascal::internal::SparseKernelImpl::compute (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE00EN6rascal8internal16SparseKernelImpl7computeEN4math8Matrix_tERK17StructureManagersRK12SparsePointsRKNSt6stringE">[1]</a>, <a href="reference/cpp.html#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType9StructureEEiEE00EN6rascal8internal16SparseKernelImpl7computeEN4math8Matrix_tER17StructureManagersR12SparsePointsRKNSt6stringE">[2]</a>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE19radial_ortho_matrixE">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::radial_ortho_matrix (C++ member)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4I00_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE00EN6rascal8internal16SparseKernelImpl18compute_derivativeEN4math8Matrix_tER17StructureManagersR12SparsePointsRKNSt6stringERKNSt6stringEKb">rascal::internal::SparseKernelImpl::compute_derivative (C++ function)</a>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE19set_hyperparametersERK8Hypers_t">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::set_hyperparameters (C++ function)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal16SparseKernelImpl4zetaE">rascal::internal::SparseKernelImpl::zeta (C++ member)</a>
+      <li><a href="reference/cpp.html#_CPPv4IEN6rascal8internal16SparseKernelImplIN8internal16SparseKernelType3GAPEEE">rascal::internal::SparseKernelImpl&lt;internal::SparseKernelType::GAP&gt; (C++ struct)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4IEN6rascal8internal16SparseKernelImplIN8internal16SparseKernelType3GAPEEE">rascal::internal::SparseKernelImpl&lt;internal::SparseKernelType::GAP&gt; (C++ class)</a>
+      <li><a href="reference/cpp.html#_CPPv4I0EN6rascal8internal16SparseKernelImplIN8internal16SparseKernelType3GAPEE7computeEN4math8Matrix_tER12SparsePoints">rascal::internal::SparseKernelImpl&lt;internal::SparseKernelType::GAP&gt;::compute (C++ function)</a>, <a href="reference/cpp.html#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE00EN6rascal8internal16SparseKernelImplIN8internal16SparseKernelType3GAPEE7computeEN4math8Matrix_tERK17StructureManagersRK12SparsePointsRKNSt6stringE">[1]</a>, <a href="reference/cpp.html#_CPPv4I0_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType9StructureEEiEE00EN6rascal8internal16SparseKernelImplIN8internal16SparseKernelType3GAPEE7computeEN4math8Matrix_tER17StructureManagersR12SparsePointsRKNSt6stringE">[2]</a>
+</li>
+      <li><a href="reference/cpp.html#_CPPv4I00_N8internal10TargetTypeE_NSt11enable_if_tIXeq4TypeN8internal10TargetType4AtomEEiEE00EN6rascal8internal16SparseKernelImplIN8internal16SparseKernelType3GAPEE18compute_derivativeEN4math8Matrix_tER17StructureManagersR12SparsePointsRKNSt6stringERKNSt6stringEKb">rascal::internal::SparseKernelImpl&lt;internal::SparseKernelType::GAP&gt;::compute_derivative (C++ function)</a>
+</li>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal8internal16SparseKernelImplIN8internal16SparseKernelType3GAPEE4zetaE">rascal::internal::SparseKernelImpl&lt;internal::SparseKernelType::GAP&gt;::zeta (C++ member)</a>
 </li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal6KernelE">rascal::Kernel (C++ class)</a>
 </li>
@@ -529,11 +545,11 @@
 </li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal4math6Hyp1f1E">rascal::math::Hyp1f1 (C++ class)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal4math6Hyp1f14calcEdb">rascal::math::Hyp1f1::calc (C++ function)</a>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal4math6Hyp1f14calcEdb">rascal::math::Hyp1f1::calc (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal4math6Hyp1f14calcEdddb">[1]</a>
 </li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonicsE">rascal::math::SphericalHarmonics (C++ class)</a>
 </li>
-      <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics4calcERKN5Eigen3RefIKN5Eigen8Vector3dEEE">rascal::math::SphericalHarmonics::calc (C++ function)</a>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics4calcERKN5Eigen3RefIKN5Eigen8Vector3dEEE">rascal::math::SphericalHarmonics::calc (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics4calcERKN5Eigen3RefIKN5Eigen8Vector3dEEEb">[1]</a>
 </li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics30get_assoc_legendre_polynom_rawEv">rascal::math::SphericalHarmonics::get_assoc_legendre_polynom_raw (C++ function)</a>
 </li>
@@ -541,19 +557,21 @@
 </li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics25get_harmonics_derivativesEv">rascal::math::SphericalHarmonics::get_harmonics_derivatives (C++ function)</a>
 </li>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics10precomputeE6size_tb">rascal::math::SphericalHarmonics::precompute (C++ function)</a>
+</li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics18SphericalHarmonicsEb">rascal::math::SphericalHarmonics::SphericalHarmonics (C++ function)</a>
 </li>
       <li><a href="dev_guide/how_to_test.html#_CPPv4N6rascal6rascal19GradientTestFixtureE">rascal::rascal::GradientTestFixture (C++ class)</a>
 </li>
-      <li><a href="dev_guide/how_to_test.html#_CPPv4N6rascal6rascal19GradientTestFixture5DEBUGE">rascal::rascal::GradientTestFixture::DEBUG (C++ enumerator)</a>
-</li>
       <li><a href="dev_guide/how_to_test.html#_CPPv4N6rascal6rascal19GradientTestFixture12fd_error_tolE">rascal::rascal::GradientTestFixture::fd_error_tol (C++ member)</a>
 </li>
-      <li><a href="dev_guide/how_to_test.html#_CPPv4N6rascal6rascal19GradientTestFixture4INFOE">rascal::rascal::GradientTestFixture::INFO (C++ enumerator)</a>
-</li>
-      <li><a href="dev_guide/how_to_test.html#_CPPv4N6rascal6rascal19GradientTestFixture6NORMALE">rascal::rascal::GradientTestFixture::NORMAL (C++ enumerator)</a>
-</li>
       <li><a href="dev_guide/how_to_test.html#_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValueE">rascal::rascal::GradientTestFixture::VerbosityValue (C++ enum)</a>
+</li>
+      <li><a href="dev_guide/how_to_test.html#_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValue5DEBUGE">rascal::rascal::GradientTestFixture::VerbosityValue::DEBUG (C++ enumerator)</a>
+</li>
+      <li><a href="dev_guide/how_to_test.html#_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValue4INFOE">rascal::rascal::GradientTestFixture::VerbosityValue::INFO (C++ enumerator)</a>
+</li>
+      <li><a href="dev_guide/how_to_test.html#_CPPv4N6rascal6rascal19GradientTestFixture14VerbosityValue6NORMALE">rascal::rascal::GradientTestFixture::VerbosityValue::NORMAL (C++ enumerator)</a>
 </li>
       <li><a href="dev_guide/how_to_test.html#_CPPv4I00EN6rascal6rascal39RepresentationCalculatorGradientFixtureE">rascal::rascal::RepresentationCalculatorGradientFixture (C++ class)</a>
 </li>
@@ -595,15 +613,11 @@
         <li><a href="reference/python.html#rascal.representations.SphericalInvariants.soap_type">(rascal.representations.SphericalInvariants attribute)</a>
 </li>
       </ul></li>
-      <li><a href="reference/python.html#rascal.representations.SortedCoulombMatrix">SortedCoulombMatrix (class in rascal.representations)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/python.html#rascal.representations.SortedCoulombMatrix">SortedCoulombMatrix (class in rascal.representations)</a>
+</li>
       <li><a href="reference/python.html#rascal.representations.SphericalCovariants">SphericalCovariants (class in rascal.representations)</a>
-</li>
-      <li><a href="reference/cpp.html#_CPPv4N18SphericalHarmonics4calcERKN5Eigen3RefIKN5Eigen8Vector3dEEEb">SphericalHarmonics::calc (C++ function)</a>
-</li>
-      <li><a href="reference/cpp.html#_CPPv4N18SphericalHarmonics10precomputeE6size_tb">SphericalHarmonics::precompute (C++ function)</a>
 </li>
       <li><a href="reference/python.html#rascal.representations.SphericalInvariants">SphericalInvariants (class in rascal.representations)</a>
 </li>
@@ -613,12 +627,12 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/python.html#rascal.representations.SortedCoulombMatrix.transform">transform() (rascal.representations.SortedCoulombMatrix method)</a>, <a href="reference/python.html#rascal.representations.SortedCoulombMatrix.transform">[1]</a>
+      <li><a href="reference/python.html#id0">transform() (rascal.representations.SortedCoulombMatrix method)</a>, <a href="reference/python.html#rascal.representations.SortedCoulombMatrix.transform">[1]</a>
 
       <ul>
-        <li><a href="reference/python.html#rascal.representations.SphericalCovariants.transform">(rascal.representations.SphericalCovariants method)</a>, <a href="reference/python.html#rascal.representations.SphericalCovariants.transform">[1]</a>
+        <li><a href="reference/python.html#id3">(rascal.representations.SphericalCovariants method)</a>, <a href="reference/python.html#rascal.representations.SphericalCovariants.transform">[1]</a>
 </li>
-        <li><a href="reference/python.html#rascal.representations.SphericalInvariants.transform">(rascal.representations.SphericalInvariants method)</a>, <a href="reference/python.html#rascal.representations.SphericalInvariants.transform">[1]</a>
+        <li><a href="reference/python.html#id2">(rascal.representations.SphericalInvariants method)</a>, <a href="reference/python.html#rascal.representations.SphericalInvariants.transform">[1]</a>
 </li>
       </ul></li>
   </ul></td>
