@@ -392,10 +392,9 @@ namespace rascal {
    */
   template <class ManagerImplementation>
   void AdaptorKspace<ManagerImplementation>::make_full_neighbour_list() {
-    using Vector_t = Eigen::Matrix<double, traits::Dim, 1>;
-
     // short hands for parameters and inputs
     constexpr auto dim{traits::Dim};
+    using Vector_t = Eigen::Matrix<double, dim, 1>;
 
     int atom_tag{0};
     for (auto center : this->manager) {
@@ -407,7 +406,7 @@ namespace rascal {
       this->atom_tag_list.push_back(atom_tag);
       this->atom_types.push_back(atom_type);
       this->atom_index_from_atom_tag_list.push_back(atom_index);
-      for (auto i_dim{0}; i_dim < traits::Dim; ++i_dim) {
+      for (auto i_dim{0}; i_dim < dim; ++i_dim) {
         this->positions.push_back(pos(i_dim));
       }
       atom_tag++;
@@ -431,7 +430,7 @@ namespace rascal {
         this->atom_types.push_back(atom_type_j);
         this->atom_index_from_atom_tag_list.push_back(atom_index_j);
         this->neighbours_atom_tag.push_back(atom_tag);
-        for (auto i_dim{0}; i_dim < traits::Dim; ++i_dim) {
+        for (auto i_dim{0}; i_dim < dim; ++i_dim) {
           this->positions.push_back(pos_j(i_dim));
         }
         atom_tag++;
