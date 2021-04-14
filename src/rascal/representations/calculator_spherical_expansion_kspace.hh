@@ -53,6 +53,7 @@
 #include <sstream>
 #include <unordered_set>
 #include <vector>
+#include <fstream>
 
 namespace rascal {
 
@@ -789,6 +790,22 @@ namespace rascal {
 
       // Normalize and orthogonalize the radial coefficients
       radial_integral->finalize_coefficients(coefficients_center);
+      
+      // Write code in which to store the coefficients 
+      std::ofstream myfile;
+      myfile.open ("expansioncoefficients_kspace.txt", std::ios::app);
+      for (auto neigh : manager) { 
+        auto atom_j_tag{neigh.get_atom_tag()};
+        size_t jat{manager->get_atom_index(atom_j_tag)};
+        Key_t neigh_type{neigh.get_atom_type()};
+        auto && coeff = coefficients_center[neigh_type];
+        myfile << "Indices " << iat << " and " << jat << "\n";
+        myfile << coeff.rows() << " x " <<
+               coeff.cols() << " coeff matrix = \n" <<
+               coeff << "\n";
+      }
+      myfile.close();
+
       // if (compute_gradients) {
       //  radial_integral->template finalize_coefficients_der<ThreeD>(
       //      expansions_coefficients_gradient, center);
