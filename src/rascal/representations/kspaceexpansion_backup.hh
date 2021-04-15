@@ -596,7 +596,38 @@ namespace rascal {
     // Radial integrals of shape (N_k, n_max * (l_max + 1)=nl_size) 
     size_t nl_size{this->max_radial*(this->max_angular+1)};
     auto I_nl{math::Matrix_t(n_k, nl_size)};
+    const size_t nmax{this->max_radial};
+    auto I_nl_primitive{math::Matrix_t(nmax,this->max_angular+1)};
 
+    // Generate orthogonalization matrix
+    auto tfmatrix{math::Matrix_t(8,8)};
+    tfmatrix.row(0) << 2.57063295510775, -2.24832264108661, 
+        0.99788590109247, -1.10312306395934, 0.96209952823151, 
+        -0.59943313810658, 0.24104471880326, -0.04822925193843; 
+    tfmatrix.row(1) << -2.24832264108661, 3.94457898964730, 
+        -2.54352793187231, 2.66502411998942, -2.33816136790963, 
+        1.51823714638869, -0.64439424807125, 0.13492260800938; 
+    tfmatrix.row(2) << 0.99788590109247, -2.54352793187231, 
+        4.94133817687962, -6.29638225533327, 6.27580554828160, 
+        -4.55050736381259, 2.12440485995026, -0.47876984018411; 
+    tfmatrix.row(3) << -1.10312306395934, 2.66502411998942, 
+        -6.29638225533327, 13.63892155115342, -16.94876887803384, 
+        14.03384676135168, -7.16968629203641, 1.72222622498310; 
+    tfmatrix.row(4) << 0.96209952823151, -2.33816136790963, 
+        6.27580554828160, -16.94876887803384, 29.16345918988579, 
+        -29.17421916037562, 16.84433772861940, -4.40081591855761; 
+    tfmatrix.row(5) << -0.59943313810658, 1.51823714638869, 
+        -4.55050736381259, 14.03384676135168, -29.17421916037562, 
+        37.67394010140923, -26.10142374594981, 7.75634547931718; 
+    tfmatrix.row(6) << 0.24104471880326, -0.64439424807125, 
+        2.12440485995026, -7.16968629203641, 16.84433772861940, 
+        -26.10142374594981, 23.65375578469920, -8.77958718830410; 
+    tfmatrix.row(7) << -0.04822925193843, 0.13492260800938, 
+        -0.47876984018411, 1.72222622498310, -4.40081591855761, 
+        7.75634547931718, -8.77958718830410, 4.98826513085619;
+    
+    std::cout << "tfmatrix = \n" << tfmatrix << "\n";
+  
     // Precompute the three above quantities for each k-vector
     for (size_t ik{0}; ik < n_k; ++ik) {
       // Fourier charge at |k|=k_val (multiply by 1/k^2 for LODE) 
@@ -624,11 +655,29 @@ namespace rascal {
         I_nl(ik, nl) = radint(nl);
       }
       
-      // Orthogonalize before main loop
-      // Note: disable final orthogonalization in this case
-      //math::Vector_t temp{I_nl.row(ik)}; 
-      //radial_integral->orthogonalize_radialprojections(temp);
-      //I_nl.row(ik) = temp;
+      // alternative method
+      size_t nl_idx{0};
+      for (size_t rad_n{0}; rad_n < nmax; rad_n++) {
+        for (size_t ang_l{0}; ang_l < this->max_angular+1; ang_l++) {
+          // Store I_nl with respect to the primitive radial basis
+          I_nl_primitive(rad_n,ang_l) = radint(nl_idx);
+          nl_idx += 1;
+        }
+      }
+      auto I_temp = tfmatrix * I_nl_primitive;
+      //for (size_t nl{0}; nl < nl_size; ++nl) {
+      //  size_t n_idx = nl / this->max_radial;
+      //  size_t l_idx = nl % this->max_angular;
+      //  I_nl(ik, nl) += (0* I_temp(n_idx,l_idx));
+      //}
+      // Eigen::Map<Eigen::RowVectorXf> v1(I_temp.data(), I_temp.size());
+      if (ik < 3) {
+        std::cout << "k = " << k_val(ik) << "\n";
+        std::cout << "Primitive I_nl = \n" << I_nl_primitive << "\n";
+        std::cout << "Orthogonal = \n" << I_temp << "\n";
+      } //I_nl.row(ik) = I_nl_vec;
+      //I_nl_primitive.reshaped();
+      // I_nl.row(ik) = ;
     }  // end of loop over k vectors
 
     /* Test radial scattering function @memo delete after testing phase
@@ -690,7 +739,10 @@ namespace rascal {
     -----------------------------------------------------------------
     */
     // Global prefactor in expansion coefficients from Fourier transform
-    double global_factor = 16.0 * pow(PI,2) / volume;
+    double global_factor{16.0 * pow(PI,2) / volume};
+    // TEMPORARY:make the coeff. agree with real space version before normalization
+    global_factor /= (16.*sqrt(2*PI));
+
     // Start the accumulation: loop over all center atoms
     for (auto center : manager) {
       // Preparations:
@@ -793,25 +845,33 @@ namespace rascal {
           } // for (radial_n)         
         } // for (neigh : center)
       } // for (kvectors) 
-
-      // Normalize and orthogonalize the radial coefficients
-      radial_integral->finalize_coefficients(coefficients_center);
-      
-      // Write code in which to store the coefficients 
-      std::ofstream myfile;
-      myfile.open ("expansioncoefficients_kspace.txt", std::ios::app);
+     
       for (auto neigh : manager) { 
         auto atom_j_tag{neigh.get_atom_tag()};
         size_t jat{manager->get_atom_index(atom_j_tag)};
         Key_t neigh_type{neigh.get_atom_type()};
         auto && coeff = coefficients_center[neigh_type];
-        myfile << "Atom indices " << iat << " and " << jat << "\n";
-        myfile << coeff.rows() << " x " <<
-               coeff.cols() << " coeff matrix = \n" <<
+        std::cout << "Indices " << iat << " and " << jat << "\n";
+        std::cout << "Coefficient matrix is of size " <<
+               coeff.rows() << " x " <<
+               coeff.cols() << " and given by \n" <<
                coeff << "\n";
-      }
-      myfile.close();
+        
+        if (compute_gradients) {
+          auto & coefficients_center_gradient = 
+                 expansions_coefficients_gradient[center.get_atom_ii()];
+          auto && grad_center_by_type{
+                 coefficients_center_gradient[neigh_type]};
+          std::cout << "Gradients = \n" << grad_center_by_type << "\n";
+        }
+      } 
+      
+      radial_integral->finalize_coefficients(coefficients_center);
+      //void finalize_coefficients(Coeffs & coefficients) const {
+      //  coefficients.lhs_dot(this->ortho_norm_matrix);
+      // }
 
+      // Normalize and orthogonalize the radial coefficients
       // if (compute_gradients) {
       //  radial_integral->template finalize_coefficients_der<ThreeD>(
       //      expansions_coefficients_gradient, center);
