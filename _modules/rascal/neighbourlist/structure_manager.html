@@ -171,6 +171,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">ase.geometry</span> <span class="kn">import</span> <span class="n">wrap_positions</span>
+<span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">Atoms</span>
 
 <span class="kn">from</span> <span class="nn">..lib</span> <span class="kn">import</span> <span class="n">neighbour_list</span>
 <span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="p">(</span>
@@ -394,8 +395,22 @@
 
 
 <span class="k">def</span> <span class="nf">convert_to_structure_list</span><span class="p">(</span><span class="n">frames</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert an atomic structure to format used internaly in rascal.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    frames : ase.Atoms or list(ase.Atoms) or list(dict)</span>
+<span class="sd">        atomic structure(s) in various formats.</span>
+<span class="sd">        Note that the dictionary must be valid structure as per is_valid_structure</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    structure_list : AtomicStructureList</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
         <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="n">frames</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must pass either an ase.Atoms object or an iterable&quot;</span><span class="p">)</span>
+
     <span class="n">structure_list</span> <span class="o">=</span> <span class="n">neighbour_list</span><span class="o">.</span><span class="n">AtomicStructureList</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">is_valid_structure</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
@@ -407,6 +422,7 @@
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                     <span class="s2">&quot;Cannot convert structure of type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">frame</span><span class="p">))</span>
                 <span class="p">)</span>
+
         <span class="n">structure</span> <span class="o">=</span> <span class="n">sanitize_non_periodic_structure</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span>
         <span class="n">structure_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">**</span><span class="n">structure</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">structure_list</span>
@@ -469,8 +485,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    StructureManagerCenters</span>
-<span class="sd">        base structure manager.</span>
+<span class="sd">    dict containing the atomic structure informations readily readable by librascal.</span>
 
 <span class="sd">    If the frame has an ase.atoms.arrays entry called</span>
 <span class="sd">    &#39;center_atoms_mask&#39; then it will be used as the center mask</span>
