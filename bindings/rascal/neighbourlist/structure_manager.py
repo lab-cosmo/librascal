@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from functools import reduce
 from operator import and_
 
@@ -241,9 +242,8 @@ def convert_to_structure_list(frames):
     """
     if isinstance(frames, Atoms):
         frames = [frames]
-
-    assert isinstance(frames, list)
-    assert isinstance(frames[0], Atoms) or isinstance(frames[0], dict)
+    elif not isinstance(frames, Iterable):
+        raise ValueError("Must pass either an ase.Atoms object or an iterable")
 
     structure_list = neighbour_list.AtomicStructureList()
     for frame in frames:
