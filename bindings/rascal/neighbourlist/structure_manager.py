@@ -1,10 +1,10 @@
-from collections.abc import Iterable
 from functools import reduce
 from operator import and_
 
 import numpy as np
 
 from ase.geometry import wrap_positions
+from ase import Atoms
 
 from ..lib import neighbour_list
 from .base import (
@@ -228,8 +228,23 @@ def get_neighbourlist(structure, options):
 
 
 def convert_to_structure_list(frames):
-    if not isinstance(frames, Iterable):
+    """Convert an atomic structure to format used internaly in rascal.
+    Parameters
+    ----------
+    frames : ase.Atoms or list(ase.Atoms) or list(dict)
+        atomic structure(s) in various formats.
+        Note that the dictionary must be valid structure as per is_valid_structure
+    Returns
+    -------
+    structure_list : AtomicStructureList
+
+    """
+    if isinstance(frames, Atoms):
         frames = [frames]
+
+    assert isinstance(frames, list)
+    assert isinstance(frames[0], Atoms) or isinstance(frames[0], dict)
+
     structure_list = neighbour_list.AtomicStructureList()
     for frame in frames:
         if is_valid_structure(frame):
@@ -241,6 +256,7 @@ def convert_to_structure_list(frames):
                 raise RuntimeError(
                     "Cannot convert structure of type {}".format(type(frame))
                 )
+
         structure = sanitize_non_periodic_structure(structure)
         structure_list.append(**structure)
     return structure_list
@@ -303,8 +319,7 @@ def unpack_ase(frame, wrap_pos=False):
 
     Returns
     -------
-    StructureManagerCenters
-        base structure manager.
+    dict containing the atomic structure informations readily readable by librascal.
 
     If the frame has an ase.atoms.arrays entry called
     'center_atoms_mask' then it will be used as the center mask
