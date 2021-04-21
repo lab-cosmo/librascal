@@ -9,4 +9,4 @@ the top-level :file:`examples/` directory.
 .. toctree::
    :maxdepth: 1
 
-   zundel_IP.ipynb
+   zundel_i-PI.ipynb
