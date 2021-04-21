@@ -178,6 +178,37 @@ jobs:
             rm -f *\#external\#*.gcov
             codecov -X gcov
 
+  # Special job to check that the example notebooks run
+  notebooks:
+    environment:
+      CC: gcc-10
+      CXX: g++-10
+    docker:
+      - image: cosmoepfl/rascal-ci:5
+    steps:
+      - checkout
+      - run:
+          name: Install Python dependencies
+          command: python3.6 -m pip install -r requirements.txt
+      - run:
+          name: Configure
+          command: |
+            mkdir build
+            cd build
+            cmake ${CMAKE_EXTRA} -DBUILD_BINDINGS=ON -DBUILD_TESTS=ON \
+                  -DBUILD_EXAMPLES=ON -DBUILD_PROFILES=ON \
+                  -DBUILD_BENCHMARKS=ON -DRUN_BENCHMARKS_FLAGS=--benchmark_min_time=0.0000001 \
+                  -DCPPLINT=CPPLINT-NOTFOUND \
+                  -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..
+      - run:
+          name: Build
+          command: cd build && make -j2
+      - run:
+          name: Validate notebooks
+          command: cd examples && PYTHONPATH=${PWD}/../build pytest --nbval-lax *.ipynb
+          # Notebook validation really shouldn't take this long...
+          no_output_timeout: 20m
+
 workflows:
   version: 2
   build_and_test:
@@ -186,6 +217,7 @@ workflows:
       - docs
       - pretty
       - valgrind
+      - notebooks
       - coverage
       - gcc-5
       - gcc-10

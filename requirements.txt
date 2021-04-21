@@ -21,3 +21,6 @@ black==20.8b1
 ase
 mpmath
 py-ubjson
+# Developers tools - testing
+pytest
+nbval
