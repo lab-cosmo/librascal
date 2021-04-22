@@ -13,3 +13,8 @@ Further examples can be found in the various directories, though they are not gu
 - :file:`python/`: Examples of using the Python bindings, e.g. for model training
 - :file:`cpp/`: Examples of using the low-level C++ interface, can be compiled by adding ``-DBUILD_EXAMPLES`` to the CMake command line
 - :file:`needs_updating/`: Notebooks that need updating to work with the most recent version of the code; they may still contain snippets useful to experienced users
+
+Writing an example
+------------------
+
+If you would like to write a Jupyter notebook to demonstrate some usage of librascal, please first make sure this usage isn't already demonstrated in an existing example, and then write the _smallest_, _self-contained_ notebook possible that still contains a working example of the usage you want to demonstrate.  Please note that notebooks should run in less than a minute total and must use less than 4 GiB of RAM in order to be tested on the cloud-based CI system.  Every notebook (:file:`.ipynb` file) in the top-level :file:`examples/` directory will be automatically tested, so if the tests fail, make sure it isn't due to a notebook using too much time or space!
