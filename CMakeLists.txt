@@ -102,7 +102,7 @@ endif()
 
 ########## START CONFIGURATION ##########
 
-# set the name of the c++ libraries
+# set the name of the c++ libraries
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(LIBRASCAL_NAME "rascal-dbg")
@@ -124,7 +124,7 @@ endif()
 if(BUILD_BINDINGS)
   find_package(PythonLibsNew 3 MODULE REQUIRED)
 
-  # warning about potential side effects of the installation of the python library
+  # warning about potential side effects of the installation of the python library
   if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
       CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     if(NOT PYTHON_IS_DEBUG)
