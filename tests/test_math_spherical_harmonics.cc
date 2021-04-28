@@ -219,7 +219,7 @@ namespace rascal {
   BOOST_AUTO_TEST_CASE(spherical_harmonics_gradient_test) {
     // (max) what?! how does this even remain numerically stable?
     // it's total overkill in any case, 10 or even 3 would suffice
-    constexpr size_t test_max_angular = 30;
+    constexpr size_t test_max_angular = 1;
     SphericalHarmonicsGradientsCalculator<test_max_angular>
         harmonics_grad_calc{};
     harmonics_grad_calc.precompute();

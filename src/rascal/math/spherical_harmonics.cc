@@ -104,7 +104,7 @@ void SphericalHarmonics::compute_assoc_legendre_polynom(double cos_theta) {
   this->assoc_legendre_polynom(0, 0) = SQRT_INV_2PI;
   if (this->max_angular > 0) {
     this->assoc_legendre_polynom(1, 0) = cos_theta * SQRT_THREE * SQRT_INV_2PI;
-    l_accum = l_accum * -std::sqrt(3.0 / 2.0) * sin_theta;
+    l_accum = l_accum * std::sqrt(3.0 / 2.0) * sin_theta;
     this->assoc_legendre_polynom(1, 1) = l_accum;
   }
   for (size_t angular_l{2}; angular_l < this->max_angular + 1; angular_l++) {
@@ -127,7 +127,7 @@ void SphericalHarmonics::compute_assoc_legendre_polynom(double cos_theta) {
     this->assoc_legendre_polynom(angular_l, angular_l - 1) =
         // cos_theta * std::sqrt(2 * angular_l + 1) * l_accum;
         l_accum * cos_theta * this->angular_coeffs1(angular_l);
-    l_accum = l_accum * sin_theta * this->angular_coeffs2(angular_l);
+    l_accum = -l_accum * sin_theta * this->angular_coeffs2(angular_l);
     this->assoc_legendre_polynom(angular_l, angular_l) = l_accum;
   }
 }
@@ -196,6 +196,11 @@ void SphericalHarmonics::compute_cos_sin_angle_multiples(double cos_phi,
           2.0 * cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
           this->cos_sin_m_phi.row(m_count - 2);
     }
+  }
+  double m_pow{1};
+  for (size_t m_count{0}; m_count < this->max_angular + 1; m_count++) {
+    this->cos_sin_m_phi.row(m_count) *= m_pow;
+    m_pow *= -1.;
   }
 }
 
