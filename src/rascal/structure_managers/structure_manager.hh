@@ -1399,7 +1399,7 @@ namespace rascal {
       return *this;
     }
     //! subtraction between iterators
-    auto operator-(const Iterator & other) { return other.index - this->index; }
+    auto operator-(const Iterator & other) { return this->index - other.index; }
 
     value_type operator*() {
       auto & cluster_indices_properties = std::get<Order - 1>(
@@ -1447,6 +1447,9 @@ namespace rascal {
       return this->index >= other.index;
     }
 
+    size_t get_index() {
+        return this->index;
+    }
     /**
      * const access to container
      */
