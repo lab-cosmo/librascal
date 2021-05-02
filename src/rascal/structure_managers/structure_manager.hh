@@ -1387,6 +1387,20 @@ namespace rascal {
       return *this;
     }
 
+    //! int increment
+    Iterator & operator+=(size_t increment) {
+      this->index += increment;
+      return *this;
+    }
+
+    //! int decrement
+    Iterator & operator-=(size_t increment) {
+      this->index -= increment;
+      return *this;
+    }
+    //! subtraction between iterators
+    auto operator-(const Iterator & other) { return this->index - other.index; }
+
     value_type operator*() {
       auto & cluster_indices_properties = std::get<Order - 1>(
           this->get_manager().get_cluster_indices_container());
@@ -1420,6 +1434,22 @@ namespace rascal {
       return not(*this == other);
     }
 
+    //! comparison operators
+    bool operator<(const Iterator & other) { return this->index < other.index; }
+
+    bool operator>(const Iterator & other) { return this->index > other.index; }
+
+    bool operator<=(const Iterator & other) {
+      return this->index <= other.index;
+    }
+
+    bool operator>=(const Iterator & other) {
+      return this->index >= other.index;
+    }
+
+    size_t get_index() {
+        return this->index;
+    }
     /**
      * const access to container
      */

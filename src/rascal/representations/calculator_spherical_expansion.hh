@@ -1791,6 +1791,7 @@ namespace rascal {
     // coeff C^{ij}_{nlm}
     auto c_ij_nlm = math::Matrix_t(n_row, n_col);
 
+#pragma omp for
     for (auto center : manager) {
       // c^{i}
       auto & coefficients_center = expansions_coefficients[center];

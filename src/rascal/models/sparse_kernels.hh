@@ -178,6 +178,7 @@ namespace rascal {
         for (auto & manager : managers) {
           auto && propA{*manager->template get_property<Property_t>(
               representation_name, true)};
+#pragma omp for              
           for (auto center : manager) {
             int sp = center.get_atom_type();
             KNM.row(ii_A) =
@@ -321,6 +322,7 @@ namespace rascal {
           if (zeta > 1) {
             dkdX_missing_T.setZero();
             // zeta * (X * T)**(zeta-1)
+#pragma omp for            
             for (auto center : manager) {
               int a_species{center.get_atom_type()};
               dkdX_missing_T[center] =
@@ -362,6 +364,7 @@ namespace rascal {
           if (do_block_by_key_dot) {
             size_t idx_row{0};
             auto repr_grads = prop_repr_grad.get_raw_data_view();
+#pragma omp for            
             for (auto center : manager) {
               int a_species{center.get_atom_type()};
               Eigen::Vector3d r_i = center.get_position();
@@ -447,6 +450,7 @@ namespace rascal {
               idx_row += nb_rows;
             }  // center
           } else {
+#pragma omp for              
             for (auto center : manager) {
               int a_species{center.get_atom_type()};
               Eigen::Vector3d r_i = center.get_position();

@@ -127,6 +127,8 @@ namespace rascal {
 
     math::Vector_t weights_scaled(weights.size());
     size_t i_row{0};
+    
+#pragma omp for
     for (auto center : manager) {
       const int a_sp{center.get_atom_type()};
       // compute contraction of the model weights with the gradient of the

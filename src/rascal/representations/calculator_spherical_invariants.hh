@@ -605,6 +605,7 @@ namespace rascal {
       Eigen::Vector3d soap_vector_dot_gradient{};
 
       // compute the dot product and update the gradients to be normalized
+#pragma omp for      
       for (auto center : manager) {
         for (auto neigh : center.pairs_with_self_pair()) {
           const auto & soap_vector = soap_vectors[center];
@@ -744,6 +745,7 @@ namespace rascal {
         *manager, "power spectrums inverse norms", true};
     soap_vector_norm_inv.resize();
 
+#pragma omp for
     for (auto center : manager) {
       auto & coefficients{expansions_coefficients[center]};
       auto & soap_vector{soap_vectors[center]};
@@ -976,6 +978,7 @@ namespace rascal {
         *manager, "radial spectrum inverse norms", ExcludeGhosts};
     soap_vector_norm_inv.resize();
 
+#pragma omp for
     for (auto center : manager) {
       const auto & coefficients{expansions_coefficients[center]};
       auto & soap_vector{soap_vectors[center]};
@@ -1048,7 +1051,12 @@ namespace rascal {
     double mult{1.0};
     Key_t trip_type{0, 0, 0};
     internal::SortedKey<Key_t> triplet_type{trip_type};
-    for (auto center : manager) {
+
+#pragma omp for    
+    for (auto iter = manager->begin(); iter<manager->end(); ++iter) {
+      std::cerr<<"computing "<<iter.get_index()<< " out of "<<   manager->end().get_index()<<"\n";
+      auto center = *iter;
+//    for (auto center : manager) {  
       auto & coefficients{expansions_coefficients[center]};
       auto & soap_vector{soap_vectors[center]};
 
