@@ -54,6 +54,7 @@
 #include <unordered_set>
 #include <vector>
 #include <fstream>
+#include <iomanip>
 
 namespace rascal {
 
@@ -626,9 +627,7 @@ namespace rascal {
       
       // Orthogonalize before main loop
       // Note: disable final orthogonalization in this case
-      //math::Vector_t temp{I_nl.row(ik)}; 
-      //radial_integral->orthogonalize_radialprojections(temp);
-      //I_nl.row(ik) = temp;
+      radial_integral->orthogonalize_radialprojections(I_nl.row(ik));
     }  // end of loop over k vectors
 
     /* Test radial scattering function @memo delete after testing phase
@@ -691,6 +690,23 @@ namespace rascal {
     */
     // Global prefactor in expansion coefficients from Fourier transform
     double global_factor = 16.0 * pow(PI,2) / volume;
+    // make the coeff. agree with real space version before normalization
+    global_factor /= (16.*sqrt(2*PI));
+    
+    // TODO(Kevin): Remove this after testing phase
+    // Write obtained coefficients into output file of fixed name
+    std::ofstream myfile;
+    if (compute_gradients) {
+      myfile.open ("expansioncoeff_kspace_withgrad.txt", std::ios::trunc);
+    } else {
+      myfile.open ("expansioncoeff_kspace_nograd.txt", std::ios::trunc);
+    }
+    myfile << "Spherical Expansion k space with parameters: " << "\n";
+    myfile << "Natoms, nmax, lmax, compute_gradients" << "\n";
+    myfile << natoms << ", " << this->max_radial << ", " <<
+              this->max_angular << ", " << compute_gradients <<"\n";
+    myfile.close();
+
     // Start the accumulation: loop over all center atoms
     for (auto center : manager) {
       // Preparations:
@@ -770,20 +786,24 @@ namespace rascal {
                       phase_factor * nlmk_factor;
           
                 if (compute_gradients) {
+                  // Define some shortcuts to access the coefficients
                   auto & coefficients_center_gradient = 
                      expansions_coefficients_gradient[center.get_atom_ii()];
                   auto && grad_center_by_type{
                      coefficients_center_gradient[neigh_type]};
                   // Get real or imag. part of e^{ikr_ij} based on parity of l
+                  double phase_factor_grad{};
                   if (ang_l%2==0) {
-                    phase_factor = pow(-1.0,ang_l/2) * fourier_imag;
+                    phase_factor_grad = pow(-1.0,ang_l/2) * fourier_imag;
                   } else {
-                    phase_factor = -pow(-1.0,(ang_l+1)/2) * fourier_real;
+                    phase_factor_grad = -pow(-1.0,(ang_l+1)/2) * fourier_real;
                   }
                   // Update x,y and z components of gradients
-                  for (size_t car_idx{0}; car_idx < ThreeD; car_idx++) {
-                  grad_center_by_type(car_idx*max_radial+radial_n, lm_idx) +=
-                      phase_factor * nlmk_factor * k_vec(ik,car_idx);
+                  for (size_t cartesian_idx{0}; cartesian_idx < ThreeD;
+                       cartesian_idx++) {
+                  grad_center_by_type(cartesian_idx*max_radial+radial_n,
+                       lm_idx) += phase_factor_grad * nlmk_factor
+                       * k_vec(ik,cartesian_idx);
                   } // for (cartesian_idx)
                 } // if (compute_gradients)
               } // for (mval)
@@ -795,11 +815,17 @@ namespace rascal {
       } // for (kvectors) 
 
       // Normalize and orthogonalize the radial coefficients
-      radial_integral->finalize_coefficients(coefficients_center);
+      //radial_integral->finalize_coefficients(coefficients_center);
       
       // Write code in which to store the coefficients 
+      // TODO delete after testing phase 
       std::ofstream myfile;
-      myfile.open ("expansioncoefficients_kspace.txt", std::ios::app);
+      if (compute_gradients) {
+        myfile.open ("expansioncoeff_kspace_withgrad.txt", std::ios::app);
+      } else {
+        myfile.open ("expansioncoeff_kspace_nograd.txt", std::ios::app);
+      }
+      myfile << std::setprecision(15);
       for (auto neigh : manager) { 
         auto atom_j_tag{neigh.get_atom_tag()};
         size_t jat{manager->get_atom_index(atom_j_tag)};
@@ -809,6 +835,15 @@ namespace rascal {
         myfile << coeff.rows() << " x " <<
                coeff.cols() << " coeff matrix = \n" <<
                coeff << "\n";
+      
+        if (compute_gradients) {
+          auto & coefficients_center_gradient = 
+                 expansions_coefficients_gradient[center.get_atom_ii()];
+          auto && grad_center_by_type{
+                 coefficients_center_gradient[neigh_type]};
+          myfile << "Gradients = \n" << grad_center_by_type << "\n";
+        }
+
       }
       myfile.close();
 
