@@ -5,17 +5,18 @@ import ase
 import json
 import sys
 import os
-sys.path.insert(0, '../build/')
+
+sys.path.insert(0, "../build/")
 import rascal
 import rascal.lib as lrl
 from rascal.representations import SphericalInvariants
 from rascal.models import Kernel
 from rascal.utils import ostream_redirect
 
-root = os.path.abspath('../')
-rascal_reference_path = os.path.join(root, 'reference_data/')
+root = os.path.abspath("../")
+rascal_reference_path = os.path.join(root, "reference_data/")
 inputs_path = os.path.join(rascal_reference_path, "inputs")
-dump_path = os.path.join('reference_data/', "tests_only")
+dump_path = os.path.join("reference_data/", "tests_only")
 
 # dump radial and power spectra for methane
 
@@ -24,8 +25,9 @@ def dump_reference_json():
     import ubjson
     import os
     from copy import copy
-    sys.path.insert(0, os.path.join(root, 'build/'))
-    sys.path.insert(0, os.path.join(root, 'tests/'))
+
+    sys.path.insert(0, os.path.join(root, "build/"))
+    sys.path.insert(0, os.path.join(root, "tests/"))
 
     cutoffs = [3.5]
     gaussian_sigmas = [0.5]
@@ -34,32 +36,33 @@ def dump_reference_json():
     soap_types = ["RadialSpectrum", "PowerSpectrum"]
 
     fn = os.path.join(inputs_path, "small_molecules-20.json")
-    fn_to_write = os.path.join(
-        'reference_data', "inputs", "small_molecules-20.json")
+    fn_to_write = os.path.join("reference_data", "inputs", "small_molecules-20.json")
     start = 0
     length = 5
-    representations = ['spherical_invariants']
-    kernel_names = ['Cosine']
-    target_types = ['Structure', 'Atom']
+    representations = ["spherical_invariants"]
+    kernel_names = ["Cosine"]
+    target_types = ["Structure", "Atom"]
     dependant_args = dict(Cosine=[dict(zeta=1), dict(zeta=2), dict(zeta=4)])
 
-    data = dict(filename=fn_to_write,
-                start=start,
-                length=length,
-                cutoffs=cutoffs,
-                gaussian_sigmas=gaussian_sigmas,
-                max_radials=max_radials,
-                soap_types=soap_types,
-                kernel_names=kernel_names,
-                target_types=target_types,
-                dependant_args=dependant_args,
-                rep_info=dict(spherical_invariants=[]))
+    data = dict(
+        filename=fn_to_write,
+        start=start,
+        length=length,
+        cutoffs=cutoffs,
+        gaussian_sigmas=gaussian_sigmas,
+        max_radials=max_radials,
+        soap_types=soap_types,
+        kernel_names=kernel_names,
+        target_types=target_types,
+        dependant_args=dependant_args,
+        rep_info=dict(spherical_invariants=[]),
+    )
 
-    frames = read(fn, '{}:{}'.format(start, start + length))
+    frames = read(fn, "{}:{}".format(start, start + length))
     for representation_name in representations:
         for cutoff in cutoffs:
             print(fn, cutoff)
-            data['rep_info'][representation_name].append([])
+            data["rep_info"][representation_name].append([])
             for kernel_name in kernel_names:
                 for target_type in target_types:
                     for kwargs in dependant_args[kernel_name]:
@@ -67,40 +70,48 @@ def dump_reference_json():
                             for gaussian_sigma in gaussian_sigmas:
                                 for max_radial in max_radials:
                                     for max_angular in max_angulars:
-                                        if 'RadialSpectrum' == soap_type:
+                                        if "RadialSpectrum" == soap_type:
                                             max_angular = 0
 
-                                        hypers = {"interaction_cutoff": cutoff,
-                                                  "cutoff_smooth_width": 0.5,
-                                                  "max_radial": max_radial,
-                                                  "max_angular": max_angular,
-                                                  "gaussian_sigma_type": "Constant",
-                                                  "gaussian_sigma_constant": gaussian_sigma,
-                                                  "soap_type": soap_type,
-                                                  "cutoff_function_type": "ShiftedCosine",
-                                                  "normalize": True,
-                                                  "radial_basis": "GTO"}
+                                        hypers = {
+                                            "interaction_cutoff": cutoff,
+                                            "cutoff_smooth_width": 0.5,
+                                            "max_radial": max_radial,
+                                            "max_angular": max_angular,
+                                            "gaussian_sigma_type": "Constant",
+                                            "gaussian_sigma_constant": gaussian_sigma,
+                                            "soap_type": soap_type,
+                                            "cutoff_function_type": "ShiftedCosine",
+                                            "normalize": True,
+                                            "radial_basis": "GTO",
+                                        }
                                         soap = SphericalInvariants(**hypers)
                                         soap_vectors = soap.transform(frames)
-                                        hypers_kernel = dict(name=kernel_name,
-                                                             target_type=target_type)
+                                        hypers_kernel = dict(
+                                            name=kernel_name,
+                                            target_type=target_type,
+                                        )
                                         hypers_kernel.update(**kwargs)
                                         kernel = Kernel(soap, **hypers_kernel)
                                         kk = kernel(soap_vectors)
                                         # x = get_spectrum(hypers, frames)
                                         for aa in soap.nl_options:
-                                            aa['initialization_arguments'] = aa['args']
+                                            aa["initialization_arguments"] = aa["args"]
 
-                                        data['rep_info'][representation_name][-1].append(dict(kernel_matrix=kk.tolist(),
-                                                                                              hypers_rep=copy(
-                                                                                                  soap.hypers),
-                                                                                              hypers_manager=copy(
-                                                                                                  soap.nl_options),
-                                                                                              hypers_kernel=copy(hypers_kernel)))
+                                        data["rep_info"][representation_name][
+                                            -1
+                                        ].append(
+                                            dict(
+                                                kernel_matrix=kk.tolist(),
+                                                hypers_rep=copy(soap.hypers),
+                                                hypers_manager=copy(soap.nl_options),
+                                                hypers_kernel=copy(hypers_kernel),
+                                            )
+                                        )
 
-    with open(os.path.join(root, dump_path,
-                           "kernel_reference.ubjson"), 'wb') as f:
+    with open(os.path.join(root, dump_path, "kernel_reference.ubjson"), "wb") as f:
         ubjson.dump(data, f)
+
 
 ##########################################################################################
 ##########################################################################################
@@ -111,13 +122,15 @@ def main(json_dump):
     if json_dump == True:
         dump_reference_json()
 
+
 ##########################################################################################
 ##########################################################################################
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-json_dump', action='store_true',
-                        help='Switch for dumping json')
+    parser.add_argument(
+        "-json_dump", action="store_true", help="Switch for dumping json"
+    )
     args = parser.parse_args()
     main(args.json_dump)

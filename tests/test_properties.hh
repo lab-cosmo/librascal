@@ -148,6 +148,9 @@ namespace rascal {
     using Manager_t = typename Parent::Manager_t;
     using ManagerPtr_t = std::shared_ptr<Manager_t>;
 
+    using StructureDynamicProperty_t =
+        typename Manager_t::template Property_t<double, 0, Eigen::Dynamic,
+                                                Eigen::Dynamic>;
     using AtomScalarProperty_t =
         typename Manager_t::template Property_t<double, 1>;
     using AtomVectorProperty_t =
@@ -167,7 +170,9 @@ namespace rascal {
     std::string atom_dynamic_vector_property_metadata{"distances"};
 
     AtomPropertyFixture()
-        : StackFixture{}, atom_scalar_property{*this->manager, "dummy_scalar"},
+        : StackFixture{}, structure_dynamic_property{*this->manager,
+                                                     "dummy_structure_dynamic"},
+          atom_scalar_property{*this->manager, "dummy_atom_scalar"},
           atom_vector_property{*this->manager, atom_vector_property_metadata},
           atom_dynamic_scalar_property{
               *this->manager, 1, 1, atom_dynamic_vector_unit_property_metadata},
@@ -178,6 +183,7 @@ namespace rascal {
                                        atom_dynamic_vector_property_metadata},
           sparse_atom_scalar_property{*this->manager} {}
 
+    StructureDynamicProperty_t structure_dynamic_property;
     AtomScalarProperty_t atom_scalar_property;
     AtomVectorProperty_t atom_vector_property;
     AtomDynamicProperty_t atom_dynamic_scalar_property;

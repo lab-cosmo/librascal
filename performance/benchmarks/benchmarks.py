@@ -31,9 +31,10 @@ DEFAULT_ITERATIONS = 100
 
 def bench(func):
     """Print the runtime of the decorated function"""
+
     @functools.wraps(func)
     def wrapper_timer(*args, **kwargs):
-        nb_iterations = kwargs.get('nb_iterations', DEFAULT_ITERATIONS)
+        nb_iterations = kwargs.get("nb_iterations", DEFAULT_ITERATIONS)
 
         total_time = 0.0
         for i in range(nb_iterations):
@@ -45,4 +46,5 @@ def bench(func):
         total_time /= nb_iterations
         print(f"Finished in {total_time*1e6:.2f} ns over {nb_iterations} runs")
         return value
+
     return wrapper_timer

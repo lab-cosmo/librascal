@@ -186,6 +186,35 @@ namespace rascal {
     json factory_args{};
   };
 
+  struct MultipleStructureManagerKspaceFixture {
+    using ManagerTypeHolder_t =
+        StructureManagerTypeHolder<StructureManagerCenters, AdaptorKspace>;
+    MultipleStructureManagerKspaceFixture() {
+      for (auto && filename : this->filenames) {
+        json parameters;
+        json structure{{"filename", filename}};
+        json adaptors;
+        json ad1{{"name", "AdaptorKspace"}, {"initialization_arguments", {}}};
+        adaptors.push_back(ad1);
+
+        parameters["structure"] = structure;
+        parameters["adaptors"] = adaptors;
+
+        this->factory_args.emplace_back(parameters);
+      }
+    }
+
+    ~MultipleStructureManagerKspaceFixture() = default;
+
+    const std::vector<std::string> filenames{
+        "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json",
+        "reference_data/inputs/simple_cubic_8.json",
+        "reference_data/inputs/small_molecule.json",
+        "reference_data/inputs/linked_cell_break_0.json"};
+
+    json factory_args{};
+  };
+
   struct MultipleStructureManagerNLFixture {
     using ManagerTypeHolder_t =
         StructureManagerTypeHolder<StructureManagerCenters,
@@ -216,8 +245,9 @@ namespace rascal {
     const std::vector<std::string> filenames{
         "reference_data/inputs/CaCrP2O7_mvc-11955_symmetrized.json",
         "reference_data/inputs/simple_cubic_8.json",
-        "reference_data/inputs/small_molecule.json"};
-    const std::vector<double> cutoffs{{1., 2., 3.}};
+        "reference_data/inputs/small_molecule.json",
+        "reference_data/inputs/linked_cell_break_0.json"};
+    const std::vector<double> cutoffs{{1., 2., 3., 5.}};
     const std::vector<double> skins{0.};
 
     json factory_args{};

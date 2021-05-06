@@ -163,13 +163,13 @@ You can also run the tests with Valgrind (a memory-error checker) by passing
 ``-DRASCAL_TESTS_USE_VALGRIND=ON`` to ``cmake``.
 
 In addition to testing the behaviour of the code, the test suite also check
-for formatting compliance with the clang-format and autopep8 packages (these
-dependencies are optional). To install these dependencies on Ubuntu:
+for formatting compliance with clang-format 8.0 or higher and black packages
+(these dependencies are optional). To install these dependencies on Ubuntu:
 
 .. code:: shell
 
-   sudo apt-get install clang-format
-   pip3 install autopep8
+   sudo apt-get install clang-format-8
+   pip3 install black
 
 Build Type
 ^^^^^^^^^^
@@ -256,7 +256,7 @@ Automatic code formatting
 
 To help developers conform their contribution to the coding
 convention, the formatting of new functionalities can be automated
-using clang-format (for the c++ files) and autopep8 (for the
+using clang-format (for the c++ files) and black (for the
 python files). The .clang-format and .pycodestyle files define
 common settings to be used.
 
@@ -266,7 +266,7 @@ tools with:
 .. code:: shell
 
    sudo apt-get install clang-format
-   pip install autopep8
+   pip install black
 
 The automatic formating of the c++ and python files can be
 trigered by:
@@ -280,7 +280,7 @@ trigered by:
 
 Please use these tools with caution as they can potentially
 introduce unwanted changes to the code. If code needs to be
-specifically excluded from auto formatting, e.g. a matrix which
+specifically excluded from auto formatting, e.g. a matrix which
 should be human-readable, code comments tells the formatters to
 ignore lines:
 

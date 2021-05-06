@@ -51,14 +51,17 @@ namespace rascal {
      * https://stackoverflow.com/questions/20511347/a-good-hash-function-for-a-vector
      * // NOLINT
      */
-    template <class KeyType>
+    template <class KeyType, typename T = int>
     struct Hash {
       using result_type = size_t;
       using argument_type = KeyType;
       result_type operator()(argument_type const & vec) const {
-        result_type seed{vec.size()};
-        for (const auto & i : vec) {
-          seed ^= i + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        result_type size{static_cast<result_type>(vec.size())};
+        result_type seed{size};
+        std::hash<T> hasher{};
+        for (result_type idx{0}; idx < size; idx++) {
+          seed ^=
+              hasher(vec[idx]) + 0x9e3779b97f4a7c15 + (seed << 6) + (seed >> 2);
         }
         return seed;
       }
@@ -942,19 +945,25 @@ namespace rascal {
       return features;
     }
 
-    Matrix_t get_features_gradient() {
-      auto all_keys = this->get_keys();
-      return this->get_features_gradient(all_keys);
-    }
-
-    Matrix_t get_features_gradient(const Keys_t & all_keys) {
+    /**
+     * Fill a dense feature matrix with layout Nneighbor x Nfeatures
+     * when Order == 2
+     * It is filled in the lexicografical order provided by all_keys and the
+     * missing entries are filled with zeros.
+     * The features are flattened out following the underlying storage order.
+     *
+     * @param features dense Eigen matrix of the proper size
+     *
+     * @param all_keys set of all the keys that should be considered when
+     * building the feature matrix
+     *
+     */
+    void fill_dense_feature_matrix_gradient(Eigen::Ref<Matrix_t> features,
+                                            const Keys_t & all_keys) const {
       static_assert(Order_ == 2, "Gradients are a property of order 2.");
       using ConstMapSoapGradFlat_t = const Eigen::Map<
           const Eigen::Matrix<double, ThreeD, Eigen::Dynamic, Eigen::RowMajor>>;
-      size_t n_elements{this->size() * ThreeD};
       int inner_size{this->get_nb_comp() / ThreeD};
-      Matrix_t features =
-          Matrix_t::Zero(n_elements, inner_size * all_keys.size());
       int i_row_global{0};
       size_t n_pairs{this->maps.size()};
       for (size_t i_pair{0}; i_pair < n_pairs; i_pair++) {
@@ -972,6 +981,19 @@ namespace rascal {
         }  // keys
         i_row_global += ThreeD;
       }  // centers
+    }
+
+    Matrix_t get_features_gradient() {
+      auto all_keys = this->get_keys();
+      return this->get_features_gradient(all_keys);
+    }
+
+    Matrix_t get_features_gradient(const Keys_t & all_keys) {
+      size_t n_elements{this->size() * ThreeD};
+      int inner_size{this->get_nb_comp() / ThreeD};
+      Matrix_t features =
+          Matrix_t::Zero(n_elements, inner_size * all_keys.size());
+      this->fill_dense_feature_matrix_gradient(features, all_keys);
       return features;
     }
 

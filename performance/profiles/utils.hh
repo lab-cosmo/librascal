@@ -28,12 +28,42 @@
 #ifndef PERFORMANCE_PROFILES_UTILS_HH_
 #define PERFORMANCE_PROFILES_UTILS_HH_
 
+#include "rascal/math/utils.hh"
+
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <chrono>  // for std::chrono functions
+#include <cmath>
 #include <fstream>
 
 namespace rascal {
+
+  class Timer {
+   private:
+    // Type aliases to make accessing nested type easier
+    using clock_t = std::chrono::high_resolution_clock;
+    using second_t = std::chrono::duration<double, std::ratio<1>>;
+
+    std::chrono::time_point<clock_t> m_beg;
+
+   public:
+    Timer() : m_beg(clock_t::now()) {}
+
+    void reset() { m_beg = clock_t::now(); }
+
+    double elapsed() const {
+      return std::chrono::duration_cast<second_t>(clock_t::now() - m_beg)
+          .count();
+    }
+  };
+
+  inline double std_dev(const rascal::math::Vector_t & vec) {
+    double std_dev = std::sqrt(
+        (vec.array() - vec.mean()).array().square().sum() / (vec.size() - 1));
+    return std_dev;
+  }
+
   /**
    * To write and read eigen matrix objects into binary objects. It is adapted
    * from https://stackoverflow.com/a/25389481/10329403

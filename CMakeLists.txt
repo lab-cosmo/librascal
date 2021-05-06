@@ -62,7 +62,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_SHARED_LIBS ON)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 include(rascalTools)
 
 ########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ########
@@ -102,7 +102,7 @@ endif()
 
 ########## START CONFIGURATION ##########
 
-# set the name of the c++ libraries
+# set the name of the c++ libraries
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
     CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(LIBRASCAL_NAME "rascal-dbg")
@@ -124,7 +124,7 @@ endif()
 if(BUILD_BINDINGS)
   find_package(PythonLibsNew 3 MODULE REQUIRED)
 
-  # warning about potential side effects of the installation of the python library
+  # warning about potential side effects of the installation of the python library
   if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR
       CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     if(NOT PYTHON_IS_DEBUG)
@@ -202,18 +202,23 @@ if(BUILD_DOC)
     add_subdirectory(docs)
 endif()
 
+# target to run linter for all configured sources
+set(LINT_TARGET lint)
+add_custom_target(${LINT_TARGET})
+
 # Try to find optional cpp linter
 include(cpplint)
 # Checking hh/cc files for compliance with coding conventions
 if(CPPLINT_FOUND)
   # register the folders to check for cpp code conventions compliance
-  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bindings" "")
-  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/examples"
+  cpplint_add_subdirectory("${PROJECT_SOURCE_DIR}/bindings" "")
+  cpplint_add_subdirectory("${PROJECT_SOURCE_DIR}/examples"
     "--filter=-build/namespaces")
-  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/benchmarks" "")
-  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/profiles" "")
-  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src" "")
-  cpplint_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests" "")
+  cpplint_add_subdirectory("${PROJECT_SOURCE_DIR}/performance/benchmarks" "")
+  cpplint_add_subdirectory("${PROJECT_SOURCE_DIR}/performance/profiles" "")
+  cpplint_add_subdirectory("${PROJECT_SOURCE_DIR}/src" "")
+  cpplint_add_subdirectory("${PROJECT_SOURCE_DIR}/tests" "")
+  add_dependencies(${LINT_TARGET} ${CPPLINT_TARGET})
 endif()
 
 # Check for clang-format
@@ -222,28 +227,30 @@ include(clangformat)
 if(CLANG_FORMAT_FOUND)
   # register the folders to apply clang-format with given configuration
   # .clang-format in project root folder
-  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bindings" "")
-  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/examples")
-  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/benchmarks" "")
-  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/performance/profiles" "")
-  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src" "")
-  clang_format_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests" "")
+  clang_format_add_subdirectory("${PROJECT_SOURCE_DIR}/bindings" "")
+  clang_format_add_subdirectory("${PROJECT_SOURCE_DIR}/examples")
+  clang_format_add_subdirectory("${PROJECT_SOURCE_DIR}/performance/benchmarks" "")
+  clang_format_add_subdirectory("${PROJECT_SOURCE_DIR}/performance/profiles" "")
+  clang_format_add_subdirectory("${PROJECT_SOURCE_DIR}/src" "")
+  clang_format_add_subdirectory("${PROJECT_SOURCE_DIR}/tests" "")
 endif()
 
-# Check for autopep8
-include(autopep8)
-# Add python files for autoformatting with autopep8
-if(AUTOPEP8_FOUND)
-  # register the folders to apply autopep8 with given configuration
-  # .pycodestyle in project root folder
-  autopep8_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/bindings")
-  autopep8_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/scripts")
-  autopep8_add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/tests")
-endif()
+# Check for black
+include(black)
+# Add python files for autoformatting with black
+if(BLACK_FOUND)
+  # register the folders to apply black
+  black_add_subdirectory("${PROJECT_SOURCE_DIR}/bindings")
+  black_add_subdirectory("${PROJECT_SOURCE_DIR}/tests")
+  black_add_subdirectory("${PROJECT_SOURCE_DIR}/performance")
+  black_add_subdirectory("${PROJECT_SOURCE_DIR}/examples")
+  black_add_subdirectory("${PROJECT_SOURCE_DIR}/scripts")
+  add_dependencies(${LINT_TARGET} ${BLACK_LINT_TARGET})
+  endif()
 
 # Removes every file in the build folder except the external libraries to
 # prevent redownloading external libraries
 add_custom_target(
     deepclean
-    COMMAND "${PYTHON_EXECUTABLE}" ${CMAKE_CURRENT_SOURCE_DIR}/scripts/developer_utils.py deepclean
+    COMMAND "${PYTHON_EXECUTABLE}" ${PROJECT_SOURCE_DIR}/scripts/developer_utils.py deepclean
   )

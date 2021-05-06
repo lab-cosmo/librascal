@@ -26,20 +26,16 @@
 # This file should be executed from the building directory
 # quick solution for loading
 import sys
-import os
 from ase.io import read
 
 import benchmarks
 
 try:
-    import rascal
+    from rascal.representations import SphericalInvariants
+    from rascal.representations import SphericalExpansion
 except ImportError:
     sys.exit("Could not import rascal.")
 
-# It could be that the file is correctly run, but these imports are not valid
-# anymore, this ensures that the user gets a different error message for this case
-from rascal.representations import SphericalInvariants
-from rascal.representations import SphericalExpansion
 
 # Benchmark hyperparameters
 NB_ITERATIONS_PER_REPRESENTATION = 20
@@ -47,18 +43,30 @@ NB_ITERATIONS_PER_REPRESENTATION = 20
 INTERACTION_CUTOFF = 4
 
 input_files = [
-    'reference_data/inputs/small_molecule.json',
-    'reference_data/inputs/methane.json',
+    "reference_data/inputs/small_molecule.json",
+    "reference_data/inputs/methane.json",
 ]
 
 optimizations_args = [
-    {'type': 'None'},
-    {'type': 'Spline', 'accuracy': 1e-8, 'range': (0.0001, INTERACTION_CUTOFF)},
-    {'type': 'Spline', 'accuracy': 1e-10, 'range': (0.0001, INTERACTION_CUTOFF)},
-    {'type': 'Spline', 'accuracy': 1e-12, 'range': (0.0001, INTERACTION_CUTOFF)},
+    {"type": "None"},
+    {
+        "type": "Spline",
+        "accuracy": 1e-8,
+        "range": (0.0001, INTERACTION_CUTOFF),
+    },
+    {
+        "type": "Spline",
+        "accuracy": 1e-10,
+        "range": (0.0001, INTERACTION_CUTOFF),
+    },
+    {
+        "type": "Spline",
+        "accuracy": 1e-12,
+        "range": (0.0001, INTERACTION_CUTOFF),
+    },
 ]
 
-radial_bases = ['GTO', 'DVR']
+radial_bases = ["GTO", "DVR"]
 
 
 @benchmarks.bench
@@ -68,42 +76,56 @@ def transform_representation(representation, frames, **kwargs):
 
 def benchmark_spherical_representations(frames, optimization_args, radial_basis):
     hypers = {
-        'interaction_cutoff': INTERACTION_CUTOFF,
-        'max_radial': 8,
-        'max_angular': 6,
-        'gaussian_sigma_constant': 0.5,
-        'gaussian_sigma_type': "Constant",
-        'cutoff_smooth_width': 0.5,
-        'radial_basis': radial_basis,
-        'optimization_args': optimization_args
+        "interaction_cutoff": INTERACTION_CUTOFF,
+        "max_radial": 8,
+        "max_angular": 6,
+        "gaussian_sigma_constant": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "cutoff_smooth_width": 0.5,
+        "radial_basis": radial_basis,
+        "optimization_args": optimization_args,
     }
 
     print("Timing SphericalExpansion")
-    transform_representation(SphericalExpansion(**hypers), frames, nb_iterations=NB_ITERATIONS_PER_REPRESENTATION)
+    transform_representation(
+        SphericalExpansion(**hypers),
+        frames,
+        nb_iterations=NB_ITERATIONS_PER_REPRESENTATION,
+    )
 
     hypers = {
-        'soap_type': "PowerSpectrum",
-        'interaction_cutoff': INTERACTION_CUTOFF,
-        'max_radial': 8,
-        'max_angular': 6,
-        'gaussian_sigma_constant': 0.5,
-        'gaussian_sigma_type': "Constant",
-        'cutoff_smooth_width': 0.5,
-        'normalize': False,
-        'radial_basis': radial_basis,
-        'optimization_args': optimization_args
+        "soap_type": "PowerSpectrum",
+        "interaction_cutoff": INTERACTION_CUTOFF,
+        "max_radial": 8,
+        "max_angular": 6,
+        "gaussian_sigma_constant": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "cutoff_smooth_width": 0.5,
+        "normalize": False,
+        "radial_basis": radial_basis,
+        "optimization_args": optimization_args,
     }
     print("Timing SphericalInvariants")
-    transform_representation(SphericalInvariants(**hypers), frames, nb_iterations=NB_ITERATIONS_PER_REPRESENTATION)
+    transform_representation(
+        SphericalInvariants(**hypers),
+        frames,
+        nb_iterations=NB_ITERATIONS_PER_REPRESENTATION,
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     for input_file in input_files:
         frames = read(input_file, index=":")
         for i in range(len(frames)):
             frames[i].wrap(eps=1e-11)
         for radial_basis in radial_bases:
             for optimization_args in optimizations_args:
-                print("Benchmark on file " + input_file + " for optimization_args", optimization_args, "with basis " + radial_basis)
-                benchmark_spherical_representations(frames, optimization_args, radial_basis)
+                print(
+                    "Benchmark on file " + input_file + " for optimization_args",
+                    optimization_args,
+                    "with basis " + radial_basis,
+                )
+                benchmark_spherical_representations(
+                    frames, optimization_args, radial_basis
+                )
                 print()

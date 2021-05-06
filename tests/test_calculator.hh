@@ -194,13 +194,13 @@ namespace rascal {
     std::vector<json> rep_hypers{{{"max_radial", 1},
                                   {"max_angular", 2},
                                   {"soap_type", "LambdaSpectrum"},
-                                  {"lam", 2},
+                                  {"covariant_lambda", 2},
                                   {"inversion_symmetry", true},
                                   {"normalize", true}},
                                  {{"max_radial", 2},
                                   {"max_angular", 2},
                                   {"soap_type", "LambdaSpectrum"},
-                                  {"lam", 2},
+                                  {"covariant_lambda", 2},
                                   {"inversion_symmetry", false},
                                   {"normalize", true}}};
   };
@@ -371,15 +371,9 @@ namespace rascal {
         {{"type", "GTO"}, {"optimization", {{"type", "None"}}}},
         {{"type", "DVR"}, {"optimization", {{"type", "None"}}}},
         {{"type", "GTO"},
-         {"optimization",
-          {{"type", "Spline"},
-           {"accuracy", 1e-12},
-           {"range", {{"begin", 0.}, {"end", 3.}}}}}},
+         {"optimization", {{"type", "Spline"}, {"accuracy", 1e-12}}}},
         {{"type", "DVR"},
-         {"optimization",
-          {{"type", "Spline"},
-           {"accuracy", 1e-5},
-           {"range", {{"begin", 0.000001}, {"end", 3.}}}}}}};
+         {"optimization", {{"type", "Spline"}, {"accuracy", 1e-5}}}}};
     std::vector<json> rep_hypers{
         {{"max_radial", 3}, {"max_angular", 2}, {"compute_gradients", true}},
         {{"max_radial", 3}, {"max_angular", 3}, {"compute_gradients", true}}};

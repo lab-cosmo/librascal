@@ -8,7 +8,6 @@ from copy import deepcopy
 
 
 class SphericalExpansion(BaseIO):
-
     """
     Computes the spherical expansion of the neighbour density [soap]
 
@@ -35,6 +34,52 @@ class SphericalExpansion(BaseIO):
     gaussian_sigma_constant : float
         Specifies the atomic Gaussian widths, in the case where they're
         fixed.
+
+    cutoff_function_type : string
+        Choose the type of smooth cutoff function used to define the local
+        environment. Can be either 'ShiftedCosine' or 'RadialScaling'.
+
+        If 'ShiftedCosine', the functional form of the switching function is:
+
+        .. math::
+
+            sc(r) = \\begin{cases}
+            1 &r < r_c - sw,\\\\
+            0.5 + 0.5 \cos(\pi * (r - r_c + sw) / sw) &r_c - sw < r <= r_c, \\\\
+            0 &r_c < r,
+            \\end{cases}
+
+        where :math:`r_c` is the interaction_cutoff and :math:`sw` is the
+        cutoff_smooth_width.
+
+        If 'RadialScaling', the functional form of the switching function is
+        as expressed in equation 21 of https://doi.org/10.1039/c8cp05921g:
+
+        .. math::
+
+            rs(r) = sc(r) u(r),
+
+        where
+
+        .. math::
+
+            u(r) = \\begin{cases}
+            \\frac{1}{(r/r_0)^m} &\\text{if c=0,}\\\\
+            1 &\\text{if m=0,} \\\\
+            \\frac{c}{c+(r/r_0)^m} &\\text{else},
+            \\end{cases}
+
+        where :math:`c` is the rate, :math:`r_0` is the scale, :math:`m` is the
+        exponent.
+
+    radial_basis :  string
+        Specifies the type of radial basis R_n to be computed
+        ("GTO" for Gaussian typed orbitals and "DVR" discrete variable representation using Gaussian quadrature rule)
+
+    optimization_args : dict
+        Additional arguments for optimization.
+        Currently spline optimization for the radial basis function is available
+        Recommended settings if used {"type":"Spline", "accuracy": 1e-5}
 
     expansion_by_species_method : string
         Specifies the how the species key of the invariant are set-up.
@@ -67,6 +112,22 @@ class SphericalExpansion(BaseIO):
         should contain all the species present in the structure for which
         invariants will be computed
 
+    compute_gradients : bool
+        control the computation of the representation's gradients w.r.t. atomic
+        positions.
+
+    cutoff_function_parameters : dict
+        Additional parameters for the cutoff function.
+        if cutoff_function_type == 'RadialScaling' then it should have the form
+
+        .. code:: python
+
+            dict(rate=...,
+                 scale=...,
+                 exponent=...)
+
+        where :code:`...` should be replaced by the desired value.
+
     Methods
     -------
     transform(frames)
@@ -79,22 +140,29 @@ class SphericalExpansion(BaseIO):
 
     """
 
-    def __init__(self, interaction_cutoff, cutoff_smooth_width,
-                 max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=0.3,
-                 cutoff_function_type="ShiftedCosine",
-                 radial_basis="GTO",
-                 optimization_args={},
-                 expansion_by_species_method="environment wise",
-                 global_species=None, compute_gradients=False,
-                 cutoff_function_parameters=dict()):
+    def __init__(
+        self,
+        interaction_cutoff,
+        cutoff_smooth_width,
+        max_radial,
+        max_angular,
+        gaussian_sigma_type,
+        gaussian_sigma_constant=0.3,
+        cutoff_function_type="ShiftedCosine",
+        radial_basis="GTO",
+        optimization_args={},
+        expansion_by_species_method="environment wise",
+        global_species=None,
+        compute_gradients=False,
+        cutoff_function_parameters=dict(),
+    ):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
         class documentation
         """
 
-        self.name = 'sphericalexpansion'
+        self.name = "sphericalexpansion"
         self.hypers = dict()
 
         if global_species is None:
@@ -103,66 +171,60 @@ class SphericalExpansion(BaseIO):
             global_species = list(global_species)
 
         self.update_hyperparameters(
-            max_radial=max_radial, max_angular=max_angular,
+            max_radial=max_radial,
+            max_angular=max_angular,
             expansion_by_species_method=expansion_by_species_method,
             global_species=global_species,
-            compute_gradients=compute_gradients
+            compute_gradients=compute_gradients,
         )
         self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
         cutoff_function_parameters.update(
             interaction_cutoff=interaction_cutoff,
-            cutoff_smooth_width=cutoff_smooth_width
+            cutoff_smooth_width=cutoff_smooth_width,
         )
         cutoff_function = cutoff_function_dict_switch(
-            cutoff_function_type, **cutoff_function_parameters)
+            cutoff_function_type, **cutoff_function_parameters
+        )
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
-            gaussian_sigma=dict(
-                value=gaussian_sigma_constant,
-                unit='A'
-            ),
+            gaussian_sigma=dict(value=gaussian_sigma_constant, unit="A"),
         )
         self.optimization_args = deepcopy(optimization_args)
-        if 'type' in optimization_args:
-            if optimization_args['type'] == 'Spline':
-                if 'accuracy' in optimization_args:
-                    accuracy = optimization_args['accuracy']
+        if "type" in optimization_args:
+            if optimization_args["type"] == "Spline":
+                if "accuracy" in optimization_args:
+                    accuracy = optimization_args["accuracy"]
                 else:
-                    accuracy = 1e-8
-                if 'range' in optimization_args:
-                    spline_range = optimization_args['range']
-                else:
-                    # TODO(felix) remove this when there is a check for the
-                    # distance for the usage of the interpolator in the
-                    # RadialContribution
-                    print("Warning: default parameter for spline range is used.")
-                    spline_range = (0, interaction_cutoff)
-                optimization_args = {
-                    'type': 'Spline', 'accuracy': accuracy, 'range': {
-                        'begin': spline_range[0], 'end': spline_range[1]}}
-            elif optimization_args['type'] == 'None':
-                optimization_args = dict({'type': 'None'})
+                    accuracy = 1e-5
+                    print(
+                        "No accuracy for spline optimization was given. Switching to default accuracy {:.0e}.".format(
+                            accuracy
+                        )
+                    )
+                optimization_args = {"type": "Spline", "accuracy": accuracy}
+            elif optimization_args["type"] == "None":
+                optimization_args = dict({"type": "None"})
             else:
-                print('Optimization type is not known. Switching to no'
-                      ' optimization.')
-                optimization_args = dict({'type': 'None'})
+                print(
+                    "Optimization type is not known. Switching to no" " optimization."
+                )
+                optimization_args = dict({"type": "None"})
         else:
-            optimization_args = dict({'type': 'None'})
-        radial_contribution = dict(
-            type=radial_basis,
-            optimization=optimization_args
+            optimization_args = dict({"type": "None"})
+        radial_contribution = dict(type=radial_basis, optimization=optimization_args)
+
+        self.update_hyperparameters(
+            cutoff_function=cutoff_function,
+            gaussian_density=gaussian_density,
+            radial_contribution=radial_contribution,
         )
 
-        self.update_hyperparameters(cutoff_function=cutoff_function,
-                                    gaussian_density=gaussian_density,
-                                    radial_contribution=radial_contribution)
-
         self.nl_options = [
-            dict(name='centers', args=dict()),
-            dict(name='neighbourlist', args=dict(cutoff=interaction_cutoff)),
+            dict(name="centers", args=dict()),
+            dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
             dict(name="centercontribution", args=dict()),
-            dict(name='strict', args=dict(cutoff=interaction_cutoff))
+            dict(name="strict", args=dict(cutoff=interaction_cutoff)),
         ]
 
         self.rep_options = dict(name=self.name, args=[self.hypers])
@@ -178,19 +240,21 @@ class SphericalExpansion(BaseIO):
 
         """
         allowed_keys = {
-            'interaction_cutoff',
-            'cutoff_smooth_width',
-            'max_radial',
-            'max_angular',
-            'gaussian_sigma_type',
-            'gaussian_sigma_constant',
-            'gaussian_density',
-            'cutoff_function',
-            'radial_contribution',
-            'compute_gradients',
-            'cutoff_function_parameters', 'expansion_by_species_method', 'global_species'}
-        hypers_clean = {key: hypers[key] for key in hypers
-                        if key in allowed_keys}
+            "interaction_cutoff",
+            "cutoff_smooth_width",
+            "max_radial",
+            "max_angular",
+            "gaussian_sigma_type",
+            "gaussian_sigma_constant",
+            "gaussian_density",
+            "cutoff_function",
+            "radial_contribution",
+            "compute_gradients",
+            "cutoff_function_parameters",
+            "expansion_by_species_method",
+            "global_species",
+        }
+        hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
         self.hypers.update(hypers_clean)
 
     def transform(self, frames):
@@ -218,8 +282,11 @@ class SphericalExpansion(BaseIO):
         (this is the descriptor size per atomic centre)
 
         """
-        return (n_species * self.hypers['max_radial']
-                * (self.hypers['max_angular'] + 1)**2)
+        return (
+            n_species
+            * self.hypers["max_radial"]
+            * (self.hypers["max_angular"] + 1) ** 2
+        )
 
     def get_keys(self, species):
         """
@@ -231,21 +298,22 @@ class SphericalExpansion(BaseIO):
         return keys
 
     def _get_init_params(self):
-        gaussian_density = self.hypers['gaussian_density']
-        cutoff_function = self.hypers['cutoff_function']
-        radial_contribution = self.hypers['radial_contribution']
+        gaussian_density = self.hypers["gaussian_density"]
+        cutoff_function = self.hypers["cutoff_function"]
+        radial_contribution = self.hypers["radial_contribution"]
 
         init_params = dict(
-            interaction_cutoff=cutoff_function['cutoff'][
-                'value'], cutoff_smooth_width=cutoff_function['smooth_width']['value'],
-            max_radial=self.hypers['max_radial'], max_angular=self.hypers['max_angular'],
-            expansion_by_species_method=self.hypers['expansion_by_species_method'],
-            global_species=self.hypers['global_species'],
-            compute_gradients=self.hypers['compute_gradients'],
-            gaussian_sigma_type=gaussian_density['type'],
-            gaussian_sigma_constant=gaussian_density['gaussian_sigma']['value'],
-            cutoff_function_type=cutoff_function['type'],
-            radial_basis=radial_contribution['type'],
+            interaction_cutoff=cutoff_function["cutoff"]["value"],
+            cutoff_smooth_width=cutoff_function["smooth_width"]["value"],
+            max_radial=self.hypers["max_radial"],
+            max_angular=self.hypers["max_angular"],
+            expansion_by_species_method=self.hypers["expansion_by_species_method"],
+            global_species=self.hypers["global_species"],
+            compute_gradients=self.hypers["compute_gradients"],
+            gaussian_sigma_type=gaussian_density["type"],
+            gaussian_sigma_constant=gaussian_density["gaussian_sigma"]["value"],
+            cutoff_function_type=cutoff_function["type"],
+            radial_basis=radial_contribution["type"],
             optimization_args=self.optimization_args,
             cutoff_function_parameters=self.cutoff_function_parameters,
         )

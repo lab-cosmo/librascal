@@ -4,16 +4,18 @@ import unittest
 import faulthandler
 
 from python_structure_manager_test import (
-    TestStructureManagerCenters, TestNL, TestNLStrict, CenterSelectTest
+    TestStructureManagerCenters,
+    TestNL,
+    TestNLStrict,
+    CenterSelectTest,
 )
 from python_representation_calculator_test import (
-    TestSortedCoulombRepresentation, TestSphericalExpansionRepresentation,
-    TestSphericalInvariantsRepresentation
+    TestSortedCoulombRepresentation,
+    TestSphericalExpansionRepresentation,
+    TestSphericalInvariantsRepresentation,
 )
 
-from python_models_test import (
-    TestCosineKernel
-)
+from python_models_test import TestNumericalKernelGradient, TestCosineKernel
 
 from python_math_test import TestMath
 
@@ -28,7 +30,7 @@ class SimpleCheck(unittest.TestCase):
         self.assertTrue(self.truth)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     faulthandler.enable()
 
     unittest.main()

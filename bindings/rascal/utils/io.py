@@ -6,7 +6,7 @@ import json
 from copy import deepcopy
 from abc import ABC, abstractmethod
 
-BETA_VERSION = '0.1'
+BETA_VERSION = "0.1"
 
 CURRENT_VERSION = BETA_VERSION
 
@@ -33,8 +33,11 @@ def dump_obj(fn, instance, version=CURRENT_VERSION):
     if isinstance(instance, BaseIO):
         to_file(fn, instance, version)
     else:
-        raise RuntimeError('The instance does not inherit from BaseIO: {}'.format(
-            instance.__class__.__mro__))
+        raise RuntimeError(
+            "The instance does not inherit from BaseIO: {}".format(
+                instance.__class__.__mro__
+            )
+        )
 
 
 def load_obj(fn):
@@ -63,7 +66,7 @@ def dump_json(fn, data):
     data :
         a json serializable python object
     """
-    with open(fn, 'w') as f:
+    with open(fn, "w") as f:
         json.dump(data, f, sort_keys=True, indent=2)
 
 
@@ -79,6 +82,7 @@ def load_json(fn):
     -------
         loaded python object from fn
     """
+
     def _decode(o):
         # JSON does not have integer keys so they are converted to string
         # to load the object as it was in python this hook converts to 'int' all
@@ -92,7 +96,8 @@ def load_json(fn):
             return {_decode(k): v for k, v in o.items()}
         else:
             return o
-    with open(fn, 'r') as f:
+
+    with open(fn, "r") as f:
         data = json.load(f, object_hook=_decode)
     return data
 
@@ -117,7 +122,7 @@ def is_npy_filename(fn):
     """does fn string corresponds to a saved numpy array ?"""
     if isinstance(fn, str):
         filename, file_extension = os.path.splitext(fn)
-        if file_extension == '.npy':
+        if file_extension == ".npy":
             return True
         else:
             return False
@@ -153,10 +158,13 @@ def obj2dict_beta(cls, state):
     VERSION = BETA_VERSION
     module_name = cls.__module__
     class_name = cls.__name__
-    frozen = dict(version=VERSION, class_name=class_name,
-                  module_name=module_name,
-                  init_params=state['init_params'],
-                  data=state['data'])
+    frozen = dict(
+        version=VERSION,
+        class_name=class_name,
+        module_name=module_name,
+        init_params=state["init_params"],
+        data=state["data"],
+    )
     return frozen
 
 
@@ -173,15 +181,21 @@ def dict2obj_beta(data):
     -------
     deserialized python object described by data
     """
-    cls = get_class(data['module_name'], data['class_name'])
-    obj = cls(**data['init_params'])
-    obj._set_data(data['data'])
+    cls = get_class(data["module_name"], data["class_name"])
+    obj = cls(**data["init_params"])
+    obj._set_data(data["data"])
     return obj
 
 
 def is_valid_object_dict_beta(data):
     """check compatibility of data to be used in dict2obj_beta"""
-    valid_keys = ['version', 'class_name', 'module_name', 'init_params', 'data']
+    valid_keys = [
+        "version",
+        "class_name",
+        "module_name",
+        "init_params",
+        "data",
+    ]
     aa = []
     if isinstance(data, dict):
         for k in data:
@@ -225,6 +239,7 @@ class BaseIO(ABC):
     of the box. This class provides an override of the __deepcopy__() function
     so that classes that inherit from this base class can be deepcopied.
     """
+
     @abstractmethod
     def _get_data(self):
         return dict()
@@ -238,18 +253,27 @@ class BaseIO(ABC):
         return dict()
 
     def __deepcopy__(self, memo=None):
-        """ Overrides deepcopy default behaviour with custom serialization
+        """Overrides deepcopy default behaviour with custom serialization
         instead of using pickle."""
         return from_dict(to_dict(self))
+
+    def __setstate__(self, state):
+        """Overrides default pickling behaviour passing through the dict representation."""
+        obj = from_dict(state)
+        self.__dict__.update(obj.__dict__)
+
+    def __getstate__(self):
+        """Overrides default pickling behaviour passing through the dict representation."""
+        return to_dict(self)
 
 
 def _get_state(obj):
     if isinstance(obj, BaseIO):
-        state = dict(data=obj._get_data(),
-                     init_params=obj._get_init_params())
+        state = dict(data=obj._get_data(), init_params=obj._get_init_params())
     else:
         raise ValueError(
-            'input object: "{}" does not inherit from "BaseIO"'.format(obj))
+            'input object: "{}" does not inherit from "BaseIO"'.format(obj)
+        )
     return state
 
 
@@ -260,9 +284,11 @@ def to_dict(obj, version=CURRENT_VERSION, recursion_depth=0):
     if recursion_depth >= MAX_RECURSION_DEPTH:
         raise ValueError(
             "The object to be serialized to dict contains more than {}".format(
-                MAX_RECURSION_DEPTH)
+                MAX_RECURSION_DEPTH
+            )
             + " levels of nested objects suggesting there is a circular reference."
-            + " Objects containing a reference to themselves are not supported.")
+            + " Objects containing a reference to themselves are not supported."
+        )
     else:
         recursion_depth += 1
 
@@ -292,7 +318,7 @@ def from_dict(data):
     """Recursirvely deserialize from dict via the BaseIO interface."""
     # temporary dictionary to hold the object being recovered
     data_obj = dict()
-    version = data['version']
+    version = data["version"]
     for name, entry in data.items():
         if isinstance(entry, dict):
             data_obj[name] = dict()
@@ -328,14 +354,13 @@ def to_file(fn, obj, version=CURRENT_VERSION):
     fn = os.path.abspath(fn)
     filename, file_extension = os.path.splitext(fn)
     data = to_dict(obj, version=version)
-    class_name = data['class_name'].lower()
+    class_name = data["class_name"].lower()
 
-    if file_extension == '.json':
+    if file_extension == ".json":
         _dump_npy(fn, data, class_name)
         dump_json(fn, data)
     else:
-        raise NotImplementedError(
-            'Unknown file extention: {}'.format(file_extension))
+        raise NotImplementedError("Unknown file extention: {}".format(file_extension))
 
 
 def from_file(fn):
@@ -343,20 +368,20 @@ def from_file(fn):
     fn = os.path.abspath(fn)
     path = os.path.dirname(fn)
     filename, file_extension = os.path.splitext(fn)
-    if file_extension == '.json':
+    if file_extension == ".json":
         data = load_json(fn)
-        version = data['version']
+        version = data["version"]
         if is_valid_object_dict[version](data):
             _load_npy(data, path)
             return from_dict(data)
         else:
             raise RuntimeError(
-                'The file: {}; does not contain a valid dictionary'.format(fn)
-                + ' representation of an object.')
+                "The file: {}; does not contain a valid dictionary".format(fn)
+                + " representation of an object."
+            )
 
     else:
-        raise NotImplementedError(
-            'Unknown file extention: {}'.format(file_extension))
+        raise NotImplementedError("Unknown file extention: {}".format(file_extension))
 
 
 def _dump_npy(fn, data, class_name):
@@ -368,19 +393,19 @@ def _dump_npy(fn, data, class_name):
     filename, file_extension = os.path.splitext(fn)
     for k, v in data.items():
         if isinstance(v, dict):
-            if 'class_name' in data:
-                class_name = data['class_name'].lower()
+            if "class_name" in data:
+                class_name = data["class_name"].lower()
             _dump_npy(fn, v, class_name)
         elif is_large_array(v):
-            if 'tag' in data:
-                class_name += '-' + data['tag']
-            v_fn = filename + '-{}-{}'.format(class_name, k) + '.npy'
+            if "tag" in data:
+                class_name += "-" + data["tag"]
+            v_fn = filename + "-{}-{}".format(class_name, k) + ".npy"
             v_bfn = os.path.basename(v_fn)
             data[k] = v_bfn
             np.save(v_fn, v)
 
         elif is_npy(v):
-            data[k] = ['npy', v.tolist()]
+            data[k] = ["npy", v.tolist()]
 
 
 def _load_npy(data, path):
@@ -392,8 +417,8 @@ def _load_npy(data, path):
         if isinstance(v, dict):
             _load_npy(v, path)
         elif is_npy_filename(v):
-            data[k] = np.load(os.path.join(path, v), mmap_mode='r')
+            data[k] = np.load(os.path.join(path, v), mmap_mode="r")
         elif isinstance(v, list):
             if len(v) == 2:
-                if 'npy' == v[0]:
+                if "npy" == v[0]:
                     data[k] = np.array(v[1])
