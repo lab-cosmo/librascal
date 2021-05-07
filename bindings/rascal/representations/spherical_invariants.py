@@ -41,16 +41,16 @@ class SphericalInvariants(BaseIO):
     max_angular : int
         Highest angular momentum number (l) in the expansion
 
-    gaussian_sigma_type : str
+    gaussian_sigma_type : str, default="Constant"
         How the Gaussian atom sigmas (smearing widths) are allowed to
         vary -- fixed ('Constant'), by species ('PerSpecies'), or by
         distance from the central atom ('Radial').
 
-    gaussian_sigma_constant : float
-        Specifies the atomic Gaussian widths, in the case where they're
-        fixed.
+    gaussian_sigma_constant : float, default=0.3
+        Specifies the atomic Gaussian widths when
+        gaussian_sigma_type=="Constant"
 
-    cutoff_function_type : string
+    cutoff_function_type : string, default="ShiftedCosine"
         Choose the type of smooth cutoff function used to define the local
         environment. Can be either 'ShiftedCosine' or 'RadialScaling'.
 
@@ -87,15 +87,15 @@ class SphericalInvariants(BaseIO):
         where :math:`c` is the rate, :math:`r_0` is the scale, :math:`m` is the
         exponent.
 
-    soap_type : string
+    soap_type : string, default="PowerSpectrum"
         Specifies the type of representation to be computed
         ("RadialSpectrum", "PowerSpectrum" and "BiSpectrum").
 
-    inversion_symmetry : boolean
+    inversion_symmetry : boolean, default True
         Specifies whether inversion invariance should be enforced.
         (Only relevant for BiSpectrum.)
 
-    radial_basis :  string
+    radial_basis :  string, default="GTO"
         Specifies the type of radial basis R_n to be computed
         ("GTO" for Gaussian typed orbitals and "DVR" discrete variable
         representation using Gaussian-Legendre quadrature rule)
@@ -104,12 +104,12 @@ class SphericalInvariants(BaseIO):
         Whether to normalize so that the kernel between identical environments
         is 1.  Default and highly recommended: True.
 
-    optimization_args : dict
+    optimization_args : dict, optional
         Additional arguments for optimization.
         Currently spline optimization for the radial basis function is available
         Recommended settings if used {"type":"Spline", "accuracy": 1e-5}
 
-    expansion_by_species_method : string
+    expansion_by_species_method : string, default="environment wise"
         Specifies the how the species key of the invariant are set-up.
         Possible values: 'environment wise', 'user defined', 'structure wise'.
         The descriptor is computed for each atomic enviroment and it is indexed
@@ -135,16 +135,21 @@ class SphericalInvariants(BaseIO):
         build kernels does not allow for clear efficiency gains so their
         sparsity is kept irrespective of expansion_by_species_method.
 
-    global_species : list of int
+        Finally, note that this setting is overridden if 'global_species'
+        is provided (see below).
+
+    global_species : list of int, optional
         list of species (specified with their atomic number) to use to set-up
         the species key of the invariant. It should contain all the species
-        present in the structure for which invariants will be computed
+        present in the structure for which invariants will be computed.
+        If provided, 'expansion_by_species_method' will be set to
+        "user defined", overriding the original value.
 
-    compute_gradients : bool
+    compute_gradients : bool, default False
         control the computation of the representation's gradients w.r.t. atomic
         positions.
 
-    cutoff_function_parameters : dict
+    cutoff_function_parameters : dict, optional
         Additional parameters for the cutoff function.
         if cutoff_function_type == 'RadialScaling' then it should have the form
 
@@ -156,7 +161,7 @@ class SphericalInvariants(BaseIO):
 
         where :code:`...` should be replaced by the desired value.
 
-    coefficient_subselection : list or None
+    coefficient_subselection : list, optional
         if None then all the coefficients are computed following max_radial,
         max_angular and the atomic species present.
         if :code:`soap_type == 'PowerSpectrum'` and it has the form
@@ -186,7 +191,7 @@ class SphericalInvariants(BaseIO):
         cutoff_smooth_width,
         max_radial,
         max_angular,
-        gaussian_sigma_type,
+        gaussian_sigma_type="Constant",
         gaussian_sigma_constant=0.3,
         cutoff_function_type="ShiftedCosine",
         soap_type="PowerSpectrum",
@@ -211,6 +216,8 @@ class SphericalInvariants(BaseIO):
             global_species = []
         elif not isinstance(global_species, list):
             global_species = list(global_species)
+        if global_species:
+            expansion_by_species_method = "user defined"
 
         self.update_hyperparameters(
             max_radial=max_radial,
