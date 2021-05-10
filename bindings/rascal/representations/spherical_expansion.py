@@ -222,18 +222,29 @@ class SphericalExpansion(BaseIO):
             cutoff_function_type, **cutoff_function_parameters
         )
         # Soft backwards compatibility (remove these two if-clauses after 01.11.2021)
+        # Soft backwards compatibility (remove this whole if-statement after 01.11.2021)
         if expansion_by_species_method is not None:
-            LOGGER.warn(
-                "The 'expansion_by_species_method' parameter is deprecated "
+            LOGGER.warning(
+                "Warning: The 'expansion_by_species_method' parameter is deprecated "
                 "(see 'species_list' parameter instead).\n"
                 "This message will become an error after 2021-11-01."
             )
-            species_list = expansion_by_species_method
-        if global_species is not None:
-            LOGGER.warn(
-                "The 'global_species' parameter is deprecated "
+            if expansion_by_species_method != "user defined":
+                species_list = expansion_by_species_method
+            elif global_species is not None:
+                species_list = global_species
+            else:
+                raise ValueError(
+                    "Found deprecated 'expansion_by_species_method' parameter "
+                    "set to 'user defined' without 'global_species' set")
+        elif global_species is not None:
+            LOGGER.warning(
+                "Warning: The 'global_species' parameter is deprecated "
                 "(see 'species_list' parameter instead).\n"
                 "This message will become an error after 2021-11-01."
+                "(Also, this needs to be set with "
+                "'expansion_by_species_method'=='user defined'; proceeding under "
+                "the assumption that this is what you wanted)"
             )
             species_list = global_species
         species_list_hypers = _parse_species_list(species_list)
