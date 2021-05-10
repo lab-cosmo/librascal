@@ -1,12 +1,16 @@
-import json
-from itertools import product
 import ase
+from itertools import product
+import json
+import logging
 
 from .base import CalculatorFactory, cutoff_function_dict_switch
+from .spherical_expansion import _parse_species_list
 from ..neighbourlist import AtomsList
 import numpy as np
 from copy import deepcopy
 from ..utils import BaseIO
+
+LOGGER = logging.getLogger(__name__)
 
 
 def get_power_spectrum_index_mapping(sp_pairs, n_max, l_max):
@@ -107,11 +111,15 @@ class SphericalInvariants(BaseIO):
     optimization_args : dict, optional
         Additional arguments for optimization.
         Currently spline optimization for the radial basis function is available
-        Recommended settings if used {"type":"Spline", "accuracy": 1e-5}
+        Recommended settings if using: {"type":"Spline", "accuracy": 1e-5}
 
-    expansion_by_species_method : string, default="environment wise"
+    species_list : string or list(int), default="environment wise"
         Specifies the how the species key of the invariant are set-up.
-        Possible values: 'environment wise', 'user defined', 'structure wise'.
+        Possible values: 'environment wise', 'structure wise', or a user-defined
+        list of species.
+        This parameter is passed directly to the SphericalExpansion used to
+        build this representation; its documentation is reproduced below.
+
         The descriptor is computed for each atomic enviroment and it is indexed
         using tuples of atomic species that are present within the environment.
         This index is by definition sparse since a species tuple will be non
@@ -121,29 +129,26 @@ class SphericalInvariants(BaseIO):
         atomic environment.
         'structure wise' means that within a structure the species tuples
         will be the same for each environment coefficients.
-        'user defined' uses global_species to set-up the species tuples.
 
-        These different settings correspond to different trade-off between
+        The user-defined option means that all the atomic numbers contained
+        in the supplied list will be considered.  The user _must_ ensure that
+        all species contained in the structure are represented in the list,
+        otherwise an error will be raised.  They are free to specify species
+        that do not occur in any structure, however; a typical use case of this
+        is to compare SOAP vectors between structure sets of possibly different
+        species composition.
+
+        These different settings correspond to different trade-offs between
         the memory efficiency of the invariants and the computational
         efficiency of the kernel computation.
         When computing a kernel using 'environment wise' setting does not allow
         for efficent matrix matrix multiplications which is ensured when
-        'user defined' is used. 'structure wise' is a balance between the
+        a user-defined list is used. 'structure wise' is a balance between the
         memory footprint and the use of matrix matrix products.
 
         Note that the sparsity of the gradient coefficients and their use to
         build kernels does not allow for clear efficiency gains so their
-        sparsity is kept irrespective of expansion_by_species_method.
-
-        Finally, note that this setting is overridden if 'global_species'
-        is provided (see below).
-
-    global_species : list of int, optional
-        list of species (specified with their atomic number) to use to set-up
-        the species key of the invariant. It should contain all the species
-        present in the structure for which invariants will be computed.
-        If provided, 'expansion_by_species_method' will be set to
-        "user defined", overriding the original value.
+        sparsity is kept irrespective of the value of this parameter.
 
     compute_gradients : bool, default False
         control the computation of the representation's gradients w.r.t. atomic
@@ -199,11 +204,12 @@ class SphericalInvariants(BaseIO):
         radial_basis="GTO",
         normalize=True,
         optimization_args={},
-        expansion_by_species_method="environment wise",
-        global_species=None,
+        species_list="environment wise",
         compute_gradients=False,
         cutoff_function_parameters=dict(),
         coefficient_subselection=None,
+        expansion_by_species_method=None,
+        global_species=None,
     ):
         """Construct a SphericalExpansion representation
 
@@ -212,12 +218,6 @@ class SphericalInvariants(BaseIO):
         """
         self.name = "sphericalinvariants"
         self.hypers = dict()
-        if global_species is None:
-            global_species = []
-        elif not isinstance(global_species, list):
-            global_species = list(global_species)
-        if global_species:
-            expansion_by_species_method = "user defined"
 
         self.update_hyperparameters(
             max_radial=max_radial,
@@ -230,6 +230,23 @@ class SphericalInvariants(BaseIO):
             compute_gradients=compute_gradients,
             coefficient_subselection=coefficient_subselection,
         )
+        # Soft backwards compatibility (remove these two if-clauses after 01.11.2021)
+        if expansion_by_species_method is not None:
+            LOGGER.warn(
+                "Warning: The 'expansion_by_species_method' parameter is deprecated "
+                "(see 'species_list' parameter instead).\n"
+                "This message will become an error after 2021-11-01."
+            )
+            species_list = expansion_by_species_method
+        if global_species is not None:
+            LOGGER.warn(
+                "Warning: The 'global_species' parameter is deprecated "
+                "(see 'species_list' parameter instead).\n"
+                "This message will become an error after 2021-11-01."
+            )
+            species_list = global_species
+        species_list_hypers = _parse_species_list(species_list)
+        self.update_hyperparameters(**species_list_hypers)
 
         if self.hypers["coefficient_subselection"] is None:
             del self.hypers["coefficient_subselection"]
@@ -255,9 +272,8 @@ class SphericalInvariants(BaseIO):
                 else:
                     accuracy = 1e-5
                     print(
-                        "No accuracy for spline optimization was given. Switching to default accuracy {:.0e}.".format(
-                            accuracy
-                        )
+                        "No accuracy for spline optimization was given. "
+                        "Switching to default accuracy {:.0e}.".format(accuracy)
                     )
                 optimization_args = {"type": "Spline", "accuracy": accuracy}
             elif optimization_args["type"] == "None":
@@ -449,6 +465,12 @@ class SphericalInvariants(BaseIO):
         gaussian_density = self.hypers["gaussian_density"]
         cutoff_function = self.hypers["cutoff_function"]
         radial_contribution = self.hypers["radial_contribution"]
+        global_species = self.hypers["global_species"]
+        species_list = (
+            global_species
+            if global_species
+            else self.hypers["expansion_by_species_method"]
+        )
 
         init_params = dict(
             interaction_cutoff=cutoff_function["cutoff"]["value"],
@@ -458,8 +480,7 @@ class SphericalInvariants(BaseIO):
             soap_type=self.hypers["soap_type"],
             inversion_symmetry=self.hypers["inversion_symmetry"],
             normalize=self.hypers["normalize"],
-            expansion_by_species_method=self.hypers["expansion_by_species_method"],
-            global_species=self.hypers["global_species"],
+            species_list=species_list,
             compute_gradients=self.hypers["compute_gradients"],
             gaussian_sigma_type=gaussian_density["type"],
             gaussian_sigma_constant=gaussian_density["gaussian_sigma"]["value"],
