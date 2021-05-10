@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 import json
 import logging
 
