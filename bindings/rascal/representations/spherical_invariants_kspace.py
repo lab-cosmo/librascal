@@ -261,9 +261,10 @@ class SphericalInvariantsKspace(BaseIO):
 
         self.nl_options = [
             dict(name='centers', args=[]),
-            dict(name='neighbourlist', args=dict(cutoff=interaction_cutoff)),
+            #dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
+            dict(name="kspace", args=dict()),
             dict(name="centercontribution", args=dict()),
-            dict(name='strict', args=dict(cutoff=interaction_cutoff))
+            #dict(name="strict", args=dict(cutoff=interaction_cutoff)),
         ]
 
         self.rep_options = dict(name=self.name, args=[self.hypers])
