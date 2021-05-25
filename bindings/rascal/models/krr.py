@@ -354,6 +354,7 @@ def train_gap_model(
     X_sparse,
     y_train,
     self_contributions,
+    solver="Normal",
     grad_train=None,
     lambdas=None,
     jitter=1e-8,
@@ -463,11 +464,23 @@ def train_gap_model(
         F /= lambdas[1] / delta
         Y = np.vstack([Y, F])
 
-    KMM[np.diag_indices_from(KMM)] += jitter
+    if solver == "Normal":
+        # Finds the KRR weights using the normal equations
+        K = KMM + np.dot(KNM.T, KNM)
+        Y = np.dot(KNM.T, Y)
+        weights = np.linalg.lstsq(K, Y, rcond=jitter)[0]
+    elif solver == "RKHS":
+        # Finds the weights by computing explicitly the RKHS and
+        # solving a least-square model 
+        eva, eve = np.linalg.eigh(KMM)
+        eva = eva[::-1]
+        eve = eve[:,::-1]
+        nrkhs = len(np.where(eva>jitter)[0])
+        PKT = eve[:,:nrkhs] @ np.diag(1.0/eva[:nrkhs]) 
+        KNM = KNM @ PKT
 
-    K = KMM + np.dot(KNM.T, KNM)
-    Y = np.dot(KNM.T, Y)
-    weights = np.linalg.lstsq(K, Y, rcond=None)[0]
+        weights = PKT @ np.linalg.lstsq(KNM.T, Y, rcond = 1.0/eva[0])
+
     model = KRR(weights, kernel, X_sparse, self_contributions)
 
     # avoid memory clogging
