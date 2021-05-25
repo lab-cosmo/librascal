@@ -430,7 +430,7 @@ def train_gap_model(
         small jitter for the numerical stability of solving the linear system,
         by default 1e-8
     solver: string, optional
-        method used to solve the sparse KRR equations. 
+        method used to solve the sparse KRR equations.
         "Normal" uses a least-squares solver for the normal equations:
            (K_NM.T@K_NM + K_MM)^(-1) K_NM.T@Y
         "RKHS" computes first the reproducing kernel features by diagonalizing K_MM
@@ -475,24 +475,24 @@ def train_gap_model(
 
     if solver == "Normal":
         # Finds the KRR weights using the normal equations
-        K = KMM + np.dot(KNM.T, KNM)        
+        K = KMM + np.dot(KNM.T, KNM)
         Y = np.dot(KNM.T, Y)
         weights = np.linalg.lstsq(K, Y, rcond=jitter)[0]
         del K
-                
+
     elif solver == "RKHS":
         # Finds the weights by computing explicitly the RKHS and
-        # solving a least-square model 
+        # solving a least-square model
         eva, eve = np.linalg.eigh(KMM)
         eva = eva[::-1]
-        eve = eve[:,::-1]
-        
-        # drop eigenvectors smaller than the jitter
-        nrkhs = len(np.where(eva/eva[0]>jitter)[0])
-        PKT = eve[:,:nrkhs] @ np.diag(1.0/eva[:nrkhs]) 
-        PNM = KNM @ PKT        
+        eve = eve[:, ::-1]
 
-        weights = PKT @ np.linalg.solve( PNM.T@PNM + np.eye(nrkhs), PNM.T @ Y)
+        # drop eigenvectors smaller than the jitter
+        nrkhs = len(np.where(eva / eva[0] > jitter)[0])
+        PKT = eve[:, :nrkhs] @ np.diag(1.0 / eva[:nrkhs])
+        PNM = KNM @ PKT
+
+        weights = PKT @ np.linalg.solve(PNM.T @ PNM + np.eye(nrkhs), PNM.T @ Y)
         del PKT, PNM
 
     model = KRR(weights, kernel, X_sparse, self_contributions)
