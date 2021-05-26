@@ -490,17 +490,17 @@ def train_gap_model(
         # drop eigenvectors smaller than the jitter
         nrkhs = len(np.where(eva / eva[0] > jitter)[0])
         PKT = eve[:, :nrkhs] @ np.diag(1.0 / eva[:nrkhs])
-        
-        # This would be the direct LR solution 
+
+        # This would be the direct LR solution
         # PNM = KNM @ PKT
-        # weights = PKT @ np.linalg.solve(PNM.T @ PNM + np.eye(nrkhs), PNM.T @ Y)        
-        
-        # ... but instead we use an alternative (equivalent) formulation discussed 
+        # weights = PKT @ np.linalg.solve(PNM.T @ PNM + np.eye(nrkhs), PNM.T @ Y)
+
+        # ... but instead we use an alternative (equivalent) formulation discussed
         # in Foster et al. JMLR (2009)
         PNM = np.vstack([KNM, PKT.T])
-        YP = np.vstack([Y, np.zeros((nrkhs,1))])
+        YP = np.vstack([Y, np.zeros((nrkhs, 1))])
         weights = np.linalg.lstsq(PNM, YP, rcond=None)[0]
-        
+
         del PKT, PNM
 
     model = KRR(weights, kernel, X_sparse, self_contributions)
