@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>How to run benchmark for different parameters &mdash; Rascal 0.0.1 documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
 
   
   
@@ -31,6 +34,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -214,7 +218,7 @@
 <li><p><a class="reference internal" href="#how-to-add-a-new-benchmark" id="id2">How to add a new benchmark</a></p></li>
 </ul>
 </div>
-<div class="section" id="how-to-run-benchmark-for-different-parameters">
+<section id="how-to-run-benchmark-for-different-parameters">
 <h1><a class="toc-backref" href="#id1">How to run benchmark for different parameters</a><a class="headerlink" href="#how-to-run-benchmark-for-different-parameters" title="Permalink to this headline">¶</a></h1>
 <p>To change the parameters of the benchmarks you have to go the corresponding
 header file of the benchmark and change the parameters. Here an example for the
@@ -230,7 +234,7 @@ interpolator</p>
 <span class="cm"> */</span>
 <span class="k">struct</span> <span class="nc">SphericalDataset</span> <span class="o">:</span> <span class="k">public</span> <span class="n">BaseInterpolatorDataset</span> <span class="p">{</span>
   <span class="k">using</span> <span class="n">SupportedFunc</span> <span class="o">=</span> <span class="k">typename</span> <span class="nc">BaseInterpolatorDataset</span><span class="o">::</span><span class="n">SupportedFunc</span><span class="p">;</span>
-  <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="n">data</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="nf">data</span><span class="p">()</span> <span class="p">{</span>
     <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
         <span class="p">{</span><span class="s">&quot;nbs_iterations&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">0</span><span class="p">}},</span>             <span class="c1">// dummy</span>
         <span class="p">{</span><span class="s">&quot;ranges&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)}},</span>  <span class="c1">// dummy</span>
@@ -290,8 +294,8 @@ Because google benchmark is currently not able to print benchmark results
 of type string, string parameters like <code class="docutils literal notranslate"><span class="pre">filename</span></code> should be also kept to a
 single value to be sure which parameter is used. For other parameters different
 combinations can be printed.</p>
-</div>
-<div class="section" id="how-to-add-a-new-benchmark">
+</section>
+<section id="how-to-add-a-new-benchmark">
 <h1><a class="toc-backref" href="#id2">How to add a new benchmark</a><a class="headerlink" href="#how-to-add-a-new-benchmark" title="Permalink to this headline">¶</a></h1>
 <p>This file is a skeleton file for writing your own benchmark. It explains the
 core featuers of google benchmarks and our own added functionalities in the
@@ -325,13 +329,13 @@ core featuers of google benchmarks and our own added functionalities in the
 
 <span class="cp">#include</span> <span class="cpf">&quot;../performance/benchmarks/benchmarks.hh&quot;</span><span class="cp"></span>
 
-<span class="k">namespace</span> <span class="n">rascal</span> <span class="p">{</span>
+<span class="k">namespace</span> <span class="nn">rascal</span> <span class="p">{</span>
   <span class="cm">/**</span>
 <span class="cm">   * Structure holding the data, the data is created inside a static function,</span>
 <span class="cm">   * because non primitives cannot be static as member variable.</span>
 <span class="cm">   */</span>
   <span class="k">struct</span> <span class="nc">SampleData</span> <span class="p">{</span>
-    <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="n">data</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="nf">data</span><span class="p">()</span> <span class="p">{</span>
       <span class="k">static</span> <span class="n">json</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{{</span><span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}},</span>
                           <span class="p">{</span><span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;crystal.json&quot;</span><span class="p">,</span> <span class="s">&quot;cube.json&quot;</span><span class="p">}}};</span>
       <span class="k">return</span> <span class="n">data</span><span class="p">;</span>
@@ -466,7 +470,7 @@ core featuers of google benchmarks and our own added functionalities in the
 <span class="n">BENCHMARK_MAIN</span><span class="p">();</span>
 </pre></div>
 </div>
-</div>
+</section>
 
 
            </div>

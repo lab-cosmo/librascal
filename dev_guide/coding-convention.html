@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Coding Convention &mdash; Rascal 0.0.1 documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
 
   
   
@@ -31,6 +34,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -229,7 +233,7 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="coding-convention">
+<section id="coding-convention">
 <span id="id1"></span><h1>Coding Convention<a class="headerlink" href="#coding-convention" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
@@ -401,7 +405,7 @@
 <li><p><a class="reference internal" href="#references" id="id144">References</a></p></li>
 </ul>
 </div>
-<div class="section" id="objectives-of-the-convention">
+<section id="objectives-of-the-convention">
 <h2><a class="toc-backref" href="#id27">Objectives of the Convention</a><a class="headerlink" href="#objectives-of-the-convention" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
 <dt>rascal is a collaborative project and these coding conventions aim to make reading and understanding its code as pain-free as possible, while ensuring the four main requirements of the library</dt><dd><ol class="arabic simple">
@@ -414,19 +418,19 @@
 </dl>
 <p><em>Versatility</em> requires that the core of the code, i.e., the data structures and fundamental algorithms be written in a generic fashion. The genericity cannot come at the cost of the second requirement – <em>Efficiency</em> – which is the reason why we use template metaprogramming and expression templates. <em>Reliability</em> can only be enforced through good unit testing with high test coverage, and <em>ease-of-use</em> relies on a good documentation for developers and users alike.</p>
 <p>Review of submitted code is the main mechanism to enforce the coding conventions.</p>
-</div>
-<div class="section" id="documentation">
+</section>
+<section id="documentation">
 <h2><a class="toc-backref" href="#id28">Documentation</a><a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
 <p>There are two types of Documentation for rascal: on the one hand, there is this monograph which is supposed to serve as reference manual to understand, and use the library and its extensions, and to look up APIs and data structures. On the other hand, there is in-code documentation helping the developer to understand the role of functions, variables, member (function)s and steps in algorithms.</p>
 <p>The in-code documentation uses the syntax of <a class="reference external" href="http://www.stack.nl/~dimitri/doxygen/">the doxygen documentation generator</a>, as its lightweight markup language is very readable in the code and allows to generate the standalone API documentation in <span class="xref std std-ref">Reference</span>.</p>
 <p>All lengthier, text-based documentation is written for <a class="reference external" href="http://www.sphinx-doc.org/en/master/index.html">Sphinx</a> in <a class="reference external" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a>. This allows to write longer, more expressive texts, such as this convention or the <span class="xref std std-ref">tutorials</span>.</p>
-</div>
-<div class="section" id="testing">
+</section>
+<section id="testing">
 <h2><a class="toc-backref" href="#id29">Testing</a><a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
 <p><em>Every</em> feature in rascal’s core library is supposed to be unit tested, and a missing test is considered a bug. Core library features are unit tested in the C++ unit tests (preferred option) or the python unit tests (both within the <code class="docutils literal notranslate"><span class="pre">tests</span></code> folder).</p>
 <p>The unit tests typically use the <a class="reference external" href="http://www.boost.org/doc/libs/1_43_0/libs/test/doc/html/utf.html">Boost unit test framework</a> to define C++ test cases and python’s <a class="reference external" href="https://docs.python.org/3/library/unittest.html">unittest</a> module for python tests. If necessary, standalone tests can be added by contributors, provided that they are added as <code class="docutils literal notranslate"><span class="pre">ctest</span></code> targets to the project’s main CMake file. See in the <code class="docutils literal notranslate"><span class="pre">tests</span></code> folder for examples regarding the tests.</p>
-</div>
-<div class="section" id="c-coding-style-and-convention">
+</section>
+<section id="c-coding-style-and-convention">
 <span id="cpp-coding-style-and-convention"></span><h2><a class="toc-backref" href="#id30">C++ Coding Style and Convention</a><a class="headerlink" href="#c-coding-style-and-convention" title="Permalink to this headline">¶</a></h2>
 <p>These are heavily inspired by the <a class="reference external" href="https://google.github.io/styleguide/cppguide.html">Google C++ Style Guide</a> but are <em>not compatible</em> with it. These guidelines mostly establish a common vocabulary to write common code and do not give advice for efficient programming practices. For that, follow Scott Meyers book <a class="reference internal" href="#meyers-2014"><span class="std std-ref">Effective Modern C++</span></a>. As far as possible, the guidelines given in that book are also enforced by the <code class="docutils literal notranslate"><span class="pre">-Weffc++</span></code> compile flag.</p>
 <p>The goals of this style guide are:</p>
@@ -458,24 +462,24 @@
 <blockquote>
 <div><p>Performance is the overwhelming priority in the <strong>core library</strong> (i.e., data structures and low level algorithms that the typical user relies on often, but rarely uses directly). If performance optimisation is in conflict with other principles in this document, optimise.</p>
 </div></blockquote>
-<div class="section" id="header-files">
+<section id="header-files">
 <h3><a class="toc-backref" href="#id31">Header Files</a><a class="headerlink" href="#header-files" title="Permalink to this headline">¶</a></h3>
 <p>In general, every <code class="docutils literal notranslate"><span class="pre">.cc</span></code> file should have an associated <code class="docutils literal notranslate"><span class="pre">.hh</span></code> file. There are some common exceptions, such as unit tests and small <code class="docutils literal notranslate"><span class="pre">.cc</span></code> files containing just a <code class="docutils literal notranslate"><span class="pre">main()</span></code> function (e.g., see in the <code class="docutils literal notranslate"><span class="pre">examples</span></code> folder).</p>
 <p>Correct use of header files can make a huge difference to the readability, size and performance of your code.</p>
 <p>The following rules will guide you through the various pitfalls of using header files.</p>
-<div class="section" id="self-contained-headers">
+<section id="self-contained-headers">
 <span id="id2"></span><h4><a class="toc-backref" href="#id32">Self-contained Headers</a><a class="headerlink" href="#self-contained-headers" title="Permalink to this headline">¶</a></h4>
 <p>Header files should be self-contained (compile on their own) and end in <code class="docutils literal notranslate"><span class="pre">.hh</span></code>. There should not be any non-header files that are meant for inclusion.</p>
 <p>All header files should be self-contained. Users and refactoring tools should not have to adhere to special conditions to include the header. Specifically, a header should have header guards and include all other headers it needs.</p>
 <p>Prefer placing the definitions for inline functions in the same file as their declarations. The definitions of these constructs must be included into every <code class="docutils literal notranslate"><span class="pre">.cc</span></code> file that uses them, or the program may fail to link in some build configurations. If declarations and definitions are in different files, including the former should transitively include the latter. Do not move these definitions to separately included header files (<code class="docutils literal notranslate"><span class="pre">-inl.hh</span></code>); this practice was common in the past, but is no longer allowed.</p>
 <p>As an exception, a template that is explicitly instantiated for all relevant sets of template arguments, or that is a private implementation detail of a class, is allowed to be defined in the one and only <code class="docutils literal notranslate"><span class="pre">.cc</span></code> file that instantiates the template.</p>
-</div>
-<div class="section" id="the-define-guard">
+</section>
+<section id="the-define-guard">
 <span id="define-guard"></span><h4><a class="toc-backref" href="#id33">The <code class="docutils literal notranslate"><span class="pre">#define</span></code> Guard</a><a class="headerlink" href="#the-define-guard" title="Permalink to this headline">¶</a></h4>
 <p>All header files should have <code class="docutils literal notranslate"><span class="pre">#define</span></code> guards to prevent multiple inclusion. The format of the symbol name should be <code class="docutils literal notranslate"><span class="pre">CLASS_NAME_H</span></code> (all caps with underscores), where <code class="docutils literal notranslate"><span class="pre">ClassName</span></code> (CamelCase) is the main class declared it the header file.</p>
 <p>Make sure to use unique file names to avoid triggering the wrong <code class="docutils literal notranslate"><span class="pre">#define</span></code> guard.</p>
-</div>
-<div class="section" id="forward-declarations">
+</section>
+<section id="forward-declarations">
 <h4><a class="toc-backref" href="#id34">Forward Declarations</a><a class="headerlink" href="#forward-declarations" title="Permalink to this headline">¶</a></h4>
 <p>Use forward declarations of rascal entities where it avoids <code class="docutils literal notranslate"><span class="pre">include</span></code>s and saves compile time.</p>
 <p>A “forward declaration” is a declaration of a class, function, or template without an associated definition.</p>
@@ -508,12 +512,12 @@
 <p>Try to avoid forward declarations of entities defined in another project.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="inline-functions">
+</section>
+<section id="inline-functions">
 <span id="id3"></span><h4><a class="toc-backref" href="#id35">Inline Functions</a><a class="headerlink" href="#inline-functions" title="Permalink to this headline">¶</a></h4>
 <p>Use inline functions for performance-critical code. Also, templated member functions that that cannot be explicitly instantiated need to be declared inline.</p>
-</div>
-<div class="section" id="names-and-order-of-includes">
+</section>
+<section id="names-and-order-of-includes">
 <h4><a class="toc-backref" href="#id36">Names and Order of Includes</a><a class="headerlink" href="#names-and-order-of-includes" title="Permalink to this headline">¶</a></h4>
 <p>All of a project’s header files should be listed as descendants of the project’s source directory without use of UNIX directory shortcuts <code class="docutils literal notranslate"><span class="pre">.</span></code> (the current directory) or <code class="docutils literal notranslate"><span class="pre">..</span></code> (the parent directory). For example, <code class="docutils literal notranslate"><span class="pre">rascal/src/neighbourhood_managers/neighbourhood_manager_base.hh</span></code> should be included as:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;neighbourhood_managers/neighbourhood_manager_base.hh&quot;</span><span class="cp"></span>
@@ -531,11 +535,11 @@
 </dl>
 <p>With this ordering, if a rascal header omits any necessary includes, the build will break. Thus, this rule ensures that build breaks show up first for the people working on these files, not for innocent people in different places.</p>
 <p>You should include all the headers that define the symbols you rely upon, except in the case of forward declaration. If you rely on symbols from <code class="docutils literal notranslate"><span class="pre">bar.hh</span></code>, don’t count on the fact that you included <code class="docutils literal notranslate"><span class="pre">foo.hh</span></code> which (currently) includes <code class="docutils literal notranslate"><span class="pre">bar.hh</span></code>: include <code class="docutils literal notranslate"><span class="pre">bar.hh</span></code> yourself, unless <code class="docutils literal notranslate"><span class="pre">foo.hh</span></code> explicitly demonstrates its intent to provide you the symbols of <code class="docutils literal notranslate"><span class="pre">bar.hh</span></code>. However, any includes present in the related header do not need to be included again in the related <code class="docutils literal notranslate"><span class="pre">.cc</span></code> (i.e., <code class="docutils literal notranslate"><span class="pre">foo.cc</span></code> can rely on <code class="docutils literal notranslate"><span class="pre">foo.hh</span></code>’s includes).</p>
-</div>
-</div>
-<div class="section" id="scoping">
+</section>
+</section>
+<section id="scoping">
 <h3><a class="toc-backref" href="#id37">Scoping</a><a class="headerlink" href="#scoping" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="namespaces">
+<section id="namespaces">
 <span id="id4"></span><h4><a class="toc-backref" href="#id38">Namespaces</a><a class="headerlink" href="#namespaces" title="Permalink to this headline">¶</a></h4>
 <p>With few exceptions, place code in the namespace <code class="docutils literal notranslate"><span class="pre">rascal</span></code>. All other (subordinate) namespaces should have unique, expressive names based on their purpose. Do not use using-directives (e.g. <code class="docutils literal notranslate"><span class="pre">using</span> <span class="pre">namespace</span> <span class="pre">foo</span></code>) within the core library (but feel free to do so in the executables in the <code class="docutils literal notranslate"><span class="pre">bin</span></code> folder). Do not use inline namespaces. For unnamed namespaces, see <a class="reference internal" href="#unnamed"><span class="std std-ref">Unnamed Namespaces and Static Variables</span></a>.</p>
 <dl>
@@ -546,8 +550,8 @@
 <p>For example, if two different projects have a class <code class="docutils literal notranslate"><span class="pre">Foo</span></code> in the global scope, these symbols may collide at compile time or at runtime. If each project places their code in a namespace, <code class="docutils literal notranslate"><span class="pre">project1::Foo</span></code> and <code class="docutils literal notranslate"><span class="pre">project2::Foo</span></code> are now distinct symbols that do not collide, and code within each project’s namespace can continue to refer to Foo without the prefix.</p>
 </li>
 <li><p>Inline namespaces automatically place their names in the enclosing scope. Consider the following snippet, for example:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span> <span class="n">outer</span> <span class="p">{</span>
-  <span class="kr">inline</span> <span class="k">namespace</span> <span class="n">inner</span> <span class="p">{</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span> <span class="nn">outer</span> <span class="p">{</span>
+  <span class="kr">inline</span> <span class="k">namespace</span> <span class="nn">inner</span> <span class="p">{</span>
     <span class="kt">void</span> <span class="nf">foo</span><span class="p">();</span>
   <span class="p">}</span>  <span class="c1">// namespace inner</span>
 <span class="p">}</span>  <span class="c1">// namespace outer</span>
@@ -569,7 +573,7 @@
 <li><p>Terminate namespaces with comments as shown in the given examples.</p></li>
 <li><p>Namespaces wrap the entire source file after includes and forward declarations of classes from other namespaces.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// In the .hh file</span>
-<span class="k">namespace</span> <span class="n">mynamespace</span> <span class="p">{</span>
+<span class="k">namespace</span> <span class="nn">mynamespace</span> <span class="p">{</span>
 
   <span class="c1">// All declarations are within the namespace scope.</span>
   <span class="c1">// Notice the lack of indentation.</span>
@@ -582,10 +586,10 @@
 <span class="p">}</span>  <span class="c1">// namespace mynamespace</span>
 
 <span class="c1">// In the .cc file</span>
-<span class="k">namespace</span> <span class="n">mynamespace</span> <span class="p">{</span>
+<span class="k">namespace</span> <span class="nn">mynamespace</span> <span class="p">{</span>
 
   <span class="c1">// Definition of functions is within scope of the namespace.</span>
-  <span class="kt">void</span> <span class="n">MyClass</span><span class="o">::</span><span class="n">Foo</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kt">void</span> <span class="nf">MyClass::Foo</span><span class="p">()</span> <span class="p">{</span>
     <span class="p">...</span>
   <span class="p">}</span>
 
@@ -595,7 +599,7 @@
 <p>More complex <code class="docutils literal notranslate"><span class="pre">.cc</span></code> files might have additional details, using-declarations.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;a.h&quot;</span><span class="cp"></span>
 
-    <span class="k">namespace</span> <span class="n">mynamespace</span> <span class="p">{</span>
+    <span class="k">namespace</span> <span class="nn">mynamespace</span> <span class="p">{</span>
 
       <span class="k">using</span> <span class="o">::</span><span class="n">foo</span><span class="o">::</span><span class="n">bar</span><span class="p">;</span>
 
@@ -608,23 +612,23 @@
 <li><p>Do not declare anything in namespace <code class="docutils literal notranslate"><span class="pre">std</span></code>, including forward declarations of standard library classes. Declaring entities in namespace <code class="docutils literal notranslate"><span class="pre">std</span></code> is undefined behaviour, i.e., not portable. To declare entities from the standard library, include the appropriate header file.</p></li>
 <li><p>You may not use a <em>using-directive</em> to make all names from a namespace available (namespace clobbering).</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// Forbidden -- This pollutes the namespace.</span>
-<span class="k">using</span> <span class="k">namespace</span> <span class="n">foo</span><span class="p">;</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="nn">foo</span><span class="p">;</span>
 </pre></div>
 </div>
 </li>
 <li><p>Do not use <em>namespace aliases</em> at namespace scope in header files except in explicitly marked internal-only namespaces, because anything imported into a namespace in a header file becomes part of the public API exported by that file.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// Shorten access to some commonly used names in .cc files.</span>
-<span class="k">namespace</span> <span class="n">baz</span> <span class="o">=</span> <span class="o">::</span><span class="n">foo</span><span class="o">::</span><span class="n">bar</span><span class="o">::</span><span class="n">baz</span><span class="p">;</span>
+<span class="k">namespace</span> <span class="nn">baz</span> <span class="o">=</span> <span class="o">::</span><span class="nn">foo</span><span class="o">::</span><span class="nn">bar</span><span class="o">::</span><span class="nn">baz</span><span class="p">;</span>
 
 <span class="c1">// Shorten access to some commonly used names (in a .h file).</span>
-<span class="k">namespace</span> <span class="n">librarian</span> <span class="p">{</span>
-  <span class="k">namespace</span> <span class="n">impl</span> <span class="p">{</span>  <span class="c1">// Internal, not part of the API.</span>
-    <span class="k">namespace</span> <span class="n">sidetable</span> <span class="o">=</span> <span class="o">::</span><span class="n">pipeline_diagnostics</span><span class="o">::</span><span class="n">sidetable</span><span class="p">;</span>
+<span class="k">namespace</span> <span class="nn">librarian</span> <span class="p">{</span>
+  <span class="k">namespace</span> <span class="nn">impl</span> <span class="p">{</span>  <span class="c1">// Internal, not part of the API.</span>
+    <span class="k">namespace</span> <span class="nn">sidetable</span> <span class="o">=</span> <span class="o">::</span><span class="nn">pipeline_diagnostics</span><span class="o">::</span><span class="nn">sidetable</span><span class="p">;</span>
   <span class="p">}</span>  <span class="c1">// namespace impl</span>
 
   <span class="kr">inline</span> <span class="kt">void</span> <span class="n">my_inline_function</span><span class="p">()</span> <span class="p">{</span>
     <span class="c1">// namespace alias local to a function (or method).</span>
-    <span class="k">namespace</span> <span class="n">baz</span> <span class="o">=</span> <span class="o">::</span><span class="n">foo</span><span class="o">::</span><span class="n">bar</span><span class="o">::</span><span class="n">baz</span><span class="p">;</span>
+    <span class="k">namespace</span> <span class="nn">baz</span> <span class="o">=</span> <span class="o">::</span><span class="nn">foo</span><span class="o">::</span><span class="nn">bar</span><span class="o">::</span><span class="nn">baz</span><span class="p">;</span>
     <span class="p">...</span>
   <span class="p">}</span>
 <span class="p">}</span>  <span class="c1">// namespace librarian</span>
@@ -636,8 +640,8 @@
 </div></blockquote>
 </dd>
 </dl>
-</div>
-<div class="section" id="unnamed-namespaces-and-static-variables">
+</section>
+<section id="unnamed-namespaces-and-static-variables">
 <span id="unnamed"></span><h4><a class="toc-backref" href="#id39">Unnamed Namespaces and Static Variables</a><a class="headerlink" href="#unnamed-namespaces-and-static-variables" title="Permalink to this headline">¶</a></h4>
 <p>When definitions in a <code class="docutils literal notranslate"><span class="pre">.cc</span></code> file do not need to be referenced outside that file, place them in an unnamed namespace or declare them static. Do not use either of these constructs in <code class="docutils literal notranslate"><span class="pre">.hh</span></code> files.</p>
 <p>All declarations can be given internal linkage by placing them in unnamed namespaces. Functions and variables can also be given internal linkage by declaring them static. This means that anything you’re declaring can’t be accessed from another file. If a different file declares something with the same name, then the two entities are completely independent.</p>
@@ -648,8 +652,8 @@
 <span class="p">}</span>  <span class="c1">// namespace</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="nonmember-static-member-and-global-functions">
+</section>
+<section id="nonmember-static-member-and-global-functions">
 <h4><a class="toc-backref" href="#id40">Nonmember, Static Member, and Global Functions</a><a class="headerlink" href="#nonmember-static-member-and-global-functions" title="Permalink to this headline">¶</a></h4>
 <p>Prefer placing nonmember functions in a namespace; use completely global functions rarely. Note: placing functions in a namespace keeps them globally accessible, the goal of this is not to suppress the use of non-member functions but rather to avoid polluting the global and <code class="docutils literal notranslate"><span class="pre">rascal</span></code> namespace by grouping them together in thematic namespaces. Do not use a class simply to group static functions, unless they are function templates which need to be partially specialised. Otherwise, static methods of a class should generally be closely related to instances of the class or the class’s static data.</p>
 <dl class="simple">
@@ -661,8 +665,8 @@
 </dd>
 </dl>
 <p>If you define a nonmember function and it is only needed in its <code class="docutils literal notranslate"><span class="pre">.cc</span></code> file, use <a class="reference internal" href="#unnamed"><span class="std std-ref">internal linkage</span></a> to limit its scope.</p>
-</div>
-<div class="section" id="local-variables">
+</section>
+<section id="local-variables">
 <h4><a class="toc-backref" href="#id41">Local Variables</a><a class="headerlink" href="#local-variables" title="Permalink to this headline">¶</a></h4>
 <p>Place a function’s variables in the narrowest scope possible, and initialise variables in the declaration.</p>
 <p>C++ allows you to declare variables anywhere in a function. We encourage you to declare them in as local a scope as possible, and as close to the first use as possible. This makes it easier for the reader to find the declaration and see what type the variable is and what it was initialised to. In particular, initialisation should be used instead of declaration and assignment, e.g.:</p>
@@ -700,8 +704,8 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="static-and-global-variables">
+</section>
+<section id="static-and-global-variables">
 <h4><a class="toc-backref" href="#id42">Static and Global Variables</a><a class="headerlink" href="#static-and-global-variables" title="Permalink to this headline">¶</a></h4>
 <p>Objects with <a class="reference external" href="http://en.cppreference.com/w/cpp/language/storage_duration#Storage_duration">static storage duration</a> are forbidden unless they are <a class="reference external" href="http://en.cppreference.com/w/cpp/types/is_destructible">trivially destructible</a>. Informally this means that the destructor does not do anything, even taking member and base destructors into account. More formally it means that the type has no user-defined or virtual destructor and that all bases and non-static members are trivially destructible. Static function-local variables may use dynamic initialisation. Use of dynamic initialisation for static class member variables or variables at namespace scope is discouraged, but allowed in limited circumstances; see below for details.</p>
 <p>As a rule of thumb: a global variable satisfies these requirements if its declaration, considered in isolation, could be <code class="docutils literal notranslate"><span class="pre">constexpr</span></code>.</p>
@@ -731,11 +735,11 @@
 </pre></div>
 </div>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// bad: non-trivial destructor</span>
-<span class="k">const</span> <span class="n">string</span> <span class="n">kFoo</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">);</span>
+<span class="k">const</span> <span class="n">string</span> <span class="nf">kFoo</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">);</span>
 
 <span class="c1">// bad for the same reason, even though kBar is a reference (the</span>
 <span class="c1">// rule also applies to lifetime-extended temporary objects)</span>
-<span class="k">const</span> <span class="n">string</span><span class="o">&amp;</span> <span class="n">kBar</span><span class="p">(</span><span class="n">StrCat</span><span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="s">&quot;c&quot;</span><span class="p">));</span>
+<span class="k">const</span> <span class="n">string</span><span class="o">&amp;</span> <span class="nf">kBar</span><span class="p">(</span><span class="n">StrCat</span><span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="s">&quot;c&quot;</span><span class="p">));</span>
 
 <span class="kt">void</span> <span class="nf">bar</span><span class="p">()</span> <span class="p">{</span>
   <span class="c1">// bad: non-trivial destructor</span>
@@ -754,7 +758,7 @@
 </div>
 <p>All but the first statement expose us to indeterminate initialisation ordering.</p>
 <p>The concept we are looking for is called <em>constant initialisation</em> in the formal language of the C++ standard. It means that the initialising expression is a constant expression, and if the object is initialised by a constructor call, then the constructor must be specified as <code class="docutils literal notranslate"><span class="pre">constexpr</span></code>, too:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">Foo</span> <span class="p">{</span> <span class="k">constexpr</span> <span class="nf">Foo</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="p">{}</span> <span class="p">};</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">Foo</span> <span class="p">{</span> <span class="k">constexpr</span> <span class="n">Foo</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="p">{}</span> <span class="p">};</span>
 
 <span class="kt">int</span> <span class="n">n</span><span class="p">{</span><span class="mi">5</span><span class="p">};</span>   <span class="c1">// fine, 5 is a constant expression</span>
 <span class="n">Foo</span> <span class="nf">x</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>   <span class="c1">// fine, 2 is a constant expression and the chosen constructor is constexpr</span>
@@ -788,8 +792,8 @@
 </ul>
 </dd>
 </dl>
-</div>
-<div class="section" id="thread-local-variables">
+</section>
+<section id="thread-local-variables">
 <h4><a class="toc-backref" href="#id43"><code class="docutils literal notranslate"><span class="pre">thread_local</span></code> Variables</a><a class="headerlink" href="#thread-local-variables" title="Permalink to this headline">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">thread_local</span></code> variables that aren’t declared inside a function must be initialised with a true compile-time constant. Prefer <code class="docutils literal notranslate"><span class="pre">thread_local</span></code> over other ways of defining thread-local data.</p>
 <dl>
@@ -832,12 +836,12 @@
 <p><code class="docutils literal notranslate"><span class="pre">thread_local</span></code> should be preferred over other mechanisms for defining thread-local data.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="classes">
+</section>
+</section>
+<section id="classes">
 <h3><a class="toc-backref" href="#id44">Classes</a><a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
 <p>Classes are the fundamental unit of code in C++. Naturally, we use them extensively. This section lists the main dos and don’ts you should follow when writing a class.</p>
-<div class="section" id="doing-work-in-constructors">
+<section id="doing-work-in-constructors">
 <h4><a class="toc-backref" href="#id45">Doing Work in Constructors</a><a class="headerlink" href="#doing-work-in-constructors" title="Permalink to this headline">¶</a></h4>
 <p>Avoid virtual method calls in constructors, and avoid initialisation that can fail if you can’t signal an error.</p>
 <dl class="simple">
@@ -858,8 +862,8 @@
 <dt>Decision:</dt><dd><p>Constructors should never call virtual functions. If appropriate for your code , terminating the program may be an appropriate error handling response. Otherwise, consider a factory function or <code class="docutils literal notranslate"><span class="pre">initialise()</span></code> method as described in <a class="reference external" href="https://abseil.io/tips/42">TotW #42</a> . Avoid <code class="docutils literal notranslate"><span class="pre">initialise()</span></code> methods on objects with no other states that affect which public methods may be called (semi-constructed objects of this form are particularly hard to work with correctly).</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="implicit-conversions">
+</section>
+<section id="implicit-conversions">
 <span id="implicit-conversion"></span><h4><a class="toc-backref" href="#id46">Implicit Conversions</a><a class="headerlink" href="#implicit-conversions" title="Permalink to this headline">¶</a></h4>
 <p>Do not define implicit conversions. Use the <code class="docutils literal notranslate"><span class="pre">explicit</span></code> keyword for conversion operators and single-argument constructors.</p>
 <dl>
@@ -867,7 +871,7 @@
 <p>In addition to the implicit conversions defined by the language, users can define their own, by adding appropriate members to the class definition of the source or destination type. An implicit conversion in the source type is defined by a type conversion operator named after the destination type (e.g. <code class="docutils literal notranslate"><span class="pre">operator</span> <span class="pre">bool()</span></code>). An implicit conversion in the destination type is defined by a constructor that can take the source type as its only argument (or only argument with no default value).</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">explicit</span></code> keyword can be applied to a constructor or (since C++11) a conversion operator, to ensure that it can only be used when the destination type is explicit at the point of use, e.g. with a cast. This applies not only to implicit conversions, but to C++11’s list initialisation syntax:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Foo</span> <span class="p">{</span>
-  <span class="k">explicit</span> <span class="nf">Foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">double</span> <span class="n">y</span><span class="p">);</span>
+  <span class="k">explicit</span> <span class="n">Foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">double</span> <span class="n">y</span><span class="p">);</span>
   <span class="p">...</span>
 <span class="p">};</span>
 
@@ -899,8 +903,8 @@
 </dl>
 </dd>
 </dl>
-</div>
-<div class="section" id="copyable-and-movable-types">
+</section>
+<section id="copyable-and-movable-types">
 <span id="id6"></span><h4><a class="toc-backref" href="#id47">Copyable and Movable Types</a><a class="headerlink" href="#copyable-and-movable-types" title="Permalink to this headline">¶</a></h4>
 <p>A class’s public API should make explicit whether the class is copyable, move-only, or neither copyable nor movable. Support copying and/or moving if these operations are clear and meaningful for your type.</p>
 <dl>
@@ -1004,8 +1008,8 @@
 <p>A type should not be copyable/movable if it incurs unexpected costs. Move operations for copyable types are strictly a performance optimisation and are a potential source of bugs and complexity, so define them if they have a chance of being more efficient than the corresponding copy operations. If your type provides copy operations, it is recommended that you design your class so that the default implementation of those operations is correct. Remember to review the correctness of any defaulted operations as you would any other code.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="structs-vs-classes">
+</section>
+<section id="structs-vs-classes">
 <span id="id7"></span><h4><a class="toc-backref" href="#id48">Structs vs. Classes</a><a class="headerlink" href="#structs-vs-classes" title="Permalink to this headline">¶</a></h4>
 <p>Use a <code class="docutils literal notranslate"><span class="pre">struct</span></code> only for passive objects that carry data or collections of templated static member functions that need to be partially specialised; everything else is a <code class="docutils literal notranslate"><span class="pre">class</span></code>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">struct</span></code> and <code class="docutils literal notranslate"><span class="pre">class</span></code> keywords behave almost identically in C++. We add our own semantic meanings to each keyword, so you should use the appropriate keyword for the data-type you’re defining.</p>
@@ -1020,7 +1024,7 @@
 <span class="cm">   * @param poisson: Poisson&#39;s ratio</span>
 <span class="cm">   */</span>
   <span class="kr">inline</span> <span class="k">static</span> <span class="k">constexpr</span> <span class="n">Real</span>
-  <span class="n">compute_lambda</span><span class="p">(</span><span class="k">const</span> <span class="n">Real</span> <span class="o">&amp;</span> <span class="n">young</span><span class="p">,</span> <span class="k">const</span> <span class="n">Real</span> <span class="o">&amp;</span> <span class="n">poisson</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nf">compute_lambda</span><span class="p">(</span><span class="k">const</span> <span class="n">Real</span> <span class="o">&amp;</span> <span class="n">young</span><span class="p">,</span> <span class="k">const</span> <span class="n">Real</span> <span class="o">&amp;</span> <span class="n">poisson</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">convert_elastic_modulus</span><span class="o">&lt;</span><span class="n">ElasticModulus</span><span class="o">::</span><span class="n">lambda</span><span class="p">,</span>
                                    <span class="n">ElasticModulus</span><span class="o">::</span><span class="n">Young</span><span class="p">,</span>
                                    <span class="n">ElasticModulus</span><span class="o">::</span><span class="n">Poisson</span><span class="o">&gt;</span><span class="p">(</span><span class="n">young</span><span class="p">,</span> <span class="n">poisson</span><span class="p">);</span>
@@ -1032,7 +1036,7 @@
 <span class="cm">   * @param poisson: Poisson&#39;s ratio</span>
 <span class="cm">   */</span>
   <span class="kr">inline</span> <span class="k">static</span> <span class="k">constexpr</span> <span class="n">Real</span>
-  <span class="n">compute_mu</span><span class="p">(</span><span class="k">const</span> <span class="n">Real</span> <span class="o">&amp;</span> <span class="n">young</span><span class="p">,</span> <span class="k">const</span> <span class="n">Real</span> <span class="o">&amp;</span> <span class="n">poisson</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nf">compute_mu</span><span class="p">(</span><span class="k">const</span> <span class="n">Real</span> <span class="o">&amp;</span> <span class="n">young</span><span class="p">,</span> <span class="k">const</span> <span class="n">Real</span> <span class="o">&amp;</span> <span class="n">poisson</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">convert_elastic_modulus</span><span class="o">&lt;</span><span class="n">ElasticModulus</span><span class="o">::</span><span class="n">Shear</span><span class="p">,</span>
                                    <span class="n">ElasticModulus</span><span class="o">::</span><span class="n">Young</span><span class="p">,</span>
                                    <span class="n">ElasticModulus</span><span class="o">::</span><span class="n">Poisson</span><span class="o">&gt;</span><span class="p">(</span><span class="n">young</span><span class="p">,</span> <span class="n">poisson</span><span class="p">);</span>
@@ -1044,7 +1048,7 @@
 <span class="cm">   * @param poisson: Poisson&#39;s ratio</span>
 <span class="cm">   */</span>
   <span class="kr">inline</span> <span class="k">static</span> <span class="k">constexpr</span> <span class="n">Real</span>
-  <span class="n">compute_K</span><span class="p">(</span><span class="k">const</span> <span class="n">Real</span> <span class="o">&amp;</span> <span class="n">young</span><span class="p">,</span> <span class="k">const</span> <span class="n">Real</span> <span class="o">&amp;</span> <span class="n">poisson</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nf">compute_K</span><span class="p">(</span><span class="k">const</span> <span class="n">Real</span> <span class="o">&amp;</span> <span class="n">young</span><span class="p">,</span> <span class="k">const</span> <span class="n">Real</span> <span class="o">&amp;</span> <span class="n">poisson</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">convert_elastic_modulus</span><span class="o">&lt;</span><span class="n">ElasticModulus</span><span class="o">::</span><span class="n">Bulk</span><span class="p">,</span>
                                    <span class="n">ElasticModulus</span><span class="o">::</span><span class="n">Young</span><span class="p">,</span>
                                    <span class="n">ElasticModulus</span><span class="o">::</span><span class="n">Poisson</span><span class="o">&gt;</span><span class="p">(</span><span class="n">young</span><span class="p">,</span> <span class="n">poisson</span><span class="p">);</span>
@@ -1104,8 +1108,8 @@
 <p>The goal of such static member functions-only <code class="docutils literal notranslate"><span class="pre">struct</span></code>s is to instantiate a set of function templates with consistent template parameters without repeating those parameters.</p>
 <p>If more functionality is required, a <code class="docutils literal notranslate"><span class="pre">class</span></code> is more appropriate. If in doubt, make it a <code class="docutils literal notranslate"><span class="pre">class</span></code>.</p>
 <p>For consistency with STL, you can use <code class="docutils literal notranslate"><span class="pre">struct</span></code> instead of <code class="docutils literal notranslate"><span class="pre">class</span></code> for functors and traits.</p>
-</div>
-<div class="section" id="inheritance">
+</section>
+<section id="inheritance">
 <span id="id8"></span><h4><a class="toc-backref" href="#id49">Inheritance</a><a class="headerlink" href="#inheritance" title="Permalink to this headline">¶</a></h4>
 <p>Composition is often more appropriate than inheritance. When using inheritance, make it <code class="docutils literal notranslate"><span class="pre">public</span></code>.</p>
 <dl>
@@ -1121,8 +1125,8 @@
 <p>Explicitly annotate overrides of virtual functions or virtual destructors with exactly one of either the <code class="docutils literal notranslate"><span class="pre">override</span></code> or (less frequently) <code class="docutils literal notranslate"><span class="pre">override</span> <span class="pre">final</span></code> specifier. Do not use <code class="docutils literal notranslate"><span class="pre">virtual</span></code> when declaring an <code class="docutils literal notranslate"><span class="pre">override</span></code>. Rationale: A function or destructor marked <code class="docutils literal notranslate"><span class="pre">override</span></code> or <code class="docutils literal notranslate"><span class="pre">final</span></code> that is not an <code class="docutils literal notranslate"><span class="pre">override</span></code> of a base class virtual function will not compile, and this helps catch common errors. The specifiers serve as documentation; if no specifier is present, the reader has to check all ancestors of the class in question to determine if the function or destructor is <code class="docutils literal notranslate"><span class="pre">virtual</span></code> or not.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="multiple-inheritance">
+</section>
+<section id="multiple-inheritance">
 <h4><a class="toc-backref" href="#id50">Multiple Inheritance</a><a class="headerlink" href="#multiple-inheritance" title="Permalink to this headline">¶</a></h4>
 <p>Only very rarely is multiple implementation inheritance actually useful. We allow multiple inheritance only when at most one of the base classes has an implementation; all other base classes must be <a class="reference internal" href="#interfaces"><span class="std std-ref">pure interface</span></a> classes.</p>
 <dl class="simple">
@@ -1137,8 +1141,8 @@
 <dt>Note:</dt><dd><p>There is an <a class="reference internal" href="#joke"><span class="std std-ref">exception</span></a> to this rule on Windows.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="interfaces">
+</section>
+<section id="interfaces">
 <span id="id9"></span><h4><a class="toc-backref" href="#id51">Interfaces</a><a class="headerlink" href="#interfaces" title="Permalink to this headline">¶</a></h4>
 <dl>
 <dt>Definition:</dt><dd><p>A class is a pure interface if it meets the following requirements:</p>
@@ -1151,8 +1155,8 @@
 <p>An interface class can never be directly instantiated because of the pure virtual method(s) it declares. To make sure all implementations of the interface can be destroyed correctly, the interface must also declare a virtual destructor (in an exception to the first rule, this should not be pure). See <em>Stroustrup, The C++ Programming Language, 4th edition, 2014</em>, section 20.3 for details.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="operator-overloading">
+</section>
+<section id="operator-overloading">
 <h4><a class="toc-backref" href="#id52">Operator Overloading</a><a class="headerlink" href="#operator-overloading" title="Permalink to this headline">¶</a></h4>
 <p>Overload operators judiciously.</p>
 <dl>
@@ -1181,22 +1185,22 @@
 </dl>
 <p>Do not overload <code class="docutils literal notranslate"><span class="pre">&amp;&amp;</span></code>, <code class="docutils literal notranslate"><span class="pre">||</span></code>, <code class="docutils literal notranslate"><span class="pre">,</span></code> (comma), or unary <code class="docutils literal notranslate"><span class="pre">&amp;</span></code>.</p>
 <p>Type conversion operators are covered in <a class="reference internal" href="#implicit-conversion"><span class="std std-ref">Implicit Conversions</span></a>. The <code class="docutils literal notranslate"><span class="pre">=</span></code> operator is covered in <a class="reference internal" href="#copyable-and-movable-types"><span class="std std-ref">Copyable and Movable Types</span></a>. Overloading <code class="docutils literal notranslate"><span class="pre">&lt;&lt;</span></code> for use with streams is covered in <a class="reference internal" href="#streams"><span class="std std-ref">Streams</span></a>. See also the rules on <a class="reference internal" href="#function-overloading"><span class="std std-ref">function overloading</span></a>, which apply to operator overloading as well.</p>
-</div>
-<div class="section" id="access-control">
+</section>
+<section id="access-control">
 <span id="id10"></span><h4><a class="toc-backref" href="#id53">Access Control</a><a class="headerlink" href="#access-control" title="Permalink to this headline">¶</a></h4>
 <p>Make data members <code class="docutils literal notranslate"><span class="pre">protected</span></code>, unless they are <code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">const</span></code> (and follow the <a class="reference internal" href="#constant-names"><span class="std std-ref">naming convention for constants</span></a>).</p>
-</div>
-<div class="section" id="declaration-order">
+</section>
+<section id="declaration-order">
 <span id="id11"></span><h4><a class="toc-backref" href="#id54">Declaration Order</a><a class="headerlink" href="#declaration-order" title="Permalink to this headline">¶</a></h4>
 <p>Group similar declarations together, placing <code class="docutils literal notranslate"><span class="pre">public</span></code> parts earlier.</p>
 <p>A class definition should usually start with a <code class="docutils literal notranslate"><span class="pre">public:</span></code> section, followed by <code class="docutils literal notranslate"><span class="pre">protected:</span></code>, then <code class="docutils literal notranslate"><span class="pre">private:</span></code>. Omit sections that would be empty.</p>
 <p>Within each section, generally prefer grouping similar kinds of declarations together, and generally prefer the following order: types (including <code class="docutils literal notranslate"><span class="pre">using</span></code>, and nested <code class="docutils literal notranslate"><span class="pre">struct</span></code>s and <code class="docutils literal notranslate"><span class="pre">class</span></code>es), constants, factory functions, constructors, assignment operators, destructor, all other methods, data members.</p>
 <p>Do not put large method definitions inline in the class definition. Trivial, performance-critical, or template methods may be defined inline. See <a class="reference internal" href="#inline-functions"><span class="std std-ref">Inline Functions</span></a> for more details.</p>
-</div>
-</div>
-<div class="section" id="functions">
+</section>
+</section>
+<section id="functions">
 <h3><a class="toc-backref" href="#id55">Functions</a><a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="output-parameters">
+<section id="output-parameters">
 <h4><a class="toc-backref" href="#id56">Output Parameters</a><a class="headerlink" href="#output-parameters" title="Permalink to this headline">¶</a></h4>
 <p>Prefer using return values rather than output parameters. If output-only parameters are used they should appear after input parameters.</p>
 <p>The output(s) of a C++ function is/are naturally provided via a (tuple of) return value and sometimes via output parameters.</p>
@@ -1204,15 +1208,15 @@
 <p>Parameters are either input to the function, output from the function, or both. Input parameters are usually values or const references, while output and input/output parameters will be references to non-const.</p>
 <p>When ordering function parameters, put all input-only parameters before any output parameters. In particular, do not add new parameters to the end of the function just because they are new; place new input-only parameters before the output parameters.</p>
 <p>This is not a hard-and-fast rule. Parameters that are both input and output (often classes/structs) muddy the waters, and, as always, consistency with related functions may require you to bend the rule.</p>
-</div>
-<div class="section" id="write-short-functions">
+</section>
+<section id="write-short-functions">
 <h4><a class="toc-backref" href="#id57">Write Short Functions</a><a class="headerlink" href="#write-short-functions" title="Permalink to this headline">¶</a></h4>
 <p>Prefer small and focused functions.</p>
 <p>We recognise that long functions are sometimes appropriate, so no hard limit is placed on functions length. If a function exceeds about 40 lines, think about whether it can be broken up without harming the structure of the program.</p>
 <p>Even if your long function works perfectly now, someone modifying it in a few months may add new behaviour. This could result in bugs that are hard to find. Keeping your functions short and simple makes it easier for other people to read and modify your code.</p>
 <p>You could find long and complicated functions when working with some code. Do not be intimidated by modifying existing code: if working with such a function proves to be difficult, you find that errors are hard to debug, or you want to use a piece of it in several different contexts, consider breaking up the function into smaller and more manageable pieces.</p>
-</div>
-<div class="section" id="reference-arguments">
+</section>
+<section id="reference-arguments">
 <h4><a class="toc-backref" href="#id58">Reference Arguments</a><a class="headerlink" href="#reference-arguments" title="Permalink to this headline">¶</a></h4>
 <p>All input parameters passed by reference must be labelled <code class="docutils literal notranslate"><span class="pre">const</span></code>, Output and input/output parameters can be passed as references, <a class="reference internal" href="#ownership-and-smart-pointers"><span class="std std-ref">smart pointers</span></a>, or <code class="docutils literal notranslate"><span class="pre">std::optional</span></code>. <strong>There are no raw pointers</strong> within rascal, ever.</p>
 <dl class="simple">
@@ -1225,8 +1229,8 @@
 <dt>Decision:</dt><dd><p>The one hard rule in rascal is that no raw pointers will be tolerated (with the obvious exception of interacting with third-party APIs). Pointers are to be considered a bug-generating relic of a darker time when <code class="docutils literal notranslate"><span class="pre">goto</span></code> statements were allowed to exist. If you need to mimic the questionable practice of passing a pointer that could be <code class="docutils literal notranslate"><span class="pre">nullptr</span></code> to indicate that there is no value, use <code class="docutils literal notranslate"><span class="pre">std::optional</span></code>.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="function-overloading">
+</section>
+<section id="function-overloading">
 <span id="id12"></span><h4><a class="toc-backref" href="#id59">Function Overloading</a><a class="headerlink" href="#function-overloading" title="Permalink to this headline">¶</a></h4>
 <p>Use overloaded functions (including constructors) only if a reader looking at a call site can get a good idea of what is happening without having to first figure out exactly which overload is being called.</p>
 <dl>
@@ -1247,8 +1251,8 @@
 <p>If you are overloading a function to support variable number of arguments of the same type, consider making it take a STL container so that the user can use an <a class="reference internal" href="#braced-initialiser-list"><span class="std std-ref">initialiser list</span></a> to specify the arguments.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="default-arguments">
+</section>
+<section id="default-arguments">
 <h4><a class="toc-backref" href="#id60">Default Arguments</a><a class="headerlink" href="#default-arguments" title="Permalink to this headline">¶</a></h4>
 <p>Default arguments are allowed on non-virtual functions when the default is guaranteed to always have the same value. Follow the same restrictions as for <a class="reference internal" href="#function-overloading"><span class="std std-ref">function overloading</span></a>, and prefer overloaded functions if the readability gained with default arguments doesn’t outweigh the downsides below.</p>
 <dl>
@@ -1263,8 +1267,8 @@
 <p>In some other cases, default arguments can improve the readability of their function declarations enough to overcome the downsides above, so they are allowed.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="trailing-return-type-syntax">
+</section>
+<section id="trailing-return-type-syntax">
 <h4><a class="toc-backref" href="#id61">Trailing Return Type Syntax</a><a class="headerlink" href="#trailing-return-type-syntax" title="Permalink to this headline">¶</a></h4>
 <p>Use trailing return types only where using the ordinary syntax (leading return types) is impractical or much less readable.</p>
 <dl>
@@ -1273,7 +1277,7 @@
 </pre></div>
 </div>
 <p>The new form, introduced in C++11, uses the auto keyword before the function name and a trailing return type after the argument list. For example, the declaration above could equivalently be written:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="nf">foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">int</span><span class="p">;</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="n">foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">int</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>The trailing return type is in the function’s scope. This doesn’t make a difference for a simple case like int but it matters for more complicated cases, like types declared in class scope or types written in terms of the function parameters.</p>
@@ -1293,12 +1297,12 @@
 <dt>Decision:</dt><dd><p>In most cases, continue to use the older style of function declaration where the return type goes before the function name. Use the new trailing-return-type form only in cases where it’s required (such as lambdas) or where, by putting the type after the function’s parameter list, it allows you to write the type in a much more readable way.</p>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="ownership-and-linting">
+</section>
+</section>
+<section id="ownership-and-linting">
 <h3><a class="toc-backref" href="#id62">Ownership and linting</a><a class="headerlink" href="#ownership-and-linting" title="Permalink to this headline">¶</a></h3>
 <p>There are various tricks and utilities that we use to make C++ code more robust, and various ways we use C++ that may differ from what you see elsewhere.</p>
-<div class="section" id="ownership-and-smart-pointers">
+<section id="ownership-and-smart-pointers">
 <span id="id13"></span><h4><a class="toc-backref" href="#id63">Ownership and Smart Pointers</a><a class="headerlink" href="#ownership-and-smart-pointers" title="Permalink to this headline">¶</a></h4>
 <p>Prefer to have single, fixed owners for dynamically allocated objects. Prefer to transfer ownership with smart pointers.</p>
 <dl>
@@ -1337,16 +1341,16 @@
 <p>Never use <code class="docutils literal notranslate"><span class="pre">std::auto_ptr</span></code> it has no longer any value. Instead, use <code class="docutils literal notranslate"><span class="pre">std::unique_ptr</span></code>.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="cpplint">
+</section>
+<section id="cpplint">
 <h4><a class="toc-backref" href="#id64">cpplint</a><a class="headerlink" href="#cpplint" title="Permalink to this headline">¶</a></h4>
 <p>Use <code class="docutils literal notranslate"><span class="pre">cpplint.py</span></code> to detect style errors.</p>
 <p><code class="docutils literal notranslate"><span class="pre">cpplint.py</span></code> is a tool that reads a source file and identifies many style errors. It is not perfect, and has both false positives and false negatives, but it is still a valuable tool. False positives can be ignored by putting <code class="docutils literal notranslate"><span class="pre">//</span> <span class="pre">NOLINT</span></code> at the end of the line or <code class="docutils literal notranslate"><span class="pre">//</span> <span class="pre">NOLINTNEXTLINE</span></code> in the previous line.</p>
-</div>
-</div>
-<div class="section" id="other-c-features">
+</section>
+</section>
+<section id="other-c-features">
 <h3><a class="toc-backref" href="#id65">Other C++ Features</a><a class="headerlink" href="#other-c-features" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="rvalue-references">
+<section id="rvalue-references">
 <h4><a class="toc-backref" href="#id66">Rvalue References</a><a class="headerlink" href="#rvalue-references" title="Permalink to this headline">¶</a></h4>
 <p>Use rvalue references to define move constructors and move assignment operators, or for perfect forwarding.</p>
 <dl class="simple">
@@ -1362,14 +1366,14 @@
 <dt>Decision:</dt><dd><p>Use rvalue references to define move constructors and move assignment operators (as described in <a class="reference internal" href="#copyable-and-movable-types"><span class="std std-ref">Copyable and Movable Types</span></a>) and, in conjunction with <code class="docutils literal notranslate"><span class="pre">std::forward</span></code>, to support perfect forwarding. You may use <code class="docutils literal notranslate"><span class="pre">std::move</span></code> to express moving a value from one object to another rather than copying it.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="friends">
+</section>
+<section id="friends">
 <h4><a class="toc-backref" href="#id67">Friends</a><a class="headerlink" href="#friends" title="Permalink to this headline">¶</a></h4>
 <p>We allow use of <code class="docutils literal notranslate"><span class="pre">friend</span></code> classes and functions, within reason.</p>
 <p>Friends should usually be defined in the same file so that the reader does not have to look in another file to find uses of the private members of a class. A common use of friend is to have a <code class="docutils literal notranslate"><span class="pre">FooBuilder</span></code> class be a friend of <code class="docutils literal notranslate"><span class="pre">Foo</span></code> so that it can construct the inner state of <code class="docutils literal notranslate"><span class="pre">Foo</span></code> correctly, without exposing this state to the world.</p>
 <p>Friends extend, but do not break, the encapsulation boundary of a class. In some cases this is better than making a member public when you want to give only one other class access to it. However, most classes should interact with other classes solely through their public members.</p>
-</div>
-<div class="section" id="exceptions">
+</section>
+<section id="exceptions">
 <h4><a class="toc-backref" href="#id68">Exceptions</a><a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h4>
 <p>We use C++ exceptions extensively.</p>
 <dl class="simple">
@@ -1392,8 +1396,8 @@
 <p>Decision:</p>
 <p>On their face, the benefits of using exceptions outweigh the costs, especially in new projects. Especially in a computational project, were we are perfectly happy to terminate if an exception is thrown.</p>
 <p>There is an <a class="reference internal" href="#joke"><span class="std std-ref">exception</span></a> to this rule (no pun intended) for Windows code.</p>
-</div>
-<div class="section" id="noexcept">
+</section>
+<section id="noexcept">
 <h4><a class="toc-backref" href="#id69">noexcept</a><a class="headerlink" href="#noexcept" title="Permalink to this headline">¶</a></h4>
 <p>Specify <code class="docutils literal notranslate"><span class="pre">noexcept</span></code> when it is useful and correct.</p>
 <dl>
@@ -1412,8 +1416,8 @@
 <dt>Decision:</dt><dd><p>You should use <code class="docutils literal notranslate"><span class="pre">noexcept</span></code> when it is useful for performance if it accurately reflects the intended semantics of your function, i.e. that if an exception is somehow thrown from within the function body then it represents a fatal error. You can assume that <code class="docutils literal notranslate"><span class="pre">noexcept</span></code> on move constructors has a meaningful performance benefit. If you think there is significant performance benefit from specifying <code class="docutils literal notranslate"><span class="pre">noexcept</span></code> on some other function, feel free to use it.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="run-time-type-information-rtti">
+</section>
+<section id="run-time-type-information-rtti">
 <span id="rtti"></span><h4><a class="toc-backref" href="#id70">Run-Time Type Information (RTTI)</a><a class="headerlink" href="#run-time-type-information-rtti" title="Permalink to this headline">¶</a></h4>
 <p>When possible, avoid using Run Time Type Information (RTTI).</p>
 <dl>
@@ -1425,8 +1429,8 @@
 <dt>Pros:</dt><dd><p>RTTI can be very useful when interacting with duck-typed languages (like python) and when implementing efficient containers with polymorphic interfaces, see future implementation for <cite>map()</cite> member function of <cite>Property</cite>.</p>
 <p>RTTI can be useful in some unit tests. For example, it is useful in tests of factory classes where the test has to verify that a newly created object has the expected dynamic type. It is also useful in managing the relationship between objects and their mocks.</p>
 <p>RTTI is useful when considering multiple abstract objects. Consider</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="n">Base</span><span class="o">::</span><span class="n">Equal</span><span class="p">(</span><span class="n">Base</span><span class="o">*</span> <span class="n">other</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-<span class="kt">bool</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Equal</span><span class="p">(</span><span class="n">Base</span><span class="o">*</span> <span class="n">other</span><span class="p">)</span> <span class="p">{</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="nf">Base::Equal</span><span class="p">(</span><span class="n">Base</span><span class="o">*</span> <span class="n">other</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">bool</span> <span class="nf">Derived::Equal</span><span class="p">(</span><span class="n">Base</span><span class="o">*</span> <span class="n">other</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">Derived</span><span class="o">*</span> <span class="n">that</span> <span class="o">=</span> <span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">other</span><span class="p">);</span>
   <span class="k">if</span> <span class="p">(</span><span class="n">that</span> <span class="o">==</span> <span class="k">nullptr</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
@@ -1455,8 +1459,8 @@
 <p>Do not hand-implement an RTTI-like workaround. The arguments against RTTI apply just as much to workarounds like class hierarchies with type tags. Moreover, workarounds disguise your true intent.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="casting">
+</section>
+<section id="casting">
 <h4><a class="toc-backref" href="#id71">Casting</a><a class="headerlink" href="#casting" title="Permalink to this headline">¶</a></h4>
 <p>Use C++-style casts like <code class="docutils literal notranslate"><span class="pre">static_cast&lt;float&gt;(double_value)</span></code>, or brace initialisation for conversion of arithmetic types like <code class="docutils literal notranslate"><span class="pre">int64</span> <span class="pre">y{int64{1}</span> <span class="pre">&lt;&lt;</span> <span class="pre">42}</span></code>. Do not use cast formats like <code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">y{(int)x}</span></code> or <code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">y{int(x)}</span></code> (but the latter is okay when invoking a constructor of a class type).</p>
 <dl class="simple">
@@ -1476,8 +1480,8 @@
 </dd>
 </dl>
 <p>See the <a class="reference internal" href="#rtti"><span class="std std-ref">RTTI</span></a> section for guidance on the use of <code class="docutils literal notranslate"><span class="pre">dynamic_cast</span></code>.</p>
-</div>
-<div class="section" id="streams">
+</section>
+<section id="streams">
 <span id="id14"></span><h4><a class="toc-backref" href="#id72">Streams</a><a class="headerlink" href="#streams" title="Permalink to this headline">¶</a></h4>
 <p>Use streams where appropriate, and stick to “simple” usages. Overload <code class="docutils literal notranslate"><span class="pre">&lt;&lt;</span></code> for streaming only for types representing values, and write only the user-visible value, not any implementation details.</p>
 <dl>
@@ -1497,8 +1501,8 @@
 <p>Overload <code class="docutils literal notranslate"><span class="pre">&lt;&lt;</span></code> as a streaming operator for your type only if your type represents a value, and <code class="docutils literal notranslate"><span class="pre">&lt;&lt;</span></code> writes out a human-readable string representation of that value. Avoid exposing implementation details in the output of <code class="docutils literal notranslate"><span class="pre">&lt;&lt;</span></code>; if you need to print object internals for debugging, use named functions instead (a method named <code class="docutils literal notranslate"><span class="pre">debug_string()</span></code> is the most common convention).</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="preincrement-and-predecrement">
+</section>
+<section id="preincrement-and-predecrement">
 <h4><a class="toc-backref" href="#id73">Preincrement and Predecrement</a><a class="headerlink" href="#preincrement-and-predecrement" title="Permalink to this headline">¶</a></h4>
 <p>Use prefix form (<code class="docutils literal notranslate"><span class="pre">++i</span></code>) of the increment and decrement operators with iterators and other template objects.</p>
 <dl class="simple">
@@ -1511,8 +1515,8 @@
 <dt>Decision:</dt><dd><p>If the return value is ignored, a post-increment (post-decrement) is a bug.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="use-of-const">
+</section>
+<section id="use-of-const">
 <span id="const"></span><h4><a class="toc-backref" href="#id74">Use of const</a><a class="headerlink" href="#use-of-const" title="Permalink to this headline">¶</a></h4>
 <p>Use <code class="docutils literal notranslate"><span class="pre">const</span></code> dly whenever its use is correct. With C++11, <code class="docutils literal notranslate"><span class="pre">constexpr</span></code> is a better choice for some uses of <code class="docutils literal notranslate"><span class="pre">const</span></code>.</p>
 <dl>
@@ -1532,8 +1536,8 @@
 </dd>
 </dl>
 <p>The <code class="docutils literal notranslate"><span class="pre">mutable</span></code> keyword is allowed but is unsafe when used with threads, so thread safety should be carefully considered first.</p>
-</div>
-<div class="section" id="use-of-constexpr">
+</section>
+<section id="use-of-constexpr">
 <h4><a class="toc-backref" href="#id75">Use of <code class="docutils literal notranslate"><span class="pre">constexpr</span></code></a><a class="headerlink" href="#use-of-constexpr" title="Permalink to this headline">¶</a></h4>
 <p>In C++11, use <code class="docutils literal notranslate"><span class="pre">constexpr</span></code> to define true constants or to ensure constant initialisation.</p>
 <dl class="simple">
@@ -1544,8 +1548,8 @@
 <dt>Decision:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">constexpr</span></code> definitions enable a more robust specification of the constant parts of an interface. Use <code class="docutils literal notranslate"><span class="pre">constexpr</span></code> to specify true constants and the functions that support their definitions. You can use <code class="docutils literal notranslate"><span class="pre">constexpr</span></code> to force inlining of functions.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="integer-types">
+</section>
+<section id="integer-types">
 <h4><a class="toc-backref" href="#id76">Integer Types</a><a class="headerlink" href="#integer-types" title="Permalink to this headline">¶</a></h4>
 <p>We do not use the built-in C++ integer types in rascal, rather the alias <code class="docutils literal notranslate"><span class="pre">Int</span></code>. If a part needs a variable of a different size, use a precise-width integer type from <code class="docutils literal notranslate"><span class="pre">&lt;cstdint&gt;</span></code>, such as <code class="docutils literal notranslate"><span class="pre">int16_t</span></code>. If your variable represents a value that could ever be greater than or equal to 2³¹ (2GiB), use a 64-bit type such as <code class="docutils literal notranslate"><span class="pre">int64_t</span></code>. Keep in mind that even if your value won’t ever be too large for an <code class="docutils literal notranslate"><span class="pre">Int</span></code>, it may be used in intermediate calculations which may require a larger type. When in doubt, choose a larger type.</p>
 <dl>
@@ -1566,13 +1570,13 @@
 <p>On Unsigned Integers</p>
 <p>Unsigned integers are good for representing bitfields and modular arithmetic. Because of historical accident, the C++ standard also uses unsigned integers to represent the size of containers - many members of the standards body believe this to be a mistake, but it is effectively impossible to fix at this point. The fact that unsigned arithmetic doesn’t model the behaviour of a simple integer, but is instead defined by the standard to model modular arithmetic (wrapping around on overflow/underflow), means that a significant class of bugs cannot be diagnosed by the compiler. In other cases, the defined behaviour impedes optimisation.</p>
 <p>That said, mixing signedness of integer types is responsible for an equally large class of problems. The best advice we can provide: try to use iterators and containers rather than pointers and sizes, try not to mix signedness, and try to avoid unsigned types (except for representing bitfields or modular arithmetic). Do not use an unsigned type merely to assert that a variable is non-negative.</p>
-</div>
-<div class="section" id="preprocessor-macros">
+</section>
+<section id="preprocessor-macros">
 <span id="id15"></span><h4><a class="toc-backref" href="#id77">Preprocessor Macros</a><a class="headerlink" href="#preprocessor-macros" title="Permalink to this headline">¶</a></h4>
 <p>Avoid defining macros, especially in headers; prefer inline functions, enums, and const variables. Do not use macros to define pieces of a C++ API. Be aware that if you do not have a <strong>very</strong> good reason to submit code with a macro, it will likely be rejected.</p>
 <p>Macros mean that the code you see is not the same as the code the compiler sees. This can introduce unexpected behaviour, especially since macros have global scope.</p>
 <p>The problems introduced by macros are especially severe when they are used to define pieces of a C++ API, and still more so for public APIs. Every error message from the compiler when developers incorrectly use that interface now must explain how the macros formed the interface. Refactoring and analysis tools have a dramatically harder time updating the interface. As a consequence, we specifically disallow using macros in this way. For example, avoid patterns like:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nf">WOMBAT_TYPE</span><span class="p">(</span><span class="n">Foo</span><span class="p">)</span> <span class="p">{</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">WOMBAT_TYPE</span><span class="p">(</span><span class="n">Foo</span><span class="p">)</span> <span class="p">{</span>
   <span class="c1">// ...</span>
 
  <span class="k">public</span><span class="o">:</span>
@@ -1595,14 +1599,14 @@
 </ul>
 </div></blockquote>
 <p>Exporting macros from headers (i.e. defining them in a header without <code class="docutils literal notranslate"><span class="pre">#undef</span></code>ing them before the end of the header) is extremely strongly discouraged. If you do export a macro from a header, it must have a globally unique name. To achieve this, it must be named with a prefix consisting of your project’s namespace name (but upper case).</p>
-</div>
-<div class="section" id="and-nullptr-null">
+</section>
+<section id="and-nullptr-null">
 <h4><a class="toc-backref" href="#id78"><code class="docutils literal notranslate"><span class="pre">0</span></code> and <code class="docutils literal notranslate"><span class="pre">nullptr</span></code>/<code class="docutils literal notranslate"><span class="pre">NULL</span></code></a><a class="headerlink" href="#and-nullptr-null" title="Permalink to this headline">¶</a></h4>
 <p>Use <code class="docutils literal notranslate"><span class="pre">0</span></code> for integers, <code class="docutils literal notranslate"><span class="pre">0.</span></code> for reals, <code class="docutils literal notranslate"><span class="pre">nullptr</span></code> for pointers, and <code class="docutils literal notranslate"><span class="pre">'\0'</span></code> for chars.</p>
 <p>For pointers (address values), there is a choice between <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">NULL</span></code>, and <code class="docutils literal notranslate"><span class="pre">nullptr</span></code>. rascal only accepts <code class="docutils literal notranslate"><span class="pre">nullptr</span></code>, as this provides type-safety.</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">'\0'</span></code> for the null character. Using the correct type makes the code more readable.</p>
-</div>
-<div class="section" id="sizeof">
+</section>
+<section id="sizeof">
 <h4><a class="toc-backref" href="#id79">sizeof</a><a class="headerlink" href="#sizeof" title="Permalink to this headline">¶</a></h4>
 <p>Prefer <code class="docutils literal notranslate"><span class="pre">sizeof(varname)</span></code> to <code class="docutils literal notranslate"><span class="pre">sizeof(type)</span></code>.</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">sizeof(varname)</span></code> when you take the size of a particular variable. <code class="docutils literal notranslate"><span class="pre">sizeof(varname)</span></code> will update appropriately if someone changes the variable type either now or later. You may use <code class="docutils literal notranslate"><span class="pre">sizeof(type)</span></code> for code unrelated to any particular variable, such as code that manages an external or internal data format where a variable of an appropriate C++ type is not convenient.</p>
@@ -1617,8 +1621,8 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="auto">
+</section>
+<section id="auto">
 <h4><a class="toc-backref" href="#id80">auto</a><a class="headerlink" href="#auto" title="Permalink to this headline">¶</a></h4>
 <p>Use auto to avoid type names that are noisy, obvious, or unimportant - cases where the type doesn’t aid in clarity for the reader. Continue to use manifest type declarations only when it helps readability or you wish to override the type (important in the context of expression templates, see <a class="reference external" href="http://eigen.tuxfamily.org/dox/TopicPitfalls.html">Eigen C++11 and the auto keyword</a>).</p>
 <dl>
@@ -1663,8 +1667,8 @@
 </li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="braced-initialiser-list">
+</section>
+<section id="braced-initialiser-list">
 <span id="id17"></span><h4><a class="toc-backref" href="#id81">Braced Initialiser List</a><a class="headerlink" href="#braced-initialiser-list" title="Permalink to this headline">¶</a></h4>
 <p>You may use braced initialiser lists.</p>
 <p>In C++03, aggregate types (arrays and structs with no constructor) could be initialised with braced initialiser lists.</p>
@@ -1734,14 +1738,14 @@
 </pre></div>
 </div>
 <p>See <a class="reference internal" href="#braced-initialiser-list-format"><span class="std std-ref">Braced Initialiser List Format</span></a> for formatting.</p>
-</div>
-<div class="section" id="lambda-expressions">
+</section>
+<section id="lambda-expressions">
 <span id="id18"></span><h4><a class="toc-backref" href="#id82">Lambda expressions</a><a class="headerlink" href="#lambda-expressions" title="Permalink to this headline">¶</a></h4>
 <p>Use lambda expressions where appropriate. Use explicit captures.</p>
 <dl>
 <dt>Definition:</dt><dd><p>Lambda expressions are a concise way of creating anonymous function objects. They’re often useful when passing functions as arguments. For example:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">sort</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">return</span> <span class="nf">Weight</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">Weight</span><span class="p">(</span><span class="n">y</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">Weight</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">Weight</span><span class="p">(</span><span class="n">y</span><span class="p">);</span>
 <span class="p">});</span>
 </pre></div>
 </div>
@@ -1814,8 +1818,8 @@
 </ul>
 </dd>
 </dl>
-</div>
-<div class="section" id="template-metaprogramming">
+</section>
+<section id="template-metaprogramming">
 <h4><a class="toc-backref" href="#id83">Template metaprogramming</a><a class="headerlink" href="#template-metaprogramming" title="Permalink to this headline">¶</a></h4>
 <p>Template metaprogramming is our tool to obtain both generic and efficient code. It can be complicated, but efficiency is the top priority in the core of rascal.</p>
 <dl>
@@ -1831,8 +1835,8 @@
 </dd>
 </dl>
 <p>If you use template metaprogramming, you should expect to put considerable effort into minimising and isolating the complexity. You should hide metaprogramming as an implementation detail whenever possible, so that user-facing headers are readable, and you should make sure that tricky code is especially well commented. You should carefully document how the code is used, and you should say something about what the “generated” code looks like. Pay extra attention to the error messages that the compiler emits when users make mistakes. The error messages are part of your user interface, and your code should be tweaked as necessary so that the error messages are understandable and actionable from a user point of view.</p>
-</div>
-<div class="section" id="boost">
+</section>
+<section id="boost">
 <h4><a class="toc-backref" href="#id84">Boost</a><a class="headerlink" href="#boost" title="Permalink to this headline">¶</a></h4>
 <p>We try to depend on Boost as little as possible. The core library should not at all depend on Boost, while the tests use the <a class="reference external" href="http://www.boost.org/doc/libs/1_43_0/libs/test/doc/html/utf.html">Boost unit test framework</a>. There is one exception: For users with ancient compilers, Boost is used to emulate <code class="docutils literal notranslate"><span class="pre">std::optional</span></code>. Do not add Boost dependencies.</p>
 <p>Definition:</p>
@@ -1847,13 +1851,13 @@
 <blockquote>
 <div><p>Boost can be tricky to install on certain systems</p>
 </div></blockquote>
-</div>
-<div class="section" id="c-14">
+</section>
+<section id="c-14">
 <h4><a class="toc-backref" href="#id85">C++14</a><a class="headerlink" href="#c-14" title="Permalink to this headline">¶</a></h4>
 <p>Use libraries and language extensions from C++14 when appropriate.</p>
 <p>C++14 contains significant improvements both to the language and libraries.</p>
-</div>
-<div class="section" id="nonstandard-extensions">
+</section>
+<section id="nonstandard-extensions">
 <h4><a class="toc-backref" href="#id86">Nonstandard Extensions</a><a class="headerlink" href="#nonstandard-extensions" title="Permalink to this headline">¶</a></h4>
 <p>Nonstandard extensions to C++ may not be used unless needed to fix compiler bugs.</p>
 <p>Compilers support various extensions that are not part of standard C++. Such extensions include GCC’s <code class="docutils literal notranslate"><span class="pre">__attribute__</span></code>.</p>
@@ -1867,8 +1871,8 @@
 <dt>Decision:</dt><dd><p>Do not use nonstandard extensions.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="aliases">
+</section>
+<section id="aliases">
 <h4><a class="toc-backref" href="#id87">Aliases</a><a class="headerlink" href="#aliases" title="Permalink to this headline">¶</a></h4>
 <p>Public aliases are for the benefit of an API’s user, and should be clearly documented.</p>
 <dl>
@@ -1899,7 +1903,7 @@
 <p>When defining a public alias, document the intent of the new name. This lets the user know whether they can treat the types as substitutable or whether more specific rules must be followed, and can help the implementation retain some degree of freedom to change the alias.</p>
 <p>Don’t put namespace aliases in your public API. (See also <a class="reference internal" href="#namespaces"><span class="std std-ref">Namespaces</span></a>).</p>
 <p>For example, these aliases document how they are intended to be used in client code:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span> <span class="n">mynamespace</span> <span class="p">{</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span> <span class="nn">mynamespace</span> <span class="p">{</span>
   <span class="c1">// Used to store field measurements. DataPoint may change from Bar* to some internal type.</span>
   <span class="c1">// Client code should treat it as an opaque pointer.</span>
   <span class="k">using</span> <span class="n">DataPoint</span> <span class="o">=</span> <span class="n">foo</span><span class="o">::</span><span class="n">Bar</span><span class="o">*</span><span class="p">;</span>
@@ -1910,7 +1914,7 @@
 </pre></div>
 </div>
 <p>These aliases don’t document intended use, and half of them aren’t meant for client use:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span> <span class="n">mynamespace</span> <span class="p">{</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span> <span class="nn">mynamespace</span> <span class="p">{</span>
   <span class="c1">// Bad: none of these say how they should be used.</span>
   <span class="k">using</span> <span class="n">DataPoint</span> <span class="o">=</span> <span class="n">foo</span><span class="o">::</span><span class="n">Bar</span><span class="o">*</span><span class="p">;</span>
   <span class="k">using</span> <span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="p">;</span>  <span class="c1">// Bad: just for local convenience</span>
@@ -1926,13 +1930,13 @@
 </div>
 </dd>
 </dl>
-</div>
-</div>
-<div class="section" id="naming">
+</section>
+</section>
+<section id="naming">
 <h3><a class="toc-backref" href="#id88">Naming</a><a class="headerlink" href="#naming" title="Permalink to this headline">¶</a></h3>
 <p>The most important consistency rules are those that govern naming. The style of a name immediately informs us what sort of thing the named entity is: a type, a variable, a function, a constant, a macro, etc., without requiring us to search for the declaration of that entity. The pattern-matching engine in our brains relies a great deal on these naming rules.</p>
 <p>Naming rules are pretty arbitrary, but we feel that consistency is more important than individual preferences in this area, so regardless of whether you find them sensible or not, the rules are the rules.</p>
-<div class="section" id="general-naming-rules">
+<section id="general-naming-rules">
 <span id="id21"></span><h4><a class="toc-backref" href="#id89">General Naming Rules</a><a class="headerlink" href="#general-naming-rules" title="Permalink to this headline">¶</a></h4>
 <p>Names should be descriptive; avoid abbreviation.</p>
 <p>Give as descriptive a name as possible, within reason. Do not worry about saving horizontal space as it is far more important to make your code immediately understandable by a new reader. Do not use abbreviations that are ambiguous or unfamiliar to readers outside your project, and do not abbreviate by deleting letters within a word. Abbreviations that would be familiar to someone outside your project with relevant domain knowledge are OK. As a rule of thumb, an abbreviation is probably OK if it’s listed in Wikipedia.</p>
@@ -1956,8 +1960,8 @@
 <p>Note that certain universally-known abbreviations are OK, such as <code class="docutils literal notranslate"><span class="pre">i</span></code> for an iteration variable and <code class="docutils literal notranslate"><span class="pre">T</span></code> for a template parameter.</p>
 <p>For some symbols, this style guide recommends names to start with a capital letter and to have a capital letter for each new word (a.k.a. “CamelCase”). When abbreviations appear in such names, prefer to capitalise every letter of the abbreviation (i.e. <code class="docutils literal notranslate"><span class="pre">FFTEngine</span></code>, not <code class="docutils literal notranslate"><span class="pre">FftEngine</span></code>).</p>
 <p>Template parameters should follow the naming style for their category: type template parameters should follow the rules for type names, and non-type template parameters should follow the rules for <code class="docutils literal notranslate"><span class="pre">constexpr</span></code> variable names.</p>
-</div>
-<div class="section" id="file-names">
+</section>
+<section id="file-names">
 <h4><a class="toc-backref" href="#id90">File Names</a><a class="headerlink" href="#file-names" title="Permalink to this headline">¶</a></h4>
 <p>Filenames should be all lowercase and can include underscores (<code class="docutils literal notranslate"><span class="pre">_</span></code>). File names should indicate their content.</p>
 <p>Examples of acceptable file names:</p>
@@ -1970,8 +1974,8 @@ test_my_useful_class.cc // unittests <span class="k">for</span> MyUsefulClass
 <p>C++ files should end in <code class="docutils literal notranslate"><span class="pre">.cc</span></code> and header files should end in <code class="docutils literal notranslate"><span class="pre">.hh</span></code> (see also the section on <a class="reference internal" href="#self-contained-headers"><span class="std std-ref">self-contained headers</span></a>).</p>
 <p>Do not use filenames that already exist in <code class="docutils literal notranslate"><span class="pre">/usr/include</span></code> or widely used libraries, such as <code class="docutils literal notranslate"><span class="pre">db.hh</span></code>.</p>
 <p>In general, make your filenames very specific. For example, use <code class="docutils literal notranslate"><span class="pre">http_server_logs.hh</span></code> rather than <code class="docutils literal notranslate"><span class="pre">logs.hh</span></code>. A very common case is to have a pair of files called, e.g., <code class="docutils literal notranslate"><span class="pre">foo_bar.hh</span></code> and <code class="docutils literal notranslate"><span class="pre">foo_bar.cc</span></code>, defining a class called <code class="docutils literal notranslate"><span class="pre">FooBar</span></code>.</p>
-</div>
-<div class="section" id="type-names">
+</section>
+<section id="type-names">
 <span id="id22"></span><h4><a class="toc-backref" href="#id91">Type Names</a><a class="headerlink" href="#type-names" title="Permalink to this headline">¶</a></h4>
 <p>Type names start with a capital letter and have a capital letter for each new word (CamelCase), with no underscores: <code class="docutils literal notranslate"><span class="pre">MyExcitingClass</span></code>, <code class="docutils literal notranslate"><span class="pre">MyExcitingEnum</span></code>.</p>
 <p>The names of all types — classes, structs, type aliases, enums, and type template parameters — have the same naming convention. Type names should start with a capital letter and have a capital letter for each new word. No underscores. For example:</p>
@@ -1994,8 +1998,8 @@ test_my_useful_class.cc // unittests <span class="k">for</span> MyUsefulClass
 </ul>
 </dd>
 </dl>
-</div>
-<div class="section" id="variable-names">
+</section>
+<section id="variable-names">
 <h4><a class="toc-backref" href="#id92">Variable Names</a><a class="headerlink" href="#variable-names" title="Permalink to this headline">¶</a></h4>
 <p>The names of variables (including function parameters) and data members are all lowercase, with underscores between words. For instance: <code class="docutils literal notranslate"><span class="pre">a_local_variable</span></code>, <code class="docutils literal notranslate"><span class="pre">a_struct_data_member</span></code>, <code class="docutils literal notranslate"><span class="pre">this-&gt;a_class_data_member</span></code>. Use class members exclusively with explicit mention of the <code class="docutils literal notranslate"><span class="pre">this</span></code> pointer.
 Common Variable names</p>
@@ -2006,7 +2010,7 @@ Common Variable names</p>
 <span class="n">string</span> <span class="n">tableName</span><span class="p">;</span>   <span class="c1">// Bad - mixed case.</span>
 </pre></div>
 </div>
-<div class="section" id="struct-and-class-data-members">
+<section id="struct-and-class-data-members">
 <h5><a class="toc-backref" href="#id93"><code class="docutils literal notranslate"><span class="pre">struct</span></code> and <code class="docutils literal notranslate"><span class="pre">class</span></code> Data Members</a><a class="headerlink" href="#struct-and-class-data-members" title="Permalink to this headline">¶</a></h5>
 <p>Data members of <code class="docutils literal notranslate"><span class="pre">struct</span></code>s and  classes, both static and non-static, are named like ordinary nonmember variables.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TableInfo</span> <span class="p">{</span>
@@ -2020,13 +2024,13 @@ Common Variable names</p>
 </pre></div>
 </div>
 <p>See <a class="reference internal" href="#structs-vs-classes"><span class="std std-ref">Structs vs. Classes</span></a> for a discussion of when to use a struct versus a class.</p>
-</div>
-</div>
-<div class="section" id="constexpr-and-const-names">
+</section>
+</section>
+<section id="constexpr-and-const-names">
 <span id="constant-names"></span><h4><a class="toc-backref" href="#id94"><code class="docutils literal notranslate"><span class="pre">constexpr</span></code> and <code class="docutils literal notranslate"><span class="pre">const</span></code> Names</a><a class="headerlink" href="#constexpr-and-const-names" title="Permalink to this headline">¶</a></h4>
 <p>Variables declared <code class="docutils literal notranslate"><span class="pre">constexpr</span></code> and non-class template parameters are CamelCase, <code class="docutils literal notranslate"><span class="pre">const</span></code> are named like regular variables.</p>
-</div>
-<div class="section" id="function-names">
+</section>
+<section id="function-names">
 <h4><a class="toc-backref" href="#id95">Function Names</a><a class="headerlink" href="#function-names" title="Permalink to this headline">¶</a></h4>
 <p>Regular functions and methods are named like variables (lowercase <code class="docutils literal notranslate"><span class="pre">name_with_underscore</span></code>).</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">make_field</span><span class="p">()</span>
@@ -2042,14 +2046,14 @@ Common Variable names</p>
                     <span class="c1">// nothing is done at runtime)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="namespace-names">
+</section>
+<section id="namespace-names">
 <span id="id23"></span><h4><a class="toc-backref" href="#id96">Namespace Names</a><a class="headerlink" href="#namespace-names" title="Permalink to this headline">¶</a></h4>
 <p>The main namespace is <code class="docutils literal notranslate"><span class="pre">rascal</span></code>. All subordinate namespaces are CamelCase. Avoid collisions between nested namespaces and well-known top-level namespaces. If a namespace is only used to hide unnecessary internal complications, put it in <code class="docutils literal notranslate"><span class="pre">namespace</span> <span class="pre">internal</span></code> or <code class="docutils literal notranslate"><span class="pre">namespace</span> <span class="pre">*_internal</span></code> to indicate that these are implementation details that the user does not have to bother with.</p>
 <p>Keep in mind that the <a class="reference internal" href="#general-naming-rules"><span class="std std-ref">rule against abbreviated names</span></a> applies to namespaces just as much as variable names. Code inside the namespace seldom needs to mention the namespace name, so there’s usually no particular need for abbreviation anyway.</p>
 <p>Avoid nested namespaces that match well-known top-level namespaces. Collisions between namespace names can lead to surprising build breaks because of name lookup rules. In particular, do not create any nested <code class="docutils literal notranslate"><span class="pre">std</span></code> namespaces.</p>
-</div>
-<div class="section" id="enumerator-names">
+</section>
+<section id="enumerator-names">
 <h4><a class="toc-backref" href="#id97">Enumerator Names</a><a class="headerlink" href="#enumerator-names" title="Permalink to this headline">¶</a></h4>
 <p>Enumerators (for both scoped and unscoped enums) should be named like <code class="docutils literal notranslate"><span class="pre">constexpr</span></code> variables (CamelCase).</p>
 <p>Preferably, the individual enumerators should be named like constants. However, it is also acceptable to name them like macros. The enumeration name, UrlTableErrors (and AlternateUrlTableErrors), is a type, and therefore mixed case.</p>
@@ -2069,8 +2073,8 @@ Common Variable names</p>
 </pre></div>
 </div>
 <p>Note that the last case, <code class="docutils literal notranslate"><span class="pre">StrainMeasure::no_strain_</span></code> is deliberately not named like an <code class="docutils literal notranslate"><span class="pre">enum</span></code>, to indicate that it is an invalid state;</p>
-</div>
-<div class="section" id="macro-names">
+</section>
+<section id="macro-names">
 <h4><a class="toc-backref" href="#id98">Macro Names</a><a class="headerlink" href="#macro-names" title="Permalink to this headline">¶</a></h4>
 <p>You’re not really going to define a macro, are you? If you do, they’re like this: <code class="docutils literal notranslate"><span class="pre">MY_MACRO_THAT_SCARES_SMALL_CHILDREN_AND_ADULTS_ALIKE.</span></code></p>
 <p>Please see the <a class="reference internal" href="#preprocessor-macros"><span class="std std-ref">description of macros</span></a>; in general macros should not be used. However, if they are absolutely needed, then they should be named with all capitals and underscores. Be ready to argue the need for a macro in your submission, and prepare yourself for rejection if you do not have an overwhelmingly convincing reason.</p>
@@ -2078,22 +2082,22 @@ Common Variable names</p>
 <span class="cp">#define PI_ROUNDED 3.0</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="exceptions-to-naming-rules">
+</section>
+<section id="exceptions-to-naming-rules">
 <h4><a class="toc-backref" href="#id99">Exceptions to Naming Rules</a><a class="headerlink" href="#exceptions-to-naming-rules" title="Permalink to this headline">¶</a></h4>
 <p>Exceptions are classes and as such follow the <a class="reference internal" href="#type-names"><span class="std std-ref">Type Names</span></a> rules (CamelCase), but additionally end in <code class="docutils literal notranslate"><span class="pre">Error</span></code>, e.g., <code class="docutils literal notranslate"><span class="pre">ProjectionError</span></code>.</p>
-</div>
-</div>
-<div class="section" id="comments">
+</section>
+</section>
+<section id="comments">
 <h3><a class="toc-backref" href="#id100">Comments</a><a class="headerlink" href="#comments" title="Permalink to this headline">¶</a></h3>
 <p>Though a pain to write, comments are absolutely vital to keeping our code readable. The following rules describe what you should comment and where. But remember: while comments are very important, the best code is self-documenting. Giving sensible names to types and variables is much better than using obscure names that you must then explain through comments.</p>
 <p>When writing your comments, write for your audience: the next contributor who will need to understand your code. Be generous — the next one may be you!</p>
-<div class="section" id="comment-style">
+<section id="comment-style">
 <h4><a class="toc-backref" href="#id101">Comment Style</a><a class="headerlink" href="#comment-style" title="Permalink to this headline">¶</a></h4>
 <p>Use either the <code class="docutils literal notranslate"><span class="pre">//</span></code> or <code class="docutils literal notranslate"><span class="pre">/*</span> <span class="pre">...</span> <span class="pre">*/</span></code> syntax for comments that are only relevant within their context (local comments for the reader/maintainer of your code)</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">//!</span></code>, <code class="docutils literal notranslate"><span class="pre">/**</span> <span class="pre">...</span> <span class="pre">*/</span></code>, and <code class="docutils literal notranslate"><span class="pre">//!&lt;</span></code> syntax for doxygen comments (which will end up being compiled into the API <span class="xref std std-ref">reference</span>), see <a class="reference external" href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</a> for details on doxygen.</p>
-</div>
-<div class="section" id="file-comments">
+</section>
+<section id="file-comments">
 <h4><a class="toc-backref" href="#id102">File Comments</a><a class="headerlink" href="#file-comments" title="Permalink to this headline">¶</a></h4>
 <p>Start each file with license boilerplate. e.g., for file <code class="docutils literal notranslate"><span class="pre">common.hh</span></code> authored by John Doe:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
@@ -2130,8 +2134,8 @@ Common Variable names</p>
 <p>File comments describe the contents of a file. If a file declares, implements, or tests exactly one abstraction that is documented by a comment at the point of declaration, file comments are not required. All other files must have file comments.</p>
 <p>Every file should contain GPL boilerplate.</p>
 <p>Do not duplicate comments in both the <code class="docutils literal notranslate"><span class="pre">.hh</span></code> and the .cc. Duplicated comments diverge.</p>
-</div>
-<div class="section" id="class-comments">
+</section>
+<section id="class-comments">
 <span id="id24"></span><h4><a class="toc-backref" href="#id103">Class Comments</a><a class="headerlink" href="#class-comments" title="Permalink to this headline">¶</a></h4>
 <p>Every non-obvious class declaration should have an accompanying comment that describes what it is for and how it should be used.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
@@ -2161,11 +2165,11 @@ Common Variable names</p>
 <p>The class comment should provide the reader with enough information to know how and when to use the class, as well as any additional considerations necessary to correctly use the class. Document the assumptions the class makes, if any. If an instance of the class can be accessed by multiple threads, take extra care to document the rules and invariants surrounding multithreaded use.</p>
 <p>The class comment is often a good place for a small example code snippet demonstrating a simple and focused usage of the class.</p>
 <p>When sufficiently separated (e.g. <code class="docutils literal notranslate"><span class="pre">.hh</span></code> and <code class="docutils literal notranslate"><span class="pre">.cc</span></code> files), comments describing the use of the class should go together with its declaration. Comments about the class operation and implementation should accompany the class’s methods (definition).</p>
-</div>
-<div class="section" id="function-comments">
+</section>
+<section id="function-comments">
 <h4><a class="toc-backref" href="#id104">Function Comments</a><a class="headerlink" href="#function-comments" title="Permalink to this headline">¶</a></h4>
 <p>Declaration comments describe use of the function; comments at the definition of a function describe operation.</p>
-<div class="section" id="function-declarations">
+<section id="function-declarations">
 <h5><a class="toc-backref" href="#id105">Function Declarations</a><a class="headerlink" href="#function-declarations" title="Permalink to this headline">¶</a></h5>
 <p>Every function declaration should have comments immediately preceding it that describe what the function does and how to use it. These comments should be descriptive (“Opens the file”) rather than imperative (“Open the file”); the comment describes the function, it does not tell the function what to do. In general, these comments do not describe how the function performs its task. Instead, that should be left to comments in the function definition.</p>
 <p>Types of things to mention in comments at the function declaration:</p>
@@ -2199,17 +2203,17 @@ Common Variable names</p>
 <p>However, do not be unnecessarily verbose or state the completely obvious.</p>
 <p>When documenting function overrides, focus on the specifics of the override itself, rather than repeating the comment from the overridden function. In many of these cases, the override needs no additional documentation and thus only brief comments are required.</p>
 <p>When commenting constructors and destructors, remember that the person reading your code knows what constructors and destructors are for, so comments that just say something like “destroys this object” are not useful. Document what constructors do with their arguments (for example, if they take ownership of pointers), and what cleanup the destructor does. If this is trivial, just name it (<code class="docutils literal notranslate"><span class="pre">default</span> <span class="pre">constructor</span></code>, <code class="docutils literal notranslate"><span class="pre">move</span> <span class="pre">constructor</span></code>, <code class="docutils literal notranslate"><span class="pre">destructor</span></code> etc).</p>
-</div>
-<div class="section" id="function-definitions">
+</section>
+<section id="function-definitions">
 <h5><a class="toc-backref" href="#id106">Function Definitions</a><a class="headerlink" href="#function-definitions" title="Permalink to this headline">¶</a></h5>
 <p>If there is anything tricky about how a function does its job, the function definition should have an explanatory comment. For example, in the definition comment you might describe any coding tricks you use, give an overview of the steps you go through, or explain why you chose to implement the function in the way you did rather than using a viable alternative. For instance, you might mention why it must acquire a lock for the first half of the function but why it is not needed for the second half.</p>
 <p>Note you should not just repeat the comments given with the function declaration, in the <code class="docutils literal notranslate"><span class="pre">.hh</span></code> file or wherever. It’s okay to recapitulate briefly what the function does, but the focus of the comments should be on how it does it.</p>
-</div>
-</div>
-<div class="section" id="variable-comments">
+</section>
+</section>
+<section id="variable-comments">
 <h4><a class="toc-backref" href="#id107">Variable Comments</a><a class="headerlink" href="#variable-comments" title="Permalink to this headline">¶</a></h4>
 <p>In general the actual name of the variable should be descriptive enough to give a good idea of what the variable is used for, but we require a short description for the API documentation.</p>
-<div class="section" id="class-data-members">
+<section id="class-data-members">
 <h5><a class="toc-backref" href="#id108">Class Data Members</a><a class="headerlink" href="#class-data-members" title="Permalink to this headline">¶</a></h5>
 <p>The purpose of each class data member (also called an instance variable or member variable) must be clear. If there are any invariants (special values, relationships between members, lifetime requirements) not clearly expressed by the type and name, they must be commented. However, if the type and name suffice (<code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">nb_events</span></code>;), a brief “number of events” is a sufficient comment:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">protected</span><span class="o">:</span>
@@ -2222,8 +2226,8 @@ Common Variable names</p>
   <span class="kt">size_t</span> <span class="n">pad_size</span><span class="p">;</span> <span class="c1">//!&lt; size of padding region at end of buffer</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="global-variables">
+</section>
+<section id="global-variables">
 <h5><a class="toc-backref" href="#id109">Global Variables</a><a class="headerlink" href="#global-variables" title="Permalink to this headline">¶</a></h5>
 <p>All global variables should have a comment describing what they are, what they are used for, and (if unclear) why it needs to be global. For example:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">constexpr</span> <span class="n">Dim_t</span> <span class="n">oneD</span><span class="p">{</span><span class="mi">1</span><span class="p">};</span> <span class="c1">//!&lt; constant for a one-dimensional problem</span>
@@ -2234,9 +2238,9 @@ Common Variable names</p>
 <span class="k">constexpr</span> <span class="n">Dim_t</span> <span class="n">fourthOrder</span><span class="p">{</span><span class="mi">4</span><span class="p">};</span> <span class="c1">//!&lt; constant fourth-order tensors</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="implementation-comments">
+</section>
+</section>
+<section id="implementation-comments">
 <h4><a class="toc-backref" href="#id110">Implementation Comments</a><a class="headerlink" href="#implementation-comments" title="Permalink to this headline">¶</a></h4>
 <p>In your implementation you should have comments in tricky, non-obvious, interesting, or important parts of your code.
 Explanatory Comments</p>
@@ -2260,7 +2264,7 @@ Explanatory Comments</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<div class="section" id="line-comments">
+<section id="line-comments">
 <h5><a class="toc-backref" href="#id111">Line Comments</a><a class="headerlink" href="#line-comments" title="Permalink to this headline">¶</a></h5>
 <p>Also, lines that are non-obvious should get a comment at the end of the line. These end-of-line comments should be separated from the code by at least one space. Example:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// If we have enough memory, mmap the data portion too.</span>
@@ -2291,15 +2295,15 @@ Explanatory Comments</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="punctuation-spelling-and-grammar">
+</section>
+</section>
+<section id="punctuation-spelling-and-grammar">
 <h4><a class="toc-backref" href="#id112">Punctuation, Spelling and Grammar</a><a class="headerlink" href="#punctuation-spelling-and-grammar" title="Permalink to this headline">¶</a></h4>
 <p>Pay attention to punctuation, spelling, and grammar; it is easier to read well-written comments than badly written ones.</p>
 <p>Comments should be as readable as narrative text, with proper capitalisation and punctuation. In many cases, complete sentences are more readable than sentence fragments. Shorter comments, such as comments at the end of a line of code, can sometimes be less formal, but you should be consistent with your style.</p>
 <p>Although it can be frustrating to have a code reviewer point out that you are using a comma when you should be using a semicolon, it is very important that source code maintain a high level of clarity and readability. Proper punctuation, spelling, and grammar help with that goal.</p>
-</div>
-<div class="section" id="todo-comments">
+</section>
+<section id="todo-comments">
 <h4><a class="toc-backref" href="#id113"><code class="docutils literal notranslate"><span class="pre">TODO</span></code> Comments</a><a class="headerlink" href="#todo-comments" title="Permalink to this headline">¶</a></h4>
 <p>Use <code class="docutils literal notranslate"><span class="pre">TODO</span></code> comments for code that is temporary, a short-term solution, or good-enough but not perfect.</p>
 <p><code class="docutils literal notranslate"><span class="pre">TODO</span></code>s should include the string <code class="docutils literal notranslate"><span class="pre">TODO</span></code> in all caps, followed by the name, e-mail address, Phabricator task number or other identifier of the person or issue with the best context about the problem referenced by the <code class="docutils literal notranslate"><span class="pre">TODO</span></code>. The main purpose is to have a consistent <code class="docutils literal notranslate"><span class="pre">TODO</span></code> that can be searched to find out how to get more details upon request. A <code class="docutils literal notranslate"><span class="pre">TODO</span></code> is not a commitment that the person referenced will fix the problem. Thus when you create a <code class="docutils literal notranslate"><span class="pre">TODO</span></code> with a name, it is almost always your name that is given.</p>
@@ -2309,8 +2313,8 @@ Explanatory Comments</p>
 </pre></div>
 </div>
 <p>If your <code class="docutils literal notranslate"><span class="pre">TODO</span></code> is of the form “At a future date do something” make sure that you either include a very specific date (“Fix by November 2005”) or a very specific event (“Remove this code when all clients can handle XML responses.”).</p>
-</div>
-<div class="section" id="deprecation-comments">
+</section>
+<section id="deprecation-comments">
 <h4><a class="toc-backref" href="#id114">Deprecation Comments</a><a class="headerlink" href="#deprecation-comments" title="Permalink to this headline">¶</a></h4>
 <p>Mark deprecated interface points with <code class="docutils literal notranslate"><span class="pre">DEPRECATED</span></code> comments.</p>
 <p>You can mark an interface as deprecated by writing a comment containing the word <code class="docutils literal notranslate"><span class="pre">DEPRECATED</span></code> in all caps. The comment goes either before the declaration of the interface or on the same line as the declaration.</p>
@@ -2318,13 +2322,13 @@ Explanatory Comments</p>
 <p>A deprecation comment must include simple, clear directions for people to fix their call sites. In C++, you can implement a deprecated function as an inline function that calls the new interface point.</p>
 <p>Marking an interface point <code class="docutils literal notranslate"><span class="pre">DEPRECATED</span></code> will not magically cause any call sites to change. If you want people to actually stop using the deprecated facility, you will have to fix the call sites yourself or recruit a crew to help you.</p>
 <p>New code should not contain calls to deprecated interface points. Use the new interface point instead. If you cannot understand the directions, find the person who created the deprecation and ask them for help using the new interface point.</p>
-</div>
-</div>
-<div class="section" id="formatting">
+</section>
+</section>
+<section id="formatting">
 <h3><a class="toc-backref" href="#id115">Formatting</a><a class="headerlink" href="#formatting" title="Permalink to this headline">¶</a></h3>
 <p>Coding style and formatting are pretty arbitrary, but a project is much easier to follow if everyone uses the same style. Individuals may not agree with every aspect of the formatting rules, and some of the rules may take some getting used to, but it is important that all project contributors follow the style rules so that they can all read and understand everyone’s code easily.</p>
 <p>To help you format code correctly, Google has created a <a class="reference external" href="https://raw.githubusercontent.com/google/styleguide/gh-pages/google-c-style.el">settings file</a> for emacs.</p>
-<div class="section" id="line-length">
+<section id="line-length">
 <h4><a class="toc-backref" href="#id116">Line Length</a><a class="headerlink" href="#line-length" title="Permalink to this headline">¶</a></h4>
 <p>Each line of text in your code should be at most 80 characters long.</p>
 <p>We recognise that this rule is controversial, but so much existing code already adheres to it, and we feel that consistency is important.</p>
@@ -2344,8 +2348,8 @@ Explanatory Comments</p>
 <dt>Exception:</dt><dd><p>You needn’t be concerned about <a class="reference internal" href="#define-guard"><span class="std std-ref">header guards</span></a> that exceed the maximum length.</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="non-ascii-characters">
+</section>
+<section id="non-ascii-characters">
 <h4><a class="toc-backref" href="#id117">Non-ASCII Characters</a><a class="headerlink" href="#non-ascii-characters" title="Permalink to this headline">¶</a></h4>
 <p>In comments and human-readable names in strings, non-ASCII characters should be used where they help readability, and must use UTF-8 formatting, e.g.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span> <span class="cm">/**</span>
@@ -2388,23 +2392,23 @@ Explanatory Comments</p>
 </pre></div>
 </div>
 <p>You shouldn’t use the C++11 <code class="docutils literal notranslate"><span class="pre">char16_t</span></code> and <code class="docutils literal notranslate"><span class="pre">char32_t</span></code> character types, since they’re for non-UTF-8 text. For similar reasons you also shouldn’t use <code class="docutils literal notranslate"><span class="pre">wchar_t</span></code>.</p>
-</div>
-<div class="section" id="spaces-vs-tabs">
+</section>
+<section id="spaces-vs-tabs">
 <h4><a class="toc-backref" href="#id118">Spaces vs. Tabs</a><a class="headerlink" href="#spaces-vs-tabs" title="Permalink to this headline">¶</a></h4>
 <p>Use only spaces, and indent 2 spaces at a time.</p>
 <p>We use spaces for indentation. Do not use tabs in your code. You should set your editor to emit spaces when you hit the tab key.</p>
-</div>
-<div class="section" id="function-declarations-and-definitions">
+</section>
+<section id="function-declarations-and-definitions">
 <h4><a class="toc-backref" href="#id119">Function Declarations and Definitions</a><a class="headerlink" href="#function-declarations-and-definitions" title="Permalink to this headline">¶</a></h4>
 <p>Return type on the same line as function name, parameters on the same line if they fit. Wrap parameter lists which do not fit on a single line as you would wrap arguments in a function call.</p>
 <p>Functions look like this:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">ReturnType</span> <span class="n">ClassName</span><span class="o">::</span><span class="n">function_name</span><span class="p">(</span><span class="n">Type</span> <span class="n">par_name1</span><span class="p">,</span> <span class="n">Type</span> <span class="n">par_name2</span><span class="p">)</span> <span class="p">{</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">ReturnType</span> <span class="nf">ClassName::function_name</span><span class="p">(</span><span class="n">Type</span> <span class="n">par_name1</span><span class="p">,</span> <span class="n">Type</span> <span class="n">par_name2</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">do_something</span><span class="p">();</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>If you have too much text to fit on one line:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">ReturnType</span> <span class="n">ClassName</span><span class="o">::</span><span class="n">really_long_function_name</span><span class="p">(</span><span class="n">Type</span> <span class="n">par_name1</span><span class="p">,</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">ReturnType</span> <span class="nf">ClassName::really_long_function_name</span><span class="p">(</span><span class="n">Type</span> <span class="n">par_name1</span><span class="p">,</span>
                                                 <span class="n">Type</span> <span class="n">par_name2</span><span class="p">,</span>
                                                 <span class="n">Type</span> <span class="n">par_name3</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">do_something</span><span class="p">();</span>
@@ -2421,7 +2425,7 @@ Explanatory Comments</p>
 <span class="k">operator</span><span class="p">[](</span><span class="k">const</span> <span class="n">Ccoord</span> <span class="o">&amp;</span> <span class="n">ccoord</span><span class="p">)</span> <span class="k">const</span><span class="p">{</span>
   <span class="kt">size_t</span> <span class="n">index</span><span class="p">{};</span>
   <span class="n">index</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">collection</span><span class="p">.</span><span class="n">get_index</span><span class="p">(</span><span class="n">ccoord</span><span class="p">);</span>
-  <span class="k">return</span> <span class="nf">const_reference</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">get_ptr_to_entry</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">index</span><span class="p">)));</span>
+  <span class="k">return</span> <span class="n">const_reference</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">get_ptr_to_entry</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">index</span><span class="p">)));</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -2449,17 +2453,17 @@ Explanatory Comments</p>
   <span class="kt">void</span> <span class="n">rotate</span><span class="p">(</span><span class="kt">double</span> <span class="n">radians</span><span class="p">)</span> <span class="k">override</span><span class="p">;</span>
 <span class="p">};</span>
 
-<span class="kt">void</span> <span class="n">Circle</span><span class="o">::</span><span class="n">rotate</span><span class="p">(</span><span class="kt">double</span> <span class="cm">/*radians*/</span><span class="p">)</span> <span class="p">{}</span>
+<span class="kt">void</span> <span class="nf">Circle::rotate</span><span class="p">(</span><span class="kt">double</span> <span class="cm">/*radians*/</span><span class="p">)</span> <span class="p">{}</span>
 </pre></div>
 </div>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// Bad - if someone wants to implement later, it&#39;s not clear what the</span>
 <span class="c1">// variable means.</span>
-<span class="kt">void</span> <span class="n">Circle</span><span class="o">::</span><span class="n">rotate</span><span class="p">(</span><span class="kt">double</span><span class="p">)</span> <span class="p">{}</span>
+<span class="kt">void</span> <span class="nf">Circle::rotate</span><span class="p">(</span><span class="kt">double</span><span class="p">)</span> <span class="p">{}</span>
 </pre></div>
 </div>
 <p>Attributes, and macros that expand to attributes, appear at the very beginning of the function declaration or definition, before the return type:</p>
-</div>
-<div class="section" id="id25">
+</section>
+<section id="id25">
 <h4><a class="toc-backref" href="#id120">Lambda Expressions</a><a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h4>
 <p>Format parameters and bodies as for any other function, and capture lists like other comma-separated lists.</p>
 <p>For by-reference captures, do not leave a space between the ampersand (&amp;) and the variable name.</p>
@@ -2476,8 +2480,8 @@ Explanatory Comments</p>
              <span class="n">digits</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="function-calls">
+</section>
+<section id="function-calls">
 <h4><a class="toc-backref" href="#id121">Function Calls</a><a class="headerlink" href="#function-calls" title="Permalink to this headline">¶</a></h4>
 <p>Either write the call all on a single line, wrap the arguments at the parenthesis, or use common sense to help readability. In the absence of other considerations, use the minimum number of lines, including placing multiple arguments on each line where appropriate.</p>
 <p>Function calls have the following format:</p>
@@ -2520,8 +2524,8 @@ Explanatory Comments</p>
                     <span class="n">z1</span><span class="p">,</span> <span class="n">z2</span><span class="p">,</span> <span class="n">z3</span><span class="p">);</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="braced-initialiser-list-format">
+</section>
+<section id="braced-initialiser-list-format">
 <span id="id26"></span><h4><a class="toc-backref" href="#id122">Braced Initialiser List Format</a><a class="headerlink" href="#braced-initialiser-list-format" title="Permalink to this headline">¶</a></h4>
 <p>Format a <a class="reference internal" href="#braced-initialiser-list"><span class="std std-ref">braced initialiser list</span></a> exactly like you would format a function call in its place.</p>
 <p>If the braced list follows a name (e.g. a type or variable name), format as if the <code class="docutils literal notranslate"><span class="pre">{}</span></code> were the parentheses of a function call with that name. If there is no name, assume a zero-length name.</p>
@@ -2552,8 +2556,8 @@ Explanatory Comments</p>
      <span class="n">interiorwrappinglist2</span><span class="p">}};</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="conditionals">
+</section>
+<section id="conditionals">
 <h4><a class="toc-backref" href="#id123">Conditionals</a><a class="headerlink" href="#conditionals" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Prefer</span> <span class="n">no</span> <span class="n">spaces</span> <span class="n">inside</span> <span class="n">parentheses</span><span class="p">.</span> <span class="n">The</span> <span class="k">if</span> <span class="n">and</span> <span class="k">else</span> <span class="n">keywords</span> <span class="n">belong</span> <span class="n">on</span> <span class="n">separate</span> <span class="n">lines</span><span class="p">.</span>
 
@@ -2586,8 +2590,8 @@ Explanatory Comments</p>
 <span class="k">else</span> <span class="p">{</span><span class="n">do_that</span><span class="p">()};</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="loops-and-switch-statements">
+</section>
+<section id="loops-and-switch-statements">
 <h4><a class="toc-backref" href="#id124">Loops and Switch Statements</a><a class="headerlink" href="#loops-and-switch-statements" title="Permalink to this headline">¶</a></h4>
 <p>Switch statements must use braces for blocks. Annotate non-trivial fall-through between cases. Empty loop bodies should use <code class="docutils literal notranslate"><span class="pre">{continue;}</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">case</span></code> blocks in switch statements have curly braces which should be placed as shown below.</p>
@@ -2617,8 +2621,8 @@ Explanatory Comments</p>
 <span class="p">}</span> <span class="c1">// Good!</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="pointer-and-reference-expressions">
+</section>
+<section id="pointer-and-reference-expressions">
 <h4><a class="toc-backref" href="#id125">Pointer and Reference Expressions</a><a class="headerlink" href="#pointer-and-reference-expressions" title="Permalink to this headline">¶</a></h4>
 <p>No spaces around period or arrow. Pointer operators may have trailing spaces.</p>
 <p>The following are examples of correctly-formatted pointer and reference expressions:</p>
@@ -2634,8 +2638,8 @@ Explanatory Comments</p>
 <ul class="simple">
 <li><p>There are no spaces around the period or arrow when accessing a member.</p></li>
 </ul>
-</div>
-<div class="section" id="boolean-expressions">
+</section>
+<section id="boolean-expressions">
 <h4><a class="toc-backref" href="#id126">Boolean Expressions</a><a class="headerlink" href="#boolean-expressions" title="Permalink to this headline">¶</a></h4>
 <p>When you have a boolean expression that is longer than the standard line length, be consistent in how you break up the lines.</p>
 <p>In this example, the logical AND operator is always at the end of the lines:</p>
@@ -2647,8 +2651,8 @@ Explanatory Comments</p>
 </pre></div>
 </div>
 <p>Note that when the code wraps in this example, both of the &amp;&amp; logical AND operators are at the end of the line. This is more common, though wrapping all operators at the beginning of the line is also allowed. Feel free to insert extra parentheses judiciously because they can be very helpful in increasing readability when used appropriately.</p>
-</div>
-<div class="section" id="return-values">
+</section>
+<section id="return-values">
 <h4><a class="toc-backref" href="#id127">Return Values</a><a class="headerlink" href="#return-values" title="Permalink to this headline">¶</a></h4>
 <p>Do not needlessly surround the return expression with parentheses.</p>
 <p>Use parentheses in <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">expr</span></code>; only where you would use them in <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">expr</span></code>;.</p>
@@ -2662,8 +2666,8 @@ Explanatory Comments</p>
 <span class="k">return</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>                <span class="c1">// return is not a function!</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="variable-and-array-initialisation">
+</section>
+<section id="variable-and-array-initialisation">
 <h4><a class="toc-backref" href="#id128">Variable and Array Initialisation</a><a class="headerlink" href="#variable-and-array-initialisation" title="Permalink to this headline">¶</a></h4>
 <p>Use <code class="docutils literal notranslate"><span class="pre">{}</span></code> when possible, <code class="docutils literal notranslate"><span class="pre">()</span></code> when necessary, avoid <code class="docutils literal notranslate"><span class="pre">=</span></code>.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">x</span><span class="p">(</span><span class="mf">3.5</span><span class="p">);</span>
@@ -2686,8 +2690,8 @@ Explanatory Comments</p>
 <span class="kt">int</span> <span class="n">pi</span><span class="p">{</span><span class="mf">3.14</span><span class="p">};</span>  <span class="c1">// Compile error: narrowing conversion.</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="preprocessor-directives">
+</section>
+<section id="preprocessor-directives">
 <h4><a class="toc-backref" href="#id129">Preprocessor Directives</a><a class="headerlink" href="#preprocessor-directives" title="Permalink to this headline">¶</a></h4>
 <p>The hash mark that starts a preprocessor directive should always be at the beginning of the line.</p>
 <p>Even when preprocessor directives are within the body of indented code, the directives should start at the beginning of the line.</p>
@@ -2712,15 +2716,15 @@ Explanatory Comments</p>
   <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="class-format">
+</section>
+<section id="class-format">
 <h4><a class="toc-backref" href="#id130">Class Format</a><a class="headerlink" href="#class-format" title="Permalink to this headline">¶</a></h4>
 <p>Sections in <code class="docutils literal notranslate"><span class="pre">public</span></code>, <code class="docutils literal notranslate"><span class="pre">protected</span></code> and <code class="docutils literal notranslate"><span class="pre">private</span></code> order, each unindented.</p>
 <p>The basic format for a class definition (lacking the comments, see <a class="reference internal" href="#class-comments"><span class="std std-ref">Class Comments</span></a> for a discussion of what comments are needed) is:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyClass</span> <span class="o">:</span> <span class="k">public</span> <span class="n">OtherClass</span> <span class="p">{</span>
 <span class="k">public</span><span class="o">:</span>      <span class="c1">// Note the 1 space indent!</span>
   <span class="n">MyClass</span><span class="p">();</span>  <span class="c1">// Regular 2 space indent.</span>
-  <span class="k">explicit</span> <span class="nf">MyClass</span><span class="p">(</span><span class="kt">int</span> <span class="n">var</span><span class="p">);</span>
+  <span class="k">explicit</span> <span class="n">MyClass</span><span class="p">(</span><span class="kt">int</span> <span class="n">var</span><span class="p">);</span>
   <span class="o">~</span><span class="n">MyClass</span><span class="p">()</span> <span class="p">{}</span>
 
   <span class="kt">void</span> <span class="n">some_function</span><span class="p">();</span>
@@ -2747,8 +2751,8 @@ Explanatory Comments</p>
 <li><p>The public section should be first, followed by the protected and finally the private section.</p></li>
 <li><p>See <a class="reference internal" href="#declaration-order"><span class="std std-ref">Declaration Order</span></a> for rules on ordering declarations within each of these sections.</p></li>
 </ul>
-</div>
-<div class="section" id="constructor-initialiser-lists">
+</section>
+<section id="constructor-initialiser-lists">
 <h4><a class="toc-backref" href="#id131">Constructor Initialiser Lists</a><a class="headerlink" href="#constructor-initialiser-lists" title="Permalink to this headline">¶</a></h4>
 <p>Constructor initialiser lists can be all on one line or with subsequent lines indented four spaces.</p>
 <p>The acceptable formats for initialiser lists are:</p>
@@ -2772,8 +2776,8 @@ Explanatory Comments</p>
   <span class="o">:</span><span class="n">some_var_</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="p">{}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="namespace-formatting">
+</section>
+<section id="namespace-formatting">
 <h4><a class="toc-backref" href="#id132">Namespace Formatting</a><a class="headerlink" href="#namespace-formatting" title="Permalink to this headline">¶</a></h4>
 <p>The contents of namespaces are indented normally.</p>
 <p>Namespaces add an extra level of indentation. For example, use:</p>
@@ -2797,15 +2801,15 @@ Explanatory Comments</p>
 </pre></div>
 </div>
 <p>When declaring nested namespaces, put each namespace on its own line.</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span> <span class="n">foo</span> <span class="p">{</span>
-  <span class="k">namespace</span> <span class="n">bar</span> <span class="p">{</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span> <span class="nn">foo</span> <span class="p">{</span>
+  <span class="k">namespace</span> <span class="nn">bar</span> <span class="p">{</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="horizontal-whitespace">
+</section>
+<section id="horizontal-whitespace">
 <h4><a class="toc-backref" href="#id133">Horizontal Whitespace</a><a class="headerlink" href="#horizontal-whitespace" title="Permalink to this headline">¶</a></h4>
 <p>Use of horizontal whitespace depends on location. Never put trailing whitespace at the end of a line.</p>
-<div class="section" id="general">
+<section id="general">
 <h5><a class="toc-backref" href="#id134">General</a><a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h5>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="kt">bool</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// Open braces should always have a space before them.</span>
   <span class="p">...</span>
@@ -2826,8 +2830,8 @@ Explanatory Comments</p>
 </pre></div>
 </div>
 <p>Adding trailing whitespace can cause extra work for others editing the same file, when they merge, as can removing existing trailing whitespace. So: Don’t introduce trailing whitespace. Remove it if you’re already changing that line, or do it in a separate clean-up operation (preferably when no-one else is working on the file).</p>
-</div>
-<div class="section" id="loops-and-conditionals">
+</section>
+<section id="loops-and-conditionals">
 <h5><a class="toc-backref" href="#id135">Loops and Conditionals</a><a class="headerlink" href="#loops-and-conditionals" title="Permalink to this headline">¶</a></h5>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="p">{</span>          <span class="c1">// Space after the keyword in conditions and loops.</span>
 <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>          <span class="c1">// Spaces around else.</span>
@@ -2855,8 +2859,8 @@ Explanatory Comments</p>
   <span class="k">case</span> <span class="mi">2</span><span class="o">:</span> <span class="k">break</span><span class="p">;</span>  <span class="c1">// Use a space after a colon if there&#39;s code after it.</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="operators">
+</section>
+<section id="operators">
 <h5><a class="toc-backref" href="#id136">Operators</a><a class="headerlink" href="#operators" title="Permalink to this headline">¶</a></h5>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span> <span class="c1">// Assignment operators always have spaces around them.</span>
  <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
@@ -2875,8 +2879,8 @@ Explanatory Comments</p>
 <span class="p">...</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="templates-and-casts">
+</section>
+<section id="templates-and-casts">
 <h5><a class="toc-backref" href="#id137">Templates and Casts</a><a class="headerlink" href="#templates-and-casts" title="Permalink to this headline">¶</a></h5>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// No spaces inside the angle brackets (&lt; and &gt;), before</span>
 <span class="c1">// &lt;, or between &gt;( in a cast</span>
@@ -2887,9 +2891,9 @@ Explanatory Comments</p>
 <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">char</span> <span class="o">*&gt;</span> <span class="n">x</span><span class="p">;</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="vertical-whitespace">
+</section>
+</section>
+<section id="vertical-whitespace">
 <h4><a class="toc-backref" href="#id138">Vertical Whitespace</a><a class="headerlink" href="#vertical-whitespace" title="Permalink to this headline">¶</a></h4>
 <p>Minimise use of vertical whitespace.</p>
 <p>This is more a principle than a rule: don’t use blank lines when you don’t have to. In particular, don’t put more than one or two blank lines between functions, resist starting functions with a blank line, don’t end functions with a blank line, and be discriminating with your use of blank lines inside functions.</p>
@@ -2899,41 +2903,41 @@ Explanatory Comments</p>
 <li><p>Blank lines at the beginning or end of a function very rarely help readability.</p></li>
 <li><p>Blank lines inside a chain of if-else blocks may well help readability.</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="exceptions-to-the-rules">
+</section>
+</section>
+<section id="exceptions-to-the-rules">
 <h3><a class="toc-backref" href="#id139">Exceptions to the Rules</a><a class="headerlink" href="#exceptions-to-the-rules" title="Permalink to this headline">¶</a></h3>
 <p>The coding conventions described above are mandatory. However, like all good rules, these sometimes have exceptions, which we discuss here.</p>
-<div class="section" id="existing-non-conformant-code">
+<section id="existing-non-conformant-code">
 <h4><a class="toc-backref" href="#id140">Existing Non-conformant Code</a><a class="headerlink" href="#existing-non-conformant-code" title="Permalink to this headline">¶</a></h4>
 <p>You may diverge from the rules when dealing with code that does not conform to this style guide.</p>
 <p>If you find yourself modifying code that was written to specifications other than those presented by this guide, you may have to diverge from these rules in order to stay consistent with the local conventions in that code. If you are in doubt about how to do this, ask the original author or the person currently responsible for the code. Remember that consistency includes local consistency, too.</p>
-</div>
-<div class="section" id="windows-code">
+</section>
+<section id="windows-code">
 <span id="joke"></span><h4><a class="toc-backref" href="#id141">Windows Code</a><a class="headerlink" href="#windows-code" title="Permalink to this headline">¶</a></h4>
 <p>Just kidding.</p>
-</div>
-</div>
-<div class="section" id="parting-words">
+</section>
+</section>
+<section id="parting-words">
 <h3><a class="toc-backref" href="#id142">Parting Words</a><a class="headerlink" href="#parting-words" title="Permalink to this headline">¶</a></h3>
 <p>Use common sense and BE CONSISTENT.</p>
 <p>If you are editing code, take a few minutes to look at the code around you and determine its style. If they use spaces around their if clauses, you should, too. If their comments have little boxes of stars around them, make your comments have little boxes of stars around them too.</p>
 <p>The point of having style guidelines is to have a common vocabulary of coding so people can concentrate on what you are saying, rather than on how you are saying it. We present global style rules here so people know the vocabulary. But local style is also important. If code you add to a file looks drastically different from the existing code around it, the discontinuity throws readers out of their rhythm when they go to read it. Try to avoid this.</p>
 <p>OK, enough writing about writing code; the code itself is much more interesting. Have fun!</p>
-</div>
-</div>
-<div class="section" id="python-coding-style">
+</section>
+</section>
+<section id="python-coding-style">
 <h2><a class="toc-backref" href="#id143">Python Coding Style</a><a class="headerlink" href="#python-coding-style" title="Permalink to this headline">¶</a></h2>
 <p>rascal is a C++ project with a thin Python wrapping. Try to follow the spirit of the <a class="reference internal" href="#cpp-coding-style-and-convention"><span class="std std-ref">C++ Coding Style and Convention</span></a>, as far as it fits into <code class="docutils literal notranslate"><span class="pre">pep8</span></code>. in case of conflict, follow <code class="docutils literal notranslate"><span class="pre">pep8</span></code></p>
-</div>
-<div class="section" id="references">
+</section>
+<section id="references">
 <h2><a class="toc-backref" href="#id144">References</a><a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <p id="hunt-2000">Hunt (2000)
 A. Hunt. The pragmatic programmer : from journeyman to master. Addison-Wesley, Reading, Mass, 2000. ISBN 978-0-2016-1622-4.</p>
 <p id="meyers-2014">Meyers (2014)
 Scott Meyers. <a class="reference external" href="http://shop.oreilly.com/product/0636920033707.do">Effective Modern C++</a>, O’Reilly Media, November 2014, ISBN 978-1491903995</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>How to add a new representation &mdash; Rascal 0.0.1 documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
 
   
   
@@ -31,6 +34,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -226,9 +230,9 @@
 </li>
 </ul>
 </div>
-<div class="section" id="how-to-add-a-new-representation">
+<section id="how-to-add-a-new-representation">
 <h1><a class="toc-backref" href="#id5">How to add a new representation</a><a class="headerlink" href="#how-to-add-a-new-representation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="write-a-calculator-for-a-representation">
+<section id="write-a-calculator-for-a-representation">
 <h2><a class="toc-backref" href="#id6">Write a Calculator for a representation</a><a class="headerlink" href="#write-a-calculator-for-a-representation" title="Permalink to this headline">¶</a></h2>
 <p>A calculator of a representation is an object that builds a representation of the atomic structure contained in <em>a</em> structure manager. This class:</p>
 <ul class="simple">
@@ -267,7 +271,7 @@ These hyperparameters can:</p>
 </div>
 <p>followed by the definition of its constructors and destructor</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//! Constructor</span>
-<span class="k">explicit</span> <span class="nf">CalculatorSortedCoulomb</span><span class="p">(</span><span class="k">const</span> <span class="n">Hypers_t</span> <span class="o">&amp;</span> <span class="n">hyper</span><span class="p">)</span>
+<span class="k">explicit</span> <span class="n">CalculatorSortedCoulomb</span><span class="p">(</span><span class="k">const</span> <span class="n">Hypers_t</span> <span class="o">&amp;</span> <span class="n">hyper</span><span class="p">)</span>
     <span class="o">:</span> <span class="n">CalculatorBase</span><span class="p">{}</span> <span class="p">{</span>
   <span class="k">this</span><span class="o">-&gt;</span><span class="n">set_default_prefix</span><span class="p">(</span><span class="s">&quot;sorted_coulomb_&quot;</span><span class="p">);</span>
   <span class="k">this</span><span class="o">-&gt;</span><span class="n">check_hyperparameters</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">reference_hypers</span><span class="p">,</span> <span class="n">hyper</span><span class="p">);</span>
@@ -356,8 +360,8 @@ These hyperparameters can:</p>
 <span class="p">};</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="implementing-several-types-of-the-same-representation">
+</section>
+<section id="implementing-several-types-of-the-same-representation">
 <h2><a class="toc-backref" href="#id7">Implementing several types of the same representation</a><a class="headerlink" href="#implementing-several-types-of-the-same-representation" title="Permalink to this headline">¶</a></h2>
 <p>Often there are different ways to implement the same fundamental representation. To be able to do this in rascal, the compute function is used with the type of the implementation as template argument (or multiple if representation requires this). The switch between several implementations of conceptually equivalent parts of a representation can be implemented through several mechanisms such a virtual inheritance. We detail here how to implement such switch efficiently using the <a class="reference internal" href="../reference/cpp.html#_CPPv4N6rascal23CalculatorSortedCoulombE" title="rascal::CalculatorSortedCoulomb"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">CalculatorSortedCoulomb</span></code></a> as an example.</p>
 <p>To make the coulomb matrix invariant with respect to permutation Ref. <a class="footnote-reference brackets" href="#two" id="id3">2</a> proposes to sort the upper triangular part of the coulomb matrix according to the norm of each rows or the distance from the central atom (see <a class="footnote-reference brackets" href="#one" id="id4">1</a> for details).</p>
@@ -492,8 +496,8 @@ These hyperparameters can:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="write-the-python-bindings-of-a-new-representation">
+</section>
+<section id="write-the-python-bindings-of-a-new-representation">
 <h2><a class="toc-backref" href="#id8">Write the python bindings of a new representation</a><a class="headerlink" href="#write-the-python-bindings-of-a-new-representation" title="Permalink to this headline">¶</a></h2>
 <p>We use <code class="docutils literal notranslate"><span class="pre">pybind11</span></code> to handle the generation of the python bindings. To make a new representation available to the python users, you need to explicitly register your representation calculator. Since the function <a class="reference internal" href="../reference/cpp.html#_CPPv4I0EN6rascal23CalculatorSortedCoulomb7computeEvR16StructureManager" title="rascal::CalculatorSortedCoulomb::compute"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">compute()</span></code></a> is templated with the type of the input structure manager, it has to be binded explicitly for every possible structure manager stack type that you want to allow as input. To do this you need to add you own binding code in the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">add_representation_calculators()</span></code> function in <code class="docutils literal notranslate"><span class="pre">bindings/bind_py_representation_calculator.cc</span></code> using the available infrastructure. Here is an example on how it is done for the sorted coulomb representation.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// Defines a particular structure manager type</span>
@@ -530,8 +534,8 @@ These hyperparameters can:</p>
 </div>
 </div>
 <p>The last step is to write a python class in <code class="docutils literal notranslate"><span class="pre">bindings/rascal/representations/</span></code> to simplify the use of the representation from the python side. You can use the implentation of the <code class="xref py py-class docutils literal notranslate"><span class="pre">SortedCoulombMatrix</span></code> in <code class="docutils literal notranslate"><span class="pre">coulomb_matrix.py</span></code> as a template.</p>
-</div>
-<div class="section" id="implement-and-test-gradients">
+</section>
+<section id="implement-and-test-gradients">
 <h2><a class="toc-backref" href="#id9">Implement and test gradients</a><a class="headerlink" href="#implement-and-test-gradients" title="Permalink to this headline">¶</a></h2>
 <p>In principle, all libRascal representations should implement gradients with
 respect to the atomic positions.  Currently the only representations to do so
@@ -559,8 +563,8 @@ Fast and Accurate Modeling of Molecular Atomization Energies with Machine Learni
 Physical Review Letters, 108(5), 58301. <a class="reference external" href="https://doi.org/10.1103/PhysRevLett.108.058301">https://doi.org/10.1103/PhysRevLett.108.058301</a></p>
 </dd>
 </dl>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

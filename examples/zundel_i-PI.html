@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>A Gaussian approximation potential (GAP) for the Zundel cation &mdash; Rascal 0.0.1 documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
 
   
   
@@ -31,12 +34,13 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "document", "processHtmlClass": "math|output_area"}}</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -453,7 +457,7 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<div class="section" id="A-Gaussian-approximation-potential-(GAP)-for-the-Zundel-cation">
+<section id="A-Gaussian-approximation-potential-(GAP)-for-the-Zundel-cation">
 <h1>A Gaussian approximation potential (GAP) for the Zundel cation<a class="headerlink" href="#A-Gaussian-approximation-potential-(GAP)-for-the-Zundel-cation" title="Permalink to this headline">¶</a></h1>
 <p>The present notebook is meant to give you an overview of the main ingredients that you need to build an interatomic potential with <code class="docutils literal notranslate"><span class="pre">librascal</span></code> and use it in connection with i-Pi (<a class="reference external" href="https://github.com/cosmo-epfl/i-pi">https://github.com/cosmo-epfl/i-pi</a>) to generate molecular dynamics (MD) trajectories of the system of interest. We will start from building a GAP model for Zundel cations (<span class="math notranslate nohighlight">\(H_5O_2+\)</span>), using a training set obtained via Bowman PES sampling, calculate its RMSE on a test set to check its performance and run a short
 NVT simulation at <span class="math notranslate nohighlight">\(\text{T} = 250\,\text{K}\)</span>.</p>
@@ -467,7 +471,7 @@ the dot product, raised to some integer power <span class="math notranslate nohi
 <p>Finally <span class="math notranslate nohighlight">\(\alpha_s\)</span> represents the weights of each sparse environment, to be determined using Kernel-Ridge Regression (KRR). For extensive details on the SOAP GAP-model fitting procedure and interesting physical applications, we invite the reader to refer to the book chapter [1]. Details on the implementation in <code class="docutils literal notranslate"><span class="pre">librascal</span></code> are instead given in the companion publication [2].</p>
 <p>[1]: M. Ceriotti, M.J. Willatt, and G. Csányi, in Handbook of Materials Modeling (Springer International Publishing, Cham, 2018), pp. 1–27. <a class="reference external" href="https://doi.org/10.1007/978-3-319-42913-7_68-1">https://doi.org/10.1007/978-3-319-42913-7_68-1</a></p>
 <p>[2]: F. Musil, M. Veit, A. Goscinski, G. Fraux, M.J. Willatt, M. Stricker, T. Junge, and M. Ceriotti, J. Chem. Phys. 154, 114109 (2021). <a class="reference external" href="https://doi.org/10.1063/5.0044689">https://doi.org/10.1063/5.0044689</a></p>
-<div class="section" id="Getting-started">
+<section id="Getting-started">
 <h2>Getting started<a class="headerlink" href="#Getting-started" title="Permalink to this headline">¶</a></h2>
 <p>In order to be able to fit a potential with <code class="docutils literal notranslate"><span class="pre">librascal</span></code> (the model evaluator) and interface it with i-Pi (the MD engine) we first need to have both softwares available and correctly installed. For <code class="docutils literal notranslate"><span class="pre">librascal</span></code>, the following should suffice:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install git+https://github.com/cosmo-epfl/librascal.git
@@ -478,7 +482,7 @@ the dot product, raised to some integer power <span class="math notranslate nohi
 </pre></div>
 </div>
 <p>If these steps don’t work, try looking at the <code class="docutils literal notranslate"><span class="pre">README.rst</span></code> files of the respective repositories for further instructions.</p>
-<div class="section" id="Importing-all-the-necessary-Librascal-modules">
+<section id="Importing-all-the-necessary-Librascal-modules">
 <h3>Importing all the necessary Librascal modules<a class="headerlink" href="#Importing-all-the-necessary-Librascal-modules" title="Permalink to this headline">¶</a></h3>
 <p>Let us start from the import of all the necessary modules and classes. In <code class="docutils literal notranslate"><span class="pre">librascal</span></code>, these are:</p>
 <ol class="arabic simple">
@@ -571,9 +575,9 @@ dict_keys([&#39;numbers&#39;, &#39;positions&#39;, &#39;forces&#39;])
 </pre></div>
 </div>
 </div>
-</div>
-</div>
-<div class="section" id="Build-the-GAP-model">
+</section>
+</section>
+<section id="Build-the-GAP-model">
 <h2>Build the GAP model<a class="headerlink" href="#Build-the-GAP-model" title="Permalink to this headline">¶</a></h2>
 <p>The preliminary step towards building a GAP model is defining a training and a test set. The training set is built by random selection of <span class="math notranslate nohighlight">\(800\)</span> of the available structures, while the remaining <span class="math notranslate nohighlight">\(200\)</span> will represent the test set. At this point, we also extract the distinct atomic species present in our system, define the atomic baseline energy and extract the information regarding energies and forces in the train and test set structures, which we will need later on.</p>
 <div class="nbinput nblast docutils container">
@@ -764,8 +768,8 @@ set and its gradients using the <code class="docutils literal notranslate"><span
 Execution:  6.5608484745025635 s
 </pre></div></div>
 </div>
-</div>
-<div class="section" id="Assessment-of-the-model">
+</section>
+<section id="Assessment-of-the-model">
 <h2>Assessment of the model<a class="headerlink" href="#Assessment-of-the-model" title="Permalink to this headline">¶</a></h2>
 <p>To perform a basic assessment of the model we have fitted, we need to predict the properties (energies and forces) of a test set. In the calculation of the model that we have fitted previously, we have randomly splitted the original dataset in a training set of 800 structures and a test set of another 200. So first we load the model and the indices corresponding to the shuffled dataset: the first 800 of those will correspond to the training set, the last 200 to the test set.</p>
 <div class="nbinput nblast docutils container">
@@ -911,8 +915,8 @@ Text(0, 0.5, &#39;reference energies [eV]&#39;)
 <img alt="../_images/examples_zundel_i-PI_33_1.png" src="../_images/examples_zundel_i-PI_33_1.png" />
 </div>
 </div>
-</div>
-<div class="section" id="MD-simulations">
+</section>
+<section id="MD-simulations">
 <h2>MD simulations<a class="headerlink" href="#MD-simulations" title="Permalink to this headline">¶</a></h2>
 <p>Now we are going to use the fitted model to perform a simple NVT simulation at <span class="math notranslate nohighlight">\(\text{T} = 250\,\)</span>K using the i-Pi interface with librascal. For that we will use a communication socket run by i-Pi, which basically outputs a structure produced by the MD and gives it in input to Librascal. This will in turn return energies, forces and stresses by means of the <code class="docutils literal notranslate"><span class="pre">GenericMDCalculator</span></code> class of Librascal.</p>
 <p>The job itself will generate a parent process (i-Pi) which contains information of the ensemble, the step needed for the time-integration, the thermostat characteristics, and all other trajectory-related infos. All these information are initially stored in an input.xml file as specified in the i-Pi documentation at <a class="reference external" href="https://github.com/cosmo-epfl/i-pi">https://github.com/cosmo-epfl/i-pi</a> and given as inputs to i-Pi. The Librascal calculator is then launched as a child process and exchanges information with the MD driver.</p>
@@ -986,8 +990,8 @@ configuration of the trajectory and by Librascal as a template to load informati
 <img alt="../_images/examples_zundel_i-PI_38_1.png" src="../_images/examples_zundel_i-PI_38_1.png" />
 </div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

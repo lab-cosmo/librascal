@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Running MD Simulations with a Librascal Model &mdash; Rascal 0.0.1 documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
 
   
   
@@ -31,6 +34,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -207,7 +211,7 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="running-md-simulations-with-a-librascal-model">
+<section id="running-md-simulations-with-a-librascal-model">
 <span id="running-md"></span><h1>Running MD Simulations with a Librascal Model<a class="headerlink" href="#running-md-simulations-with-a-librascal-model" title="Permalink to this headline">¶</a></h1>
 <p>Once you have fitted a model with <code class="docutils literal notranslate"><span class="pre">librascal</span></code> (see <a class="reference internal" href="model_fitting.html#model-fitting"><span class="std std-ref">Fitting a Model with Librascal</span></a>), you will
 probably want to use it to do something interesting – for example, running a
@@ -216,7 +220,7 @@ interfaces to other codes that specialize in running molecular simulations;
 <code class="docutils literal notranslate"><span class="pre">librascal</span></code> only calculates descriptors (and usually also energies and forces)
 given an atomic configuration.  Below is a list of codes that can currently use
 <code class="docutils literal notranslate"><span class="pre">librascal</span></code> to run MD simulations.</p>
-<div class="section" id="i-pi">
+<section id="i-pi">
 <h2>i-PI<a class="headerlink" href="#i-pi" title="Permalink to this headline">¶</a></h2>
 <p>The i-PI universal force engine (<a class="reference external" href="https://ipi-code.org">ipi-code.org</a>) is a
 powerful and flexible simulation engine, capable of many advanced simulation
@@ -226,23 +230,23 @@ socket calculator interface: Use <a class="reference external" href="https://git
 to initialize a saved <code class="docutils literal notranslate"><span class="pre">librascal</span></code> model, then run i-PI to connect to the
 socket and run dynamics.  Please consult the i-PI documentation for further
 information on setting up a simulation and using socket calculators.</p>
-</div>
-<div class="section" id="ase-python">
+</section>
+<section id="ase-python">
 <h2>ASE (Python)<a class="headerlink" href="#ase-python" title="Permalink to this headline">¶</a></h2>
 <p>Librascal also provides a Python Calculator compatible with the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/">ASE</a> package, which is capable of running serial
 MD (<code class="docutils literal notranslate"><span class="pre">librascal</span></code> does not yet parallelize the energy or force calculation).
 The Calculator can be used for parallel evaluation of energies/forces for a set
 of <em>existing</em> structures with the help of a standard Python parallelism tool,
 such as <a class="reference external" href="https://ipyparallel.readthedocs.io/en/latest/">ipyparallel</a>.</p>
-</div>
-<div class="section" id="lammps-under-construction">
+</section>
+<section id="lammps-under-construction">
 <h2>LAMMPS (under construction)<a class="headerlink" href="#lammps-under-construction" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="https://lammps.sandia.gov/">LAMMPS</a> is one of the most widely used MD codes
 and supports a wide array of energy and force models (including several machine
 learning potentials), as well as parallel MD via spatial domain decomposition.
 An interface to LAMMPS is currently in the works; stay tuned for more!</p>
-</div>
-<div class="section" id="others">
+</section>
+<section id="others">
 <h2>Others<a class="headerlink" href="#others" title="Permalink to this headline">¶</a></h2>
 <p>If you would like <code class="docutils literal notranslate"><span class="pre">librascal</span></code> to support another MD code, please let us know!
 The best way to do this is <a class="reference external" href="https://github.com/cosmo-epfl/librascal/issues">open an issue on our github</a> with the <code class="docutils literal notranslate"><span class="pre">enhancement</span></code>
@@ -251,8 +255,8 @@ label.</p>
 to use the <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericMDCalculator</span></code> class defined in
 <cite>bindings/rascal/models/IP_generic_md.py</cite> – which can be used as-is or as the
 starting point for a more specialized, optimized interface.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

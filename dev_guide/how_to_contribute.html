@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>How to contribute &mdash; Rascal 0.0.1 documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
 
   
   
@@ -31,6 +34,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -220,19 +224,19 @@
 </li>
 </ul>
 </div>
-<div class="section" id="id1">
+<section id="id1">
 <h1><a class="toc-backref" href="#id2">How to contribute</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
 <p>If you want to add a new  a method that can be used in Rascal, please, first of all, be aware of the <a class="reference internal" href="../index.html#code-structure"><span class="std std-ref">Structure of the Code</span></a>. Once you know how Rascal is subdivided, you can start thinking about the implementation of the new functionality.</p>
 <p>First of all, think about what you need and check if is already implemented (for example, if you need a special C++ structure or if you can use one of the basic types already implemented).</p>
 <p>When you know what is necessary for your method, you can proceed in the implementation.</p>
 <p>The new method should be written in C++14 in the <strong>src</strong> folder and should be named in a way that is clear what the method does (no method_3_bis.cc etc..). The file should start with a header reporting a few information such as the author, date, etc.. You can check the other .cc files in the directory for a quick reference.
 Before, jumping into the next paragraphs, please respect our <a class="reference internal" href="coding-convention.html#coding-convention"><span class="std std-ref">coding convention</span></a>.</p>
-<div class="section" id="write-the-c-method">
+<section id="write-the-c-method">
 <h2><a class="toc-backref" href="#id3">Write the C++ method</a><a class="headerlink" href="#write-the-c-method" title="Permalink to this headline">¶</a></h2>
 <p>At this point, you can code the method in the way that you want, but we remind you that it should be included in the <code class="docutils literal notranslate"><span class="pre">namespace</span> <span class="pre">rascal</span> <span class="pre">{...}</span></code>. So for example, your file(s) <code class="docutils literal notranslate"><span class="pre">mymethod.hh</span></code> will contain:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;wathever_is_needed&gt;</span><span class="cp"></span>
 
-<span class="k">namespace</span> <span class="n">rascal</span> <span class="p">{</span>
+<span class="k">namespace</span> <span class="nn">rascal</span> <span class="p">{</span>
     <span class="cm">/**</span>
 <span class="cm">    * Remember to put comments in a form that Doxygen</span>
 <span class="cm">    * so that is clear what they do</span>
@@ -244,8 +248,8 @@ Before, jumping into the next paragraphs, please respect our <a class="reference
 </pre></div>
 </div>
 <p>Once the method that you need has been implemented, you can save the file(s) and proceed. Note that adding a <code class="docutils literal notranslate"><span class="pre">.cc</span></code> file requires its registration in the folder’s CMakeLists.txt for it to be compiled.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Species Manager &mdash; Rascal 0.0.1 documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
 
   
   
@@ -31,6 +34,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
@@ -219,7 +223,7 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="species-manager">
+<section id="species-manager">
 <span id="id1"></span><h1>Species Manager<a class="headerlink" href="#species-manager" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
@@ -228,12 +232,12 @@
 <li><p><a class="reference internal" href="#access" id="id6">Access</a></p></li>
 </ul>
 </div>
-<div class="section" id="principle">
+<section id="principle">
 <h2><a class="toc-backref" href="#id4">Principle</a><a class="headerlink" href="#principle" title="Permalink to this headline">¶</a></h2>
 <p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">SpeciesManager</span></code> is an Object which provides access to a structure sorted by species. Upon construction the whole tree of combinations is unrolled up to the <code class="docutils literal notranslate"><span class="pre">MaxOrder</span></code> (i.e. pairs or triplets typically). The use case is e.g. a function (symmetry function, etc.) which is defined for a given atom species combination with types 1-2-1.
 Access is provided via square bracket operater taking an array of integers, i.e. <code class="docutils literal notranslate"><span class="pre">std:array&lt;int,</span> <span class="pre">3&gt;</span> <span class="pre">species_indices{1,</span> <span class="pre">2,</span> <span class="pre">1}</span></code>. The return type is an iterable filtered view on the structure sorted by <code class="docutils literal notranslate"><span class="pre">species_indices</span></code>. Internally this is converted to a <code class="xref py py-class docutils literal notranslate"><span class="pre">KeyStandardisation</span></code>.</p>
-</div>
-<div class="section" id="storage-concept">
+</section>
+<section id="storage-concept">
 <h2><a class="toc-backref" href="#id5">Storage concept</a><a class="headerlink" href="#storage-concept" title="Permalink to this headline">¶</a></h2>
 <p>Internally the <code class="xref py py-class docutils literal notranslate"><span class="pre">SpeciesManager</span></code> stores the splitted species in a container that is a map of <code class="xref py py-class docutils literal notranslate"><span class="pre">KeyStandardisation</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorFilter</span></code> (please refer to <a class="reference internal" href="adaptors.html#adaptor-filter"><span class="std std-ref">AdaptorFilter</span></a> for details).
 <a href="#id2"><span class="problematic" id="id3">`</span></a>AdaptorFilter`s serve as a bucket to store atoms/pairs/triplets of a given combinations.</p>
@@ -244,12 +248,12 @@ Access is provided via square bracket operater taking an array of integers, i.e.
 <p>Putting them into containers of <code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorFilter</span></code> makes it easy to reuse this class type for other kinds of sorting.</p>
 <p>A downside of this choice is that the concept of <code class="xref py py-meth docutils literal notranslate"><span class="pre">update_self()</span></code> is broken. In the current case the <code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorFilter</span></code> just serves as a bucket to put a specific type of cluster in. It does not know anything about the rationale why it was given this combination. So the <cite>brains</cite> here lie with the <code class="xref py py-class docutils literal notranslate"><span class="pre">StructureManager</span></code>. Hence, then recursive update (if e.g. the underlying structure changes) can only be invoked by the <code class="xref py py-class docutils literal notranslate"><span class="pre">StructureManager</span></code> who does the actual sorting.
 Further, if a new structure is provided, it could be that the <code class="xref py py-class docutils literal notranslate"><span class="pre">AdaptorFilter</span></code>, who was the container for a specific combination of species, does not exist anymore because the neighbourhood changed.</p>
-</div>
-<div class="section" id="access">
+</section>
+<section id="access">
 <h2><a class="toc-backref" href="#id6">Access</a><a class="headerlink" href="#access" title="Permalink to this headline">¶</a></h2>
 <p>One example for how to access a filtered view on a structure through the <code class="xref py py-class docutils literal notranslate"><span class="pre">SpeciesManager</span></code> is given in the test. By using a <code class="docutils literal notranslate"><span class="pre">std::array&lt;int,</span> <span class="pre">Order&gt;</span></code> filled with the desired species combination with the <code class="docutils literal notranslate"><span class="pre">operator[]</span></code>, a <code class="xref py py-class docutils literal notranslate"><span class="pre">StructureManager</span></code> is returned, which only holds this specific combination.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

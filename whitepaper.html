@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Goals &amp; Design &mdash; Rascal 0.0.1 documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -31,6 +34,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -200,14 +204,14 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="goals-design">
+<section id="goals-design">
 <span id="whitepaper"></span><h1>Goals &amp; Design<a class="headerlink" href="#goals-design" title="Permalink to this headline">¶</a></h1>
 <p>Rascal is built as an efficient C++ core that can be easily accessed
 from Python. Coding philosophy and style conventions are discussed in the
 <a class="reference internal" href="dev_guide/developer.html#dev"><span class="std std-ref">Developer’s guide</span></a>.</p>
 <p>Here we discuss the general structure of the code, the main objects that
 are used, and the rationale for various design choices.</p>
-<div class="section" id="structures-and-clusters">
+<section id="structures-and-clusters">
 <h2>Structures and Clusters<a class="headerlink" href="#structures-and-clusters" title="Permalink to this headline">¶</a></h2>
 <p>An atomic structure is a collection of atoms, with properties associated
 to it. In the most abstract way possible, properties can be attached to the
@@ -219,8 +223,8 @@ atoms, a distance is a property of a pair of atoms, and so on.
 We refer to the number of atoms involved in a cluster as the order of that
 cluster. An atom is a cluster with <cite>Order=1</cite>, a pair is a cluster with
 <cite>Order=2</cite> and so on.</p>
-</div>
-<div class="section" id="structure-managers">
+</section>
+<section id="structure-managers">
 <h2>Structure Managers<a class="headerlink" href="#structure-managers" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">StructureManager</span></code> is the main class forming the backbone of Rascal.
 It takes care of:</p>
@@ -266,8 +270,8 @@ concise notation to iterate over atoms, pairs, triplets, …</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="adaptors">
+</section>
+<section id="adaptors">
 <h2>Adaptors<a class="headerlink" href="#adaptors" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">AdaptorX</span></code> are classes, which by <em>stacking</em> on top of a <code class="docutils literal notranslate"><span class="pre">StructureManager</span></code>
 or another <code class="docutils literal notranslate"><span class="pre">Adaptor</span></code> change the iteration of the underlying
@@ -292,8 +296,8 @@ creates only data and data structures, that are necessary for its intended use
 and transparently hands requests for data through to the underlying
 manager. Because of this transparency and the way they are used and accessed,
 adaptors are from now on referred to as structure managers. The stacking is explained in the next section.</p>
-</div>
-<div class="section" id="stacking-of-structuremanagers">
+</section>
+<section id="stacking-of-structuremanagers">
 <h2>Stacking of StructureManagers<a class="headerlink" href="#stacking-of-structuremanagers" title="Permalink to this headline">¶</a></h2>
 <p>Structure managers can be build in a modular fashion by stacking them on
 top of each other. That is, one can add functionalities to an existing
@@ -346,8 +350,8 @@ template algebra based on the <code class="docutils literal notranslate"><span c
 provide storage space for most of the data (both properties and indices) and
 infrastructure to access this data with minimal memory duplication and
 computational overhead.</p>
-</div>
-<div class="section" id="clusterrefs-property-and-indexing">
+</section>
+<section id="clusterrefs-property-and-indexing">
 <h2>ClusterRefs, Property and indexing<a class="headerlink" href="#clusterrefs-property-and-indexing" title="Permalink to this headline">¶</a></h2>
 <p>The actual infrastructure to index and access cluster data is created at
 compile time and linked statically, so despite the apparent complexity there
@@ -369,8 +373,8 @@ computed at a deeper level without the need for recomputing or duplicating
 the data.</p>
 <p>TODO: discussion of Properties, how they are indexed and how they can store
 metadata.</p>
-</div>
-<div class="section" id="repmanager">
+</section>
+<section id="repmanager">
 <h2>RepManager<a class="headerlink" href="#repmanager" title="Permalink to this headline">¶</a></h2>
 <p>A <code class="docutils literal notranslate"><span class="pre">RepManager</span></code> object has the purpose of computing properties of
 clusters, such as distances, angles, or more complex features such as
@@ -380,8 +384,8 @@ It needs to be initialized with a <code class="docutils literal notranslate"><sp
 a JSON formatted string that contains its hyperparameters.
 This string will also be attached to the metadata of the returned
 properties.</p>
-</div>
-<div class="section" id="structure-managers-repmanager-and-python">
+</section>
+<section id="structure-managers-repmanager-and-python">
 <h2>Structure Managers, RepManager and Python<a class="headerlink" href="#structure-managers-repmanager-and-python" title="Permalink to this headline">¶</a></h2>
 <p>NOTE: this is more of a summary of a discussion we had about using this from
 Python and what this entails in terms of the template definitions.</p>
@@ -416,8 +420,8 @@ based on StructureManagerFull, that could go like</p>
 <p>and a generic constructor that would use template algebra to make sure that
 whatever SM that is passed as a constructor has the functionality that is
 needed to compute the representation.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

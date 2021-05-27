@@ -4,7 +4,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Installation &mdash; Rascal 0.0.1 documentation</title>
@@ -13,6 +14,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -31,6 +34,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -215,9 +219,9 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="installation">
+<section id="installation">
 <span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="get-librascal">
+<section id="get-librascal">
 <h2>Get librascal<a class="headerlink" href="#get-librascal" title="Permalink to this headline">¶</a></h2>
 <p>It is strongly recommended to clone librascal from its repository in GitHub.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/cosmo-epfl/librascal.git
@@ -228,7 +232,7 @@
 </pre></div>
 </div>
 <p>assuming that <cite>python</cite> 3.5 (or higher) and <cite>gcc</cite> or <cite>clang</cite> are available.</p>
-<div class="section" id="dependencies">
+<section id="dependencies">
 <h3>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h3>
 <p>Before installing librascal, please make sure you have at least the
 following packages installed:</p>
@@ -297,8 +301,8 @@ automatically when compiling Rascal.</p>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="compiling">
+</section>
+<section id="compiling">
 <h3>Compiling<a class="headerlink" href="#compiling" title="Permalink to this headline">¶</a></h3>
 <p>To compile the code it is necessary to have CMake 3.0 and a C++ compiler
 supporting C++14. During the configuration, it will automatically try to
@@ -330,13 +334,13 @@ cmake ..
 make
 </pre></div>
 </div>
-</div>
-<div class="section" id="customizing-the-build">
+</section>
+<section id="customizing-the-build">
 <h3>Customizing the build<a class="headerlink" href="#customizing-the-build" title="Permalink to this headline">¶</a></h3>
 <p>The library supports several alternative builds that have additional
 dependencies. Note that the <code class="docutils literal notranslate"><span class="pre">ncurses</span></code> GUI for cmake (ccmake) is quite
 helpful to customize the build options.</p>
-<div class="section" id="tests">
+<section id="tests">
 <h4>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h4>
 <p>Librascal source code is extensively tested (both c++ and python).
 The BOOST unit_test_framework is required to build the tests (see
@@ -357,8 +361,8 @@ for formatting compliance with clang-format 8.0 or higher and black packages
 pip3 install black
 </pre></div>
 </div>
-</div>
-<div class="section" id="build-type">
+</section>
+<section id="build-type">
 <h4>Build Type<a class="headerlink" href="#build-type" title="Permalink to this headline">¶</a></h4>
 <p>Several build types are available Release (default), Debug and
 RelWithDebInfo. To build an alternative mode</p>
@@ -375,8 +379,8 @@ cmake -DCMAKE_BUILD_TYPE<span class="o">=</span>RelWithDebInfo  <span class="se"
 make
 </pre></div>
 </div>
-</div>
-<div class="section" id="documentation">
+</section>
+<section id="documentation">
 <h4>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h4>
 <p>The documentation relies on the sphinx (with nbsphinx and breathe
 extensions), doxygen, pandoc, and graphviz
@@ -392,8 +396,8 @@ make doc
 </pre></div>
 </div>
 <p>and open <code class="file docutils literal notranslate"><span class="pre">build/docs/html/index.html</span></code> in a browser.</p>
-</div>
-<div class="section" id="bindings">
+</section>
+<section id="bindings">
 <h4>Bindings<a class="headerlink" href="#bindings" title="Permalink to this headline">¶</a></h4>
 <p>Librascal relies on the pybind11 library to automate the generation
 of the python bindings which are built by default. Nevertheless, to
@@ -403,18 +407,18 @@ cmake -DBUILD_BINDINGS<span class="o">=</span>OFF ..
 make
 </pre></div>
 </div>
-</div>
-<div class="section" id="installing-rascal">
+</section>
+<section id="installing-rascal">
 <h4>Installing rascal<a class="headerlink" href="#installing-rascal" title="Permalink to this headline">¶</a></h4>
 <p>To install the python library with c++ bindings:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install .
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="helpers-for-developers">
+</section>
+</section>
+<section id="helpers-for-developers">
 <h3>Helpers for Developers<a class="headerlink" href="#helpers-for-developers" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="deepclean">
+<section id="deepclean">
 <h4>Deepclean<a class="headerlink" href="#deepclean" title="Permalink to this headline">¶</a></h4>
 <p>To remove all the cmake files/folders except for the external
 library (enable glob and remove):</p>
@@ -422,8 +426,8 @@ library (enable glob and remove):</p>
 rm -fr -- !<span class="o">(</span>external<span class="p">|</span>third-party<span class="o">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="automatic-code-formatting">
+</section>
+<section id="automatic-code-formatting">
 <h4>Automatic code formatting<a class="headerlink" href="#automatic-code-formatting" title="Permalink to this headline">¶</a></h4>
 <p>To help developers conform their contribution to the coding
 convention, the formatting of new functionalities can be automated
@@ -464,8 +468,8 @@ ignore lines:</p>
 <p>where <code class="docutils literal notranslate"><span class="pre">noqa</span></code> stands for <code class="docutils literal notranslate"><span class="pre">no</span></code> <code class="docutils literal notranslate"><span class="pre">q</span></code>uality <code class="docutils literal notranslate"><span class="pre">a</span></code>ssurance.</p>
 </li>
 </ul>
-</div>
-<div class="section" id="jupyter-notebooks">
+</section>
+<section id="jupyter-notebooks">
 <h4>Jupyter notebooks<a class="headerlink" href="#jupyter-notebooks" title="Permalink to this headline">¶</a></h4>
 <p>If you are contributing any code in IPython/Jupyter notebooks, <em>please</em>
 install the <cite>nbstripout</cite> extension (available e.g. on
@@ -493,10 +497,10 @@ are either meant to be run <em>interactively</em> or are meant to be processed b
 <cite>sphinx</cite> (<a class="reference external" href="https://nbsphinx.readthedocs.io/en/latest/">nbsphinx</a>) for
 inclusion in the
 <a class="reference external" href="https://cosmo-epfl.github.io/librascal/tutorials/tutorials.html">tutorials page</a>.</p>
-</div>
-</div>
-</div>
-<div class="section" id="miscellaneous-information">
+</section>
+</section>
+</section>
+<section id="miscellaneous-information">
 <h2>Miscellaneous Information<a class="headerlink" href="#miscellaneous-information" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Common cmake flags:</p>
@@ -532,21 +536,21 @@ inclusion in the
 sudo docker run -it -v /path/to/repo/:/home/user/  <span class="nb">test</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="run-rascal">
+</section>
+<section id="run-rascal">
 <h2>Run Rascal<a class="headerlink" href="#run-rascal" title="Permalink to this headline">¶</a></h2>
 <p>In order to run Rascal, you need to import the library into a Python code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rascal</span>
 <span class="kn">from</span> <span class="nn">rascal.representations</span> <span class="kn">import</span> <span class="o">*</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="advanced-options">
+</section>
+<section id="advanced-options">
 <h2>Advanced options<a class="headerlink" href="#advanced-options" title="Permalink to this headline">¶</a></h2>
 <p>It is possible to link Rascal with other scientific calculation packages, like
 LAMMPS, ASE, i-PI, and n2p2.  These interfaces are still a work in progress.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
