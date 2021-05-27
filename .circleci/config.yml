@@ -76,6 +76,9 @@ jobs:
 
   # Special job only building the documentation
   docs:
+    environment:
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
     docker:
     - image: cosmoepfl/rascal-ci:3
     steps:
@@ -103,6 +106,9 @@ jobs:
 
   # Special job only linting the code
   lint:
+    environment:
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
     docker:
     - image: cosmoepfl/rascal-ci:3
     steps:
