@@ -6,14 +6,15 @@ jupyter
 matplotlib
 #qml
 # tqdm
-# for documentation
-sphinx==4.0.1
-breathe==4.30.0
+# Developers tools for compiling documentation
+sphinx>=2.1.2
+breathe>=4.14.1
+# Jinja2 v3 breaks nbsphinx
 jinja2==2.11.3
 sphinx_rtd_theme
-nbsphinx==0.8.5
-pygments==2.9.0
-docutils==0.17
+nbsphinx>=0.8.1
+pygments>=2.4.1
+# Developers tools for linting and formatting
 cpplint==1.5.5
 black==20.8b1
 # Developers tools - data generation scripts
