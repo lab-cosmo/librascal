@@ -415,7 +415,7 @@ Physical Review Letters, 108(5), 58301. <a class="reference external" href="http
 
 <dl class="py class">
 <dt class="sig sig-object py" id="rascal.representations.SphericalInvariants">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rascal.representations.</span></span><span class="sig-name descname"><span class="pre">SphericalInvariants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interaction_cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_smooth_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_radial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_angular</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_sigma_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_sigma_constant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_function_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ShiftedCosine'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">soap_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'PowerSpectrum'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inversion_symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radial_basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GTO'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_by_species_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'environment</span> <span class="pre">wise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_gradients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_function_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coefficient_subselection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_invariants.html#SphericalInvariants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rascal.representations.SphericalInvariants" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rascal.representations.</span></span><span class="sig-name descname"><span class="pre">SphericalInvariants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interaction_cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_smooth_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_radial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_angular</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_sigma_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_sigma_constant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_function_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ShiftedCosine'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">soap_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'PowerSpectrum'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inversion_symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radial_basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GTO'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_by_species_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'environment</span> <span class="pre">wise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_gradients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_function_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coefficient_subselection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_invariants.html#SphericalInvariants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rascal.representations.SphericalInvariants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a SphericalInvariants representation, i.e. the SOAP power spectrum.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rascal.representations.SphericalInvariants.interaction_cutoff">
@@ -571,14 +571,36 @@ is 1.  Default and highly recommended: True.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="rascal.representations.SphericalInvariants.optimization_args">
-<span class="sig-name descname"><span class="pre">optimization_args</span></span><a class="headerlink" href="#rascal.representations.SphericalInvariants.optimization_args" title="Permalink to this definition">¶</a></dt>
-<dd><p>Additional arguments for optimization.
-Currently spline optimization for the radial basis function is available
-Recommended settings if used {“type”:”Spline”, “accuracy”: 1e-5}</p>
+<dt class="sig sig-object py" id="rascal.representations.SphericalInvariants.optimization">
+<span class="sig-name descname"><span class="pre">optimization</span></span><a class="headerlink" href="#rascal.representations.SphericalInvariants.optimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional arguments for optimization of the computation of spherical
+expansion coefficients. “Spline” and “RadialDimReduction” are available.</p>
+<p>Spline: Enables cubic splining for the radial basis functions.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>accuracy<span class="classifier">float</span></dt><dd><p>accuracy of the cubic spline</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl>
+<dt>RadialDimReduction: Projection matrices to optimize radial basis,</dt><dd><blockquote>
+<div><p>requires Spline to be set</p>
+</div></blockquote>
+<dl class="simple">
+<dt>projection_matrices<span class="classifier">dict</span></dt><dd><p>Contains or each species a list of projection matrices for each
+angular channel. A projection matrix for an angular channel has
+the shape (max_radial, expanded_max_radial). A number of
+<cite>expanded_max_radial</cite> radial basis are computed
+to be then projected to <cite>max_radial</cite> radial basis. The projected
+radial basis is then splined for each species and angular channel</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Default settings is using spline</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-odd"><p>dict, default None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -650,7 +672,7 @@ if cutoff_function_type == ‘RadialScaling’ then it should have the form</p>
      <span class="n">exponent</span><span class="o">=...</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>where <code class="code docutils literal notranslate"><span class="pre">...</span></code> should be replaced by the desired value.</p>
+<p>where <code class="code docutils literal notranslate"><span class="pre">...</span></code> should be replaced by the desired positive float.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>dict</p>
@@ -732,7 +754,7 @@ environments”, Phys. Rev. B. 87(18), p. 184115
 
 <dl class="py class">
 <dt class="sig sig-object py" id="rascal.representations.SphericalCovariants">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rascal.representations.</span></span><span class="sig-name descname"><span class="pre">SphericalCovariants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interaction_cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_smooth_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_radial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_angular</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_sigma_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_sigma_constant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_function_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ShiftedCosine'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radial_basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GTO'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">soap_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'LambdaSpectrum'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inversion_symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariant_lambda</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_function_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_covariants.html#SphericalCovariants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rascal.representations.SphericalCovariants" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rascal.representations.</span></span><span class="sig-name descname"><span class="pre">SphericalCovariants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interaction_cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_smooth_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_radial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_angular</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_sigma_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_sigma_constant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_function_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ShiftedCosine'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radial_basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GTO'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">soap_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'LambdaSpectrum'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inversion_symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariant_lambda</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff_function_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/spherical_covariants.html#SphericalCovariants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rascal.representations.SphericalCovariants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a SphericalCovariants representation, i.e. lambda spectrum.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="rascal.representations.SphericalCovariants.interaction_cutoff">
@@ -906,10 +928,45 @@ if cutoff_function_type == ‘RadialScaling’ then it should have the form</p>
      <span class="n">exponent</span><span class="o">=...</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>where <code class="code docutils literal notranslate"><span class="pre">...</span></code> should be replaced by the desired value.</p>
+<p>where <code class="code docutils literal notranslate"><span class="pre">...</span></code> should be replaced by the desired positive float.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rascal.representations.SphericalCovariants.optimization">
+<span class="sig-name descname"><span class="pre">optimization</span></span><a class="headerlink" href="#rascal.representations.SphericalCovariants.optimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional arguments for optimization of the computation of spherical
+expansion coefficients. “Spline” and “RadialDimReduction” are available.</p>
+<p>Spline: Enables cubic splining for the radial basis functions.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>accuracy<span class="classifier">float</span></dt><dd><p>accuracy of the cubic spline</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl>
+<dt>RadialDimReduction: Projection matrices to optimize radial basis,</dt><dd><blockquote>
+<div><p>requires Spline to be set</p>
+</div></blockquote>
+<dl class="simple">
+<dt>projection_matrices<span class="classifier">dict</span></dt><dd><p>Contains or each species a list of projection matrices for each
+angular channel. A projection matrix for an angular channel has
+the shape (max_radial, expanded_max_radial). A number of
+<cite>expanded_max_radial</cite> radial basis are computed
+to be then projected to <cite>max_radial</cite> radial basis. The projected
+radial basis is then splined for each species and angular channel</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Default settings is using spline</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict, default None</p>
 </dd>
 </dl>
 </dd></dl>

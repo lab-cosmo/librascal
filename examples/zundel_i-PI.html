@@ -652,12 +652,13 @@ the <code class="docutils literal notranslate"><span class="pre">compute_KNM</sp
                             <span class="n">exponent</span><span class="o">=</span><span class="mi">4</span>
                         <span class="p">),</span>
               <span class="n">radial_basis</span><span class="o">=</span><span class="s2">&quot;GTO&quot;</span><span class="p">,</span>
-              <span class="n">optimization_args</span><span class="o">=</span>
-                    <span class="nb">dict</span><span class="p">(</span>
-                            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;Spline&quot;</span><span class="p">,</span>
-                            <span class="n">accuracy</span><span class="o">=</span><span class="mf">1.0e-05</span>
-                        <span class="p">),</span>
               <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+              <span class="n">optimization</span><span class="o">=</span>
+                    <span class="nb">dict</span><span class="p">(</span>
+                            <span class="n">Spline</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                               <span class="n">accuracy</span><span class="o">=</span><span class="mf">1.0e-05</span>
+                            <span class="p">)</span>
+                        <span class="p">),</span>
               <span class="n">compute_gradients</span><span class="o">=</span><span class="kc">False</span>
               <span class="p">)</span>
 

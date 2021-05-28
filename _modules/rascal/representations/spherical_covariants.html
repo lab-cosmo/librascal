@@ -169,7 +169,11 @@
   <h1>Source code for rascal.representations.spherical_covariants</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">json</span>
 
-<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">CalculatorFactory</span><span class="p">,</span> <span class="n">cutoff_function_dict_switch</span>
+<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CalculatorFactory</span><span class="p">,</span>
+    <span class="n">cutoff_function_dict_switch</span><span class="p">,</span>
+    <span class="n">check_optimization_for_spherical_representations</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">..neighbourlist</span> <span class="kn">import</span> <span class="n">AtomsList</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">BaseIO</span>
@@ -269,7 +273,33 @@
 <span class="sd">                 scale=...,</span>
 <span class="sd">                 exponent=...)</span>
 
-<span class="sd">        where :code:`...` should be replaced by the desired value.</span>
+<span class="sd">        where :code:`...` should be replaced by the desired positive float.</span>
+
+<span class="sd">    optimization : dict, default None</span>
+<span class="sd">        Optional arguments for optimization of the computation of spherical</span>
+<span class="sd">        expansion coefficients. &quot;Spline&quot; and &quot;RadialDimReduction&quot; are available.</span>
+
+<span class="sd">        Spline: Enables cubic splining for the radial basis functions.</span>
+
+<span class="sd">            accuracy : float</span>
+<span class="sd">                accuracy of the cubic spline</span>
+
+<span class="sd">        RadialDimReduction: Projection matrices to optimize radial basis,</span>
+<span class="sd">                            requires Spline to be set</span>
+
+<span class="sd">            projection_matrices : dict</span>
+<span class="sd">                Contains or each species a list of projection matrices for each</span>
+<span class="sd">                angular channel. A projection matrix for an angular channel has</span>
+<span class="sd">                the shape (max_radial, expanded_max_radial). A number of</span>
+<span class="sd">                `expanded_max_radial` radial basis are computed</span>
+<span class="sd">                to be then projected to `max_radial` radial basis. The projected</span>
+<span class="sd">                radial basis is then splined for each species and angular channel</span>
+
+<span class="sd">        Default settings is using spline</span>
+
+<span class="sd">        .. code: python</span>
+
+<span class="sd">            dict(Spline=dict(accuracy=1e-8))</span>
 
 
 <span class="sd">    Methods</span>
@@ -296,7 +326,8 @@
         <span class="n">cutoff_function_type</span><span class="o">=</span><span class="s2">&quot;ShiftedCosine&quot;</span><span class="p">,</span>
         <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">radial_basis</span><span class="o">=</span><span class="s2">&quot;GTO&quot;</span><span class="p">,</span>
-        <span class="n">optimization_args</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">optimization</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">optimization_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;LambdaSpectrum&quot;</span><span class="p">,</span>
         <span class="n">inversion_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">covariant_lambda</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -332,30 +363,14 @@
             <span class="nb">type</span><span class="o">=</span><span class="n">gaussian_sigma_type</span><span class="p">,</span>
             <span class="n">gaussian_sigma</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">gaussian_sigma_constant</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;AA&quot;</span><span class="p">),</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">optimization_args</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">optimization_args</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s2">&quot;type&quot;</span> <span class="ow">in</span> <span class="n">optimization_args</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Spline&quot;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s2">&quot;accuracy&quot;</span> <span class="ow">in</span> <span class="n">optimization_args</span><span class="p">:</span>
-                    <span class="n">accuracy</span> <span class="o">=</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s2">&quot;accuracy&quot;</span><span class="p">]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">accuracy</span> <span class="o">=</span> <span class="mf">1e-5</span>
-                    <span class="nb">print</span><span class="p">(</span>
-                        <span class="s2">&quot;No accuracy for spline optimization was given. Switching to default accuracy </span><span class="si">{:.0e}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">accuracy</span>
-                        <span class="p">)</span>
-                    <span class="p">)</span>
-                <span class="n">optimization_args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Spline&quot;</span><span class="p">,</span> <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="n">accuracy</span><span class="p">}</span>
-            <span class="k">elif</span> <span class="n">optimization_args</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-                <span class="n">optimization_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">})</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span>
-                    <span class="s2">&quot;Optimization type is not known. Switching to no&quot;</span> <span class="s2">&quot; optimization.&quot;</span>
-                <span class="p">)</span>
-                <span class="n">optimization_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">})</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">optimization_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">})</span>
-        <span class="n">radial_contribution</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">radial_basis</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="n">optimization_args</span><span class="p">)</span>
-        <span class="n">radial_contribution</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">radial_basis</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="n">optimization_args</span><span class="p">)</span>
+        <span class="n">optimization</span> <span class="o">=</span> <span class="n">check_optimization_for_spherical_representations</span><span class="p">(</span>
+            <span class="n">optimization</span><span class="p">,</span> <span class="n">optimization_args</span>
+        <span class="p">)</span>
+
+        <span class="n">radial_contribution</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">radial_basis</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="n">optimization</span><span class="p">)</span>
+        <span class="n">radial_contribution</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="nb">type</span><span class="o">=</span><span class="n">radial_basis</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">update_hyperparameters</span><span class="p">(</span>
             <span class="n">cutoff_function</span><span class="o">=</span><span class="n">cutoff_function</span><span class="p">,</span>
@@ -525,6 +540,7 @@
             <span class="n">lam</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;covariant_lambda&quot;</span><span class="p">],</span>
             <span class="n">cutoff_function_type</span><span class="o">=</span><span class="n">cutoff_function</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span>
             <span class="n">radial_basis</span><span class="o">=</span><span class="n">radial_contribution</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span>
+            <span class="n">optimization</span><span class="o">=</span><span class="n">radial_contribution</span><span class="p">[</span><span class="s2">&quot;optimization&quot;</span><span class="p">],</span>
             <span class="n">cutoff_function_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff_function_parameters</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">init_params</span>
