@@ -5,7 +5,7 @@ A collection of utility functions to manipulate the radial basis.
 from scipy.special import legendre, gamma
 from copy import deepcopy
 import numpy as np
-import rascal.representations as representations
+from .. representations.spherical_expansion import SphericalExpansion
 
 
 def radial_basis_functions_dvr(
@@ -353,7 +353,9 @@ def get_optimal_radial_basis_hypers(hypers, frames, expanded_max_radial=-1):
         hyperparameters for the desired representation. "max_radial" indicates
         the desired size of the optimal basis
     frames: ase.Atoms
-        a list of structures used to estimate the optimal radial basis
+        a list of structures used to estimate the optimal radial basis. can also
+        be given as a list of frames blocks, in which case it computes the covariance
+        incrementally (useful for large expanded_max_radial or large framesets)
     expanded_max_radial: int
         number of intermediate basis to be used to estimate the optimal basis.
         defaults to -1, in which case it is taken to be 2*max_radial
@@ -378,12 +380,23 @@ def get_optimal_radial_basis_hypers(hypers, frames, expanded_max_radial=-1):
         expanded_max_radial = 2 * hypers["max_radial"]
     spherical_expansion_hypers["max_radial"] = expanded_max_radial
 
-    spex = representations.SphericalExpansion(**spherical_expansion_hypers)
-    # computes density expansion coefficients
-    feats = spex.transform(frames).get_features_by_species(spex)
-
-    # computes covariance and principal components
+    spex = SphericalExpansion(**spherical_expansion_hypers)
+    
+    # computes density expansion coefficients and covariance (incrementally if needed)
+    if not type(frames[0]) is list:
+        frames = [frames]
+    feats = spex.transform(frames[0]).get_features_by_species(spex)        
     cov = get_radial_basis_covariance(spex, feats)
+    nframes = len(frames[0])
+    
+    for fr in frames[1:]:
+        feats = spex.transform(fr).get_features_by_species(spex)
+        icov = get_radial_basis_covariance(spex, feats)        
+        for s in cov.keys():
+            cov[s] = (cov[s]*nframes + icov[s])/(nframes+len(fr))
+        nframes += len(fr)
+
+    # principal components from the covariance    
     p_val, p_vec = get_radial_basis_pca(cov)
 
     p_mat = get_radial_basis_projections(p_vec, hypers["max_radial"])
