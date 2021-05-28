@@ -5,7 +5,7 @@ A collection of utility functions to manipulate the radial basis.
 from scipy.special import legendre, gamma
 from copy import deepcopy
 import numpy as np
-from .. representations.spherical_expansion import SphericalExpansion
+from ..representations.spherical_expansion import SphericalExpansion
 
 
 def radial_basis_functions_dvr(
@@ -381,22 +381,22 @@ def get_optimal_radial_basis_hypers(hypers, frames, expanded_max_radial=-1):
     spherical_expansion_hypers["max_radial"] = expanded_max_radial
 
     spex = SphericalExpansion(**spherical_expansion_hypers)
-    
+
     # computes density expansion coefficients and covariance (incrementally if needed)
     if not type(frames[0]) is list:
         frames = [frames]
-    feats = spex.transform(frames[0]).get_features_by_species(spex)        
+    feats = spex.transform(frames[0]).get_features_by_species(spex)
     cov = get_radial_basis_covariance(spex, feats)
     nframes = len(frames[0])
-    
+
     for fr in frames[1:]:
         feats = spex.transform(fr).get_features_by_species(spex)
-        icov = get_radial_basis_covariance(spex, feats)        
+        icov = get_radial_basis_covariance(spex, feats)
         for s in cov.keys():
-            cov[s] = (cov[s]*nframes + icov[s])/(nframes+len(fr))
+            cov[s] = (cov[s] * nframes + icov[s]) / (nframes + len(fr))
         nframes += len(fr)
 
-    # principal components from the covariance    
+    # principal components from the covariance
     p_val, p_vec = get_radial_basis_pca(cov)
 
     p_mat = get_radial_basis_projections(p_vec, hypers["max_radial"])
