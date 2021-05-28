@@ -83,7 +83,7 @@ def benchmark_spherical_representations(frames, optimization_args, radial_basis)
         "gaussian_sigma_type": "Constant",
         "cutoff_smooth_width": 0.5,
         "radial_basis": radial_basis,
-        "optimization_args": optimization_args,
+        "optimization": optimization_args,
     }
 
     print("Timing SphericalExpansion")
@@ -103,7 +103,7 @@ def benchmark_spherical_representations(frames, optimization_args, radial_basis)
         "cutoff_smooth_width": 0.5,
         "normalize": False,
         "radial_basis": radial_basis,
-        "optimization_args": optimization_args,
+        "optimization": optimization_args,
     }
     print("Timing SphericalInvariants")
     transform_representation(
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         for radial_basis in radial_bases:
             for optimization_args in optimizations_args:
                 print(
-                    "Benchmark on file " + input_file + " for optimization_args",
+                    "Benchmark on file " + input_file + " for optimization",
                     optimization_args,
                     "with basis " + radial_basis,
                 )

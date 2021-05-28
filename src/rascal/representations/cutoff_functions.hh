@@ -224,7 +224,7 @@ namespace rascal {
         if (this->rate < 0) {
           throw std::runtime_error("RadialScaling's rate should be positive");
         }
-        this->exponent = hypers.at("exponent").at("value").get<int>();
+        this->exponent = hypers.at("exponent").at("value").get<double>();
         this->scale = hypers.at("scale").at("value").get<double>();
       }
 
@@ -281,7 +281,7 @@ namespace rascal {
       //! rate c
       double rate{0.};
       //! exponent m
-      int exponent{0};
+      double exponent{0};
       //! scale r_0
       double scale{1.};
     };
