@@ -5,6 +5,10 @@ from ..neighbourlist.structure_manager import convert_to_structure_list
 import numpy as np
 import queue
 
+from copy import deepcopy
+
+
+_supported_optimization = ["Spline", "RadialDimReduction"]
 # Register Calculators
 _representations_list = [
     "sortedcoulomb",
@@ -58,3 +62,34 @@ def cutoff_function_dict_switch(cutoff_function_type, **kwargs):
         )
 
     return cutoff_function_dict
+
+
+def check_optimization_for_spherical_representations(optimization, optimization_args):
+    """
+    Checks if the arguments in optimzation have been set correctly
+    for representation based on spherical expansion.
+    """
+    # Soft backwards compatibility (remove this whole if-statement after 01.11.2021)
+    if optimization_args is not None:
+        # TODO(veit) TODO(alex) replace with logger as soon as merged
+        print(
+            "Warning: The 'optimization_args' parameter is deprecated "
+            "(see 'optimization' parameter instead).\n"
+            "This message will become an error after 2021-11-01."
+        )
+        optimization = dict(Spline=dict(accuracy=optimization_args["accuracy"]))
+
+    if optimization is None:
+        optimization = dict(Spline=dict(accuracy=1e-8))
+    optimization = deepcopy(optimization)
+    # check supported optimization keys
+    for key in optimization:
+        if key not in _supported_optimization:
+            print(
+                f"Warning: Optimization argument {key} is not supported and therefore ignored."
+            )
+    if "RadialDimReduction" in optimization and "Spline" not in optimization:
+        raise ValueError(
+            "Optimization key `RadialDimReduction` can only be used with `Spline`, please set the spline arguments in `optimization`"
+        )
+    return optimization

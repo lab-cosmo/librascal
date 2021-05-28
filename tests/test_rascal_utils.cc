@@ -43,7 +43,7 @@ namespace rascal {
   /*
    * enum class RadialBasisType { GTO, DVR, End_ };
    * enum class AtomicSmearingType { Constant, PerSpecies, Radial, End_ };
-   * enum class OptimizationType { None, Interpolator, End_ };
+   * enum class OptimizationType { None, Spline, End_ };
    *
    * enum value tuple  ->  combined key
    *    (0,0,0)                 0
@@ -71,11 +71,11 @@ namespace rascal {
                       3);
     BOOST_CHECK_EQUAL(combine_enums(RadialBasisType::DVR,
                                     AtomicSmearingType::Constant,
-                                    OptimizationType::Interpolator),
+                                    OptimizationType::Spline),
                       7);
     BOOST_CHECK_EQUAL(combine_enums(RadialBasisType::DVR,
                                     AtomicSmearingType::Radial,
-                                    OptimizationType::Interpolator),
+                                    OptimizationType::Spline),
                       11);
   }
   BOOST_AUTO_TEST_SUITE_END();
