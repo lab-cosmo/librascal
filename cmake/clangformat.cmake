@@ -66,9 +66,9 @@ if(CLANG_FORMAT)
     add_custom_target(${CLANG_FORMAT_TARGET})
     set(CLANG_FORMAT_FOUND TRUE)
 else()
-  message(STATUS "The optional clang-format auto formatter has not been"
-    " found. For more information see"
-    " https://clang.llvm.org/docs/ClangFormat.html")
+    message(STATUS "The optional clang-format auto formatter has not been"
+                   " found. For more information see"
+                   " https://clang.llvm.org/docs/ClangFormat.html")
     set(CLANG_FORMAT_FOUND FALSE)
     return()
 endif()
@@ -77,9 +77,12 @@ execute_process(
     COMMAND ${CLANG_FORMAT} --version
     OUTPUT_VARIABLE CLANG_FORMAT_VERSION
 )
-string(REGEX REPLACE "clang-format version ([0-9.]+).*" "\\1" CLANG_FORMAT_VERSION "${CLANG_FORMAT_VERSION}")
+string(REGEX REPLACE ".*clang-format version ([0-9.]+).*" "\\1" CLANG_FORMAT_VERSION "${CLANG_FORMAT_VERSION}")
 if("${CLANG_FORMAT_VERSION}" VERSION_LESS "8.0")
-    message(FATAL_ERROR "Unsupported clang-format (version ${CLANG_FORMAT_VERSION}): a newer version (at least 8.0) is required")
+    message(STATUS "Unsupported clang-format (version ${CLANG_FORMAT_VERSION}): "
+                   "a more recent version (at least 8.0) is required")
+    set(CLANG_FORMAT_FOUND FALSE)
+    return()
 endif()
 
 # use clang-format to autoformat source code files DIR
