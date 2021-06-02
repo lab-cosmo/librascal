@@ -10,3 +10,4 @@ the top-level :file:`examples/` directory.
    :maxdepth: 1
 
    zundel_i-PI.ipynb
+   optimized_radial_basis_functions.ipynb
