@@ -67,10 +67,10 @@ class TestOptimalRadialBasis(unittest.TestCase):
 
         p_val, p_vec = get_radial_basis_pca(cov)
 
-        p_mat = get_radial_basis_projections(p_vec, 10)
+        p_mat = get_radial_basis_projections(p_vec, self.hypers["max_radial"])
 
         # now makes this SOAP
-        hypers["max_radial"] = hypers["max_radial"]
+        hypers["max_radial"] = self.hypers["max_radial"]
         hypers["soap_type"] = "PowerSpectrum"
         hypers["optimization"] = {
             "RadialDimReduction": {"projection_matrices": p_mat},
@@ -85,7 +85,7 @@ class TestOptimalRadialBasis(unittest.TestCase):
         hypers = deepcopy(self.hypers)
         hypers["soap_type"] = "PowerSpectrum"
         hypers = get_optimal_radial_basis_hypers(
-            soap_hypers, frames, expanded_max_radial=self.expanded_max_radial
+            hypers, self.frames, expanded_max_radial=self.expanded_max_radial
         )
         soap_opt_2 = SphericalInvariants(**hypers)
         soap_feats_2 = soap_opt_2.transform(self.frames).get_features(soap_opt_2)
