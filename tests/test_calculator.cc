@@ -485,7 +485,11 @@ namespace rascal {
 
         auto diff_rep{math::relative_error(
             ref_representation, test_representation, delta, epsilon)};
-        BOOST_CHECK_LE(diff_rep.maxCoeff(), delta);
+        if (diff_rep.maxCoeff() > delta) {
+          std::cout << "representation_hypers " << representation_hypers
+                    << std::endl;
+          BOOST_CHECK_LE(diff_rep.maxCoeff(), delta);
+        }
       }
       manager_i += 1;
     }
@@ -499,7 +503,11 @@ namespace rascal {
       RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
                                    internal::RadialBasisType::GTO,
                                    internal::AtomicSmearingType::Constant,
-                                   internal::OptimizationType::Interpolator>,
+                                   internal::OptimizationType::Spline>,
+      RadialIntegralHandlerFixture<
+          MultipleHypersSphericalExpansion, internal::RadialBasisType::GTO,
+          internal::AtomicSmearingType::Constant,
+          internal::OptimizationType::RadialDimReductionSpline>,
       RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
                                    internal::RadialBasisType::DVR,
                                    internal::AtomicSmearingType::Constant,
@@ -507,7 +515,11 @@ namespace rascal {
       RadialIntegralHandlerFixture<MultipleHypersSphericalExpansion,
                                    internal::RadialBasisType::DVR,
                                    internal::AtomicSmearingType::Constant,
-                                   internal::OptimizationType::Interpolator>>;
+                                   internal::OptimizationType::Spline>,
+      RadialIntegralHandlerFixture<
+          MultipleHypersSphericalExpansion, internal::RadialBasisType::DVR,
+          internal::AtomicSmearingType::Constant,
+          internal::OptimizationType::RadialDimReductionSpline>>;
 
   /**
    * Test the derivative of the GTO radial integral in the SphericalExpansion
