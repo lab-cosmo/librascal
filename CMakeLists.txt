@@ -57,7 +57,10 @@ message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 
 project(rascal CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+# std::filesystem cannot be used from Sergeys script
+# I am sure one could adapt Sergeys script such that this would work
+# the change to 17 is out of convenience
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_SHARED_LIBS ON)
@@ -66,7 +69,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 include(rascalTools)
 
 ########## MAIN VARIABLE TO CHANGE THE BUILD AND INSTALL OF THE LIBRARY ########
-option(BUILD_BINDINGS "Build the python bindings" ON)
+# when linking libtorch the bindings conflict with libtorch settings
+option(BUILD_BINDINGS "Build the python bindings" OFF)
 option(BUILD_EXAMPLES "Build the examples" ON)
 option(BUILD_BENCHMARKS "Build the benchmarks" OFF)
 option(BUILD_PROFILING "Build the files for profiling" OFF)
