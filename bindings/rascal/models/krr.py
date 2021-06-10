@@ -480,11 +480,11 @@ def train_gap_model(
         weights = np.linalg.lstsq(K, Y, rcond=jitter)[0]
         del K
     if solver == "QR":
-        # Finds the KRR weights solving am extended system, see e.g 
+        # Finds the KRR weights solving am extended system, see e.g
         # Foster et al. JMLR (2009)
-        V = np.linalg.cholesky(KMM)        
+        V = np.linalg.cholesky(KMM)
         A = np.vstack([KNM, V.T])
-        b = np.vstack([Y, np.zeros((len(KMM),1))])
+        b = np.vstack([Y, np.zeros((len(KMM), 1))])
         weights = np.linalg.lstsq(A, b, rcond=jitter)[0]
         del V, A, b
     elif solver == "RKHS":
@@ -498,16 +498,16 @@ def train_gap_model(
         nrkhs = len(np.where(eva / eva[0] > jitter)[0])
         print("Retaining ", nrkhs, " RKHS components out of ", len(eva))
         PKT = eve[:, :nrkhs] @ np.diag(1.0 / np.sqrt(eva[:nrkhs]))
-        
+
         # This would be the direct LR solution
         # PKT = eve[:, :nrkhs] @ np.diag(1.0 / np.sqrt(eva[:nrkhs]))
         # PNM = KNM @ PKT
         # weights = PKT @ np.linalg.solve(PNM.T @ PNM + np.eye(nrkhs), PNM.T @ Y)
 
         # ... but instead we use an alternative (equivalent) formulation using QR
-        A = np.vstack([ KNM@PKT, np.eye(nrkhs) ])
+        A = np.vstack([KNM @ PKT, np.eye(nrkhs)])
         b = np.vstack([Y, np.zeros((nrkhs, 1))])
-        weights = PKT@np.linalg.lstsq(A, b, rcond=None)[0]        
+        weights = PKT @ np.linalg.lstsq(A, b, rcond=None)[0]
 
         del PKT, eva, eve, A, b
 
