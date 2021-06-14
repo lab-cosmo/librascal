@@ -367,15 +367,38 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+    // nested json definitions dont work properly in this case:
+    // if not defined seperately, radial_dim_reduction_hypers are
+    // interpreted as arrays
+    // https://github.com/nlohmann/json/issues/737
+    // shape (max_angular+1, max_radial, max_radial)  = (4, 3, 3)
+    std::map<std::string, std::vector<std::vector<std::vector<double>>>>
+        projection_matrices{{"8",
+                             {
+                                 {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}},
+                                 {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}},
+                                 {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}},
+                                 {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}},
+                             }}};
+    json projection_matrices_hypers{
+        {"projection_matrices", projection_matrices}};
+    json radial_dim_reduction_hypers{
+        {"RadialDimReduction", projection_matrices_hypers}};
+    json radial_dim_reduction_spline_hypers{
+        {"Spline", {{"accuracy", 1e-8}}},
+        {"RadialDimReduction", projection_matrices_hypers}};
     std::vector<json> radial_contribution_hypers{
-        {{"type", "GTO"}, {"optimization", {{"type", "None"}}}},
-        {{"type", "DVR"}, {"optimization", {{"type", "None"}}}},
+        {{"type", "GTO"}, {"optimization", {}}},
+        {{"type", "DVR"}, {"optimization", {}}},
         {{"type", "GTO"},
-         {"optimization", {{"type", "Spline"}, {"accuracy", 1e-12}}}},
-        {{"type", "DVR"},
-         {"optimization", {{"type", "Spline"}, {"accuracy", 1e-5}}}}};
+         {"optimization", {{"Spline", {{"accuracy", 1e-12}}}}}},
+        {{"type", "DVR"}, {"optimization", {{"Spline", {{"accuracy", 1e-5}}}}}},
+        {{"type", "GTO"}, {"optimization", radial_dim_reduction_hypers}},
+        {{"type", "DVR"}, {"optimization", radial_dim_reduction_hypers}},
+        {{"type", "GTO"}, {"optimization", radial_dim_reduction_spline_hypers}},
+        {{"type", "DVR"}, {"optimization", radial_dim_reduction_spline_hypers}},
+    };
     std::vector<json> rep_hypers{
-        {{"max_radial", 3}, {"max_angular", 2}, {"compute_gradients", true}},
         {{"max_radial", 3}, {"max_angular", 3}, {"compute_gradients", true}}};
   };
 
@@ -690,7 +713,7 @@ namespace rascal {
     f(const Eigen::Matrix<double, 1, 1> & input_v) {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
       result = this->radial_integral->template compute_neighbour_contribution(
-          input_v(0), this->pair);
+          input_v(0), this->pair, this->pair.get_atom_type());
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;
@@ -700,7 +723,7 @@ namespace rascal {
     grad_f(const Eigen::Matrix<double, 1, 1> & input_v) {
       Eigen::ArrayXXd result(this->max_radial, this->max_angular + 1);
       result = this->radial_integral->template compute_neighbour_derivative(
-          input_v(0), this->pair);
+          input_v(0), this->pair, this->pair.get_atom_type());
       Eigen::Map<Eigen::Array<double, 1, Eigen::Dynamic>> result_flat(
           result.data(), 1, result.size());
       return result_flat;
@@ -740,8 +763,9 @@ namespace rascal {
             density_hypers.at("type").template get<std::string>();
         auto optimization_hypers =
             radial_contribution_hypers.at("optimization").template get<json>();
-        auto optimization_type_name =
-            optimization_hypers.at("type").template get<std::string>();
+        bool using_spline = optimization_hypers.count("Spline");
+        bool using_radial_dim_reduction =
+            optimization_hypers.count("RadialDimReduction");
 
         internal::RadialBasisType radial_contribution_type{};
         internal::AtomicSmearingType smearing_type{};
@@ -762,21 +786,19 @@ namespace rascal {
               "Wrong smearing type for RadialIntegralHandler tests");
         }
 
-        if (optimization_type_name == "None") {
-          optimization_type = internal::OptimizationType::None;
-        } else if (optimization_type_name == "Spline") {
-          optimization_type = internal::OptimizationType::Interpolator;
+        if (using_spline && using_radial_dim_reduction) {
+          optimization_type =
+              internal::OptimizationType::RadialDimReductionSpline;
+        } else if (using_spline) {
+          optimization_type = internal::OptimizationType::Spline;
         } else {
-          throw std::runtime_error(
-              "Wrong optimization type for RadialIntegralHandler tests");
+          optimization_type = internal::OptimizationType::None;
         }
-        auto hypers_radial_contribution_handler_type{
-            internal::combine_to_radial_contribution_type(
-                radial_contribution_type, smearing_type, optimization_type)};
+        auto hypers_radial_contribution_handler_type{internal::combine_enums(
+            radial_contribution_type, smearing_type, optimization_type)};
 
         auto radial_contribution_handler_type{
-            internal::combine_to_radial_contribution_type(
-                RadialType, SmearingType, OptType)};
+            internal::combine_enums(RadialType, SmearingType, OptType)};
 
         if (hypers_radial_contribution_handler_type ==
             radial_contribution_handler_type) {

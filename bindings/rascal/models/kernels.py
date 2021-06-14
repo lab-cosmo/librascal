@@ -16,14 +16,7 @@ import numpy as np
 class Kernel(BaseIO):
 
     """
-    Computes the kernel for a given representation. In the following
-    we refer to the training samples with 'N' and, in the case of
-    sparse kernels [1], we refer to the pseudo points with 'M'. So a
-    kernel between the training samples and the pseudo points is
-    'KNM'. For more information on sparse kernels see
-    :meth:`rascal.models.krr.train_gap_model`.
-
-    Initialize the kernel with the given parameters
+    Initialize the kernel with the given representation and parameters
 
     Parameters
     ----------
@@ -42,8 +35,17 @@ class Kernel(BaseIO):
 
     kernel_type : string
         Type of kernel method, either 'Full' (computing exact covariance matrix)
-        or 'Sparse' (computing GAP [2] like kernel for sparse kernel methods like
+        or 'Sparse' (computing GAP [2]_ like kernel for sparse kernel methods like
         Subset of Regressors)
+
+    Notes
+    -----
+    In the following
+    we refer to the training samples with 'N' and, in the case of
+    sparse kernels [1]_, we refer to the pseudo points with 'M'. So a
+    kernel between the training samples and the pseudo points is
+    'KNM'. For more information on sparse kernels see
+    :meth:`rascal.models.krr.train_gap_model`.
 
     .. [1] Joaquin Quiñonero-Candela, Carl Edward Rasmussen;
             A Unifying View of Sparse Approximate Gaussian Process Regression,
