@@ -13,6 +13,38 @@ import rascal.models
 from rascal.models import gaptools
 
 
+def _get_energy_baseline(energy_baseline_in, source_geoms):
+    if isinstance(energy_baseline_in, Mapping):
+        energy_baseline = energy_baseline_in
+    else:
+        all_species = set()
+        for geom in source_geoms:
+            all_species = all_species.union(geom.get_atomic_numbers())
+            # Convert to int because otherwise it's a numpy type
+            # (which doesn't play well with json)
+            all_species = set(int(sp) for sp in all_species)
+        energy_baseline = {species: energy_baseline_in for species in all_species}
+    return energy_baseline
+
+
+def _get_n_train(n_train_in, n_test_in, n_geoms):
+    if n_train_in is None:
+        n_train = n_geoms
+    do_learning_curve = isinstance(n_train_in, Iterable)
+    if n_test_in is None:
+        if do_learning_curve:
+            n_test = n_geoms - max(n_train_in)
+        else:
+            n_test = n_geoms - n_train
+    else:
+        n_test = n_test_in
+    if do_learning_curve:
+        n_train_all = n_train
+    else:
+        n_train_all = [ n_train, ]
+    return n_train_all, n_test, do_learning_curve
+
+
 def fit_save_model(parameters):
     WORKDIR = parameters.working_directory
     gaptools.WORKDIR = WORKDIR
@@ -24,18 +56,13 @@ def fit_save_model(parameters):
         idces = np.loadtxt(parameters.shuffle_file, dtype=int)
         source_geoms = [source_geoms[idx] for idx in idces]
     natoms_source = [len(geom) for geom in source_geoms]
-    if parameters.n_train is None:
-        parameters.n_train = len(source_geoms)
-    do_learning_curve = isinstance(parameters.n_train, Iterable)
-    if parameters.n_test is None:
-        if do_learning_curve:
-            parameters.n_test = len(source_geoms) - max(parameters.n_train)
-        else:
-            parameters.n_test = len(source_geoms) - parameters.n_train
-    if not do_learning_curve:
-        parameters.n_train = [
-            parameters.n_train,
-        ]
+
+    n_train_all, n_test, do_learning_curve = _get_n_train(
+        parameters.n_train,
+        parameters.n_test,
+        len(source_geoms)
+    )
+
     rep, soaps, sparse_points = gaptools.calculate_and_sparsify(
         source_geoms, parameters.soap_hypers, parameters.n_sparse
     )
@@ -46,17 +73,7 @@ def fit_save_model(parameters):
     fparam_name = parameters.force_parameter_name
     energies = np.array([geom.info[eparam_name] for geom in source_geoms])
     forces = np.array([geom.arrays[fparam_name] for geom in source_geoms])
-    energy_baseline_in = parameters.atom_energy_baseline
-    if isinstance(energy_baseline_in, Mapping):
-        energy_baseline = energy_baseline_in
-    else:
-        all_species = set()
-        for geom in source_geoms:
-            all_species = all_species.union(geom.get_atomic_numbers())
-            # Convert to int because otherwise it's a numpy type
-            # (which doesn't play well with json)
-            all_species = set(int(sp) for sp in all_species)
-        energy_baseline = {species: energy_baseline_in for species in all_species}
+    energy_baseline = _get_energy_baseline(parameters.atom_energy_baseline)
     energy_delta = parameters.energy_delta
     # Uncomment the below to get mainline train_gap behaviour
     # energy_delta = np.std(energies)
