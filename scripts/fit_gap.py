@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-import collections
+import argparse
+from collections.abc import Iterable, Mapping
 import os
 import sys
 import time
@@ -11,52 +11,43 @@ import rascal.utils
 import rascal.utils.io
 import rascal.models
 from rascal.models import gaptools
-from tqdm import tqdm
-
-import logging
-
-LOGGER = logging.getLogger(__name__)
-
-WORKDIR = "potential_default"
 
 
-# TODO parameter parsing and validation is sorta entwined with the work here;
-#      consider offloading it to something like argparse
 def fit_save_model(parameters):
-
-    # Source data and kernels
-    global WORKDIR
-    WORKDIR = parameters.get("working_directory", WORKDIR)
+    WORKDIR = parameters.working_directory
     gaptools.WORKDIR = WORKDIR
-    os.makedirs(WORKDIR, exist_ok=True) # Works from Python 3.2 onward
-    geom_subset = parameters.get("structure_subset", ":")
-    source_geoms = ase.io.read(parameters["structure_filename"], geom_subset)
-    eparam_name = parameters.get("energy_parameter_name", "energy")
-    energies = np.array([geom.info[eparam_name] for geom in source_geoms])
-    use_forces = "force_parameter_name" in parameters
-    # Only use forces in the fit if a parameter name has been
-    # explicitly specified
-    if use_forces:
-        fparam_name = parameters["force_parameter_name"]
-        forces = np.array([geom.arrays[fparam_name] for geom in source_geoms])
-        parameters["soap_hypers"]["compute_gradients"] = True
-    rep, soaps, sparse_points = gaptools.calculate_and_sparsify(
-        tqdm(source_geoms), parameters["soap_hypers"], parameters["n_sparse"]
-    )
-    kernels = gaptools.compute_kernels(
-        rep,
-        soaps,
-        sparse_points,
-        parameters.get("soap_power", 2),
-        do_gradients=use_forces,
-    )
-    kobj, kernel_sparse, kernel_energies = kernels[:3]
-    if use_forces:
-        kernel_forces = kernels[3]
+    os.makedirs(WORKDIR, exist_ok=True)  # Works from Python 3.2 onward
 
-    # Energy baseline
-    energy_baseline_in = parameters["atom_energy_baseline"]
-    if isinstance(energy_baseline_in, collections.abc.Mapping):
+    source_geoms = ase.io.read(parameters.structure_filename, ":")
+    # Source geometry transformation
+    if parameters.shuffle_file:
+        idces = np.loadtxt(parameters.shuffle_file, dtype=int)
+        source_geoms = [source_geoms[idx] for idx in idces]
+    natoms_source = [len(geom) for geom in source_geoms]
+    if parameters.n_train is None:
+        parameters.n_train = len(source_geoms)
+    do_learning_curve = isinstance(parameters.n_train, Iterable)
+    if parameters.n_test is None:
+        if do_learning_curve:
+            parameters.n_test = len(source_geoms) - max(parameters.n_train)
+        else:
+            parameters.n_test = len(source_geoms) - parameters.n_train
+    if not do_learning_curve:
+        parameters.n_train = [
+            parameters.n_train,
+        ]
+    rep, soaps, sparse_points = gaptools.calculate_and_sparsify(
+        source_geoms, parameters.soap_hypers, parameters.n_sparse
+    )
+    (kobj, kernel_sparse, kernel_energies, kernel_forces) = gaptools.compute_kernels(
+        rep, soaps, sparse_points, parameters.soap_power
+    )
+    eparam_name = parameters.energy_parameter_name
+    fparam_name = parameters.force_parameter_name
+    energies = np.array([geom.info[eparam_name] for geom in source_geoms])
+    forces = np.array([geom.arrays[fparam_name] for geom in source_geoms])
+    energy_baseline_in = parameters.atom_energy_baseline
+    if isinstance(energy_baseline_in, Mapping):
         energy_baseline = energy_baseline_in
     else:
         all_species = set()
@@ -66,55 +57,176 @@ def fit_save_model(parameters):
             # (which doesn't play well with json)
             all_species = set(int(sp) for sp in all_species)
         energy_baseline = {species: energy_baseline_in for species in all_species}
-
-    # Regularizers, fit and save model
-    energy_delta = parameters.get("energy_delta", 1.0)
-    energy_regularizer = parameters["energy_regularizer"] / energy_delta
-    force_regularizer = parameters["force_regularizer"] / energy_delta
-    output_filename = parameters.get("output_filename", "gap_model.json")
-    weights = gaptools.fit_gap_simple(
-        source_geoms,
-        kernel_sparse,
-        energies,
-        kernel_energies,
-        energy_regularizer,
-        energy_baseline,
-        forces,
-        kernel_forces,
-        force_regularizer,
-    )
-    np.save(os.path.join(WORKDIR, 'weights'), weights)
-    model_description = parameters.get("description", "")
-    if model_description:
-        if model_description.endswith("."):
-            model_description += " "
+    energy_delta = parameters.energy_delta
+    # Uncomment the below to get mainline train_gap behaviour
+    # energy_delta = np.std(energies)
+    energy_regularizer = parameters.energy_regularizer / energy_delta
+    force_regularizer = parameters.force_regularizer / energy_delta
+    # TODO bundle all the parameters needed below into a "fit object"
+    if parameters.print_residuals:
+        if parameters.n_test > 0:
+            print(f"Residuals on {parameters.n_test:} testing structures:")
         else:
-            model_description += ". "
-    model_timestamp = time.strftime("%Y-%m-%d at %H:%M:%S %Z", time.localtime())
-    model_description += "Generated by fit_gap.py on {:s}".format(model_timestamp)
-    units = parameters.get("units", None)
-    if units is None:
-        LOGGER.warning("No units specified in input file.  Assuming eV and Å.")
-    model = rascal.models.KRR(
-        weights,
-        kobj,
-        sparse_points,
-        energy_baseline,
-        description=model_description,
-        units=units,
+            print("Residuals on training set:")
+    for n_train in parameters.n_train:
+        energies_train = energies[:n_train]
+        kernel_energies_train = kernel_energies[:n_train]
+        forces_train = forces[:n_train]
+        kernel_forces_train = kernel_forces[: 3 * sum(natoms_source[:n_train])]
+        weights = gaptools.fit_gap_simple(
+            source_geoms[:n_train],
+            kernel_sparse,
+            energies_train,
+            kernel_energies_train,
+            energy_regularizer,
+            energy_baseline,
+            forces_train,
+            kernel_forces_train,
+            force_regularizer,
+        )
+        np.save(os.path.join(WORKDIR, "weights"), weights)
+        model_description = parameters.description
+        if model_description:
+            if model_description.endswith("."):
+                model_description += " "
+            else:
+                model_description += ". "
+        model_timestamp = time.strftime("%Y-%m-%d at %H:%M:%S %Z", time.localtime())
+        model_description += "Generated by fit_gap.py on {:s}; N_train = {:d}".format(
+            model_timestamp, n_train
+        )
+        model = rascal.models.KRR(
+            weights, kobj, sparse_points, energy_baseline, description=model_description
+        )
+        rascal.utils.dump_obj(parameters.output_filename.format(n_train), model)
+        if (parameters.print_residuals) or (parameters.write_residuals):
+            if parameters.n_test > 0:
+                test_subset = np.arange(len(source_geoms))[-1 * parameters.n_test :]
+                natoms_test = natoms_source[-1 * parameters.n_test :]
+                test_force_slice = slice(-3 * sum(natoms_test), None)
+            else:
+                test_subset = np.arange(len(source_geoms))[n_train:]
+                natoms_test = natoms_source[n_train:]
+                test_force_slice = slice(-3 * sum(natoms_test), None)
+            test_soaps = soaps.get_subset(test_subset)
+            test_energies = energies[test_subset]
+            test_forces = forces[test_subset]
+            kernel_energies_test = kernel_energies[test_subset]
+            kernel_forces_test = kernel_forces[test_force_slice]
+            if parameters.print_residuals:
+                print(f"----- {n_train: 4d} train structures -----")
+            compute_print_residuals(
+                test_soaps,
+                model,
+                test_energies,
+                kernel_energies_test,
+                test_forces,
+                kernel_forces_test,
+                natoms_test,
+                parameters.print_residuals,
+                parameters.write_residuals.format(n_train),
+            )
+
+
+def compute_print_residuals(
+    soaps,
+    model,
+    energies,
+    kernel_energies,
+    forces,
+    kernel_forces,
+    natoms_perstruct,
+    do_print=False,
+    filename="",
+):
+    # get predictions
+    pred_energies = model.predict(soaps, kernel_energies)
+    pred_forces = model.predict_forces(soaps, kernel_forces)
+    energy_resids = pred_energies - energies
+    force_resids = pred_forces - forces.reshape((-1, 3))
+    energy_rmse = np.sqrt(np.mean(energy_resids ** 2))
+    energy_rmse_peratom = np.sqrt(
+        np.mean((energy_resids / np.array(natoms_perstruct)) ** 2)
     )
-    rascal.utils.dump_obj(output_filename, model)
+    force_rmse = np.sqrt(np.sum(force_resids ** 2) / np.sum(natoms_perstruct))
+    if do_print:
+        print(
+            f"Energy RMSE: {energy_rmse:.06f} eV ({energy_rmse_peratom*1000:.06f} eV/atom)"
+        )
+        print(f"Force RMSE: {force_rmse:.06f} eV/Å")
+    if filename:
+        np.savez(
+            filename,
+            energy_resids=energy_resids,
+            force_resids=force_resids,
+            energy_rmse=energy_rmse,
+            energy_rmse_peratom=energy_rmse_peratom,
+            force_rmse=force_rmse,
+        )
+
+
+# TODO add arguments also present in JSON, with appropriate defaults
+# (just don't give them short names; reserve those for flags commonly given
+# on the command line -- but do include the structure and model filenames)
+def parse_command_line():
+    parser = argparse.ArgumentParser(description="Fit a GAP model")
+    parser.add_argument("parameter_file", help="Name of a JSON parameter file")
+    parser.add_argument(
+        "-n",
+        "--n-train",
+        type=int,
+        nargs="+",
+        help="Number of training structures at the beginning of the file (provide multiple values to do a learning curve)",
+    )
+    parser.add_argument(
+        "-t",
+        "--n-test",
+        type=int,
+        help="Number of testing structures at the end of the file, by default all the remaining structures in the input file",
+    )
+    parser.add_argument(
+        "-s", "--shuffle-file", help="File giving indices for shuffling of input file"
+    )
+    parser.add_argument(
+        "-p",
+        "--print-residuals",
+        action="store_true",
+        help="Print RMSE residuals on the test set (if n_test > 0), or else the training set.",
+    )
+    parser.add_argument(
+        "-w",
+        "--write-residuals",
+        help="Write residuals to the given filename, formatted with n_train",
+        default=""
+    )
+    parser.add_argument(
+        "-o", "--output-filename", help="Name of the file to write the GAP model to"
+    )
+    parser.add_argument(
+        '-z', '--soap-power', help='Exponent to use for the SOAP kernel ("zeta")',
+        type=int, default=2)
+    parser.add_argument(
+        '--energy-parameter-name', help="Name of the energy parameter in the input file",
+        default="energy")
+    parser.add_argument(
+        '--force-parameter-name', help="Name of the force parameter in the input file",
+        default="force")
+    parser.add_argument(
+        '--description', help="Descriptive text to write into the model file",
+        default="")
+    parser.add_argument(
+        '--working-directory', help="Directory in which to write kernels and other large, temporary files",
+        default="potential_default")
+    # Use the rascal loader to be able to read integer keys
+    args = parser.parse_args()
+    fit_parameters = rascal.utils.io.load_json(args.parameter_file)
+    fit_parameters = argparse.Namespace(**fit_parameters)
+    # Parameters given on the command line override those in the JSON
+    # TODO is there any way to avoid having to do this twice?
+    args = parser.parse_args(namespace=fit_parameters)
+    # TODO move some validation and as much as possible of the pre-processing here
+    return fit_parameters
 
 
 if __name__ == "__main__":
-    LOGGER = logging.getLogger(sys.argv[0])
-    if len(sys.argv) < 2:
-        raise RuntimeError(
-            "Must provide the name of a JSON parameter file"
-            "as the first argument (see the examples/ directory"
-            " for, well, an example)"
-        )
-    elif len(sys.argv) > 2:
-        raise RuntimeError("Too many arguments")
-    else:
-        fit_save_model(rascal.utils.io.load_json(sys.argv[1]))
+    fit_save_model(parse_command_line())
