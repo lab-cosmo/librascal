@@ -6,7 +6,6 @@
 
 #include <iostream>
 #include <memory>
-#include <filesystem>
 
 int main() {
   torch::Tensor tensor = torch::rand({2, 3});

@@ -46,6 +46,7 @@
 #include <iostream>
 #include <list>
 #include <string>
+#include <stdexcept>
 
 using namespace rascal;  // NOLINT
 
@@ -54,9 +55,10 @@ using Matrix_t = math::Matrix_t;
 using Representation_t = CalculatorSphericalExpansion;
 using Manager_t = AdaptorStrict<
     AdaptorCenterContribution<AdaptorNeighbourList<StructureManagerCenters>>>;
-using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
+using Prop_t = typename CalculatorSphericalExpansion::Property_t<Manager_t>;
 using PropGrad_t =
-    typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
+    typename CalculatorSphericalExpansion::PropertyGradient_t<Manager_t>;
+
 
 // adapted from https://discuss.pytorch.org/t/data-transfer-between-libtorch-c-and-eigen/54156/6
 torch::Tensor eigenMatrixToTorchTensor(Matrix_t eigen_mat) {
@@ -71,6 +73,7 @@ torch::Tensor eigenMatrixToTorchTensor(Matrix_t eigen_mat) {
     auto tensor = torch::empty({eigen_mat.rows(), eigen_mat.cols()}, options);
     double* data = tensor.data_ptr<double>();
 
+    // TODO check from_blop 
     Eigen::Map<Matrix_t> eigen_mat_cast(data, tensor.size(0), tensor.size(1));
     eigen_mat_cast = eigen_mat.cast<double>();
     return tensor;
@@ -88,9 +91,9 @@ int main(int argc, char * argv[]) {
   int max_radial{std::atoi(argv[2])};
   int max_angular{std::atoi(argv[3])};
 
-  double cutoff{4.};
+  double cutoff{2.};
   json hypers{
-      {"max_radial", max_radial}, {"max_angular", max_angular}, {"compute_gradients", false}};
+      {"max_radial", max_radial}, {"max_angular", max_angular}, {"compute_gradients", true}};
 
   json fc_hypers{{"type", "ShiftedCosine"},
                  {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
@@ -113,6 +116,7 @@ int main(int argc, char * argv[]) {
   adaptors.emplace_back(ad1);
   adaptors.emplace_back(ad1b);
   adaptors.emplace_back(ad2);
+
   auto manager =
       make_structure_manager_stack<StructureManagerCenters,
                                    AdaptorNeighbourList,
@@ -136,26 +140,24 @@ int main(int argc, char * argv[]) {
   auto && expansions_coefficients{
       *manager->template get_property<Prop_t>(representation.get_name())};
   Matrix_t feature_matrix = expansions_coefficients.get_features();
-  std::cout << "nb_features: nb_species*max_radial*(max_angular+1)**2" << std::endl;
-  std::cout << "nb_features: " << feature_matrix.cols() << std::endl;
-  // feature shape should be equivalent to the python side
-
-  // features can be also obtained centerwise
-  //for (auto center : manager) {
-  //  auto ii_pair = center.get_atom_ii();
-  //  std::cout << "============================" << std::endl;
-  //  std::cout << "Center " << center.get_index();
-  //  std::cout << " of type " << center.get_atom_type() << std::endl;
-  //  std::cout << expansions_coefficients.get_dense_row(center);
-  //  std::cout << std::endl;
-  //}
+  //std::cout << "nb_features: nb_species*max_radial*(max_angular+1)**2" << std::endl;
+  //std::cout << "nb_features: " << feature_matrix.cols() << std::endl;
 
   torch::Tensor feature_matrix_torch = eigenMatrixToTorchTensor(feature_matrix);
 
-  std::cout << std::endl;
-  std::cout << "EIGEN Matrix" << std::endl;
+  //std::cout << std::endl;
+  std::cout << "EIGEN Matrix (" << feature_matrix.rows() << ", " << feature_matrix.cols() << ")" << std::endl;
   std::cout << feature_matrix << std::endl;
   std::cout << std::endl;
   std::cout << "TORCH Matrix" << std::endl;
   std::cout << feature_matrix_torch  << std::endl;
+  
+  auto && expansions_coefficients_gradient{
+      *manager->template get_property<PropGrad_t>(
+          representation.get_gradient_name())};
+
+  Matrix_t feature_gradient_matrix = expansions_coefficients_gradient.get_features_gradient();
+  std::cout << std::endl;
+  std::cout << "EIGEN Gradient Matrix (" << feature_gradient_matrix.rows() << ", " << feature_gradient_matrix.cols() << ")" << std::endl;
+  //std::cout << feature_gradient_matrix << std::endl;
 }

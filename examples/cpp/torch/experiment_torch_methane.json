@@ -1,0 +1,31 @@
+{
+    "spherical_expansion_hypers": {
+    "cutoff_function": {
+        "type": "ShiftedCosine",
+        "cutoff": {
+            "value": 6.3,
+            "unit": "AA"
+            },
+        "smooth_width": {
+            "value": 0.3,
+            "unit": "AA"
+            }
+        },
+    "gaussian_density": {
+        "type": "Constant",
+        "gaussian_sigma": {
+            "value": 0.5, 
+            "unit": "AA"
+            }
+        },
+    "radial_contribution": {"type": "GTO"},
+    "max_radial": 10,
+    "max_angular": 5,
+    "gaussian_sigma_type": "Constant",
+    "radial_basis": "GTO",
+    "compute_gradients": true
+    },
+    "structures_absolute_path2": "/scratch/local/datasets/methane_test.json",
+    "structures_absolute_path": "/ssd/local/code/librascal/reference_data/inputs/alanine-X-examples.json",
+    "torch_model_absolute_path": "/ssd/local/code/pytorch_prototype/meeting/sparse_kernel_model_list.pt"
+}
