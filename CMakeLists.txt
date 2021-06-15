@@ -118,6 +118,7 @@ endif()
 
 add_external_package(wigxjpf VERSION 1.9 CONFIG)
 add_external_package(Eigen3 VERSION 3.3.4 CONFIG)
+set(LIBTORCH_PATH ""  CACHE STRING "Path of libtorch installation")
 add_external_package(Torch VERSION 3.3.4 CONFIG)
 
 if(BUILD_BENCHMARKS)

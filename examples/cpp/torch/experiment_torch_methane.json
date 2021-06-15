@@ -19,13 +19,13 @@
             }
         },
     "radial_contribution": {"type": "GTO"},
-    "max_radial": 10,
+    "max_radial": 5,
     "max_angular": 5,
     "gaussian_sigma_type": "Constant",
     "radial_basis": "GTO",
     "compute_gradients": true
     },
-    "structures_absolute_path2": "/scratch/local/datasets/methane_test.json",
-    "structures_absolute_path": "/ssd/local/code/librascal/reference_data/inputs/alanine-X-examples.json",
-    "torch_model_absolute_path": "/ssd/local/code/pytorch_prototype/meeting/sparse_kernel_model_list.pt"
+    "structures_absolute_path": "/home/alexgo/datasets/methane_test.json",
+    "structures_absolute_path2": "/home/alexgo/lib/librascal/reference_data/inputs/alanine-X-examples.json",
+    "torch_model_absolute_path": "/home/alexgo/lib/pytorch_prototype/meeting/sparse_kernel_model_list.pt"
 }

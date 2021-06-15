@@ -3,6 +3,7 @@
 #include "rascal/structure_managers/adaptor_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_strict.hh"
 #include "rascal/structure_managers/atomic_structure.hh"
+#include "rascal/structure_managers/structure_manager_collection.hh"
 #include "rascal/structure_managers/make_structure_manager.hh"
 #include "rascal/structure_managers/structure_manager_centers.hh"
 #include "rascal/utils/json_io.hh"
@@ -26,6 +27,8 @@ using Matrix_t = math::Matrix_t;
 
 using Representation_t = CalculatorSphericalExpansion;
 using Manager_t = AdaptorStrict<
+    AdaptorCenterContribution<AdaptorNeighbourList<StructureManagerCenters>>>;
+using ManagerCollection_t = AdaptorStrict<
     AdaptorCenterContribution<AdaptorNeighbourList<StructureManagerCenters>>>;
 using Prop_t = typename CalculatorSphericalExpansion::Property_t<Manager_t>;
 using PropGrad_t =
@@ -168,13 +171,13 @@ int main(int argc, char * argv[]) {
 
   std::cout << "Loading structures...";
   json structures{{"filename", structures_absolute_path}};
-  auto manager =
-      make_structure_manager_stack<StructureManagerCenters,
-                                   AdaptorNeighbourList,
-                                   AdaptorCenterContribution, AdaptorStrict>(
-          structures, adaptors);
-  std::cout << " finished." << std::endl;
+  auto managers{ManagerCollection<StructureManagerCenters, AdaptorNeighbourList, AdaptorCenterContribution, AdaptorStrict>(adaptors)};
+  managers.add_structures(structures_absolute_path, 0, -1); // extendable with arguments: int start = 0, int length = -1)
 
+  auto manager =
+      make_structure_manager_stack<StructureManagerCenters, AdaptorNeighbourList, AdaptorCenterContribution, AdaptorStrict>(
+          structures, adaptors);
+  std::cout << " finished. Number of structures loaded: " << managers.size() << std::endl;
 
   // load torch model 
   std::cout << "Loading model...";
@@ -182,13 +185,16 @@ int main(int argc, char * argv[]) {
   module = torch::jit::load(torch_model_absolute_path);
   std::cout << " finished." << std::endl;
 
+  std::vector<torch::jit::IValue> torch_model_inputs;
+
   //// DUMMY DATA
+  std::vector<torch::jit::IValue> remapped_sph_exp;
   // TODO(sergey) code is just to have some functional input for testing but in the end
   // the remapped representation should be used
   std::cout << "Loading dummy...";
   std::vector<std::string> names;
 
-  for (const auto & entry : std::filesystem::directory_iterator("/ssd/local/code/pytorch_prototype/meeting/inputs/")) {
+  for (const auto & entry : std::filesystem::directory_iterator("/home/alexgo//lib/pytorch_prototype/meeting/inputs/")) {
       std::string path_now = entry.path();
       char first_symbol = 0;
       for (int i = path_now.size() - 1; i >= 0; --i) {
@@ -201,35 +207,77 @@ int main(int argc, char * argv[]) {
           names.push_back(path_now);
       }
   }
-  std::vector<torch::jit::IValue> remapped_sph_exp;
 
   std::sort(names.begin(), names.end());
   for (unsigned int i = 0 ; i < names.size(); ++i) {
-      remapped_sph_exp.push_back(read_tensor(names[i]));
-      //std::cout << names[i] << '\n';
+    torch::Tensor t{read_tensor(names[i])};
+    std::cout << "i: "<< i << " size: (";
+    for (int64_t d = 0; d < t.dim(); ++d) {
+      std::cout << t.size(d) << " ";
+    }
+    std::cout << ")" << std::endl;
+    remapped_sph_exp.push_back(t);
   }
   std::cout << " finished." << std::endl;
+
   //// DUMMY DATA
+  Representation_t representation{sph_hypers};
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  //std::cout << "Loading comp rep...";
-  Representation_t representation{sph_hypers};
-  representation.compute(manager);
-  //std::cout << " finished." << std::endl;
+  std::cout << "Loading comp rep...";
+  representation.compute(managers);
 
-  auto && expansions_coefficients{
-      *manager->template get_property<Prop_t>(representation.get_name())};
+  //// get_features for all structures and merge together like in pybind 
+  auto property_name{managers.get_calculator_name(representation, false)};
+
+  const auto & property_ =
+      *managers[0]->template get_property<Prop_t>(property_name);
+  // assume inner_size is consistent for all managers
+  int inner_size{property_.get_nb_comp()};
+
+  auto all_keys{property_.get_keys()};
+
+  math::Matrix_t feature_matrix{};
+
+  auto n_rows{
+      managers.template get_number_of_elements<Prop_t>(property_name)};
+  size_t n_cols{all_keys.size() * inner_size};
+  feature_matrix.resize(n_rows, n_cols);
+  feature_matrix.setZero();
+
+  int i_row{0};
+  for (auto & manager : managers) {
+    const auto & property =
+        *manager->template get_property<Prop_t>(property_name);
+    auto n_rows_manager = property.size();
+    property.fill_dense_feature_matrix(
+        feature_matrix.block(i_row, 0, n_rows_manager, n_cols), all_keys);
+    i_row += n_rows_manager;
+  }
+  //for (int angular_l = 0;  angular_l < max_angular; angular_l++) {
+  //}
+  ////
+  std::cout << " finished." << std::endl;
 
   auto finish_sph_exp_computation = std::chrono::high_resolution_clock::now();
-  // this should do a memcopy, transforms sparse object to non sparse
-  Matrix_t feature_matrix = expansions_coefficients.get_features();
-  // at this point the expansion_coefficents could be freed, not sure if needed for benchmarks
 
   // this should *not* do a memcopy, TODO(alex) double check this 
   torch::Tensor feature_matrix_torch = eigen_matrix_to_torch_tensor(feature_matrix);
   auto finish_eigen_to_torch_format = std::chrono::high_resolution_clock::now();
   
+  //std::vector<int> all_species{};
+  //for manager in managers
+  //torch_model_inputs.push_back(torch::from_blob(all_species.data(), {1, all_species.size()}, torch::kInt64));
+
+  //for (int angular_l = 0;  angular_l < max_angular; angular_l++) {
+  //  torch_model_inputs
+  //  feature_matrix_torch[l]
+  //}
+  //species information
+  //center information
+  //for (int angular_l = 0;  angular_l < max_angular; angular_l++) {
+
   // TODO(sergey)
   // remapped_sph_exp = ...
   // reshape it the way you want

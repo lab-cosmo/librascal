@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-set(LIBTORCH_PATH "/ssd/local/code/libtorch/" CACHE STRING "")
 #set(LIBTORCH_PATH "${LIBTORCH_PATH}")
 #message(FATAL_ERROR "LIBTORCH_PATH  ${LIBTORCH_PATH}")
 set(Torch_DIR "${LIBTORCH_PATH}/share/cmake/Torch/")
