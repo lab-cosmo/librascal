@@ -51,6 +51,7 @@
 using namespace rascal;  // NOLINT
 
 using Matrix_t = math::Matrix_t;
+using Matrix_Ref = math::Matrix_Ref;
 
 using Representation_t = CalculatorSphericalExpansion;
 using Manager_t = AdaptorStrict<
@@ -61,7 +62,7 @@ using PropGrad_t =
 
 
 // adapted from https://discuss.pytorch.org/t/data-transfer-between-libtorch-c-and-eigen/54156/6
-torch::Tensor eigenMatrixToTorchTensor(Matrix_t eigen_mat) {
+torch::Tensor eigenMatrixToTorchTensor(Matrix_Ref eigen_mat) {
     // one can play more around with the options, not sure at the moment
     auto options =
       torch::TensorOptions()
