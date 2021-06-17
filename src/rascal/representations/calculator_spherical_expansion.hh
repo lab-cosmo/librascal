@@ -133,10 +133,10 @@ namespace rascal {
       explicit AtomicSmearingSpecification(const Hypers_t & hypers) {
         this->constant_gaussian_sigma =
             hypers.at("gaussian_sigma").at("value").get<double>();
-        if (this->constant_gaussian_sigma < 5e-2) {
+        if (this->constant_gaussian_sigma < 1e-2) {
           std::stringstream err_str{};
           err_str << "Constant gaussian sigma is too small: "
-                  << this->constant_gaussian_sigma << " < 5e-2";
+                  << this->constant_gaussian_sigma << " < 1e-2";
           throw std::runtime_error(err_str.str());
         }
       }
@@ -1353,7 +1353,8 @@ namespace rascal {
       compute_center_contribution(ClusterRefKey<Order, Layer> & /*center*/,
                                   int center_type) {
         try {
-          return Vector_Ref(this->reduced_radial_integral_centers[center_type]);
+          return Vector_Ref(
+              this->reduced_radial_integral_centers.at(center_type));
         } catch (const std::exception & e) {
           std::stringstream err_str{};
           err_str << "RadialDimReduction is missing projection matrices at "
@@ -1369,7 +1370,7 @@ namespace rascal {
           int neighbour_type) {
         try {
           this->radial_integral_neighbour =
-              this->intps[neighbour_type]->interpolate(distance);
+              this->intps.at(neighbour_type)->interpolate(distance);
           return Matrix_Ref(this->radial_integral_neighbour);
         } catch (const std::exception & e) {
           std::stringstream err_str{};
@@ -1405,9 +1406,13 @@ namespace rascal {
       template <typename Coeffs>
       void finalize_coefficients(Coeffs & /*coefficients*/) {}
 
-      template <int NDims, typename Coeffs>
-      void
-      finalize_neighbour_derivative(Coeffs & /*coefficients_neigh_gradient*/) {}
+      /*
+       * Overwriting the finalization function to empty one, since the
+       * derivative of the spline is used
+       */
+      template <int NDims, typename Coeffs, typename Center>
+      void finalize_coefficients_der(Coeffs & /*coefficients_gradient*/,
+                                     Center & /*center*/) const {}
 
      protected:
       Matrix_Ref compute_neighbour_contribution(const double distance,
