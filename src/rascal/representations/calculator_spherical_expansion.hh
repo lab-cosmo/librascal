@@ -1405,9 +1405,13 @@ namespace rascal {
       template <typename Coeffs>
       void finalize_coefficients(Coeffs & /*coefficients*/) {}
 
-      template <int NDims, typename Coeffs>
-      void
-      finalize_neighbour_derivative(Coeffs & /*coefficients_neigh_gradient*/) {}
+      /*
+       * Overwriting the finalization function to empty one, since the
+       * derivative of the spline is used
+       */
+      template <int NDims, typename Coeffs, typename Center>
+      void finalize_coefficients_der(Coeffs & /*coefficients_gradient*/,
+                                     Center & /*center*/) const {}
 
      protected:
       Matrix_Ref compute_neighbour_contribution(const double distance,
