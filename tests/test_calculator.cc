@@ -563,7 +563,6 @@ namespace rascal {
           SingleHypersSphericalExpansion<SimplePeriodicNLCCStrictFixture>>,
       CalculatorFixture<
           SingleHypersSphericalInvariants<SimplePeriodicNLCCStrictFixture>>>;
-
   /**
    * Test the gradient of the SphericalExpansion and SphericalInvariants
    * representation on a few simple crystal structures (single- and
@@ -603,7 +602,13 @@ namespace rascal {
           grad_fix.advance_center();
         } while (grad_fix.has_next());
         /* ---- grad-test-example-end2 ---- */
-        break;
+        // for peformance reasons we do the SphericalInvariants test only for
+        // the first hyper, since it builds on top of the SphericalExpansion and
+        // the SphericalExpansion is tested for all hypers, we do not lose
+        // coverage
+        if (hyper.count("soap_type")) {
+          break;
+        }
       }
       ++filename_it;
     }
