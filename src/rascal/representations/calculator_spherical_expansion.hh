@@ -1353,7 +1353,8 @@ namespace rascal {
       compute_center_contribution(ClusterRefKey<Order, Layer> & /*center*/,
                                   int center_type) {
         try {
-          return Vector_Ref(this->reduced_radial_integral_centers[center_type]);
+          return Vector_Ref(
+              this->reduced_radial_integral_centers.at(center_type));
         } catch (const std::exception & e) {
           std::stringstream err_str{};
           err_str << "RadialDimReduction is missing projection matrices at "
@@ -1369,7 +1370,7 @@ namespace rascal {
           int neighbour_type) {
         try {
           this->radial_integral_neighbour =
-              this->intps[neighbour_type]->interpolate(distance);
+              this->intps.at(neighbour_type)->interpolate(distance);
           return Matrix_Ref(this->radial_integral_neighbour);
         } catch (const std::exception & e) {
           std::stringstream err_str{};

@@ -375,13 +375,14 @@ namespace rascal {
     // https://github.com/nlohmann/json/issues/737
     // shape (max_angular+1, max_radial, max_radial)  = (4, 3, 3)
     std::map<std::string, std::vector<std::vector<std::vector<double>>>>
-        projection_matrices{{"8",
-                             {
-                                 {{0.5, 0.1, 0.3}, {0.1, 1.5, 0.1}, {0.5, 0.1, 1.9}},
-                                 {{0.9, 0.2, 0.6}, {0.9, 1.1, 0.4}, {0.5, 0.5, 1.1}},
-                                 {{0.4, 0.8, 0.6}, {0.8, 1.2, 0.5}, {0.1, 0.4, 1.9}},
-                                 {{0.1, 0.3, 0.1}, {0.6, 1.1, 0.4}, {0.5, 0.6, 1.5}},
-                             }}};
+        projection_matrices{
+            {"8",
+             {
+                 {{0.5, 0.1, 0.3}, {0.1, 1.5, 0.1}, {0.5, 0.1, 1.9}},
+                 {{0.9, 0.2, 0.6}, {0.9, 1.1, 0.4}, {0.5, 0.5, 1.1}},
+                 {{0.4, 0.8, 0.6}, {0.8, 1.2, 0.5}, {0.1, 0.4, 1.9}},
+                 {{0.1, 0.3, 0.1}, {0.6, 1.1, 0.4}, {0.5, 0.6, 1.5}},
+             }}};
     json projection_matrices_hypers{
         {"projection_matrices", projection_matrices}};
     json radial_dim_reduction_spline_hypers{
@@ -390,7 +391,8 @@ namespace rascal {
     std::vector<json> radial_contribution_hypers{
         {{"type", "GTO"}, {"optimization", {}}},
         {{"type", "DVR"}, {"optimization", {}}},
-        {{"type", "GTO"},{"optimization", {{"Spline", {{"accuracy", 1e-12}}}}}},
+        {{"type", "GTO"},
+         {"optimization", {{"Spline", {{"accuracy", 1e-12}}}}}},
         {{"type", "DVR"}, {"optimization", {{"Spline", {{"accuracy", 1e-5}}}}}},
         {{"type", "GTO"}, {"optimization", radial_dim_reduction_spline_hypers}},
         {{"type", "DVR"}, {"optimization", radial_dim_reduction_spline_hypers}},
@@ -585,43 +587,61 @@ namespace rascal {
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     std::map<std::string, std::vector<std::vector<std::vector<double>>>>
         projection_matrices{
-                            {"1", {{{0.5, 0.1}, {0.1, 1.5}},
-                                   {{0.9, 0.2}, {0.9, 1.1}},
-                                   {{0.4, 0.8}, {0.8, 1.2}},
-                             }},
-                            {"6", {{{0.5, 0.1}, {0.1, 1.5}},
-                                   {{0.9, 0.2}, {0.9, 1.1}},
-                                   {{0.4, 0.8}, {0.8, 1.2}},
-                             }},
-                            {"7", {{{0.5, 0.1}, {0.1, 1.5}},
-                                   {{0.9, 0.2}, {0.9, 1.1}},
-                                   {{0.4, 0.8}, {0.8, 1.2}},
-                             }},
-                            {"8", {{{0.5, 0.1}, {0.1, 1.5}},
-                                   {{0.9, 0.2}, {0.9, 1.1}},
-                                   {{0.4, 0.8}, {0.8, 1.2}},
-                             }},
-                            {"14", {{{0.5, 0.1}, {0.1, 1.5}},
-                                    {{0.9, 0.2}, {0.9, 1.1}},
-                                    {{0.4, 0.8}, {0.8, 1.2}},
-                             }},
-                            {"15", {{{0.5, 0.1}, {0.1, 1.5}},
-                                    {{0.9, 0.2}, {0.9, 1.1}},
-                                    {{0.4, 0.8}, {0.8, 1.2}},
-                             }},
-                            {"20", {{{0.5, 0.1}, {0.1, 1.5}},
-                                    {{0.9, 0.2}, {0.9, 1.1}},
-                                    {{0.4, 0.8}, {0.8, 1.2}},
-                             }},
-                            {"24", {{{0.5, 0.1}, {0.1, 1.5}},
-                                    {{0.9, 0.2}, {0.9, 1.1}},
-                                    {{0.4, 0.8}, {0.8, 1.2}},
-                             }},
-                            {"32", {{{0.5, 0.1}, {0.1, 1.5}},
-                                    {{0.9, 0.2}, {0.9, 1.1}},
-                                    {{0.4, 0.8}, {0.8, 1.2}},
-                             }},
-                            };
+            {"1",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"6",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"7",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"8",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"14",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"15",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"20",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"24",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"32",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+        };
     json projection_matrices_hypers{
         {"projection_matrices", projection_matrices}};
     json radial_dim_reduction_spline_hypers{
@@ -631,11 +651,11 @@ namespace rascal {
         {{"type", "GTO"}, {"optimization", {}}},
         {{"type", "DVR"}, {"optimization", {}}},
         {{"type", "GTO"}, {"optimization", {{"Spline", {{"accuracy", 1e-8}}}}}},
-        {{"type", "GTO"}, {"optimization", radial_dim_reduction_spline_hypers}}
-    };
-    // if new hypers are added or current ones changed there will be problems with the
-    // projection_matrices defined above since their size depend on max_radial
-    // and max_angular
+        {{"type", "GTO"},
+         {"optimization", radial_dim_reduction_spline_hypers}}};
+    // if new hypers are added or current ones changed there will be problems
+    // with the projection_matrices defined above since their size depend on
+    // max_radial and max_angular
     std::vector<json> rep_hypers{
         {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}}};
   };
