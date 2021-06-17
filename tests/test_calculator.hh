@@ -298,6 +298,7 @@ namespace rascal {
         StructureManagerTypeHolder<StructureManagerCenters,
                                    AdaptorNeighbourList,
                                    AdaptorCenterContribution, AdaptorStrict>;
+    using Structure_t = AtomicStructure<3>;
 
     SimpleStructureManagerNLCCStrictFixture() {
       json parameters;
@@ -328,6 +329,7 @@ namespace rascal {
     const double cutoff_skin{0.};
 
     json factory_args{};
+    std::vector<Structure_t> structures{};
   };
 
   struct MultipleHypersSphericalExpansion
@@ -368,22 +370,21 @@ namespace rascal {
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
     // nested json definitions dont work properly in this case:
-    // if not defined seperately, radial_dim_reduction_hypers are
-    // interpreted as arrays
+    // if not defined seperately, radial dimension reduction_hypers
+    // are interpreted as arrays
     // https://github.com/nlohmann/json/issues/737
     // shape (max_angular+1, max_radial, max_radial)  = (4, 3, 3)
     std::map<std::string, std::vector<std::vector<std::vector<double>>>>
-        projection_matrices{{"8",
-                             {
-                                 {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}},
-                                 {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}},
-                                 {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}},
-                                 {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}},
-                             }}};
+        projection_matrices{
+            {"8",
+             {
+                 {{0.5, 0.1, 0.3}, {0.1, 1.5, 0.1}, {0.5, 0.1, 1.9}},
+                 {{0.9, 0.2, 0.6}, {0.9, 1.1, 0.4}, {0.5, 0.5, 1.1}},
+                 {{0.4, 0.8, 0.6}, {0.8, 1.2, 0.5}, {0.1, 0.4, 1.9}},
+                 {{0.1, 0.3, 0.1}, {0.6, 1.1, 0.4}, {0.5, 0.6, 1.5}},
+             }}};
     json projection_matrices_hypers{
         {"projection_matrices", projection_matrices}};
-    json radial_dim_reduction_hypers{
-        {"RadialDimReduction", projection_matrices_hypers}};
     json radial_dim_reduction_spline_hypers{
         {"Spline", {{"accuracy", 1e-8}}},
         {"RadialDimReduction", projection_matrices_hypers}};
@@ -393,8 +394,6 @@ namespace rascal {
         {{"type", "GTO"},
          {"optimization", {{"Spline", {{"accuracy", 1e-12}}}}}},
         {{"type", "DVR"}, {"optimization", {{"Spline", {{"accuracy", 1e-5}}}}}},
-        {{"type", "GTO"}, {"optimization", radial_dim_reduction_hypers}},
-        {{"type", "DVR"}, {"optimization", radial_dim_reduction_hypers}},
         {{"type", "GTO"}, {"optimization", radial_dim_reduction_spline_hypers}},
         {{"type", "DVR"}, {"optimization", radial_dim_reduction_spline_hypers}},
     };
@@ -586,10 +585,79 @@ namespace rascal {
     std::vector<json> density_hypers{
         {{"type", "Constant"},
          {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::map<std::string, std::vector<std::vector<std::vector<double>>>>
+        projection_matrices{
+            {"1",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"6",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"7",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"8",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"14",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"15",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"20",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"24",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+            {"32",
+             {
+                 {{0.5, 0.1}, {0.1, 1.5}},
+                 {{0.9, 0.2}, {0.9, 1.1}},
+                 {{0.4, 0.8}, {0.8, 1.2}},
+             }},
+        };
+    json projection_matrices_hypers{
+        {"projection_matrices", projection_matrices}};
+    json radial_dim_reduction_spline_hypers{
+        {"Spline", {{"accuracy", 1e-8}}},
+        {"RadialDimReduction", projection_matrices_hypers}};
+    std::vector<json> radial_contribution_hypers{
+        {{"type", "GTO"}, {"optimization", {}}},
+        {{"type", "DVR"}, {"optimization", {}}},
+        {{"type", "GTO"}, {"optimization", {{"Spline", {{"accuracy", 1e-8}}}}}},
+        {{"type", "GTO"},
+         {"optimization", radial_dim_reduction_spline_hypers}}};
+    // if new hypers are added or current ones changed there will be problems
+    // with the projection_matrices defined above since their size depend on
+    // max_radial and max_angular
     std::vector<json> rep_hypers{
-        {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}},
-        {{"max_radial", 2}, {"max_angular", 0}, {"compute_gradients", true}}};
+        {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}}};
   };
 
   template <typename DataFixture>
@@ -791,6 +859,9 @@ namespace rascal {
               internal::OptimizationType::RadialDimReductionSpline;
         } else if (using_spline) {
           optimization_type = internal::OptimizationType::Spline;
+        } else if (using_radial_dim_reduction) {
+          throw std::runtime_error(
+              "RadialDimReduction without Spline is not supported.");
         } else {
           optimization_type = internal::OptimizationType::None;
         }
