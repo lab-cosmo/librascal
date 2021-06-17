@@ -372,6 +372,7 @@ def get_optimal_radial_basis_hypers(hypers, frames, expanded_max_radial=-1):
     spherical_expansion_hypers.pop("normalize", None)
     spherical_expansion_hypers.pop("soap_type", None)
     spherical_expansion_hypers.pop("compute_gradients", None)
+    spherical_expansion_hypers.pop("inversion_symmetry", None)
 
     if "optimization" in spherical_expansion_hypers:
         spherical_expansion_hypers["optimization"].pop("RadialDimReduction", None)
