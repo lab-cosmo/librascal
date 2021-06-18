@@ -455,7 +455,7 @@ def json_dumps_frame(frames, **json_dumps_kwargs):
     Parameters
     ----------
     frames : list(ase.Atoms) or ase.Atoms
-        List of atomic structures to be dumped to a json
+        List of atomic structures (or single one) to be dumped to a json
 
     json_dumps_kwargs : dict
         List of arguments forwarded to json.dumps

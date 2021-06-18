@@ -106,7 +106,7 @@ class TestIO(unittest.TestCase):
             os.path.join(inputs_path, "methane.json"),
         ]
 
-    def test_dumps_frame(self):
+    def test_json_dumps_frame(self):
         """
         Checks if json file decoded by RascalEncoder in dumps_frame can be read
         by rascal
