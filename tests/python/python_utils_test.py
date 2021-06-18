@@ -7,7 +7,7 @@ from rascal.utils import (
     get_radial_basis_pca,
     get_radial_basis_projections,
     get_optimal_radial_basis_hypers,
-    json_dumps_frame
+    json_dumps_frame,
 )
 from rascal.lib import neighbour_list
 from rascal.neighbourlist import base
@@ -98,6 +98,7 @@ class TestOptimalRadialBasis(unittest.TestCase):
 
         self.assertTrue(np.allclose(soap_feats, soap_feats_2))
 
+
 class TestIO(unittest.TestCase):
     def setUp(self):
         self.fns = [
@@ -130,5 +131,3 @@ class TestIO(unittest.TestCase):
             except:
                 tmp.close()
                 os.unlink(tmp.name)
-
-

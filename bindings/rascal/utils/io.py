@@ -424,17 +424,19 @@ def _load_npy(data, path):
                 if "npy" == v[0]:
                     data[k] = np.array(v[1])
 
+
 class RascalEncoder(json.JSONEncoder):
     def default(self, obj):
-        if hasattr(obj, 'todict'):
+        if hasattr(obj, "todict"):
             d = obj.todict()
 
             if not isinstance(d, dict):
-                raise RuntimeError('todict() of {} returned object of type {} '
-                                   'but should have returned dict'
-                                   .format(obj, type(d)))
-            if hasattr(obj, 'ase_objtype'):
-                d['__ase_objtype__'] = obj.ase_objtype
+                raise RuntimeError(
+                    "todict() of {} returned object of type {} "
+                    "but should have returned dict".format(obj, type(d))
+                )
+            if hasattr(obj, "ase_objtype"):
+                d["__ase_objtype__"] = obj.ase_objtype
 
             return d
         if isinstance(obj, np.ndarray):
@@ -444,10 +446,11 @@ class RascalEncoder(json.JSONEncoder):
         if isinstance(obj, np.bool_):
             return bool(obj)
         if isinstance(obj, datetime.datetime):
-            return {'__datetime__': obj.isoformat()}
+            return {"__datetime__": obj.isoformat()}
         if isinstance(obj, complex):
-            return {'__complex__': (obj.real, obj.imag)}
+            return {"__complex__": (obj.real, obj.imag)}
         return json.JSONEncoder.default(self, obj)
+
 
 def json_dumps_frame(frames, **json_dumps_kwargs):
     """Serialize frames to a JSON formatted string.
@@ -471,7 +474,7 @@ def json_dumps_frame(frames, **json_dumps_kwargs):
     for i, frame in enumerate(frames):
         json_frames[str(i)] = json.loads(json.dumps(frame, cls=RascalEncoder))
 
-    json_frames['ids'] = list(range(len(frames)))
-    json_frames['nextid'] = len(frames)
+    json_frames["ids"] = list(range(len(frames)))
+    json_frames["nextid"] = len(frames)
 
     return json.dumps(json_frames, **json_dumps_kwargs)
