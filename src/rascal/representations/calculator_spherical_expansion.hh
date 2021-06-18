@@ -1994,8 +1994,8 @@ namespace rascal {
         myfile.open ("expansioncoeff_realspace_nograd.txt", std::ios::app);
       }
       myfile << std::setprecision(15);
-      for (auto neigh : manager) { 
-        auto atom_j_tag{neigh.get_atom_tag()};
+      for (auto neigh : center.pairs()) { 
+        auto atom_j_tag{neigh.get_atom_j().get_atom_tag()};
         auto atom_i_tag{center.get_atom_tag()};
         size_t jat{manager->get_atom_index(atom_j_tag)};
         size_t iat{manager->get_atom_index(atom_i_tag)};
@@ -2012,6 +2012,11 @@ namespace rascal {
           auto && grad_center_by_type{
                  coefficients_center_gradient[neigh_type]};
           myfile << "Gradients = \n" << grad_center_by_type << "\n";
+          auto & coefficients_neigh_gradient =
+              expansions_coefficients_gradient[neigh];
+          auto && grad_neigh_by_type{
+              coefficients_neigh_gradient[neigh_type]};
+          myfile << "offdiagonals = \n" << grad_neigh_by_type << "\n";
         }
       }
     }  // for (center : manager)

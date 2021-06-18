@@ -46,7 +46,11 @@ class SparsePoints(BaseIO):
 
     def __init__(self, representation):
         self.representation = representation
-        if "SphericalInvariants" in str(representation):
+        if "SphericalInvariantsKspace" in str(representation):
+            self._sparse_points = _sparse_points[
+                "SparsePointsBlockSparse_KspaceSphericalInvariants"
+            ]()
+        elif "SphericalInvariants" in str(representation):
             self._sparse_points = _sparse_points[
                 "SparsePointsBlockSparse_SphericalInvariants"
             ]()

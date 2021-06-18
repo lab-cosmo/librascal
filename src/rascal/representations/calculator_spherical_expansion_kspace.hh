@@ -557,7 +557,7 @@ namespace rascal {
 
     // Radius of the sphere in reciprocal space defining the
     // maximum spatial resolution
-    double kcut = 2.0*PI/(this->smearing);
+    double kcut = PI/(this->smearing);
     // initialization
     math::Kvectors k_vectors(kcut, cell);
     // number of k-vectors
@@ -744,12 +744,13 @@ namespace rascal {
         double nlmk_factor{};
 
         // Start adding up terms for all "neighbor" atoms
-        for (auto neigh : manager) {
+        for (auto neigh : center.pairs()) {
           // Initialize index and type of new atom and only execute code
           // if different from center atom
           // (the periodic images move with the center, so their
           // contribution to the center gradient is zero as well)
-          auto atom_j_tag{neigh.get_atom_tag()};
+          auto atom_j = neigh.get_atom_j();
+          const int atom_j_tag = atom_j.get_atom_tag();
           size_t jat{manager->get_atom_index(atom_j_tag)};
           if (jat == iat) {
             continue;
@@ -786,24 +787,37 @@ namespace rascal {
                       phase_factor * nlmk_factor;
           
                 if (compute_gradients) {
-                  // Define some shortcuts to access the coefficients
+                  // Define some shortcuts to access the gradient coefficients:
+                  // Coefficients of center atom dV_i/dr_i
                   auto & coefficients_center_gradient = 
                      expansions_coefficients_gradient[center.get_atom_ii()];
                   auto && grad_center_by_type{
                      coefficients_center_gradient[neigh_type]};
+
+                  // Coefficients of neighbor atom dV_i/dr_j
+                  auto & coefficients_neigh_gradient =
+                     expansions_coefficients_gradient[neigh];
+                  auto && grad_neigh_by_type{
+                     coefficients_neigh_gradient[neigh_type]};
+
                   // Get real or imag. part of e^{ikr_ij} based on parity of l
                   double phase_factor_grad{};
+                  // double phase_factor_grad_ii{};
                   if (ang_l%2==0) {
                     phase_factor_grad = pow(-1.0,ang_l/2) * fourier_imag;
                   } else {
-                    phase_factor_grad = -pow(-1.0,(ang_l+1)/2) * fourier_real;
+                    phase_factor_grad = pow(-1.0,(ang_l+1)/2) * fourier_real;
                   }
                   // Update x,y and z components of gradients
                   for (size_t cartesian_idx{0}; cartesian_idx < ThreeD;
                        cartesian_idx++) {
-                  grad_center_by_type(cartesian_idx*max_radial+radial_n,
+                    grad_center_by_type(cartesian_idx*max_radial+radial_n,
                        lm_idx) += phase_factor_grad * nlmk_factor
                        * k_vec(ik,cartesian_idx);
+                    grad_neigh_by_type(cartesian_idx*max_radial+radial_n,
+                       lm_idx) -= phase_factor_grad * nlmk_factor
+                       * k_vec(ik,cartesian_idx);
+
                   } // for (cartesian_idx)
                 } // if (compute_gradients)
               } // for (mval)
@@ -826,8 +840,9 @@ namespace rascal {
         myfile.open ("expansioncoeff_kspace_nograd.txt", std::ios::app);
       }
       myfile << std::setprecision(15);
-      for (auto neigh : manager) { 
-        auto atom_j_tag{neigh.get_atom_tag()};
+      for (auto neigh : center.pairs()) { 
+        auto atom_j = neigh.get_atom_j();
+        const int atom_j_tag = atom_j.get_atom_tag();
         size_t jat{manager->get_atom_index(atom_j_tag)};
         Key_t neigh_type{neigh.get_atom_type()};
         auto && coeff = coefficients_center[neigh_type];
@@ -838,10 +853,15 @@ namespace rascal {
       
         if (compute_gradients) {
           auto & coefficients_center_gradient = 
-                 expansions_coefficients_gradient[center.get_atom_ii()];
+              expansions_coefficients_gradient[center.get_atom_ii()];
           auto && grad_center_by_type{
-                 coefficients_center_gradient[neigh_type]};
+              coefficients_center_gradient[neigh_type]};
           myfile << "Gradients = \n" << grad_center_by_type << "\n";
+          auto & coefficients_neigh_gradient =
+              expansions_coefficients_gradient[neigh];
+          auto && grad_neigh_by_type{
+              coefficients_neigh_gradient[neigh_type]};
+          myfile << "offdiagonals = \n" << grad_neigh_by_type << "\n";
         }
 
       }

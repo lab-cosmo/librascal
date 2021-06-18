@@ -128,6 +128,9 @@ namespace rascal {
         StructureManagerCenters, AdaptorNeighbourList,
         AdaptorCenterContribution, AdaptorStrict>::type_list;
 
+    using ManagerList_2_t = typename StructureManagerTypeHolder<
+        StructureManagerCenters, AdaptorKspace, AdaptorCenterContribution>::type_list;
+
     using Calc2_t = CalculatorSphericalExpansion;
     auto rep_spherical_expansion =
         add_representation_calculator<Calc2_t>(mod, m_internal);
@@ -145,12 +148,12 @@ namespace rascal {
     using Calc5_t = CalculatorKspaceSphericalExpansion;
     auto rep_spherical_expansion_kspace =
         add_representation_calculator<Calc5_t>(mod, m_internal);
-    bind_compute_function_helper<ManagerList_1_t>(
+    bind_compute_function_helper<ManagerList_2_t>(
         rep_spherical_expansion_kspace);
 
     using Calc6_t = CalculatorKspaceSphericalInvariants;
     auto rep_lode = add_representation_calculator<Calc6_t>(mod, m_internal);
-    bind_compute_function_helper<ManagerList_1_t>(rep_lode);
+    bind_compute_function_helper<ManagerList_2_t>(rep_lode);
   }
 
 }  // namespace rascal

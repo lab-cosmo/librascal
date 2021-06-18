@@ -216,10 +216,17 @@ namespace rascal {
     using ManagerCollection_2_t =
         ManagerCollection<StructureManagerCenters, AdaptorNeighbourList,
                           AdaptorCenterContribution, AdaptorStrict>;
+    
+    using ManagerCollection_3_t =
+        ManagerCollection<StructureManagerCenters, AdaptorKspace,
+        AdaptorCenterContribution>;
+
     // Defines the representation manager type for the particular structure
     // manager
     using Calc1_t = CalculatorSphericalInvariants;
+    using Calc2_t = CalculatorKspaceSphericalInvariants;
     using SparsePoints_1_t = SparsePointsBlockSparse<Calc1_t>;
+    using SparsePoints_2_t = SparsePointsBlockSparse<Calc2_t>;
 
     // Bind the interface of this representation manager
     auto kernel = add_kernel<Kernel>(m_kernels, m_internal);
@@ -228,6 +235,8 @@ namespace rascal {
                                  ManagerCollection_1_t>(kernel);
     bind_kernel_compute_function<internal::KernelType::Cosine, Calc1_t,
                                  ManagerCollection_2_t>(kernel);
+    bind_kernel_compute_function<internal::KernelType::Cosine, Calc2_t,
+                                 ManagerCollection_3_t>(kernel);
 
     // bind the sparse kernel and pseudo points class
     auto sparse_kernel = add_kernel<SparseKernel>(m_kernels, m_internal);
@@ -235,14 +244,35 @@ namespace rascal {
     bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
                                         Calc1_t, ManagerCollection_2_t,
                                         SparsePoints_1_t>(sparse_kernel);
+    bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
+                                        Calc2_t, ManagerCollection_3_t,
+                                        SparsePoints_2_t>(sparse_kernel);
+    
+    /*auto sparse_kernel_ksp = add_kernel<SparseKernel>(m_kernels, m_internal);
+    internal::bind_dict_representation(sparse_kernel_ksp);
+    bind_sparse_kernel_compute_function<internal::SparseKernelType::GAP,
+                                        Calc2_t, ManagerCollection_3_t,
+                                        SparsePoints_2_t>(sparse_kernel_ksp);*/
+
     auto sparse_points =
         add_sparse_points<SparsePoints_1_t>(m_kernels, m_internal);
     bind_sparse_points_push_back<ManagerCollection_2_t, Calc1_t>(sparse_points);
     internal::bind_dict_representation(sparse_points);
 
+    auto sparse_points_kspace =
+        add_sparse_points<SparsePoints_2_t>(m_kernels, m_internal);
+    bind_sparse_points_push_back<ManagerCollection_3_t, Calc2_t>(sparse_points_kspace);
+    internal::bind_dict_representation(sparse_points_kspace);
+
     bind_compute_gradients<ManagerCollection_2_t, Calc1_t, SparsePoints_1_t>(
         mod, m_internal);
     bind_compute_numerical_kernel_gradients<
         SparseKernel, Calc1_t, ManagerCollection_2_t, SparsePoints_1_t>(mod);
+    
+    
+    bind_compute_gradients<ManagerCollection_3_t, Calc2_t, SparsePoints_2_t>(
+        mod, m_internal);
+    bind_compute_numerical_kernel_gradients<
+        SparseKernel, Calc2_t, ManagerCollection_3_t, SparsePoints_2_t>(mod);
   }
 }  // namespace rascal
