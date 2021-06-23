@@ -43,26 +43,19 @@ def calculate_representation(
     return rep, soaps
 
 
-# TODO also support feature sparsification (this just does env. sparsification
-#      for now)
-def calculate_and_sparsify(
+def calculate_features(
     geoms,
     rep_parameters,
-    n_sparse,
     rep_class=representations.SphericalInvariants,
     auto_wrap=True,
-    selection_type="CUR",
 ):
-    """Calculate SOAP vectors and sparsify
+    """Calculate feature vectors (e.g. SOAPs)
 
     Parameters:
         geoms       List of Atoms objects to transform
         rep_parameters
                     Dictionary of parameters used to initialize the
                     representation
-        n_sparse    Number of sparse points per species, in the form of
-                    a dict mapping atomic number to number of requested
-                    sparse points
     Optional arguments:
         rep_class   Class that specifies which representation to use
                     (default rascal.representations.SphericalInvariants)
@@ -74,27 +67,54 @@ def calculate_and_sparsify(
                     non-periodic require special handling -- do not use
                     this option!  Manually pad the cell and shift the
                     positions instead.
-        selection_type
-                    Which selection algorithm to use. 'CUR' and 'FPS'
-                    are supported (see the documentation in rascal.utils
-                    for details on each method), default CUR.
 
-    Returns the Representation object, the SOAP vectors, and the sparse
-    points, in a 3-tuple.
+    Returns the Representation object and the SOAP vectors (the latter in
+    the internal librascal representation)
     """
     rep = rep_class(**rep_parameters)
     if auto_wrap:
         for geom in geoms:
             geom.wrap(eps=1e-10)
     soaps = rep.transform(geoms)
+    return rep, soaps
+
+
+# TODO also support feature sparsification (this just does env. sparsification
+#      for now)
+def sparsify_environments(
+    features,
+    n_sparse,
+    selection_type="CUR",
+    save_sparsepoints=False
+):
+    """Sparsify the feature matrix along the environments dimension
+
+    Parameters:
+        features    List of features to use for sparsification, in the
+                    internal librascal representation
+        n_sparse    Number of sparse points per species, in the form of
+                    a dict mapping atomic number to number of requested
+                    sparse points
+    Optional arguments:
+        selection_type
+            Which selection algorithm to use. 'CUR' and 'FPS'
+            are supported (see the documentation in rascal.utils
+            for details on each method), default CUR.
+        save_sparsepoints
+            Write the list of sparse points to a file for later use?
+            (default False)
+
+    Returns the sparse points, again in the internal librascal representation
+    """
     if selection_type.upper() == "CUR":
         compressor = utils.CURFilter(rep, n_sparse, act_on="sample per species")
     elif selection_type.upper() == "FPS":
         # TODO random starting index? by default?
         compressor = utils.FPSFilter(rep, n_sparse, act_on="sample per species")
     sparse_points = compressor.select_and_filter(soaps)
-    utils.dump_obj(os.path.join(WORKDIR, "sparsepoints.json"), sparse_points)
-    return rep, soaps, sparse_points
+    if save_sparsepoints:
+        utils.dump_obj(os.path.join(WORKDIR, "sparsepoints.json"), sparse_points)
+    return sparse_points
 
 
 def compute_kernels(
