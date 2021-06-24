@@ -41,7 +41,7 @@ def _get_n_train(n_train_in, n_test_in, n_geoms):
     if do_learning_curve:
         n_train_all = n_train
     else:
-        n_train_all = [ n_train, ]
+        n_train_all = [n_train]
     return n_train_all, n_test, do_learning_curve
 
 
@@ -58,9 +58,7 @@ def fit_save_model(parameters):
     natoms_source = [len(geom) for geom in source_geoms]
 
     n_train_all, n_test, do_learning_curve = _get_n_train(
-        parameters.n_train,
-        parameters.n_test,
-        len(source_geoms)
+        parameters.n_train, parameters.n_test, len(source_geoms)
     )
 
     rep, soaps, sparse_points = gaptools.calculate_and_sparsify(
@@ -214,26 +212,38 @@ def parse_command_line():
         "-w",
         "--write-residuals",
         help="Write residuals to the given filename, formatted with n_train",
-        default=""
+        default="",
     )
     parser.add_argument(
         "-o", "--output-filename", help="Name of the file to write the GAP model to"
     )
     parser.add_argument(
-        '-z', '--soap-power', help='Exponent to use for the SOAP kernel ("zeta")',
-        type=int, default=2)
+        "-z",
+        "--soap-power",
+        help='Exponent to use for the SOAP kernel ("zeta")',
+        type=int,
+        default=2,
+    )
     parser.add_argument(
-        '--energy-parameter-name', help="Name of the energy parameter in the input file",
-        default="energy")
+        "--energy-parameter-name",
+        help="Name of the energy parameter in the input file",
+        default="energy",
+    )
     parser.add_argument(
-        '--force-parameter-name', help="Name of the force parameter in the input file",
-        default="force")
+        "--force-parameter-name",
+        help="Name of the force parameter in the input file",
+        default="force",
+    )
     parser.add_argument(
-        '--description', help="Descriptive text to write into the model file",
-        default="")
+        "--description",
+        help="Descriptive text to write into the model file",
+        default="",
+    )
     parser.add_argument(
-        '--working-directory', help="Directory in which to write kernels and other large, temporary files",
-        default="potential_default")
+        "--working-directory",
+        help="Directory in which to write kernels and other large, temporary files",
+        default="potential_default",
+    )
     # Use the rascal loader to be able to read integer keys
     args = parser.parse_args()
     fit_parameters = rascal.utils.io.load_json(args.parameter_file)

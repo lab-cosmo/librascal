@@ -7,6 +7,7 @@ import ase.io
 import numpy as np
 
 from rascal import models, representations, utils
+from rascal.models.krr import SparseGPRSolver
 
 WORKDIR = os.getcwd()
 
@@ -82,10 +83,7 @@ def calculate_features(
 # TODO also support feature sparsification (this just does env. sparsification
 #      for now)
 def sparsify_environments(
-    features,
-    n_sparse,
-    selection_type="CUR",
-    save_sparsepoints=False
+    features, n_sparse, selection_type="CUR", save_sparsepoints=False
 ):
     """Sparsify the feature matrix along the environments dimension
 
@@ -221,7 +219,8 @@ def fit_gap_simple(
     forces=None,
     kernel_gradients_sparse=None,
     force_regularizer=None,
-    rcond=None,
+    solver="Normal",
+    jitter=1e-10,
 ):
     """
     Fit a GAP model to total energies and optionally forces
@@ -268,10 +267,14 @@ def fit_gap_simple(
                         energy / distance (component-wise)
 
     Optional arguments:
-        rcond           Condition number cutoff for matrix inversion at
-                        the core of the fit.  Default (and highly
-                        recommended) None; see the documentation for
-                        numpy.linalg.lstsq for more details.
+        solver          Which solver to use for the sparse GPR equations.
+                        Options are "Normal", "QR", "RKHS", and "RKHS-QR".
+                        See the documentation of
+                        rascal.models.krr.SparseGPRSolver for details.
+                        Default "Normal".
+        jitter          Value to add to the diagonal of the sparse GPR
+                        equations to make them stable, see SparseGPRSolver
+                        for details. Default 1E-10.
 
     Returns the weights (1-D array, size M) that define the fit.
     """
@@ -295,9 +298,19 @@ def fit_gap_simple(
     else:
         K_NM = kernel_energies_norm
         Y = energies_shifted / energy_regularizer
-    K = kernel_sparse + K_NM.T @ K_NM
-    weights, *_ = np.linalg.lstsq(K, K_NM.T @ Y, rcond=rcond)
-    return weights
+    # Old, unstable version - the active code below should be equivalent to
+    # solving these equations in a more stable way.
+    # K = kernel_sparse + K_NM.T @ K_NM
+    # weights, *_ = np.linalg.lstsq(K, K_NM.T @ Y, rcond=rcond)
+    #
+    # The regularizer is pre-multiplied with the kernel matrices, so we do not
+    # include it in the solver below.  This also implies the use of an absolute
+    # jitter.
+    solver = SparseGPRSolver(
+        K_MM, regularizer=1, jitter=jitter, solver=solver, relative_jitter=False
+    )
+    solver.fit(K_NM, Y)
+    return solver._weights
 
 
 def load_potential(
