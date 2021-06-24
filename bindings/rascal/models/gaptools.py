@@ -307,7 +307,8 @@ def fit_gap_simple(
     # include it in the solver below.  This also implies the use of an absolute
     # jitter.
     solver = SparseGPRSolver(
-        K_MM, regularizer=1, jitter=jitter, solver=solver, relative_jitter=False
+        kernel_sparse, regularizer=1, jitter=jitter, solver=solver, 
+        relative_jitter=False
     )
     solver.fit(K_NM, Y)
     return solver._weights
