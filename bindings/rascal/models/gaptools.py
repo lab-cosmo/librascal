@@ -117,6 +117,27 @@ def sparsify_environments(
     return sparse_points
 
 
+def build_sparse_list(list_natoms, absolute_index_list):
+    """Convert an absolute-indexed selection to structure-indexed format
+
+    Parameters:
+        list_natoms     List of the number of atoms in each structure
+        absolute_index_list
+                        List of sparse points selected, indexed from the
+                        beginning of the entire feature matrix
+                        (Note: if you need to preserve the order of the sparse
+                        points, then you should not use Rascal's SparsePoints)
+    """
+    index_breaks = np.cumsum(list_natoms)
+    find_struct = lambda i: np.searchsorted(index_breaks - 1, i)
+    structure_based_indices = [[] for n in list_natoms]
+    for abs_idx in absolute_index_list:
+        structure_index = find_struct(abs_idx)
+        offset = index_breaks[structure_index - 1] if (structure_index > 0) else 0
+        structure_based_indices[structure_index].append(abs_idx - offset)
+    return structure_based_indices
+
+
 def compute_kernels(
     rep,
     soaps,
