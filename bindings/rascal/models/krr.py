@@ -271,6 +271,10 @@ class KRR(BaseIO):
             raise NotImplementedError(
                 "force prediction only implemented for kernels with kernel_type=='Sparse'"
             )
+        if self.kernel.target_type != "Structure":
+            raise NotImplementedError(
+                "force prediction only implemented for kernels with target_type=='Structure'"
+            )
         if KNM is None:
             rep = self.kernel._representation
             gradients = compute_sparse_kernel_gradients(
