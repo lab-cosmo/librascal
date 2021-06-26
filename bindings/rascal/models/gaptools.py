@@ -143,6 +143,7 @@ def compute_kernels(
     soap_power=2,
     do_gradients=True,
     compute_sparse_kernel=True,
+    target_type="Structure", 
 ):
     """Compute the kernels necessary for a GAP fit
 
@@ -170,13 +171,17 @@ def compute_kernels(
                 new data; therefore, this option can be set to False for
                 that task.  If this option is set to False, an empty
                 array will be returned in place of the sparse kernel.
+        target_type : string
+                Type of target (prediction) properties, must be either 'Atom' (the kernel
+                is between atomic environments) or 'Structure' (the kernel is summed over
+                atoms in a structure), which is the default
 
     Returns a tuple of: the kernel object (which contains all the kernel
     parameters), the sparse kernel, and the energy kernel (and force
     kernel, if requested).
     """
     kernel = models.Kernel(
-        rep, name="GAP", zeta=soap_power, target_type="Structure", kernel_type="Sparse"
+        rep, name="GAP", zeta=soap_power, target_type=target_type, kernel_type="Sparse"
     )
     if compute_sparse_kernel:
         kernel_sparse = kernel(sparse_points)
@@ -188,6 +193,8 @@ def compute_kernels(
     #     kernels with possible future test kernels
     np.save(os.path.join(WORKDIR, "K_NM_E"), kernel_sparse_full)
     if do_gradients:
+        if target_type == "Atom":
+            raise ValueError("At present, atom-centered properties do not support gradients")
         kernel_sparse_full_grads = kernel(soaps, sparse_points, grad=(True, False))
         np.save(os.path.join(WORKDIR, "K_NM_F"), kernel_sparse_full_grads)
         return (kernel, kernel_sparse, kernel_sparse_full, kernel_sparse_full_grads)
@@ -195,16 +202,22 @@ def compute_kernels(
         return kernel, kernel_sparse, kernel_sparse_full
 
 
-def _get_energy_baseline(geom, atom_contributions):
+def _get_energy_baseline(geom, atom_contributions, target_type="Structure"):
     """Get the energy baseline for a single structure
 
     Depends only on the number of atoms of each atomic species present;
     the 'atom_contributions' dictionary says how much energy to assign
     to an atom of each species.
     """
-    e0 = 0.0
-    for species, e0_value in atom_contributions.items():
-        e0 += e0_value * np.sum(geom.get_atomic_numbers() == species)
+    
+    if target_type == "Structure":
+        e0 = 0.0    
+        for species, e0_value in atom_contributions.items():
+            e0 += e0_value * np.sum(geom.get_atomic_numbers() == species)
+    elif target_type == "Atom":
+        e0 = np.asarray( [ atom_contributions[species] for species in geom.get_atomic_numbers()] )        
+    else:
+        raise ValueError("Invalid baseline target ", target_type)
     return e0
 
 
@@ -221,6 +234,7 @@ def fit_gap_simple(
     force_regularizer=None,
     solver="Normal",
     jitter=1e-10,
+    target_type="Structure" 
 ):
     """
     Fit a GAP model to total energies and optionally forces
@@ -277,14 +291,19 @@ def fit_gap_simple(
                         for details. Default 1E-10.
 
     Returns the weights (1-D array, size M) that define the fit.
-    """
+    """    
     e0_all = np.array(
-        [_get_energy_baseline(geom, energy_atom_contributions) for geom in geoms]
-    )
+        [_get_energy_baseline(geom, energy_atom_contributions, target_type) for geom in geoms]
+    ).flatten()
     energies_shifted = energies - e0_all
-    natoms_list = np.array([len(geom) for geom in geoms])
-    energy_regularizer = energy_regularizer_peratom * np.sqrt(natoms_list)
-    kernel_energies_norm = kernel_energies_sparse / energy_regularizer[:, np.newaxis]
+    
+    if target_type == "Structure":
+        natoms_list = np.array([len(geom) for geom in geoms])
+        energy_regularizer = energy_regularizer_peratom * np.sqrt(natoms_list)
+        kernel_energies_norm = kernel_energies_sparse / energy_regularizer[:, np.newaxis]
+    else:
+        energy_regularizer = energy_regularizer_peratom
+        kernel_energies_norm = kernel_energies_sparse / energy_regularizer
     if forces is not None:
         gradients = -1 * forces
         kernel_gradients_norm = kernel_gradients_sparse / force_regularizer
@@ -298,6 +317,7 @@ def fit_gap_simple(
     else:
         K_NM = kernel_energies_norm
         Y = energies_shifted / energy_regularizer
+        
     # Old, unstable version - the active code below should be equivalent to
     # solving these equations in a more stable way.
     # K = kernel_sparse + K_NM.T @ K_NM
