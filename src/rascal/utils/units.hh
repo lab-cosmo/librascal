@@ -124,7 +124,10 @@ namespace rascal {
     extern const UnitStyle metal;
     extern const UnitStyle electron;
 
-    extern const std::map<std::string, int> species_numbers;
+    /**
+     * Map from element names to atomic numbers.
+     */
+    extern const std::map<std::string, int> default_species_numbers;
 
   }  // namespace units
 

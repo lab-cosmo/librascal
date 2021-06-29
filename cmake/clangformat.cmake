@@ -78,8 +78,11 @@ endif()
 execute_process(
     COMMAND ${CLANG_FORMAT} --version
     OUTPUT_VARIABLE CLANG_FORMAT_VERSION
-)
-string(REGEX REPLACE "clang-format version ([0-9.]+).*" "\\1" CLANG_FORMAT_VERSION "${CLANG_FORMAT_VERSION}")
+    )
+
+# the leading '.*' is required in newer debian versions, where the response string is "Debian clang-format versios XXXXX"
+string(REGEX REPLACE ".*clang-format version ([0-9.]+).*" "\\1" CLANG_FORMAT_VERSION "${CLANG_FORMAT_VERSION}")
+
 if("${CLANG_FORMAT_VERSION}" VERSION_LESS "8.0")
     message(FATAL_ERROR "Unsupported clang-format (version ${CLANG_FORMAT_VERSION}): a newer version (at least 8.0) is required")
 endif()

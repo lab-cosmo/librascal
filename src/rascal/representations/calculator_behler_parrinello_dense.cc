@@ -37,17 +37,21 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   template <bool CompatibilityMode_, SymmetryFunctionType... SymFunTypes>
   CalculatorBehlerParrinelloDense<CompatibilityMode_, SymFunTypes...>::
-      CalculatorBehlerParrinelloDense(const Hypers_t & parameters,
-                                      const UnitStyle & unit_style)
+      CalculatorBehlerParrinelloDense(
+          const Hypers_t & parameters, const UnitStyle & unit_style,
+          const std::vector<int> & managed_species_ids,
+          const std::map<std::string, int> & species_mapping)
 
-        : CalculatorBase{}, cutoff_function_type{json_io::get<std::string>(
-                              parameters, "cutoff_function_type")} {
+      : CalculatorBase{}, cutoff_function_type{json_io::get<std::string>(
+                              parameters, "cutoff_function_type")},
+        managed_species_ids{managed_species_ids}, species_mapping{
+                                                      species_mapping} {
     this->set_default_prefix("dense_behler_parrinello_");
     // simple check (just existence of keys)
     this->check_hyperparameters(this->reference_hypers, parameters);
     // 1)  create shared_ptr to cutoff_function
-    std::string cut_fun_type{json_io::get<std::string>(
-                              parameters, "cutoff_function_type")};
+    std::string cut_fun_type{
+        json_io::get<std::string>(parameters, "cutoff_function_type")};
 
     // 2) iterate through sym_function_params and fill vector of
     // behlerfeatures
@@ -55,15 +59,20 @@ namespace rascal {
     for (auto && sym_fun_params :
          json_io::get(parameters, "symmetry_functions")) {
       auto && cut_fun_params{json_io::get(sym_fun_params, "cutoff_function")};
-      auto && cut_fun{cut_funs[CutoffFunctionBase::identifier(
-          unit_style, cut_fun_params)]};
+      auto && cut_fun{
+          cut_funs[CutoffFunctionBase::identifier(unit_style, cut_fun_params)]};
 
       if (cut_fun == nullptr) {
         cut_fun = CutoffFunctionBase::make_shared(unit_style, cut_fun_params);
       }
       this->behler_features.push_back(std::move(
           BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>::make_unique(
-              cut_fun, unit_style, sym_fun_params)));
+              cut_fun, unit_style, sym_fun_params, this->species_mapping)));
+      if (this->managed_species_ids !=
+          this->behler_features.back()->get_species_ids()) {
+        throw std::runtime_error("The Behler feature " + sym_fun_params.dump() +
+                                 " has the wrong species for this calculator.");
+      }
     }
   }
 

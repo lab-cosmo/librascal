@@ -41,9 +41,9 @@
                     "r_s": {
                         "value": 5.6,
                         "unit": "Å"
-                    }
+                    },
+                    "species": ["Mg", "Si"]
                 },
-                "species": ["Mg", "Si"],
                 "cutoff_function": {
                     "type": "Cosine",
                     "_comment": "params is usually empty, except for ShiftedCosine",
@@ -68,9 +68,9 @@
                     "r_s": {
                         "value": 5.6,
                         "unit": "Å"
-                    }
+                    },
+                    "species": ["Mg", "Si"]
                 },
-                "species": ["Mg", "Si"],
                 "cutoff_function": {
                     "type": "Cosine",
                     "_comment": "params is usually empty, except for ShiftedCosine",
@@ -95,9 +95,9 @@
                     "r_s": {
                         "value": 5.6,
                         "unit": "Å"
-                    }
+                    },
+                    "species": ["Mg", "Si"]
                 },
-                "species": ["Mg", "Si"],
                 "cutoff_function": {
                     "type": "Cosine",
                     "_comment": "params is usually empty, except for ShiftedCosine",
@@ -122,9 +122,9 @@
                     "r_s": {
                         "value": 5.6,
                         "unit": "Å"
-                    }
+                    },
+                    "species": ["Mg", "Si"]
                 },
-                "species": ["Mg", "Si"],
                 "cutoff_function": {
                     "type": "Cosine",
                     "_comment": "params is usually empty, except for ShiftedCosine",

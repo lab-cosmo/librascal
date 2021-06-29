@@ -55,8 +55,10 @@ namespace rascal {
     CalculatorBehlerParrinelloDense() = delete;
 
     //! Constructor with input json
-    explicit CalculatorBehlerParrinelloDense(const Hypers_t & parameters,
-                                             const UnitStyle & unit_style);
+    explicit CalculatorBehlerParrinelloDense(
+        const Hypers_t & parameters, const UnitStyle & unit_style,
+        const std::vector<int> & managed_species_ids,
+        const std::map<std::string, int> & species_mapping);
 
     //! Copy constructor
     CalculatorBehlerParrinelloDense(
@@ -78,16 +80,151 @@ namespace rascal {
     operator=(CalculatorBehlerParrinelloDense && other) = default;
 
     template <class StructureManager>
-    void compute(StructureManager & manager) {
-      for (auto && behler_feature : this->behler_features) {
-        auto && values{behler_feature->fetch_or_create_value()};
-        auto && self_derivatives{
-            behler_feature->fetch_or_create_self_derivatives()};
-        auto && other_derivatives{
-            behler_feature->fetch_or_create_other_derivatives()};
+    void compute(StructureManager & manager,
+                 const std::vector<int> & managed_species_ids) {
+      for (auto & behler_feature : this->behler_features) {
+        /**
+         * todo(jungestricker) BehlerFeatures: what is RepeatedSpecies and
+         * permutation, add switch?
+         * maybe: throw error if manager does not fit
+         */
+        if (managed_species_ids.size() != behler_feature->get_order()) {
+          // this behler feature handles clusters of a different size and has
+          // nothing to do
+          break;
+        }
 
-        behler_feature->compute(manager, values, self_derivatives,
-                                other_derivatives);
+        auto expected_repetition{
+            get_repeated_species(behler_feature->get_species_ids())};
+        switch (expected_repetition) {
+        case RepeatedSpecies::Not: {
+          this->compute_rep_helper<StructureManager, RepeatedSpecies::Not>(
+              manager, *behler_feature, managed_species_ids);
+          break;
+        }
+        case RepeatedSpecies::All: {
+          this->compute_rep_helper<StructureManager, RepeatedSpecies::All>(
+              manager, *behler_feature, managed_species_ids);
+          break;
+        }
+        case RepeatedSpecies::FirstTwo: {
+          this->compute_rep_helper<StructureManager, RepeatedSpecies::FirstTwo>(
+              manager, *behler_feature, managed_species_ids);
+          break;
+        }
+        case RepeatedSpecies::SecondTwo: {
+          this->compute_rep_helper<StructureManager,
+                                   RepeatedSpecies::SecondTwo>(
+              manager, *behler_feature, managed_species_ids);
+          break;
+        }
+        case RepeatedSpecies::OuterTwo: {
+          this->compute_rep_helper<StructureManager, RepeatedSpecies::OuterTwo>(
+              manager, *behler_feature, managed_species_ids);
+          break;
+        }
+        default:
+          throw std::runtime_error("Can't handle Unknown RepSpecies");
+          break;
+        }
+      }
+    }
+
+    template <class StructureManager, RepeatedSpecies ExpectedRepSpecies>
+    void compute_rep_helper(StructureManager & manager,
+                            BehlerFeatureBase_t & behler_feature,
+                            const std::vector<int> & managed_species_ids) {
+      /**
+       * todo(tillmarkus): this whole function could be moved to BehlerFeature,
+       * because the only thing it does is ask the BehlerFeature about
+       * properties and what it should to. Would be nice to have it there.
+       * Deferred to later time.
+       */
+      auto && values{behler_feature.fetch_or_create_value(manager)};
+      auto && self_derivatives{
+          behler_feature.fetch_or_create_self_derivatives(manager)};
+      auto && other_derivatives{
+          behler_feature.fetch_or_create_other_derivatives(manager)};
+
+      auto && manager_order{managed_species_ids.size()};
+      // the following should be a std::array<int, 4> representing the template
+      // parameters of this permutation and should be implemented in
+      // permutation.hh
+      auto && expected_species_ids{behler_feature.get_species_ids()};
+      auto && permutation_label{
+          compute_permutation(managed_species_ids, expected_species_ids)};
+      switch (manager_order) {
+      case PairOrder: {
+        switch (permutation_label) {
+        case PermutationLabel::p01: {
+          using Perm = PermutationSelector<PermutationLabel::p01>::type;
+          behler_feature.template compute<ExpectedRepSpecies, Perm>(
+              manager, values, self_derivatives, other_derivatives);
+          break;
+        }
+        case PermutationLabel::p10: {
+          using Perm = PermutationSelector<PermutationLabel::p10>::type;
+          behler_feature.template compute<ExpectedRepSpecies, Perm>(
+              manager, values, self_derivatives, other_derivatives);
+          break;
+        }
+        default: {
+          throw std::runtime_error("unknown Permutation type for pairs");
+          break;
+        }
+        }
+        break;
+      }
+      case TripletOrder: {
+        switch (permutation_label) {
+        case PermutationLabel::p012: {
+          using Perm = PermutationSelector<PermutationLabel::p012>::type;
+          behler_feature.template compute<ExpectedRepSpecies, Perm>(
+              manager, values, self_derivatives, other_derivatives);
+          break;
+        }
+        case PermutationLabel::p120: {
+          using Perm = PermutationSelector<PermutationLabel::p120>::type;
+          behler_feature.template compute<ExpectedRepSpecies, Perm>(
+              manager, values, self_derivatives, other_derivatives);
+          break;
+        }
+        case PermutationLabel::p201: {
+          using Perm = PermutationSelector<PermutationLabel::p201>::type;
+          behler_feature.template compute<ExpectedRepSpecies, Perm>(
+              manager, values, self_derivatives, other_derivatives);
+          break;
+        }
+        case PermutationLabel::p102: {
+          using Perm = PermutationSelector<PermutationLabel::p102>::type;
+          behler_feature.template compute<ExpectedRepSpecies, Perm>(
+              manager, values, self_derivatives, other_derivatives);
+          break;
+        }
+        case PermutationLabel::p021: {
+          using Perm = PermutationSelector<PermutationLabel::p021>::type;
+          behler_feature.template compute<ExpectedRepSpecies, Perm>(
+              manager, values, self_derivatives, other_derivatives);
+          break;
+        }
+        case PermutationLabel::p210: {
+          using Perm = PermutationSelector<PermutationLabel::p210>::type;
+          behler_feature.template compute<ExpectedRepSpecies, Perm>(
+              manager, values, self_derivatives, other_derivatives);
+          break;
+        }
+        default: {
+          throw std::runtime_error("unknown Permutation type for triplets");
+          break;
+        }
+        }
+        break;
+      }
+
+      default: {
+        throw std::runtime_error("unknown cluster order");
+        break;
+      }
       }
     }
 
@@ -95,16 +232,18 @@ namespace rascal {
     /**
      * stores base class refs to the Symmetry functions to be evaluated. The
      * main loop iterates over this container and applies each function to
-     * all clusters of an input structure manager, storing the results to a
-     * provided input property (which is not necessarily attached to the
-     * same structure manager)
+     * all clusters of an input structure manager, storing the results
+     * to a provided input property (which is not necessarily attached to
+     * the same structure manager)
      */
     std::vector<std::unique_ptr<BehlerFeatureBase_t>> behler_features{};
 
     std::string cutoff_function_type;
+    std::vector<int> managed_species_ids;
+    std::map<std::string, int> species_mapping;
     /**
-     * reference of the requiered hypers, these are used to check the parameters
-     * for building the behler_features vector at construction
+     * reference of the requiered hypers, these are used to check the
+     * parameters for building the behler_features vector at construction
      */
     const ReferenceHypers_t reference_hypers{{"scaling", {}},
                                              {"cutoff_function_type", {}},

@@ -66,15 +66,18 @@ namespace rascal {
   template <>
   struct SymmetryFunFixture<SymmetryFunctionType::Gaussian> {
     using SymFun = SymmetryFunction<SymmetryFunctionType::Gaussian>;
-    SymmetryFunFixture() : sym_fun{unit_style, correct_input} {}
+    SymmetryFunFixture()
+        : sym_fun{unit_style, correct_input, units::default_species_numbers} {}
     const units::UnitStyle unit_style{units::metal};
 
     const double r_ij{1.1};
     json correct_input{{"eta", {{"value", .1}, {"unit", "(Å)^(-2)"}}},
-                       {"r_s", {{"value", 5.6}, {"unit", "Å"}}}};
+                       {"r_s", {{"value", 5.6}, {"unit", "Å"}}},
+                       {"species", {"Mg", "Si"}}};
 
     json incorrect_put{{"eta", {{"value", .1}, {"unit", "(Å)^(-1)"}}},
-                       {"r_s", {{"value", 5.6}, {"unit", "Å"}}}};
+                       {"r_s", {{"value", 5.6}, {"unit", "Å"}}},
+                       {"species", {"Mg", "Si"}}};
     SymFun sym_fun;
   };
 
@@ -86,7 +89,8 @@ namespace rascal {
   template <>
   struct SymmetryFunFixture<SymmetryFunctionType::AngularNarrow> {
     using SymFun = SymmetryFunction<SymmetryFunctionType::AngularNarrow>;
-    SymmetryFunFixture() : sym_fun{unit_style, correct_input} {
+    SymmetryFunFixture()
+        : sym_fun{unit_style, correct_input, units::default_species_numbers} {
       this->cos_theta << cos(2.96706), .5, 1;  // ~170°
       this->dists << 1.1, 1.2, 1.3;
       this->cutoffs << .1, .2, .3;
@@ -101,11 +105,13 @@ namespace rascal {
 
     json correct_input{{"zeta", {{"value", .1}, {"unit", "-"}}},
                        {"lambda", {{"value", .1}, {"unit", "-"}}},
-                       {"eta", {{"value", .1}, {"unit", "(Å)^(-2)"}}}};
+                       {"eta", {{"value", .1}, {"unit", "(Å)^(-2)"}}},
+                       {"species", {"Mg", "Si", "Si"}}};
 
     json incorrect_put{{"zeta", {{"value", .1}, {"unit", "-"}}},
                        {"lambda", {{"value", .1}, {"unit", "-"}}},
-                       {"eta", {{"value", .1}, {"unit", "(Å)^(-1)"}}}};
+                       {"eta", {{"value", .1}, {"unit", "(Å)^(-1)"}}},
+                       {"species", {"Mg", "Si", "Si"}}};
     SymFun sym_fun;
   };
 
@@ -117,7 +123,8 @@ namespace rascal {
   template <>
   struct SymmetryFunFixture<SymmetryFunctionType::AngularWide> {
     using SymFun = SymmetryFunction<SymmetryFunctionType::AngularWide>;
-    SymmetryFunFixture() : sym_fun{unit_style, correct_input} {
+    SymmetryFunFixture()
+        : sym_fun{unit_style, correct_input, units::default_species_numbers} {
       this->cos_theta << cos(2.96706), .5, 1;  // ~170°
       this->dists << 1.1, 1.2, 1.3;
       this->cutoffs << .1, .2, .3;
@@ -132,11 +139,13 @@ namespace rascal {
 
     json correct_input{{"zeta", {{"value", .1}, {"unit", "-"}}},
                        {"lambda", {{"value", .1}, {"unit", "-"}}},
-                       {"eta", {{"value", .1}, {"unit", "(Å)^(-2)"}}}};
+                       {"eta", {{"value", .1}, {"unit", "(Å)^(-2)"}}},
+                       {"species", {"Mg", "Si", "Si"}}};
 
     json incorrect_put{{"zeta", {{"value", .1}, {"unit", "-"}}},
                        {"lambda", {{"value", .1}, {"unit", "-"}}},
-                       {"eta", {{"value", .1}, {"unit", "(Å)^(-1)"}}}};
+                       {"eta", {{"value", .1}, {"unit", "(Å)^(-1)"}}},
+                       {"species", {"Mg", "Si", "Si"}}};
     SymFun sym_fun;
   };
 

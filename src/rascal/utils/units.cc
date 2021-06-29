@@ -181,7 +181,8 @@ namespace rascal {
     }  // namespace internal
 
     /* ---------------------------------------------------------------------- */
-    const std::map<std::string, int> species_numbers{internal::make_species()};
+    const std::map<std::string, int> default_species_numbers{
+        internal::make_species()};
 
   }  // namespace units
 

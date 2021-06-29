@@ -28,6 +28,7 @@
  */
 #include <array>
 #include <type_traits>
+#include <vector>
 #ifndef SRC_RASCAL_UTILS_PERMUTATION_HH_
 #define SRC_RASCAL_UTILS_PERMUTATION_HH_
 
@@ -101,6 +102,26 @@ namespace rascal {
     }
   }
 
+  inline RepeatedSpecies
+  get_repeated_species(const std::vector<int> & species_ids) {
+    switch (species_ids.size()) {
+    case PairOrder: {
+      return species_ids[0] == species_ids[1] ? RepeatedSpecies::All
+                                              : RepeatedSpecies::Not;
+      break;
+    }
+    case TripletOrder: {
+      return triplet_representation(
+          reinterpret_cast<const std::array<int, TripletOrder> &>(
+              *species_ids.data()));
+      break;
+    }
+    default:
+      throw std::runtime_error("I can only handle pairs and triplets");
+      break;
+    }
+  }
+
   // // Proposed for usage in test for iterating RepeatedSpecies
   // static constexpr RepeatedSpecies AllRepSpecies[] = {
   //     RepeatedSpecies::Unknown,   RepeatedSpecies::Not,
@@ -140,6 +161,8 @@ namespace rascal {
     }
   }
 
+  enum class PermutationLabel { p01, p10, p012, p120, p201, p102, p021, p210 };
+
   template <size_t Size_, size_t First, size_t Second, size_t Third = Size_ - 1>
   struct Permutation {
     static_assert((First != Second) && (Size_ > First) && (Size_ > Second) &&
@@ -150,6 +173,10 @@ namespace rascal {
     static constexpr int leading() { return First; }
     static constexpr int second() { return Second; }
     static constexpr size_t Size{Size_};
+
+    constexpr static std::array<size_t, 4> get_params() {
+      return std::array<size_t, 4>{Size_, First, Second, Third};
+    }
 
     /* ---------------------------------------------------------------------- */
     template <bool IsTriplet = (Size_ == 3)>
@@ -327,9 +354,27 @@ namespace rascal {
                    const std::array<size_t, 3> ordering) {
       return std::array<T, 3>{values[ordering[0]], values[ordering[1]],
                               values[ordering[2]]};
+    }
 
-      //      std::array<double, 3> ret_val{} : ret_val[0] =
-      //      values[ordering[0]];
+    template <typename T>
+    static std::vector<T> apply_ordering(const std::vector<T> & values,
+                                         const std::array<size_t, 3> ordering) {
+      switch (values.size()) {
+      case PairOrder: {
+        return std::vector<T>{values[ordering[0]], values[ordering[1]]};
+        break;
+      }
+      case TripletOrder: {
+        return std::vector<T>{values[ordering[0]], values[ordering[1]],
+                              values[ordering[2]]};
+
+        break;
+      }
+      default: {
+        throw std::runtime_error("Can only handle pairs and triplets");
+        break;
+      }
+      }
     }
 
     /**
@@ -356,7 +401,153 @@ namespace rascal {
       }
       return ret_val;
     }
+
+    template <bool IsTriplet = (Size_ == TripletOrder)>
+    constexpr static std::enable_if_t<IsTriplet,
+                                      std::array<size_t, TripletOrder>>
+    get_ordering() {
+      static_assert(IsTriplet == (Size_ == TripletOrder),
+                    "IsTriplet is a SFINAE parameter, don't touch it");
+      return std::array<size_t, TripletOrder>{leading(), second(), third()};
+    }
+
+    template <bool IsPair = (Size_ == PairOrder)>
+    constexpr static std::array<size_t, TripletOrder>
+    get_ordering(std::enable_if_t<IsPair> * /*ignore*/ = nullptr) {
+      static_assert(IsPair == (Size_ == PairOrder),
+                    "IsPair is a SFINAE parameter, don't touch it");
+      return std::array<size_t, TripletOrder>{leading(), second(), Size_ - 1};
+    }
   };  // Permutation
+
+  template <PermutationLabel Label>
+  struct PermutationSelector {};
+
+  template <>
+  struct PermutationSelector<PermutationLabel::p01> {
+    using type = Permutation<2, 0, 1, 1>;
+  };
+  template <>
+  struct PermutationSelector<PermutationLabel::p10> {
+    using type = Permutation<2, 1, 0, 1>;
+  };
+  template <>
+  struct PermutationSelector<PermutationLabel::p012> {
+    using type = Permutation<3, 0, 1, 2>;
+  };
+  template <>
+  struct PermutationSelector<PermutationLabel::p120> {
+    using type = Permutation<3, 1, 2, 0>;
+  };
+  template <>
+  struct PermutationSelector<PermutationLabel::p201> {
+    using type = Permutation<3, 2, 0, 1>;
+  };
+  template <>
+  struct PermutationSelector<PermutationLabel::p021> {
+    using type = Permutation<3, 0, 2, 1>;
+  };
+  template <>
+  struct PermutationSelector<PermutationLabel::p210> {
+    using type = Permutation<3, 2, 1, 0>;
+  };
+  template <>
+  struct PermutationSelector<PermutationLabel::p102> {
+    using type = Permutation<3, 1, 0, 2>;
+  };
+
+  PermutationLabel
+  compute_permutation(const std::vector<int> & managed_species_ids,
+                      const std::vector<int> & symmetry_function_species_ids) {
+    const auto order{managed_species_ids.size()};
+    if (symmetry_function_species_ids.size() != order) {
+      throw std::runtime_error(
+          "Can't compute a permutation for clusters of differing order.");
+    }
+    switch (order) {
+    case PairOrder: {
+      {
+        // case P01
+        using Perm = PermutationSelector<PermutationLabel::p01>::type;
+        if (Perm::apply_ordering(managed_species_ids, Perm::get_ordering()) ==
+            symmetry_function_species_ids) {
+          return PermutationLabel::p01;
+        }
+      }
+      {
+        // case P10
+        using Perm = PermutationSelector<PermutationLabel::p10>::type;
+        if (Perm::apply_ordering(managed_species_ids, Perm::get_ordering()) ==
+            symmetry_function_species_ids) {
+          return PermutationLabel::p10;
+        }
+      }
+
+      throw std::runtime_error(
+          "can't match managed_species_ids onto symmetry_function_species_ids");
+      break;
+    }
+    case TripletOrder: {
+      {
+        // case P012
+        using Perm = PermutationSelector<PermutationLabel::p012>::type;
+        if (Perm::apply_ordering(managed_species_ids, Perm::get_ordering()) ==
+            symmetry_function_species_ids) {
+          return PermutationLabel::p012;
+        }
+      }
+      {
+        // case P120
+        using Perm = PermutationSelector<PermutationLabel::p120>::type;
+        if (Perm::apply_ordering(managed_species_ids, Perm::get_ordering()) ==
+            symmetry_function_species_ids) {
+          return PermutationLabel::p120;
+        }
+      }
+      {
+        // case P201
+        using Perm = PermutationSelector<PermutationLabel::p201>::type;
+        if (Perm::apply_ordering(managed_species_ids, Perm::get_ordering()) ==
+            symmetry_function_species_ids) {
+          return PermutationLabel::p201;
+        }
+      }
+      {
+        // case P021
+        using Perm = PermutationSelector<PermutationLabel::p021>::type;
+        if (Perm::apply_ordering(managed_species_ids, Perm::get_ordering()) ==
+            symmetry_function_species_ids) {
+          return PermutationLabel::p021;
+        }
+      }
+      {
+        // case P210
+        using Perm = PermutationSelector<PermutationLabel::p210>::type;
+        if (Perm::apply_ordering(managed_species_ids, Perm::get_ordering()) ==
+            symmetry_function_species_ids) {
+          return PermutationLabel::p210;
+        }
+      }
+      {
+        // case P102
+        using Perm = PermutationSelector<PermutationLabel::p102>::type;
+        if (Perm::apply_ordering(managed_species_ids, Perm::get_ordering()) ==
+            symmetry_function_species_ids) {
+          return PermutationLabel::p102;
+        }
+      }
+
+      throw std::runtime_error(
+          "can't match managed_species_ids onto symmetry_function_species_ids");
+      break;
+    }
+    default: {
+      throw std::runtime_error("can only handle pairs or triplets");
+      break;
+    }
+    }
+  }
+
   template <size_t Size_, size_t First, size_t Second, size_t Third>
   constexpr size_t Permutation<Size_, First, Second, Third>::Size;
 

@@ -64,16 +64,24 @@ namespace rascal {
     auto unit_params(json_io::get(
         json_io::get(this->raw_params, "general_description"), "unit_style"));
     auto unit_style{units::UnitStyle::make(unit_params)};
+    auto && species_map{units::default_species_numbers};
+    std::vector<int> managed_species_ids{species_map.at("Mg"),
+                                         species_map.at("Si")};
     CalculatorBehlerParrinelloDenseStd calc_BP{
-        json_io::get(this->raw_params, "input_layer"), unit_style};
+        json_io::get(this->raw_params, "input_layer"), unit_style,
+        managed_species_ids, species_map};
   };
 
   BOOST_FIXTURE_TEST_CASE_TEMPLATE(compute_test, Fix, BPCalculators, Fix) {
     auto unit_params(json_io::get(
         json_io::get(this->raw_params, "general_description"), "unit_style"));
     auto unit_style{units::UnitStyle::make(unit_params)};
+    auto && species_map{units::default_species_numbers};
+    std::vector<int> managed_species_ids{species_map.at("Mg"),
+                                         species_map.at("Si")};
     CalculatorBehlerParrinelloDenseStd calc_BP{
-        json_io::get(this->raw_params, "input_layer"), unit_style};
+        json_io::get(this->raw_params, "input_layer"), unit_style,
+        managed_species_ids, units::default_species_numbers};
 
     ManagerFixture<StructureManagerLammpsMinimal> manager_fix{};
     double r_cut_manager{1.42};
@@ -82,7 +90,7 @@ namespace rascal {
     auto & manager{*manager_ptr};
     manager.update();
 
-    calc_BP.compute(manager);
+    calc_BP.compute(manager, managed_species_ids);
   };
 
   BOOST_AUTO_TEST_SUITE_END();

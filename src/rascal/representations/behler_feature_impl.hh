@@ -68,6 +68,29 @@ namespace rascal {
                                           SymFunTypes...>::type;
 
   /* ---------------------------------------------------------------------- */
+  namespace internal {
+    template <bool RightOrder, bool SufficientManager>
+    struct ConditionalCaller {
+      template <RepeatedSpecies RepSpecies, typename Permutation,
+                class StructureManager, class Feature, class... PropertyPtr>
+      static void call_compute(Feature &&, StructureManager &&,
+                               PropertyPtr &&...) {
+        throw std::runtime_error("Did you touch the SFINAE?");
+      }
+    };
+    template <>
+    struct ConditionalCaller<true, true> {
+      template <RepeatedSpecies RepSpecies, typename Permutation,
+                class StructureManager, class Feature, class... PropertyPtr>
+      static void call_compute(Feature && feature, StructureManager && manager,
+                               PropertyPtr &&... outputs) {
+        feature.template compute_helper<RepSpecies, Permutation>(
+            std::forward<StructureManager>(manager),
+            std::forward<PropertyPtr>(outputs)...);
+      }
+    };
+
+  }  // namespace internal
   template <bool CompatibilityMode, SymmetryFunctionType... SymFunTypes>
   template <SymmetryFunctionType Head, SymmetryFunctionType... Tail>
   struct BehlerFeatureBase<CompatibilityMode,
@@ -75,7 +98,7 @@ namespace rascal {
     template <RepeatedSpecies RepSpecies, typename Permutation,
               class StructureManager, class... PropertyPtr>
     static void compute(const BehlerFeatureBase & behler_feature,
-                        StructureManager & manager, PropertyPtr... outputs) {
+                        StructureManager & manager, PropertyPtr &&... outputs) {
       static_assert(StructureManager::traits::NeighbourListType ==
                         AdaptorTraits::NeighbourListType::half,
                     "Behlerfeature expects minimal neighbour lists");
@@ -84,7 +107,11 @@ namespace rascal {
         using Feature_t = BehlerFeatureOrderSelector_t<CompatibilityMode, Order,
                                                        Head, SymFunTypes...>;
         auto & feature{dynamic_cast<const Feature_t &>(behler_feature)};
-        feature.compute_helper(manager, outputs...);
+        using Caller_t = internal::ConditionalCaller<
+            Order == Permutation::Size,
+            StructureManager_traits<StructureManager>::MaxOrder >= Order>;
+        Caller_t::template call_compute<RepSpecies, Permutation>(
+            feature, manager, outputs...);
       } else {
         SymFunctionsVTable<Tail...>::template compute<RepSpecies, Permutation>(
             behler_feature, manager, outputs...);
@@ -112,8 +139,11 @@ namespace rascal {
         using Feature_t = BehlerFeatureOrderSelector_t<CompatibilityMode, Order,
                                                        Head, SymFunTypes...>;
         auto & feature{dynamic_cast<const Feature_t &>(behler_feature)};
-        feature.template compute_helper<RepSpecies, Permutation>(manager,
-                                                                 outputs...);
+        using Caller_t = internal::ConditionalCaller<
+            Order == Permutation::Size,
+            StructureManager_traits<StructureManager>::MaxOrder >= Order>;
+        Caller_t::template call_compute<RepSpecies, Permutation>(
+            feature, manager, outputs...);
       } else {
         std::stringstream err{};
         err << "Symmetry function type " << behler_feature.sym_fun_type
@@ -443,11 +473,11 @@ namespace rascal {
           fun_self_derivatives[center] += dG_incr_ij - dG_incr_ki;
 
           /**
-           * Forward direction vectors between pairs are defined. When permuting
-           * a triplet, this direction can appear forwards or backwards,
-           * depending on the order of the pairs of a triplet. Here it is made
-           * sure that the respective derivatives are assigned correctly to
-           * either pair direction.
+           * Forward direction vectors between pairs are defined. When
+           * permuting a triplet, this direction can appear forwards or
+           * backwards, depending on the order of the pairs of a triplet. Here
+           * it is made sure that the respective derivatives are assigned
+           * correctly to either pair direction.
            *
            * Example:
            * triplet 012 -> pair 01, pair 12, pair 20

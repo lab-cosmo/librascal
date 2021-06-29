@@ -67,7 +67,8 @@ namespace rascal {
                                    SymmetryFunctionsAll_t, Fix) {
     using SymFun = typename Fix::SymFun;
 
-    BOOST_CHECK_THROW(SymFun(this->unit_style, this->incorrect_put),
+    BOOST_CHECK_THROW(SymFun(this->unit_style, this->incorrect_put,
+                             units::default_species_numbers),
                       std::runtime_error);
   }
 

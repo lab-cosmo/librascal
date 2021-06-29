@@ -54,6 +54,19 @@ namespace rascal {
 
     using Hypers_t = json;
 
+    template <class StructureManager>
+    using GVals_t = Property<double, AtomOrder,
+                             StructureManager>;
+    template <class StructureManager>
+    using dGSelfVals_t =
+        Property<double, AtomOrder,
+                 StructureManager, ThreeD>;
+
+    template <class StructureManager>
+    using dGOtherVals_t =
+        Property<double, PairOrder,
+                 StructureManager, ThreeD, 2>;
+
     constexpr static bool CompatibilityMode{CompatibilityMode_};
     //! Default constructor
     BehlerFeatureBase() = delete;
@@ -70,7 +83,8 @@ namespace rascal {
      */
     inline static std::unique_ptr<BehlerFeatureBase>
     make_unique(std::shared_ptr<CutoffFunctionBase> cut_fun,
-                const UnitStyle & unit_style, const Hypers_t & parameters);
+                const UnitStyle & unit_style, const Hypers_t & parameters,
+                const std::map<std::string, int> & species_numbers);
 
     //! Copy constructor
     BehlerFeatureBase(const BehlerFeatureBase & other);
@@ -130,6 +144,38 @@ namespace rascal {
       return name_stream.str();
     }
 
+    template <class StructureManager>
+    std::shared_ptr<PropertyBase>
+    fetch_or_create_value(StructureManager & manager) {
+      constexpr bool ValidateProperty{true};
+      constexpr bool AllowCreation{true};
+      return manager.template get_property<GVals_t<StructureManager>>(
+          this->get_identifier() + "_value", ValidateProperty, AllowCreation);
+    }
+
+    template <class StructureManager>
+    std::shared_ptr<PropertyBase>
+    fetch_or_create_self_derivatives(StructureManager & manager) {
+      constexpr bool ValidateProperty{true};
+      constexpr bool AllowCreation{true};
+      return manager.template get_property<dGSelfVals_t<StructureManager>>(
+          this->get_identifier() + "_self_derivatives", ValidateProperty,
+          AllowCreation);
+    }
+
+    template <class StructureManager>
+    std::shared_ptr<PropertyBase>
+    fetch_or_create_other_derivatives(StructureManager & manager) {
+      constexpr bool ValidateProperty{true};
+      constexpr bool AllowCreation{true};
+      return manager.template get_property<dGOtherVals_t<StructureManager>>(
+          this->get_identifier() + "_other_derivatives", ValidateProperty,
+          AllowCreation);
+    }
+
+    virtual const std::vector<int> & get_species_ids() const = 0;
+    const size_t & get_order() const { return this->order; }
+
    protected:
     virtual std::string get_sym_fun_identifier() const = 0;
     template <SymmetryFunctionType... FunTypes_>
@@ -170,11 +216,13 @@ namespace rascal {
 
     //! Default constructor
     BehlerPairFeature(std::shared_ptr<CutoffFunctionBase> cut_fun,
-                      const UnitStyle & unit_style, const Hypers_t & raw_params)
+                      const UnitStyle & unit_style, const Hypers_t & raw_params,
+                      const std::map<std::string, int> & species_numbers)
         : Parent(MySymFunType, cut_fun, SymmetryFunction_t::Order, raw_params),
-          sym_fun{unit_style,
-                  json_io::get(raw_params,
-                               "params" + canary(raw_params, "params"))} {
+          sym_fun{
+              unit_style,
+              json_io::get(raw_params, "params" + canary(raw_params, "params")),
+              species_numbers} {
       if (json_io::get<std::string>(raw_params, "type") !=
           get_name(MySymFunType)) {
         std::stringstream err{};
@@ -218,6 +266,10 @@ namespace rascal {
     BehlerPairFeature & operator=(BehlerPairFeature && other) = default;
 
     void init(const UnitStyle & units) final;
+
+    const std::vector<int> & get_species_ids() const final {
+      return this->sym_fun.get_species_ids();
+    }
 
     // template <RepeatedSpecies RepSpecies, class StructureManager>
     // void compute(StructureManager & manager,
@@ -273,9 +325,11 @@ namespace rascal {
     //! Default constructor
     BehlerTripletFeature(std::shared_ptr<CutoffFunctionBase> cut_fun,
                          const UnitStyle & unit_style,
-                         const Hypers_t & raw_params)
+                         const Hypers_t & raw_params,
+                         const std::map<std::string, int> & species_numbers)
         : Parent(MySymFunType, cut_fun, SymmetryFunction_t::Order, raw_params),
-          sym_fun{unit_style, json_io::get(raw_params, "params")} {
+          sym_fun{unit_style, json_io::get(raw_params, "params"),
+                  species_numbers} {
       if (json_io::get<std::string>(raw_params, "type") !=
           get_name(MySymFunType)) {
         std::stringstream err{};
@@ -317,6 +371,10 @@ namespace rascal {
     BehlerTripletFeature & operator=(BehlerTripletFeature && other) = default;
 
     void init(const UnitStyle & units) final;
+
+    const std::vector<int> & get_species_ids() const final {
+      return this->sym_fun.get_species_ids();
+    }
 
     // template <RepeatedSpecies RepSpecies, class StructureManager>
     // void compute(StructureManager & manager,
@@ -361,20 +419,21 @@ namespace rascal {
   std::unique_ptr<BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>>
   BehlerFeatureBase<CompatibilityMode_, SymFunTypes...>::make_unique(
       std::shared_ptr<CutoffFunctionBase> cut_fun, const UnitStyle & unit_style,
-      const Hypers_t & parameters) {
+      const Hypers_t & parameters,
+      const std::map<std::string, int> & species_numbers) {
     auto && sym_fun_label{json_io::get<std::string>(parameters, "type")};
     if (sym_fun_label == "Gaussian") {
       return std::make_unique<BehlerPairFeature<
           CompatibilityMode_, SymmetryFunctionType::Gaussian, SymFunTypes...>>(
-          cut_fun, unit_style, parameters);
+          cut_fun, unit_style, parameters, species_numbers);
     } else if (sym_fun_label == "AngularNarrow") {
       return std::make_unique<BehlerTripletFeature<
           CompatibilityMode_, SymmetryFunctionType::AngularNarrow,
-          SymFunTypes...>>(cut_fun, unit_style, parameters);
+          SymFunTypes...>>(cut_fun, unit_style, parameters, species_numbers);
     } else if (sym_fun_label == "AngularWide") {
       return std::make_unique<BehlerTripletFeature<
           CompatibilityMode_, SymmetryFunctionType::AngularWide,
-          SymFunTypes...>>(cut_fun, unit_style, parameters);
+          SymFunTypes...>>(cut_fun, unit_style, parameters, species_numbers);
     } else {
       throw std::runtime_error("Unknown symmetry function type '" +
                                sym_fun_label + "'");

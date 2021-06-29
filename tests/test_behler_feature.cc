@@ -33,6 +33,7 @@
 #include "rascal/representations/behler_feature.hh"
 #include "rascal/utils/json_io.hh"
 #include "rascal/utils/permutation.hh"
+#include "rascal/utils/units.hh"
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
@@ -53,8 +54,8 @@ namespace rascal {
                       {"unit", "eV"},
                       {"params",
                        {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
-                        {"r_s", {{"value", 0.6}, {"unit", "Å"}}}}},
-                      {"species", {"Mg", "Si"}},
+                        {"r_s", {{"value", 0.6}, {"unit", "Å"}}},
+                        {"species", {"Mg", "Si"}}}},
                       {"cutoff_function",
                        {{"r_cut", {{"value", this->r_cut}, {"unit", "Å"}}}}}};
         break;
@@ -66,8 +67,8 @@ namespace rascal {
                       {"params",
                        {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
                         {"zeta", {{"value", 0.6}, {"unit", "-"}}},
-                        {"lambda", {{"value", 0.6}, {"unit", "-"}}}}},
-                      {"species", {"Mg", "Si", "Si"}},
+                        {"lambda", {{"value", 0.6}, {"unit", "-"}}},
+                        {"species", {"Mg", "Si", "Si"}}}},
                       {"cutoff_function",
                        {{"r_cut", {{"value", this->r_cut}, {"unit", "Å"}}}}}};
         break;
@@ -79,7 +80,10 @@ namespace rascal {
       return retval;
     }
 
-    BehlerFeatureFixture() : raw_params(make_params()) {}
+    BehlerFeatureFixture()
+        : raw_params(make_params()),
+          bf(this->cut_fun, this->unit_style, this->raw_params,
+             units::default_species_numbers) {}
 
     using CutFun_t = CutoffFunction<InlCutoffFunctionType::Cosine>;
     const double r_cut{1.42};
@@ -92,10 +96,11 @@ namespace rascal {
     json raw_params;
     static constexpr auto Order{SymmetryFunction<MySymFunType>::Order};
     static constexpr bool CompatibilityMode{Order == TripletOrder};
+
     using BehlerFeature_t =
         BehlerFeatureOrderSelector_t<CompatibilityMode, Order, MySymFunType,
                                      SymFunTypes...>;
-    BehlerFeature_t bf{this->cut_fun, this->unit_style, this->raw_params};
+    BehlerFeature_t bf;
   };
 
   // list of all tested BehlerFeatures
@@ -123,8 +128,7 @@ namespace rascal {
 
     constexpr auto Order{Fix::BehlerFeature_t::SymmetryFunction_t::Order};
     using GVals_t = Property<double, AtomOrder,
-                             AdaptorStrict<StructureManagerLammpsMinimal>,
-                             nb_distances(Order)>;
+                             AdaptorStrict<StructureManagerLammpsMinimal>>;
     auto G_vals{std::make_shared<GVals_t>(manager)};
 
     // Yes, the pairs in this manager do not have the correct species, but this
@@ -157,8 +161,8 @@ namespace rascal {
         {"params",
          {{"eta", {{"value", 0.1}, {"unit", "(Å)^(-2)"}}},
           {"zeta", {{"value", 0.6}, {"unit", "-"}}},
-          {"lambda", {{"value", 0.6}, {"unit", "-"}}}}},
-        {"species", {"Mg", "Si", "Si"}},
+          {"lambda", {{"value", 0.6}, {"unit", "-"}}},
+          {"species", {"Mg", "Si", "Si"}}}},
         {"cutoff_function", {{"r_cut", {{"value", r_cut}, {"unit", "Å"}}}}}};
     const UnitStyle unit_style{units::metal};
     std::shared_ptr<CutoffFunction<InlCutoffFunctionType::Cosine>> cut_fun{
@@ -170,7 +174,8 @@ namespace rascal {
         BehlerFeatureOrderSelector_t<CompatibilityMode, Order,
                                      SymmetryFunctionType::AngularNarrow,
                                      SymmetryFunctionType::AngularNarrow>;
-    BehlerFeature_t bf{cut_fun, unit_style, params};
+    BehlerFeature_t bf{cut_fun, unit_style, params,
+                       units::default_species_numbers};
     BehlerFeatureFixture<SymmetryFunctionType::AngularNarrow,
                          SymmetryFunctionType::AngularNarrow>
         bff{};

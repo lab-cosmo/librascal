@@ -94,9 +94,22 @@ namespace rascal {
     using TripletReturn_t =
         std::tuple<double, std::array<double, nb_distances(TripletOrder)>>;
 
+    /**
+     * constructor
+     */
+    SymmetryFunctionBase(const json & params,
+                         const std::map<std::string, int> & species_numbers)
+      : params(params) {
+      for (auto && species_name :
+           json_io::get<std::vector<std::string>>(params, "species")) {
+        this->species_ids.push_back(species_numbers.at(species_name));
+      }
+    }
+
     /* ---------------------------------------------------------------------- */
     inline static std::unique_ptr<SymmetryFunctionBase>
-    make_unique(const UnitStyle & unit_style, const json & parameters);
+    make_unique(const UnitStyle & unit_style, const json & parameters,
+                const std::map<std::string, int> & species_numbers);
 
     /* ---------------------------------------------------------------------- */
     double f_sym(const double & /*dummy*/) const {
@@ -124,6 +137,27 @@ namespace rascal {
     }
 
     virtual std::string get_identifier() const = 0;
+
+    std::string species_identifier() const {
+      std::stringstream id{};
+      id << '(';
+      auto species_names{
+          json_io::get<std::vector<std::string>>(this->params, "species")};
+      for (size_t i{0}; i < this->species_ids.size() - 1; ++i) {
+        id << species_names[i] << '[' << this->species_ids[i] << ']';
+      }
+      id << species_names[this->species_ids.size() - 1] << '['
+         << this->species_ids[this->species_ids.size() - 1] << "])";
+      return id.str();
+    }
+
+    const std::vector<int> & get_species_ids() const {
+      return this->species_ids;
+    }
+
+   protected:
+    const json params;
+    std::vector<int> species_ids{};
   };
   /* ---------------------------------------------------------------------- */
   template <SymmetryFunctionType FunType>
@@ -185,9 +219,11 @@ namespace rascal {
     static constexpr bool DerivativeIsCollinear{true};
 
     // constructor
-    SymmetryFunction(const UnitStyle & unit_style, const json & params)
-        : params{params}, eta{json_io::check_units(unit_style.distance(-2),
-                                                   params.at("eta"))},
+    SymmetryFunction(const UnitStyle & unit_style, const json & params,
+                     const std::map<std::string, int> & species_numbers)
+        : Parent{params, species_numbers}, eta{json_io::check_units(
+                                               unit_style.distance(-2),
+                                               params.at("eta"))},
           r_s{json_io::check_units(unit_style.distance(), params.at("r_s"))} {}
 
     double f_sym(const double & r_ij) const {
@@ -207,12 +243,12 @@ namespace rascal {
       std::stringstream name_stream{};
       name_stream << "Gaussian"
                   << "_η_" << json_io::get_quantity(this->params, "eta")
-                  << "_rₛ_" << json_io::get_quantity(this->params, "r_s");
+                  << "_rₛ_" << json_io::get_quantity(this->params, "r_s")
+                  << this->species_identifier();
       return name_stream.str();
     }
 
    protected:
-    const json params;
     double eta;
     double r_s;
   };
@@ -245,9 +281,11 @@ namespace rascal {
     // usage?
     static constexpr bool DerivativeIsCollinear{false};
 
-    SymmetryFunction(const UnitStyle & unit_style, const json & params)
-        : params{params}, zeta{json_io::check_units(unit_style.none(),
-                                                    params.at("zeta"))},
+    SymmetryFunction(const UnitStyle & unit_style, const json & params,
+                     const std::map<std::string, int> & species_numbers)
+        : Parent{params, species_numbers}, zeta{json_io::check_units(
+                                               unit_style.none(),
+                                               params.at("zeta"))},
           lambda{json_io::check_units(unit_style.none(), params.at("lambda"))},
           eta{json_io::check_units(unit_style.distance(-2), params.at("eta"))},
           prefactor{math::pow(2., 1 - zeta)} {}
@@ -357,7 +395,6 @@ namespace rascal {
     }
 
    protected:
-    const json params;
     double zeta;
     double lambda;
     double eta;
@@ -392,9 +429,11 @@ namespace rascal {
     // usage?
     static constexpr bool DerivativeIsCollinear{false};
 
-    SymmetryFunction(const UnitStyle & unit_style, const json & params)
-        : params{params}, zeta{json_io::check_units(unit_style.none(),
-                                                    params.at("zeta"))},
+    SymmetryFunction(const UnitStyle & unit_style, const json & params,
+                     const std::map<std::string, int> & species_numbers)
+        : Parent{params, species_numbers}, zeta{json_io::check_units(
+                                               unit_style.none(),
+                                               params.at("zeta"))},
           lambda{json_io::check_units(unit_style.none(), params.at("lambda"))},
           eta{json_io::check_units(unit_style.distance(-2), params.at("eta"))},
           prefactor{math::pow(2., 1 - zeta)} {}
@@ -479,7 +518,6 @@ namespace rascal {
     }
 
    protected:
-    const json params;
     double zeta;
     double lambda;
     double eta;
@@ -531,19 +569,20 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   inline static std::unique_ptr<SymmetryFunctionBase>
-  make_unique(const UnitStyle & unit_style, const json & parameters) {
+  make_unique(const UnitStyle & unit_style, const json & parameters,
+              const std::map<std::string, int> & species_numbers) {
     auto sym_fun_label{parameters.at("name").get<std::string>()};
     if (sym_fun_label == "Gaussian") {
       return std::make_unique<SymmetryFunction<SymmetryFunctionType::Gaussian>>(
-          unit_style, parameters);
+          unit_style, parameters, species_numbers);
     } else if (sym_fun_label == "AngularNarrow") {
       return std::make_unique<
-          SymmetryFunction<SymmetryFunctionType::AngularNarrow>>(unit_style,
-                                                                 parameters);
+          SymmetryFunction<SymmetryFunctionType::AngularNarrow>>(
+          unit_style, parameters, species_numbers);
     } else if (sym_fun_label == "AngularWide") {
       return std::make_unique<
-          SymmetryFunction<SymmetryFunctionType::AngularWide>>(unit_style,
-                                                               parameters);
+          SymmetryFunction<SymmetryFunctionType::AngularWide>>(
+          unit_style, parameters, species_numbers);
     } else {
       throw std::runtime_error("undefined symmetry function type");
     }
