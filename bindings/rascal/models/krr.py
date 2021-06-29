@@ -124,7 +124,7 @@ class SparseGPRSolver:
             )
             Q, R = np.linalg.qr(A)
             self._weights = self._PKPhi @ scipy.linalg.solve_triangular(
-                R, Q.T @ np.hstack([Y, np.zeros((self._nM, Y.shape[1]))])
+                R, Q.T @ np.vstack([Y, np.zeros((self._nM, Y.shape[1]))])
             )
         elif self._solver == "QR":
             A = np.vstack([KNM, self._VMM])
