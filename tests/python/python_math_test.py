@@ -7,7 +7,7 @@ import sys
 
 class TestMath(unittest.TestCase):
     def setUp(self):
-        """"""
+        """ """
         np.random.seed(10)
         self.Ntest = 100
         self.atol = 1e-14

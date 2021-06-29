@@ -5138,7 +5138,7 @@
             "max_angular": 2,
             "max_radial": 4,
             "normalize": true,
-            "optimization_args": {},
+            "optimization": {},
             "radial_basis": "GTO",
             "soap_type": "PowerSpectrum"
           },
@@ -5177,7 +5177,7 @@
             "max_angular": 2,
             "max_radial": 4,
             "normalize": true,
-            "optimization_args": {},
+            "optimization": {},
             "radial_basis": "GTO",
             "soap_type": "PowerSpectrum"
           },

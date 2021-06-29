@@ -458,6 +458,7 @@ namespace rascal {
       // the copying has been disabled
       this->radial_contr =
           std::make_shared<RadialContribution<RadialBasisType::GTO>>(hypers);
+      this->radial_contr->precompute();
       this->func = [&](double x) mutable {
         return this->radial_contr
             ->template compute_contribution<AtomicSmearingType::Constant>(x,

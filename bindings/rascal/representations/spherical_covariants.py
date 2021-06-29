@@ -1,6 +1,10 @@
 import json
 
-from .base import CalculatorFactory, cutoff_function_dict_switch
+from .base import (
+    CalculatorFactory,
+    cutoff_function_dict_switch,
+    check_optimization_for_spherical_representations,
+)
 from ..neighbourlist import AtomsList
 import numpy as np
 from ..utils import BaseIO
@@ -100,7 +104,33 @@ class SphericalCovariants(BaseIO):
                  scale=...,
                  exponent=...)
 
-        where :code:`...` should be replaced by the desired value.
+        where :code:`...` should be replaced by the desired positive float.
+
+    optimization : dict, default None
+        Optional arguments for optimization of the computation of spherical
+        expansion coefficients. "Spline" and "RadialDimReduction" are available.
+
+        Spline: Enables cubic splining for the radial basis functions.
+
+            accuracy : float
+                accuracy of the cubic spline
+
+        RadialDimReduction: Projection matrices to optimize radial basis,
+                            requires Spline to be set
+
+            projection_matrices : dict
+                Contains or each species a list of projection matrices for each
+                angular channel. A projection matrix for an angular channel has
+                the shape (max_radial, expanded_max_radial). A number of
+                `expanded_max_radial` radial basis are computed
+                to be then projected to `max_radial` radial basis. The projected
+                radial basis is then splined for each species and angular channel
+
+        Default settings is using spline
+
+        .. code: python
+
+            dict(Spline=dict(accuracy=1e-8))
 
 
     Methods
@@ -127,7 +157,8 @@ class SphericalCovariants(BaseIO):
         cutoff_function_type="ShiftedCosine",
         normalize=True,
         radial_basis="GTO",
-        optimization_args={},
+        optimization=None,
+        optimization_args=None,
         soap_type="LambdaSpectrum",
         inversion_symmetry=True,
         covariant_lambda=0,
@@ -163,30 +194,14 @@ class SphericalCovariants(BaseIO):
             type=gaussian_sigma_type,
             gaussian_sigma=dict(value=gaussian_sigma_constant, unit="AA"),
         )
-        self.optimization_args = deepcopy(optimization_args)
-        if "type" in optimization_args:
-            if optimization_args["type"] == "Spline":
-                if "accuracy" in optimization_args:
-                    accuracy = optimization_args["accuracy"]
-                else:
-                    accuracy = 1e-5
-                    print(
-                        "No accuracy for spline optimization was given. Switching to default accuracy {:.0e}.".format(
-                            accuracy
-                        )
-                    )
-                optimization_args = {"type": "Spline", "accuracy": accuracy}
-            elif optimization_args["type"] == "None":
-                optimization_args = dict({"type": "None"})
-            else:
-                print(
-                    "Optimization type is not known. Switching to no" " optimization."
-                )
-                optimization_args = dict({"type": "None"})
-        else:
-            optimization_args = dict({"type": "None"})
-        radial_contribution = dict(type=radial_basis, optimization=optimization_args)
-        radial_contribution = dict(type=radial_basis, optimization=optimization_args)
+        optimization = check_optimization_for_spherical_representations(
+            optimization, optimization_args
+        )
+
+        radial_contribution = dict(type=radial_basis, optimization=optimization)
+        radial_contribution = dict(
+            type=radial_basis,
+        )
 
         self.update_hyperparameters(
             cutoff_function=cutoff_function,
@@ -356,6 +371,7 @@ class SphericalCovariants(BaseIO):
             lam=self.hypers["covariant_lambda"],
             cutoff_function_type=cutoff_function["type"],
             radial_basis=radial_contribution["type"],
+            optimization=radial_contribution["optimization"],
             cutoff_function_parameters=self.cutoff_function_parameters,
         )
         return init_params
