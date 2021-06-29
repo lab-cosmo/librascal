@@ -46,11 +46,11 @@ namespace rascal {
      * \f{equation}{
      * Y_\ell^m(\theta, \phi) =
      * \begin{cases}
-     * \sqrt{\frac{2\ell + 1}{2\pi} \frac{(\ell + m)!}{(\ell - m)!}}
-     *      P_\ell^{-m}(\cos\theta) \sin(-m\phi) & \text{for } m < 0\\
+     * (-1)^m \sqrt{\frac{2\ell + 1}{2\pi} \frac{(\ell + m)!}{(\ell - m)!}}
+     *      P_\ell^{-m}(\cos\theta) \sin(|m|\phi) & \text{for } m < 0\\
      * \sqrt{\frac{2\ell + 1}{4\pi}} P_\ell(\cos\theta) & \text{for } m = 0\\
-     * \sqrt{\frac{2\ell + 1}{2\pi} \frac{(\ell - m)!}{(\ell + m)!}}
-     *      P_\ell^{m}(\cos\theta) \cos(m\phi) & \text{for } m > 0
+     * (-1)^m \sqrt{\frac{2\ell + 1}{2\pi} \frac{(\ell - m)!}{(\ell + m)!}}
+     *      P_\ell^{m}(\cos\theta) \cos(|m|\phi) & \text{for } m > 0
      * \end{cases}
      * \f}
      *
