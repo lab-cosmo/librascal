@@ -47,8 +47,9 @@ def get_ascending_angular_lists(max_angular_l):
 #         |
 #         ╰ (-1)^m √2 Re[Y_l^m]   for m<0
 # where Y_l^m is the output of the spherical harmonics function of scipy
-# following the definition in
+#  following the definition in
 # https://en.wikipedia.org/wiki/Spherical_harmonics#Real_form
+
 
 def dump_reference_json():
     # to produces more readable tests use l_max 2 or 3
@@ -102,7 +103,9 @@ def dump_reference_json():
 
             # calculation for negative m
             for m in range(-l, 0):
-                result = (-1)**m*np.sqrt(2) * np.imag(sph_harm(np.abs(m), l, phi, theta))
+                result = (
+                    (-1) ** m * np.sqrt(2) * np.imag(sph_harm(np.abs(m), l, phi, theta))
+                )
                 harmonics.append(float(result))
                 if verbose:
                     print(l, m, result)
@@ -113,7 +116,7 @@ def dump_reference_json():
                 print(l, 0, result)
             # calculation for positive m
             for m in range(1, l + 1):
-                result = (-1)**m*np.sqrt(2) * np.real(sph_harm(m, l, phi, theta))
+                result = (-1) ** m * np.sqrt(2) * np.real(sph_harm(m, l, phi, theta))
             print(alps)
         alps *= alp_normfacts
         if verbose:
