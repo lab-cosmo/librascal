@@ -74,6 +74,10 @@ def spx_roll(spx, hypers):
 
 
 def mslice(l):
+    """
+    Simple helper function to get the slice corresponding to m=-l..l in a dense
+    storage block for Y^l_m-like coefficients
+    """
     return slice(l * l, (l + 1) * (l + 1), 1)
 
 
