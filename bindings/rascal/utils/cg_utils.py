@@ -172,19 +172,59 @@ class CGReal:
     def combine(self, rho1, rho2, L):
         """ 
             Combines Ylm-like coefficients to generate an equivariant
-            term of order L using spherical expansion coefficients
+            term of order L using spherical expansion coefficients.
+            
+            
         """
         
-        l1 = (len(rho1)-1)//2
-        l2 = (len(rho2)-1)//2
+        # automatically infer l1 and l2 from the size of the coefficients vectors        
+        l1 = (rho1.shape[-1]-1)//2
+        l2 = (rho2.shape[-1]-1)//2
         if L>self._lmax or l1>self._lmax or l2>self._lmax:
             raise ValueError("Requested CG entry has not been precomputed")
-        rho = np.zeros(2*L+1)
-        if not (l1, l2, L) in self._cgdict:
-            return rho        
-        for M in range(2*L+1):
-            for m1, m2, cg in self._cgdict[(l1,l2,L)][M]:
-                rho[M] += rho1[m1]*rho2[m2]*cg
+
+        rho_shape = rho1.shape[:-1]
+        if rho1.shape[:-1] != rho2.shape[:-1]:
+            raise IndexError("Cannot combine differently-shaped feature blocks")
+
+        rho1_reshaped = rho1.reshape((-1,2*l1+1))
+        rho2_reshaped = rho2.reshape((-1,2*l2+1))
+        rho = np.zeros((rho1_reshaped.shape[0],2*L+1))
+        if (l1, l2, L) in self._cgdict:
+            # Failsafe implementation: if user requests an "impossible" coupling,
+            # return an empty vector
+            for M in range(2*L+1):
+                for m1, m2, cg in self._cgdict[(l1,l2,L)][M]:
+                    rho[:,M] += rho1_reshaped[:,m1]*rho2_reshaped[:,m2]*cg
+
+        return rho.reshape( rho_shape + (2*L+1,) )
+
+    def combine_einsum(self, rho1, rho2, L, combination_string):
+        """ 
+            Combines Ylm-like coefficients to generate an equivariant
+            term of order L using spherical expansion coefficients.
+            Uses einsum for maximum flexibility in how the two sets of 
+            features are combined.
+        """
+        
+        # automatically infer l1 and l2 from the size of the coefficients vectors        
+        l1 = (rho1.shape[-1]-1)//2
+        l2 = (rho2.shape[-1]-1)//2
+        if L>self._lmax or l1>self._lmax or l2>self._lmax:
+            raise ValueError("Requested CG entry has not been precomputed")
+
+        # infers the shape of the output using the einsum internals        
+        rho_shape = np.einsum(combination_string,rho1[...,0], rho2[...,0]).shape
+        rho = np.zeros(rho_shape+(2*L+1,))
+        
+        if (l1, l2, L) in self._cgdict:
+            # Failsafe implementation: if user requests an "impossible" coupling,
+            # return an empty vector
+            for M in range(2*L+1):
+                for m1, m2, cg in self._cgdict[(l1,l2,L)][M]:
+                    rho[...,M] += np.einsum(combination_string,
+                                            rho1[...,m1],rho2[...,m2]*cg)
+
         return rho
     
     def couple(self, rho2d):
