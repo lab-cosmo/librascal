@@ -26,4 +26,4 @@ from .radial_basis import (
     radial_basis_functions_gto,
 )
 
-from .cg_utils import WDReal, CGReal
+from .cg_utils import WDReal, CGReal, spx_roll, mslice

@@ -11,10 +11,10 @@ from sympy.physics.quantum.cg import CG
 
 # Just a few wrappers for sympy/scipy utility functions
 def _wigner_d(l, alpha, beta, gamma):
-    return np.complex128(wigner_d(l, alpha, beta, gamma)).T
+    return np.complex128(wigner_d(l, alpha, beta, gamma))
 
 def _rotation(alpha, beta, gamma):
-    return Rotation.from_euler('zyz', [alpha, beta, gamma]).as_matrix()
+    return Rotation.from_euler('ZYZ', [alpha, beta, gamma]).as_matrix()
 
 def _cg(l1, l2, L):
     rcg = np.zeros( (2*l1+1,2*l2+1,2*L+1), dtype=np.double )
@@ -50,6 +50,20 @@ def _c2r(cp):
         
     return rs
 
+def spx_roll(spx, hypers):
+    """
+        Folds a list of spherical expansion coefficients in a 
+        n_env, n_el, nmax, (lmax+1)^2 form that is more convenient to evaluate
+    """
+    nmax = hypers['max_radial']
+    lmax = hypers['max_angular']
+    nid = len(spx)
+    nel = spx.shape[1]//(nmax*(lmax+1)**2)
+    return spx.reshape((nid, nel, nmax, (lmax+1)**2)) # (lm) terms are stored in a compact form
+
+def mslice(l):
+    return slice(l*l,(l+1)*(l+1),1)
+    
 class WDReal:
     """
         A helper class to compute Wigner D matrices given the Euler angles of a rotation,
