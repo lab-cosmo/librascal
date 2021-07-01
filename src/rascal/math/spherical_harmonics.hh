@@ -228,8 +228,8 @@ namespace rascal {
        *
        * Stores the results as an (Eigen)matrix, sized \f$m_\text{max}\f$ by 2
        * with the \f$(-1)^m\cos(m\phi)\f$ stored in the first column and
-       * \f$(-1)^m\sin(m\phi)\f$ in the second column, with \f$m\f$ being the row
-       * index
+       * \f$(-1)^m\sin(m\phi)\f$ in the second column, with \f$m\f$ being the
+       * row index
        */
       void compute_cos_sin_angle_multiples(double cos_phi, double sin_phi);
 
