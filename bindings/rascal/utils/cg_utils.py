@@ -36,8 +36,6 @@ def _cg(l1, l2, L):
 # coefficients) and back. Uses the convention from Wikipedia
 isqrt2 = 1.0 / np.sqrt(2)
 sqrt2 = np.sqrt(2)
-
-
 def _r2c(sp):
     l = (len(sp) - 1) // 2
     rc = np.zeros(len(sp), dtype=np.complex128)
@@ -186,15 +184,26 @@ class CGReal:
 
                     # applies transformations that make them act and generate real
                     # valued coefficients
-                    rcg = np.real(
-                        np.einsum(
-                            "abc, ax, by, zc -> xyz",
-                            ccg,
-                            r2c_mats[l1],
-                            r2c_mats[l2],
-                            c2r_mats[L],
+                    if (l1+l2+L)%2 == 0:
+                        rcg = np.real(
+                            np.einsum(
+                                "abc, ax, by, zc -> xyz",
+                                ccg,
+                                r2c_mats[l1],
+                                r2c_mats[l2],
+                                c2r_mats[L],
+                            )
                         )
-                    )
+                    else:
+                        rcg = np.imag(
+                            np.einsum(
+                                "abc, ax, by, zc -> xyz",
+                                ccg,
+                                r2c_mats[l1],
+                                r2c_mats[l2],
+                                c2r_mats[L],
+                            )
+                        )
 
                     # tricky: real-valued transformations have a funny layout, and
                     # so it is best to store them in a sparse format: for each l
