@@ -4,13 +4,17 @@ Requires sympy to compute relevant coefficients.
 """
 
 import numpy as np
-from sympy.physics.wigner import wigner_d
 from scipy.spatial.transform import Rotation
-from sympy.physics.quantum.cg import CG
 
 
 # Just a few wrappers for sympy/scipy utility functions
 def _wigner_d(l, alpha, beta, gamma):
+    try:
+        from sympy.physics.wigner import wigner_d
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError(
+            "Calculation of Wigner D matrices requires a sympy installation"
+        )
     return np.complex128(wigner_d(l, alpha, beta, gamma))
 
 
@@ -19,6 +23,13 @@ def _rotation(alpha, beta, gamma):
 
 
 def _cg(l1, l2, L):
+    try:
+        from sympy.physics.quantum.cg import CG
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError(
+            "Calculation of Clebsch-Gordan coefficients requires a sympy installation"
+        )
+
     rcg = np.zeros((2 * l1 + 1, 2 * l2 + 1, 2 * L + 1), dtype=np.double)
     if np.abs(l1 - l2) > L or np.abs(l1 + l2) < L:
         return rcg
@@ -36,6 +47,8 @@ def _cg(l1, l2, L):
 # coefficients) and back. Uses the convention from Wikipedia
 isqrt2 = 1.0 / np.sqrt(2)
 sqrt2 = np.sqrt(2)
+
+
 def _r2c(sp):
     l = (len(sp) - 1) // 2
     rc = np.zeros(len(sp), dtype=np.complex128)
@@ -184,7 +197,7 @@ class CGReal:
 
                     # applies transformations that make them act and generate real
                     # valued coefficients
-                    if (l1+l2+L)%2 == 0:
+                    if (l1 + l2 + L) % 2 == 0:
                         rcg = np.real(
                             np.einsum(
                                 "abc, ax, by, zc -> xyz",
