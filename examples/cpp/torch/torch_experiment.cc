@@ -198,21 +198,21 @@ int main(int argc, char * argv[]) {
   adaptors.emplace_back(ad1b);
   adaptors.emplace_back(ad2);
 
-  std::cout << "Loading structures...";
+  std::cout << "Loading structures..."  << std::endl;
   json structures{{"filename", structures_absolute_path}};
   auto managers{ManagerCollection<StructureManagerCenters, AdaptorNeighbourList, AdaptorCenterContribution, AdaptorStrict>(adaptors)};
   managers.add_structures(structures_absolute_path, 0, -1); // extendable with arguments: int start = 0, int length = -1)
 
-  auto manager =
-      make_structure_manager_stack<StructureManagerCenters, AdaptorNeighbourList, AdaptorCenterContribution, AdaptorStrict>(
-          structures, adaptors);
-  std::cout << " finished. Number of structures loaded: " << managers.size() << std::endl;
+  //auto manager =
+  //    make_structure_manager_stack<StructureManagerCenters, AdaptorNeighbourList, AdaptorCenterContribution, AdaptorStrict>(
+  //        structures, adaptors);
+  //std::cout << " finished. Number of structures loaded: " << managers.size() << std::endl;
 
   // load torch model 
-  std::cout << "Loading model...";
+  //std::cout << "Loading model..." << std::endl;
   torch::jit::script::Module module;
   module = torch::jit::load(torch_model_absolute_path);
-  std::cout << " finished." << std::endl;
+  //std::cout << " finished." << std::endl;
 
   std::vector<torch::jit::IValue> torch_model_inputs;
   // angular channels, species per center, structuer idx per center
@@ -263,6 +263,7 @@ int main(int argc, char * argv[]) {
   //// get_features for all structures and merge together like in pybind 
   auto property_name{managers.get_calculator_name(representation, false)};
 
+  // get property from first structure to define type
   const auto & property_ =
       *managers[0]->template get_property<Prop_t>(property_name);
   // assume inner_size is consistent for all managers
@@ -384,7 +385,7 @@ int main(int argc, char * argv[]) {
 
   auto finish_sph_exp_remapping = std::chrono::high_resolution_clock::now();
 
-  //std::cout << "Computing forward...";
+  //std::cout << "Computing forward..." << std::endl;
   at::Tensor energies = module.forward(torch_model_inputs).toTensor();
   //std::cout << " finished " << std::endl;
 
@@ -409,8 +410,9 @@ int main(int argc, char * argv[]) {
   
   json timings_json = {
       {"sph_exp_time", elapsed_sph_exp_computation.count()},
-      {"eigen_to_torch_format_time", elapsed_eigen_to_torch_format.count()},
+      {"densify_time", elapsed_densify.count()},
       {"sph_exp_remapping_time", elapsed_sph_exp_remapping.count()},
+      {"eigen_to_torch_format_time", elapsed_eigen_to_torch_format.count()},
       {"torch_prediction_time", elapsed_torch_prediction.count()},
       {"overall_time", elapsed_overall.count()},
     };
