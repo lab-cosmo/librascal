@@ -107,12 +107,9 @@ class Kernel(BaseIO):
 
     def _set_data(self, data):
         super()._set_data(data)
-        self._kernel = self._kernel.from_dict(data["kernel"])
 
     def _get_data(self):
-        data = super()._get_data()
-        data.update(kernel=self._kernel.to_dict())
-        return data
+        return super()._get_data()
 
     def __call__(self, X, Y=None, grad=(False, False), compute_neg_stress=False):
         """
