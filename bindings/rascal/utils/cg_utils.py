@@ -5,6 +5,7 @@ Requires sympy to compute relevant coefficients.
 
 import numpy as np
 from scipy.spatial.transform import Rotation
+from ..neighbourlist.structure_manager import is_ase_Atoms
 
 
 # Just a few wrappers for sympy/scipy utility functions
@@ -139,8 +140,8 @@ class WDReal:
         (2l+1) array containing the coefficients for the rotated structure
         """
 
-        L = (len(rho) - 1) // 2
-        return self._wddict[L] @ rho
+        L = (rho.shape[-1] - 1) // 2
+        return rho @ self._wddict[L].T
 
     def rotate_frame(self, frame):
         """
@@ -154,9 +155,14 @@ class WDReal:
         -------
         The rotated frame
         """
-
-        frame.positions = frame.positions @ self._rotation.T
-        frame.cell = frame.cell @ self._rotation.T
+        
+        if is_ase_Atoms(frame):
+            frame.positions = frame.positions @ self._rotation.T
+            frame.cell = frame.cell @ self._rotation.T
+        else:
+            print(frame["positions"])
+            frame["positions"] = self._rotation@frame["positions"]
+            frame["cell"] = self._rotation@frame["cell"] 
         return frame
 
 
