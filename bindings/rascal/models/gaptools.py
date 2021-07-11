@@ -244,7 +244,7 @@ def fit_gap_simple(
     energies,
     kernel_energies_sparse,
     energy_regularizer_peratom,
-    energy_atom_contributions,
+    energy_atom_contributions=None,
     forces=None,
     kernel_gradients_sparse=None,
     force_regularizer=None,
@@ -281,7 +281,7 @@ def fit_gap_simple(
         energy_atom_contributions
                         Baseline energy contributions per atomic species
                         Dict mapping species to baseline energy value
-                        per atom
+                        per atom. None to avoid baselining
 
     Parameters for force fitting:
         forces          Forces of the structures to fit: NumPy array of
@@ -308,13 +308,15 @@ def fit_gap_simple(
 
     Returns the weights (1-D array, size M) that define the fit.
     """
-    e0_all = np.array(
-        [
-            _get_energy_baseline(geom, energy_atom_contributions, target_type)
-            for geom in geoms
-        ]
-    ).flatten()
-    energies_shifted = energies - e0_all
+    energies_shifted = energies
+    if energy_atom_contributions is not None:
+        e0_all = np.array(
+            [
+                _get_energy_baseline(geom, energy_atom_contributions, target_type)
+                for geom in geoms
+            ]
+        ).flatten()
+        energies_shifted -= e0_all
 
     if target_type == "Structure":
         natoms_list = np.array([len(geom) for geom in geoms])

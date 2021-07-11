@@ -163,6 +163,7 @@ class KRR(BaseIO):
     self_contributions : dictionary
         map atomic number to the property baseline, e.g. isolated atoms
         energies when the model has been trained on total energies.
+        None to avoid computing a baseline
 
     description : string
         User-defined string used to describe the model for future reference
@@ -177,7 +178,7 @@ class KRR(BaseIO):
         weights,
         kernel,
         X_train,
-        self_contributions,
+        self_contributions=None,
         description="KRR potential model",
         units=None,
     ):
@@ -248,7 +249,10 @@ class KRR(BaseIO):
                     "KNM size mismatch {}!={}".format(self.X_train.size(), KNM.shape[1])
                 )
             kernel = KNM
-        Y0 = self._get_property_baseline(managers)
+        Y0 = 0
+        if self.self_contributions is not None:
+            Y0 = self._get_property_baseline(managers)
+
         return Y0 + np.dot(kernel, self.weights).reshape((-1))
 
     def predict_forces(self, managers, KNM=None):
