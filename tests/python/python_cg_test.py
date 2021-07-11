@@ -70,15 +70,14 @@ class TestCGUtils(unittest.TestCase):
             self.assertTrue(np.allclose(rfeats[...,mslice(L)], self.wd.rotate(self.feats[..., mslice(L)])))
             
     def test_invariants(self):
-        """Checks that spherical invariants are equal to SOAP features."""
+        """Checks that spherical invariants computed from CGs are equal to SOAP features."""
         
         hypers = deepcopy(self.hypers)
         hypers["soap_type"] = "PowerSpectrum"
         hypers["normalize"] = False
         
         soap = SphericalInvariants(**hypers)
+        sfeats = soap.transform(frames).get_features(soap)
         
-        
-        pass
-        
+        self.cg.
         
