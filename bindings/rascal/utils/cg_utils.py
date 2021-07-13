@@ -9,7 +9,14 @@ from ..neighbourlist.structure_manager import is_ase_Atoms
 
 
 # Just a few wrappers for sympy/scipy utility functions
+# Only loads sympy on request given it adds a significant 
+# overhead to librascal loading
 def _wigner_d(l, alpha, beta, gamma):
+    """ Computes a Wigner D matrix 
+    D^l_{mm'}(alpha, beta, gamma)
+   from sympy and converts it to numerical values.  
+   (alpha, beta, gamma) are Euler angles (radians) and l the irrep.
+   """
     try:
         from sympy.physics.wigner import wigner_d
     except ModuleNotFoundError:
@@ -20,10 +27,19 @@ def _wigner_d(l, alpha, beta, gamma):
 
 
 def _rotation(alpha, beta, gamma):
+    """ A Cartesian rotation matrix in the appropriate convention to be
+    consistent with Wigner D rotation. 
+    (alpha, beta, gamma) are Euler angles (radians)."""
     return Rotation.from_euler("ZYZ", [alpha, beta, gamma]).as_matrix()
 
 
 def _cg(l1, l2, L):
+    """ Computes CG coefficients from sympy 
+    <l1 m1; l2 m2| L M>
+    and converts them to numerical values.  
+    Returns a full (2 * l1 + 1, 2 * l2 + 1, 2 * L + 1) array, which
+    is mostly zeros.
+    """
     try:
         from sympy.physics.quantum.cg import CG
     except ModuleNotFoundError:
@@ -48,10 +64,11 @@ def _cg(l1, l2, L):
 # coefficients) and back. Uses the convention from Wikipedia
 isqrt2 = 1.0 / np.sqrt(2)
 sqrt2 = np.sqrt(2)
-
-
 def _r2c(sp):
-    l = (len(sp) - 1) // 2
+    """ Real to complex SPH. Assumes a block with 2l+1 reals corresponding
+    to real SPH with m indices from -l to +l """
+    
+    l = (len(sp) - 1) // 2  # infers l from the vector size
     rc = np.zeros(len(sp), dtype=np.complex128)
     rc[l] = sp[l]
     for m in range(1, l + 1):
@@ -59,33 +76,34 @@ def _r2c(sp):
         rc[l - m] = (sp[l + m] - 1j * sp[l - m]) * isqrt2
     return rc
 
-
 def _c2r(cp):
-    l = (len(cp) - 1) // 2
+    """ Complex to real SPH. Assumes a block with 2l+1 complex 
+    corresponding to Y^m_l with m indices from -l to +l """
+    l = (len(cp) - 1) // 2  # infers l from the vector size
     rs = np.zeros(len(cp), dtype=np.float64)
     rs[l] = np.real(cp[l])
     for m in range(1, l + 1):
         rs[l - m] = (-1) ** m * sqrt2 * np.imag(cp[l + m])
         rs[l + m] = (-1) ** m * sqrt2 * np.real(cp[l + m])
-
     return rs
 
-
-def spx_roll(spx, hypers):
+def spherical_expansion_reshape(spx, max_radial, max_angular, **kwargs):
     """
     Folds a list of spherical expansion coefficients in a
-    n_env, n_el, nmax, (lmax+1)^2 form that is more convenient to evaluate
+    n_env, n_el, nmax, (lmax+1)^2 form that is more convenient to evaluate.
+    Can be called with **hypers in the same format as for a SphericalExpansion
+    object.
     """
-    nmax = hypers["max_radial"]
-    lmax = hypers["max_angular"]
+    
+    lmshape = (max_angular + 1) ** 2
     nid = len(spx)
-    nel = spx.shape[1] // (nmax * (lmax + 1) ** 2)
+    nel = spx.shape[1] // (max_radial * lmshape)
     return spx.reshape(
-        (nid, nel, nmax, (lmax + 1) ** 2)
+        (nid, nel, max_radial, lmshape)
     )  # (lm) terms are stored in a compact form
 
 
-def mslice(l):
+def lm_slice(l):
     """
     Simple helper function to get the slice corresponding to m=-l..l in a dense
     storage block for Y^l_m-like coefficients
@@ -93,7 +111,7 @@ def mslice(l):
     return slice(l * l, (l + 1) * (l + 1), 1)
 
 
-class WDReal:
+class WignerDReal:
     """
     A helper class to compute Wigner D matrices given the Euler angles of a rotation,
     and apply them to spherical harmonics (or coefficients). Built to function with
@@ -102,7 +120,7 @@ class WDReal:
 
     def __init__(self, lmax, alpha, beta, gamma):
         """
-        Initialize the WDReal class.
+        Initialize the WignerDReal class.
 
         lmax: int
             maximum angular momentum channel for which the Wigner D matrices are
@@ -166,7 +184,7 @@ class WDReal:
         return frame
 
 
-class CGReal:
+class ClebschGordanReal:
     """
     Helper class to manipulate Clebsch-Gordan coefficients with real-storage
     spherical harmonics and coefficients.
@@ -174,7 +192,7 @@ class CGReal:
 
     def __init__(self, lmax):
         """
-        Initialize the CGReal class, precomputing transformation coefficients
+        Initialize the ClebschGordanReal class, precomputing transformation coefficients
         up to lmax
 
         lmax: int

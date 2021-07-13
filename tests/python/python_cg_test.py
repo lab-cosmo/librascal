@@ -3,7 +3,7 @@ from rascal.representations import (
     SphericalInvariants,
 )
 from rascal.utils import (
-    CGReal, WDReal, spx_roll, mslice
+    ClebschGordanReal, WignerDReal, spherical_expansion_reshape, lm_slice
 )
 
 from test_utils import load_json_frame, BoxList, Box, dot
@@ -49,11 +49,12 @@ class TestCGUtils(unittest.TestCase):
         )
 
         self.lmax = self.hypers["max_angular"]
-        self.wd = WDReal(self.lmax, 0.1, 0.2, 0.3)
-        self.cg = CGReal(self.lmax)        
+        self.wd = WignerDReal(self.lmax, 0.1, 0.2, 0.3)
+        self.cg = ClebschGordanReal(self.lmax)        
 
         self.spex = SphericalExpansion(**self.hypers)
-        self.feats = spx_roll(self.spex.transform(self.frames).get_features(self.spex), self.hypers)
+        self.feats = spherical_expansion_reshape(
+            self.spex.transform(self.frames).get_features(self.spex), **self.hypers)
 
 
     def test_rotation(self):
@@ -65,9 +66,11 @@ class TestCGUtils(unittest.TestCase):
             self.wd.rotate_frame(rf)
             rframes.append(rf)
         
-        rfeats = spx_roll(self.spex.transform(rframes).get_features(self.spex), self.hypers)
+        rfeats = spherical_expansion_reshape(
+            self.spex.transform(rframes).get_features(self.spex), **self.hypers)
         for L in range(self.lmax+1):
-            self.assertTrue(np.allclose(rfeats[...,mslice(L)], self.wd.rotate(self.feats[..., mslice(L)])))
+            self.assertTrue(np.allclose(rfeats[...,lm_slice(L)], 
+                self.wd.rotate(self.feats[..., lm_slice(L)])))
             
     def test_invariants(self):
         """Checks that spherical invariants computed from CGs are equal to SOAP features."""
@@ -77,7 +80,7 @@ class TestCGUtils(unittest.TestCase):
         hypers["normalize"] = False
         
         soap = SphericalInvariants(**hypers)
-        sfeats = soap.transform(frames).get_features(soap)
+        sfeats = soap.transform(self.frames).get_features(soap)
         
-        self.cg.
+        pass
         
