@@ -15,7 +15,7 @@ def _wigner_d(l, alpha, beta, gamma):
     """ Computes a Wigner D matrix 
     D^l_{mm'}(alpha, beta, gamma)
    from sympy and converts it to numerical values.  
-   (alpha, beta, gamma) are Euler angles (radians) and l the irrep.
+   (alpha, beta, gamma) are Euler angles (radians, ZYZ convention) and l the irrep.
    """
     try:
         from sympy.physics.wigner import wigner_d
@@ -27,8 +27,8 @@ def _wigner_d(l, alpha, beta, gamma):
 
 
 def _rotation(alpha, beta, gamma):
-    """ A Cartesian rotation matrix in the appropriate convention to be
-    consistent with Wigner D rotation. 
+    """ A Cartesian rotation matrix in the appropriate convention 
+    (ZYZ, implicit rotations) to be consistent with the common Wigner D definition.
     (alpha, beta, gamma) are Euler angles (radians)."""
     return Rotation.from_euler("ZYZ", [alpha, beta, gamma]).as_matrix()
 
@@ -87,6 +87,7 @@ def _c2r(cp):
         rs[l + m] = (-1) ** m * sqrt2 * np.real(cp[l + m])
     return rs
 
+
 def spherical_expansion_reshape(spx, max_radial, max_angular, **kwargs):
     """
     Folds a list of spherical expansion coefficients in a
@@ -102,6 +103,21 @@ def spherical_expansion_reshape(spx, max_radial, max_angular, **kwargs):
         (nid, nel, max_radial, lmshape)
     )  # (lm) terms are stored in a compact form
 
+def sph_conjugate_real(sp):
+    """ Computes the "complex conjugate" of real spherical harmonics or 
+    associated coefficients, basically <lm|rhat>^* = (-1)^m <l (-m)|rhat>.
+    In this form, the transformation applies also to real coefficients. 
+    Assumes that the argument is a m=(-l..l) block. 
+    """
+    
+    lm = sp.shape[-1]    
+    l = (lm - 1)//2
+    ones = np.ones(lm)
+    if l%2==0:
+        ones[1::2] = -1
+    else:
+        ones[0::2] = -1
+    return sp
 
 def lm_slice(l):
     """
