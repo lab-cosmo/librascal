@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import os
+from collections.abc import Iterable
 
 import ase.io
 import numpy as np
@@ -144,6 +145,7 @@ def compute_kernels(
     do_gradients=True,
     compute_sparse_kernel=True,
     target_type="Structure",
+    save_kernels=False,
 ):
     """Compute the kernels necessary for a GAP fit
 
@@ -185,17 +187,19 @@ def compute_kernels(
     )
     if compute_sparse_kernel:
         kernel_sparse = kernel(sparse_points)
-        np.save(os.path.join(WORKDIR, "K_MM"), kernel_sparse)
+        if save_kernels:
+            np.save(os.path.join(WORKDIR, "K_MM"), kernel_sparse)
     else:
         kernel_sparse = np.array([])
     kernel_sparse_full = kernel(soaps, sparse_points)
     # TODO make kernel name configurable so we don't overwrite training
     #     kernels with possible future test kernels
-    np.save(os.path.join(WORKDIR, "K_NM_E"), kernel_sparse_full)
+    if save_kernels:
+        np.save(os.path.join(WORKDIR, "K_NM_E"), kernel_sparse_full)
     if do_gradients:
         if target_type == "Atom":
             raise ValueError(
-                "At present, atom-centered properties do not support gradients"
+                "Atom-centered properties do not support gradients at present"
             )
         kernel_sparse_full_grads = kernel(soaps, sparse_points, grad=(True, False))
         np.save(os.path.join(WORKDIR, "K_NM_F"), kernel_sparse_full_grads)
@@ -235,6 +239,73 @@ def _get_energy_baseline(geom, atom_contributions, target_type="Structure"):
     else:
         raise ValueError("Invalid baseline target ", target_type)
     return e0
+
+
+def extract_kernel_indices(
+    idces, kernel, kernel_grads=None, natoms=None, target_type="Structure"
+):
+    """Extract rows from the sparse-full kernel ("K_NM")
+
+    This is useful e.g. to perform a train-test or a CV split
+
+    Parameters
+    ----------
+    idces: list(int) or 1-D array
+        List of indices (structure or atom) to extract
+    kernel: 2-D array
+        Sparse-full kernel ("K_NM")
+    kernel_grads: 2-D array, optional
+        Gradient of sparse-full kernel w.r.t. atomic positions
+    natoms: int or list(int)
+        Number of atoms in each structure.  Can be a single number
+        if all structures have the same number of atoms.  Only
+        needed if kernel_grads supplied and target_type=="Structure".
+    target_type: "Structure" or "Atom"
+        Whether the sparse-full kernel and extraction indices are
+        for structures or atoms - "Structure" means structure indices
+        and structure (summed) kernels, "Atom" means atom indices
+        and atomic kernels
+
+    Returns
+    -------
+    kernel_sub: 2-D array
+        Extracted subset of kernel matrix
+    kernel_grads_sub: 2-D array
+        Corresponding subset of gradient kernel matrix, if supplied
+    """
+    n_rows = kernel.shape[0]
+    n_sub = len(idces)
+    kernel_sub = kernel[idces]
+    if kernel_grads is None:
+        return kernel_sub
+    if target_type == "Atom":
+        kernel_grads_sub = kernel_grads.reshape((n_rows, 3, -1))[idces].reshape(
+            (n_sub * 3, -1)
+        )
+    elif target_type == "Structure":
+        if natoms is None:
+            raise ValueError(
+                "Must supply number of atoms for each structure "
+                "in order to extract subset from kernel_grads"
+            )
+        elif isinstance(natoms, Iterable):
+            kernel_grads_sub = []
+            kernel_grads_peratom = kernel_grads.reshape((sum(natoms), 3, -1))
+            offsets = np.cumsum(natoms)
+            for idx in idces:
+                nat = natoms[idx]
+                offset = offsets[idx]
+                kernel_grads_sub.append(kernel_grads_peratom[offset : offset + nat])
+            kernel_grads_sub = np.concatenate(kernel_grads_sub)
+            n_grads_sub = kernel_grads_sub.shape[0]
+            kernel_grads_sub = kernel_grads_sub.reshape((n_grads_sub * 3, -1))
+        else:
+            kernel_grads_sub = kernel_grads.reshape((n_rows, natoms, 3, -1))[
+                idces
+            ].reshape((n_sub * natoms * 3, -1))
+    else:
+        raise ValueError(f'Unrecognized target_type: "{target_type:s}"')
+    return kernel_sub, kernel_grads_sub
 
 
 # TODO also make energies optional
