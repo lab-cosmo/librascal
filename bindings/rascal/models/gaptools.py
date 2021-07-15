@@ -84,11 +84,12 @@ def calculate_features(
 # TODO also support feature sparsification (this just does env. sparsification
 #      for now)
 def sparsify_environments(
-    features, n_sparse, selection_type="CUR", save_sparsepoints=False
+    rep, features, n_sparse, selection_type="CUR", save_sparsepoints=False
 ):
     """Sparsify the feature matrix along the environments dimension
 
     Parameters:
+        rep         Representation calculator used to compute the features
         features    List of features to use for sparsification, in the
                     internal librascal representation
         n_sparse    Number of sparse points per species, in the form of
@@ -110,7 +111,7 @@ def sparsify_environments(
     elif selection_type.upper() == "FPS":
         # TODO random starting index? by default?
         compressor = utils.FPSFilter(rep, n_sparse, act_on="sample per species")
-    sparse_points = compressor.select_and_filter(soaps)
+    sparse_points = compressor.select_and_filter(features)
     if save_sparsepoints:
         utils.dump_obj(os.path.join(WORKDIR, "sparsepoints.json"), sparse_points)
     return sparse_points
@@ -202,7 +203,8 @@ def compute_kernels(
                 "Atom-centered properties do not support gradients at present"
             )
         kernel_sparse_full_grads = kernel(soaps, sparse_points, grad=(True, False))
-        np.save(os.path.join(WORKDIR, "K_NM_F"), kernel_sparse_full_grads)
+        if save_kernels:
+            np.save(os.path.join(WORKDIR, "K_NM_F"), kernel_sparse_full_grads)
         return (kernel, kernel_sparse, kernel_sparse_full, kernel_sparse_full_grads)
     else:
         return kernel, kernel_sparse, kernel_sparse_full
