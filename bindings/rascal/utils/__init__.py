@@ -26,4 +26,10 @@ from .radial_basis import (
     radial_basis_functions_gto,
 )
 
-from .cg_utils import WignerDReal, ClebschGordanReal, spherical_expansion_reshape, lm_slice
+from .cg_utils import (
+    WignerDReal,
+    ClebschGordanReal,
+    spherical_expansion_reshape,
+    lm_slice,
+    real2complex_matrix,
+)

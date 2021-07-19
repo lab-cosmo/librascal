@@ -9,14 +9,14 @@ from ..neighbourlist.structure_manager import is_ase_Atoms
 
 
 # Just a few wrappers for sympy/scipy utility functions
-# Only loads sympy on request given it adds a significant 
+# Only loads sympy on request given it adds a significant
 # overhead to librascal loading
 def _wigner_d(l, alpha, beta, gamma):
-    """ Computes a Wigner D matrix 
-    D^l_{mm'}(alpha, beta, gamma)
-   from sympy and converts it to numerical values.  
-   (alpha, beta, gamma) are Euler angles (radians, ZYZ convention) and l the irrep.
-   """
+    """Computes a Wigner D matrix
+     D^l_{mm'}(alpha, beta, gamma)
+    from sympy and converts it to numerical values.
+    (alpha, beta, gamma) are Euler angles (radians, ZYZ convention) and l the irrep.
+    """
     try:
         from sympy.physics.wigner import wigner_d
     except ModuleNotFoundError:
@@ -27,16 +27,16 @@ def _wigner_d(l, alpha, beta, gamma):
 
 
 def _rotation(alpha, beta, gamma):
-    """ A Cartesian rotation matrix in the appropriate convention 
+    """A Cartesian rotation matrix in the appropriate convention
     (ZYZ, implicit rotations) to be consistent with the common Wigner D definition.
     (alpha, beta, gamma) are Euler angles (radians)."""
     return Rotation.from_euler("ZYZ", [alpha, beta, gamma]).as_matrix()
 
 
 def _cg(l1, l2, L):
-    """ Computes CG coefficients from sympy 
+    """Computes CG coefficients from sympy
     <l1 m1; l2 m2| L M>
-    and converts them to numerical values.  
+    and converts them to numerical values.
     Returns a full (2 * l1 + 1, 2 * l2 + 1, 2 * L + 1) array, which
     is mostly zeros.
     """
@@ -64,10 +64,12 @@ def _cg(l1, l2, L):
 # coefficients) and back. Uses the convention from Wikipedia
 isqrt2 = 1.0 / np.sqrt(2)
 sqrt2 = np.sqrt(2)
+
+
 def _r2c(sp):
-    """ Real to complex SPH. Assumes a block with 2l+1 reals corresponding
-    to real SPH with m indices from -l to +l """
-    
+    """Real to complex SPH. Assumes a block with 2l+1 reals corresponding
+    to real SPH with m indices from -l to +l"""
+
     l = (len(sp) - 1) // 2  # infers l from the vector size
     rc = np.zeros(len(sp), dtype=np.complex128)
     rc[l] = sp[l]
@@ -76,9 +78,10 @@ def _r2c(sp):
         rc[l - m] = (sp[l + m] - 1j * sp[l - m]) * isqrt2
     return rc
 
+
 def _c2r(cp):
-    """ Complex to real SPH. Assumes a block with 2l+1 complex 
-    corresponding to Y^m_l with m indices from -l to +l """
+    """Complex to real SPH. Assumes a block with 2l+1 complex
+    corresponding to Y^m_l with m indices from -l to +l"""
     l = (len(cp) - 1) // 2  # infers l from the vector size
     rs = np.zeros(len(cp), dtype=np.float64)
     rs[l] = np.real(cp[l])
@@ -88,6 +91,15 @@ def _c2r(cp):
     return rs
 
 
+def real2complex_matrix(L):
+    """Computes a matrix that can be used to convert from real to
+    complex-valued spherical harmonics(coefficients) of order L.
+    It's meand to be applied to the right, [-L..L]@r2cmtx."""
+
+    eye = np.eye(2 * L + 1)
+    return np.hstack([_r2c(eye[i])[:, np.newaxis] for i in range(2 * L + 1)])
+
+
 def spherical_expansion_reshape(spx, max_radial, max_angular, **kwargs):
     """
     Folds a list of spherical expansion coefficients in a
@@ -95,7 +107,7 @@ def spherical_expansion_reshape(spx, max_radial, max_angular, **kwargs):
     Can be called with **hypers in the same format as for a SphericalExpansion
     object.
     """
-    
+
     lmshape = (max_angular + 1) ** 2
     nid = len(spx)
     nel = spx.shape[1] // (max_radial * lmshape)
@@ -103,21 +115,24 @@ def spherical_expansion_reshape(spx, max_radial, max_angular, **kwargs):
         (nid, nel, max_radial, lmshape)
     )  # (lm) terms are stored in a compact form
 
-def sph_conjugate_real(sp):
-    """ Computes the "complex conjugate" of real spherical harmonics or 
-    associated coefficients, basically <lm|rhat>^* = (-1)^m <l (-m)|rhat>.
-    In this form, the transformation applies also to real coefficients. 
-    Assumes that the argument is a m=(-l..l) block. 
-    """
-    
-    lm = sp.shape[-1]    
-    l = (lm - 1)//2
-    ones = np.ones(lm)
-    if l%2==0:
-        ones[1::2] = -1
-    else:
-        ones[0::2] = -1
-    return sp
+
+# unsure about this...
+# ~ def sph_conjugate_real(sp):
+# ~ """ Computes the "complex conjugate" of real spherical harmonics or
+# ~ associated coefficients, basically <lm|rhat>^* = (-1)^m <l (-m)|rhat>.
+# ~ In this form, the transformation applies also to real coefficients.
+# ~ Assumes that the argument is a m=(-l..l) block.
+# ~ """
+
+# ~ lm = sp.shape[-1]
+# ~ l = (lm - 1)//2
+# ~ ones = np.ones(lm)
+# ~ if l%2==0:
+# ~ ones[1::2] = -1
+# ~ else:
+# ~ ones[0::2] = -1
+# ~ return sp
+
 
 def lm_slice(l):
     """
@@ -189,14 +204,14 @@ class WignerDReal:
         -------
         The rotated frame
         """
-        
+
         if is_ase_Atoms(frame):
             frame.positions = frame.positions @ self._rotation.T
             frame.cell = frame.cell @ self._rotation.T
         else:
             print(frame["positions"])
-            frame["positions"] = self._rotation@frame["positions"]
-            frame["cell"] = self._rotation@frame["cell"] 
+            frame["positions"] = self._rotation @ frame["positions"]
+            frame["cell"] = self._rotation @ frame["cell"]
         return frame
 
 
@@ -217,14 +232,13 @@ class ClebschGordanReal:
 
         self._lmax = lmax
         self._cgdict = {}
+        self._cgraw = {}
 
         # real-to-complex and complex-to-real transformations as matrices
         r2c_mats = {}
         c2r_mats = {}
         for L in range(0, self._lmax + 1):
-            r2c_mats[L] = np.hstack(
-                [_r2c(np.eye(2 * L + 1)[i])[:, np.newaxis] for i in range(2 * L + 1)]
-            )
+            r2c_mats[L] = real2complex_matrix(L)
             c2r_mats[L] = np.conjugate(r2c_mats[L]).T
 
         for l1 in range(self._lmax + 1):
@@ -234,6 +248,7 @@ class ClebschGordanReal:
                 ):
                     # computes CG coefficients
                     ccg = _cg(l1, l2, L)
+                    self._cgraw[(l1, l2, L)] = ccg
 
                     # applies transformations that make them act and generate real
                     # valued coefficients
