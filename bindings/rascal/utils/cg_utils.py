@@ -94,7 +94,7 @@ def _c2r(cp):
 def real2complex_matrix(L):
     """Computes a matrix that can be used to convert from real to
     complex-valued spherical harmonics(coefficients) of order L.
-    It's meand to be applied to the right, [-L..L]@r2cmtx."""
+    It's meand to be applied to the left, r2cmtx@[-L..L]."""
 
     eye = np.eye(2 * L + 1)
     return np.hstack([_r2c(eye[i])[:, np.newaxis] for i in range(2 * L + 1)])
@@ -283,7 +283,7 @@ class ClebschGordanReal:
                         for m1 in range(2 * l1 + 1):
                             for m2 in range(2 * l2 + 1):
                                 if np.abs(rcg[m1, m2, M]) > 1e-15:
-                                    cgm.append((m1, m2, rcg[m1, m2, M]))
+                                    cgm.append((m1, m2, rcg[m1, m2, M]))                                    
                         newcg.append(cgm)
                     self._cgdict[(l1, l2, L)] = newcg
 
