@@ -194,7 +194,8 @@ void SphericalHarmonics::compute_cos_sin_angle_multiples(double cos_phi,
     if (m_count == 0) {
       this->cos_sin_m_phi.row(m_count) << 1.0, 0.0;
     } else if (m_count == 1) {
-      // standard iter: this->cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
+      // standard iter: 
+      //this->cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
       this->cos_sin_m_phi.row(m_count) << -cos_phi, -sin_phi;
     } else {
       /* standard iter:
@@ -202,9 +203,11 @@ void SphericalHarmonics::compute_cos_sin_angle_multiples(double cos_phi,
           2.0 * cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
           this->cos_sin_m_phi.row(m_count - 2);
       */
+      
       this->cos_sin_m_phi.row(m_count) =
           -2.0 * cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
           this->cos_sin_m_phi.row(m_count - 2);
+          
     }
   }
 }
