@@ -125,7 +125,7 @@ def spherical_expansion_conjugate(spx):
     """
 
     lmall = spx.shape[-1]
-    lmax = int(np.sqrt(lmall)+0.5) - 1
+    lmax = int(np.sqrt(lmall) + 0.5) - 1
     cspx = deepcopy(spx)
     for l in range(lmax + 1):
         cspx[..., lm_slice(l)][..., :l] *= -1

@@ -160,8 +160,8 @@ void SphericalHarmonics::calc(
     sin_phi = direction_normed[1] / sqrt_xy;
   }
   if (conjugate) {
-      // if we require the complex conjugate og Y^m_l, simply evaluates
-      // for -phi (cosine doesn't change)
+      // if we require the complex conjugate of Y^m_l, 
+      // simply evaluates Ylm(theta,-phi) (cosine doesn't change)
       sin_phi *= -1;
   }
   this->compute_assoc_legendre_polynom(cos_theta);
