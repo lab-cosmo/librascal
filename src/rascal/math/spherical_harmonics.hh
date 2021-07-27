@@ -128,12 +128,13 @@ namespace rascal {
        *                    (arguments for the \f$Y_\ell^m\f$)
        *
        * @param calculate_derivatives       Compute the gradients too?
+       * @param conjugate                   Compute $(Y^m_l)^*$?
        *
        * @warning Prints warning and normalizes direction if it is not
        *          already normalized.
        */
       void calc(const Eigen::Ref<const Eigen::Vector3d> & direction,
-                bool calculate_derivatives);
+                bool calculate_derivatives, bool conjugate=false);
 
       /**
        * Same as calc(), but using the internal default to decide whether to

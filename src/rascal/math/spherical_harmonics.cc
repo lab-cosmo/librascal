@@ -134,7 +134,7 @@ void SphericalHarmonics::compute_assoc_legendre_polynom(double cos_theta) {
 
 void SphericalHarmonics::calc(
     const Eigen::Ref<const Eigen::Vector3d> & direction,
-    bool calculate_derivatives) {
+    bool calculate_derivatives, bool conjugate) {
   Eigen::Vector3d direction_normed;
   if (std::abs((direction[0] * direction[0] + direction[1] * direction[1] +
                 direction[2] * direction[2]) -
@@ -159,7 +159,11 @@ void SphericalHarmonics::calc(
     cos_phi = direction_normed[0] / sqrt_xy;
     sin_phi = direction_normed[1] / sqrt_xy;
   }
-
+  if (conjugate) {
+      // if we require the complex conjugate og Y^m_l, simply evaluates
+      // for -phi (cosine doesn't change)
+      sin_phi *= -1;
+  }
   this->compute_assoc_legendre_polynom(cos_theta);
   this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
 

@@ -2254,7 +2254,8 @@ namespace rascal {
         const double & dist{manager->get_distance(neigh)};
         const auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
-        this->spherical_harmonics.calc(direction, compute_gradients);
+        this->spherical_harmonics.calc(direction, compute_gradients,
+                                        true); // computes Y^m_l^*
         auto && harmonics{spherical_harmonics.get_harmonics()};
         auto && harmonics_gradients{
             spherical_harmonics.get_harmonics_derivatives()};

@@ -4,6 +4,8 @@ Requires sympy to compute relevant coefficients.
 """
 
 import numpy as np
+from math import isqrt
+from copy import deepcopy
 from scipy.spatial.transform import Rotation
 from ..neighbourlist.structure_manager import is_ase_Atoms
 
@@ -116,22 +118,33 @@ def spherical_expansion_reshape(spx, max_radial, max_angular, **kwargs):
     )  # (lm) terms are stored in a compact form
 
 
-# unsure about this...
-# ~ def sph_conjugate_real(sp):
-# ~ """ Computes the "complex conjugate" of real spherical harmonics or
-# ~ associated coefficients, basically <lm|rhat>^* = (-1)^m <l (-m)|rhat>.
-# ~ In this form, the transformation applies also to real coefficients.
-# ~ Assumes that the argument is a m=(-l..l) block.
-# ~ """
+def spherical_expansion_conjugate(spx):
+    """
+    Computes the complex conjugate of spherical expansion coefficients,
+    that must have already been reshaped to have a separate index for the
+    lm terms
+    """
 
-# ~ lm = sp.shape[-1]
-# ~ l = (lm - 1)//2
-# ~ ones = np.ones(lm)
-# ~ if l%2==0:
-# ~ ones[1::2] = -1
-# ~ else:
-# ~ ones[0::2] = -1
-# ~ return sp
+    lmall = spx.shape[-1]
+    lmax = isqrt(lmall) - 1
+    cspx = deepcopy(spx)
+    for l in range(lmax + 1):
+        cspx[..., lm_slice(l)][..., :l] *= -1
+    return cspx
+
+
+def sph_real_conjugate(sp):
+    """Computes the "complex conjugate" of real spherical harmonics or
+    associated coefficients, basically <lm|rhat>^* = (-1)^m <l (-m)|rhat>.
+    The transformation is applied to a set of real-storage coefficients
+    so it would be equivalent to real->complex->conj->real.
+    """
+
+    lm = sp.shape[-1]
+    l = (lm - 1) // 2
+    ones = np.ones(lm)
+    ones[:l] = -1
+    return sp[..., :] * ones
 
 
 def lm_slice(l):
@@ -283,7 +296,7 @@ class ClebschGordanReal:
                         for m1 in range(2 * l1 + 1):
                             for m2 in range(2 * l2 + 1):
                                 if np.abs(rcg[m1, m2, M]) > 1e-15:
-                                    cgm.append((m1, m2, rcg[m1, m2, M]))                                    
+                                    cgm.append((m1, m2, rcg[m1, m2, M]))
                         newcg.append(cgm)
                     self._cgdict[(l1, l2, L)] = newcg
 

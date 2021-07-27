@@ -30,6 +30,8 @@ from .cg_utils import (
     WignerDReal,
     ClebschGordanReal,
     spherical_expansion_reshape,
+    spherical_expansion_conjugate,
+    sph_real_conjugate,
     lm_slice,
     real2complex_matrix,
 )
