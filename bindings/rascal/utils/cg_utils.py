@@ -4,7 +4,6 @@ Requires sympy to compute relevant coefficients.
 """
 
 import numpy as np
-from math import isqrt
 from copy import deepcopy
 from scipy.spatial.transform import Rotation
 from ..neighbourlist.structure_manager import is_ase_Atoms
@@ -126,7 +125,7 @@ def spherical_expansion_conjugate(spx):
     """
 
     lmall = spx.shape[-1]
-    lmax = isqrt(lmall) - 1
+    lmax = int(np.sqrt(lmall)+0.5) - 1
     cspx = deepcopy(spx)
     for l in range(lmax + 1):
         cspx[..., lm_slice(l)][..., :l] *= -1
