@@ -126,5 +126,5 @@ class GenericMDCalculator:
         stress_matrix = np.zeros((3, 3))
         stress_matrix[tuple(zip(*self.matrix_indices_in_voigt_notation))] = stress_voigt
         # Symmetrize the stress matrix (replicate upper-diagonal entries)
-        stress_matrix += np.triu(stress_matrix).T
+        stress_matrix += np.triu(stress_matrix, k=1).T
         return energy, forces, stress_matrix
