@@ -210,24 +210,29 @@ class WignerDReal:
         L = (rho.shape[-1] - 1) // 2
         return rho @ self._wddict[L].T
 
-    def rotate_frame(self, frame):
+    def rotate_frame(self, frame, in_place = False):
         """
         Utility function to also rotate a structure, given as an Atoms frame.
         NB: it will rotate positions and cell, and no other array.
 
         frame: ase.Atoms
             An atomic structure in ASE format, that will be modified in place
+        in_frame: bool
+            Whether the frame should be copied or processed in place (defaults to False)
 
         Returns:
         -------
-        The rotated frame
+        The rotated frame.
         """
 
         if is_ase_Atoms(frame):
+            if in_place:
+                frame = frame.copy()
             frame.positions = frame.positions @ self._rotation.T
             frame.cell = frame.cell @ self._rotation.T
         else:
-            print(frame["positions"])
+            if in_place:
+                frame = deepcopy(frame)
             frame["positions"] = self._rotation @ frame["positions"]
             frame["cell"] = self._rotation @ frame["cell"]
         return frame
