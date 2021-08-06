@@ -69,6 +69,7 @@ def _cg(l1, l2, L):
 isqrt2 = 1.0 / np.sqrt(2)
 sqrt2 = np.sqrt(2)
 
+
 def _r2c(sp):
     """Real to complex SPH. Assumes a block with 2l+1 reals corresponding
     to real SPH with m indices from -l to +l"""
@@ -136,6 +137,7 @@ def sph_real_conjugate(sp):
     ones = np.ones(lm)
     ones[:l] = -1
     return sp[..., :] * ones
+
 
 def spherical_expansion_conjugate(spx):
     """
@@ -210,7 +212,7 @@ class WignerDReal:
         L = (rho.shape[-1] - 1) // 2
         return rho @ self._wddict[L].T
 
-    def rotate_frame(self, frame, in_place = False):
+    def rotate_frame(self, frame, in_place=False):
         """
         Utility function to also rotate a structure, given as an Atoms frame.
         NB: it will rotate positions and cell, and no other array.
