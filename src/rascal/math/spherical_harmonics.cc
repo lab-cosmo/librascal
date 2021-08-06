@@ -160,9 +160,9 @@ void SphericalHarmonics::calc(
     sin_phi = direction_normed[1] / sqrt_xy;
   }
   if (conjugate) {
-      // if we require the complex conjugate of Y^m_l, 
-      // simply evaluates Ylm(theta,-phi) (cosine doesn't change)
-      sin_phi *= -1;
+    // if we require the complex conjugate of Y^m_l,
+    // simply evaluates Ylm(theta,-phi) (cosine doesn't change)
+    sin_phi *= -1;
   }
   this->compute_assoc_legendre_polynom(cos_theta);
   this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
@@ -198,8 +198,8 @@ void SphericalHarmonics::compute_cos_sin_angle_multiples(double cos_phi,
     if (m_count == 0) {
       this->cos_sin_m_phi.row(m_count) << 1.0, 0.0;
     } else if (m_count == 1) {
-      // standard iter: 
-      //this->cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
+      // standard iter:
+      // this->cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
       this->cos_sin_m_phi.row(m_count) << -cos_phi, -sin_phi;
     } else {
       /* standard iter:
@@ -207,11 +207,10 @@ void SphericalHarmonics::compute_cos_sin_angle_multiples(double cos_phi,
           2.0 * cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
           this->cos_sin_m_phi.row(m_count - 2);
       */
-      
+
       this->cos_sin_m_phi.row(m_count) =
           -2.0 * cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
           this->cos_sin_m_phi.row(m_count - 2);
-          
     }
   }
 }

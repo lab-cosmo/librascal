@@ -62,10 +62,12 @@ def _cg(l1, l2, L):
 
 
 # Convert from real to complex spherical harmonics (or corresponding
-# coefficients) and back. Uses the convention from Wikipedia
+# coefficients) and back. Uses the convention
+#               (-1)^m Im(|l (-m); C>) sqrt(2) if  m<0
+#   |lm; R> =   Re(|lm; C>)                    if  m==0
+#               (-1)^m Im(|l m; C>) sqrt(2)    if  m>0
 isqrt2 = 1.0 / np.sqrt(2)
 sqrt2 = np.sqrt(2)
-
 
 def _r2c(sp):
     """Real to complex SPH. Assumes a block with 2l+1 reals corresponding
@@ -117,11 +119,29 @@ def spherical_expansion_reshape(spx, max_radial, max_angular, **kwargs):
     )  # (lm) terms are stored in a compact form
 
 
+def sph_real_conjugate(sp):
+    """Computes the "complex conjugate" of real spherical harmonics or
+    associated coefficients, basically <lm|rhat>^* = (-1)^m <l (-m)|rhat>.
+    The transformation is applied to a set of real-storage coefficients
+    so it would be equivalent to real->complex->conj->real, using c2r and
+    r2c transformations above.
+    Note that the operation is of limited utility and meaning because the
+    complex to real transform is just a conventional way of storing the
+    information from <rhat|lm; C> in real format, and so it does not usually
+    makes sense to apply it to <rhat|lm; C>*.
+    """
+
+    lm = sp.shape[-1]
+    l = (lm - 1) // 2
+    ones = np.ones(lm)
+    ones[:l] = -1
+    return sp[..., :] * ones
+
 def spherical_expansion_conjugate(spx):
     """
     Computes the complex conjugate of spherical expansion coefficients,
     that must have already been reshaped to have a separate index for the
-    lm terms
+    lm terms. See also sph_real_conjugate
     """
 
     lmall = spx.shape[-1]
@@ -130,20 +150,6 @@ def spherical_expansion_conjugate(spx):
     for l in range(lmax + 1):
         cspx[..., lm_slice(l)][..., :l] *= -1
     return cspx
-
-
-def sph_real_conjugate(sp):
-    """Computes the "complex conjugate" of real spherical harmonics or
-    associated coefficients, basically <lm|rhat>^* = (-1)^m <l (-m)|rhat>.
-    The transformation is applied to a set of real-storage coefficients
-    so it would be equivalent to real->complex->conj->real.
-    """
-
-    lm = sp.shape[-1]
-    l = (lm - 1) // 2
-    ones = np.ones(lm)
-    ones[:l] = -1
-    return sp[..., :] * ones
 
 
 def lm_slice(l):

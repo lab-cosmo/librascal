@@ -2254,7 +2254,11 @@ namespace rascal {
         const double & dist{manager->get_distance(neigh)};
         const auto direction{manager->get_direction_vector(neigh)};
         Key_t neigh_type{neigh.get_atom_type()};
-        this->spherical_harmonics.calc(direction, compute_gradients);
+
+        // the typical definition of the expansion coefficients involves
+        // (Y^m_l)*, but we compute everything with actual _real_ harmonics,
+        // so we just compute the real-valued Y^m_l (conjugate=false)
+        this->spherical_harmonics.calc(direction, compute_gradients, false);
         auto && harmonics{spherical_harmonics.get_harmonics()};
         auto && harmonics_gradients{
             spherical_harmonics.get_harmonics_derivatives()};

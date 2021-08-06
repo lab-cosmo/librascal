@@ -45,7 +45,7 @@ namespace rascal {
      * real spherical harmonics.
      *
      * In brief, this class computes the real spherical harmonics where the
-     * imaginary components of the usualn complex functions are instead stored
+     * imaginary components of the usual complex functions are instead stored
      * in the negative-m indices:
      *
      * \f{equation}{
@@ -72,6 +72,10 @@ namespace rascal {
      * (this extra factor of \f$\frac{1}{\sqrt{2}}\f$ is not included in the
      * normalization of the associated Legendre polynomials defined above;
      * however, all other normalization factors are.)
+     *
+     * The class can also compute \f$(Y^m_l)^*\f$, with the real and imaginary
+     * parts of the complex conjugate are stored in a real-valued vector
+     * following the same convention.
      *
      * Cartesian gradients can optionally be computed in addition.
      *
@@ -122,26 +126,27 @@ namespace rascal {
        * Compute a full set of spherical harmonics given a direction vector.
        * If calculate_derivatives flag is on, the derivatives are additionally
        * computed. This function returns void, results have to be retrieved
-       * with get functions.
+       * with get functions. The components are stored in real-valued format.
        *
        * @param direction   unit vector defining the angles
        *                    (arguments for the \f$Y_\ell^m\f$)
        *
        * @param calculate_derivatives       Compute the gradients too?
-       * @param conjugate                   Compute $(Y^m_l)^*$?
+       * @param conjugate                   Compute \f$(Y^m_l)^*\f$?
        *
        * @warning Prints warning and normalizes direction if it is not
        *          already normalized.
        */
       void calc(const Eigen::Ref<const Eigen::Vector3d> & direction,
-                bool calculate_derivatives, bool conjugate=false);
+                bool calculate_derivatives, bool conjugate = false);
 
       /**
        * Same as calc(), but using the internal default to decide whether to
        * compute derivatives.
        */
-      void calc(const Eigen::Ref<const Eigen::Vector3d> & direction) {
-        this->calc(direction, this->calculate_derivatives);
+      void calc(const Eigen::Ref<const Eigen::Vector3d> & direction,
+                bool conjugate = false) {
+        this->calc(direction, this->calculate_derivatives, conjugate);
       }
 
       const Matrix_Ref get_assoc_legendre_polynom() {
