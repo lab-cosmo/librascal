@@ -34,4 +34,6 @@ from .cg_utils import (
     sph_real_conjugate,
     lm_slice,
     real2complex_matrix,
+    xyz_to_spherical,
+    spherical_to_xyz,
 )

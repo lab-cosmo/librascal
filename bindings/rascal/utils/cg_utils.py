@@ -162,6 +162,47 @@ def lm_slice(l):
     return slice(l * l, (l + 1) * (l + 1), 1)
 
 
+def xyz_to_spherical(data, axes=()):
+    """
+    Converts a vector (or a list of outer products of vectors) from
+    Cartesian to l=1 spherical form. Given the definition of real
+    spherical harmonics, this is just mapping (y, z, x) -> (-1,0,1)
+
+    Automatically detects which directions should be converted
+
+    data: array
+        An array containing the data that must be converted
+
+    axes: array_like
+        A list of the dimensions that should be converted. If
+        empty, selects all dimensions with size 3. For instance,
+        a list of polarizabilities (ntrain, 3, 3) will convert
+        dimensions 1 and 2.
+
+    Returns:
+        The array in spherical (l=1) form
+    """
+    shape = data.shape
+    rdata = data
+    # automatically detect the xyz dimensions
+    if len(axes) == 0:
+        axes = np.where(np.asarray(shape) == 3)[0]
+    return np.roll(data, -1, axis=axes)
+
+
+def spherical_to_xyz(data, axes=()):
+    """
+    The inverse operation of xyz_to_spherical. Arguments have the
+    same meaning, only it goes from l=1 to (x,y,z).
+    """
+    shape = data.shape
+    rdata = data
+    # automatically detect the l=1 dimensions
+    if len(axes) == 0:
+        axes = np.where(np.asarray(shape) == 3)[0]
+    return np.roll(data, 1, axis=axes)
+
+
 class WignerDReal:
     """
     A helper class to compute Wigner D matrices given the Euler angles of a rotation,
@@ -371,44 +412,125 @@ class ClebschGordanReal:
 
         return rho
 
-    def couple(self, rho2d):
+    def couple(self, decoupled, iterate=0):
         """
-        Goes from an uncoupled product basis to a coupled basis, taking a
-        (2l1+1)x(2l2+1) matrix and transforming it into a list of coupled
-        vectors, each transforming like a Y^L irrep.
+        Goes from an uncoupled product basis to a coupled basis.
+        A (2l1+1)x(2l2+1) matrix transforming like the outer product of
+        Y^m1_l1 Y^m2_l2 can be rewritten as a list of coupled vectors,
+        each transforming like a Y^L irrep.
 
-        rho2d: array
-            (2l1+1)x(2l2+1) array containing coefficients that transforms like
-            products of Y^l1 and Y^l2 harmonics
+        The process can be iterated: a D dimensional array that is the product
+        of D Y^m_l can be turned into a set of multiple terms transforming as
+        a single Y^M_L.
+
+        decoupled: array or dict
+            (...)x(2l1+1)x(2l2+1) array containing coefficients that
+            transform like products of Y^l1 and Y^l2 harmonics. can also
+            be called on a array of higher dimensionality, in which case
+            the result will contain matrices of entries.
+            If the further index also correspond to spherical harmonics,
+            the process can be iterated, and couple() can be called onto
+            its output, in which case the decoupling is applied to each
+            entry.
+
+        iterate: int
+            calls couple iteratively the given number of times. equivalent to
+            couple(couple(... couple(decoupled)))
 
         Returns:
         --------
-        A tuple tracking the nature of the coupled object, that contains in turns
-        (l1, l2) the coefficients of the parent Ylm
-        a dictionary of coupled terms, in the form L:(2L+1) array
+        A dictionary tracking the nature of the coupled objects. When called one
+        time, it returns a dictionary containing (l1, l2) [the coefficients of the
+        parent Ylm] which in turns is a dictionary of coupled terms, in the form
+        L:(...)x(2L+1)x(...) array. When called multiple times, it applies the
+        coupling to each term, and keeps track of the additional l terms, so that
+        e.g. when called with iterate=1 the return dictionary contains terms of
+        the form
+        (l3,l4,l1,l2) : { L: array }
         """
-        l1 = (rho2d.shape[0] - 1) // 2
-        l2 = (rho2d.shape[1] - 1) // 2
 
         coupled = {}
-        for L in range(max(l1, l2) - min(l1, l2), min(self._lmax, (l1 + l2)) + 1):
-            Lterm = np.zeros(2 * L + 1)
-            for M in range(2 * L + 1):
-                for m1, m2, cg in self._cgdict[(l1, l2, L)][M]:
-                    Lterm[M] += rho2d[m1, m2] * cg
-            coupled[L] = Lterm
-        return ((l1, l2), coupled)
 
-    def decouple(self, rho_coupled):
+        # when called on a matrix, turns it into a dict form to which we can
+        # apply the generic algorithm
+        if not isinstance(decoupled, dict):
+            l2 = (decoupled.shape[-1] - 1) // 2
+            decoupled = {(): {l2: decoupled}}
+
+        # runs over the tuple of (partly) decoupled terms
+        for ltuple, lcomponents in decoupled.items():
+            # each is a list of L terms
+            for lc in lcomponents.keys():
+
+                # this is the actual matrix-valued coupled term,
+                # of shape (..., 2l1+1, 2l2+1), transforming as Y^m1_l1 Y^m2_l2
+                dec_term = lcomponents[lc]
+                l1 = (dec_term.shape[-2] - 1) // 2
+                l2 = (dec_term.shape[-1] - 1) // 2
+
+                # there is a certain redundance: the L value is also the last entry
+                # in ltuple
+                if lc != l2:
+                    raise ValueError(
+                        "Inconsistent shape for coupled angular momentum block."
+                    )
+
+                # in the new coupled term, prepend (l1,l2) to the existing label
+                coupled[(l1, l2) + ltuple] = {}
+                for L in range(
+                    max(l1, l2) - min(l1, l2), min(self._lmax, (l1 + l2)) + 1
+                ):
+                    Lterm = np.zeros(shape=dec_term.shape[:-2] + (2 * L + 1,))
+                    for M in range(2 * L + 1):
+                        for m1, m2, cg in self._cgdict[(l1, l2, L)][M]:
+                            Lterm[..., M] += dec_term[..., m1, m2] * cg
+                    coupled[(l1, l2) + ltuple][L] = Lterm
+
+        # repeat if required
+        if iterate > 0:
+            coupled = self.couple(coupled, iterate - 1)
+        return coupled
+
+    def decouple(self, coupled, iterate=0):
         """
         Undoes the transformation enacted by couple.
         """
 
-        l1, l2 = rho_coupled[0]
+        decoupled = {}
+        # applies the decoupling to each entry in the dictionary
+        for ltuple, lcomponents in coupled.items():
 
-        decoupled = np.zeros((2 * l1 + 1, 2 * l2 + 1))
-        for L in range(max(l1, l2) - min(l1, l2), min(self._lmax, (l1 + l2)) + 1):
-            for M in range(2 * L + 1):
-                for m1, m2, cg in self._cgdict[(l1, l2, L)][M]:
-                    decoupled[m1, m2] += cg * rho_coupled[1][L][M]
+            # the initial pair in the key indicates the decoupled terms that generated
+            # the L entries
+            l1, l2 = ltuple[:2]
+
+            # shape of the coupled matrix (last entry is the 2L+1 M terms)
+            shape = next(iter(lcomponents.values())).shape[:-1]
+
+            dec_term = np.zeros(
+                shape
+                + (
+                    2 * l1 + 1,
+                    2 * l2 + 1,
+                )
+            )
+            for L in range(max(l1, l2) - min(l1, l2), min(self._lmax, (l1 + l2)) + 1):
+                # supports missing L components, e.g. if they are zero because of symmetry
+                if not L in lcomponents:
+                    continue
+                for M in range(2 * L + 1):
+                    for m1, m2, cg in self._cgdict[(l1, l2, L)][M]:
+                        dec_term[..., m1, m2] += cg * lcomponents[L][..., M]
+            # stores the result with a key that drops the l's we have just decoupled
+            if not ltuple[2:] in decoupled:
+                decoupled[ltuple[2:]] = {}
+            decoupled[ltuple[2:]][l2] = dec_term
+
+        # rinse, repeat
+        if iterate > 0:
+            decoupled = self.decouple(decoupled, iterate - 1)
+
+        # if we got a fully decoupled state, just return an array
+        if ltuple[2:] == ():
+            decoupled = next(iter(decoupled[()].values()))
         return decoupled
