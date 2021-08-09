@@ -69,6 +69,7 @@ Math utilities (namespace :cpp:class:`rascal::math`)
  .. doxygenclass:: rascal::math::SphericalHarmonics
     :project: rascal
     :members:
+    :private-members:
 
  .. doxygenclass:: rascal::math::Hyp1f1
     :project: rascal

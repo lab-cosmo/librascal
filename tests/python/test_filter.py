@@ -46,6 +46,10 @@ class FilterTest:
             sp_idx = np.array(compressor.selected_sample_ids_by_sp[sp])
             self.assertEqual(len(sp_idx), n_sparses[sp])
 
+        # Checking that the returned SparsePoints container has the right size
+        n_sparse_total = sum(n_sparses[sp] for sp in n_sparses)
+        self.assertEqual(x.size(), n_sparse_total)
+
     def test_sample_mode(self):
         """This test checks that `sample` mode returns the correct
         number of selected samples
@@ -53,14 +57,14 @@ class FilterTest:
         n_sparses = self.example_features.shape[0] // 10
         compressor = self._filter(self.repr, n_sparses, act_on="sample")
 
-        idx = np.concatenate(compressor.select_and_filter(self.managers))
+        x = compressor.select_and_filter(self.managers)
 
         # Checking that these parameters have not been set
         self.assertIsNone(compressor.selected_feature_ids_global)
         self.assertIsNone(compressor.selected_sample_ids_by_sp)
 
         self.assertIsNotNone(compressor.selected_sample_ids)
-        self.assertEqual(idx.shape[0], n_sparses)
+        self.assertEqual(x.size(), n_sparses)
 
     def test_feature_mode(self):
         """This test checks that `feature` mode returns the correct
@@ -95,12 +99,11 @@ class FilterTest:
         """This test checks that any mode other than `sample`,
         `sample per species`, and `feature` throws an error
         """
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaisesRegex(
+            ValueError,
+            '^"act_on" should be one of: "sample", "sample per species", or "feature"$',
+        ) as cm:
             compressor = self._filter(self.repr, 1, act_on="bad mode")
-            self.assertEqual(
-                str(cm.message),
-                '"act_on" should be either of: "sample", "sample per species", "feature"',
-            )
 
     def test_new_n(self):
         """This test checks that `filter` can return an arbitrary number of
@@ -111,12 +114,11 @@ class FilterTest:
         compressor.select(self.managers)
         compressor.filter(self.managers, n_select=n_sparses // 10)
 
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaisesRegex(
+            ValueError,
+            rf"^It is only possible to filter {n_sparses} feature\(s\), you have requested {n_sparses * 10}$",
+        ) as cm:
             compressor.filter(self.managers, n_select=n_sparses * 10)
-            self.assertEqual(
-                str(cm.message),
-                f"It is only possible to filter {n_sparses} features, you have requested {n_sparses * 10}",
-            )
 
 
 class FPSTest(FilterTest, unittest.TestCase):
