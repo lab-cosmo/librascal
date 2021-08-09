@@ -203,6 +203,57 @@ def spherical_to_xyz(data, axes=()):
     return np.roll(data, 1, axis=axes)
 
 
+def compute_lambda_soap(spx, cg, lam, parity=0):
+    """
+    Computes lambda-SOAP features given the expansion coefficients of the density.
+    Uses sorted l indices to avoid duplications, and computes only the terms consistent
+    with the triangle inequality.
+
+    spx: array
+        Density expansion coefficients, structured as (entry, element, radial, lm)
+    cg: ClebschGordanReal
+        A CG object already initialized to handle combinations at least up to lam
+    lam: int
+        The order of the $\lambda$-SOAP features that must be computed
+    parity: int [0,-1,1]
+        Select only features with vector (1) or pseudovector (-1) parity, or just compute everything (0)
+
+    Returns:
+        lambda_soap features, structured as (entry, a1, n1, a2, n2, lk, mu)
+    """
+
+    lmax = int(np.sqrt(spx.shape[-1])) - 1
+    nid, nel, nmax = spx.shape[:-1]
+    # can't work out analytically how many terms we have, so we precompute it here
+    nl = 0
+    for l1 in range(lmax + 1):
+        for l2 in range(l1, lmax + 1):  # only need l2>=l1
+            if parity != 0 and (-1) ** (l1 + l2 + lam) != parity:
+                continue
+            if l2 - l1 > lam or l2 + l1 < lam:
+                continue
+            nl += 1
+    lsoap = np.zeros((nid, nel, nmax, nel, nmax, nl, 2 * lam + 1))
+    nl = 0
+    for l1 in range(lmax + 1):
+        for l2 in range(l1, lmax + 1):
+            if parity != 0 and (-1) ** (l1 + l2 + lam) != parity:
+                continue
+            if l2 - l1 > lam or l2 + l1 < lam:
+                continue
+            lsoap[..., nl, :] = (
+                cg.combine_einsum(
+                    spx[..., lm_slice(l1)],
+                    spx[..., lm_slice(l2)],
+                    lam,
+                    combination_string="ian,iAN->ianAN",
+                )
+                * (1 if l2 == l1 else sqrt2)
+            )
+            nl += 1
+    return lsoap
+
+
 class WignerDReal:
     """
     A helper class to compute Wigner D matrices given the Euler angles of a rotation,
@@ -410,6 +461,66 @@ class ClebschGordanReal:
                         combination_string, rho1[..., m1], rho2[..., m2] * cg
                     )
 
+        return rho
+
+    def combine_nice(self, rho1, rho2):
+        """
+        Combines Ylm-like coefficients using the NICE iteration, to generate a
+        higher-body-order equivariant. NOT and efficient implementation!
+        """
+
+        # we assume that the first index is the environment index, and the
+        # last the combined lambda x mu symmetry index.
+
+        if rho1.shape[0] != rho2.shape[0]:
+            raise ValueError("Incompatible number of rho1, rho2 coefficients")
+
+        # assumes both rho1 and rho2 to contain equivariants up to order lmax
+        if rho1.shape[-1] != rho2.shape[-1] or rho1.shape[-1] != (self._lmax + 1) ** 2:
+            raise ValueError("Incompatible max_angular for NICE iteration")
+
+        rho1_shape = rho1.shape
+        rho2_shape = rho2.shape
+
+        rho1r = rho1.reshape((rho1_shape[0], -1, (self._lmax + 1) ** 2))
+        rho2r = rho2.reshape((rho1_shape[0], -1, (self._lmax + 1) ** 2))
+
+        # this is *not* the most concise set of higher-order equivariants possible:
+        # many are forbidden by the triangle inequality, and the l<=k inequality is
+        # not enforced. it is just built for easy indexing and testing purposes
+        rho = np.zeros(
+            (
+                rho1_shape[0],
+                rho1r.shape[1],
+                rho2r.shape[1],
+                (self._lmax + 1),
+                (self._lmax + 1),
+                (self._lmax + 1) ** 2,
+            )
+        )
+        for l in range(self._lmax + 1):
+            rho1l = rho1r[..., lm_slice(l)]
+            for k in range(self._lmax + 1):
+                rho2k = rho2r[..., lm_slice(k)]
+                for L in range(abs(l - k), min(l + k, self._lmax) + 1):
+                    rhoL = rho[..., l, k, lm_slice(L)]
+                    if (l, k, L) in self._cgdict:
+                        for M in range(2 * L + 1):
+                            for m1, m2, cg in self._cgdict[(l, k, L)][M]:
+                                # does the contraction on the flattened indices
+                                rhoL[..., M] += np.einsum(
+                                    "in,iQ->inQ", rho1l[..., m1], rho2k[..., m2] * cg
+                                )
+        rho.shape = (
+            (rho1_shape[0],)
+            + rho1_shape[1:-1]
+            + rho2_shape[1:-1]
+            + (
+                self._lmax + 1,
+                self._lmax + 1,
+                (self._lmax + 1) ** 2,
+            )
+        )
         return rho
 
     def couple(self, decoupled, iterate=0):

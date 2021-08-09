@@ -36,4 +36,5 @@ from .cg_utils import (
     real2complex_matrix,
     xyz_to_spherical,
     spherical_to_xyz,
+    compute_lambda_soap,
 )
