@@ -8,8 +8,6 @@ from .io import (
     load_obj,
 )
 
-# Warning potential dependency loop: FPS imports models, which imports KRR,
-# which imports this file again
 from .filter import FPSFilter, CURFilter
 
 # function to redirect c++'s standard output to python's one
