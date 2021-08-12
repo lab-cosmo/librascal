@@ -2231,9 +2231,24 @@ namespace rascal {
     // coeff C^{ij}_{nlm}
     auto c_ij_nlm = math::Matrix_t(n_row, n_col);
 
+    // TODO(alex) only for debug can be removed later
+    //auto it2 = manager->begin();
+    //++it2;
+    //auto center2 = *it2;
+    //auto & coefficients_center2 = expansions_coefficients[center2];
+    //Key_t center2_type{center2.get_atom_type()};
+    //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
+    //for (auto center : manager) {
+    //  auto & coefficients_center = expansions_coefficients[center];
+    //  Key_t center_type{center.get_atom_type()};
+    //  std::cout << "coefficients_center " << coefficients_center[center_type].transpose() << std::endl;
+    //}
+
     for (auto center : manager) {
       // c^{i}
       auto & coefficients_center = expansions_coefficients[center];
+      //std::cout << "center center tag " << center.get_atom_tag() << std::endl;
+      //std::cout << "center cluster index " << center.get_cluster_index() << std::endl;
       // \grad_i c^{i}
       auto & coefficients_center_gradient =
           expansions_coefficients_gradient[center.get_atom_ii()];
@@ -2241,11 +2256,14 @@ namespace rascal {
       Key_t center_type{center.get_atom_type()};
 
       // Start the accumulation with the central atom contribution
+      //std::cout << "before central update coefficients_center" << coefficients_center[center_type].transpose() << std::endl;
+      //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
       coefficients_center[center_type].col(0) +=
           radial_integral->template compute_center_contribution(
               center, center.get_atom_type()) /
           sqrt(4.0 * PI);
-
+      //std::cout << "after central update coefficients_center" << coefficients_center[center_type].transpose() << std::endl;
+      //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
       for (auto neigh : center.pairs()) {
         auto atom_j = neigh.get_atom_j();
         const int atom_j_tag = atom_j.get_atom_tag();
@@ -2265,6 +2283,7 @@ namespace rascal {
         auto && neighbour_contribution =
             radial_integral->template compute_neighbour_contribution(
                 dist, neigh, neigh.get_atom_type());
+        //std::cout << "neighbour_contribution" << neighbour_contribution.transpose() << std::endl;
         double f_c{cutoff_function->f_c(dist)};
         auto coefficients_center_by_type{coefficients_center[neigh_type]};
 
@@ -2279,7 +2298,11 @@ namespace rascal {
           l_block_idx += l_block_size;
         }
         c_ij_nlm *= f_c;
+        //std::cout << "before update coefficients_center" << coefficients_center[center_type].transpose() << std::endl;
+        //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
         coefficients_center_by_type += c_ij_nlm;
+        //std::cout << "after update coefficients_center" << coefficients_center[center_type].transpose() << std::endl;
+        //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
 
         // half list branch for c^{ji} terms using
         // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
@@ -2301,6 +2324,8 @@ namespace rascal {
             }
           }
         }
+        //std::cout << "point0 " << coefficients_center[center_type].transpose() << std::endl;
+        //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
 
         // compute the gradients of the coefficients with respect to
         // atoms positions
@@ -2403,14 +2428,21 @@ namespace rascal {
             }      // if (is_center_atom)
           }        // if (IsHalfNL)
         }          // if (compute_gradients)
+        //std::cout << "point1 " << coefficients_center[center_type].transpose() << std::endl;
+        //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
       }            // for (neigh : center)
 
       // Normalize and orthogonalize the radial coefficients
+      //std::cout << "before finalization coefficients_center" << coefficients_center[center_type].transpose() << std::endl;
+      //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
       radial_integral->finalize_coefficients(coefficients_center);
       if (compute_gradients) {
         radial_integral->template finalize_coefficients_der<ThreeD>(
             expansions_coefficients_gradient, center);
       }
+      //std::cout << "final coefficients_center" << coefficients_center[center_type].transpose() << std::endl;
+      //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
+      //std::cout << "\n" << std::endl;
     }  // for (center : manager)
   }    // compute()
 

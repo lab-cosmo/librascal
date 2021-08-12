@@ -254,7 +254,7 @@ namespace rascal {
       return this->atom_tag_list[1];
     }
 
-   protected:
+   public:
     /**
      * main function during construction of a neighbourlist.
      * @param atom_tag the atom to add to the list
