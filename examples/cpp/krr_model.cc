@@ -131,14 +131,81 @@ int main(int argc, char * argv[]) {
   // compute repr
   calculator.compute(managers);
 
-  for (auto manager : managers) {
-    auto && expansions_coefficients{*manager->template get_property<Calculator_t::template Property_t<Manager_t>>(
-      calculator.get_name())};
-                                                                                                        
-    for (auto atom : manager) {                                                                         
-      std::cout << expansions_coefficients[atom].get_full_vector().transpose() << std::endl;
-    }   
-  }
+  //for (auto manager : managers) {
+  //  std::cout << "manager->offsets ";
+  //  std::cout << std::endl;
+  //  for (int k=0; k < manager->offsets.size(); k++) {
+  //     for (auto p=0; p < manager->offsets[k].size(); p++) {
+  //       std::cout << manager->offsets[k][p] << ", ";
+  //     }
+  //     std::cout << std::endl;
+  //  }
+  //  std::cout << std::endl;
+
+  //  std::cout << "manager->nb_neigh ";
+  //  std::cout << std::endl;
+  //  for (int k=0; k < manager->nb_neigh.size(); k++) {
+  //     for (auto p=0; p < manager->nb_neigh[k].size(); p++) {
+  //       std::cout << manager->nb_neigh[k][p] << ", ";
+  //     }
+  //     std::cout << std::endl;
+  //  }
+  //  std::cout << std::endl;
+
+  //  std::cout << "manager->atom_tag_list ";
+  //  std::cout << std::endl;
+  //  for (int k=0; k < manager->atom_tag_list.size(); k++) {
+  //     for (auto p=0; p < manager->atom_tag_list[k].size(); p++) {
+  //       std::cout << manager->atom_tag_list[k][p] << ", ";
+  //     }
+  //     std::cout << std::endl;
+  //  }
+  //  std::cout << std::endl;
+  //  
+  //  std::cout << "manager->neighbours_cluster_index ";
+  //  std::cout << std::endl;
+  //  for (int k=0; k < manager->neighbours_cluster_index.size(); k++) {
+  //     std::cout << manager->neighbours_cluster_index[k] << ", ";
+  //  }
+  //  std::cout << std::endl;
+
+  //  for (auto atom : manager->with_ghosts()) {
+  //      std::cout << " center " << atom.get_atom_tag() << std::endl;
+  //    for (auto pair : atom.pairs_with_self_pair()) {
+  //      std::cout << "pair (" << atom.get_atom_tag() << ", "
+  //                << pair.get_atom_tag() << ") global index "
+  //                << pair.get_global_index() << std::endl;
+  //    }
+  //  }
+  //  std::cout << std::endl;
+  //  for (auto atom : manager) {
+  //      std::cout << " center " << atom.get_atom_tag() << std::endl;
+  //    for (auto pair : atom.pairs()) {
+  //      std::cout << "pair (" << atom.get_atom_tag() << ", "
+  //                << pair.get_atom_tag() << ") global index "
+  //                << pair.get_global_index() << std::endl;
+  //    }
+  //  }
+  //  std::cout << std::endl;
+  //  for (auto atom : manager) {
+  //    for (auto pair : atom.pairs()) {
+  //      std::cout << "pair dist " << manager->get_distance(pair) 
+  //                << std::endl;
+  //      std::cout << "direction vector " << manager->get_direction_vector(pair).transpose()
+  //                << std::endl;
+  //    }
+  //  }
+  //  std::cout << std::endl;
+  //}
+
+  //for (auto manager : managers) {
+  //  auto && expansions_coefficients{*manager->template get_property<Calculator_t::template Property_t<Manager_t>>(
+  //    calculator.get_name())};
+  //                                                                                                      
+  //  for (auto atom : manager) {                                                                         
+  //    std::cout << expansions_coefficients[atom].get_full_vector().transpose() << std::endl;
+  //  }   
+  //}
 
 
   // predict gradient, stress
@@ -153,23 +220,24 @@ int main(int argc, char * argv[]) {
   math::Matrix_t energies = KNM * weights.transpose();
   std::cout << energies.transpose() << std::endl;
 
-  //std::string force_name = compute_sparse_kernel_gradients(
-  //        calculator, kernel, managers, sparse_points, weights);
+  std::string force_name = compute_sparse_kernel_gradients(
+          calculator, kernel, managers, sparse_points, weights);
 
   //std::string neg_stress_name = compute_sparse_kernel_neg_stress(
   //    calculator, kernel, managers, sparse_points, weights);
 
-  //size_t i_center{0};
-  //for (auto manager : managers) {
-  //  math::Matrix_t ee =
-  //      energies.block(i_center, 0, 1, 1);
-  //  std::cout << "ee shape: " << ee.rows() << ", " << ee.cols() << std::endl; 
+  size_t i_center{0};
+  for (auto manager : managers) {
+    math::Matrix_t ee =
+        energies.block(i_center, 0, 1, 1);
+    std::cout << "ee shape: " << ee.rows() << ", " << ee.cols() << std::endl; 
  
-  //  auto && gradients{*manager->template get_property<
-  //      Property<double, 1, Manager_t, 1, ThreeD>>(force_name, true)};
-  //  math::Matrix_t ff = Eigen::Map<const math::Matrix_t>(
-  //      gradients.view().data(), manager->size() * ThreeD, 1);
-  //  std::cout << "ff shape: " << ff.rows() << ", " << ff.cols() << std::endl; 
+    auto && gradients{*manager->template get_property<
+        Property<double, 1, Manager_t, 1, ThreeD>>(force_name, true)};
+    math::Matrix_t ff = Eigen::Map<const math::Matrix_t>(
+        gradients.view().data(), manager->size(), ThreeD);
+    std::cout << "ff shape: " << ff.rows() << ", " << ff.cols() << std::endl; 
+    std::cout << "ff \n" << ff << std::endl; 
 
   //  auto && neg_stress{
   //      *manager->template get_property<Property<double, 0, Manager_t, 6>>(
@@ -178,8 +246,8 @@ int main(int argc, char * argv[]) {
   //     Eigen::Map<const math::Matrix_t>(neg_stress.view().data(), 6, 1);
   //  std::cout << "ff_stress shape: " << ff_stress.rows() << ", " << ff_stress.cols() << std::endl; 
 
-  //  i_center += manager->size() * ThreeD;
-  //}
+    i_center += manager->size() * ThreeD;
+  }
 
   //for (auto manager : managers) {
   //  for (auto atom : manager->with_ghosts()) {
