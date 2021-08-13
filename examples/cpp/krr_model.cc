@@ -81,24 +81,47 @@ int main(int argc, char * argv[]) {
   from_json(sparse_input, sparse_points);
 
   // calculator
-  json X_train_init_params = X_train.at("init_params").template get<json>();
-  json representation = X_train_init_params.at("representation").template get<json>();
-  json representation_init_params = representation.at("init_params").template get<json>();
-  Calculator_t calculator{representation_init_params};
-
+  //json X_train_init_params = X_train.at("init_params").template get<json>();
+  //json representation = X_train_init_params.at("representation").template get<json>();
+  ////json representation_init_params = representation.at("init_params").template get<json>();
+  //json representation_data = representation.at("data").template get<json>();
+  //json representation_init_params = representation_data.at("representation").template get<json>();
+  //representation_init_params.at("compute_gradients") = true;
+  //Calculator_t calculator{representation_init_params};
   // kernel
   json kernel_params = init_params.at("kernel").template get<json>();
+  json kernel_data = kernel_params.at("data").template get<json>();
+  json kernel_cpp_params = kernel_data.at("cpp_kernel").template get<json>();
+  SparseKernel kernel{kernel_cpp_params};
+
   json kernel_init_params = kernel_params.at("init_params").template get<json>();
-  SparseKernel kernel{kernel_init_params};
+  json kernel_representation = kernel_init_params.at("representation").template get<json>();
+  json kernel_representation_data = kernel_representation .at("data").template get<json>();
+  json representation_cpp_params = kernel_representation_data.at("cpp_representation").template get<json>();
+  Calculator_t calculator{representation_cpp_params};
 
   // weights 
-  std::vector<double> weights_vec = init_params.at("weights").template get<json>().at(1).template get<std::vector<double>>();
+  //std::vector<std::vector<double>> weights_vec = init_params.at("weights").template get<json>().at(1).template get<std::vector<std::vector<double>>>();
+  std::vector<std::vector<double>> weights_vec = init_params.at("weights").template get<json>().at(1).template get<std::vector<std::vector<double>>>();
   if (sparse_points.size() != weights_vec.size()) {
     std::cerr << "weight size and sparse_points size disagree ";
     std::cerr << std::endl;
     return -1;
   }
-  math::Vector_t weights = Eigen::Map<math::Vector_t>(weights_vec.data(), static_cast<long int>(weights_vec.size()));
+  if (1 != weights_vec.at(0).size()) {
+    std::cerr << "The shape of the weights is (" << weights_vec.size() << ", " << weights_vec.at(0).size() << "), "
+              << " but C++ interface does not support multitarget learning. The second dimension must be one."
+              << "In file " << __LINE__ << ", " << __FILE__;
+  }
+
+  math::Vector_t weights(weights_vec.size());
+  //= Eigen::Map<math::Vector_t>(weights_vec.data(), static_cast<long int>(weights_vec.size()));
+  for (unsigned int i=0; i < weights_vec.size(); i++) {
+    weights(i) = weights_vec[i][0];
+  }
+  //auto weights{Eigen::Map<math::Matrix_t>(weights_vec.data(), static_cast<long int>(weights_vec.size()), 1)}; 
+  //math::Matrix_t weights = Eigen::Map<math::Matrix_t, Eigen::Unaligned>(weights_vec.data(), static_cast<long int>(weights_vec.size()), 1);
+  //math::Vector_t weights = Eigen::Map<math::Vector_t>(weights_vec.data(), static_cast<long int>(weights_vec.size()));
 
   // manager
   //// cutoff

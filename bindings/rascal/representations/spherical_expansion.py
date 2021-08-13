@@ -329,6 +329,9 @@ class SphericalExpansion(BaseIO):
 
     def _set_data(self, data):
         super()._set_data(data)
+        self._representation = self._representation.from_dict(data["cpp_representation"])
 
     def _get_data(self):
-        return super()._get_data()
+        data = super()._get_data()
+        data.update(cpp_representation=self._representation.to_dict())
+        return data
