@@ -63,15 +63,19 @@ class TestCGUtils(unittest.TestCase):
     def test_rotation(self):
         """Checks that spherical expansion features transform as they should."""
 
+        # rotates frames
         rframes = []
         for f in self.frames:
             rf = f.copy()
             self.wd.rotate_frame(rf)
             rframes.append(rf)
 
+        # computes features of the rotated structure
         rfeats = spherical_expansion_reshape(
             self.spex.transform(rframes).get_features(self.spex), **self.hypers
         )
+
+        # checks that features of rotated structures match with rotated features
         for L in range(self.lmax + 1):
             self.assertTrue(
                 np.allclose(
@@ -88,6 +92,56 @@ class TestCGUtils(unittest.TestCase):
         hypers["normalize"] = False
 
         soap = SphericalInvariants(**hypers)
-        sfeats = soap.transform(self.frames).get_features(soap)
+        sfeats = soap.transform(self.frames).get_features_by_species(soap)
 
-        pass
+        # gets list of element ids
+        el = list()
+        for k in sfeats.keys():
+            el = el + list(k)
+        el = list(set(el))
+        nel = len(el)
+
+        nenv = self.feats.shape[0]
+        tsoap = np.asarray(
+            [
+                self.cg.combine_einsum(
+                    self.feats[:, :, :, lm_slice(l)],
+                    self.feats[:, :, :, lm_slice(l)],
+                    L=0,
+                    combination_string="ian,iAN->iaAnN",
+                )
+                * (-1) ** l
+                for l in range(hypers["max_angular"] + 1)
+            ]
+        )
+
+        # uses einsum to get the invariant SOAP
+        tsoap = np.asarray(
+            [
+                (
+                    self.cg.combine_einsum(
+                        self.feats[:, :, :, lm_slice(l)],
+                        self.feats[:, :, :, lm_slice(l)],
+                        L=0,
+                        combination_string="ian,iAN->iaAnN",
+                    )
+                    * (-1) ** l
+                )  # extra phase
+                for l in range(hypers["max_angular"] + 1)
+            ]
+        )
+
+        # reorders axes so that l comes last
+        tsoap = np.moveaxis(tsoap, (1, 2, 3, 4, 5, 0), (0, 1, 2, 3, 4, 5))
+        # diagonal block
+        self.assertTrue(
+            np.allclose(tsoap[:, 0, 0, ...].reshape((nenv, -1)), sfeats[(el[0], el[0])])
+        )
+
+        # off-diagonal block (builtin SOAP is scaled by sqrt(2))
+        self.assertTrue(
+            np.allclose(
+                tsoap[:, 0, 1, ...].reshape((nenv, -1)),
+                sfeats[(el[0], el[1])] / np.sqrt(2),
+            )
+        )
