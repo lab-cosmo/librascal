@@ -49,21 +49,21 @@ namespace rascal {
     this->type = type;
     this->eatom = eatom;
     this->vatom = vatom;
-    std::cout << "atom_types.size() " << atom_types.size() << std::endl;
+    //std::cout << "atom_types.size() " << atom_types.size() << std::endl;
     this->atom_types = atom_types;
     this->offsets.reserve(inum);
     this->offsets.resize(1);
-    std::cout << "atom_index_from_atom_tag_list() " << std::endl;
+    //std::cout << "atom_index_from_atom_tag_list() " << std::endl;
     this->atom_index_from_atom_tag_list.clear();
     // #BUG8486@(all) it should be this->inum
-    std::cout << "offsets " << std::endl;
+    //std::cout << "offsets " << std::endl;
     for (int i{0}; i < this->inum; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
     }
     this->nb_pairs = std::accumulate(numneigh, numneigh + this->inum, 0);
-    std::cout << "nb pairs " << this->nb_pairs << std::endl;
+    //std::cout << "nb pairs " << this->nb_pairs << std::endl;
 
-    std::cout << "cluster indices" << std::endl;
+    //std::cout << "cluster indices" << std::endl;
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
@@ -76,7 +76,7 @@ namespace rascal {
 
 
     // TODO(alex) here we assume that ilist does count ascending without gaps
-    std::cout << "make atom" << std::endl;
+    //            I think this is generally true, but it would be good to double check this
     this->atom_tag_list.resize(this->tot_num);
     this->atom_index_from_atom_tag_list.resize(this->tot_num);
     for (int i{0}; i < this->tot_num; ++i) {
@@ -84,7 +84,6 @@ namespace rascal {
       this->atom_index_from_atom_tag_list[i] = atom_ghost_tag[i]-1; // atom tags in lammps start with 1
     }
 
-    std::cout << "fill " << std::endl;
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
   }

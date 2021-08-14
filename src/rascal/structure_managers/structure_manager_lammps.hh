@@ -54,7 +54,7 @@ namespace rascal {
     constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0, 0>;
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
-        AdaptorTraits::NeighbourListType::half};
+        AdaptorTraits::NeighbourListType::full};
     using PreviousManager_t = StructureManagerLammps;
   };
 
