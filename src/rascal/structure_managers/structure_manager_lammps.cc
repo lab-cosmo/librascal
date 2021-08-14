@@ -55,7 +55,6 @@ namespace rascal {
     this->offsets.resize(1);
     //std::cout << "atom_index_from_atom_tag_list() " << std::endl;
     this->atom_index_from_atom_tag_list.clear();
-    // #BUG8486@(all) it should be this->inum
     //std::cout << "offsets " << std::endl;
     for (int i{0}; i < this->inum; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
@@ -66,13 +65,6 @@ namespace rascal {
     //std::cout << "cluster indices" << std::endl;
     auto & atom_cluster_indices{std::get<0>(this->cluster_indices_container)};
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
-
-    // #BUG8486@(all) is the solution used in make_atom_index_from_atom_tag_list
-    // good enough, does ilist have huge gaps?
-    // e.g. ilist = [1,5000], then the atom_index_from_atom_tag_list list will
-    // have 5000 elements.
-    // Also the dummy 0 values which will could undefined behaviour instead
-    // necessary an error
 
 
     // TODO(alex) here we assume that ilist does count ascending without gaps
@@ -86,6 +78,11 @@ namespace rascal {
 
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
+    std::cout << "StructureManagerLammps offsets: ";
+    for (unsigned int p=0; p < offsets.size(); p++) {
+      std::cout << offsets[p] << ", ";
+    }
+    std::cout << std::endl;
   }
 
   /* ---------------------------------------------------------------------- */

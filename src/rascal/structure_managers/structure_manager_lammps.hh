@@ -274,8 +274,16 @@ namespace rascal {
     std::vector<int> atom_tag_list{};  //! stores i-atom and ghost atom tags
     std::vector<int> offsets{};  //! offset per atom to access neighbour list
 
-    // works as in adatpor neighbour list
+    // works as in adaptor neighbour list
     std::vector<size_t> atom_index_from_atom_tag_list{};
+
+    //! Stores the number of neighbours for every atom
+    //?? std::vector<size_t> nb_neigh{};
+
+    //! Stores additional atom tags of current Order (only ghost atoms)
+    //std::vector<int> ghost_atom_tag_list{};
+    //! Stores neighbour's atom tag in a list in sequence of atoms
+    //std::vector<int> neighbours_atom_tag{};
 
    private:
   };

@@ -263,6 +263,7 @@ namespace rascal {
      */
     template <size_t Order>
     void add_atom(int atom_tag) {
+      std::cout << "AdaptorStrict: add atom_tag " << atom_tag << std::endl;
       static_assert(Order <= traits::MaxOrder,
                     "you can only add neighbours to the n-th degree defined by "
                     "MaxOrder of the underlying manager");
@@ -284,6 +285,7 @@ namespace rascal {
 
     template <size_t Order, size_t Layer>
     void add_atom(const ClusterRefKey<Order, Layer> & cluster) {
+      std::cout << "AdaptorStrict: add pair (" << cluster.front() << ", " << cluster.back() << ")" << std::endl;
       this->template add_atom<Order - 1>(cluster.back());
     }
 
@@ -403,6 +405,7 @@ namespace rascal {
 
     double rc2{this->cutoff * this->cutoff};
 
+    std::cout << "AdaptorStrict: rc2 " << rc2 << std::endl;
     for (auto && atom : this->manager) {
       this->add_atom(atom);
       /**
@@ -416,7 +419,11 @@ namespace rascal {
       for (auto pair : atom.pairs_with_self_pair()) {
         auto vec_ij{pair.get_position() - atom.get_position()};
         double distance2{(vec_ij).squaredNorm()};
+        std::cout << "AdaptorStrict: pair (" << pair.front() << ", " << pair.back() << "), "
+                  << "distance2 " << distance2
+                  << std::endl;
         if (distance2 <= rc2) {
+          std::cout << "AdaptorStrict: will add pair (" << pair.front() << ", " << pair.back() << "), ";
           this->add_atom(pair);
           double distance{std::sqrt(distance2)};
           if (distance2 > 0.) {
