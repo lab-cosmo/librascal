@@ -417,11 +417,13 @@ namespace rascal {
       indices(AtomLayer) = indices(AtomLayer - 1);
       atom_cluster_indices.push_back(indices);
       for (auto pair : atom.pairs_with_self_pair()) {
+        std::cout << "AdaptorStrict: pair (" << pair.front() << ", " << pair.back() << "):"
+                  << std::endl;
         auto vec_ij{pair.get_position() - atom.get_position()};
         double distance2{(vec_ij).squaredNorm()};
-        std::cout << "AdaptorStrict: pair (" << pair.front() << ", " << pair.back() << "), "
-                  << "distance2 " << distance2
-                  << std::endl;
+        std::cout << "AdaptorStrict: atom.get_position() " << atom.get_position().transpose() << std::endl;
+        std::cout << "AdaptorStrict: pair.get_position() " << pair.get_position().transpose() << std::endl;
+        std::cout << "distance2 " << distance2 << std::endl;
         if (distance2 <= rc2) {
           std::cout << "AdaptorStrict: will add pair (" << pair.front() << ", " << pair.back() << "), ";
           this->add_atom(pair);

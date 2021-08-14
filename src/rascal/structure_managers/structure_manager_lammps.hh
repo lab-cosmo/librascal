@@ -130,9 +130,27 @@ namespace rascal {
 
     //! return position vector of an atom given the atom tag
     Vector_ref get_position(int atom_tag) {
-      auto * xval{this->x[this->get_atom_index(atom_tag)]};
-      return Vector_ref(xval);
+      // if not ghost atom else
+      if (atom_tag < this->inum) {
+        auto * xval{this->x[this->get_atom_index(atom_tag)]};
+        return Vector_ref(xval);
+      } else {
+        return this->get_ghost_position(atom_tag - this->inum);
+      }
     }
+    // TODO(alex) finish ghost atoms positions
+    Vector_ref get_ghost_position(const size_t ghost_atom_index) {
+      auto * xval{this->x[this->get_atom_index(ghost_atom_index)]};
+      return Vector_ref(xval);
+      //auto p = this->get_ghost_positions();
+      //auto * xval{p.col(ghost_atom_index).data()};
+      //return Vector_ref(xval);
+    }
+
+    //Positions_ref get_ghost_positions() {
+    //  return Positions_ref(this->ghost_positions.data(), traits::Dim,
+    //                       this->ghost_positions.size() / traits::Dim);
+    //}
 
     //! return position vector of an atom given the atom tag
     Vector_ref get_position(const AtomRef_t & atom) {
