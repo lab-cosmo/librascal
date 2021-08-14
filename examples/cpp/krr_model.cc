@@ -31,6 +31,7 @@
 #include "rascal/models/sparse_kernel_predict.hh"
 #include "rascal/structure_managers/adaptor_center_contribution.hh"
 #include "rascal/structure_managers/adaptor_neighbour_list.hh"
+#include "rascal/structure_managers/adaptor_half_neighbour_list.hh"
 #include "rascal/structure_managers/adaptor_strict.hh"
 #include "rascal/structure_managers/atomic_structure.hh"
 #include "rascal/structure_managers/make_structure_manager.hh"
@@ -50,9 +51,16 @@ using namespace rascal;  // NOLINT
 
 using Calculator_t = CalculatorSphericalInvariants;
 
+// full neighbor list
 using ManagerCollection_t = ManagerCollection<StructureManagerCenters, AdaptorNeighbourList, AdaptorCenterContribution, AdaptorStrict>;
 using Manager_t = AdaptorStrict<
     AdaptorCenterContribution<AdaptorNeighbourList<StructureManagerCenters>>>;
+
+// half neighbor list
+//using ManagerCollection_t = ManagerCollection<StructureManagerCenters, AdaptorNeighbourList, AdaptorHalfList, AdaptorCenterContribution, AdaptorStrict>;
+//using Manager_t = AdaptorStrict<AdaptorCenterContribution<AdaptorHalfList<
+//                                AdaptorNeighbourList<StructureManagerCenters>>>>;
+
 using Prop_t = typename CalculatorSphericalInvariants::Property_t<Manager_t>;
 using PropGrad_t =
     typename CalculatorSphericalInvariants::PropertyGradient_t<Manager_t>;
@@ -94,10 +102,11 @@ int main(int argc, char * argv[]) {
   json kernel_cpp_params = kernel_data.at("cpp_kernel").template get<json>();
   SparseKernel kernel{kernel_cpp_params};
 
+  json representation_cpp_params;
   json kernel_init_params = kernel_params.at("init_params").template get<json>();
   json kernel_representation = kernel_init_params.at("representation").template get<json>();
   json kernel_representation_data = kernel_representation .at("data").template get<json>();
-  json representation_cpp_params = kernel_representation_data.at("cpp_representation").template get<json>();
+  representation_cpp_params = kernel_representation_data.at("cpp_representation").template get<json>();
   Calculator_t calculator{representation_cpp_params};
 
   // weights 
@@ -115,7 +124,6 @@ int main(int argc, char * argv[]) {
   }
 
   math::Vector_t weights(weights_vec.size());
-  //= Eigen::Map<math::Vector_t>(weights_vec.data(), static_cast<long int>(weights_vec.size()));
   for (unsigned int i=0; i < weights_vec.size(); i++) {
     weights(i) = weights_vec[i][0];
   }
@@ -125,13 +133,17 @@ int main(int argc, char * argv[]) {
 
   // manager
   //// cutoff
-  double cutoff = representation_init_params.at("cutoff_function").template get<json>().at("cutoff").template get<json>().at("value").template get<double>();
+  double cutoff = representation_cpp_params.at("cutoff_function").template get<json>().at("cutoff").template get<json>().at("value").template get<double>();
   ////
   json adaptors_input = {
       {
         {"initialization_arguments", {{"cutoff", cutoff}}},
         {"name",   "neighbourlist"}
       },
+      //{
+      //  {"initialization_arguments", {}},
+      //  {"name",   "halflist"}
+      //},
       {
         {"initialization_arguments", {}},
         {"name", "centercontribution"}
@@ -154,72 +166,72 @@ int main(int argc, char * argv[]) {
   // compute repr
   calculator.compute(managers);
 
-  //for (auto manager : managers) {
-  //  std::cout << "manager->offsets ";
-  //  std::cout << std::endl;
-  //  for (int k=0; k < manager->offsets.size(); k++) {
-  //     for (auto p=0; p < manager->offsets[k].size(); p++) {
-  //       std::cout << manager->offsets[k][p] << ", ";
-  //     }
-  //     std::cout << std::endl;
-  //  }
-  //  std::cout << std::endl;
+  for (auto manager : managers) {
+      std::cout << "manager->offsets\n";
+      for (unsigned int k=0; k < manager->offsets.size(); k++) {
+         for (unsigned int p=0; p < manager->offsets[k].size(); p++) {
+           std::cout << manager->offsets[k][p] << ", ";
+         }
+         std::cout << "\n";
+      }
+      std::cout << std::endl;
 
-  //  std::cout << "manager->nb_neigh ";
-  //  std::cout << std::endl;
-  //  for (int k=0; k < manager->nb_neigh.size(); k++) {
-  //     for (auto p=0; p < manager->nb_neigh[k].size(); p++) {
-  //       std::cout << manager->nb_neigh[k][p] << ", ";
-  //     }
-  //     std::cout << std::endl;
-  //  }
-  //  std::cout << std::endl;
+      std::cout << "manager->nb_neigh\n";
+      for (unsigned int k=0; k < manager->nb_neigh.size(); k++) {
+         for (unsigned int p=0; p < manager->nb_neigh[k].size(); p++) {
+           std::cout << manager->nb_neigh[k][p] << ", ";
+         }
+         std::cout << "\n";
+      }
+      std::cout << std::endl;
 
-  //  std::cout << "manager->atom_tag_list ";
-  //  std::cout << std::endl;
-  //  for (int k=0; k < manager->atom_tag_list.size(); k++) {
-  //     for (auto p=0; p < manager->atom_tag_list[k].size(); p++) {
-  //       std::cout << manager->atom_tag_list[k][p] << ", ";
-  //     }
-  //     std::cout << std::endl;
-  //  }
-  //  std::cout << std::endl;
-  //  
-  //  std::cout << "manager->neighbours_cluster_index ";
-  //  std::cout << std::endl;
-  //  for (int k=0; k < manager->neighbours_cluster_index.size(); k++) {
-  //     std::cout << manager->neighbours_cluster_index[k] << ", ";
-  //  }
-  //  std::cout << std::endl;
+      std::cout << "manager->atom_tag_list\n";
+      for (unsigned int k=0; k < manager->atom_tag_list.size(); k++) {
+         for (unsigned int p=0; p < manager->atom_tag_list[k].size(); p++) {
+           std::cout << manager->atom_tag_list[k][p] << ", ";
+         }
+         std::cout << "\n";
+      }
+      std::cout << std::endl;
+      
+      std::cout << "manager->neighbours_cluster_index\n";
+      for (unsigned int k=0; k < manager->neighbours_cluster_index.size(); k++) {
+         std::cout << manager->neighbours_cluster_index[k] << ", ";
+      }
+      std::cout << std::endl;
 
-  //  for (auto atom : manager->with_ghosts()) {
-  //      std::cout << " center " << atom.get_atom_tag() << std::endl;
-  //    for (auto pair : atom.pairs_with_self_pair()) {
-  //      std::cout << "pair (" << atom.get_atom_tag() << ", "
-  //                << pair.get_atom_tag() << ") global index "
-  //                << pair.get_global_index() << std::endl;
-  //    }
-  //  }
-  //  std::cout << std::endl;
-  //  for (auto atom : manager) {
-  //      std::cout << " center " << atom.get_atom_tag() << std::endl;
-  //    for (auto pair : atom.pairs()) {
-  //      std::cout << "pair (" << atom.get_atom_tag() << ", "
-  //                << pair.get_atom_tag() << ") global index "
-  //                << pair.get_global_index() << std::endl;
-  //    }
-  //  }
-  //  std::cout << std::endl;
-  //  for (auto atom : manager) {
-  //    for (auto pair : atom.pairs()) {
-  //      std::cout << "pair dist " << manager->get_distance(pair) 
-  //                << std::endl;
-  //      std::cout << "direction vector " << manager->get_direction_vector(pair).transpose()
-  //                << std::endl;
-  //    }
-  //  }
-  //  std::cout << std::endl;
-  //}
+      std::cout << "neighbor list without ghosts\n";
+      for (auto atom : manager) {
+          std::cout << "center atom tag " << atom.get_atom_tag() << ", "
+                    << "cluster index " << atom.get_cluster_index()
+                    << std::endl;
+        for (auto pair : atom.pairs()) {
+          std::cout << "  pair (" << atom.get_atom_tag() << ", "
+                    << pair.get_atom_tag() << "): " 
+                    << "global index " << pair.get_global_index() << ", "
+                    << "pair dist " << manager->get_distance(pair)  << ", " 
+                    << "direction vector " << manager->get_direction_vector(pair).transpose()
+                    << std::endl;
+        }
+      }
+      std::cout << std::endl;
+
+      std::cout << "neighbor list with ghost\n";
+      for (auto atom : manager->with_ghosts()) {
+        std::cout << "center atom tag " << atom.get_atom_tag() << ", "
+                  << "cluster index " << atom.get_cluster_index()
+                  << std::endl;
+        for (auto pair : atom.pairs_with_self_pair()) {
+          std::cout << "  pair (" << atom.get_atom_tag() << ", "
+                    << pair.get_atom_tag() << "): "
+                    << "global index " << pair.get_global_index() << ", "
+                    << "pair dist " << manager->get_distance(pair)  << ", " 
+                    << "direction vector " << manager->get_direction_vector(pair).transpose()
+                    << std::endl;
+        }
+      }
+      std::cout << std::endl;
+  }
 
   //for (auto manager : managers) {
   //  auto && expansions_coefficients{*manager->template get_property<Calculator_t::template Property_t<Manager_t>>(
