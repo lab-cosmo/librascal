@@ -379,10 +379,10 @@ namespace rascal {
         }
       }
       auto manager_root = extract_underlying_manager<0>(manager);
-      json structure_copy = manager_root->get_atomic_structure();
-      auto atomic_structure =
-          structure_copy.template get<AtomicStructure<ThreeD>>();
-      neg_stress[0] /= atomic_structure.get_volume();
+      //json structure_copy = manager_root->get_atomic_structure();
+      //auto atomic_structure =
+      //    structure_copy.template get<AtomicStructure<ThreeD>>();
+      neg_stress[0] /= manager_root->get_cell_volume();
       neg_stress.set_updated_status(true);
     }  // manager
     return neg_stress_name;

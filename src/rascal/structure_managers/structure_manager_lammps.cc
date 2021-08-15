@@ -79,7 +79,7 @@ namespace rascal {
     for (int i{0}; i < this->tot_num; ++i) {
       // Here we assume that ilist does count ascending without gaps.
       // I have not found any formal guarantee from lammps, 
-      // but I (alex) have not seen an ilist where this was not true.
+      // but there data format strongly suggests this. 
       this->atom_tag_list[i] = i;
       // Lammps atom tags works like rascal atom indices, however
       // they are user-defined, thefore the can have any number > 0.

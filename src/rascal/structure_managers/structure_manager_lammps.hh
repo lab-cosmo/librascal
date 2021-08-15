@@ -127,6 +127,8 @@ namespace rascal {
     Eigen::Array3d get_cell_lengths() {
       return this->lattice.get_cell_lengths().array();
     }
+    
+    double get_cell_volume() { return this->lattice.get_cell_volume(); }
 
     //! Returns a map of size traits::Dim with 0/1 for periodicity
     PBC_ref get_periodic_boundary_conditions() {

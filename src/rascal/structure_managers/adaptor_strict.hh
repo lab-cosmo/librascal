@@ -431,6 +431,14 @@ namespace rascal {
           if (distance2 > 0.) {
             this->dir_vec->push_back((vec_ij.array() / distance).matrix());
           } else {
+            if (atom.get_atom_tag() != pair.get_atom_tag()) {
+              std::cerr << "Warning: Found non self pair ("
+                        << atom.get_atom_tag() << ", "
+                        << pair.get_atom_tag() << ") "
+                        << " with zero distance. "
+                        << "In file " << __FILE__ << " (line " << __LINE__ << ")"
+                        << std::endl;
+            }
             this->dir_vec->push_back((vec_ij.array()).matrix());
           }
 

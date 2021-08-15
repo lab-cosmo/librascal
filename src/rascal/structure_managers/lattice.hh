@@ -91,6 +91,12 @@ namespace rascal {
       this->cell_angles[2] =
           std::acos(this->cell_vectors.col(1).dot(this->cell_vectors.col(0)) /
                     this->cell_lengths[1] / this->cell_lengths[0]);
+      Vec_t c_abg = cell_angles.array().cos();
+      this->cell_volume = this->cell_lengths[0] * this->cell_lengths[1] *
+                     this->cell_lengths[2] *
+                     std::sqrt(1 - c_abg[0] * c_abg[0] - c_abg[1] * c_abg[1] -
+                               c_abg[2] * c_abg[2] +
+                               2 * c_abg[0] * c_abg[1] * c_abg[2]);
       this->set_transformation_matrix();
       this->set_reciprocal_vectors();
     }
@@ -104,6 +110,8 @@ namespace rascal {
 
     //! Returns the cell angles
     const Vec_t get_cell_angles() { return this->cell_angles; }
+
+    double get_cell_volume() { return this->cell_volume; }
 
     /**
      * Returns the transformation matrix to transform absolute cartesian
@@ -133,16 +141,18 @@ namespace rascal {
      * space lattice vectors and the reciprocal space cell lengths
      */
     void set_reciprocal_vectors() {
-      Vec_t c_abg = cell_angles.array().cos();
-
+      // TODO(alex) remove this for merge, volume is now computed and stored
+      //            because it is needed for stress computetation
+      //Vec_t c_abg = cell_angles.array().cos();
+      //
       //! Cell volume
-      double V{this->cell_lengths[0] * this->cell_lengths[1] *
-               this->cell_lengths[2] *
-               std::sqrt(1 - c_abg[0] * c_abg[0] - c_abg[1] * c_abg[1] -
-                         c_abg[2] * c_abg[2] +
-                         2 * c_abg[0] * c_abg[1] * c_abg[2])};
+      //double V{this->cell_lengths[0] * this->cell_lengths[1] *
+      //         this->cell_lengths[2] *
+      //         std::sqrt(1 - c_abg[0] * c_abg[0] - c_abg[1] * c_abg[1] -
+      //                   c_abg[2] * c_abg[2] +
+      //                   2 * c_abg[0] * c_abg[1] * c_abg[2])};
 
-      double Vinv{1. / V};
+      double Vinv{1. / this->cell_volume};
       this->reciprocal_vectors *= Vinv;
 
       Vec_t recip1, recip2, recip3;
@@ -182,6 +192,7 @@ namespace rascal {
       Vec_t c_abg = cell_angles.array().cos();
       Vec_t s_abg = cell_angles.array().sin();
 
+      // TODO(alex) use this->volume here
       //! Cell volume divided by a*b*c
       double V{std::sqrt(1 - c_abg[0] * c_abg[0] - c_abg[1] * c_abg[1] -
                          c_abg[2] * c_abg[2] +
@@ -244,6 +255,8 @@ namespace rascal {
     Vec_t reciprocal_lengths = Vec_t::Ones();
     //! alpha(b,c) beta(a,c) gamma(a,b) in radian
     Vec_t cell_angles = Vec_t::Ones();
+    //! Cell volume
+    double cell_volume{0};
     //! transformation matrix from the lattice coordinate system to cartesian
     Cell_t scaled2cartesian = Cell_t::Zero();
     //! transformation matrix from the cartesian system to the lattice
