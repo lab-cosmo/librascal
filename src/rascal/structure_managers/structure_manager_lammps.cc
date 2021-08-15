@@ -37,7 +37,7 @@ namespace rascal {
                                            int * numneigh, int ** firstneigh,
                                            double ** x, double ** f, int * type,
                                            double * eatom, double ** vatom, std::vector<int> atom_types,
-                                           int * lammps_atom_tag) {
+                                           int * lammps_atom_tag, double * lattice, int * pbc) {
     // IMPORTANT: atom tags in lammps work like atom index in rascal (ghost atoms have the id of their corresponding atoms)
     // We have to use the lammps  as rascal atom indices because lammps does not store atom
     // lammps ilist <-> rascal atom indices
@@ -53,6 +53,9 @@ namespace rascal {
     this->vatom = vatom;
     //std::cout << "atom_types.size() " << atom_types.size() << std::endl;
     this->atom_types = atom_types;
+    this->lattice.set_cell(Eigen::Map<Cell_t>(lattice, traits::Dim, traits::Dim));
+    this->pbc = Eigen::Map<PBC_t>(pbc, traits::Dim);
+
     this->offsets.reserve(inum);
     this->offsets.resize(1);
     //std::cout << "atom_index_from_atom_tag_list() " << std::endl;
@@ -90,6 +93,8 @@ namespace rascal {
         this->atom_index_from_atom_tag_list[i] = rascal_atom_index_from_lammps_atom_tag[lammps_atom_tag[i]];
       }
     }
+    std::cout << "max_rascal_atom_index, " << "this->inum ";
+    std::cout << max_rascal_atom_index << ", " << this->inum << std::endl;
     assert(max_rascal_atom_index == this->inum);
 
     atom_cluster_indices.fill_sequence();

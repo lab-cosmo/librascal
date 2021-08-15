@@ -202,7 +202,7 @@ namespace rascal {
      */
     Cell_ref get_cell() { return Cell_ref(this->atoms_object.cell); }
 
-    Eigen::Array3d get_cell_length() {
+    Eigen::Array3d get_cell_lengths() {
       return this->get_cell().colwise().norm().array();
     }
     //! Returns the type of a given atom, given an AtomRef

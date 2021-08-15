@@ -45,9 +45,9 @@ namespace rascal {
   template <size_t Dim>
   class Lattice {
    public:
-    // TODO(felix): implement the specialization for the 2D case
     static_assert(Dim == 3, "2D lattice is not implemented yet");
     using Cell_t = typename AtomicStructure<Dim>::Cell_t;
+    using Cell_ref = typename AtomicStructure<Dim>::Cell_ref;
     using AtomTypes_t = typename AtomicStructure<Dim>::AtomTypes_t;
     using PBC_t = typename AtomicStructure<Dim>::PBC_t;
     using Positions_t = typename AtomicStructure<Dim>::Positions_t;
@@ -96,6 +96,9 @@ namespace rascal {
     }
 
     /* ---------------------------------------------------------------------- */
+    //! Returns the cell lengths
+    Cell_ref get_cell() { return Cell_ref(this->cell_vectors); }
+
     //! Returns the cell lengths
     const Vec_t get_cell_lengths() { return this->cell_lengths; }
 

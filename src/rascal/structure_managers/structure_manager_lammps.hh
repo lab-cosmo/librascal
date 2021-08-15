@@ -29,6 +29,8 @@
 #define SRC_RASCAL_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_LAMMPS_HH_
 
 #include "rascal/structure_managers/structure_manager.hh"
+#include "rascal/structure_managers/atomic_structure.hh"
+#include "rascal/structure_managers/lattice.hh"
 
 #include <stdexcept>
 #include <vector>
@@ -69,6 +71,13 @@ namespace rascal {
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
+
+    using Cell_t = AtomicStructure<traits::Dim>::Cell_t;
+    using Cell_ref = AtomicStructure<traits::Dim>::Cell_ref;
+
+    using PBC_t = AtomicStructure<traits::Dim>::PBC_t;
+    using PBC_ref = AtomicStructure<traits::Dim>::PBC_ref;
+
     using ManagerImplementation_t = StructureManagerLammps;
     using ImplementationPtr_t = std::shared_ptr<StructureManagerLammps>;
     using ConstImplementationPtr_t =
@@ -109,28 +118,26 @@ namespace rascal {
       this->update_children();
     }
     ////---------------------------------------------------
-    //// needs to be implemented for some checks in the spherical expansion coeffs
-    ///**
-    // * Returns a traits::Dim by traits::Dim matrix with the cell vectors of the
-    // * structure.
-    // */
-    //Cell_ref get_cell() { return Cell_ref(this->atoms_object.cell); }
+    /**
+     * Returns a traits::Dim by traits::Dim matrix with the cell vectors of the
+     * structure.
+     */
+    Cell_ref get_cell() { return Cell_ref(this->lattice.get_cell()); }
 
-    //Eigen::Array3d get_cell_length() {
-    //  ...
-    //  return this->get_cell().colwise().norm().array();
-    //}
+    Eigen::Array3d get_cell_lengths() {
+      return this->lattice.get_cell_lengths().array();
+    }
 
-    ////! Returns a map of size traits::Dim with 0/1 for periodicity
-    //PBC_ref get_periodic_boundary_conditions() {
-    //  return PBC_ref(this->atoms_object.pbc);
-    //}
+    //! Returns a map of size traits::Dim with 0/1 for periodicity
+    PBC_ref get_periodic_boundary_conditions() {
+      return PBC_ref(this->pbc);
+    }
 
     ////-----------------------------------------------
 
     //! return position vector of an atom given the atom tag
     Vector_ref get_position(int atom_tag) {
-      auto * xval{this->x[this->get_atom_index(atom_tag)]};
+      auto * xval{this->x[atom_tag]};
       return Vector_ref(xval);
     }
 
@@ -182,12 +189,7 @@ namespace rascal {
       auto && i_atom_id{cluster.back()};
       return this->firstneigh[std::move(i_atom_id)][index];
     }
-
-    // #BUG8486@(all) I do not know how the structure of ilist is implemented,
-    // can it it have huge gaps like [1, 50000]? Then using a vector with
-    // ensures quick memory access would be super inefficient. However
-    // firstneigh also uses this kind of access structure and is given by
-    // lammps, so it should be fine.
+  
     int get_atom_index(int atom_tag) const {
       return this->atom_index_from_atom_tag_list.at(atom_tag);
     }
@@ -242,7 +244,7 @@ namespace rascal {
                      int ** firstneigh, double ** x, double ** f, int * type,
                      double * eatom, double ** vatom,
                      std::vector<int> atom_types,
-                     int * atom_ghost_tag);
+                     int * lammps_atom_tag, double * lattice, int * pbc);
 
    protected:
     /**
@@ -273,6 +275,8 @@ namespace rascal {
     std::vector<int> atom_types{}; //!< lammps atom types to rascal, used as atom_types[type[atom_tag]-1]
     std::vector<int> atom_tag_list{};  //! stores i-atom and ghost atom tags
     std::vector<int> offsets{};  //! offset per atom to access neighbour list
+    Lattice<traits::Dim> lattice{};
+    PBC_t pbc{};
 
     // works as in adaptor neighbour list
     std::vector<size_t> atom_index_from_atom_tag_list{};
