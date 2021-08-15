@@ -37,8 +37,10 @@ namespace rascal {
                                            int * numneigh, int ** firstneigh,
                                            double ** x, double ** f, int * type,
                                            double * eatom, double ** vatom, std::vector<int> atom_types,
-                                           int * atom_ghost_tag) {
-    // setting the class variables
+                                           int * lammps_atom_tag) {
+    // IMPORTANT: atom tags in lammps work like atom index in rascal (ghost atoms have the id of their corresponding atoms)
+    // We have to use the lammps  as rascal atom indices because lammps does not store atom
+    // lammps ilist <-> rascal atom indices
     this->inum = inum;
     this->tot_num = tot_num;
     this->ilist = ilist;
@@ -67,22 +69,36 @@ namespace rascal {
     auto & pair_cluster_indices{std::get<1>(this->cluster_indices_container)};
 
 
-    // TODO(alex) here we assume that ilist does count ascending without gaps
-    //            I think this is generally true, but it would be good to double check this
     this->atom_tag_list.resize(this->tot_num);
     this->atom_index_from_atom_tag_list.resize(this->tot_num);
+    std::map<int, int> rascal_atom_index_from_lammps_atom_tag{};
+    int max_rascal_atom_index{0};
     for (int i{0}; i < this->tot_num; ++i) {
+      // Here we assume that ilist does count ascending without gaps.
+      // I have not found any formal guarantee from lammps, 
+      // but I (alex) have not seen an ilist where this was not true.
       this->atom_tag_list[i] = i;
-      this->atom_index_from_atom_tag_list[i] = atom_ghost_tag[i]-1; // atom tags in lammps start with 1
+      // Lammps atom tags works like rascal atom indices, however
+      // they are user-defined, thefore the can have any number > 0.
+      // So we remap them to the range [0, tot_num] to obtain
+      // rascal atom indices
+      if (rascal_atom_index_from_lammps_atom_tag.count(lammps_atom_tag[i]) == 0) {
+        rascal_atom_index_from_lammps_atom_tag[lammps_atom_tag[i]] = max_rascal_atom_index;
+        this->atom_index_from_atom_tag_list[i] = max_rascal_atom_index;
+        max_rascal_atom_index++;
+      } else {
+        this->atom_index_from_atom_tag_list[i] = rascal_atom_index_from_lammps_atom_tag[lammps_atom_tag[i]];
+      }
     }
+    assert(max_rascal_atom_index == this->inum);
 
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
-    std::cout << "StructureManagerLammps offsets: ";
-    for (unsigned int p=0; p < offsets.size(); p++) {
-      std::cout << offsets[p] << ", ";
-    }
-    std::cout << std::endl;
+    //std::cout << "StructureManagerLammps offsets: ";
+    //for (unsigned int p=0; p < offsets.size(); p++) {
+    //  std::cout << offsets[p] << ", ";
+    //}
+    //std::cout << std::endl;
   }
 
   /* ---------------------------------------------------------------------- */

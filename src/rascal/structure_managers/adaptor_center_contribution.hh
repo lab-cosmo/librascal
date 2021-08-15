@@ -267,7 +267,7 @@ namespace rascal {
      */
     template <size_t Order>
     void add_atom(int atom_tag) {
-      std::cout << "AdaptorCenterContribution: add atom_tag " << atom_tag << std::endl;
+      //std::cout << "AdaptorCenterContribution: add atom_tag " << atom_tag << std::endl;
       static_assert(Order <= traits::MaxOrder,
                     "you can only add neighbours to the n-th degree defined by "
                     "MaxOrder of the underlying manager");
@@ -289,7 +289,7 @@ namespace rascal {
 
     template <size_t Order, size_t Layer>
     void add_atom(const ClusterRefKey<Order, Layer> & cluster) {
-      std::cout << "AdaptorCenterContribution: add pair (" << cluster.front() << ", " << cluster.back() << ")" << std::endl;
+      //std::cout << "AdaptorCenterContribution: add pair (" << cluster.front() << ", " << cluster.back() << ")" << std::endl;
       this->template add_atom<Order - 1>(cluster.back());
     }
 
