@@ -247,27 +247,27 @@ in the cluster.</p>
 <p><code class="docutils literal notranslate"><span class="pre">ClusterRef</span></code> objects can be in turn iterated on, giving access to a
 concise notation to iterate over atoms, pairs, triplets, …</p>
 <p>This is best explained with a code snippet</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">StructureManager</span> <span class="nf">SM</span><span class="p">(</span><span class="n">structure_data</span><span class="p">);</span> <span class="c1">// assume this can compute pairs and distances</span>
-<span class="n">SM</span><span class="p">.</span><span class="n">update</span><span class="p">();</span>   <span class="c1">// refreshes the list of pairs</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">StructureManager</span><span class="w"> </span><span class="nf">SM</span><span class="p">(</span><span class="n">structure_data</span><span class="p">);</span><span class="w"> </span><span class="c1">// assume this can compute pairs and distances</span>
+<span class="n">SM</span><span class="p">.</span><span class="n">update</span><span class="p">();</span><span class="w">   </span><span class="c1">// refreshes the list of pairs</span>
 
-<span class="n">energy</span> <span class="o">=</span> <span class="n">SM</span><span class="p">.</span><span class="n">get_real</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&quot;energy&quot;</span><span class="p">)</span> <span class="c1">// structure-global property access</span>
+<span class="n">energy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SM</span><span class="p">.</span><span class="n">get_real</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;energy&quot;</span><span class="p">)</span><span class="w"> </span><span class="c1">// structure-global property access</span>
 <span class="c1">//access to atomic positions, explicit typing</span>
-<span class="n">pos</span> <span class="o">=</span> <span class="n">SM</span><span class="p">.</span><span class="n">get_3vec</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;positions&quot;</span><span class="p">);</span>
+<span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SM</span><span class="p">.</span><span class="n">get_3vec</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;positions&quot;</span><span class="p">);</span><span class="w"></span>
 <span class="c1">// pos = SM.get(&quot;positions&quot;);  // implicit (slower)</span>
-<span class="n">dist</span> <span class="o">=</span> <span class="n">SM</span><span class="p">.</span><span class="n">get_real</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s">&quot;distances&quot;</span><span class="p">);</span>
+<span class="n">dist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SM</span><span class="p">.</span><span class="n">get_real</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;distances&quot;</span><span class="p">);</span><span class="w"></span>
 
-<span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">atom</span><span class="p">:</span> <span class="n">SM</span><span class="p">)</span> <span class="p">{</span>
-  <span class="c1">// iterates over order-1 clusters (atoms)</span>
-  <span class="n">ri</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="n">atom</span><span class="p">]</span> <span class="c1">//accesses the position of an iterated atom</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="nl">atom</span><span class="p">:</span><span class="w"> </span><span class="n">SM</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="c1">// iterates over order-1 clusters (atoms)</span>
+<span class="w">  </span><span class="n">ri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pos</span><span class="p">[</span><span class="n">atom</span><span class="p">]</span><span class="w"> </span><span class="c1">//accesses the position of an iterated atom</span>
 
-  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">pair</span><span class="p">:</span> <span class="n">atom</span><span class="p">.</span><span class="n">pairs</span><span class="p">())</span> <span class="p">{</span>
-    <span class="c1">// iterates over order-2 clusters (pairs)</span>
-    <span class="n">dij</span> <span class="o">=</span> <span class="n">dist</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span>  <span class="c1">// accesses the distance between the two atoms</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="nl">pair</span><span class="p">:</span><span class="w"> </span><span class="n">atom</span><span class="p">.</span><span class="n">pairs</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// iterates over order-2 clusters (pairs)</span>
+<span class="w">    </span><span class="n">dij</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dist</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span><span class="w">  </span><span class="c1">// accesses the distance between the two atoms</span>
 
-    <span class="n">rj</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span>  <span class="c1">// the cluster can be used to access properties of</span>
-                    <span class="c1">// the last member of the cluster</span>
-  <span class="p">}</span>
-<span class="p">}</span>
+<span class="w">    </span><span class="n">rj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pos</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span><span class="w">  </span><span class="c1">// the cluster can be used to access properties of</span>
+<span class="w">                    </span><span class="c1">// the last member of the cluster</span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
 </section>
@@ -410,11 +410,11 @@ can function with it without stacking anything on top, and have enough
 flexibility to reuse between different representations (within reason).</p>
 <p>So a typical representation constructor would have a mode of functioning
 based on StructureManagerFull, that could go like</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">RepManagerSphericalInvariants</span><span class="o">&lt;</span><span class="n">StructureManagerFull</span><span class="o">&gt;</span> <span class="p">(</span><span class="n">StructureManagerFull</span><span class="o">&amp;</span> <span class="n">SM</span><span class="p">,</span> <span class="n">hypers</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">this</span><span class="o">-&gt;</span><span class="n">sm</span> <span class="o">=</span> <span class="n">SM</span><span class="p">;</span>
-  <span class="k">this</span><span class="o">-&gt;</span><span class="n">sm</span><span class="p">.</span><span class="n">initialize_pars_based_on_hypers</span><span class="p">(</span><span class="n">hypers</span><span class="p">);</span>
-  <span class="k">this</span><span class="o">-&gt;</span><span class="n">sm</span><span class="p">.</span><span class="n">update</span><span class="p">();</span>
-<span class="p">}</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">RepManagerSphericalInvariants</span><span class="o">&lt;</span><span class="n">StructureManagerFull</span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">StructureManagerFull</span><span class="o">&amp;</span><span class="w"> </span><span class="n">SM</span><span class="p">,</span><span class="w"> </span><span class="n">hypers</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">sm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SM</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">sm</span><span class="p">.</span><span class="n">initialize_pars_based_on_hypers</span><span class="p">(</span><span class="n">hypers</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">sm</span><span class="p">.</span><span class="n">update</span><span class="p">();</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
 <p>and a generic constructor that would use template algebra to make sure that

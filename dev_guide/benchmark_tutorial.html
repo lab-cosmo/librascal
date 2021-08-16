@@ -231,26 +231,26 @@ interpolator</p>
 <span class="cm"> * `SphericalRepresentationBFixture`. But since not all of these parameters</span>
 <span class="cm"> * are needed for the `SphericalRepresentationBFixture` we give them dummy</span>
 <span class="cm"> * values.</span>
-<span class="cm"> */</span>
-<span class="k">struct</span> <span class="nc">SphericalDataset</span> <span class="o">:</span> <span class="k">public</span> <span class="n">BaseInterpolatorDataset</span> <span class="p">{</span>
-  <span class="k">using</span> <span class="n">SupportedFunc</span> <span class="o">=</span> <span class="k">typename</span> <span class="nc">BaseInterpolatorDataset</span><span class="o">::</span><span class="n">SupportedFunc</span><span class="p">;</span>
-  <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="nf">data</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="p">{</span><span class="s">&quot;nbs_iterations&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">0</span><span class="p">}},</span>             <span class="c1">// dummy</span>
-        <span class="p">{</span><span class="s">&quot;ranges&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)}},</span>  <span class="c1">// dummy</span>
-        <span class="p">{</span><span class="s">&quot;log_error_bounds&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">-8</span><span class="p">,</span> <span class="mi">-10</span><span class="p">,</span> <span class="mi">-12</span><span class="p">}},</span>
-        <span class="p">{</span><span class="s">&quot;func_names&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">SupportedVecFunc</span><span class="o">::</span><span class="n">Dummy</span><span class="p">}},</span>  <span class="c1">// dummy</span>
-        <span class="p">{</span><span class="s">&quot;radial_angular&quot;</span><span class="p">,</span>
-         <span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">)}},</span>
-        <span class="p">{</span><span class="s">&quot;random&quot;</span><span class="p">,</span> <span class="p">{</span><span class="nb">true</span><span class="p">}},</span>  <span class="c1">// dummy</span>
-        <span class="p">{</span><span class="s">&quot;filenames&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;reference_data/inputs/small_molecule.json&quot;</span><span class="p">}},</span>
-        <span class="c1">// please use only one file because google benchmark cant put strings</span>
-        <span class="c1">// into their `Counter`, therefore the filename cannot be printed</span>
-        <span class="c1">// {&quot;filenames&quot;, {&quot;reference_data/inputs/methane.json&quot;}},</span>
-        <span class="p">{</span><span class="s">&quot;cutoffs&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">4</span><span class="p">}}};</span>
-    <span class="k">return</span> <span class="n">data</span><span class="p">;</span>
-  <span class="p">}</span>
-<span class="p">};</span>
+<span class="cm"> */</span><span class="w"></span>
+<span class="k">struct</span> <span class="nc">SphericalDataset</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">BaseInterpolatorDataset</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">SupportedFunc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">typename</span> <span class="nc">BaseInterpolatorDataset</span><span class="o">::</span><span class="n">SupportedFunc</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="nf">data</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="s">&quot;nbs_iterations&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">}},</span><span class="w">             </span><span class="c1">// dummy</span>
+<span class="w">        </span><span class="p">{</span><span class="s">&quot;ranges&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)}},</span><span class="w">  </span><span class="c1">// dummy</span>
+<span class="w">        </span><span class="p">{</span><span class="s">&quot;log_error_bounds&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">-8</span><span class="p">,</span><span class="w"> </span><span class="mi">-10</span><span class="p">,</span><span class="w"> </span><span class="mi">-12</span><span class="p">}},</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="s">&quot;func_names&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">SupportedVecFunc</span><span class="o">::</span><span class="n">Dummy</span><span class="p">}},</span><span class="w">  </span><span class="c1">// dummy</span>
+<span class="w">        </span><span class="p">{</span><span class="s">&quot;radial_angular&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">         </span><span class="p">{</span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">),</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">)}},</span><span class="w"></span>
+<span class="w">        </span><span class="p">{</span><span class="s">&quot;random&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="nb">true</span><span class="p">}},</span><span class="w">  </span><span class="c1">// dummy</span>
+<span class="w">        </span><span class="p">{</span><span class="s">&quot;filenames&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s">&quot;reference_data/inputs/small_molecule.json&quot;</span><span class="p">}},</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// please use only one file because google benchmark cant put strings</span>
+<span class="w">        </span><span class="c1">// into their `Counter`, therefore the filename cannot be printed</span>
+<span class="w">        </span><span class="c1">// {&quot;filenames&quot;, {&quot;reference_data/inputs/methane.json&quot;}},</span>
+<span class="w">        </span><span class="p">{</span><span class="s">&quot;cutoffs&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">4</span><span class="p">}}};</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">data</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 </pre></div>
 </div>
 <p>At the beginning of the header file there should be a description of each
@@ -286,7 +286,7 @@ parameter.</p>
 <span class="cm"> *</span>
 <span class="cm"> *      // parameter only for `SphericalExpansion` AdaptorStrict cutoff</span>
 <span class="cm"> *      {&quot;cutoffs&quot;, {8}}};</span>
-<span class="cm"> */</span>
+<span class="cm"> */</span><span class="w"></span>
 </pre></div>
 </div>
 <p>After changing the parameters, recompile the code and run the benchmark.
@@ -325,24 +325,24 @@ core featuers of google benchmarks and our own added functionalities in the
 <span class="cm"> * along with this software; see the file LICENSE. If not, write to the</span>
 <span class="cm"> * Free Software Foundation, Inc., 59 Temple Place - Suite 330,</span>
 <span class="cm"> * Boston, MA 02111-1307, USA.</span>
-<span class="cm"> */</span>
+<span class="cm"> */</span><span class="w"></span>
 
-<span class="cp">#include</span> <span class="cpf">&quot;../performance/benchmarks/benchmarks.hh&quot;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;../performance/benchmarks/benchmarks.hh&quot;</span><span class="cp"></span>
 
-<span class="k">namespace</span> <span class="nn">rascal</span> <span class="p">{</span>
-  <span class="cm">/**</span>
+<span class="k">namespace</span><span class="w"> </span><span class="nn">rascal</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="cm">/**</span>
 <span class="cm">   * Structure holding the data, the data is created inside a static function,</span>
 <span class="cm">   * because non primitives cannot be static as member variable.</span>
-<span class="cm">   */</span>
-  <span class="k">struct</span> <span class="nc">SampleData</span> <span class="p">{</span>
-    <span class="k">static</span> <span class="k">const</span> <span class="n">json</span> <span class="nf">data</span><span class="p">()</span> <span class="p">{</span>
-      <span class="k">static</span> <span class="n">json</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{{</span><span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}},</span>
-                          <span class="p">{</span><span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;crystal.json&quot;</span><span class="p">,</span> <span class="s">&quot;cube.json&quot;</span><span class="p">}}};</span>
-      <span class="k">return</span> <span class="n">data</span><span class="p">;</span>
-    <span class="p">}</span>
-  <span class="p">};</span>
+<span class="cm">   */</span><span class="w"></span>
+<span class="w">  </span><span class="k">struct</span> <span class="nc">SampleData</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="nf">data</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="k">static</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{{</span><span class="s">&quot;x&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">}},</span><span class="w"></span>
+<span class="w">                          </span><span class="p">{</span><span class="s">&quot;name&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s">&quot;crystal.json&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;cube.json&quot;</span><span class="p">}}};</span><span class="w"></span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">data</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">};</span><span class="w"></span>
 
-  <span class="cm">/**</span>
+<span class="w">  </span><span class="cm">/**</span>
 <span class="cm">   * We have the naming convention to call fixtures in the benchmarks BFixture</span>
 <span class="cm">   * to potential prevent collision with the tests. All new BFixtures should</span>
 <span class="cm">   * inherit from `BaseBFixture` to inherit a lookup table for the json</span>
@@ -350,50 +350,50 @@ core featuers of google benchmarks and our own added functionalities in the
 <span class="cm">   * in the `SampleData`. According to the json standard a json does have no</span>
 <span class="cm">   * deterministic order, therefore a map has to be built, mapping the json</span>
 <span class="cm">   * keys to the correct position when accesing the json with an index.</span>
-<span class="cm">   */</span>
-  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Dataset</span><span class="o">&gt;</span>
-  <span class="k">class</span> <span class="nc">MyBFixture</span> <span class="o">:</span> <span class="k">public</span> <span class="n">BaseBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span> <span class="p">{</span>
-   <span class="k">public</span><span class="o">:</span>
-    <span class="k">using</span> <span class="n">Parent</span> <span class="o">=</span> <span class="n">BaseBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span><span class="p">;</span>
-    <span class="n">MyBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span><span class="p">()</span> <span class="o">:</span> <span class="n">Parent</span><span class="p">()</span> <span class="p">{}</span>
+<span class="cm">   */</span><span class="w"></span>
+<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Dataset</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="k">class</span> <span class="nc">MyBFixture</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">BaseBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">Parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BaseBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">MyBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Parent</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span><span class="w"></span>
 
-    <span class="cm">/**</span>
+<span class="w">    </span><span class="cm">/**</span>
 <span class="cm">     * By convention we use a setup function which handles the initialization of</span>
 <span class="cm">     * new parameters, it should be invoked at the start of the benchmark.</span>
-<span class="cm">     */</span>
-    <span class="kt">void</span> <span class="n">setup</span><span class="p">(</span><span class="n">benchmark</span><span class="o">::</span><span class="n">State</span> <span class="o">&amp;</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
-      <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">old_name</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">;</span>
+<span class="cm">     */</span><span class="w"></span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="n">setup</span><span class="p">(</span><span class="n">benchmark</span><span class="o">::</span><span class="n">State</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">old_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">;</span><span class="w"></span>
 
-      <span class="c1">// initialize</span>
-      <span class="n">json</span> <span class="n">data</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">::</span><span class="n">data</span><span class="p">();</span>
-      <span class="c1">// lookup takes the indices inside the state and gets parameter x from</span>
-      <span class="c1">// dataset at these indices</span>
-      <span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="k">template</span> <span class="n">lookup</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="n">state</span><span class="p">);</span>
-      <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="k">template</span> <span class="n">lookup</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="n">state</span><span class="p">);</span>
+<span class="w">      </span><span class="c1">// initialize</span>
+<span class="w">      </span><span class="n">json</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Dataset</span><span class="o">::</span><span class="n">data</span><span class="p">();</span><span class="w"></span>
+<span class="w">      </span><span class="c1">// lookup takes the indices inside the state and gets parameter x from</span>
+<span class="w">      </span><span class="c1">// dataset at these indices</span>
+<span class="w">      </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="o">-&gt;</span><span class="k">template</span><span class="w"> </span><span class="n">lookup</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;x&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">);</span><span class="w"></span>
+<span class="w">      </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="o">-&gt;</span><span class="k">template</span><span class="w"> </span><span class="n">lookup</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;name&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">);</span><span class="w"></span>
 
-      <span class="c1">// this check tests if the data has actually changed, if it has changed</span>
-      <span class="c1">// then we do the costly initialization.</span>
-      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">!=</span> <span class="n">old_name</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// Some very costly initialization</span>
-        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Costly initialization.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-      <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="kt">int</span> <span class="n">x</span><span class="p">{};</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">{};</span>
-  <span class="p">};</span>
+<span class="w">      </span><span class="c1">// this check tests if the data has actually changed, if it has changed</span>
+<span class="w">      </span><span class="c1">// then we do the costly initialization.</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">old_name</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// Some very costly initialization</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Costly initialization.&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">{};</span><span class="w"></span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">name</span><span class="p">{};</span><span class="w"></span>
+<span class="w">  </span><span class="p">};</span><span class="w"></span>
 
-  <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">BFixture</span><span class="o">&gt;</span>
-  <span class="kt">void</span> <span class="n">bm_example</span><span class="p">(</span><span class="n">benchmark</span><span class="o">::</span><span class="n">State</span> <span class="o">&amp;</span> <span class="n">state</span><span class="p">,</span> <span class="n">BFixture</span> <span class="o">&amp;</span> <span class="n">fix</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">fix</span><span class="p">.</span><span class="n">setup</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;bm_example invoked &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">fix</span><span class="p">.</span><span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;, &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">fix</span><span class="p">.</span><span class="n">name</span>
-              <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="c1">//</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">_</span> <span class="p">:</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
-      <span class="c1">// do some tests for speed</span>
-    <span class="p">}</span>
-  <span class="p">}</span>
+<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">BFixture</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">bm_example</span><span class="p">(</span><span class="n">benchmark</span><span class="o">::</span><span class="n">State</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">BFixture</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">fix</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">fix</span><span class="p">.</span><span class="n">setup</span><span class="p">(</span><span class="n">state</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;bm_example invoked &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">fix</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;, &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">fix</span><span class="p">.</span><span class="n">name</span><span class="w"></span>
+<span class="w">              </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="c1">//</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="nl">_</span> <span class="p">:</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="c1">// do some tests for speed</span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
 
-  <span class="cm">/**</span>
+<span class="w">  </span><span class="cm">/**</span>
 <span class="cm">   * The `all_combinations_of_arguments` function is used to produce all</span>
 <span class="cm">   * combinations from the parameters included in a `Dataset` structure. The</span>
 <span class="cm">   * parameters are accessible in the benchmark function with the benchmark</span>
@@ -406,12 +406,12 @@ core featuers of google benchmarks and our own added functionalities in the
 <span class="cm">   * Inside the `BaseBFixture class the `lookup` function can be used with the</span>
 <span class="cm">   * data json, the state and the targeted property to access it at the correct</span>
 <span class="cm">   * position.</span>
-<span class="cm">   */</span>
-  <span class="k">auto</span> <span class="n">myfix</span><span class="p">{</span><span class="n">MyBFixture</span><span class="o">&lt;</span><span class="n">SampleData</span><span class="o">&gt;</span><span class="p">()};</span>
-  <span class="n">BENCHMARK_CAPTURE</span><span class="p">(</span><span class="n">bm_example</span><span class="p">,</span> <span class="cm">/* some_name_if_wanted */</span><span class="p">,</span> <span class="n">myfix</span><span class="p">)</span>
-      <span class="o">-&gt;</span><span class="n">Apply</span><span class="p">(</span><span class="n">all_combinations_of_arguments</span><span class="o">&lt;</span><span class="n">SampleData</span><span class="o">&gt;</span><span class="p">);</span>
+<span class="cm">   */</span><span class="w"></span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">myfix</span><span class="p">{</span><span class="n">MyBFixture</span><span class="o">&lt;</span><span class="n">SampleData</span><span class="o">&gt;</span><span class="p">()};</span><span class="w"></span>
+<span class="w">  </span><span class="n">BENCHMARK_CAPTURE</span><span class="p">(</span><span class="n">bm_example</span><span class="p">,</span><span class="w"> </span><span class="cm">/* some_name_if_wanted */</span><span class="p">,</span><span class="w"> </span><span class="n">myfix</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="o">-&gt;</span><span class="n">Apply</span><span class="p">(</span><span class="n">all_combinations_of_arguments</span><span class="o">&lt;</span><span class="n">SampleData</span><span class="o">&gt;</span><span class="p">);</span><span class="w"></span>
 
-  <span class="cm">/**</span>
+<span class="w">  </span><span class="cm">/**</span>
 <span class="cm">   * This benchmark should make clear how the different depths of iterations</span>
 <span class="cm">   * work in google benchmark there is the `benchmark_repetitions` flag which</span>
 <span class="cm">   * can be given when executing the benchmark. This parameter controls how</span>
@@ -424,50 +424,50 @@ core featuers of google benchmarks and our own added functionalities in the
 <span class="cm">   * `benchmark_min_time` flag, but google benchmark itself handles how the time</span>
 <span class="cm">   * changes the two parameters. To understand this better, please execute this</span>
 <span class="cm">   * benchmark multiple times with different values.</span>
-<span class="cm">   */</span>
-  <span class="kt">void</span> <span class="nf">BM_StringCompare</span><span class="p">(</span><span class="n">benchmark</span><span class="o">::</span><span class="n">State</span> <span class="o">&amp;</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Preiteration &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s1</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="sc">&#39;-&#39;</span><span class="p">);</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s2</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="sc">&#39;-&#39;</span><span class="p">);</span>
-    <span class="cm">/* We do not print inside the iterations because this value can be seen when</span>
+<span class="cm">   */</span><span class="w"></span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">BM_StringCompare</span><span class="p">(</span><span class="n">benchmark</span><span class="o">::</span><span class="n">State</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Preiteration &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">s1</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="sc">&#39;-&#39;</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">s2</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="sc">&#39;-&#39;</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="cm">/* We do not print inside the iterations because this value can be seen when</span>
 <span class="cm">     * the benchmarks are run.</span>
-<span class="cm">     */</span>
-    <span class="c1">// BEGIN ITERATION</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="nl">_</span> <span class="p">:</span> <span class="n">state</span><span class="p">)</span> <span class="p">{</span>
-      <span class="n">benchmark</span><span class="o">::</span><span class="n">DoNotOptimize</span><span class="p">(</span><span class="n">s1</span><span class="p">.</span><span class="n">compare</span><span class="p">(</span><span class="n">s2</span><span class="p">));</span>
-    <span class="p">}</span>  <span class="c1">// END ITERATION</span>
-    <span class="n">state</span><span class="p">.</span><span class="n">SetComplexityN</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
-  <span class="p">}</span>
+<span class="cm">     */</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// BEGIN ITERATION</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="nl">_</span> <span class="p">:</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">      </span><span class="n">benchmark</span><span class="o">::</span><span class="n">DoNotOptimize</span><span class="p">(</span><span class="n">s1</span><span class="p">.</span><span class="n">compare</span><span class="p">(</span><span class="n">s2</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w">  </span><span class="c1">// END ITERATION</span>
+<span class="w">    </span><span class="n">state</span><span class="p">.</span><span class="n">SetComplexityN</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
 
-  <span class="cm">/**</span>
+<span class="w">  </span><span class="cm">/**</span>
 <span class="cm">   * `RangeMultiplier` is the exponential base for all ranges given later by</span>
 <span class="cm">   * `Range` or `Ranges`. The first parameter 1 &lt;&lt; 10 results in parameters</span>
 <span class="cm">   * (1,2,4,8), the second (1,2,4,8,16)</span>
-<span class="cm">   */</span>
-  <span class="n">BENCHMARK</span><span class="p">(</span><span class="n">BM_StringCompare</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">RangeMultiplier</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Range</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">18</span><span class="p">);</span>
+<span class="cm">   */</span><span class="w"></span>
+<span class="w">  </span><span class="n">BENCHMARK</span><span class="p">(</span><span class="n">BM_StringCompare</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">RangeMultiplier</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">Range</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">18</span><span class="p">);</span><span class="w"></span>
 
-  <span class="cm">/**</span>
+<span class="w">  </span><span class="cm">/**</span>
 <span class="cm">   * Repetition repeats everything in this case 3 times and calculates</span>
 <span class="cm">   * averages</span>
-<span class="cm">   */</span>
-  <span class="n">BENCHMARK</span><span class="p">(</span><span class="n">BM_StringCompare</span><span class="p">)</span>
-      <span class="o">-&gt;</span><span class="n">RangeMultiplier</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-      <span class="o">-&gt;</span><span class="n">Range</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">18</span><span class="p">)</span>
-      <span class="o">-&gt;</span><span class="n">Repetitions</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+<span class="cm">   */</span><span class="w"></span>
+<span class="w">  </span><span class="n">BENCHMARK</span><span class="p">(</span><span class="n">BM_StringCompare</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="o">-&gt;</span><span class="n">RangeMultiplier</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="o">-&gt;</span><span class="n">Range</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">18</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="o">-&gt;</span><span class="n">Repetitions</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span><span class="w"></span>
 
-  <span class="cm">/**</span>
+<span class="w">  </span><span class="cm">/**</span>
 <span class="cm">   * Google benchmark can estimate the complexity. To estimate the complexity</span>
 <span class="cm">   * inside the benchmark the parameter determing the size is required.</span>
-<span class="cm">   */</span>
-  <span class="n">BENCHMARK</span><span class="p">(</span><span class="n">BM_StringCompare</span><span class="p">)</span>
-      <span class="o">-&gt;</span><span class="n">RangeMultiplier</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-      <span class="o">-&gt;</span><span class="n">Range</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">18</span><span class="p">)</span>
-      <span class="o">-&gt;</span><span class="n">Complexity</span><span class="p">();</span>
-  <span class="c1">// alternatively an own complexity function can be given</span>
-  <span class="c1">//-&gt;Range(1&lt;&lt;10, 1&lt;&lt;18)-&gt;Complexity([](auto n)-&gt;double{return n;});</span>
+<span class="cm">   */</span><span class="w"></span>
+<span class="w">  </span><span class="n">BENCHMARK</span><span class="p">(</span><span class="n">BM_StringCompare</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="o">-&gt;</span><span class="n">RangeMultiplier</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="o">-&gt;</span><span class="n">Range</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">18</span><span class="p">)</span><span class="w"></span>
+<span class="w">      </span><span class="o">-&gt;</span><span class="n">Complexity</span><span class="p">();</span><span class="w"></span>
+<span class="w">  </span><span class="c1">// alternatively an own complexity function can be given</span>
+<span class="w">  </span><span class="c1">//-&gt;Range(1&lt;&lt;10, 1&lt;&lt;18)-&gt;Complexity([](auto n)-&gt;double{return n;});</span>
 
-<span class="p">}</span>  <span class="c1">// namespace rascal</span>
-<span class="n">BENCHMARK_MAIN</span><span class="p">();</span>
+<span class="p">}</span><span class="w">  </span><span class="c1">// namespace rascal</span>
+<span class="n">BENCHMARK_MAIN</span><span class="p">();</span><span class="w"></span>
 </pre></div>
 </div>
 </section>

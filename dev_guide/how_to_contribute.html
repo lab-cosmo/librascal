@@ -234,17 +234,17 @@ Before, jumping into the next paragraphs, please respect our <a class="reference
 <section id="write-the-c-method">
 <h2><a class="toc-backref" href="#id3">Write the C++ method</a><a class="headerlink" href="#write-the-c-method" title="Permalink to this headline">¶</a></h2>
 <p>At this point, you can code the method in the way that you want, but we remind you that it should be included in the <code class="docutils literal notranslate"><span class="pre">namespace</span> <span class="pre">rascal</span> <span class="pre">{...}</span></code>. So for example, your file(s) <code class="docutils literal notranslate"><span class="pre">mymethod.hh</span></code> will contain:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;wathever_is_needed&gt;</span><span class="cp"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;wathever_is_needed&gt;</span><span class="cp"></span>
 
-<span class="k">namespace</span> <span class="nn">rascal</span> <span class="p">{</span>
-    <span class="cm">/**</span>
+<span class="k">namespace</span><span class="w"> </span><span class="nn">rascal</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="cm">/**</span>
 <span class="cm">    * Remember to put comments in a form that Doxygen</span>
 <span class="cm">    * so that is clear what they do</span>
-<span class="cm">    */</span>
-    <span class="kt">void</span> <span class="nf">function</span><span class="p">(</span><span class="n">type</span><span class="o">&amp;</span> <span class="n">args</span><span class="p">){</span>
-        <span class="p">...</span>
-    <span class="p">}</span>
-<span class="p">}</span>
+<span class="cm">    */</span><span class="w"></span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">function</span><span class="p">(</span><span class="n">type</span><span class="o">&amp;</span><span class="w"> </span><span class="n">args</span><span class="p">){</span><span class="w"></span>
+<span class="w">        </span><span class="p">...</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
 <p>Once the method that you need has been implemented, you can save the file(s) and proceed. Note that adding a <code class="docutils literal notranslate"><span class="pre">.cc</span></code> file requires its registration in the folder’s CMakeLists.txt for it to be compiled.</p>
