@@ -37,10 +37,12 @@ namespace rascal {
                                            int * numneigh, int ** firstneigh,
                                            double ** x, double ** f, int * type,
                                            double * eatom, double ** vatom, std::vector<int> atom_types,
-                                           int * lammps_atom_tag, double * lattice, int * pbc) {
+                                           int * lammps_atom_tags, double * lattice, int * pbc) {
     // IMPORTANT: atom tags in lammps work like atom index in rascal (ghost atoms have the id of their corresponding atoms)
-    // We have to use the lammps  as rascal atom indices because lammps does not store atom
-    // lammps ilist <-> rascal atom indices
+    //   We have to use the lammps  as rascal atom indices because lammps does not store atom
+    //   lammps ilist <-> rascal atom indices
+    // IMPORTANT: In MPI setting inum is set to the number of atoms in the domain
+    //            while lammps_atom_tags contains the tags for all domains
     this->inum = inum;
     this->tot_num = tot_num;
     this->ilist = ilist;
@@ -74,7 +76,7 @@ namespace rascal {
 
     this->atom_tag_list.resize(this->tot_num);
     this->atom_index_from_atom_tag_list.resize(this->tot_num);
-    std::map<int, int> rascal_atom_index_from_lammps_atom_tag{};
+    std::map<int, int> rascal_atom_index_from_lammps_atom_tags{};
     int max_rascal_atom_index{0};
     for (int i{0}; i < this->tot_num; ++i) {
       // Here we assume that ilist does count ascending without gaps.
@@ -85,17 +87,16 @@ namespace rascal {
       // they are user-defined, thefore the can have any number > 0.
       // So we remap them to the range [0, tot_num] to obtain
       // rascal atom indices
-      if (rascal_atom_index_from_lammps_atom_tag.count(lammps_atom_tag[i]) == 0) {
-        rascal_atom_index_from_lammps_atom_tag[lammps_atom_tag[i]] = max_rascal_atom_index;
+      if (rascal_atom_index_from_lammps_atom_tags.count(lammps_atom_tags[i]) == 0) {
+        rascal_atom_index_from_lammps_atom_tags[lammps_atom_tags[i]] = max_rascal_atom_index;
         this->atom_index_from_atom_tag_list[i] = max_rascal_atom_index;
         max_rascal_atom_index++;
       } else {
-        this->atom_index_from_atom_tag_list[i] = rascal_atom_index_from_lammps_atom_tag[lammps_atom_tag[i]];
+        this->atom_index_from_atom_tag_list[i] = rascal_atom_index_from_lammps_atom_tags[lammps_atom_tags[i]];
       }
     }
-    std::cout << "max_rascal_atom_index, " << "this->inum ";
-    std::cout << max_rascal_atom_index << ", " << this->inum << std::endl;
-    assert(max_rascal_atom_index == this->inum);
+    //std::cout << sched_getcpu() << ": " << "StructureManagerLammps: max_rascal_atom_index, " << "this->inum " << "this->tot_num ";
+    //std::cout << max_rascal_atom_index << ", " << this->inum << ", " << this->tot_num << std::endl;
 
     atom_cluster_indices.fill_sequence();
     pair_cluster_indices.fill_sequence();
