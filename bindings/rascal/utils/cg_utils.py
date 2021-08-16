@@ -558,6 +558,11 @@ class ClebschGordanReal:
         e.g. when called with iterate=1 the return dictionary contains terms of
         the form
         (l3,l4,l1,l2) : { L: array }
+        
+        
+        Note that this coupling scheme is different from the NICE-coupling where
+        angular momenta are coupled from left to right as (((l1 l2) l3) l4)... )
+        Thus results may differ when combining more than two angular channels.
         """
 
         coupled = {}
