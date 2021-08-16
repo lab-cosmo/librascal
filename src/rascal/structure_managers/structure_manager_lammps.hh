@@ -151,7 +151,7 @@ namespace rascal {
     //! get const atom type reference given an atom_tag
     int get_atom_type(int atom_tag) const {
       // lammps atom types go from 1 to N, so we map it to rascal atom types
-      // by mapping 0 to N-1 to the correspoinding number
+      // by mapping 0 to N-1 to the corresponding number
       return this->atom_types[this->type[this->get_atom_index(atom_tag)]-1];
     }
 
