@@ -311,7 +311,7 @@ def extract_kernel_indices(
             offsets = np.cumsum(natoms)
             for idx in idces:
                 nat = natoms[idx]
-                offset = offsets[idx]
+                offset = offsets[idx] - nat
                 kernel_grads_sub.append(kernel_grads_peratom[offset : offset + nat])
             kernel_grads_sub = np.concatenate(kernel_grads_sub)
             n_grads_sub = kernel_grads_sub.shape[0]
