@@ -202,7 +202,22 @@ def compute_kernels(
             raise ValueError(
                 "Atom-centered properties do not support gradients at present"
             )
-        kernel_sparse_full_grads = kernel(soaps, sparse_points, grad=(True, False))
+        # In this case, the representation matrix _with_ gradients is usually
+        # too large to fit in memory, so we make a special version of the
+        # representation with gradients enabled and then compute the K_NM
+        # gradient entries one at a time.
+        rep_hypers = rep._get_init_params()
+        rep_hypers['compute_gradients'] = True
+        rep_grads = rep.__class__(**rep_hypers)
+        kernel = models.Kernel(
+            rep_grads, name="GAP", zeta=soap_power, target_type=target_type, kernel_type="Sparse"
+        )
+        kernel_rows = []
+        for frame in soaps._frames:
+            soap_grad = rep_grads.transform([frame,])
+            kernel_row = kernel(soap_grad, sparse_points, grad=(True, False))
+            kernel_rows.append(kernel_row)
+        kernel_sparse_full_grads = np.concatenate(kernel_rows)
         if save_kernels:
             np.save(os.path.join(WORKDIR, "K_NM_F"), kernel_sparse_full_grads)
         return (kernel, kernel_sparse, kernel_sparse_full, kernel_sparse_full_grads)
