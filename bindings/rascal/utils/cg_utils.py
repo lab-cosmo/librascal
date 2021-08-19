@@ -61,15 +61,15 @@ def _cg(l1, l2, L):
     return rcg
 
 
-# Convert from real to complex spherical harmonics (or corresponding
-# coefficients) and back. Uses the convention
+
+I_SQRT_2 = 1.0 / np.sqrt(2)
+SQRT_2 = np.sqrt(2)
+
+# Convert from real to complex spherical harmonics [_r2c] (or corresponding
+# coefficients) and back [_c2r]. Uses the convention
 #               (-1)^m Im(|l (-m); C>) sqrt(2) if  m<0
 #   |lm; R> =   Re(|lm; C>)                    if  m==0
 #               (-1)^m Im(|l m; C>) sqrt(2)    if  m>0
-isqrt2 = 1.0 / np.sqrt(2)
-sqrt2 = np.sqrt(2)
-
-
 def _r2c(sp):
     """Real to complex SPH. Assumes a block with 2l+1 reals corresponding
     to real SPH with m indices from -l to +l"""
@@ -78,8 +78,8 @@ def _r2c(sp):
     rc = np.zeros(len(sp), dtype=np.complex128)
     rc[l] = sp[l]
     for m in range(1, l + 1):
-        rc[l + m] = (sp[l + m] + 1j * sp[l - m]) * isqrt2 * (-1) ** m
-        rc[l - m] = (sp[l + m] - 1j * sp[l - m]) * isqrt2
+        rc[l + m] = (sp[l + m] + 1j * sp[l - m]) * I_SQRT_2 * (-1) ** m
+        rc[l - m] = (sp[l + m] - 1j * sp[l - m]) * I_SQRT_2
     return rc
 
 
@@ -90,8 +90,8 @@ def _c2r(cp):
     rs = np.zeros(len(cp), dtype=np.float64)
     rs[l] = np.real(cp[l])
     for m in range(1, l + 1):
-        rs[l - m] = (-1) ** m * sqrt2 * np.imag(cp[l + m])
-        rs[l + m] = (-1) ** m * sqrt2 * np.real(cp[l + m])
+        rs[l - m] = (-1) ** m * SQRT_2 * np.imag(cp[l + m])
+        rs[l + m] = (-1) ** m * SQRT_2 * np.real(cp[l + m])
     return rs
 
 
@@ -248,7 +248,7 @@ def compute_lambda_soap(spx, cg, lam, parity=0):
                     lam,
                     combination_string="ian,iAN->ianAN",
                 )
-                * (1 if l2 == l1 else sqrt2)
+                * (1 if l2 == l1 else   SQRT_2)
             )
             nl += 1
     return lsoap
@@ -368,7 +368,11 @@ class ClebschGordanReal:
                     self._cgraw[(l1, l2, L)] = ccg
 
                     # applies transformations that make them act and generate real
-                    # valued coefficients
+                    # valued coefficients. this is basically achieved taking the
+                    # <l1m1; l2m2| LM> "complex" CG and apply a real-to-complex to 
+                    # the bra (r2c) and a complex-to-real transformation to the ket 
+                    # (c2r). Note that since the c2r is applied to the right, there 
+                    # has to be a transposition (zc rather than cz in einsum)
                     if (l1 + l2 + L) % 2 == 0:
                         rcg = np.real(
                             np.einsum(
