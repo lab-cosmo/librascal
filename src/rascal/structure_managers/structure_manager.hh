@@ -358,6 +358,10 @@ namespace rascal {
      * already been attached in the manager layer which invoked this function.
      */
     inline bool is_property_in_current_level(const std::string & name) const {
+      //std::cout << sched_getcpu() << ": " << "is_property_in_current_level Level " << traits::StackLevel << " requested name " << name << std::endl;
+      //for(auto it = this->properties.cbegin(); it != this->properties.cend(); ++it) {
+      //  std::cout << sched_getcpu() << ": " << "property key " << it->first << std::endl;
+      //}
       return not(this->properties.find(name) == this->properties.end());
     }
 
@@ -387,8 +391,10 @@ namespace rascal {
               std::enable_if_t<IsRoot, int> = 0>
     inline bool is_property_in_stack(const std::string & name) {
       if (this->is_property_in_current_level(name)) {
+        //std::cout << sched_getcpu() << ": " << "is_property_in_stack with " << name << " true\n" << std::endl;
         return true;
       }
+      //std::cout << sched_getcpu() << ": " << "is_property_in_stack with " << name << " false\n" << std::endl;
       return false;
     }
 
@@ -396,8 +402,10 @@ namespace rascal {
               std::enable_if_t<not(IsRoot), int> = 0>
     inline bool is_property_in_stack(const std::string & name) {
       if (this->is_property_in_current_level(name)) {
+        //std::cout << sched_getcpu() << ": " << "is_property_in_stack with " << name << " true" << std::endl;
         return true;
       }
+      //std::cout << sched_getcpu() << ": " << "is_property_in_stack with " << name << " false" << std::endl;
       return this->get_previous_manager()->is_property_in_stack(name);
     }
 
@@ -510,6 +518,7 @@ namespace rascal {
                  const bool force_creation = false,
                  const bool exclude_ghosts = false,
                  const std::string & metadata = "no metadata") {
+      //std::cout << "property with name " << name << " requested" << std::endl;
       bool is_property_in_stack{this->is_property_in_stack(name)};
       if (is_property_in_stack) {
         return this->template forward_get_property_request<UserProperty_t>(

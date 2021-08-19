@@ -213,17 +213,22 @@ namespace rascal {
     using Property_t = typename Calculator::template Property_t<Manager_t>;
     using PropertyGradient_t =
         typename Calculator::template PropertyGradient_t<Manager_t>;
+
     auto && representation_name{calculator.get_name()};
-    const auto representation_grad_name{calculator.get_gradient_name()};
+    std::string representation_grad_name{calculator.get_gradient_name()};
     size_t n_centers{0};
     // find the total number of gradients
     for (const auto & manager : managers) {
       n_centers += manager->size();
     }
 
+    std::string kernel_type_str = kernel.parameters.at("name").get<std::string>();
     internal::Hash<math::Vector_t, double> hasher{};
-    auto kernel_type_str = kernel.parameters.at("name").get<std::string>();
     std::string weight_hash = std::to_string(hasher(weights));
+    //std::cout << "kernel_type_str " << kernel_type_str << std::endl;
+    //std::cout << "representation_grad_name  " << representation_grad_name << std::endl;
+    //std::cout << "weight_hash " << weight_hash << std::endl;
+
     std::string pair_grad_atom_i_r_j_name =
         std::string("kernel: ") + kernel_type_str + std::string(" ; ") +
         representation_grad_name +
