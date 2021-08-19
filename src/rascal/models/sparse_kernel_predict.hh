@@ -246,6 +246,12 @@ namespace rascal {
           Property<double, 1, Manager_t, 1, ThreeD>>(gradient_name, true, true,
                                                      true)};
       if (gradients.is_updated()) {
+        //auto rascal_forces = Eigen::Map<const math::Matrix_t>(
+        //     gradients.view().data(), manager->size(), 3);
+        //std::cout << sched_getcpu() << ": " << "updated rascal forces with shape (" << rascal_forces.rows() << ", " << rascal_forces.cols() << "):\n";
+        //for (int i=0; i < rascal_forces.rows(); i++) {
+        //  std::cout << sched_getcpu() << ": " << rascal_forces.row(i) << std::endl;
+        //}
         continue;
       }
       gradients.resize();
@@ -258,17 +264,15 @@ namespace rascal {
         // accumulate partial gradients onto gradients
         for (auto neigh : center.pairs_with_self_pair()) {
           // TODO(alex) should work now, just in case I have to debug this again
-          //std::cout << "neigh.get_atom_j() " << neigh.get_atom_j().get_atom_tag() << std::endl;
-          //std::cout << pair_grad_atom_i_r_j[neigh].rows() << " " << pair_grad_atom_i_r_j[neigh].cols() << std::endl;
-          //std::cout << pair_grad_atom_i_r_j[neigh] << std::endl;
-          //std::cout << gradients[neigh.get_atom_j()].rows() << " " << gradients[neigh.get_atom_j()].cols() << std::endl;
-          //std::cout << gradients[neigh.get_atom_j()] << std::endl; // oldTODO(alex)  valgrind says here is memory leak
-          //std::cout << "pair (" << center.get_atom_tag() << ", " 
-          //          << neigh.get_atom_tag() << ") global index " 
-          //          << neigh.get_global_index() << ", atom j tag "
-          //          << neigh.get_atom_j().get_atom_tag() << ", atom j cluster index "
-          //          << neigh.get_atom_j().get_cluster_index() << std::endl;  
-
+          std::cout << sched_getcpu() << ": " << "the pair (" << center.get_atom_tag() << ", " 
+                    << neigh.get_atom_tag() << ") global index " 
+                    << neigh.get_global_index() << "writes to atom j with tag "
+                    << neigh.get_atom_j().get_atom_tag() << " and cluster index "
+                    << neigh.get_atom_j().get_cluster_index() 
+                    << neigh.get_atom_j().get_atom_tag() << " pair gradient with shape "
+                    << pair_grad_atom_i_r_j[neigh].rows() << " " << pair_grad_atom_i_r_j[neigh].cols() << std::endl;
+          std::cout << sched_getcpu() << ": " << pair_grad_atom_i_r_j[neigh] << std::endl;
+          //std::cout << sched_getcpu() << ": " << gradients[neigh.get_atom_j()] << std::endl; // oldTODO(alex)  valgrind says here is memory leak
           gradients[neigh.get_atom_j()] += pair_grad_atom_i_r_j[neigh];
         }
       }
