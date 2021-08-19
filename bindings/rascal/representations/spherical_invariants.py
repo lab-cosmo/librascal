@@ -475,16 +475,15 @@ class SphericalInvariants(BaseIO):
             ]
         return init_params
 
-    #def _set_data(self, data):
-    #    super()._set_data(data)
-
-    #def _get_data(self):
-    #    return super()._get_data()
-  
     # a cpp readable dict/json is dumped into "data" of the representation dict/json
     def _set_data(self, data):
         super()._set_data(data)
-        self._representation = self._representation.from_dict(data["cpp_representation"])
+        # allows to load deprecated models 
+        if "cpp_representation" in data.keys():
+          self._representation = self._representation.from_dict(data["cpp_representation"])
+        else:
+          #TODO(alex)TODO(max) put this into logger
+          print("WARNING: you loaded a deprecated model. Please dump and reload the model to update it. The model parameters will not change, only the format.")
 
     def _get_data(self):
         data = super()._get_data()

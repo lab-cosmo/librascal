@@ -378,7 +378,12 @@ class SphericalCovariants(BaseIO):
 
     def _set_data(self, data):
         super()._set_data(data)
-        self._representation = self._representation.from_dict(data["cpp_representation"])
+        # allows to load deprecated models 
+        if "cpp_representation" in data.keys():
+          self._representation = self._representation.from_dict(data["cpp_representation"])
+        else:
+          #TODO(alex)TODO(max) put this into logger
+          print("WARNING: you loaded a deprecated model. Please dump and reload the model to update it. The model parameters will not change, only the format.")
 
     def _get_data(self):
         data = super()._get_data()

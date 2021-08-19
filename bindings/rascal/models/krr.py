@@ -189,6 +189,7 @@ class KRR(BaseIO):
 
         if KNM is None:
             rep = self.kernel._representation
+            # TODO(alex) check if weights need shape (1,-1), but it should not really matter
             neg_stress = compute_sparse_kernel_neg_stress(
                 rep,
                 self.kernel._kernel,
@@ -209,8 +210,14 @@ class KRR(BaseIO):
 
         return -neg_stress
 
-    def get_weights(self):
-        return self.weights
+    # TODO(alex) check if this does not break things
+    @property
+    def weights(self):
+        return self._weights
+
+    @weights.setter
+    def weights(self, weights):
+        self._weights = weights.reshape(-1, 1)
 
     def _get_init_params(self):
         init_params = dict(
