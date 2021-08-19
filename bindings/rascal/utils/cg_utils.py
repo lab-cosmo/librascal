@@ -61,7 +61,6 @@ def _cg(l1, l2, L):
     return rcg
 
 
-
 I_SQRT_2 = 1.0 / np.sqrt(2)
 SQRT_2 = np.sqrt(2)
 
@@ -248,7 +247,7 @@ def compute_lambda_soap(spx, cg, lam, parity=0):
                     lam,
                     combination_string="ian,iAN->ianAN",
                 )
-                * (1 if l2 == l1 else   SQRT_2)
+                * (1 if l2 == l1 else SQRT_2)
             )
             nl += 1
     return lsoap
@@ -369,9 +368,9 @@ class ClebschGordanReal:
 
                     # applies transformations that make them act and generate real
                     # valued coefficients. this is basically achieved taking the
-                    # <l1m1; l2m2| LM> "complex" CG and apply a real-to-complex to 
-                    # the bra (r2c) and a complex-to-real transformation to the ket 
-                    # (c2r). Note that since the c2r is applied to the right, there 
+                    # <l1m1; l2m2| LM> "complex" CG and apply a real-to-complex to
+                    # the bra (r2c) and a complex-to-real transformation to the ket
+                    # (c2r). Note that since the c2r is applied to the right, there
                     # has to be a transposition (zc rather than cz in einsum)
                     if (l1 + l2 + L) % 2 == 0:
                         rcg = np.real(
