@@ -1,5 +1,5 @@
 """
-Utilities to manipulate CG coefficients, rotations, and equivariant construction in general.
+Utilities to manipulate Clebsch–Gordan coefficients, rotations, and equivariant construction in general.
 Requires sympy to compute relevant coefficients.
 """
 
