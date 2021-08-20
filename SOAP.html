@@ -122,6 +122,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#beyond-soap">Beyond SOAP</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="dev_guide/developer.html">Developer’s guide</a></li>
@@ -225,11 +226,11 @@
 <dd class="field-odd"><p>Felix Musil, Max Veit, Michael Willatt, Klim Goldshtein</p>
 </dd>
 <dt class="field-even">Last updated</dt>
-<dd class="field-even"><p>27 Aug 2019</p>
+<dd class="field-even"><p>15 Aug 2020</p>
 </dd>
 </dl>
 <p>The mathematics behind the analytical radial integrals, and Cartesian gradients,
-of the SOAP descriptor is described below.</p>
+of the SOAP descriptor <a class="footnote-reference brackets" href="#one" id="id1">8</a> is described below.</p>
 <section id="from-the-density-to-the-density-expansion">
 <h2>From the density to the density expansion<a class="headerlink" href="#from-the-density-to-the-density-expansion" title="Permalink to this headline">¶</a></h2>
 <p>Density expansion:</p>
@@ -368,20 +369,20 @@ Y_{\ell}^{m}\left(\hat{\mathrm{R}}\hat{\mathbf{r}}\right) = &amp; \sum_{m'=-\ell
 the following integral representation</p>
 <div class="math notranslate nohighlight">
 \[\mathsf{i}_n\left(z\right)= \frac{1}{2}\int_{-1}^{1}\mathrm{d}x \exp\left(zx\right)\mathrm{P}_{n}^{0}\left(x\right),\]</div>
-<p>which can be shown using the reference relations <a class="footnote-reference brackets" href="#id4" id="id1">1</a> <a class="footnote-reference brackets" href="#id5" id="id2">2</a> <a class="footnote-reference brackets" href="#id6" id="id3">3</a>:</p>
+<p>which can be shown using the reference relations <a class="footnote-reference brackets" href="#id5" id="id2">1</a> <a class="footnote-reference brackets" href="#id6" id="id3">2</a> <a class="footnote-reference brackets" href="#id7" id="id4">3</a>:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{aligned}
 \mathsf{j}_n\left(z\right) =&amp; \frac{(-i)^n}{2}\int_{-1}^{1}\mathrm{d}x \exp\left[izx\right]P_{n}^{0}\left(x\right), \label{eq:bessel-1}\\
 \mathsf{i}_n\left(z\right)=&amp; (-i)^{n} \mathsf{j}_n\left(iz\right), \label{eq:bessel-3}\\
 \mathsf{i}_n\left(z\right)=&amp; (-1)^{n} \mathsf{i}_n\left(-z\right), \label{eq:bessel-4}\end{aligned}\end{split}\]</div>
 <dl class="footnote brackets">
-<dt class="label" id="id4"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dt class="label" id="id5"><span class="brackets"><a class="fn-backref" href="#id2">1</a></span></dt>
 <dd><p><a class="reference external" href="http://dlmf.nist.gov/10.54.E2">http://dlmf.nist.gov/10.54.E2</a></p>
 </dd>
-<dt class="label" id="id5"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
+<dt class="label" id="id6"><span class="brackets"><a class="fn-backref" href="#id3">2</a></span></dt>
 <dd><p><a class="reference external" href="http://dlmf.nist.gov/10.47.E12">http://dlmf.nist.gov/10.47.E12</a></p>
 </dd>
-<dt class="label" id="id6"><span class="brackets"><a class="fn-backref" href="#id3">3</a></span></dt>
+<dt class="label" id="id7"><span class="brackets"><a class="fn-backref" href="#id4">3</a></span></dt>
 <dd><p><a class="reference external" href="http://dlmf.nist.gov/10.47.E16">http://dlmf.nist.gov/10.47.E16</a></p>
 </dd>
 </dl>
@@ -442,7 +443,7 @@ terms of MSBF:</p>
 <div class="math notranslate nohighlight">
 \[\CHF{a}{\ell+\frac{3}{2}}{x} = \frac{2x^{-\frac{\ell}{2}}}{\sqrt{\pi}}\frac{\GA{\ell+\frac{3}{2}}}{\GA{a}}\int_0^\infty e^{-t} t^{a-1-\frac{\ell}{2}} \mathsf{i}_{\ell}(2\sqrt{xt})\dd{t},
 \label{eq:chf-int}\]</div>
-<p>using these relations <a class="footnote-reference brackets" href="#id10" id="id7">4</a> <a class="footnote-reference brackets" href="#id11" id="id8">5</a> <a class="footnote-reference brackets" href="#id12" id="id9">6</a></p>
+<p>using these relations <a class="footnote-reference brackets" href="#id11" id="id8">4</a> <a class="footnote-reference brackets" href="#id12" id="id9">5</a> <a class="footnote-reference brackets" href="#id13" id="id10">6</a></p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{align}
 \CHF{a}{b}{z} = &amp; \frac{1}{\GA{a}} \int_0^\infty e^{-t}t^{a-1}\CHLF{b}{zt}\dd{t},\\
@@ -452,14 +453,14 @@ I_l(z) =&amp; \frac{(\frac{z}{2})^{\ell}}{\GA{l+1}} \CHLF{\ell+1}{\frac{z^2}{4}}
 \CHLF{\ell+\frac{3}{2}}{xt}=&amp; \sqrt{\frac{4}{\pi}}\GA{\ell+\frac{3}{2}} x^{-\frac{\ell}{2}}t^{-\frac{\ell}{2}}\mathsf{i}_{\ell}(2\sqrt{xt}),
 \end{align}\end{split}\]</div>
 <dl class="footnote brackets">
-<dt class="label" id="id10"><span class="brackets"><a class="fn-backref" href="#id7">4</a></span></dt>
+<dt class="label" id="id11"><span class="brackets"><a class="fn-backref" href="#id8">4</a></span></dt>
 <dd><p><a class="reference external" href="http://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/07/01/01/0002/">http://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/07/01/01/0002/</a>
 <a class="reference external" href="http://dlmf.nist.gov/16.5.E3">http://dlmf.nist.gov/16.5.E3</a></p>
 </dd>
-<dt class="label" id="id11"><span class="brackets"><a class="fn-backref" href="#id8">5</a></span></dt>
+<dt class="label" id="id12"><span class="brackets"><a class="fn-backref" href="#id9">5</a></span></dt>
 <dd><p><a class="reference external" href="https://en.wikipedia.org/wiki/Generalized_hypergeometric_function#The_series_0F1">https://en.wikipedia.org/wiki/Generalized_hypergeometric_function#The_series_0F1</a></p>
 </dd>
-<dt class="label" id="id12"><span class="brackets">6</span><span class="fn-backref">(<a href="#id9">1</a>,<a href="#id16">2</a>)</span></dt>
+<dt class="label" id="id13"><span class="brackets">6</span><span class="fn-backref">(<a href="#id10">1</a>,<a href="#id17">2</a>)</span></dt>
 <dd><p><a class="reference external" href="http://mathworld.wolfram.com/ModifiedSphericalBesselFunctionoftheFirstKind.html">http://mathworld.wolfram.com/ModifiedSphericalBesselFunctionoftheFirstKind.html</a></p>
 </dd>
 </dl>
@@ -505,13 +506,13 @@ following shifting formula is useful,</p>
 \[\int_a^b f(x)\,\dd{x} \approx \frac{b-a}{2} \sum_{i=1}^n w_i f\left(\frac{b-a}{2}x_i + \frac{a+b}{2}\right).\]</div>
 <section id="discrete-variable-representation">
 <h5>Discrete Variable Representation<a class="headerlink" href="#discrete-variable-representation" title="Permalink to this headline">¶</a></h5>
-<p>In the special case of the the DVR radial basis <a class="footnote-reference brackets" href="#id14" id="id13">7</a> with Gauss-Legendre
+<p>In the special case of the the DVR radial basis <a class="footnote-reference brackets" href="#id15" id="id14">7</a> with Gauss-Legendre
 quadrature rule, the radial integral simplifies into:</p>
 <div class="math notranslate nohighlight">
 \[\text{I}_{n\ell}^{ij} = \frac{r_c}{2} \sqrt{\omega_n} x_n^2 e^{-ax_n^2} \mathsf{i}_{\ell}\left(2a x_n r_{ij}\right),\]</div>
 <p>where <span class="math notranslate nohighlight">\(x_n=\frac{r_c}{2}r_n+\frac{r_c}{2}\)</span>.</p>
 <dl class="footnote brackets">
-<dt class="label" id="id14"><span class="brackets"><a class="fn-backref" href="#id13">7</a></span></dt>
+<dt class="label" id="id15"><span class="brackets"><a class="fn-backref" href="#id14">7</a></span></dt>
 <dd><p>Light, J. C., &amp; Carrington, T. (2007). Discrete-Variable Representations and their Utilization (pp. 263–310). John Wiley &amp; Sons, Ltd.
 <a class="reference external" href="https://doi.org/10.1002/9780470141731.ch4">https://doi.org/10.1002/9780470141731.ch4</a></p>
 </dd>
@@ -640,7 +641,7 @@ derivatives of spherical harmonics is computed in the
 </section>
 </section>
 <section id="gto-like-radial-basis-1">
-<span id="id15"></span><h4>GTO like radial basis<a class="headerlink" href="#gto-like-radial-basis-1" title="Permalink to this headline">¶</a></h4>
+<span id="id16"></span><h4>GTO like radial basis<a class="headerlink" href="#gto-like-radial-basis-1" title="Permalink to this headline">¶</a></h4>
 <p>We rewrite <a class="reference external" href="#eq:rad-int-gto-1">[eq:rad-int-gto-1]</a></p>
 <div class="math notranslate nohighlight">
 \[I^{ij\,\text{GTO}}_{nl} = N_{n\ell} \cdot A_{n\ell} \cdot B_\ell ,\]</div>
@@ -689,7 +690,7 @@ branch,</div>
 </section>
 <section id="numerical-integration">
 <h4>Numerical Integration<a class="headerlink" href="#numerical-integration" title="Permalink to this headline">¶</a></h4>
-<p>Using the recurrence relation of the MSBF <a class="footnote-reference brackets" href="#id12" id="id16">6</a>:</p>
+<p>Using the recurrence relation of the MSBF <a class="footnote-reference brackets" href="#id13" id="id17">6</a>:</p>
 <div class="math notranslate nohighlight">
 \[\dv{\mathsf{i}_{\ell}(x)}{x} = \frac{1}{2\ell+1}[\ell\mathsf{i}_{\ell-1}(x)+(\ell+1)\mathsf{i}_{\ell+1}(x)],\]</div>
 <p>the gradient of the radial integral becomes:</p>
@@ -701,6 +702,44 @@ branch,</div>
 <p>where <span class="math notranslate nohighlight">\(x_n=\frac{r_c}{2}r_n+\frac{r_c}{2}\)</span>.</p>
 </section>
 </section>
+</section>
+<section id="beyond-soap">
+<h2>Beyond SOAP<a class="headerlink" href="#beyond-soap" title="Permalink to this headline">¶</a></h2>
+<p>SOAP can be seen as one of the simplest members of a hierarchy of “density correlation features”,
+that are obtained by appropriately symmetrizing tensor products of the neighbor density.
+The formalism, first introduced in Ref.  <a class="footnote-reference brackets" href="#two" id="id18">9</a>, leads to formulas to evaluate discretized
+versions of these features as a combination of the density expansion coefficients, and includes
+also <em>equivariant</em> features, that transform as spherical harmonics under rotation <a class="footnote-reference brackets" href="#three" id="id19">10</a>.
+A comparatively simple expression to compute these higher-order features iteratively, based
+on an angular momentum combination relation has been discussed in Ref. <a class="footnote-reference brackets" href="#four" id="id20">11</a>, as part
+of the N-body iterative contraction of equivariants (NICE) framework.
+Even though these higher-order features are not the main focus of <code class="docutils literal notranslate"><span class="pre">librascal</span></code>, you can find
+some utilities that compute them starting from the expansion coefficients. These are
+part of the of the <code class="docutils literal notranslate"><span class="pre">bindings/rascal/utils/cg_utils.py</span></code>, and are demonstrated and tersely
+documented in the example notebooks <code class="docutils literal notranslate"><span class="pre">examples/equivariant_demo.ipynb</span></code> and
+<code class="docutils literal notranslate"><span class="pre">examples/nice_demo.ipynb</span></code>.</p>
+<dl class="footnote brackets">
+<dt class="label" id="one"><span class="brackets"><a class="fn-backref" href="#id1">8</a></span></dt>
+<dd><p>A. P. Bartók, R. Kondor, and G. Csányi (2013)
+On representing chemical environments.
+Physical Review B 87(18), 184115. <a class="reference external" href="https://doi.org/10.1103/PhysRevB.87.184115">https://doi.org/10.1103/PhysRevB.87.184115</a></p>
+</dd>
+<dt class="label" id="two"><span class="brackets"><a class="fn-backref" href="#id18">9</a></span></dt>
+<dd><p>M. J. Willatt, F. Musil, and M. Ceriotti (2019)
+Atom-density representations for machine learning.
+Journal of Chemical Physics 150(15), 154110. <a class="reference external" href="https://doi.org/10.1063/1.5090481">https://doi.org/10.1063/1.5090481</a></p>
+</dd>
+<dt class="label" id="three"><span class="brackets"><a class="fn-backref" href="#id19">10</a></span></dt>
+<dd><p>A. Grisafi, D. M. Wilkins, G. Csányi, and M. Ceriotti (2018)
+Symmetry-Adapted Machine Learning for Tensorial Properties of Atomistic Systems.
+Physical Review Letters 120(3), 036002. <a class="reference external" href="https://doi.org/10.1103/PhysRevLett.120.036002">https://doi.org/10.1103/PhysRevLett.120.036002</a></p>
+</dd>
+<dt class="label" id="four"><span class="brackets"><a class="fn-backref" href="#id20">11</a></span></dt>
+<dd><p>J. Nigam, S. Pozdnyakov, and M. Ceriotti (2020)
+Recursive evaluation and iterative contraction of N -body equivariant features.
+J. Chem. Phys. 153(12), 121101. <a class="reference external" href="https://doi.org/10.1063/5.0021116">https://doi.org/10.1063/5.0021116</a></p>
+</dd>
+</dl>
 </section>
 </section>
 

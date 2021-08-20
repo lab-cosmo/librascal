@@ -494,7 +494,7 @@ the dot product, raised to some integer power <span class="math notranslate nohi
 <p>NOTE: it is assumed that the input format for the training set and the test set is an ASE-compatible (e.g. extended-XYZ) file, which is then converted into an array of ASE Atoms objects, each one corresponding to a specific structure. <code class="docutils literal notranslate"><span class="pre">librascal</span></code> uses these frames to compute the representations and predict the properties of new structures. In this example on zundel cations, the target energies to build the model with are reported in the <code class="docutils literal notranslate"><span class="pre">zundel_energies.txt</span></code> file, while the atomic forces are
 additional columns of the xyz.</p>
 <p>Alternatively, global target properties can be reported in the header line following the ASE format.</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
@@ -521,8 +521,25 @@ additional columns of the xyz.</p>
 </pre></div>
 </div>
 </div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-02e5b6284741&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">     15</span> <span class="ansi-green-fg">from</span> time <span class="ansi-green-fg">import</span> time
+<span class="ansi-green-intense-fg ansi-bold">     16</span>
+<span class="ansi-green-fg">---&gt; 17</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">from</span> rascal<span class="ansi-blue-fg">.</span>models <span class="ansi-green-fg">import</span> Kernel<span class="ansi-blue-fg">,</span> train_gap_model<span class="ansi-blue-fg">,</span> compute_KNM
+<span class="ansi-green-intense-fg ansi-bold">     18</span> <span class="ansi-green-fg">from</span> rascal<span class="ansi-blue-fg">.</span>representations <span class="ansi-green-fg">import</span> SphericalInvariants
+<span class="ansi-green-intense-fg ansi-bold">     19</span> <span class="ansi-green-fg">from</span> rascal<span class="ansi-blue-fg">.</span>utils <span class="ansi-green-fg">import</span> from_dict<span class="ansi-blue-fg">,</span> to_dict<span class="ansi-blue-fg">,</span> CURFilter<span class="ansi-blue-fg">,</span> dump_obj<span class="ansi-blue-fg">,</span> load_obj
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;rascal&#39;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -530,9 +547,18 @@ additional columns of the xyz.</p>
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[Errno 2] No such file or directory: &#39;i-PI/zundel/&#39;
+/root/project/docs/source/examples
+</pre></div></div>
+</div>
 <p>In the snippets below we extract the relevant properties for each ASE frame. We load the total potential energies and we use the <code class="docutils literal notranslate"><span class="pre">ASE.Atoms.arrays</span></code> methods to get the atomic forces. For more information on how to use ASE-related methods, check the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html">ASE Atoms documentation</a>.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -551,11 +577,41 @@ additional columns of the xyz.</p>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-dict_keys([&#39;numbers&#39;, &#39;positions&#39;, &#39;forces&#39;])
+
+<span class="ansi-red-fg">FileNotFoundError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-51714ca6a733&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># Load the first N structures of the zundel dataset</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> N_dataset <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">1000</span>
+<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span>frames <span class="ansi-blue-fg">=</span> read<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;zundel_dataset.xyz&#39;</span><span class="ansi-blue-fg">,</span> index<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;:{}&#39;</span><span class="ansi-blue-fg">.</span>format<span class="ansi-blue-fg">(</span>N_dataset<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> energies <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>loadtxt<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;zundel_energies.txt&#39;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span>N_dataset<span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span>
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/ase/io/formats.py</span> in <span class="ansi-cyan-fg">read</span><span class="ansi-blue-fg">(filename, index, format, parallel, do_not_split_by_at_sign, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    727</span>     <span class="ansi-green-fg">if</span> index <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    728</span>         index <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">-</span><span class="ansi-cyan-fg">1</span>
+<span class="ansi-green-fg">--&gt; 729</span><span class="ansi-red-fg">     </span>format <span class="ansi-blue-fg">=</span> format <span class="ansi-green-fg">or</span> filetype<span class="ansi-blue-fg">(</span>filename<span class="ansi-blue-fg">,</span> read<span class="ansi-blue-fg">=</span>isinstance<span class="ansi-blue-fg">(</span>filename<span class="ansi-blue-fg">,</span> str<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    730</span>
+<span class="ansi-green-intense-fg ansi-bold">    731</span>     io <span class="ansi-blue-fg">=</span> get_ioformat<span class="ansi-blue-fg">(</span>format<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/ase/io/formats.py</span> in <span class="ansi-cyan-fg">filetype</span><span class="ansi-blue-fg">(filename, read, guess)</span>
+<span class="ansi-green-intense-fg ansi-bold">    918</span>
+<span class="ansi-green-intense-fg ansi-bold">    919</span>         <span class="ansi-green-fg">if</span> orig_filename <span class="ansi-blue-fg">==</span> filename<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 920</span><span class="ansi-red-fg">             </span>fd <span class="ansi-blue-fg">=</span> open_with_compression<span class="ansi-blue-fg">(</span>filename<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;rb&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    921</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    922</span>             fd <span class="ansi-blue-fg">=</span> orig_filename  <span class="ansi-red-fg"># type: ignore</span>
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/ase/io/formats.py</span> in <span class="ansi-cyan-fg">open_with_compression</span><span class="ansi-blue-fg">(filename, mode)</span>
+<span class="ansi-green-intense-fg ansi-bold">    549</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    550</span>         <span class="ansi-red-fg"># Either None or unknown string</span>
+<span class="ansi-green-fg">--&gt; 551</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> open<span class="ansi-blue-fg">(</span>filename<span class="ansi-blue-fg">,</span> mode<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    552</span>
+<span class="ansi-green-intense-fg ansi-bold">    553</span>
+
+<span class="ansi-red-fg">FileNotFoundError</span>: [Errno 2] No such file or directory: &#39;zundel_dataset.xyz&#39;
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -581,8 +637,8 @@ dict_keys([&#39;numbers&#39;, &#39;positions&#39;, &#39;forces&#39;])
 <section id="Build-the-GAP-model">
 <h2>Build the GAP model<a class="headerlink" href="#Build-the-GAP-model" title="Permalink to this headline">¶</a></h2>
 <p>The preliminary step towards building a GAP model is defining a training and a test set. The training set is built by random selection of <span class="math notranslate nohighlight">\(800\)</span> of the available structures, while the remaining <span class="math notranslate nohighlight">\(200\)</span> will represent the test set. At this point, we also extract the distinct atomic species present in our system, define the atomic baseline energy and extract the information regarding energies and forces in the train and test set structures, which we will need later on.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -606,8 +662,25 @@ dict_keys([&#39;numbers&#39;, &#39;positions&#39;, &#39;forces&#39;])
 </pre></div>
 </div>
 </div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-b2c128092f82&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> global_species <span class="ansi-blue-fg">=</span> set<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">----&gt; 5</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">for</span> frame <span class="ansi-green-fg">in</span> frames<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span>     global_species<span class="ansi-blue-fg">.</span>update<span class="ansi-blue-fg">(</span>frame<span class="ansi-blue-fg">.</span>get_atomic_numbers<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      7</span> global_species <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>array<span class="ansi-blue-fg">(</span>list<span class="ansi-blue-fg">(</span>global_species<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;frames&#39; is not defined
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -616,8 +689,22 @@ dict_keys([&#39;numbers&#39;, &#39;positions&#39;, &#39;forces&#39;])
 </pre></div>
 </div>
 </div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-db82e9c14cb5&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>f_train <span class="ansi-blue-fg">=</span> extract_forces<span class="ansi-blue-fg">(</span>frames_train<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;forces&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> f <span class="ansi-blue-fg">=</span> extract_forces<span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;forces&#39;</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;frames_train&#39; is not defined
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -627,13 +714,28 @@ dict_keys([&#39;numbers&#39;, &#39;positions&#39;, &#39;forces&#39;])
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-8333bbc4b529&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># Atomic energy baseline</span>
+<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg"> </span>atom_energy_baseline <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>mean<span class="ansi-blue-fg">(</span>energies<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">/</span><span class="ansi-blue-fg">(</span>frames<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">.</span>get_global_number_of_atoms<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> energy_baseline <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">{</span>np<span class="ansi-blue-fg">.</span>int<span class="ansi-blue-fg">(</span>species<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span> atom_energy_baseline <span class="ansi-green-fg">for</span> species <span class="ansi-green-fg">in</span> global_species<span class="ansi-blue-fg">}</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;energies&#39; is not defined
+</pre></div></div>
+</div>
 <p>Now we proceed with the actual calculation of the SOAP vectors of our training set. We need to specify an hyperparameters dictionary, which <code class="docutils literal notranslate"><span class="pre">librascal</span></code> uses to compute the structural features. The meaning of each hyperparameter and how to correctly set them is reported in <cite>the ``SphericalInvariants`</cite> documentation &lt;<a class="reference external" href="https://cosmo-epfl.github.io/librascal/reference/python.html#rascal.representations.SphericalInvariants">https://cosmo-epfl.github.io/librascal/reference/python.html#rascal.representations.SphericalInvariants</a>&gt;`__. These hyperparameters can be used as default values, but a careful
 optimization of the interaction cutoff might be required in the case the material under investigation might present some mid- or long-range order.</p>
 <p>For the actual calculation of the SOAP features, we first create an object of the <code class="docutils literal notranslate"><span class="pre">SphericalInvariants</span></code> class, defined by its hyperparameters. The methods that we then need to use are <code class="docutils literal notranslate"><span class="pre">transform()}</span></code>, which yields a second object called the <code class="docutils literal notranslate"><span class="pre">manager</span></code> containing the representation, while <code class="docutils literal notranslate"><span class="pre">get_features()</span></code> converts it into an <span class="math notranslate nohighlight">\(NxM\)</span> matrix, <span class="math notranslate nohighlight">\(N\)</span> being the number of atomic environments in the training set and M the number of features per each environment.</p>
 <p>At this point, the <code class="docutils literal notranslate"><span class="pre">compute_gradients</span></code> hyper should be set to <code class="docutils literal notranslate"><span class="pre">False</span></code>. For now, we will only use the SOAP representations (no gradients!) of the training set structures to select a sparse set using the CUR decomposition. Setting it to <code class="docutils literal notranslate"><span class="pre">True</span></code> would require Librascal to compute all the gradients of the SOAP representation w.r.t. atomic coordinates, thus making the structural managers unnecessarily memory expensive. We will instead compute later on the gradients of the sparse kernels using
 the <code class="docutils literal notranslate"><span class="pre">compute_KNM</span></code> method when we fit the GAP model.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -668,10 +770,25 @@ the <code class="docutils literal notranslate"><span class="pre">compute_KNM</sp
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-db2fba376d2e&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">     26</span>
+<span class="ansi-green-intense-fg ansi-bold">     27</span>
+<span class="ansi-green-fg">---&gt; 28</span><span class="ansi-red-fg"> </span>soap <span class="ansi-blue-fg">=</span> SphericalInvariants<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">**</span>hypers<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;SphericalInvariants&#39; is not defined
+</pre></div></div>
+</div>
 <p>The following snippet computes the descriptors and the managers for each frame, which will represent the expensive part of the calculation, in terms of memory usage.</p>
 <p>NOTE: the <code class="docutils literal notranslate"><span class="pre">librascal</span></code> structure manager only works if the atoms have been wrapped within the cell provided in the input file using e.g. <code class="docutils literal notranslate"><span class="pre">ase.Atoms.wrap()</span></code>, or one of the structure preprocessors provided in <code class="docutils literal notranslate"><span class="pre">rascal.neighbourlist.structure_manager</span></code> module (useful especially for non-periodic structures).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -685,26 +802,28 @@ the <code class="docutils literal notranslate"><span class="pre">compute_KNM</sp
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "742829ccfc204504a6374bd03d0a63b6", "version_major": 2, "version_minor": 0}</script></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-Execution:  0.2071518898010254 s
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-91faa7b8ed78&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> managers <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">for</span> f <span class="ansi-green-fg">in</span> tqdm<span class="ansi-blue-fg">(</span>frames_train<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>     f<span class="ansi-blue-fg">.</span>wrap<span class="ansi-blue-fg">(</span>eps<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1e-18</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> start <span class="ansi-blue-fg">=</span> time<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;frames_train&#39; is not defined
 </pre></div></div>
 </div>
 <p>At this point, we can define the <strong>sparse set</strong>, i.e. the set of (ideally) “maximally diverse” environments that will be used as basis points of the kernel ridge regression (KRR, mostly equivalent to GAP) model. We can choose the number of sparse environments in <code class="docutils literal notranslate"><span class="pre">librascal</span></code> per each atomic species, by defining a dictionary containing (atomic number, number of environments) pairs. The CURFilter class then selects out the most “representative” environments according to the representation that we
 provide as the input object and by applying the CUR decomposition [3].</p>
 <p>[3]: 1 M.W. Mahoney and P. Drineas, PNAS 106, 697 (2009). <a class="reference external" href="https://doi.org/10.1073/pnas.0803205106">https://doi.org/10.1073/pnas.0803205106</a></p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -720,11 +839,15 @@ provide as the input object and by applying the CUR decomposition [3].</p>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The number of pseudo points selected by central atom species is: {1: 250, 8: 125}
-Selecting species: 1
-Reconstruction RMSE=1.157e-02
-Selecting species: 8
-Reconstruction RMSE=1.020e-02
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-07f3458aba17&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> <span class="ansi-red-fg"># select the sparse points for the sparse kernel method with CUR on the whole training set</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> n_sparse <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">{</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">:</span><span class="ansi-cyan-fg">250</span><span class="ansi-blue-fg">,</span> <span class="ansi-cyan-fg">8</span><span class="ansi-blue-fg">:</span><span class="ansi-cyan-fg">125</span><span class="ansi-blue-fg">}</span>
+<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg"> </span>compressor <span class="ansi-blue-fg">=</span> CURFilter<span class="ansi-blue-fg">(</span>soap<span class="ansi-blue-fg">,</span> n_sparse<span class="ansi-blue-fg">,</span> act_on<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;sample per species&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> X_sparse <span class="ansi-blue-fg">=</span> compressor<span class="ansi-blue-fg">.</span>select_and_filter<span class="ansi-blue-fg">(</span>managers<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;CURFilter&#39; is not defined
 </pre></div></div>
 </div>
 <p>As shown in eq. <span class="math notranslate nohighlight">\((1)\)</span>, in order to fit a GAP potential we need to compute the kernels of all the training structure descriptors and the sparse set, as well as the gradients w.r.t. the atomic positions, if we wish to fit the atomic forces. We do so by using another key structure of librascal: the <code class="docutils literal notranslate"><span class="pre">Kernel</span></code> class. We first build a kernel object containing the representation (SOAP), which we then use to compute the sparse kernel matrix <span class="math notranslate nohighlight">\(K_{NM}\)</span> between the training set and the sparse
@@ -732,7 +855,7 @@ set and its gradients using the <code class="docutils literal notranslate"><span
 <p>Finally, we group everything together to build the GAP model, which basically uses the kernel matrices to regress the weights <span class="math notranslate nohighlight">\(\{\alpha_s\}_{s=1}^M\)</span> on each sparse environment. The <code class="docutils literal notranslate"><span class="pre">lambdas</span></code> are the regularization parameters of the KRR (for both energies and forces), while <code class="docutils literal notranslate"><span class="pre">jitter</span></code> is a small parameter that enables its numerical convergence.</p>
 <p>The output is a KRR object, which we can save as .json file for future use. For this last bit we use the <code class="docutils literal notranslate"><span class="pre">dump_obj</span></code> method (part of the <code class="docutils literal notranslate"><span class="pre">rascal.utils.io</span></code> module).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -755,27 +878,29 @@ set and its gradients using the <code class="docutils literal notranslate"><span
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "6e18e28e49de4ddcbfb49acf29b0e7a5", "version_major": 2, "version_minor": 0}</script></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-Execution:  6.5608484745025635 s
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-acb3fc454716&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> start <span class="ansi-blue-fg">=</span> time<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> hypers<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;compute_gradients&#39;</span><span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">True</span>
+<span class="ansi-green-fg">----&gt; 5</span><span class="ansi-red-fg"> </span>soap <span class="ansi-blue-fg">=</span> SphericalInvariants<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">**</span>hypers<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span> kernel <span class="ansi-blue-fg">=</span> Kernel<span class="ansi-blue-fg">(</span>soap<span class="ansi-blue-fg">,</span> name<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;GAP&#39;</span><span class="ansi-blue-fg">,</span> zeta<span class="ansi-blue-fg">=</span>zeta<span class="ansi-blue-fg">,</span> target_type<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;Structure&#39;</span><span class="ansi-blue-fg">,</span> kernel_type<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;Sparse&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      7</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;SphericalInvariants&#39; is not defined
 </pre></div></div>
 </div>
 </section>
 <section id="Assessment-of-the-model">
 <h2>Assessment of the model<a class="headerlink" href="#Assessment-of-the-model" title="Permalink to this headline">¶</a></h2>
 <p>To perform a basic assessment of the model we have fitted, we need to predict the properties (energies and forces) of a test set. In the calculation of the model that we have fitted previously, we have randomly splitted the original dataset in a training set of 800 structures and a test set of another 200. So first we load the model and the indices corresponding to the shuffled dataset: the first 800 of those will correspond to the training set, the last 200 to the test set.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -785,8 +910,23 @@ Execution:  6.5608484745025635 s
 </pre></div>
 </div>
 </div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-2e12477b6ef7&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> n <span class="ansi-blue-fg">=</span> <span class="ansi-cyan-fg">800</span>
+<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg"> </span>model <span class="ansi-blue-fg">=</span> load_obj<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;zundel_model.json&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> ids <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>loadtxt<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;Structure_indices.txt&#39;</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;load_obj&#39; is not defined
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -803,10 +943,27 @@ Execution:  6.5608484745025635 s
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-dc1157e982cc&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>train_ids <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span>np<span class="ansi-blue-fg">.</span>int<span class="ansi-blue-fg">(</span>i<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> i <span class="ansi-green-fg">in</span> ids<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span>n<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> test_ids <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span>np<span class="ansi-blue-fg">.</span>int<span class="ansi-blue-fg">(</span>i<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> i <span class="ansi-green-fg">in</span> ids<span class="ansi-blue-fg">[</span>n<span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> frames_train <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span>frames<span class="ansi-blue-fg">[</span>ii<span class="ansi-blue-fg">]</span> <span class="ansi-green-fg">for</span> ii <span class="ansi-green-fg">in</span> train_ids<span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> frames_test <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span>frames<span class="ansi-blue-fg">[</span>ii<span class="ansi-blue-fg">]</span> <span class="ansi-green-fg">for</span> ii <span class="ansi-green-fg">in</span> test_ids<span class="ansi-blue-fg">]</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;ids&#39; is not defined
+</pre></div></div>
+</div>
 <p>Let us now compute the predictions on the test set, using the <code class="docutils literal notranslate"><span class="pre">predict()</span></code> and <code class="docutils literal notranslate"><span class="pre">predict_forces()</span></code> methods of the <code class="docutils literal notranslate"><span class="pre">KRR</span></code> class. At this point we need to compute the SOAP representation of the test set structures. It is important to stress however that this will not cause any issue regarding memory usage, because all we need is the predictions, so we can compute the managers of the test set structures one by one and calculate the predictions right away. Instead for the GAP fitting we need to
 store ALL the structure managers of the training set to perform the regression (which causes a large RAM usage).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -827,11 +984,31 @@ store ALL the structure managers of the training set to perform the regression (
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
+<div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "a90dd7b7f71045d8af5183258fbfa785", "version_major": 2, "version_minor": 0}</script></div>
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-ae0a76babca0&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> f_pred <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span>
+<span class="ansi-green-fg">----&gt; 5</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">for</span> f <span class="ansi-green-fg">in</span> tqdm<span class="ansi-blue-fg">(</span>frames_test<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span>     positions <span class="ansi-blue-fg">=</span> f<span class="ansi-blue-fg">.</span>get_positions<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      7</span>     f<span class="ansi-blue-fg">.</span>set_positions<span class="ansi-blue-fg">(</span>positions<span class="ansi-blue-fg">+</span><span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;frames_test&#39; is not defined
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">f_test</span> <span class="o">=</span> <span class="n">extract_forces</span><span class="p">(</span><span class="n">frames_test</span><span class="p">,</span> <span class="s1">&#39;forces&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -839,16 +1016,12 @@ store ALL the structure managers of the training set to perform the regression (
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-9b07f4584819&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>f_test <span class="ansi-blue-fg">=</span> extract_forces<span class="ansi-blue-fg">(</span>frames_test<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;forces&#39;</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;frames_test&#39; is not defined
 </pre></div></div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">f_test</span> <span class="o">=</span> <span class="n">extract_forces</span><span class="p">(</span><span class="n">frames_test</span><span class="p">,</span> <span class="s1">&#39;forces&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
 </div>
 <p>Let us now compute the overall performance of the model. This is done by calculation of the Root-Mean-Square Error (RMSE), i.e. the standard deviation of the residuals according to the standard formula:</p>
 <div class="math notranslate nohighlight">
@@ -857,7 +1030,7 @@ store ALL the structure managers of the training set to perform the regression (
 <p>Finally we plot a “correlation plot”, to observe how well the predictions on the test set correlate with the reference DFT-computed energies.</p>
 <p>NOTE: by just repeating this procedure and fitting potentials with increasing training set size, one can also construct the learning curve of the GAP.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -877,13 +1050,20 @@ store ALL the structure managers of the training set to perform the regression (
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-RMSE =  18.520980475974834 meV
-Sigma test set =  0.274800153468654  eV
-%RMSE =  6.739799902654528  %
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-62a867182928&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span><span class="ansi-green-fg">from</span> rascal<span class="ansi-blue-fg">.</span>utils <span class="ansi-green-fg">import</span> get_score
+<span class="ansi-green-intense-fg ansi-bold">      2</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> score <span class="ansi-blue-fg">=</span> get_score<span class="ansi-blue-fg">(</span>y_pred<span class="ansi-blue-fg">,</span> y_test<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> RMSE <span class="ansi-blue-fg">=</span> score<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#39;RMSE&#39;</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> sigma_test <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>std<span class="ansi-blue-fg">(</span>y_test<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">ModuleNotFoundError</span>: No module named &#39;rascal&#39;
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -901,21 +1081,22 @@ Sigma test set =  0.274800153468654  eV
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Text(0, 0.5, &#39;reference energies [eV]&#39;)
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/examples_zundel_i-PI_33_1.png" src="../_images/examples_zundel_i-PI_33_1.png" />
-</div>
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">NameError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-dcf6d0fc1c18&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>plt<span class="ansi-blue-fg">.</span>scatter<span class="ansi-blue-fg">(</span>y_test<span class="ansi-blue-fg">,</span> y_pred<span class="ansi-blue-fg">,</span> s<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">5.0</span><span class="ansi-blue-fg">,</span> c <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">&#39;black&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> lims = [
+<span class="ansi-green-intense-fg ansi-bold">      3</span>     np<span class="ansi-blue-fg">.</span>min<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">[</span>np<span class="ansi-blue-fg">.</span>min<span class="ansi-blue-fg">(</span>y_pred<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> np<span class="ansi-blue-fg">.</span>min<span class="ansi-blue-fg">(</span>y_test<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>  <span class="ansi-red-fg"># min of both axes</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span>     np<span class="ansi-blue-fg">.</span>max<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">[</span>np<span class="ansi-blue-fg">.</span>max<span class="ansi-blue-fg">(</span>y_pred<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> np<span class="ansi-blue-fg">.</span>max<span class="ansi-blue-fg">(</span>y_test<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>  <span class="ansi-red-fg"># max of both axes</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span> ]
+
+<span class="ansi-red-fg">NameError</span>: name &#39;y_test&#39; is not defined
+</pre></div></div>
 </div>
 </section>
 <section id="MD-simulations">
@@ -933,7 +1114,7 @@ configuration of the trajectory and by Librascal as a template to load informati
 </div>
 <p>and the simulation can be monitored with the following cell.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -976,21 +1157,32 @@ configuration of the trajectory and by Librascal as a template to load informati
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-[Text(0.5, 0, &#39;time [ps]&#39;)]
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/examples_zundel_i-PI_38_1.png" src="../_images/examples_zundel_i-PI_38_1.png" />
-</div>
+<div class="highlight"><pre>
+
+<span class="ansi-red-fg">FileNotFoundError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-9e6ebda5c5d2&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">----&gt; 3</span><span class="ansi-red-fg">     </span>f <span class="ansi-blue-fg">=</span> open<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;zundel.out&#39;</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;r&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> <span class="ansi-green-fg">except</span> FileNotFoundError<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-red-fg">FileNotFoundError</span>: [Errno 2] No such file or directory: &#39;zundel.out&#39;
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">FileNotFoundError</span>Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-1-9e6ebda5c5d2&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span>     f <span class="ansi-blue-fg">=</span> open<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;zundel.out&#39;</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;r&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span> <span class="ansi-green-fg">except</span> FileNotFoundError<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">----&gt; 5</span><span class="ansi-red-fg">     </span>f <span class="ansi-blue-fg">=</span> open<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;zundel.example.out&#39;</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;r&#39;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span> lines<span class="ansi-blue-fg">=</span>f<span class="ansi-blue-fg">.</span>readlines<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">13</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">      7</span>
+
+<span class="ansi-red-fg">FileNotFoundError</span>: [Errno 2] No such file or directory: &#39;zundel.example.out&#39;
+</pre></div></div>
 </div>
 </section>
 </section>
