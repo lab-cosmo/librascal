@@ -25,3 +25,16 @@ from .radial_basis import (
     radial_basis_functions_dvr,
     radial_basis_functions_gto,
 )
+
+from .cg_utils import (
+    WignerDReal,
+    ClebschGordanReal,
+    spherical_expansion_reshape,
+    spherical_expansion_conjugate,
+    sph_real_conjugate,
+    lm_slice,
+    real2complex_matrix,
+    xyz_to_spherical,
+    spherical_to_xyz,
+    compute_lambda_soap,
+)
