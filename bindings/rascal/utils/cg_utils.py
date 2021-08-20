@@ -514,7 +514,7 @@ class ClebschGordanReal:
                                 rhoL[..., M] += np.einsum(
                                     "in,iQ->inQ", rho1l[..., m1], rho2k[..., m2] * cg
                                 )
-        rho.shape = (
+        return rho.reshape(
             (rho1_shape[0],)
             + rho1_shape[1:-1]
             + rho2_shape[1:-1]
@@ -524,7 +524,6 @@ class ClebschGordanReal:
                 (self._lmax + 1) ** 2,
             )
         )
-        return rho
 
     def couple(self, decoupled, iterate=0):
         """
