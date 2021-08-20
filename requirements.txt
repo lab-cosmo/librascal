@@ -2,12 +2,13 @@
 numpy
 scipy
 jupyter
+sympy>=1.4
 # notebook tutorials
 matplotlib
 #qml
 # tqdm
 # Developers tools for compiling documentation
-sphinx>=2.1.2
+sphinx>=2.1.2,<=4.0.2
 breathe>=4.14.1
 # Jinja2 v3 breaks nbsphinx
 jinja2==2.11.3
