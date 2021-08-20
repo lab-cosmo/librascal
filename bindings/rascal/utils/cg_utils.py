@@ -469,7 +469,7 @@ class ClebschGordanReal:
     def combine_nice(self, rho1, rho2):
         """
         Combines Ylm-like coefficients using the NICE iteration, to generate a
-        higher-body-order equivariant. NOT and efficient implementation!
+        higher-body-order equivariant. NOT an efficient implementation!
         """
 
         # we assume that the first index is the environment index, and the
