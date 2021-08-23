@@ -104,7 +104,7 @@ class GenericMDCalculator:
 
         # Update ASE Atoms object (we only use ASE to handle any
         # re-wrapping of the atoms that needs to take place)
-        self.atoms.set_cell(cell_matrix)
+        self.atoms.set_cell(cell_matrix.T)
         self.atoms.set_positions(positions)
 
         # Convert from ASE to librascal
