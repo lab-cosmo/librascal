@@ -269,14 +269,14 @@ namespace rascal {
         // accumulate partial gradients onto gradients
         for (auto neigh : center.pairs_with_self_pair()) {
           // TODO(alex) should work now, just in case I have to debug this again
-          std::cout << sched_getcpu() << ": " << "the pair (" << center.get_atom_tag() << ", " 
-                    << neigh.get_atom_tag() << ") global index " 
-                    << neigh.get_global_index() << "writes to atom j with tag "
-                    << neigh.get_atom_j().get_atom_tag() << " and cluster index "
-                    << neigh.get_atom_j().get_cluster_index() 
-                    << neigh.get_atom_j().get_atom_tag() << " pair gradient with shape "
-                    << pair_grad_atom_i_r_j[neigh].rows() << " " << pair_grad_atom_i_r_j[neigh].cols() << std::endl;
-          std::cout << sched_getcpu() << ": " << pair_grad_atom_i_r_j[neigh] << std::endl;
+          //std::cout << sched_getcpu() << ": " << "the pair (" << center.get_atom_tag() << ", " 
+          //          << neigh.get_atom_tag() << ") global index " 
+          //          << neigh.get_global_index() << " writes to atom j with tag "
+          //          << neigh.get_atom_j().get_atom_tag() << " and cluster index ("
+          //          << neigh.get_atom_j().get_cluster_index() << ", "
+          //          << neigh.get_atom_j().get_atom_tag() << ") with pair gradient with shape "
+          //          << pair_grad_atom_i_r_j[neigh].rows() << " " << pair_grad_atom_i_r_j[neigh].cols() << std::endl;
+          //std::cout << sched_getcpu() << ": " << pair_grad_atom_i_r_j[neigh] << std::endl;
           //std::cout << sched_getcpu() << ": " << gradients[neigh.get_atom_j()] << std::endl; // oldTODO(alex)  valgrind says here is memory leak
           gradients[neigh.get_atom_j()] += pair_grad_atom_i_r_j[neigh];
         }
