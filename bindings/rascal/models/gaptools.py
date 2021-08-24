@@ -400,7 +400,6 @@ def fit_gap_simple(
 
     Returns the weights (1-D array, size M) that define the fit.
     """
-    energies_shifted = energies
     if energy_atom_contributions is not None:
         e0_all = np.array(
             [
@@ -408,7 +407,9 @@ def fit_gap_simple(
                 for geom in geoms
             ]
         ).flatten()
-        energies_shifted -= e0_all
+        energies_shifted = energies - e0_all
+    else:
+        energies_shifted = energies
 
     if target_type == "Structure":
         natoms_list = np.array([len(geom) for geom in geoms])
