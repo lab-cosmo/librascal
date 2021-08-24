@@ -210,14 +210,13 @@ class KRR(BaseIO):
 
         return -neg_stress
 
-    # TODO(alex) check if this does not break things
     @property
     def weights(self):
         return self._weights
 
     @weights.setter
     def weights(self, weights):
-        self._weights = weights.reshape(-1, 1)
+        self._weights = weights.reshape(-1)
 
     def _get_init_params(self):
         init_params = dict(

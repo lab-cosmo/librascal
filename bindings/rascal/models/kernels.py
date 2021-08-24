@@ -108,12 +108,16 @@ class Kernel(BaseIO):
     # I think not needed
     def _set_data(self, data):
         super()._set_data(data)
-        # allows to load deprecated models 
+        # allows to load deprecated models
         if "cpp_kernel" in data.keys():
-          self._kernel = self._kernel.from_dict(data["cpp_kernel"])
+            self._kernel = self._kernel.from_dict(data["cpp_kernel"])
         else:
-          #TODO(alex)TODO(max) put this into logger
-          print("WARNING: you loaded a deprecated model. Please dump and reload the model to update it. The model parameters will not change, only the format.")
+            print(
+                "WARNING: a deprecated model was loaded. Key 'cpp_kernel' "
+                "was not found in model. Please dump and reload the model "
+                "to update it. The model parameters will not change, only "
+                "the format."
+            )
 
     def _get_data(self):
         data = super()._get_data()
