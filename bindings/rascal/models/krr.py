@@ -209,8 +209,13 @@ class KRR(BaseIO):
 
         return -neg_stress
 
-    def get_weights(self):
-        return self.weights
+    @property
+    def weights(self):
+        return self._weights
+
+    @weights.setter
+    def weights(self, weights):
+        self._weights = weights.reshape(-1)
 
     def _get_init_params(self):
         init_params = dict(
