@@ -2,6 +2,7 @@ import logging
 import numpy as np
 from .io import BaseIO
 from ..models.sparse_points import SparsePoints
+from ..representations.spherical_invariants import SphericalInvariants
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,197 +15,176 @@ except ImportError as ie:
     LOGGER.warn("Original error:\n" + str(ie))
     _FPS = _CUR = None
 
-# utility functions for Filters
+# Index conversion utilities
 
 
-def get_index_mappings_sample_per_species(managers, sps):
-    """Get various info from the structures about the center atom species
-    and indexing per species.
+def _indices_manager_to_perstructure(managers, selected_ids_global):
+    """Convert manager-global center indexing to per-structure format
+
+    That is, change them to a list of lists of structure-local atom indices
+    that is accepted as input to SparsePoints
 
     Parameters
     ----------
-
-    managers : AtomsList
+    managers : AtomsList or list(ase.Atoms)
         list of atomic structures
-    sps : list
-        list of unique center atom species present in managers
+    selected_ids_global : list of int
+        global indices to convert
 
     Returns
     -------
-
-    strides_by_sp : dict
-        list the positions of the begining of each structure in arrays that
-        have one row per atom of species sp
-    global_counter : dict
-        count the number of atoms of a particular element sp
-    map_by_manager : dict
-        map species / structure index / global atom index to the atom index
-        in the structure
-    indices_by_sp : dict
-        map position in arrays that have one row per atom of species sp to
-        the position in array that has one row per atom
+    selected_ids : list of list(int)
+        list the atom indices (within their structure) that have been selected
     """
-
-    # list of the atom types following the order in managers accross the
-    # atomic structures
-    types = []
-    strides_by_sp = {sp: [0] for sp in sps}
-    global_counter = {sp: 0 for sp in sps}
-    indices_by_sp = {sp: [] for sp in sps}
-    map_by_manager = {sp: [{} for ii in range(len(managers))] for sp in sps}
-    for i_man in range(len(managers)):
-        man = managers[i_man]
-        counter = {sp: 0 for sp in sps}
-        for i_at, at in enumerate(man):
-            types.append(at.atom_type)
-            if at.atom_type in sps:
-                map_by_manager[at.atom_type][i_man][global_counter[at.atom_type]] = i_at
-                counter[at.atom_type] += 1
-                global_counter[at.atom_type] += 1
-            else:
-                raise ValueError(
-                    "Atom type {} has not been specified in fselect: {}".format(
-                        at.atom_type, sps
-                    )
-                )
-        for sp in sps:
-            strides_by_sp[sp].append(counter[sp])
-
-    for sp in sps:
-        strides_by_sp[sp] = np.cumsum(strides_by_sp[sp])
-
-    for ii, sp in enumerate(types):
-        indices_by_sp[sp].append(ii)
-
-    return strides_by_sp, global_counter, map_by_manager, indices_by_sp
+    selected_ids = []
+    selected_ids_global = np.array(selected_ids_global)
+    natoms_list = [len(manager) for manager in managers]
+    split_idces = np.cumsum(natoms_list)
+    structure_start_idx = 0
+    # Handle any out-of-range indices
+    if np.any(selected_ids_global >= split_idces[-1]):
+        bad_indices = selected_ids_global[selected_ids_global >= split_idces[-1]]
+        bad_indices_str = np.array2string(
+            bad_indices, threshold=5, edgeitems=2, separator=", "
+        )
+        raise ValueError(f"Selected index(es): {bad_indices_str} out of range")
+    # Do the actual conversion if OK
+    for structure_end_idx in split_idces:
+        this_structure_idces = selected_ids_global[
+            (selected_ids_global >= structure_start_idx)
+            & (selected_ids_global < structure_end_idx)
+        ]
+        selected_structure_idces = this_structure_idces - structure_start_idx
+        selected_ids.append(list(selected_structure_idces))
+        structure_start_idx = structure_end_idx
+    assert sum(len(ids) for ids in selected_ids) == len(selected_ids_global)
+    return selected_ids
 
 
-def get_index_mappings_sample(managers):
-    """Get various info from the structures about the center atom species and indexing.
+def _indices_perspecies_manager_to_perstructure(managers, selected_ids_by_sp, sps):
+    """Convert per-species, manager-global center indexing to per-structure
+
+    That is, change them to a list of lists of structure-local atom indices
+    that is accepted as input to SparsePoints
+
+    See _get_index_mappings_sample_per_species() to make the intput
 
     Parameters
     ----------
-
-    managers : AtomsList
-        list of atomic structures
-
-    Returns
-    -------
-
-    strides : list
-        list the positions of the begining of each structure in arrays that
-        have one row per atom
-    global_counter : int
-        count the number of atoms in managers
-    map_by_manager : dict
-        map the structure index / global atom index to the atom index in the
-        structure
-    """
-
-    strides = [0]
-    global_counter = 0
-    map_by_manager = [{} for ii in range(len(managers))]
-    for i_man in range(len(managers)):
-        man = managers[i_man]
-        counter = 0
-        for i_at, _ in enumerate(man):
-            map_by_manager[i_man][global_counter] = i_at
-            counter += 1
-            global_counter += 1
-        strides.append(counter)
-
-    strides = np.cumsum(strides)
-
-    return strides, global_counter, map_by_manager
-
-
-def convert_selected_global_index2perstructure_index_per_species(
-    managers, selected_ids_by_sp, strides_by_sp, map_by_manager, sps
-):
-    """Convert selected center indexing into the rascal format.
-
-    See get_index_mappings_sample_per_species to make the intput
-
-    Parameters
-    ----------
-
     managers : AtomsList
         list of atomic structures
     selected_ids_by_sp : dict
-        map position in arrays that have one row per atom of species sp to
-        the position in array that has one row per atom
-    strides_by_sp : dict
-        list the positions of the begining of each structure in arrays that
-        have one row per atom of species sp
-    map_by_manager : dict
-        map species / structure index / global atom index to the atom index
-        in the structure
+        indices to convert; each dictionary entry (keyed by species)
+        is a list of indices into the array of all atoms in the manager
+        of only that species
+    sps : list(int) or set(int)
+        unique center atom species present in managers
+
+    Returns
+    -------
+    selected_ids : list of lists
+        list the atom indices (within their structure) that have been selected
+        They are ordered, first by species (sorted, irrespective of the order
+        passed in), then by selection order.
+
+    Notes
+    -----
+    Asking for indices for a species not present in the AtomsList will
+    result in an out-of-range error (since the slice of atoms of that species
+    is of size zero).
+
+    This function does not yet support lists of ASE Atoms (instead of a list
+    of managers) as input, but it should be fairly easy to add support in
+    the future if required.
+    """
+    if len(set(sps)) != len(sps):
+        raise ValueError(f"List of species contains duplicated entries: {sps}")
+    selected_ids = [[] for ii in range(len(managers))]
+    structure_sp_start_idx = {sp: 0 for sp in sps}
+    for sp in sps:
+        selected_ids_by_sp[sp] = np.array(selected_ids_by_sp[sp])
+    for structure, structure_selected_ids in zip(managers, selected_ids):
+        perspecies_counter = {sp: 0 for sp in sps}
+        structure_index_mapping = {sp: [] for sp in sps}
+        for perstructure_idx, atom in enumerate(structure):
+            atom_sp = atom.atom_type
+            if atom_sp not in sps:
+                raise ValueError(
+                    f"Atom of type {atom_sp} found but was not listed in sps: {sps}"
+                )
+            structure_index_mapping[atom_sp].append(perstructure_idx)
+            perspecies_counter[atom_sp] += 1
+        for sp in sorted(list(sps)):
+            selected_ids_sp = selected_ids_by_sp[sp]
+            structure_sp_end_idx = structure_sp_start_idx[sp] + perspecies_counter[sp]
+            this_structure_sp_idces = (
+                selected_ids_sp[
+                    (selected_ids_sp >= structure_sp_start_idx[sp])
+                    & (selected_ids_sp < structure_sp_end_idx)
+                ]
+                - structure_sp_start_idx[sp]
+            )
+            structure_selected_ids.extend(
+                [
+                    structure_index_mapping[sp][sp_idx]
+                    for sp_idx in this_structure_sp_idces
+                ]
+            )
+            structure_sp_start_idx[sp] += perspecies_counter[sp]
+    for sp in sps:
+        selected_out_of_range = (
+            np.array(selected_ids_by_sp[sp]) >= structure_sp_start_idx[sp]
+        )
+        if np.any(selected_out_of_range):
+            bad_indices = np.array(selected_ids_by_sp[sp])[selected_out_of_range]
+            bad_indices_str = np.array2string(
+                bad_indices, threshold=5, edgeitems=2, separator=", "
+            )
+            error_str = (
+                f"Selected index(es): {bad_indices_str} for species {sp} out of range"
+            )
+            if 0 in bad_indices:
+                error_str += " (species does not appear to be present)"
+            raise ValueError(error_str)
+    # Check that we haven't missed anything
+    assert sum(len(ids) for ids in selected_ids) == sum(
+        len(selected_ids_by_sp[sp]) for sp in sps
+    )
+    return selected_ids
+
+
+def _split_feature_matrix_by_species(managers, X, sps):
+    """Does exactly what it says on the tin
+
+    Parameters
+    ----------
+    managers : AtomsList
+        list of atomic structures
+    X : np.ndarray (2-D)
+        feature matrix computed from managers; rows must correspond to atoms
     sps : list(int)
         list of unique center atom species present in managers
 
     Returns
     -------
+    dict(np.ndarray)
+        The feature matrix split into matrices each corresponding to one
+        of the atomic species requested
 
-    selected_ids : list of lists
-        list the atom indices (within their structure) that have been selected
+    Warnings
+    --------
+    This function does not check that the list of species provided actually
+    corresponds to those present in managers; it only performs the selection
+    (which would be empty for nonexistent species).
     """
-
-    selected_ids = [[] for ii in range(len(managers))]
+    X_per_species = {}
+    global_species_list = []
+    for structure in managers:
+        global_species_list.extend([atom.atom_type for atom in structure])
+    global_species_list = np.array(global_species_list)
     for sp in sps:
-        ids = convert_selected_global_index2perstructure_index(
-            managers,
-            selected_ids_by_sp[sp],
-            strides_by_sp[sp],
-            map_by_manager[sp],
-        )
-        for ii, selected_idx in zip(ids, selected_ids):
-            selected_idx.extend(ii)
-    for ii in range(len(selected_ids)):
-        selected_ids[ii] = list(np.sort(selected_ids[ii]))
-    return selected_ids
-
-
-def convert_selected_global_index2perstructure_index(
-    managers, selected_ids_global, strides, map_by_manager
-):
-    """Convert selected center indexing into the rascal format.
-
-    See get_index_mappings_sample to make the intput
-
-    Parameters
-    ----------
-
-    managers : AtomsList
-        list of atomic structures
-    selected_ids_global : list of int
-        list of unique center atom species present in managers
-    strides : list
-        list the positions of the begining of each structure in arrays that
-        have one row per atom
-    map_by_manager : dict
-        map the structure index / global atom index to the atom index in the
-        structure
-
-    Returns
-    -------
-
-    selected_ids : list of lists
-        list the atom indices (within their structure) that have been selected
-    """
-
-    selected_ids = [[] for ii in range(len(managers))]
-    i_manager = 0
-    for idx in selected_ids_global:
-        carry_on = True
-        while carry_on:
-            if idx >= strides[i_manager] and idx < strides[i_manager + 1]:
-                selected_ids[i_manager].append(map_by_manager[i_manager][idx])
-                carry_on = False
-            else:
-                i_manager += 1
-    for ii in range(len(selected_ids)):
-        selected_ids[ii] = list(np.sort(selected_ids[ii]).astype(int))
-    return selected_ids
+        X_per_species[sp] = X[global_species_list == sp]
+    return X_per_species
 
 
 class Filter(BaseIO):
@@ -251,10 +231,8 @@ class Filter(BaseIO):
     ):
         self._representation = representation
         self.Nselect = Nselect
-
         if self.act_on is None:
             self._check_set_mode(act_on)
-
         # effectively selected list of indices at the filter step
         # the indices have been reordered for effiency and compatibility with
         # the c++ routines
@@ -265,7 +243,6 @@ class Filter(BaseIO):
         self.selected_sample_ids_by_sp = None
         # for feature selection
         self.selected_feature_ids_global = None
-
         self._selector = selector
 
     def _check_set_mode(
@@ -303,34 +280,14 @@ class Filter(BaseIO):
             operation
 
         """
-
-        # get the dense feature matrix
         X = managers.get_features(self._representation)
-
         if self.act_on == "sample per species":
+            self.selected_sample_ids_by_sp = {}
             sps = list(self.Nselect.keys())
-
-            # get various info from the structures about the center atom species and indexing
-            (
-                strides_by_sp,
-                global_counter,
-                map_by_manager,
-                indices_by_sp,
-            ) = get_index_mappings_sample_per_species(managers, sps)
-
             LOGGER.info(
                 f"The number of pseudo points selected by central atom species is: {self.Nselect}"
             )
-
-            # organize features w.r.t. central atom type
-            X_by_sp = {}
-            for sp in sps:
-                X_by_sp[sp] = X[indices_by_sp[sp]]
-            self._XX = X_by_sp
-
-            # split the dense feature matrix by center species and apply CUR decomposition
-            self.selected_sample_ids_by_sp = {}
-
+            X_by_sp = _split_feature_matrix_by_species(managers, X, sps)
             for sp in sps:
                 LOGGER.info(f"Selecting species: {sp}")
                 if self._selector[sp] is not None:
@@ -343,12 +300,9 @@ class Filter(BaseIO):
                     self.selected_sample_ids_by_sp[sp] = in_sample_indices
                 else:
                     self.selected_sample_ids_by_sp[sp] = []
-
             return self
-
         else:
             self._selector.fit(X)
-
             if self.act_on == "sample":
                 self.selected_sample_ids = self._selector.get_support(
                     indices=True, ordered=True
@@ -357,7 +311,6 @@ class Filter(BaseIO):
                 self.selected_feature_ids_global = self._selector.get_support(
                     indices=True, ordered=True
                 )
-
             return self
 
     def filter(self, managers, n_select=None):
@@ -393,59 +346,41 @@ class Filter(BaseIO):
             to initialize the representation
 
         """
-
         if n_select is None:
             n_select = self.Nselect
-
         else:
             if n_select > self.Nselect:
                 raise ValueError(
                     f"It is only possible to filter {self.Nselect} {self.act_on}(s), "
                     f"you have requested {n_select}"
                 )
-
         if self.act_on == "sample per species":
             sps = list(n_select.keys())
-            # get various info from the structures about the center atom species and indexing
-            (
-                strides_by_sp,
-                global_counter,
-                map_by_manager,
-                indices_by_sp,
-            ) = get_index_mappings_sample_per_species(managers, sps)
             selected_ids_by_sp = {
-                key: np.sort(val[: n_select[key]])
+                key: val[: n_select[key]]
                 for key, val in self.selected_sample_ids_by_sp.items()
             }
-            self.selected_ids = (
-                convert_selected_global_index2perstructure_index_per_species(
-                    managers,
-                    selected_ids_by_sp,
-                    strides_by_sp,
-                    map_by_manager,
-                    sps,
-                )
+            self.selected_ids = _indices_perspecies_manager_to_perstructure(
+                managers, selected_ids_by_sp, sps
             )
-            # return self.selected_ids
-            # build the pseudo points
-            pseudo_points = SparsePoints(self._representation)
-            pseudo_points.extend(managers, self.selected_ids)
-            return pseudo_points
-
+            sparse_points = SparsePoints(self._representation)
+            sparse_points.extend(managers, self.selected_ids)
+            return sparse_points
         elif self.act_on == "sample":
-
-            selected_ids_global = np.sort(self.selected_sample_ids[:n_select])
-            strides, _, map_by_manager = get_index_mappings_sample(managers)
-            self.selected_ids = convert_selected_global_index2perstructure_index(
-                managers, selected_ids_global, strides, map_by_manager
+            selected_ids_global = self.selected_sample_ids[:n_select]
+            self.selected_ids = _indices_manager_to_perstructure(
+                managers, selected_ids_global
             )
             # The sparse points will be reordered since they're not per-species
             # but the resulting object is still usable
             sparse_points = SparsePoints(self._representation)
             sparse_points.extend(managers, self.selected_ids)
             return sparse_points
-
         elif self.act_on == "feature":
+            if not isinstance(self._representation, SphericalInvariants):
+                raise ValueError(
+                    "Feature filtering currently only supported for SphericalInvariants"
+                )
             feat_idx2coeff_idx = self._representation.get_feature_index_mapping(
                 managers
             )
@@ -460,6 +395,7 @@ class Filter(BaseIO):
                 coef_idx = feat_idx2coeff_idx[idx]
                 for key in self.selected_ids.keys():
                     self.selected_ids[key].append(int(coef_idx[key]))
+            self.selected_ids = dict(coefficient_subselection=self.selected_ids)
             # keep the global indices and ordering for ease of use
             self.selected_ids[
                 "selected_feature_ids_global"
@@ -467,7 +403,6 @@ class Filter(BaseIO):
             self.selected_ids[
                 "selected_feature_ids_global_selection_ordering"
             ] = selected_ids_sorting.tolist()
-            self.selected_ids = dict(coefficient_subselection=self.selected_ids)
             return self.selected_ids
 
     def select_and_filter(self, managers):
