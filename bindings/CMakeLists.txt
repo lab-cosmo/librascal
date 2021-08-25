@@ -31,7 +31,6 @@
 set(BINDING_SRCS
     bind_py_module.cc
     bind_py_structure_manager.cc
-    bind_py_utils.cc
     bind_py_representation_calculator.cc
     bind_py_models.cc
 )
