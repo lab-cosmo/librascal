@@ -1236,6 +1236,60 @@ TODO(felix) add mechanism to check if the StructureManager is compatible with th
 </dd></dl>
 
 </div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6rascal4math18SphericalHarmonics30compute_assoc_legendre_polynomEd">
+<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a6fbf1a5801b9e6d82ac1a5aee76bf9f1"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">compute_assoc_legendre_polynom</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">cos_theta</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics30compute_assoc_legendre_polynomEd" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Compute a set of normalized associated Legendre polynomials, namely <span class="math notranslate nohighlight">\(P_\ell^{m}\)</span>.</p>
+<p>These are normalized for use in computing the real spherical harmonics; see the class documentation for details. In particular, the <span class="math notranslate nohighlight">\(m=0\)</span> harmonics require an extra factor of <span class="math notranslate nohighlight">\(\frac{1}{\sqrt{2}}\)</span>. The negative-m functions are not computed due to symmetry.</p>
+<p>Note that <span class="math notranslate nohighlight">\(P_\ell^{m}\)</span> includes the Condon-Shortley phase.</p>
+<p>
+Stores the results as an (Eigen)matrix containing the evaluated polynomials, sized <span class="math notranslate nohighlight">\(\ell_\text{max}\)</span> by <span class="math notranslate nohighlight">\((2\ell_\text{max} + 1)\)</span>; the row is indexed by <span class="math notranslate nohighlight">\(\ell\)</span> and the column by <span class="math notranslate nohighlight">\(m \geq 0\)</span>. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cos_theta</strong> – (aka x) Where to evaluate the polynomial</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6rascal4math18SphericalHarmonics31compute_cos_sin_angle_multiplesEdd">
+<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1aa1d4392e5b054cef1d4c108613c82c17"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">compute_cos_sin_angle_multiples</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">cos_phi</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">sin_phi</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics31compute_cos_sin_angle_multiplesEdd" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Compute <span class="math notranslate nohighlight">\((-1)^m\cos(m\phi)\)</span> and <span class="math notranslate nohighlight">\((-1)^m\sin(m\phi)\)</span> from the recurrence relations</p>
+<p>The relations are (these are the same recurrence relations used to calculate the Chebyshev polynomials):</p>
+<p><div class="math notranslate nohighlight">
+\[\begin{split}\begin{eqnarray} \cos(m\phi) &amp;=&amp; 2\cos(\phi)\cos((m-1)\phi) - \cos((m-2)\phi)\\ \sin(m\phi) &amp;=&amp; 2\cos(\phi)\sin((m-1)\phi) - \sin((m-2)\phi) \end{eqnarray}\end{split}\]</div>
+</p>
+<p>and they require only <span class="math notranslate nohighlight">\(\cos(\phi)\)</span> and <span class="math notranslate nohighlight">\(\sin(\phi)\)</span> to start.</p>
+<p>
+Stores the results as an (Eigen)matrix, sized <span class="math notranslate nohighlight">\(m_\text{max}\)</span> by 2 with the <span class="math notranslate nohighlight">\((-1)^m\cos(m\phi)\)</span> stored in the first column and <span class="math notranslate nohighlight">\((-1)^m\sin(m\phi)\)</span> in the second column, with <span class="math notranslate nohighlight">\(m\)</span> being the row index </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cos_phi</strong> – Value of <span class="math notranslate nohighlight">\(\cos(\phi)\)</span> to start the relation</p></li>
+<li><p><strong>sin_phi</strong> – Value of <span class="math notranslate nohighlight">\(\sin(\phi)\)</span> to start the relation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6rascal4math18SphericalHarmonics27compute_spherical_harmonicsEv">
+<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1a19ebd9dc707ef3984b6de5b995288591"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">compute_spherical_harmonics</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics27compute_spherical_harmonicsEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Combine the associated Legendre polynomials with the cos/sin(mφ) to compute the final spherical harmonics</p>
+<p>Stores the results as an (Eigen)matrix, sized <span class="math notranslate nohighlight">\((\ell_\text{max}+1)^2\)</span>. The index collects <span class="math notranslate nohighlight">\(\ell\)</span> and <span class="math notranslate nohighlight">\(m\)</span> quantum numbers stored in compact format ( <span class="math notranslate nohighlight">\(m\)</span> varies fastest, from <span class="math notranslate nohighlight">\(-\ell\)</span> to <span class="math notranslate nohighlight">\(\ell\)</span>, and <span class="math notranslate nohighlight">\(\ell\)</span> from 0 to <span class="math notranslate nohighlight">\(\ell_\text{max}\)</span>). </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6rascal4math18SphericalHarmonics39compute_spherical_harmonics_derivativesEdddd">
+<span class="target" id="classrascal_1_1math_1_1SphericalHarmonics_1aa87c9faeecf60910243d1474aea17aa6"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">compute_spherical_harmonics_derivatives</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">sin_theta</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">cos_theta</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">sin_phi</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">cos_phi</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6rascal4math18SphericalHarmonics39compute_spherical_harmonics_derivativesEdddd" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Compute a full set of spherical harmonics and their Cartesian gradients</p>
+<p>Spherical harmonics are defined as described in compute_spherical_harmonics(). Gradients are defined with respect to motion of the neighbor atom, which is in accordance with the usual definition with respect to the <em>arguments</em> of the <span class="math notranslate nohighlight">\(Y_\ell^m\)</span>. The actual Cartesian gradients include an extra factor of <span class="math notranslate nohighlight">\(\frac{1}{r}\)</span> that is not included here; the rest is independent of radius.</p>
+<p>Results are stored as in compute_spherical_harmonics(), but with an extra (row) index for the x, y, and z Cartesian components. </p>
+</dd></dl>
+
+</div>
 </dd></dl>
 
 <dl class="cpp class">
@@ -2578,16 +2632,6 @@ TODO(felix) add mechanism to check if the StructureManager is compatible with th
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp">
-<span class="sig-name descname"><span class="n"><span class="pre">BOOST_AUTO_TEST_SUITE</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">UtilsSparsify</span></span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="cpp function">
-<dt class="sig sig-object cpp">
-<span class="sig-name descname"><span class="n"><span class="pre">BOOST_AUTO_TEST_CASE</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">sparsify_fps_test</span></span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="cpp function">
-<dt class="sig sig-object cpp">
 <span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Kernel</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">py</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">class_</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN6rascal10add_kernelEN2py6class_I6KernelEERN2py6moduleERN2py6moduleE" title="rascal::add_kernel::Kernel"><span class="n"><span class="pre">Kernel</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">add_kernel</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">py</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">module</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">mod</span></span>, <span class="n"><span class="pre">py</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">&amp;</span></span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -2744,11 +2788,6 @@ TODO(felix) add mechanism to check if the StructureManager is compatible with th
 <dl class="cpp function">
 <dt class="sig sig-object cpp">
 <span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">add_structure_managers</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">py</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">module</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">m_nl</span></span>, <span class="n"><span class="pre">py</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">module</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">m_internal</span></span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="cpp function">
-<dt class="sig sig-object cpp">
-<span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">utils_binding</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">py</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">module</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">mod</span></span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
@@ -9782,42 +9821,6 @@ TODO(felix) add mechanism to check if the StructureManager is compatible with th
 </div>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="cpp type">
-<dt class="sig sig-object cpp">
-<span class="k"><span class="pre">namespace</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">utils</span></span></span><br /></dt>
-<dd><div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric" id="breathe-section-title-typedefs">Typedefs</p>
-<dl class="cpp type">
-<dt class="sig sig-object cpp">
-<span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">RowMatrixXd</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Matrix</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Dynamic</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Dynamic</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">RowMajor</span></span><span class="p"><span class="pre">&gt;</span></span><br /></dt>
-<dd></dd></dl>
-
-<dl class="cpp type">
-<dt class="sig sig-object cpp">
-<span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FPSReturnTuple</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">tuple</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ArrayXi</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ArrayXd</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ArrayXd</span></span><span class="p"><span class="pre">&gt;</span></span><br /></dt>
-<dd></dd></dl>
-
-<dl class="cpp type">
-<dt class="sig sig-object cpp">
-<span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FPSReturnTupleConst</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">tuple</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ArrayXi</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ArrayXd</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ArrayXd</span></span><span class="p"><span class="pre">&gt;</span></span><br /></dt>
-<dd></dd></dl>
-
-</div>
-<div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
-<dl class="cpp function">
-<dt class="sig sig-object cpp">
-<a class="reference internal" href="#_CPPv4N6rascal5utils14FPSReturnTupleE" title="rascal::utils::FPSReturnTuple"><span class="n"><span class="pre">FPSReturnTuple</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">select_fps</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Ref</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N6rascal5utils11RowMatrixXdE" title="rascal::utils::RowMatrixXd"><span class="n"><span class="pre">RowMatrixXd</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">feature_matrix</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">n_sparse</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">i_first_point</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N6rascal5utils19FPSReturnTupleConstE" title="rascal::utils::FPSReturnTupleConst"><span class="n"><span class="pre">FPSReturnTupleConst</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">restart</span></span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="cpp function">
-<dt class="sig sig-object cpp">
-<span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">tuple</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ArrayXi</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ArrayXd</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ArrayXd</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ArrayXi</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">ArrayXd</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">select_fps_voronoi</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Ref</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N6rascal5utils11RowMatrixXdE" title="rascal::utils::RowMatrixXd"><span class="n"><span class="pre">RowMatrixXd</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">feature_matrix</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">n_sparse</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">i_first_point</span></span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-</div>
 </dd></dl>
 
 </dd></dl>

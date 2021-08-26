@@ -175,6 +175,7 @@
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#K"><strong>K</strong></a>
@@ -218,10 +219,12 @@
 </li>
       <li><a href="reference/python.html#rascal.representations.SphericalCovariants.covariant_lambda">covariant_lambda (rascal.representations.SphericalCovariants attribute)</a>
 </li>
-      <li><a href="reference/python.html#rascal.representations.SortedCoulombMatrix.cutoff">cutoff (rascal.representations.SortedCoulombMatrix attribute)</a>
+      <li><a href="reference/python.html#rascal.utils.CURFilter">CURFilter (class in rascal.utils)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/python.html#rascal.representations.SortedCoulombMatrix.cutoff">cutoff (rascal.representations.SortedCoulombMatrix attribute)</a>
+</li>
       <li><a href="reference/python.html#rascal.representations.SphericalCovariants.cutoff_function_parameters">cutoff_function_parameters (rascal.representations.SphericalCovariants attribute)</a>
 
       <ul>
@@ -259,6 +262,18 @@
   </ul></td>
 </tr></table>
 
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/python.html#rascal.utils.filter.Filter">Filter (class in rascal.utils.filter)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/python.html#rascal.utils.FPSFilter">FPSFilter (class in rascal.utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -274,6 +289,8 @@
         <li><a href="reference/python.html#rascal.representations.SphericalInvariants.gaussian_sigma_type">(rascal.representations.SphericalInvariants attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/python.html#rascal.utils.FPSFilter.get_fps_distances">get_fps_distances() (rascal.utils.FPSFilter method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/python.html#rascal.representations.SphericalCovariants.get_keys">get_keys() (rascal.representations.SphericalCovariants method)</a>
@@ -508,12 +525,12 @@
 </li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3DVREED0Ev">rascal::internal::RadialContribution&lt;RadialBasisType::DVR&gt;::~RadialContribution (C++ function)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/cpp.html#_CPPv4IEN6rascal8internal18RadialContributionIN15RadialBasisType3GTOEEE">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt; (C++ struct)</a>
 </li>
       <li><a href="reference/cpp.html#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE27compute_center_contributionE10Vector_RefR13ClusterRefKeyI5Order5LayerEi">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::compute_center_contribution (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE27compute_center_contributionEd">[1]</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/cpp.html#_CPPv4I_18AtomicSmearingTypeEN6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE20compute_contributionE8Matrix_tKdKd">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::compute_contribution (C++ function)</a>
 </li>
       <li><a href="reference/cpp.html#_CPPv4I_18AtomicSmearingType_6size_t_6size_tEN6rascal8internal18RadialContributionIN15RadialBasisType3GTOEE30compute_neighbour_contributionE10Matrix_RefKdRK13ClusterRefKeyI5Order5LayerE">rascal::internal::RadialContribution&lt;RadialBasisType::GTO&gt;::compute_neighbour_contribution (C++ function)</a>
@@ -559,6 +576,14 @@
       <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonicsE">rascal::math::SphericalHarmonics (C++ class)</a>
 </li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics4calcERKN5Eigen3RefIKN5Eigen8Vector3dEEEb">rascal::math::SphericalHarmonics::calc (C++ function)</a>, <a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics4calcERKN5Eigen3RefIKN5Eigen8Vector3dEEEbb">[1]</a>
+</li>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics30compute_assoc_legendre_polynomEd">rascal::math::SphericalHarmonics::compute_assoc_legendre_polynom (C++ function)</a>
+</li>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics31compute_cos_sin_angle_multiplesEdd">rascal::math::SphericalHarmonics::compute_cos_sin_angle_multiples (C++ function)</a>
+</li>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics27compute_spherical_harmonicsEv">rascal::math::SphericalHarmonics::compute_spherical_harmonics (C++ function)</a>
+</li>
+      <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics39compute_spherical_harmonics_derivativesEdddd">rascal::math::SphericalHarmonics::compute_spherical_harmonics_derivatives (C++ function)</a>
 </li>
       <li><a href="reference/cpp.html#_CPPv4N6rascal4math18SphericalHarmonics30get_assoc_legendre_polynom_rawEv">rascal::math::SphericalHarmonics::get_assoc_legendre_polynom_raw (C++ function)</a>
 </li>

@@ -207,9 +207,20 @@
 </style>
 <section id="fitting-a-model-with-librascal">
 <span id="model-fitting"></span><h1>Fitting a Model with Librascal<a class="headerlink" href="#fitting-a-model-with-librascal" title="Permalink to this headline">¶</a></h1>
-<p>This section is under construction.  Please see the
-<code class="docutils literal notranslate"><span class="pre">examples/MLIP_example.ipynb</span></code> notebook for an example of fitting and saving a
-potential (“model”, in <code class="docutils literal notranslate"><span class="pre">librascal</span></code> parlance) to an existing training database.</p>
+<p>Note: This section is under construction.</p>
+<p>One of the main things you will want to do with <code class="docutils literal notranslate"><span class="pre">librascal</span></code>, besides computing
+descriptors, is fitting an ML model to a database of structural properties (such
+as energies and forces or chemical shifts).  The example notebook
+<code class="file docutils literal notranslate"><span class="pre">examples/MLIP_example.ipynb</span></code> contains an example of fitting and saving a
+model of a potential energy surface to an existing training database.</p>
+<p>If you have fit a model to energies and/or forces, then you have a model of the
+potential energy surface that you then can use to run molecular dynamics (MD)
+simulations.  The notebook <code class="file docutils literal notranslate"><span class="pre">examples/zundel_i-PI.ipynb</span></code> has an example of
+fitting and running a potential using the included interface to the
+<a class="reference external" href="http://ipi-code.org">i-PI code (outbound)</a>.</p>
+<p>Finally, you may wish to optimize the speed of the potential by using feature
+selection.  This is implemented using the <a class="reference internal" href="../reference/python.html#filters"><span class="std std-ref">Filters</span></a>
+classes and demonstrated in the notebook <code class="file docutils literal notranslate"><span class="pre">examples/Feature_selection_example.ipynb</span></code>.</p>
 </section>
 
 

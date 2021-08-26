@@ -108,7 +108,10 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Python</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#atoms-and-cells">Atoms and cells</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#representations">Representations</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#models">Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#models">Models</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#filters">Filters</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#io">IO</a></li>
 </ul>
 </li>
@@ -214,6 +217,8 @@
 <p>This list is incomplete. You can help by <em>expanding it</em>!</p>
 <section id="atoms-and-cells">
 <h2>Atoms and cells<a class="headerlink" href="#atoms-and-cells" title="Permalink to this headline">¶</a></h2>
+<p>Some base functionality for working with structures and collections thereof in
+<code class="docutils literal notranslate"><span class="pre">librascal</span></code></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="rascal.neighbourlist.structure_manager.AtomsList">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rascal.neighbourlist.structure_manager.</span></span><span class="sig-name descname"><span class="pre">AtomsList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nl_options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">managers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/neighbourlist/structure_manager.html#AtomsList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rascal.neighbourlist.structure_manager.AtomsList" title="Permalink to this definition">¶</a></dt>
@@ -316,6 +321,8 @@ previous mask).</p>
 </section>
 <section id="representations">
 <h2>Representations<a class="headerlink" href="#representations" title="Permalink to this headline">¶</a></h2>
+<p>Representations are the primary classes in <code class="docutils literal notranslate"><span class="pre">librascal</span></code> used to compute
+structural representations (features, descriptors) from a list of atoms.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="rascal.representations.SortedCoulombMatrix">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rascal.representations.</span></span><span class="sig-name descname"><span class="pre">SortedCoulombMatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sorting_algorithm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'row_norm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">central_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interaction_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interaction_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/representations/coulomb_matrix.html#SortedCoulombMatrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rascal.representations.SortedCoulombMatrix" title="Permalink to this definition">¶</a></dt>
@@ -1027,6 +1034,10 @@ Atomistic Systems. Physical Review Letters, 120(3), 036002.
 </section>
 <section id="models">
 <h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
+<p>Also included is an optimized implementation of kernel ridge regression (KRR,
+also equivalent to Gaussian approximation potentials aka GAP).  Both fitting and
+evaluating of models is implemented; the evaluation in particular is optimized
+for use in MD simulations.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="rascal.models.Kernel">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rascal.models.</span></span><span class="sig-name descname"><span class="pre">Kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">representation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Cosine'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Full'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Structure'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/models/kernels.html#Kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rascal.models.Kernel" title="Permalink to this definition">¶</a></dt>
@@ -1049,7 +1060,7 @@ Subset of Regressors)</p></li>
 <p class="rubric">Notes</p>
 <p>In the following
 we refer to the training samples with ‘N’ and, in the case of
-sparse kernels <a href="#id9"><span class="problematic" id="id5">[1]_</span></a>, we refer to the pseudo points with ‘M’. So a
+sparse kernels <a href="#id10"><span class="problematic" id="id5">[1]_</span></a>, we refer to the pseudo points with ‘M’. So a
 kernel between the training samples and the pseudo points is
 ‘KNM’. For more information on sparse kernels see
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">rascal.models.krr.train_gap_model()</span></code>.</p>
@@ -1194,9 +1205,69 @@ you can wrap the <cite>frames</cite> parameter in a <a class="reference internal
 </dl>
 </dd></dl>
 
+<section id="filters">
+<span id="id9"></span><h3>Filters<a class="headerlink" href="#filters" title="Permalink to this headline">¶</a></h3>
+<p>Filters are used mainly to select rows and columns from feature (or kernel)
+matrices in order to reduce their dimensionality and make the fitting problem
+tractable, or just more efficient.  The following filters, implemented in
+<a class="reference external" href="https://scikit-cosmo.readthedocs.io/en/latest/selection.html">scikit-cosmo (outbound)</a>, are available:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="rascal.utils.FPSFilter">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rascal.utils.</span></span><span class="sig-name descname"><span class="pre">FPSFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">representation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nselect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act_on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sample</span> <span class="pre">per</span> <span class="pre">species'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/utils/filter.html#FPSFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rascal.utils.FPSFilter" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="rascal.utils.FPSFilter.get_fps_distances">
+<span class="sig-name descname"><span class="pre">get_fps_distances</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/utils/filter.html#FPSFilter.get_fps_distances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rascal.utils.FPSFilter.get_fps_distances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Hausdorff distances over the course of selection</p>
+<p>This may be a useful (rough) indicator for choosing how many points to
+select, as a small distance generally indicates that the selected point
+is close to the existing set of selected points and therefore probably
+does not add much additional information.</p>
+<p>Returns either an array of Hausdorff distances, or a species-indexed
+dict of arrays (for the “sample per species” mode).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rascal.utils.CURFilter">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rascal.utils.</span></span><span class="sig-name descname"><span class="pre">CURFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">representation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nselect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act_on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sample</span> <span class="pre">per</span> <span class="pre">species'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/utils/filter.html#CURFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rascal.utils.CURFilter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Both inherit the interface of the following base class:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="rascal.utils.filter.Filter">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">rascal.utils.filter.</span></span><span class="sig-name descname"><span class="pre">Filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">representation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nselect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act_on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sample</span> <span class="pre">per</span> <span class="pre">species'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/utils/filter.html#Filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rascal.utils.filter.Filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>A super class for filtering representations based upon a standard
+sample or feature selection class.</p>
+<p>This is mainly a wrapper around selectors (implemented e.g. in
+scikit-cosmo) that handles the semantic-index transformations
+required after selection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>representation</strong> (<em>Calculator</em>) – Representation calculator associated with the kernel</p></li>
+<li><p><strong>Nselect</strong> (<em>int</em>) – number of points to select. If act_on=’sample per species’ then it should
+be a dictionary mapping atom type to the number of samples, e.g.
+Nselect = {1:200,6:100,8:50}.</p></li>
+<li><p><strong>selector</strong> (<em>selector to use for filtering. The selector should</em>) – have a <cite>fit</cite> function, which when called will select from the input
+matrix the desired features / samples and a <cite>get_support</cite> function
+which takes parameters <cite>indices</cite> and <cite>ordered</cite>, and returns a list
+of selection indices, in the order that they were selected,
+when <cite>indices=True</cite> and <cite>ordered=True</cite>.</p></li>
+<li><p><strong>act_on</strong> (<em>string</em>) – Select how to apply the selection. Can be either of ‘sample’,
+‘sample per species’,’feature’.  Default ‘sample per species’.
+Note that for ‘feature’ mode only the SphericalInvariants
+representation is supported.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 </section>
 <section id="io">
 <h2>IO<a class="headerlink" href="#io" title="Permalink to this headline">¶</a></h2>
+<p>Utilities for loading and saving Rascal objects (especially models)</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="rascal.utils.dump_obj">
 <span class="sig-prename descclassname"><span class="pre">rascal.utils.</span></span><span class="sig-name descname"><span class="pre">dump_obj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0.1'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rascal/utils/io.html#dump_obj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rascal.utils.dump_obj" title="Permalink to this definition">¶</a></dt>
