@@ -61,7 +61,6 @@ namespace rascal {
     this->offsets.reserve(inum);
     this->offsets.resize(1);
     //std::cout << "atom_index_from_atom_tag_list() " << std::endl;
-    this->atom_index_from_atom_tag_list.clear();
     //std::cout << "offsets " << std::endl;
     for (int i{0}; i < this->inum; ++i) {
       this->offsets.emplace_back(this->offsets[i] + this->numneigh[i]);
@@ -87,6 +86,8 @@ namespace rascal {
       // they are user-defined, thefore the can have any number > 0.
       // So we remap them to the range [0, tot_num] to obtain
       // rascal atom indices
+      // We cannot assume that the first inum atoms contain all atom tags
+      // thereforce we have to work with a map
       if (rascal_atom_index_from_lammps_atom_tags.count(lammps_atom_tags[i]) == 0) {
         rascal_atom_index_from_lammps_atom_tags[lammps_atom_tags[i]] = max_rascal_atom_index;
         this->atom_index_from_atom_tag_list[i] = max_rascal_atom_index;
@@ -95,6 +96,11 @@ namespace rascal {
         this->atom_index_from_atom_tag_list[i] = rascal_atom_index_from_lammps_atom_tags[lammps_atom_tags[i]];
       }
     }
+    //std::cout << sched_getcpu() << ": this->atom_index_from_atom_tag_list ";
+    //for (int i{0}; i < this->tot_num; ++i) {
+    //  std::cout << this->atom_index_from_atom_tag_list[i] << " ";
+    //}
+    //std::cout << std::endl;
     //std::cout << sched_getcpu() << ": " << "StructureManagerLammps: max_rascal_atom_index, " << "this->inum " << "this->tot_num ";
     //std::cout << max_rascal_atom_index << ", " << this->inum << ", " << this->tot_num << std::endl;
 

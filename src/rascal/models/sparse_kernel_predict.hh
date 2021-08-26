@@ -246,10 +246,10 @@ namespace rascal {
             manager, sparse_points, weights, zeta, representation_name,
             representation_grad_name, pair_grad_atom_i_r_j_name);
       }
-
+      // COMMENT(alex) now ghosts atoms also can have gradients 
       auto && gradients{*manager->template get_property<
           Property<double, 1, Manager_t, 1, ThreeD>>(gradient_name, true, true,
-                                                     true)};
+          false)};
       if (gradients.is_updated()) {
         //auto rascal_forces = Eigen::Map<const math::Matrix_t>(
         //     gradients.view().data(), manager->size(), 3);
@@ -268,17 +268,24 @@ namespace rascal {
       for (auto center : manager) {
         // accumulate partial gradients onto gradients
         for (auto neigh : center.pairs_with_self_pair()) {
-          // TODO(alex) should work now, just in case I have to debug this again
+          //std::cout << sched_getcpu() << ": " << "atom j cluster indices " <<
+          //neigh.get_atom_j().get_cluster_indices().transpose() << std::endl;
           //std::cout << sched_getcpu() << ": " << "the pair (" << center.get_atom_tag() << ", " 
           //          << neigh.get_atom_tag() << ") global index " 
           //          << neigh.get_global_index() << " writes to atom j with tag "
-          //          << neigh.get_atom_j().get_atom_tag() << " and cluster index ("
-          //          << neigh.get_atom_j().get_cluster_index() << ", "
-          //          << neigh.get_atom_j().get_atom_tag() << ") with pair gradient with shape "
+          //          << neigh.get_atom_j().get_atom_tag() << " and cluster index "
+          //          << neigh.get_atom_j().get_cluster_index() << " atom index "
+          //          << manager->get_atom_index(neigh.get_atom_j().get_atom_tag()) << " with pair gradient with shape "
           //          << pair_grad_atom_i_r_j[neigh].rows() << " " << pair_grad_atom_i_r_j[neigh].cols() << std::endl;
-          //std::cout << sched_getcpu() << ": " << pair_grad_atom_i_r_j[neigh] << std::endl;
-          //std::cout << sched_getcpu() << ": " << gradients[neigh.get_atom_j()] << std::endl; // oldTODO(alex)  valgrind says here is memory leak
-          gradients[neigh.get_atom_j()] += pair_grad_atom_i_r_j[neigh];
+          //std::cout << sched_getcpu() << ": gradient += pair_gradient" << std::endl;
+          //std::cout << sched_getcpu() << ": " << gradients[neigh.get_atom_j()]
+          //<< " += " << pair_grad_atom_i_r_j[neigh] << std::endl; // oldTODO(alex)  valgrind says here is memory leak
+
+          // COMMENT(alex) before we added the contribution to the original
+          //               atom using get_cluster_index inside the property, since lammps
+          //               is taking care of the mapping we don't have to do
+          //               this
+          gradients[neigh.get_atom_tag()] += pair_grad_atom_i_r_j[neigh];
         }
       }
       gradients.set_updated_status(true);
