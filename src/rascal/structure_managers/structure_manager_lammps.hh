@@ -152,7 +152,7 @@ namespace rascal {
     int get_atom_type(int atom_tag) const {
       // lammps atom types go from 1 to N, so we map it to rascal atom types
       // by mapping 0 to N-1 to the corresponding number
-      return this->atom_types[this->type[this->get_atom_index(atom_tag)]-1];
+      return this->atom_types[this->type[atom_tag]-1];
     }
 
     //! return number of I atoms in the list
@@ -193,7 +193,7 @@ namespace rascal {
     }
   
     int get_atom_index(int atom_tag) const {
-      return this->atom_index_from_atom_tag_list.at(atom_tag);
+      return this->atom_index_from_atom_tag_list[atom_tag];
     }
 
     /**
@@ -270,7 +270,7 @@ namespace rascal {
     int ** firstneigh{};  //!< pointer to first neighbour
     double ** x{};        //!< atomic positions
     double ** f{};        //!< atomic forces
-    int * type{};         //!< atom types
+    int * type{};         //!< lammps atom types
     double * eatom{};     //!< energy of atoms
     double ** vatom{};    //!< virial stress of atoms
     int nb_pairs{};       //! number of clusters with cluster_size=2 (pairs)
