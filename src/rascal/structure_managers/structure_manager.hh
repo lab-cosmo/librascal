@@ -1074,7 +1074,8 @@ namespace rascal {
 
     /**
      * Getter for a ClusterRefKey refering to the current j-atom of the
-     * ij-pair.
+     * ij-pair. If atom j is a ghost atom the function returns the corresponding
+     * within-cell atom.
      *
      * if you try to use this function and Order != 2 then
      * you will get an error about not finding the function to call
