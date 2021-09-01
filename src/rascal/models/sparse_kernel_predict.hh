@@ -195,12 +195,22 @@ namespace rascal {
    * '"kernel: "+kernel_type+" ; "+representation_grad_name+" gradients;
    * weight_hash:"+weight_hash' gradients [N_{atoms}, 3]
    *
+   * The gradient of atom i is computed by summing neighbours partial gradients
+   * with respect to the position of atom i dA_i/dr = sum_j dA_j/dr_i
+   *
    * @tparam StructureManagers should be an iterable over shared pointer
    *          of structure managers like ManagerCollection
    * @param sparse_points a SparsePoints* class
    * @param managers a ManagerCollection or similar collection of
    * structure managers
    * @param weights regression weights of the sparse GPR model
+   * @param store_partial_gradients_in_ghosts the dA_i/dr_j contributions
+   *        are stored in atom j. If atom j is a ghost atom and the flag is true,
+   *        then the contributions are stored in the ghost atom j, if the flag
+   *        is false in this case then the contributions are stored in the
+   *        within-cell atom corresponding to ghost atom j. This flag is
+   *        necessary for domain decomposition where the accumlation of the
+   *        partial gradients is done outside of rascal.
    * @return name used to register the gradients in the managers
    */
   template <class Calculator, class StructureManagers, class SparsePoints>
@@ -208,7 +218,9 @@ namespace rascal {
                                               SparseKernel & kernel,
                                               StructureManagers & managers,
                                               SparsePoints & sparse_points,
-                                              math::Vector_t & weights) {
+                                              math::Vector_t & weights,
+                                              bool store_partial_gradients_in_ghosts =
+                                              false) {
     using Manager_t = typename StructureManagers::Manager_t;
     using Property_t = typename Calculator::template Property_t<Manager_t>;
     using PropertyGradient_t =
@@ -221,7 +233,6 @@ namespace rascal {
     for (const auto & manager : managers) {
       n_centers += manager->size();
     }
-
     std::string kernel_type_str = kernel.parameters.at("name").get<std::string>();
     internal::Hash<math::Vector_t, double> hasher{};
     std::string weight_hash = std::to_string(hasher(weights));
@@ -240,16 +251,16 @@ namespace rascal {
 
     for (const auto & manager : managers) {
       if (kernel_type_str == "GAP") {
-        const auto zeta = kernel.parameters.at("zeta").get<size_t>();
-
+        const size_t zeta = kernel.parameters.at("zeta").get<size_t>();
+        // dA_i/dr_j
         compute_partial_gradients_gap<Property_t, PropertyGradient_t>(
             manager, sparse_points, weights, zeta, representation_name,
             representation_grad_name, pair_grad_atom_i_r_j_name);
       }
-      // COMMENT(alex) now ghosts atoms also can have gradients 
-      auto && gradients{*manager->template get_property<
-          Property<double, 1, Manager_t, 1, ThreeD>>(gradient_name, true, true,
-          false)};
+      // dA_i/dr
+      auto && gradients{*manager->template get_property<Property<double, 1,
+        Manager_t, 1, ThreeD>>(gradient_name, true, true,
+                               not(store_partial_gradients_in_ghosts))};
       if (gradients.is_updated()) {
         //auto rascal_forces = Eigen::Map<const math::Matrix_t>(
         //     gradients.view().data(), manager->size(), 3);
@@ -265,29 +276,40 @@ namespace rascal {
       auto && pair_grad_atom_i_r_j{*manager->template get_property<
           Property<double, 2, Manager_t, 1, ThreeD>>(pair_grad_atom_i_r_j_name,
                                                      true)};
-      for (auto center : manager) {
-        // accumulate partial gradients onto gradients
-        for (auto neigh : center.pairs_with_self_pair()) {
-          //std::cout << "CPU" << sched_getcpu() << ": " << "atom j cluster indices " <<
-          //neigh.get_atom_j().get_cluster_indices().transpose() << std::endl;
-          //std::cout << "CPU" << sched_getcpu() << ": " << "the pair (" << center.get_atom_tag() << ", " 
-          //          << neigh.get_atom_tag() << ") global index " 
-          //          << neigh.get_global_index() << " writes to atom j with tag "
-          //          << neigh.get_atom_j().get_atom_tag() << " and cluster index "
-          //          << neigh.get_atom_j().get_cluster_index() << " atom index "
-          //          << manager->get_atom_index(neigh.get_atom_j().get_atom_tag()) << " with pair gradient with shape "
-          //          << pair_grad_atom_i_r_j[neigh].rows() << " " << pair_grad_atom_i_r_j[neigh].cols() << std::endl;
-          //std::cout << "CPU" << sched_getcpu() << ": gradient += pair_gradient" << std::endl;
-          //std::cout << "CPU" << sched_getcpu() << ": " << gradients[neigh.get_atom_j()]
-          //<< " += " << pair_grad_atom_i_r_j[neigh] << std::endl; // oldTODO(alex)  valgrind says here is memory leak
-
-          // COMMENT(alex) before we added the contribution to the original
-          //               atom using get_cluster_index inside the property, since lammps
-          //               is taking care of the mapping we don't have to do
-          //               this
-          gradients[neigh.get_atom_tag()] += pair_grad_atom_i_r_j[neigh];
+      if (store_partial_gradients_in_ghosts) {
+        // The partial gradient contribution is added to the ghost atom 
+        // before we added the contribution to the original
+        // atom using get_cluster_index inside the property, since lammps
+        // is taking care of the mapping we don't have to do
+        // this
+        for (auto center : manager) {
+          // accumulate partial gradients onto gradients
+          for (auto neigh : center.pairs_with_self_pair()) {
+            //std::cout << "CPU" << sched_getcpu() << ": " << "atom j cluster indices " <<
+            //             neigh.get_atom_j().get_cluster_indices().transpose() << std::endl;
+            //std::cout << "CPU" << sched_getcpu() << ": " << "the pair (" << center.get_atom_tag() << ", " 
+            //          << neigh.get_atom_tag() << ") global index " 
+            //          << neigh.get_global_index() << " writes to atom j with tag "
+            //          << neigh.get_atom_j().get_atom_tag() << " and cluster index "
+            //          << neigh.get_atom_j().get_cluster_index() << " atom index "
+            //          << manager->get_atom_index(neigh.get_atom_j().get_atom_tag()) << " with pair gradient with shape "
+            //          << pair_grad_atom_i_r_j[neigh].rows() << " " << pair_grad_atom_i_r_j[neigh].cols() << std::endl;
+            //std::cout << "CPU" << sched_getcpu() << ": gradient += pair_gradient" << std::endl;
+            //std::cout << "CPU" << sched_getcpu() << ": " << gradients[neigh.get_atom_j()]
+            //<< " += " << pair_grad_atom_i_r_j[neigh] << std::endl; // oldTODO(alex)  valgrind says here is memory leak
+            gradients[neigh.get_atom_tag()] += pair_grad_atom_i_r_j[neigh];
+          }
+        }
+      } else {
+        for (auto center : manager) {
+          for (auto neigh : center.pairs_with_self_pair()) {
+            // if atom j is a ghost atom get_atom_j returns the corresponding
+            // within-cell atom
+            gradients[neigh.get_atom_j()] += pair_grad_atom_i_r_j[neigh];
+          }
         }
       }
+
       gradients.set_updated_status(true);
     }  // manager
     return gradient_name;
