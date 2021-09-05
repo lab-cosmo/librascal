@@ -75,8 +75,8 @@ class SparseGPRSolver:
         self._KY = None
 
     def partial_fit(self, KNM, Y, accumulate_only=False):
-        
-        if len(Y)>0: 
+
+        if len(Y) > 0:
             # only accumulate if we are passing data
             if len(Y.shape) == 1:
                 Y = Y[:, np.newaxis]
@@ -95,7 +95,7 @@ class SparseGPRSolver:
             self._KY += Phi.T @ Y
 
         # do actual fit if called with empty array or if asked
-        if len(Y)==0 or (not accumulate_only):
+        if len(Y) == 0 or (not accumulate_only):
             if self._solver == "RKHS":
                 self._weights = self._PKPhi @ scipy.linalg.solve(
                     self._Cov + np.eye(self._nM) * self._regularizer,
