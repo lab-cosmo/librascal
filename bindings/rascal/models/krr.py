@@ -75,23 +75,27 @@ class SparseGPRSolver:
         self._KY = None
 
     def partial_fit(self, KNM, Y, accumulate_only=False):
-        if len(Y.shape) == 1:
-            Y = Y[:, np.newaxis]
-        if self._solver == "RKHS":
-            Phi = KNM @ self._PKPhi
-        elif self._solver == "Normal":
-            Phi = KNM
-        else:
-            raise ValueError(
-                "Partial fit can only be realized with solver = [RKHS, Normal]"
-            )
-        if self._KY is None:
-            self._KY = np.zeros((self._nM, Y.shape[1]))
+        
+        if len(Y)>0: 
+            # only accumulate if we are passing data
+            if len(Y.shape) == 1:
+                Y = Y[:, np.newaxis]
+            if self._solver == "RKHS":
+                Phi = KNM @ self._PKPhi
+            elif self._solver == "Normal":
+                Phi = KNM
+            else:
+                raise ValueError(
+                    "Partial fit can only be realized with solver = [RKHS, Normal]"
+                )
+            if self._KY is None:
+                self._KY = np.zeros((self._nM, Y.shape[1]))
 
-        self._Cov += Phi.T @ Phi
-        self._KY += Phi.T @ Y
+            self._Cov += Phi.T @ Phi
+            self._KY += Phi.T @ Y
 
-        if not accumulate_only:
+        # do actual fit if called with empty array or if asked
+        if len(Y)==0 or (not accumulate_only):
             if self._solver == "RKHS":
                 self._weights = self._PKPhi @ scipy.linalg.solve(
                     self._Cov + np.eye(self._nM) * self._regularizer,
@@ -141,7 +145,7 @@ class SparseGPRSolver:
                 assume_a="pos",
             )
 
-    def transform(self, KTM):
+    def predict(self, KTM):
         return KTM @ self._weights
 
 
