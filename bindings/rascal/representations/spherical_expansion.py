@@ -32,8 +32,7 @@ class SphericalExpansion(BaseIO):
 
     gaussian_sigma_type : str
         How the Gaussian atom sigmas (smearing widths) are allowed to
-        vary -- fixed ('Constant'), by species ('PerSpecies'), or by
-        distance from the central atom ('Radial').
+        vary. Only fixed smearing width ('Constant') are implemented.
 
     gaussian_sigma_constant : float
         Specifies the atomic Gaussian widths, in the case where they're
