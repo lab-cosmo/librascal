@@ -6,7 +6,7 @@
  * @date   15 Jan 2019
  *
  * @brief utilities for the definition of input nodes (combinations of symmetry
- * functions with cutoff functions
+ * functions with cutoff functions)
  *
  * Copyright © 2019 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
@@ -184,8 +184,6 @@ namespace rascal {
     const SymmetryFunctionType sym_fun_type;
     const size_t order;
     std::vector<json> raw_params{};
-    RepeatedSpecies species_repetition{RepeatedSpecies::Unknown};
-    // StdSpecies species_combo{};
     bool is_initialised{false};
     std::shared_ptr<CutoffFunctionBase> cut_fun;
   };

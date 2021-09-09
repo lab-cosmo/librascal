@@ -197,16 +197,6 @@ namespace rascal {
                  AdaptorMaxOrder<AdaptorStrict<StructureManagerLammpsMinimal>>>;
     auto G_vals{std::make_shared<GVals_t>(manager)};
 
-    int pair_counter{0};
-    for (auto && atom : manager) {
-      for (auto && pair : atom.pairs()) {
-        auto pair_offset{pair.get_global_index()};
-        std::cout << "pair (" << atom.get_atom_tag() << ", "
-                  << pair.get_atom_tag() << "), pair_counter = " << pair_counter
-                  << ", pair_offset = " << pair_offset << std::endl;
-        ++pair_counter;
-      }
-    }
     // Yes, the triplets in this manager do not have the correct species, but
     // this doesn't interfere with testing the compute algo
     Fix::bf.template compute<RepeatedSpecies::All, Permutation<Order, 0, 1, 2>>(

@@ -190,7 +190,7 @@ namespace rascal {
 
   std::string canary(const json & params, const std::string & name) {
     try {
-      std::cout << params.at(name) << std::endl;
+      volatile auto val{params.at(name)};
     } catch (json::exception & error) {
       std::stringstream errmsg{};
       errmsg << "Can't access field '" << name << "' in json '" << params

@@ -318,6 +318,11 @@ namespace rascal {
     auto & pair_distances{manager.get_distance()};
     auto & pair_direction_vectors{manager.get_direction_vector()};
 
+    /**
+     * In order so save iterations (only iterate once per cluster), access is
+     * needed to the neighbor atoms as i-atoms (centers). The following
+     * container provides this functionality.
+     */
     auto & neigh_to_i_atom{
         manager
             .template get_neighbours_to_i_atoms<SymmetryFunction_t::Order>()};
@@ -326,7 +331,7 @@ namespace rascal {
     fun_self_derivatives.resize();
     fun_other_derivatives.resize();
 
-    auto && pair_inversion{Permutation::pair_inversion()[0]};
+    const bool pair_inversion{Permutation::pair_inversion()[0]};
     for (auto && atom : manager) {
       for (auto && pair : atom.pairs()) {
         // compute the increment to the G function value
@@ -346,7 +351,6 @@ namespace rascal {
 
         auto && dG_incr{dir_vec * (sym_fun_value * cut_fun_derivative +
                                    sym_fun_derivative * cut_fun_value)};
-
         switch (RepSpecies) {
         case RepeatedSpecies::Not: {
           fun_vals[i_atom] += G_incr;

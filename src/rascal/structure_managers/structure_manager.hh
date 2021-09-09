@@ -858,11 +858,6 @@ namespace rascal {
                const ClusterRefKey<AtomOrder, CallerOrderJ> & atom_j) const {
         auto && atom_i_id{atom_i.get_cluster_index(this->Layer())};
         auto && atom_j_id{atom_j.get_cluster_index(this->Layer())};
-        std::cout << std::endl << "id = " << atom_i_id << std::endl;
-        std::cout << "jd = " << atom_j_id << std::endl;
-        for (auto && key_val : this->pairs[atom_i_id]) {
-          std::cout << std::get<0>(key_val) << std::endl;
-        }
         return this->pairs[atom_i_id].at(atom_j_id);
       }
 

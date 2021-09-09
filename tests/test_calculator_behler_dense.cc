@@ -91,6 +91,14 @@ namespace rascal {
     manager.update();
 
     calc_BP.compute(manager, managed_species_ids);
+
+    /**
+     * note to continue: need to test the number of calculated BehlerFeature
+     * outputs (values, derivatives, self, other). Access should be provided by
+     * BehlerFeatures? Looping over BehlerFeauters via
+     * CalculatorBehlerParrinelloDenseStd and asking for the existing Properties (et
+     * al.) and check for nonzeroness
+     */
   };
 
   BOOST_AUTO_TEST_SUITE_END();

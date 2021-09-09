@@ -228,6 +228,8 @@ namespace rascal {
       }
     }
 
+    size_t size() const { return this->behler_features.size(); }
+
    protected:
     /**
      * stores base class refs to the Symmetry functions to be evaluated. The

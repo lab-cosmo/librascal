@@ -29,6 +29,12 @@
 #include <array>
 #include <type_traits>
 #include <vector>
+#include <stdexcept>
+
+#include <Eigen/Dense>
+
+#include "utils.hh"
+
 #ifndef SRC_RASCAL_UTILS_PERMUTATION_HH_
 #define SRC_RASCAL_UTILS_PERMUTATION_HH_
 
