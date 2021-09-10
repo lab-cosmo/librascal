@@ -32,15 +32,16 @@ class SparseGPRSolver:
         self, KMM, regularizer=1, jitter=0, solver="RKHS", relative_jitter=True
     ):
 
-        self._solver = solver
+        self.solver = solver
+        self.KMM = KMM
+        self.relative_jitter = relative_jitter
 
         self._nM = len(KMM)
-        if self._solver == "RKHS" or self._solver == "RKHS-QR":
+        if self.solver == "RKHS" or self.solver == "RKHS-QR":
             self._vk, self._Uk = scipy.linalg.eigh(KMM)
             self._vk = self._vk[::-1]
             self._Uk = self._Uk[:, ::-1]
-        elif self._solver == "QR" or self._solver == "Normal":
-            self._KMM = KMM
+        elif self.solver == "QR" or self.solver == "Normal":
             # gets maximum eigenvalue of KMM to scale the numerical jitter
             self._KMM_maxeva = scipy.sparse.linalg.eigsh(
                 KMM, k=1, return_eigenvectors=False
@@ -52,24 +53,24 @@ class SparseGPRSolver:
                 " not supported. Possible values are [RKHS, RKHS-QR, QR, Normal].",
             )
         if relative_jitter:
-            if self._solver == "RKHS" or self._solver == "RKHS-QR":
+            if self.solver == "RKHS" or self.solver == "RKHS-QR":
                 self._jitter_scale = self._vk[0]
-            elif self._solver == "QR" or self._solver == "Normal":
+            elif self.solver == "QR" or self.solver == "Normal":
                 self._jitter_scale = self._KMM_maxeva
         else:
             self._jitter_scale = 1.0
         self.set_regularizers(regularizer, jitter)
 
     def set_regularizers(self, regularizer=1.0, jitter=0.0):
-        self._regularizer = regularizer
-        self._jitter = jitter
-        if self._solver == "RKHS" or self._solver == "RKHS-QR":
-            self._nM = len(np.where(self._vk > self._jitter * self._jitter_scale)[0])
+        self.regularizer = regularizer
+        self.jitter = jitter
+        if self.solver == "RKHS" or self.solver == "RKHS-QR":
+            self._nM = len(np.where(self._vk > self.jitter * self._jitter_scale)[0])
             self._PKPhi = self._Uk[:, : self._nM] * 1 / np.sqrt(self._vk[: self._nM])
-        elif self._solver == "QR":
+        elif self.solver == "QR":
             self._VMM = scipy.linalg.cholesky(
-                self._regularizer * self._KMM
-                + np.eye(self._nM) * self._jitter_scale * self._jitter
+                self.regularizer * self.KMM
+                + np.eye(self._nM) * self._jitter_scale * self.jitter
             )
         self._Cov = np.zeros((self._nM, self._nM))
         self._KY = None
@@ -80,9 +81,9 @@ class SparseGPRSolver:
             # only accumulate if we are passing data
             if len(Y.shape) == 1:
                 Y = Y[:, np.newaxis]
-            if self._solver == "RKHS":
+            if self.solver == "RKHS":
                 Phi = KNM @ self._PKPhi
-            elif self._solver == "Normal":
+            elif self.solver == "Normal":
                 Phi = KNM
             else:
                 raise ValueError(
@@ -96,17 +97,17 @@ class SparseGPRSolver:
 
         # do actual fit if called with empty array or if asked
         if len(Y) == 0 or (not accumulate_only):
-            if self._solver == "RKHS":
+            if self.solver == "RKHS":
                 self._weights = self._PKPhi @ scipy.linalg.solve(
-                    self._Cov + np.eye(self._nM) * self._regularizer,
+                    self._Cov + np.eye(self._nM) * self.regularizer,
                     self._KY,
                     assume_a="pos",
                 )
-            elif self._solver == "Normal":
+            elif self.solver == "Normal":
                 self._weights = scipy.linalg.solve(
                     self._Cov
-                    + self._regularizer * self._KMM
-                    + np.eye(self._KMM.shape[0]) * self._jitter * self._jitter_scale,
+                    + self.regularizer * self.KMM
+                    + np.eye(self.KMM.shape[0]) * self.jitter * self._jitter_scale,
                     self._KY,
                     assume_a="pos",
                 )
@@ -115,32 +116,32 @@ class SparseGPRSolver:
 
         if len(Y.shape) == 1:
             Y = Y[:, np.newaxis]
-        if self._solver == "RKHS":
+        if self.solver == "RKHS":
             Phi = KNM @ self._PKPhi
             self._weights = self._PKPhi @ scipy.linalg.solve(
-                Phi.T @ Phi + np.eye(self._nM) * self._regularizer,
+                Phi.T @ Phi + np.eye(self._nM) * self.regularizer,
                 Phi.T @ Y,
                 assume_a="pos",
             )
-        elif self._solver == "RKHS-QR":
+        elif self.solver == "RKHS-QR":
             A = np.vstack(
-                [KNM @ self._PKPhi, np.sqrt(self._regularizer) * np.eye(self._nM)]
+                [KNM @ self._PKPhi, np.sqrt(self.regularizer) * np.eye(self._nM)]
             )
             Q, R = np.linalg.qr(A)
             self._weights = self._PKPhi @ scipy.linalg.solve_triangular(
                 R, Q.T @ np.vstack([Y, np.zeros((self._nM, Y.shape[1]))])
             )
-        elif self._solver == "QR":
+        elif self.solver == "QR":
             A = np.vstack([KNM, self._VMM])
             Q, R = np.linalg.qr(A)
             self._weights = scipy.linalg.solve_triangular(
                 R, Q.T @ np.vstack([Y, np.zeros((KNM.shape[1], Y.shape[1]))])
             )
-        elif self._solver == "Normal":
+        elif self.solver == "Normal":
             self._weights = scipy.linalg.solve(
                 KNM.T @ KNM
-                + self._regularizer * self._KMM
-                + np.eye(self._nM) * self._jitter * self._jitter_scale,
+                + self.regularizer * self.KMM
+                + np.eye(self._nM) * self.jitter * self._jitter_scale,
                 KNM.T @ Y,
                 assume_a="pos",
             )
