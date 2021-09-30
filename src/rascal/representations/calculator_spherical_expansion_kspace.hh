@@ -623,11 +623,12 @@ namespace rascal {
       auto && radint = radial_integral->compute_radial_integral(k_val(ik));
       for (size_t nl{0}; nl < nl_size; ++nl) {
         I_nl(ik, nl) = radint(nl);
+        // I_nl(ik, nl) = 1.;
       }
       
       // Orthogonalize before main loop
       // Note: disable final orthogonalization in this case
-      radial_integral->orthogonalize_radialprojections(I_nl.row(ik));
+      // radial_integral->orthogonalize_radialprojections(I_nl.row(ik));
     }  // end of loop over k vectors
 
     /* Test radial scattering function @memo delete after testing phase
