@@ -102,15 +102,9 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
   "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   # detect if the local architechture is arm64 or x86_64
-  execute_process(
-      COMMAND uname -m
-      RESULT_VARIABLE result
-      OUTPUT_VARIABLE RASCAL_OSX_NATIVE_ARCHITECTURE
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
-  if(RASCAL_OSX_NATIVE_ARCHITECTURE STREQUAL "arm64")
+  if(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "arm64")
     set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "")
-    message(STATUS "macOS universal (x86_64 / arm64) build")
+    message(STATUS "Detected Apple M1, make build universal (x86_64 / arm64)")
   else()
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -march=${TYPE_ARCHITECTURE}")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=${TYPE_ARCHITECTURE}")
