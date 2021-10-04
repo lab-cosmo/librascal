@@ -65,7 +65,7 @@ int main(int argc, char * argv[]) {
 
   double cutoff{4.};
   json hypers{
-      {"max_radial", 3}, {"max_angular", 2}, {"compute_gradients", true}};
+      {"max_radial", 3}, {"max_angular", 0}, {"compute_gradients", true}};
   // {"soap_type", "PowerSpectrum"},
   // {"normalize", true}};
 
@@ -74,10 +74,20 @@ int main(int argc, char * argv[]) {
                  {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
   json sigma_hypers{{"type", "Constant"},
                     {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+  std::map<std::string, std::vector<std::vector<std::vector<double>>>>
+      projection_matrices{{"1", {{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}}}};
+  json projection_matrices_hypers{{"projection_matrices", projection_matrices}};
+  json radial_dim_reduction_hypers{"RadialDimReduction",
+                                   projection_matrices_hypers};
+  json spline_accuracy_hypers{{"accuracy", 1e-8}};
+  json spline_hypers{"Spline", spline_accuracy_hypers};
+
+  json optimization_hypers{spline_hypers, radial_dim_reduction_hypers};
 
   hypers["cutoff_function"] = fc_hypers;
   hypers["gaussian_density"] = sigma_hypers;
-  hypers["radial_contribution"] = {{"type", "GTO"}};
+  hypers["radial_contribution"] = {{"type", "GTO"},
+                                   {"optimization", optimization_hypers}};
 
   json structure{{"filename", filename}};
   json adaptors;

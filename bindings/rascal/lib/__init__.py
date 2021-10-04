@@ -5,4 +5,3 @@ from ._rascal.models import (
     compute_sparse_kernel_gradients,
     compute_sparse_kernel_neg_stress,
 )
-from ._rascal.utils import sparsification

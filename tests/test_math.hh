@@ -179,11 +179,11 @@ namespace rascal {
 
     Vector_Ref f(const Eigen::Vector3d & inputs_v) {
       Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
-      this->harmonics_calculator.calc(my_inputs, false);
+      this->harmonics_calculator.calc(my_inputs, false, false);
       return this->harmonics_calculator.get_harmonics();
     }
     Matrix_Ref grad_f(const Eigen::Vector3d & inputs_v) {
-      this->harmonics_calculator.calc(inputs_v, true);
+      this->harmonics_calculator.calc(inputs_v, true, false);
       return this->harmonics_calculator.get_harmonics_derivatives();
     }
 

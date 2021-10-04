@@ -6,6 +6,7 @@ from copy import deepcopy
 import numpy as np
 
 from ase.geometry import wrap_positions
+from ase import Atoms
 
 from ..lib import neighbour_list
 from .base import (
@@ -229,20 +230,22 @@ def get_neighbourlist(structure, options):
 
 
 def convert_to_structure_list(frames):
-    """
-    Convert a list of structures into the rascal type `AtomicStructureList`.
-
+    """Convert an atomic structure to format used internaly in rascal.
     Parameters
     ----------
-    frames : (list of) ase.Atoms, or valid structure as per is_valid_structure
-
-
+    frames : ase.Atoms or list(ase.Atoms) or list(dict)
+        atomic structure(s) in various formats.
+        Note that the dictionary must be valid structure as per is_valid_structure
     Returns
     -------
     structure_list : AtomicStructureList
+
     """
-    if not isinstance(frames, Iterable):
+    if isinstance(frames, Atoms):
         frames = [frames]
+    elif not isinstance(frames, Iterable):
+        raise ValueError("Must pass either an ase.Atoms object or an iterable")
+
     structure_list = neighbour_list.AtomicStructureList()
     for frame in frames:
         if is_valid_structure(frame):
@@ -314,12 +317,13 @@ def sanitize_non_periodic_structure(structure):
 
     Parameters
     ----------
-    structure : a valid structure as per is_valid_structure
+    structure : dict
+         a valid structure as per is_valid_structure
 
 
     Returns
     -------
-    a valid structure as per is_valid_structure
+    a valid structure as per is_valid_structure: dict
         cell and positions have been modified if structure is not periodic
     """
 
@@ -377,8 +381,7 @@ def unpack_ase(frame):
 
     Returns
     -------
-    StructureManagerCenters
-        base structure manager.
+    dict containing the atomic structure informations readily readable by librascal.
 
     If the frame has an ase.atoms.arrays entry called
     'center_atoms_mask' then it will be used as the center mask

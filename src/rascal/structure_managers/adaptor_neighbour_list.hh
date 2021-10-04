@@ -356,13 +356,14 @@ namespace rascal {
     template <int Dim>
     bool position_in_bounds(const Eigen::Matrix<double, Dim, 1> & min,
                             const Eigen::Matrix<double, Dim, 1> & max,
-                            const Eigen::Matrix<double, Dim, 1> & pos) {
+                            const Eigen::Matrix<double, Dim, 1> & pos,
+                            const double epsilon = 1e-4) {
       auto pos_lower = pos.array() - min.array();
       auto pos_greater = pos.array() - max.array();
 
       // check if shifted position inside maximum mesh positions
-      auto f_lt = (pos_lower.array() > 0.).all();
-      auto f_gt = (pos_greater.array() < 0.).all();
+      auto f_lt = (pos_lower.array() > epsilon).all();
+      auto f_gt = (pos_greater.array() < -epsilon).all();
 
       if (f_lt and f_gt) {
         return true;
@@ -403,12 +404,12 @@ namespace rascal {
       //! brackets operator
       std::vector<int> & operator[](const std::array<int, Dim> & ccoord) {
         for (int i = 0; i < static_cast<int>(Dim); ++i) {
-          if (not(ccoord[i] < this->nboxes[i] - 1) and
-              (ccoord[i] >= 1)) {  // NOLINT
+          // we make sure not to bin atoms in the outer layer of boxes needed
+          // by the stencil
+          if (ccoord[i] >= this->nboxes[i] - 1 or (ccoord[i] <= 0)) {  // NOLINT
             std::stringstream error{};
-            error << "Error: At least one atom is outside the unit cell. This "
-                     "adaptor expects atoms to be folded into the original "
-                     "unit cell. ccoord = ("
+            error << "Error: this atom does not fall in one of the linked cell "
+                  << "bin. It might have not been wrapped properly. ccoord = ("
                   << ccoord[0] << ", " << ccoord[1] << ", " << ccoord[2]
                   << "), nboxes = (" << nboxes[0] << ", " << nboxes[1] << ", "
                   << nboxes[2] << ")";
@@ -876,21 +877,28 @@ namespace rascal {
 
   /* ---------------------------------------------------------------------- */
   /**
-   * Builds full neighbour list. Triclinicity is accounted for. The general idea
-   * is to anchor a mesh at the origin of the supplied cell (assuming it is at
-   * the origin). Then the mesh is extended into space until it is as big as the
-   * maximum cell coordinate plus one cutoff in each direction. This mesh has
-   * boxes of size ``cutoff``.
-   * All atoms are expected to be inside the unit cell.
+   * Build a neighbor list using a linked cell algorithm for finite cutoff
+   * interaction computations of lenght \f$r_c\f$. There is no restriction
+   * regarding the type of lattice and periodic boundary conditions (triclinic
+   * lattices and mixed periodicity are handled by design).
    *
-   * Depending on the periodicity of the mesh, ghost
-   * atoms are added by shifting all i-atoms by the cell vectors corresponding
-   * to the desired periodicity. All i-atoms and the ghost atoms are then sorted
-   * into the respective boxes of the cartesian mesh and a stencil anchored at
-   * the box of the i-atoms is used to build the atom neighbourhoods from the 9
-   * (2d) or 27 (3d) boxes, which is checked for the neighbourhood. Correct
-   * periodicity is ensured by the placement of the ghost atoms. The resulting
-   * neighbourlist is full and not strict.
+   * To do so we build a cubic box that contains the unit cell and one
+   * \f$r_c\f$ in each directions. The length of the box is a multiple of
+   * \f$r_c\f$ and it is partitioned into cubic bins of size \f$r_c\f$. The
+   * resulting mesh encompass the unit cell and its surrounding up to \f$2
+   * r_c\f$ in each directions so that atoms can be binned in it. The
+   * additional layer of bins is kept empty so that the connectivity assignment
+   * criteria of the linked cell, i.e. atoms belonging to neighbor bins are
+   * neighbors, can be applied uniformly (latter referred are stencil).
+   * note(felix): the mesh going up to \f$2 r_c\f$ is probably not really
+   *  necessary for the connectivity assignment and \f$r_c\f$ would work too.
+   *
+   * Atoms are assumed to be inside the unit cell (otherwise it will throw an
+   * error) and they are binned. Then depending on the periodicity of the
+   * system, the periodic images or ghost atoms that fall within the bounds of
+   * the mesh are also binned.
+   * Then each binned atoms is assigned its neighbor depending on the bin's
+   * connectivity criteria (in 3d the 27 nearest bins).
    */
   template <class ManagerImplementation>
   void AdaptorNeighbourList<ManagerImplementation>::make_full_neighbour_list() {
@@ -937,19 +945,24 @@ namespace rascal {
       // 2 cutoff for extra layer of emtpy cells (because of stencil iteration)
       mesh_min[i] = min_coord - 2. * cutoff;
 
-      // outer mesh, including one layer of emtpy cells
-      double lmesh{max_coord - mesh_min[i] + 2 * cutoff};
+      // outer mesh, including one layer of emtpy cells in each direction
+      double lmesh{max_coord - min_coord + 4. * cutoff};
       // number of Linked Cell in each directions
       double n{std::ceil(lmesh / cutoff)};
       mesh_max[i] = mesh_min[i] + n * cutoff;
       nboxes_per_dim[i] = static_cast<int>(n);
 
       // positions min/max for ghost atoms -> this is the actual bounding box
-      ghost_min[i] = mesh_min[i] + cutoff;
-      double lghost{lmesh - 2 * cutoff};
+      ghost_min[i] = min_coord - cutoff;
+      double lghost{max_coord - min_coord + 2 * cutoff};
       double n_ghost_boxes{std::ceil(lghost / cutoff)};
       ghost_max[i] = n_ghost_boxes * cutoff + ghost_min[i];
     }
+
+    // numerical tolerance when determining if a ghost atom falls into the
+    // the range that should be considered for binning
+    double max_box_lenght{(ghost_max - ghost_min).maxCoeff()};
+    double bound_tol{max_box_lenght * 1e-8};
 
     // Periodicity related multipliers. Now the mesh coordinates are calculated
     // in units of cell vectors. m_min and m_max give the number of repetitions
@@ -959,8 +972,8 @@ namespace rascal {
     Eigen::Matrix<double, dim, ncorners> xpos{};
     std::array<double, 2 * dim> mesh_bounds{};
     for (auto i{0}; i < dim; ++i) {
-      mesh_bounds[i] = mesh_min[i];
-      mesh_bounds[i + dim] = mesh_max[i];
+      mesh_bounds[i] = ghost_min[i] - bound_tol;
+      mesh_bounds[i + dim] = ghost_max[i] + bound_tol;
     }
 
     // Get the mesh bounds to solve for the multiplicators
@@ -979,7 +992,8 @@ namespace rascal {
     // find max and min multipliers for cell vectors
     for (auto i{0}; i < dim; ++i) {
       m_min[i] = std::floor(xmin(i));
-      m_max[i] = std::ceil(xmax(i));
+      // remove 1 because the original cell is already included
+      m_max[i] = std::ceil(xmax(i)) - 1;
     }
 
     std::array<int, dim> periodic_max{};
@@ -1039,8 +1053,8 @@ namespace rascal {
         //! assumption: this assumes atoms were inside the cell initially
         if (not(p_image.array() == 0).all()) {
           Vector_t pos_ghost{pos + cell * p_image.template cast<double>()};
-          auto flag_inside =
-              internal::position_in_bounds(ghost_min, ghost_max, pos_ghost);
+          auto flag_inside = internal::position_in_bounds(ghost_min, ghost_max,
+                                                          pos_ghost, bound_tol);
 
           if (flag_inside) {
             // next atom tag is size, since start is at index = 0

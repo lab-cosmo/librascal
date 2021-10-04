@@ -8,7 +8,7 @@
         "gaussian_density":
           {"type": "Constant", "gaussian_sigma": {"value": 0.8, "unit": "AA"}},
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
     "adaptors": [
@@ -31,7 +31,7 @@
         "gaussian_density":
           {"type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}},
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
     "adaptors": [
@@ -51,7 +51,7 @@
         "cutoff_function":
           {"type": "ShiftedCosine", "cutoff": {"value": 3.5, "unit": "AA"}, "smooth_width": {"value": 0.5, "unit": "AA"}},
         "gaussian_density":
-          {"type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}}, "radial_contribution": {"type": "GTO", "optimization": {"type": "None"}}
+          {"type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}}, "radial_contribution": {"type": "GTO", "optimization": {}}
       },
     "adaptors": [
       {"initialization_arguments": {"cutoff": 3.5}, "name":   "neighbourlist"}, {"initialization_arguments": {}, "name": "centercontribution"}, {"initialization_arguments": {"cutoff": 3.5}, "name": "strict"}
@@ -71,7 +71,7 @@
         "gaussian_density":
           {"type": "Constant", "gaussian_sigma": {"value": 0.6, "unit": "AA"}},
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
     "adaptors": [
@@ -94,7 +94,7 @@
         "gaussian_density":
           {"type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}},
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
     "adaptors": [
@@ -114,7 +114,7 @@
         "cutoff_function":
           {"type": "ShiftedCosine", "cutoff": {"value": 3.5, "unit": "AA"}, "smooth_width": {"value": 0.5, "unit": "AA"}},
         "gaussian_density":
-          {"type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}}, "radial_contribution": {"type": "GTO", "optimization": {"type": "None"}}
+          {"type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}}, "radial_contribution": {"type": "GTO", "optimization": {}}
       },
     "adaptors": [
       {"initialization_arguments": {"cutoff": 3.5}, "name":   "neighbourlist"}, {"initialization_arguments": {}, "name": "centercontribution"}, {"initialization_arguments": {"cutoff": 3.5}, "name": "strict"}

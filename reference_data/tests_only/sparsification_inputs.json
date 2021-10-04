@@ -19,7 +19,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "rep_sparse": {
@@ -50,7 +50,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "adaptors": [
@@ -84,7 +84,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "rep_sparse": {
@@ -115,7 +115,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "adaptors": [
@@ -149,7 +149,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "rep_sparse": {
@@ -178,7 +178,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "adaptors": [
@@ -212,7 +212,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "rep_sparse": {
@@ -287,7 +287,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "adaptors": [
@@ -321,7 +321,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "rep_sparse": {
@@ -396,7 +396,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "adaptors": [
@@ -430,7 +430,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "rep_sparse": {
@@ -459,7 +459,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "adaptors": [
@@ -493,7 +493,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "rep_sparse": {
@@ -540,7 +540,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "adaptors": [
@@ -574,7 +574,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "rep_sparse": {
@@ -621,7 +621,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "adaptors": [
@@ -655,7 +655,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "rep_sparse": {
@@ -684,7 +684,7 @@
           "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
         },
         "radial_contribution": {
-          "type": "GTO", "optimization": {"type": "None"}
+          "type": "GTO", "optimization": {}
         }
       },
       "adaptors": [

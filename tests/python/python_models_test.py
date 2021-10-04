@@ -1,5 +1,6 @@
 from rascal.representations import SphericalInvariants
-from rascal.models import Kernel, SparsePoints
+from rascal.models import Kernel
+from rascal.models.sparse_points import SparsePoints
 from rascal.models.kernels import compute_numerical_kernel_gradients
 from rascal.utils import from_dict, to_dict
 from test_utils import load_json_frame, BoxList, Box, compute_relative_error
