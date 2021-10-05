@@ -274,7 +274,6 @@ namespace rascal {
 
     //! stores i-atom tags
     std::vector<int> atom_tag_list{};
-
     std::vector<int> atom_types{};
 
     // //! Stores additional atom tags of current Order (only ghost atoms)
