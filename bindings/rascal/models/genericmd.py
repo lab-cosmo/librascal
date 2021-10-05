@@ -106,15 +106,15 @@ class GenericMDCalculator:
         # re-wrapping of the atoms that needs to take place)
         self.atoms.set_cell(cell_matrix)
         self.atoms.set_positions(positions)
-
+        self.atoms.wrap(eps=1e-11)
+        
         # Convert from ASE to librascal
         if self.manager is None:
             #  happens at the begining of the MD run
             at = self.atoms.copy()
-            at.wrap(eps=1e-11)
             self.manager = [at]
         elif isinstance(self.manager, AtomsList):
-            structure = unpack_ase(self.atoms, wrap_pos=True)
+            structure = unpack_ase(self.atoms)
             structure.pop("center_atoms_mask")
             self.manager[0].update(**structure)
 
