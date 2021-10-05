@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 from functools import reduce
 from operator import and_
+from copy import deepcopy
 
 import numpy as np
 
@@ -248,27 +249,95 @@ def convert_to_structure_list(frames):
     structure_list = neighbour_list.AtomicStructureList()
     for frame in frames:
         if is_valid_structure(frame):
-            structure = frame
+            structure = sanitize_non_periodic_structure(frame)
+            structure = wrap_structure(structure)
         else:
             if is_ase_Atoms(frame):
+                frame.wrap(eps=1e-11)
+                frame = sanitize_non_periodic_ase(frame)
                 structure = unpack_ase(frame)
             else:
                 raise RuntimeError(
                     "Cannot convert structure of type {}".format(type(frame))
                 )
 
-        structure = sanitize_non_periodic_structure(structure)
         structure_list.append(**structure)
     return structure_list
+
+
+def convert_structure_to_ase(structure):
+    """Convert a structure as per is_valid_structure into an ASE Atoms object"""
+    from ase import Atoms
+
+    return Atoms(
+        positions=structure["positions"].T,
+        cell=structure["cell"].T,
+        numbers=structure["atom_types"].flatten(),
+        pbc=np.array(structure["pbc"].flatten(), dtype=bool),
+    )
+
+
+def sanitize_non_periodic_ase(frame):
+    """
+    Rascal expects a unit cell that contains all the atoms even if the
+    structure is not periodic.
+    In this case a unit cell is set to be the smallest rectangle that contains
+    all of the atoms and that starts at the origin. The atoms are moved inside
+    this box.
+
+    Parameters
+    ----------
+    frame : ase.Atoms
+
+
+    Returns
+    -------
+    frame : ase.Atoms
+        cell and positions have been modified if structure is not periodic
+    """
+
+    if not np.all(frame.get_pbc()):
+        frame = deepcopy(frame)
+        pos = frame.get_positions()
+        bounds = np.array([pos.min(axis=0), pos.max(axis=0)])
+        bounding_box_lengths = (bounds[1] - bounds[0]) * 1.1
+        new_cell = np.diag(bounding_box_lengths)
+        frame.set_cell(new_cell)
+        frame.center()
+    return frame
 
 
 def sanitize_non_periodic_structure(structure):
     """
     Rascal expects a unit cell that contains all the atoms even if the
     structure is not periodic.
-    If the cell is set to 0 and the structure is not periodic then it
-    is adapted to contain the atoms and the atoms are shifted inside the unit
-    cell.
+    In this case a unit cell is set to be the smallest rectangle that contains
+    all of the atoms and that starts at the origin. The atoms are moved inside
+    this box.
+
+    Parameters
+    ----------
+    structure : dict
+         a valid structure as per is_valid_structure
+
+
+    Returns
+    -------
+    a valid structure as per is_valid_structure: dict
+        cell and positions have been modified if structure is not periodic
+    """
+
+    if np.all(structure["pbc"] == 0):
+        atoms = convert_structure_to_ase(structure)
+        atoms = sanitize_non_periodic_ase(atoms)
+        structure = unpack_ase(atoms)
+    return structure
+
+
+def wrap_structure(structure, tol=1e-11):
+    """
+    Wrap the atoms inside the unit cell for periodic structure. This a wrapper
+    around `ase.geometry.wrap_positions`.
 
     Parameters
     ----------
@@ -280,18 +349,11 @@ def sanitize_non_periodic_structure(structure):
     a valid structure as per is_valid_structure
         cell and positions have been modified if structure is not periodic
     """
-
-    if np.all(structure["pbc"] == 0):
-        cell = structure["cell"]
-        if np.allclose(cell, np.zeros((3, 3))):
-            pos = structure["positions"]
-            bounds = np.array([pos.min(axis=1), pos.max(axis=1)])
-            bounding_box_lengths = (bounds[1] - bounds[0]) * 1.05
-            new_cell = np.diag(bounding_box_lengths)
-            CoM = pos.mean(axis=1)
-            disp = 0.5 * bounding_box_lengths - CoM
-            new_pos = pos + disp[:, None]
-            structure["positions"] = new_pos
+    positions = structure["positions"].T
+    cell = structure["cell"].T
+    pbc = np.array(structure["pbc"], dtype=bool).flatten()
+    positions = wrap_positions(positions, cell, pbc, eps=tol)
+    structure["positions"] = np.array(positions.T, order="F")
     return structure
 
 
@@ -308,7 +370,7 @@ def is_ase_Atoms(frame):
     return is_ase
 
 
-def unpack_ase(frame, wrap_pos=False):
+def unpack_ase(frame):
     """
     Convert ASE Atoms object to rascal's equivalent
 
@@ -330,9 +392,6 @@ def unpack_ase(frame, wrap_pos=False):
     positions = frame.get_positions()
     numbers = frame.get_atomic_numbers()
     pbc = frame.get_pbc().astype(int)
-
-    if wrap_pos:
-        positions = wrap_positions(positions, cell, frame.get_pbc(), eps=1e-11)
 
     if "center_atoms_mask" in frame.arrays.keys():
         center_atoms_mask = frame.get_array("center_atoms_mask")
