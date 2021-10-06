@@ -71,8 +71,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * Adaptor that transforms a ManagerImplementation of order 1 into a neighbor
-   * list with pairs. The neighbors are all of the atoms present and periodic
-   * images are not considered.
+   * list with pairs. For this special adaptor, no periodic images are considered
+   * and each atom i is a neighbor of every other atom j!=i. 
    */
   template <class ManagerImplementation>
   class AdaptorKspace
@@ -213,12 +213,10 @@ namespace rascal {
       }
     }
 
-    //! Returns atom type given an atom tag, also works for ghost atoms
+    //! Returns atom type given an atom tag
     int get_atom_type(int atom_tag) const { return this->atom_types[atom_tag]; }
 
-    /** The atom tag corresponds to an ghost atom, then it returns it cluster
-     * index of the atom in the original cell.
-     */
+    //! Returns the cluster index corresponding to the atom tag.
     size_t get_atom_index(const int atom_tag) const {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
@@ -276,9 +274,6 @@ namespace rascal {
     std::vector<int> atom_tag_list{};
     std::vector<int> atom_types{};
 
-    // //! Stores additional atom tags of current Order (only ghost atoms)
-    // std::vector<int> ghost_atom_tag_list{};
-
     //! Stores the number of neighbours for every atom
     std::vector<size_t> nb_neigh{};
 
@@ -288,8 +283,7 @@ namespace rascal {
     /**
      * Returns the atoms cluster index when accessing it with the atom's atomic
      * index in a list in sequence of atoms.  List of atom tags which have a
-     * correpsonding cluster index of order 1.  If ghost atoms have been added
-     * they have their own new index.
+     * correpsonding cluster index of order 1.
      */
     std::vector<size_t> atom_index_from_atom_tag_list{};
 
