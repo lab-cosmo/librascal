@@ -76,8 +76,8 @@ namespace rascal {
   /* ---------------------------------------------------------------------- */
   /**
    * Adaptor that transforms a ManagerImplementation of order 1 into a neighbor
-   * list with pairs. For this special adaptor, no periodic images are considered
-   * and each atom i is a neighbor of every other atom j!=i. 
+   * list with pairs. For this special adaptor, no periodic images are
+   * considered and each atom i is a neighbor of every other atom j!=i.
    */
   template <class ManagerImplementation>
   class AdaptorKspace
