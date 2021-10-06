@@ -5,7 +5,12 @@
  *
  * @date   08 Apr 2021
  *
- * @brief implements an adaptor
+ * @brief implements an adaptor used for descriptors that require
+ *        a summation over kspace (reciprocal space) like LODE.
+ *        Every atom i is a neighbor of every other atom j != i,
+ *        and no distances or ghost atoms are stored/used since
+ *        an atom i represents not only itself but also all its
+ *        periodic images.
  *
  * Copyright  2021 Felix Musil COSMO (EPFL), LAMMM (EPFL)
  *
