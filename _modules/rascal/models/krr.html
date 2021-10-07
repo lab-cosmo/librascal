@@ -530,7 +530,7 @@
     <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
     <span class="c1"># lambdas[0] is provided per atom hence the &#39;* np.sqrt(Natoms)&#39;</span>
     <span class="c1"># the first n_centers rows of KNM are expected to refer to the</span>
-    <span class="c1">#  property</span>
+    <span class="c1">#  property</span>
     <span class="n">KNM</span><span class="p">[:</span><span class="n">n_centers</span><span class="p">]</span> <span class="o">/=</span> <span class="n">lambdas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Natoms</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
     <span class="n">Y</span> <span class="o">/=</span> <span class="n">lambdas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Natoms</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
 

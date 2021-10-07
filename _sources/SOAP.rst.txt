@@ -501,7 +501,7 @@ and for the :math:`y` component, similarly:
        \frac{\partial \bar{D}_{\ell,0}}{\partial y_i} &=
            \frac{-\sin\phi \cos\theta}{r_{ij}}\sqrt{\frac{\ell(\ell+1)}{2}}\bar{P}_\ell^1(\cos\theta)\label{eq:dby2}\end{aligned}
 
-The formulæ above have a singularity at the poles for :math:`m \neq 0`,
+The formulæ above have a singularity at the poles for :math:`m \neq 0`,
 so use the following identity:
 
 .. math::
