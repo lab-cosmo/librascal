@@ -40,7 +40,7 @@ class ASEMLCalculator(Calculator, BaseIO):
         Calculator.calculate(self, atoms, properties, system_changes)
 
         if self.manager is None:
-            #  happens at the begining of the MD run
+            #  happens at the begining of the MD run
             at = self.atoms.copy()
             at.wrap(eps=1e-11)
             self.manager = [at]
