@@ -6,7 +6,7 @@ from collections.abc import Iterable
 
 import ase.io
 import numpy as np
-
+from tqdm.notebook import tqdm
 from rascal import models, representations, utils
 from rascal.models.krr import SparseGPRSolver
 
@@ -116,6 +116,39 @@ def sparsify_environments(
         utils.dump_obj(os.path.join(WORKDIR, "sparsepoints.json"), sparse_points)
     return sparse_points
 
+def sparsify_features(
+    rep, features, n_features, selection_type="CUR", save_selection=False
+):
+    """Sparsify the feature matrix along the environments dimension
+
+    Parameters:
+        rep         Representation calculator used to compute the features
+        features    List of features to use for sparsification, in the
+                    internal librascal representation
+        n_features  Number of features to select from features
+    Optional arguments:
+        selection_type
+            Which selection algorithm to use. 'CUR' and 'FPS'
+            are supported (see the documentation in rascal.utils
+            for details on each method), default CUR.
+        save_selection
+            Write the list of selected features indicies
+            (default False)
+
+    Returns the sparse points, again in the internal librascal representation
+    """
+    if selection_type.upper() == "CUR":
+        compressor = utils.CURFilter(rep, n_features, act_on="feature")
+    elif selection_type.upper() == "FPS":
+        # TODO random starting index? by default?
+        compressor = utils.FPSFilter(rep, n_features, act_on="feature")
+    selected_features_ids = compressor.select_and_filter(features)
+    if save_selection:
+        utils.dump_json(os.path.join(WORKDIR, "selected_feature.json"), selected_features_ids)
+    hypers = rep._get_init_params()
+    hypers.update(coefficient_subselection=selected_features_ids['coefficient_subselection'])
+    return hypers
+
 
 def build_sparse_list(list_natoms, absolute_index_list):
     """Convert an absolute-indexed selection to structure-indexed format
@@ -217,13 +250,14 @@ def compute_kernels(
             kernel_type="Sparse",
         )
         kernel_rows = []
-        for frame in soaps._frames:
+        for frame in tqdm(soaps._frames, desc='Compute kernel gradients'):
             soap_grad = rep_grads.transform([frame])
             kernel_row = kernel(soap_grad, sparse_points, grad=(True, False))
             kernel_rows.append(kernel_row)
         kernel_sparse_full_grads = np.concatenate(kernel_rows)
         if save_kernels:
             np.save(os.path.join(WORKDIR, "K_NM_F"), kernel_sparse_full_grads)
+            utils.dump_obj(os.path.join(WORKDIR, "kernel.json"), kernel)
         return (kernel, kernel_sparse, kernel_sparse_full, kernel_sparse_full_grads)
     else:
         return kernel, kernel_sparse, kernel_sparse_full
