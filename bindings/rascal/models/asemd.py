@@ -39,13 +39,14 @@ class ASEMLCalculator(Calculator, BaseIO):
     ):
         Calculator.calculate(self, atoms, properties, system_changes)
 
+        self.atoms.wrap(eps=1e-11)
+
         if self.manager is None:
-            #  happens at the begining of the MD run
+            # happens at the begining of the MD run
             at = self.atoms.copy()
-            at.wrap(eps=1e-11)
             self.manager = [at]
         elif isinstance(self.manager, AtomsList):
-            structure = unpack_ase(self.atoms, wrap_pos=True)
+            structure = unpack_ase(self.atoms)
             structure.pop("center_atoms_mask")
             self.manager[0].update(**structure)
 
