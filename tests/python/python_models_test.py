@@ -159,7 +159,7 @@ class TestNumericalKernelGradient(unittest.TestCase):
                 sparse_points.extend(managers, [selected_id])
 
                 # the binded cpp function; the minus is because the function
-                #  returns the negative stress
+                # returns the negative stress
                 cpp_site_stress = -compute_numerical_kernel_gradients(
                     kernel, calculator, managers, sparse_points, h_disp, True
                 )[-6:]

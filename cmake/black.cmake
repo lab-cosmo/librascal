@@ -19,7 +19,7 @@ if(BLACK)
     add_custom_target(${BLACK_LINT_TARGET})
     set(BLACK_FOUND TRUE)
 
-    # run black on python files that are at the root directory
+    # run black on python files that are at the root directory
     set(ROOT_DIR_FILES "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
     add_custom_target(black.setup
         COMMAND ${BLACK} "-l 88" "-v" ${ROOT_DIR_FILES}
