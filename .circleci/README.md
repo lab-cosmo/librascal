@@ -8,11 +8,14 @@ See the [Dockerfile] for more information.
 
 1. make your changes to the Dockerfile
 2. build the image locally
+
 ```bash
 cd .circleci
 docker build -t rascal-ci .
 ```
+
 3. tag the image (replace <VERSION> with the right value) and upload to docker hub
+
 ```bash
 docker tag rascal-ci cosmoepfl/rascal-ci:<VERSION>
 docker push cosmoepfl/rascal-ci:<VERSION>

@@ -5,20 +5,24 @@ version: 2
 # indicated by the CC/CXX environment variables.
 default_job: &default_job
   docker:
-    - image: cosmoepfl/rascal-ci:5
+    - image: cosmoepfl/rascal-ci:6
   steps:
     - checkout
     - run:
         name: Install Python dependencies
-        command: python3.6 -m pip install -r requirements.txt
+        command: python3.8 -m pip install -r requirements.txt
     - run:
         name: Configure
         command: |
           mkdir build
           cd build
-          cmake ${CMAKE_EXTRA} -DBUILD_BINDINGS=ON -DBUILD_TESTS=ON \
-                -DBUILD_EXAMPLES=ON -DBUILD_PROFILES=ON \
-                -DBUILD_BENCHMARKS=ON -DRUN_BENCHMARKS_FLAGS=--benchmark_min_time=0.0000001 \
+          cmake ${CMAKE_EXTRA} \
+                -DBUILD_BINDINGS=ON \
+                -DBUILD_TESTS=ON \
+                -DBUILD_EXAMPLES=ON \
+                -DBUILD_PROFILES=ON \
+                -DBUILD_BENCHMARKS=ON \
+                -DRUN_BENCHMARKS_FLAGS=--benchmark_min_time=0.0000001 \
                 -DCPPLINT=CPPLINT-NOTFOUND \
                 -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..
     - run:
@@ -80,12 +84,12 @@ jobs:
       LC_ALL: C.UTF-8
       LANG: C.UTF-8
     docker:
-    - image: cosmoepfl/rascal-ci:3
+    - image: cosmoepfl/rascal-ci:6
     steps:
       - checkout
       - run:
           name: Install Python dependencies
-          command: python3.6 -m pip install -r requirements.txt
+          command: python3.8 -m pip install -r requirements.txt
       - run:
           name: Configure
           command: |
@@ -110,12 +114,12 @@ jobs:
       LC_ALL: C.UTF-8
       LANG: C.UTF-8
     docker:
-    - image: cosmoepfl/rascal-ci:3
+    - image: cosmoepfl/rascal-ci:6
     steps:
       - checkout
       - run:
           name: Install Python dependencies
-          command: python3.6 -m pip install -r requirements.txt
+          command: python3.8 -m pip install -r requirements.txt
       - run:
           name: Configure
           command: |
@@ -129,12 +133,12 @@ jobs:
   # Special job checking that make-pretty was run
   pretty:
     docker:
-    - image: cosmoepfl/rascal-ci:3
+    - image: cosmoepfl/rascal-ci:6
     steps:
       - checkout
       - run:
           name: Install Python dependencies
-          command: python3.6 -m pip install -r requirements.txt
+          command: python3.8 -m pip install -r requirements.txt
       - run:
           name: Configure
           command: |
@@ -150,14 +154,14 @@ jobs:
   # Special job collecting code coverage
   coverage:
     docker:
-    - image: cosmoepfl/rascal-ci:3
+    - image: cosmoepfl/rascal-ci:6
     steps:
       - checkout
       - run:
           name: Install Python dependencies
           command: |
-            python3.6 -m pip install -r requirements.txt
-            python3.6 -m pip install codecov coverage
+            python3.8 -m pip install -r requirements.txt
+            python3.8 -m pip install codecov coverage
       - run:
           name: Configure
           command: |
@@ -190,22 +194,25 @@ jobs:
       CC: gcc-10
       CXX: g++-10
     docker:
-      - image: cosmoepfl/rascal-ci:5
+      - image: cosmoepfl/rascal-ci:6
     steps:
       - checkout
       - run:
           name: Install Python dependencies
-          command: python3.6 -m pip install -r requirements.txt
+          command: python3.8 -m pip install -r requirements.txt
       - run:
           name: Configure
           command: |
             mkdir build
             cd build
-            cmake ${CMAKE_EXTRA} -DBUILD_BINDINGS=ON -DBUILD_TESTS=ON \
-                  -DBUILD_EXAMPLES=ON -DBUILD_PROFILES=ON \
-                  -DBUILD_BENCHMARKS=ON -DRUN_BENCHMARKS_FLAGS=--benchmark_min_time=0.0000001 \
+            cmake ${CMAKE_EXTRA} \
+                  -DBUILD_BINDINGS=ON \
+                  -DBUILD_TESTS=OFF \
+                  -DBUILD_EXAMPLES=OFF \
+                  -DBUILD_PROFILES=OFF \
                   -DCPPLINT=CPPLINT-NOTFOUND \
-                  -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..
+                  -DCMAKE_C_COMPILER=$CC \
+                  -DCMAKE_CXX_COMPILER=$CXX ..
       - run:
           name: Build
           command: cd build && make -j2
