@@ -275,8 +275,8 @@ tools with:
    sudo apt-get install clang-format
    pip install black
 
-The automatic formating of the c++ and python files can be
-trigered by:
+The automatic formatting of the c++ and python files can be
+triggered by:
 
 .. code:: shell
 
