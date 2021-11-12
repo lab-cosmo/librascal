@@ -40,7 +40,7 @@ set(RASCAL_SOURCES
     rascal/math/interpolator.cc
     rascal/math/gauss_legendre.cc
     rascal/math/spherical_harmonics.cc
-
+    rascal/math/kvec_generator.cc
     rascal/structure_managers/structure_manager_lammps.cc
     rascal/structure_managers/structure_manager_centers.cc
     rascal/representations/calculator_base.cc
