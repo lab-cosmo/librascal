@@ -2232,6 +2232,36 @@ Stores the results as an (Eigen)matrix, sized <span class="math notranslate nohi
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp">
+<span class="sig-name descname"><span class="n"><span class="pre">BOOST_AUTO_TEST_SUITE</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">test_kvecgenerator</span></span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="sig-name descname"><span class="n"><span class="pre">BOOST_AUTO_TEST_CASE</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">kvecgen_smallcells_test</span></span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="sig-name descname"><span class="n"><span class="pre">BOOST_FIXTURE_TEST_CASE</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">kvecgen_allvecs_in_ball_test</span></span>, <a class="reference internal" href="#_CPPv4N6rascal17KvecgenRefFixtureE" title="rascal::KvecgenRefFixture"><span class="n"><span class="pre">KvecgenRefFixture</span></span></a><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="sig-name descname"><span class="n"><span class="pre">BOOST_FIXTURE_TEST_CASE</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">kvecgen_numvectors_reasonable_test</span></span>, <a class="reference internal" href="#_CPPv4N6rascal17KvecgenRefFixtureE" title="rascal::KvecgenRefFixture"><span class="n"><span class="pre">KvecgenRefFixture</span></span></a><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="sig-name descname"><span class="n"><span class="pre">BOOST_FIXTURE_TEST_CASE</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">kvecgen_scaling_test</span></span>, <a class="reference internal" href="#_CPPv4N6rascal17KvecgenRefFixtureE" title="rascal::KvecgenRefFixture"><span class="n"><span class="pre">KvecgenRefFixture</span></span></a><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="sig-name descname"><span class="n"><span class="pre">BOOST_AUTO_TEST_CASE</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">kvecgen_rotation_test</span></span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
 <span class="sig-name descname"><span class="n"><span class="pre">BOOST_AUTO_TEST_SUITE</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">MathBesselFirstKindTests</span></span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
@@ -5023,6 +5053,11 @@ Stores the results as an (Eigen)matrix, sized <span class="math notranslate nohi
 
 </div>
 </dd></dl>
+
+<dl class="cpp struct">
+<dt class="sig sig-object cpp">
+<span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">KvecgenRefFixture</span></span></span><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp class">
 <dt class="sig sig-object cpp">
@@ -9597,6 +9632,34 @@ Stores the results as an (Eigen)matrix, sized <span class="math notranslate nohi
 <dl class="cpp function">
 <dt class="sig sig-object cpp">
 <span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">interpolate_derivative</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">x</span></span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp">
+<span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Kvectors</span></span></span><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="sig-name descname"><span class="n"><span class="pre">Kvectors</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">cutoff</span></span>, <span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Matrix3d</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">basisvectors</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">is_reciprocal_cell</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">need_origin</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_numvectors</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Ref</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N6rascal4math8Matrix_tE" title="rascal::math::Matrix_t"><span class="n"><span class="pre">Matrix_t</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_kvectors</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp">
+<span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Ref</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N6rascal4math8Vector_tE" title="rascal::math::Vector_t"><span class="n"><span class="pre">Vector_t</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_kvector_norms</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 </div>
