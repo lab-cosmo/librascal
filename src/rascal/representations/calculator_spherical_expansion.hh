@@ -1582,6 +1582,11 @@ namespace rascal {
     using Matrix_Ref = math::Matrix_Ref;
     using Vector_Ref = math::Vector_Ref;
 
+
+    int get_num_coefficients(int n_species){
+       return (n_species*this->max_radial*(this->max_angular+1)*(this->max_angular+1));
+
+    }
     /**
      * Set the hyperparameters of this descriptor from a json-like container.
      *

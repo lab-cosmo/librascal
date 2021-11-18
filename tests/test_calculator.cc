@@ -35,7 +35,6 @@
 
 namespace rascal {
   /* ---------------------------------------------------------------------- */
-
   using multiple_fixtures =
       boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb<
                            MultipleStructureManagerNLStrictFixture>>,
@@ -45,7 +44,13 @@ namespace rascal {
                            MultipleStructureManagerNLCCStrictFixture>>,
                        CalculatorFixture<MultipleStructureSphericalCovariants<
                            MultipleStructureManagerNLCCStrictFixture>>>;
+ 
+  using spherical_fixtures =
+      boost::mpl::list<
+                       CalculatorFixture<MultipleStructureSphericalExpansion<
+                           MultipleStructureManagerNLCCStrictFixture>>>;
 
+ 
   using fixtures_ref_test =
       boost::mpl::list<CalculatorFixture<SortedCoulombTestData>,
                        CalculatorFixture<SphericalExpansionTestData>,
@@ -169,7 +174,12 @@ namespace rascal {
     auto & representations = Fix::representations;
     auto & representation_hypers = Fix::representation_hypers;
     int manager_i{0};
+    std::set<int> species_list;
     for (auto & manager : managers) {
+	    for (auto center : manager){
+		  species_list.insert(center.get_atom_type());
+	    }
+      
       for (auto & hyper : representation_hypers) {
         double representation_cutoff{
             extract_interaction_cutoff_from_representation_hyper(hyper)};
@@ -179,14 +189,15 @@ namespace rascal {
           ManagerCollection_t collection{};
           auto & prop = *manager->template get_property<Property_t>(
               representations.back().get_name(), true);
-          math::Matrix_t feat_prop = prop.get_features();
+	  math::Matrix_t feat_prop = prop.get_features();
           collection.add_structure(manager);
           math::Matrix_t feat_col =
               collection.get_features(representations.back());
 
           BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
           BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
-
+	 // BOOST_CHECK_EQUAL(feat_prop.cols(), representations.back().get_num_coefficients(species_list.size()));
+	 // std::cout << feat_prop.cols() << "YOOOO" << representations.back().get_num_coefficients(species_list.size()) << std::endl;
           auto diff_rep{math::relative_error(feat_prop, feat_col)};
           BOOST_CHECK_LE(diff_rep.maxCoeff(), 6e-12);
         }
@@ -194,6 +205,41 @@ namespace rascal {
       manager_i++;
     }
   }
+
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_number_feature_comparison, Fix,
+                                   spherical_fixtures, Fix) {
+    using ManagerCollection_t =
+        typename TypeHolderInjector<ManagerCollection,
+                                    typename Fix::ManagerTypeList_t>::type;
+    using Property_t = typename Fix::Property_t;
+
+    auto & managers = Fix::managers;
+    auto & representations = Fix::representations;
+    auto & representation_hypers = Fix::representation_hypers;
+    int manager_i{0};
+    std::set<int> species_list;
+    for (auto & manager : managers) {
+      species_list.clear();
+      for (auto center : manager){
+            species_list.insert(center.get_atom_type());
+      }
+      for (auto & hyper : representation_hypers) {
+        double representation_cutoff{
+            extract_interaction_cutoff_from_representation_hyper(hyper)};
+        if (manager->get_cutoff() == representation_cutoff) {
+          representations.emplace_back(hyper);
+          representations.back().compute(manager);
+          auto & prop = *manager->template get_property<Property_t>(
+              representations.back().get_name(), true);
+	  math::Matrix_t feat_prop = prop.get_features();
+	  BOOST_CHECK_EQUAL(feat_prop.cols(), representations.back().get_num_coefficients(species_list.size()));
+        }
+      }
+      manager_i++;
+    }
+  }
+
 
   /* ---------------------------------------------------------------------- */
   /**
