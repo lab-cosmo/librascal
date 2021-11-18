@@ -232,8 +232,8 @@ namespace rascal {
           representations.back().compute(manager);
           auto & prop = *manager->template get_property<Property_t>(
               representations.back().get_name(), true);
-	  math::Matrix_t feat_prop = prop.get_features();
-	  BOOST_CHECK_EQUAL(feat_prop.cols(), representations.back().get_num_coefficients(species_list.size()));
+          math::Matrix_t feat_prop = prop.get_features();
+          BOOST_CHECK_EQUAL(feat_prop.cols(), representations.back().get_num_coefficients(species_list.size()));
         }
       }
       manager_i++;
