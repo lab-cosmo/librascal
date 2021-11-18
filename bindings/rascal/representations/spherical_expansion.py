@@ -236,8 +236,6 @@ class SphericalExpansion(BaseIO):
 
         self.rep_options = dict(name=self.name, args=[self.hypers])
 
-        n_features = self.get_num_coefficients()
-
         self._representation = CalculatorFactory(self.rep_options)
 
     def update_hyperparameters(self, **hypers):
@@ -289,11 +287,7 @@ class SphericalExpansion(BaseIO):
         (this is the descriptor size per atomic centre)
 
         """
-        return (
-            n_species
-            * self.hypers["max_radial"]
-            * (self.hypers["max_angular"] + 1) ** 2
-        )
+        return self._representation.get_num_coefficients(n_species)
 
     def get_keys(self, species):
         """

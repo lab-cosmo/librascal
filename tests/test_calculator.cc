@@ -35,7 +35,6 @@
 
 namespace rascal {
   /* ---------------------------------------------------------------------- */
-
   using multiple_fixtures =
       boost::mpl::list<CalculatorFixture<MultipleStructureSortedCoulomb<
                            MultipleStructureManagerNLStrictFixture>>,
@@ -44,6 +43,12 @@ namespace rascal {
                        CalculatorFixture<MultipleStructureSphericalInvariants<
                            MultipleStructureManagerNLCCStrictFixture>>,
                        CalculatorFixture<MultipleStructureSphericalCovariants<
+                           MultipleStructureManagerNLCCStrictFixture>>>;
+
+  using spherical_fixtures =
+      boost::mpl::list<CalculatorFixture<MultipleStructureSphericalExpansion<
+                           MultipleStructureManagerNLCCStrictFixture>>,
+                       CalculatorFixture<MultipleStructureSphericalInvariants<
                            MultipleStructureManagerNLCCStrictFixture>>>;
 
   using fixtures_ref_test =
@@ -169,7 +174,12 @@ namespace rascal {
     auto & representations = Fix::representations;
     auto & representation_hypers = Fix::representation_hypers;
     int manager_i{0};
+    std::set<int> species_list;
     for (auto & manager : managers) {
+      for (auto center : manager) {
+        species_list.insert(center.get_atom_type());
+      }
+
       for (auto & hyper : representation_hypers) {
         double representation_cutoff{
             extract_interaction_cutoff_from_representation_hyper(hyper)};
@@ -186,9 +196,40 @@ namespace rascal {
 
           BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
           BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
-
           auto diff_rep{math::relative_error(feat_prop, feat_col)};
           BOOST_CHECK_LE(diff_rep.maxCoeff(), 6e-12);
+        }
+      }
+      manager_i++;
+    }
+  }
+
+  BOOST_FIXTURE_TEST_CASE_TEMPLATE(spherical_number_feature_comparison, Fix,
+                                   spherical_fixtures, Fix) {
+    using Property_t = typename Fix::Property_t;
+
+    auto & managers = Fix::managers;
+    auto & representations = Fix::representations;
+    auto & representation_hypers = Fix::representation_hypers;
+    int manager_i{0};
+    std::set<int> species_list;
+    for (auto & manager : managers) {
+      species_list.clear();
+      for (auto center : manager) {
+        species_list.insert(center.get_atom_type());
+      }
+      for (auto & hyper : representation_hypers) {
+        double representation_cutoff{
+            extract_interaction_cutoff_from_representation_hyper(hyper)};
+        if (manager->get_cutoff() == representation_cutoff) {
+          representations.emplace_back(hyper);
+          representations.back().compute(manager);
+          auto & prop = *manager->template get_property<Property_t>(
+              representations.back().get_name(), true);
+          math::Matrix_t feat_prop = prop.get_features();
+          BOOST_CHECK_EQUAL(
+              feat_prop.cols(),
+              representations.back().get_num_coefficients(species_list.size()));
         }
       }
       manager_i++;
@@ -683,6 +724,8 @@ namespace rascal {
     const double delta{4e-7};
     // range of zero
     const double epsilon{1e-15};
+    // to iterate through gradients info
+    int grandients_info_i_row{0};
 
     for (size_t i_manager{0}; i_manager < managers.size(); ++i_manager) {
       auto manager = managers[i_manager];
@@ -749,6 +792,32 @@ namespace rascal {
                     << std::endl;
           std::cout << "TEST: " << X_grad_sparse.col(i_feat).transpose()
                     << std::endl;
+        }
+
+        Eigen::Matrix<int, Eigen::Dynamic, 5> gradients_info{
+            manager->get_gradients_info()};
+        BOOST_TEST(gradients_info.rows() * 3 == X_grad.rows(),
+                   "REF X_grad number of rows:  "
+                       << X_grad.rows()
+                       << " not equal to TEST gradients_info number of rows*3: "
+                       << gradients_info.rows() * 3);
+        grandients_info_i_row = 0;
+        // equal check for the individual manager
+        for (auto center : manager) {
+          for (auto pair : center.pairs_with_self_pair()) {
+            // because we do not create gradients info over manager collection
+            // i_frame is 0
+            BOOST_TEST(gradients_info(grandients_info_i_row, 0) == 0);
+            BOOST_TEST(gradients_info(grandients_info_i_row, 1) ==
+                       center.get_atom_tag());
+            BOOST_TEST(gradients_info(grandients_info_i_row, 2) ==
+                       pair.get_atom_j().get_atom_tag());
+            BOOST_TEST(gradients_info(grandients_info_i_row, 3) ==
+                       center.get_atom_type());
+            BOOST_TEST(gradients_info(grandients_info_i_row, 4) ==
+                       pair.get_atom_type());
+            grandients_info_i_row++;
+          }
         }
       }
     }

@@ -958,6 +958,19 @@ namespace rascal {
      */
     int get_atom_type() const { return this->manager.atom_type(this->index); }
 
+    /**
+     * Get informations necessary to the computation of gradients. It has
+     * as many rows as the number gradients and they correspond to the index
+     * of the structure, the central atom, the neighbor atom and their atomic
+     * species.
+     *
+     * The shape is (n_structures * n_centers * n_neighbor, 5) while the
+     * n_neighbour is nonconstant over centers
+     */
+    Eigen::Matrix<int, Eigen::Dynamic, 5> get_gradients_info() const {
+      return this->implementation().get_gradients_info();
+    }
+
    protected:
     //! reference to the underlying manager
     Manager_t & manager;
