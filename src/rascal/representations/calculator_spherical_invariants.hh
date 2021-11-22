@@ -254,6 +254,41 @@ namespace rascal {
     //! the coefficient_subselection input
     bool is_sparsified{false};
 
+    int get_num_coefficients(int n_species) {
+      auto soap_type = hypers.at("soap_type").get<std::string>();
+      if (soap_type == "RadialSpectrum") {
+        return (n_species * this->max_radial);
+      } else if (soap_type == "PowerSpectrum") {
+        return (n_species * (n_species + 1) * 0.5 * this->max_radial *
+                this->max_radial * (this->max_angular + 1));
+      } else if (soap_type == "BiSpectrum") {
+        int count = 0;
+        for (size_t l1{0}; l1 < this->max_angular + 1; l1++) {
+          for (size_t l2{0}; l2 < this->max_angular + 1; l2++) {
+            for (size_t l3{0}; l3 < this->max_angular + 1; l3++) {
+              if (this->inversion_symmetry == true) {
+                if ((l1 + l2 + l3) % 2 == 1) {
+                  continue;
+                }
+              }
+
+              if ((l1 < static_cast<size_t>(std::abs<int>(l2 - l3))) ||
+                  (l1 > l2 + l3)) {
+                continue;
+              }
+
+              count += 1;
+            }
+          }
+        }
+
+        return (count * math::pow(this->max_radial, 3) *
+                ((n_species + 2) * (n_species + 1) * n_species) / 6);
+      } else
+        throw std::logic_error("Num of coefficients for soap type \'" +
+                               soap_type + "\' not implemented!");
+    }
+
     void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::SphericalInvariantsType;
 
