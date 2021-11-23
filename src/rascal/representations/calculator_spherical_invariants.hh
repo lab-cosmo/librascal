@@ -255,6 +255,13 @@ namespace rascal {
     bool is_sparsified{false};
 
     int get_num_coefficients(int n_species) {
+      // Returns number of coefficients for Spherical invariants (with feature
+      // subselection for Power spectrum) Power Spectrum: (n_species+1 choose 2)
+      // nmax^2 * (lmax+1) # where n choose x is combinatorial to avoid counting
+      // different orders of the species as separate instances Bispectrum : we
+      // count the number of coefficients by looping over allowed values of
+      // l1,l2, l3 (triangular inequality of angular momenta) and inversion
+      // symmetry selects coefficients where (l1+l2+l3)%2=0
       auto soap_type = hypers.at("soap_type").get<std::string>();
       if (soap_type == "RadialSpectrum") {
         return (n_species * this->max_radial);

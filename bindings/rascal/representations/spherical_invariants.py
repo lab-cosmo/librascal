@@ -343,7 +343,7 @@ class SphericalInvariants(BaseIO):
         return frames
 
     def get_num_coefficients(self, n_species=1):
-        """Return the number of coefficients in the spherical expansion
+        """Return the number of coefficients in the spherical invariants
 
         (this is the descriptor size per atomic centre)
 
