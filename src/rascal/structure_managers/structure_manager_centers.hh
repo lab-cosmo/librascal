@@ -293,6 +293,17 @@ namespace rascal {
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t order) const;
 
+    /**
+     * Get informations necessary to the computation of gradients. It has
+     * as many rows as the number gradients and they correspond to the index
+     * of the structure, the central atom, the neighbor atom and their atomic
+     * species.
+     *
+     * The shape is (n_structures * n_centers * n_neighbor, 5) while the
+     * n_neighbour is nonconstant over centers
+     */
+    Eigen::Matrix<int, Eigen::Dynamic, 5> get_gradients_info() const;
+
     //! to follow the base class
     void update_self() {}
 
