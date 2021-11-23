@@ -724,6 +724,8 @@ namespace rascal {
     const double delta{4e-7};
     // range of zero
     const double epsilon{1e-15};
+    // to iterate through gradients info
+    int grandients_info_i_row{0};
 
     for (size_t i_manager{0}; i_manager < managers.size(); ++i_manager) {
       auto manager = managers[i_manager];
@@ -790,6 +792,32 @@ namespace rascal {
                     << std::endl;
           std::cout << "TEST: " << X_grad_sparse.col(i_feat).transpose()
                     << std::endl;
+        }
+
+        Eigen::Matrix<int, Eigen::Dynamic, 5> gradients_info{
+            manager->get_gradients_info()};
+        BOOST_TEST(gradients_info.rows() * 3 == X_grad.rows(),
+                   "REF X_grad number of rows:  "
+                       << X_grad.rows()
+                       << " not equal to TEST gradients_info number of rows*3: "
+                       << gradients_info.rows() * 3);
+        grandients_info_i_row = 0;
+        // equal check for the individual manager
+        for (auto center : manager) {
+          for (auto pair : center.pairs_with_self_pair()) {
+            // because we do not create gradients info over manager collection
+            // i_frame is 0
+            BOOST_TEST(gradients_info(grandients_info_i_row, 0) == 0);
+            BOOST_TEST(gradients_info(grandients_info_i_row, 1) ==
+                       center.get_atom_tag());
+            BOOST_TEST(gradients_info(grandients_info_i_row, 2) ==
+                       pair.get_atom_j().get_atom_tag());
+            BOOST_TEST(gradients_info(grandients_info_i_row, 3) ==
+                       center.get_atom_type());
+            BOOST_TEST(gradients_info(grandients_info_i_row, 4) ==
+                       pair.get_atom_type());
+            grandients_info_i_row++;
+          }
         }
       }
     }

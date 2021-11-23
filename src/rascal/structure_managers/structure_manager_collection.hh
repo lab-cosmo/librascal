@@ -146,6 +146,45 @@ namespace rascal {
     }
 
     /**
+     * Get informations necessary to the computation of gradients. It has
+     * as many rows as the number gradients and they correspond to the index
+     * of the structure, the central atom, the neighbor atom and their atomic
+     * species.
+     * The shape is (n_structures * n_centers * n_neighbor, 5) while the
+     * n_neighbour is nonconstant over centers
+     */
+    Eigen::Matrix<int, Eigen::Dynamic, 5> get_gradients_info() const {
+      if (this->managers.size() == 0) {
+        throw std::runtime_error(
+            R"(There are no structure to get features from)");
+      }
+      size_t n_neighbors{0};
+      for (auto & manager : managers) {
+        n_neighbors += manager->get_nb_clusters(2);
+      }
+
+      Eigen::Matrix<int, Eigen::Dynamic, 5> gradients_info(n_neighbors, 5);
+      gradients_info.setZero();
+      int i_row{0}, i_center{0}, i_frame{0};
+      for (auto & manager : this->managers) {
+        for (auto center : manager) {
+          for (auto pair : center.pairs_with_self_pair()) {
+            gradients_info(i_row, 0) = i_frame;
+            gradients_info(i_row, 1) = i_center + center.get_atom_tag();
+            gradients_info(i_row, 2) =
+                i_center + pair.get_atom_j().get_atom_tag();
+            gradients_info(i_row, 3) = center.get_atom_type();
+            gradients_info(i_row, 4) = pair.get_atom_type();
+            i_row++;
+          }
+        }
+        i_center += static_cast<int>(manager->size());
+        i_frame++;
+      }
+      return gradients_info;
+    }
+
+    /**
      * functions to add one or several structures to the collection
      */
     void add_structure(const Hypers_t & structure,

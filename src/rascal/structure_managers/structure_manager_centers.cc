@@ -108,6 +108,11 @@ namespace rascal {
       throw std::string("ERROR : Order != 1");
     }
   }
+  Eigen::Matrix<int, Eigen::Dynamic, 5>
+  StructureManagerCenters::get_gradients_info() const {
+    throw std::logic_error(
+        "Error: StructureManagerCenters does not have grandients info");
+  }
   /* ---------------------------------------------------------------------- */
 
 }  // namespace rascal
