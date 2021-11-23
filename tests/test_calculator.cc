@@ -196,8 +196,6 @@ namespace rascal {
 
           BOOST_CHECK_EQUAL(feat_prop.rows(), feat_col.rows());
           BOOST_CHECK_EQUAL(feat_prop.cols(), feat_col.cols());
-          // BOOST_CHECK_EQUAL(feat_prop.cols(),
-          // representations.back().get_num_coefficients(species_list.size()));
           auto diff_rep{math::relative_error(feat_prop, feat_col)};
           BOOST_CHECK_LE(diff_rep.maxCoeff(), 6e-12);
         }

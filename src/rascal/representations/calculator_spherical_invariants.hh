@@ -258,9 +258,6 @@ namespace rascal {
       auto soap_type = hypers.at("soap_type").get<std::string>();
       if (soap_type == "RadialSpectrum") {
         return (n_species * this->max_radial);
-      } else if (soap_type == "PowerSpectrum") {
-        return (n_species * (n_species + 1) * 0.5 * this->max_radial *
-                this->max_radial * (this->max_angular + 1));
       } else if (soap_type == "BiSpectrum") {
         int count = 0;
         for (size_t l1{0}; l1 < this->max_angular + 1; l1++) {
@@ -284,9 +281,22 @@ namespace rascal {
 
         return (count * math::pow(this->max_radial, 3) *
                 ((n_species + 2) * (n_species + 1) * n_species) / 6);
-      } else
-        throw std::logic_error("Num of coefficients for soap type \'" +
-                               soap_type + "\' not implemented!");
+      } else if (soap_type == "PowerSpectrum") {
+        if (hypers.find("coefficient_subselection") != hypers.end()) {
+          auto coefficient_subselection =
+              hypers.at("coefficient_subselection").get<json>();
+          if (not(coefficient_subselection.is_null())) {
+            auto sp_a = coefficient_subselection.at("a")
+                            .get<std::vector<typename Key_t::value_type>>();
+            return sp_a.size();
+          }
+        } else {
+          return (n_species * (n_species + 1) * 0.5 * this->max_radial *
+                  this->max_radial * (this->max_angular + 1));
+        }
+      }
+      throw std::logic_error("Num of coefficients for soap type \'" +
+                             soap_type + "\' not implemented!");
     }
 
     void set_hyperparameters(const Hypers_t & hypers) override {
@@ -348,130 +358,133 @@ namespace rascal {
       this->type = SphericalInvariantsType::PowerSpectrum;
 
       if (hypers.find("coefficient_subselection") != hypers.end()) {
-        this->is_sparsified = true;
+        // this->is_sparsified = true;
         auto coefficient_subselection =
             hypers.at("coefficient_subselection").get<json>();
-        // get the indices of the subselected PowerSpectrum coefficients:
-        // p_{abn_1n_2l} where a and b refer to atomic species and should be
-        // lexicographically sorted so that a <= b, n_1 and n_2 refer to
-        // radial basis index and l refer to the angular index of the
-        // spherical harmonic
-        auto sp_a = coefficient_subselection.at("a")
-                        .get<std::vector<typename Key_t::value_type>>();
-        auto sp_b = coefficient_subselection.at("b")
-                        .get<std::vector<typename Key_t::value_type>>();
-        auto radial_n1 =
-            coefficient_subselection.at("n1").get<std::vector<std::uint32_t>>();
-        auto radial_n2 =
-            coefficient_subselection.at("n2").get<std::vector<std::uint32_t>>();
-        auto angular_l =
-            coefficient_subselection.at("l").get<std::vector<std::uint32_t>>();
+        if (not(coefficient_subselection.is_null())) {
+          this->is_sparsified = true;
+          // get the indices of the subselected PowerSpectrum coefficients:
+          // p_{abn_1n_2l} where a and b refer to atomic species and should be
+          // lexicographically sorted so that a <= b, n_1 and n_2 refer to
+          // radial basis index and l refer to the angular index of the
+          // spherical harmonic
+          auto sp_a = coefficient_subselection.at("a")
+                          .get<std::vector<typename Key_t::value_type>>();
+          auto sp_b = coefficient_subselection.at("b")
+                          .get<std::vector<typename Key_t::value_type>>();
+          auto radial_n1 = coefficient_subselection.at("n1")
+                               .get<std::vector<std::uint32_t>>();
+          auto radial_n2 = coefficient_subselection.at("n2")
+                               .get<std::vector<std::uint32_t>>();
+          auto angular_l = coefficient_subselection.at("l")
+                               .get<std::vector<std::uint32_t>>();
 
-        std::uint32_t angular_max{
-            *std::max_element(angular_l.begin(), angular_l.end())};
-        std::uint32_t radial1_max{
-            *std::max_element(radial_n1.begin(), radial_n1.end())};
-        std::uint32_t radial2_max{
-            *std::max_element(radial_n2.begin(), radial_n2.end())};
-        // check if the inputs are sane
-        {
-          if (sp_a.size() != sp_b.size()) {
-            throw std::logic_error(
-                R"(coefficient_subselection should have elements of the same size but: a.size() != b.size())");
-          } else if (sp_a.size() != radial_n1.size()) {
-            throw std::logic_error(
-                R"(coefficient_subselection should have elements of the same size but: a.size() != n1.size())");
-          } else if (sp_a.size() != radial_n2.size()) {
-            throw std::logic_error(
-                R"(coefficient_subselection should have elements of the same size but: a.size() != n2.size())");
-          } else if (sp_a.size() != angular_l.size()) {
-            throw std::logic_error(
-                R"(coefficient_subselection should have elements of the same size but: a.size() != l.size())");
-          }
+          std::uint32_t angular_max{
+              *std::max_element(angular_l.begin(), angular_l.end())};
+          std::uint32_t radial1_max{
+              *std::max_element(radial_n1.begin(), radial_n1.end())};
+          std::uint32_t radial2_max{
+              *std::max_element(radial_n2.begin(), radial_n2.end())};
+          // check if the inputs are sane
+          {
+            if (sp_a.size() != sp_b.size()) {
+              throw std::logic_error(
+                  R"(coefficient_subselection should have elements of the same size but: a.size() != b.size())");
+            } else if (sp_a.size() != radial_n1.size()) {
+              throw std::logic_error(
+                  R"(coefficient_subselection should have elements of the same size but: a.size() != n1.size())");
+            } else if (sp_a.size() != radial_n2.size()) {
+              throw std::logic_error(
+                  R"(coefficient_subselection should have elements of the same size but: a.size() != n2.size())");
+            } else if (sp_a.size() != angular_l.size()) {
+              throw std::logic_error(
+                  R"(coefficient_subselection should have elements of the same size but: a.size() != l.size())");
+            }
 
-          if (angular_max >= this->max_angular + 1) {
-            std::stringstream err_str{};
-            err_str << "'max(l)' in coefficient_subselection is larger"
-                    << " than 'max_angular+1'" << angular_max
-                    << " >= " << this->max_angular + 1 << std::endl;
-            throw std::runtime_error(err_str.str());
+            if (angular_max >= this->max_angular + 1) {
+              std::stringstream err_str{};
+              err_str << "'max(l)' in coefficient_subselection is larger"
+                      << " than 'max_angular+1'" << angular_max
+                      << " >= " << this->max_angular + 1 << std::endl;
+              throw std::runtime_error(err_str.str());
+            }
+            if (radial1_max >= this->max_radial) {
+              std::stringstream err_str{};
+              err_str << "'max(n1)' in coefficient_subselection is larger"
+                      << " than 'max_radial'" << radial1_max
+                      << " >= " << this->max_radial << std::endl;
+              throw std::runtime_error(err_str.str());
+            }
+            if (radial2_max >= this->max_radial) {
+              std::stringstream err_str{};
+              err_str << "'max(n2)' in coefficient_subselection is larger"
+                      << " than 'max_radial'" << radial2_max
+                      << " >= " << this->max_radial << std::endl;
+              throw std::runtime_error(err_str.str());
+            }
           }
-          if (radial1_max >= this->max_radial) {
-            std::stringstream err_str{};
-            err_str << "'max(n1)' in coefficient_subselection is larger"
-                    << " than 'max_radial'" << radial1_max
-                    << " >= " << this->max_radial << std::endl;
-            throw std::runtime_error(err_str.str());
-          }
-          if (radial2_max >= this->max_radial) {
-            std::stringstream err_str{};
-            err_str << "'max(n2)' in coefficient_subselection is larger"
-                    << " than 'max_radial'" << radial2_max
-                    << " >= " << this->max_radial << std::endl;
-            throw std::runtime_error(err_str.str());
-          }
-        }
-        this->inner_invariants_shape[0] = 1;
-        this->inner_invariants_shape[1] = sp_a.size();
+          this->inner_invariants_shape[0] = 1;
+          this->inner_invariants_shape[1] = sp_a.size();
 
-        internal::Sorted<true> is_sorted{};
-        // collect all unique sorted pairs
-        for (size_t i_pair{0}; i_pair < sp_a.size(); ++i_pair) {
-          if (sp_a[i_pair] > sp_b[i_pair]) {
-            throw std::logic_error(
-                R"(coefficient_subselection should have only lexicographically
+          internal::Sorted<true> is_sorted{};
+          // collect all unique sorted pairs
+          for (size_t i_pair{0}; i_pair < sp_a.size(); ++i_pair) {
+            if (sp_a[i_pair] > sp_b[i_pair]) {
+              throw std::logic_error(
+                  R"(coefficient_subselection should have only lexicographically
               sorted pairs of atomic species in the selection but: a > b)");
+            }
+            Key_t pair{{sp_a[i_pair], sp_b[i_pair]}};
+            this->unique_pair_list.insert({is_sorted, pair});
           }
-          Key_t pair{{sp_a[i_pair], sp_b[i_pair]}};
-          this->unique_pair_list.insert({is_sorted, pair});
-        }
-        // initialize coeff_indices_map
-        std::vector<PowerSpectrumCoeffIndex> init_vec{};
-        for (const auto & key : this->unique_pair_list) {
-          this->coeff_indices_map[key] = init_vec;
-        }
+          // initialize coeff_indices_map
+          std::vector<PowerSpectrumCoeffIndex> init_vec{};
+          for (const auto & key : this->unique_pair_list) {
+            this->coeff_indices_map[key] = init_vec;
+          }
 
-        // precompute the positions and sizes of the angular momentum channels
-        // of the linear storage of the spherical expansion coefficients
-        // related to the spherical harmonics
-        std::vector<std::uint32_t> l_block_sizes{}, l_block_ids{};
-        std::uint32_t pos{0};
-        for (std::uint32_t l{0}; l < this->max_angular + 1; ++l) {
-          std::uint32_t size{2 * l + 1};
-          l_block_sizes.push_back(size);
-          l_block_ids.push_back(pos);
-          pos += size;
-        }
+          // precompute the positions and sizes of the angular momentum channels
+          // of the linear storage of the spherical expansion coefficients
+          // related to the spherical harmonics
+          std::vector<std::uint32_t> l_block_sizes{}, l_block_ids{};
+          std::uint32_t pos{0};
+          for (std::uint32_t l{0}; l < this->max_angular + 1; ++l) {
+            std::uint32_t size{2 * l + 1};
+            l_block_sizes.push_back(size);
+            l_block_ids.push_back(pos);
+            pos += size;
+          }
 
-        this->l_factors = internal::precompute_l_factors(this->max_angular);
+          this->l_factors = internal::precompute_l_factors(this->max_angular);
 
-        // fill coeff_indices_map
-        for (size_t i_pair{0}; i_pair < sp_a.size(); ++i_pair) {
-          Key_t pair{{sp_a[i_pair], sp_b[i_pair]}};
-          internal::SortedKey<Key_t> spair{is_sorted, pair};
-          // insertion order n1, n2, l, n1n2, l_block_size, l_block_idx
-          // n1n2 is set to zero because we store the sparsified features as
-          // one row
-          this->coeff_indices_map[spair].emplace_back(
-              radial_n1[i_pair], radial_n2[i_pair],
-              static_cast<std::uint32_t>(i_pair), 0,
-              l_block_sizes[angular_l[i_pair]], l_block_ids[angular_l[i_pair]],
-              this->l_factors[angular_l[i_pair]]);
-        }
+          // fill coeff_indices_map
+          for (size_t i_pair{0}; i_pair < sp_a.size(); ++i_pair) {
+            Key_t pair{{sp_a[i_pair], sp_b[i_pair]}};
+            internal::SortedKey<Key_t> spair{is_sorted, pair};
+            // insertion order n1, n2, l, n1n2, l_block_size, l_block_idx
+            // n1n2 is set to zero because we store the sparsified features as
+            // one row
+            this->coeff_indices_map[spair].emplace_back(
+                radial_n1[i_pair], radial_n2[i_pair],
+                static_cast<std::uint32_t>(i_pair), 0,
+                l_block_sizes[angular_l[i_pair]],
+                l_block_ids[angular_l[i_pair]],
+                this->l_factors[angular_l[i_pair]]);
+          }
 
-        Key_t sparsified_type{0, 0};
-        for (int sp1{0}; sp1 < MaxChemElements; sp1++) {
-          for (int sp2{0}; sp2 < MaxChemElements; sp2++) {
-            if (sp1 <= sp2) {
-              Key_t pair_type{sp1, sp2};
-              internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
-              internal::SortedKey<Key_t> ssparsified_type{is_sorted,
-                                                          sparsified_type};
-              this->key_map[spair_type] = ssparsified_type;
+          Key_t sparsified_type{0, 0};
+          for (int sp1{0}; sp1 < MaxChemElements; sp1++) {
+            for (int sp2{0}; sp2 < MaxChemElements; sp2++) {
+              if (sp1 <= sp2) {
+                Key_t pair_type{sp1, sp2};
+                internal::SortedKey<Key_t> spair_type{is_sorted, pair_type};
+                internal::SortedKey<Key_t> ssparsified_type{is_sorted,
+                                                            sparsified_type};
+                this->key_map[spair_type] = ssparsified_type;
+              }
             }
           }
         }
-
       } else {  // Default false (compute all coefficents)
         this->l_factors = internal::precompute_l_factors(this->max_angular);
         this->is_sparsified = false;
