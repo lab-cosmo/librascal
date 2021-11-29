@@ -640,7 +640,7 @@ namespace rascal {
      * of the structure, the central atom, the neighbor atom and their atomic
      * species.
      *
-     * The shape is (n_structures * n_centers * n_neighbor, 5) while the
+     * The shape is (n_centers * n_neighbor, 5) while the
      * n_neighbour is nonconstant over centers
      */
     Eigen::Matrix<int, Eigen::Dynamic, 5> get_gradients_info() {
