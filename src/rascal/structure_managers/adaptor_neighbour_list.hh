@@ -642,42 +642,6 @@ namespace rascal {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
 
-    /**
-     * Get informations necessary to the computation of gradients. It has
-     * as many rows as the number gradients and they correspond to the index
-     * of the structure, the central atom, the neighbor atom and their atomic
-     * species.
-     *
-     * The shape is (n_structures * n_centers * n_neighbor, 5) while the
-     * n_neighbour is nonconstant over centers
-     */
-    Eigen::Matrix<int, Eigen::Dynamic, 5> get_gradients_info() const {
-      if (this->get_size() == 0) {
-        throw std::runtime_error(
-            R"(There are no structure to get features from)");
-      }
-
-      size_t n_neighbors{this->get_nb_clusters(2)};
-      Eigen::Matrix<int, Eigen::Dynamic, 5> gradients_info(n_neighbors, 5);
-      gradients_info.setZero();
-      int i_row{0};
-      for (int i = 0; i < static_cast<int>(this->get_size()); i++) {
-        for (int j = 0; j < static_cast<int>(this->nb_neigh[i]); j++) {
-          gradients_info(i_row, 0) = 0;
-          gradients_info(i_row, 1) =
-              this->get_atom_index(this->atom_tag_list[i]);
-          gradients_info(i_row, 2) = this->get_atom_index(
-              this->neighbours_atom_tag[this->offsets[i] + j]);
-          gradients_info(i_row, 3) =
-              this->get_atom_type(this->atom_tag_list[i]);
-          gradients_info(i_row, 4) = this->get_atom_type(
-              this->neighbours_atom_tag[this->offsets[i] + j]);
-          i_row++;
-        }
-      }
-      return gradients_info;
-    }
-
     //! Returns the number of neighbours of a given atom at a given TargetOrder
     //! Returns the number of pairs of a given center
     template <size_t TargetOrder, size_t Order, size_t Layer>
