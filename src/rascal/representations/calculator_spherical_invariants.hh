@@ -254,7 +254,7 @@ namespace rascal {
     //! the coefficient_subselection input
     bool is_sparsified{false};
 
-    int get_num_coefficients(int n_species) {
+    int get_num_coefficients(int n_species) const {
       // Returns number of coefficients for Spherical invariants (with feature
       // subselection for Power spectrum) Power Spectrum: (n_species+1 choose 2)
       // nmax^2 * (lmax+1) # where n choose x is combinatorial to avoid counting
@@ -266,7 +266,7 @@ namespace rascal {
       if (soap_type == "RadialSpectrum") {
         return (n_species * this->max_radial);
       } else if (soap_type == "BiSpectrum") {
-        int count = 0;
+        int count{0};
         for (size_t l1{0}; l1 < this->max_angular + 1; l1++) {
           for (size_t l2{0}; l2 < this->max_angular + 1; l2++) {
             for (size_t l3{0}; l3 < this->max_angular + 1; l3++) {
@@ -286,7 +286,7 @@ namespace rascal {
           }
         }
 
-        return (count * math::pow(this->max_radial, 3) *
+        return (count * static_cast<int>(math::pow(this->max_radial, 3)) *
                 ((n_species + 2) * (n_species + 1) * n_species) / 6);
       } else if (soap_type == "PowerSpectrum") {
         if (hypers.find("coefficient_subselection") != hypers.end()) {
@@ -298,8 +298,9 @@ namespace rascal {
             return sp_a.size();
           }
         } else {
-          return (n_species * (n_species + 1) * 0.5 * this->max_radial *
-                  this->max_radial * (this->max_angular + 1));
+          return (static_cast<int>(n_species * (n_species + 1) * 0.5) *
+                  this->max_radial * this->max_radial *
+                  (this->max_angular + 1));
         }
       }
       throw std::logic_error("Num of coefficients for soap type \'" +
