@@ -5119,52 +5119,7 @@
       "init_params": {
         "representation": {
           "class_name": "SphericalInvariants",
-          "data": {
-            "cpp_representation": {
-              "compute_gradients": true,
-              "cutoff_function": {
-                "cutoff": {
-                  "unit": "AA",
-                  "value": 7.5
-                },
-                "exponent": {
-                  "unit": "AA",
-                  "value": 4
-                },
-                "rate": {
-                  "unit": "AA",
-                  "value": 1
-                },
-                "scale": {
-                  "unit": "AA",
-                  "value": 4.5
-                },
-                "smooth_width": {
-                  "unit": "AA",
-                  "value": 0.5
-                },
-                "type": "RadialScaling"
-              },
-              "expansion_by_species_method": "environment wise",
-              "gaussian_density": {
-                "gaussian_sigma": {
-                  "unit": "AA",
-                  "value": 0.5
-                },
-                "type": "Constant"
-              },
-              "global_species": [],
-              "inversion_symmetry": true,
-              "max_angular": 2,
-              "max_radial": 4,
-              "normalize": true,
-              "radial_contribution": {
-                "optimization": {},
-                "type": "GTO"
-              },
-              "soap_type": "PowerSpectrum"
-            }
-          },
+          "data": {},
           "init_params": {
             "compute_gradients": true,
             "cutoff_function_parameters": {
@@ -5209,52 +5164,7 @@
         "name": "GAP",
         "representation": {
           "class_name": "SphericalInvariants",
-          "data": {
-            "cpp_representation": {
-              "compute_gradients": true,
-              "cutoff_function": {
-                "cutoff": {
-                  "unit": "AA",
-                  "value": 7.5
-                },
-                "exponent": {
-                  "unit": "AA",
-                  "value": 4
-                },
-                "rate": {
-                  "unit": "AA",
-                  "value": 1
-                },
-                "scale": {
-                  "unit": "AA",
-                  "value": 4.5
-                },
-                "smooth_width": {
-                  "unit": "AA",
-                  "value": 0.5
-                },
-                "type": "RadialScaling"
-              },
-              "expansion_by_species_method": "environment wise",
-              "gaussian_density": {
-                "gaussian_sigma": {
-                  "unit": "AA",
-                  "value": 0.5
-                },
-                "type": "Constant"
-              },
-              "global_species": [],
-              "inversion_symmetry": true,
-              "max_angular": 2,
-              "max_radial": 4,
-              "normalize": true,
-              "radial_contribution": {
-                "optimization": {},
-                "type": "GTO"
-              },
-              "soap_type": "PowerSpectrum"
-            }
-          },
+          "data": {},
           "init_params": {
             "compute_gradients": true,
             "cutoff_function_parameters": {

@@ -48,9 +48,22 @@ namespace rascal {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
             for (auto & rep_hyp : this->rep_hypers) {
-              rep_hyp["cutoff_function"] = fc_hyp;
-              rep_hyp["gaussian_density"] = sig_hyp;
-              rep_hyp["radial_contribution"] = ri_hyp;
+              rep_hyp["cutoff_function_type"] = fc_hyp["cutoff_function_type"];
+              rep_hyp["interaction_cutoff"] = fc_hyp["interaction_cutoff"];
+              rep_hyp["cutoff_smooth_width"] = fc_hyp["cutoff_smooth_width"];
+              if (fc_hyp.count("cutoff_function_parameters")) {
+                rep_hyp["cutoff_function_parameters"] =
+                    fc_hyp["cutoff_function_parameters"];
+              }
+
+              rep_hyp["gaussian_sigma_type"] = sig_hyp["gaussian_sigma_type"];
+              rep_hyp["gaussian_sigma_constant"] =
+                  sig_hyp["gaussian_sigma_constant"];
+
+              rep_hyp["radial_basis"] = ri_hyp["radial_basis"];
+              if (ri_hyp.count("optimization")) {
+                rep_hyp["optimization"] = ri_hyp["optimization"];
+              }
               this->representation_hypers.push_back(rep_hyp);
             }
           }
@@ -61,23 +74,26 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
 
-    std::vector<json> fc_hypers{
-        {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
+    std::vector<json> fc_hypers{{{"cutoff_function_type", "ShiftedCosine"},
+                                 {"interaction_cutoff", 2.0},
+                                 {"cutoff_smooth_width", 0.5}}};
 
-    std::vector<json> density_hypers{
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 3},
-                                  {"max_angular", 0},
-                                  {"soap_type", "RadialSpectrum"},
-                                  {"normalize", true}},
-                                 {{"max_radial", 2},
-                                  {"max_angular", 2},
-                                  {"soap_type", "PowerSpectrum"},
-                                  {"normalize", true}}};
+    std::vector<json> density_hypers{{{"gaussian_sigma_type", "Constant"},
+                                      {"gaussian_sigma_constant", 0.4}}};
+    std::vector<json> radial_contribution_hypers{{{"radial_basis", "GTO"}}};
+    std::vector<json> rep_hypers{
+        {{"max_radial", 3},
+         {"max_angular", 0},
+         {"soap_type", "RadialSpectrum"},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", false},
+         {"normalize", true}},
+        {{"max_radial", 2},
+         {"max_angular", 2},
+         {"soap_type", "PowerSpectrum"},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", false},
+         {"normalize", true}}};
 
     std::vector<json> kernel_hypers{
         {{"zeta", 2}, {"target_type", "Structure"}, {"name", "Cosine"}},

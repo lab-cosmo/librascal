@@ -41,13 +41,14 @@ namespace rascal {
    */
   BOOST_AUTO_TEST_CASE(shifted_cosine_gradient_test) {
     static const bool verbose{false};
-    std::vector<json> fc_hypers{
-        R"({
-        "type": "ShiftedCosine",
-        "cutoff": {"value": 3, "unit": "AA"},
-        "smooth_width": {"value": 0.5, "unit": "AA"}
-      })"_json,
-    };
+    std::vector<json> fc_hypers{{{"cutoff_function_type", "ShiftedCosine"},
+                                 {"interaction_cutoff", 3.0},
+                                 {"cutoff_smooth_width", 0.5}}};
+    //    R"({
+    //    "type": "ShiftedCosine",
+    //    "cutoff": {"value": 3, "unit": "AA"},
+    //    "smooth_width": {"value": 0.5, "unit": "AA"}
+    //  })"_json,
     using Cutoff_t =
         internal::CutoffFunction<internal::CutoffFunctionType::ShiftedCosine>;
 
@@ -73,31 +74,47 @@ namespace rascal {
   BOOST_AUTO_TEST_CASE(radial_scaling_gradient_test) {
     static const bool verbose{false};
     std::vector<json> fc_hypers{
-        R"({
-        "type": "RadialScaling",
-        "cutoff": {"value": 3, "unit": "AA"},
-        "smooth_width": {"value": 0.5, "unit": "AA"},
-        "rate": {"value": 1, "unit": "AA"},
-        "scale": {"value": 2, "unit": "AA"} ,
-        "exponent": {"value": 3, "unit": ""}
-      })"_json,
-        R"({
-        "type": "RadialScaling",
-        "cutoff": {"value": 3, "unit": "AA"},
-        "smooth_width": {"value": 0.5, "unit": "AA"},
-        "rate": {"value": 0, "unit": "AA"},
-        "scale": {"value": 2, "unit": "AA"} ,
-        "exponent": {"value": 3, "unit": ""}
-      })"_json,
-        R"({
-        "type": "RadialScaling",
-        "cutoff": {"value": 3, "unit": "AA"},
-        "smooth_width": {"value": 0.5, "unit": "AA"},
-        "rate": {"value": 0, "unit": "AA"},
-        "scale": {"value": 2, "unit": "AA"} ,
-        "exponent": {"value": 0, "unit": ""}
-      })"_json,
-    };
+        {{"cutoff_function_type", "RadialScaling"},
+         {"interaction_cutoff", 3.0},
+         {"cutoff_smooth_width", 0.5},
+         {"cutoff_function_parameters",
+          {{"rate", 1}, {"scale", 2}, {"exponent", 3}}}},
+        {{"cutoff_function_type", "RadialScaling"},
+         {"interaction_cutoff", 3.0},
+         {"cutoff_smooth_width", 0.5},
+         {"cutoff_function_parameters",
+          {{"rate", 0}, {"scale", 2}, {"exponent", 3}}}},
+        {{"cutoff_function_type", "RadialScaling"},
+         {"interaction_cutoff", 3.0},
+         {"cutoff_smooth_width", 0.5},
+         {"cutoff_function_parameters",
+          {{"rate", 0}, {"scale", 2}, {"exponent", 0}}}}};
+
+    //    R"({
+    //    "type": "RadialScaling",
+    //    "cutoff": {"value": 3, "unit": "AA"},
+    //    "smooth_width": {"value": 0.5, "unit": "AA"},
+    //    "rate": {"value": 1, "unit": "AA"},
+    //    "scale": {"value": 2, "unit": "AA"} ,
+    //    "exponent": {"value": 3, "unit": ""}
+    //  })"_json,
+    //    R"({
+    //    "type": "RadialScaling",
+    //    "cutoff": {"value": 3, "unit": "AA"},
+    //    "smooth_width": {"value": 0.5, "unit": "AA"},
+    //    "rate": {"value": 0, "unit": "AA"},
+    //    "scale": {"value": 2, "unit": "AA"} ,
+    //    "exponent": {"value": 3, "unit": ""}
+    //  })"_json,
+    //    R"({
+    //    "type": "RadialScaling",
+    //    "cutoff": {"value": 3, "unit": "AA"},
+    //    "smooth_width": {"value": 0.5, "unit": "AA"},
+    //    "rate": {"value": 0, "unit": "AA"},
+    //    "scale": {"value": 2, "unit": "AA"} ,
+    //    "exponent": {"value": 0, "unit": ""}
+    //  })"_json,
+    //};
     using Cutoff_t =
         internal::CutoffFunction<internal::CutoffFunctionType::RadialScaling>;
 
@@ -124,39 +141,26 @@ namespace rascal {
   BOOST_AUTO_TEST_CASE(radial_scaling_exponent_zero_test) {
     static const bool verbose{false};
     std::vector<json> fc_hypers{
-        R"({
-        "type": "RadialScaling",
-        "cutoff": {"value": 3, "unit": "AA"},
-        "smooth_width": {"value": 0.5, "unit": "AA"},
-        "rate": {"value": 1, "unit": "AA"},
-        "scale": {"value": 1, "unit": "AA"} ,
-        "exponent": {"value": 0, "unit": ""}
-      })"_json,
-        R"({
-        "type": "RadialScaling",
-        "cutoff": {"value": 3, "unit": "AA"},
-        "smooth_width": {"value": 0.5, "unit": "AA"},
-        "rate": {"value": 0, "unit": "AA"},
-        "scale": {"value": 0, "unit": "AA"} ,
-        "exponent": {"value": 0, "unit": ""}
-      })"_json,
-        R"({
-        "type": "RadialScaling",
-        "cutoff": {"value": 3, "unit": "AA"},
-        "smooth_width": {"value": 0.5, "unit": "AA"},
-        "rate": {"value": 0, "unit": "AA"},
-        "scale": {"value": 1, "unit": "AA"} ,
-        "exponent": {"value": 0, "unit": ""}
-      })"_json,
-        R"({
-        "type": "RadialScaling",
-        "cutoff": {"value": 3, "unit": "AA"},
-        "smooth_width": {"value": 0.5, "unit": "AA"},
-        "rate": {"value": 1, "unit": "AA"},
-        "scale": {"value": 0, "unit": "AA"} ,
-        "exponent": {"value": 0, "unit": ""}
-      })"_json,
-    };
+        {{"cutoff_function_type", "RadialScaling"},
+         {"interaction_cutoff", 3.0},
+         {"cutoff_smooth_width", 0.5},
+         {"cutoff_function_parameters",
+          {{"rate", 1}, {"scale", 1}, {"exponent", 0}}}},
+        {{"cutoff_function_type", "RadialScaling"},
+         {"interaction_cutoff", 3.0},
+         {"cutoff_smooth_width", 0.5},
+         {"cutoff_function_parameters",
+          {{"rate", 0}, {"scale", 0}, {"exponent", 0}}}},
+        {{"cutoff_function_type", "RadialScaling"},
+         {"interaction_cutoff", 3.0},
+         {"cutoff_smooth_width", 0.5},
+         {"cutoff_function_parameters",
+          {{"rate", 0}, {"scale", 1}, {"exponent", 0}}}},
+        {{"cutoff_function_type", "RadialScaling"},
+         {"interaction_cutoff", 3.0},
+         {"cutoff_smooth_width", 0.5},
+         {"cutoff_function_parameters",
+          {{"rate", 1}, {"scale", 0}, {"exponent", 0}}}}};
     using Cutoff_t =
         internal::CutoffFunction<internal::CutoffFunctionType::RadialScaling>;
 

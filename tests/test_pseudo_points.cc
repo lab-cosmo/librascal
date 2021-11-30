@@ -52,9 +52,19 @@ namespace rascal {
     using SparsePoints_t = SparsePoints<Representation>;
 
     SparsePointsFixture() {
-      hypers["cutoff_function"] = fc_hypers;
-      hypers["gaussian_density"] = sigma_hypers;
-      hypers["radial_contribution"] = {{"type", "GTO"}};
+      hypers["cutoff_function_type"] = fc_hypers["cutoff_function_type"];
+      hypers["interaction_cutoff"] = fc_hypers["interaction_cutoff"];
+      hypers["cutoff_smooth_width"] = fc_hypers["cutoff_smooth_width"];
+      if (fc_hypers.count("cutoff_function_parameters")) {
+        hypers["cutoff_function_parameters"] =
+            fc_hypers["cutoff_function_parameters"];
+      }
+
+      hypers["gaussian_sigma_type"] = sigma_hypers["gaussian_sigma_type"];
+      hypers["gaussian_sigma_constant"] =
+          sigma_hypers["gaussian_sigma_constant"];
+
+      hypers["radial_contribution"] = {{"radial_basis", "GTO"}};
 
       json ad1a{{"name", "AdaptorNeighbourList"},
                 {"initialization_arguments", {{"cutoff", cutoff}}}};
@@ -81,11 +91,11 @@ namespace rascal {
                 {"normalize", true},
                 {"expansion_by_species_method", "environment wise"}};
 
-    json fc_hypers{{"type", "ShiftedCosine"},
-                   {"cutoff", {{"value", cutoff}, {"unit", "AA"}}},
-                   {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}};
-    json sigma_hypers{{"type", "Constant"},
-                      {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+    json fc_hypers{{"cutoff_function_type", "ShiftedCosine"},
+                   {"interaction_cutoff", cutoff},
+                   {"cutoff_smooth_width", 0.5}};
+    json sigma_hypers{{"gaussian_sigma_type", "Constant"},
+                      {"gaussian_sigma_constant", 0.4}};
   };
 
   using multiple_fixtures = boost::mpl::list<
