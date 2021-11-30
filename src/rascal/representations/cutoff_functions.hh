@@ -29,6 +29,9 @@
 #ifndef SRC_RASCAL_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_
 #define SRC_RASCAL_REPRESENTATIONS_CUTOFF_FUNCTIONS_HH_
 
+// relative path of file with respect to librascal directory
+#define __FILENAME__ (__FILE__ + SOURCE_PATH_SIZE)
+
 #include "rascal/math/utils.hh"
 #include "rascal/representations/calculator_base.hh"
 #include "rascal/utils/utils.hh"
@@ -152,9 +155,10 @@ namespace rascal {
       }
 
       void set_hyperparameters(const Hypers_t & hypers) override {
-        this->cutoff = hypers.at("cutoff").at("value").get<double>();
-        this->smooth_width =
-            hypers.at("smooth_width").at("value").get<double>();
+        this->cutoff = json_io::read_hyperparameter<double>(
+            __FILENAME__, __LINE__, hypers, "cutoff");
+        this->smooth_width = json_io::read_hyperparameter<double>(
+            __FILENAME__, __LINE__, hypers, "cutoff_smooth_width");
       }
 
       double f_c(double distance) {
@@ -217,15 +221,25 @@ namespace rascal {
       }
 
       void set_hyperparameters(const Hypers_t & hypers) override {
-        this->cutoff = hypers.at("cutoff").at("value").get<double>();
-        this->smooth_width =
-            hypers.at("smooth_width").at("value").get<double>();
-        this->rate = hypers.at("rate").at("value").get<double>();
+        this->cutoff = json_io::read_hyperparameter<double>(
+            __FILENAME__, __LINE__, hypers, "interaction_cutoff");
+        this->smooth_width = json_io::read_hyperparameter<double>(
+            __FILENAME__, __LINE__, hypers, "cutoff_smooth_width");
+        json cutoff_function_parameters = json_io::read_hyperparameter<json>(
+            __FILENAME__, __LINE__, hypers, "cutoff_function_parameters");
+
+        this->rate = json_io::read_hyperparameter<double>(
+            __FILENAME__, __LINE__, cutoff_function_parameters, "rate");
         if (this->rate < 0) {
-          throw std::runtime_error("RadialScaling's rate should be positive");
+          std::stringstream error{};
+          error << "RadialScaling's 'rate' should be positive "
+                << "at file " << __FILENAME__ << ":" << __LINE__ << std::endl;
+          throw std::runtime_error(error.str());
         }
-        this->exponent = hypers.at("exponent").at("value").get<double>();
-        this->scale = hypers.at("scale").at("value").get<double>();
+        this->exponent = json_io::read_hyperparameter<double>(
+            __FILENAME__, __LINE__, cutoff_function_parameters, "exponent");
+        this->scale = json_io::read_hyperparameter<double>(
+            __FILENAME__, __LINE__, cutoff_function_parameters, "scale");
       }
 
       double value(double distance) {

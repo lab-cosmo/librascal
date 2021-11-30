@@ -48,6 +48,7 @@
 #include <Eigen/Dense>
 
 #include <fstream>
+#include <iostream>
 
 // For convenience
 using json = nlohmann::json;
@@ -301,6 +302,14 @@ namespace Eigen {
 namespace rascal {
   namespace json_io {
 
+    //! find if element appears in vector.
+    template <class T, class Vec>
+    bool is_element_in(const T & element, const Vec & vector) {
+      Vec s_element{{element}};
+      return not(std::search(vector.begin(), vector.end(), s_element.begin(),
+                             s_element.end()) == vector.end());
+    }
+
     //! load a json file
     json load(const std::string & filename);
 
@@ -356,6 +365,62 @@ namespace rascal {
      */
     double check_units(const std::string & expected_unit,
                        const json & parameter);
+
+   /**
+     * Returns a typed property of the given name.
+     *
+     * @tparam T return type. Return type must support << operator.
+     *
+     * @param hypers 
+     * @param key
+     * @param default_value is a unique_ptr to allow hyperparamaters with no default value in which case it is null ptr. Starting with C++17 one could solve this more transparent with std::optional.
+     *
+     * @throw runtime_error when value cannot be read from hypers 
+     * @throw runtime_error when key is not present in hypers and no default_value is null ptr
+     */
+    template <typename T>
+    T read_hyperparameter(const char * file, int line, const json & hypers,
+                          std::string key) {
+      if (hypers.count(key)) {
+        try {
+          return hypers.at(key).get<T>();
+        } catch (const std::exception & e) {
+          std::stringstream error{};
+          error << "Reading '" << key << "' from json hypers failed "
+                << "at file " << file << ":" << line << "\n"
+                << "  what():  " << e.what() << std::endl;
+          throw std::runtime_error(error.str());
+        }
+      } else {
+        std::stringstream error{};
+        error << "Reading '" << key << "' from json hypers failed. No '" << key
+              << "' was found in json hypers "
+              << "at file " << file << ":" << line << std::endl;
+        throw std::runtime_error(error.str());
+      }
+    }
+
+    template <typename T>
+    T read_hyperparameter(const char * file, int line, const json & hypers,
+                          std::string key, T default_value) {
+      if (hypers.count(key)) {
+        try {
+          return hypers.at(key).get<T>();
+        } catch (const std::exception & e) {
+          std::stringstream error{};
+          error << "Reading '" << key << "' from json hypers failed "
+                << "at file " << file << ":" << line << "\n"
+                << "  what():  " << e.what() << std::endl;
+          throw std::runtime_error(error.str());
+        }
+      } else {
+        std::cout << "WARNING: Reading '" << key
+                  << "' from json hypers failed. Setting " << key << " to '"
+                  << default_value << "' "
+                  << "at file " << file << ":" << line << std::endl;
+        return default_value;
+      }
+    }
   }  // namespace json_io
 }  // namespace rascal
 

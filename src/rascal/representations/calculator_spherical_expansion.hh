@@ -31,6 +31,9 @@
 #ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
 #define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
 
+// relative path of file with respect to librascal directory
+#define __FILENAME__ (__FILE__ + SOURCE_PATH_SIZE)
+
 #include "rascal/math/bessel.hh"
 #include "rascal/math/gauss_legendre.hh"
 #include "rascal/math/hyp1f1.hh"
@@ -131,8 +134,8 @@ namespace rascal {
         : AtomicSmearingSpecificationBase {
       using Hypers_t = typename AtomicSmearingSpecificationBase::Hypers_t;
       explicit AtomicSmearingSpecification(const Hypers_t & hypers) {
-        this->constant_gaussian_sigma =
-            hypers.at("gaussian_sigma").at("value").get<double>();
+        this->constant_gaussian_sigma = json_io::read_hyperparameter<double>(
+            __FILENAME__, __LINE__, hypers, "gaussian_sigma_constant", 0.3);
         if (this->constant_gaussian_sigma < 1e-2) {
           std::stringstream err_str{};
           err_str << "Constant gaussian sigma is too small: "
@@ -354,33 +357,32 @@ namespace rascal {
         this->max_radial = hypers.at("max_radial");
         this->max_angular = hypers.at("max_angular");
 
-        if (hypers.count("compute_gradients")) {
-          this->compute_gradients = hypers.at("compute_gradients").get<bool>();
-        } else {  // Default false (don't compute gradients)
-          this->compute_gradients = false;
-        }
-
-        this->init_matrices();
+        this->compute_gradients = json_io::template read_hyperparameter<bool>(
+            __FILENAME__, __LINE__, hypers, "compute_gradients", false);
 
         // find the cutoff radius of the representation
-        auto fc_hypers = hypers.at("cutoff_function").get<json>();
         this->interaction_cutoff =
-            fc_hypers.at("cutoff").at("value").get<double>();
+            json_io::template read_hyperparameter<double>(
+                __FILENAME__, __LINE__, hypers, "interaction_cutoff");
 
         // define the type of smearing to use
-        auto smearing_hypers = hypers.at("gaussian_density").get<json>();
-        auto smearing_type = smearing_hypers.at("type").get<std::string>();
+        std::string smearing_type{
+            json_io::template read_hyperparameter<std::string>(
+                __FILENAME__, __LINE__, hypers, "gaussian_sigma_type",
+                "Constant")};
         if (smearing_type == "Constant") {
           this->atomic_smearing_type = AtomicSmearingType::Constant;
           this->atomic_smearing =
-              make_atomic_smearing<AtomicSmearingType::Constant>(
-                  smearing_hypers);
+              make_atomic_smearing<AtomicSmearingType::Constant>(hypers);
         } else {
           throw std::logic_error(
-              "Requested Gaussian sigma type \'" + smearing_type +
-              "\' has not been implemented.  Must be one of" +
-              ": \'Constant\'.");
+              "Requested Gaussian sigma type '" + smearing_type +
+              "' has not been implemented.  Must be one of : 'Constant' at "
+              "file " +
+              std::string(__FILENAME__) + ":" + std::to_string(__LINE__));
         }
+
+        this->init_matrices();
       }
 
       // initialize Eigen matrices/vectors, contains both
@@ -767,40 +769,51 @@ namespace rascal {
       void set_hyperparameters(const Hypers_t & hypers) override {
         this->hypers = hypers;
 
-        this->max_radial = hypers.at("max_radial");
-        this->max_angular = hypers.at("max_angular");
+        this->compute_gradients = json_io::template read_hyperparameter<bool>(
+            __FILENAME__, __LINE__, hypers, "compute_gradients", false);
 
-        if (hypers.count("compute_gradients")) {
-          this->compute_gradients = hypers.at("compute_gradients").get<bool>();
-        } else {  // Default false (don't compute gradients)
-          this->compute_gradients = false;
+        int max_radial_int{json_io::template read_hyperparameter<int>(
+            __FILENAME__, __LINE__, hypers, "max_radial")};
+        if (max_radial_int <= 0) {
+          std::stringstream error{};
+          error << "Parameter 'max_radial' has to be > 0"
+                << " at file " << __FILENAME__ << ":" << __LINE__ << std::endl;
+          throw std::runtime_error(error.str());
         }
+        this->max_radial = static_cast<size_t>(max_radial_int);
 
-        this->init_matrices();
+        int max_angular_int{json_io::template read_hyperparameter<int>(
+            __FILENAME__, __LINE__, hypers, "max_angular")};
+        if (max_angular_int < 0) {
+          std::stringstream error{};
+          error << "Parameter 'max_angular' has to be >= 0"
+                << " at file " << __FILENAME__ << ":" << __LINE__ << std::endl;
+          throw std::runtime_error(error.str());
+        }
+        this->max_angular = static_cast<size_t>(max_angular_int);
 
-        // find the cutoff radius of the representation
-        auto fc_hypers = hypers.at("cutoff_function").get<json>();
         this->interaction_cutoff =
-            fc_hypers.at("cutoff").at("value").get<double>();
-        this->smooth_width =
-            fc_hypers.at("smooth_width").at("value").get<double>();
+            json_io::template read_hyperparameter<double>(
+                __FILENAME__, __LINE__, hypers, "interaction_cutoff");
 
+        std::string smearing_type{
+            json_io::template read_hyperparameter<std::string>(
+                __FILENAME__, __LINE__, hypers, "gaussian_sigma_type",
+                "Constant")};
+        this->smooth_width = json_io::template read_hyperparameter<double>(
+            __FILENAME__, __LINE__, hypers, "gaussian_sigma_constant");
         // define the type of smearing to use
-        auto smearing_hypers = hypers.at("gaussian_density").get<json>();
-        auto smearing_type = smearing_hypers.at("type").get<std::string>();
         if (smearing_type == "Constant") {
           this->atomic_smearing_type = AtomicSmearingType::Constant;
           this->atomic_smearing =
-              make_atomic_smearing<AtomicSmearingType::Constant>(
-                  smearing_hypers);
-          this->smearing =
-              smearing_hypers.at("gaussian_sigma").at("value").get<double>();
+              make_atomic_smearing<AtomicSmearingType::Constant>(hypers);
         } else {
           throw std::logic_error(
-              "Requested Gaussian sigma type \'" + smearing_type +
-              "\' has not been implemented.  Must be one of" +
-              ": \'Constant\'.");
+              "Requested Gaussian sigma type '" + smearing_type +
+              "' has not been implemented.  Must be one of" + ": 'Constant'.");
         }
+
+        this->init_matrices();
       }
 
       // initialize Eigen matrices/vectors, contains both
@@ -1105,10 +1118,9 @@ namespace rascal {
       }
 
       void init_interpolator(const Hypers_t & hypers) {
-        auto radial_contribution_hypers =
-            hypers.at("radial_contribution").template get<json>();
-        auto optimization_hypers =
-            radial_contribution_hypers.at("optimization").template get<json>();
+        json optimization_hypers{
+            json_io::template read_hyperparameter<json>(
+                __FILENAME__, __LINE__, hypers, "optimization")};
 
         double accuracy{this->get_interpolator_accuracy(optimization_hypers)};
         // minimal distance such that it is still stable with the interpolated
@@ -1135,20 +1147,16 @@ namespace rascal {
       }
 
       double get_interpolator_accuracy(const Hypers_t & optimization_hypers) {
-        auto spline_hypers =
-            optimization_hypers.at("Spline").template get<json>();
-        if (spline_hypers.count("accuracy")) {
-          return spline_hypers.at("accuracy").template get<double>();
-        } else {
-          std::stringstream err_str{};
-          err_str << "No Spline accuracy was given.";
-          throw std::logic_error(err_str.str());
-        }
+        json spline_hypers{
+            json_io::template read_hyperparameter<json>(
+                __FILENAME__, __LINE__, optimization_hypers, "Spline")};
+        return json_io::template read_hyperparameter<double>(
+              __FILENAME__, __LINE__, spline_hypers, "accuracy");
       }
 
       double get_cutoff(const Hypers_t & hypers) {
-        auto fc_hypers = hypers.at("cutoff_function").template get<json>();
-        return fc_hypers.at("cutoff").at("value").template get<double>();
+        return json_io::template read_hyperparameter<double>(
+            __FILENAME__, __LINE__, hypers, "interaction_cutoff");
       }
 
       double fac_a{};
@@ -1186,30 +1194,21 @@ namespace rascal {
       }
 
       void set_hyperparameters(const Hypers_t & hypers) override {
-        auto radial_contribution_hypers =
-            hypers.at("radial_contribution").template get<json>();
-        auto optimization_hypers =
-            radial_contribution_hypers.at("optimization").template get<json>();
-        auto radial_dim_reduction_hypers =
-            optimization_hypers.at("RadialDimReduction").template get<json>();
+        json optimization_hypers{
+            json_io::template read_hyperparameter<json>(
+                __FILENAME__, __LINE__, hypers, "optimization")};
+        json radial_dim_reduction_hypers{
+            json_io::template read_hyperparameter<json>(
+                __FILENAME__, __LINE__, hypers, "RadialDimReduction")};
         if (radial_dim_reduction_hypers.count("projection_matrices")) {
           std::map<std::string, std::vector<std::vector<std::vector<double>>>>
               json_projection_matrices{};
-          try {
             // hyper keys are converted to string so we also use here strings
             // for species
-            json_projection_matrices =
-                radial_dim_reduction_hypers.at("projection_matrices")
-                    .template get<std::map<
-                        std::string,
-                        std::vector<std::vector<std::vector<double>>>>>();
-          } catch (const std::exception & e) {
-            std::stringstream err_str{};
-            err_str << "Projection matrices should be of type "
-                       "std::map<std::string, "
-                       "std::vector<std::vector<std::vector<double>>>>.";
-            throw std::logic_error(err_str.str());
-          }
+
+        json_projection_matrices = 
+            json_io::template read_hyperparameter<std::map<std::string, std::vector<std::vector<std::vector<double>>>>>(
+                __FILENAME__, __LINE__, radial_dim_reduction_hypers, "projection_matrices");
 
           this->n_species = json_projection_matrices.size();
           this->n_components = this->max_radial;
@@ -1451,10 +1450,9 @@ namespace rascal {
       }
 
       void init_interpolator(const Hypers_t & hypers) {
-        auto radial_contribution_hypers =
-            hypers.at("radial_contribution").template get<json>();
-        auto optimization_hypers =
-            radial_contribution_hypers.at("optimization").template get<json>();
+        json optimization_hypers{
+            json_io::template read_hyperparameter<json>(
+                __FILENAME__, __LINE__, hypers, "optimization")};
 
         double accuracy{this->get_interpolator_accuracy(optimization_hypers)};
         // minimal distance such that it is still stable with the interpolated
@@ -1486,20 +1484,16 @@ namespace rascal {
       }
 
       double get_interpolator_accuracy(const Hypers_t & optimization_hypers) {
-        auto spline_hypers =
-            optimization_hypers.at("Spline").template get<json>();
-        if (spline_hypers.count("accuracy")) {
-          return spline_hypers.at("accuracy").template get<double>();
-        } else {
-          std::stringstream err_str{};
-          err_str << "No Spline accuracy was given.";
-          throw std::logic_error(err_str.str());
-        }
+        json spline_hypers{
+            json_io::template read_hyperparameter<json>(
+                __FILENAME__, __LINE__, optimization_hypers, "Spline")};
+        return json_io::template read_hyperparameter<double>(
+              __FILENAME__, __LINE__, spline_hypers, "accuracy");
       }
 
       double get_cutoff(const Hypers_t & hypers) {
-        auto fc_hypers = hypers.at("cutoff_function").template get<json>();
-        return fc_hypers.at("cutoff").at("value").template get<double>();
+        return json_io::template read_hyperparameter<double>(
+            __FILENAME__, __LINE__, hypers, "interaction_cutoff");
       }
 
       Matrix_t reduced_radial_integral_neighbour{};
@@ -1600,38 +1594,37 @@ namespace rascal {
       using internal::RadialBasisType;
       this->hypers = hypers;
 
-      this->max_radial = hypers.at("max_radial").get<size_t>();
-      this->max_angular = hypers.at("max_angular").get<size_t>();
-      if (hypers.count("compute_gradients")) {
-        this->compute_gradients = hypers.at("compute_gradients").get<bool>();
-      } else {  // Default false (don't compute gradients)
-        this->compute_gradients = false;
+      int max_radial_int{json_io::template read_hyperparameter<int>(
+          __FILENAME__, __LINE__, hypers, "max_radial")};
+      if (max_radial_int <= 0) {
+        std::stringstream error{};
+        error << "Parameter 'max_radial' has to be > 0"
+              << " at file " << __FILENAME__ << ":" << __LINE__ << std::endl;
+        throw std::runtime_error(error.str());
       }
+      this->max_radial = static_cast<size_t>(max_radial_int);
 
-      if (hypers.count("expansion_by_species_method")) {
-        std::set<std::string> possible_expansion_by_species{
-            {"environment wise", "user defined", "structure wise"}};
-        auto expansion_by_species_tmp =
-            hypers.at("expansion_by_species_method").get<std::string>();
-        if (possible_expansion_by_species.count(expansion_by_species_tmp)) {
-          this->expansion_by_species = expansion_by_species_tmp;
-        } else {
-          std::stringstream err_str{};
-          err_str << "expansion_by_species_method provided:'"
-                  << expansion_by_species_tmp
-                  << "' is not part of the implemented methods: '";
-          for (const auto & val : possible_expansion_by_species) {
-            err_str << val << "', ";
-          }
-          throw std::logic_error(err_str.str());
-        }
-      } else {
-        // default value for backward compatibility
-        this->expansion_by_species = "environment wise";
+      int max_angular_int{json_io::template read_hyperparameter<int>(
+          __FILENAME__, __LINE__, hypers, "max_angular")};
+      if (max_angular_int < 0) {
+        std::stringstream error{};
+        error << "Parameter 'max_angular' has to be >= 0"
+              << " at file " << __FILENAME__ << ":" << __LINE__ << std::endl;
+        throw std::runtime_error(error.str());
       }
+      this->max_angular = static_cast<size_t>(max_angular_int);
+
+      this->compute_gradients = json_io::template read_hyperparameter<bool>(
+          __FILENAME__, __LINE__, hypers, "compute_gradients", false);
+
+      std::string expansion_by_species_method{
+          json_io::template read_hyperparameter<std::string>(
+              __FILENAME__, __LINE__, hypers, "expansion_by_species_method", "environment wise")};
 
       if (hypers.count("global_species")) {
-        auto species = hypers.at("global_species").get<Key_t>();
+        Key_t species{
+            json_io::template read_hyperparameter<Key_t>(
+                __FILENAME__, __LINE__, hypers, "global_species")};
         for (const auto & sp : species) {
           this->global_species.insert({sp});
         }
@@ -1639,7 +1632,9 @@ namespace rascal {
         if (this->expansion_by_species == "user defined") {
           std::stringstream err_str{};
           err_str << "expansion_by_species_method is 'user defined'"
-                  << " but global_species is not defined.";
+                  << " but global_species is not defined"
+                  << " at file " << __FILENAME__ << ":" << __LINE__
+                  << std::endl;
           throw std::logic_error(err_str.str());
         }
         this->global_species.clear();
@@ -1651,29 +1646,36 @@ namespace rascal {
       // create the class that will compute the radial terms of the
       // expansion. the atomic smearing is an integral part of the
       // radial contribution
-      auto smearing_hypers = hypers.at("gaussian_density").get<json>();
-      auto smearing_type = smearing_hypers.at("type").get<std::string>();
+      std::string smearing_type{
+          json_io::template read_hyperparameter<std::string>(
+              __FILENAME__, __LINE__, hypers, "gaussian_sigma_type",
+              "Constant")};
 
       if (smearing_type == "Constant") {
         this->atomic_smearing_type = AtomicSmearingType::Constant;
       } else if (smearing_type == "PerSpecies") {
-        throw std::logic_error("Requested Smearing type \'PerSpecies\'"
-                               "\' has not been implemented.  Must be one of"
-                               ": \'Constant\'.");
+        throw std::logic_error("Requested Smearing type 'PerSpecies'"
+                               " has not been implemented.  Must be one of"
+                               ": 'Constant' at file " +
+                               std::string(__FILENAME__) + ":" +
+                               std::to_string(__LINE__));
       } else if (smearing_type == "Radial") {
-        throw std::logic_error("Requested Smearing type \'Radial\'"
-                               "\' has not been implemented.  Must be one of"
-                               ": \'Constant\'.");
+        throw std::logic_error("Requested Smearing type 'Radial'"
+                               "' has not been implemented.  Must be one of"
+                               ": 'Constant' at file " +
+                               std::string(__FILENAME__) + ":" +
+                               std::to_string(__LINE__));
       } else {
-        throw std::logic_error("Requested Smearing type \'" + smearing_type +
-                               "\' is unknown.  Must be one of" +
-                               ": \'Constant\'.");
+        throw std::logic_error(
+            "Requested Smearing type '" + smearing_type +
+            "' is unknown.  Must be one of" + ": 'Constant' at file " +
+            std::string(__FILENAME__) + ":" + std::to_string(__LINE__));
       }
 
-      auto radial_contribution_hypers =
-          hypers.at("radial_contribution").get<json>();
-      auto radial_contribution_type =
-          radial_contribution_hypers.at("type").get<std::string>();
+      std::string radial_contribution_type{
+          json_io::template read_hyperparameter<std::string>(
+              __FILENAME__, __LINE__, hypers, "radial_basis",
+              "GTO")};
 
       // create the class that will compute the radial terms of the
       // expansion. the atomic smearing is an integral part of the
@@ -1692,25 +1694,32 @@ namespace rascal {
         this->radial_integral = rc_shared;
         this->radial_integral_type = RadialBasisType::DVR;
       } else {
-        throw std::logic_error("Requested Radial contribution type \'" +
+        throw std::logic_error("Requested Radial contribution type '" +
                                radial_contribution_type +
-                               "\' has not been implemented.  Must be one of" +
-                               ": \'GTO\' or \'DVR\'. ");
+                               "' has not been implemented.  Must be one of" +
+                               ": 'GTO' or 'DVR' at file " +
+                               std::string(__FILENAME__) + ":" +
+                               std::to_string(__LINE__));
       }
 
-      if (radial_contribution_hypers.count("optimization")) {
-        auto optimization_hypers =
-            radial_contribution_hypers.at("optimization").get<json>();
-        // Checks for all optimization args used for the computation of the
-        // spherical expansion
-        if (optimization_hypers.count("Spline") &&
-            optimization_hypers.count("RadialDimReduction")) {
-          this->optimization_type = OptimizationType::RadialDimReductionSpline;
-        } else if (optimization_hypers.count("Spline")) {
-          this->optimization_type = OptimizationType::Spline;
-        } else if (optimization_hypers.count("RadialDimReduction")) {
-          throw std::logic_error("RadialDimReduction requires\'"
-                                 "\' Spline to be set.");
+      if (hypers.count("optimization")) {
+        json optimization_hypers{
+            json_io::template read_hyperparameter<json>(
+                __FILENAME__, __LINE__, hypers, "optimization")};
+        if (optimization_hypers.size() != 0) {
+          // Checks for all optimization args used for the computation of the
+          // spherical expansion
+          if (optimization_hypers.count("Spline") &&
+              optimization_hypers.count("RadialDimReduction")) {
+            this->optimization_type = OptimizationType::RadialDimReductionSpline;
+          } else if (optimization_hypers.count("Spline")) {
+            this->optimization_type = OptimizationType::Spline;
+          } else if (optimization_hypers.count("RadialDimReduction")) {
+            throw std::logic_error("RadialDimReduction requires '"
+                                   "' Spline to be set at file " +
+                                 std::string(__FILENAME__) + ":" +
+                                 std::to_string(__LINE__));
+          }
         } else {
           this->optimization_type = OptimizationType::None;
         }
@@ -1720,22 +1729,28 @@ namespace rascal {
 
       this->set_radial_integral(hypers);
 
-      auto fc_hypers = hypers.at("cutoff_function").get<json>();
-      auto fc_type = fc_hypers.at("type").get<std::string>();
-      this->interaction_cutoff = fc_hypers.at("cutoff").at("value");
-      this->cutoff_smooth_width = fc_hypers.at("smooth_width").at("value");
-      if (fc_type == "ShiftedCosine") {
+      this->interaction_cutoff = json_io::template read_hyperparameter<double>(
+          __FILENAME__, __LINE__, hypers, "interaction_cutoff");
+      this->cutoff_smooth_width = json_io::template read_hyperparameter<double>(
+          __FILENAME__, __LINE__, hypers, "cutoff_smooth_width");
+
+      std::string cutoff_function_type_description{
+          json_io::template read_hyperparameter<std::string>(
+              __FILENAME__, __LINE__, hypers, "cutoff_function_type",
+              "ShiftedCosine")};
+      if (cutoff_function_type_description == "ShiftedCosine") {
         this->cutoff_function_type = CutoffFunctionType::ShiftedCosine;
         this->cutoff_function =
-            make_cutoff_function<CutoffFunctionType::ShiftedCosine>(fc_hypers);
-      } else if (fc_type == "RadialScaling") {
+            make_cutoff_function<CutoffFunctionType::ShiftedCosine>(hypers);
+      } else if (cutoff_function_type_description == "RadialScaling") {
         this->cutoff_function_type = CutoffFunctionType::RadialScaling;
         this->cutoff_function =
-            make_cutoff_function<CutoffFunctionType::RadialScaling>(fc_hypers);
+            make_cutoff_function<CutoffFunctionType::RadialScaling>(hypers);
       } else {
-        throw std::logic_error("Requested cutoff function type \'" + fc_type +
-                               "\' has not been implemented.  Must be one of" +
-                               ": \'ShiftedCosine\' or 'RadialScaling'.");
+        throw std::logic_error("Requested cutoff function type '" +
+                               cutoff_function_type_description +
+                               "' has not been implemented.  Must be one of" +
+                               ": 'ShiftedCosine' or 'RadialScaling'.");
       }
 
       this->set_name(hypers);

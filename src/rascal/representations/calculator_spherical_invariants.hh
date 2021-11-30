@@ -31,6 +31,9 @@
 #ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_
 #define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_INVARIANTS_HH_
 
+// relative path of file with respect to librascal directory
+#define __FILENAME__ (__FILE__ + SOURCE_PATH_SIZE)
+
 #include "rascal/math/utils.hh"
 #include "rascal/representations/calculator_base.hh"
 #include "rascal/representations/calculator_spherical_expansion.hh"
@@ -257,20 +260,39 @@ namespace rascal {
     void set_hyperparameters(const Hypers_t & hypers) override {
       using internal::SphericalInvariantsType;
 
-      this->normalize = hypers.at("normalize").get<bool>();
-      auto soap_type = hypers.at("soap_type").get<std::string>();
+      this->normalize = json_io::template read_hyperparameter<bool>(
+          __FILENAME__, __LINE__, hypers, "normalize", true);
+      std::string soap_type{json_io::template read_hyperparameter<std::string>(
+          __FILENAME__, __LINE__, hypers, "soap_type", "PowerSpectrum")};
+      this->compute_gradients = json_io::template read_hyperparameter<bool>(
+          __FILENAME__, __LINE__, hypers, "compute_gradients", false);
 
-      if (hypers.find("compute_gradients") != hypers.end()) {
-        this->compute_gradients = hypers.at("compute_gradients").get<bool>();
-      } else {  // Default false (don't compute gradients)
-        this->compute_gradients = false;
+      int max_radial_int{json_io::template read_hyperparameter<int>(
+          __FILENAME__, __LINE__, hypers, "max_radial")};
+      if (max_radial_int <= 0) {
+        std::stringstream error{};
+        error << "CalculatorSphericalInvariants.set_hyperparameters: "
+                 "'max_radial' has to be > 0"
+              << " at file " << __FILENAME__ << ":" << __LINE__
+              << std::endl;
+        throw std::runtime_error(error.str());
       }
+      this->max_radial = static_cast<size_t>(max_radial_int);
 
-      this->max_radial = hypers.at("max_radial").get<size_t>();
-      this->max_angular = hypers.at("max_angular").get<size_t>();
+      int max_angular_int{json_io::template read_hyperparameter<int>(
+          __FILENAME__, __LINE__, hypers, "max_angular")};
+      if (max_angular_int < 0) {
+        std::stringstream error{};
+        error << "CalculatorSphericalInvariants.set_hyperparameters: "
+                 "'max_angular' has to be >= 0"
+              << " at file " << __FILENAME__ << ":" << __LINE__
+              << std::endl;
+        throw std::runtime_error(error.str());
+      }
+      this->max_angular = static_cast<size_t>(max_angular_int);
 
       if (soap_type == "PowerSpectrum") {
-        this->set_hyperparameters_powerspectrum(hypers);
+        this->set_coefficient_subselection(hypers);
       } else if (soap_type == "RadialSpectrum") {
         this->type = SphericalInvariantsType::RadialSpectrum;
         if (this->max_angular > 0) {
@@ -278,13 +300,14 @@ namespace rascal {
         }
       } else if (soap_type == "BiSpectrum") {
         this->type = internal::SphericalInvariantsType::BiSpectrum;
-        this->inversion_symmetry = hypers.at("inversion_symmetry").get<bool>();
+        this->inversion_symmetry = json_io::template read_hyperparameter<bool>(
+            __FILENAME__, __LINE__, hypers, "inversion_symmetry", true);
         this->wigner_w3js = internal::precompute_wigner_w3js(
             this->max_angular, this->inversion_symmetry);
       } else {
         throw std::logic_error(
-            "Requested SphericalInvariants type \'" + soap_type +
-            "\' has not been implemented.  Must be one of" +
+            "Requested SphericalInvariants type '" + soap_type +
+            "' has not been implemented.  Must be one of" +
             ": 'PowerSpectrum', 'RadialSpectrum', or 'BiSpectrum'.");
       }
 
@@ -308,29 +331,39 @@ namespace rascal {
      *      Note that values in 'n1', 'n2', 'l' should not exceed max_radial-1
      *      and max_angular.
      */
-    void set_hyperparameters_powerspectrum(const Hypers_t & hypers) {
+    void set_coefficient_subselection(const Hypers_t & hypers) {
       using internal::SphericalInvariantsType;
       this->type = SphericalInvariantsType::PowerSpectrum;
 
-      if (hypers.find("coefficient_subselection") != hypers.end()) {
+      if (hypers.count("coefficient_subselection")) {
         this->is_sparsified = true;
-        auto coefficient_subselection =
-            hypers.at("coefficient_subselection").get<json>();
+
+        json coefficient_subselection{
+            json_io::template read_hyperparameter<json>(
+                __FILENAME__, __LINE__, hypers, "coefficient_subselection")};
         // get the indices of the subselected PowerSpectrum coefficients:
         // p_{abn_1n_2l} where a and b refer to atomic species and should be
         // lexicographically sorted so that a <= b, n_1 and n_2 refer to
         // radial basis index and l refer to the angular index of the
         // spherical harmonic
-        auto sp_a = coefficient_subselection.at("a")
-                        .get<std::vector<typename Key_t::value_type>>();
-        auto sp_b = coefficient_subselection.at("b")
-                        .get<std::vector<typename Key_t::value_type>>();
-        auto radial_n1 =
-            coefficient_subselection.at("n1").get<std::vector<std::uint32_t>>();
-        auto radial_n2 =
-            coefficient_subselection.at("n2").get<std::vector<std::uint32_t>>();
-        auto angular_l =
-            coefficient_subselection.at("l").get<std::vector<std::uint32_t>>();
+        std::vector<typename Key_t::value_type> sp_a, sp_b;
+        std::vector<std::uint32_t> radial_n1, radial_n2, angular_l;
+
+        sp_a = json_io::template read_hyperparameter<
+            std::vector<typename Key_t::value_type>>(__FILENAME__, __LINE__,
+                                                     hypers, "a");
+        sp_b = json_io::template read_hyperparameter<
+            std::vector<typename Key_t::value_type>>(__FILENAME__, __LINE__,
+                                                     hypers, "b");
+        radial_n1 =
+            json_io::template read_hyperparameter<std::vector<std::uint32_t>>(
+                __FILENAME__, __LINE__, hypers, "n1");
+        radial_n2 =
+            json_io::template read_hyperparameter<std::vector<std::uint32_t>>(
+                __FILENAME__, __LINE__, hypers, "n2");
+        angular_l =
+            json_io::template read_hyperparameter<std::vector<std::uint32_t>>(
+                __FILENAME__, __LINE__, hypers, "l");
 
         std::uint32_t angular_max{
             *std::max_element(angular_l.begin(), angular_l.end())};
@@ -656,9 +689,9 @@ namespace rascal {
     size_t max_angular{};
     // shape of the inner dense section of the computed invariant coefficients
     std::array<size_t, 2> inner_invariants_shape{{0, 0}};
-    bool normalize{};
-    bool compute_gradients{};
-    bool inversion_symmetry{false};
+    bool normalize{true};
+    bool compute_gradients{false};
+    bool inversion_symmetry{true};
 
     CalculatorSphericalExpansion rep_expansion;
 

@@ -28,6 +28,7 @@
 #include "rascal/utils/json_io.hh"
 
 namespace rascal {
+
   namespace json_io {
 
     json load(const std::string & filename) {

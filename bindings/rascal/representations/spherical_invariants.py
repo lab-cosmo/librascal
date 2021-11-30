@@ -211,7 +211,7 @@ class SphericalInvariants(BaseIO):
         cutoff_smooth_width,
         max_radial,
         max_angular,
-        gaussian_sigma_type,
+        gaussian_sigma_type="Constant",
         gaussian_sigma_constant=0.3,
         cutoff_function_type="ShiftedCosine",
         soap_type="PowerSpectrum",
