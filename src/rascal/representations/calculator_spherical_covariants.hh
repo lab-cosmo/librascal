@@ -292,7 +292,8 @@ namespace rascal {
 
     int get_num_coefficients(int /*n_species*/) const {
       std::stringstream error{};
-      error << "Function `get_num_coefficients` in file " << __FILE__
+      error << "CalculatorSphericalCovariants.get_num_coefficients: Function 'get_num_coefficients' is not implemented "
+            << "(file " << __FILE__ <<", line " << __LINE__ << ")."
             << std::endl;
       throw std::runtime_error(error.str());
     }
