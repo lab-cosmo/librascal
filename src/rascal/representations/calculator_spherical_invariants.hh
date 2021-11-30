@@ -273,8 +273,7 @@ namespace rascal {
         std::stringstream error{};
         error << "CalculatorSphericalInvariants.set_hyperparameters: "
                  "'max_radial' has to be > 0"
-              << " at file " << __FILENAME__ << ":" << __LINE__
-              << std::endl;
+              << " at file " << __FILENAME__ << ":" << __LINE__ << std::endl;
         throw std::runtime_error(error.str());
       }
       this->max_radial = static_cast<size_t>(max_radial_int);
@@ -285,8 +284,7 @@ namespace rascal {
         std::stringstream error{};
         error << "CalculatorSphericalInvariants.set_hyperparameters: "
                  "'max_angular' has to be >= 0"
-              << " at file " << __FILENAME__ << ":" << __LINE__
-              << std::endl;
+              << " at file " << __FILENAME__ << ":" << __LINE__ << std::endl;
         throw std::runtime_error(error.str());
       }
       this->max_angular = static_cast<size_t>(max_angular_int);
@@ -350,11 +348,11 @@ namespace rascal {
         std::vector<std::uint32_t> radial_n1, radial_n2, angular_l;
 
         sp_a = json_io::template read_hyperparameter<
-            std::vector<typename Key_t::value_type>>(__FILENAME__, __LINE__,
-                                                     coefficient_subselection, "a");
+            std::vector<typename Key_t::value_type>>(
+            __FILENAME__, __LINE__, coefficient_subselection, "a");
         sp_b = json_io::template read_hyperparameter<
-            std::vector<typename Key_t::value_type>>(__FILENAME__, __LINE__,
-                                                     coefficient_subselection, "b");
+            std::vector<typename Key_t::value_type>>(
+            __FILENAME__, __LINE__, coefficient_subselection, "b");
         radial_n1 =
             json_io::template read_hyperparameter<std::vector<std::uint32_t>>(
                 __FILENAME__, __LINE__, coefficient_subselection, "n1");

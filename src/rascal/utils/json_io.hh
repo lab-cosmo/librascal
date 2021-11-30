@@ -366,17 +366,20 @@ namespace rascal {
     double check_units(const std::string & expected_unit,
                        const json & parameter);
 
-   /**
+    /**
      * Returns a typed property of the given name.
      *
      * @tparam T return type. Return type must support << operator.
      *
-     * @param hypers 
+     * @param hypers
      * @param key
-     * @param default_value is a unique_ptr to allow hyperparamaters with no default value in which case it is null ptr. Starting with C++17 one could solve this more transparent with std::optional.
+     * @param default_value is a unique_ptr to allow hyperparamaters with no
+     * default value in which case it is null ptr. Starting with C++17 one could
+     * solve this more transparent with std::optional.
      *
-     * @throw runtime_error when value cannot be read from hypers 
-     * @throw runtime_error when key is not present in hypers and no default_value is null ptr
+     * @throw runtime_error when value cannot be read from hypers
+     * @throw runtime_error when key is not present in hypers and no
+     * default_value is null ptr
      */
     template <typename T>
     T read_hyperparameter(const char * file, int line, const json & hypers,
