@@ -156,7 +156,7 @@ namespace rascal {
 
       void set_hyperparameters(const Hypers_t & hypers) override {
         this->cutoff = json_io::read_hyperparameter<double>(
-            __FILENAME__, __LINE__, hypers, "cutoff");
+            __FILENAME__, __LINE__, hypers, "interaction_cutoff");
         this->smooth_width = json_io::read_hyperparameter<double>(
             __FILENAME__, __LINE__, hypers, "cutoff_smooth_width");
       }

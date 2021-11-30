@@ -338,9 +338,9 @@ namespace rascal {
       if (hypers.count("coefficient_subselection")) {
         this->is_sparsified = true;
 
-        json coefficient_subselection{
+        json coefficient_subselection =
             json_io::template read_hyperparameter<json>(
-                __FILENAME__, __LINE__, hypers, "coefficient_subselection")};
+                __FILENAME__, __LINE__, hypers, "coefficient_subselection");
         // get the indices of the subselected PowerSpectrum coefficients:
         // p_{abn_1n_2l} where a and b refer to atomic species and should be
         // lexicographically sorted so that a <= b, n_1 and n_2 refer to
@@ -351,19 +351,19 @@ namespace rascal {
 
         sp_a = json_io::template read_hyperparameter<
             std::vector<typename Key_t::value_type>>(__FILENAME__, __LINE__,
-                                                     hypers, "a");
+                                                     coefficient_subselection, "a");
         sp_b = json_io::template read_hyperparameter<
             std::vector<typename Key_t::value_type>>(__FILENAME__, __LINE__,
-                                                     hypers, "b");
+                                                     coefficient_subselection, "b");
         radial_n1 =
             json_io::template read_hyperparameter<std::vector<std::uint32_t>>(
-                __FILENAME__, __LINE__, hypers, "n1");
+                __FILENAME__, __LINE__, coefficient_subselection, "n1");
         radial_n2 =
             json_io::template read_hyperparameter<std::vector<std::uint32_t>>(
-                __FILENAME__, __LINE__, hypers, "n2");
+                __FILENAME__, __LINE__, coefficient_subselection, "n2");
         angular_l =
             json_io::template read_hyperparameter<std::vector<std::uint32_t>>(
-                __FILENAME__, __LINE__, hypers, "l");
+                __FILENAME__, __LINE__, coefficient_subselection, "l");
 
         std::uint32_t angular_max{
             *std::max_element(angular_l.begin(), angular_l.end())};

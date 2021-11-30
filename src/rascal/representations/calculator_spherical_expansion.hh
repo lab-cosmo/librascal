@@ -368,8 +368,8 @@ namespace rascal {
         // define the type of smearing to use
         std::string smearing_type{
             json_io::template read_hyperparameter<std::string>(
-                __FILENAME__, __LINE__, hypers, "gaussian_sigma_type",
-                "Constant")};
+                __FILENAME__, __LINE__, hypers, "gaussian_sigma_type")};
+                //,"Constant")};  // TODO(alex) SET BACK TO "Constant"
         if (smearing_type == "Constant") {
           this->atomic_smearing_type = AtomicSmearingType::Constant;
           this->atomic_smearing =
@@ -777,7 +777,8 @@ namespace rascal {
         if (max_radial_int <= 0) {
           std::stringstream error{};
           error << "Parameter 'max_radial' has to be > 0"
-                << " at file " << __FILENAME__ << ":" << __LINE__ << std::endl;
+                << " at file " << __FILENAME__ << ":" << __LINE__
+                << std::endl;
           throw std::runtime_error(error.str());
         }
         this->max_radial = static_cast<size_t>(max_radial_int);
@@ -787,7 +788,8 @@ namespace rascal {
         if (max_angular_int < 0) {
           std::stringstream error{};
           error << "Parameter 'max_angular' has to be >= 0"
-                << " at file " << __FILENAME__ << ":" << __LINE__ << std::endl;
+                << " at file " << __FILENAME__ << ":" << __LINE__
+                << std::endl;
           throw std::runtime_error(error.str());
         }
         this->max_angular = static_cast<size_t>(max_angular_int);
@@ -1118,9 +1120,9 @@ namespace rascal {
       }
 
       void init_interpolator(const Hypers_t & hypers) {
-        json optimization_hypers{
+        json optimization_hypers =
             json_io::template read_hyperparameter<json>(
-                __FILENAME__, __LINE__, hypers, "optimization")};
+                __FILENAME__, __LINE__, hypers, "optimization");
 
         double accuracy{this->get_interpolator_accuracy(optimization_hypers)};
         // minimal distance such that it is still stable with the interpolated
@@ -1147,9 +1149,9 @@ namespace rascal {
       }
 
       double get_interpolator_accuracy(const Hypers_t & optimization_hypers) {
-        json spline_hypers{
+        json spline_hypers = 
             json_io::template read_hyperparameter<json>(
-                __FILENAME__, __LINE__, optimization_hypers, "Spline")};
+                __FILENAME__, __LINE__, optimization_hypers, "Spline");
         return json_io::template read_hyperparameter<double>(
               __FILENAME__, __LINE__, spline_hypers, "accuracy");
       }
@@ -1194,140 +1196,144 @@ namespace rascal {
       }
 
       void set_hyperparameters(const Hypers_t & hypers) override {
-        json optimization_hypers{
+        json optimization_hypers = 
             json_io::template read_hyperparameter<json>(
-                __FILENAME__, __LINE__, hypers, "optimization")};
-        json radial_dim_reduction_hypers{
+                __FILENAME__, __LINE__, hypers, "optimization");
+        json radial_dim_reduction_hypers = 
             json_io::template read_hyperparameter<json>(
-                __FILENAME__, __LINE__, hypers, "RadialDimReduction")};
-        if (radial_dim_reduction_hypers.count("projection_matrices")) {
-          std::map<std::string, std::vector<std::vector<std::vector<double>>>>
-              json_projection_matrices{};
-            // hyper keys are converted to string so we also use here strings
-            // for species
+                __FILENAME__, __LINE__, optimization_hypers, "RadialDimReduction");
+        std::map<std::string, std::vector<std::vector<std::vector<double>>>>
+            json_projection_matrices{};
+          // hyper keys are converted to string so we also use here strings
+          // for species
 
-        json_projection_matrices = 
-            json_io::template read_hyperparameter<std::map<std::string, std::vector<std::vector<std::vector<double>>>>>(
-                __FILENAME__, __LINE__, radial_dim_reduction_hypers, "projection_matrices");
+      json_projection_matrices = 
+          json_io::template read_hyperparameter<std::map<std::string, std::vector<std::vector<std::vector<double>>>>>(
+              __FILENAME__, __LINE__, radial_dim_reduction_hypers, "projection_matrices");
 
-          this->n_species = json_projection_matrices.size();
-          this->n_components = this->max_radial;
+        this->n_species = json_projection_matrices.size();
+        this->n_components = this->max_radial;
 
-          if (json_projection_matrices.begin()->second.size() == 0) {
+        if (json_projection_matrices.begin()->second.size() == 0) {
+          std::stringstream err_str{};
+          err_str << "projection_matrices should have the shape "
+                  << "(max_angular+1, max_radial, expanded_max_radial)"
+                    << " at file " << __FILENAME__ << ":" << __LINE__
+                    << std::endl;
+          throw std::logic_error(err_str.str());
+        }
+        if (json_projection_matrices.begin()->second.at(0).size() == 0) {
+          std::stringstream err_str{};
+          err_str << "projection_matrices should have the shape "
+                  << "(max_angular+1, max_radial, expanded_max_radial)"
+                    << " at file " << __FILENAME__ << ":" << __LINE__
+                    << std::endl;
+          throw std::logic_error(err_str.str());
+        }
+        if (json_projection_matrices.begin()->second.at(0).at(0).size() ==
+            0) {
+          std::stringstream err_str{};
+          err_str << "projection_matrices should have the shape "
+                  << "(max_angular+1, max_radial, expanded_max_radial)"
+                    << " at file " << __FILENAME__ << ":" << __LINE__
+                    << std::endl;
+          throw std::logic_error(err_str.str());
+        }
+        // overwrite max_radial to expanded max_radial
+        this->max_radial =
+            json_projection_matrices.begin()->second.at(0).at(0).size();
+
+        // check projection matrices sizes
+        std::string species;
+        for (auto it = json_projection_matrices.begin();
+             it != json_projection_matrices.end(); ++it) {
+          species = it->first;
+          if (json_projection_matrices.at(species).size() !=
+              this->max_angular + 1) {
             std::stringstream err_str{};
-            err_str << "projection_matrices should have the shape "
-                       "(max_angular+1, max_radial, expanded_max_radial)";
+            err_str << "Projection matrices at species=" << species
+                    << " does not match the size max_angular="
+                    << this->max_angular << " but is "
+                    << json_projection_matrices.at(species).size()
+                    << ", should be max_angular+1"
+                    << " at file " << __FILENAME__ << ":" << __LINE__
+                    << std::endl;
             throw std::logic_error(err_str.str());
           }
-          if (json_projection_matrices.begin()->second.at(0).size() == 0) {
-            std::stringstream err_str{};
-            err_str << "projection_matrices should have the shape "
-                       "(max_angular+1, max_radial, expanded_max_radial)";
-            throw std::logic_error(err_str.str());
-          }
-          if (json_projection_matrices.begin()->second.at(0).at(0).size() ==
-              0) {
-            std::stringstream err_str{};
-            err_str << "projection_matrices should have the shape "
-                       "(max_angular+1, max_radial, expanded_max_radial)";
-            throw std::logic_error(err_str.str());
-          }
-          // overwrite max_radial to expanded max_radial
-          this->max_radial =
-              json_projection_matrices.begin()->second.at(0).at(0).size();
-
-          // check projection matrices sizes
-          std::string species;
-          for (auto it = json_projection_matrices.begin();
-               it != json_projection_matrices.end(); ++it) {
-            species = it->first;
-            if (json_projection_matrices.at(species).size() !=
-                this->max_angular + 1) {
+          for (size_t angular_l = 0; angular_l < this->max_angular + 1;
+               angular_l++) {
+            if (json_projection_matrices.at(species).at(angular_l).size() !=
+                this->n_components) {
               std::stringstream err_str{};
-              err_str << "Projection matrices at species=" << species
-                      << " does not match the size max_angular="
-                      << this->max_angular << " but is "
-                      << json_projection_matrices.at(species).size()
-                      << ", should be max_angular+1";
+              // be aware that `max_radial` in hyperparameters is
+              // this->n_components within in this class
+              err_str
+                  << "Projection matrices at species=" << species
+                  << " and angular_l=" << angular_l
+                  << " does not match the max_radial=" << this->n_components
+                  << " in hyperparameters but is "
+                  << json_projection_matrices.at(species).at(angular_l).size()
+                  << " at file " << __FILENAME__ << ":" << __LINE__
+                  << std::endl;
               throw std::logic_error(err_str.str());
             }
-            for (size_t angular_l = 0; angular_l < this->max_angular + 1;
-                 angular_l++) {
-              if (json_projection_matrices.at(species).at(angular_l).size() !=
-                  this->n_components) {
+            for (size_t radial_c = 0; radial_c < this->n_components;
+                 radial_c++) {
+              if (json_projection_matrices.at(species)
+                      .at(angular_l)
+                      .at(radial_c)
+                      .size() != this->max_radial) {
                 std::stringstream err_str{};
                 // be aware that `max_radial` in hyperparameters is
                 // this->n_components within in this class
-                err_str
-                    << "Projection matrices at species=" << species
-                    << " and angular_l=" << angular_l
-                    << " does not match the max_radial=" << this->n_components
-                    << " in hyperparameters but is "
-                    << json_projection_matrices.at(species).at(angular_l).size()
-                    << ".";
+                err_str << "Projection matrices at species=" << species
+                        << ", angular_l=" << angular_l
+                        << " and max_radial=" << this->n_components
+                        << " is not consistent in expanded_max_radial="
+                        << this->max_radial
+                        << " with species=0, angular_l=0 and max_radial=0"
+                        << json_projection_matrices.at(species)
+                               .at(angular_l)
+                               .at(radial_c)
+                               .size()
+                        << " at file " << __FILENAME__ << ":" << __LINE__
+                        << std::endl;
                 throw std::logic_error(err_str.str());
               }
-              for (size_t radial_c = 0; radial_c < this->n_components;
-                   radial_c++) {
-                if (json_projection_matrices.at(species)
+            }
+          }
+        }
+
+        // init projection matrices
+        Matrix_t projection_matrix{};
+        std::vector<Matrix_t> angular_projection_matrices(this->max_angular +
+                                                          1);
+        for (auto it = json_projection_matrices.begin();
+             it != json_projection_matrices.end(); ++it) {
+          species = it->first;
+          for (size_t angular_l = 0; angular_l < this->max_angular + 1;
+               angular_l++) {
+            projection_matrix.resize(this->n_components, this->max_radial);
+            projection_matrix.setZero();
+            for (size_t radial_c = 0; radial_c < this->n_components;
+                 radial_c++) {
+              for (size_t radial_n = 0; radial_n < this->max_radial;
+                   radial_n++) {
+                projection_matrix(radial_c, radial_n) =
+                    json_projection_matrices.at(species)
                         .at(angular_l)
                         .at(radial_c)
-                        .size() != this->max_radial) {
-                  std::stringstream err_str{};
-                  // be aware that `max_radial` in hyperparameters is
-                  // this->n_components within in this class
-                  err_str << "Projection matrices at species=" << species
-                          << ", angular_l=" << angular_l
-                          << " and max_radial=" << this->n_components
-                          << " is not consistent in expanded_max_radial="
-                          << this->max_radial
-                          << " with species=0, angular_l=0 and max_radial=0"
-                          << json_projection_matrices.at(species)
-                                 .at(angular_l)
-                                 .at(radial_c)
-                                 .size()
-                          << ".";
-                  throw std::logic_error(err_str.str());
-                }
+                        .at(radial_n);
               }
             }
+            angular_projection_matrices.at(angular_l) = projection_matrix;
           }
-
-          // init projection matrices
-          Matrix_t projection_matrix{};
-          std::vector<Matrix_t> angular_projection_matrices(this->max_angular +
-                                                            1);
-          for (auto it = json_projection_matrices.begin();
-               it != json_projection_matrices.end(); ++it) {
-            species = it->first;
-            for (size_t angular_l = 0; angular_l < this->max_angular + 1;
-                 angular_l++) {
-              projection_matrix.resize(this->n_components, this->max_radial);
-              projection_matrix.setZero();
-              for (size_t radial_c = 0; radial_c < this->n_components;
-                   radial_c++) {
-                for (size_t radial_n = 0; radial_n < this->max_radial;
-                     radial_n++) {
-                  projection_matrix(radial_c, radial_n) =
-                      json_projection_matrices.at(species)
-                          .at(angular_l)
-                          .at(radial_c)
-                          .at(radial_n);
-                }
-              }
-              angular_projection_matrices.at(angular_l) = projection_matrix;
-            }
-            this->projection_matrices.insert(
-                std::pair<int, std::vector<Matrix_t>>(
-                    std::stoi(species), angular_projection_matrices));
-          }
-
-          this->init_matrices();
-        } else {
-          std::stringstream err_str{};
-          err_str << "No projection matrices were given.";
-          throw std::logic_error(err_str.str());
+          this->projection_matrices.insert(
+              std::pair<int, std::vector<Matrix_t>>(
+                  std::stoi(species), angular_projection_matrices));
         }
+
+        this->init_matrices();
         Parent::init_matrices();
       }
 
@@ -1450,9 +1456,9 @@ namespace rascal {
       }
 
       void init_interpolator(const Hypers_t & hypers) {
-        json optimization_hypers{
+        json optimization_hypers = 
             json_io::template read_hyperparameter<json>(
-                __FILENAME__, __LINE__, hypers, "optimization")};
+                __FILENAME__, __LINE__, hypers, "optimization");
 
         double accuracy{this->get_interpolator_accuracy(optimization_hypers)};
         // minimal distance such that it is still stable with the interpolated
@@ -1484,9 +1490,9 @@ namespace rascal {
       }
 
       double get_interpolator_accuracy(const Hypers_t & optimization_hypers) {
-        json spline_hypers{
+        json spline_hypers =
             json_io::template read_hyperparameter<json>(
-                __FILENAME__, __LINE__, optimization_hypers, "Spline")};
+                __FILENAME__, __LINE__, optimization_hypers, "Spline");
         return json_io::template read_hyperparameter<double>(
               __FILENAME__, __LINE__, spline_hypers, "accuracy");
       }
@@ -1617,9 +1623,9 @@ namespace rascal {
       this->compute_gradients = json_io::template read_hyperparameter<bool>(
           __FILENAME__, __LINE__, hypers, "compute_gradients", false);
 
-      std::string expansion_by_species_method{
+      this->expansion_by_species =
           json_io::template read_hyperparameter<std::string>(
-              __FILENAME__, __LINE__, hypers, "expansion_by_species_method", "environment wise")};
+              __FILENAME__, __LINE__, hypers, "expansion_by_species_method", "environment wise");
 
       if (hypers.count("global_species")) {
         Key_t species{
@@ -1631,7 +1637,7 @@ namespace rascal {
       } else {
         if (this->expansion_by_species == "user defined") {
           std::stringstream err_str{};
-          err_str << "expansion_by_species_method is 'user defined'"
+          err_str << "expansion_by_species is 'user defined'"
                   << " but global_species is not defined"
                   << " at file " << __FILENAME__ << ":" << __LINE__
                   << std::endl;
@@ -1674,8 +1680,8 @@ namespace rascal {
 
       std::string radial_contribution_type{
           json_io::template read_hyperparameter<std::string>(
-              __FILENAME__, __LINE__, hypers, "radial_basis",
-              "GTO")};
+              __FILENAME__, __LINE__, hypers, "radial_basis")};
+              //,"GTO")};  // TODO(alex) SET BACK TO "GTO"
 
       // create the class that will compute the radial terms of the
       // expansion. the atomic smearing is an integral part of the
@@ -1703,9 +1709,9 @@ namespace rascal {
       }
 
       if (hypers.count("optimization")) {
-        json optimization_hypers{
+        json optimization_hypers =
             json_io::template read_hyperparameter<json>(
-                __FILENAME__, __LINE__, hypers, "optimization")};
+                __FILENAME__, __LINE__, hypers, "optimization");
         if (optimization_hypers.size() != 0) {
           // Checks for all optimization args used for the computation of the
           // spherical expansion
@@ -2240,7 +2246,12 @@ namespace rascal {
       this->initialize_expansion_structure_wise(
           manager, expansions_coefficients, expansions_coefficients_gradient);
     } else {
-      throw std::runtime_error("should not arrive here");
+      std::stringstream error{};
+      error << "Requested expansion by species method '" << this->expansion_by_species
+            << "' is unknown. Must be one of : 'environment wise', 'user defined' or 'structure wise' file " << __FILENAME__ << ":" << __LINE__
+              << std::endl;
+
+      throw std::runtime_error(error.str());
     }
 
     // coeff C^{ij}_{nlm}
