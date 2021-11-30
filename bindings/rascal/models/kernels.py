@@ -9,9 +9,11 @@ from ..utils import BaseIO
 from .sparse_points import SparsePoints
 import json
 
+import logging
 
 import numpy as np
 
+LOGGER = logging.getLogger(__name__)
 
 class Kernel(BaseIO):
 
@@ -111,7 +113,7 @@ class Kernel(BaseIO):
         if "cpp_kernel" in data.keys():
             self._kernel = self._kernel.from_dict(data["cpp_kernel"])
         else:
-            print(
+            LOGGER.warn(
                 "WARNING: a deprecated model was loaded. Key 'cpp_kernel' "
                 "was not found in model. Please dump and reload the model "
                 "to update it. The model parameters will not change, only "
