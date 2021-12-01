@@ -420,49 +420,12 @@
         <span class="k">return</span> <span class="n">frames</span></div>
 
 <div class="viewcode-block" id="SphericalInvariants.get_num_coefficients"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SphericalInvariants.get_num_coefficients">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_coefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_species</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the number of coefficients in the representation</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of coefficients in the spherical invariants</span>
 
 <span class="sd">        (this is the descriptor size per atomic centre)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;soap_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;RadialSpectrum&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">n_species</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_radial&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;soap_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;PowerSpectrum&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="nb">int</span><span class="p">((</span><span class="n">n_species</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_species</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
-                <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_radial&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
-                <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;soap_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;BiSpectrum&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;inversion_symmetry&quot;</span><span class="p">]:</span>
-                <span class="k">return</span> <span class="p">(</span>
-                    <span class="n">n_species</span> <span class="o">**</span> <span class="mi">3</span>
-                    <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_radial&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">3</span>
-                    <span class="o">*</span> <span class="nb">int</span><span class="p">(</span>
-                        <span class="mi">1</span>
-                        <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span>
-                        <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">2</span>
-                        <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">(</span>
-                    <span class="n">n_species</span> <span class="o">**</span> <span class="mi">3</span>
-                    <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_radial&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">3</span>
-                    <span class="o">*</span> <span class="nb">int</span><span class="p">(</span>
-                        <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span>
-                            <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-                            <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hypers</span><span class="p">[</span><span class="s2">&quot;max_angular&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span>
-                            <span class="o">/</span> <span class="mf">8.0</span>
-                        <span class="p">)</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Only soap_type = RadialSpectrum || &quot;</span>
-                <span class="s2">&quot;PowerSpectrum || BiSpectrum &quot;</span>
-                <span class="s2">&quot;implemented for now&quot;</span>
-            <span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_representation</span><span class="o">.</span><span class="n">get_num_coefficients</span><span class="p">(</span><span class="n">n_species</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SphericalInvariants.get_keys"><a class="viewcode-back" href="../../../reference/python.html#rascal.representations.SphericalInvariants.get_keys">[docs]</a>    <span class="k">def</span> <span class="nf">get_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
