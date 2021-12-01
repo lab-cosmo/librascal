@@ -127,8 +127,7 @@ namespace rascal {
                                        {"b", {1}},
                                        {"n1", {0}},
                                        {"n2", {0}},
-                                       {"l", {0}},
-                                       {"selected_features_global_ids", {0}}}};
+                                       {"l", {0}}}};
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
