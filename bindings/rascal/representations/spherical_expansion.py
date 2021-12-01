@@ -174,12 +174,12 @@ class SphericalExpansion(BaseIO):
         gaussian_sigma_constant=0.3,
         cutoff_function_type="ShiftedCosine",
         radial_basis="GTO",
+        compute_gradients=False,
+        expansion_by_species_method="environment wise",
         optimization=None,
         optimization_args=None,
-        expansion_by_species_method="environment wise",
         global_species=None,
-        compute_gradients=False,
-        cutoff_function_parameters=dict(),
+        cutoff_function_parameters=None,
     ):
         """Construct a SphericalExpansion representation
 
@@ -218,11 +218,11 @@ class SphericalExpansion(BaseIO):
             gaussian_sigma_constant=gaussian_sigma_constant,
             cutoff_function_type=cutoff_function_type,
             radial_basis=radial_basis,
+            compute_gradients=compute_gradients,
+            expansion_by_species_method=expansion_by_species_method,
             optimization=optimization,
             optimization_args=optimization_args,
-            expansion_by_species_method=expansion_by_species_method,
             global_species=global_species,
-            compute_gradients=compute_gradients,
             cutoff_function_parameters=cutoff_function_parameters,
         )
 
@@ -245,13 +245,14 @@ class SphericalExpansion(BaseIO):
         allowed_keys = {
             "interaction_cutoff",
             "cutoff_smooth_width",
-            "cutoff_function_type",
             "max_radial",
             "max_angular",
-            "radial_basis",
-            "optimization",
             "gaussian_sigma_type",
             "gaussian_sigma_constant",
+            "cutoff_function_type",
+            "radial_basis",
+            "compute_gradients",
+            "optimization",
             "cutoff_function_parameters",
             "expansion_by_species_method",
             "global_species",

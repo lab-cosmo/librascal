@@ -154,14 +154,15 @@ class SphericalCovariants(BaseIO):
         gaussian_sigma_type="Constant",
         gaussian_sigma_constant=0.3,
         cutoff_function_type="ShiftedCosine",
-        normalize=True,
-        radial_basis="GTO",
-        optimization=None,
-        optimization_args=None,
         soap_type="LambdaSpectrum",
         inversion_symmetry=True,
+        radial_basis="GTO",
+        normalize=True,
         covariant_lambda=0,
-        cutoff_function_parameters=dict(),
+        optimization=None,
+        optimization_args=None,
+        global_species=None,
+        cutoff_function_parameters=None,
     ):
         """Construct a SphericalExpansion representation
 
@@ -201,11 +202,10 @@ class SphericalCovariants(BaseIO):
             inversion_symmetry=inversion_symmetry,
             radial_basis=radial_basis,
             normalize=normalize,
+            covariant_lambda=covariant_lambda,
             optimization=optimization,
             optimization_args=optimization_args,
-            covariant_lambda=covariant_lambda,
             global_species=global_species,
-            compute_gradients=compute_gradients,
             cutoff_function_parameters=cutoff_function_parameters,
         )
 
@@ -228,20 +228,21 @@ class SphericalCovariants(BaseIO):
         allowed_keys = {
             "interaction_cutoff",
             "cutoff_smooth_width",
-            "cutoff_function_type",
             "max_radial",
             "max_angular",
-            "radial_basis",
-            "optimization",
             "gaussian_sigma_type",
             "gaussian_sigma_constant",
+            "cutoff_function_type",
             "soap_type",
             "inversion_symmetry",
+            "radial_basis",
             "normalize",
-            "cutoff_function_parameters",
-            "global_species",
             "covariant_lambda",
+            "optimization",
+            "global_species",
+            "cutoff_function_parameters",
         }
+
         hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
         self.hypers.update(hypers_clean)
 

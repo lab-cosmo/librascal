@@ -272,11 +272,11 @@ class SphericalInvariants(BaseIO):
             inversion_symmetry=inversion_symmetry,
             radial_basis=radial_basis,
             normalize=normalize,
+            compute_gradients=compute_gradients,
+            expansion_by_species_method=expansion_by_species_method,
             optimization=optimization,
             optimization_args=optimization_args,
-            expansion_by_species_method=expansion_by_species_method,
             global_species=global_species,
-            compute_gradients=compute_gradients,
             cutoff_function_parameters=cutoff_function_parameters,
             coefficient_subselection=coefficient_subselection,
         )
