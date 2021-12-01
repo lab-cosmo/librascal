@@ -122,12 +122,8 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
 
-    std::vector<json> coef_sub_hypers{{},
-                                      {{"a", {1}},
-                                       {"b", {1}},
-                                       {"n1", {0}},
-                                       {"n2", {0}},
-                                       {"l", {0}}}};
+    std::vector<json> coef_sub_hypers{
+        {}, {{"a", {1}}, {"b", {1}}, {"n1", {0}}, {"n2", {0}}, {"l", {0}}}};
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
