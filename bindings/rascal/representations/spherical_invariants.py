@@ -286,61 +286,6 @@ class SphericalInvariants(BaseIO):
 
         self._representation = CalculatorFactory(self.rep_options)
 
-
-        #self.update_hyperparameters(
-        #    max_radial=max_radial,
-        #    max_angular=max_angular,
-        #    soap_type=soap_type,
-        #    normalize=normalize,
-        #    inversion_symmetry=inversion_symmetry,
-        #    expansion_by_species_method=expansion_by_species_method,
-        #    global_species=global_species,
-        #    compute_gradients=compute_gradients,
-        #    coefficient_subselection=coefficient_subselection,
-        #)
-
-        #if self.hypers["coefficient_subselection"] is None:
-        #    del self.hypers["coefficient_subselection"]
-
-        #self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
-        #cutoff_function_parameters.update(
-        #    interaction_cutoff=interaction_cutoff,
-        #    cutoff_smooth_width=cutoff_smooth_width,
-        #)
-        #cutoff_function = cutoff_function_dict_switch(
-        #    cutoff_function_type, **cutoff_function_parameters
-        #)
-
-        #gaussian_density = dict(
-        #    type=gaussian_sigma_type,
-        #    gaussian_sigma=dict(value=gaussian_sigma_constant, unit="AA"),
-        #)
-        #optimization = check_optimization_for_spherical_representations(
-        #    optimization, optimization_args
-        #)
-
-        #radial_contribution = dict(type=radial_basis, optimization=optimization)
-
-        #self.update_hyperparameters(
-        #    cutoff_function=cutoff_function,
-        #    gaussian_density=gaussian_density,
-        #    radial_contribution=radial_contribution,
-        #)
-
-        #if soap_type == "RadialSpectrum":
-        #    self.update_hyperparameters(max_angular=0)
-
-        #self.nl_options = [
-        #    dict(name="centers", args=[]),
-        #    dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
-        #    dict(name="centercontribution", args=dict()),
-        #    dict(name="strict", args=dict(cutoff=interaction_cutoff)),
-        #]
-
-        #self.rep_options = dict(name=self.name, args=[self.hypers])
-
-        #self._representation = CalculatorFactory(self.rep_options)
-
     def update_hyperparameters(self, **hypers):
         """Store the given dict of hyperparameters
 

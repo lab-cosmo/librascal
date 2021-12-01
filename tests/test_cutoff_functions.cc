@@ -44,11 +44,6 @@ namespace rascal {
     std::vector<json> fc_hypers{{{"cutoff_function_type", "ShiftedCosine"},
                                  {"interaction_cutoff", 3.0},
                                  {"cutoff_smooth_width", 0.5}}};
-    //    R"({
-    //    "type": "ShiftedCosine",
-    //    "cutoff": {"value": 3, "unit": "AA"},
-    //    "smooth_width": {"value": 0.5, "unit": "AA"}
-    //  })"_json,
     using Cutoff_t =
         internal::CutoffFunction<internal::CutoffFunctionType::ShiftedCosine>;
 
@@ -90,31 +85,6 @@ namespace rascal {
          {"cutoff_function_parameters",
           {{"rate", 0}, {"scale", 2}, {"exponent", 0}}}}};
 
-    //    R"({
-    //    "type": "RadialScaling",
-    //    "cutoff": {"value": 3, "unit": "AA"},
-    //    "smooth_width": {"value": 0.5, "unit": "AA"},
-    //    "rate": {"value": 1, "unit": "AA"},
-    //    "scale": {"value": 2, "unit": "AA"} ,
-    //    "exponent": {"value": 3, "unit": ""}
-    //  })"_json,
-    //    R"({
-    //    "type": "RadialScaling",
-    //    "cutoff": {"value": 3, "unit": "AA"},
-    //    "smooth_width": {"value": 0.5, "unit": "AA"},
-    //    "rate": {"value": 0, "unit": "AA"},
-    //    "scale": {"value": 2, "unit": "AA"} ,
-    //    "exponent": {"value": 3, "unit": ""}
-    //  })"_json,
-    //    R"({
-    //    "type": "RadialScaling",
-    //    "cutoff": {"value": 3, "unit": "AA"},
-    //    "smooth_width": {"value": 0.5, "unit": "AA"},
-    //    "rate": {"value": 0, "unit": "AA"},
-    //    "scale": {"value": 2, "unit": "AA"} ,
-    //    "exponent": {"value": 0, "unit": ""}
-    //  })"_json,
-    //};
     using Cutoff_t =
         internal::CutoffFunction<internal::CutoffFunctionType::RadialScaling>;
 
