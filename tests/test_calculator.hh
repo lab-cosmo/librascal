@@ -102,11 +102,16 @@ namespace rascal {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
-            for (auto & rep_hyp : this->rep_hypers) {
-              rep_hyp["cutoff_function"] = fc_hyp;
-              rep_hyp["gaussian_density"] = sig_hyp;
-              rep_hyp["radial_contribution"] = ri_hyp;
-              this->representation_hypers.push_back(rep_hyp);
+            for (auto & coef_sub_hyp : this->coef_sub_hypers) {
+              for (auto & rep_hyp : this->rep_hypers) {
+                rep_hyp["cutoff_function"] = fc_hyp;
+                rep_hyp["gaussian_density"] = sig_hyp;
+                rep_hyp["radial_contribution"] = ri_hyp;
+                if (not(coef_sub_hyp.is_null())) {
+                  rep_hyp["coefficient_subselection"] = coef_sub_hyp;
+                }
+                this->representation_hypers.push_back(rep_hyp);
+              }
             }
           }
         }
@@ -117,6 +122,8 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
 
+    std::vector<json> coef_sub_hypers{
+        {}, {{"a", {1}}, {"b", {1}}, {"n1", {0}}, {"n2", {0}}, {"l", {0}}}};
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},

@@ -290,6 +290,13 @@ namespace rascal {
         Invariants & soap_vector, ExpansionCoeff & expansions_coefficients,
         std::shared_ptr<StructureManager> manager);
 
+    int get_num_coefficients(int /*n_species*/) const {
+      std::stringstream error{};
+      error << "Function 'get_num_coefficients' is not implemented "
+            << "at file " << __FILE__ << ":" << __LINE__ << std::endl;
+      throw std::runtime_error(error.str());
+    }
+
    protected:
     size_t max_radial{};
     size_t max_angular{};
