@@ -51,7 +51,8 @@ namespace rascal {
 
   template <class Calculator, typename Manager,
             template <class> class... Adaptor>
-  void bind_get_num_coefficients_function(PyCalculator<Calculator> & representation) {
+  void bind_get_num_coefficients_function(
+      PyCalculator<Calculator> & representation) {
     representation.def(
         "get_num_coefficients",
         [](Calculator & representation, int n_species) {
@@ -102,10 +103,12 @@ namespace rascal {
     struct bind_get_num_coefficients_function_helper;
 
     template <typename SM, template <class> class... Ti>
-    struct bind_get_num_coefficients_function_helper<SM, AdaptorTypeHolder<Ti...>> {
+    struct bind_get_num_coefficients_function_helper<SM,
+                                                     AdaptorTypeHolder<Ti...>> {
       template <class Calculator>
       static void apply(PyCalculator<Calculator> & representation) {
-        bind_get_num_coefficients_function<Calculator, SM, Ti...>(representation);
+        bind_get_num_coefficients_function<Calculator, SM, Ti...>(
+            representation);
       }
     };
 
@@ -128,9 +131,10 @@ namespace rascal {
   }
 
   template <typename StructureManagerTypeHolder_, class Calculator>
-  void bind_get_num_coefficients_function_helper(PyCalculator<Calculator> & representation) {
-    py_internal::bind_get_num_coefficients_function_util<StructureManagerTypeHolder_>::apply(
-        representation);
+  void bind_get_num_coefficients_function_helper(
+      PyCalculator<Calculator> & representation) {
+    py_internal::bind_get_num_coefficients_function_util<
+        StructureManagerTypeHolder_>::apply(representation);
   }
 
   /**
@@ -170,7 +174,8 @@ namespace rascal {
     auto rep_spherical_expansion =
         add_representation_calculator<Calc2_t>(mod, m_internal);
     bind_compute_function_helper<ManagerList_1_t>(rep_spherical_expansion);
-    bind_get_num_coefficients_function_helper<ManagerList_1_t>(rep_spherical_expansion);
+    bind_get_num_coefficients_function_helper<ManagerList_1_t>(
+        rep_spherical_expansion);
 
     using Calc3_t = CalculatorSphericalInvariants;
     auto rep_soap = add_representation_calculator<Calc3_t>(mod, m_internal);
