@@ -218,12 +218,12 @@ class SphericalInvariants(BaseIO):
         inversion_symmetry=True,
         radial_basis="GTO",
         normalize=True,
+        compute_gradients=False,
+        expansion_by_species_method="environment wise",
         optimization=None,
         optimization_args=None,
-        expansion_by_species_method="environment wise",
         global_species=None,
-        compute_gradients=False,
-        cutoff_function_parameters=dict(),
+        cutoff_function_parameters=None,
         coefficient_subselection=None,
     ):
         """Construct a SphericalExpansion representation
@@ -239,19 +239,26 @@ class SphericalInvariants(BaseIO):
 
         if global_species is None:
             global_species = []
-        elif not isinstance(global_species, list):
-            # TODO(veit) I think we should raise an error in this case, maybe we can still make an integer to a list, but in any other case I find it dangours to make a list out of this. I did not change this to ensure backwards compatibility
+        elif isinstance(global_species, int):
             global_species = list(global_species)
+        elif not (isinstance(global_species, list)):
+            raise ValueError(
+                "'global_species' should be None, an integer, an empty list or a list of atomic numbers"
+            )
 
         if cutoff_function_parameters is None:
             cutoff_function_parameters = dict()
         elif not isinstance(cutoff_function_parameters, dict):
-            raise ValueError("\'cutoff_function_parameters\' should be None or a dictionary with \'rate\', \'scale\' and \'expontent\'")
+            raise ValueError(
+                "'cutoff_function_parameters' should be None or a dictionary with 'rate', 'scale' and 'expontent'"
+            )
 
         if coefficient_subselection is None:
             coefficient_subselection = dict()
         elif not isinstance(coefficient_subselection, dict):
-            raise ValueError("\'coefficient_subselection\' should be None or a dictionary with \'a\', \'b\', \'n1\', \'n2\' and \'l\'")
+            raise ValueError(
+                "'coefficient_subselection' should be None or a dictionary with 'a', 'b', 'n1', 'n2' and 'l'"
+            )
 
         self.hypers = dict(
             interaction_cutoff=interaction_cutoff,
@@ -274,7 +281,6 @@ class SphericalInvariants(BaseIO):
             coefficient_subselection=coefficient_subselection,
         )
 
-
         self.nl_options = [
             dict(name="centers", args=[]),
             dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
@@ -282,7 +288,6 @@ class SphericalInvariants(BaseIO):
             dict(name="strict", args=dict(cutoff=interaction_cutoff)),
         ]
         self.rep_options = dict(name=self.name, args=[self.hypers])
-
 
         self._representation = CalculatorFactory(self.rep_options)
 
@@ -295,26 +300,24 @@ class SphericalInvariants(BaseIO):
         allowed_keys = {
             "interaction_cutoff",
             "cutoff_smooth_width",
+            "cutoff_function_type",
             "max_radial",
             "max_angular",
+            "radial_basis",
+            "optimization",
             "gaussian_sigma_type",
             "gaussian_sigma_constant",
             "soap_type",
             "inversion_symmetry",
-            "cutoff_function",
             "normalize",
-            "gaussian_density",
-            "radial_contribution",
             "cutoff_function_parameters",
             "expansion_by_species_method",
-            "compute_gradients",
             "global_species",
+            "compute_gradients",
             "coefficient_subselection",
         }
         hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
-
         self.hypers.update(hypers_clean)
-        return
 
     def transform(self, frames):
         """Compute the representation.

@@ -336,9 +336,8 @@ namespace rascal {
       json coefficient_subselection;
       bool is_coefficient_subselection_set{false};
       if (hypers.count("coefficient_subselection")) {
-        coefficient_subselection =
-            json_io::template read_hyperparameter<json>(
-                __FILENAME__, __LINE__, hypers, "coefficient_subselection");
+        coefficient_subselection = json_io::template read_hyperparameter<json>(
+            __FILENAME__, __LINE__, hypers, "coefficient_subselection");
         if (coefficient_subselection.size() != 0) {
           is_coefficient_subselection_set = true;
         }

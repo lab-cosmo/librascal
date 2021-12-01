@@ -175,14 +175,19 @@ class SphericalCovariants(BaseIO):
 
         if global_species is None:
             global_species = []
-        elif not isinstance(global_species, list):
-            # TODO(veit) I think we should raise an error in this case, maybe we can still make an integer to a list, but in any other case I find it dangours to make a list out of this. I did not change this to ensure backwards compatibility
+        elif isinstance(global_species, int):
             global_species = list(global_species)
+        elif not (isinstance(global_species, list)):
+            raise ValueError(
+                "'global_species' should be None, an integer, an empty list or a list of atomic numbers"
+            )
 
         if cutoff_function_parameters is None:
             cutoff_function_parameters = dict()
         elif not isinstance(cutoff_function_parameters, dict):
-            raise ValueError("\'cutoff_function_parameters\' should be None or a dictionary with \'rate\', \'scale\' and \'expontent\'")
+            raise ValueError(
+                "'cutoff_function_parameters' should be None or a dictionary with 'rate', 'scale' and 'expontent'"
+            )
 
         self.hypers = dict(
             interaction_cutoff=interaction_cutoff,
@@ -199,12 +204,10 @@ class SphericalCovariants(BaseIO):
             optimization=optimization,
             optimization_args=optimization_args,
             covariant_lambda=covariant_lambda,
-            expansion_by_species_method=expansion_by_species_method,
             global_species=global_species,
             compute_gradients=compute_gradients,
             cutoff_function_parameters=cutoff_function_parameters,
         )
-
 
         self.nl_options = [
             dict(name="centers", args=[]),
@@ -213,7 +216,6 @@ class SphericalCovariants(BaseIO):
             dict(name="strict", args=dict(cutoff=interaction_cutoff)),
         ]
         self.rep_options = dict(name=self.name, args=[self.hypers])
-    
 
         self._representation = CalculatorFactory(self.rep_options)
 
@@ -226,22 +228,22 @@ class SphericalCovariants(BaseIO):
         allowed_keys = {
             "interaction_cutoff",
             "cutoff_smooth_width",
+            "cutoff_function_type",
             "max_radial",
             "max_angular",
+            "radial_basis",
+            "optimization",
             "gaussian_sigma_type",
             "gaussian_sigma_constant",
             "soap_type",
             "inversion_symmetry",
-            "covariant_lambda",
-            "cutoff_function",
             "normalize",
-            "gaussian_density",
-            "radial_contribution",
             "cutoff_function_parameters",
+            "global_species",
+            "covariant_lambda",
         }
         hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
         self.hypers.update(hypers_clean)
-        return
 
     def transform(self, frames):
         """Compute the representation.
@@ -351,27 +353,7 @@ class SphericalCovariants(BaseIO):
         return keys
 
     def _get_init_params(self):
-        gaussian_density = self.hypers["gaussian_density"]
-        cutoff_function = self.hypers["cutoff_function"]
-        radial_contribution = self.hypers["radial_contribution"]
-
-        init_params = dict(
-            interaction_cutoff=cutoff_function["cutoff"]["value"],
-            cutoff_smooth_width=cutoff_function["smooth_width"]["value"],
-            max_radial=self.hypers["max_radial"],
-            max_angular=self.hypers["max_angular"],
-            soap_type=self.hypers["soap_type"],
-            inversion_symmetry=self.hypers["inversion_symmetry"],
-            normalize=self.hypers["normalize"],
-            gaussian_sigma_type=gaussian_density["type"],
-            gaussian_sigma_constant=gaussian_density["gaussian_sigma"]["value"],
-            lam=self.hypers["covariant_lambda"],
-            cutoff_function_type=cutoff_function["type"],
-            radial_basis=radial_contribution["type"],
-            optimization=radial_contribution["optimization"],
-            cutoff_function_parameters=self.cutoff_function_parameters,
-        )
-        return init_params
+        return self.hypers
 
     def _set_data(self, data):
         super()._set_data(data)

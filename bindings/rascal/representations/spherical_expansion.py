@@ -195,13 +195,19 @@ class SphericalExpansion(BaseIO):
 
         if global_species is None:
             global_species = []
-        elif not isinstance(global_species, list):
-            raise ValueError("\'global_species\' should be None, empty list, or list of atomic numbers")
+        elif isinstance(global_species, int):
+            global_species = list(global_species)
+        elif not (isinstance(global_species, list)):
+            raise ValueError(
+                "'global_species' should be None, an integer, an empty list or a list of atomic numbers"
+            )
 
         if cutoff_function_parameters is None:
             cutoff_function_parameters = dict()
         elif not isinstance(cutoff_function_parameters, dict):
-            raise ValueError("\'cutoff_function_parameters\' should be None or a dictionary with \'rate\', \'scale\' and \'expontent\'")
+            raise ValueError(
+                "'cutoff_function_parameters' should be None or a dictionary with 'rate', 'scale' and 'expontent'"
+            )
 
         self.hypers = dict(
             interaction_cutoff=interaction_cutoff,
@@ -220,7 +226,6 @@ class SphericalExpansion(BaseIO):
             cutoff_function_parameters=cutoff_function_parameters,
         )
 
-
         self.nl_options = [
             dict(name="centers", args=[]),
             dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
@@ -228,7 +233,6 @@ class SphericalExpansion(BaseIO):
             dict(name="strict", args=dict(cutoff=interaction_cutoff)),
         ]
         self.rep_options = dict(name=self.name, args=[self.hypers])
-    
 
         self._representation = CalculatorFactory(self.rep_options)
 
@@ -241,17 +245,17 @@ class SphericalExpansion(BaseIO):
         allowed_keys = {
             "interaction_cutoff",
             "cutoff_smooth_width",
+            "cutoff_function_type",
             "max_radial",
             "max_angular",
+            "radial_basis",
+            "optimization",
             "gaussian_sigma_type",
             "gaussian_sigma_constant",
-            "gaussian_density",
-            "cutoff_function",
-            "radial_contribution",
-            "compute_gradients",
             "cutoff_function_parameters",
             "expansion_by_species_method",
             "global_species",
+            "compute_gradients",
         }
         hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
         self.hypers.update(hypers_clean)

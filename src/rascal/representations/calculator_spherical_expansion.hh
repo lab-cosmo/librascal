@@ -1632,7 +1632,8 @@ namespace rascal {
       if (hypers.count("global_species")) {
         Key_t species = json_io::template read_hyperparameter<Key_t>(
             __FILENAME__, __LINE__, hypers, "global_species");
-        if (species.size() == 0 && this->expansion_by_species == "user defined") {
+        if (species.size() == 0 &&
+            this->expansion_by_species == "user defined") {
           std::stringstream err_str{};
           err_str << "expansion_by_species is 'user defined'"
                   << " but global_species is empty"
