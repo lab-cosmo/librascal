@@ -333,12 +333,20 @@ namespace rascal {
       using internal::SphericalInvariantsType;
       this->type = SphericalInvariantsType::PowerSpectrum;
 
+      json coefficient_subselection;
+      bool is_coefficient_subselection_set{false};
       if (hypers.count("coefficient_subselection")) {
-        this->is_sparsified = true;
-
-        json coefficient_subselection =
+        coefficient_subselection =
             json_io::template read_hyperparameter<json>(
                 __FILENAME__, __LINE__, hypers, "coefficient_subselection");
+        if (coefficient_subselection.size() != 0) {
+          is_coefficient_subselection_set = true;
+        }
+      }
+
+      if (is_coefficient_subselection_set) {
+        this->is_sparsified = true;
+
         // get the indices of the subselected PowerSpectrum coefficients:
         // p_{abn_1n_2l} where a and b refer to atomic species and should be
         // lexicographically sorted so that a <= b, n_1 and n_2 refer to

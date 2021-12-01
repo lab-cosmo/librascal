@@ -151,7 +151,7 @@ class SphericalCovariants(BaseIO):
         cutoff_smooth_width,
         max_radial,
         max_angular,
-        gaussian_sigma_type,
+        gaussian_sigma_type="Constant",
         gaussian_sigma_constant=0.3,
         cutoff_function_type="ShiftedCosine",
         normalize=True,
@@ -169,53 +169,51 @@ class SphericalCovariants(BaseIO):
         class documentation
         """
         self.name = "sphericalcovariants"
-        self.hypers = dict()
-        self.update_hyperparameters(
-            max_radial=max_radial,
-            max_angular=max_angular,
-            soap_type=soap_type,
-            normalize=normalize,
-            inversion_symmetry=inversion_symmetry,
-            covariant_lambda=covariant_lambda,
-        )
-
-        self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
-
-        cutoff_function_parameters.update(
-            interaction_cutoff=interaction_cutoff,
-            cutoff_smooth_width=cutoff_smooth_width,
-        )
-        cutoff_function = cutoff_function_dict_switch(
-            cutoff_function_type, **cutoff_function_parameters
-        )
-
-        gaussian_density = dict(
-            type=gaussian_sigma_type,
-            gaussian_sigma=dict(value=gaussian_sigma_constant, unit="AA"),
-        )
         optimization = check_optimization_for_spherical_representations(
             optimization, optimization_args
         )
 
-        radial_contribution = dict(type=radial_basis, optimization=optimization)
-        radial_contribution = dict(
-            type=radial_basis,
+        if global_species is None:
+            global_species = []
+        elif not isinstance(global_species, list):
+            # TODO(veit) I think we should raise an error in this case, maybe we can still make an integer to a list, but in any other case I find it dangours to make a list out of this. I did not change this to ensure backwards compatibility
+            global_species = list(global_species)
+
+        if cutoff_function_parameters is None:
+            cutoff_function_parameters = dict()
+        elif not isinstance(cutoff_function_parameters, dict):
+            raise ValueError("\'cutoff_function_parameters\' should be None or a dictionary with \'rate\', \'scale\' and \'expontent\'")
+
+        self.hypers = dict(
+            interaction_cutoff=interaction_cutoff,
+            cutoff_smooth_width=cutoff_smooth_width,
+            max_radial=max_radial,
+            max_angular=max_angular,
+            gaussian_sigma_type=gaussian_sigma_type,
+            gaussian_sigma_constant=gaussian_sigma_constant,
+            cutoff_function_type=cutoff_function_type,
+            soap_type=soap_type,
+            inversion_symmetry=inversion_symmetry,
+            radial_basis=radial_basis,
+            normalize=normalize,
+            optimization=optimization,
+            optimization_args=optimization_args,
+            covariant_lambda=covariant_lambda,
+            expansion_by_species_method=expansion_by_species_method,
+            global_species=global_species,
+            compute_gradients=compute_gradients,
+            cutoff_function_parameters=cutoff_function_parameters,
         )
 
-        self.update_hyperparameters(
-            cutoff_function=cutoff_function,
-            gaussian_density=gaussian_density,
-            radial_contribution=radial_contribution,
-        )
 
         self.nl_options = [
-            dict(name="centers", args=dict()),
+            dict(name="centers", args=[]),
             dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
             dict(name="centercontribution", args=dict()),
             dict(name="strict", args=dict(cutoff=interaction_cutoff)),
         ]
-
         self.rep_options = dict(name=self.name, args=[self.hypers])
+    
 
         self._representation = CalculatorFactory(self.rep_options)
 
@@ -377,20 +375,7 @@ class SphericalCovariants(BaseIO):
 
     def _set_data(self, data):
         super()._set_data(data)
-        # allows to load deprecated models
-        if "cpp_representation" in data.keys():
-            self._representation = self._representation.from_dict(
-                data["cpp_representation"]
-            )
-        else:
-            print(
-                "WARNING: a deprecated model was loaded. Key "
-                "'cpp_representation' was not found in model. Please dump and "
-                "reload the model to update it. The model parameters will not "
-                "change, only the format."
-            )
 
     def _get_data(self):
         data = super()._get_data()
-        data.update(cpp_representation=self._representation.to_dict())
         return data
