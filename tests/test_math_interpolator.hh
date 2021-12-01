@@ -204,13 +204,12 @@ namespace rascal {
     math::Hyp1f1 hyp1f1{0.5 * (5 + 4 + 3), 4 + 1.5, 200, 1e-15};
     const int max_radial{3};
     const int max_angular{max_radial - 1};
-    const json fc_hypers{{"type", "Constant"},
-                         {"gaussian_sigma", {{"value", 0.5}, {"unit", "AA"}}}};
-    const json hypers{
-        {"gaussian_density", fc_hypers},
-        {"max_radial", max_radial},
-        {"max_angular", max_angular},
-        {"cutoff_function", {{"cutoff", {{"value", 2.0}, {"unit", "AA"}}}}}};
+
+    const json hypers{{"gaussian_sigma_type", "Constant"},
+                      {"gaussian_sigma_constant", 0.5},
+                      {"max_radial", max_radial},
+                      {"max_angular", max_angular},
+                      {"interaction_cutoff", 3.0}};
 
     // a=0.5*(n+l+3), b = l+1.5, mmax, tolerance
     RadialIntegral_t radial_contr{hypers};

@@ -170,16 +170,16 @@ class SphericalExpansion(BaseIO):
         cutoff_smooth_width,
         max_radial,
         max_angular,
-        gaussian_sigma_type,
+        gaussian_sigma_type="Constant",
         gaussian_sigma_constant=0.3,
         cutoff_function_type="ShiftedCosine",
         radial_basis="GTO",
+        compute_gradients=False,
+        expansion_by_species_method="environment wise",
         optimization=None,
         optimization_args=None,
-        expansion_by_species_method="environment wise",
         global_species=None,
-        compute_gradients=False,
-        cutoff_function_parameters=dict(),
+        cutoff_function_parameters=None,
     ):
         """Construct a SphericalExpansion representation
 
@@ -188,55 +188,51 @@ class SphericalExpansion(BaseIO):
         """
 
         self.name = "sphericalexpansion"
-        self.hypers = dict()
 
-        if global_species is None:
-            global_species = []
-        elif not isinstance(global_species, list):
-            global_species = list(global_species)
-
-        self.update_hyperparameters(
-            max_radial=max_radial,
-            max_angular=max_angular,
-            expansion_by_species_method=expansion_by_species_method,
-            global_species=global_species,
-            compute_gradients=compute_gradients,
-        )
-        self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
-        cutoff_function_parameters.update(
-            interaction_cutoff=interaction_cutoff,
-            cutoff_smooth_width=cutoff_smooth_width,
-        )
-        cutoff_function = cutoff_function_dict_switch(
-            cutoff_function_type, **cutoff_function_parameters
-        )
-
-        gaussian_density = dict(
-            type=gaussian_sigma_type,
-            gaussian_sigma=dict(value=gaussian_sigma_constant, unit="A"),
-        )
         optimization = check_optimization_for_spherical_representations(
             optimization, optimization_args
         )
 
-        radial_contribution = dict(type=radial_basis, optimization=optimization)
+        if global_species is None:
+            global_species = []
+        elif isinstance(global_species, int):
+            global_species = list(global_species)
+        elif not (isinstance(global_species, list)):
+            raise ValueError(
+                "'global_species' should be None, an integer, an empty list or a list of atomic numbers"
+            )
 
-        self.update_hyperparameters(
-            cutoff_function=cutoff_function,
-            gaussian_density=gaussian_density,
-            radial_contribution=radial_contribution,
+        if cutoff_function_parameters is None:
+            cutoff_function_parameters = dict()
+        elif not isinstance(cutoff_function_parameters, dict):
+            raise ValueError(
+                "'cutoff_function_parameters' should be None or a dictionary with 'rate', 'scale' and 'expontent'"
+            )
+
+        self.hypers = dict(
+            interaction_cutoff=interaction_cutoff,
+            cutoff_smooth_width=cutoff_smooth_width,
+            max_radial=max_radial,
+            max_angular=max_angular,
+            gaussian_sigma_type=gaussian_sigma_type,
+            gaussian_sigma_constant=gaussian_sigma_constant,
+            cutoff_function_type=cutoff_function_type,
+            radial_basis=radial_basis,
+            compute_gradients=compute_gradients,
+            expansion_by_species_method=expansion_by_species_method,
+            optimization=optimization,
+            optimization_args=optimization_args,
+            global_species=global_species,
+            cutoff_function_parameters=cutoff_function_parameters,
         )
 
         self.nl_options = [
-            dict(name="centers", args=dict()),
+            dict(name="centers", args=[]),
             dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
             dict(name="centercontribution", args=dict()),
             dict(name="strict", args=dict(cutoff=interaction_cutoff)),
         ]
-
         self.rep_options = dict(name=self.name, args=[self.hypers])
-
-        n_features = self.get_num_coefficients()
 
         self._representation = CalculatorFactory(self.rep_options)
 
@@ -253,13 +249,14 @@ class SphericalExpansion(BaseIO):
             "max_angular",
             "gaussian_sigma_type",
             "gaussian_sigma_constant",
-            "gaussian_density",
-            "cutoff_function",
-            "radial_contribution",
+            "cutoff_function_type",
+            "radial_basis",
             "compute_gradients",
+            "optimization",
             "cutoff_function_parameters",
             "expansion_by_species_method",
             "global_species",
+            "compute_gradients",
         }
         hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
         self.hypers.update(hypers_clean)
@@ -305,29 +302,11 @@ class SphericalExpansion(BaseIO):
         return keys
 
     def _get_init_params(self):
-        gaussian_density = self.hypers["gaussian_density"]
-        cutoff_function = self.hypers["cutoff_function"]
-        radial_contribution = self.hypers["radial_contribution"]
-
-        init_params = dict(
-            interaction_cutoff=cutoff_function["cutoff"]["value"],
-            cutoff_smooth_width=cutoff_function["smooth_width"]["value"],
-            max_radial=self.hypers["max_radial"],
-            max_angular=self.hypers["max_angular"],
-            expansion_by_species_method=self.hypers["expansion_by_species_method"],
-            global_species=self.hypers["global_species"],
-            compute_gradients=self.hypers["compute_gradients"],
-            gaussian_sigma_type=gaussian_density["type"],
-            gaussian_sigma_constant=gaussian_density["gaussian_sigma"]["value"],
-            cutoff_function_type=cutoff_function["type"],
-            radial_basis=radial_contribution["type"],
-            optimization=radial_contribution["optimization"],
-            cutoff_function_parameters=self.cutoff_function_parameters,
-        )
-        return init_params
+        return self.hypers
 
     def _set_data(self, data):
         super()._set_data(data)
 
     def _get_data(self):
-        return super()._get_data()
+        data = super()._get_data()
+        return data

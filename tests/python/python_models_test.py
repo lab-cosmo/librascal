@@ -132,21 +132,7 @@ class TestNumericalKernelGradient(unittest.TestCase):
             #            a general function transformation c++ parameters to
             #            python would be more suitable here
             #            future work
-            calculator = SphericalInvariants(
-                soap_type=hypers["soap_type"],
-                radial_basis=hypers["radial_contribution"]["type"],
-                max_radial=hypers["max_radial"],
-                max_angular=hypers["max_angular"],
-                cutoff_function_type=hypers["cutoff_function"]["type"],
-                interaction_cutoff=hypers["cutoff_function"]["cutoff"]["value"],
-                cutoff_smooth_width=hypers["cutoff_function"]["smooth_width"]["value"],
-                gaussian_sigma_type=hypers["gaussian_density"]["type"],
-                gaussian_sigma_constant=hypers["gaussian_density"]["gaussian_sigma"][
-                    "value"
-                ],
-                compute_gradients=hypers["compute_gradients"],
-                normalize=hypers["normalize"],
-            )
+            calculator = SphericalInvariants(**hypers)
             kernel = Kernel(calculator, kernel_type="Sparse", **kernel_input["kernel"])
             for j in range(len(frames)):
                 # we do this frame by frame to be able to use the function

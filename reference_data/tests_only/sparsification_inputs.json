@@ -10,17 +10,13 @@
         "expansion_by_species_method": "structure wise",
         "global_species": [],
         "compute_gradients": true,
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "rep_sparse": {
         "max_radial": 2,
@@ -41,17 +37,13 @@
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
           ]
         },
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "adaptors": [
         {
@@ -75,17 +67,13 @@
         "expansion_by_species_method": "structure wise",
         "global_species": [],
         "compute_gradients": true,
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "rep_sparse": {
         "max_radial": 2,
@@ -106,17 +94,13 @@
             2, 6, 7, 5, 11, 8, 10, 3, 1, 0, 4, 9
           ]
         },
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "adaptors": [
         {
@@ -140,17 +124,13 @@
         "expansion_by_species_method": "structure wise",
         "global_species": [],
         "compute_gradients": true,
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "rep_sparse": {
         "max_radial": 2,
@@ -169,17 +149,13 @@
           "l": [1, 2, 2, 1, 1, 0, 1, 0],
           "selected_features_global_ids": [1, 5, 2, 7, 10, 3, 4, 6]
         },
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "adaptors": [
         {
@@ -203,17 +179,13 @@
         "expansion_by_species_method": "structure wise",
         "global_species": [],
         "compute_gradients": true,
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "rep_sparse": {
         "max_radial": 2,
@@ -278,17 +250,13 @@
             116, 117, 118, 119
           ]
         },
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "adaptors": [
         {
@@ -312,17 +280,13 @@
         "expansion_by_species_method": "structure wise",
         "global_species": [],
         "compute_gradients": true,
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "rep_sparse": {
         "max_radial": 2,
@@ -387,17 +351,13 @@
             100, 72, 33, 62, 107
           ]
         },
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "adaptors": [
         {
@@ -421,17 +381,13 @@
         "expansion_by_species_method": "structure wise",
         "global_species": [],
         "compute_gradients": true,
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "rep_sparse": {
         "max_radial": 2,
@@ -450,17 +406,13 @@
           "l": [1, 2, 0, 2, 0, 1, 2, 1],
           "selected_features_global_ids": [91, 38, 51, 23, 102, 115, 26, 49]
         },
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "adaptors": [
         {
@@ -484,17 +436,13 @@
         "expansion_by_species_method": "structure wise",
         "global_species": [],
         "compute_gradients": true,
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "rep_sparse": {
         "max_radial": 2,
@@ -531,17 +479,13 @@
             19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
           ]
         },
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "adaptors": [
         {
@@ -565,17 +509,13 @@
         "expansion_by_species_method": "structure wise",
         "global_species": [],
         "compute_gradients": true,
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "rep_sparse": {
         "max_radial": 2,
@@ -612,17 +552,13 @@
             17, 31, 30, 18, 28, 11, 34, 27, 24, 3, 9, 21, 19, 22, 4, 10, 16, 6
           ]
         },
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "adaptors": [
         {
@@ -646,17 +582,13 @@
         "expansion_by_species_method": "structure wise",
         "global_species": [],
         "compute_gradients": true,
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "rep_sparse": {
         "max_radial": 2,
@@ -675,17 +607,13 @@
           "l": [1, 0, 0, 0, 0, 0, 1, 1],
           "selected_features_global_ids": [4, 9, 30, 15, 21, 3, 1, 13]
         },
-        "cutoff_function": {
-          "type": "ShiftedCosine",
-          "cutoff": {"value": 3.5, "unit": "AA"},
-          "smooth_width": {"value": 0.5, "unit": "AA"}
-        },
-        "gaussian_density": {
-          "type": "Constant", "gaussian_sigma": {"value": 0.4, "unit": "AA"}
-        },
-        "radial_contribution": {
-          "type": "GTO", "optimization": {}
-        }
+        "cutoff_function_type": "ShiftedCosine",
+        "interaction_cutoff": 3.5,
+        "cutoff_smooth_width": 0.5,
+        "gaussian_sigma_type": "Constant",
+        "gaussian_sigma_constant": 0.4,
+        "radial_basis": "GTO",
+        "optimization": {}
       },
       "adaptors": [
         {

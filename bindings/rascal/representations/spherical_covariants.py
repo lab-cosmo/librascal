@@ -151,17 +151,18 @@ class SphericalCovariants(BaseIO):
         cutoff_smooth_width,
         max_radial,
         max_angular,
-        gaussian_sigma_type,
+        gaussian_sigma_type="Constant",
         gaussian_sigma_constant=0.3,
         cutoff_function_type="ShiftedCosine",
-        normalize=True,
-        radial_basis="GTO",
-        optimization=None,
-        optimization_args=None,
         soap_type="LambdaSpectrum",
         inversion_symmetry=True,
+        radial_basis="GTO",
+        normalize=True,
         covariant_lambda=0,
-        cutoff_function_parameters=dict(),
+        optimization=None,
+        optimization_args=None,
+        global_species=None,
+        cutoff_function_parameters=None,
     ):
         """Construct a SphericalExpansion representation
 
@@ -169,52 +170,51 @@ class SphericalCovariants(BaseIO):
         class documentation
         """
         self.name = "sphericalcovariants"
-        self.hypers = dict()
-        self.update_hyperparameters(
-            max_radial=max_radial,
-            max_angular=max_angular,
-            soap_type=soap_type,
-            normalize=normalize,
-            inversion_symmetry=inversion_symmetry,
-            covariant_lambda=covariant_lambda,
-        )
-
-        self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
-
-        cutoff_function_parameters.update(
-            interaction_cutoff=interaction_cutoff,
-            cutoff_smooth_width=cutoff_smooth_width,
-        )
-        cutoff_function = cutoff_function_dict_switch(
-            cutoff_function_type, **cutoff_function_parameters
-        )
-
-        gaussian_density = dict(
-            type=gaussian_sigma_type,
-            gaussian_sigma=dict(value=gaussian_sigma_constant, unit="AA"),
-        )
         optimization = check_optimization_for_spherical_representations(
             optimization, optimization_args
         )
 
-        radial_contribution = dict(type=radial_basis, optimization=optimization)
-        radial_contribution = dict(
-            type=radial_basis,
-        )
+        if global_species is None:
+            global_species = []
+        elif isinstance(global_species, int):
+            global_species = list(global_species)
+        elif not (isinstance(global_species, list)):
+            raise ValueError(
+                "'global_species' should be None, an integer, an empty list or a list of atomic numbers"
+            )
 
-        self.update_hyperparameters(
-            cutoff_function=cutoff_function,
-            gaussian_density=gaussian_density,
-            radial_contribution=radial_contribution,
+        if cutoff_function_parameters is None:
+            cutoff_function_parameters = dict()
+        elif not isinstance(cutoff_function_parameters, dict):
+            raise ValueError(
+                "'cutoff_function_parameters' should be None or a dictionary with 'rate', 'scale' and 'expontent'"
+            )
+
+        self.hypers = dict(
+            interaction_cutoff=interaction_cutoff,
+            cutoff_smooth_width=cutoff_smooth_width,
+            max_radial=max_radial,
+            max_angular=max_angular,
+            gaussian_sigma_type=gaussian_sigma_type,
+            gaussian_sigma_constant=gaussian_sigma_constant,
+            cutoff_function_type=cutoff_function_type,
+            soap_type=soap_type,
+            inversion_symmetry=inversion_symmetry,
+            radial_basis=radial_basis,
+            normalize=normalize,
+            covariant_lambda=covariant_lambda,
+            optimization=optimization,
+            optimization_args=optimization_args,
+            global_species=global_species,
+            cutoff_function_parameters=cutoff_function_parameters,
         )
 
         self.nl_options = [
-            dict(name="centers", args=dict()),
+            dict(name="centers", args=[]),
             dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
             dict(name="centercontribution", args=dict()),
             dict(name="strict", args=dict(cutoff=interaction_cutoff)),
         ]
-
         self.rep_options = dict(name=self.name, args=[self.hypers])
 
         self._representation = CalculatorFactory(self.rep_options)
@@ -232,18 +232,19 @@ class SphericalCovariants(BaseIO):
             "max_angular",
             "gaussian_sigma_type",
             "gaussian_sigma_constant",
+            "cutoff_function_type",
             "soap_type",
             "inversion_symmetry",
-            "covariant_lambda",
-            "cutoff_function",
+            "radial_basis",
             "normalize",
-            "gaussian_density",
-            "radial_contribution",
+            "covariant_lambda",
+            "optimization",
+            "global_species",
             "cutoff_function_parameters",
         }
+
         hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
         self.hypers.update(hypers_clean)
-        return
 
     def transform(self, frames):
         """Compute the representation.
@@ -353,30 +354,11 @@ class SphericalCovariants(BaseIO):
         return keys
 
     def _get_init_params(self):
-        gaussian_density = self.hypers["gaussian_density"]
-        cutoff_function = self.hypers["cutoff_function"]
-        radial_contribution = self.hypers["radial_contribution"]
-
-        init_params = dict(
-            interaction_cutoff=cutoff_function["cutoff"]["value"],
-            cutoff_smooth_width=cutoff_function["smooth_width"]["value"],
-            max_radial=self.hypers["max_radial"],
-            max_angular=self.hypers["max_angular"],
-            soap_type=self.hypers["soap_type"],
-            inversion_symmetry=self.hypers["inversion_symmetry"],
-            normalize=self.hypers["normalize"],
-            gaussian_sigma_type=gaussian_density["type"],
-            gaussian_sigma_constant=gaussian_density["gaussian_sigma"]["value"],
-            lam=self.hypers["covariant_lambda"],
-            cutoff_function_type=cutoff_function["type"],
-            radial_basis=radial_contribution["type"],
-            optimization=radial_contribution["optimization"],
-            cutoff_function_parameters=self.cutoff_function_parameters,
-        )
-        return init_params
+        return self.hypers
 
     def _set_data(self, data):
         super()._set_data(data)
 
     def _get_data(self):
-        return super()._get_data()
+        data = super()._get_data()
+        return data

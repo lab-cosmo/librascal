@@ -29,6 +29,9 @@
 #ifndef TESTS_TEST_CALCULATOR_HH_
 #define TESTS_TEST_CALCULATOR_HH_
 
+// relative path of file with respect to librascal directory
+#define __FILENAME__ (__FILE__ + SOURCE_PATH_SIZE)
+
 #include "test_adaptor.hh"
 #include "test_math.hh"
 #include "test_structure.hh"
@@ -103,9 +106,19 @@ namespace rascal {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
             for (auto & rep_hyp : this->rep_hypers) {
-              rep_hyp["cutoff_function"] = fc_hyp;
-              rep_hyp["gaussian_density"] = sig_hyp;
-              rep_hyp["radial_contribution"] = ri_hyp;
+              rep_hyp["cutoff_function_type"] = fc_hyp["cutoff_function_type"];
+              rep_hyp["interaction_cutoff"] = fc_hyp["interaction_cutoff"];
+              rep_hyp["cutoff_smooth_width"] = fc_hyp["cutoff_smooth_width"];
+              if (fc_hyp.count("cutoff_function_parameters")) {
+                rep_hyp["cutoff_function_parameters"] =
+                    fc_hyp["cutoff_function_parameters"];
+              }
+
+              rep_hyp["gaussian_sigma_type"] = sig_hyp["gaussian_sigma_type"];
+              rep_hyp["gaussian_sigma_constant"] =
+                  sig_hyp["gaussian_sigma_constant"];
+
+              rep_hyp["radial_basis"] = ri_hyp["radial_basis"];
               this->representation_hypers.push_back(rep_hyp);
             }
           }
@@ -117,42 +130,53 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
 
-    std::vector<json> fc_hypers{
-        {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
+    std::vector<json> fc_hypers{{{"cutoff_function_type", "ShiftedCosine"},
+                                 {"interaction_cutoff", 3.0},
+                                 {"cutoff_smooth_width", 0.5}}};
 
-    std::vector<json> density_hypers{
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
+    std::vector<json> density_hypers{{{"gaussian_sigma_type", "Constant"},
+                                      {"gaussian_sigma_constant", 0.2}}};
+    std::vector<json> radial_contribution_hypers{{{"radial_basis", "GTO"}}};
 
-    std::vector<json> rep_hypers{{{"max_radial", 3},
-                                  {"max_angular", 0},
-                                  {"soap_type", "RadialSpectrum"},
-                                  {"normalize", true}},
-                                 {{"max_radial", 3},
-                                  {"max_angular", 0},
-                                  {"soap_type", "RadialSpectrum"},
-                                  {"normalize", true}},
-                                 {{"max_radial", 3},
-                                  {"max_angular", 3},
-                                  {"soap_type", "PowerSpectrum"},
-                                  {"normalize", true}},
-                                 {{"max_radial", 4},
-                                  {"max_angular", 3},
-                                  {"soap_type", "PowerSpectrum"},
-                                  {"normalize", true}},
-                                 {{"max_radial", 3},
-                                  {"max_angular", 1},
-                                  {"soap_type", "BiSpectrum"},
-                                  {"inversion_symmetry", true},
-                                  {"normalize", true}},
-                                 {{"max_radial", 3},
-                                  {"max_angular", 1},
-                                  {"soap_type", "BiSpectrum"},
-                                  {"inversion_symmetry", false},
-                                  {"normalize", true}}};
+    std::vector<json> rep_hypers{
+        {{"max_radial", 3},
+         {"max_angular", 0},
+         {"soap_type", "RadialSpectrum"},
+         {"normalize", true},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", false}},
+        {{"max_radial", 3},
+         {"max_angular", 0},
+         {"soap_type", "RadialSpectrum"},
+         {"normalize", true},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", false}},
+        {{"max_radial", 3},
+         {"max_angular", 3},
+         {"soap_type", "PowerSpectrum"},
+         {"normalize", true},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", false}},
+        {{"max_radial", 4},
+         {"max_angular", 3},
+         {"soap_type", "PowerSpectrum"},
+         {"normalize", true},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", false}},
+        {{"max_radial", 3},
+         {"max_angular", 1},
+         {"soap_type", "BiSpectrum"},
+         {"inversion_symmetry", true},
+         {"normalize", true},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", false}},
+        {{"max_radial", 3},
+         {"max_angular", 1},
+         {"soap_type", "BiSpectrum"},
+         {"inversion_symmetry", false},
+         {"normalize", true},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", false}}};
   };
 
   template <typename MultipleStructureFixture>
@@ -166,9 +190,19 @@ namespace rascal {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
             for (auto & rep_hyp : this->rep_hypers) {
-              rep_hyp["cutoff_function"] = fc_hyp;
-              rep_hyp["gaussian_density"] = sig_hyp;
-              rep_hyp["radial_contribution"] = ri_hyp;
+              rep_hyp["cutoff_function_type"] = fc_hyp["cutoff_function_type"];
+              rep_hyp["interaction_cutoff"] = fc_hyp["interaction_cutoff"];
+              rep_hyp["cutoff_smooth_width"] = fc_hyp["cutoff_smooth_width"];
+              if (fc_hyp.count("cutoff_function_parameters")) {
+                rep_hyp["cutoff_function_parameters"] =
+                    fc_hyp["cutoff_function_parameters"];
+              }
+
+              rep_hyp["gaussian_sigma_type"] = sig_hyp["gaussian_sigma_type"];
+              rep_hyp["gaussian_sigma_constant"] =
+                  sig_hyp["gaussian_sigma_constant"];
+
+              rep_hyp["radial_basis"] = ri_hyp["radial_basis"];
               this->representation_hypers.push_back(rep_hyp);
             }
           }
@@ -180,29 +214,32 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
 
-    std::vector<json> fc_hypers{
-        {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+    std::vector<json> fc_hypers{{{"cutoff_function_type", "ShiftedCosine"},
+                                 {"interaction_cutoff", 2.0},
+                                 {"cutoff_smooth_width", 1.0}}};
 
     std::vector<json> density_hypers{
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 1},
-                                  {"max_angular", 2},
-                                  {"soap_type", "LambdaSpectrum"},
-                                  {"covariant_lambda", 2},
-                                  {"inversion_symmetry", true},
-                                  {"normalize", true}},
-                                 {{"max_radial", 2},
-                                  {"max_angular", 2},
-                                  {"soap_type", "LambdaSpectrum"},
-                                  {"covariant_lambda", 2},
-                                  {"inversion_symmetry", false},
-                                  {"normalize", true}}};
+        {{"gaussian_sigma_type", "Constant"}, {"gaussian_sigma_constant", 0.2}},
+        {{"gaussian_sigma_type", "Constant"},
+         {"gaussian_sigma_constant", 0.4}}};
+    std::vector<json> radial_contribution_hypers{{{"radial_basis", "GTO"}}};
+    std::vector<json> rep_hypers{
+        {{"max_radial", 1},
+         {"max_angular", 2},
+         {"soap_type", "LambdaSpectrum"},
+         {"covariant_lambda", 2},
+         {"inversion_symmetry", true},
+         {"normalize", true},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", false}},
+        {{"max_radial", 2},
+         {"max_angular", 2},
+         {"soap_type", "LambdaSpectrum"},
+         {"covariant_lambda", 2},
+         {"inversion_symmetry", false},
+         {"normalize", true},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", false}}};
   };
 
   struct SphericalInvariantsTestData : TestData {
@@ -242,9 +279,19 @@ namespace rascal {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
             for (auto & rep_hyp : this->rep_hypers) {
-              rep_hyp["cutoff_function"] = fc_hyp;
-              rep_hyp["gaussian_density"] = sig_hyp;
-              rep_hyp["radial_contribution"] = ri_hyp;
+              rep_hyp["cutoff_function_type"] = fc_hyp["cutoff_function_type"];
+              rep_hyp["interaction_cutoff"] = fc_hyp["interaction_cutoff"];
+              rep_hyp["cutoff_smooth_width"] = fc_hyp["cutoff_smooth_width"];
+              if (fc_hyp.count("cutoff_function_parameters")) {
+                rep_hyp["cutoff_function_parameters"] =
+                    fc_hyp["cutoff_function_parameters"];
+              }
+
+              rep_hyp["gaussian_sigma_type"] = sig_hyp["gaussian_sigma_type"];
+              rep_hyp["gaussian_sigma_constant"] =
+                  sig_hyp["gaussian_sigma_constant"];
+
+              rep_hyp["radial_basis"] = ri_hyp["radial_basis"];
               this->representation_hypers.push_back(rep_hyp);
             }
           }
@@ -256,33 +303,34 @@ namespace rascal {
     std::vector<json> representation_hypers{};
 
     std::vector<json> fc_hypers{
-        {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}},
-        {{"type", "RadialScaling"},
-         {"cutoff", {{"value", 4.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}},
-         {"rate", {{"value", .0}, {"unit", "AA"}}},
-         {"exponent", {{"value", 4}, {"unit", ""}}},
-         {"scale", {{"value", 2.5}, {"unit", "AA"}}}},
-        {{"type", "RadialScaling"},
-         {"cutoff", {{"value", 4.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}},
-         {"rate", {{"value", 1.}, {"unit", "AA"}}},
-         {"exponent", {{"value", 3}, {"unit", ""}}},
-         {"scale", {{"value", 2.}, {"unit", "AA"}}}}};
+        {{"cutoff_function_type", "ShiftedCosine"},
+         {"interaction_cutoff", 3.0},
+         {"cutoff_smooth_width", 0.5}},
+        {{"cutoff_function_type", "ShiftedCosine"},
+         {"interaction_cutoff", 2.0},
+         {"cutoff_smooth_width", 1.0}},
+        {{"cutoff_function_type", "RadialScaling"},
+         {"interaction_cutoff", 4.0},
+         {"cutoff_smooth_width", 0.5},
+         {"cutoff_function_parameters",
+          {{"rate", .0}, {"exponent", 4}, {"scale", 2.5}}}},
+        {{"cutoff_function_type", "RadialScaling"},
+         {"interaction_cutoff", 4.0},
+         {"cutoff_smooth_width", 0.5},
+         {"cutoff_function_parameters",
+          {{"rate", 1.}, {"exponent", 3}, {"scale", 2.}}}}};
 
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}},
-                                                 {{"type", "DVR"}}};
+    std::vector<json> radial_contribution_hypers{{{"radial_basis", "GTO"}},
+                                                 {{"radial_basis", "DVR"}}};
 
-    std::vector<json> density_hypers{
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.5}, {"unit", "AA"}}}}};
+    std::vector<json> density_hypers{{{"gaussian_sigma_type", "Constant"},
+                                      {"gaussian_sigma_constant", 0.5}}};
 
-    std::vector<json> rep_hypers{{{"max_radial", 2}, {"max_angular", 2}}};
+    std::vector<json> rep_hypers{
+        {{"max_radial", 2},
+         {"max_angular", 2},
+         {"compute_gradients", false},
+         {"expansion_by_species_method", "environment wise"}}};
   };
 
   /**
@@ -343,9 +391,22 @@ namespace rascal {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
             for (auto & rep_hyp : this->rep_hypers) {
-              rep_hyp["cutoff_function"] = fc_hyp;
-              rep_hyp["gaussian_density"] = sig_hyp;
-              rep_hyp["radial_contribution"] = ri_hyp;
+              rep_hyp["cutoff_function_type"] = fc_hyp["cutoff_function_type"];
+              rep_hyp["interaction_cutoff"] = fc_hyp["interaction_cutoff"];
+              rep_hyp["cutoff_smooth_width"] = fc_hyp["cutoff_smooth_width"];
+              if (fc_hyp.count("cutoff_function_parameters")) {
+                rep_hyp["cutoff_function_parameters"] =
+                    fc_hyp["cutoff_function_parameters"];
+              }
+
+              rep_hyp["gaussian_sigma_type"] = sig_hyp["gaussian_sigma_type"];
+              rep_hyp["gaussian_sigma_constant"] =
+                  sig_hyp["gaussian_sigma_constant"];
+
+              rep_hyp["radial_basis"] = ri_hyp["radial_basis"];
+              if (ri_hyp.count("optimization")) {
+                rep_hyp["optimization"] = ri_hyp["optimization"];
+              }
               this->representation_hypers.push_back(rep_hyp);
             }
           }
@@ -356,19 +417,17 @@ namespace rascal {
     ~MultipleHypersSphericalExpansion() = default;
 
     std::vector<json> representation_hypers{};
-    std::vector<json> fc_hypers{
-        {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}},
-        {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 2.0}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+    std::vector<json> fc_hypers{{{"cutoff_function_type", "ShiftedCosine"},
+                                 {"interaction_cutoff", 3.0},
+                                 {"cutoff_smooth_width", 0.5}},
+                                {{"cutoff_function_type", "ShiftedCosine"},
+                                 {"interaction_cutoff", 2.0},
+                                 {"cutoff_smooth_width", 1.0}}};
 
     std::vector<json> density_hypers{
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.2}, {"unit", "AA"}}}},
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+        {{"gaussian_sigma_type", "Constant"}, {"gaussian_sigma_constant", 0.2}},
+        {{"gaussian_sigma_type", "Constant"},
+         {"gaussian_sigma_constant", 0.4}}};
     // nested json definitions dont work properly in this case:
     // if not defined seperately, radial dimension reduction_hypers
     // are interpreted as arrays
@@ -389,16 +448,22 @@ namespace rascal {
         {"Spline", {{"accuracy", 1e-8}}},
         {"RadialDimReduction", projection_matrices_hypers}};
     std::vector<json> radial_contribution_hypers{
-        {{"type", "GTO"}, {"optimization", {}}},
-        {{"type", "DVR"}, {"optimization", {}}},
-        {{"type", "GTO"},
+        {{"radial_basis", "GTO"}, {"optimization", {}}},
+        {{"radial_basis", "DVR"}, {"optimization", {}}},
+        {{"radial_basis", "GTO"},
          {"optimization", {{"Spline", {{"accuracy", 1e-12}}}}}},
-        {{"type", "DVR"}, {"optimization", {{"Spline", {{"accuracy", 1e-5}}}}}},
-        {{"type", "GTO"}, {"optimization", radial_dim_reduction_spline_hypers}},
-        {{"type", "DVR"}, {"optimization", radial_dim_reduction_spline_hypers}},
+        {{"radial_basis", "DVR"},
+         {"optimization", {{"Spline", {{"accuracy", 1e-5}}}}}},
+        {{"radial_basis", "GTO"},
+         {"optimization", radial_dim_reduction_spline_hypers}},
+        {{"radial_basis", "DVR"},
+         {"optimization", radial_dim_reduction_spline_hypers}},
     };
     std::vector<json> rep_hypers{
-        {{"max_radial", 3}, {"max_angular", 3}, {"compute_gradients", true}}};
+        {{"max_radial", 3},
+         {"max_angular", 3},
+         {"compute_gradients", true},
+         {"expansion_by_species_method", "environment wise"}}};
   };
 
   /** Contains some simple periodic structures for testing complicated things
@@ -564,9 +629,19 @@ namespace rascal {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
             for (auto & rep_hyp : this->rep_hypers) {
-              rep_hyp["cutoff_function"] = fc_hyp;
-              rep_hyp["gaussian_density"] = sig_hyp;
-              rep_hyp["radial_contribution"] = ri_hyp;
+              rep_hyp["cutoff_function_type"] = fc_hyp["cutoff_function_type"];
+              rep_hyp["interaction_cutoff"] = fc_hyp["interaction_cutoff"];
+              rep_hyp["cutoff_smooth_width"] = fc_hyp["cutoff_smooth_width"];
+              if (fc_hyp.count("cutoff_function_parameters")) {
+                rep_hyp["cutoff_function_parameters"] =
+                    fc_hyp["cutoff_function_parameters"];
+              }
+
+              rep_hyp["gaussian_sigma_type"] = sig_hyp["gaussian_sigma_type"];
+              rep_hyp["gaussian_sigma_constant"] =
+                  sig_hyp["gaussian_sigma_constant"];
+
+              rep_hyp["radial_basis"] = ri_hyp["radial_basis"];
               this->representation_hypers.push_back(rep_hyp);
             }
           }
@@ -577,14 +652,12 @@ namespace rascal {
     ~SingleHypersSphericalExpansion() = default;
 
     std::vector<json> representation_hypers{};
-    std::vector<json> fc_hypers{
-        {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
+    std::vector<json> fc_hypers{{{"cutoff_function_type", "ShiftedCosine"},
+                                 {"interaction_cutoff", 2.5},
+                                 {"cutoff_smooth_width", 0.5}}};
 
-    std::vector<json> density_hypers{
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
+    std::vector<json> density_hypers{{{"gaussian_sigma_type", "Constant"},
+                                      {"gaussian_sigma_constant", 0.4}}};
     std::map<std::string, std::vector<std::vector<std::vector<double>>>>
         projection_matrices{
             {"1",
@@ -648,16 +721,20 @@ namespace rascal {
         {"Spline", {{"accuracy", 1e-8}}},
         {"RadialDimReduction", projection_matrices_hypers}};
     std::vector<json> radial_contribution_hypers{
-        {{"type", "GTO"}, {"optimization", {}}},
-        {{"type", "DVR"}, {"optimization", {}}},
-        {{"type", "GTO"}, {"optimization", {{"Spline", {{"accuracy", 1e-8}}}}}},
-        {{"type", "GTO"},
+        {{"radial_basis", "GTO"}, {"optimization", {}}},
+        {{"radial_basis", "DVR"}, {"optimization", {}}},
+        {{"radial_basis", "GTO"},
+         {"optimization", {{"Spline", {{"accuracy", 1e-8}}}}}},
+        {{"radial_basis", "GTO"},
          {"optimization", radial_dim_reduction_spline_hypers}}};
     // if new hypers are added or current ones changed there will be problems
     // with the projection_matrices defined above since their size depend on
     // max_radial and max_angular
     std::vector<json> rep_hypers{
-        {{"max_radial", 2}, {"max_angular", 2}, {"compute_gradients", true}}};
+        {{"max_radial", 2},
+         {"max_angular", 2},
+         {"compute_gradients", true},
+         {"expansion_by_species_method", "environment wise"}}};
   };
 
   template <typename DataFixture>
@@ -671,9 +748,19 @@ namespace rascal {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
             for (auto & rep_hyp : this->rep_hypers) {
-              rep_hyp["cutoff_function"] = fc_hyp;
-              rep_hyp["gaussian_density"] = sig_hyp;
-              rep_hyp["radial_contribution"] = ri_hyp;
+              rep_hyp["cutoff_function_type"] = fc_hyp["cutoff_function_type"];
+              rep_hyp["interaction_cutoff"] = fc_hyp["interaction_cutoff"];
+              rep_hyp["cutoff_smooth_width"] = fc_hyp["cutoff_smooth_width"];
+              if (fc_hyp.count("cutoff_function_parameters")) {
+                rep_hyp["cutoff_function_parameters"] =
+                    fc_hyp["cutoff_function_parameters"];
+              }
+
+              rep_hyp["gaussian_sigma_type"] = sig_hyp["gaussian_sigma_type"];
+              rep_hyp["gaussian_sigma_constant"] =
+                  sig_hyp["gaussian_sigma_constant"];
+
+              rep_hyp["radial_basis"] = ri_hyp["radial_basis"];
               this->representation_hypers.push_back(rep_hyp);
             }
           }
@@ -685,25 +772,26 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
 
-    std::vector<json> fc_hypers{
-        {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 2.5}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 0.5}, {"unit", "AA"}}}}};
+    std::vector<json> fc_hypers{{{"cutoff_function_type", "ShiftedCosine"},
+                                 {"interaction_cutoff", 2.5},
+                                 {"cutoff_smooth_width", 0.5}}};
 
-    std::vector<json> density_hypers{
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 2},
-                                  {"max_angular", 2},
-                                  {"normalize", true},
-                                  {"soap_type", "PowerSpectrum"},
-                                  {"compute_gradients", true}},
-                                 {{"max_radial", 2},
-                                  {"max_angular", 0},
-                                  {"normalize", true},
-                                  {"soap_type", "RadialSpectrum"},
-                                  {"compute_gradients", true}}};
+    std::vector<json> density_hypers{{{"gaussian_sigma_type", "Constant"},
+                                      {"gaussian_sigma_constant", 0.4}}};
+    std::vector<json> radial_contribution_hypers{{{"radial_basis", "GTO"}}};
+    std::vector<json> rep_hypers{
+        {{"max_radial", 2},
+         {"max_angular", 2},
+         {"normalize", true},
+         {"soap_type", "PowerSpectrum"},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", true}},
+        {{"max_radial", 2},
+         {"max_angular", 0},
+         {"normalize", true},
+         {"soap_type", "RadialSpectrum"},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", true}}};
   };
 
   struct ComplexHypersSphericalInvariants : ComplexPeriodicNLCCStrictFixture {
@@ -716,9 +804,19 @@ namespace rascal {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
             for (auto & rep_hyp : this->rep_hypers) {
-              rep_hyp["cutoff_function"] = fc_hyp;
-              rep_hyp["gaussian_density"] = sig_hyp;
-              rep_hyp["radial_contribution"] = ri_hyp;
+              rep_hyp["cutoff_function_type"] = fc_hyp["cutoff_function_type"];
+              rep_hyp["interaction_cutoff"] = fc_hyp["interaction_cutoff"];
+              rep_hyp["cutoff_smooth_width"] = fc_hyp["cutoff_smooth_width"];
+              if (fc_hyp.count("cutoff_function_parameters")) {
+                rep_hyp["cutoff_function_parameters"] =
+                    fc_hyp["cutoff_function_parameters"];
+              }
+
+              rep_hyp["gaussian_sigma_type"] = sig_hyp["gaussian_sigma_type"];
+              rep_hyp["gaussian_sigma_constant"] =
+                  sig_hyp["gaussian_sigma_constant"];
+
+              rep_hyp["radial_basis"] = ri_hyp["radial_basis"];
               this->representation_hypers.push_back(rep_hyp);
             }
           }
@@ -729,25 +827,26 @@ namespace rascal {
     ~ComplexHypersSphericalInvariants() = default;
 
     std::vector<json> representation_hypers{};
-    std::vector<json> fc_hypers{
-        {{"type", "ShiftedCosine"},
-         {"cutoff", {{"value", 3.5}, {"unit", "AA"}}},
-         {"smooth_width", {{"value", 1.0}, {"unit", "AA"}}}}};
+    std::vector<json> fc_hypers{{{"cutoff_function_type", "ShiftedCosine"},
+                                 {"interaction_cutoff", 3.5},
+                                 {"cutoff_smooth_width", 1.0}}};
 
-    std::vector<json> density_hypers{
-        {{"type", "Constant"},
-         {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}}};
-    std::vector<json> radial_contribution_hypers{{{"type", "GTO"}}};
-    std::vector<json> rep_hypers{{{"max_radial", 2},
-                                  {"max_angular", 2},
-                                  {"normalize", false},
-                                  {"soap_type", "PowerSpectrum"},
-                                  {"compute_gradients", true}},
-                                 {{"max_radial", 2},
-                                  {"max_angular", 2},
-                                  {"normalize", true},
-                                  {"soap_type", "PowerSpectrum"},
-                                  {"compute_gradients", true}}};
+    std::vector<json> density_hypers{{{"gaussian_sigma_type", "Constant"},
+                                      {"gaussian_sigma_constant", 0.4}}};
+    std::vector<json> radial_contribution_hypers{{{"radial_basis", "GTO"}}};
+    std::vector<json> rep_hypers{
+        {{"max_radial", 2},
+         {"max_angular", 2},
+         {"normalize", false},
+         {"soap_type", "PowerSpectrum"},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", true}},
+        {{"max_radial", 2},
+         {"max_angular", 2},
+         {"normalize", true},
+         {"soap_type", "PowerSpectrum"},
+         {"expansion_by_species_method", "environment wise"},
+         {"compute_gradients", true}}};
   };
 
   struct SphericalExpansionTestData : TestData {
@@ -822,15 +921,16 @@ namespace rascal {
         // the fixture. This way we do not have to create a fixture for each
         // type while not using the wrong templated RadialIntegralHandler
         // constructor
-        auto radial_contribution_hypers =
-            hyper.at("radial_contribution").template get<json>();
-        auto radial_contribution_type_name =
-            radial_contribution_hypers.at("type").template get<std::string>();
-        auto density_hypers = hyper.at("gaussian_density").template get<json>();
+        // auto radial_contribution_type_name =
+        //    radial_contribution_hypers.at("radial_basis").template
+        //    get<std::string>();
+        std::string radial_contribution_type_name =
+            json_io::read_hyperparameter<std::string>(__FILENAME__, __LINE__,
+                                                      hyper, "radial_basis");
         auto smearing_type_name =
-            density_hypers.at("type").template get<std::string>();
+            hyper.at("gaussian_sigma_type").template get<std::string>();
         auto optimization_hypers =
-            radial_contribution_hypers.at("optimization").template get<json>();
+            hyper.at("optimization").template get<json>();
         bool using_spline = optimization_hypers.count("Spline");
         bool using_radial_dim_reduction =
             optimization_hypers.count("RadialDimReduction");

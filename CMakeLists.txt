@@ -171,6 +171,11 @@ if(SKBUILD)
   message(STATUS "The project is built using scikit-build")
 endif()
 
+# it determines the size of the PATH up to librascal and
+# is used to output relative path information in the code using __FILE__
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_definitions("-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
+
 add_subdirectory(src)
 
 enable_testing()

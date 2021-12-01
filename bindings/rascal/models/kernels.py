@@ -9,8 +9,11 @@ from ..utils import BaseIO
 from .sparse_points import SparsePoints
 import json
 
+import logging
 
 import numpy as np
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Kernel(BaseIO):
@@ -109,7 +112,8 @@ class Kernel(BaseIO):
         super()._set_data(data)
 
     def _get_data(self):
-        return super()._get_data()
+        data = super()._get_data()
+        return data
 
     def __call__(self, X, Y=None, grad=(False, False), compute_neg_stress=False):
         """
