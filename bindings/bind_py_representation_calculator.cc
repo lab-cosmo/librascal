@@ -51,6 +51,17 @@ namespace rascal {
 
   template <class Calculator, typename Manager,
             template <class> class... Adaptor>
+  void bind_get_num_coefficients_function(PyCalculator<Calculator> & representation) {
+    representation.def(
+        "get_num_coefficients",
+        [](Calculator & representation, int n_species) {
+          return representation.get_num_coefficients(n_species);
+        },
+        py::arg("n_species"), py::call_guard<py::gil_scoped_release>());
+  }
+
+  template <class Calculator, typename Manager,
+            template <class> class... Adaptor>
   void bind_compute_function(PyCalculator<Calculator> & representation) {
     using TypeHolder_t = StructureManagerTypeHolder<Manager, Adaptor...>;
     using Manager_t = typename TypeHolder_t::type;
@@ -86,11 +97,39 @@ namespace rascal {
         bind_compute_function_helper<T...>::apply(representation);
       }
     };
+
+    template <typename SM, typename AdaptorTypeHolder_>
+    struct bind_get_num_coefficients_function_helper;
+
+    template <typename SM, template <class> class... Ti>
+    struct bind_get_num_coefficients_function_helper<SM, AdaptorTypeHolder<Ti...>> {
+      template <class Calculator>
+      static void apply(PyCalculator<Calculator> & representation) {
+        bind_get_num_coefficients_function<Calculator, SM, Ti...>(representation);
+      }
+    };
+
+    template <typename StructureManagerTypeHolder_>
+    struct bind_get_num_coefficients_function_util;
+
+    template <typename... T>
+    struct bind_get_num_coefficients_function_util<std::tuple<T...>> {
+      template <class Calculator>
+      static void apply(PyCalculator<Calculator> & representation) {
+        bind_get_num_coefficients_function_helper<T...>::apply(representation);
+      }
+    };
   }  // namespace py_internal
 
   template <typename StructureManagerTypeHolder_, class Calculator>
   void bind_compute_function_helper(PyCalculator<Calculator> & representation) {
     py_internal::bind_compute_function_util<StructureManagerTypeHolder_>::apply(
+        representation);
+  }
+
+  template <typename StructureManagerTypeHolder_, class Calculator>
+  void bind_get_num_coefficients_function_helper(PyCalculator<Calculator> & representation) {
+    py_internal::bind_get_num_coefficients_function_util<StructureManagerTypeHolder_>::apply(
         representation);
   }
 
@@ -131,15 +170,18 @@ namespace rascal {
     auto rep_spherical_expansion =
         add_representation_calculator<Calc2_t>(mod, m_internal);
     bind_compute_function_helper<ManagerList_1_t>(rep_spherical_expansion);
+    bind_get_num_coefficients_function_helper<ManagerList_1_t>(rep_spherical_expansion);
 
     using Calc3_t = CalculatorSphericalInvariants;
     auto rep_soap = add_representation_calculator<Calc3_t>(mod, m_internal);
     bind_compute_function_helper<ManagerList_1_t>(rep_soap);
+    bind_get_num_coefficients_function_helper<ManagerList_1_t>(rep_soap);
 
     using Calc4_t = CalculatorSphericalCovariants;
     auto rep_lambda_soap =
         add_representation_calculator<Calc4_t>(mod, m_internal);
     bind_compute_function_helper<ManagerList_1_t>(rep_lambda_soap);
+    bind_get_num_coefficients_function_helper<ManagerList_1_t>(rep_lambda_soap);
   }
 
 }  // namespace rascal
