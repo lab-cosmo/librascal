@@ -51,11 +51,11 @@
 #include <array>
 #include <cmath>
 #include <exception>
+#include <iomanip>
 #include <memory>
 #include <sstream>
 #include <unordered_set>
 #include <vector>
-#include <iomanip>
 
 namespace rascal {
 
@@ -1788,7 +1788,7 @@ namespace rascal {
     } else {
       throw std::runtime_error("should not arrive here");
     }
-    
+
     // TODO(Kevin): Remove this after testing phase
     // Write obtained coefficients into output file of fixed name
     size_t natoms{0};
@@ -1797,14 +1797,16 @@ namespace rascal {
     }
     std::ofstream myfile;
     if (compute_gradients) {
-      myfile.open ("expansioncoeff_realspace_withgrad.txt", std::ios::trunc);
+      myfile.open("expansioncoeff_realspace_withgrad.txt", std::ios::trunc);
     } else {
-      myfile.open ("expansioncoeff_realspace_nograd.txt", std::ios::trunc);
+      myfile.open("expansioncoeff_realspace_nograd.txt", std::ios::trunc);
     }
-    myfile << "Spherical Expansion real space with parameters: " << "\n"
-           << "Natoms, nmax, lmax, compute_gradients" << "\n" 
-           << natoms << ", " << this->max_radial << ", " <<
-              this->max_angular << ", " << compute_gradients <<"\n";
+    myfile << "Spherical Expansion real space with parameters: "
+           << "\n"
+           << "Natoms, nmax, lmax, compute_gradients"
+           << "\n"
+           << natoms << ", " << this->max_radial << ", " << this->max_angular
+           << ", " << compute_gradients << "\n";
     myfile.close();
 
     // coeff C^{ij}_{nlm}
@@ -1984,17 +1986,17 @@ namespace rascal {
         radial_integral->template finalize_coefficients_der<ThreeD>(
             expansions_coefficients_gradient, center);
       }
-      
+
       // Write code in which to store the coefficients
-      // TODO delete after testing phase 
+      // TODO delete after testing phase
       std::ofstream myfile;
       if (compute_gradients) {
-        myfile.open ("expansioncoeff_realspace_withgrad.txt", std::ios::app);
+        myfile.open("expansioncoeff_realspace_withgrad.txt", std::ios::app);
       } else {
-        myfile.open ("expansioncoeff_realspace_nograd.txt", std::ios::app);
+        myfile.open("expansioncoeff_realspace_nograd.txt", std::ios::app);
       }
       myfile << std::setprecision(15);
-      for (auto neigh : center.pairs()) { 
+      for (auto neigh : center.pairs()) {
         auto atom_j_tag{neigh.get_atom_j().get_atom_tag()};
         auto atom_i_tag{center.get_atom_tag()};
         size_t jat{manager->get_atom_index(atom_j_tag)};
@@ -2002,20 +2004,17 @@ namespace rascal {
         Key_t neigh_type{neigh.get_atom_type()};
         auto && coeff = coefficients_center[neigh_type];
         myfile << "Atom indices " << iat << " and " << jat << "\n";
-        myfile << coeff.rows() << " x " <<
-               coeff.cols() << " coeff matrix = \n" <<
-               coeff << "\n";
+        myfile << coeff.rows() << " x " << coeff.cols() << " coeff matrix = \n"
+               << coeff << "\n";
 
         if (compute_gradients) {
-          auto & coefficients_center_gradient = 
-                 expansions_coefficients_gradient[center.get_atom_ii()];
-          auto && grad_center_by_type{
-                 coefficients_center_gradient[neigh_type]};
+          auto & coefficients_center_gradient =
+              expansions_coefficients_gradient[center.get_atom_ii()];
+          auto && grad_center_by_type{coefficients_center_gradient[neigh_type]};
           myfile << "Gradients = \n" << grad_center_by_type << "\n";
           auto & coefficients_neigh_gradient =
               expansions_coefficients_gradient[neigh];
-          auto && grad_neigh_by_type{
-              coefficients_neigh_gradient[neigh_type]};
+          auto && grad_neigh_by_type{coefficients_neigh_gradient[neigh_type]};
           myfile << "offdiagonals = \n" << grad_neigh_by_type << "\n";
         }
       }

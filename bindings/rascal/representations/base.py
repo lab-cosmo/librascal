@@ -6,9 +6,14 @@ import numpy as np
 import queue
 
 # Register Calculators
-_representations_list = ["sortedcoulomb", "sphericalexpansion",
-                         "sphericalinvariants", "sphericalcovariants",
-                         "kspacesphericalexpansion", "kspacesphericalinvariants"]
+_representations_list = [
+    "sortedcoulomb",
+    "sphericalexpansion",
+    "sphericalinvariants",
+    "sphericalcovariants",
+    "kspacesphericalexpansion",
+    "kspacesphericalinvariants",
+]
 _representations = {}
 for k, v in representation_calculators.__dict__.items():
     if "pybind11_builtins.pybind11_type" in str(type(v)):

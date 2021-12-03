@@ -35,8 +35,7 @@ def getsubitems(obj, itemkey, islast, maxlinelength, indent):
         # render basic type
         keyseparator = "" if itemkey == "" else ": "
         itemseparator = "" if islast else ","
-        items.append(itemkey + keyseparator +
-                     basictype2str(obj) + itemseparator)
+        items.append(itemkey + keyseparator + basictype2str(obj) + itemseparator)
 
     else:
         # render lists/dicts/tuples

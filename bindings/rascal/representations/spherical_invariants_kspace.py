@@ -13,9 +13,10 @@ def get_power_spectrum_index_mapping(sp_pairs, n_max, l_max):
     feat_idx2coeff_idx = {}
     # i_feat corresponds the global linear index
     i_feat = 0
-    for sp_pair, n1, n2, l in product(sp_pairs, range(n_max), range(n_max), range(l_max)):
-        feat_idx2coeff_idx[i_feat] = dict(
-            a=sp_pair[0], b=sp_pair[1], n1=n1, n2=n2, l=l)
+    for sp_pair, n1, n2, l in product(
+        sp_pairs, range(n_max), range(n_max), range(l_max)
+    ):
+        feat_idx2coeff_idx[i_feat] = dict(a=sp_pair[0], b=sp_pair[1], n1=n1, n2=n2, l=l)
         i_feat += 1
     return feat_idx2coeff_idx
 
@@ -169,24 +170,32 @@ class SphericalInvariantsKspace(BaseIO):
 
     """
 
-    def __init__(self, interaction_cutoff, cutoff_smooth_width,
-                 max_radial, max_angular, gaussian_sigma_type,
-                 gaussian_sigma_constant=0.3,
-                 cutoff_function_type="ShiftedCosine",
-                 soap_type="PowerSpectrum", inversion_symmetry=True,
-                 radial_basis="GTO", normalize=True,
-                 optimization_args={},
-                 expansion_by_species_method="environment wise",
-                 global_species=None,
-                 compute_gradients=False,
-                 cutoff_function_parameters=dict(),
-                 coefficient_subselection=None):
+    def __init__(
+        self,
+        interaction_cutoff,
+        cutoff_smooth_width,
+        max_radial,
+        max_angular,
+        gaussian_sigma_type,
+        gaussian_sigma_constant=0.3,
+        cutoff_function_type="ShiftedCosine",
+        soap_type="PowerSpectrum",
+        inversion_symmetry=True,
+        radial_basis="GTO",
+        normalize=True,
+        optimization_args={},
+        expansion_by_species_method="environment wise",
+        global_species=None,
+        compute_gradients=False,
+        cutoff_function_parameters=dict(),
+        coefficient_subselection=None,
+    ):
         """Construct a SphericalExpansion representation
 
         Required arguments are all the hyperparameters named in the
         class documentation
         """
-        self.name = 'kspacesphericalinvariants'
+        self.name = "kspacesphericalinvariants"
         self.hypers = dict()
         if global_species is None:
             global_species = []
@@ -194,41 +203,42 @@ class SphericalInvariantsKspace(BaseIO):
             global_species = list(global_species)
 
         self.update_hyperparameters(
-            max_radial=max_radial, max_angular=max_angular,
-            soap_type=soap_type, normalize=normalize,
+            max_radial=max_radial,
+            max_angular=max_angular,
+            soap_type=soap_type,
+            normalize=normalize,
             inversion_symmetry=inversion_symmetry,
             expansion_by_species_method=expansion_by_species_method,
             global_species=global_species,
             compute_gradients=compute_gradients,
-            coefficient_subselection=coefficient_subselection)
+            coefficient_subselection=coefficient_subselection,
+        )
 
-        if self.hypers['coefficient_subselection'] is None:
-            del self.hypers['coefficient_subselection']
+        if self.hypers["coefficient_subselection"] is None:
+            del self.hypers["coefficient_subselection"]
 
         self.cutoff_function_parameters = deepcopy(cutoff_function_parameters)
         cutoff_function_parameters.update(
             interaction_cutoff=interaction_cutoff,
-            cutoff_smooth_width=cutoff_smooth_width
+            cutoff_smooth_width=cutoff_smooth_width,
         )
         cutoff_function = cutoff_function_dict_switch(
-            cutoff_function_type, **cutoff_function_parameters)
+            cutoff_function_type, **cutoff_function_parameters
+        )
 
         gaussian_density = dict(
             type=gaussian_sigma_type,
-            gaussian_sigma=dict(
-                value=gaussian_sigma_constant,
-                unit='AA'
-            ),
+            gaussian_sigma=dict(value=gaussian_sigma_constant, unit="AA"),
         )
         self.optimization_args = deepcopy(optimization_args)
-        if 'type' in optimization_args:
-            if optimization_args['type'] == 'Spline':
-                if 'accuracy' in optimization_args:
-                    accuracy = optimization_args['accuracy']
+        if "type" in optimization_args:
+            if optimization_args["type"] == "Spline":
+                if "accuracy" in optimization_args:
+                    accuracy = optimization_args["accuracy"]
                 else:
                     accuracy = 1e-8
-                if 'range' in optimization_args:
-                    spline_range = optimization_args['range']
+                if "range" in optimization_args:
+                    spline_range = optimization_args["range"]
                 else:
                     # TODO(felix) remove this when there is a check for the
                     # distance for the usage of the interpolator in the
@@ -236,35 +246,37 @@ class SphericalInvariantsKspace(BaseIO):
                     print("Warning: default parameter for spline range is used.")
                     spline_range = (0, interaction_cutoff)
                 optimization_args = {
-                    'type': 'Spline', 'accuracy': accuracy, 'range': {
-                        'begin': spline_range[0], 'end': spline_range[1]}}
-            elif optimization_args['type'] == 'None':
-                optimization_args = dict({'type': 'None'})
+                    "type": "Spline",
+                    "accuracy": accuracy,
+                    "range": {"begin": spline_range[0], "end": spline_range[1]},
+                }
+            elif optimization_args["type"] == "None":
+                optimization_args = dict({"type": "None"})
             else:
-                print('Optimization type is not known. Switching to no'
-                      ' optimization.')
-                optimization_args = dict({'type': 'None'})
+                print(
+                    "Optimization type is not known. Switching to no" " optimization."
+                )
+                optimization_args = dict({"type": "None"})
         else:
-            optimization_args = dict({'type': 'None'})
+            optimization_args = dict({"type": "None"})
 
-        radial_contribution = dict(
-            type=radial_basis,
-            optimization=optimization_args
+        radial_contribution = dict(type=radial_basis, optimization=optimization_args)
+
+        self.update_hyperparameters(
+            cutoff_function=cutoff_function,
+            gaussian_density=gaussian_density,
+            radial_contribution=radial_contribution,
         )
-
-        self.update_hyperparameters(cutoff_function=cutoff_function,
-                                    gaussian_density=gaussian_density,
-                                    radial_contribution=radial_contribution)
 
         if soap_type == "RadialSpectrum":
             self.update_hyperparameters(max_angular=0)
 
         self.nl_options = [
-            dict(name='centers', args=[]),
-            #dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
+            dict(name="centers", args=[]),
+            # dict(name="neighbourlist", args=dict(cutoff=interaction_cutoff)),
             dict(name="kspace", args=dict()),
             dict(name="centercontribution", args=dict()),
-            #dict(name="strict", args=dict(cutoff=interaction_cutoff)),
+            # dict(name="strict", args=dict(cutoff=interaction_cutoff)),
         ]
 
         self.rep_options = dict(name=self.name, args=[self.hypers])
@@ -277,16 +289,26 @@ class SphericalInvariantsKspace(BaseIO):
         Also updates the internal json-like representation
 
         """
-        allowed_keys = {'interaction_cutoff', 'cutoff_smooth_width',
-                        'max_radial', 'max_angular', 'gaussian_sigma_type',
-                        'gaussian_sigma_constant', 'soap_type',
-                        'inversion_symmetry', 'cutoff_function', 'normalize',
-                        'gaussian_density', 'radial_contribution',
-                        'cutoff_function_parameters', 'expansion_by_species_method',
-                        'compute_gradients',
-                        'global_species', 'coefficient_subselection'}
-        hypers_clean = {key: hypers[key] for key in hypers
-                        if key in allowed_keys}
+        allowed_keys = {
+            "interaction_cutoff",
+            "cutoff_smooth_width",
+            "max_radial",
+            "max_angular",
+            "gaussian_sigma_type",
+            "gaussian_sigma_constant",
+            "soap_type",
+            "inversion_symmetry",
+            "cutoff_function",
+            "normalize",
+            "gaussian_density",
+            "radial_contribution",
+            "cutoff_function_parameters",
+            "expansion_by_species_method",
+            "compute_gradients",
+            "global_species",
+            "coefficient_subselection",
+        }
+        hypers_clean = {key: hypers[key] for key in hypers if key in allowed_keys}
 
         self.hypers.update(hypers_clean)
         return
@@ -317,48 +339,60 @@ class SphericalInvariantsKspace(BaseIO):
         (this is the descriptor size per atomic centre)
 
         """
-        if self.hypers['soap_type'] == 'RadialSpectrum':
-            return (n_species * self.hypers['max_radial'])
-        if self.hypers['soap_type'] == 'PowerSpectrum':
-            return (int((n_species *
-                         (n_species +
-                          1)) /
-                        2) *
-                    self.hypers['max_radial']**2 *
-                    (self.hypers['max_angular'] +
-                     1))
-        if self.hypers['soap_type'] == 'BiSpectrum':
-            if not self.hypers['inversion_symmetry']:
-                return (n_species**3
-                        * self.hypers['max_radial']**3
-                        * int(1 + 2 * self.hypers['max_angular']
-                              + 3 * self.hypers['max_angular']**2 / 2
-                              + self.hypers['max_angular']**3 / 2))
+        if self.hypers["soap_type"] == "RadialSpectrum":
+            return n_species * self.hypers["max_radial"]
+        if self.hypers["soap_type"] == "PowerSpectrum":
+            return (
+                int((n_species * (n_species + 1)) / 2)
+                * self.hypers["max_radial"] ** 2
+                * (self.hypers["max_angular"] + 1)
+            )
+        if self.hypers["soap_type"] == "BiSpectrum":
+            if not self.hypers["inversion_symmetry"]:
+                return (
+                    n_species ** 3
+                    * self.hypers["max_radial"] ** 3
+                    * int(
+                        1
+                        + 2 * self.hypers["max_angular"]
+                        + 3 * self.hypers["max_angular"] ** 2 / 2
+                        + self.hypers["max_angular"] ** 3 / 2
+                    )
+                )
             else:
-                return (n_species**3
-                        * self.hypers['max_radial']**3
-                        * int(np.floor(((self.hypers['max_angular'] + 1)**2 + 1)
-                                       * (2 * (self.hypers['max_angular'] + 1) + 3) / 8.0)))
+                return (
+                    n_species ** 3
+                    * self.hypers["max_radial"] ** 3
+                    * int(
+                        np.floor(
+                            ((self.hypers["max_angular"] + 1) ** 2 + 1)
+                            * (2 * (self.hypers["max_angular"] + 1) + 3)
+                            / 8.0
+                        )
+                    )
+                )
         else:
-            raise ValueError('Only soap_type = RadialSpectrum || '
-                             'PowerSpectrum || BiSpectrum '
-                             'implemented for now')
+            raise ValueError(
+                "Only soap_type = RadialSpectrum || "
+                "PowerSpectrum || BiSpectrum "
+                "implemented for now"
+            )
 
     def get_keys(self, species):
         """
         return the proper list of keys used to build the representation
         """
         keys = []
-        if self.hypers['soap_type'] == 'RadialSpectrum':
+        if self.hypers["soap_type"] == "RadialSpectrum":
             for sp in species:
                 keys.append([sp])
-        elif self.hypers['soap_type'] == 'PowerSpectrum':
+        elif self.hypers["soap_type"] == "PowerSpectrum":
             for sp1 in species:
                 for sp2 in species:
                     if sp1 > sp2:
                         continue
                     keys.append([sp1, sp2])
-        elif self.hypers['soap_type'] == 'BiSpectrum':
+        elif self.hypers["soap_type"] == "BiSpectrum":
             for sp1 in species:
                 for sp2 in species:
                     if sp1 > sp2:
@@ -368,9 +402,11 @@ class SphericalInvariantsKspace(BaseIO):
                             continue
                         keys.append([sp1, sp2, sp3])
         else:
-            raise ValueError('Only soap_type = RadialSpectrum || '
-                             'PowerSpectrum || BiSpectrum '
-                             'implemented for now')
+            raise ValueError(
+                "Only soap_type = RadialSpectrum || "
+                "PowerSpectrum || BiSpectrum "
+                "implemented for now"
+            )
         return keys
 
     def get_feature_index_mapping(self, managers):
@@ -387,37 +423,39 @@ class SphericalInvariantsKspace(BaseIO):
         u_species = np.unique(species)
         sp_pairs = self.get_keys(u_species)
 
-        n_max = self.hypers['max_radial']
-        l_max = self.hypers['max_angular'] + 1
-        if self.hypers['soap_type'] == 'PowerSpectrum':
+        n_max = self.hypers["max_radial"]
+        l_max = self.hypers["max_angular"] + 1
+        if self.hypers["soap_type"] == "PowerSpectrum":
             feature_index_mapping = get_power_spectrum_index_mapping(
-                sp_pairs, n_max, l_max)
+                sp_pairs, n_max, l_max
+            )
         else:
-            raise NotImplementedError('Only soap_type = '
-                                      'PowerSpectrum '
-                                      'implemented for now')
+            raise NotImplementedError(
+                "Only soap_type = " "PowerSpectrum " "implemented for now"
+            )
 
         return feature_index_mapping
 
     def _get_init_params(self):
-        gaussian_density = self.hypers['gaussian_density']
-        cutoff_function = self.hypers['cutoff_function']
-        radial_contribution = self.hypers['radial_contribution']
+        gaussian_density = self.hypers["gaussian_density"]
+        cutoff_function = self.hypers["cutoff_function"]
+        radial_contribution = self.hypers["radial_contribution"]
 
         init_params = dict(
-            interaction_cutoff=cutoff_function['cutoff']['value'],
-            cutoff_smooth_width=cutoff_function['smooth_width']['value'],
-            max_radial=self.hypers['max_radial'], max_angular=self.hypers['max_angular'],
-            soap_type=self.hypers['soap_type'],
-            inversion_symmetry=self.hypers['inversion_symmetry'],
-            normalize=self.hypers['normalize'],
-            expansion_by_species_method=self.hypers['expansion_by_species_method'],
-            global_species=self.hypers['global_species'],
-            compute_gradients=self.hypers['compute_gradients'],
-            gaussian_sigma_type=gaussian_density['type'],
-            gaussian_sigma_constant=gaussian_density['gaussian_sigma']['value'],
-            cutoff_function_type=cutoff_function['type'],
-            radial_basis=radial_contribution['type'],
+            interaction_cutoff=cutoff_function["cutoff"]["value"],
+            cutoff_smooth_width=cutoff_function["smooth_width"]["value"],
+            max_radial=self.hypers["max_radial"],
+            max_angular=self.hypers["max_angular"],
+            soap_type=self.hypers["soap_type"],
+            inversion_symmetry=self.hypers["inversion_symmetry"],
+            normalize=self.hypers["normalize"],
+            expansion_by_species_method=self.hypers["expansion_by_species_method"],
+            global_species=self.hypers["global_species"],
+            compute_gradients=self.hypers["compute_gradients"],
+            gaussian_sigma_type=gaussian_density["type"],
+            gaussian_sigma_constant=gaussian_density["gaussian_sigma"]["value"],
+            cutoff_function_type=cutoff_function["type"],
+            radial_basis=radial_contribution["type"],
             optimization_args=self.optimization_args,
             cutoff_function_parameters=self.cutoff_function_parameters,
         )

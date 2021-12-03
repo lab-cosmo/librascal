@@ -146,7 +146,6 @@ namespace rascal {
       };
     }  // namespace internal
 
-
     inline double hyp1f1_sum(double a, double b, double z) {
       double epsilon{1e-6};
       int k{0};
@@ -178,7 +177,7 @@ namespace rascal {
       double res{0.};
       double z{x};
       if (x < 0.) {
-        a = b-a;
+        a = b - a;
         z = -x;
       }
       if (std::abs(1 - b / a) < math::DBL_FTOL) {
@@ -186,9 +185,9 @@ namespace rascal {
       } else if (std::abs(a - b - 1) < math::DBL_FTOL) {
         res = (1 + z / b) * std::exp(z);
       } else {
-        res = hyp1f1_sum(a,b,z);
+        res = hyp1f1_sum(a, b, z);
       }
-      
+
       if (x < 0.) {
         res *= std::exp(-z);
       }

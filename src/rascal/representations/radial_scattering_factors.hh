@@ -243,7 +243,7 @@ namespace rascal {
             this->radial_integral(nl_idx) =
                 pow(kval, static_cast<double>(angular_l)) *
                 this->radial_nl_factors(radial_n, angular_l) *
-                this->radial_norm_factors(radial_n) * 
+                this->radial_norm_factors(radial_n) *
                 hyp1f1_calculator.calc(fac_c);
             // std::cout << kval << " " << radial_n << " " << angular_l << " "
             // << radial_integral(nl_idx) << "\n";
@@ -265,27 +265,27 @@ namespace rascal {
       // at the I_nl level, i.e. before the main loop over atom pairs
       void orthogonalize_radialprojections(auto && I_nl) const {
         // Generate temporary matrix for orthogonal components
-        auto I_nl_matrix{Matrix_t(max_radial,max_angular+1)};
-        
+        auto I_nl_matrix{Matrix_t(max_radial, max_angular + 1)};
+
         // Reshape I_nl into (nmax, lmax+1) matrix
         size_t nl_idx{0};
         for (size_t rad_n{0}; rad_n < max_radial; rad_n++) {
-          for (size_t ang_l{0}; ang_l < max_angular+1; ang_l++) {
+          for (size_t ang_l{0}; ang_l < max_angular + 1; ang_l++) {
             // Store I_nl with respect to the primitive radial basis
-            I_nl_matrix(rad_n,ang_l) = I_nl(nl_idx);
+            I_nl_matrix(rad_n, ang_l) = I_nl(nl_idx);
             nl_idx += 1;
           }
         }
-        
+
         // Transform coefficients into orthonormal basis
         auto I_nl_orthomatrix{this->ortho_norm_matrix * I_nl_matrix};
-        
+
         // Store orthonormalized coefficients in output
         nl_idx = 0;
         for (size_t rad_n{0}; rad_n < max_radial; rad_n++) {
-          for (size_t ang_l{0}; ang_l < max_angular+1; ang_l++) {
+          for (size_t ang_l{0}; ang_l < max_angular + 1; ang_l++) {
             // Store I_nl with respect to the primitive radial basis
-            I_nl(nl_idx) = I_nl_orthomatrix(rad_n,ang_l);
+            I_nl(nl_idx) = I_nl_orthomatrix(rad_n, ang_l);
             nl_idx += 1;
           }
         }
