@@ -6,10 +6,10 @@ SOAP Theory
 
 :Authors: Felix Musil, Max Veit, Michael Willatt, Klim Goldshtein
 
-:Last updated: 27 Aug 2019
+:Last updated: 15 Aug 2020
 
 The mathematics behind the analytical radial integrals, and Cartesian gradients,
-of the SOAP descriptor is described below.
+of the SOAP descriptor [#one]_ is described below.
 
 .. TODO link to an appropriate publication once the below is incorporated there
 
@@ -593,4 +593,41 @@ In the case of the DVR radial basis:
 .. math:: \text{I}_{n\ell}^{ij} = -\frac{2a\sqrt{\omega_n}}{2\ell+1}\frac{r_c}{2}  x_n^3 e^{-ax_n^2} [\ell\mathsf{i}_{\ell-1}(2a x_n r_{ij})+(\ell+1)\mathsf{i}_{\ell+1}(2a x_n r_{ij})] \hat{\mathbf{r}}_{ij},
 
 where :math:`x_n=\frac{r_c}{2}r_n+\frac{r_c}{2}`.
+
+Beyond SOAP
+===========
+
+SOAP can be seen as one of the simplest members of a hierarchy of "density correlation features", 
+that are obtained by appropriately symmetrizing tensor products of the neighbor density. 
+The formalism, first introduced in Ref.  [#two]_, leads to formulas to evaluate discretized
+versions of these features as a combination of the density expansion coefficients, and includes
+also *equivariant* features, that transform as spherical harmonics under rotation [#three]_.
+A comparatively simple expression to compute these higher-order features iteratively, based
+on an angular momentum combination relation has been discussed in Ref. [#four]_, as part
+of the N-body iterative contraction of equivariants (NICE) framework.
+Even though these higher-order features are not the main focus of ``librascal``, you can find 
+some utilities that compute them starting from the expansion coefficients. These are 
+part of the of the ``bindings/rascal/utils/cg_utils.py``, and are demonstrated and tersely
+documented in the example notebooks ``examples/equivariant_demo.ipynb`` and
+``examples/nice_demo.ipynb``.
+
+
+.. [#one] A. P. Bartók, R. Kondor, and G. Csányi (2013)
+        On representing chemical environments. 
+        Physical Review B 87(18), 184115. https://doi.org/10.1103/PhysRevB.87.184115
+        
+.. [#two] M. J. Willatt, F. Musil, and M. Ceriotti (2019)
+        Atom-density representations for machine learning.
+        Journal of Chemical Physics 150(15), 154110. https://doi.org/10.1063/1.5090481
+
+.. [#three] A. Grisafi, D. M. Wilkins, G. Csányi, and M. Ceriotti (2018)
+        Symmetry-Adapted Machine Learning for Tensorial Properties of Atomistic Systems.
+        Physical Review Letters 120(3), 036002. https://doi.org/10.1103/PhysRevLett.120.036002
+
+.. [#four] J. Nigam, S. Pozdnyakov, and M. Ceriotti (2020)
+        Recursive evaluation and iterative contraction of N -body equivariant features.
+        J. Chem. Phys. 153(12), 121101. https://doi.org/10.1063/5.0021116
+
+        
+
 

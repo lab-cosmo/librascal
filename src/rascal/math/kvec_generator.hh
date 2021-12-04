@@ -6,7 +6,10 @@
  *
  * @date   10 February 2021
  *
- * @brief implementation of k-vectors generation
+ * @brief Generate the k-vectors (also called reciprocal or Fourier vectors)
+ *        needed for the k-space implementation of LODE and SOAP.
+ *        More specifically, these are all points of a (reciprocal space)
+ *        lattice that lie within a ball of a specified cutoff radius.
  *
  * Copyright  2021  Andrea Grisafi, Kevin Kazuki Huguenin-Dumittan, COSMO(EPFL)
  *
@@ -31,106 +34,104 @@
 
 #include "rascal/math/utils.hh"
 
+#include <Eigen/Dense>
+
 namespace rascal {
   namespace math {
+    /**
+     * Produce the k-vectors (also called reciprocal space or Fourier
+     * vectors) needed for the k-space implementation of LODE and SOAP.
+     *
+     * More specifically, if b1, b2 and b3 are basis vectors of a reciprocal
+     * lattice, this class is used to get all vectors of the form:
+     * \f{equation}{k = n_1b_1 + n_2b_2 + n_3b_3,\f}
+     * where n1,n2,n3 are integers, which are inside a ball of a given
+     * cutoff radius \f$k_\mathrm{cut}\f$.
+     *
+     * Note that for any radius > 0, the origin \f$k=(0,0,0)\f$ is always
+     * in the ball and is the first entry of the returned vectors.
+     * For applications where k=0 should be excluded, there is the option
+     * to do so.
+     * For any other k-vector k, symmetry typically allows us to group the
+     * two vectors k and -k together. Thus, only one out of each such pair
+     * is returned as a representant.
+     *
+     */
     class Kvectors {
      private:
-      // Quantities that will be provided by the user upon initialization
-      double kcutoff{};  // cutoff radius
-      Eigen::Matrix3d
-          basisvecs{};  // matrix containing the three basis vectors of the cell
+      /* Store the quantities provided by the user that completely determine
+       * the problem:
+       * The first two quantities, the cutoff radius in reciprocal space as
+       * well as the three basis vectors of the reciprocal cell, determine
+       * the geometry, and thus are most important.
+       * The optional parameter include_origin is stored as well which
+       * determines whether the point (0,0,0) should be included or not.
+       */
+      double kcutoff{};
+      Eigen::Matrix3d basisvecs{};
+      bool include_origin{};
 
-      // Quantities that will be computed and be used in further steps (e.g. for
-      // LODE)
-      size_t numvectors = 0;  //
-      Matrix_t kvecs{};
-      // Eigen::Matrix_Xi kvecindices{};
-      Vector_t kvecnorms{};
-
-      // Auxiliary variables for developers/testing:
-      double detM{};
-      size_t numtot{};
-      size_t n1max{};
-      size_t n2max{};
-      size_t n3max{};
+      /* Variables for quantities that can be returned by this class:
+       * - the N x 3 Eigen matrix containing the k-vectors in the ball
+       * - the Eigen vector of size N containing the norms of the k-vectors
+       */
+      Matrix_t kvectors{};
+      Vector_t kvector_norms{};
 
      public:
-      // Constructors and related functions
-
-      /** Constructor taking cutoff and cell as input
-       * As default state, the user can provide the real space
-       * cell vectors, from which the reciprocal cell is computed.
-       * By setting is_reciprocal_cell to be true, the reciprocal
-       * cell can alternatively be passed to the class directly.
+      /** Constructor:
+       * Upon initialization, directly compute all the k-vectors on the
+       * lattice specified by three basisvectors lying within a ball.
+       * @param cutoff Cutoff radius of reciprocal space ball.
+       *     As a guideline, if the smearing parameter of the density
+       *     is given by \f$sigma\f$, use \f$pi/sigma\f$ as cutoff.
+       * @param basisvectors 3x3 matrix containing the three basis
+       *     vectors a1, a2, a3 of the real space unit cell, stored as:
+       *     a1 = basisvectors[0], a2=basisvectors[1], etc.
+       *     These are then automatically converted to the corresponding
+       *     reciprocal cell vectors b1, b2, b3 by the formulae:
+       *     \f{equation}{b_1 = 2\pi \frac{a_1 \times a_2}
+       *                 {a_1 \cdot (a_2 \times a_3)} \f}
+       *     and similarly for the periodic permutations.
+       *     It is also possible to provide the basis vectors of the
+       *     reciprocal lattice directly by using the option below.
+       * @param is_reciprocal_cell false by default.
+       *     If set to true, it indicates that the cell provided
+       *     in the variable basisvectors is already the reciprocal cell.
+       *     Thus, the formula above for converting the a_i's to the b_i's
+       *     is not used, and the provided cell is used directly.
+       * @param need_origin false by default.
+       *     If set to true, the list of found k-vectors will also
+       *     contain the origin k=(0,0,0), which will then be stored
+       *     as the very first element in the matrix of found vectors.
        */
-      explicit Kvectors(double cutoff, Eigen::Matrix3d basisvectors,
-                        bool is_reciprocal_cell = false) {
-        this->kcutoff = cutoff;
+      Kvectors(double cutoff, Eigen::Matrix3d basisvectors,
+               bool is_reciprocal_cell = false, bool need_origin = false);
 
-        if (not is_reciprocal_cell) {  // real space cell is given
-          // Create reciprocal cell from real space cell
-          Eigen::Matrix3d tcell = basisvectors.transpose();
-          this->basisvecs = 2.0 * M_PI * tcell.inverse();
-        } else {  // cell of reciprocal space is already given
-          this->basisvecs = basisvectors;
-        }
+      /** Returns number of vectors found within cutoff radius
+       * without double counting pairs related by inversion.
+       * This is the actual number that can be used to iterate over all
+       * vectors and its norms obtained from get_kvectors and get_norms.
+       */
+      size_t get_numvectors() const { return this->kvector_norms.size(); }
 
-        this->precompute();
+      /** Returns reference to the Eigen matrix containing all
+       * k-vectors within cutoff radius without double counting, where
+       * row(i) = i-th vector. If the origin k=(0,0,0) is included, it is
+       * always stored in row(0).
+       */
+      Eigen::Ref<Matrix_t> get_kvectors() {
+        return Eigen::Ref<Matrix_t>(this->kvectors);
       }
 
-      // Generate kvectors from cutoff and cell
-      void precompute();
-
-      // FUNCTIONS FOR USER
-
-      /** Get number of vectors found within cutoff radius
-       * without double counting pair related by inversion
+      /** Returns const reference to the Eigen vector containing the norm
+       * of all k-vectors within the cutoff without double counting.
        */
-      size_t get_numvectors() const { return this->numvectors; };
-
-      /** Get number of vectors found within cutoff radius
-       * counting pairs related by inversion separately
-       */
-      size_t get_numvectors_all() const { return 2 * this->numvectors - 1; };
-
-      /** Get matrix containing all vectors within cutoff radius
-       * without double counting, where row(i)= i-th vector
-       */
-      Matrix_t get_kvectors() const { return this->kvecs; };
-
-      /** Get vector containing the norm of all vectors
-       */
-      Vector_t get_norms() const { return this->kvecnorms; };
-
-      // FUNCTIONS FOR DEVELOPERS / TESTING PHASE
-      void print_analysis() const {
-        // Estimated number of points based on continuous
-        // approximation for reference
-        double kcut = this->kcutoff;
-        size_t numest =
-            round(2.0 * M_PI / 3.0 * kcut * kcut * kcut / sqrt(this->detM));
-        double succratio =
-            ((double)(this->numvectors)) / ((double)(this->numtot));
-        std::cout << "Number of found k-vectors inside sphere = "
-                  << this->numvectors << "\n";
-        std::cout << "Estimated number from cont. approx.     = " << numest
-                  << "\n";
-        std::cout << "Total number of pts in search space box = "
-                  << this->numtot << "\n";
-        std::cout << "Ratio of successful points     = " << succratio << "\n";
-        std::cout << "Ideal ratio for circle (cont.) = " << M_PI / 6. << "\n";
-        std::cout << "Dimensions of optimal search space box: \n"
-                  << "(n1max,n2max,n3max) = (" << this->n1max << ", "
-                  << this->n2max << ", " << this->n3max << ")\n\n";
-      };
-
-      // OUTDATED METHODS
-
-      // explicit Kvectors(size_t n) : nk(0), kval(Vector_t::Zero(n)),
-      // kvec(Matrix_t::Zero(n,3)){} void precompute(size_t n1max, size_t n2max,
-      // size_t n3max, Matrix_t basisvectors, double kcut);
-    };
-  }  // namespace math
+      Eigen::Ref<const Vector_t> const get_kvector_norms() {
+        return Eigen::Ref<const Vector_t>(this->kvector_norms);
+      }
+    };  // Kvectors class
+  }     // namespace math
 }  // namespace rascal
 
-#endif
+#endif  // SRC_RASCAL_MATH_KVEC_GENERATOR_HH_

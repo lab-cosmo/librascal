@@ -179,11 +179,11 @@ namespace rascal {
 
     Vector_Ref f(const Eigen::Vector3d & inputs_v) {
       Eigen::Vector3d my_inputs = inputs_v / inputs_v.norm();
-      this->harmonics_calculator.calc(my_inputs, false);
+      this->harmonics_calculator.calc(my_inputs, false, false);
       return this->harmonics_calculator.get_harmonics();
     }
     Matrix_Ref grad_f(const Eigen::Vector3d & inputs_v) {
-      this->harmonics_calculator.calc(inputs_v, true);
+      this->harmonics_calculator.calc(inputs_v, true, false);
       return this->harmonics_calculator.get_harmonics_derivatives();
     }
 
@@ -457,6 +457,49 @@ namespace rascal {
       }  // for (int disp_idx...) (displacement directions)
     }    // for (auto inputs...) (function inputs)
   }
+
+  /**
+   * @brief Fixture used for testing kvecgenerator
+   *
+   * Multiple cells are defined that cover a range of relevant
+   * structures from the simple cubic structure having highest
+   * symmetry to triclinic cells whose extension along the three
+   * basis vectors is very different.
+   * The tests are then run over all these structures to ensure
+   * that the kvecgenerator works properly under various conditions.
+   */
+  struct KvecgenRefFixture {
+    KvecgenRefFixture() {
+      // Define basic cell quantities
+      Eigen::Matrix3d cell{};
+      double a = 10.;
+      double c = std::sqrt(8. / 3.) * a;
+
+      // Cells 1 and 2: Simple cubic cells of different dimensions
+      cell << 1., 0., 0., 0., 1., 0., 0., 0., 1.;
+      this->cells.push_back(a * cell);
+      this->cells.push_back(1.5 * a * cell);
+
+      // Cell 3: hcp cell (taken from test_structure.hh)
+      cell << a, -0.5 * a, 0., 0., std::sqrt(3.) / 2. * a, 0., 0., 0., c;
+      this->cells.push_back(cell);
+
+      // Cell 4: fcc cell (taken from test_structure.hh)
+      cell << a, 0.5 * a, 0.5 * a, 0., 0.5 * a, 0., 0., 0., 0.5 * a;
+      this->cells.push_back(cell);
+
+      // Cells 5 and 6: Two triclinic cells including high asymmetry
+      cell << 1., 0.3, 0.2, 0.4, 1., -0.1, 0., 0.3, 1.;
+      this->cells.push_back(a * cell);
+      cell << 0.8, 0.3, 0.2, 0.1, 3., -0.2, 0., 0.3, 0.7;
+      this->cells.push_back(a * cell);
+    }
+
+    ~KvecgenRefFixture() = default;
+
+    // Variable to store generated cells
+    std::vector<Eigen::Matrix3d> cells{};
+  };
 
   struct Hyp1F1RefFixture {
     Hyp1F1RefFixture() {

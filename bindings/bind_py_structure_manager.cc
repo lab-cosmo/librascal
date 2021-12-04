@@ -815,35 +815,7 @@ namespace rascal {
     manager_collection.def(
         "get_gradients_info",
         [](ManagerCollection_t & managers) {
-          if (managers.size() == 0) {
-            throw std::runtime_error(
-                R"(There are no structure to get features from)");
-          }
-          auto n_neighbors{0};
-          for (auto & manager : managers) {
-            n_neighbors += manager->get_nb_clusters(2);
-          }
-
-          Eigen::Matrix<int, Eigen::Dynamic, 5> ij_mat{};
-          ij_mat.resize(n_neighbors, 5);
-          ij_mat.setZero();
-          int i_row{0}, i_center{0}, i_frame{0};
-          for (auto & manager : managers) {
-            for (auto center : manager) {
-              for (auto pair : center.pairs_with_self_pair()) {
-                ij_mat(i_row, 0) = i_frame;
-                ij_mat(i_row, 1) = i_center + center.get_atom_tag();
-                ij_mat(i_row, 2) = i_center + pair.get_atom_j().get_atom_tag();
-                ij_mat(i_row, 3) = center.get_atom_type();
-                ij_mat(i_row, 4) = pair.get_atom_type();
-                i_row++;
-              }
-            }
-            i_center += static_cast<int>(manager->size());
-            i_frame++;
-          }
-
-          return ij_mat;
+          return managers.get_gradients_info();
         },
         R"(Get informations necessary to the computation of gradients. It has
         as many rows as the number gradients and they correspond to the index

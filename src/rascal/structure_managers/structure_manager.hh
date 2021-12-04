@@ -634,6 +634,38 @@ namespace rascal {
       return this->get_previous_manager()->get_direction_vector(pair);
     }
 
+    /**
+     * Get informations necessary to the computation of gradients. It has
+     * as many rows as the number gradients and they correspond to the index
+     * of the structure, the central atom, the neighbor atom and their atomic
+     * species.
+     *
+     * The shape is (n_centers * n_neighbor, 5) while the
+     * n_neighbour is nonconstant over centers
+     */
+    Eigen::Matrix<int, Eigen::Dynamic, 5> get_gradients_info() {
+      if (this->size() == 0) {
+        throw std::runtime_error(
+            R"(There are no structure to get features from)");
+      }
+      size_t n_neighbors{this->nb_clusters(2)};
+
+      Eigen::Matrix<int, Eigen::Dynamic, 5> gradients_info(n_neighbors, 5);
+      gradients_info.setZero();
+      int i_row{0};
+      for (auto center : this->implementation()) {
+        for (auto pair : center.pairs_with_self_pair()) {
+          gradients_info(i_row, 0) = 0;
+          gradients_info(i_row, 1) = center.get_atom_tag();
+          gradients_info(i_row, 2) = pair.get_atom_j().get_atom_tag();
+          gradients_info(i_row, 3) = center.get_atom_type();
+          gradients_info(i_row, 4) = pair.get_atom_type();
+          i_row++;
+        }
+      }
+      return gradients_info;
+    }
+
     bool is_not_masked() const {
       return this->get_previous_manager()->is_not_masked();
     }

@@ -32,6 +32,5 @@
 #include "bind_py_models.hh"
 #include "bind_py_representation_calculator.hh"
 #include "bind_py_structure_manager.hh"
-#include "bind_py_utils.hh"
 
 #endif  // BINDINGS_BIND_PY_MODULE_HH_

@@ -134,7 +134,7 @@ void SphericalHarmonics::compute_assoc_legendre_polynom(double cos_theta) {
 
 void SphericalHarmonics::calc(
     const Eigen::Ref<const Eigen::Vector3d> & direction,
-    bool calculate_derivatives) {
+    bool calculate_derivatives, bool conjugate) {
   Eigen::Vector3d direction_normed;
   if (std::abs((direction[0] * direction[0] + direction[1] * direction[1] +
                 direction[2] * direction[2]) -
@@ -159,7 +159,11 @@ void SphericalHarmonics::calc(
     cos_phi = direction_normed[0] / sqrt_xy;
     sin_phi = direction_normed[1] / sqrt_xy;
   }
-
+  if (conjugate) {
+    // if we require the complex conjugate of Y^m_l,
+    // simply evaluates Ylm(theta,-phi) (cosine doesn't change)
+    sin_phi *= -1;
+  }
   this->compute_assoc_legendre_polynom(cos_theta);
   this->compute_cos_sin_angle_multiples(cos_phi, sin_phi);
 
@@ -186,14 +190,26 @@ void SphericalHarmonics::calc(
 
 void SphericalHarmonics::compute_cos_sin_angle_multiples(double cos_phi,
                                                          double sin_phi) {
+  // computes iteratively a list of (cos(m phi), sin(m phi))
+  // uses a modified iteration that yields (-1)^m(cos(m phi), sin(m phi)),
+  // that has the right sign to get real-valued sph with the usual
+  // phase convention
   for (size_t m_count{0}; m_count < this->max_angular + 1; m_count++) {
     if (m_count == 0) {
       this->cos_sin_m_phi.row(m_count) << 1.0, 0.0;
     } else if (m_count == 1) {
-      this->cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
+      // standard iter:
+      // this->cos_sin_m_phi.row(m_count) << cos_phi, sin_phi;
+      this->cos_sin_m_phi.row(m_count) << -cos_phi, -sin_phi;
     } else {
+      /* standard iter:
       this->cos_sin_m_phi.row(m_count) =
           2.0 * cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
+          this->cos_sin_m_phi.row(m_count - 2);
+      */
+
+      this->cos_sin_m_phi.row(m_count) =
+          -2.0 * cos_phi * this->cos_sin_m_phi.row(m_count - 1) -
           this->cos_sin_m_phi.row(m_count - 2);
     }
   }

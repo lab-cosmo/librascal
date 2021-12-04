@@ -173,7 +173,9 @@ namespace rascal {
   struct InterpolatorFixture {
     using RadialIntegral_t =
         internal::RadialContribution<internal::RadialBasisType::GTO>;
-    InterpolatorFixture<Interpolator, ClampedBoundaryConditions>() {}
+    InterpolatorFixture<Interpolator, ClampedBoundaryConditions>() {
+      this->radial_contr.precompute();
+    }
     typedef Interpolator Interpolator_t;
     static constexpr bool clamped_boundary_conditions{
         ClampedBoundaryConditions};

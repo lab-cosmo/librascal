@@ -142,7 +142,15 @@ namespace rascal {
     double get_cutoff() const { return this->cutoff; }
 
     size_t get_nb_clusters(int order) const {
-      assert(order == 2);
+      if (order != 2) {
+        throw std::runtime_error(
+            "The case for order=1 is abmiguous: one possible answer is the "
+            "number of centers the other possibility is the number of centers "
+            "+ "
+            "ghost atoms. Please use the get_size or get_size_with_ghosts "
+            "member "
+            "functions");
+      }
       return this->atom_tag_list[order - 1].size();
     }
 
