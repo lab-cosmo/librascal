@@ -559,13 +559,13 @@ namespace rascal {
     // maximum spatial resolution
     double kcut = PI / (this->smearing);
     // initialization
-    math::Kvectors k_vectors(kcut, cell);
+    math::Kvectors k_vectors(kcut, cell, false, true);
     // number of k-vectors
     size_t n_k = k_vectors.get_numvectors();
     // k-vector matrix: the i-th vector is the i-th row of this matrix
     Matrix_t k_vec = k_vectors.get_kvectors();
     // standard norms of the vectors
-    Vector_t k_val = k_vectors.get_norms();
+    Vector_t k_val = k_vectors.get_kvector_norms();
     // k_vectors.print_analysis();
 
     /*
@@ -590,7 +590,7 @@ namespace rascal {
     */
 
     // Initialize arrays
-    // Fourier components of potential / density
+    // Fourier components of bare potential times components of density
     auto G_k{math::Vector_t(n_k)};
     // Spherical harmonics of shape (N_k, (l_max+1)^2)
     auto Y_lm{math::Matrix_t(n_k, n_col)};
@@ -601,13 +601,13 @@ namespace rascal {
     // Precompute the three above quantities for each k-vector
     for (size_t ik{0}; ik < n_k; ++ik) {
       // Use this for SOAP
-      // G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) );
+      G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) );
 
       // Spherical harmonics at hat{k}=vec{k}/k
       if (k_val(ik) != 0.0) {
         // Use this for LODE
-        G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) )
-                / k_val(ik) / k_val(ik);
+        //G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) )
+        //        / k_val(ik) / k_val(ik);
         Eigen::Vector3d k_dir{k_vec.row(ik) / k_val(ik)};
         this->spherical_harmonics.calc(k_dir);
         auto && harmonics{spherical_harmonics.get_harmonics()};
@@ -688,7 +688,7 @@ namespace rascal {
       Key_t center_type{center.get_atom_type()};
 
       // loop over k-vectors
-      for (size_t ik{1}; ik < n_k; ++ik) {
+      for (size_t ik{0}; ik < n_k; ++ik) {
         // Initialize some variables that will be updated in each loop
         double fourier_real{};
         double fourier_imag{};
