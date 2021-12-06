@@ -367,30 +367,34 @@ namespace rascal {
                        const json & parameter);
 
     /**
-     * Returns a typed property of the given name.
+     * Reads a hyperparameter from a json and handles the error properly in case
+     * of failure
      *
-     * @tparam T return type. Return type must support << operator.
+     * @tparam Hyperparameter_T  the type of the returned hyperparameter. The
+     * type must support the << operator.
      *
-     * @param hypers
-     * @param key
-     * @param default_value is a unique_ptr to allow hyperparamaters with no
-     * default value in which case it is null ptr. Starting with C++17 one could
-     * solve this more transparent with std::optional.
+     * @param filename  the name of the file where the function is invoked
+     * @param line  the line number where the function is invoked
+     * @param hypers  the json with all hyperparameters
+     * @param key  the name of the hyperparameter in the json `hypers`
      *
-     * @throw runtime_error when value cannot be read from hypers
-     * @throw runtime_error when key is not present in hypers and no
-     * default_value is null ptr
+     * @throw runtime_error  when the hyperparameter could not be read, because
+     * e.g. the `Hyperparameters_T` does not match hyperparameter type
+     * @throw runtime_error  when the hyperparameter was not found in the json
+     * `hypers`
+     *
+     * @return  the hyperparamater described by the `key` in the json `hypers`
      */
-    template <typename T>
-    T read_hyperparameter(const char * file, int line, const json & hypers,
-                          std::string key) {
+    template <typename Hyperparameter_T>
+    Hyperparameter_T read_hyperparameter(const char * filename, int line,
+                                         const json & hypers, std::string key) {
       if (hypers.count(key)) {
         try {
-          return hypers.at(key).get<T>();
+          return hypers.at(key).get<Hyperparameter_T>();
         } catch (const std::exception & e) {
           std::stringstream error{};
           error << "Reading '" << key << "' from json hypers failed "
-                << "at file " << file << ":" << line << "\n"
+                << "at file " << filename << ":" << line << "\n"
                 << "  what():  " << e.what() << std::endl;
           throw std::runtime_error(error.str());
         }
@@ -398,30 +402,53 @@ namespace rascal {
         std::stringstream error{};
         error << "Reading '" << key << "' from json hypers failed. No '" << key
               << "' was found in json hypers "
-              << "at file " << file << ":" << line << std::endl;
+              << "at file " << filename << ":" << line << std::endl;
         throw std::runtime_error(error.str());
       }
     }
 
-    template <typename T>
-    T read_hyperparameter(const char * file, int line, const json & hypers,
-                          std::string key, T default_value) {
+    /**
+     * Reads a hyperparameter from a json and handles the error properly in case
+     * of failure
+     *
+     * @tparam Hyperparameter_T  the type of the returned hyperparameter. The
+     * type must support the << operator.
+     *
+     * @param filename  the name of the file where the function is invoked
+     * @param line  the line number where the function is invoked
+     * @param hypers  the json with all hyperparameters
+     * @param key  the name of the hyperparameter in the json `hypers`
+     * @param default_hyperparameter  this value is not used when the
+     * hyperparameter was not found in the json `hypers`
+     *
+     * @throw runtime_error  when the hyperparameter could not be read, because
+     * e.g. the `Hyperparameters_T` does not match hyperparameter type
+     * @throw warning  when key was not found in the json and
+     * `default_hyperparameter` is used
+     *
+     * @return  the hyperparamater described by the `key` in the json `hypers`
+     */
+    template <typename Hyperparameter_T>
+    Hyperparameter_T
+    read_hyperparameter(const char * filename, int line, const json & hypers,
+                        std::string key,
+                        Hyperparameter_T default_hyperparameter) {
       if (hypers.count(key)) {
         try {
-          return hypers.at(key).get<T>();
+          return hypers.at(key).get<Hyperparameter_T>();
         } catch (const std::exception & e) {
           std::stringstream error{};
           error << "Reading '" << key << "' from json hypers failed "
-                << "at file " << file << ":" << line << "\n"
+                << "at file " << filename << ":" << line << "\n"
                 << "  what():  " << e.what() << std::endl;
           throw std::runtime_error(error.str());
         }
       } else {
         std::cout << "WARNING: Reading '" << key
                   << "' from json hypers failed. Setting " << key << " to '"
-                  << default_value << "' "
-                  << "at file " << file << ":" << line << std::endl;
-        return default_value;
+                  << default_hyperparameter << "' "
+                  << "at file " << filename << ":" << line << std::endl;
+        return default_hyperparameter;
       }
     }
   }  // namespace json_io
