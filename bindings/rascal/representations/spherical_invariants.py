@@ -449,5 +449,4 @@ class SphericalInvariants(BaseIO):
         super()._set_data(data)
 
     def _get_data(self):
-        data = super()._get_data()
-        return data
+        return super()._get_data()
