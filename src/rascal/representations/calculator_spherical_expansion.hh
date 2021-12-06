@@ -31,8 +31,17 @@
 #ifndef SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
 #define SRC_RASCAL_REPRESENTATIONS_CALCULATOR_SPHERICAL_EXPANSION_HH_
 
+// This variable stores the length of the absolute path of this file up to the
+// librascal directory It is set in the CMakeLists.txt, but for clang > 4 it is
+// not stored, so we set it here to zero in this case
+#ifndef SOURCE_PATH_SIZE
+#define SOURCE_PATH_SIZE 0
+#endif
+
 // relative path of file with respect to librascal directory
-#define __FILENAME__ (__FILE__ + SOURCE_PATH_SIZE)
+#ifndef __FILENAME__
+#define __FILENAME__ ((const char *)&__FILE__[SOURCE_PATH_SIZE])
+#endif
 
 #include "rascal/math/bessel.hh"
 #include "rascal/math/gauss_legendre.hh"
