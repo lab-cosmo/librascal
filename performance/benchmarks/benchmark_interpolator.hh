@@ -447,13 +447,12 @@ namespace rascal {
           data, "radial_angular", state);
       this->max_radial = std::get<0>(radial_angular);
       this->max_angular = std::get<1>(radial_angular);
-      json fc_hypers{{"type", "Constant"},
-                     {"gaussian_sigma", {{"value", 0.5}, {"unit", "A"}}}};
-      json hypers{
-          {"gaussian_density", fc_hypers},
-          {"max_radial", this->max_radial},
-          {"max_angular", this->max_angular},
-          {"cutoff_function", {{"cutoff", {{"value", 2.0}, {"unit", "A"}}}}}};
+
+      json hypers{{"gaussian_sigma_type", "Constant"},
+                  {"gaussian_sigma_constant", 0.5},
+                  {"max_radial", this->max_radial},
+                  {"max_angular", this->max_angular},
+                  {"interaction_cutoff", 2.0}};
       // we cannot copy radial contribution to the lambda function, because
       // the copying has been disabled
       this->radial_contr =
@@ -567,24 +566,21 @@ namespace rascal {
                   {"compute_gradients", this->compute_gradients},
                   {"soap_type", "PowerSpectrum"}};
 
-      json fc_hypers{{"type", "ShiftedCosine"},
-                     {"cutoff", {{"value", this->cutoff}, {"unit", "AA"}}},
-                     {"smooth_width", {{"value", 0.}, {"unit", "AA"}}}};
-      json sigma_hypers{{"type", "Constant"},
-                        {"gaussian_sigma", {{"value", 0.4}, {"unit", "AA"}}}};
+      hypers["cutoff_function_type"] = "ShiftedCosine";
+      hypers["interaction_cutoff"] = this->cutoff;
+      hypers["cutoff_smooth_width"] = 0.;
 
-      hypers["cutoff_function"] = fc_hypers;
-      hypers["gaussian_density"] = sigma_hypers;
+      hypers["gaussian_sigma_type"] = "Constant";
+      hypers["gaussian_sigma_constant"] = 0.4;
 
       if (this->use_interpolator) {
-        hypers["radial_contribution"] = {
-            {"type", "GTO"},
-            {"optimization",
-             {{"type", "Spline"},
-              {"accuracy", this->error_bound},
-              {"range", {{"begin", 0.}, {"end", cutoff}}}}}};
+        hypers["radial_basis"] = "GTO";
+        hypers["optimization"] = {
+            {{"Spline",
+              {{"accuracy", this->error_bound},
+               {"range", {{"begin", 0.}, {"end", cutoff}}}}}}};
       } else {
-        hypers["radial_contribution"] = {{"type", "GTO"}};
+        hypers["radial_basis"] = "GTO";
       }
       this->hypers = hypers;
       this->representation_ptr = std::make_shared<Representation_t>(hypers);
