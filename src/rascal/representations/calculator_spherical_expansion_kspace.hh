@@ -601,13 +601,13 @@ namespace rascal {
     // Precompute the three above quantities for each k-vector
     for (size_t ik{0}; ik < n_k; ++ik) {
       // Use this for SOAP
-      G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) );
+      // G_k(ik) = std::exp(-0.5 * pow(this->smearing * k_val(ik), 2));
 
       // Spherical harmonics at hat{k}=vec{k}/k
       if (k_val(ik) != 0.0) {
         // Use this for LODE
-        //G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) )
-        //        / k_val(ik) / k_val(ik);
+        G_k(ik) = std::exp(-0.5 * pow(this->smearing*k_val(ik) , 2) )
+                / k_val(ik) / k_val(ik);
         Eigen::Vector3d k_dir{k_vec.row(ik) / k_val(ik)};
         this->spherical_harmonics.calc(k_dir);
         auto && harmonics{spherical_harmonics.get_harmonics()};
@@ -618,6 +618,9 @@ namespace rascal {
         // For k=0, only Y_00=1/sqrt(4pi) is defined. We divide this
         // by 2 since the k=0 term is not counted twice later on.
         Y_lm(ik, 0) = 0.5 / std::sqrt(4 * PI);
+        for (size_t lm{1}; lm < n_col; ++lm) {
+          Y_lm(ik, lm) = 0.0;
+        }
       }
 
       // Radial integral between primitive radial function and
@@ -628,7 +631,7 @@ namespace rascal {
         I_nl(ik, nl) = radint(nl);
       }
       // Change to orthonormalized radial basis
-      radial_integral->orthogonalize_radialprojections(I_nl.row(ik));
+      // radial_integral->orthogonalize_radialprojections(I_nl.row(ik));
     }  // end of loop over k vectors
 
     /*
@@ -657,6 +660,8 @@ namespace rascal {
       }
     }
 
+    // Make new textfile
+
     /*
     -----------------------------------------------------------------
     COMPLETE EVALUATION OF SPHERICAL EXPANSION:
@@ -673,11 +678,10 @@ namespace rascal {
     version of the code.
     -----------------------------------------------------------------
     */
-    // Global prefactor in expansion coefficients from Fourier transform
-    double global_factor = 1. * 16.0 * pow(PI, 2) / volume;
-    // make the coeff. agree with real space version before normalization
-    global_factor /= (16. * sqrt(2 * PI));
 
+    // Global prefactor in expansion coefficients from Fourier transform
+    double global_factor = 16.0 * pow(PI, 2) / volume;
+    global_factor /= (16. * sqrt(2 * PI));
     // Start the accumulation: loop over all center atoms
     for (auto center : manager) {
       // Preparations:
@@ -688,7 +692,27 @@ namespace rascal {
       Key_t center_type{center.get_atom_type()};
 
       // loop over k-vectors
-      for (size_t ik{0}; ik < n_k; ++ik) {
+      for (size_t ik{1}; ik < n_k; ++ik) {
+        // Start the accumulation with the central atom contribution
+        size_t nl_idx{0};
+        for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
+          size_t l_block_idx{0};
+          for (size_t ang_l{0}; ang_l < this->max_angular + 1; ++ang_l) {
+            // l odd contributions vanish by k-symmetry for central atom
+            size_t size_m{2 * ang_l + 1};
+            if (ang_l % 2 == 0) {
+              for (size_t mval{0}; mval < size_m; ++mval) {
+                coefficients_center[center_type](radial_n,
+                                                 l_block_idx + mval) +=
+                    I_nl(ik, nl_idx) * Y_lm(ik, l_block_idx + mval) * G_k(ik) *
+                    global_factor;
+              }
+            }
+            l_block_idx += size_m;
+            nl_idx += 1;
+          }  // end of loop over l=0,1,...,lmax
+        }    // end of loop over n=0,1,...,nmax-1
+
         // Initialize some variables that will be updated in each loop
         double fourier_real{};
         double fourier_imag{};
@@ -696,13 +720,12 @@ namespace rascal {
         double nlmk_factor{};
 
         // Start adding up terms for all "neighbor" atoms
-        for (auto neigh : center.pairs()) {
+        for (auto neigh : manager) {
           // Initialize index and type of new atom and only execute code
           // if different from center atom
           // (the periodic images move with the center, so their
           // contribution to the center gradient is zero as well)
-          auto atom_j = neigh.get_atom_j();
-          const int atom_j_tag = atom_j.get_atom_tag();
+          auto atom_j_tag{neigh.get_atom_tag()};
           size_t jat{manager->get_atom_index(atom_j_tag)};
           if (jat == iat) {
             continue;
@@ -739,40 +762,21 @@ namespace rascal {
                     phase_factor * nlmk_factor;
 
                 if (compute_gradients) {
-                  // Define some shortcuts to access the gradient coefficients:
-                  // Coefficients of center atom dV_i/dr_i
                   auto & coefficients_center_gradient =
                       expansions_coefficients_gradient[center.get_atom_ii()];
                   auto && grad_center_by_type{
                       coefficients_center_gradient[neigh_type]};
-
-                  // Coefficients of neighbor atom dV_i/dr_j
-                  auto & coefficients_neigh_gradient =
-                      expansions_coefficients_gradient[neigh];
-                  auto && grad_neigh_by_type{
-                      coefficients_neigh_gradient[neigh_type]};
-
                   // Get real or imag. part of e^{ikr_ij} based on parity of l
-                  double phase_factor_grad{};
-                  // double phase_factor_grad_ii{};
                   if (ang_l % 2 == 0) {
-                    phase_factor_grad = pow(-1.0, ang_l / 2) * fourier_imag;
+                    phase_factor = pow(-1.0, ang_l / 2) * fourier_imag;
                   } else {
-                    phase_factor_grad =
-                        pow(-1.0, (ang_l + 1) / 2) * fourier_real;
+                    phase_factor = -pow(-1.0, (ang_l + 1) / 2) * fourier_real;
                   }
                   // Update x,y and z components of gradients
-                  for (size_t cartesian_idx{0}; cartesian_idx < ThreeD;
-                       cartesian_idx++) {
-                    grad_center_by_type(cartesian_idx * max_radial + radial_n,
-                                        lm_idx) += phase_factor_grad *
-                                                   nlmk_factor *
-                                                   k_vec(ik, cartesian_idx);
-                    grad_neigh_by_type(cartesian_idx * max_radial + radial_n,
-                                       lm_idx) -= phase_factor_grad *
-                                                  nlmk_factor *
-                                                  k_vec(ik, cartesian_idx);
-
+                  for (size_t car_idx{0}; car_idx < ThreeD; car_idx++) {
+                    grad_center_by_type(car_idx * max_radial + radial_n,
+                                        lm_idx) +=
+                        phase_factor * nlmk_factor * k_vec(ik, car_idx);
                   }  // for (cartesian_idx)
                 }    // if (compute_gradients)
               }      // for (mval)
@@ -782,8 +786,176 @@ namespace rascal {
           }    // for (radial_n)
         }      // for (neigh : center)
       }        // for (kvectors)
-    }          // for (center : manager)
-  }            // compute()
+
+      // Normalize and orthogonalize the radial coefficients
+      radial_integral->finalize_coefficients(coefficients_center);
+
+      /** Write code in which to store the coefficients
+      std::ofstream myfile;
+      myfile.open ("expansioncoefficients_kspace.txt", std::ios::app);
+      for (auto neigh : manager) {
+        auto atom_j_tag{neigh.get_atom_tag()};
+        size_t jat{manager->get_atom_index(atom_j_tag)};
+        Key_t neigh_type{neigh.get_atom_type()};
+        auto && coeff = coefficients_center[neigh_type];
+        myfile << "Atom indices " << iat << " and " << jat << "\n";
+        myfile << coeff.rows() << " x " <<
+               coeff.cols() << " coeff matrix = \n" <<
+               coeff << "\n";
+      }
+      myfile.close();*/
+
+      // Write code in which to store the coefficients
+      // TODO delete after testing phase
+      std::ofstream myfile;
+      if (compute_gradients) {
+        myfile.open("expansioncoeff_kspace_withgrad.txt", std::ios::app);
+      } else {
+        myfile.open("expansioncoeff_kspace_nograd.txt", std::ios::app);
+      }
+      myfile << std::setprecision(15);
+      for (auto neigh : center.pairs()) {
+        auto atom_j = neigh.get_atom_j();
+        const int atom_j_tag = atom_j.get_atom_tag();
+        size_t jat{manager->get_atom_index(atom_j_tag)};
+        Key_t neigh_type{neigh.get_atom_type()};
+        auto && coeff = coefficients_center[neigh_type];
+        myfile << "Atom indices " << iat << " and " << jat << "\n";
+        myfile << coeff.rows() << " x " << coeff.cols() << " coeff matrix = \n"
+               << coeff << "\n";
+
+        if (compute_gradients) {
+          auto & coefficients_center_gradient =
+              expansions_coefficients_gradient[center.get_atom_ii()];
+          auto && grad_center_by_type{coefficients_center_gradient[neigh_type]};
+          myfile << "Gradients = \n" << grad_center_by_type << "\n";
+          auto & coefficients_neigh_gradient =
+              expansions_coefficients_gradient[neigh];
+          auto && grad_neigh_by_type{coefficients_neigh_gradient[neigh_type]};
+          myfile << "offdiagonals = \n" << grad_neigh_by_type << "\n";
+        }
+      }
+      myfile.close();
+
+      // if (compute_gradients) {
+      //  radial_integral->template finalize_coefficients_der<ThreeD>(
+      //      expansions_coefficients_gradient, center);
+      //}
+    }  // for (center : manager)
+  }    // compute()
+
+  /**
+  // Global prefactor in expansion coefficients from Fourier transform
+  double global_factor = 1. * 16.0 * pow(PI, 2) / volume;
+  // make the coeff. agree with real space version before normalization
+  global_factor /= (16. * sqrt(2 * PI));
+
+  // Start the accumulation: loop over all center atoms
+  for (auto center : manager) {
+    // Preparations:
+    auto atom_i_tag{center.get_atom_tag()};
+    size_t iat{manager->get_atom_index(atom_i_tag)};
+    // c^{i}
+    auto & coefficients_center = expansions_coefficients[center];
+    Key_t center_type{center.get_atom_type()};
+
+    // loop over k-vectors
+    for (size_t ik{0}; ik < n_k; ++ik) {
+      // Initialize some variables that will be updated in each loop
+      double fourier_real{};
+      double fourier_imag{};
+      double phase_factor{};
+      double nlmk_factor{};
+
+      // Start adding up terms for all "neighbor" atoms
+      for (auto neigh : center.pairs()) {
+        // Initialize index and type of new atom and only execute code
+        // if different from center atom
+        // (the periodic images move with the center, so their
+        // contribution to the center gradient is zero as well)
+        auto atom_j = neigh.get_atom_j();
+        const int atom_j_tag = atom_j.get_atom_tag();
+        size_t jat{manager->get_atom_index(atom_j_tag)};
+        if (jat == iat) {
+          continue;
+        }
+        Key_t neigh_type{neigh.get_atom_type()};
+
+        // Get real and imaginary parts of the Fourier factor
+        // exp(-k*r_ij) that will help us define the phase factor
+        fourier_real = cos_ki(ik, jat) * cos_ki(ik, iat) +
+                       sin_ki(ik, jat) * sin_ki(ik, iat);
+        fourier_imag = sin_ki(ik, jat) * cos_ki(ik, iat) -
+                       cos_ki(ik, jat) * sin_ki(ik, iat);
+
+        // index running over all pairs (n,l), so (0,0)=0, (0,1)=1, etc.
+        size_t nl_idx{0};
+        for (size_t radial_n{0}; radial_n < this->max_radial; ++radial_n) {
+          // index running over (l,m) pairs updated in steps of #m=2l+1
+          size_t l_block_idx{0};
+          for (size_t ang_l{0}; ang_l < this->max_angular + 1; ++ang_l) {
+            // Get real or imag. part of e^{ikr_ij} based on parity of l
+            if (ang_l % 2 == 0) {
+              phase_factor = pow(-1.0, ang_l / 2) * fourier_real;
+            } else {
+              phase_factor = -pow(-1.0, (ang_l + 1) / 2) * fourier_imag;
+            }
+            size_t size_m = 2 * ang_l + 1;
+            for (size_t mval{0}; mval < size_m; ++mval) {
+              size_t lm_idx{l_block_idx + mval};
+              // All factors depending on the parameters (n,l,m) and vec{k}
+              nlmk_factor = I_nl(ik, nl_idx) * Y_lm(ik, l_block_idx + mval) *
+                            G_k(ik) * global_factor;
+              // Add new contribution to expansion coefficient
+              coefficients_center[neigh_type](radial_n, l_block_idx + mval) +=
+                  phase_factor * nlmk_factor;
+
+              if (compute_gradients) {
+                // Define some shortcuts to access the gradient coefficients:
+                // Coefficients of center atom dV_i/dr_i
+                auto & coefficients_center_gradient =
+                    expansions_coefficients_gradient[center.get_atom_ii()];
+                auto && grad_center_by_type{
+                    coefficients_center_gradient[neigh_type]};
+
+                // Coefficients of neighbor atom dV_i/dr_j
+                auto & coefficients_neigh_gradient =
+                    expansions_coefficients_gradient[neigh];
+                auto && grad_neigh_by_type{
+                    coefficients_neigh_gradient[neigh_type]};
+
+                // Get real or imag. part of e^{ikr_ij} based on parity of l
+                double phase_factor_grad{};
+                // double phase_factor_grad_ii{};
+                if (ang_l % 2 == 0) {
+                  phase_factor_grad = pow(-1.0, ang_l / 2) * fourier_imag;
+                } else {
+                  phase_factor_grad =
+                      pow(-1.0, (ang_l + 1) / 2) * fourier_real;
+                }
+                // Update x,y and z components of gradients
+                for (size_t cartesian_idx{0}; cartesian_idx < ThreeD;
+                     cartesian_idx++) {
+                  grad_center_by_type(cartesian_idx * max_radial + radial_n,
+                                      lm_idx) += phase_factor_grad *
+                                                 nlmk_factor *
+                                                 k_vec(ik, cartesian_idx);
+                  grad_neigh_by_type(cartesian_idx * max_radial + radial_n,
+                                     lm_idx) -= phase_factor_grad *
+                                                nlmk_factor *
+                                                k_vec(ik, cartesian_idx);
+
+                }  // for (cartesian_idx)
+              }    // if (compute_gradients)
+            }      // for (mval)
+            l_block_idx += size_m;
+            nl_idx += 1;
+          }  // for (ang_l)
+        }    // for (radial_n)
+      }      // for (neigh : center)
+    }        // for (kvectors)
+  }          // for (center : manager)
+}            // compute() **/
 
   // STRUCTURE MANAGER STUFF BELOW
   template <class StructureManager>

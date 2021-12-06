@@ -2239,11 +2239,13 @@ namespace rascal {
     for (auto center : manager) {
       natoms += 1;
     }
+
+    /**
     std::ofstream myfile;
     if (compute_gradients) {
-      myfile.open("expansioncoeff_realspace_withgrad.txt", std::ios::trunc);
+      myfile.open("expansioncoeff_realspace_withgrad2.txt", std::ios::trunc);
     } else {
-      myfile.open("expansioncoeff_realspace_nograd.txt", std::ios::trunc);
+      myfile.open("expansioncoeff_realspace_nograd2.txt", std::ios::trunc);
     }
     myfile << "Spherical Expansion real space with parameters: "
            << "\n"
@@ -2251,7 +2253,7 @@ namespace rascal {
            << "\n"
            << natoms << ", " << this->max_radial << ", " << this->max_angular
            << ", " << compute_gradients << "\n";
-    myfile.close();
+    myfile.close();*/
 
     // coeff C^{ij}_{nlm}
     auto c_ij_nlm = math::Matrix_t(n_row, n_col);
@@ -2439,11 +2441,12 @@ namespace rascal {
 
       // Write code in which to store the coefficients
       // TODO delete after testing phase
+      /**
       std::ofstream myfile;
       if (compute_gradients) {
-        myfile.open("expansioncoeff_realspace_withgrad.txt", std::ios::app);
+        myfile.open("expansioncoeff_realspace_withgrad2.txt", std::ios::app);
       } else {
-        myfile.open("expansioncoeff_realspace_nograd.txt", std::ios::app);
+        myfile.open("expansioncoeff_realspace_nograd2.txt", std::ios::app);
       }
       myfile << std::setprecision(15);
       for (auto neigh : center.pairs()) {
@@ -2467,7 +2470,7 @@ namespace rascal {
           auto && grad_neigh_by_type{coefficients_neigh_gradient[neigh_type]};
           myfile << "offdiagonals = \n" << grad_neigh_by_type << "\n";
         }
-      }
+      }*/
     }  // for (center : manager)
   }    // compute()
 

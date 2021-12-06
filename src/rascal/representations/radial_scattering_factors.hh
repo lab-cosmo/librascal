@@ -263,7 +263,7 @@ namespace rascal {
 
       // Function to normalize and orthogonalize radial projections
       // at the I_nl level, i.e. before the main loop over atom pairs
-      void orthogonalize_radialprojections(auto && I_nl) const {
+      void orthogonalize_radialprojections(math::Matrix_t && I_nl) const {
         // Generate temporary matrix for orthogonal components
         auto I_nl_matrix{Matrix_t(max_radial, max_angular + 1)};
 
