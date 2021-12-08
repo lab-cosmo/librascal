@@ -2,8 +2,8 @@ import unittest
 import numpy as np
 import ase.io
 
-from rascal.utils import filter, FPSFilter, CURFilter
-from rascal.representations import SphericalInvariants as SOAP
+from librascal.utils import filter, FPSFilter, CURFilter
+from librascal.representations import SphericalInvariants as SOAP
 
 
 class IndexConversionTest(unittest.TestCase):

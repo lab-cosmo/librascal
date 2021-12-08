@@ -80,22 +80,22 @@ set_target_properties(_rascal PROPERTIES INSTALL_RPATH "${BINDNIGS_INSTALL_RPATH
 
 # Normal installation procedure
 # copy rascal folder in the python distribution
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/rascal" DESTINATION "${CMAKE_INSTALL_PREFIX}/bindings"
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/librascal" DESTINATION "${CMAKE_INSTALL_PREFIX}/bindings"
     PATTERN "*__pycache__" EXCLUDE
     PATTERN "*.pyc" EXCLUDE
     PATTERN "*.so" EXCLUDE
     PATTERN "*.dylib" EXCLUDE
 )
-install(TARGETS _rascal DESTINATION "${CMAKE_INSTALL_PREFIX}/bindings/rascal/lib")
+install(TARGETS _rascal DESTINATION "${CMAKE_INSTALL_PREFIX}/bindings/librascal/lib")
 
 # Copy the python wrappers in the build folder
 # Copy the resulting bindings lib in the python wrapper lib folder
 add_custom_target(copy_python_bindings ALL
-    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/rascal
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/librascal
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/rascal ${CMAKE_BINARY_DIR}/rascal
+        ${CMAKE_CURRENT_SOURCE_DIR}/librascal ${CMAKE_BINARY_DIR}/librascal
     COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_BINARY_DIR}/_rascal.* ${CMAKE_BINARY_DIR}/rascal/lib/
+        ${CMAKE_CURRENT_BINARY_DIR}/_rascal.* ${CMAKE_BINARY_DIR}/librascal/lib/
     DEPENDS _rascal
     COMMENT "Copying python bindings and libraries"
 )

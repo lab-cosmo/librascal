@@ -1,11 +1,11 @@
-from rascal.representations import (
+from librascal.representations import (
     SortedCoulombMatrix,
     SphericalExpansion,
     SphericalInvariants,
 )
-from rascal.utils import from_dict, to_dict, FPSFilter
-from rascal.models import Kernel
-from rascal.models.sparse_points import SparsePoints
+from librascal.utils import from_dict, to_dict, FPSFilter
+from librascal.models import Kernel
+from librascal.models.sparse_points import SparsePoints
 from test_utils import load_json_frame, BoxList, Box, dot
 import unittest
 import numpy as np

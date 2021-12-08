@@ -11,7 +11,7 @@ import re
 # read the version number from the library
 pattern = r"[0-9]\.[0-9]\.[0-9]"
 version = None
-with open("./bindings/rascal/__init__.py", "r") as fp:
+with open("./bindings/librascal/__init__.py", "r") as fp:
     for line in fp.readlines():
         if "__version__" in line:
             version = re.findall(pattern, line)[0]
@@ -22,7 +22,7 @@ with open("./requirements_pip.txt", "r") as fp:
     requirements = list(filter(lambda x: "#" not in x, (line.strip() for line in fp)))
 
 setup(
-    name="rascal",
+    name="librascal",
     version=version,
     description="""A versatile and scalable computation of representations of \
     atomic structures for machine learning.""",

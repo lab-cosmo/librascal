@@ -1,7 +1,7 @@
 import ase.io
 from ase.build import molecule
-from rascal.neighbourlist import get_neighbourlist, AtomsList
-from rascal.neighbourlist.structure_manager import (
+from librascal.neighbourlist import get_neighbourlist, AtomsList
+from librascal.neighbourlist.structure_manager import (
     mask_center_atoms_by_species,
     mask_center_atoms_by_id,
 )
