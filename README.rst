@@ -71,7 +71,7 @@ Installation
 
 .. start-install
 
-When the dependencise are met the installation of the library for python use can be done simply with:
+When the dependencies are met, the python package can be installed with:
 
 .. code:: bash
 
@@ -88,7 +88,7 @@ For optional features we have python packages required for the optional librasca
 | (Clebsch-Gordan coeffs.) |             |                    |
 +--------------------------+-------------+--------------------+
 
-If you want to use the optional features and to be able to run all example notebooks, you can install the dependencies with
+The dependencies for the optional features and the `introductive examples <https://cosmo-epfl.github.io/librascal/examples/examples.html>`_ can be installed with
 
 .. code:: bash
 
@@ -142,7 +142,7 @@ for formatting compliance with clang-format 8.0 or higher and black packages
 .. code:: shell
 
    sudo apt-get install clang-format-8
-   pip install -r requirements testing.txt
+   pip install -r requirements/testing.txt
 
 Build Type
 ^^^^^^^^^^

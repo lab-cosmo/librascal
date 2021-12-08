@@ -10,10 +10,11 @@ import re
 from bindings.librascal import __version__
 
 with open("AUTHORS.txt") as fp:
-    author = ", ".join(fp.readlines()).replace("\n", "")
+    author = ", ".join(fp.readlines()).replace("\n", "").replace("\n", "")
 
+from pkg_resources import parse_requirements
 with open("./requirements/minimal.txt", "r") as fp:
-    install_requires = list(filter(lambda x: "#" not in x, (line.strip() for line in fp)))
+    install_requires  = [str(requirement) for requirement in parse_requirements(fp.read())]
 
 from pathlib import Path
 this_directory = Path(__file__).parent
@@ -36,6 +37,7 @@ setup(
         "-DINSTALL_PATH:STRING=" + join(os.getcwd(), CMAKE_INSTALL_DIR()),
         "-DBUILD_EXAMPLES:BOOL=OFF",
     ],
+    url="https://github.com/cosmo-epfl/librascal/",
     package_dir={"": "bindings"},
     packages=find_packages(where="bindings"),
     install_requires=install_requires,
