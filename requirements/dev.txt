@@ -1,24 +1,11 @@
-### requirements for development
+# all requirements for development
 -r common.txt
-# feature/sample selection
-skcosmo
-# compiling documentation
-sphinx>=2.1.2,<=4.0.2
-breathe>=4.14.1
-nbsphinx>=0.8.1
-pygments>=2.4.1
-# Jinja2 v3 breaks nbsphinx
-jinja2==2.11.3
-sphinx_rtd_theme
-# notebook tutorials
-jupyter
-matplotlib>=2.0.0
-# linting and formatting
-cpplint==1.5.5
-black==20.8b1
-# data generation scripts
+-r doc.txt
+-r testing.txt
+
+## data generation scripts
 mpmath
 py-ubjson
-# testing
-pytest
-nbval
+
+## building python package
+scikit-build

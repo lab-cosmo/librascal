@@ -1,0 +1,9 @@
+# requirements to run tests
+
+## python tests
+pytest
+nbval
+
+## linting and formatting
+cpplint==1.5.5
+black==20.8b1

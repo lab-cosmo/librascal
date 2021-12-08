@@ -44,19 +44,6 @@ See `Helpers for Developers`_ below for some essential tools if you want to help
 develop librascal.  Be sure to also read `CONTRIBUTING.rst <https://github.com/cosmo-epfl/librascal/blob/master/CONTRIBUTING.rst>`_
 if you plan on making a contribution.
 
-Installation
-------------
-
-.. start-install
-
-The installation of the library for python use can be done simply with:
-
-.. code:: bash
-
-   pip install librascal
-
-assuming that `python` 3.6 (or higher) and `gcc` or `clang` are available.
-
 Dependencies
 ~~~~~~~~~~~~
 
@@ -74,68 +61,44 @@ following packages installed:
 +-------------+--------------------+
 | python      | 3.6 or higher      |
 +-------------+--------------------+
-| numpy       | 1.13 or higher     |
-+-------------+--------------------+
-| scipy       | 1.4.0 or higher    |
-+-------------+--------------------+
-| ASE         | 3.18 or higher     |
-+-------------+--------------------+
 
-Other necessary packages (such as Eigen and PyBind11) are downloaded
-automatically when compiling Rascal.
+Other necessary packages Eigen, PyBind11 and wigxjpf are downloaded
+automatically when compiling librascal.
 
-The following packages are required for some optional features:
+
+Installation
+------------
+
+.. start-install
+
+When the dependencise are met the installation of the library for python use can be done simply with:
+
+.. code:: bash
+
+   pip install librascal
+
+For optional features we have python packages required for the optional librascal features:
 
 +--------------------------+-------------+--------------------+
-| Feature                  | Package     | Required version   |
+| Librascal feature        | Package     | Required version   |
 +==========================+=============+====================+
 | Feature compression      | skcosmo     | 0.1.0 or later     |
 +--------------------------+-------------+--------------------+
 | Rotational algebra       | sympy       | 1.4 or later       |
 | (Clebsch-Gordan coeffs.) |             |                    |
 +--------------------------+-------------+--------------------+
-| Building documentation   | pandoc      | (latest)           |
-+--------------------------+-------------+--------------------+
-|                          | sphinx      | 2.1.2 or later     |
-+--------------------------+-------------+--------------------+
-|                          | breathe     | 4.14.1 or later    |
-+--------------------------+-------------+--------------------+
-|                          | nbsphinx    | 0.8.1 or later     |
-+--------------------------+-------------+--------------------+
+
+If you want to use the optional features and to be able to run all example notebooks, you can install the dependencies with
+
+.. code:: bash
+
+   pip install -r requirements/common.txt
 
 Compiling
 ~~~~~~~~~
 
 To compile the code it is necessary to have CMake 3.0 and a C++ compiler
-supporting C++14. During the configuration, it will automatically try to
-download the external libraries on which it depends:
-
--  Eigen
--  Pybind11
--  Boost (only the unit test framework library)
--  Python3
-
-And the following libraries to build the documentation:
-
--  Doxygen
--  Sphinx
--  Breathe
-
-Beware, Python3 is mandatory. The code won’t work with a Python version
-older than 3.
-
-You can then use pip to install all python packages required for the usage
-of the example notebooks:
-
-.. code:: bash
-
-    pip install -r requirements/common.txt 
-
-or development of rascal:
-
-.. code:: bash
-
-    pip install -r requirements/dev.txt 
+supporting C++14. During the configuration.
 
 To configure and compile the code with the default options, on \*nix
 systems (Windows is not supported):
@@ -179,7 +142,7 @@ for formatting compliance with clang-format 8.0 or higher and black packages
 .. code:: shell
 
    sudo apt-get install clang-format-8
-   pip3 install black
+   pip install -r requirements testing.txt
 
 Build Type
 ^^^^^^^^^^
@@ -212,7 +175,7 @@ packages. To install them on ubuntu:
 
 .. code:: shell
 
-  pip3 install sphinx sphinx_rtd_theme breathe nbsphinx
+  pip install -r requirements/doc.txt
   sudo apt-get install pandoc doxygen graphviz
 
 Then to build the documentation run:
@@ -241,11 +204,17 @@ build only the c++ library:
 Helpers for Developers
 ~~~~~~~~~~~~~~~~~~~~~~
 
+All python packages required for development can be installed with
+
+.. code:: shell
+
+   pip install -r requirements/dev.txt
+
 Deepclean
 ^^^^^^^^^
 
 To remove all the cmake files/folders except for the external
-library:
+libraries:
 
 .. code:: shell
 
@@ -265,7 +234,7 @@ tools with:
 
 .. code:: shell
 
-   sudo apt-get install clang-format
+   sudo apt-get install clang-format-8
    pip install black
 
 The automatic formatting of the c++ and python files can be
@@ -334,36 +303,3 @@ are either meant to be run *interactively* or are meant to be processed by
 `sphinx` (`nbsphinx <https://nbsphinx.readthedocs.io/en/latest/>`_) for
 inclusion in the
 `introductive examples <https://cosmo-epfl.github.io/librascal/examples/examples.html>`_.
-
-Miscellaneous Information
--------------------------
-
--  Common cmake flags:
-
-   -  -DCMAKE_CXX_COMPILER
-   -  -DCMAKE_C_COMPILER
-   -  -DCMAKE_BUILD_TYPE
-   -  -DBUILD_BINDINGS
-   -  -DINSTALL_PATH
-   -  -DBUILD_DOC
-   -  -DBUILD_TESTS
-
--  Special flags:
-
-   -  -DBUILD_BINDINGS:
-
-      -  ON (default) -> build python binding
-      -  OFF -> does not build python binding
-
-   -  -DINSTALL_PATH:
-
-      -  empty (default) -> does not install in a custom folder
-      -  custom string -> root path for the installation
-
-
-To build librascal as a docker environment:
-
-.. code:: shell
-
-   sudo docker build -t test -f ./docker/install_env.dockerfile  .
-   sudo docker run -it -v /path/to/repo/:/home/user/  test
