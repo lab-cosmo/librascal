@@ -13,20 +13,24 @@ with open("AUTHORS.txt") as fp:
     author = ", ".join(fp.readlines()).replace("\n", "").replace("\n", "")
 
 from pkg_resources import parse_requirements
+
 with open("./requirements/minimal.txt", "r") as fp:
-    install_requires  = [str(requirement) for requirement in parse_requirements(fp.read())]
+    install_requires = [
+        str(requirement) for requirement in parse_requirements(fp.read())
+    ]
 
 from pathlib import Path
+
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.rst").read_text()
 
-with open('README.rst') as f:
+with open("README.rst") as f:
     long_description = f.read()
 
 setup(
     name="librascal",
     version=__version__,
-    long_description_content_type='text/x-rst',
+    long_description_content_type="text/x-rst",
     long_description=long_description,
     description="""A versatile and scalable computation of representations of \
     atomic structures for machine learning.""",
