@@ -77,7 +77,7 @@ When the dependencies are met, the python package can be installed with:
 
    pip install librascal
 
-For optional features we have python packages required for the optional librascal features:
+For optional features of librascal the following python packages are required:
 
 +--------------------------+-------------+--------------------+
 | Librascal feature        | Package     | Required version   |
@@ -98,10 +98,7 @@ Compiling
 ~~~~~~~~~
 
 To compile the code it is necessary to have CMake 3.0 and a C++ compiler
-supporting C++14. During the configuration.
-
-To configure and compile the code with the default options, on \*nix
-systems (Windows is not supported):
+supporting C++14. To configure and compile the code with the default options, on \*nix systems (Windows is not supported):
 
 .. code:: shell
 
@@ -204,7 +201,7 @@ build only the c++ library:
 Helpers for Developers
 ~~~~~~~~~~~~~~~~~~~~~~
 
-All python packages required for development can be installed with
+All python packages used for development can be installed with:
 
 .. code:: shell
 
@@ -214,7 +211,7 @@ Deepclean
 ^^^^^^^^^
 
 To remove all the cmake files/folders except for the external
-libraries:
+libraries (e.g. Eigen):
 
 .. code:: shell
 
