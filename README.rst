@@ -56,7 +56,7 @@ The installation of the library for python use can be done simply with:
 
 .. code:: bash
 
-   pip install .
+   pip install librascal
 
 assuming that `python` 3.5 (or higher) and `gcc` or `clang` are available.
 
@@ -128,11 +128,17 @@ Beware, Python3 is mandatory. The code won’t work with a Python version
 older than 3.
 
 You can then use pip to install all python packages required for the usage
-and development of rascal:
+of the example notebooks:
 
 .. code:: bash
 
-    pip install -r requirements.txt
+    pip install -r requirements/common.txt 
+
+or development of rascal:
+
+.. code:: bash
+
+    pip install -r requirements/dev.txt 
 
 To configure and compile the code with the default options, on \*nix
 systems (Windows is not supported):
@@ -235,15 +241,6 @@ build only the c++ library:
    cmake -DBUILD_BINDINGS=OFF ..
    make
 
-Installing rascal
-^^^^^^^^^^^^^^^^^
-To install the python library with c++ bindings:
-
-.. code:: shell
-
-   pip install .
-
-
 Helpers for Developers
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -251,12 +248,11 @@ Deepclean
 ^^^^^^^^^
 
 To remove all the cmake files/folders except for the external
-library (enable glob and remove):
+library:
 
 .. code:: shell
 
-   shopt -s extglob
-   rm -fr -- !(external|third-party)
+   make deepclean
 
 Automatic code formatting
 ^^^^^^^^^^^^^^^^^^^^^^^^^
