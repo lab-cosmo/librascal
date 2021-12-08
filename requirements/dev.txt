@@ -1,7 +1,7 @@
 # all requirements for development
 -r common.txt
 -r doc.txt
--r testing.txt
+-r tests.txt
 
 ## data generation scripts
 mpmath

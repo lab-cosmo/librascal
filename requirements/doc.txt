@@ -1,0 +1,6 @@
+# building documentation
+sphinx_rtd_theme
+sphinx>=2.1.2,<=4.0.2
+breathe>=4.14.1
+nbsphinx>=0.8.1
+pygments>=2.4.1
