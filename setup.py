@@ -8,6 +8,9 @@ from skbuild import setup
 from skbuild.constants import CMAKE_INSTALL_DIR
 import re
 
+with open("AUTHORS.txt") as fp:
+    author = ", ".join(fp.readlines()).replace("\n", "")
+
 # read the version number from the library
 pattern = r"[0-9]\.[0-9]\.[0-9]"
 version = None
@@ -21,12 +24,17 @@ if version is None:
 with open("./requirements/minimal.txt", "r") as fp:
     requirements = list(filter(lambda x: "#" not in x, (line.strip() for line in fp)))
 
+with open("./README.rst", "r") as fp:
+    description = ''.join(fp.readlines())
+
 setup(
     name="librascal",
     version=version,
+    long_description_content_type='text/plain',
+    long_description=description,
     description="""A versatile and scalable computation of representations of \
     atomic structures for machine learning.""",
-    author=", ".join(open(os.path.join(ROOT, "contributors.txt"))),
+    author=author,
     license="LGPL-3.0-or-later",
     cmake_args=[
         "-DINSTALL_PATH:STRING=" + join(os.getcwd(), CMAKE_INSTALL_DIR()),
