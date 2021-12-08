@@ -441,7 +441,7 @@ additional columns of the xyz.</p>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-/local/scratch/mveit/codes/librascal/examples/i-PI/zundel
+/ssd/local/code/librascal-zundel/examples/i-PI/zundel
 </pre></div></div>
 </div>
 <p>In the snippets below we extract the relevant properties for each ASE frame. We load the total potential energies and we use the <code class="docutils literal notranslate"><span class="pre">ASE.Atoms.arrays</span></code> methods to get the atomic forces. For more information on how to use ASE-related methods, check the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/atoms.html">ASE Atoms documentation</a>.</p>
@@ -554,8 +554,8 @@ the <code class="docutils literal notranslate"><span class="pre">compute_KNM</sp
 <span></span><span class="c1"># define the parameters of the spherical expansion</span>
 <span class="n">hypers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;PowerSpectrum&quot;</span><span class="p">,</span>
               <span class="n">interaction_cutoff</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
-              <span class="n">max_radial</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-              <span class="n">max_angular</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+              <span class="n">max_radial</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+              <span class="n">max_angular</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
               <span class="n">gaussian_sigma_constant</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
               <span class="n">gaussian_sigma_type</span><span class="o">=</span><span class="s2">&quot;Constant&quot;</span><span class="p">,</span>
               <span class="n">cutoff_function_type</span><span class="o">=</span><span class="s2">&quot;RadialScaling&quot;</span><span class="p">,</span>
@@ -603,7 +603,7 @@ the <code class="docutils literal notranslate"><span class="pre">compute_KNM</sp
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "e39d6f0d1e8d4f69ae92c4bd51848612", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "d5ce53e036fa4f378480913fc7369c6a", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -611,7 +611,7 @@ the <code class="docutils literal notranslate"><span class="pre">compute_KNM</sp
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-Execution:  0.17952418327331543 s
+Execution:  0.12206697463989258 s
 </pre></div></div>
 </div>
 <p>At this point, we can define the <strong>sparse set</strong>, i.e. the set of (ideally) “maximally diverse” environments that will be used as basis points of the kernel ridge regression (KRR, mostly equivalent to GAP) model. We can choose the number of sparse environments in <code class="docutils literal notranslate"><span class="pre">librascal</span></code> per each atomic species, by defining a dictionary containing (atomic number, number of environments) pairs. The CURFilter class then selects out the most “representative” environments according to the representation that we
@@ -636,7 +636,9 @@ provide as the input object and by applying the CUR decomposition [3].</p>
 <div class="highlight"><pre>
 The number of pseudo points selected by central atom species is: {1: 50, 8: 100}
 Selecting species: 1
+Reconstruction RMSE=1.463e+00
 Selecting species: 8
+Reconstruction RMSE=1.577e-02
 </pre></div></div>
 </div>
 <p>As shown in eq. <span class="math notranslate nohighlight">\((1)\)</span>, in order to fit a GAP potential we need to compute the kernels of all the training structure descriptors and the sparse set, as well as the gradients w.r.t. the atomic positions, if we wish to fit the atomic forces. We do so by using another key structure of librascal: the <code class="docutils literal notranslate"><span class="pre">Kernel</span></code> class. We first build a kernel object containing the representation (SOAP), which we then use to compute the sparse kernel matrix <span class="math notranslate nohighlight">\(K_{NM}\)</span> between the training set and the sparse
@@ -671,7 +673,7 @@ set and its gradients using the <code class="docutils literal notranslate"><span
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "c76b5bf9381341dbada585cafb3ea1ba", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "27249c466afd4deb8c92ee912ee53c82", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -679,7 +681,7 @@ set and its gradients using the <code class="docutils literal notranslate"><span
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-Execution:  3.0745327472686768 s
+Execution:  1.5349509716033936 s
 </pre></div></div>
 </div>
 </section>
@@ -743,7 +745,7 @@ store ALL the structure managers of the training set to perform the regression (
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "7d940ef06b4e40708fd0836c3d49fb43", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "080b3e3ced374a8898f4ba9277884fba", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
@@ -789,9 +791,9 @@ store ALL the structure managers of the training set to perform the regression (
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-RMSE =  32.907081760686964 meV
+RMSE =  30.087996494496597 meV
 Sigma test set =  0.274800153468654  eV
-%RMSE =  11.974913894813605  %
+%RMSE =  10.949046466936812  %
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
