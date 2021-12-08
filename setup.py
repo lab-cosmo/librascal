@@ -18,7 +18,7 @@ with open("./bindings/librascal/__init__.py", "r") as fp:
 if version is None:
     raise ValueError("Version number not found.")
 
-with open("./requirements/common.txt", "r") as fp:
+with open("./requirements/minimal.txt", "r") as fp:
     requirements = list(filter(lambda x: "#" not in x, (line.strip() for line in fp)))
 
 setup(
@@ -26,7 +26,7 @@ setup(
     version=version,
     description="""A versatile and scalable computation of representations of \
     atomic structures for machine learning.""",
-    author="librascal developers",
+    author=", ".join(open(os.path.join(ROOT, "contributors.txt"))),
     license="LGPL-3.0-or-later",
     cmake_args=[
         "-DINSTALL_PATH:STRING=" + join(os.getcwd(), CMAKE_INSTALL_DIR()),
