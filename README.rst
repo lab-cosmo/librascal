@@ -35,16 +35,13 @@ For more information, have a look at the documentation_!
 Development
 -----------
 
-The code is currently in the alpha development phase; it is not yet
-suitable for public use. Nevertheless, there is a significant amount of
-functionality (including two tutorials) currently working and available
-to test if you’re feeling adventurous. Feedback and bug reports are
-welcome, as long as you keep the above in mind.
+The code is currently in the beta development phase, therefore we cannot guarantee that the interface and data formats will not change, but it has been in use for at least a year.
+Feedback and bug reports are welcome, as long as you keep the above in mind.
 
 .. end-intro
 
 See `Helpers for Developers`_ below for some essential tools if you want to help
-develop libRascal.  Be sure to also read `CONTRIBUTING.rst <CONTRIBUTING.rst>`_
+develop librascal.  Be sure to also read `CONTRIBUTING.rst <https://github.com/cosmo-epfl/librascal/blob/master/CONTRIBUTING.rst>`_
 if you plan on making a contribution.
 
 Installation
@@ -58,7 +55,7 @@ The installation of the library for python use can be done simply with:
 
    pip install librascal
 
-assuming that `python` 3.5 (or higher) and `gcc` or `clang` are available.
+assuming that `python` 3.6 (or higher) and `gcc` or `clang` are available.
 
 Dependencies
 ~~~~~~~~~~~~
@@ -332,11 +329,11 @@ noise.)
 
 Nonetheless, it is highly discouraged to contribute code in the form of
 notebooks; even with filters like ``nbstripout`` they're a hassle to use
-in version control.  Use them only for tutorials or *stable* examples that
+in version control.  Use them only for comprehensive tutorials or *stable* examples that
 are either meant to be run *interactively* or are meant to be processed by
 `sphinx` (`nbsphinx <https://nbsphinx.readthedocs.io/en/latest/>`_) for
 inclusion in the
-`tutorials page <https://cosmo-epfl.github.io/librascal/tutorials/tutorials.html>`_.
+`introductive examples <https://cosmo-epfl.github.io/librascal/examples/examples.html>`_.
 
 Miscellaneous Information
 -------------------------
