@@ -18,7 +18,7 @@ with open("./bindings/librascal/__init__.py", "r") as fp:
 if version is None:
     raise ValueError("Version number not found.")
 
-with open("./requirements_pip.txt", "r") as fp:
+with open("./requirements/common.txt", "r") as fp:
     requirements = list(filter(lambda x: "#" not in x, (line.strip() for line in fp)))
 
 setup(
