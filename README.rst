@@ -220,7 +220,7 @@ Then to build the documentation run:
   cmake -DBUILD_DOC=ON ..
   make doc
 
-and open :file:`build/docs/html/index.html` in a browser.
+and open `build/docs/html/index.html` in a browser.
 
 Bindings
 ^^^^^^^^
