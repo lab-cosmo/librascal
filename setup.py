@@ -1,4 +1,5 @@
 import sys
+import os
 from os.path import join
 from distutils.sysconfig import get_python_lib
 from setuptools import find_packages
