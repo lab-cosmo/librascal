@@ -24,9 +24,9 @@ collection (for large collections of small structures), or over components of a
 representation (for representations with a large number of independent functions
 or components).
 
-It comes with a GNU Lesser General Public License of version 3, which
-means that it can be modified and freely distributed, although we take
-no responsibility for its misuse.
+librascal is distributed under the GNU Lesser General Public License version 2.1
+or later, at your convenience. This means that it can be modified and freely
+distributed, although we take no responsibility for its misuse.
 
 For more information, have a look at the documentation_!
 
