@@ -454,10 +454,25 @@ def train_gap_model(
     # lambdas[0] is provided per atom hence the '* np.sqrt(Natoms)'
     # the first n_centers rows of KNM are expected to refer to the
     #  property
+
+    if isinstance(lambdas[0], np.ndarray):
+        assert lambdas[0].shape == (n_centers, 1),\
+          "Shape of provided regularizor does not match number of environments"
+    else:
+        assert isinstance(lambdas[0], float),\
+          "Regularizor needs to be float or numpy array"
+
     KNM[:n_centers] /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
     Y /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
 
     if grad_train is not None:
+        if isinstance(lambdas[0], np.ndarray):
+            assert lambdas[0].shape == (len(KNM) - n_centers, 1),\
+                "Shape of provided regularizor does not match number of environments"
+        else:
+            assert isinstance(lambdas[0], float),\
+                "Regularizor needs to be float or numpy array"
+
         KNM[n_centers:] /= lambdas[1] / delta
         F = grad_train.reshape((-1, 1)).copy()
         F /= lambdas[1] / delta
