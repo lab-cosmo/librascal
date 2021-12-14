@@ -1,4 +1,4 @@
-import rascal.lib._rascal as rc
+import librascal.lib._rascal as rc
 import unittest
 import numpy as np
 import scipy.special as sps

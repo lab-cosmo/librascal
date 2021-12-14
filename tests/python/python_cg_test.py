@@ -1,8 +1,8 @@
-from rascal.representations import (
+from librascal.representations import (
     SphericalExpansion,
     SphericalInvariants,
 )
-from rascal.utils import (
+from librascal.utils import (
     ClebschGordanReal,
     WignerDReal,
     spherical_expansion_reshape,

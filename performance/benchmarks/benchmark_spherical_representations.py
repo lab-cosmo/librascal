@@ -31,8 +31,8 @@ from ase.io import read
 import benchmarks
 
 try:
-    from rascal.representations import SphericalInvariants
-    from rascal.representations import SphericalExpansion
+    from librascal.representations import SphericalInvariants
+    from librascal.representations import SphericalExpansion
 except ImportError:
     sys.exit("Could not import rascal.")
 

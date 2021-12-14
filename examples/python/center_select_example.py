@@ -9,8 +9,8 @@ only carbon centres
 import ase.io
 import numpy as np
 
-from rascal.representations import SphericalInvariants
-from rascal.neighbourlist.structure_manager import (
+from librascal.representations import SphericalInvariants
+from librascal.neighbourlist.structure_manager import (
     mask_center_atoms_by_species,
     mask_center_atoms_by_id,
 )

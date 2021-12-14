@@ -1,8 +1,8 @@
-from rascal.representations import (
+from librascal.representations import (
     SphericalExpansion,
     SphericalInvariants,
 )
-from rascal.utils import (
+from librascal.utils import (
     get_radial_basis_covariance,
     get_radial_basis_pca,
     get_radial_basis_projections,

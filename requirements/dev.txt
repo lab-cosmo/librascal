@@ -1,0 +1,11 @@
+# all requirements for development
+-r common.txt
+-r doc.txt
+-r tests.txt
+
+## data generation scripts
+mpmath
+py-ubjson
+
+## building python package
+scikit-build

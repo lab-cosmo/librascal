@@ -45,7 +45,7 @@ class Kernel(BaseIO):
     sparse kernels [1]_, we refer to the pseudo points with 'M'. So a
     kernel between the training samples and the pseudo points is
     'KNM'. For more information on sparse kernels see
-    :meth:`rascal.models.krr.train_gap_model`.
+    :meth:`librascal.models.krr.train_gap_model`.
 
     .. [1] Joaquin Quiñonero-Candela, Carl Edward Rasmussen;
             A Unifying View of Sparse Approximate Gaussian Process Regression,
