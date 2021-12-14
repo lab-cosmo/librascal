@@ -1,5 +1,5 @@
 librascal
-================================================================================
+********************************************************************************
 
 .. start-intro
 
@@ -37,7 +37,7 @@ For more information, have a look at the documentation_!
 .. end-intro
 
 Dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+================================================================================
 
 Before installing librascal, please make sure you have at least the following
 packages installed:
@@ -66,7 +66,7 @@ automatically when compiling librascal.
 
 
 Installation
---------------------------------------------------------------------------------
+================================================================================
 
 .. start-install
 
@@ -97,7 +97,7 @@ installed with
    pip install -r requirements/common.txt
 
 Compiling
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+================================================================================
 
 To configure and compile the code with the default options, on \*nix systems
 (Windows is not supported):
@@ -110,14 +110,14 @@ To configure and compile the code with the default options, on \*nix systems
    make
 
 Customizing the build
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------------------------------------------------
 
 The library supports several alternative builds that have additional
 dependencies. Note that the ``ncurses`` GUI for cmake (ccmake) is quite helpful
 to customize the build options.
 
 Tests
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 
 Librascal source code is extensively tested (both c++ and python). The BOOST
 unit_test_framework is required to build the tests (see BOOST.md for further
@@ -199,7 +199,7 @@ library:
    make
 
 Development
---------------------------------------------------------------------------------
+================================================================================
 
 Read the `CONTRIBUTING.rst
 <https://github.com/cosmo-epfl/librascal/blob/master/CONTRIBUTING.rst>`_ if you

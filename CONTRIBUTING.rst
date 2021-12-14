@@ -1,5 +1,5 @@
 Contributing to librascal
---------------------------------------------------------------------------------
+********************************************************************************
 
 Thank you for contributing to libRascal! To make sure your pull request gets
 accepted with a minimum of hassle for everyone involved, please make sure first
@@ -122,10 +122,10 @@ judiciously.
 Developer tools
 ================================================================================
 
-Tools to make simpler for developers
+Tools to make life simpler for developers
 
 Deepclean
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------------------------------------------------------
 
 To remove all the cmake files/folders except for the external libraries:
 
@@ -134,7 +134,7 @@ To remove all the cmake files/folders except for the external libraries:
    make deepclean
 
 Automatic code formatting
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------------------------------------------------------
 
 To help developers conform their contribution to the coding convention, the
 formatting of new functionalities can be automated using clang-format (for the

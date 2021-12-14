@@ -1,7 +1,7 @@
 # required packages to use all features from librascal and to run notebook examples
 -r minimal.txt
 
-## jup
+## running example jupyter notebooks
 jupyter
 matplotlib>=2.0.0
 
