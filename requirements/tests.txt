@@ -1,4 +1,5 @@
 # requirements to run tests
+-r common.txt
 
 ## python tests
 pytest

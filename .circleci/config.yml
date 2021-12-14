@@ -89,7 +89,7 @@ jobs:
       - checkout
       - run:
           name: Install Python dependencies
-          command: python3.8 -m pip install -r requirements/dev.txt
+          command: python3.8 -m pip install -r requirements/doc.txt
       - run:
           name: Configure
           command: |
@@ -199,7 +199,7 @@ jobs:
       - checkout
       - run:
           name: Install Python dependencies
-          command: python3.8 -m pip install -r requirements/common.txt -r requirements/tests.txt
+          command: python3.8 -m pip install -r requirements/tests.txt
       - run:
           name: Configure
           command: |

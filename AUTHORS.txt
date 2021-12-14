@@ -1,16 +1,18 @@
 Michele Ceriotti
-Félix Musil
-Max Veit
-Alexander Goscinski
-Guillaume Fraux
-Michael J. Willatt
-Markus Stricker
-Till Junge
-Klim Goldshtein
-Chiheb B. Mahmoud
-Federico Giberti
-Andrea Grisafi
 Rose K. Cersonsky
+Guillaume Fraux
+Federico Giberti
 Lorenzo Gigli
-Jigyasa Nigam
+Klim Goldshtein
+Alexander Goscinski
+Andrea Grisafi
+Ben A. Helfrecht
 Kevin K. Huguenin-Dumittan
+Giulio Imbalzano
+Till Junge
+Chiheb B. Mahmoud
+Félix Musil
+Jigyasa Nigam
+Markus Stricker
+Max Veit
+Michael J. Willatt
