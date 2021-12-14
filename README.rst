@@ -205,3 +205,4 @@ library:
    cd build
    cmake -DBUILD_BINDINGS=OFF ..
    make
+   
