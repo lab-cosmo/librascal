@@ -9,6 +9,11 @@ that can then be fed to any supervised or unsupervised learning algorithm.
 Simple regression code will be included for testing purposes, but the long-term
 goal is to develop a separate collection of tools to this end.
 
+The code is currently in the beta development phase, therefore we cannot
+guarantee that the interface and data formats will not change, but it has been
+in use for at least a year. Feedback and bug reports are welcome, as long as you
+keep the above in mind.
+
 librascal is currently considered a standalone code. However, we aim to provide
 enough flexibility to interface it with other codes such as LAMMPS and
 PLUMED-2.0. It can be used as a C++ library as well as a python module. To be
@@ -29,20 +34,7 @@ For more information, have a look at the documentation_!
 
 .. _documentation: https://cosmo-epfl.github.io/librascal/
 
-Development
---------------------------------------------------------------------------------
-
-The code is currently in the beta development phase, therefore we cannot
-guarantee that the interface and data formats will not change, but it has been
-in use for at least a year. Feedback and bug reports are welcome, as long as you
-keep the above in mind.
-
 .. end-intro
-
-See `Helpers for Developers`_ below for some essential tools if you want to help
-develop librascal. Be sure to also read `CONTRIBUTING.rst
-<https://github.com/cosmo-epfl/librascal/blob/master/CONTRIBUTING.rst>`_ if you
-plan on making a contribution.
 
 Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -205,4 +197,10 @@ library:
    cd build
    cmake -DBUILD_BINDINGS=OFF ..
    make
-   
+
+Development
+--------------------------------------------------------------------------------
+
+Read the `CONTRIBUTING.rst
+<https://github.com/cosmo-epfl/librascal/blob/master/CONTRIBUTING.rst>`_ if you
+plan on making a contribution.
