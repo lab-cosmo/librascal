@@ -19,7 +19,7 @@ powerful and flexible simulation engine, capable of many advanced simulation
 techniques such as REMD and PIMD and parallel execution of multiple system
 replicas.  It is possible to use ``librascal`` as a "force driver" within i-PI's
 socket calculator interface: Use `this driver script (on github)
-<https://github.com/cosmo-epfl/i-pi/blob/feat/librascal/drivers/py/pes/rascal.py>`_
+<https://github.com/lab-cosmo/i-pi/blob/feat/librascal/drivers/py/pes/rascal.py>`_
 to initialize a saved ``librascal`` model, then run i-PI to connect to the
 socket and run dynamics.  Please consult the i-PI documentation for further
 information on setting up a simulation and using socket calculators.
@@ -47,7 +47,7 @@ Others
 
 If you would like ``librascal`` to support another MD code, please let us know!
 The best way to do this is `open an issue on our github
-<https://github.com/cosmo-epfl/librascal/issues>`_ with the ``enhancement``
+<https://github.com/lab-cosmo/librascal/issues>`_ with the ``enhancement``
 label.
 
 In the meantime, if you can make your MD code call Python code, you may be able

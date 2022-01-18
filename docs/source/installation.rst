@@ -10,7 +10,7 @@ It is strongly recommended to clone librascal from its repository in GitHub.
 
 .. code-block:: bash
 
-    git clone https://github.com/cosmo-epfl/librascal.git
+    git clone https://github.com/lab-cosmo/librascal.git
 
 
 .. include:: ../../README.rst

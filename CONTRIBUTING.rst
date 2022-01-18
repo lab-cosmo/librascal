@@ -14,9 +14,9 @@ linter fails on your code, the pull request will be sent back for revision
 without any further comments.
 
 It is also a good idea to browse the
-`developer's guide <https://cosmo-epfl.github.io/librascal/dev_guide/developer.html>`_,
+`developer's guide <https://lab-cosmo.github.io/librascal/dev_guide/developer.html>`_,
 especially the
-`coding conventions <https://cosmo-epfl.github.io/librascal/dev_guide/coding-convention.html>`_
+`coding conventions <https://lab-cosmo.github.io/librascal/dev_guide/coding-convention.html>`_
 for C++ code (Python code generally follows PEP 8).
 
 We now have a pull request template; please use it (especially for new
@@ -32,7 +32,7 @@ Summary of the review process
 ===============================
 
 A detailed description can be found in a separate document about the `review
-process <https://cosmo-epfl.github.io/librascal/dev_guide/review_process.html>`_
+process <https://lab-cosmo.github.io/librascal/dev_guide/review_process.html>`_
 
 For developers
  * We want a clean and tested master branch, which is why we review code and use
@@ -69,7 +69,7 @@ sent back without further comments.  The two exceptions to this rule are:
    those outputs from making it into the history in the first place)
 
 2. Stable outputs for example notebooks meant to be processed to HTML for the
-   `tutorials page <https://cosmo-epfl.github.io/librascal/tutorials/tutorials.html>`_.
+   `tutorials page <https://lab-cosmo.github.io/librascal/tutorials/tutorials.html>`_.
    "Stable" here means these are the final outputs meant to be shown to the
    public and won't be changed unless errors or omissions are discovered, or the
    tutorial is later updated or expanded.  Note that tutorials that rely on
