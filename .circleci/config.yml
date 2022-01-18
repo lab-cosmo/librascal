@@ -105,7 +105,7 @@ jobs:
             if [[ $CIRCLE_BRANCH == "master" ]]; then
                 ./.circleci/deploy-docs.sh
                 cd gh-pages
-                git push -q https://${GH_TOKEN}@github.com/cosmo-epfl/librascal.git gh-pages
+                git push -q https://${GH_TOKEN}@github.com/lab-cosmo/librascal.git gh-pages
             fi
 
   # Special job only linting the code

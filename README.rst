@@ -14,7 +14,7 @@ librascal is currently considered a standalone code. However, we aim to
 provide enough flexibility to interface it with other codes such as
 LAMMPS and PLUMED-2.0. It can be used as a C++ library as well as a
 python module. To be able to call it from python, we have used the
-pybind11 library.
+pybind11_ library.
 
 Although at the moment is a serial-only code, we aim to write it in MPI
 so that it will be possible to take advantage of parallelization to
@@ -30,7 +30,8 @@ distributed, although we take no responsibility for its misuse.
 
 For more information, have a look at the documentation_!
 
-.. _documentation: https://cosmo-epfl.github.io/librascal/
+.. _documentation: https://lab-cosmo.github.io/librascal/
+.. _pybind11: https://pybind11.readthedocs.io
 
 Development
 -----------
@@ -84,7 +85,7 @@ following packages installed:
 | ASE         | 3.18 or higher     |
 +-------------+--------------------+
 
-Other necessary packages (such as Eigen and PyBind11) are downloaded
+Other necessary packages (such as Eigen and pybind11) are downloaded
 automatically when compiling Rascal.
 
 The following packages are required for some optional features:
@@ -114,7 +115,7 @@ supporting C++14. During the configuration, it will automatically try to
 download the external libraries on which it depends:
 
 -  Eigen
--  Pybind11
+-  pybind11
 -  Boost (only the unit test framework library)
 -  Python3
 
@@ -340,7 +341,7 @@ in version control.  Use them only for tutorials or *stable* examples that
 are either meant to be run *interactively* or are meant to be processed by
 `sphinx` (`nbsphinx <https://nbsphinx.readthedocs.io/en/latest/>`_) for
 inclusion in the
-`tutorials page <https://cosmo-epfl.github.io/librascal/tutorials/tutorials.html>`_.
+`tutorials page <https://lab-cosmo.github.io/librascal/tutorials/tutorials.html>`_.
 
 Miscellaneous Information
 -------------------------
