@@ -400,8 +400,8 @@
 <li><p>Forward declaring symbols from namespace std:: yields undefined behaviour.</p></li>
 <li><p>It can be difficult to determine whether a forward declaration or a full <code class="docutils literal notranslate"><span class="pre">#include</span></code> is needed. Replacing an <code class="docutils literal notranslate"><span class="pre">#include</span></code> with a forward declaration can silently change the meaning of code:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// b.hh:</span>
-<span class="k">struct</span> <span class="nc">B</span><span class="w"> </span><span class="p">{};</span><span class="w"></span>
-<span class="k">struct</span> <span class="nc">D</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">B</span><span class="w"> </span><span class="p">{};</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">B</span><span class="w"> </span><span class="p">{};</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">D</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">B</span><span class="w"> </span><span class="p">{};</span><span class="w"></span>
 
 <span class="c1">// good_user.cc:</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;b.hh&quot;</span><span class="cp"></span>
@@ -482,7 +482,7 @@
 
 <span class="w">  </span><span class="c1">// All declarations are within the namespace scope.</span>
 <span class="w">  </span><span class="c1">// Notice the lack of indentation.</span>
-<span class="w">  </span><span class="k">class</span> <span class="nc">MyClass</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">class</span><span class="w"> </span><span class="nc">MyClass</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
 <span class="w">     </span><span class="p">...</span><span class="w"></span>
 <span class="w">     </span><span class="kt">void</span><span class="w"> </span><span class="n">Foo</span><span class="p">();</span><span class="w"></span>
@@ -628,7 +628,7 @@
 <p>When destructors are trivial, their execution is not subject to ordering at all (they are effectively not “run”); otherwise we are exposed to the risk of accessing objects after the end of their lifetime. Therefore, we only allow objects with static storage duration if they are trivially destructible. Fundamental types (like pointers and int) are trivially destructible, as are arrays of trivially destructible types. Note that variables marked with <code class="docutils literal notranslate"><span class="pre">constexpr</span></code> are trivially destructible.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">kNum</span><span class="p">{</span><span class="mi">10</span><span class="p">};</span><span class="w">  </span><span class="c1">// allowed</span>
 
-<span class="k">struct</span> <span class="nc">X</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">X</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
 <span class="k">const</span><span class="w"> </span><span class="n">X</span><span class="w"> </span><span class="n">kX</span><span class="p">[]{{</span><span class="mi">1</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="mi">2</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="mi">3</span><span class="p">}};</span><span class="w">  </span><span class="c1">// allowed</span>
 
 <span class="kt">void</span><span class="w"> </span><span class="nf">foo</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
@@ -663,7 +663,7 @@
 </div>
 <p>All but the first statement expose us to indeterminate initialisation ordering.</p>
 <p>The concept we are looking for is called <em>constant initialisation</em> in the formal language of the C++ standard. It means that the initialising expression is a constant expression, and if the object is initialised by a constructor call, then the constructor must be specified as <code class="docutils literal notranslate"><span class="pre">constexpr</span></code>, too:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">Foo</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="n">Foo</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">Foo</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="n">Foo</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
 
 <span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">{</span><span class="mi">5</span><span class="p">};</span><span class="w">   </span><span class="c1">// fine, 5 is a constant expression</span>
 <span class="n">Foo</span><span class="w"> </span><span class="nf">x</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span><span class="w">   </span><span class="c1">// fine, 2 is a constant expression and the chosen constructor is constexpr</span>
@@ -674,7 +674,7 @@
 <p>By contrast, the following initialisations are problematic:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">time_t</span><span class="w"> </span><span class="nf">time</span><span class="p">(</span><span class="kt">time_t</span><span class="o">*</span><span class="p">);</span><span class="w">      </span><span class="c1">// not ``constexpr``!</span>
 <span class="kt">int</span><span class="w"> </span><span class="nf">f</span><span class="p">();</span><span class="w">                   </span><span class="c1">// not ``constexpr``!</span>
-<span class="k">struct</span> <span class="nc">Bar</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Bar</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Bar</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Bar</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
 
 <span class="kt">time_t</span><span class="w"> </span><span class="n">m</span><span class="p">{</span><span class="n">time</span><span class="p">(</span><span class="k">nullptr</span><span class="p">)};</span><span class="w">   </span><span class="c1">// initialising expression not a constant expression</span>
 <span class="n">Foo</span><span class="w"> </span><span class="nf">y</span><span class="p">(</span><span class="n">f</span><span class="p">());</span><span class="w">                </span><span class="c1">// ditto</span>
@@ -775,7 +775,7 @@
 <dt>Definition:</dt><dd><p>Implicit conversions allow an object of one type (called the <em>source type</em>) to be used where a different type (called the <em>destination type</em>) is expected, such as when passing an <code class="docutils literal notranslate"><span class="pre">int</span></code> argument to a function that takes a <code class="docutils literal notranslate"><span class="pre">double</span></code> parameter.</p>
 <p>In addition to the implicit conversions defined by the language, users can define their own, by adding appropriate members to the class definition of the source or destination type. An implicit conversion in the source type is defined by a type conversion operator named after the destination type (e.g. <code class="docutils literal notranslate"><span class="pre">operator</span> <span class="pre">bool()</span></code>). An implicit conversion in the destination type is defined by a constructor that can take the source type as its only argument (or only argument with no default value).</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">explicit</span></code> keyword can be applied to a constructor or (since C++11) a conversion operator, to ensure that it can only be used when the destination type is explicit at the point of use, e.g. with a cast. This applies not only to implicit conversions, but to C++11’s list initialisation syntax:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Foo</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Foo</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">Foo</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="p">);</span><span class="w"></span>
 <span class="w">  </span><span class="p">...</span><span class="w"></span>
 <span class="p">};</span><span class="w"></span>
@@ -829,7 +829,7 @@
 </dd>
 <dt>Decision:</dt><dd><p>Every class’s public interface should make explicit which copy and move operations the class supports. This should usually take the form of explicitly declaring and/or deleting the appropriate operations in the public section of the declaration.</p>
 <p>Specifically, a copyable class should explicitly declare the copy operations, a move-only class should explicitly declare the move operations, and a non-copyable/movable class should explicitly delete the copy operations. Explicitly declaring or deleting all four copy/move operations is required. If you provide a copy or move assignment operator, you must also provide the corresponding constructor.</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Copyable</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Copyable</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
 <span class="w">    </span><span class="c1">//! Default constructor</span>
 <span class="w">    </span><span class="n">Copyable</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span><span class="p">;</span><span class="w"></span>
@@ -856,7 +856,7 @@
 
 <span class="w">  </span><span class="p">};</span><span class="w"></span>
 
-<span class="w">  </span><span class="k">class</span> <span class="nc">MoveOnly</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">class</span><span class="w"> </span><span class="nc">MoveOnly</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
 <span class="w">    </span><span class="c1">//! Default constructor</span>
 <span class="w">    </span><span class="n">MoveOnly</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span><span class="p">;</span><span class="w"></span>
@@ -882,7 +882,7 @@
 <span class="w">    </span><span class="p">...</span><span class="w"></span>
 <span class="w">  </span><span class="p">};</span><span class="w"></span>
 
-<span class="w">  </span><span class="k">class</span> <span class="nc">NotCopyableNorMovable</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">class</span><span class="w"> </span><span class="nc">NotCopyableNorMovable</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
 <span class="w">    </span><span class="c1">//! Default constructor</span>
 <span class="w">    </span><span class="n">NotCopyableNorMovable</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span><span class="p">;</span><span class="w"></span>
@@ -921,8 +921,8 @@
 <p><code class="docutils literal notranslate"><span class="pre">struct</span></code>s should be used for passive objects that carry data, and may have associated constants, but lack any functionality other than access/setting the data members. The accessing/setting of fields is done by directly accessing the fields rather than through method invocations.</p>
 <p>Methods should only be used in templated static method-only <code class="docutils literal notranslate"><span class="pre">struct</span></code>s. See, e.g.:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//! static inline implementation of Hooke&#39;s law</span>
-<span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="n">Dim_t</span><span class="w"> </span><span class="n">Dim</span><span class="p">,</span><span class="w"> </span><span class="k">class</span> <span class="nc">Strain_t</span><span class="p">,</span><span class="w"> </span><span class="k">class</span> <span class="nc">Tangent_t</span><span class="o">&gt;</span><span class="w"></span>
-<span class="k">struct</span> <span class="nc">Hooke</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="n">Dim_t</span><span class="w"> </span><span class="n">Dim</span><span class="p">,</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">Strain_t</span><span class="p">,</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">Tangent_t</span><span class="o">&gt;</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">Hooke</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="cm">/**</span>
 <span class="cm">   * compute Lamé&#39;s first constant</span>
 <span class="cm">   * @param young: Young&#39;s modulus</span>
@@ -986,7 +986,7 @@
 <span class="cm">   * @param mu: Second Lamé&#39;s constant (i.e. shear modulus)</span>
 <span class="cm">   * @param E: Green-Lagrange or small strain tensor</span>
 <span class="cm">   */</span><span class="w"></span>
-<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">s_t</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">s_t</span><span class="o">&gt;</span><span class="w"></span>
 <span class="w">  </span><span class="kr">inline</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span><span class="w"></span>
 <span class="w">  </span><span class="n">evaluate_stress</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Real</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">lambda</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Real</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">mu</span><span class="p">,</span><span class="w"> </span><span class="n">s_t</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">E</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">E</span><span class="p">.</span><span class="n">trace</span><span class="p">()</span><span class="o">*</span><span class="n">lambda</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Strain_t</span><span class="o">::</span><span class="n">Identity</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="o">*</span><span class="n">mu</span><span class="o">*</span><span class="n">E</span><span class="p">;</span><span class="w"></span>
@@ -999,7 +999,7 @@
 <span class="cm">   * @param E: Green-Lagrange or small strain tensor</span>
 <span class="cm">   * @param C: stiffness tensor (Piola-Kirchhoff 2 (or σ) w.r.t to `E`)</span>
 <span class="cm">   */</span><span class="w"></span>
-<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">s_t</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">s_t</span><span class="o">&gt;</span><span class="w"></span>
 <span class="w">  </span><span class="kr">inline</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span><span class="w"></span>
 <span class="w">  </span><span class="n">evaluate_stress</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Real</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">lambda</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Real</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">mu</span><span class="p">,</span><span class="w"></span>
 <span class="w">                  </span><span class="n">Tangent_t</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">C</span><span class="p">,</span><span class="w"> </span><span class="n">s_t</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">E</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
@@ -1140,7 +1140,7 @@
 <p>Use overloaded functions (including constructors) only if a reader looking at a call site can get a good idea of what is happening without having to first figure out exactly which overload is being called.</p>
 <dl>
 <dt>Definition:</dt><dd><p>You may write a function that takes a <code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">string&amp;</span></code> and overload it with another that takes <code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">char*</span></code>. However, in this case consider <code class="docutils literal notranslate"><span class="pre">std::string_view</span></code> instead.</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyClass</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyClass</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w"> </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
 <span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">Analyze</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="n">text</span><span class="p">);</span><span class="w"></span>
 <span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">Analyze</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">textlen</span><span class="p">);</span><span class="w"></span>
@@ -1189,12 +1189,12 @@
 </dd>
 <dt>Pros:</dt><dd><p>Trailing return types are the only way to explicitly specify the return type of a <a class="reference internal" href="#lambda-expressions"><span class="std std-ref">lambda expression</span></a>. In some cases the compiler is able to deduce a lambda’s return type, but not in all cases. Even when the compiler can deduce it automatically, sometimes specifying it explicitly would be clearer for readers.</p>
 <p>Sometimes it’s easier and more readable to specify a return type after the function’s parameter list has already appeared. This is particularly true when the return type depends on template parameters. For example:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span> <span class="nc">U</span><span class="o">&gt;</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">U</span><span class="o">&gt;</span><span class="w"></span>
 <span class="k">auto</span><span class="w"> </span><span class="n">add</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">U</span><span class="w"> </span><span class="n">u</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">decltype</span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">u</span><span class="p">);</span><span class="w"></span>
 </pre></div>
 </div>
 <p>versus</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span> <span class="nc">U</span><span class="o">&gt;</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">U</span><span class="o">&gt;</span><span class="w"></span>
 <span class="k">decltype</span><span class="p">(</span><span class="n">declval</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&amp;&gt;</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">declval</span><span class="o">&lt;</span><span class="n">U</span><span class="o">&amp;&gt;</span><span class="p">())</span><span class="w"> </span><span class="n">add</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">U</span><span class="w"> </span><span class="n">u</span><span class="p">);</span><span class="w"></span>
 </pre></div>
 </div>
@@ -1481,7 +1481,7 @@
 <p>Avoid defining macros, especially in headers; prefer inline functions, enums, and const variables. Do not use macros to define pieces of a C++ API. Be aware that if you do not have a <strong>very</strong> good reason to submit code with a macro, it will likely be rejected.</p>
 <p>Macros mean that the code you see is not the same as the code the compiler sees. This can introduce unexpected behaviour, especially since macros have global scope.</p>
 <p>The problems introduced by macros are especially severe when they are used to define pieces of a C++ API, and still more so for public APIs. Every error message from the compiler when developers incorrectly use that interface now must explain how the macros formed the interface. Refactoring and analysis tools have a dramatically harder time updating the interface. As a consequence, we specifically disallow using macros in this way. For example, avoid patterns like:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">WOMBAT_TYPE</span><span class="p">(</span><span class="n">Foo</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">WOMBAT_TYPE</span><span class="p">(</span><span class="n">Foo</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="c1">// ...</span>
 
 <span class="w"> </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
@@ -1560,7 +1560,7 @@
 <li><p>When the type is clear from local context (in the same expression or within a few lines). Initialisation of a pointer or smart pointer with calls to <code class="docutils literal notranslate"><span class="pre">new</span></code> and <code class="docutils literal notranslate"><span class="pre">std::make_unique</span></code> commonly falls into this category, as does use of <code class="docutils literal notranslate"><span class="pre">auto</span></code> in a range-based loop over a container whose type is spelled out nearby.</p></li>
 <li><p>When the type doesn’t matter because it isn’t being used for anything other than equality comparison.</p></li>
 <li><p>When iterating over a map with a range-based loop (because it is often assumed that the correct type is <code class="docutils literal notranslate"><span class="pre">std::pair&lt;KeyType,</span> <span class="pre">ValueType&gt;</span></code> whereas it is actually <code class="docutils literal notranslate"><span class="pre">std::pair&lt;const</span> <span class="pre">KeyType,</span> <span class="pre">ValueType&gt;</span></code>). This is particularly well paired with local key and value aliases for <code class="docutils literal notranslate"><span class="pre">.first</span></code> and <code class="docutils literal notranslate"><span class="pre">.second</span></code> (often const-ref).</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="nl">item</span> <span class="p">:</span><span class="w"> </span><span class="n">some_map</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">some_map</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">KeyType</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="n">first</span><span class="p">;</span><span class="w"></span>
 <span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">ValType</span><span class="o">&amp;</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">item</span><span class="p">.</span><span class="n">second</span><span class="p">;</span><span class="w"></span>
 <span class="w">  </span><span class="c1">// The rest of the loop can now just refer to key and value,</span>
@@ -1577,7 +1577,7 @@
 <span id="id17"></span><h4><a class="toc-backref" href="#id81">Braced Initialiser List</a><a class="headerlink" href="#braced-initialiser-list" title="Permalink to this headline"></a></h4>
 <p>You may use braced initialiser lists.</p>
 <p>In C++03, aggregate types (arrays and structs with no constructor) could be initialised with braced initialiser lists.</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">Point</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">;</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="p">;</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">Point</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">;</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="p">;</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
 <span class="n">Point</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">};</span><span class="w"></span>
 </pre></div>
 </div>
@@ -1599,7 +1599,7 @@
 <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">test_function</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">};</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
 
 <span class="c1">// Iterate over a braced-init-list.</span>
-<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="nl">i</span> <span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="mi">-2</span><span class="p">,</span><span class="w"> </span><span class="mi">-3</span><span class="p">})</span><span class="w"> </span><span class="p">{}</span><span class="w"></span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="mi">-2</span><span class="p">,</span><span class="w"> </span><span class="mi">-3</span><span class="p">})</span><span class="w"> </span><span class="p">{}</span><span class="w"></span>
 
 <span class="c1">// Call a function using a braced-init-list.</span>
 <span class="kt">void</span><span class="w"> </span><span class="n">TestFunction2</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span><span class="w"></span>
@@ -1607,16 +1607,16 @@
 </pre></div>
 </div>
 <p>A user-defined type can also define a constructor and/or assignment operator that take <code class="docutils literal notranslate"><span class="pre">std::initialiser_list&lt;T&gt;</span></code>, which is automatically created from braced-init-list:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyType</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyType</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w"> </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
 <span class="w">  </span><span class="c1">// std::initialiser_list references the underlying init list.</span>
 <span class="w">  </span><span class="c1">// It should be passed by value.</span>
 <span class="w">  </span><span class="n">MyType</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">initialiser_list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">init_list</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="nl">i</span> <span class="p">:</span><span class="w"> </span><span class="n">init_list</span><span class="p">)</span><span class="w"> </span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">init_list</span><span class="p">)</span><span class="w"> </span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">);</span><span class="w"></span>
 <span class="w">  </span><span class="p">}</span><span class="w"></span>
 <span class="w">  </span><span class="n">MyType</span><span class="o">&amp;</span><span class="w"> </span><span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">initialiser_list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="w"> </span><span class="n">init_list</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="n">clear</span><span class="p">();</span><span class="w"></span>
-<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="nl">i</span> <span class="p">:</span><span class="w"> </span><span class="n">init_list</span><span class="p">)</span><span class="w"> </span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">init_list</span><span class="p">)</span><span class="w"> </span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">);</span><span class="w"></span>
 <span class="w">  </span><span class="p">}</span><span class="w"></span>
 <span class="p">};</span><span class="w"></span>
 <span class="n">MyType</span><span class="w"> </span><span class="n">m</span><span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">};</span><span class="w"></span>
@@ -1626,7 +1626,7 @@
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="p">{</span><span class="mf">1.23</span><span class="p">};</span><span class="w"></span>
 <span class="c1">// Calls ordinary constructor as long as MyOtherType has no</span>
 <span class="c1">// std::initialiser_list constructor.</span>
-<span class="k">class</span> <span class="nc">MyOtherType</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyOtherType</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w"> </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
 <span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">MyOtherType</span><span class="p">(</span><span class="n">string</span><span class="p">);</span><span class="w"></span>
 <span class="w">  </span><span class="n">MyOtherType</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">string</span><span class="p">);</span><span class="w"></span>
@@ -1782,7 +1782,7 @@
 <p>Public aliases are for the benefit of an API’s user, and should be clearly documented.</p>
 <dl>
 <dt>Definition:</dt><dd><p>You can create names that are aliases of other entities:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">Param</span><span class="o">&gt;</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">Param</span><span class="o">&gt;</span><span class="w"></span>
 <span class="k">using</span><span class="w"> </span><span class="n">Bar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Foo</span><span class="o">&lt;</span><span class="n">Param</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
 <span class="k">using</span><span class="w"> </span><span class="n">other_namespace</span><span class="o">::</span><span class="n">Foo</span><span class="p">;</span><span class="w"></span>
 </pre></div>
@@ -1885,15 +1885,15 @@ test_my_useful_class.cc // unittests <span class="k">for</span> MyUsefulClass
 <p>Type names start with a capital letter and have a capital letter for each new word (CamelCase), with no underscores: <code class="docutils literal notranslate"><span class="pre">MyExcitingClass</span></code>, <code class="docutils literal notranslate"><span class="pre">MyExcitingEnum</span></code>.</p>
 <p>The names of all types — classes, structs, type aliases, enums, and type template parameters — have the same naming convention. Type names should start with a capital letter and have a capital letter for each new word. No underscores. For example:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// classes and structs</span>
-<span class="k">class</span> <span class="nc">UrlTable</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"></span>
-<span class="k">class</span> <span class="nc">UrlTableTester</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"></span>
-<span class="k">struct</span> <span class="nc">UrlTableProperties</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"></span>
+<span class="k">class</span><span class="w"> </span><span class="nc">UrlTable</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"></span>
+<span class="k">class</span><span class="w"> </span><span class="nc">UrlTableTester</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">UrlTableProperties</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"></span>
 
 <span class="c1">// using aliases</span>
 <span class="k">using</span><span class="w"> </span><span class="n">PropertiesMap_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hash_map</span><span class="o">&lt;</span><span class="n">UrlTableProperties</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="n">string</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
 
 <span class="c1">// enums</span>
-<span class="k">enum</span> <span class="nc">UrlTableErrors</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"></span>
+<span class="k">enum</span><span class="w"> </span><span class="nc">UrlTableErrors</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"></span>
 </pre></div>
 </div>
 <dl class="simple">
@@ -1918,7 +1918,7 @@ Common Variable names</p>
 <section id="struct-and-class-data-members">
 <h5><a class="toc-backref" href="#id93"><code class="docutils literal notranslate"><span class="pre">struct</span></code> and <code class="docutils literal notranslate"><span class="pre">class</span></code> Data Members</a><a class="headerlink" href="#struct-and-class-data-members" title="Permalink to this headline"></a></h5>
 <p>Data members of <code class="docutils literal notranslate"><span class="pre">struct</span></code>s and  classes, both static and non-static, are named like ordinary nonmember variables.</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TableInfo</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">TableInfo</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="p">...</span><span class="w"></span>
 <span class="k">private</span><span class="o">:</span><span class="w"></span>
 <span class="w">  </span><span class="n">string</span><span class="w"> </span><span class="n">unique_name</span><span class="p">;</span><span class="w">  </span><span class="c1">// OK - underscore.</span>
@@ -1964,7 +1964,7 @@ Common Variable names</p>
 <p>Preferably, the individual enumerators should be named like constants. However, it is also acceptable to name them like macros. The enumeration name, UrlTableErrors (and AlternateUrlTableErrors), is a type, and therefore mixed case.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//! Material laws can declare which type of strain measure they require and</span>
 <span class="c1">//! µSpectre will provide it</span>
-<span class="k">enum</span> <span class="k">class</span><span class="w"> </span><span class="nc">StrainMeasure</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">enum</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">StrainMeasure</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="n">Gradient</span><span class="p">,</span><span class="w">      </span><span class="c1">//!&lt; placement gradient (δy/δx)</span>
 <span class="w">  </span><span class="n">Infinitesimal</span><span class="p">,</span><span class="w"> </span><span class="c1">//!&lt; small strain tensor .5(∇u + ∇uᵀ)</span>
 <span class="w">  </span><span class="n">GreenLagrange</span><span class="p">,</span><span class="w"> </span><span class="c1">//!&lt; Green-Lagrange strain .5(Fᵀ·F - I)</span>
@@ -2018,20 +2018,19 @@ Common Variable names</p>
 <span class="cm"> *</span>
 <span class="cm"> * Copyright  2017 Till Junge, John Doe</span>
 <span class="cm"> *</span>
-<span class="cm"> * rascal is free software; you can redistribute it and/or</span>
-<span class="cm"> * modify it under the terms of the GNU Lesser General Public License as</span>
-<span class="cm"> * published by the Free Software Foundation, either version 3, or (at</span>
-<span class="cm"> * your option) any later version.</span>
+<span class="cm"> * This library is free software; you can redistribute it and/or</span>
+<span class="cm"> * modify it under the terms of the GNU Lesser General Public</span>
+<span class="cm"> * License as published by the Free Software Foundation; either</span>
+<span class="cm"> * version 2.1 of the License, or (at your option) any later version.</span>
 <span class="cm"> *</span>
-<span class="cm"> * rascal is distributed in the hope that it will be useful, but</span>
-<span class="cm"> * WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="cm"> * This library is distributed in the hope that it will be useful,</span>
+<span class="cm"> * but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
 <span class="cm"> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU</span>
 <span class="cm"> * Lesser General Public License for more details.</span>
 <span class="cm"> *</span>
-<span class="cm"> * You should have received a copy of the GNU Lesser General Public License</span>
-<span class="cm"> * along with GNU Emacs; see the file COPYING. If not, write to the</span>
-<span class="cm"> * Free Software Foundation, Inc., 59 Temple Place - Suite 330,</span>
-<span class="cm"> * Boston, MA 02111-1307, USA.</span>
+<span class="cm"> * You should have received a copy of the GNU Lesser General Public</span>
+<span class="cm"> * License along with this library; if not, write to the Free Software</span>
+<span class="cm"> * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
 <span class="cm"> */</span><span class="w"></span>
 </pre></div>
 </div>
@@ -2060,8 +2059,8 @@ Common Variable names</p>
 <span class="cm"> * onto for instance Eigen maps and iterating over those is</span>
 <span class="cm"> * handled by the `FieldMap`.</span>
 <span class="cm"> */</span><span class="w"></span>
-<span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">FieldCollection</span><span class="o">&gt;</span><span class="w"></span>
-<span class="k">class</span> <span class="nc">FieldBase</span><span class="w"></span>
+<span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">FieldCollection</span><span class="o">&gt;</span><span class="w"></span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FieldBase</span><span class="w"></span>
 <span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="p">...</span><span class="w"></span>
 <span class="p">};</span><span class="w"></span>
@@ -2321,9 +2320,9 @@ Explanatory Comments</p>
 </pre></div>
 </div>
 <p>or if you cannot fit even the first parameter, be reasonable, in the spirit of readability:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">FieldCollection</span><span class="p">,</span><span class="w"> </span><span class="k">class</span> <span class="nc">EigenArray</span><span class="p">,</span><span class="w"> </span><span class="k">class</span> <span class="nc">EigenConstArray</span><span class="p">,</span><span class="w"></span>
-<span class="w">          </span><span class="k">class</span> <span class="nc">EigenPlain</span><span class="p">,</span><span class="w"> </span><span class="n">Map_t</span><span class="w"> </span><span class="n">map_type</span><span class="p">,</span><span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">ConstField</span><span class="o">&gt;</span><span class="w"></span>
-<span class="k">typename</span> <span class="nc">MatrixLikeFieldMap</span><span class="o">&lt;</span><span class="n">FieldCollection</span><span class="p">,</span><span class="w"> </span><span class="n">EigenArray</span><span class="p">,</span><span class="w"> </span><span class="n">EigenConstArray</span><span class="p">,</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">FieldCollection</span><span class="p">,</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">EigenArray</span><span class="p">,</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">EigenConstArray</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="k">class</span><span class="w"> </span><span class="nc">EigenPlain</span><span class="p">,</span><span class="w"> </span><span class="n">Map_t</span><span class="w"> </span><span class="n">map_type</span><span class="p">,</span><span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">ConstField</span><span class="o">&gt;</span><span class="w"></span>
+<span class="k">typename</span><span class="w"> </span><span class="nc">MatrixLikeFieldMap</span><span class="o">&lt;</span><span class="n">FieldCollection</span><span class="p">,</span><span class="w"> </span><span class="n">EigenArray</span><span class="p">,</span><span class="w"> </span><span class="n">EigenConstArray</span><span class="p">,</span><span class="w"></span>
 <span class="w">                            </span><span class="n">EigenPlain</span><span class="p">,</span><span class="w"> </span><span class="n">map_type</span><span class="p">,</span><span class="w"> </span><span class="n">ConstField</span><span class="o">&gt;::</span><span class="n">const_reference</span><span class="w"></span>
 <span class="n">MatrixLikeFieldMap</span><span class="o">&lt;</span><span class="n">FieldCollection</span><span class="p">,</span><span class="w"> </span><span class="n">EigenArray</span><span class="p">,</span><span class="w"> </span><span class="n">EigenConstArray</span><span class="p">,</span><span class="w"> </span><span class="n">EigenPlain</span><span class="p">,</span><span class="w"></span>
 <span class="w">                   </span><span class="n">map_type</span><span class="p">,</span><span class="w"> </span><span class="n">ConstField</span><span class="o">&gt;::</span><span class="w"></span>
@@ -2348,12 +2347,12 @@ Explanatory Comments</p>
 <li><p>Default indentation is 2 spaces.</p></li>
 </ul>
 <p>Unused parameters that might not be obvious must comment out the variable name in the function definition:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Shape</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Shape</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w"> </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
 <span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">rotate</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">radians</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
 <span class="p">};</span><span class="w"></span>
 
-<span class="k">class</span> <span class="nc">Circle</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Shape</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Circle</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Shape</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w"> </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
 <span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">rotate</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">radians</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span><span class="w"></span>
 <span class="p">};</span><span class="w"></span>
@@ -2502,11 +2501,11 @@ Explanatory Comments</p>
 <p><code class="docutils literal notranslate"><span class="pre">case</span></code> blocks in switch statements have curly braces which should be placed as shown below.</p>
 <p>If not conditional on an enumerated value, switch statements should always have a default case (in the case of an enumerated value, the compiler will warn you if any values are not handled). If the default case should never execute, treat this as an error. For example:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">form</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="k">case</span><span class="w"> </span><span class="n">Formulation</span><span class="o">::</span><span class="nl">finite_strain</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">case</span><span class="w"> </span><span class="n">Formulation</span><span class="o">::</span><span class="n">finite_strain</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">StrainMeasure</span><span class="o">::</span><span class="n">Gradient</span><span class="p">;</span><span class="w"></span>
 <span class="w">  </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-<span class="k">case</span><span class="w"> </span><span class="n">Formulation</span><span class="o">::</span><span class="nl">small_strain</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">case</span><span class="w"> </span><span class="n">Formulation</span><span class="o">::</span><span class="n">small_strain</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">StrainMeasure</span><span class="o">::</span><span class="n">Infinitesimal</span><span class="p">;</span><span class="w"></span>
 <span class="w">  </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
@@ -2626,7 +2625,7 @@ Explanatory Comments</p>
 <h4><a class="toc-backref" href="#id130">Class Format</a><a class="headerlink" href="#class-format" title="Permalink to this headline"></a></h4>
 <p>Sections in <code class="docutils literal notranslate"><span class="pre">public</span></code>, <code class="docutils literal notranslate"><span class="pre">protected</span></code> and <code class="docutils literal notranslate"><span class="pre">private</span></code> order, each unindented.</p>
 <p>The basic format for a class definition (lacking the comments, see <a class="reference internal" href="#class-comments"><span class="std std-ref">Class Comments</span></a> for a discussion of what comments are needed) is:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyClass</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">OtherClass</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyClass</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">OtherClass</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="k">public</span><span class="o">:</span><span class="w">      </span><span class="c1">// Note the 1 space indent!</span>
 <span class="w">  </span><span class="n">MyClass</span><span class="p">();</span><span class="w">  </span><span class="c1">// Regular 2 space indent.</span>
 <span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">MyClass</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">var</span><span class="p">);</span><span class="w"></span>
@@ -2725,7 +2724,7 @@ Explanatory Comments</p>
 <span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="w"></span>
 
 <span class="c1">// Spaces after the colon in inheritance and initialiser lists.</span>
-<span class="k">class</span> <span class="nc">Foo</span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bar</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Foo</span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Bar</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w"> </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
 <span class="w">  </span><span class="c1">// For inline function implementations, put spaces between the braces</span>
 <span class="w">  </span><span class="c1">// and the implementation itself.</span>
@@ -2755,7 +2754,7 @@ Explanatory Comments</p>
 <span class="w">  </span><span class="p">...</span><span class="w"></span>
 
 <span class="c1">// Range-based for loops always have a space before and after the colon.</span>
-<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="nl">x</span> <span class="p">:</span><span class="w"> </span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="p">...</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 <span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>

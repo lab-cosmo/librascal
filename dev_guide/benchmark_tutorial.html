@@ -137,8 +137,8 @@ interpolator</p>
 <span class="cm"> * are needed for the `SphericalRepresentationBFixture` we give them dummy</span>
 <span class="cm"> * values.</span>
 <span class="cm"> */</span><span class="w"></span>
-<span class="k">struct</span> <span class="nc">SphericalDataset</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">BaseInterpolatorDataset</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">SupportedFunc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">typename</span> <span class="nc">BaseInterpolatorDataset</span><span class="o">::</span><span class="n">SupportedFunc</span><span class="p">;</span><span class="w"></span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">SphericalDataset</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">BaseInterpolatorDataset</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">SupportedFunc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">BaseInterpolatorDataset</span><span class="o">::</span><span class="n">SupportedFunc</span><span class="p">;</span><span class="w"></span>
 <span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="nf">data</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="p">{</span><span class="s">&quot;nbs_iterations&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">0</span><span class="p">}},</span><span class="w">             </span><span class="c1">// dummy</span>
@@ -216,20 +216,19 @@ core featuers of google benchmarks and our own added functionalities in the
 <span class="cm"> *</span>
 <span class="cm"> * Copyright  2019 Alexander Goscinski, COSMO (EPFL), LAMMM (EPFL)</span>
 <span class="cm"> *</span>
-<span class="cm"> * rascal is free software; you can redistribute it and/or</span>
-<span class="cm"> * modify it under the terms of the GNU Lesser General Public License as</span>
-<span class="cm"> * published by the Free Software Foundation, either version 3, or (at</span>
-<span class="cm"> * your option) any later version.</span>
+<span class="cm"> * This library is free software; you can redistribute it and/or</span>
+<span class="cm"> * modify it under the terms of the GNU Lesser General Public</span>
+<span class="cm"> * License as published by the Free Software Foundation; either</span>
+<span class="cm"> * version 2.1 of the License, or (at your option) any later version.</span>
 <span class="cm"> *</span>
-<span class="cm"> * rascal is distributed in the hope that it will be useful, but</span>
-<span class="cm"> * WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="cm"> * This library is distributed in the hope that it will be useful,</span>
+<span class="cm"> * but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
 <span class="cm"> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU</span>
 <span class="cm"> * Lesser General Public License for more details.</span>
 <span class="cm"> *</span>
-<span class="cm"> * You should have received a copy of the GNU Lesser General Public License</span>
-<span class="cm"> * along with this software; see the file LICENSE. If not, write to the</span>
-<span class="cm"> * Free Software Foundation, Inc., 59 Temple Place - Suite 330,</span>
-<span class="cm"> * Boston, MA 02111-1307, USA.</span>
+<span class="cm"> * You should have received a copy of the GNU Lesser General Public</span>
+<span class="cm"> * License along with this library; if not, write to the Free Software</span>
+<span class="cm"> * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
 <span class="cm"> */</span><span class="w"></span>
 
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;../performance/benchmarks/benchmarks.hh&quot;</span><span class="cp"></span>
@@ -239,7 +238,7 @@ core featuers of google benchmarks and our own added functionalities in the
 <span class="cm">   * Structure holding the data, the data is created inside a static function,</span>
 <span class="cm">   * because non primitives cannot be static as member variable.</span>
 <span class="cm">   */</span><span class="w"></span>
-<span class="w">  </span><span class="k">struct</span> <span class="nc">SampleData</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">struct</span><span class="w"> </span><span class="nc">SampleData</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="nf">data</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">      </span><span class="k">static</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{{</span><span class="s">&quot;x&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">}},</span><span class="w"></span>
 <span class="w">                          </span><span class="p">{</span><span class="s">&quot;name&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s">&quot;crystal.json&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;cube.json&quot;</span><span class="p">}}};</span><span class="w"></span>
@@ -256,8 +255,8 @@ core featuers of google benchmarks and our own added functionalities in the
 <span class="cm">   * deterministic order, therefore a map has to be built, mapping the json</span>
 <span class="cm">   * keys to the correct position when accesing the json with an index.</span>
 <span class="cm">   */</span><span class="w"></span>
-<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Dataset</span><span class="o">&gt;</span><span class="w"></span>
-<span class="w">  </span><span class="k">class</span> <span class="nc">MyBFixture</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">BaseBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">Dataset</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="k">class</span><span class="w"> </span><span class="nc">MyBFixture</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">BaseBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">   </span><span class="k">public</span><span class="o">:</span><span class="w"></span>
 <span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">Parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BaseBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span><span class="p">;</span><span class="w"></span>
 <span class="w">    </span><span class="n">MyBFixture</span><span class="o">&lt;</span><span class="n">Dataset</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Parent</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span><span class="w"></span>
@@ -287,13 +286,13 @@ core featuers of google benchmarks and our own added functionalities in the
 <span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">name</span><span class="p">{};</span><span class="w"></span>
 <span class="w">  </span><span class="p">};</span><span class="w"></span>
 
-<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">BFixture</span><span class="o">&gt;</span><span class="w"></span>
+<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">BFixture</span><span class="o">&gt;</span><span class="w"></span>
 <span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">bm_example</span><span class="p">(</span><span class="n">benchmark</span><span class="o">::</span><span class="n">State</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">BFixture</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">fix</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="n">fix</span><span class="p">.</span><span class="n">setup</span><span class="p">(</span><span class="n">state</span><span class="p">);</span><span class="w"></span>
 <span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;bm_example invoked &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">fix</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;, &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">fix</span><span class="p">.</span><span class="n">name</span><span class="w"></span>
 <span class="w">              </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span><span class="w"></span>
 <span class="w">    </span><span class="c1">//</span>
-<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="nl">_</span> <span class="p">:</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">_</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">      </span><span class="c1">// do some tests for speed</span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
 <span class="w">  </span><span class="p">}</span><span class="w"></span>
@@ -338,7 +337,7 @@ core featuers of google benchmarks and our own added functionalities in the
 <span class="cm">     * the benchmarks are run.</span>
 <span class="cm">     */</span><span class="w"></span>
 <span class="w">    </span><span class="c1">// BEGIN ITERATION</span>
-<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="nl">_</span> <span class="p">:</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">_</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">      </span><span class="n">benchmark</span><span class="o">::</span><span class="n">DoNotOptimize</span><span class="p">(</span><span class="n">s1</span><span class="p">.</span><span class="n">compare</span><span class="p">(</span><span class="n">s2</span><span class="p">));</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w">  </span><span class="c1">// END ITERATION</span>
 <span class="w">    </span><span class="n">state</span><span class="p">.</span><span class="n">SetComplexityN</span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span><span class="w"></span>

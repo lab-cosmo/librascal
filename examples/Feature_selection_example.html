@@ -308,7 +308,7 @@ div.nboutput.container div.output_area > div[class^='highlight']{
 }
 
 /* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
-.prompt a.copybtn {
+.prompt .copybtn {
     display: none;
 }
 
@@ -383,8 +383,7 @@ setting.</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pylab</span> <span class="k">as</span> <span class="n">plt</span>
 
 <span class="kn">import</span> <span class="nn">ase</span>
@@ -413,8 +412,7 @@ setting.</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">cd</span> <span class="n">i</span><span class="o">-</span><span class="n">PI</span><span class="o">/</span><span class="n">zundel</span><span class="o">/</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">i</span><span class="o">-</span><span class="n">PI</span><span class="o">/</span><span class="n">zundel</span><span class="o">/</span>
 </pre></div>
 </div>
 </div>
@@ -430,8 +428,7 @@ setting.</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Load the first N structures of the zundel dataset</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the first N structures of the zundel dataset</span>
 <span class="n">N_dataset</span> <span class="o">=</span> <span class="mi">1000</span>
 <span class="n">frames</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="s1">&#39;zundel_dataset.xyz&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s1">&#39;:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">N_dataset</span><span class="p">))</span>
 <span class="n">energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;zundel_energies.txt&#39;</span><span class="p">)[:</span><span class="n">N_dataset</span><span class="p">]</span>
@@ -443,8 +440,7 @@ setting.</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">forces</span><span class="o">.</span><span class="n">shape</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">forces</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
 </div>
 </div>
@@ -461,8 +457,7 @@ setting.</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Number of structures to train the model with</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Number of structures to train the model with</span>
 <span class="n">n_train</span> <span class="o">=</span> <span class="mi">800</span>
 
 <span class="n">global_species</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span>
@@ -491,8 +486,7 @@ setting.</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Atomic energy baseline - assuming all configurations have the same number of atoms</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Atomic energy baseline - assuming all configurations have the same number of atoms</span>
 <span class="n">atom_energy_baseline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">frames</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="n">energy_baseline</span> <span class="o">=</span> <span class="p">{</span><span class="nb">int</span><span class="p">(</span><span class="n">species</span><span class="p">):</span> <span class="n">atom_energy_baseline</span> <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">global_species</span><span class="p">}</span>
 </pre></div>
@@ -502,8 +496,7 @@ setting.</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># define the parameters of the spherical expansion</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define the parameters of the spherical expansion</span>
 <span class="n">hypers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">soap_type</span><span class="o">=</span><span class="s2">&quot;PowerSpectrum&quot;</span><span class="p">,</span>
               <span class="n">interaction_cutoff</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
               <span class="n">max_radial</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
@@ -541,8 +534,7 @@ setting.</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">managers</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">managers</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">frames_train</span><span class="p">:</span>
     <span class="n">f</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="mf">1e-18</span><span class="p">)</span>
 
@@ -568,8 +560,7 @@ Execution:  0.30106329917907715 s
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># select the sparse points for the sparse kernel method with FPS on the whole training set</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># select the sparse points for the sparse kernel method with FPS on the whole training set</span>
 <span class="n">n_sparse_env</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span><span class="mi">50</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">100</span><span class="p">}</span>
 <span class="n">sample_compressor</span> <span class="o">=</span> <span class="n">FPSFilter</span><span class="p">(</span><span class="n">soap</span><span class="p">,</span> <span class="n">n_sparse_env</span><span class="p">,</span> <span class="n">act_on</span><span class="o">=</span><span class="s1">&#39;sample per species&#39;</span><span class="p">)</span>
 <span class="n">X_sparse</span> <span class="o">=</span> <span class="n">sample_compressor</span><span class="o">.</span><span class="n">select_and_filter</span><span class="p">(</span><span class="n">managers</span><span class="p">)</span>
@@ -594,8 +585,7 @@ INFO:rascal.utils.filter:Selecting species: 8
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">zeta</span> <span class="o">=</span> <span class="mi">2</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">zeta</span> <span class="o">=</span> <span class="mi">2</span>
 
 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
 <span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;compute_gradients&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
@@ -626,8 +616,7 @@ Execution:  4.386488199234009 s
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># make predictions on the test set</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># make predictions on the test set</span>
 <span class="n">e_pred</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">f_pred</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">frames_test</span><span class="p">):</span>
@@ -646,8 +635,7 @@ Execution:  4.386488199234009 s
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">rascal.utils</span> <span class="kn">import</span> <span class="n">get_score</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rascal.utils</span> <span class="kn">import</span> <span class="n">get_score</span>
 
 <span class="n">score</span> <span class="o">=</span> <span class="n">get_score</span><span class="p">(</span><span class="n">e_pred</span><span class="p">,</span> <span class="n">e_test</span><span class="p">)</span>
 <span class="n">RMSE</span> <span class="o">=</span> <span class="n">score</span><span class="p">[</span><span class="s1">&#39;RMSE&#39;</span><span class="p">]</span>
@@ -676,8 +664,7 @@ Relative RMSE =  13.564100839492538  %
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">soap</span><span class="o">.</span><span class="n">get_num_coefficients</span><span class="p">(</span><span class="n">n_species</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">soap</span><span class="o">.</span><span class="n">get_num_coefficients</span><span class="p">(</span><span class="n">n_species</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -697,8 +684,7 @@ Relative RMSE =  13.564100839492538  %
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># select the features with FPS, again the whole training set</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># select the features with FPS, again the whole training set</span>
 <span class="n">n_sparse_feat</span> <span class="o">=</span> <span class="mi">600</span>
 <span class="n">feat_compressor</span> <span class="o">=</span> <span class="n">FPSFilter</span><span class="p">(</span><span class="n">soap</span><span class="p">,</span> <span class="n">n_sparse_feat</span><span class="p">,</span> <span class="n">act_on</span><span class="o">=</span><span class="s1">&#39;feature&#39;</span><span class="p">)</span>
 <span class="n">feat_sparse_parameters</span> <span class="o">=</span> <span class="n">feat_compressor</span><span class="o">.</span><span class="n">select_and_filter</span><span class="p">(</span><span class="n">managers</span><span class="p">)</span>
@@ -711,8 +697,7 @@ Relative RMSE =  13.564100839492538  %
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">feat_sparse_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">feat_sparse_parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -730,8 +715,7 @@ dict_keys([&#39;coefficient_subselection&#39;, &#39;selected_feature_ids_global&
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;coefficient_subselection&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feat_sparse_parameters</span><span class="p">[</span><span class="s1">&#39;coefficient_subselection&#39;</span><span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hypers</span><span class="p">[</span><span class="s1">&#39;coefficient_subselection&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feat_sparse_parameters</span><span class="p">[</span><span class="s1">&#39;coefficient_subselection&#39;</span><span class="p">]</span>
 <span class="n">soap_fsparse</span> <span class="o">=</span> <span class="n">SphericalInvariants</span><span class="p">(</span><span class="o">**</span><span class="n">hypers</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -740,8 +724,7 @@ dict_keys([&#39;coefficient_subselection&#39;, &#39;selected_feature_ids_global&
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
 <span class="n">managers_sparsefeat</span> <span class="o">=</span> <span class="n">soap_fsparse</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">frames_train</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Execution time: </span><span class="si">{}</span><span class="s2"> s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
 </pre></div>
@@ -759,8 +742,7 @@ Execution time: 1.7077140808105469 s
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Bit of a hack because we can&#39;t directly use the old `sample_compressor` on the new features</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Bit of a hack because we can&#39;t directly use the old `sample_compressor` on the new features</span>
 <span class="n">sample_compressor_sparse</span> <span class="o">=</span> <span class="n">FPSFilter</span><span class="p">(</span><span class="n">soap_fsparse</span><span class="p">,</span> <span class="n">n_sparse_env</span><span class="p">,</span> <span class="n">act_on</span><span class="o">=</span><span class="s1">&#39;sample per species&#39;</span><span class="p">)</span>
 <span class="n">sample_compressor_sparse</span><span class="o">.</span><span class="n">selected_sample_ids_by_sp</span> <span class="o">=</span> <span class="n">sample_compressor</span><span class="o">.</span><span class="n">selected_sample_ids_by_sp</span>
 <span class="n">X_sparse_sparsefeat</span> <span class="o">=</span> <span class="n">sample_compressor_sparse</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">managers_sparsefeat</span><span class="p">)</span>
@@ -775,8 +757,7 @@ less of an information return for each point added to the set.</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fps_dists</span> <span class="o">=</span> <span class="n">feat_compressor</span><span class="o">.</span><span class="n">get_fps_distances</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fps_dists</span> <span class="o">=</span> <span class="n">feat_compressor</span><span class="o">.</span><span class="n">get_fps_distances</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">fps_dists</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Selected feature index&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Hausdorff distance&#39;</span><span class="p">)</span>
@@ -805,8 +786,7 @@ Text(0.5, 1.0, &#39;FPS selection on features&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">K_MM_fullfeat</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">X_sparse</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">K_MM_fullfeat</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">X_sparse</span><span class="p">)</span>
 <span class="n">kernel_sparsefeat</span> <span class="o">=</span> <span class="n">Kernel</span><span class="p">(</span><span class="n">soap_fsparse</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GAP&#39;</span><span class="p">,</span> <span class="n">zeta</span><span class="o">=</span><span class="n">zeta</span><span class="p">,</span> <span class="n">target_type</span><span class="o">=</span><span class="s1">&#39;Structure&#39;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s1">&#39;Sparse&#39;</span><span class="p">)</span>
 <span class="n">K_MM_sparsefeat</span> <span class="o">=</span> <span class="n">kernel_sparsefeat</span><span class="p">(</span><span class="n">X_sparse_sparsefeat</span><span class="p">)</span>
 </pre></div>
@@ -816,8 +796,7 @@ Text(0.5, 1.0, &#39;FPS selection on features&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_MM_fullfeat</span> <span class="o">-</span> <span class="n">K_MM_sparsefeat</span><span class="p">,</span> <span class="s1">&#39;fro&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_MM_fullfeat</span> <span class="o">-</span> <span class="n">K_MM_sparsefeat</span><span class="p">,</span> <span class="s1">&#39;fro&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -834,8 +813,7 @@ Text(0.5, 1.0, &#39;FPS selection on features&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_MM_fullfeat</span><span class="p">,</span> <span class="s1">&#39;fro&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_MM_fullfeat</span><span class="p">,</span> <span class="s1">&#39;fro&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -853,8 +831,7 @@ Text(0.5, 1.0, &#39;FPS selection on features&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">def</span> <span class="nf">get_feature_sparsified_soap</span><span class="p">(</span><span class="n">Nselect</span><span class="p">,</span> <span class="n">full_soap</span><span class="p">,</span> <span class="n">managers</span><span class="p">,</span> <span class="n">sample_compressor</span><span class="p">):</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_feature_sparsified_soap</span><span class="p">(</span><span class="n">Nselect</span><span class="p">,</span> <span class="n">full_soap</span><span class="p">,</span> <span class="n">managers</span><span class="p">,</span> <span class="n">sample_compressor</span><span class="p">):</span>
     <span class="n">feat_compressor</span> <span class="o">=</span> <span class="n">FPSFilter</span><span class="p">(</span><span class="n">full_soap</span><span class="p">,</span> <span class="n">Nselect</span><span class="p">,</span> <span class="n">act_on</span><span class="o">=</span><span class="s1">&#39;feature&#39;</span><span class="p">)</span>
     <span class="n">feat_sparse_parameters</span> <span class="o">=</span> <span class="n">feat_compressor</span><span class="o">.</span><span class="n">select_and_filter</span><span class="p">(</span><span class="n">managers</span><span class="p">)</span>
     <span class="n">soap_hypers</span> <span class="o">=</span> <span class="n">full_soap</span><span class="o">.</span><span class="n">_get_init_params</span><span class="p">()</span>
@@ -872,8 +849,7 @@ Text(0.5, 1.0, &#39;FPS selection on features&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">soap_smallsparse</span><span class="p">,</span> <span class="n">managers_sparsefeat</span><span class="p">,</span> <span class="n">X_sparse_sparsefeat</span> <span class="o">=</span> <span class="n">get_feature_sparsified_soap</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">soap_smallsparse</span><span class="p">,</span> <span class="n">managers_sparsefeat</span><span class="p">,</span> <span class="n">X_sparse_sparsefeat</span> <span class="o">=</span> <span class="n">get_feature_sparsified_soap</span><span class="p">(</span>
     <span class="mi">200</span><span class="p">,</span> <span class="n">soap</span><span class="p">,</span> <span class="n">managers</span><span class="p">,</span> <span class="n">sample_compressor</span>
 <span class="p">)</span>
 </pre></div>
@@ -883,8 +859,7 @@ Text(0.5, 1.0, &#39;FPS selection on features&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">kernel_sparsefeat</span> <span class="o">=</span> <span class="n">Kernel</span><span class="p">(</span><span class="n">soap_smallsparse</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GAP&#39;</span><span class="p">,</span> <span class="n">zeta</span><span class="o">=</span><span class="n">zeta</span><span class="p">,</span> <span class="n">target_type</span><span class="o">=</span><span class="s1">&#39;Structure&#39;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s1">&#39;Sparse&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">kernel_sparsefeat</span> <span class="o">=</span> <span class="n">Kernel</span><span class="p">(</span><span class="n">soap_smallsparse</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GAP&#39;</span><span class="p">,</span> <span class="n">zeta</span><span class="o">=</span><span class="n">zeta</span><span class="p">,</span> <span class="n">target_type</span><span class="o">=</span><span class="s1">&#39;Structure&#39;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s1">&#39;Sparse&#39;</span><span class="p">)</span>
 <span class="n">K_MM_sparsefeat</span> <span class="o">=</span> <span class="n">kernel_sparsefeat</span><span class="p">(</span><span class="n">X_sparse_sparsefeat</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -893,8 +868,7 @@ Text(0.5, 1.0, &#39;FPS selection on features&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_MM_fullfeat</span> <span class="o">-</span> <span class="n">K_MM_sparsefeat</span><span class="p">,</span> <span class="s1">&#39;fro&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">K_MM_fullfeat</span> <span class="o">-</span> <span class="n">K_MM_sparsefeat</span><span class="p">,</span> <span class="s1">&#39;fro&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -916,8 +890,7 @@ Text(0.5, 1.0, &#39;FPS selection on features&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">zeta</span> <span class="o">=</span> <span class="mi">2</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">zeta</span> <span class="o">=</span> <span class="mi">2</span>
 
 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
 <span class="n">sparse_hypers</span> <span class="o">=</span> <span class="n">soap_smallsparse</span><span class="o">.</span><span class="n">_get_init_params</span><span class="p">()</span>
@@ -958,8 +931,7 @@ Execution:  1.8869318962097168 s
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># make predictions on the test set</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># make predictions on the test set</span>
 <span class="n">e_pred</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">f_pred</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">frames_test</span><span class="p">):</span>
@@ -979,8 +951,7 @@ Execution:  1.8869318962097168 s
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">rascal.utils</span> <span class="kn">import</span> <span class="n">get_score</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rascal.utils</span> <span class="kn">import</span> <span class="n">get_score</span>
 
 <span class="n">score</span> <span class="o">=</span> <span class="n">get_score</span><span class="p">(</span><span class="n">e_pred</span><span class="o">.</span><span class="n">flat</span><span class="p">,</span> <span class="n">e_test</span><span class="p">)</span>
 <span class="n">RMSE</span> <span class="o">=</span> <span class="n">score</span><span class="p">[</span><span class="s1">&#39;RMSE&#39;</span><span class="p">]</span>
@@ -1010,8 +981,7 @@ Relative RMSE =  9.461427922173616  %
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">ase.md</span> <span class="kn">import</span> <span class="n">MDLogger</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ase.md</span> <span class="kn">import</span> <span class="n">MDLogger</span>
 <span class="kn">from</span> <span class="nn">ase.md.langevin</span> <span class="kn">import</span> <span class="n">Langevin</span>
 <span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">units</span>
 <span class="kn">from</span> <span class="nn">ase.io.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
@@ -1023,8 +993,7 @@ Relative RMSE =  9.461427922173616  %
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">rascal.models.asemd</span> <span class="kn">import</span> <span class="n">ASEMLCalculator</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rascal.models.asemd</span> <span class="kn">import</span> <span class="n">ASEMLCalculator</span>
 </pre></div>
 </div>
 </div>
@@ -1034,8 +1003,7 @@ Relative RMSE =  9.461427922173616  %
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">atoms</span> <span class="o">=</span> <span class="n">frames_test</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atoms</span> <span class="o">=</span> <span class="n">frames_test</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="n">calc</span> <span class="o">=</span> <span class="n">ASEMLCalculator</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">soap_grads</span><span class="p">)</span>
 <span class="n">T</span> <span class="o">=</span> <span class="mi">200</span>
 
@@ -1064,8 +1032,7 @@ Elapsed time: 2.3851280212402344 s (4.770256042480469 ms per timestep)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">atoms</span> <span class="o">=</span> <span class="n">frames_test</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">atoms</span> <span class="o">=</span> <span class="n">frames_test</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="n">calc</span> <span class="o">=</span> <span class="n">ASEMLCalculator</span><span class="p">(</span><span class="n">model_fsparse</span><span class="p">,</span> <span class="n">soap_fsparse_grads</span><span class="p">)</span>
 <span class="n">T</span> <span class="o">=</span> <span class="mi">200</span>
 
