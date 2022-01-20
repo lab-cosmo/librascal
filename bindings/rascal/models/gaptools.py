@@ -13,38 +13,6 @@ from rascal.models.krr import SparseGPRSolver
 WORKDIR = os.getcwd()
 
 
-def calculate_representation(
-    geoms, rep_parameters, rep_class=representations.SphericalInvariants, auto_wrap=True
-):
-    """Calculate SOAP vectors without sparsification
-
-    Parameters:
-        geoms       List of Atoms objects to transform
-        rep_parameters
-                    Dictionary of parameters used to initialize the
-                    representation
-    Optional arguments:
-        rep_class   Class that specifies which representation to use
-                    (default rascal.representations.SphericalInvariants)
-        auto_wrap   Automatically wrap all the atoms so they are
-                    "inside" the periodic cell by the libRascal
-                    definition?  (Default True, recommended for periodic
-                    structures).
-                    WARNING: Structures intended to be treated as
-                    non-periodic require special handling -- do not use
-                    this option!  Manually pad the cell and shift the
-                    positions instead.
-
-    Returns the Representation object and the SOAP vectors in a tuple.
-    """
-    rep = rep_class(**rep_parameters)
-    if auto_wrap:
-        for geom in geoms:
-            geom.wrap(eps=1e-10)
-    soaps = rep.transform(geoms)
-    return rep, soaps
-
-
 def calculate_features(
     geoms,
     rep_parameters,
