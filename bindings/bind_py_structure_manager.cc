@@ -9,20 +9,19 @@
  *
  * Copyright  2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
- * Rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3, or (at
- * your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * Rascal is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; see the file LICENSE. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "bind_py_structure_manager.hh"
@@ -453,6 +452,28 @@ namespace rascal {
     }
   };
 
+  template <typename Implementation_t>
+  struct BindAdaptor<AdaptorKspace, Implementation_t> {
+    using Manager_t = AdaptorKspace<Implementation_t>;
+    using ImplementationPtr_t = std::shared_ptr<Implementation_t>;
+    using PyManager_t = PyManager<Manager_t>;
+    static void bind_adaptor_init(PyManager_t & adaptor) {
+      adaptor.def(py::init<std::shared_ptr<Implementation_t>>(),
+                  py::keep_alive<1, 2>());
+    }
+
+    static void bind_adapted_manager_maker(const std::string & name,
+                                           py::module & m_adaptor) {
+      m_adaptor.def(
+          name.c_str(),
+          [](ImplementationPtr_t & manager) {
+            return make_adapted_manager<AdaptorKspace, Implementation_t>(
+                manager);
+          },
+          py::arg("manager"), py::return_value_policy::copy);
+    }
+  };
+
   template <typename Manager_t>
   void bind_make_structure_manager(py::module & m_str_mng) {
     std::string factory_name = "make_structure_manager_";
@@ -477,6 +498,91 @@ namespace rascal {
         "get_features", &ManagerCollection_t::template get_features<Calculator>,
         py::call_guard<py::gil_scoped_release>());
   }
+
+  template <class ManagerCollection_t, class ManagerCollectionBinder,
+            bool HasDistances, std::enable_if_t<HasDistances, int> = 0>
+  void bind_get_distance(ManagerCollectionBinder & manager_collection) {
+    manager_collection.def(
+        "get_distances",
+        [](ManagerCollection_t & managers) {
+          if (managers.size() == 0) {
+            throw std::runtime_error(
+                R"(There are no structure to get features from)");
+          }
+          auto n_neighbors{0};
+          for (auto & manager : managers) {
+            n_neighbors += manager->get_nb_clusters(2);
+          }
+
+          Eigen::Matrix<double, Eigen::Dynamic, 1> rij_mat{};
+          rij_mat.resize(n_neighbors, 1);
+          rij_mat.setZero();
+          int i_row{0};
+          for (auto & manager : managers) {
+            for (auto center : manager) {
+              for (auto pair : center.pairs_with_self_pair()) {
+                rij_mat(i_row, 0) = manager->get_distance(pair);
+                i_row++;
+              }
+            }
+          }
+
+          return rij_mat;
+        },
+        R"(Get the distance from the central atoms to their neighbors.
+        The zeros vectors correspond to the central atom to itself so that this
+        matrix matches the shape of the array returned by
+        `get_gradients_info`.
+        np.array with shape (n_neighbor+n_atoms, 3))");
+  }
+
+  template <class ManagerCollection_t, class ManagerCollectionBinder,
+            bool HasDistances, std::enable_if_t<not(HasDistances), int> = 0>
+  void bind_get_distance(ManagerCollectionBinder & /*manager_collection*/) {}
+
+  template <class ManagerCollection_t, class ManagerCollectionBinder,
+            bool HasDirectionVector,
+            std::enable_if_t<HasDirectionVector, int> = 0>
+  void bind_get_direction_vector(ManagerCollectionBinder & manager_collection) {
+    manager_collection.def(
+        "get_direction_vectors",
+        [](ManagerCollection_t & managers) {
+          if (managers.size() == 0) {
+            throw std::runtime_error(
+                R"(There are no structure to get features from)");
+          }
+          auto n_neighbors{0};
+          for (auto & manager : managers) {
+            n_neighbors += manager->get_nb_clusters(2);
+          }
+
+          Eigen::Matrix<double, Eigen::Dynamic, 3> rij_mat{};
+          rij_mat.resize(n_neighbors, 3);
+          rij_mat.setZero();
+          int i_row{0};
+          for (auto & manager : managers) {
+            for (auto center : manager) {
+              for (auto pair : center.pairs_with_self_pair()) {
+                rij_mat.row(i_row) = manager->get_direction_vector(pair);
+                i_row++;
+              }
+            }
+          }
+
+          return rij_mat;
+        },
+        R"(Get the direction vectors from the central atoms to their neighbors.
+        The zeros vectors correspond to the central atom to itself so that this
+        matrix matches the shape of the array returned by
+        `get_gradients_info`.
+        np.array with shape (n_neighbor+n_atoms, 3))");
+  }
+
+  template <class ManagerCollection_t, class ManagerCollectionBinder,
+            bool HasDirectionVector,
+            std::enable_if_t<not(HasDirectionVector), int> = 0>
+  void
+  bind_get_direction_vector(ManagerCollectionBinder & /*manager_collection*/) {}
 
   /**
    * Bind getters for the feature matrix comming from BlockSparseProperty.
@@ -708,116 +814,23 @@ namespace rascal {
     manager_collection.def(
         "get_gradients_info",
         [](ManagerCollection_t & managers) {
-          if (managers.size() == 0) {
-            throw std::runtime_error(
-                R"(There are no structure to get features from)");
-          }
-          auto n_neighbors{0};
-          for (auto & manager : managers) {
-            n_neighbors += manager->get_nb_clusters(2);
-          }
-
-          Eigen::Matrix<int, Eigen::Dynamic, 5> ij_mat{};
-          ij_mat.resize(n_neighbors, 5);
-          ij_mat.setZero();
-          int i_row{0}, i_center{0}, i_frame{0};
-          for (auto & manager : managers) {
-            for (auto center : manager) {
-              for (auto pair : center.pairs_with_self_pair()) {
-                ij_mat(i_row, 0) = i_frame;
-                ij_mat(i_row, 1) = i_center + center.get_atom_tag();
-                ij_mat(i_row, 2) = i_center + pair.get_atom_j().get_atom_tag();
-                ij_mat(i_row, 3) = center.get_atom_type();
-                ij_mat(i_row, 4) = pair.get_atom_type();
-                i_row++;
-              }
-            }
-            i_center += static_cast<int>(manager->size());
-            i_frame++;
-          }
-
-          return ij_mat;
+          return managers.get_gradients_info();
         },
         R"(Get informations necessary to the computation of gradients. It has
         as many rows as the number gradients and they correspond to the index
         of the structure, the central atom, the neighbor atom and their atomic
         species.
         np.array with shape (n_neighbor+n_atoms, 5))");
-
-    manager_collection.def(
-        "get_direction_vectors",
-        [](ManagerCollection_t & managers) {
-          if (managers.size() == 0) {
-            throw std::runtime_error(
-                R"(There are no structure to get features from)");
-          }
-          auto n_neighbors{0};
-          for (auto & manager : managers) {
-            n_neighbors += manager->get_nb_clusters(2);
-          }
-
-          Eigen::Matrix<double, Eigen::Dynamic, 3> rij_mat{};
-          rij_mat.resize(n_neighbors, 3);
-          rij_mat.setZero();
-          int i_row{0};
-          for (auto & manager : managers) {
-            for (auto center : manager) {
-              for (auto pair : center.pairs_with_self_pair()) {
-                rij_mat.row(i_row) = manager->get_direction_vector(pair);
-                i_row++;
-              }
-            }
-          }
-
-          return rij_mat;
-        },
-        R"(Get the direction vectors from the central atoms to their neighbors.
-        The zeros vectors correspond to the central atom to itself so that this
-        matrix matches the shape of the array returned by
-        `get_gradients_info`.
-        np.array with shape (n_neighbor+n_atoms, 3))");
-    manager_collection.def(
-        "get_distances",
-        [](ManagerCollection_t & managers) {
-          if (managers.size() == 0) {
-            throw std::runtime_error(
-                R"(There are no structure to get features from)");
-          }
-          auto n_neighbors{0};
-          for (auto & manager : managers) {
-            n_neighbors += manager->get_nb_clusters(2);
-          }
-
-          Eigen::Matrix<double, Eigen::Dynamic, 1> rij_mat{};
-          rij_mat.resize(n_neighbors, 1);
-          rij_mat.setZero();
-          int i_row{0};
-          for (auto & manager : managers) {
-            for (auto center : manager) {
-              for (auto pair : center.pairs_with_self_pair()) {
-                rij_mat(i_row, 0) = manager->get_distance(pair);
-                i_row++;
-              }
-            }
-          }
-
-          return rij_mat;
-        },
-        R"(Get the distance from the central atoms to their neighbors.
-        The zeros vectors correspond to the central atom to itself so that this
-        matrix matches the shape of the array returned by
-        `get_gradients_info`.
-        np.array with shape (n_neighbor+n_atoms, 3))");
   }
 
   template <typename Manager, template <class> class... Adaptor>
   void bind_structure_manager_collection(py::module & m_str_mng) {
     using ManagerCollection_t = ManagerCollection<Manager, Adaptor...>;
     using Manager_t = typename ManagerCollection_t::Manager_t;
+    using ManagerCollectionBinder = py::class_<ManagerCollection_t>;
     std::string factory_name = "ManagerCollection_";
     factory_name += internal::GetBindingTypeName<Manager_t>();
-    py::class_<ManagerCollection_t> manager_collection(m_str_mng,
-                                                       factory_name.c_str());
+    ManagerCollectionBinder manager_collection(m_str_mng, factory_name.c_str());
 
     // bind constructor
     manager_collection.def(py::init([](std::string & adaptor_inputs_str) {
@@ -897,6 +910,15 @@ namespace rascal {
                                       ManagerCollection_t>(manager_collection);
     bind_sparse_feature_matrix_getter<CalculatorSphericalCovariants,
                                       ManagerCollection_t>(manager_collection);
+
+    constexpr static bool HasDistances{Manager_t::traits::HasDistances};
+    constexpr static bool HasDirectionVectors{
+        Manager_t::traits::HasDirectionVectors};
+
+    bind_get_direction_vector<ManagerCollection_t, ManagerCollectionBinder,
+                              HasDirectionVectors>(manager_collection);
+    bind_get_distance<ManagerCollection_t, ManagerCollectionBinder,
+                      HasDistances>(manager_collection);
   }
 
   /**
@@ -1112,5 +1134,12 @@ namespace rascal {
                                       AdaptorNeighbourList,
                                       AdaptorCenterContribution, AdaptorStrict>(
         m_nl);
+
+    BindAdaptorStack<StructureManagerCenters, AdaptorKspace,
+                     AdaptorCenterContribution>
+        adaptor_stack_3{m_nl, m_adp, m_internal, name_list};
+
+    bind_structure_manager_collection<StructureManagerCenters, AdaptorKspace,
+                                      AdaptorCenterContribution>(m_nl);
   }
 }  // namespace rascal

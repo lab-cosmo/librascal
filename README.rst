@@ -24,9 +24,9 @@ collection (for large collections of small structures), or over components of a
 representation (for representations with a large number of independent functions
 or components).
 
-It comes with a GNU Lesser General Public License of version 3, which
-means that it can be modified and freely distributed, although we take
-no responsibility for its misuse.
+librascal is distributed under the GNU Lesser General Public License version 2.1
+or later, at your convenience. This means that it can be modified and freely
+distributed, although we take no responsibility for its misuse.
 
 For more information, have a look at the documentation_!
 
@@ -79,25 +79,32 @@ following packages installed:
 +-------------+--------------------+
 | numpy       | 1.13 or higher     |
 +-------------+--------------------+
+| scipy       | 1.4.0 or higher    |
++-------------+--------------------+
 | ASE         | 3.18 or higher     |
 +-------------+--------------------+
 
 Other necessary packages (such as Eigen and PyBind11) are downloaded
 automatically when compiling Rascal.
 
-The following packages are required for building some optional features:
+The following packages are required for some optional features:
 
-+------------------+-------------+--------------------+
-| Feature          | Package     | Required version   |
-+==================+=============+====================+
-| Documentation    | pandoc      | (latest)           |
-+------------------+-------------+--------------------+
-|                  | sphinx      | 2.1.2 or later     |
-+------------------+-------------+--------------------+
-|                  | breathe     | 4.14.1 or later    |
-+------------------+-------------+--------------------+
-|                  | nbsphinx    | 0.8.1 or later     |
-+------------------+-------------+--------------------+
++--------------------------+-------------+--------------------+
+| Feature                  | Package     | Required version   |
++==========================+=============+====================+
+| Feature compression      | skcosmo     | 0.1.0 or later     |
++--------------------------+-------------+--------------------+
+| Rotational algebra       | sympy       | 1.4 or later       |
+| (Clebsch-Gordan coeffs.) |             |                    |
++--------------------------+-------------+--------------------+
+| Building documentation   | pandoc      | (latest)           |
++--------------------------+-------------+--------------------+
+|                          | sphinx      | 2.1.2 or later     |
++--------------------------+-------------+--------------------+
+|                          | breathe     | 4.14.1 or later    |
++--------------------------+-------------+--------------------+
+|                          | nbsphinx    | 0.8.1 or later     |
++--------------------------+-------------+--------------------+
 
 Compiling
 ~~~~~~~~~
@@ -268,8 +275,8 @@ tools with:
    sudo apt-get install clang-format
    pip install black
 
-The automatic formating of the c++ and python files can be
-trigered by:
+The automatic formatting of the c++ and python files can be
+triggered by:
 
 .. code:: shell
 
@@ -280,7 +287,7 @@ trigered by:
 
 Please use these tools with caution as they can potentially
 introduce unwanted changes to the code. If code needs to be
-specifically excluded from auto formatting, e.g. a matrix which
+specifically excluded from auto formatting, e.g. a matrix which
 should be human-readable, code comments tells the formatters to
 ignore lines:
 

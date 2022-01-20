@@ -11,20 +11,19 @@
  *
  * Copyright  2018 Till Junge, COSMO (EPFL), LAMMM (EPFL)
  *
- * Rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3, or (at
- * your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * Rascal is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; see the file LICENSE. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #ifndef SRC_RASCAL_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_HH_
@@ -632,6 +631,38 @@ namespace rascal {
       static_assert(HasDirectionVectors == traits::HasDirectionVectors,
                     "The manager does not have direction vectors.");
       return this->get_previous_manager()->get_direction_vector(pair);
+    }
+
+    /**
+     * Get informations necessary to the computation of gradients. It has
+     * as many rows as the number gradients and they correspond to the index
+     * of the structure, the central atom, the neighbor atom and their atomic
+     * species.
+     *
+     * The shape is (n_centers * n_neighbor, 5) while the
+     * n_neighbour is nonconstant over centers
+     */
+    Eigen::Matrix<int, Eigen::Dynamic, 5> get_gradients_info() {
+      if (this->size() == 0) {
+        throw std::runtime_error(
+            R"(There are no structure to get features from)");
+      }
+      size_t n_neighbors{this->nb_clusters(2)};
+
+      Eigen::Matrix<int, Eigen::Dynamic, 5> gradients_info(n_neighbors, 5);
+      gradients_info.setZero();
+      int i_row{0};
+      for (auto center : this->implementation()) {
+        for (auto pair : center.pairs_with_self_pair()) {
+          gradients_info(i_row, 0) = 0;
+          gradients_info(i_row, 1) = center.get_atom_tag();
+          gradients_info(i_row, 2) = pair.get_atom_j().get_atom_tag();
+          gradients_info(i_row, 3) = center.get_atom_type();
+          gradients_info(i_row, 4) = pair.get_atom_type();
+          i_row++;
+        }
+      }
+      return gradients_info;
     }
 
     bool is_not_masked() const {

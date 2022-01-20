@@ -48,8 +48,7 @@ class SphericalInvariants(BaseIO):
 
     gaussian_sigma_type : str
         How the Gaussian atom sigmas (smearing widths) are allowed to
-        vary -- fixed ('Constant'), by species ('PerSpecies'), or by
-        distance from the central atom ('Radial').
+        vary. Only fixed smearing width ('Constant') are implemented.
 
     gaussian_sigma_constant : float
         Specifies the atomic Gaussian widths, in the case where they're
@@ -344,49 +343,12 @@ class SphericalInvariants(BaseIO):
         return frames
 
     def get_num_coefficients(self, n_species=1):
-        """Return the number of coefficients in the representation
+        """Return the number of coefficients in the spherical invariants
 
         (this is the descriptor size per atomic centre)
 
         """
-        if self.hypers["soap_type"] == "RadialSpectrum":
-            return n_species * self.hypers["max_radial"]
-        if self.hypers["soap_type"] == "PowerSpectrum":
-            return (
-                int((n_species * (n_species + 1)) / 2)
-                * self.hypers["max_radial"] ** 2
-                * (self.hypers["max_angular"] + 1)
-            )
-        if self.hypers["soap_type"] == "BiSpectrum":
-            if not self.hypers["inversion_symmetry"]:
-                return (
-                    n_species ** 3
-                    * self.hypers["max_radial"] ** 3
-                    * int(
-                        1
-                        + 2 * self.hypers["max_angular"]
-                        + 3 * self.hypers["max_angular"] ** 2 / 2
-                        + self.hypers["max_angular"] ** 3 / 2
-                    )
-                )
-            else:
-                return (
-                    n_species ** 3
-                    * self.hypers["max_radial"] ** 3
-                    * int(
-                        np.floor(
-                            ((self.hypers["max_angular"] + 1) ** 2 + 1)
-                            * (2 * (self.hypers["max_angular"] + 1) + 3)
-                            / 8.0
-                        )
-                    )
-                )
-        else:
-            raise ValueError(
-                "Only soap_type = RadialSpectrum || "
-                "PowerSpectrum || BiSpectrum "
-                "implemented for now"
-            )
+        return self._representation.get_num_coefficients(n_species)
 
     def get_keys(self, species):
         """

@@ -607,7 +607,7 @@ def train_gap_model(
     delta = np.std(Y)
     # lambdas[0] is provided per atom hence the '* np.sqrt(Natoms)'
     # the first n_centers rows of KNM are expected to refer to the
-    #  property
+    #  property
     KNM[:n_centers] /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
     Y /= lambdas[0] / delta * np.sqrt(Natoms)[:, None]
 
