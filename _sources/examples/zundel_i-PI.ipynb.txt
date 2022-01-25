@@ -11,7 +11,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "The present notebook is meant to give you an overview of the main ingredients that you need to build an interatomic potential with `librascal` and use it in connection with i-Pi (https://github.com/cosmo-epfl/i-pi) to generate molecular dynamics (MD) trajectories of the system of interest. \n",
+    "The present notebook is meant to give you an overview of the main ingredients that you need to build an interatomic potential with `librascal` and use it in connection with i-Pi (https://github.com/lab-cosmo/i-pi) to generate molecular dynamics (MD) trajectories of the system of interest. \n",
     "We will start from building a GAP model for Zundel cations ($H_5O_2+$), using a training set obtained via Bowman PES sampling, calculate its RMSE on a test set to check its performance and run a short NVT simulation at $\\text{T} = 250\\,\\text{K}$. \n",
     "\n",
     "The mathematical framework that we are going to use is the kernel-GAP fitting method, using both total energies and atomic forces as target properties. Basically the GAP-model total energy of a zundel molecule is computed using the following expression: \n",
@@ -47,12 +47,12 @@
    "source": [
     "In order to be able to fit a potential with `librascal` (the model evaluator) and interface it with i-Pi (the MD engine) we first need to have both softwares available and correctly installed. For `librascal`, the following should suffice:\n",
     "```bash\n",
-    "$ pip install git+https://github.com/cosmo-epfl/librascal.git\n",
+    "$ pip install git+https://github.com/lab-cosmo/librascal.git\n",
     "```\n",
     "\n",
     "and the same for i-PI:\n",
     "```bash\n",
-    "$ pip install git+https://github.com/cosmo-epfl/i-pi.git\n",
+    "$ pip install git+https://github.com/lab-cosmo/i-pi.git\n",
     "```\n",
     "If these steps don't work, try looking at the `README.rst` files of the respective repositories for further instructions."
    ]
@@ -247,7 +247,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "Now we proceed with the actual calculation of the SOAP vectors of our training set. We need to specify an hyperparameters dictionary, which `librascal` uses to compute the structural features. The meaning of each hyperparameter and how to correctly set them is reported in [the `SphericalInvariants` documentation](https://cosmo-epfl.github.io/librascal/reference/python.html#rascal.representations.SphericalInvariants). These hyperparameters can be used as default values, but a careful optimization of the interaction cutoff might be required in the case the material under investigation might present some mid- or long-range order. \n",
+    "Now we proceed with the actual calculation of the SOAP vectors of our training set. We need to specify an hyperparameters dictionary, which `librascal` uses to compute the structural features. The meaning of each hyperparameter and how to correctly set them is reported in [the `SphericalInvariants` documentation](https://lab-cosmo.github.io/librascal/reference/python.html#rascal.representations.SphericalInvariants). These hyperparameters can be used as default values, but a careful optimization of the interaction cutoff might be required in the case the material under investigation might present some mid- or long-range order. \n",
     "\n",
     "For the actual calculation of the SOAP features, we first create an object of the `SphericalInvariants` class, defined by its hyperparameters. The methods that we then need to use are `transform()}`, which yields a second object called the `manager` containing the representation, while `get_features()` converts it into an $NxM$ matrix, $N$ being the number of atomic environments in the training set and M the number of features per each environment. \n",
     "\n",
@@ -632,7 +632,7 @@
    "source": [
     "Now we are going to use the fitted model to perform a simple NVT simulation at $\\text{T} = 250\\,$K using the i-Pi interface with librascal. For that we will use a communication socket run by i-Pi, which basically outputs a structure produced by the MD and gives it in input to Librascal. This will in turn return energies, forces and stresses by means of the `GenericMDCalculator` class of Librascal. \n",
     "\n",
-    "The job itself will generate a parent process (i-Pi) which contains information of the ensemble, the step needed for the time-integration, the thermostat characteristics, and all other trajectory-related infos. All these information are initially stored in an input.xml file as specified in the i-Pi documentation at https://github.com/cosmo-epfl/i-pi and given as inputs to i-Pi. The Librascal calculator is then launched as a child process and exchanges information with the MD driver.  \n",
+    "The job itself will generate a parent process (i-Pi) which contains information of the ensemble, the step needed for the time-integration, the thermostat characteristics, and all other trajectory-related infos. All these information are initially stored in an input.xml file as specified in the i-Pi documentation at https://github.com/lab-cosmo/i-pi and given as inputs to i-Pi. The Librascal calculator is then launched as a child process and exchanges information with the MD driver.  \n",
     "\n",
     "The Librascal driver in i-Pi needs some input parameters, that can be given directly in the command line when the driver is called. To check the needed information, just use the --help option when calling it, as shown below.\n",
     "\n",

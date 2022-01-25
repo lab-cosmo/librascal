@@ -26,12 +26,13 @@ are written in C++14, and are collected in the :file:`/src/` directory, as in th
 case of the :cpp:func:`cdist <cdist>`. This folder is completely agnostic of the
 python bindings, and it should be kept in this way.
 
-The python-bindings is obtained through Pybind11, and the binding subroutines
+The python-bindings is obtained through the pybind11 library, 
+and the binding subroutines
 are included in the :file:`/bindings/` folder. Here, the bind_py_module.cc is
 the file that contains the main binding of the C++ package (in other words, is
 what is needed to use the syntax :python:`import librascal`). The binding for
 each submodule of Rascal and its members are collected in files named
-bind_py_METHOD.cc. We decided to employ Pybind11 because of its seamless
+bind_py_METHOD.cc. We decided to employ pybind11 because of its seamless
 integration between Eigen and numpy. This allows the developer (and the user) to
 code fast and efficient algorithms easily, without losing the power of the C++
 linear algebra as well as numpy simplicity. For more reference, please consult

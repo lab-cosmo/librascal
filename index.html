@@ -112,7 +112,7 @@ collection of tools to this end.</p>
 provide enough flexibility to interface it with other codes such as
 LAMMPS and PLUMED-2.0. It can be used as a C++ library as well as a
 python module. To be able to call it from python, we have used the
-pybind11 library.</p>
+<a class="reference external" href="https://pybind11.readthedocs.io">pybind11</a> library.</p>
 <p>Although at the moment is a serial-only code, we aim to write it in MPI
 so that it will be possible to take advantage of parallelization to
 speed up the calculations significantly. Parallelization is possible especially
@@ -123,7 +123,7 @@ or components).</p>
 <p>librascal is distributed under the GNU Lesser General Public License version 2.1
 or later, at your convenience. This means that it can be modified and freely
 distributed, although we take no responsibility for its misuse.</p>
-<p>For more information, have a look at the <a class="reference external" href="https://cosmo-epfl.github.io/librascal/">documentation</a>!</p>
+<p>For more information, have a look at the <a class="reference external" href="https://lab-cosmo.github.io/librascal/">documentation</a>!</p>
 <section id="development">
 <h2>Development<a class="headerlink" href="#development" title="Permalink to this headline"></a></h2>
 <p>The code is currently in the alpha development phase; it is not yet
@@ -139,12 +139,13 @@ welcome, as long as you keep the above in mind.</p>
 are written in C++14, and are collected in the <code class="file docutils literal notranslate"><span class="pre">/src/</span></code> directory, as in the
 case of the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">cdist</span></code>. This folder is completely agnostic of the
 python bindings, and it should be kept in this way.</p>
-<p>The python-bindings is obtained through Pybind11, and the binding subroutines
+<p>The python-bindings is obtained through the pybind11 library,
+and the binding subroutines
 are included in the <code class="file docutils literal notranslate"><span class="pre">/bindings/</span></code> folder. Here, the bind_py_module.cc is
 the file that contains the main binding of the C++ package (in other words, is
 what is needed to use the syntax <code class="code python docutils literal notranslate"><span class="keyword namespace"><span class="pre">import</span></span> <span class="name namespace"><span class="pre">librascal</span></span></code>). The binding for
 each submodule of Rascal and its members are collected in files named
-bind_py_METHOD.cc. We decided to employ Pybind11 because of its seamless
+bind_py_METHOD.cc. We decided to employ pybind11 because of its seamless
 integration between Eigen and numpy. This allows the developer (and the user) to
 code fast and efficient algorithms easily, without losing the power of the C++
 linear algebra as well as numpy simplicity. For more reference, please consult
