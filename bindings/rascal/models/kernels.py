@@ -169,6 +169,16 @@ class Kernel(BaseIO):
                 )
             )
 
+class KernelDirect(BaseIO):
+    """Compute a kernel directly by specifying the feature matrices
+
+    This class aims to be compatible with the KRR class and gaptools
+    infrastructure, while not requiring a link to a librascal representation
+    calculator.  The tradeoff is lower computational efficiency, especially
+    for sparse multi-species systems.
+    """
+    pass
+
 
 def compute_numerical_kernel_gradients(
     kernel, calculator, managers, sparse_points, h_disp, compute_neg_stress=True

@@ -84,6 +84,29 @@ def sparsify_environments(
         utils.dump_obj(os.path.join(WORKDIR, "sparsepoints.json"), sparse_points)
     return sparse_points
 
+def sparsify_environments_barefeats(
+    feature_matrix, n_sparse, selection_type="CUR", save_sparsepoints=False
+):
+    """Sparsify the feature matrix and just return the selected indices
+
+    Parameters:
+        feature_matrix
+                    Features to use for sparsification, as a 2-D numpy
+                    array (environments along the first dimension)
+        n_sparse    Number of sparse points per species, in the form of
+                    a dict mapping atomic number to number of requested
+                    sparse points
+    Optional arguments:
+        selection_type
+            Which selection algorithm to use. 'CUR' and 'FPS'
+            are supported (see the documentation in rascal.utils
+            for details on each method), default CUR.
+        save_sparsepoints
+            Write the list of sparse points to a file for later use?
+            (default False)
+    """
+    pass
+
 
 def build_sparse_list(list_natoms, absolute_index_list):
     """Convert an absolute-indexed selection to structure-indexed format
