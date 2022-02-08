@@ -170,6 +170,7 @@ class Kernel(BaseIO):
             )
 
 class KernelDirect(BaseIO):
+
     """Compute a kernel directly by specifying the feature matrices
 
     This class aims to be compatible with the KRR class and gaptools
@@ -177,7 +178,73 @@ class KernelDirect(BaseIO):
     calculator.  The tradeoff is lower computational efficiency, especially
     for sparse multi-species systems.
     """
-    pass
+
+    def __init__(self, kernel_power, kernel_name="Cosine", target_type="Atom"):
+        """Make a kernel function with the given parameters
+
+        Currently only supports atom-wise dot-product (aka Cosine)
+        kernels, raised to some power.
+
+        Parameters
+        ----------
+        kernel_power : int or float
+            Exponent of the polynomial kernel, sometimes called zeta
+
+        Other parameters
+        ----------------
+        kernel_name : str
+            Type of kernel; must be "Cosine"
+        target_type : str
+            Selects whether the kernel is computed for atoms or structures
+            Currently only atoms are supported; summing the kernel rows
+            over structures gives the structure-wise kernel.
+
+        Returns
+        -------
+        kernel : function
+            Function for computing the kernel between two feature matrices
+        """
+        if (kernel_name != "Cosine") or (target_type != "Atom"):
+            raise ValueError("Only atom-wise cosine kernels are supported")
+        self.kernel_power = kernel_power
+
+    def _self_kernel(self, features):
+        """Compute the kernel of the feature matrix with itself"""
+        return (features @ features.T)**self.kernel_power
+
+    def __call__(self, features, other_features=None, grad=False):
+        """Compute the kernel between the feature matrices
+
+        Parameters
+        ----------
+        features : 2-D array
+            First set of features
+        other_features : 2-D array, optional
+            Second set of features (e.g. sparse points)
+            If not provided, the kernel is computed between the
+            first feature set and itself.
+        grad : bool
+            Whether to compute the _gradient_ of the kernel with respect
+            to atomic positions.  This operation is only applied to the
+            first set of features, since the double-gradient kernel is
+            practically never used.  Not supported for the self-kernel
+            (i.e. if other_features is None).
+
+        Returns
+        -------
+        kernel : 2-D array
+            The kernel between the requested features
+        """
+        if other_features is None:
+            if grad:
+                raise ValueError("Gradients are not supported for the self-kernel")
+            return self._self_kernel(features)
+        else:
+            if grad:
+                #TODO implement
+                raise NotImplemented("Gradient kernel WIP, sorry")
+            else:
+                return (features @ other_features.T)**self.kernel_power
 
 
 def compute_numerical_kernel_gradients(

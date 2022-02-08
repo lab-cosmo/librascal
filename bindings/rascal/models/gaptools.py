@@ -105,6 +105,12 @@ def sparsify_environments_barefeats(
             Write the list of sparse points to a file for later use?
             (default False)
     """
+    # Probably need to write a thin wrapper of AtomsList, actually,
+    # that works with the filter utils -- it only needs to emulate
+    # returning atom types (might actually want to make a separate
+    # split-species function) and returning features.
+    # All this is so that selecting sparse points per central atom
+    # species is possible; otherwise it's an easy call to CUR/FPS.
     pass
 
 
