@@ -309,6 +309,29 @@ class KRR(BaseIO):
 
         return -gradients
 
+    def predict_forces_with_gradient_kernel(self, managers, KNM_grad=None):
+        """Predict forces the "slow" way, with explicit gradient kernel
+
+        Provided for compatibility with externally-computed features,
+        at least until we can figure out a consistent backpropagation
+        interface
+        """
+        if KNM_grad is None:
+            rep = self.kernel._representation
+            KNM_grad = self.kernel(managers, self.X_train, (True, False))
+        n_atoms = 0
+        for manager in managers:
+            n_atoms += len(manager)
+        if 3 * n_atoms != KNM.shape[0]:
+            raise ValueError(
+                "KNM_grad size mismatch {}!={}".format(3 * n_atoms, KNM_grad.shape[0])
+            )
+        elif self.X_train.size() != KNM.shape[1]:
+            raise ValueError(
+                "KNM_grad size mismatch {}!={}".format(self.X_train.size(), KNM_grad.shape[1])
+            )
+        return -1 * (KNM_grad @ self.weights).reshape((-1, 3))
+
     def predict_stress(self, managers, KNM=None):
         """Predict gradients w.r.t cell parameters, e.g. stress, associated with the atomic structures in managers.
         The stress is returned using the Voigt order: xx, yy, zz, yz, xz, xy.

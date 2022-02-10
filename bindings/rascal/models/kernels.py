@@ -179,7 +179,7 @@ class KernelDirect(BaseIO):
     for sparse multi-species systems.
     """
 
-    def __init__(self, kernel_power, kernel_name="Cosine", target_type="Atom"):
+    def __init__(self, kernel_power, representation=None, kernel_name="Cosine", target_type="Atom"):
         """Make a kernel function with the given parameters
 
         Currently only supports atom-wise dot-product (aka Cosine)
@@ -192,6 +192,8 @@ class KernelDirect(BaseIO):
 
         Other parameters
         ----------------
+        representation : object
+            Optional representation calculator, currently unused
         kernel_name : str
             Type of kernel; must be "Cosine"
         target_type : str
@@ -207,6 +209,7 @@ class KernelDirect(BaseIO):
         if (kernel_name != "Cosine") or (target_type != "Atom"):
             raise ValueError("Only atom-wise cosine kernels are supported")
         self.kernel_power = kernel_power
+        self._representation = representation
 
     def _self_kernel(self, features):
         """Compute the kernel of the feature matrix with itself"""
@@ -235,6 +238,9 @@ class KernelDirect(BaseIO):
         kernel : 2-D array
             The kernel between the requested features
         """
+        # Compatibility with the original Kernel call function
+        if isinstance(grad, tuple):
+            grad = grad[0]
         if other_features is None:
             if grad:
                 raise ValueError("Gradients are not supported for the self-kernel")
