@@ -407,21 +407,16 @@ The function_calculator object may be of any type, as long as it provides two fu
 <dd><p>Fixture for testing the gradient of a real function of N real arguments</p>
 <p>(Verifies that the gradient is the same as the converged value of the finite-difference approximation along the given directions)</p>
 <p>Parameters should be provided in a JSON input file, as follows:</p>
-<p><dl class="field-list simple">
-<dt class="field-odd">param function_inputs</dt>
-<dd class="field-odd"><p>List of vectors of function arguments at which to test the gradient</p>
-</dd>
-<dt class="field-even">param direction_mode</dt>
-<dd class="field-even"><p>How the finite-difference directions are specified; options are “Cartesian” (once along each independent argument), “Random” (exactly what it says on the tin), and “Provided” (given in input file, see below)</p>
-</dd>
-<dt class="field-odd">param displacement_directions</dt>
-<dd class="field-odd"><p>List of vectors along which to displace the inputs, in case “direction_mode” is “Provided”.</p>
-</dd>
-<dt class="field-even">param verbosity</dt>
-<dd class="field-even"><p>Level of verbosity to use when printing test info, as string (“NORMAL”, “INFO”, or “DEBUG”) </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>function_inputs</strong> – List of vectors of function arguments at which to test the gradient</p></li>
+<li><p><strong>direction_mode</strong> – How the finite-difference directions are specified; options are “Cartesian” (once along each independent argument), “Random” (exactly what it says on the tin), and “Provided” (given in input file, see below)</p></li>
+<li><p><strong>displacement_directions</strong> – List of vectors along which to displace the inputs, in case “direction_mode” is “Provided”.</p></li>
+<li><p><strong>verbosity</strong> – Level of verbosity to use when printing test info, as string (“NORMAL”, “INFO”, or “DEBUG”) </p></li>
+</ul>
 </dd>
 </dl>
-</p>
 <p>Subclassed by <a class="reference internal" href="#classrascal_1_1RepresentationCalculatorGradientFixture"><span class="std std-ref">rascal::RepresentationCalculatorGradientFixture&lt; Calculator, StructureManager &gt;</span></a></p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-types">Public Types</p>
@@ -456,7 +451,7 @@ The function_calculator object may be of any type, as long as it provides two fu
 <dl class="cpp var">
 <dt class="sig sig-object cpp" id="_CPPv4N6rascal6rascal19GradientTestFixture12fd_error_tolE">
 <span class="target" id="classrascal_1_1GradientTestFixture_1a0a64d8d81bb9ae4419c22d0e8588adea"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fd_error_tol</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="m"><span class="pre">1E-6</span></span><span class="p"><span class="pre">}</span></span><a class="headerlink" href="#_CPPv4N6rascal6rascal19GradientTestFixture12fd_error_tolE" title="Permalink to this definition"></a><br /></dt>
-<dd><p>The error of the finite-difference against the analytical derivatives isn’t going to be arbitrarily small, due to the interaction of finite-difference and finite precision effects. The default here reflects this, while allowing different tests to change it  keeping in mind that the automated test is really more intended to be a sanity check on the implementation than a rigorous convergence test. </p>
+<dd><p>The error of the finite-difference against the analytical derivatives isn’t going to be arbitrarily small, due to the interaction of finite-difference and finite precision effects. The default here reflects this, while allowing different tests to change it &amp;#8212; keeping in mind that the automated test is really more intended to be a sanity check on the implementation than a rigorous convergence test. </p>
 </dd></dl>
 
 </div>
