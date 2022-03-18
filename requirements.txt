@@ -11,6 +11,7 @@ sphinx>=2.1.2,<=4.0.2
 breathe>=4.14.1
 # Jinja2 v3 breaks nbsphinx
 jinja2==2.11.3
+MarkupSafe==2.0.1
 sphinx_rtd_theme
 # notebook tutorials
 nbsphinx>=0.8.1
