@@ -2167,7 +2167,7 @@ namespace rascal {
       throw std::runtime_error(err_str.str());
     }
     auto manager_root = extract_underlying_manager<0>(manager);
-    auto cell_length = manager_root->get_cell_length();
+    auto cell_length = manager_root->get_cell_lengths();
     auto pbc = manager_root->get_periodic_boundary_conditions();
     bool is_cutoff_too_large{false};
     for (size_t i_dim{0}; i_dim < ThreeD; ++i_dim) {
@@ -2234,9 +2234,24 @@ namespace rascal {
     // coeff C^{ij}_{nlm}
     auto c_ij_nlm = math::Matrix_t(n_row, n_col);
 
+    // TODO(alex) only for debug can be removed later
+    //auto it2 = manager->begin();
+    //++it2;
+    //auto center2 = *it2;
+    //auto & coefficients_center2 = expansions_coefficients[center2];
+    //Key_t center2_type{center2.get_atom_type()};
+    //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
+    //for (auto center : manager) {
+    //  auto & coefficients_center = expansions_coefficients[center];
+    //  Key_t center_type{center.get_atom_type()};
+    //  std::cout << "coefficients_center " << coefficients_center[center_type].transpose() << std::endl;
+    //}
+
     for (auto center : manager) {
       // c^{i}
       auto & coefficients_center = expansions_coefficients[center];
+      //std::cout << "center center tag " << center.get_atom_tag() << std::endl;
+      //std::cout << "center cluster index " << center.get_cluster_index() << std::endl;
       // \grad_i c^{i}
       auto & coefficients_center_gradient =
           expansions_coefficients_gradient[center.get_atom_ii()];
@@ -2244,11 +2259,14 @@ namespace rascal {
       Key_t center_type{center.get_atom_type()};
 
       // Start the accumulation with the central atom contribution
+      //std::cout << "before central update coefficients_center" << coefficients_center[center_type].transpose() << std::endl;
+      //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
       coefficients_center[center_type].col(0) +=
           radial_integral->template compute_center_contribution(
               center, center.get_atom_type()) /
           sqrt(4.0 * PI);
-
+      //std::cout << "after central update coefficients_center" << coefficients_center[center_type].transpose() << std::endl;
+      //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
       for (auto neigh : center.pairs()) {
         auto atom_j = neigh.get_atom_j();
         const int atom_j_tag = atom_j.get_atom_tag();
@@ -2268,6 +2286,7 @@ namespace rascal {
         auto && neighbour_contribution =
             radial_integral->template compute_neighbour_contribution(
                 dist, neigh, neigh.get_atom_type());
+        //std::cout << "neighbour_contribution" << neighbour_contribution.transpose() << std::endl;
         double f_c{cutoff_function->f_c(dist)};
         auto coefficients_center_by_type{coefficients_center[neigh_type]};
 
@@ -2282,7 +2301,11 @@ namespace rascal {
           l_block_idx += l_block_size;
         }
         c_ij_nlm *= f_c;
+        //std::cout << "before update coefficients_center" << coefficients_center[center_type].transpose() << std::endl;
+        //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
         coefficients_center_by_type += c_ij_nlm;
+        //std::cout << "after update coefficients_center" << coefficients_center[center_type].transpose() << std::endl;
+        //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
 
         // half list branch for c^{ji} terms using
         // c^{ij}_{nlm} = (-1)^l c^{ji}_{nlm}.
@@ -2304,6 +2327,8 @@ namespace rascal {
             }
           }
         }
+        //std::cout << "point0 " << coefficients_center[center_type].transpose() << std::endl;
+        //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
 
         // compute the gradients of the coefficients with respect to
         // atoms positions
@@ -2406,14 +2431,21 @@ namespace rascal {
             }      // if (is_center_atom)
           }        // if (IsHalfNL)
         }          // if (compute_gradients)
+        //std::cout << "point1 " << coefficients_center[center_type].transpose() << std::endl;
+        //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
       }            // for (neigh : center)
 
       // Normalize and orthogonalize the radial coefficients
+      //std::cout << "before finalization coefficients_center" << coefficients_center[center_type].transpose() << std::endl;
+      //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
       radial_integral->finalize_coefficients(coefficients_center);
       if (compute_gradients) {
         radial_integral->template finalize_coefficients_der<ThreeD>(
             expansions_coefficients_gradient, center);
       }
+      //std::cout << "final coefficients_center" << coefficients_center[center_type].transpose() << std::endl;
+      //std::cout << "check coefficients_center " << coefficients_center2[center2_type].transpose() << std::endl;
+      //std::cout << "\n" << std::endl;
     }  // for (center : manager)
   }    // compute()
 
@@ -2430,17 +2462,22 @@ namespace rascal {
     std::map<int, int> center_tag2idx{};
     const bool compute_gradients{this->compute_gradients};
     int i_center{0};
+    int j_neigh{0};
     for (auto center : manager) {
       center_tag2idx[center.get_atom_tag()] = i_center;
       i_center++;
-      keys_list.emplace_back();
+      //keys_list.emplace_back();
       if (compute_gradients) {
         for (auto neigh : center.pairs_with_self_pair()) {
-          (void)neigh;  // to avoid compiler warning
-          keys_list_grad.emplace_back();
+          j_neigh++;
+          // TODO(alex) why was this used? seems unnessary complicated?
+          //(void)neigh;  // to avoid compiler warning
+          //keys_list_grad.emplace_back();
         }
       }
     }
+    keys_list.resize(i_center);
+    keys_list_grad.resize(j_neigh);
     int i_grad{0};
     i_center = 0;
     for (auto center : manager) {
@@ -2448,7 +2485,11 @@ namespace rascal {
 
       for (auto neigh : center.pairs()) {
         keys_list[i_center].insert({neigh.get_atom_type()});
-        if (manager->is_center_atom(neigh) and IsHalfNL) {
+        // TODO(alex) remove after debug finished
+        //std::cout << "strict pair (" << center.get_atom_tag() << ", "
+        //  << neigh.get_atom_tag() << ") global index "
+        //  << neigh.get_global_index() << std::endl;
+        if (IsHalfNL && manager->is_center_atom(neigh)) {
           auto atom_j = neigh.get_atom_j();
           auto j_center = center_tag2idx[atom_j.get_atom_tag()];
           keys_list[j_center].insert(center_type);

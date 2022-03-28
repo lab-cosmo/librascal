@@ -310,12 +310,20 @@ namespace rascal {
       // correspond to a ghost atom while the tag of atom_j always correspond to
       // an atom in the unit cell.
       // the additional check is to make sure atom_j is not a masked atom.
+
+      // TODO(alex) put back after debugging
       auto atom_j_tag = cluster.get_atom_tag();
       auto atom_j_index = this->get_atom_index(atom_j_tag);
       auto atom_j_it = this->get_iterator_at(atom_j_index, 0);
       auto atom_j = *(atom_j_it);
-      return (atom_j_tag == atom_j.get_atom_tag() and
-              atom_j.get_cluster_index(Layer) < this->size());
+      auto atom_j_tag_r = atom_j.get_atom_tag();
+      auto cluster_index = atom_j.get_cluster_index(Layer);
+      //std::cout << "atom_j_tag " << atom_j_tag << std::endl;
+      //std::cout << "atom_j_tag_r " << atom_j_tag_r << std::endl; // <- valgrind complains, it is uninitialized
+      //std::cout << "cluster_index " << cluster_index << std::endl; 
+      //std::cout << "this->size() " << this->size() << std::endl; 
+      return (atom_j_tag == atom_j_tag_r and
+              cluster_index < this->size());
     }
 
     //! number of atoms including ghosts
@@ -349,6 +357,10 @@ namespace rascal {
      * already been attached in the manager layer which invoked this function.
      */
     inline bool is_property_in_current_level(const std::string & name) const {
+      //std::cout << sched_getcpu() << ": " << "is_property_in_current_level Level " << traits::StackLevel << " requested name " << name << std::endl;
+      //for(auto it = this->properties.cbegin(); it != this->properties.cend(); ++it) {
+      //  std::cout << sched_getcpu() << ": " << "property key " << it->first << std::endl;
+      //}
       return not(this->properties.find(name) == this->properties.end());
     }
 
@@ -378,8 +390,10 @@ namespace rascal {
               std::enable_if_t<IsRoot, int> = 0>
     inline bool is_property_in_stack(const std::string & name) {
       if (this->is_property_in_current_level(name)) {
+        //std::cout << sched_getcpu() << ": " << "is_property_in_stack with " << name << " true\n" << std::endl;
         return true;
       }
+      //std::cout << sched_getcpu() << ": " << "is_property_in_stack with " << name << " false\n" << std::endl;
       return false;
     }
 
@@ -387,8 +401,10 @@ namespace rascal {
               std::enable_if_t<not(IsRoot), int> = 0>
     inline bool is_property_in_stack(const std::string & name) {
       if (this->is_property_in_current_level(name)) {
+        //std::cout << sched_getcpu() << ": " << "is_property_in_stack with " << name << " true" << std::endl;
         return true;
       }
+      //std::cout << sched_getcpu() << ": " << "is_property_in_stack with " << name << " false" << std::endl;
       return this->get_previous_manager()->is_property_in_stack(name);
     }
 
@@ -501,6 +517,7 @@ namespace rascal {
                  const bool force_creation = false,
                  const bool exclude_ghosts = false,
                  const std::string & metadata = "no metadata") {
+      //std::cout << "property with name " << name << " requested" << std::endl;
       bool is_property_in_stack{this->is_property_in_stack(name)};
       if (is_property_in_stack) {
         return this->template forward_get_property_request<UserProperty_t>(
@@ -1088,7 +1105,8 @@ namespace rascal {
 
     /**
      * Getter for a ClusterRefKey refering to the current j-atom of the
-     * ij-pair.
+     * ij-pair. If atom j is a ghost atom the function returns the corresponding
+     * within-cell atom.
      *
      * if you try to use this function and Order != 2 then
      * you will get an error about not finding the function to call

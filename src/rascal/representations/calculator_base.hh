@@ -102,12 +102,17 @@ namespace rascal {
      * if not provided use the hypers to generate a unique identifier
      */
     void set_name(const Hypers_t & hyper) {
+      internal::Hash<std::string> repr_hasher{};
+      std::string representation_grad_name;
       if (hyper.count("identifier") == 1) {
-        this->set_name(this->default_prefix +
-                       hyper["identifier"].get<std::string>());
+        //std::cout << "identifier found" << std::endl;
+        representation_grad_name = this->default_prefix +
+                       hyper["identifier"].get<std::string>();
       } else {
-        this->set_name(this->default_prefix + hyper.dump());
+        //std::cout << "no identifier found" << std::endl;
+        representation_grad_name = this->default_prefix + hyper.dump();
       }
+      this->set_name(std::to_string(repr_hasher(representation_grad_name)));
     }
 
     /**

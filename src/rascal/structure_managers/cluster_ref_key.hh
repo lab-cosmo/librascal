@@ -283,6 +283,7 @@ namespace rascal {
     /* the internal cluster neighbour is the neighbour which was added as
      * neighbour in the creation of this cluster
      */
+    // TODO(alex) replace with get_atom_tag
     int get_internal_neighbour_atom_tag() const { return this->back(); }
 
     /*

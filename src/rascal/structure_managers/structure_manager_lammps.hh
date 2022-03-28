@@ -28,6 +28,8 @@
 #define SRC_RASCAL_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_LAMMPS_HH_
 
 #include "rascal/structure_managers/structure_manager.hh"
+#include "rascal/structure_managers/atomic_structure.hh"
+#include "rascal/structure_managers/lattice.hh"
 
 #include <stdexcept>
 #include <vector>
@@ -53,7 +55,7 @@ namespace rascal {
     constexpr static int StackLevel{0};
     using LayerByOrder = std::index_sequence<0, 0>;
     constexpr static AdaptorTraits::NeighbourListType NeighbourListType{
-        AdaptorTraits::NeighbourListType::half};
+        AdaptorTraits::NeighbourListType::full};
     using PreviousManager_t = StructureManagerLammps;
   };
 
@@ -68,6 +70,13 @@ namespace rascal {
     using Parent = StructureManager<StructureManagerLammps>;
     using Vector_ref = typename Parent::Vector_ref;
     using AtomRef_t = typename Parent::AtomRef;
+
+    using Cell_t = AtomicStructure<traits::Dim>::Cell_t;
+    using Cell_ref = AtomicStructure<traits::Dim>::Cell_ref;
+
+    using PBC_t = AtomicStructure<traits::Dim>::PBC_t;
+    using PBC_ref = AtomicStructure<traits::Dim>::PBC_ref;
+
     using ManagerImplementation_t = StructureManagerLammps;
     using ImplementationPtr_t = std::shared_ptr<StructureManagerLammps>;
     using ConstImplementationPtr_t =
@@ -107,10 +116,29 @@ namespace rascal {
       // send the update signal to the tree
       this->update_children();
     }
+    ////---------------------------------------------------
+    /**
+     * Returns a traits::Dim by traits::Dim matrix with the cell vectors of the
+     * structure.
+     */
+    Cell_ref get_cell() { return Cell_ref(this->lattice.get_cell()); }
+
+    Eigen::Array3d get_cell_lengths() {
+      return this->lattice.get_cell_lengths().array();
+    }
+    
+    double get_cell_volume() { return this->lattice.get_cell_volume(); }
+
+    //! Returns a map of size traits::Dim with 0/1 for periodicity
+    PBC_ref get_periodic_boundary_conditions() {
+      return PBC_ref(this->pbc);
+    }
+
+    ////-----------------------------------------------
 
     //! return position vector of an atom given the atom tag
     Vector_ref get_position(int atom_tag) {
-      auto * xval{this->x[this->get_atom_index(atom_tag)]};
+      auto * xval{this->x[atom_tag]};
       return Vector_ref(xval);
     }
 
@@ -121,7 +149,9 @@ namespace rascal {
 
     //! get const atom type reference given an atom_tag
     int get_atom_type(int atom_tag) const {
-      return this->type[this->get_atom_index(atom_tag)];
+      // lammps atom types go from 1 to N, so we map it to rascal atom types
+      // by mapping 0 to N-1 to the corresponding number
+      return this->atom_types[this->type[atom_tag]-1];
     }
 
     //! return number of I atoms in the list
@@ -138,6 +168,17 @@ namespace rascal {
       return this->numneigh[this->get_atom_index(cluster.get_atom_tag())];
     }
 
+    /**
+     * return the atom_tag of the index-th atom in manager parent here is
+     * dummy and is used for consistency in other words, atom_tag is the
+     * global LAMMPS atom tag.
+     */
+    int get_neighbour_atom_tag(const Parent &, size_t cluster_index) const {
+      //return this->atom_index_from_atom_tag_list.at(cluster_index);
+      //return this->ilist[cluster_index];
+      return this->atom_tag_list[cluster_index];
+    }
+
     //! return the index-th neighbour of the last atom in a cluster with
     //! cluster_size = 1 (atoms) which can be used to construct pairs
     template <size_t Order, size_t Layer>
@@ -149,21 +190,7 @@ namespace rascal {
       auto && i_atom_id{cluster.back()};
       return this->firstneigh[std::move(i_atom_id)][index];
     }
-
-    /**
-     * return the atom_tag of the index-th atom in manager parent here is
-     * dummy and is used for consistency in other words, atom_tag is the
-     * global LAMMPS atom tag.
-     */
-    int get_neighbour_atom_tag(const Parent &, size_t cluster_index) const {
-      return this->ilist[cluster_index];
-    }
-
-    // #BUG8486@(all) I do not know how the structure of ilist is implemented,
-    // can it it have huge gaps like [1, 50000]? Then using a vector with
-    // ensures quick memory access would be super inefficient. However
-    // firstneigh also uses this kind of access structure and is given by
-    // lammps, so it should be fine.
+  
     int get_atom_index(int atom_tag) const {
       return this->atom_index_from_atom_tag_list[atom_tag];
     }
@@ -181,7 +208,7 @@ namespace rascal {
      */
     size_t get_nb_clusters(int order) const;
 
-    bool is_not_masked() const { return false; }
+    bool is_not_masked() const { return true; }
 
     //! overload of update that does not change the underlying structure
     void update_self() {}
@@ -216,7 +243,9 @@ namespace rascal {
      */
     void update_self(int inum, int tot_num, int * ilist, int * numneigh,
                      int ** firstneigh, double ** x, double ** f, int * type,
-                     double * eatom, double ** vatom);
+                     double * eatom, double ** vatom,
+                     std::vector<int> atom_types,
+                     int * lammps_atom_tag, double * lattice, int * pbc);
 
    protected:
     /**
@@ -233,43 +262,35 @@ namespace rascal {
       return shared_from_this();
     }
 
-    int inum{};           //!< total numer of atoms
+    int inum{};           //!< total numer of atoms 
     int tot_num{};        //!< total number, includes ghosts
-    int * ilist{};        //!< atomic indices
+    int * ilist{};        //!< lammps atomic indices / rascal atom tags, size is inum if lammps ghost flag is turned off which is default other wise size is tot_num
     int * numneigh{};     //!< number of neighbours per atom
     int ** firstneigh{};  //!< pointer to first neighbour
     double ** x{};        //!< atomic positions
     double ** f{};        //!< atomic forces
-    int * type{};         //!< atom types
+    int * type{};         //!< lammps atom types
     double * eatom{};     //!< energy of atoms
     double ** vatom{};    //!< virial stress of atoms
     int nb_pairs{};       //! number of clusters with cluster_size=2 (pairs)
+    std::vector<int> atom_types{}; //!< lammps atom types to rascal, used as atom_types[type[atom_tag]-1]
+    std::vector<int> atom_tag_list{};  //! stores i-atom and ghost atom tags
     std::vector<int> offsets{};  //! offset per atom to access neighbour list
+    Lattice<traits::Dim> lattice{};
+    PBC_t pbc{};
 
-    // the inverse mapping from the ilist
+    // works as in adaptor neighbour list
     std::vector<size_t> atom_index_from_atom_tag_list{};
 
+    //! Stores the number of neighbours for every atom
+    //?? std::vector<size_t> nb_neigh{};
+
+    //! Stores additional atom tags of current Order (only ghost atoms)
+    //std::vector<int> ghost_atom_tag_list{};
+    //! Stores neighbour's atom tag in a list in sequence of atoms
+    //std::vector<int> neighbours_atom_tag{};
+
    private:
-    void make_atom_index_from_atom_tag_list() {
-      int max_atomic_index = 0;
-      for (int i{0}; i < this->inum; ++i) {
-        if (this->ilist[i] > max_atomic_index) {
-          max_atomic_index = this->ilist[i];
-        }
-      }
-      //! Filling dummy cluster index
-      this->atom_index_from_atom_tag_list.reserve(max_atomic_index + 1);
-      for (int i{0}; i < max_atomic_index + 1; ++i) {
-        this->atom_index_from_atom_tag_list.push_back(0);
-      }
-      //! Replacing dummy values with correct cluster index
-      for (int i{0}; i < this->inum; ++i) {
-        // this->ilist does not have negative atom tags therefore the cast is
-        // safe
-        this->atom_index_from_atom_tag_list.at(
-            static_cast<size_t>(this->ilist[i])) = i;
-      }
-    }
   };
 
   /**
