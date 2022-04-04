@@ -43,10 +43,6 @@ option(BUILD_SANDBOX "If on, builds the sandbox" OFF)
 
 set(INSTALL_PATH "" CACHE STRING "Path to install the libraries")
 
-SET(TYPE_ARCHITECTURE "native" CACHE STRING
-    "Choose the type of architecture to compile to in release mode."
-)
-
 ########## COMPILATION FLAGS ##########
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++ -Wno-non-virtual-dtor")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
@@ -57,14 +53,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
 
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
-
-    # Add -march=${TYPE_ARCHITECTURE} (-march=native by default) to the release
-    # build flags
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -march=${TYPE_ARCHITECTURE}")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=${TYPE_ARCHITECTURE}")
-
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -march=${TYPE_ARCHITECTURE}")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=${TYPE_ARCHITECTURE}")
 endif()
 
 ########## START CONFIGURATION ##########
