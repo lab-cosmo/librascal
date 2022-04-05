@@ -240,15 +240,12 @@ def compute_lambda_soap(spx, cg, lam, parity=0):
                 continue
             if l2 - l1 > lam or l2 + l1 < lam:
                 continue
-            lsoap[..., nl, :] = (
-                cg.combine_einsum(
-                    spx[..., lm_slice(l1)],
-                    spx[..., lm_slice(l2)],
-                    lam,
-                    combination_string="ian,iAN->ianAN",
-                )
-                * (1 if l2 == l1 else SQRT_2)
-            )
+            lsoap[..., nl, :] = cg.combine_einsum(
+                spx[..., lm_slice(l1)],
+                spx[..., lm_slice(l2)],
+                lam,
+                combination_string="ian,iAN->ianAN",
+            ) * (1 if l2 == l1 else SQRT_2)
             nl += 1
     return lsoap
 
