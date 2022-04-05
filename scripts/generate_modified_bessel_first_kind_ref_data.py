@@ -27,7 +27,7 @@ def sbesseli_complete_square(n, a, r, x):
     """i_n(2arx)*\exp{-ar^2}*\exp{-ax^2}"""
     z = 2 * a * r * x
     return float(
-        sqrt(pi / (2 * z)) * besseli(n + 0.5, z) * exp(-a * r ** 2) * exp(-a * x ** 2)
+        sqrt(pi / (2 * z)) * besseli(n + 0.5, z) * exp(-a * r**2) * exp(-a * x**2)
     )
 
 

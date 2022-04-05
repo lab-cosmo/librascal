@@ -94,7 +94,7 @@ def gto_width(sigma):
     ---Returns---
     b: GTO (Gaussian) width
     """
-    return 1.0 / (2 * sigma ** 2)
+    return 1.0 / (2 * sigma**2)
 
 
 def gto_prefactor(n, sigma):
@@ -125,7 +125,7 @@ def gto(r, n, sigma):
     """
     b = gto_width(sigma)
     N = gto_prefactor(n, sigma)
-    return N * r ** (n + 1) * np.exp(-b * r ** 2)
+    return N * r ** (n + 1) * np.exp(-b * r**2)
 
 
 def gto_overlap(n, m, sigma_n, sigma_m):
