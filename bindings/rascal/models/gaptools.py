@@ -84,6 +84,7 @@ def sparsify_environments(
         utils.dump_obj(os.path.join(WORKDIR, "sparsepoints.json"), sparse_points)
     return sparse_points
 
+
 def sparsify_environments_barefeats(
     feature_matrix, n_sparse, selection_type="CUR", save_sparsepoints=False
 ):

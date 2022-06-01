@@ -221,9 +221,14 @@ class KRR(BaseIO):
             Y0 = np.zeros(n_centers)
             i_center = 0
             for manager in managers:
-                for center in manager:
-                    Y0[i_center] = self.self_contributions[center.atom_type]
-                    i_center += 1
+                if isinstance(manager, ase.Atoms):
+                    for sp in manager.get_atomic_numbers():
+                        Y0[i_center] = self.self_contributions[sp]
+                        i_center += 1
+                else:
+                    for center in manager:
+                        Y0[i_center] = self.self_contributions[center.atom_type]
+                        i_center += 1
         return Y0
 
     def predict(self, managers, KNM=None):
@@ -249,7 +254,8 @@ class KRR(BaseIO):
                 raise ValueError(
                     "KNM size mismatch {}!={}".format(len(managers), KNM.shape[0])
                 )
-            elif self.X_train.size() != KNM.shape[1]:
+            # This works whether X_train is a SparsePoints or just a plain array
+            elif len(self.X_train) != KNM.shape[1]:
                 raise ValueError(
                     "KNM size mismatch {}!={}".format(self.X_train.size(), KNM.shape[1])
                 )
@@ -328,7 +334,9 @@ class KRR(BaseIO):
             )
         elif self.X_train.size() != KNM.shape[1]:
             raise ValueError(
-                "KNM_grad size mismatch {}!={}".format(self.X_train.size(), KNM_grad.shape[1])
+                "KNM_grad size mismatch {}!={}".format(
+                    self.X_train.size(), KNM_grad.shape[1]
+                )
             )
         return -1 * (KNM_grad @ self.weights).reshape((-1, 3))
 

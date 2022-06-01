@@ -222,6 +222,39 @@ class AtomsList(object):
         return self.managers.get_distances()
 
 
+def store_features_ase_atoms(atoms_list, feature_matrix, key="features"):
+    """Store a feature matrix directly into a list of ASE Atoms
+
+    This helps with compatibility and portability outside librascal
+
+    Parameters
+    ----------
+    atoms_list: list(ase.Atoms)
+        List of ASE Atoms to store the features into
+
+    feature_matrix: np.ndarray, NxQ
+        Array of (atom-wise) features calculated for the atoms list.
+        First index is atoms, concatenated across structures.
+        Second index is features.
+
+    key : str
+        Dictionary key under which to store the features.
+        WARNING: If features are already present under this key,
+        they will be overwritten!
+
+    Returns
+    -------
+    Returns the modified atoms list, but note that this also modifies
+    the atoms list directly!
+    """
+    offset = 0
+    for structure in atoms_list:
+        natoms = len(structure)
+        structure.arrays[key] = feature_matrix[offset : offset + natoms]
+        offset += natoms
+    return atoms_list
+
+
 def get_neighbourlist(structure, options):
     manager = NeighbourListFactory(options)
     manager.update(**structure)

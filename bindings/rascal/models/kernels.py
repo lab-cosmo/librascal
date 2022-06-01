@@ -65,7 +65,7 @@ class Kernel(BaseIO):
         name="Cosine",
         kernel_type="Full",
         target_type="Structure",
-        **kwargs
+        **kwargs,
     ):
         # This case cannot be handled by the c++ side because c++ cannot deduce the
         # type from arguments inside a json, so it has to be casted in the c++
@@ -169,6 +169,7 @@ class Kernel(BaseIO):
                 )
             )
 
+
 class KernelDirect(BaseIO):
 
     """Compute a kernel directly by specifying the feature matrices
@@ -177,9 +178,18 @@ class KernelDirect(BaseIO):
     infrastructure, while not requiring a link to a librascal representation
     calculator.  The tradeoff is lower computational efficiency, especially
     for sparse multi-species systems.
+
+    TODO implement structure and gradient kernels
     """
 
-    def __init__(self, kernel_power, representation=None, kernel_name="Cosine", target_type="Atom"):
+    def __init__(
+        self,
+        kernel_power,
+        representation=None,
+        kernel_name="Cosine",
+        target_type="Atom",
+        features_key="features",
+    ):
         """Make a kernel function with the given parameters
 
         Currently only supports atom-wise dot-product (aka Cosine)
@@ -197,35 +207,51 @@ class KernelDirect(BaseIO):
         kernel_name : str
             Type of kernel; must be "Cosine"
         target_type : str
-            Selects whether the kernel is computed for atoms or structures
-            Currently only atoms are supported; summing the kernel rows
-            over structures gives the structure-wise kernel.
+            Selects whether the kernel is computed for atoms ('Atom')
+            or structures ('Structure').
+        features_key : str
+            For structure kernels, which key is used to access the
+            features in the provided ASE Atoms objects.
+            This can be modified in the kernel __call__() as well.
 
         Returns
         -------
         kernel : function
             Function for computing the kernel between two feature matrices
         """
-        if (kernel_name != "Cosine") or (target_type != "Atom"):
-            raise ValueError("Only atom-wise cosine kernels are supported")
+        if kernel_name != "Cosine":
+            raise ValueError("Only cosine kernels are supported")
+        valid_target_types = ["Atom", "Structure"]
+        if target_type not in valid_target_types:
+            raise ValueError(f"'target_type' must be one of: {valid_target_types!s}")
+        self.kernel_name = kernel_name
+        self.target_type = target_type
+        self.features_key = features_key
         self.kernel_power = kernel_power
         self._representation = representation
 
     def _self_kernel(self, features):
         """Compute the kernel of the feature matrix with itself"""
-        return (features @ features.T)**self.kernel_power
+        return (features @ features.T) ** self.kernel_power
 
-    def __call__(self, features, other_features=None, grad=False):
+    def __call__(self, features, other_features=None, grad=False, features_key=None):
         """Compute the kernel between the feature matrices
 
         Parameters
         ----------
-        features : 2-D array
-            First set of features
+        features : 2-D array or list(ase.Atoms)
+            First set of features.  If target_type=='Structure', should
+            instead be a list of ASE Atoms with the features for each
+            structure stored in the Atoms.arrays attribute, e.g. using
+            librascal.neighbourlist.store_features_ase_atoms()
         other_features : 2-D array, optional
             Second set of features (e.g. sparse points)
             If not provided, the kernel is computed between the
             first feature set and itself.
+        features_key : str
+            For structure kernels, the dictionary key used to access
+            features in the ASE Atoms objects.  If provided, overrides
+            the key provided in the constructor.
         grad : bool
             Whether to compute the _gradient_ of the kernel with respect
             to atomic positions.  This operation is only applied to the
@@ -247,10 +273,51 @@ class KernelDirect(BaseIO):
             return self._self_kernel(features)
         else:
             if grad:
-                #TODO implement
+                # TODO implement
                 raise NotImplemented("Gradient kernel WIP, sorry")
             else:
-                return (features @ other_features.T)**self.kernel_power
+                if self.target_type == "Structure":
+                    output_kernel = np.empty((len(features), other_features.shape[0]))
+                    # This may be a somewhat slow way of doing the computation,
+                    # but avoids hogging large amounts of memory at once.
+                    # Consider implementing a "blocking" option to compromise the
+                    # two needs in the future.
+                    offset = 0
+                    if features_key is None:
+                        features_key = self.features_key
+                    for structure_idx, structure in enumerate(features):
+                        try:
+                            structure_features = structure.arrays[features_key]
+                        except AttributeError as ae:
+                            raise ValueError(
+                                "Need a list of ASE Atoms for structure kernels"
+                            ) from ae
+                        except KeyError as ke:
+                            raise ValueError(
+                                f"No features found under key '{features_key}'"
+                            ) from ke
+                        output_kernel[structure_idx] = np.sum(
+                            (structure_features @ other_features.T)
+                            ** self.kernel_power,
+                            axis=0,
+                        )
+                    return output_kernel
+                else:
+                    return (features @ other_features.T) ** self.kernel_power
+
+    def _set_data(self, data):
+        super()._set_data(data)
+
+    def _get_data(self):
+        return super()._get_data()
+
+    def _get_init_params(self):
+        return dict(
+            kernel_power=self.kernel_power,
+            kernel_name=self.kernel_name,
+            target_type=self.target_type,
+            representation=self._representation,
+        )
 
 
 def compute_numerical_kernel_gradients(
