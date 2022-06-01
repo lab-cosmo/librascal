@@ -337,7 +337,7 @@ def fit_gap_simple(
     forces=None,
     kernel_gradients_sparse=None,
     force_regularizer=None,
-    solver="Normal",
+    solver_type="Normal",
     jitter=1e-10,
     target_type="Structure",
 ):
@@ -386,7 +386,7 @@ def fit_gap_simple(
                         energy / distance (component-wise)
 
     Optional arguments:
-        solver          Which solver to use for the sparse GPR equations.
+        solver_type     Which solver to use for the sparse GPR equations.
                         Options are "Normal", "QR", "RKHS", and "RKHS-QR".
                         See the documentation of
                         rascal.models.krr.SparseGPRSolver for details.
@@ -443,7 +443,7 @@ def fit_gap_simple(
         kernel_sparse,
         regularizer=1,
         jitter=jitter,
-        solver=solver,
+        solver=solver_type,
         relative_jitter=False,
     )
     solver.fit(K_NM, Y)
