@@ -179,7 +179,7 @@ class KernelDirect(BaseIO):
     calculator.  The tradeoff is lower computational efficiency, especially
     for sparse multi-species systems.
 
-    TODO implement structure and gradient kernels
+    TODO implement gradient kernels
     """
 
     def __init__(
@@ -234,24 +234,36 @@ class KernelDirect(BaseIO):
         """Compute the kernel of the feature matrix with itself"""
         return (features @ features.T) ** self.kernel_power
 
-    def __call__(self, features, other_features=None, grad=False, features_key=None):
+    def __call__(
+        self,
+        features,
+        other_features=None,
+        grad=False,
+        features_key=None,
+        grad_suffix="_grad",
+    ):
         """Compute the kernel between the feature matrices
 
         Parameters
         ----------
         features : 2-D array or list(ase.Atoms)
-            First set of features.  If target_type=='Structure', should
-            instead be a list of ASE Atoms with the features for each
-            structure stored in the Atoms.arrays attribute, e.g. using
-            librascal.neighbourlist.store_features_ase_atoms()
+            First set of features.  If target_type=='Structure', and not
+            doing a self-kernel, should instead be a list of ASE Atoms with the
+            features for each structure stored in the Atoms.arrays attribute,
+            e.g. using librascal.neighbourlist.store_features_ase_atoms()
+            The sparse points should then be supplied as 'other_features'
         other_features : 2-D array, optional
-            Second set of features (e.g. sparse points)
+            Second set of features (normally, the sparse points)
             If not provided, the kernel is computed between the
             first feature set and itself.
         features_key : str
             For structure kernels, the dictionary key used to access
-            features in the ASE Atoms objects.  If provided, overrides
-            the key provided in the constructor.
+            features in the ASE Atoms objects.  If provided, overrides the key
+            provided in the constructor.
+        grad_suffix : str
+            How to access the feature gradients: The 'features_key' is
+            appended with the given suffix (default '_grad') and used as
+            the new key to access the arrays dictionary
         grad : bool
             Whether to compute the _gradient_ of the kernel with respect
             to atomic positions.  This operation is only applied to the
@@ -272,38 +284,78 @@ class KernelDirect(BaseIO):
                 raise ValueError("Gradients are not supported for the self-kernel")
             return self._self_kernel(features)
         else:
+            if self.target_type == "Atom":
+                return (features @ other_features.T) ** self.kernel_power
             if grad:
                 # TODO implement
                 raise NotImplemented("Gradient kernel WIP, sorry")
-            else:
-                if self.target_type == "Structure":
+            elif self.target_type == "Structure":
+                if not grad:
                     output_kernel = np.empty((len(features), other_features.shape[0]))
-                    # This may be a somewhat slow way of doing the computation,
-                    # but avoids hogging large amounts of memory at once.
-                    # Consider implementing a "blocking" option to compromise the
-                    # two needs in the future.
+                else:
+                    n_atoms_tot = sum(len(struct) for struct in features)
+                    output_kernel = np.empty((n_atoms_tot, 3, other_features.shape[0]))
                     offset = 0
-                    if features_key is None:
-                        features_key = self.features_key
-                    for structure_idx, structure in enumerate(features):
-                        try:
-                            structure_features = structure.arrays[features_key]
-                        except AttributeError as ae:
-                            raise ValueError(
-                                "Need a list of ASE Atoms for structure kernels"
-                            ) from ae
-                        except KeyError as ke:
-                            raise ValueError(
-                                f"No features found under key '{features_key}'"
-                            ) from ke
+                # This may be a somewhat slow way of doing the computation,
+                # but avoids hogging large amounts of memory at once.
+                # Consider implementing a "blocking" option to compromise the
+                # two needs in the future.
+                if features_key is None:
+                    features_key = self.features_key
+                for structure_idx, structure in enumerate(features):
+                    try:
+                        structure_features = structure.arrays[features_key]
+                        if grad:
+                            structure_feat_grad = structure.arrays[
+                                features_key + grad_suffix
+                            ]
+                    except AttributeError as ae:
+                        raise ValueError(
+                            "Need a list of ASE Atoms for structure kernels"
+                        ) from ae
+                    except KeyError as ke:
+                        raise ValueError(
+                            f"No features found under key '{features_key}'"
+                        ) from ke
+                    if not grad:
                         output_kernel[structure_idx] = np.sum(
                             (structure_features @ other_features.T)
                             ** self.kernel_power,
                             axis=0,
                         )
-                    return output_kernel
-                else:
-                    return (features @ other_features.T) ** self.kernel_power
+                    else:
+                        natoms = len(structure)
+                        if structure_feat_grad.shape[0] != (
+                            natoms,
+                            natoms,
+                            3,
+                            other_features.shape[0],
+                        ):
+                            raise ValueError(
+                                "Feature gradients need to have shape "
+                                "(N_atoms x N_atoms x 3 x N_feat)"
+                                f" -- got shape: {structure_feat_grad.shape!s}"
+                            )
+                        # TODO check correctness -- also this is very
+                        # inefficient if N_neigh << N_atoms
+                        # This term is theoretically of size N_neigh x 3
+                        # but we don't have any way of telling here which atoms
+                        # are actually neighbours of which center, so we just
+                        # compute an N_atoms x 3 matrix instead with the
+                        # understanding that the first index lists neighbours
+                        # that should be summed over in the end
+                        chainrule_term = self.kernel_power * (
+                            structure_features @ other_features.T
+                        ) ** (self.kernel_power - 1)
+                        dot_prod_derivative = structure_feat_grad @ other_features.T
+                        output_kernel[offset : offset + natoms] = np.sum(
+                            chainrule_term[np.newaxis, :, np.newaxis, :]
+                            * dot_prod_derivative,
+                            axis=1,
+                        )
+                return output_kernel
+            else:
+                raise ValueError(f"Unknown target_type: '{self.target_type}'")
 
     def _set_data(self, data):
         super()._set_data(data)
