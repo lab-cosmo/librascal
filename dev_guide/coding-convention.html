@@ -2501,11 +2501,11 @@ Explanatory Comments</p>
 <p><code class="docutils literal notranslate"><span class="pre">case</span></code> blocks in switch statements have curly braces which should be placed as shown below.</p>
 <p>If not conditional on an enumerated value, switch statements should always have a default case (in the case of an enumerated value, the compiler will warn you if any values are not handled). If the default case should never execute, treat this as an error. For example:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">form</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="k">case</span><span class="w"> </span><span class="n">Formulation</span><span class="o">::</span><span class="n">finite_strain</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">case</span><span class="w"> </span><span class="no">Formulation</span><span class="o">::</span><span class="no">finite_strain</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">StrainMeasure</span><span class="o">::</span><span class="n">Gradient</span><span class="p">;</span><span class="w"></span>
 <span class="w">  </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-<span class="k">case</span><span class="w"> </span><span class="n">Formulation</span><span class="o">::</span><span class="n">small_strain</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">case</span><span class="w"> </span><span class="no">Formulation</span><span class="o">::</span><span class="no">small_strain</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">StrainMeasure</span><span class="o">::</span><span class="n">Infinitesimal</span><span class="p">;</span><span class="w"></span>
 <span class="w">  </span><span class="k">break</span><span class="p">;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
@@ -2758,9 +2758,9 @@ Explanatory Comments</p>
 <span class="w">  </span><span class="p">...</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 <span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="w">         </span><span class="c1">// No space before colon in a switch case.</span>
+<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="w">         </span><span class="c1">// No space before colon in a switch case.</span>
 <span class="w">    </span><span class="p">...</span><span class="w"></span>
-<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="mi">2</span><span class="o">:</span><span class="w"> </span><span class="k">break</span><span class="p">;</span><span class="w">  </span><span class="c1">// Use a space after a colon if there&#39;s code after it.</span>
+<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="mi">2</span><span class="p">:</span><span class="w"> </span><span class="k">break</span><span class="p">;</span><span class="w">  </span><span class="c1">// Use a space after a colon if there&#39;s code after it.</span>
 </pre></div>
 </div>
 </section>
