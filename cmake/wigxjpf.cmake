@@ -3,7 +3,7 @@
 set(SOURCE_DIR "${_wigxjpf_external_dir}/${package}")
 
 download_external_project(wigxjpf
-    URL "http://fy.chalmers.se/subatom/wigxjpf/wigxjpf-${_wigxjpf_version}.tar.gz"
+    URL "https://github.com/lab-cosmo/wigxjpf/archive/refs/tags/${_wigxjpf_version}.tar.gz"
     BACKEND NONE
     THIRD_PARTY_SRC_DIR ${_wigxjpf_external_dir}
     BUILD_COMMAND "make -C ${SOURCE_DIR}"
