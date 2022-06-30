@@ -24,10 +24,10 @@ with open("./requirements_pip.txt", "r") as fp:
 setup(
     name="rascal",
     version=version,
-    description="""A versatile and scalable computation of representations of
-atomic structures for machine learning.""",
+    description="""A versatile and scalable computation of representations of \
+    atomic structures for machine learning.""",
     author="librascal developers",
-    license="LGPL-3.0-or-later",
+    license="LGPL-2.1-or-later",
     cmake_args=[
         "-DINSTALL_PATH:STRING=" + join(os.getcwd(), CMAKE_INSTALL_DIR()),
         "-DBUILD_EXAMPLES:BOOL=OFF",

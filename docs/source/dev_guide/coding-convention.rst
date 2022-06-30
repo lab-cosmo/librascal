@@ -2050,20 +2050,19 @@ Start each file with license boilerplate. e.g., for file ``common.hh`` authored 
     *
     * Copyright  2017 Till Junge, John Doe
     *
-    * rascal is free software; you can redistribute it and/or
-    * modify it under the terms of the GNU Lesser General Public License as
-    * published by the Free Software Foundation, either version 3, or (at
-    * your option) any later version.
+    * This library is free software; you can redistribute it and/or
+    * modify it under the terms of the GNU Lesser General Public
+    * License as published by the Free Software Foundation; either
+    * version 2.1 of the License, or (at your option) any later version.
     *
-    * rascal is distributed in the hope that it will be useful, but
-    * WITHOUT ANY WARRANTY; without even the implied warranty of
+    * This library is distributed in the hope that it will be useful,
+    * but WITHOUT ANY WARRANTY; without even the implied warranty of
     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
     * Lesser General Public License for more details.
     *
-    * You should have received a copy of the GNU Lesser General Public License
-    * along with GNU Emacs; see the file COPYING. If not, write to the
-    * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-    * Boston, MA 02111-1307, USA.
+    * You should have received a copy of the GNU Lesser General Public
+    * License along with this library; if not, write to the Free Software
+    * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
     */
 
 Note on copyright: it is shared among the writers of the particular file, but chances are that in most cases, at least part of each new file contains ideas or even copied-and-pasted snippets from other files. Give the authors of those files also shared copyright.

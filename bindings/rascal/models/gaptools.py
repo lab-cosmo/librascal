@@ -13,38 +13,6 @@ from rascal.models.krr import SparseGPRSolver
 WORKDIR = os.getcwd()
 
 
-def calculate_representation(
-    geoms, rep_parameters, rep_class=representations.SphericalInvariants, auto_wrap=True
-):
-    """Calculate SOAP vectors without sparsification
-
-    Parameters:
-        geoms       List of Atoms objects to transform
-        rep_parameters
-                    Dictionary of parameters used to initialize the
-                    representation
-    Optional arguments:
-        rep_class   Class that specifies which representation to use
-                    (default rascal.representations.SphericalInvariants)
-        auto_wrap   Automatically wrap all the atoms so they are
-                    "inside" the periodic cell by the libRascal
-                    definition?  (Default True, recommended for periodic
-                    structures).
-                    WARNING: Structures intended to be treated as
-                    non-periodic require special handling -- do not use
-                    this option!  Manually pad the cell and shift the
-                    positions instead.
-
-    Returns the Representation object and the SOAP vectors in a tuple.
-    """
-    rep = rep_class(**rep_parameters)
-    if auto_wrap:
-        for geom in geoms:
-            geom.wrap(eps=1e-10)
-    soaps = rep.transform(geoms)
-    return rep, soaps
-
-
 def calculate_features(
     geoms,
     rep_parameters,
@@ -115,6 +83,36 @@ def sparsify_environments(
     if save_sparsepoints:
         utils.dump_obj(os.path.join(WORKDIR, "sparsepoints.json"), sparse_points)
     return sparse_points
+
+
+def sparsify_environments_barefeats(
+    feature_matrix, n_sparse, selection_type="CUR", save_sparsepoints=False
+):
+    """Sparsify the feature matrix and just return the selected indices
+
+    Parameters:
+        feature_matrix
+                    Features to use for sparsification, as a 2-D numpy
+                    array (environments along the first dimension)
+        n_sparse    Number of sparse points per species, in the form of
+                    a dict mapping atomic number to number of requested
+                    sparse points
+    Optional arguments:
+        selection_type
+            Which selection algorithm to use. 'CUR' and 'FPS'
+            are supported (see the documentation in rascal.utils
+            for details on each method), default CUR.
+        save_sparsepoints
+            Write the list of sparse points to a file for later use?
+            (default False)
+    """
+    # Probably need to write a thin wrapper of AtomsList, actually,
+    # that works with the filter utils -- it only needs to emulate
+    # returning atom types (might actually want to make a separate
+    # split-species function) and returning features.
+    # All this is so that selecting sparse points per central atom
+    # species is possible; otherwise it's an easy call to CUR/FPS.
+    pass
 
 
 def build_sparse_list(list_natoms, absolute_index_list):
@@ -340,7 +338,7 @@ def fit_gap_simple(
     forces=None,
     kernel_gradients_sparse=None,
     force_regularizer=None,
-    solver="Normal",
+    solver_type="Normal",
     jitter=1e-10,
     target_type="Structure",
 ):
@@ -389,7 +387,7 @@ def fit_gap_simple(
                         energy / distance (component-wise)
 
     Optional arguments:
-        solver          Which solver to use for the sparse GPR equations.
+        solver_type     Which solver to use for the sparse GPR equations.
                         Options are "Normal", "QR", "RKHS", and "RKHS-QR".
                         See the documentation of
                         rascal.models.krr.SparseGPRSolver for details.
@@ -446,7 +444,7 @@ def fit_gap_simple(
         kernel_sparse,
         regularizer=1,
         jitter=jitter,
-        solver=solver,
+        solver=solver_type,
         relative_jitter=False,
     )
     solver.fit(K_NM, Y)

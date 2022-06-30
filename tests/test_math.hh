@@ -10,20 +10,19 @@
  *
  * Copyright  2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
- * Rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3, or (at
- * your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * Rascal is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; see the file LICENSE. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #ifndef TESTS_TEST_MATH_HH_
@@ -457,6 +456,49 @@ namespace rascal {
       }  // for (int disp_idx...) (displacement directions)
     }    // for (auto inputs...) (function inputs)
   }
+
+  /**
+   * @brief Fixture used for testing kvecgenerator
+   *
+   * Multiple cells are defined that cover a range of relevant
+   * structures from the simple cubic structure having highest
+   * symmetry to triclinic cells whose extension along the three
+   * basis vectors is very different.
+   * The tests are then run over all these structures to ensure
+   * that the kvecgenerator works properly under various conditions.
+   */
+  struct KvecgenRefFixture {
+    KvecgenRefFixture() {
+      // Define basic cell quantities
+      Eigen::Matrix3d cell{};
+      double a = 10.;
+      double c = std::sqrt(8. / 3.) * a;
+
+      // Cells 1 and 2: Simple cubic cells of different dimensions
+      cell << 1., 0., 0., 0., 1., 0., 0., 0., 1.;
+      this->cells.push_back(a * cell);
+      this->cells.push_back(1.5 * a * cell);
+
+      // Cell 3: hcp cell (taken from test_structure.hh)
+      cell << a, -0.5 * a, 0., 0., std::sqrt(3.) / 2. * a, 0., 0., 0., c;
+      this->cells.push_back(cell);
+
+      // Cell 4: fcc cell (taken from test_structure.hh)
+      cell << a, 0.5 * a, 0.5 * a, 0., 0.5 * a, 0., 0., 0., 0.5 * a;
+      this->cells.push_back(cell);
+
+      // Cells 5 and 6: Two triclinic cells including high asymmetry
+      cell << 1., 0.3, 0.2, 0.4, 1., -0.1, 0., 0.3, 1.;
+      this->cells.push_back(a * cell);
+      cell << 0.8, 0.3, 0.2, 0.1, 3., -0.2, 0., 0.3, 0.7;
+      this->cells.push_back(a * cell);
+    }
+
+    ~KvecgenRefFixture() = default;
+
+    // Variable to store generated cells
+    std::vector<Eigen::Matrix3d> cells{};
+  };
 
   struct Hyp1F1RefFixture {
     Hyp1F1RefFixture() {

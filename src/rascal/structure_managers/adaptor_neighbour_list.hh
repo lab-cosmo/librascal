@@ -13,20 +13,19 @@
  * Copyright  2018 Markus Stricker, Till Junge, Felix Musil COSMO (EPFL),
  *  LAMMM (EPFL)
  *
- * Rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3, or (at
- * your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * Rascal is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; see the file LICENSE. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #ifndef SRC_RASCAL_STRUCTURE_MANAGERS_ADAPTOR_NEIGHBOUR_LIST_HH_
@@ -535,21 +534,16 @@ namespace rascal {
 
     //! Returns the number of clusters of size cluster_size
     size_t get_nb_clusters(size_t order) const {
-      switch (order) {
-      /**
-       * Note: The case for order=1 is abmiguous: one possible answer is the
-       * number of centers the other possibility is the number of centers +
-       * ghost atoms. Please use the get_size or get_size_with_ghosts member
-       * functions
-       */
-      case 2: {
-        return this->neighbours_atom_tag.size();
-        break;
+      if (order != 2) {
+        throw std::runtime_error(
+            "The case for order=1 is abmiguous: one possible answer is the "
+            "number of centers the other possibility is the number of centers "
+            "+ "
+            "ghost atoms. Please use the get_size or get_size_with_ghosts "
+            "member "
+            "functions");
       }
-      default:
-        throw std::runtime_error("Can only handle pairs.");
-        break;
-      }
+      return this->neighbours_atom_tag.size();
     }
 
     //! Returns number of clusters of the original manager

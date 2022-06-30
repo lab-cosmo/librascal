@@ -9,20 +9,19 @@
  *
  * Copyright  2018  Felix Musil, COSMO (EPFL), LAMMM (EPFL)
  *
- * Rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3, or (at
- * your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * Rascal is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; see the file LICENSE. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include "bind_py_structure_manager.hh"
@@ -815,35 +814,7 @@ namespace rascal {
     manager_collection.def(
         "get_gradients_info",
         [](ManagerCollection_t & managers) {
-          if (managers.size() == 0) {
-            throw std::runtime_error(
-                R"(There are no structure to get features from)");
-          }
-          auto n_neighbors{0};
-          for (auto & manager : managers) {
-            n_neighbors += manager->get_nb_clusters(2);
-          }
-
-          Eigen::Matrix<int, Eigen::Dynamic, 5> ij_mat{};
-          ij_mat.resize(n_neighbors, 5);
-          ij_mat.setZero();
-          int i_row{0}, i_center{0}, i_frame{0};
-          for (auto & manager : managers) {
-            for (auto center : manager) {
-              for (auto pair : center.pairs_with_self_pair()) {
-                ij_mat(i_row, 0) = i_frame;
-                ij_mat(i_row, 1) = i_center + center.get_atom_tag();
-                ij_mat(i_row, 2) = i_center + pair.get_atom_j().get_atom_tag();
-                ij_mat(i_row, 3) = center.get_atom_type();
-                ij_mat(i_row, 4) = pair.get_atom_type();
-                i_row++;
-              }
-            }
-            i_center += static_cast<int>(manager->size());
-            i_frame++;
-          }
-
-          return ij_mat;
+          return managers.get_gradients_info();
         },
         R"(Get informations necessary to the computation of gradients. It has
         as many rows as the number gradients and they correspond to the index

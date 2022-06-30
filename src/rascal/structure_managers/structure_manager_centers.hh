@@ -13,20 +13,19 @@
  *
  * Copyright  2018 Felix Musil, Markus Stricker, COSMO (EPFL), LAMMM (EPFL)
  *
- * Rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3, or (at
- * your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * Rascal is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; see the file LICENSE. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #ifndef SRC_RASCAL_STRUCTURE_MANAGERS_STRUCTURE_MANAGER_CENTERS_HH_
@@ -292,6 +291,17 @@ namespace rascal {
 
     //! Function for returning the number of atoms
     size_t get_nb_clusters(size_t order) const;
+
+    /**
+     * Get informations necessary to the computation of gradients. It has
+     * as many rows as the number gradients and they correspond to the index
+     * of the structure, the central atom, the neighbor atom and their atomic
+     * species.
+     *
+     * The shape is (n_structures * n_centers * n_neighbor, 5) while the
+     * n_neighbour is nonconstant over centers
+     */
+    Eigen::Matrix<int, Eigen::Dynamic, 5> get_gradients_info() const;
 
     //! to follow the base class
     void update_self() {}

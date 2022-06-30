@@ -1,4 +1,5 @@
 import logging
+from ase import Atoms
 import numpy as np
 from .io import BaseIO
 from ..models.sparse_points import SparsePoints
@@ -158,7 +159,7 @@ def _split_feature_matrix_by_species(managers, X, sps):
 
     Parameters
     ----------
-    managers : AtomsList
+    managers : AtomsList or list(ase.Atoms)
         list of atomic structures
     X : np.ndarray (2-D)
         feature matrix computed from managers; rows must correspond to atoms
@@ -180,7 +181,11 @@ def _split_feature_matrix_by_species(managers, X, sps):
     X_per_species = {}
     global_species_list = []
     for structure in managers:
-        global_species_list.extend([atom.atom_type for atom in structure])
+        if isinstance(structure, Atoms):
+            global_species_list.extend(structure.get_atomic_numbers())
+        else:
+            # Assuming rascal StructureManagerCollection
+            global_species_list.extend([atom.atom_type for atom in structure])
     global_species_list = np.array(global_species_list)
     for sp in sps:
         X_per_species[sp] = X[global_species_list == sp]

@@ -61,9 +61,8 @@ def fit_save_model(parameters):
         parameters.n_train, parameters.n_test, len(source_geoms)
     )
 
-    rep, soaps, sparse_points = gaptools.calculate_and_sparsify(
-        source_geoms, parameters.soap_hypers, parameters.n_sparse
-    )
+    rep, soaps = gaptools.calculate_features(source_geoms, parameters.soap_hypers)
+    sparse_points = gaptools.sparsify_environments(rep, soaps, parameters.n_sparse)
     (kobj, kernel_sparse, kernel_energies, kernel_forces) = gaptools.compute_kernels(
         rep, soaps, sparse_points, parameters.soap_power
     )

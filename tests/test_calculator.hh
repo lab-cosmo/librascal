@@ -10,20 +10,19 @@
  *
  * Copyright  2018 Musil Felix, COSMO (EPFL), LAMMM (EPFL)
  *
- * rascal is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3, or (at
- * your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * rascal is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this software; see the file LICENSE. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #ifndef TESTS_TEST_CALCULATOR_HH_
@@ -102,11 +101,16 @@ namespace rascal {
       for (auto & ri_hyp : this->radial_contribution_hypers) {
         for (auto & fc_hyp : this->fc_hypers) {
           for (auto & sig_hyp : this->density_hypers) {
-            for (auto & rep_hyp : this->rep_hypers) {
-              rep_hyp["cutoff_function"] = fc_hyp;
-              rep_hyp["gaussian_density"] = sig_hyp;
-              rep_hyp["radial_contribution"] = ri_hyp;
-              this->representation_hypers.push_back(rep_hyp);
+            for (auto & coef_sub_hyp : this->coef_sub_hypers) {
+              for (auto & rep_hyp : this->rep_hypers) {
+                rep_hyp["cutoff_function"] = fc_hyp;
+                rep_hyp["gaussian_density"] = sig_hyp;
+                rep_hyp["radial_contribution"] = ri_hyp;
+                if (not(coef_sub_hyp.is_null())) {
+                  rep_hyp["coefficient_subselection"] = coef_sub_hyp;
+                }
+                this->representation_hypers.push_back(rep_hyp);
+              }
             }
           }
         }
@@ -117,6 +121,8 @@ namespace rascal {
 
     std::vector<json> representation_hypers{};
 
+    std::vector<json> coef_sub_hypers{
+        {}, {{"a", {1}}, {"b", {1}}, {"n1", {0}}, {"n2", {0}}, {"l", {0}}}};
     std::vector<json> fc_hypers{
         {{"type", "ShiftedCosine"},
          {"cutoff", {{"value", 3.0}, {"unit", "AA"}}},
